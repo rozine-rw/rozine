@@ -192,9 +192,13 @@ docs/
   New Logo/                    Logo asset library (PNG, plus PNGs/ variants)
 
 resources/
-  rozine-pulse-desktop.html    Pulse landing page — desktop, self-contained bundle
-  rozine-pulse-mobile.html     Pulse landing page — mobile, self-contained bundle
+  rozine-pulse-desktop.html        Pulse landing page — desktop
+  rozine-pulse-mobile.html         Pulse landing page — mobile
+  rozine-pulse-desktop-light.html  Pulse landing page — desktop, light theme
+  rozine-pulse-mobile-light.html   Pulse landing page — mobile, light theme
 ```
+
+The Pulse pages are self-contained bundles — markup, styles and content packed into a single self-extracting file, with no external dependency beyond web fonts. They are build output rather than reviewable source, so diffs on them are not meaningful; if the generating source exists, it belongs here alongside them.
 
 **Markdown is canonical.** The `.md` files are the source of truth: they diff cleanly, review in a pull request, and let requirement IDs be traced line by line. The PDFs are rendered copies kept for distribution to partners, auditors and the regulator. **Edit the Markdown; regenerate the PDF from it.** If the two ever disagree, the Markdown is correct and the PDF is stale.
 
