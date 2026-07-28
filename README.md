@@ -17,7 +17,7 @@ This repository currently contains **the governing business and brand documentat
 | | |
 |---|---|
 | **Phase** | Pre-build — BRS v1.0 baselined, prototype complete, production build-out starting |
-| **In this repo** | BRS, business plan, branding styles, logo asset library |
+| **In this repo** | BRS, business plan, branding styles, logo asset library, Pulse landing pages |
 | **Prior work** | A Next.js prototype covering all five apps exists in the history of the predecessor repository. It is **not** carried forward here. |
 
 ---
@@ -185,11 +185,22 @@ KYC/KYB before any transaction, continuous AML monitoring with case management, 
 
 ```
 docs/
-  Rozine-BRS.pdf               Business Requirements Specification v1.0 — the governing document
-  Rozine-Business-Plan.pdf     Business plan (2026)
-  Rozine-Branding-Styles.pdf   Brand and visual identity guide
+  Rozine-BRS.md                Business Requirements Specification v1.0  ← canonical
+  Rozine-Business-Plan.md      Business plan (2026)                      ← canonical
+  Rozine-Branding-Styles.md    Brand and visual identity guide           ← canonical
+  Rozine-*.pdf                 Rendered distribution copies of the above
   New Logo/                    Logo asset library (PNG, plus PNGs/ variants)
+
+resources/
+  rozine-pulse-desktop.html        Pulse landing page — desktop
+  rozine-pulse-mobile.html         Pulse landing page — mobile
+  rozine-pulse-desktop-light.html  Pulse landing page — desktop, light theme
+  rozine-pulse-mobile-light.html   Pulse landing page — mobile, light theme
 ```
+
+The Pulse pages are self-contained bundles — markup, styles and content packed into a single self-extracting file, with no external dependency beyond web fonts. They are build output rather than reviewable source, so diffs on them are not meaningful; if the generating source exists, it belongs here alongside them.
+
+**Markdown is canonical.** The `.md` files are the source of truth: they diff cleanly, review in a pull request, and let requirement IDs be traced line by line. The PDFs are rendered copies kept for distribution to partners, auditors and the regulator. **Edit the Markdown; regenerate the PDF from it.** If the two ever disagree, the Markdown is correct and the PDF is stale.
 
 **The BRS governs.** It is the single reference against which the build is scoped, the compliance programme is evidenced, and delivery is accepted. Where any other artefact — including this README — conflicts with it, the BRS wins. Requirement IDs cited above (`BO‑n` objective, `BR‑n` rule, `FR‑n` functional, `DR‑n` data, `NFR‑n` non-functional, `IR‑n` integration, `CR‑n` compliance, `AC‑n` acceptance) are the canonical handles for tracing work back to it.
 

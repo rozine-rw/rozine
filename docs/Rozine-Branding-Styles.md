@@ -8,7 +8,7 @@ Colour, type and surface rules for every Rozine product. Blue leads. Green,
 
 orange and the semantic states support it — never compete with it. 
 
-V 1.0 JULY 2026 
+V1.0 JULY 2026 
 
 ##### 0 1 — C O R E 
 
@@ -18,15 +18,15 @@ V 1.0 JULY 2026
 
 
 
-- Rozine Blue Primary. Investor app. All product chrome. **`#0A5CFF`** 
+- Rozine Blue Primary. Investor app. All product chrome. **`#0 A 5 CFF`** 
 
 Deep Blue Gradient base, pressed states. 
 
 Ink All headings and key figures. 
 
-   - **`#0C1830`** 
+   - **`#0 C 1830`** 
 
-- **`#0A3FB0`** 
+- **`#0 A 3 FB 0`** 
 
 ##### 0 2 — A P P I D E N T I T Y 
 
@@ -41,25 +41,25 @@ Each app carries a single accent so a user always knows which side of the market
 
 
 <!-- Start of picture text -->
-Investor Business<br>#0A5CFF #12A150<br><!-- End of picture text -->
+Investor Business<br>#0 A 5 CFF #12 A 150<br><!-- End of picture text -->
 
 
 
 
 
 <!-- Start of picture text -->
-Auditor<br>#DD8A00<br><!-- End of picture text -->
+Auditor<br>#DD 8 A 00<br><!-- End of picture text -->
 
 
 
 
 
 <!-- Start of picture text -->
-Pulse<br>#08090D<br><!-- End of picture text -->
+Pulse<br>#08090 D<br><!-- End of picture text -->
 
 ROZINE TECHNOLOGIES LTD 
 
-BRAND SYSTEM · V 1.0 
+BRAND SYSTEM · V1.0 
 
 0 3 — R AT I N G B A N D S 
 
@@ -67,15 +67,15 @@ BRAND SYSTEM · V 1.0
 
 The rating is the single measure of business quality. Stable is the healthy default and must never read as a warning — its blue is calm, not alarming. 
 
-Strong **`4.4`** Stable **`3.4`** Weak **`2.6`** Distressed **`1.4`** 4.0 – 5.0 · low risk. 3.0 – 3.9 · the healthy 2.0 – 2.9 · elevated. Thin Below 2.0 · impaired. Not Selective by design. default. coverage. listable. **`#12A150 #0A5CFF #DD8A00 #E5484D`** N E U T R A L S & S U R FAC E S - quiet nine tenths Ink Slate Body Muted Hairline Surface `#0C1830 #3A465E #69748A #8894A8 #E7ECF4 #F8FAFD` 
+Strong **`4.4`** Stable **`3.4`** Weak **`2.6`** Distressed **`1.4`** 4.0 – 5.0 · low risk. 3.0 – 3.9 · the healthy 2.0 – 2.9 · elevated. Thin Below 2.0 · impaired. Not Selective by design. default. coverage. listable. **`#12 A 150 #0 A 5 CFF #DD 8 A 00 #E 5484 D`** N E U T R A L S & S U R FAC E S - quiet nine tenths Ink Slate Body Muted Hairline Surface `#0 C 1830 #3 A 465 E #69748 A #8894 A 8 #E 7 ECF 4 #F 8 FAFD` 
 
 ##### 0 4 — N E U T R A L S & S U R FAC E S 
 
-## - The quiet nine tenths 
+## The quiet nine-tenths 
 
 ROZINE TECHNOLOGIES LTD 
 
-BRAND SYSTEM · V 1.0 
+BRAND SYSTEM · V1.0 
 
 
 
@@ -105,7 +105,7 @@ The wing mark stands alone in tight spaces — app icons, favicons, avatars. Eve
 
 ##### 0 8 — R U L E S 
 
-## - Non negotiables 
+## Non-negotiables 
 
 #### ALWAYS 
 
@@ -145,5 +145,5 @@ Rozine Technologies Ltd · Kigali, Rwanda
 
 ROZINE TECHNOLOGIES LTD 
 
-BRAND SYSTEM · V 1.0 
+BRAND SYSTEM · V1.0 
 

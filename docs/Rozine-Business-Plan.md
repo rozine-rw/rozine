@@ -4,7 +4,7 @@ BUSINESS PLAN · 2026
 
 ### rozine 
 
-# Buildin Rwanda's ca ital market g p for profitable private businesses 
+# Building Rwanda's capital market for profitable private businesses 
 
 - - Rozine connects everyday and institutional investors to audited, cash flow verified Rwandan SMEs raising collateral-free growth capital — with fixed monthly repayments, independent CPA co-signature, and a liquid secondary market. 
 
@@ -38,12 +38,12 @@ We are not a lender. We do not take deposits, we do not hold credit risk on a ba
 
 |Pillar|What it is|Why it is hard to copy|
 |---|---|---|
-|Statement-parsed<br>underwriting|OCRingestion of 6–24 months of<br>bank andMoMo statements;<br>automated derivation of gross inflow,<br>outflow, volatility, seasonality and<br>debt service capacity.|Requires a parsing corpus<br>tuned toRwandan bank<br>andMoMo formats —<br>accumulated, not bought.|
-|TheAuditPartner<br>network|ICPAR-accreditedCPAs who<br>physically visit each borrower<br>monthly, capture geo-tagged<br>evidence, and co-sign the report<br>underISRS4400 agreed-upon<br>procedures.|Alicensed, contractually<br>bound, geographically<br>distributed human<br>network — years to build,<br>immediately trusted.|
+|Statement-parsed<br>underwriting|OCRingestion of 6–24 months of<br>bank and MoMo statements;<br>automated derivation of gross inflow,<br>outflow, volatility, seasonality and<br>debt service capacity.|Requires a parsing corpus<br>tuned toRwandan bank<br>and MoMo formats —<br>accumulated, not bought.|
+|TheAuditPartner<br>network|ICPAR-accreditedCPAs who<br>physically visit each borrower<br>monthly, capture geo-tagged<br>evidence, and co-sign the report<br>under ISRS 4400 agreed-upon<br>procedures.|Alicensed, contractually<br>bound, geographically<br>distributed human<br>network — years to build,<br>immediately trusted.|
 ||One number and one word (Strong /|Only meaningful when|
 |The unified rating|Stable / Weak /Distressed, 0.0–5.0)<br>computed from verified cash flow,<br>replacing every competing score.|backed by verified data; a<br>score on self-reported<br>numbers is worthless.<br>Liquidity is a network|
 |The secondary<br>market|Investors exit before maturity by<br>selling notes to other investors at a<br>market price.|effect: it improves as the<br>book grows and cannot<br>be bootstrapped by a<br>new entrant.|
-|Regulatory position|Sequenced entry via theRwanda<br>CapitalMarketAuthority (RCMA)<br>regulatory sandbox, with demand<br>proven before capital is at risk.|First-mover licence in a<br>jurisdiction that grants<br>few.|
+|Regulatory position|Sequenced entry via the Rwanda<br>Capital Market Authority (RCMA)<br>regulatory sandbox, with demand<br>proven before capital is at risk.|First-mover licence in a<br>jurisdiction that grants<br>few.|
 
 
 
@@ -63,7 +63,7 @@ S E C T I O N 0 2
 
 A Rwandan business can be genuinely profitable — steady MoMo receipts, real margins, a growing customer base — and still be structurally unable to borrow. The reason is not risk. The reason is collateral. 
 
-Commercial lending in Rwanda is underwritten against pledged assets: land title, vehicles, machinery. A distributor with RWF 40M in annual throughput but no title deed is, in the eyes of a bank's credit committee, uncreditworthy — regardless of how reliably cash arrives. The consequence is a class of businesses that are too big for microfinance, too asset-light for commercial credit, and therefore frozen at exactly the size where capital would compound fastest. 
+Commercial lending in Rwanda is underwritten against pledged assets: land title, vehicles, machinery. A distributor with RWF 40 M in annual throughput but no title deed is, in the eyes of a bank's credit committee, uncreditworthy — regardless of how reliably cash arrives. The consequence is a class of businesses that are too big for microfinance, too asset-light for commercial credit, and therefore frozen at exactly the size where capital would compound fastest. 
 
 The alternatives are worse. Informal lenders charge rates that destroy the very margin the loan was meant to grow. Supplier credit is short and relationship-dependent. Equity is premature and, for most owners, unwelcome — they do not want a partner, they want inventory. 
 
@@ -79,7 +79,7 @@ What does not exist is the middle: a product where a person can put a modest sum
 
 #### 2.3 The root cause: verification is expensive 
 
-Both sides of the market fail for one shared reason. Verifying that a small business earns what it claims has historically required either a full audit (too costly relative to a RWF 20M facility) or trust in self-reported figures (worthless as an investment basis). 
+Both sides of the market fail for one shared reason. Verifying that a small business earns what it claims has historically required either a full audit (too costly relative to a RWF 20 M facility) or trust in self-reported figures (worthless as an investment basis). 
 
 Every attempted solution to SME finance in the region has stumbled here. Lend on selfreported revenue and you underwrite fiction. Demand an audit and the economics collapse. Rozine's entire architecture exists to make verification cheap enough to be routine and rigorous enough to be investable. 
 
@@ -135,22 +135,22 @@ CONFIDENTIAL
 
 S E C T I O N 0 4 
 
-## The atform pl 
+## The platform 
 
 Rozine ships as five coordinated applications over one shared transactional core. Every entity — party, note, order, report, ledger entry, policy — lives in a single source of truth, so an action in one app propagates instantly to the others. 
 
 |Application|User|Purpose|
 |---|---|---|
-||Retail &|Discover deals as a swipeable deck; inspect verified<br>financials, ratings and audit evidence; invest fromRWF|
+||Retail &|Discover deals as a swipeable deck; inspect verified<br>financials, ratings and audit evidence; invest from RWF|
 |Investor app|institutional<br>investors|5,000; track a portfolio; receive monthly verified<br>updates; trade on the secondary market; manage a<br>wallet.|
 |||Onboard and verify identity; upload statements; see<br>|
 |Business app|Borrowing<br>SMEs|computed capacity and rating; create and manage a<br>raise; submit the monthly report; track repayments and<br>standing.|
 |||Receive dispatched jobs within a 30 km radius; run 24-|
-|Auditor app|ICPAR Audit<br>Partners|hourFlashAudits; capture geo-tagged evidence on<br>site; co-sign reports; track the 25% yield share;<br>complete continuing-education modules.|
-|||Total command over every object and action in the<br>ecosystem: underwriting policy,ICPARlicence|
-|Admin console|Rozine staff|verification, spatial dispatch,SLAenforcement, treasury<br>and ledger, compliance cases, per-app feature flags,<br>role-based access and a full audit trail.|
+|Auditor app|ICPAR Audit<br>Partners|hour Flash Audits; capture geo-tagged evidence on<br>site; co-sign reports; track the 25% yield share;<br>complete continuing-education modules.|
+|||Total command over every object and action in the<br>ecosystem: underwriting policy, ICPARlicence|
+|Admin console|Rozine staff|verification, spatial dispatch, SLAenforcement, treasury<br>and ledger, compliance cases, per-app feature flags,<br>role-based access and a full audit trail.|
 |||Demand-aggregation portal: investors register pledges,|
-|RozinePulse|Pre-launch<br>public|businesses pre-qualify by uploading a statement, and<br>both receive a shareable pass.Generates the evidence<br>base for the regulatory application.|
+|RozinePulse|Pre-launch<br>public|businesses pre-qualify by uploading a statement, and<br>both receive a shareable pass. Generates the evidence<br>base for the regulatory application.|
 
 
 
@@ -189,7 +189,7 @@ Figure 1 — Capacity is solved backwards from serviceable monthly repayment, ne
 
 |Tier|DSCRband|Treatment|
 |---|---|---|
-|Tier 1 — auto-<br>approve|≥ 1.25×|Cleared by the engine subject toAuditPartner<br>co-signature andKYBcompletion.|
+|Tier 1 — auto-<br>approve|≥ 1.25×|Cleared by the engine subject to Audit Partner<br>co-signature and KYB completion.|
 |Tier 2 — audit<br>band|1.00× – 1.25×|Requires enhanced on-site procedures and<br>manual underwriter approval; capacity is<br>reduced.|
 |Tier 3 — decline|< 1.00×|Rejected. The business receives its computed<br>figures and specific, actionable guidance on<br>what must change.|
 
@@ -207,7 +207,7 @@ CONFIDENTIAL
 
 S E C T I O N 0 6 
 
-## The ratin g 
+## The rating 
 
 Rozine publishes exactly one measure of quality. Early designs carried both a 0–100 platform score and a separate risk scale; we deliberately collapsed them, because two competing numbers force every user to ask which one matters and erode trust in both. 
 
@@ -216,10 +216,10 @@ The unified rating is expressed on a 0.0–5.0 scale with one decimal, always pa
 |Band|Rating|Meaning to an investor|
 |---|---|---|
 |||Deep, stable, well-covered cash flow with a clean|
-|Strong|4.0 – 5.0|verification history.Selective by design — most healthy<br>businesses will not qualify, and that is the point.|
+|Strong|4.0 – 5.0|verification history. Selective by design — most healthy<br>businesses will not qualify, and that is the point.|
 |Stable|3.0 – 3.9|Sound and serviceable. The healthy default for an<br>ordinary, well-run business; not a warning.|
-|Weak|2.0 – 2.9|Thin coverage or volatile receipts.Investable only with<br>the elevated return that accompanies it.|
-|Distressed|Below 2.0|Impaired.Not listable; existing notes enter active<br>monitoring and recovery.|
+|Weak|2.0 – 2.9|Thin coverage or volatile receipts. Investable only with<br>the elevated return that accompanies it.|
+|Distressed|Below 2.0|Impaired. Not listable; existing notes enter active<br>monitoring and recovery.|
 
 
 
@@ -285,7 +285,7 @@ Rozine earns from five thin, transparent fees. We take no spread on the investor
 
 |Fee|Rate|Paid by|Trigger|
 |---|---|---|---|
-|Listing fee<br>Service fee|Fixed<br>2% of<br>repayment|Business<br>Business|On successful listing of a raise, after<br>underwriting and co-signature.<br>Monthly, on each scheduled<br>repayment. 25% of this is routed<br>to theAuditPartner.|
+|Listing fee<br>Service fee|Fixed<br>2% of<br>repayment|Business<br>Business|On successful listing of a raise, after<br>underwriting and co-signature.<br>Monthly, on each scheduled<br>repayment. 25% of this is routed<br>to the Audit Partner.|
 |Repayment fee|1% of payout|Investor|On each payout received.|
 |Secondary fee|3% of trade|Seller|On each secondary-market<br>transaction.|
 ||||Yield on undeployed balances held|
@@ -339,7 +339,7 @@ CONFIDENTIAL
 
 S E C T I O N 1 0 
 
-## - - Go to market 
+## Go-to-market 
 
 Rozine's launch sequence is designed so that each stage de-risks the next, and so that we arrive at the regulator with evidence rather than intentions. 
 
@@ -397,7 +397,7 @@ Rozine operates a marketplace for investment instruments. We are not a deposit-t
 |AMLmonitoring|Transaction surveillance, case management, freeze and<br>reversal powers, and an immutable admin action log.|
 |Segregation of funds|Investor balances held separately from company funds, with<br>a full double-entry ledger.|
 |Disclosure|Every listing carries verified financials, the rating and its<br>basis, the fee schedule, and explicit risk warnings.|
-|Ongoing reporting|Mandatory monthlyCPAco-signed reports published to<br>holders, with enforcedSLAs.|
+|Ongoing reporting|Mandatory monthly CPA co-signed reports published to<br>holders, with enforced SLAs.|
 ||Role-based access control, dual-approval on sensitive|
 |Governance|actions, and a complete audit trail of every administrative<br>decision with actor and stated reason.|
 |Consumer protection|Investment limits, plain-language risk education, a dispute-<br>resolution workflow, and a documented recovery process.|
@@ -412,15 +412,15 @@ CONFIDENTIAL
 
 S E C T I O N 1 2 
 
-## C etition omp 
+## Competition 
 
-|Alternative<br>Commercial banks|Where it falls short<br>Underwrite collateral, not cash flow.Slow, document-heavy, and<br>structurally unable to serve asset-light businesses at this ticket<br>size.|
+|Alternative<br>Commercial banks|Where it falls short<br>Underwrite collateral, not cash flow. Slow, document-heavy, and<br>structurally unable to serve asset-light businesses at this ticket<br>size.|
 |---|---|
-|Microfinance &<br>SACCOs|Serve a smaller ticket band with group-liability mechanics;<br>cannot fund theRWF10–100Mgrowth step.|
-|Digital nano-lenders|<sup>Very short tenor, very high effective cost, algorithmic and</sup><br>unverified.Solves liquidity, not growth.|
+|Microfinance &<br>SACCOs|Serve a smaller ticket band with group-liability mechanics;<br>cannot fund the RWF 10–100 Mgrowth step.|
+|Digital nano-lenders|<sup>Very short tenor, very high effective cost, algorithmic and</sup><br>unverified. Solves liquidity, not growth.|
 |Impact funds &<br>accelerators|Deep diligence but tiny throughput and long timelines; equity-<br>shaped for founders who want debt.|
 |Informal lending|Fast and flexible, but rates destroy margin and there is no<br>recourse for either party.|
-|Regional<br>crowdfunding<br>platforms|Rely on self-reported figures and one-time diligence.No<br>independent monthly attestation, no liquidity, no licensed<br>verification layer.|
+|Regional<br>crowdfunding<br>platforms|Rely on self-reported figures and one-time diligence. No<br>independent monthly attestation, no liquidity, no licensed<br>verification layer.|
 
 
 
@@ -437,10 +437,10 @@ S E C T I O N 1 3
 |Risk|Exposure|Mitigation|
 |---|---|---|
 |Borrower default|Investor capital impaired;<br>platform trust damaged.|Capacity-based sizing with<br>DSCRfloors; monthly verified<br>reporting; early-warning health<br>status; graduated collections<br>and documented recovery; full<br>loss disclosure at the point of<br>investment.<br>Machine parsing with anomaly<br>detection; independent on-site|
-|Statement fraud|Forged or edited documents<br>inflate capacity.|CPAattestation; geo-tagged<br>evidence; randomFlashAudits;<br>permanent platform ban and<br>referral for confirmed fraud.|
+|Statement fraud|Forged or edited documents<br>inflate capacity.|CPAattestation; geo-tagged<br>evidence; random Flash Audits;<br>permanent platform ban and<br>referral for confirmed fraud.|
 |||Rotation, concurrency caps, in-<br>app camera-only evidence,|
-|Auditor collusion|Apartner signs off on a business<br>they should not.|licence-linked accountability<br>withICPAR, yield freeze pending<br>investigation, andFlashAudit<br>sampling.|
-|||Sequenced entry via the<br>sandbox;Pulse generates|
+|Auditor collusion|Apartner signs off on a business<br>they should not.|licence-linked accountability<br>with ICPAR, yield freeze pending<br>investigation, and Flash Audit<br>sampling.|
+|||Sequenced entry via the<br>sandbox; Pulse generates|
 |Regulatory delay|Launch timing slips.|evidence and market presence<br>during the waiting period at no<br>regulatory exposure; controls<br>built ahead of requirement.<br>Secondary market with<br>|
 |Liquidity mismatch|<sup>Investors need exit before</sup><br>maturity.|transparent pricing; short tenors<br>of 3–12 months by design; clear<br>communication that early exit<br>depends on a willing buyer.<br>Sector and geographic exposure|
 |Concentration|Asector or region shock hits<br>many notes at once.|caps enforced in policy; portfolio<br>diversification prompts to<br>investors; admin-level<br>concentration monitoring.|
@@ -455,7 +455,7 @@ CONFIDENTIAL
 
 S E C T I O N 1 4 
 
-## Technolo gy 
+## Technology 
 
 The prototype is complete across all five applications on a single shared transactional core, with the full entity model, lifecycle state machine, policy engine, ledger and admin command surface implemented and demonstrable. Production build-out proceeds along four tracks. 
 
@@ -496,7 +496,7 @@ S E C T I O N 1 5
 |Phase|Objective|Exit criteria|
 |---|---|---|
 |Phase 1|Pulse campaign and<br>partnership execution|Signed institutional partners; a substantial<br>verified pledge book; a pre-qualified business<br>pipeline; parsing engine validated on real<br>statements at volume.|
-|Phase 2|Production build and<br>AuditPartner<br>accreditation|Core services live; payment rails integrated;<br>first cohort ofICPARpartners onboarded,<br>trained and contracted; security review<br>passed.|
+|Phase 2|Production build and<br>Audit Partner<br>accreditation|Core services live; payment rails integrated;<br>first cohort of ICPAR partners onboarded,<br>trained and contracted; security review<br>passed.|
 |Phase 3|RCMAsandbox operation|Live notes originated, funded, serviced and<br>repaid under supervision; complete monthly<br>reporting record; measured default and<br>recovery experience.|
 |||Licence granted; caps lifted; institutional|
 |Phase 4|Full licence and scale|channel opened; secondary market at depth;<br>regional expansion prepared.|
@@ -574,14 +574,14 @@ Tenors offered 3, 6, 9 or 12 months Total return to investor Flat 10% minimum �
 |Term|Definition|
 |---|---|
 |Note|The instrument issued by a business and held by investors,<br>carrying a fixed total return and a fixed repayment schedule.|
-|Capacity|The maximum a business may raise, computed from verified<br>cash flow.Never negotiable upward.|
+|Capacity|The maximum a business may raise, computed from verified<br>cash flow. Never negotiable upward.|
 ||Cash flow available for debt service — verified operating cash|
 |CFADS|flow after existing obligations and owner drawings, volatility-<br>adjusted.|
 |DSCR|Debt service coverage ratio —CFADSdivided by the proposed<br>monthly repayment.|
-|AuditPartner|AnICPAR-accreditedCPAcontracted to perform on-site<br>verification and co-sign reports underISRS4400.|
+|AuditPartner|AnICPAR-accreditedCPAcontracted to perform on-site<br>verification and co-sign reports under ISRS 4400.|
 |Verification seal|Acryptographic hash binding auditor identity, licence, report<br>contents and timestamp to a published report.|
-|FlashAudit|Arandomly triggered 24-hour re-verification of a business and<br>itsAuditPartner.|
-|RozinePulse|The pre-launch demand-aggregation portal.Collects no funds<br>and issues no instrument.|
+|FlashAudit|Arandomly triggered 24-hour re-verification of a business and<br>its Audit Partner.|
+|RozinePulse|The pre-launch demand-aggregation portal. Collects no funds<br>and issues no instrument.|
 
 
 
