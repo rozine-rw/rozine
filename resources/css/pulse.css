@@ -1,0 +1,380 @@
+/*
+ * Pulse waitlist.
+ *
+ * The palette, motion and control styling for the Pulse page, kept out of the
+ * component so the light and dark variants of the design can be expressed as
+ * one token set. Values are lifted verbatim from the approved design.
+ */
+
+.rz-pulse {
+    font-family:
+        'Inter',
+        -apple-system,
+        system-ui,
+        sans-serif;
+    background: var(--rz-page);
+    color: var(--rz-fg);
+
+    /* The design leans on browser defaults the app otherwise overrides. */
+    line-height: normal;
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
+
+    /* Type */
+    --rz-fg: #16202f;
+    --rz-fg-strong: #0c1830;
+    --rz-fg-title: #0c1830;
+    --rz-muted: #69748a;
+    --rz-muted-2: #69748a;
+    --rz-dim: #8894a8;
+    --rz-dim-2: #8894a8;
+    --rz-strong: #3a465e;
+    --rz-hero-label: #46526b;
+    --rz-hero-accent: #5b6a83;
+    --rz-stat-label: #5b6a83;
+    --rz-stat-value: #0c1830;
+    --rz-currency: #8894a8;
+    --rz-note-name: #16202f;
+    --rz-note-meta: #8894a8;
+    --rz-note-term: #69748a;
+
+    /* Accents */
+    --rz-blue: #0a5cff;
+    --rz-blue-fg: #0a5cff;
+    --rz-blue-yield: #0a5cff;
+    --rz-badge-fg: #0a5cff;
+    --rz-blue-deep: #3f6cc4;
+    --rz-green: #12a150;
+    --rz-green-fg: #12a150;
+    --rz-green-strong: #12a150;
+    --rz-green-rating: #0c1830;
+    --rz-green-deep: #0f7a3d;
+
+    /* Metrics the mobile design tunes */
+    --rz-hero-bar-radius: 3px;
+    --rz-hero-label-tracking: 0.1em;
+    --rz-hero-fig-tracking: -0.018em;
+    --rz-stat-tracking: 0.09em;
+
+    /* Surfaces */
+    --rz-page: linear-gradient(180deg, #f7f9fd 0%, #ffffff 40%);
+    --rz-glow: rgba(10, 92, 255, 0.1);
+    --rz-grid-line: rgba(12, 24, 48, 0.05);
+    --rz-topbar-bg: rgba(255, 255, 255, 0.82);
+    --rz-topbar-border: #e7ecf4;
+    --rz-divider: #dbe3f0;
+    --rz-hero-card-bg: #ffffff;
+    --rz-hero-card-border: #e2e8f2;
+    --rz-card-bg: #f8fafd;
+    --rz-card-border: #e7ecf4;
+    --rz-tile-bg: #ffffff;
+    --rz-tile-border: #e7ecf4;
+    --rz-line: #e7ecf4;
+    --rz-line-soft: #eef2f8;
+    --rz-seg-bg: #f8fafd;
+    --rz-seg-border: #e2e8f2;
+    --rz-input-bg: #ffffff;
+    --rz-input-border: #dbe3f0;
+    --rz-placeholder: #a3acbd;
+    --rz-modal-bg: #ffffff;
+    --rz-modal-border: #e2e8f2;
+    --rz-modal-line: #e7ecf4;
+    --rz-seg-active-fg: #0c1830;
+    --rz-modal-shadow: 0 40px 90px -30px rgba(20, 45, 95, 0.3);
+    --rz-overlay: rgba(12, 24, 48, 0.45);
+    --rz-track: #e9eef6;
+    --rz-chip-bg: #f1f4f9;
+    --rz-chip-border: #e2e8f2;
+    --rz-icon-btn-bg: #f1f4f9;
+    --rz-ghost-border: #dbe3f0;
+    --rz-disabled-bg: #e2e8f2;
+    --rz-disabled-fg: #7a8598;
+    --rz-toast-border: #dbe3f0;
+    --rz-error: #c0392b;
+}
+
+.dark .rz-pulse {
+    /* Type */
+    --rz-fg: #e9ebf0;
+    --rz-fg-strong: #f6f8fc;
+    --rz-fg-title: #f3f5f8;
+    --rz-muted: #8b909b;
+    --rz-muted-2: #9aa0ac;
+    --rz-dim: #6a7080;
+    --rz-dim-2: #7b8194;
+    --rz-strong: #c7ccd6;
+    --rz-hero-label: #d4d9e2;
+    --rz-hero-accent: #9db4e8;
+    --rz-stat-label: #c3cad6;
+    --rz-stat-value: #e9ecf3;
+    --rz-currency: #7b8698;
+    --rz-note-name: #e9ebf0;
+    --rz-note-meta: #6a7080;
+    --rz-note-term: #c9ccd6;
+
+    /* Accents */
+    --rz-blue-fg: #5f86ff;
+    --rz-blue-yield: #7ea2ff;
+    --rz-badge-fg: #7fa8ff;
+    --rz-blue-deep: #7d9bdb;
+    --rz-green-fg: #4ade80;
+    --rz-green-strong: #22c55e;
+    --rz-green-rating: #5fd699;
+    --rz-green-deep: #6a9d80;
+
+    /* Surfaces */
+    --rz-page: #08090d;
+    --rz-glow: rgba(10, 92, 255, 0.16);
+    --rz-grid-line: rgba(255, 255, 255, 0.018);
+    --rz-topbar-bg: rgba(8, 9, 13, 0.72);
+    --rz-topbar-border: rgba(255, 255, 255, 0.06);
+    --rz-divider: rgba(255, 255, 255, 0.14);
+    --rz-hero-card-bg: rgba(255, 255, 255, 0.03);
+    --rz-hero-card-border: rgba(255, 255, 255, 0.09);
+    --rz-card-bg: rgba(255, 255, 255, 0.02);
+    --rz-card-border: rgba(255, 255, 255, 0.08);
+    --rz-tile-bg: rgba(255, 255, 255, 0.03);
+    --rz-tile-border: rgba(255, 255, 255, 0.07);
+    --rz-line: rgba(255, 255, 255, 0.08);
+    --rz-line-soft: rgba(255, 255, 255, 0.06);
+    --rz-seg-bg: rgba(255, 255, 255, 0.02);
+    --rz-seg-border: rgba(255, 255, 255, 0.1);
+    --rz-input-bg: rgba(255, 255, 255, 0.03);
+    --rz-input-border: rgba(255, 255, 255, 0.12);
+    --rz-placeholder: #4b5060;
+    --rz-modal-bg: #0c0d13;
+    --rz-modal-border: rgba(255, 255, 255, 0.1);
+    --rz-modal-line: rgba(255, 255, 255, 0.07);
+    --rz-seg-active-fg: #eef1f7;
+    --rz-modal-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.9);
+    --rz-overlay: rgba(4, 5, 9, 0.8);
+    --rz-track: rgba(255, 255, 255, 0.08);
+    --rz-chip-bg: rgba(255, 255, 255, 0.04);
+    --rz-chip-border: rgba(255, 255, 255, 0.1);
+    --rz-icon-btn-bg: rgba(255, 255, 255, 0.05);
+    --rz-ghost-border: rgba(255, 255, 255, 0.12);
+    --rz-disabled-bg: rgba(255, 255, 255, 0.08);
+    --rz-disabled-fg: #ffffff;
+    --rz-toast-border: rgba(255, 255, 255, 0.14);
+    --rz-error: #f87171;
+}
+
+/* The mobile design tunes a handful of tokens per theme. */
+@media (max-width: 767px) {
+    .rz-pulse {
+        --rz-hero-accent: #4b7bd6;
+    }
+
+    .dark .rz-pulse {
+        --rz-hero-card-bg: rgba(255, 255, 255, 0.02);
+        --rz-hero-card-border: rgba(255, 255, 255, 0.07);
+        --rz-hero-label: #8b909b;
+        --rz-stat-label: #7b8698;
+        --rz-hero-bar-radius: 2px;
+        --rz-hero-label-tracking: 0.05em;
+        --rz-hero-fig-tracking: -0.01em;
+        --rz-stat-tracking: 0.08em;
+    }
+}
+
+.rz-pulse ::selection {
+    background: rgba(10, 92, 255, 0.18);
+    color: #0c1830;
+}
+
+.dark .rz-pulse ::selection {
+    background: rgba(10, 92, 255, 0.4);
+    color: #fff;
+}
+
+.rz-num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+}
+
+@keyframes rzp-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes rzp-blink {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.2;
+    }
+}
+
+@keyframes rzp-ping {
+    0% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+    80%,
+    100% {
+        transform: scale(2.6);
+        opacity: 0;
+    }
+}
+
+@keyframes rzp-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes rzp-thumb {
+    0%,
+    100% {
+        box-shadow: 0 0 0 4px rgba(10, 92, 255, 0.35);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 0 13px rgba(10, 92, 255, 0.06);
+        transform: scale(1.18);
+    }
+}
+
+@keyframes rzp-box {
+    0%,
+    100% {
+        border-color: rgba(18, 161, 80, 0.35);
+        box-shadow: 0 0 0 0 rgba(16, 161, 80, 0);
+    }
+    50% {
+        border-color: #12a150;
+        box-shadow:
+            0 0 26px -6px rgba(16, 161, 80, 0.35),
+            inset 0 0 18px -8px rgba(16, 161, 80, 0.14);
+    }
+}
+
+@keyframes rzp-box-dark {
+    0%,
+    100% {
+        border-color: rgba(74, 222, 128, 0.4);
+        box-shadow: 0 0 0 0 rgba(16, 161, 80, 0);
+    }
+    50% {
+        border-color: rgba(74, 222, 128, 1);
+        box-shadow:
+            0 0 34px -2px rgba(16, 161, 80, 0.6),
+            inset 0 0 22px -6px rgba(16, 161, 80, 0.35);
+    }
+}
+
+@keyframes rzp-arrow {
+    0%,
+    100% {
+        transform: translateY(4px);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+@keyframes rzp-sheen {
+    0% {
+        transform: translateX(-130%) skewX(-16deg);
+    }
+    100% {
+        transform: translateX(240%) skewX(-16deg);
+    }
+}
+
+input[type='range'].rz-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 3px;
+    background: #dbe3f0;
+    outline: none;
+    cursor: pointer;
+}
+
+.dark input[type='range'].rz-slider {
+    height: 2px;
+    background: rgba(255, 255, 255, 0.14);
+}
+
+input[type='range'].rz-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #0a5cff;
+    border: 3px solid #cfe0ff;
+    cursor: pointer;
+    box-shadow: 0 0 0 4px rgba(10, 92, 255, 0.18);
+    animation: rzp-thumb 1.5s ease-in-out infinite;
+}
+
+input[type='range'].rz-slider:hover::-webkit-slider-thumb,
+input[type='range'].rz-slider:active::-webkit-slider-thumb {
+    animation: none;
+    box-shadow: 0 0 0 6px rgba(10, 92, 255, 0.22);
+}
+
+input[type='range'].rz-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #0a5cff;
+    border: 3px solid #cfe0ff;
+}
+
+.rz-ipt::placeholder {
+    color: var(--rz-placeholder);
+}
+
+.rz-ghost:hover {
+    background: #f1f4f9;
+}
+
+.dark .rz-ghost:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.rz-upload {
+    animation: rzp-box 1.7s ease-in-out infinite;
+}
+
+.dark .rz-upload {
+    animation: rzp-box-dark 1.7s ease-in-out infinite;
+}
+
+.rz-upload:hover {
+    animation: none;
+    border-color: #12a150;
+    background: rgba(18, 161, 80, 0.06);
+}
+
+.dark .rz-upload:hover {
+    animation: none;
+    border-color: rgba(74, 222, 128, 0.85);
+    background: rgba(16, 161, 80, 0.09);
+}
+
+.rz-upload svg {
+    animation: rzp-arrow 1.7s ease-in-out infinite;
+}
+
+.rz-upload:hover svg {
+    animation: none;
+}
+
+.rz-cta:hover {
+    filter: brightness(1.12);
+}
+
+.rz-scrollwin::-webkit-scrollbar {
+    width: 0;
+}
