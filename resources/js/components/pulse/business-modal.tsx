@@ -2,8 +2,10 @@ import { RatingPill } from '@/components/pulse/business-panel';
 import { ListingConsent } from '@/components/pulse/listing-consent';
 import {
     PassActions,
+    PassAmount,
     PassCard,
-    PassDomain,
+    PassFooter,
+    PassHolder,
     PassStat,
 } from '@/components/pulse/pass-card';
 import {
@@ -136,9 +138,10 @@ export function BusinessModal({
                     </div>
                     <PassCard
                         tone="business"
-                        tag={`BUSINESS LOAN ${loanNumber}`}
+                        tag="BUSINESS LOAN"
+                        badge={loanNumber}
                     >
-                        <div className="text-[9px] font-semibold tracking-[0.1em] text-[rgba(255,255,255,0.82)] uppercase">
+                        <PassHolder>
                             {details.name.trim() || 'Pre-qualified business'}{' '}
                             <span className="text-[rgba(255,255,255,0.9)]">
                                 ·
@@ -146,29 +149,24 @@ export function BusinessModal({
                             <span className="font-normal">
                                 {details.district || 'Gasabo'}
                             </span>
-                        </div>
-                        <div className="mt-1.5 text-[7.5px] font-bold tracking-[0.13em] text-[rgba(255,255,255,0.62)]">
-                            PRE-QUALIFIED LOAN
-                        </div>
-                        <div className="rz-num mt-0.5 text-[33px] leading-none font-extrabold tracking-[-0.025em] text-white">
+                        </PassHolder>
+                        <PassAmount caption="PRE-QUALIFIED LOAN">
                             {formatCompact(qualifiedAmount)}
-                        </div>
-                        <div className="mt-2 flex items-end justify-between">
-                            <div className="flex gap-[13px]">
-                                <PassStat label="TERM" value={termLabel} />
-                                <PassStat label="FLAT" value={flatRate} />
-                                <PassStat
-                                    label="RATING"
-                                    value={`${rating.band} ${rating.score}`}
-                                />
-                            </div>
-                            <PassDomain />
-                        </div>
+                        </PassAmount>
+                        <PassFooter>
+                            <PassStat label="TERM" value={termLabel} />
+                            <PassStat label="FLAT" value={flatRate} />
+                            <PassStat
+                                label="RATING"
+                                value={`${rating.band} ${rating.score}`}
+                            />
+                        </PassFooter>
                     </PassCard>
                     <PassActions
                         card={{
                             tone: 'business',
-                            tag: `BUSINESS LOAN ${loanNumber}`,
+                            tag: 'BUSINESS LOAN',
+                            badge: loanNumber,
                             holder: `${details.name.trim() || 'Pre-qualified business'} · ${details.district || 'Gasabo'}`,
                             caption: 'PRE-QUALIFIED LOAN',
                             amount: formatCompact(qualifiedAmount),

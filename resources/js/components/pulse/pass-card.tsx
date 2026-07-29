@@ -13,79 +13,119 @@ const TONES = {
     investor: {
         background:
             'radial-gradient(150% 130% at 14% 0%, #3f83ff 0%, #0a44c4 40%, #061640 100%)',
-        shadow: '0 30px 60px -18px rgba(10,92,255,.6), inset 0 1px 0 rgba(255,255,255,.3)',
-        pattern: 'rz-wing-investor',
+        glow: 'rgba(10,92,255,.6)',
     },
     business: {
         background:
             'radial-gradient(150% 130% at 14% 0%, #17c268 0%, #0a7c47 40%, #052a1c 100%)',
-        shadow: '0 30px 60px -18px rgba(16,178,90,.55), inset 0 1px 0 rgba(255,255,255,.3)',
-        pattern: 'rz-wing-business',
+        glow: 'rgba(16,178,90,.55)',
     },
 };
 
 /**
  * The shareable pass a visitor walks away with.
+ *
+ * The design is drawn at a 900px width, so the card carries that width as a
+ * unit — `--rz-pass-u` is one design pixel — and every box below is the figure
+ * the design gives it. The card then holds its proportions at any width.
  */
 export function PassCard({
     tone,
     tag,
+    badge,
     children,
 }: {
     tone: 'investor' | 'business';
     tag: string;
+    badge: string;
     children: ReactNode;
 }) {
-    const { background, shadow, pattern } = TONES[tone];
+    const { background, glow } = TONES[tone];
 
     return (
-        <div
-            className="relative mx-auto mt-3 aspect-[1.585] w-full overflow-hidden rounded-[20px] text-left"
-            style={{ background, boxShadow: shadow }}
-        >
-            <svg
-                width="100%"
-                height="100%"
-                preserveAspectRatio="xMidYMid slice"
-                className="absolute inset-0 opacity-[0.11]"
+        <div className="@container mx-auto mt-3 w-full [--rz-pass-u:calc(100cqw/900)]">
+            <div
+                className="relative aspect-[1.6] w-full overflow-hidden rounded-[calc(38*var(--rz-pass-u))] text-left"
+                style={{
+                    background,
+                    boxShadow: `0 calc(50*var(--rz-pass-u)) calc(100*var(--rz-pass-u)) calc(-30*var(--rz-pass-u)) ${glow}, inset 0 calc(2*var(--rz-pass-u)) 0 rgba(255,255,255,.3)`,
+                }}
             >
-                <defs>
-                    <pattern
-                        id={pattern}
-                        width="19"
-                        height="10.5"
-                        patternUnits="userSpaceOnUse"
-                        patternTransform="rotate(-30)"
-                    >
-                        <image
-                            href="/images/rozine-wing-white.png"
-                            x="0.5"
-                            y="0.75"
-                            width="18"
-                            height="9.4"
-                            preserveAspectRatio="xMidYMid meet"
-                        />
-                    </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill={`url(#${pattern})`} />
-            </svg>
-            <div className="absolute top-0 bottom-0 left-0 w-[46%] animate-[rzp-sheen_5s_ease-in-out_infinite] bg-[linear-gradient(100deg,rgba(255,255,255,0.16),transparent_72%)]" />
-            <div className="absolute -top-[70px] -right-[70px] h-[230px] w-[230px] rounded-full bg-[radial-gradient(closest-side,rgba(255,255,255,0.2),transparent)]" />
-            <div className="relative flex h-full flex-col px-4 py-[13px]">
-                <div className="flex items-start justify-between">
-                    <div className="flex items-center">
-                        <img
-                            src="/images/rozine-wordmark-white.png"
-                            alt="rozine"
-                            className="block h-[17px] w-auto"
-                        />
+                <div className="absolute -top-[30%] -left-[30%] h-[160%] w-[160%] rotate-[-30deg] bg-[url('/images/rozine-wing-white.png')] bg-[size:calc(36*var(--rz-pass-u))_calc(20*var(--rz-pass-u))] bg-repeat opacity-[0.11]" />
+                <div className="absolute top-[calc(-140*var(--rz-pass-u))] right-[calc(-140*var(--rz-pass-u))] h-[calc(460*var(--rz-pass-u))] w-[calc(460*var(--rz-pass-u))] rounded-full bg-[radial-gradient(closest-side,rgba(255,255,255,0.2),transparent)]" />
+                <div className="relative flex h-full flex-col px-[calc(56*var(--rz-pass-u))] py-[calc(52*var(--rz-pass-u))]">
+                    <div className="flex items-start justify-between">
+                        <div className="flex items-center">
+                            <img
+                                src="/images/rozine-wordmark-white.png"
+                                alt="rozine"
+                                className="block h-[calc(63*var(--rz-pass-u))] w-auto"
+                            />
+                        </div>
+                        <div className="flex items-center gap-[calc(12*var(--rz-pass-u))]">
+                            <span className="text-[calc(22.8*var(--rz-pass-u))] font-bold tracking-[0.14em] whitespace-nowrap text-[rgba(255,255,255,0.72)]">
+                                {tag}
+                            </span>
+                            <span className="inline-flex items-center rounded-full border-[calc(1.5*var(--rz-pass-u))] border-[rgba(255,255,255,0.34)] bg-[rgba(255,255,255,0.16)] px-[calc(14*var(--rz-pass-u))] pt-[calc(7*var(--rz-pass-u))] pb-[calc(8*var(--rz-pass-u))] text-[calc(26*var(--rz-pass-u))] leading-none font-extrabold tracking-[0.02em] whitespace-nowrap text-white shadow-[inset_0_calc(1*var(--rz-pass-u))_0_rgba(255,255,255,0.25)]">
+                                {badge}
+                            </span>
+                        </div>
                     </div>
-                    <span className="text-[7.5px] font-bold tracking-[0.14em] text-[rgba(255,255,255,0.72)]">
-                        {tag}
-                    </span>
+                    <div className="mt-auto">{children}</div>
                 </div>
-                <div className="mt-auto">{children}</div>
             </div>
+        </div>
+    );
+}
+
+/**
+ * The name a pass is made out to.
+ */
+export function PassHolder({ children }: { children: ReactNode }) {
+    return (
+        <div className="text-[calc(27*var(--rz-pass-u))] font-semibold tracking-[0.1em] text-[rgba(255,255,255,0.82)] uppercase">
+            {children}
+        </div>
+    );
+}
+
+/**
+ * The headline figure a pass is claimed for, under an optional caption naming
+ * what the figure is.
+ */
+export function PassAmount({
+    caption,
+    children,
+}: {
+    caption?: string;
+    children: ReactNode;
+}) {
+    return (
+        <>
+            {caption && (
+                <div className="mt-[calc(18*var(--rz-pass-u))] text-[calc(22.5*var(--rz-pass-u))] font-bold tracking-[0.13em] text-[rgba(255,255,255,0.62)]">
+                    {caption}
+                </div>
+            )}
+            <div
+                className={`${caption ? 'mt-[calc(6*var(--rz-pass-u))]' : 'mt-[calc(24*var(--rz-pass-u))]'} text-[calc(99*var(--rz-pass-u))] leading-none font-extrabold tracking-[-0.025em] text-white`}
+            >
+                {children}
+            </div>
+        </>
+    );
+}
+
+/**
+ * The row of figures and the mark that close a pass.
+ */
+export function PassFooter({ children }: { children: ReactNode }) {
+    return (
+        <div className="mt-[calc(24*var(--rz-pass-u))] flex items-end justify-between">
+            <div className="flex gap-[calc(39*var(--rz-pass-u))]">
+                {children}
+            </div>
+            <PassDomain />
         </div>
     );
 }
@@ -96,10 +136,10 @@ export function PassCard({
 export function PassStat({ label, value }: { label: string; value: string }) {
     return (
         <div>
-            <div className="text-[7px] tracking-[0.1em] text-[rgba(255,255,255,0.6)]">
+            <div className="text-[calc(21*var(--rz-pass-u))] tracking-[0.1em] text-[rgba(255,255,255,0.6)]">
                 {label}
             </div>
-            <div className="rz-num mt-px text-[11.5px] font-bold text-white">
+            <div className="mt-[calc(4.8*var(--rz-pass-u))] text-[calc(34.5*var(--rz-pass-u))] font-bold text-white">
                 {value}
             </div>
         </div>
@@ -109,10 +149,10 @@ export function PassStat({ label, value }: { label: string; value: string }) {
 /**
  * The rozine.rw mark that closes a pass.
  */
-export function PassDomain() {
+function PassDomain() {
     return (
-        <div className="flex items-center gap-1 text-[10.5px] font-bold tracking-[0.03em] text-white">
-            <GlobeIcon />
+        <div className="flex items-center gap-[calc(12*var(--rz-pass-u))] text-[calc(31.2*var(--rz-pass-u))] font-bold tracking-[0.03em] text-white">
+            <GlobeIcon className="h-[calc(42*var(--rz-pass-u))] w-[calc(42*var(--rz-pass-u))]" />
             rozine.rw
         </div>
     );
