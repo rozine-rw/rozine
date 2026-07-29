@@ -3,9 +3,11 @@
 namespace App\Http\Requests\Pulse;
 
 use App\Concerns\PulseSignupValidationRules;
+use App\Enums\PulseSector;
 use App\Support\PulseUnderwriting;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 
 class StoreBusinessSignupRequest extends FormRequest
@@ -20,7 +22,15 @@ class StoreBusinessSignupRequest extends FormRequest
     public function rules(): array
     {
         return array_merge($this->signupRules(), [
-            'statement_path' => ['required', 'string', Rule::in(array_keys($this->parsedStatements()))],
+            'annual_revenue' => ['required', 'integer', 'min:'.PulseUnderwriting::MINIMUM_REVENUE],
+            'annual_costs' => ['required', 'integer', 'min:1', 'lt:annual_revenue'],
+            'sector' => ['required', Rule::enum(PulseSector::class)],
+            'registered_year' => [
+                'required',
+                'integer',
+                'min:'.PulseUnderwriting::EARLIEST_REGISTRATION_YEAR,
+                'max:'.Carbon::now()->year,
+            ],
             'term_months' => ['required', 'integer', Rule::in(PulseUnderwriting::TERMS)],
             'listed' => ['sometimes', 'boolean'],
         ]);
@@ -34,28 +44,16 @@ class StoreBusinessSignupRequest extends FormRequest
     public function messages(): array
     {
         return array_merge($this->signupMessages(), [
-            'statement_path.in' => 'Upload a statement before claiming your pass.',
+            'annual_revenue.min' => 'Tell us what your business made over the last 12 months.',
+            'annual_costs.lt' => 'Your costs have to be lower than your revenue to pre-qualify.',
         ]);
     }
 
     /**
-     * Get the average annual inflow read off the submitted statement.
+     * Get the sector the business trades in.
      */
-    public function annualInflow(): int
+    public function sector(): PulseSector
     {
-        return $this->parsedStatements()[$this->string('statement_path')->toString()];
-    }
-
-    /**
-     * Get the inflow figures keyed by the statements this session has uploaded.
-     *
-     * @return array<string, int>
-     */
-    private function parsedStatements(): array
-    {
-        /** @var array<string, int> $statements */
-        $statements = $this->session()->get('pulse.statements', []);
-
-        return $statements;
+        return PulseSector::from($this->string('sector')->toString());
     }
 }

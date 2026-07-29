@@ -12,6 +12,6 @@ return [
     |
     */
 
-    'listing_limit' => 12,
+    'listing_limit' => 14,
 
 ];

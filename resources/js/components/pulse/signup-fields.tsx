@@ -30,7 +30,7 @@ const ACCENTS = {
     business: {
         tint: 'rgba(16,161,80,.14)',
         line: 'rgba(16,161,80,.55)',
-        dot: 'var(--rz-green-fg)',
+        dot: 'var(--rz-green-dot)',
     },
 };
 

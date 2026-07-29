@@ -1,8 +1,10 @@
 /**
  * The demand-simulation model behind the Pulse waitlist.
  *
- * These mirror the formulas the server persists with, so what a visitor sees
- * while they move the slider is what gets recorded when they claim a spot.
+ * A business sizes itself on five figures it reports: revenue and costs over
+ * the last twelve months, what it does, the year it registered and the term it
+ * wants. These mirror the formulas the server persists with, so what a visitor
+ * sees while they type is what gets recorded when they claim a spot.
  */
 
 export type ThemedColor = {
@@ -43,13 +45,21 @@ export type Traction = {
     average_loan: number | null;
     average_yield: number | null;
     average_rating: number | null;
+    average_term: number | null;
 };
 
 export type ContactMethod = 'phone' | 'email';
 
-export const TERMS = [3, 6, 9, 12] as const;
+export type Sizing = {
+    score: number;
+    rating: Rating;
+    flatRate: number;
+    qualifiedAmount: number;
+    monthlyRepayment: number;
+    coverRatio: number;
+};
 
-export const DEFAULT_SCORE = 68;
+export const TERMS = [3, 6, 9, 12] as const;
 
 export const BLENDED_YIELD = 12.5;
 
@@ -57,7 +67,43 @@ export const MIN_PLEDGE = 5000;
 
 export const MAX_PLEDGE = 10000000;
 
-const CAPACITY_MULTIPLE = 2.75;
+/** The smallest revenue a business can be sized on. */
+export const MINIMUM_REVENUE = 1000000;
+
+/** The earliest year of registration the waitlist offers. */
+export const EARLIEST_REGISTRATION_YEAR = 1996;
+
+/**
+ * The cover a monthly repayment must leave on top of itself, so a business
+ * never commits every franc of its surplus.
+ */
+const COVER = 1.25;
+
+/** The share of a year's revenue a loan may never exceed. */
+const REVENUE_CEILING = 0.35;
+
+/** The step a pre-qualified amount is rounded down to. */
+const ROUNDING_STEP = 100000;
+
+/** The years of trading beyond which more history adds nothing. */
+const TRADING_YEARS_CAP = 10;
+
+/** The profit margin beyond which a fatter margin adds nothing. */
+const MARGIN_CAP = 0.45;
+
+/**
+ * What a business does, and the points that earns it. These mirror the
+ * `PulseSector` enum the server scores with.
+ */
+export const SECTORS: { value: string; score: number }[] = [
+    { value: 'Agriculture', score: 4 },
+    { value: 'Retail & trade', score: 6 },
+    { value: 'Logistics', score: 5 },
+    { value: 'Manufacturing', score: 4 },
+    { value: 'Services', score: 5 },
+    { value: 'Energy', score: 3 },
+    { value: 'Other', score: 2 },
+];
 
 /**
  * The avatar colours a listed business is dealt, by its accent index.
@@ -75,23 +121,16 @@ export const ACCENTS: ThemedColor[] = [
     { light: '#6366f1', dark: '#6366f1' },
 ];
 
-export const DOCUMENT_TYPES = [
-    'MoMo statement',
-    'Bank statement',
-    'Audited cash transactions',
-    'POS data',
-];
-
 export const STEPS = [
     {
         no: '01',
         title: 'Add your intent',
-        sub: 'Businesses upload a statement. Investors set an amount.',
+        sub: 'Businesses answer five questions. Investors set an amount.',
     },
     {
         no: '02',
         title: 'See the numbers',
-        sub: 'Capacity, rating and yield on real cash flow, in ~60s.',
+        sub: 'Capacity, rating and yield on your own figures, in ~30s.',
     },
     {
         no: '03',
@@ -102,7 +141,6 @@ export const STEPS = [
 
 export const TRUST_MARKERS = [
     { color: { light: '#12a150', dark: '#22c55e' }, label: 'Encrypted' },
-    { color: { light: '#0a5cff', dark: '#0a5cff' }, label: 'OCR parsing' },
     { color: { light: '#e0a53a', dark: '#e0a53a' }, label: 'Bank-grade' },
 ];
 
@@ -151,6 +189,85 @@ export function formatAverage(value: number | null, precision = 0): string {
  */
 export function formatNumber(value: number): string {
     return Math.round(value || 0).toLocaleString('en-US');
+}
+
+/**
+ * Keep only the digits a visitor typed into an amount.
+ */
+export function digitsOnly(value: string, maxLength = 12): number {
+    const digits = (value ?? '').replace(/[^0-9]/g, '').slice(0, maxLength);
+
+    return digits === '' ? 0 : parseInt(digits, 10);
+}
+
+/**
+ * Get the money a business has left each month to service debt with.
+ */
+export function monthlySurplus(
+    annualRevenue: number,
+    annualCosts: number,
+): number {
+    return (annualRevenue - annualCosts) / 12;
+}
+
+/**
+ * Get the share of revenue a business keeps.
+ */
+export function profitMargin(
+    annualRevenue: number,
+    annualCosts: number,
+): number {
+    if (annualRevenue <= 0 || annualCosts >= annualRevenue) {
+        return 0;
+    }
+
+    return (annualRevenue - annualCosts) / annualRevenue;
+}
+
+/**
+ * Get the years a business has been trading.
+ */
+export function yearsTrading(registeredYear: number): number {
+    return Math.max(0, new Date().getFullYear() - registeredYear);
+}
+
+/**
+ * The years of registration a business may pick from, newest first.
+ */
+export function registrationYears(): number[] {
+    const years: number[] = [];
+
+    for (
+        let year = new Date().getFullYear();
+        year >= EARLIEST_REGISTRATION_YEAR;
+        year--
+    ) {
+        years.push(year);
+    }
+
+    return years;
+}
+
+/**
+ * Score a business' strength out of a hundred, held between forty and
+ * ninety-two so neither a long history nor a fat margin runs away with it.
+ */
+export function scoreFor(
+    annualRevenue: number,
+    annualCosts: number,
+    sector: string,
+    registeredYear: number,
+): number {
+    const sectorScore =
+        SECTORS.find((entry) => entry.value === sector)?.score ?? 0;
+
+    const score =
+        50 +
+        Math.min(yearsTrading(registeredYear), TRADING_YEARS_CAP) * 1.5 +
+        sectorScore +
+        Math.min(profitMargin(annualRevenue, annualCosts), MARGIN_CAP) * 42;
+
+    return Math.max(40, Math.min(92, score));
 }
 
 /**
@@ -207,7 +324,8 @@ export function rate(score: number): Rating {
 }
 
 /**
- * Get the flat rate, as a percentage, for a score over a given term.
+ * Get the flat rate, as a percentage, for a score over a given term. A weaker
+ * score and a longer term both raise it.
  */
 export function yieldFor(score: number, months: number): number {
     return Math.max(
@@ -217,21 +335,68 @@ export function yieldFor(score: number, months: number): number {
 }
 
 /**
- * Get the amount a business pre-qualifies for over a given term.
+ * Get the repayment a business could carry each month, which is its surplus
+ * less the cover the model insists on.
  */
-export function qualifyFor(
-    capacity: number,
-    score: number,
-    months: number,
+export function affordablePayment(
+    annualRevenue: number,
+    annualCosts: number,
 ): number {
-    return (capacity * months) / (24 * (1 + yieldFor(score, months) / 100));
+    return Math.max(0, monthlySurplus(annualRevenue, annualCosts)) / COVER;
 }
 
 /**
- * Get the borrowing capacity backed by a year of cash flow.
+ * Get the amount a business pre-qualifies for over a given term.
+ *
+ * Affordability binds first; the share-of-revenue ceiling is the backstop.
  */
-export function capacityFor(annualInflow: number): number {
-    return annualInflow ? CAPACITY_MULTIPLE * annualInflow : 0;
+export function qualifyFor(
+    annualRevenue: number,
+    annualCosts: number,
+    score: number,
+    months: number,
+): number {
+    const affordable =
+        (affordablePayment(annualRevenue, annualCosts) * months) /
+        (1 + yieldFor(score, months) / 100);
+
+    const sized = Math.min(affordable, annualRevenue * REVENUE_CEILING);
+
+    return Math.floor(Math.max(0, sized) / ROUNDING_STEP) * ROUNDING_STEP;
+}
+
+/**
+ * Size a business against the figures it reported, over the term it picked.
+ */
+export function sizingFor(
+    annualRevenue: number,
+    annualCosts: number,
+    sector: string,
+    registeredYear: number,
+    months: number,
+): Sizing {
+    const score = scoreFor(annualRevenue, annualCosts, sector, registeredYear);
+    const flatRate = yieldFor(score, months);
+    const qualifiedAmount = qualifyFor(
+        annualRevenue,
+        annualCosts,
+        score,
+        months,
+    );
+    const monthlyRepayment =
+        (qualifiedAmount * (1 + flatRate / 100)) / Math.max(1, months);
+
+    return {
+        score,
+        rating: rate(score),
+        flatRate,
+        qualifiedAmount,
+        monthlyRepayment,
+        coverRatio:
+            monthlyRepayment > 0
+                ? monthlySurplus(annualRevenue, annualCosts) / monthlyRepayment
+                : 0,
+    };
 }
 
 /**

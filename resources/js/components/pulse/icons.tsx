@@ -34,52 +34,31 @@ export function MailIcon({ size = 15 }: { size?: number }) {
     );
 }
 
-export function FileIcon() {
+/**
+ * The mark on the promise that an Audit Partner checks the figures a business
+ * reports before any of it counts.
+ */
+export function AuditIcon() {
     return (
         <svg
-            width="13"
-            height="13"
+            width="15"
+            height="15"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="currentColor"
-            strokeWidth="1.7"
+            className="shrink-0"
         >
-            <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-            <path d="M14 3v5h5" />
-        </svg>
-    );
-}
-
-export function VerifiedIcon() {
-    return (
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <circle
                 cx="12"
                 cy="12"
-                r="9"
-                stroke="currentColor"
+                r="9.2"
+                stroke="#12a150"
                 strokeWidth="1.8"
             />
             <path
-                d="M8 12.4l2.6 2.6L16 9.4"
-                stroke="currentColor"
-                strokeWidth="1.9"
+                d="M12 7.6v.8M12 11v5.4"
+                stroke="#12a150"
+                strokeWidth="2"
                 strokeLinecap="round"
-                strokeLinejoin="round"
-            />
-        </svg>
-    );
-}
-
-export function UploadIcon() {
-    return (
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            <path
-                d="M12 15V4M8 8l4-4 4 4M5 20h14"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinecap="round"
-                strokeLinejoin="round"
             />
         </svg>
     );
@@ -237,9 +216,9 @@ export function InstagramIcon() {
     );
 }
 
-export function DownloadIcon() {
+export function DownloadIcon({ size = 16 }: { size?: number }) {
     return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
             <path
                 d="M12 4v11M8 11l4 4 4-4M5 20h14"
                 stroke="currentColor"

@@ -26,16 +26,18 @@
     --rz-fg-title: #0c1830;
     --rz-muted: #69748a;
     --rz-muted-2: #69748a;
-    --rz-dim: #8894a8;
-    --rz-dim-2: #8894a8;
+    --rz-dim: #69748a;
+    --rz-dim-2: #69748a;
+    --rz-hint: #8894a8;
     --rz-strong: #3a465e;
     --rz-hero-label: #46526b;
-    --rz-hero-accent: #5b6a83;
+    --rz-hero-mark-fg: #0a44c4;
+    --rz-hero-mark-bg: rgba(10, 92, 255, 0.13);
     --rz-stat-label: #5b6a83;
     --rz-stat-value: #0c1830;
-    --rz-currency: #8894a8;
+    --rz-currency: #69748a;
     --rz-note-name: #16202f;
-    --rz-note-meta: #8894a8;
+    --rz-note-meta: #69748a;
     --rz-note-term: #69748a;
 
     /* Accents */
@@ -45,7 +47,8 @@
     --rz-badge-fg: #0a5cff;
     --rz-blue-deep: #3f6cc4;
     --rz-green: #12a150;
-    --rz-green-fg: #12a150;
+    --rz-green-fg: #0f7a3d;
+    --rz-green-dot: #12a150;
     --rz-green-strong: #12a150;
     --rz-green-rating: #0c1830;
     --rz-green-deep: #0f7a3d;
@@ -89,8 +92,13 @@
     --rz-ghost-border: #dbe3f0;
     --rz-disabled-bg: #e2e8f2;
     --rz-disabled-fg: #7a8598;
+    --rz-toast-bg: #ffffff;
     --rz-toast-border: #dbe3f0;
+    --rz-toast-shadow: 0 18px 40px -14px rgba(0, 0, 0, 0.8);
     --rz-error: #c0392b;
+    --rz-pill-bg: #0c1830;
+    --rz-pill-border: transparent;
+    --rz-pill-shadow: 0 12px 30px -14px rgba(12, 24, 48, 0.6);
 }
 
 .dark .rz-pulse {
@@ -102,9 +110,11 @@
     --rz-muted-2: #9aa0ac;
     --rz-dim: #6a7080;
     --rz-dim-2: #7b8194;
+    --rz-hint: #6a7080;
     --rz-strong: #c7ccd6;
     --rz-hero-label: #d4d9e2;
-    --rz-hero-accent: #9db4e8;
+    --rz-hero-mark-fg: #bcd0ff;
+    --rz-hero-mark-bg: rgba(90, 140, 255, 0.18);
     --rz-stat-label: #c3cad6;
     --rz-stat-value: #e9ecf3;
     --rz-currency: #7b8698;
@@ -118,6 +128,7 @@
     --rz-badge-fg: #7fa8ff;
     --rz-blue-deep: #7d9bdb;
     --rz-green-fg: #4ade80;
+    --rz-green-dot: #4ade80;
     --rz-green-strong: #22c55e;
     --rz-green-rating: #5fd699;
     --rz-green-deep: #6a9d80;
@@ -155,16 +166,17 @@
     --rz-ghost-border: rgba(255, 255, 255, 0.12);
     --rz-disabled-bg: rgba(255, 255, 255, 0.08);
     --rz-disabled-fg: #ffffff;
+    --rz-toast-bg: #12131a;
     --rz-toast-border: rgba(255, 255, 255, 0.14);
+    --rz-toast-shadow: 0 18px 40px -14px rgba(0, 0, 0, 0.8);
     --rz-error: #f87171;
+    --rz-pill-bg: rgba(255, 255, 255, 0.05);
+    --rz-pill-border: rgba(255, 255, 255, 0.1);
+    --rz-pill-shadow: 0 12px 30px -14px rgba(0, 0, 0, 0.8);
 }
 
 /* The mobile design tunes a handful of tokens per theme. */
 @media (max-width: 767px) {
-    .rz-pulse {
-        --rz-hero-accent: #4b7bd6;
-    }
-
     .dark .rz-pulse {
         --rz-hero-card-bg: rgba(255, 255, 255, 0.02);
         --rz-hero-card-border: rgba(255, 255, 255, 0.07);
@@ -243,44 +255,6 @@
     }
 }
 
-@keyframes rzp-box {
-    0%,
-    100% {
-        border-color: rgba(18, 161, 80, 0.35);
-        box-shadow: 0 0 0 0 rgba(16, 161, 80, 0);
-    }
-    50% {
-        border-color: #12a150;
-        box-shadow:
-            0 0 26px -6px rgba(16, 161, 80, 0.35),
-            inset 0 0 18px -8px rgba(16, 161, 80, 0.14);
-    }
-}
-
-@keyframes rzp-box-dark {
-    0%,
-    100% {
-        border-color: rgba(74, 222, 128, 0.4);
-        box-shadow: 0 0 0 0 rgba(16, 161, 80, 0);
-    }
-    50% {
-        border-color: rgba(74, 222, 128, 1);
-        box-shadow:
-            0 0 34px -2px rgba(16, 161, 80, 0.6),
-            inset 0 0 22px -6px rgba(16, 161, 80, 0.35);
-    }
-}
-
-@keyframes rzp-arrow {
-    0%,
-    100% {
-        transform: translateY(4px);
-    }
-    50% {
-        transform: translateY(-4px);
-    }
-}
-
 input[type='range'].rz-slider {
     -webkit-appearance: none;
     appearance: none;
@@ -332,34 +306,6 @@ input[type='range'].rz-slider::-moz-range-thumb {
 
 .dark .rz-ghost:hover {
     background: rgba(255, 255, 255, 0.04);
-}
-
-.rz-upload {
-    animation: rzp-box 1.7s ease-in-out infinite;
-}
-
-.dark .rz-upload {
-    animation: rzp-box-dark 1.7s ease-in-out infinite;
-}
-
-.rz-upload:hover {
-    animation: none;
-    border-color: #12a150;
-    background: rgba(18, 161, 80, 0.06);
-}
-
-.dark .rz-upload:hover {
-    animation: none;
-    border-color: rgba(74, 222, 128, 0.85);
-    background: rgba(16, 161, 80, 0.09);
-}
-
-.rz-upload svg {
-    animation: rzp-arrow 1.7s ease-in-out infinite;
-}
-
-.rz-upload:hover svg {
-    animation: none;
 }
 
 .rz-cta:hover {

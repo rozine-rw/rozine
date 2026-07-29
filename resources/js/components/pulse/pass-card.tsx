@@ -47,7 +47,7 @@ export function PassCard({
     return (
         <div className="@container mx-auto mt-3 w-full [--rz-pass-u:calc(100cqw/900)]">
             <div
-                className="relative aspect-[1.6] w-full overflow-hidden rounded-[calc(38*var(--rz-pass-u))] text-left"
+                className="relative aspect-[1.585] w-full overflow-hidden rounded-[calc(38*var(--rz-pass-u))] text-left"
                 style={{
                     background,
                     boxShadow: `0 calc(50*var(--rz-pass-u)) calc(100*var(--rz-pass-u)) calc(-30*var(--rz-pass-u)) ${glow}, inset 0 calc(2*var(--rz-pass-u)) 0 rgba(255,255,255,.3)`,
@@ -65,15 +65,13 @@ export function PassCard({
                 />
                 <div className="absolute top-[calc(-140*var(--rz-pass-u))] right-[calc(-140*var(--rz-pass-u))] h-[calc(460*var(--rz-pass-u))] w-[calc(460*var(--rz-pass-u))] rounded-full bg-[radial-gradient(closest-side,rgba(255,255,255,0.2),transparent)]" />
                 <div className="relative flex h-full flex-col px-[calc(56*var(--rz-pass-u))] py-[calc(52*var(--rz-pass-u))]">
-                    <div className="flex items-start justify-between">
-                        <div className="flex items-center">
-                            <img
-                                src="/images/rozine-wordmark-white.png"
-                                alt="rozine"
-                                className="block h-[calc(63*var(--rz-pass-u))] w-auto"
-                            />
-                        </div>
-                        <div className="flex items-center gap-[calc(12*var(--rz-pass-u))]">
+                    <div className="flex items-start justify-between gap-[calc(18*var(--rz-pass-u))]">
+                        <img
+                            src="/images/rozine-wordmark-white.png"
+                            alt="rozine"
+                            className="block h-[calc(63*var(--rz-pass-u))] w-auto"
+                        />
+                        <div className="flex shrink-0 items-center gap-[calc(12*var(--rz-pass-u))]">
                             <span className="text-[calc(22.8*var(--rz-pass-u))] font-bold tracking-[0.14em] whitespace-nowrap text-[rgba(255,255,255,0.72)]">
                                 {tag}
                             </span>
@@ -132,7 +130,7 @@ export function PassAmount({
  */
 export function PassFooter({ children }: { children: ReactNode }) {
     return (
-        <div className="mt-[calc(24*var(--rz-pass-u))] flex items-end justify-between">
+        <div className="mt-[calc(24*var(--rz-pass-u))] flex items-end justify-between gap-[calc(18*var(--rz-pass-u))]">
             <div className="flex gap-[calc(39*var(--rz-pass-u))]">
                 {children}
             </div>
@@ -147,10 +145,10 @@ export function PassFooter({ children }: { children: ReactNode }) {
 export function PassStat({ label, value }: { label: string; value: string }) {
     return (
         <div>
-            <div className="text-[calc(21*var(--rz-pass-u))] tracking-[0.1em] text-[rgba(255,255,255,0.6)]">
+            <div className="text-[calc(21*var(--rz-pass-u))] tracking-[0.1em] whitespace-nowrap text-[rgba(255,255,255,0.6)]">
                 {label}
             </div>
-            <div className="mt-[calc(4.8*var(--rz-pass-u))] text-[calc(34.5*var(--rz-pass-u))] font-bold text-white">
+            <div className="mt-[calc(4.8*var(--rz-pass-u))] text-[calc(34.5*var(--rz-pass-u))] font-bold whitespace-nowrap text-white">
                 {value}
             </div>
         </div>
@@ -162,7 +160,7 @@ export function PassStat({ label, value }: { label: string; value: string }) {
  */
 function PassDomain() {
     return (
-        <div className="flex items-center gap-[calc(12*var(--rz-pass-u))] text-[calc(31.2*var(--rz-pass-u))] font-bold tracking-[0.03em] text-white">
+        <div className="flex shrink-0 items-center gap-[calc(12*var(--rz-pass-u))] text-[calc(31.5*var(--rz-pass-u))] font-bold tracking-[0.03em] whitespace-nowrap text-white">
             <GlobeIcon className="h-[calc(42*var(--rz-pass-u))] w-[calc(42*var(--rz-pass-u))]" />
             rozine.rw
         </div>

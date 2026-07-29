@@ -24,7 +24,7 @@ export type PassCardSpec = {
 
 const WIDTH = 900;
 
-const HEIGHT = WIDTH / 1.6;
+const HEIGHT = WIDTH / 1.585;
 
 const SCALE = 2;
 
@@ -55,10 +55,10 @@ const LAYOUT = {
         color: 'rgba(255,255,255,0.82)',
     },
     caption: {
-        size: 22.5,
+        size: 21,
         tracking: 0.13,
         color: 'rgba(255,255,255,0.62)',
-        gap: 18,
+        gap: 15,
     },
     amount: { size: 99, tracking: -0.025, gap: 24, gapUnderCaption: 6 },
     statLabel: {
@@ -68,7 +68,7 @@ const LAYOUT = {
     },
     statValue: { size: 34.5, gap: 4.8 },
     domain: {
-        size: 31.2,
+        size: 31.5,
         tracking: 0.03,
         icon: 42,
         gap: 12,

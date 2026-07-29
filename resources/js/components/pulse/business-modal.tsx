@@ -121,7 +121,7 @@ export function BusinessModal({
                         />
                     </SignupFields>
                     <ModalSubmit
-                        accent="#12a150"
+                        accent="#0f7a3d"
                         enabled={canSubmit}
                         processing={processing}
                         onClick={onSubmit}
@@ -133,7 +133,7 @@ export function BusinessModal({
 
             {step === 'pass' && (
                 <div className="text-center">
-                    <div className="text-[11px] font-bold tracking-[0.16em] text-[var(--rz-green-strong)]">
+                    <div className="text-[11px] font-bold tracking-[0.16em] text-[var(--rz-green-fg)]">
                         ✓ YOU&apos;RE IN · SPOT {queueNumber}
                     </div>
                     <PassCard

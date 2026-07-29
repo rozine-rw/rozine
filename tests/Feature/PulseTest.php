@@ -1,13 +1,33 @@
 <?php
 
 use App\Enums\PulseContactMethod;
+use App\Enums\PulseSector;
 use App\Enums\PulseSignupType;
 use App\Models\PulseSignup;
 use App\Support\PulseUnderwriting;
-use Illuminate\Contracts\Filesystem\Filesystem;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia;
+
+/**
+ * The details and the five figures a business pre-qualifies on, ready to post.
+ *
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
+function businessSignup(array $overrides = []): array
+{
+    return array_merge([
+        'name' => 'GreenLeaf Agro',
+        'contact_method' => 'phone',
+        'contact' => '0788 123 456',
+        'province' => 'Northern',
+        'district' => 'Musanze',
+        'annual_revenue' => 120_000_000,
+        'annual_costs' => 90_000_000,
+        'sector' => 'Logistics',
+        'registered_year' => 2018,
+        'term_months' => 12,
+    ], $overrides);
+}
 
 test('the home route shows the pulse waitlist without authentication', function () {
     $response = $this->get(route('home'));
@@ -77,7 +97,7 @@ test('a business that did not consent is listed without its name', function () {
 });
 
 test('the newest businesses are listed first and the list is capped', function () {
-    PulseSignup::factory()->business()->count(14)->sequence(fn ($sequence) => [
+    PulseSignup::factory()->business()->count(16)->sequence(fn ($sequence) => [
         'name' => "Business {$sequence->index}",
         'listed' => true,
         'created_at' => now()->subDays(20 - $sequence->index),
@@ -86,15 +106,25 @@ test('the newest businesses are listed first and the list is capped', function (
     $response = $this->get(route('home'));
 
     $response->assertInertia(fn (AssertableInertia $page) => $page
-        ->has('listings', 12)
-        ->where('listings.0.name', 'Business 13')
-        ->where('listings.11.name', 'Business 2')
+        ->has('listings', 14)
+        ->where('listings.0.name', 'Business 15')
+        ->where('listings.13.name', 'Business 2')
     );
 });
 
 test('traction averages come from the businesses that have been sized', function () {
-    PulseSignup::factory()->business()->create(['qualified_amount' => 80_000_000, 'flat_rate' => 13.0, 'rating_score' => 3.0]);
-    PulseSignup::factory()->business()->create(['qualified_amount' => 100_000_000, 'flat_rate' => 14.0, 'rating_score' => 4.0]);
+    PulseSignup::factory()->business()->create([
+        'qualified_amount' => 80_000_000,
+        'flat_rate' => 13.0,
+        'rating_score' => 3.0,
+        'term_months' => 6,
+    ]);
+    PulseSignup::factory()->business()->create([
+        'qualified_amount' => 100_000_000,
+        'flat_rate' => 14.0,
+        'rating_score' => 4.0,
+        'term_months' => 12,
+    ]);
 
     $response = $this->get(route('home'));
 
@@ -102,6 +132,7 @@ test('traction averages come from the businesses that have been sized', function
         ->where('traction.average_loan', 90_000_000)
         ->where('traction.average_yield', 13.5)
         ->where('traction.average_rating', 3.5)
+        ->where('traction.average_term', 9)
     );
 });
 
@@ -112,46 +143,18 @@ test('there is no average to report until a business has been sized', function (
         ->where('traction.average_loan', null)
         ->where('traction.average_yield', null)
         ->where('traction.average_rating', null)
+        ->where('traction.average_term', null)
     );
 });
 
 test('a business records whether it consented to being listed', function () {
-    Storage::fake('local');
-
-    $upload = $this->post(route('pulse.statement.store'), [
-        'statement' => UploadedFile::fake()->create('momo-statement.pdf', 120, 'application/pdf'),
-    ]);
-
-    $this->postJson(route('pulse.business.store'), [
-        'name' => 'GreenLeaf Agro',
-        'contact_method' => 'phone',
-        'contact' => '0788123456',
-        'province' => 'Northern',
-        'district' => 'Musanze',
-        'statement_path' => $upload->json('statement_path'),
-        'term_months' => 12,
-        'listed' => true,
-    ])->assertOk();
+    $this->postJson(route('pulse.business.store'), businessSignup(['listed' => true]))->assertOk();
 
     expect(PulseSignup::query()->sole()->listed)->toBeTrue();
 });
 
 test('a business is not listed unless it says so', function () {
-    Storage::fake('local');
-
-    $upload = $this->post(route('pulse.statement.store'), [
-        'statement' => UploadedFile::fake()->create('momo-statement.pdf', 120, 'application/pdf'),
-    ]);
-
-    $this->postJson(route('pulse.business.store'), [
-        'name' => 'GreenLeaf Agro',
-        'contact_method' => 'phone',
-        'contact' => '0788123456',
-        'province' => 'Northern',
-        'district' => 'Musanze',
-        'statement_path' => $upload->json('statement_path'),
-        'term_months' => 12,
-    ])->assertOk();
+    $this->postJson(route('pulse.business.store'), businessSignup())->assertOk();
 
     expect(PulseSignup::query()->sole()->listed)->toBeFalse();
 });
@@ -248,26 +251,14 @@ test('a contact is matched however it is punctuated or cased', function () {
 });
 
 test('a contact already pledging cannot also pre-qualify a business', function () {
-    Storage::fake('local');
-
     PulseSignup::factory()->investor()->create([
         'contact_method' => PulseContactMethod::Phone,
         'contact' => '0788123456',
     ]);
 
-    $upload = $this->post(route('pulse.statement.store'), [
-        'statement' => UploadedFile::fake()->create('momo-statement.pdf', 120, 'application/pdf'),
-    ]);
-
-    $response = $this->postJson(route('pulse.business.store'), [
-        'name' => 'GreenLeaf Agro',
-        'contact_method' => 'phone',
+    $response = $this->postJson(route('pulse.business.store'), businessSignup([
         'contact' => '0788123456',
-        'province' => 'Northern',
-        'district' => 'Musanze',
-        'statement_path' => $upload->json('statement_path'),
-        'term_months' => 12,
-    ]);
+    ]));
 
     $response->assertStatus(422);
     $response->assertJsonPath('errors.contact.0', 'This phone number is already in the waitlist.');
@@ -365,68 +356,10 @@ test('a phone number needs at least nine digits', function () {
     $response->assertJsonValidationErrors('contact');
 });
 
-test('a statement is stored and sized', function () {
-    Storage::fake('local');
+test('a business claims a pass on the figures it reported', function () {
+    $this->travelTo(now()->setDate(2026, 7, 29));
 
-    $response = $this->post(route('pulse.statement.store'), [
-        'statement' => UploadedFile::fake()->create('momo-statement.pdf', 120, 'application/pdf'),
-    ]);
-
-    $response->assertOk();
-
-    $path = $response->json('statement_path');
-
-    expect($path)->toStartWith('pulse-statements/')
-        ->and($response->json('annual_inflow'))->toBeGreaterThanOrEqual(48_000_000)
-        ->and($response->json('annual_inflow'))->toBeLessThanOrEqual(127_000_000);
-
-    Storage::disk('local')->assertExists($path);
-    $response->assertSessionHas('pulse.statements');
-});
-
-test('a statement that cannot be written is reported back', function () {
-    $disk = Mockery::mock(Filesystem::class);
-    $disk->shouldReceive('putFile')->once()->andReturnFalse();
-    Storage::shouldReceive('disk')->with('local')->andReturn($disk);
-
-    $response = $this->postJson(route('pulse.statement.store'), [
-        'statement' => UploadedFile::fake()->create('momo-statement.pdf', 120, 'application/pdf'),
-    ]);
-
-    $response->assertStatus(422);
-    $response->assertJsonValidationErrors('statement');
-});
-
-test('an executable dressed as a statement is rejected', function () {
-    Storage::fake('local');
-
-    $response = $this->postJson(route('pulse.statement.store'), [
-        'statement' => UploadedFile::fake()->create('payload.php', 10, 'application/x-php'),
-    ]);
-
-    $response->assertStatus(422);
-    $response->assertJsonValidationErrors('statement');
-});
-
-test('a business can claim a pass against a statement it uploaded', function () {
-    Storage::fake('local');
-
-    $upload = $this->post(route('pulse.statement.store'), [
-        'statement' => UploadedFile::fake()->create('momo-statement.pdf', 120, 'application/pdf'),
-    ]);
-
-    $path = $upload->json('statement_path');
-    $inflow = $upload->json('annual_inflow');
-
-    $response = $this->postJson(route('pulse.business.store'), [
-        'name' => 'GreenLeaf Agro',
-        'contact_method' => 'phone',
-        'contact' => '0788 123 456',
-        'province' => 'Northern',
-        'district' => 'Musanze',
-        'statement_path' => $path,
-        'term_months' => 12,
-    ]);
+    $response = $this->postJson(route('pulse.business.store'), businessSignup());
 
     $response->assertOk();
     $response->assertJsonPath('queue_number', '#0001');
@@ -435,51 +368,67 @@ test('a business can claim a pass against a statement it uploaded', function () 
     $signup = PulseSignup::query()->sole();
 
     expect($signup->type)->toBe(PulseSignupType::Business)
-        ->and($signup->statement_path)->toBe($path)
-        ->and($signup->annual_inflow)->toBe($inflow)
+        ->and($signup->annual_revenue)->toBe(120_000_000)
+        ->and($signup->annual_costs)->toBe(90_000_000)
+        ->and($signup->sector)->toBe(PulseSector::Logistics)
+        ->and($signup->registered_year)->toBe(2018)
+        ->and($signup->score)->toBe(77.5)
         ->and($signup->term_months)->toBe(12)
-        ->and($signup->qualified_amount)->toBe(PulseUnderwriting::qualifiedAmount($inflow, 12))
-        ->and($signup->flat_rate)->toBe(PulseUnderwriting::flatRate(12))
+        ->and($signup->qualified_amount)->toBe(21_100_000)
+        ->and($signup->flat_rate)->toBe(13.3)
         ->and($signup->rating_band)->toBe('Stable')
-        ->and($signup->rating_score)->toBe(3.4);
+        ->and($signup->rating_score)->toBe(3.9);
 });
 
-test('a business cannot claim a pass against a statement it never uploaded', function () {
-    $response = $this->postJson(route('pulse.business.store'), [
-        'name' => 'GreenLeaf Agro',
-        'contact_method' => 'phone',
-        'contact' => '0788 123 456',
-        'province' => 'Northern',
-        'district' => 'Musanze',
-        'statement_path' => 'pulse-statements/somebody-elses-file.pdf',
-        'term_months' => 12,
-    ]);
+test('a business is sized on the server, whatever the browser claims', function () {
+    $this->postJson(route('pulse.business.store'), businessSignup([
+        'qualified_amount' => 900_000_000,
+        'score' => 92,
+        'flat_rate' => 10,
+        'rating_band' => 'Strong',
+    ]))->assertOk();
+
+    $signup = PulseSignup::query()->sole();
+
+    expect($signup->qualified_amount)->toBe(
+        PulseUnderwriting::qualifiedAmount(120_000_000, 90_000_000, $signup->score, 12)
+    )->and($signup->rating_band)->toBe('Stable');
+});
+
+test('a business whose costs swallow its revenue cannot pre-qualify', function () {
+    $response = $this->postJson(route('pulse.business.store'), businessSignup([
+        'annual_revenue' => 90_000_000,
+        'annual_costs' => 90_000_000,
+    ]));
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors('statement_path');
+    $response->assertJsonPath(
+        'errors.annual_costs.0',
+        'Your costs have to be lower than your revenue to pre-qualify.'
+    );
 
     expect(PulseSignup::query()->count())->toBe(0);
 });
 
-test('a business term outside the offered set is rejected', function () {
-    Storage::fake('local');
+test('a business too small to size is turned away', function () {
+    $response = $this->postJson(route('pulse.business.store'), businessSignup([
+        'annual_revenue' => 900_000,
+        'annual_costs' => 400_000,
+    ]));
 
-    $upload = $this->post(route('pulse.statement.store'), [
-        'statement' => UploadedFile::fake()->create('momo-statement.pdf', 120, 'application/pdf'),
-    ]);
-
-    $response = $this->postJson(route('pulse.business.store'), [
-        'name' => 'GreenLeaf Agro',
-        'contact_method' => 'phone',
-        'contact' => '0788 123 456',
-        'province' => 'Northern',
-        'district' => 'Musanze',
-        'statement_path' => $upload->json('statement_path'),
-        'term_months' => 7,
-    ]);
-
-    $response->assertJsonValidationErrors('term_months');
+    $response->assertJsonValidationErrors('annual_revenue');
 });
+
+test('figures a business could not have reported are rejected', function (array $overrides, string $field) {
+    $this->postJson(route('pulse.business.store'), businessSignup($overrides))
+        ->assertJsonValidationErrors($field);
+})->with([
+    'an unknown sector' => [['sector' => 'Cryptocurrency'], 'sector'],
+    'a year before the register' => [['registered_year' => 1995], 'registered_year'],
+    'a year still to come' => [['registered_year' => 2099], 'registered_year'],
+    'a term nobody offers' => [['term_months' => 7], 'term_months'],
+    'costs of nothing at all' => [['annual_costs' => 0], 'annual_costs'],
+]);
 
 test('queue numbers follow the signups already taken for that side', function () {
     PulseSignup::factory()->investor()->count(3)->create();
@@ -494,14 +443,4 @@ test('queue numbers follow the signups already taken for that side', function ()
     ]);
 
     $response->assertJsonPath('queue_number', '#0004');
-});
-
-test('the underwriting model sizes capacity from cash flow', function () {
-    expect(PulseUnderwriting::flatRate(3))->toBe(12.6)
-        ->and(PulseUnderwriting::flatRate(12))->toBe(14.1)
-        ->and(PulseUnderwriting::rating())->toBe(['band' => 'Stable', 'score' => 3.4])
-        ->and(PulseUnderwriting::projectedReturn(500_000))->toBe(562_500)
-        ->and(PulseUnderwriting::qualifiedAmount(100_000_000, 12))->toBe(
-            (int) round((2.75 * 100_000_000 * 12) / (24 * 1.141))
-        );
 });

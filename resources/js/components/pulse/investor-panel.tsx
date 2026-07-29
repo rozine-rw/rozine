@@ -14,6 +14,7 @@ type InvestorPanelProps = {
     pledged: number;
     investors: number;
     averageYield: number | null;
+    averageTerm: number | null;
     pledge: number;
     payout: number;
     notes: BusinessNote[];
@@ -30,6 +31,7 @@ export function InvestorPanel({
     pledged,
     investors,
     averageYield,
+    averageTerm,
     pledge,
     payout,
     notes,
@@ -64,7 +66,11 @@ export function InvestorPanel({
                     <StatTile label="INVESTORS" color="var(--rz-stat-value)">
                         {formatNumber(investors)}
                     </StatTile>
-                    <StatTile label="AVG YIELD" color="var(--rz-blue-yield)">
+                    <StatTile
+                        label="AVG YIELD"
+                        color="var(--rz-blue-yield)"
+                        suffix={averageTerm === null ? '—' : `${averageTerm}MO`}
+                    >
                         {averageYield === null
                             ? '—'
                             : `${formatAverage(averageYield, 1)}%`}
@@ -98,7 +104,7 @@ export function InvestorPanel({
                     BUSINESSES YOU CAN BACK
                 </span>
             </div>
-            <div className="rz-scrollwin mt-[9px] mb-[14px] max-h-[120px] min-h-[52px] overflow-y-auto rounded-[11px] border border-[rgba(10,92,255,0.16)] bg-[rgba(10,92,255,0.03)]">
+            <div className="rz-scrollwin mt-[9px] mb-[14px] h-auto max-h-[148px] min-h-[120px] flex-auto overflow-y-auto rounded-[11px] border border-[rgba(10,92,255,0.16)] bg-[rgba(10,92,255,0.03)] md:h-0 md:max-h-none">
                 {notes.length === 0 && (
                     <div className="px-[11px] py-4 text-center text-[10.5px] font-semibold text-[var(--rz-note-meta)]">
                         No businesses have pre-qualified yet. Yours could be the
@@ -162,7 +168,7 @@ export function InvestorPanel({
             <button
                 type="button"
                 onClick={onSaveSpot}
-                className="rz-cta mt-auto h-12 w-full shrink-0 cursor-pointer rounded-[10px] border-none bg-[#0a5cff] text-[14px] font-semibold text-white transition-[filter] duration-150"
+                className="rz-cta mt-auto h-12 w-full shrink-0 cursor-pointer rounded-[10px] border-none bg-[#0a5cff] text-[14px] font-semibold text-white transition-[filter] duration-150 md:mt-0"
             >
                 Save your spot →
             </button>

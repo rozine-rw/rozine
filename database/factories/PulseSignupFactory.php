@@ -3,8 +3,10 @@
 namespace Database\Factories;
 
 use App\Enums\PulseContactMethod;
+use App\Enums\PulseSector;
 use App\Enums\PulseSignupType;
 use App\Models\PulseSignup;
+use App\Support\PulseUnderwriting;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -53,20 +55,25 @@ class PulseSignupFactory extends Factory
      */
     public function business(): static
     {
-        return $this->state(fn (): array => [
-            'type' => PulseSignupType::Business,
-            'name' => fake()->company(),
-            'pledge_amount' => null,
-            'projected_return' => null,
-            'blended_yield' => null,
-            'statement_path' => 'pulse-statements/'.fake()->uuid().'.pdf',
-            'annual_inflow' => fake()->numberBetween(48, 127) * 1000000,
-            'qualified_amount' => fake()->numberBetween(20, 200) * 1000000,
-            'term_months' => fake()->randomElement([3, 6, 9, 12]),
-            'flat_rate' => fake()->randomFloat(1, 10, 15),
-            'rating_band' => 'Stable',
-            'rating_score' => 3.4,
-            'loan_number' => '#'.number_format(fake()->numberBetween(1470, 1509)),
-        ]);
+        return $this->state(function (): array {
+            $annualRevenue = fake()->numberBetween(48, 320) * 1000000;
+            $annualCosts = (int) round($annualRevenue * fake()->randomFloat(2, 0.55, 0.85));
+
+            return [
+                'type' => PulseSignupType::Business,
+                'name' => fake()->company(),
+                'pledge_amount' => null,
+                'projected_return' => null,
+                'blended_yield' => null,
+                ...PulseUnderwriting::size(
+                    $annualRevenue,
+                    $annualCosts,
+                    fake()->randomElement(PulseSector::cases()),
+                    fake()->numberBetween(2005, 2024),
+                    fake()->randomElement(PulseUnderwriting::TERMS),
+                ),
+                'loan_number' => '#'.number_format(fake()->numberBetween(1470, 1509)),
+            ];
+        });
     }
 }

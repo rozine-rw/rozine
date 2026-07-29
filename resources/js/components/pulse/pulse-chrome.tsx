@@ -1,5 +1,6 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import {
+    DownloadIcon,
     LinkedInIcon,
     MailIcon,
     MoonIcon,
@@ -95,12 +96,83 @@ export function PulseSteps() {
 }
 
 /**
+ * The two briefs that explain what Pulse is sizing, one for each side of the
+ * waitlist. Both are handed over as a PDF rather than opened in a tab.
+ */
+export function PulseBriefs() {
+    return (
+        <div className="mt-11 border-t border-[var(--rz-line)] pt-[26px]">
+            <div className="text-[11px] font-bold tracking-[0.16em] text-[var(--rz-dim-2)]">
+                LEARN MORE ABOUT ROZINE
+            </div>
+            <div className="mt-3.5 grid grid-cols-1 gap-3 md:grid-cols-2">
+                <BriefCard
+                    href="/briefs/rozine-investor-brief.pdf"
+                    title="Investor brief"
+                    accent="#0a5cff"
+                    tint="rgba(10,92,255,.09)"
+                >
+                    How investing on Rozine works: Yields, ratings and how your
+                    money is handled.
+                </BriefCard>
+                <BriefCard
+                    href="/briefs/rozine-business-brief.pdf"
+                    title="Business brief"
+                    accent="var(--rz-green-fg)"
+                    tint="rgba(16,161,80,.1)"
+                >
+                    How business loans work on Rozine: What you qualify for,
+                    what it costs, how we calculate.
+                </BriefCard>
+            </div>
+        </div>
+    );
+}
+
+function BriefCard({
+    href,
+    title,
+    accent,
+    tint,
+    children,
+}: {
+    href: string;
+    title: string;
+    accent: string;
+    tint: string;
+    children: ReactNode;
+}) {
+    return (
+        <a
+            href={href}
+            download
+            className="flex items-center gap-[13px] rounded-[13px] border border-[var(--rz-hero-card-border)] bg-[var(--rz-hero-card-bg)] px-4 py-[15px] no-underline"
+        >
+            <span
+                className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[10px]"
+                style={{ background: tint, color: accent }}
+            >
+                <DownloadIcon size={18} />
+            </span>
+            <span className="min-w-0">
+                <span className="block text-[14px] font-semibold text-[var(--rz-fg)]">
+                    {title}
+                </span>
+                <span className="mt-0.5 block text-[11.5px] leading-[1.4] text-[var(--rz-muted)]">
+                    {children}
+                </span>
+            </span>
+        </a>
+    );
+}
+
+/**
  * The reminder that no money changes hands.
  */
 export function PulseDisclaimer() {
     return (
         <div className="mt-9 flex justify-center">
-            <div className="inline-flex items-center gap-[11px] rounded-xl border border-[var(--rz-line)] bg-[var(--rz-tile-bg)] px-5 py-3 text-[var(--rz-dim-2)]">
+            <div className="inline-flex items-center gap-[11px] rounded-xl border border-[var(--rz-line)] bg-[var(--rz-tile-bg)] px-5 py-3 text-[var(--rz-hint)]">
                 <ShieldIcon />
                 <span className="text-[12.5px] text-[var(--rz-muted-2)]">
                     <span className="font-semibold text-[var(--rz-strong)]">

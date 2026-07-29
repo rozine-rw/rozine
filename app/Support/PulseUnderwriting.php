@@ -2,29 +2,24 @@
 
 namespace App\Support;
 
+use App\Enums\PulseSector;
+use Illuminate\Support\Carbon;
+
 /**
  * The demand-simulation model behind Pulse.
  *
- * These are the same formulas the waitlist runs client side, kept here so the
- * figures that get persisted are derived server side rather than trusted from
- * the browser. Nothing here underwrites a real loan.
+ * A business sizes itself on five figures it reports: revenue and costs over
+ * the last twelve months, what it does, the year it registered and the term it
+ * wants. These are the same formulas the waitlist runs client side, kept here
+ * so the figures that get persisted are derived server side rather than trusted
+ * from the browser. Nothing here underwrites a real loan.
  */
 class PulseUnderwriting
 {
     /**
-     * The strength score assigned to a business that uploads a statement.
-     */
-    public const DEFAULT_SCORE = 68;
-
-    /**
      * The blended yield quoted to investors, as a percentage.
      */
     public const BLENDED_YIELD = 12.5;
-
-    /**
-     * The multiple of annual inflow a business may borrow against.
-     */
-    private const CAPACITY_MULTIPLE = 2.75;
 
     /**
      * The terms, in months, a business may pick from.
@@ -34,13 +29,91 @@ class PulseUnderwriting
     public const TERMS = [3, 6, 9, 12];
 
     /**
+     * The smallest revenue a business can be sized on.
+     */
+    public const MINIMUM_REVENUE = 1_000_000;
+
+    /**
+     * The earliest year of registration the waitlist offers.
+     */
+    public const EARLIEST_REGISTRATION_YEAR = 1996;
+
+    /**
+     * The cover a monthly repayment must leave on top of itself, so a business
+     * never commits every franc of its surplus.
+     */
+    private const COVER = 1.25;
+
+    /**
+     * The share of a year's revenue a loan may never exceed.
+     */
+    private const REVENUE_CEILING = 0.35;
+
+    /**
+     * The step a pre-qualified amount is rounded down to.
+     */
+    private const ROUNDING_STEP = 100_000;
+
+    /**
+     * The years of trading beyond which more history adds nothing.
+     */
+    private const TRADING_YEARS_CAP = 10;
+
+    /**
+     * The profit margin beyond which a fatter margin adds nothing.
+     */
+    private const MARGIN_CAP = 0.45;
+
+    /**
+     * Get the money a business has left each month to service debt with.
+     */
+    public static function monthlySurplus(int $annualRevenue, int $annualCosts): float
+    {
+        return ($annualRevenue - $annualCosts) / 12;
+    }
+
+    /**
+     * Get the share of revenue a business keeps.
+     */
+    public static function profitMargin(int $annualRevenue, int $annualCosts): float
+    {
+        if ($annualRevenue <= 0 || $annualCosts >= $annualRevenue) {
+            return 0;
+        }
+
+        return ($annualRevenue - $annualCosts) / $annualRevenue;
+    }
+
+    /**
+     * Get the years a business has been trading.
+     */
+    public static function yearsTrading(int $registeredYear): int
+    {
+        return max(0, Carbon::now()->year - $registeredYear);
+    }
+
+    /**
+     * Score a business' strength out of a hundred, held between forty and
+     * ninety-two so neither a long history nor a fat margin runs away with it.
+     */
+    public static function score(int $annualRevenue, int $annualCosts, PulseSector $sector, int $registeredYear): float
+    {
+        $score = 50
+            + min(self::yearsTrading($registeredYear), self::TRADING_YEARS_CAP) * 1.5
+            + $sector->score()
+            + min(self::profitMargin($annualRevenue, $annualCosts), self::MARGIN_CAP) * 42;
+
+        return max(40, min(92, $score));
+    }
+
+    /**
      * Translate a strength score into a rating band and a score out of five.
      *
      * @return array{band: string, score: float}
      */
-    public static function rating(int $score = self::DEFAULT_SCORE): array
+    public static function rating(float $score): array
     {
-        $outOfFive = round($score / 20 * 10) / 10;
+        $outOfFive = round($score / 20, 1);
 
         $band = match (true) {
             $outOfFive >= 4 => 'Strong',
@@ -53,40 +126,84 @@ class PulseUnderwriting
     }
 
     /**
-     * Get the flat rate, as a percentage, for a score over a given term.
+     * Get the flat rate, as a percentage, for a score over a given term. A
+     * weaker score and a longer term both raise it.
      */
-    public static function flatRate(int $termMonths, int $score = self::DEFAULT_SCORE): float
+    public static function flatRate(int $termMonths, float $score): float
     {
         $rate = 10 + (100 - $score) * 0.08 + ($termMonths - 3) / 9 * 1.5;
 
-        return round(max(10, min(15, $rate)), 1);
+        return max(10, min(15, $rate));
+    }
+
+    /**
+     * Get the repayment a business could carry each month, which is its surplus
+     * less the cover the model insists on.
+     */
+    public static function affordablePayment(int $annualRevenue, int $annualCosts): float
+    {
+        return max(0, self::monthlySurplus($annualRevenue, $annualCosts)) / self::COVER;
     }
 
     /**
      * Get the amount a business pre-qualifies for over a given term.
+     *
+     * Affordability binds first; the share-of-revenue ceiling is the backstop.
      */
-    public static function qualifiedAmount(int $annualInflow, int $termMonths, int $score = self::DEFAULT_SCORE): int
+    public static function qualifiedAmount(int $annualRevenue, int $annualCosts, float $score, int $termMonths): int
     {
-        $capacity = self::CAPACITY_MULTIPLE * $annualInflow;
-        $rate = self::flatRate($termMonths, $score);
+        $affordable = self::affordablePayment($annualRevenue, $annualCosts)
+            * $termMonths
+            / (1 + self::flatRate($termMonths, $score) / 100);
 
-        return (int) round($capacity * $termMonths / (24 * (1 + $rate / 100)));
+        $sized = min($affordable, $annualRevenue * self::REVENUE_CEILING);
+
+        return (int) (floor(max(0, $sized) / self::ROUNDING_STEP) * self::ROUNDING_STEP);
     }
 
     /**
-     * Size a business' pre-qualification against a year of cash flow.
+     * Get what a pre-qualified amount costs to repay.
      *
-     * @return array{annual_inflow: int, qualified_amount: int, term_months: int, flat_rate: float, rating_band: string, rating_score: float}
+     * @return array{total: float, monthly: float}
      */
-    public static function size(int $annualInflow, int $termMonths): array
+    public static function repayment(int $qualifiedAmount, float $flatRate, int $termMonths): array
     {
-        $rating = self::rating();
+        $total = $qualifiedAmount * (1 + $flatRate / 100);
+
+        return ['total' => $total, 'monthly' => $total / $termMonths];
+    }
+
+    /**
+     * Get the cover a repayment leaves on top of itself.
+     */
+    public static function coverRatio(int $annualRevenue, int $annualCosts, float $monthlyRepayment): float
+    {
+        if ($monthlyRepayment <= 0) {
+            return 0;
+        }
+
+        return self::monthlySurplus($annualRevenue, $annualCosts) / $monthlyRepayment;
+    }
+
+    /**
+     * Size a business' pre-qualification against the figures it reported.
+     *
+     * @return array{annual_revenue: int, annual_costs: int, sector: PulseSector, registered_year: int, score: float, qualified_amount: int, term_months: int, flat_rate: float, rating_band: string, rating_score: float}
+     */
+    public static function size(int $annualRevenue, int $annualCosts, PulseSector $sector, int $registeredYear, int $termMonths): array
+    {
+        $score = self::score($annualRevenue, $annualCosts, $sector, $registeredYear);
+        $rating = self::rating($score);
 
         return [
-            'annual_inflow' => $annualInflow,
-            'qualified_amount' => self::qualifiedAmount($annualInflow, $termMonths),
+            'annual_revenue' => $annualRevenue,
+            'annual_costs' => $annualCosts,
+            'sector' => $sector,
+            'registered_year' => $registeredYear,
+            'score' => $score,
+            'qualified_amount' => self::qualifiedAmount($annualRevenue, $annualCosts, $score, $termMonths),
             'term_months' => $termMonths,
-            'flat_rate' => self::flatRate($termMonths),
+            'flat_rate' => self::flatRate($termMonths, $score),
             'rating_band' => $rating['band'],
             'rating_score' => $rating['score'],
         ];
@@ -98,13 +215,5 @@ class PulseUnderwriting
     public static function projectedReturn(int $pledgeAmount): int
     {
         return (int) round($pledgeAmount * (1 + self::BLENDED_YIELD / 100));
-    }
-
-    /**
-     * Estimate the average annual inflow read off an uploaded statement.
-     */
-    public static function estimateAnnualInflow(): int
-    {
-        return random_int(48, 127) * 1_000_000;
     }
 }

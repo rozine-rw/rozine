@@ -110,7 +110,9 @@ export function InvestorModal({
                         <PassHolder>
                             {details.name.trim() || 'Pledging investor'}
                         </PassHolder>
-                        <PassAmount>{formatCompact(pledge)}</PassAmount>
+                        <PassAmount caption="PLEDGED AMOUNT">
+                            {formatCompact(pledge)}
+                        </PassAmount>
                         <PassFooter>
                             <PassStat
                                 label="PROJECTED"
@@ -128,6 +130,7 @@ export function InvestorModal({
                             tag: 'PLEDGING INVESTOR',
                             badge: queueNumber,
                             holder: details.name.trim() || 'Pledging investor',
+                            caption: 'PLEDGED AMOUNT',
                             amount: formatCompact(pledge),
                             stats: [
                                 {

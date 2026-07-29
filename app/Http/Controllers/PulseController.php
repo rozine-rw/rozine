@@ -5,18 +5,14 @@ namespace App\Http\Controllers;
 use App\Enums\PulseSignupType;
 use App\Http\Requests\Pulse\StoreBusinessSignupRequest;
 use App\Http\Requests\Pulse\StoreInvestorPledgeRequest;
-use App\Http\Requests\Pulse\StoreStatementRequest;
 use App\Http\Resources\PulseListingResource;
 use App\Models\PulseSignup;
 use App\Support\PulseUnderwriting;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -42,29 +38,6 @@ class PulseController extends Controller
     }
 
     /**
-     * Store a statement and report the cash flow read off it.
-     */
-    public function storeStatement(StoreStatementRequest $request): JsonResponse
-    {
-        $path = Storage::disk('local')->putFile('pulse-statements', $request->file('statement'));
-
-        if ($path === false) {
-            throw ValidationException::withMessages([
-                'statement' => 'We could not save that statement. Please try again.',
-            ]);
-        }
-
-        $annualInflow = PulseUnderwriting::estimateAnnualInflow();
-
-        $this->rememberParsedStatement($request, $path, $annualInflow);
-
-        return response()->json([
-            'statement_path' => $path,
-            'annual_inflow' => $annualInflow,
-        ]);
-    }
-
-    /**
      * Store an investor's pledge intent.
      */
     public function storeInvestor(StoreInvestorPledgeRequest $request): JsonResponse
@@ -86,15 +59,22 @@ class PulseController extends Controller
     }
 
     /**
-     * Store a business' pre-qualification.
+     * Store a business' pre-qualification, sized here rather than taken from
+     * the browser so the figures recorded are the ones this application worked
+     * out from what the business reported.
      */
     public function storeBusiness(StoreBusinessSignupRequest $request): JsonResponse
     {
         $signup = $this->signupFor($request, PulseSignupType::Business);
 
         $signup->fill([
-            ...PulseUnderwriting::size($request->annualInflow(), (int) $request->validated('term_months')),
-            'statement_path' => $request->validated('statement_path'),
+            ...PulseUnderwriting::size(
+                (int) $request->validated('annual_revenue'),
+                (int) $request->validated('annual_costs'),
+                $request->sector(),
+                (int) $request->validated('registered_year'),
+                (int) $request->validated('term_months'),
+            ),
             'listed' => $request->boolean('listed'),
             'loan_number' => '#'.Number::format(PulseSignup::query()->businesses()->count() + 1),
         ])->save();
@@ -110,7 +90,7 @@ class PulseController extends Controller
      * Get the traction Pulse reports, which is only ever what the waitlist has
      * actually taken.
      *
-     * @return array{pledged: int, investors: int, businesses: int, average_loan: int|null, average_yield: float|null, average_rating: float|null}
+     * @return array{pledged: int, investors: int, businesses: int, average_loan: int|null, average_yield: float|null, average_rating: float|null, average_term: int|null}
      */
     private function traction(): array
     {
@@ -118,16 +98,16 @@ class PulseController extends Controller
         $businesses = PulseSignup::query()->businesses();
 
         $averageLoan = $this->average($businesses, 'qualified_amount');
-        $averageYield = $this->average($businesses, 'flat_rate', 1);
-        $averageRating = $this->average($businesses, 'rating_score', 1);
+        $averageTerm = $this->average($businesses, 'term_months');
 
         return [
             'pledged' => (int) $investors->clone()->sum('pledge_amount'),
             'investors' => $investors->clone()->count(),
             'businesses' => $businesses->clone()->count(),
             'average_loan' => $averageLoan === null ? null : (int) $averageLoan,
-            'average_yield' => $averageYield,
-            'average_rating' => $averageRating,
+            'average_yield' => $this->average($businesses, 'flat_rate', 1),
+            'average_rating' => $this->average($businesses, 'rating_score', 1),
+            'average_term' => $averageTerm === null ? null : (int) $averageTerm,
         ];
     }
 
@@ -168,19 +148,5 @@ class PulseController extends Controller
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
-    }
-
-    /**
-     * Remember the inflow read off a statement so the pre-qualification that
-     * follows is sized from a figure this application produced.
-     */
-    private function rememberParsedStatement(Request $request, string $path, int $annualInflow): void
-    {
-        /** @var array<string, int> $statements */
-        $statements = $request->session()->get('pulse.statements', []);
-
-        $statements[$path] = $annualInflow;
-
-        $request->session()->put('pulse.statements', $statements);
     }
 }
