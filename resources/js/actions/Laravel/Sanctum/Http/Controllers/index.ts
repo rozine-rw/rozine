@@ -1,7 +1,10 @@
-import CsrfCookieController from './CsrfCookieController'
+import CsrfCookieController from './CsrfCookieController';
 
 const Controllers = {
-    CsrfCookieController: Object.assign(CsrfCookieController, CsrfCookieController),
-}
+    CsrfCookieController: Object.assign(
+        CsrfCookieController,
+        CsrfCookieController,
+    ),
+};
 
-export default Controllers
+export default Controllers;
