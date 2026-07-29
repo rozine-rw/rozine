@@ -1,0 +1,58 @@
+name: Deploy (staging)
+
+# Auto-deploy to the Contabo staging box (staging.rozine.rw) on merge/push to uat.
+on:
+  push:
+    branches: [uat]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout uat
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.STAGING_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.STAGING_SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Rsync source to server
+        run: |
+          rsync -az --delete \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'node_modules' \
+            --exclude 'vendor' \
+            --exclude '.env' \
+            --exclude 'storage' \
+            --exclude 'bootstrap/cache' \
+            --exclude 'public/build' \
+            --exclude 'public/storage' \
+            -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new" \
+            ./ "${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_SSH_HOST }}:/var/www/rozine/"
+
+      - name: Build, migrate & reload on server
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new \
+            "${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_SSH_HOST }}" 'bash -lc "
+              set -euo pipefail
+              cd /var/www/rozine
+              composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+              npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+              npm run build
+              php artisan migrate --force
+              php artisan config:cache
+              php artisan route:cache
+              php artisan view:cache
+              php artisan queue:restart
+            "'
