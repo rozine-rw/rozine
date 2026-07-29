@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\PulseContactMethod;
+use App\Enums\PulseSector;
 use App\Enums\PulseSignupType;
 use Database\Factories\PulseSignupFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -31,8 +32,11 @@ class PulseSignup extends Model
         'pledge_amount',
         'projected_return',
         'blended_yield',
-        'statement_path',
-        'annual_inflow',
+        'annual_revenue',
+        'annual_costs',
+        'sector',
+        'registered_year',
+        'score',
         'qualified_amount',
         'term_months',
         'flat_rate',
@@ -77,7 +81,11 @@ class PulseSignup extends Model
             'pledge_amount' => 'integer',
             'projected_return' => 'integer',
             'blended_yield' => 'float',
-            'annual_inflow' => 'integer',
+            'sector' => PulseSector::class,
+            'annual_revenue' => 'integer',
+            'annual_costs' => 'integer',
+            'registered_year' => 'integer',
+            'score' => 'float',
             'qualified_amount' => 'integer',
             'term_months' => 'integer',
             'flat_rate' => 'float',

@@ -88,70 +88,6 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 index.form = indexForm;
 
 /**
- * @see \App\Http\Controllers\PulseController::storeStatement
- * @see app/Http/Controllers/PulseController.php:47
- * @route '/pulse/statement'
- */
-export const storeStatement = (
-    options?: RouteQueryOptions,
-): RouteDefinition<'post'> => ({
-    url: storeStatement.url(options),
-    method: 'post',
-});
-
-storeStatement.definition = {
-    methods: ['post'],
-    url: '/pulse/statement',
-} satisfies RouteDefinition<['post']>;
-
-/**
- * @see \App\Http\Controllers\PulseController::storeStatement
- * @see app/Http/Controllers/PulseController.php:47
- * @route '/pulse/statement'
- */
-storeStatement.url = (options?: RouteQueryOptions) => {
-    return storeStatement.definition.url + queryParams(options);
-};
-
-/**
- * @see \App\Http\Controllers\PulseController::storeStatement
- * @see app/Http/Controllers/PulseController.php:47
- * @route '/pulse/statement'
- */
-storeStatement.post = (
-    options?: RouteQueryOptions,
-): RouteDefinition<'post'> => ({
-    url: storeStatement.url(options),
-    method: 'post',
-});
-
-/**
- * @see \App\Http\Controllers\PulseController::storeStatement
- * @see app/Http/Controllers/PulseController.php:47
- * @route '/pulse/statement'
- */
-const storeStatementForm = (
-    options?: RouteQueryOptions,
-): RouteFormDefinition<'post'> => ({
-    action: storeStatement.url(options),
-    method: 'post',
-});
-
-/**
- * @see \App\Http\Controllers\PulseController::storeStatement
- * @see app/Http/Controllers/PulseController.php:47
- * @route '/pulse/statement'
- */
-storeStatementForm.post = (
-    options?: RouteQueryOptions,
-): RouteFormDefinition<'post'> => ({
-    action: storeStatement.url(options),
-    method: 'post',
-});
-
-storeStatement.form = storeStatementForm;
-
-/**
  * @see \App\Http\Controllers\PulseController::storeInvestor
  * @see app/Http/Controllers/PulseController.php:70
  * @route '/pulse/investor'
@@ -279,6 +215,6 @@ storeBusinessForm.post = (
 
 storeBusiness.form = storeBusinessForm;
 
-const PulseController = { index, storeStatement, storeInvestor, storeBusiness };
+const PulseController = { index, storeInvestor, storeBusiness };
 
 export default PulseController;

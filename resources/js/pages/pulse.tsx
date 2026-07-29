@@ -3,14 +3,15 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     storeBusiness,
     storeInvestor,
-    storeStatement,
 } from '@/actions/App/Http/Controllers/PulseController';
 import { BusinessModal } from '@/components/pulse/business-modal';
 import { BusinessPanel } from '@/components/pulse/business-panel';
+import type { BusinessFigures } from '@/components/pulse/business-panel';
 import { InvestorModal } from '@/components/pulse/investor-modal';
 import { InvestorPanel } from '@/components/pulse/investor-panel';
 import {
     PulseBackdrop,
+    PulseBriefs,
     PulseDisclaimer,
     PulseFooter,
     PulseSteps,
@@ -22,14 +23,11 @@ import type { SignupDetails } from '@/components/pulse/signup-fields';
 import {
     BLENDED_YIELD,
     businessNotes,
-    capacityFor,
-    DEFAULT_SCORE,
     isValidContact,
     isValidName,
-    qualifyFor,
-    rate,
+    MINIMUM_REVENUE,
+    sizingFor,
     TERMS,
-    yieldFor,
 } from '@/lib/pulse';
 import type { ContactMethod, Listing, Traction } from '@/lib/pulse';
 
@@ -45,11 +43,6 @@ type SignupResponse = {
     traction: Traction;
 };
 
-type StatementResponse = {
-    statement_path: string;
-    annual_inflow: number;
-};
-
 type SignupPayload = {
     name: string;
     contact: string;
@@ -63,7 +56,10 @@ type InvestorPayload = SignupPayload & {
 };
 
 type BusinessPayload = SignupPayload & {
-    statement_path: string;
+    annual_revenue: number;
+    annual_costs: number;
+    sector: string;
+    registered_year: number;
     term_months: number;
     listed: boolean;
 };
@@ -84,13 +80,25 @@ const EMPTY_PAYLOAD: SignupPayload = {
     district: '',
 };
 
+const EMPTY_FIGURES: BusinessFigures = {
+    name: '',
+    annualRevenue: 0,
+    annualCosts: 0,
+    sector: '',
+    registeredYear: '',
+};
+
+/** The stages the sizing counts through before it reports a figure. */
+const SIZING_STEPS = [24, 46, 68, 88, 100];
+
 export default function Pulse({ traction, listings, districts }: PulseProps) {
     const [toastMessage, setToastMessage] = useState('');
     const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const sizingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+    const resultTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const investorPanel = useRef<HTMLDivElement>(null);
     const businessPanel = useRef<HTMLDivElement>(null);
-    const statementInput = useRef<HTMLInputElement>(null);
 
     // Investor flow.
     const [pledge, setPledge] = useState(500000);
@@ -107,27 +115,25 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
     const [businessStep, setBusinessStep] = useState<
         'idle' | 'parsing' | 'result' | 'pass'
     >('idle');
+    const [figures, setFigures] = useState<BusinessFigures>(EMPTY_FIGURES);
     const [businessDetails, setBusinessDetails] =
         useState<SignupDetails>(EMPTY_DETAILS);
     const [businessQueue, setBusinessQueue] = useState('#0142');
     const [loanNumber, setLoanNumber] = useState('#1,480');
     const [termIndex, setTermIndex] = useState(3);
     const [progress, setProgress] = useState(0);
-    const [annualInflow, setAnnualInflow] = useState(0);
-    const [statementName, setStatementName] = useState('statement.pdf');
-    const [statementPath, setStatementPath] = useState('');
     const [businessListed, setBusinessListed] = useState(false);
 
-    const upload = useHttp<{ statement: File | null }, StatementResponse>({
-        statement: null,
-    });
     const investorSignup = useHttp<InvestorPayload, SignupResponse>({
         ...EMPTY_PAYLOAD,
         pledge_amount: 0,
     });
     const businessSignup = useHttp<BusinessPayload, SignupResponse>({
         ...EMPTY_PAYLOAD,
-        statement_path: '',
+        annual_revenue: 0,
+        annual_costs: 0,
+        sector: '',
+        registered_year: 0,
         term_months: 12,
         listed: false,
     });
@@ -137,34 +143,55 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
     usePoll(10000, { only: ['traction', 'listings'], async: true });
 
     useEffect(() => {
+        const timers = [toastTimer, sizingTimer, resultTimer];
+
         return () => {
-            if (toastTimer.current) {
-                clearTimeout(toastTimer.current);
-            }
+            timers.forEach((timer) => {
+                if (timer.current) {
+                    clearTimeout(
+                        timer.current as ReturnType<typeof setTimeout>,
+                    );
+                    clearInterval(
+                        timer.current as ReturnType<typeof setInterval>,
+                    );
+                }
+            });
         };
     }, []);
 
-    const rating = useMemo(() => rate(DEFAULT_SCORE), []);
     const notes = useMemo(
         () => businessNotes(listings, pledge),
         [listings, pledge],
     );
 
     const term = TERMS[termIndex];
-    const flatRate = yieldFor(DEFAULT_SCORE, term);
-    const qualifiedAmount = qualifyFor(
-        capacityFor(annualInflow),
-        DEFAULT_SCORE,
-        term,
+    const sizing = useMemo(
+        () =>
+            sizingFor(
+                figures.annualRevenue,
+                figures.annualCosts,
+                figures.sector,
+                parseInt(figures.registeredYear, 10) || 0,
+                term,
+            ),
+        [figures, term],
     );
-    const monthlyRepayment = (qualifiedAmount * (1 + flatRate / 100)) / term;
+
     const payout = pledge * (1 + BLENDED_YIELD / 100);
+
+    const canSize =
+        isValidName(figures.name) &&
+        figures.annualRevenue >= MINIMUM_REVENUE &&
+        figures.annualCosts > 0 &&
+        figures.annualCosts < figures.annualRevenue &&
+        figures.sector !== '' &&
+        figures.registeredYear !== '';
 
     const progressLabel =
         progress < 50
-            ? 'READING STATEMENT'
+            ? 'CHECKING YOUR FIGURES'
             : progress < 100
-              ? 'RECONSTRUCTING CASH FLOW'
+              ? 'MODELLING CASH FLOW'
               : 'SIZING CAPACITY';
 
     function toast(message: string): void {
@@ -213,38 +240,42 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
         };
     }
 
-    function onStatementSelected(file: File): void {
-        setStatementName(file.name);
-        setStatementPath('');
-        setAnnualInflow(0);
-        setProgress(8);
-        setBusinessStep('parsing');
-        setBusinessOpen(false);
+    /**
+     * Count the sizing through its stages. The figures are the visitor's own,
+     * so nothing is fetched — the pause is the model being read back to them.
+     */
+    function startSizing(): void {
+        if (!canSize) {
+            return;
+        }
 
-        upload.setData('statement', file);
-        upload.post(storeStatement.url(), {
-            onProgress: (event) =>
-                setProgress(
-                    Math.max(
-                        8,
-                        Math.min(99, Math.round(event.percentage ?? 0)),
-                    ),
-                ),
-            onSuccess: (response) => {
-                setProgress(100);
-                setAnnualInflow(response.annual_inflow);
-                setStatementPath(response.statement_path);
-                setTimeout(() => setBusinessStep('result'), 360);
-            },
-            onError: (errors) => {
-                setBusinessStep('idle');
-                reportErrors(errors);
-            },
-            onNetworkError: () => {
-                setBusinessStep('idle');
-                toast('We could not reach the server. Please try again.');
-            },
-        });
+        clearSizingTimers();
+        setBusinessOpen(false);
+        setBusinessStep('parsing');
+        setProgress(8);
+
+        let step = 0;
+
+        sizingTimer.current = setInterval(() => {
+            setProgress(SIZING_STEPS[step]);
+
+            if (step >= SIZING_STEPS.length - 1) {
+                clearSizingTimers();
+                resultTimer.current = setTimeout(
+                    () => setBusinessStep('result'),
+                    360,
+                );
+            }
+
+            step++;
+        }, 320);
+    }
+
+    function clearSizingTimers(): void {
+        if (sizingTimer.current) {
+            clearInterval(sizingTimer.current);
+            sizingTimer.current = null;
+        }
     }
 
     function submitInvestor(): void {
@@ -267,7 +298,10 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
     function submitBusiness(): void {
         businessSignup.setData({
             ...payloadFor(businessDetails),
-            statement_path: statementPath,
+            annual_revenue: figures.annualRevenue,
+            annual_costs: figures.annualCosts,
+            sector: figures.sector,
+            registered_year: parseInt(figures.registeredYear, 10),
             term_months: term,
             listed: businessListed,
         });
@@ -309,6 +343,7 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
                         pledged={traction.pledged}
                         investors={traction.investors}
                         averageYield={traction.average_yield}
+                        averageTerm={traction.average_term}
                         pledge={pledge}
                         payout={payout}
                         notes={notes}
@@ -334,20 +369,30 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
                         result={businessStep === 'result' && !businessOpen}
                         progress={progress}
                         progressLabel={progressLabel}
-                        statementName={statementName}
-                        annualInflow={annualInflow}
-                        qualifiedAmount={qualifiedAmount}
-                        monthlyRepayment={monthlyRepayment}
-                        flatRate={`${flatRate.toFixed(1)}%`}
-                        rating={rating}
+                        figures={figures}
+                        sizing={sizing}
                         termIndex={termIndex}
-                        onUpload={() => statementInput.current?.click()}
+                        canSize={canSize}
+                        onFiguresChange={(changes) =>
+                            setFigures((current) => ({
+                                ...current,
+                                ...changes,
+                            }))
+                        }
+                        onSize={startSizing}
                         onTermChange={setTermIndex}
-                        onSaveSpot={() => setBusinessOpen(true)}
+                        onSaveSpot={() => {
+                            setBusinessDetails((current) => ({
+                                ...current,
+                                name: current.name || figures.name,
+                            }));
+                            setBusinessOpen(true);
+                        }}
                     />
                 </div>
 
                 <PulseSteps />
+                <PulseBriefs />
                 <PulseDisclaimer />
                 <PulseFooter />
             </div>
@@ -357,19 +402,17 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
                     step={businessStep === 'idle' ? 'result' : businessStep}
                     progress={progress}
                     progressLabel={progressLabel}
-                    qualifiedAmount={qualifiedAmount}
-                    rating={rating}
+                    qualifiedAmount={sizing.qualifiedAmount}
+                    rating={sizing.rating}
                     termLabel={`${term}mo`}
-                    flatRate={`${flatRate.toFixed(1)}%`}
+                    flatRate={`${sizing.flatRate.toFixed(1)}%`}
                     queueNumber={businessQueue}
                     loanNumber={loanNumber}
                     districts={districts}
                     details={businessDetails}
                     listed={businessListed}
                     contactError={businessSignup.errors.contact}
-                    canSubmit={
-                        isComplete(businessDetails) && statementPath !== ''
-                    }
+                    canSubmit={isComplete(businessDetails) && canSize}
                     processing={businessSignup.processing}
                     onListedChange={setBusinessListed}
                     onChange={(changes) => {
@@ -422,22 +465,6 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
             )}
 
             {toastMessage !== '' && <PulseToast message={toastMessage} />}
-
-            <input
-                ref={statementInput}
-                type="file"
-                accept=".pdf,.csv,.txt,.xls,.xlsx,.jpg,.jpeg,.png"
-                className="hidden"
-                onChange={(event) => {
-                    const file = event.target.files?.[0];
-
-                    if (file) {
-                        onStatementSelected(file);
-                    }
-
-                    event.target.value = '';
-                }}
-            />
         </div>
     );
 }

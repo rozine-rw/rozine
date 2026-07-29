@@ -77,7 +77,7 @@ export function PulseHero({
             </div>
             <h1 className="mt-5 text-[23px] leading-[1.05] font-bold tracking-[-0.033em] text-[var(--rz-fg-strong)] md:text-[clamp(30px,4.6vw,52px)]">
                 Invest in profitable Rwandan businesses{' '}
-                <span className="text-[var(--rz-hero-accent)]">
+                <span className="rounded-[0.14em] bg-[var(--rz-hero-mark-bg)] box-decoration-clone text-[var(--rz-hero-mark-fg)] shadow-[0_0_0_0.12em_var(--rz-hero-mark-bg)]">
                     from just RWF 5,000.
                 </span>{' '}
                 <span className="text-[#0a5cff]">Earn up to 15%.</span>
@@ -89,14 +89,23 @@ export function PulseHero({
                     Audited, profitable deals for investors.
                 </span>
             </p>
-            <p className="mt-4 text-[16px] font-semibold text-[var(--rz-strong)]">
-                Save your spot to get priority at launch.
-            </p>
+            <div className="mt-[18px] inline-flex items-center gap-[7px] rounded-full border border-[var(--rz-pill-border)] bg-[var(--rz-pill-bg)] px-[10px] py-[7px] pr-3 shadow-[var(--rz-pill-shadow)] md:gap-2.5 md:py-2.5 md:pr-[15px] md:pl-3">
+                <span className="relative h-2 w-2 shrink-0">
+                    <span className="absolute inset-0 rounded-full bg-[#4ade80]" />
+                    <span className="absolute inset-0 animate-[rzp-ping_1.8s_ease-out_infinite] rounded-full bg-[#4ade80]" />
+                </span>
+                <span className="text-[11px] font-semibold tracking-[-0.01em] text-white md:text-[14px]">
+                    Save your spot now —{' '}
+                    <span className="text-[#4ade80]">
+                        first in line at launch.
+                    </span>
+                </span>
+            </div>
             <div className="mt-4 grid grid-cols-2 gap-2.5 md:hidden">
                 <HeroButton onClick={onInvest} background="#0a5cff">
                     I want to invest
                 </HeroButton>
-                <HeroButton onClick={onBorrow} background="#12a150">
+                <HeroButton onClick={onBorrow} background="#0f7a3d">
                     I want a business loan
                 </HeroButton>
             </div>
