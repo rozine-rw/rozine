@@ -9,6 +9,8 @@ import {
 import { downloadPassCard } from '@/lib/pass-card-image';
 import type { PassCardSpec } from '@/lib/pass-card-image';
 
+const WING = '/images/rozine-wing-white.png';
+
 const TONES = {
     investor: {
         background:
@@ -51,7 +53,16 @@ export function PassCard({
                     boxShadow: `0 calc(50*var(--rz-pass-u)) calc(100*var(--rz-pass-u)) calc(-30*var(--rz-pass-u)) ${glow}, inset 0 calc(2*var(--rz-pass-u)) 0 rgba(255,255,255,.3)`,
                 }}
             >
-                <div className="absolute -top-[30%] -left-[30%] h-[160%] w-[160%] rotate-[-30deg] bg-[url('/images/rozine-wing-white.png')] bg-[size:calc(36*var(--rz-pass-u))_calc(20*var(--rz-pass-u))] bg-repeat opacity-[0.11]" />
+                {/*
+                 * The mark is hung on the style attribute rather than a
+                 * utility class: Vite rebases a url() it finds in CSS onto its
+                 * own dev origin, which laravel-vite-plugin leaves without a
+                 * public directory to serve it from, so the tile 404s in dev.
+                 */}
+                <div
+                    className="absolute -top-[30%] -left-[30%] h-[160%] w-[160%] rotate-[-30deg] bg-[size:calc(36*var(--rz-pass-u))_calc(20*var(--rz-pass-u))] bg-repeat opacity-[0.11]"
+                    style={{ backgroundImage: `url(${WING})` }}
+                />
                 <div className="absolute top-[calc(-140*var(--rz-pass-u))] right-[calc(-140*var(--rz-pass-u))] h-[calc(460*var(--rz-pass-u))] w-[calc(460*var(--rz-pass-u))] rounded-full bg-[radial-gradient(closest-side,rgba(255,255,255,0.2),transparent)]" />
                 <div className="relative flex h-full flex-col px-[calc(56*var(--rz-pass-u))] py-[calc(52*var(--rz-pass-u))]">
                     <div className="flex items-start justify-between">
