@@ -1,7 +1,9 @@
 import {
     PassActions,
+    PassAmount,
     PassCard,
-    PassDomain,
+    PassFooter,
+    PassHolder,
     PassStat,
 } from '@/components/pulse/pass-card';
 import {
@@ -102,32 +104,29 @@ export function InvestorModal({
                     </div>
                     <PassCard
                         tone="investor"
-                        tag={`PLEDGING INVESTOR ${queueNumber}`}
+                        tag="PLEDGING INVESTOR"
+                        badge={queueNumber}
                     >
-                        <div className="text-[9px] font-semibold tracking-[0.1em] text-[rgba(255,255,255,0.82)] uppercase">
+                        <PassHolder>
                             {details.name.trim() || 'Pledging investor'}
-                        </div>
-                        <div className="rz-num mt-2 text-[33px] leading-none font-extrabold tracking-[-0.025em] text-white">
-                            {formatCompact(pledge)}
-                        </div>
-                        <div className="mt-2 flex items-end justify-between">
-                            <div className="flex gap-[13px]">
-                                <PassStat
-                                    label="PROJECTED"
-                                    value={formatCompact(payout)}
-                                />
-                                <PassStat
-                                    label="AVG YIELD"
-                                    value={`${BLENDED_YIELD.toFixed(1)}%`}
-                                />
-                            </div>
-                            <PassDomain />
-                        </div>
+                        </PassHolder>
+                        <PassAmount>{formatCompact(pledge)}</PassAmount>
+                        <PassFooter>
+                            <PassStat
+                                label="PROJECTED"
+                                value={formatCompact(payout)}
+                            />
+                            <PassStat
+                                label="AVG YIELD"
+                                value={`${BLENDED_YIELD.toFixed(1)}%`}
+                            />
+                        </PassFooter>
                     </PassCard>
                     <PassActions
                         card={{
                             tone: 'investor',
-                            tag: `PLEDGING INVESTOR ${queueNumber}`,
+                            tag: 'PLEDGING INVESTOR',
+                            badge: queueNumber,
                             holder: details.name.trim() || 'Pledging investor',
                             amount: formatCompact(pledge),
                             stats: [

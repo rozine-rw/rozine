@@ -178,9 +178,9 @@ export function LinkedInIcon() {
     );
 }
 
-export function GlobeIcon() {
+export function GlobeIcon({ className }: { className: string }) {
     return (
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+        <svg className={className} viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="9" stroke="#fff" strokeWidth="1.7" />
             <path
                 d="M3.2 12h17.6M12 3c2.7 2.6 2.7 15.4 0 18M12 3c-2.7 2.6-2.7 15.4 0 18"

@@ -281,15 +281,6 @@
     }
 }
 
-@keyframes rzp-sheen {
-    0% {
-        transform: translateX(-130%) skewX(-16deg);
-    }
-    100% {
-        transform: translateX(240%) skewX(-16deg);
-    }
-}
-
 input[type='range'].rz-slider {
     -webkit-appearance: none;
     appearance: none;
