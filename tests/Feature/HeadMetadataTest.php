@@ -7,7 +7,7 @@ test('the home page renders SEO and social head metadata', function () {
 
     $response->assertOk()
         ->assertSee('name="description"', false)
-        ->assertSee('growth capital for SMEs', false)
+        ->assertSee('Earn up to 15% by investing in Rwandan businesses from just RWF 5,000.', false)
         ->assertSee('name="author"', false)
         ->assertSee('rel="canonical"', false)
         ->assertSee('og:type', false)
