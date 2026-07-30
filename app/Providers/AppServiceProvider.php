@@ -61,7 +61,7 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function configureHead(): void
     {
-        $description = 'A capital marketplace for Rwanda\'s profitable private businesses — growth capital for SMEs, and cash-flow-verified investment notes from RWF 5,000.';
+        $description = 'Earn up to 15% by investing in Rwandan businesses from just RWF 5,000.';
 
         // Stable browser hints, rendered into the first HTML response and then left untouched.
         Head::inertiaGlobals(fn (HeadBuilder $head) => $head
