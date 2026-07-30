@@ -90,6 +90,11 @@ test('a loan is capped at a third of the revenue behind it', function () {
     expect(PulseUnderwriting::qualifiedAmount(10_000_000, 1_000_000, $score, 12))->toBe(3_500_000);
 });
 
+test('a non-positive monthly repayment has no cover', function () {
+    expect(PulseUnderwriting::coverRatio(120_000_000, 90_000_000, 0))->toBe(0.0)
+        ->and(PulseUnderwriting::coverRatio(120_000_000, 90_000_000, -1))->toBe(0.0);
+});
+
 test('a business with nothing left over pre-qualifies for nothing', function () {
     expect(PulseUnderwriting::qualifiedAmount(50_000_000, 50_000_000, 60.0, 12))->toBe(0);
 });
