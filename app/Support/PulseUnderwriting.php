@@ -19,7 +19,7 @@ class PulseUnderwriting
     /**
      * The blended yield quoted to investors, as a percentage.
      */
-    public const BLENDED_YIELD = 12.5;
+    public const BLENDED_YIELD = 13.0;
 
     /**
      * The terms, in months, a business may pick from.
@@ -31,12 +31,22 @@ class PulseUnderwriting
     /**
      * The smallest revenue a business can be sized on.
      */
-    public const MINIMUM_REVENUE = 1_000_000;
+    public const MINIMUM_REVENUE = 15_000_000;
 
     /**
      * The earliest year of registration the waitlist offers.
      */
     public const EARLIEST_REGISTRATION_YEAR = 1996;
+
+    /**
+     * The smallest loan Rozine writes.
+     */
+    public const MIN_LOAN = 5_000_000;
+
+    /**
+     * The largest loan Rozine writes.
+     */
+    public const MAX_LOAN = 50_000_000;
 
     /**
      * The cover a monthly repayment must leave on top of itself, so a business
@@ -131,9 +141,9 @@ class PulseUnderwriting
      */
     public static function flatRate(int $termMonths, float $score): float
     {
-        $rate = 10 + (100 - $score) * 0.08 + ($termMonths - 3) / 9 * 1.5;
+        $rate = 10 + (100 - $score) * 0.085 + ($termMonths - 3) / 9 * 2.5;
 
-        return max(10, min(15, $rate));
+        return max(10.5, min(15, $rate));
     }
 
     /**
@@ -146,11 +156,11 @@ class PulseUnderwriting
     }
 
     /**
-     * Get the amount a business pre-qualifies for over a given term.
+     * Get the amount a business' figures size to, before the loan band applies.
      *
      * Affordability binds first; the share-of-revenue ceiling is the backstop.
      */
-    public static function qualifiedAmount(int $annualRevenue, int $annualCosts, float $score, int $termMonths): int
+    public static function sizedAmount(int $annualRevenue, int $annualCosts, float $score, int $termMonths): int
     {
         $affordable = self::affordablePayment($annualRevenue, $annualCosts)
             * $termMonths
@@ -159,6 +169,25 @@ class PulseUnderwriting
         $sized = min($affordable, $annualRevenue * self::REVENUE_CEILING);
 
         return (int) (floor(max(0, $sized) / self::ROUNDING_STEP) * self::ROUNDING_STEP);
+    }
+
+    /**
+     * Get the amount a business pre-qualifies for, held to the loan band Rozine
+     * writes within. A business that sizes under the floor is still recorded at
+     * what it sized to; it joins the waitlist rather than qualifying.
+     */
+    public static function qualifiedAmount(int $annualRevenue, int $annualCosts, float $score, int $termMonths): int
+    {
+        return min(self::sizedAmount($annualRevenue, $annualCosts, $score, $termMonths), self::MAX_LOAN);
+    }
+
+    /**
+     * Get the monthly surplus the smallest loan Rozine writes would need over a
+     * given term, which is what a business short of it has to close.
+     */
+    public static function surplusForMinimumLoan(float $score, int $termMonths): float
+    {
+        return self::MIN_LOAN * self::COVER * (1 + self::flatRate($termMonths, $score) / 100) / $termMonths;
     }
 
     /**
@@ -203,7 +232,7 @@ class PulseUnderwriting
             'score' => $score,
             'qualified_amount' => self::qualifiedAmount($annualRevenue, $annualCosts, $score, $termMonths),
             'term_months' => $termMonths,
-            'flat_rate' => self::flatRate($termMonths, $score),
+            'flat_rate' => round(self::flatRate($termMonths, $score), 2),
             'rating_band' => $rating['band'],
             'rating_score' => $rating['score'],
         ];

@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties, ReactNode, RefObject } from 'react';
 import {
     DownloadIcon,
     LinkedInIcon,
@@ -9,7 +9,7 @@ import {
 } from '@/components/pulse/icons';
 import { PulseWordmark } from '@/components/pulse/pulse-wordmark';
 import { useAppearance } from '@/hooks/use-appearance';
-import { STEPS, TRUST_MARKERS } from '@/lib/pulse';
+import { TRUST_MARKERS } from '@/lib/pulse';
 
 /**
  * Flips the page between its light and dark cut.
@@ -46,9 +46,16 @@ export function PulseBackdrop() {
 /**
  * The sticky masthead.
  */
-export function PulseTopbar() {
+export function PulseTopbar({
+    barRef,
+}: {
+    barRef?: RefObject<HTMLDivElement | null>;
+}) {
     return (
-        <div className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-[var(--rz-topbar-border)] bg-[var(--rz-topbar-bg)] py-[13px] backdrop-blur-[14px] md:py-4">
+        <div
+            ref={barRef}
+            className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-[var(--rz-topbar-border)] bg-[var(--rz-topbar-bg)] py-[13px] backdrop-blur-[14px] md:py-4"
+        >
             <div className="mx-auto flex w-full max-w-[1120px] items-center justify-between gap-4 px-2 md:px-[26px]">
                 <div className="flex items-center gap-[11px]">
                     <PulseWordmark className="h-[27px] w-auto object-contain" />
@@ -70,38 +77,12 @@ export function PulseTopbar() {
 }
 
 /**
- * The three-step explainer.
- */
-export function PulseSteps() {
-    return (
-        <div className="mt-[72px] grid grid-cols-1 gap-4 md:grid-cols-3">
-            {STEPS.map((step) => (
-                <div
-                    key={step.no}
-                    className="border-t border-[var(--rz-line)] py-5"
-                >
-                    <div className="rz-num text-[13px] font-bold text-[var(--rz-dim-2)]">
-                        {step.no}
-                    </div>
-                    <div className="mt-3 text-[15px] font-semibold text-[var(--rz-fg)]">
-                        {step.title}
-                    </div>
-                    <div className="mt-[5px] text-[13px] leading-[1.5] text-[var(--rz-dim-2)]">
-                        {step.sub}
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-}
-
-/**
  * The two briefs that explain what Pulse is sizing, one for each side of the
  * waitlist. Both are handed over as a PDF rather than opened in a tab.
  */
 export function PulseBriefs() {
     return (
-        <div className="mt-11 border-t border-[var(--rz-line)] pt-[26px]">
+        <div className="mt-14 border-t border-[var(--rz-line)] pt-[26px]">
             <div className="text-[11px] font-bold tracking-[0.16em] text-[var(--rz-dim-2)]">
                 LEARN MORE ABOUT ROZINE
             </div>

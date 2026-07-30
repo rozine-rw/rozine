@@ -23,6 +23,7 @@ type BusinessModalProps = {
     progress: number;
     progressLabel: string;
     qualifiedAmount: number;
+    belowMinimum: boolean;
     rating: Rating;
     termLabel: string;
     flatRate: string;
@@ -49,6 +50,7 @@ export function BusinessModal({
     progress,
     progressLabel,
     qualifiedAmount,
+    belowMinimum,
     rating,
     termLabel,
     flatRate,
@@ -66,6 +68,13 @@ export function BusinessModal({
     onShare,
     onClose,
 }: BusinessModalProps) {
+    // A business under the smallest loan Rozine writes takes a place in the
+    // queue rather than an amount.
+    const passCaption = belowMinimum ? 'EARLY ACCESS' : 'PRE-QUALIFIED LOAN';
+    const passAmount = belowMinimum
+        ? 'WAITLIST'
+        : formatCompact(qualifiedAmount);
+
     return (
         <PulseModal label="BUSINESS · PRE-QUALIFY" onClose={onClose}>
             {step === 'parsing' && (
@@ -89,8 +98,8 @@ export function BusinessModal({
             {step === 'result' && (
                 <>
                     <ModalHeading
-                        title="Claim your pass"
-                        subtitle="A few details and your early-access spot is locked."
+                        title="Reserve your spot"
+                        subtitle="A few details and your early-access spot is confirmed."
                     />
                     <div className="mt-[18px] overflow-hidden rounded-[14px] border border-[rgba(16,161,80,0.24)] bg-[linear-gradient(135deg,rgba(16,161,80,0.16),rgba(16,161,80,0.04))]">
                         <div className="flex items-end justify-between gap-3 px-[15px] py-3">
@@ -126,7 +135,7 @@ export function BusinessModal({
                         processing={processing}
                         onClick={onSubmit}
                     >
-                        Lock in &amp; get my pass →
+                        Reserve my spot →
                     </ModalSubmit>
                 </>
             )}
@@ -150,8 +159,8 @@ export function BusinessModal({
                                 {details.district || 'Gasabo'}
                             </span>
                         </PassHolder>
-                        <PassAmount caption="PRE-QUALIFIED LOAN">
-                            {formatCompact(qualifiedAmount)}
+                        <PassAmount caption={passCaption}>
+                            {passAmount}
                         </PassAmount>
                         <PassFooter>
                             <PassStat label="TERM" value={termLabel} />
@@ -168,8 +177,8 @@ export function BusinessModal({
                             tag: 'BUSINESS LOAN',
                             badge: loanNumber,
                             holder: `${details.name.trim() || 'Pre-qualified business'} · ${details.district || 'Gasabo'}`,
-                            caption: 'PRE-QUALIFIED LOAN',
-                            amount: formatCompact(qualifiedAmount),
+                            caption: passCaption,
+                            amount: passAmount,
                             stats: [
                                 { label: 'TERM', value: termLabel },
                                 { label: 'FLAT', value: flatRate },
