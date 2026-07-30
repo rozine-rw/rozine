@@ -1,16 +1,23 @@
-name: tests
+name: TIA Baseline
 
 on:
   push:
     branches:
       - main
-  pull_request:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: tia-baseline-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  ci:
+  baseline:
+    name: refresh Pest TIA baseline
     runs-on: ubuntu-latest
 
     steps:
@@ -39,16 +46,6 @@ jobs:
       - name: Install PHP dependencies from lock file
         run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Restore PHP-specific TIA state
-        id: tia-cache
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
-        with:
-          path: ~/.pest/tia
-          key: pest-tia-${{ runner.os }}-${{ runner.arch }}-php-8.4-${{ hashFiles('composer.lock', 'package-lock.json', 'phpunit.xml') }}-${{ github.sha }}
-          restore-keys: |
-            pest-tia-${{ runner.os }}-${{ runner.arch }}-php-8.4-${{ hashFiles('composer.lock', 'package-lock.json', 'phpunit.xml') }}-
-            pest-tia-${{ runner.os }}-${{ runner.arch }}-php-8.4-
-
       - name: Copy environment file
         run: cp .env.example .env
 
@@ -58,18 +55,20 @@ jobs:
       - name: Run database migrations
         run: php artisan migrate --force
 
-      - name: Run non-test engineering checks
-        run: composer ci:check:static
-
       - name: Build production assets
         run: npm run build
 
-      - name: Enforce complete PHP line coverage with TIA
-        run: ./vendor/bin/pest --coverage --min=100 --compact --tia
+      - name: Record fresh TIA baseline with complete coverage
+        run: ./vendor/bin/pest --coverage --min=100 --compact --tia --fresh
 
-      - name: Save PHP-specific TIA state
-        if: steps.tia-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      - name: Resolve TIA baseline path
+        id: baseline
+        run: echo "path=$(./vendor/bin/pest --baseline)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload TIA baseline
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          path: ~/.pest/tia
-          key: ${{ steps.tia-cache.outputs.cache-primary-key }}
+          name: pest-tia-baseline
+          path: ${{ steps.baseline.outputs.path }}
+          include-hidden-files: true
+          retention-days: 30
