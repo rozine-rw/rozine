@@ -54,21 +54,33 @@ export type Sizing = {
     score: number;
     rating: Rating;
     flatRate: number;
+    /** What the figures size to, before the loan band is applied. */
+    sizedAmount: number;
     qualifiedAmount: number;
     monthlyRepayment: number;
     coverRatio: number;
+    belowMinimum: boolean;
+    atMaximum: boolean;
+    /** The monthly surplus the smallest loan would need over this term. */
+    requiredSurplus: number;
 };
 
 export const TERMS = [3, 6, 9, 12] as const;
 
-export const BLENDED_YIELD = 12.5;
+export const BLENDED_YIELD = 13.0;
 
 export const MIN_PLEDGE = 5000;
 
-export const MAX_PLEDGE = 10000000;
+export const MAX_PLEDGE = 50000000;
 
 /** The smallest revenue a business can be sized on. */
-export const MINIMUM_REVENUE = 1000000;
+export const MINIMUM_REVENUE = 15000000;
+
+/** The smallest loan Rozine writes. */
+export const MIN_LOAN = 5000000;
+
+/** The largest loan Rozine writes. */
+export const MAX_LOAN = 50000000;
 
 /** The earliest year of registration the waitlist offers. */
 export const EARLIEST_REGISTRATION_YEAR = 1996;
@@ -121,22 +133,18 @@ export const ACCENTS: ThemedColor[] = [
     { light: '#6366f1', dark: '#6366f1' },
 ];
 
-export const STEPS = [
-    {
-        no: '01',
-        title: 'Add your intent',
-        sub: 'Businesses answer five questions. Investors set an amount.',
-    },
-    {
-        no: '02',
-        title: 'See the numbers',
-        sub: 'Capacity, rating and yield on your own figures, in ~30s.',
-    },
-    {
-        no: '03',
-        title: 'Lock your spot',
-        sub: 'Claim a shareable pass and early access at launch.',
-    },
+/** What an investor gets, listed beside the amount they set. */
+export const INVESTOR_CRITERIA = [
+    '10–15% total return over 3 to 12 months.',
+    'Paid back monthly, automatically, into your Rozine account.',
+    'You pick businesses you want to invest in. Each one is audited by an ICPAR-certified CPA.',
+];
+
+/** What a business needs before it can be sized. */
+export const BUSINESS_CRITERIA = [
+    'Registered with RDB',
+    'RWF 15M+ revenue in the last 12 months',
+    'Showing clear profit',
 ];
 
 export const TRUST_MARKERS = [
@@ -163,6 +171,28 @@ export function formatCompact(amount: number): string {
     }
 
     return `RWF ${value}`;
+}
+
+/**
+ * Shorten a figure to the abbreviation the traction tiles carry, without the
+ * currency in front of it.
+ */
+export function formatAbbrev(amount: number): string {
+    const value = Math.round(amount || 0);
+
+    if (value >= 1e9) {
+        return `${Math.round(value / 1e7) / 100}B`;
+    }
+
+    if (value >= 1e6) {
+        return `${Math.round(value / 1e5) / 10}M`;
+    }
+
+    if (value >= 1e3) {
+        return `${Math.round(value / 1e3)}K`;
+    }
+
+    return String(value);
 }
 
 /**
@@ -329,8 +359,8 @@ export function rate(score: number): Rating {
  */
 export function yieldFor(score: number, months: number): number {
     return Math.max(
-        10,
-        Math.min(15, 10 + (100 - score) * 0.08 + ((months - 3) / 9) * 1.5),
+        10.5,
+        Math.min(15, 10 + (100 - score) * 0.085 + ((months - 3) / 9) * 2.5),
     );
 }
 
@@ -346,11 +376,11 @@ export function affordablePayment(
 }
 
 /**
- * Get the amount a business pre-qualifies for over a given term.
+ * Get the amount a business' figures size to, before the loan band applies.
  *
  * Affordability binds first; the share-of-revenue ceiling is the backstop.
  */
-export function qualifyFor(
+export function sizeFor(
     annualRevenue: number,
     annualCosts: number,
     score: number,
@@ -366,6 +396,30 @@ export function qualifyFor(
 }
 
 /**
+ * Get the amount a business pre-qualifies for, held to the loan band Rozine
+ * writes within.
+ */
+export function qualifyFor(
+    annualRevenue: number,
+    annualCosts: number,
+    score: number,
+    months: number,
+): number {
+    return Math.min(
+        sizeFor(annualRevenue, annualCosts, score, months),
+        MAX_LOAN,
+    );
+}
+
+/**
+ * Get the monthly surplus the smallest loan Rozine writes would need over a
+ * given term, which is what a business short of it has to close.
+ */
+export function surplusForMinimumLoan(score: number, months: number): number {
+    return (MIN_LOAN * COVER * (1 + yieldFor(score, months) / 100)) / months;
+}
+
+/**
  * Size a business against the figures it reported, over the term it picked.
  */
 export function sizingFor(
@@ -377,12 +431,8 @@ export function sizingFor(
 ): Sizing {
     const score = scoreFor(annualRevenue, annualCosts, sector, registeredYear);
     const flatRate = yieldFor(score, months);
-    const qualifiedAmount = qualifyFor(
-        annualRevenue,
-        annualCosts,
-        score,
-        months,
-    );
+    const sizedAmount = sizeFor(annualRevenue, annualCosts, score, months);
+    const qualifiedAmount = Math.min(sizedAmount, MAX_LOAN);
     const monthlyRepayment =
         (qualifiedAmount * (1 + flatRate / 100)) / Math.max(1, months);
 
@@ -390,12 +440,16 @@ export function sizingFor(
         score,
         rating: rate(score),
         flatRate,
+        sizedAmount,
         qualifiedAmount,
         monthlyRepayment,
         coverRatio:
             monthlyRepayment > 0
                 ? monthlySurplus(annualRevenue, annualCosts) / monthlyRepayment
                 : 0,
+        belowMinimum: annualRevenue > 0 && sizedAmount < MIN_LOAN,
+        atMaximum: sizedAmount > MAX_LOAN,
+        requiredSurplus: surplusForMinimumLoan(score, months),
     };
 }
 

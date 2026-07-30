@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\PulseContactMethod;
 use App\Enums\PulseSector;
 use App\Enums\PulseSignupType;
+use App\Support\PulseUnderwriting;
 use Database\Factories\PulseSignupFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -65,6 +66,18 @@ class PulseSignup extends Model
     public function scopeBusinesses(Builder $query): void
     {
         $query->where('type', PulseSignupType::Business);
+    }
+
+    /**
+     * Scope the query to businesses that sized at or above the smallest loan
+     * Rozine writes. Anything under it joined the waitlist rather than
+     * pre-qualifying, so it is not a loan an investor can back.
+     *
+     * @param  Builder<PulseSignup>  $query
+     */
+    public function scopePreQualified(Builder $query): void
+    {
+        $query->businesses()->where('qualified_amount', '>=', PulseUnderwriting::MIN_LOAN);
     }
 
     /**

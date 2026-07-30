@@ -14,7 +14,6 @@ import {
     PulseBriefs,
     PulseDisclaimer,
     PulseFooter,
-    PulseSteps,
     PulseTopbar,
 } from '@/components/pulse/pulse-chrome';
 import { PulseHero, TractionCards } from '@/components/pulse/pulse-hero';
@@ -97,6 +96,7 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
     const sizingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
     const resultTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+    const topbar = useRef<HTMLDivElement>(null);
     const investorPanel = useRef<HTMLDivElement>(null);
     const businessPanel = useRef<HTMLDivElement>(null);
 
@@ -109,6 +109,7 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
     const [investorDetails, setInvestorDetails] =
         useState<SignupDetails>(EMPTY_DETAILS);
     const [investorQueue, setInvestorQueue] = useState('#0142');
+    const [exampleOpen, setExampleOpen] = useState(false);
 
     // Business flow.
     const [businessOpen, setBusinessOpen] = useState(false);
@@ -215,8 +216,14 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
             return;
         }
 
+        // Clear the sticky masthead the panel would otherwise land under.
+        const bar = topbar.current?.getBoundingClientRect().height ?? 0;
+
         window.scrollTo({
-            top: element.getBoundingClientRect().top + window.scrollY - 14,
+            top: Math.max(
+                0,
+                element.getBoundingClientRect().top + window.scrollY - bar - 18,
+            ),
             behavior: 'smooth',
         });
     }
@@ -323,7 +330,7 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
             <Head title="Pulse" />
 
             <PulseBackdrop />
-            <PulseTopbar />
+            <PulseTopbar barRef={topbar} />
 
             <div className="relative z-[2] mx-auto max-w-[1120px] px-2 md:px-[26px]">
                 <TractionCards
@@ -347,6 +354,8 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
                         pledge={pledge}
                         payout={payout}
                         notes={notes}
+                        exampleOpen={exampleOpen}
+                        onExampleToggle={() => setExampleOpen((open) => !open)}
                         onPledgeChange={setPledge}
                         onSaveSpot={() => {
                             setInvestorStep('notes');
@@ -391,7 +400,6 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
                     />
                 </div>
 
-                <PulseSteps />
                 <PulseBriefs />
                 <PulseDisclaimer />
                 <PulseFooter />
@@ -403,6 +411,7 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
                     progress={progress}
                     progressLabel={progressLabel}
                     qualifiedAmount={sizing.qualifiedAmount}
+                    belowMinimum={sizing.belowMinimum}
                     rating={sizing.rating}
                     termLabel={`${term}mo`}
                     flatRate={`${sizing.flatRate.toFixed(1)}%`}
