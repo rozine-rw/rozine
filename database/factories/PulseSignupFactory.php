@@ -35,7 +35,7 @@ class PulseSignupFactory extends Factory
             'listed' => false,
             'queue_number' => '#'.str_pad((string) fake()->numberBetween(120, 299), 4, '0', STR_PAD_LEFT),
             'pledge_amount' => fake()->numberBetween(1, 2000) * 5000,
-            'blended_yield' => 12.5,
+            'blended_yield' => PulseUnderwriting::BLENDED_YIELD,
         ];
     }
 
@@ -46,8 +46,23 @@ class PulseSignupFactory extends Factory
     {
         return $this->state(fn (array $attributes): array => [
             'type' => PulseSignupType::Investor,
-            'projected_return' => (int) round(($attributes['pledge_amount'] ?? 500000) * 1.125),
+            'projected_return' => PulseUnderwriting::projectedReturn((int) ($attributes['pledge_amount'] ?? 500000)),
         ]);
+    }
+
+    /**
+     * Indicate that the business sized under the smallest loan Rozine writes,
+     * so it joined the waitlist rather than pre-qualifying.
+     */
+    public function waitlisted(): static
+    {
+        return $this->business()->state(fn (): array => PulseUnderwriting::size(
+            16_000_000,
+            15_400_000,
+            PulseSector::Other,
+            2024,
+            3,
+        ));
     }
 
     /**
@@ -56,8 +71,10 @@ class PulseSignupFactory extends Factory
     public function business(): static
     {
         return $this->state(function (): array {
-            $annualRevenue = fake()->numberBetween(48, 320) * 1000000;
-            $annualCosts = (int) round($annualRevenue * fake()->randomFloat(2, 0.55, 0.85));
+            // Comfortably clear of the smallest loan Rozine writes, so a
+            // factory business is one an investor could actually back.
+            $annualRevenue = fake()->numberBetween(120, 320) * 1000000;
+            $annualCosts = (int) round($annualRevenue * fake()->randomFloat(2, 0.55, 0.75));
 
             return [
                 'type' => PulseSignupType::Business,

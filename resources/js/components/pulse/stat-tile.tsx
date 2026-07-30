@@ -20,7 +20,7 @@ export function StatTile({
     children: ReactNode;
 }) {
     return (
-        <div className="min-w-0 rounded-[10px] border border-[var(--rz-tile-border)] bg-[var(--rz-tile-bg)] p-[9px] md:px-3 md:py-2.5">
+        <div className="min-w-0 rounded-[10px] border border-[var(--rz-tile-border)] bg-[var(--rz-stat-bg)] p-[9px] md:px-3 md:py-2.5">
             <div className="flex items-center gap-[5px] text-[8px] font-bold tracking-[var(--rz-stat-tracking)] whitespace-nowrap text-[var(--rz-stat-label)] md:text-[11px]">
                 <span className="relative h-1.5 w-1.5 shrink-0">
                     <span className="absolute inset-0 rounded-full bg-[var(--rz-green-dot)]" />
