@@ -31,11 +31,11 @@ type BusinessModalProps = {
     loanNumber: string;
     districts: Record<string, string[]>;
     details: SignupDetails;
-    listed: boolean;
+    anonymous: boolean;
     contactError?: string;
     canSubmit: boolean;
     processing: boolean;
-    onListedChange: (listed: boolean) => void;
+    onAnonymousChange: (anonymous: boolean) => void;
     onChange: (details: Partial<SignupDetails>) => void;
     onSubmit: () => void;
     onShare: (message: string) => void;
@@ -58,11 +58,11 @@ export function BusinessModal({
     loanNumber,
     districts,
     details,
-    listed,
+    anonymous,
     contactError,
     canSubmit,
     processing,
-    onListedChange,
+    onAnonymousChange,
     onChange,
     onSubmit,
     onShare,
@@ -124,9 +124,9 @@ export function BusinessModal({
                         onChange={onChange}
                     >
                         <ListingConsent
-                            checked={listed}
+                            anonymous={anonymous}
                             district={details.district}
-                            onChange={onListedChange}
+                            onChange={onAnonymousChange}
                         />
                     </SignupFields>
                     <ModalSubmit

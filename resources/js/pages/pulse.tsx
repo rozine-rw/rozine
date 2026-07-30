@@ -123,7 +123,8 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
     const [loanNumber, setLoanNumber] = useState('#1,480');
     const [termIndex, setTermIndex] = useState(3);
     const [progress, setProgress] = useState(0);
-    const [businessListed, setBusinessListed] = useState(false);
+    // The checkbox asks to be hidden, so the listing consent is its inverse.
+    const [businessAnonymous, setBusinessAnonymous] = useState(false);
 
     const investorSignup = useHttp<InvestorPayload, SignupResponse>({
         ...EMPTY_PAYLOAD,
@@ -310,7 +311,7 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
             sector: figures.sector,
             registered_year: parseInt(figures.registeredYear, 10),
             term_months: term,
-            listed: businessListed,
+            listed: !businessAnonymous,
         });
         businessSignup.post(storeBusiness.url(), {
             onSuccess: (response) => {
@@ -419,11 +420,11 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
                     loanNumber={loanNumber}
                     districts={districts}
                     details={businessDetails}
-                    listed={businessListed}
+                    anonymous={businessAnonymous}
                     contactError={businessSignup.errors.contact}
                     canSubmit={isComplete(businessDetails) && canSize}
                     processing={businessSignup.processing}
-                    onListedChange={setBusinessListed}
+                    onAnonymousChange={setBusinessAnonymous}
                     onChange={(changes) => {
                         if (
                             'contact' in changes ||
