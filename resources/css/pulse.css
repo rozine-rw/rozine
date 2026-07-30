@@ -124,6 +124,8 @@
     --rz-warn-bg: rgba(224, 165, 58, 0.08);
     --rz-warn-border: rgba(224, 165, 58, 0.35);
     --rz-warn-fg: #a06d00;
+    --rz-focus-border: #12a150;
+    --rz-focus-ring: rgba(18, 161, 80, 0.14);
 }
 
 .dark .rz-pulse {
@@ -223,6 +225,8 @@
     --rz-warn-bg: rgba(224, 165, 58, 0.12);
     --rz-warn-border: rgba(224, 165, 58, 0.4);
     --rz-warn-fg: #e0a53a;
+    --rz-focus-border: #4ade80;
+    --rz-focus-ring: rgba(74, 222, 128, 0.18);
 }
 
 /* The mobile design tunes a handful of tokens per theme. */
@@ -348,6 +352,25 @@ input[type='range'].rz-slider::-moz-range-thumb {
 
 .rz-ipt::placeholder {
     color: var(--rz-placeholder);
+}
+
+/*
+ * A field a business is filling in. `:focus` catches the ones that carry their
+ * own border; `:focus-within` catches the amounts, where the border belongs to
+ * the box the currency prefix shares with the input.
+ */
+.rz-focus:focus,
+.rz-focus:focus-within {
+    border-color: var(--rz-focus-border);
+    box-shadow: 0 0 0 3px var(--rz-focus-ring);
+}
+
+.rz-focus,
+.rz-focus:focus,
+.rz-focus:focus-within {
+    transition:
+        border-color 0.15s,
+        box-shadow 0.15s;
 }
 
 .rz-ghost:hover {

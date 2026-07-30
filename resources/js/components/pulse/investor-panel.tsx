@@ -1,4 +1,5 @@
 import type { CSSProperties, RefObject } from 'react';
+import { useState } from 'react';
 import {
     PanelCriteria,
     PanelHeading,
@@ -7,6 +8,7 @@ import {
 } from '@/components/pulse/panel';
 import { StatCurrency, StatTile } from '@/components/pulse/stat-tile';
 import {
+    digitsOnly,
     formatAbbrev,
     formatAverage,
     formatFull,
@@ -111,9 +113,7 @@ export function InvestorPanel({
                 </div>
             </div>
             <div className="mt-[22px] flex flex-col items-start justify-between gap-1.5 md:flex-row md:items-baseline md:gap-2.5">
-                <span className="rz-num text-[32px] leading-none font-bold tracking-[-0.03em] text-[var(--rz-fg-strong)]">
-                    {formatFull(pledge)}
-                </span>
+                <PledgeAmount pledge={pledge} onChange={onPledgeChange} />
                 <span className="rz-num text-[13px] font-semibold text-[var(--rz-blue-fg)]">
                     → {formatFull(payout)} back
                 </span>
@@ -125,7 +125,7 @@ export function InvestorPanel({
                 max={MAX_PLEDGE}
                 step={MIN_PLEDGE}
                 value={pledge}
-                aria-label="Pledge amount"
+                aria-label="Adjust pledge amount"
                 onChange={(event) =>
                     onPledgeChange(
                         parseInt(event.target.value, 10) || MIN_PLEDGE,
@@ -207,4 +207,65 @@ export function InvestorPanel({
             </button>
         </PulsePanel>
     );
+}
+
+/**
+ * The amount an investor is pledging, set by typing as well as by the slider.
+ *
+ * It has to read as the figure it already was, so the field carries no chrome
+ * of its own: an invisible copy of the text sizes the box, and the input sits
+ * over it wearing the same type.
+ */
+function PledgeAmount({
+    pledge,
+    onChange,
+}: {
+    pledge: number;
+    onChange: (pledge: number) => void;
+}) {
+    const [draft, setDraft] = useState<string | null>(null);
+    const shown = draft ?? formatNumber(pledge);
+
+    return (
+        <span className="rz-num inline-flex items-baseline text-[32px] leading-none font-bold tracking-[-0.03em] text-[var(--rz-fg-strong)]">
+            <span>RWF&nbsp;</span>
+            <span className="relative inline-block">
+                <span className="invisible whitespace-pre" aria-hidden="true">
+                    {shown}
+                </span>
+                <input
+                    value={shown}
+                    inputMode="numeric"
+                    aria-label="Pledge amount"
+                    onFocus={(event) => event.currentTarget.select()}
+                    onChange={(event) => {
+                        const typed = Math.min(
+                            digitsOnly(event.target.value, 9),
+                            MAX_PLEDGE,
+                        );
+
+                        setDraft(typed === 0 ? '' : formatNumber(typed));
+
+                        if (typed > 0) {
+                            onChange(typed);
+                        }
+                    }}
+                    onBlur={() => {
+                        setDraft(null);
+                        onChange(commit(pledge));
+                    }}
+                    className="absolute inset-0 w-full border-none bg-transparent p-0 font-[inherit] tracking-[inherit] text-[inherit] outline-none"
+                />
+            </span>
+        </span>
+    );
+}
+
+/**
+ * Settle a typed amount onto a figure the slider can also hold.
+ */
+function commit(pledge: number): number {
+    const held = Math.min(Math.max(pledge, MIN_PLEDGE), MAX_PLEDGE);
+
+    return Math.round(held / MIN_PLEDGE) * MIN_PLEDGE;
 }

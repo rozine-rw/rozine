@@ -128,7 +128,7 @@ export function BusinessPanel({
                                     })
                                 }
                                 placeholder="e.g. GreenLeaf Agro"
-                                className="rz-ipt h-[42px] w-full rounded-[10px] border border-[var(--rz-input-border)] bg-[var(--rz-input-bg)] px-[13px] text-[14px] text-[var(--rz-fg)] outline-none"
+                                className="rz-ipt rz-focus h-[42px] w-full rounded-[10px] border border-[var(--rz-input-border)] bg-[var(--rz-input-bg)] px-[13px] text-[14px] text-[var(--rz-fg)] outline-none"
                             />
                         </div>
                         <AmountField
@@ -357,7 +357,7 @@ function AmountField({
     return (
         <div>
             <FieldLabel>{label}</FieldLabel>
-            <div className="flex h-[42px] items-center overflow-hidden rounded-[10px] border border-[var(--rz-input-border)] bg-[var(--rz-input-bg)]">
+            <div className="rz-focus flex h-[42px] items-center overflow-hidden rounded-[10px] border border-[var(--rz-input-border)] bg-[var(--rz-input-bg)]">
                 <span className="shrink-0 pr-[9px] pl-[13px] text-[10.5px] font-bold tracking-[0.06em] text-[var(--rz-hint)]">
                     RWF
                 </span>
@@ -434,7 +434,7 @@ function PanelSelect({
             value={value}
             aria-label={label}
             onChange={(event) => onChange(event.target.value)}
-            className="rz-ipt h-[42px] w-full cursor-pointer appearance-none rounded-[10px] border border-[var(--rz-input-border)] bg-[var(--rz-input-bg)] px-[11px] text-[13.5px] text-[var(--rz-fg)] outline-none"
+            className="rz-ipt rz-focus h-[42px] w-full cursor-pointer appearance-none rounded-[10px] border border-[var(--rz-input-border)] bg-[var(--rz-input-bg)] px-[11px] text-[13.5px] text-[var(--rz-fg)] outline-none"
         >
             <option value="" style={{ background: '#12141b' }}>
                 {placeholder}
