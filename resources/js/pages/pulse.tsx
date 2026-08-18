@@ -14,7 +14,6 @@ import {
     PulseBriefs,
     PulseDisclaimer,
     PulseFooter,
-    PulseSteps,
     PulseTopbar,
 } from '@/components/pulse/pulse-chrome';
 import { PulseHero, TractionCards } from '@/components/pulse/pulse-hero';
@@ -97,6 +96,7 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
     const sizingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
     const resultTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+    const topbar = useRef<HTMLDivElement>(null);
     const investorPanel = useRef<HTMLDivElement>(null);
     const businessPanel = useRef<HTMLDivElement>(null);
 
@@ -109,6 +109,7 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
     const [investorDetails, setInvestorDetails] =
         useState<SignupDetails>(EMPTY_DETAILS);
     const [investorQueue, setInvestorQueue] = useState('#0142');
+    const [exampleOpen, setExampleOpen] = useState(false);
 
     // Business flow.
     const [businessOpen, setBusinessOpen] = useState(false);
@@ -122,7 +123,8 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
     const [loanNumber, setLoanNumber] = useState('#1,480');
     const [termIndex, setTermIndex] = useState(3);
     const [progress, setProgress] = useState(0);
-    const [businessListed, setBusinessListed] = useState(false);
+    // The checkbox asks to be hidden, so the listing consent is its inverse.
+    const [businessAnonymous, setBusinessAnonymous] = useState(false);
 
     const investorSignup = useHttp<InvestorPayload, SignupResponse>({
         ...EMPTY_PAYLOAD,
@@ -215,8 +217,14 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
             return;
         }
 
+        // Clear the sticky masthead the panel would otherwise land under.
+        const bar = topbar.current?.getBoundingClientRect().height ?? 0;
+
         window.scrollTo({
-            top: element.getBoundingClientRect().top + window.scrollY - 14,
+            top: Math.max(
+                0,
+                element.getBoundingClientRect().top + window.scrollY - bar - 18,
+            ),
             behavior: 'smooth',
         });
     }
@@ -303,7 +311,7 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
             sector: figures.sector,
             registered_year: parseInt(figures.registeredYear, 10),
             term_months: term,
-            listed: businessListed,
+            listed: !businessAnonymous,
         });
         businessSignup.post(storeBusiness.url(), {
             onSuccess: (response) => {
@@ -323,7 +331,7 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
             <Head title="Pulse" />
 
             <PulseBackdrop />
-            <PulseTopbar />
+            <PulseTopbar barRef={topbar} />
 
             <div className="relative z-[2] mx-auto max-w-[1120px] px-2 md:px-[26px]">
                 <TractionCards
@@ -347,6 +355,8 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
                         pledge={pledge}
                         payout={payout}
                         notes={notes}
+                        exampleOpen={exampleOpen}
+                        onExampleToggle={() => setExampleOpen((open) => !open)}
                         onPledgeChange={setPledge}
                         onSaveSpot={() => {
                             setInvestorStep('notes');
@@ -391,7 +401,6 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
                     />
                 </div>
 
-                <PulseSteps />
                 <PulseBriefs />
                 <PulseDisclaimer />
                 <PulseFooter />
@@ -403,6 +412,7 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
                     progress={progress}
                     progressLabel={progressLabel}
                     qualifiedAmount={sizing.qualifiedAmount}
+                    belowMinimum={sizing.belowMinimum}
                     rating={sizing.rating}
                     termLabel={`${term}mo`}
                     flatRate={`${sizing.flatRate.toFixed(1)}%`}
@@ -410,11 +420,11 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
                     loanNumber={loanNumber}
                     districts={districts}
                     details={businessDetails}
-                    listed={businessListed}
+                    anonymous={businessAnonymous}
                     contactError={businessSignup.errors.contact}
                     canSubmit={isComplete(businessDetails) && canSize}
                     processing={businessSignup.processing}
-                    onListedChange={setBusinessListed}
+                    onAnonymousChange={setBusinessAnonymous}
                     onChange={(changes) => {
                         if (
                             'contact' in changes ||

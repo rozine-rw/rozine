@@ -64,8 +64,11 @@ jobs:
       - name: Build production assets
         run: npm run build
 
+      # A graph restored by fallback key was recorded against a different tree,
+      # so the lines it remembers no longer map onto this one and any test it
+      # replays reports as uncovered. Only an exact hit is safe to reuse.
       - name: Enforce complete PHP line coverage with TIA
-        run: ./vendor/bin/pest --coverage --min=100 --compact --tia
+        run: ./vendor/bin/pest --coverage --min=100 --compact --tia ${{ steps.tia-cache.outputs.cache-hit == 'true' && '' || '--fresh' }}
 
       - name: Save PHP-specific TIA state
         if: steps.tia-cache.outputs.cache-hit != 'true'

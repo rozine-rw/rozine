@@ -1,9 +1,19 @@
 import type { CSSProperties, RefObject } from 'react';
+import { useState } from 'react';
+import {
+    PanelCriteria,
+    PanelHeading,
+    PanelLabel,
+    PulsePanel,
+} from '@/components/pulse/panel';
 import { StatCurrency, StatTile } from '@/components/pulse/stat-tile';
 import {
+    digitsOnly,
+    formatAbbrev,
     formatAverage,
     formatFull,
     formatNumber,
+    INVESTOR_CRITERIA,
     MAX_PLEDGE,
     MIN_PLEDGE,
 } from '@/lib/pulse';
@@ -18,6 +28,8 @@ type InvestorPanelProps = {
     pledge: number;
     payout: number;
     notes: BusinessNote[];
+    exampleOpen: boolean;
+    onExampleToggle: () => void;
     onPledgeChange: (pledge: number) => void;
     onSaveSpot: () => void;
 };
@@ -35,33 +47,56 @@ export function InvestorPanel({
     pledge,
     payout,
     notes,
+    exampleOpen,
+    onExampleToggle,
     onPledgeChange,
     onSaveSpot,
 }: InvestorPanelProps) {
     return (
-        <div
-            ref={panelRef}
-            className="relative flex flex-col overflow-hidden rounded-2xl border border-[var(--rz-card-border)] bg-[var(--rz-card-bg)] px-2 py-3 md:p-[17px]"
-        >
-            <div className="absolute top-0 right-0 left-0 h-px bg-[linear-gradient(90deg,transparent,rgba(10,92,255,0.7),transparent)]" />
-            <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold tracking-[0.16em] text-[var(--rz-blue-fg)]">
-                    FOR INVESTORS
-                </span>
-            </div>
-            <div className="mt-[15px] text-[22px] leading-[1.22] font-bold tracking-[-0.02em] text-[var(--rz-fg-title)]">
-                Earn up to 15% backing
-                <br />
-                audited local businesses.
-            </div>
-            <p className="mt-3 text-[13.5px] leading-[1.55] text-[var(--rz-muted)]">
-                Set your amount and reserve your allocation for launch.
-            </p>
+        <PulsePanel tone="investor" panelRef={panelRef}>
+            <PanelLabel color="var(--rz-blue-fg)">FOR INVESTORS</PanelLabel>
+            <PanelHeading>Set amount to invest.</PanelHeading>
+            <PanelCriteria tone="investor" items={INVESTOR_CRITERIA} />
+            <button
+                type="button"
+                onClick={onExampleToggle}
+                aria-expanded={exampleOpen}
+                className="mt-[11px] cursor-pointer self-start border-none bg-transparent p-0 text-left text-[12px] font-semibold text-[var(--rz-blue-fg)]"
+            >
+                {exampleOpen
+                    ? 'Hide the example'
+                    : 'See how a repayment works →'}
+            </button>
+            {exampleOpen && (
+                <div className="mt-[9px] rounded-[11px] border border-[var(--rz-intent-blue-border)] bg-[var(--rz-intent-blue-bg)] px-[13px] py-[11px] text-[12px] leading-[1.6] text-[var(--rz-criteria)]">
+                    A business borrows{' '}
+                    <strong className="text-[var(--rz-fg)]">
+                        RWF 10,000,000
+                    </strong>{' '}
+                    for 6 months at a{' '}
+                    <strong className="text-[var(--rz-fg)]">
+                        14% total return
+                    </strong>
+                    . It repays{' '}
+                    <strong className="text-[var(--rz-fg)]">
+                        RWF 11,400,000
+                    </strong>{' '}
+                    in 6 monthly tranches of{' '}
+                    <strong className="text-[var(--rz-fg)]">
+                        RWF 1,900,000
+                    </strong>
+                    .
+                    <div className="mt-[7px] text-[var(--rz-muted)]">
+                        Put RWF 100,000 into that raise and you get RWF 114,000
+                        back — paid to you monthly, not at the end.
+                    </div>
+                </div>
+            )}
             <div className="mt-5">
                 <div className="mt-[13px] grid grid-cols-[1fr_90px_90px] gap-2 md:grid-cols-[1.25fr_1fr_1fr]">
                     <StatTile label="PLEDGED" color="var(--rz-stat-value)">
                         <StatCurrency />
-                        {formatNumber(pledged)}
+                        {formatAbbrev(pledged)}
                     </StatTile>
                     <StatTile label="INVESTORS" color="var(--rz-stat-value)">
                         {formatNumber(investors)}
@@ -78,9 +113,7 @@ export function InvestorPanel({
                 </div>
             </div>
             <div className="mt-[22px] flex flex-col items-start justify-between gap-1.5 md:flex-row md:items-baseline md:gap-2.5">
-                <span className="rz-num text-[32px] leading-none font-bold tracking-[-0.03em] text-[var(--rz-fg-strong)]">
-                    {formatFull(pledge)}
-                </span>
+                <PledgeAmount pledge={pledge} onChange={onPledgeChange} />
                 <span className="rz-num text-[13px] font-semibold text-[var(--rz-blue-fg)]">
                     → {formatFull(payout)} back
                 </span>
@@ -92,7 +125,7 @@ export function InvestorPanel({
                 max={MAX_PLEDGE}
                 step={MIN_PLEDGE}
                 value={pledge}
-                aria-label="Pledge amount"
+                aria-label="Adjust pledge amount"
                 onChange={(event) =>
                     onPledgeChange(
                         parseInt(event.target.value, 10) || MIN_PLEDGE,
@@ -172,6 +205,67 @@ export function InvestorPanel({
             >
                 Save your spot →
             </button>
-        </div>
+        </PulsePanel>
     );
+}
+
+/**
+ * The amount an investor is pledging, set by typing as well as by the slider.
+ *
+ * It has to read as the figure it already was, so the field carries no chrome
+ * of its own: an invisible copy of the text sizes the box, and the input sits
+ * over it wearing the same type.
+ */
+function PledgeAmount({
+    pledge,
+    onChange,
+}: {
+    pledge: number;
+    onChange: (pledge: number) => void;
+}) {
+    const [draft, setDraft] = useState<string | null>(null);
+    const shown = draft ?? formatNumber(pledge);
+
+    return (
+        <span className="rz-num inline-flex items-baseline text-[32px] leading-none font-bold tracking-[-0.03em] text-[var(--rz-fg-strong)]">
+            <span>RWF&nbsp;</span>
+            <span className="relative inline-block">
+                <span className="invisible whitespace-pre" aria-hidden="true">
+                    {shown}
+                </span>
+                <input
+                    value={shown}
+                    inputMode="numeric"
+                    aria-label="Pledge amount"
+                    onFocus={(event) => event.currentTarget.select()}
+                    onChange={(event) => {
+                        const typed = Math.min(
+                            digitsOnly(event.target.value, 9),
+                            MAX_PLEDGE,
+                        );
+
+                        setDraft(typed === 0 ? '' : formatNumber(typed));
+
+                        if (typed > 0) {
+                            onChange(typed);
+                        }
+                    }}
+                    onBlur={() => {
+                        setDraft(null);
+                        onChange(commit(pledge));
+                    }}
+                    className="absolute inset-0 w-full border-none bg-transparent p-0 font-[inherit] tracking-[inherit] text-[inherit] outline-none"
+                />
+            </span>
+        </span>
+    );
+}
+
+/**
+ * Settle a typed amount onto a figure the slider can also hold.
+ */
+function commit(pledge: number): number {
+    const held = Math.min(Math.max(pledge, MIN_PLEDGE), MAX_PLEDGE);
+
+    return Math.round(held / MIN_PLEDGE) * MIN_PLEDGE;
 }

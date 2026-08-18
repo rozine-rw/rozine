@@ -115,6 +115,13 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 # Deployment
 
+## Branch flow (IMPORTANT)
+
+- Work is promoted `feat/*` → `dev` → `uat` → `main`. Branch new work off `dev`, never off `main`.
+- `uat` auto-deploys to staging.rozine.rw and `main` auto-deploys to rozine.rw, so a change reaching `main` is in production.
+- Never open a pull request from a feature branch straight to `main`, and never merge to `main` before the same commits have run on `uat`. "Ship it to main" means promote it through the chain, not retarget the PR.
+- Each hop is its own pull request, and each waits for its checks before merging.
+
 - Laravel can be deployed using [Laravel Cloud](https://cloud.laravel.com/), which is the fastest way to deploy and scale production Laravel applications.
 
 === tests rules ===

@@ -27,8 +27,7 @@ class PulseController extends Controller
             'traction' => $this->traction(),
             'listings' => PulseListingResource::collection(
                 PulseSignup::query()
-                    ->businesses()
-                    ->whereNotNull('qualified_amount')
+                    ->preQualified()
                     ->latest()
                     ->limit((int) config('pulse.listing_limit'))
                     ->get()
@@ -96,30 +95,31 @@ class PulseController extends Controller
     {
         $investors = PulseSignup::query()->investors();
         $businesses = PulseSignup::query()->businesses();
+        $preQualified = PulseSignup::query()->preQualified();
 
-        $averageLoan = $this->average($businesses, 'qualified_amount');
-        $averageTerm = $this->average($businesses, 'term_months');
+        $averageLoan = $this->average($preQualified, 'qualified_amount');
+        $averageTerm = $this->average($preQualified, 'term_months');
 
         return [
             'pledged' => (int) $investors->clone()->sum('pledge_amount'),
             'investors' => $investors->clone()->count(),
             'businesses' => $businesses->clone()->count(),
             'average_loan' => $averageLoan === null ? null : (int) $averageLoan,
-            'average_yield' => $this->average($businesses, 'flat_rate', 1),
-            'average_rating' => $this->average($businesses, 'rating_score', 1),
+            'average_yield' => $this->average($preQualified, 'flat_rate', 1),
+            'average_rating' => $this->average($preQualified, 'rating_score', 1),
             'average_term' => $averageTerm === null ? null : (int) $averageTerm,
         ];
     }
 
     /**
-     * Average a column across the businesses sized so far. Nothing sized means
-     * there is no average to report, rather than an average of nothing.
+     * Average a column across the businesses that pre-qualified. Nothing sized
+     * means there is no average to report, rather than an average of nothing.
      *
-     * @param  Builder<PulseSignup>  $businesses
+     * @param  Builder<PulseSignup>  $signups
      */
-    private function average(Builder $businesses, string $column, int $precision = 0): ?float
+    private function average(Builder $signups, string $column, int $precision = 0): ?float
     {
-        $average = $businesses->clone()->avg($column);
+        $average = $signups->clone()->avg($column);
 
         return $average === null ? null : round((float) $average, $precision);
     }

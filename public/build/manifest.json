@@ -317,7 +317,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-Cfv5_lnf.css",
+    "file": "assets/app-CC5ur4wQ.css",
     "name": "app",
     "names": [
       "app.css"
@@ -326,7 +326,7 @@
     "isEntry": true
   },
   "resources/js/app.tsx": {
-    "file": "assets/app-Vc03oKPE.js",
+    "file": "assets/app-BPgNJVEn.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
@@ -495,7 +495,7 @@
     ]
   },
   "resources/js/pages/pulse.tsx": {
-    "file": "assets/pulse-Bvm6zujv.js",
+    "file": "assets/pulse-CSdWrhXy.js",
     "name": "pulse",
     "src": "resources/js/pages/pulse.tsx",
     "isDynamicEntry": true,

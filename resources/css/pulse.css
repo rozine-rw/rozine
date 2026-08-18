@@ -99,6 +99,33 @@
     --rz-pill-bg: #0c1830;
     --rz-pill-border: transparent;
     --rz-pill-shadow: 0 12px 30px -14px rgba(12, 24, 48, 0.6);
+
+    /* The two intent panels that open the page. */
+    --rz-hero-label-blue: #0a44c4;
+    --rz-hero-label-green: #0b6733;
+    --rz-intent-blue-bg: rgba(10, 92, 255, 0.05);
+    --rz-intent-blue-border: rgba(10, 92, 255, 0.16);
+    --rz-intent-green-bg: rgba(16, 161, 80, 0.05);
+    --rz-intent-green-border: rgba(16, 161, 80, 0.18);
+    --rz-mark-blue-fg: #0a44c4;
+    --rz-mark-blue-bg: rgba(10, 92, 255, 0.14);
+    --rz-mark-green-fg: #0b6733;
+    --rz-mark-green-bg: rgba(16, 161, 80, 0.15);
+
+    /* The bordered panels beneath them. */
+    --rz-panel-bg: #ffffff;
+    --rz-panel-shadow-blue: 0 14px 34px -22px rgba(10, 60, 160, 0.45);
+    --rz-panel-shadow-green: 0 14px 34px -22px rgba(10, 110, 60, 0.45);
+    --rz-criteria: #3a465e;
+    --rz-stat-bg: #f7f9fd;
+    --rz-note-bg: #f1f4f9;
+    --rz-note-border: #e2e8f2;
+    --rz-note-fg: #5b6a83;
+    --rz-warn-bg: rgba(224, 165, 58, 0.08);
+    --rz-warn-border: rgba(224, 165, 58, 0.35);
+    --rz-warn-fg: #a06d00;
+    --rz-focus-border: #12a150;
+    --rz-focus-ring: rgba(18, 161, 80, 0.14);
 }
 
 .dark .rz-pulse {
@@ -173,6 +200,33 @@
     --rz-pill-bg: rgba(255, 255, 255, 0.05);
     --rz-pill-border: rgba(255, 255, 255, 0.1);
     --rz-pill-shadow: 0 12px 30px -14px rgba(0, 0, 0, 0.8);
+
+    /* The two intent panels that open the page. */
+    --rz-hero-label-blue: #7fa8ff;
+    --rz-hero-label-green: #4ade80;
+    --rz-intent-blue-bg: rgba(10, 92, 255, 0.1);
+    --rz-intent-blue-border: rgba(90, 140, 255, 0.28);
+    --rz-intent-green-bg: rgba(16, 161, 80, 0.1);
+    --rz-intent-green-border: rgba(74, 222, 128, 0.26);
+    --rz-mark-blue-fg: #bcd0ff;
+    --rz-mark-blue-bg: rgba(90, 140, 255, 0.22);
+    --rz-mark-green-fg: #a7f3c4;
+    --rz-mark-green-bg: rgba(74, 222, 128, 0.2);
+
+    /* The bordered panels beneath them. */
+    --rz-panel-bg: rgba(255, 255, 255, 0.03);
+    --rz-panel-shadow-blue: 0 14px 34px -22px rgba(0, 0, 0, 0.9);
+    --rz-panel-shadow-green: 0 14px 34px -22px rgba(0, 0, 0, 0.9);
+    --rz-criteria: #c7ccd6;
+    --rz-stat-bg: rgba(255, 255, 255, 0.03);
+    --rz-note-bg: rgba(255, 255, 255, 0.04);
+    --rz-note-border: rgba(255, 255, 255, 0.1);
+    --rz-note-fg: #9aa0ac;
+    --rz-warn-bg: rgba(224, 165, 58, 0.12);
+    --rz-warn-border: rgba(224, 165, 58, 0.4);
+    --rz-warn-fg: #e0a53a;
+    --rz-focus-border: #4ade80;
+    --rz-focus-ring: rgba(74, 222, 128, 0.18);
 }
 
 /* The mobile design tunes a handful of tokens per theme. */
@@ -298,6 +352,25 @@ input[type='range'].rz-slider::-moz-range-thumb {
 
 .rz-ipt::placeholder {
     color: var(--rz-placeholder);
+}
+
+/*
+ * A field a business is filling in. `:focus` catches the ones that carry their
+ * own border; `:focus-within` catches the amounts, where the border belongs to
+ * the box the currency prefix shares with the input.
+ */
+.rz-focus:focus,
+.rz-focus:focus-within {
+    border-color: var(--rz-focus-border);
+    box-shadow: 0 0 0 3px var(--rz-focus-ring);
+}
+
+.rz-focus,
+.rz-focus:focus,
+.rz-focus:focus-within {
+    transition:
+        border-color 0.15s,
+        box-shadow 0.15s;
 }
 
 .rz-ghost:hover {

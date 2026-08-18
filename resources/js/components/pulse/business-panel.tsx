@@ -1,8 +1,16 @@
 import type { CSSProperties, ReactNode, RefObject } from 'react';
 import { AuditIcon } from '@/components/pulse/icons';
+import {
+    PanelCriteria,
+    PanelHeading,
+    PanelLabel,
+    PulsePanel,
+} from '@/components/pulse/panel';
 import { StatCurrency, StatTile } from '@/components/pulse/stat-tile';
 import {
+    BUSINESS_CRITERIA,
     digitsOnly,
+    formatAbbrev,
     formatAverage,
     formatCompact,
     formatFull,
@@ -71,25 +79,14 @@ export function BusinessPanel({
         showSurplus && figures.annualCosts >= figures.annualRevenue;
 
     return (
-        <div
-            ref={panelRef}
-            className="relative flex flex-col overflow-hidden rounded-2xl border border-[var(--rz-card-border)] bg-[var(--rz-card-bg)] px-2 py-3 md:p-[17px]"
-        >
-            <div className="absolute top-0 right-0 left-0 h-px bg-[linear-gradient(90deg,transparent,rgba(16,161,80,0.7),transparent)]" />
-            <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold tracking-[0.16em] text-[var(--rz-green-fg)]">
-                    FOR BUSINESSES
-                </span>
+        <PulsePanel tone="business" panelRef={panelRef}>
+            <PanelLabel color="var(--rz-green-fg)">FOR BUSINESSES</PanelLabel>
+            <PanelHeading>Check loan amount you qualify for.</PanelHeading>
+            <PanelCriteria tone="business" items={BUSINESS_CRITERIA} />
+            <div className="mt-[11px] rounded-[10px] border border-[var(--rz-note-border)] bg-[var(--rz-note-bg)] px-3 py-[9px] text-[11.5px] leading-[1.45] text-[var(--rz-note-fg)]">
+                Repaid <strong className="text-[var(--rz-fg)]">monthly</strong>{' '}
+                over a 3, 6, 9 or 12-month term.
             </div>
-            <div className="mt-[15px] text-[22px] leading-[1.22] font-bold tracking-[-0.02em] text-[var(--rz-fg-title)]">
-                Raise a business loan
-                <br />
-                based on revenue. No collateral.
-            </div>
-            <p className="mt-3 text-[13.5px] leading-[1.55] text-[var(--rz-muted)]">
-                Answer short questions to see how much your business
-                pre-qualifies for.
-            </p>
             <div className="mt-5">
                 <div className="mt-[13px] grid grid-cols-[1fr_90px_90px] gap-2 md:grid-cols-[1.25fr_1fr_1fr]">
                     <StatTile
@@ -97,7 +94,7 @@ export function BusinessPanel({
                         color="var(--rz-stat-value)"
                     >
                         {averageLoan !== null && <StatCurrency />}
-                        {formatAverage(averageLoan)}
+                        {averageLoan === null ? '—' : formatAbbrev(averageLoan)}
                     </StatTile>
                     <StatTile label="SIZED" color="var(--rz-stat-value)">
                         {businesses}
@@ -131,7 +128,7 @@ export function BusinessPanel({
                                     })
                                 }
                                 placeholder="e.g. GreenLeaf Agro"
-                                className="rz-ipt h-[42px] w-full rounded-[10px] border border-[var(--rz-input-border)] bg-[var(--rz-input-bg)] px-[13px] text-[14px] text-[var(--rz-fg)] outline-none"
+                                className="rz-ipt rz-focus h-[42px] w-full rounded-[10px] border border-[var(--rz-input-border)] bg-[var(--rz-input-bg)] px-[13px] text-[14px] text-[var(--rz-fg)] outline-none"
                             />
                         </div>
                         <AmountField
@@ -144,7 +141,7 @@ export function BusinessPanel({
                         />
                         <AmountField
                             label="Total costs over the last 12 months"
-                            hint="All expenses: rent, salaries, transport,…"
+                            hint="All expenses: taxes, rent, salaries, transport,…"
                             value={figures.annualCosts}
                             onChange={(annualCosts) =>
                                 onFiguresChange({ annualCosts })
@@ -238,16 +235,51 @@ export function BusinessPanel({
                     <div className="mt-2.5">
                         <RatingPill rating={sizing.rating} />
                     </div>
-                    <div className="mt-4">
-                        <div className="text-[11px] font-bold tracking-[0.16em] text-[var(--rz-dim)]">
-                            PRE-QUALIFIED
+                    {!sizing.belowMinimum && (
+                        <div className="mt-4">
+                            <div className="text-[11px] font-bold tracking-[0.16em] text-[var(--rz-dim)]">
+                                PRE-QUALIFIED
+                            </div>
+                            <div className="mt-2 flex items-end justify-between gap-3">
+                                <span className="rz-num text-[42px] leading-[0.9] font-bold tracking-[-0.035em] text-[var(--rz-fg-strong)]">
+                                    {formatCompact(sizing.qualifiedAmount)}
+                                </span>
+                            </div>
+                            {sizing.atMaximum && (
+                                <div className="mt-2 text-[11.5px] leading-[1.45] text-[var(--rz-note-fg)]">
+                                    Your figures support more, but RWF 50M is
+                                    the largest loan on Rozine.
+                                </div>
+                            )}
                         </div>
-                        <div className="mt-2 flex items-end justify-between gap-3">
-                            <span className="rz-num text-[42px] leading-[0.9] font-bold tracking-[-0.035em] text-[var(--rz-fg-strong)]">
-                                {formatCompact(sizing.qualifiedAmount)}
-                            </span>
+                    )}
+                    {sizing.belowMinimum && (
+                        <div className="mt-4 rounded-xl border border-[var(--rz-warn-border)] bg-[var(--rz-warn-bg)] px-3.5 py-[13px]">
+                            <div className="text-[11px] font-bold tracking-[0.16em] text-[var(--rz-warn-fg)]">
+                                NOT YET
+                            </div>
+                            <div className="mt-[7px] text-[13.5px] leading-[1.5] text-[var(--rz-criteria)]">
+                                On these figures you would size at{' '}
+                                <strong className="rz-num text-[var(--rz-fg)]">
+                                    {formatCompact(sizing.sizedAmount)}
+                                </strong>
+                                . Rozine loans start at{' '}
+                                <strong className="text-[var(--rz-fg)]">
+                                    RWF 5M
+                                </strong>
+                                .
+                            </div>
+                            <div className="mt-[7px] text-[12px] leading-[1.5] text-[var(--rz-muted)]">
+                                To reach RWF 5M over this term you would need
+                                about{' '}
+                                <strong className="rz-num text-[var(--rz-strong)]">
+                                    {formatFull(sizing.requiredSurplus)}
+                                </strong>{' '}
+                                left over each month. Register anyway and we
+                                will size you again at launch.
+                            </div>
                         </div>
-                    </div>
+                    )}
                     <div className="mt-[18px] flex gap-0.5 rounded-[10px] border border-[var(--rz-seg-border)] bg-[var(--rz-seg-bg)] p-[3px]">
                         {TERMS.map((term, index) => (
                             <button
@@ -264,35 +296,45 @@ export function BusinessPanel({
                             </button>
                         ))}
                     </div>
-                    <div className="mt-3 flex gap-0.5 overflow-hidden rounded-xl border border-[var(--rz-line)]">
-                        <ResultFigure
-                            label="FLAT RETURN"
-                            color="var(--rz-green-fg)"
-                        >
-                            {sizing.flatRate.toFixed(1)}%
-                        </ResultFigure>
-                        <ResultFigure label="MONTHLY" color="var(--rz-fg)">
-                            {formatCompact(sizing.monthlyRepayment)}
-                        </ResultFigure>
-                        <ResultFigure
-                            label="DSCR"
-                            color="var(--rz-green-fg)"
-                            last
-                        >
-                            {sizing.coverRatio >= 1 && '✓ '}
-                            {sizing.coverRatio.toFixed(2)}×
-                        </ResultFigure>
-                    </div>
+                    {!sizing.belowMinimum && (
+                        <div className="mt-3 flex gap-0.5 overflow-hidden rounded-xl border border-[var(--rz-line)]">
+                            <ResultFigure
+                                label="FLAT RETURN"
+                                color="var(--rz-green-fg)"
+                            >
+                                {sizing.flatRate.toFixed(1)}%
+                            </ResultFigure>
+                            <ResultFigure label="MONTHLY" color="var(--rz-fg)">
+                                {formatCompact(sizing.monthlyRepayment)}
+                            </ResultFigure>
+                            <ResultFigure
+                                label="DSCR"
+                                color="var(--rz-green-fg)"
+                                last
+                            >
+                                {sizing.coverRatio >= 1 && '✓ '}
+                                {sizing.coverRatio.toFixed(2)}×
+                            </ResultFigure>
+                        </div>
+                    )}
+                    {sizing.belowMinimum && (
+                        <div className="mt-2.5 text-[11.5px] leading-[1.45] text-[var(--rz-hint)]">
+                            Try a longer term above — it lowers the monthly
+                            surplus you need.
+                        </div>
+                    )}
                     <button
                         type="button"
                         onClick={onSaveSpot}
                         className="rz-cta mt-5 h-12 w-full shrink-0 cursor-pointer rounded-[10px] border-none bg-[#0f7a3d] text-[14px] font-semibold text-white transition-[filter] duration-150"
                     >
-                        Save your spot →
+                        {sizing.belowMinimum
+                            ? 'Join the launch waitlist →'
+                            : 'Save your spot →'}
                     </button>
                 </div>
             )}
-        </div>
+        </PulsePanel>
     );
 }
 
@@ -315,7 +357,7 @@ function AmountField({
     return (
         <div>
             <FieldLabel>{label}</FieldLabel>
-            <div className="flex h-[42px] items-center overflow-hidden rounded-[10px] border border-[var(--rz-input-border)] bg-[var(--rz-input-bg)]">
+            <div className="rz-focus flex h-[42px] items-center overflow-hidden rounded-[10px] border border-[var(--rz-input-border)] bg-[var(--rz-input-bg)]">
                 <span className="shrink-0 pr-[9px] pl-[13px] text-[10.5px] font-bold tracking-[0.06em] text-[var(--rz-hint)]">
                     RWF
                 </span>
@@ -392,7 +434,7 @@ function PanelSelect({
             value={value}
             aria-label={label}
             onChange={(event) => onChange(event.target.value)}
-            className="rz-ipt h-[42px] w-full cursor-pointer appearance-none rounded-[10px] border border-[var(--rz-input-border)] bg-[var(--rz-input-bg)] px-[11px] text-[13.5px] text-[var(--rz-fg)] outline-none"
+            className="rz-ipt rz-focus h-[42px] w-full cursor-pointer appearance-none rounded-[10px] border border-[var(--rz-input-border)] bg-[var(--rz-input-bg)] px-[11px] text-[13.5px] text-[var(--rz-fg)] outline-none"
         >
             <option value="" style={{ background: '#12141b' }}>
                 {placeholder}

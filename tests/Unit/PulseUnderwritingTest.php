@@ -45,11 +45,11 @@ test('a margin is only a margin while costs stay under revenue', function () {
         ->and(PulseUnderwriting::profitMargin(0, 0))->toBe(0.0);
 });
 
-test('the flat rate rises with the term, falls with the score and is held between ten and fifteen', function () {
-    expect(PulseUnderwriting::flatRate(12, 77.5))->toBe(13.3)
-        ->and(PulseUnderwriting::flatRate(3, 77.5))->toBe(11.8)
+test('the flat rate rises with the term, falls with the score and is held between ten and a half and fifteen', function () {
+    expect(PulseUnderwriting::flatRate(12, 77.5))->toBe(14.4125)
+        ->and(PulseUnderwriting::flatRate(3, 77.5))->toBe(11.9125)
         ->and(PulseUnderwriting::flatRate(12, 0.0))->toBe(15.0)
-        ->and(PulseUnderwriting::flatRate(3, 100.0))->toBe(10.0);
+        ->and(PulseUnderwriting::flatRate(3, 100.0))->toBe(10.5);
 });
 
 test('a repayment is sized to leave a quarter of the surplus uncommitted', function () {
@@ -59,7 +59,7 @@ test('a repayment is sized to leave a quarter of the surplus uncommitted', funct
         ->and(PulseUnderwriting::affordablePayment(90_000_000, 120_000_000))->toBe(0.0);
 });
 
-test('the pre-qualified amount follows the worked example the sizing note gives', function () {
+test('the pre-qualified amount is what the surplus carries over the term', function () {
     $score = PulseUnderwriting::score(120_000_000, 90_000_000, PulseSector::Logistics, 2018);
     $qualified = PulseUnderwriting::qualifiedAmount(120_000_000, 90_000_000, $score, 12);
 
@@ -69,8 +69,9 @@ test('the pre-qualified amount follows the worked example the sizing note gives'
         12
     );
 
-    expect($qualified)->toBe(21_100_000)
-        ->and(round($monthly))->toBe(1_992_192.0)
+    // RWF 2,000,000 a month over 12 at 14.4125%, floored to the hundred thousand.
+    expect($qualified)->toBe(20_900_000)
+        ->and(round($monthly))->toBe(1_992_684.0)
         ->and(round(PulseUnderwriting::coverRatio(120_000_000, 90_000_000, $monthly), 2))->toBe(1.25);
 });
 
@@ -78,9 +79,9 @@ test('a pre-qualified amount is rounded down to the nearest hundred thousand', f
     $score = PulseUnderwriting::score(120_000_000, 90_000_000, PulseSector::Logistics, 2018);
     $qualified = PulseUnderwriting::qualifiedAmount(120_000_000, 90_000_000, $score, 12);
 
-    // 2,000,000 x 12 / 1.133 is 21,183,583, which floors to 21,100,000.
+    // 2,000,000 x 12 / 1.144125 is 20,976,957, which floors to 20,900,000.
     expect($qualified % 100_000)->toBe(0)
-        ->and($qualified)->toBeLessThan(2_000_000 * 12 / 1.133);
+        ->and($qualified)->toBeLessThan(2_000_000 * 12 / 1.144125);
 });
 
 test('a loan is capped at a third of the revenue behind it', function () {
@@ -99,6 +100,25 @@ test('a business with nothing left over pre-qualifies for nothing', function () 
     expect(PulseUnderwriting::qualifiedAmount(50_000_000, 50_000_000, 60.0, 12))->toBe(0);
 });
 
+test('a loan never exceeds the largest Rozine writes, however strong the figures', function () {
+    $score = PulseUnderwriting::score(900_000_000, 300_000_000, PulseSector::RetailAndTrade, 2005);
+
+    expect(PulseUnderwriting::sizedAmount(900_000_000, 300_000_000, $score, 12))
+        ->toBeGreaterThan(PulseUnderwriting::MAX_LOAN)
+        ->and(PulseUnderwriting::qualifiedAmount(900_000_000, 300_000_000, $score, 12))
+        ->toBe(PulseUnderwriting::MAX_LOAN);
+});
+
+test('the surplus the smallest loan needs falls as the term lengthens', function () {
+    $score = PulseUnderwriting::score(120_000_000, 90_000_000, PulseSector::Logistics, 2018);
+
+    $overThree = PulseUnderwriting::surplusForMinimumLoan($score, 3);
+    $overTwelve = PulseUnderwriting::surplusForMinimumLoan($score, 12);
+
+    expect(round($overTwelve))->toBe(595_898.0)
+        ->and($overThree)->toBeGreaterThan($overTwelve);
+});
+
 test('a sizing carries everything a pre-qualification is recorded with', function () {
     expect(PulseUnderwriting::size(120_000_000, 90_000_000, PulseSector::Logistics, 2018, 12))->toBe([
         'annual_revenue' => 120_000_000,
@@ -106,15 +126,15 @@ test('a sizing carries everything a pre-qualification is recorded with', functio
         'sector' => PulseSector::Logistics,
         'registered_year' => 2018,
         'score' => 77.5,
-        'qualified_amount' => 21_100_000,
+        'qualified_amount' => 20_900_000,
         'term_months' => 12,
-        'flat_rate' => 13.3,
+        'flat_rate' => 14.41,
         'rating_band' => 'Stable',
         'rating_score' => 3.9,
     ]);
 });
 
 test('an investor is projected the blended yield on top of their pledge', function () {
-    expect(PulseUnderwriting::projectedReturn(500_000))->toBe(562_500)
-        ->and(PulseUnderwriting::projectedReturn(5_000))->toBe(5_625);
+    expect(PulseUnderwriting::projectedReturn(500_000))->toBe(565_000)
+        ->and(PulseUnderwriting::projectedReturn(5_000))->toBe(5_650);
 });

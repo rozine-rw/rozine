@@ -136,6 +136,18 @@ test('traction averages come from the businesses that have been sized', function
     );
 });
 
+test('a business that sized under the smallest loan is not offered to investors', function () {
+    PulseSignup::factory()->waitlisted()->create(['listed' => true]);
+
+    $response = $this->get(route('home'));
+
+    $response->assertInertia(fn (AssertableInertia $page) => $page
+        ->has('listings', 0)
+        ->where('traction.businesses', 1)
+        ->where('traction.average_loan', null)
+    );
+});
+
 test('there is no average to report until a business has been sized', function () {
     $response = $this->get(route('home'));
 
@@ -178,8 +190,8 @@ test('an investor can pledge', function () {
     expect($signup->type)->toBe(PulseSignupType::Investor)
         ->and($signup->contact_method)->toBe(PulseContactMethod::Phone)
         ->and($signup->pledge_amount)->toBe(500_000)
-        ->and($signup->projected_return)->toBe(562_500)
-        ->and($signup->blended_yield)->toBe(12.5);
+        ->and($signup->projected_return)->toBe(565_000)
+        ->and($signup->blended_yield)->toBe(13.0);
 });
 
 test('an email already on the waitlist is turned away', function () {
@@ -374,8 +386,8 @@ test('a business claims a pass on the figures it reported', function () {
         ->and($signup->registered_year)->toBe(2018)
         ->and($signup->score)->toBe(77.5)
         ->and($signup->term_months)->toBe(12)
-        ->and($signup->qualified_amount)->toBe(21_100_000)
-        ->and($signup->flat_rate)->toBe(13.3)
+        ->and($signup->qualified_amount)->toBe(20_900_000)
+        ->and($signup->flat_rate)->toBe(14.41)
         ->and($signup->rating_band)->toBe('Stable')
         ->and($signup->rating_score)->toBe(3.9);
 });
@@ -412,11 +424,37 @@ test('a business whose costs swallow its revenue cannot pre-qualify', function (
 
 test('a business too small to size is turned away', function () {
     $response = $this->postJson(route('pulse.business.store'), businessSignup([
-        'annual_revenue' => 900_000,
-        'annual_costs' => 400_000,
+        'annual_revenue' => 14_000_000,
+        'annual_costs' => 4_000_000,
     ]));
 
     $response->assertJsonValidationErrors('annual_revenue');
+});
+
+test('a business sizing under the smallest loan still takes a place in the queue', function () {
+    $response = $this->postJson(route('pulse.business.store'), businessSignup([
+        'annual_revenue' => 16_000_000,
+        'annual_costs' => 15_400_000,
+        'term_months' => 3,
+    ]));
+
+    $response->assertOk();
+
+    expect(PulseSignup::query()->sole()->qualified_amount)
+        ->toBeLessThan(PulseUnderwriting::MIN_LOAN);
+});
+
+test('a pledge above the largest loan Rozine writes is turned away', function () {
+    $response = $this->postJson(route('pulse.investor.store'), [
+        'name' => 'Diane Uwase',
+        'contact_method' => 'phone',
+        'contact' => '0788 123 456',
+        'province' => 'Kigali City',
+        'district' => 'Gasabo',
+        'pledge_amount' => PulseUnderwriting::MAX_LOAN + 5_000,
+    ]);
+
+    $response->assertJsonValidationErrors('pledge_amount');
 });
 
 test('figures a business could not have reported are rejected', function (array $overrides, string $field) {

@@ -44,7 +44,7 @@ class StoreBusinessSignupRequest extends FormRequest
     public function messages(): array
     {
         return array_merge($this->signupMessages(), [
-            'annual_revenue.min' => 'Tell us what your business made over the last 12 months.',
+            'annual_revenue.min' => 'Rozine sizes businesses making RWF 15M or more over 12 months.',
             'annual_costs.lt' => 'Your costs have to be lower than your revenue to pre-qualify.',
         ]);
     }
