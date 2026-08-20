@@ -1,0 +1,13 @@
+{
+  "runs": [
+    {
+      "date": "2026-08-18T06:31:00.256620+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "files": 71,
+      "usage_note": "Subagent token usage was unavailable from the collaboration runner; zero values are placeholders, not measured cost."
+    }
+  ],
+  "total_input_tokens": 0,
+  "total_output_tokens": 0
+}
