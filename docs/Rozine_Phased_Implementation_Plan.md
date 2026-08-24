@@ -2,7 +2,7 @@
 
 **Document status:** Draft; underwriting/Pulse decisions D-11, D-11A–C, D-13, D-14, and D-19A are product-approved candidates, not activated; remaining product, operational, technical, and regulatory gates stay open
 
-**Prepared:** 18 August 2026 · **MVP-first refactor:** 19 August 2026 · **Agent-native secondary-market schedule:** 20 August 2026
+**Prepared:** 18 August 2026 · **MVP-first refactor:** 19 August 2026 · **Agent-native secondary-market schedule:** 20 August 2026 · **Cross-platform risk-tiered coverage revision:** 24 August 2026
 
 **Scope:** First deliver a responsive-web/PWA MVP containing the Business, Auditor, Investor, and Admin applications, shared launcher, transactional core, and mandatory Investor-to-Investor secondary trading; then deliver governed pilot evidence, native mobile, Pulse, and approved product extensions as explicit post-MVP phases
 **Delivery model:** Laravel 13 monolith; Inertia.js 3 + React 19 for the MVP web/PWA; versioned Laravel API for post-MVP native mobile; the same Eloquent API Resources provide Inertia data and mobile API representations
@@ -125,11 +125,12 @@ The shared Resource catalog should include, at minimum: Party, BusinessProfile, 
 | Framework | Laravel 13, Inertia React 3, React 19, Tailwind CSS 4, Fortify, Sanctum, Wayfinder, and Pest are configured. | Keep the selected stack; do not introduce a parallel backend or web SPA API layer. |
 | Pulse | Public Pulse page, investor/business registration, polling, a listing Resource, and a server-side underwriting class exist. | Reuse the transport patterns only after formula and data-source reconciliation. |
 | Shared representation | `PulseListingResource` is already resolved for Inertia. | Generalize this proven pattern into a formal cross-transport Resource contract. |
+| Frontend verification | The current `resources/js` tree contains 173 TypeScript/TSX files, but `package.json` exposes only lint, format, type-check, and build commands; no frontend test runner, React component-testing library, test files, or JavaScript coverage gate is configured. Generated Wayfinder output and non-executable declarations share the tree with human-authored code. | Phase 0 must classify the executable source and risk tiers, install/configure the approved React test stack, baseline all retained first-party TypeScript/React code at 100% lines/statements/functions globally and per file, enforce the D-67 branch thresholds, and keep generated/type-only exclusions explicit and machine-readable. |
 | Identity | Starter authentication, account settings, two-factor authentication, and passkey-related foundations exist. | Extend to Party, multi-role authorization, KYC/KYB, staff/Auditor MFA, and mobile token lifecycle. |
 | Mobile API | Only a minimal authenticated user route is present. | Versioned role APIs and sync contracts remain to be built. |
 | Role products | No complete Business, Investor, or Auditor marketplace journey was found. | Most role phases are `NOT STARTED`. |
 | Runtime baseline | Route discovery currently fails because `laravel/head` is present in `composer.json` and `composer.lock` but absent from the installed `vendor` tree; installed dependencies are out of sync with the lock. | Phase 0 must restore a reproducible booting baseline before feature work. |
-| CI and delivery | Automated tests and strict coverage expectations exist; `uat` and `main` have staging/production deployment meaning. | Preserve the governed `feat/* -> dev -> uat -> main` promotion chain and attach evidence at every hop. |
+| CI and delivery | Pest 5, Larastan, an `app/` coverage source, a `--coverage --min=100` CI command, and a dedicated TIA-baseline workflow exist. Architecture tests and the Pest PHPStan plugin are not configured, while the main clean-checkout CI job currently uses `--tia`. | Phase 0 must preserve 100% PHP line coverage, add architecture and Pest-aware static-analysis gates, and remove TIA from the authoritative CI test job. TIA remains a local acceleration engine plus a dedicated shared-baseline workflow. Preserve `feat/* -> dev -> uat -> main` promotion and attach full-suite evidence at every hop. |
 
 ## 6. Product invariants across every phase
 
@@ -150,6 +151,12 @@ The shared Resource catalog should include, at minimum: Party, BusinessProfile, 
 - Investor principal is at risk. No page, message, notification, or support material may imply protection or guarantee.
 - Authorization is server-side and record-level. Hiding a button is not access control.
 - Every state transition and attributable change emits durable evidence with actor, role, reason, timestamp, prior/new state, policy version, and request correlation.
+- Every active phase maintains **100.0% executable PHP line coverage over first-party `app/`**. Human-authored TypeScript/React web/PWA source, and first-party native/platform-bridge source from the first native-client commit—including any thin-Auditor MVP exception—must achieve **100.0% lines, statements, and functions globally and per file**. D-67 additionally requires **100.0% branches globally and per file for critical financial/trust-boundary source**, **95.0% branches globally and at least 90.0% per file for approved non-critical presentation/platform adapters**, and **100.0% coverage of every newly changed branch**.
+- A checked-in machine-readable client risk manifest classifies every authored web/native file as `critical` or `non-critical`. Money, fees, wallet/ledger/ownership, orders/trading/settlement/halts, reconciliation/idempotency, underwriting/rating/eligibility/disclosures, authentication/authorization/role/consent, KYC/KYB, audit evidence/seals/provenance, provider callback/retry/reversal, offline/conflict recovery, contract mapping, and governed workflow state machines are always critical. A presentation/platform-adapter classification is allowed only when the file renders or transports already-authoritative decisions and contains none of those behaviors.
+- Generated Wayfinder/client code, build output, vendor code, declaration-only files, and other genuinely non-executable artifacts may be omitted only through a machine-readable generated/non-executable manifest. Reachable business, authorization, money, evidence, provider, workflow, React, PWA, or native behavior may not be excluded, ignored, or annotated away.
+- Coverage is a floor, not proof of correct assertions. Risk-based negative, property, concurrency, replay, contract, accessibility, browser/PWA, and real-device tests remain mandatory, and snapshot-only rendering does not establish behavior.
+- Pest architecture tests and Pest-aware PHPStan/Larastan analysis are permanent merge and phase-exit gates. They enforce the modular-monolith boundaries in Section 4 and statically validate both application and Pest test code.
+- Pest TIA accelerates developer feedback and may record a shared baseline in its dedicated workflow, but it never replaces the full clean-checkout Pest suite in pull-request, promotion, release-candidate, or production gates.
 
 ## 7. Target page and screen map
 
@@ -219,6 +226,7 @@ A phase is ready to start only when:
 - UX covers loading, empty, error, denied, frozen, expired, offline, conflict, maintenance, and forced-update states.
 - Policy values are versioned data where the BRS permits change; financial and lifecycle invariants remain code-enforced.
 - Acceptance tests are written before or with implementation, using factories and deterministic clocks/providers.
+- The phase test map identifies the PHP, TypeScript/React, future native, behavioral, architecture, and static-analysis paths affected by the slice; no slice is ready if it would lower any applicable D-65/D-66/D-67 threshold, misclassify critical source, or require an undocumented coverage/PHPStan/generated-source exclusion.
 
 ### 9.1 AI-agent-assisted estimation model
 
@@ -257,6 +265,8 @@ External tracks should start in Phase 0 and run concurrently; these allowances a
 
 AI is a throughput multiplier, not an approval multiplier. It does not compress regulator review, provider certification, live-data collection, financial/legal ownership, offline/real-device soak, independent assurance, UAT, or required production observation. The Week 8–10 result is therefore a pre-production engineering `MVP RELEASE CANDIDATE`, not an unconditional launch date, guaranteed regulatory-sandbox admission, or production-rail certification. Phase 4 owns the regulated pilot and live evidence. `LIVE MVP ACCEPTED` cannot occur until at least one real three-month Note completes after production authorization, regardless of engineering speed.
 
+The 100% PHP gate, D-66/D-67 TypeScript/React and future-native coverage gates, architecture suite, Pest PHPStan integration, React component-test foundation, and TIA setup/remediation are included inside the applicable phase estimates; they are not an additional late hardening phase. Pest TIA and frontend/native watch or related-test modes shorten local agent/developer feedback, but no duration assumes that an impacted-test run replaces a complete clean-checkout phase or release gate. Because the existing 173-file TypeScript/TSX tree has no test harness, the eight-week stretch remains conditional on Phase 0 closing that baseline within Week 1; otherwise rebaseline the schedule rather than lowering or deferring D-66/D-67.
+
 ### 9.2 MVP-first release topology
 
 ```mermaid
@@ -284,7 +294,7 @@ Solid arrows are mandatory gates. Dotted arrows mean Phase 8 considers a post-MV
 
 **Estimated two-developer agent-native active engineering:** `0.5–1 focused week` · **Confidence:** Medium-Low
 
-**Scheduling note:** Target Days 1–3, with Week 1 as the ceiling. Both developers pair on authority, architecture, secondary-market rules, and release-boundary decisions while agents inventory requirements/assets, repair the reproducible baseline, and generate the traceability skeleton. Provider and regulatory engagement begins concurrently; waiting time is additional.
+**Scheduling note:** Target Days 1–3, with Week 1 as the conditional ceiling. Both developers pair on authority, architecture, secondary-market rules, and release-boundary decisions while agents inventory requirements/assets, repair the reproducible baseline, divide the existing TypeScript/React test backfill into non-overlapping behavior slices, and generate the traceability skeleton. The source/risk manifests, policy validator, changed-branch mapper, CI metadata, and negative controls are part of this baseline rather than deferred hardening. If the honest D-66/D-67 client baseline cannot close by Week 1, rebaseline the portfolio schedule; do not exclude authored code, misclassify critical source, or weaken the thresholds. Provider and regulatory engagement begins concurrently; waiting time is additional.
 
 ### Goal
 
@@ -307,6 +317,19 @@ Create one approved MVP contract before feature expansion: preserve BRS safety a
 - [ ] Close D-26/D-27 and freeze the secondary-market contract before the Holding, Order, reservation, fee-posting, record-date, halt, and settlement schemas are finalized; mandatory secondary scope may not be traded away for schedule.
 - [ ] Run a time-boxed PWA assurance spike for Auditor offline packages, in-browser camera-only capture, geolocation, timestamp/provenance, process interruption, durable local encryption, reconnect, conflict, and sync. Record a thin-native MVP exception if any mandatory guarantee cannot be met.
 - [ ] Reconcile `composer.json`, `composer.lock`, and installed dependencies; prove application boot, route discovery, focused tests, static/type checks, and the production frontend build from a clean install.
+- [ ] Freeze the coverage contract: `phpunit.xml` measures every executable line under `app/`; `./vendor/bin/pest --ci --no-tia --coverage --min=100` is the authoritative clean-checkout gate; no reachable first-party behavior may use `@codeCoverageIgnore*` or an unapproved source exclusion.
+- [ ] Inventory every TypeScript/TSX file and create machine-readable source and risk manifests distinguishing human-authored executable web source from generated Wayfinder/routes/actions, declaration-only files, vendor/build output, and dead code, then classifying every authored executable file as `critical` or `non-critical` under Section 11.1. Delete dead code; do not use MVP deferral, low testability, directory location, or presentation naming as an exclusion or risk downgrade.
+- [ ] Add a Vite-compatible Vitest runner with V8 coverage, jsdom, React Testing Library, user-event, and accessible DOM matchers; include unimported matched files and emit the complete global/per-file line, statement, function, and branch dataset needed by D-67.
+- [ ] Add a checked-in deterministic coverage-policy validator because a single runner threshold block does not express the full risk-tier policy. From the complete report plus source/risk manifests it must enforce 100% lines/statements/functions globally and per file, 100% branches globally and per file for critical source, 95% branches globally and at least 90% per file for approved non-critical presentation/platform adapters, and 100% coverage for every newly changed branch against recorded base/head SHAs.
+- [ ] Add canonical `test:web`, `test:web:watch`, and `test:web:coverage` scripts; the authoritative frontend command runs the complete suite once, emits machine-readable coverage, and invokes the coverage-policy validator, while watch/related-test selection is local acceleration only.
+- [ ] Establish behavior-first React test conventions for Inertia pages/layouts, forms, hooks, state/error/offline branches, Resources/prop contracts, active-role authorization presentation, and accessibility queries; prohibit shallow implementation-detail tests and snapshot-only coverage claims.
+- [ ] Create `tests/Architecture/ArchitectureTest.php` plus module-specific architecture files as needed, register the Architecture suite in `phpunit.xml`, and cover the Section 4 dependency rules, naming/inheritance rules, strict types, prohibited debug calls, and the Domain/Application/HTTP/Resource/Integration boundaries defined in Section 11.
+- [ ] Add the Pest 5 first-party `pestphp/pest-plugin-phpstan`, register its extension in `phpstan.neon`, include `tests/` in analysis, retain Larastan for Laravel awareness, and make zero-error Pest-aware analysis part of `composer ci:check:static`.
+- [ ] Correct the TIA topology: configure local TIA with a coverage driver and optional fetched shared baseline; keep `--tia --fresh` only in the dedicated baseline workflow; remove `--tia` and TIA result-cache restoration from the authoritative pull-request/promotion CI test job so every clean checkout executes every test.
+- [ ] Centralize non-drifting Composer/npm commands for the local impacted-test loops, full PHP and D-66/D-67 web coverage gates, architecture suite, Pest-aware static analysis, frontend type/lint/build gates, changed-branch calculation, and future native hooks; make `composer ci:check` invoke the authoritative applicable gates rather than leaving thresholds only inside workflow YAML.
+- [ ] Resolve the PHP 8.4 minimum-versus-8.5 deployment contract and add CI lanes for the canonical coverage runtime, every supported/deployed runtime, and PostgreSQL-backed locking/concurrency/queue behavior; SQLite may remain a fast unit/feature lane but cannot certify financial or secondary settlement races.
+- [ ] Make the full quality/build check a required status for the exact SHA at each `feat/* -> dev -> uat -> main` hop and make deployment workflows refuse a SHA without that evidence.
+- [ ] Prove the quality controls with reversible negative checks: an uncovered PHP line fails; an uncovered client line/statement/function fails globally and per file; an entirely unimported in-scope file fails; missing/drifting source or risk manifest entries fail; an uncovered critical branch fails; non-critical branch results below either 95% global or 90% per file fail using exact counts; one uncovered newly changed branch fails; a risk-manifest downgrade of governed behavior fails; stale/unmappable base-head or mismatched tested-SHA evidence fails; a forbidden dependency fails the architecture suite; and an invalid Pest construct fails PHPStan. Remove every temporary violation after evidence is captured.
 - [ ] Capture the baseline schema, routes, authentication, existing Pulse boundary, CI gates, deployment environments, and current migration/data state.
 - [ ] Approve one of the two supplied Rozine lockups, the star mark, the three role lockups, exact source colors, font/outline ownership, role-accessible names, and whether reconstruction is authorized.
 - [ ] Replace WhatsApp filenames with a semantic asset manifest without deleting source evidence; record the six current JPEGs as references and retire the legacy 60-image inventory.
@@ -320,6 +343,7 @@ Create one approved MVP contract before feature expansion: preserve BRS safety a
 - Signed MVP scope/authority decision and C-01–C-34 disposition register.
 - Per-ID MVP/BRS/phase/evidence crosswalk and deferred-scope register.
 - Green reproducible-baseline evidence pack and implementation-state inventory.
+- Versioned cross-platform quality contract: PHP and web/native coverage scopes, generated/non-executable manifest, critical/non-critical risk manifest, D-67 metric/branch thresholds, changed-branch checker, architecture rule catalog, Pest-aware PHPStan configuration, Vitest/React test foundation, local impacted-test instructions, dedicated TIA baseline workflow, and full-suite CI evidence.
 - Auditor PWA assurance report and, if required, scoped native-exception decision.
 - Approved architecture decision records, error/state vocabulary, and release definitions.
 - New-logo approval record, six-file source manifest, rights/licensing record, approved canonical vector/transparent and outlined-wordmark masters, derived-asset brief, and legacy retirement record.
@@ -334,12 +358,17 @@ Create one approved MVP contract before feature expansion: preserve BRS safety a
 - [ ] The MVP crosswalk contains an unbroken, owned path from an eligible settled Holding through ask, reservation, fill/cancel/expiry, exact fee disclosure, cash/Holding settlement, reconciliation, and Admin halt; no Rozine-principal route exists.
 - [ ] The web/PWA Auditor route is either proven capable in principle or replaced by a documented, estimated thin-native exception.
 - [ ] Application boot, route discovery, focused tests, static/type checks, and production asset build are green from the approved clean baseline.
+- [ ] The full non-TIA clean-checkout Pest suite reports `100.0%` line coverage for all in-scope `app/` code; there is no unexplained coverage exclusion, ignored error, risky test, warning, or deprecation.
+- [ ] The complete clean-checkout Vitest suite reports 100.0% lines/statements/functions globally and per file for all retained human-authored TypeScript/React code; 100.0% critical branches globally and per file; at least 95.0% non-critical branches globally and 90.0% per file; and 100.0% newly changed branches. Every negative control fails as expected, and no behavioral file is hidden or misclassified by either manifest.
+- [ ] Architecture tests fail on a controlled forbidden-dependency example and pass after its removal; the rule catalog covers shared Resources, thin transports, application actions, Domain isolation, provider ports/adapters, and protected financial/evidence seams.
+- [ ] PHPStan/Larastan analyses `app/`, configured first-party paths, and `tests/` with the Pest extension and zero errors; TIA works locally from a fresh or downloaded baseline, while the normal CI job demonstrably runs the complete suite without TIA.
+- [ ] Canonical Composer/npm and CI commands agree; PHP coverage and complete web metric/risk-tier/changed-branch reports, manifest/report-set equality, frontend type/lint/build checks, the supported/deployed PHP matrix, PostgreSQL financial-concurrency lane, and exact-SHA required deployment check are green from a clean install.
 - [ ] All six current logo references are accounted for; one primary lockup/mark direction and the role naming contract are approved; rights-cleared vector/transparent masters exist; no flattened JPEG is treated as a production master.
 - [ ] Native mobile, Pulse, Plus execution, and every other deferred item have an explicit destination phase and cannot leak into the MVP critical path without change control.
 
 ### Verification and exit gate
 
-Archive the source manifest, rendered-PDF review, conflict register, PWA spike evidence, brand approval, dependency outputs, application boot/routes, focused tests, type/static checks, and production build. Phase 1 starts only when the baseline is green, every Phase 1 behavioral decision is signed, and later-wave blockers have named owners and enforceable gates.
+Archive the source/risk manifests, rendered-PDF review, conflict register, PWA spike evidence, brand approval, dependency outputs, application boot/routes, full non-TIA PHP coverage, complete Vitest D-66/D-67 metric and changed-branch reports, generated/non-executable manifest, coverage/risk-classification negative controls, architecture/PHPStan negative-control evidence, local impacted-test evidence, dedicated TIA baseline evidence, and production build. Phase 1 starts only when the clean-checkout baseline is green, every Phase 1 behavioral decision is signed, and later-wave blockers have named owners and enforceable gates.
 
 ---
 
@@ -380,6 +409,7 @@ Reach `MVP ALPHA`: one Business applies, one eligible Auditor verifies, the core
 - [ ] Propagate committed funding, balance, Holding, disbursement, and repayment changes to every affected online role without manual reload and reconcile after reconnect.
 - [ ] Cover the initial loading, empty, validation, authorization, policy-gated, provider-failure, retry, and success states for every alpha screen.
 - [ ] Build Phase 1 controls, logs, metrics, alerts, fixtures, and denial tests in the same slices; no later Admin/hardening phase is allowed to supply missing safety retrospectively.
+- [ ] Add PHP unit/feature/contract/property/concurrency/denial/architecture tests and behavior-first TypeScript/React page/component/hook tests with each vertical slice; use TIA and Vitest watch/related-test modes locally but run both complete coverage suites before integration and Alpha acceptance.
 
 ### Deliverables
 
@@ -390,6 +420,7 @@ Reach `MVP ALPHA`: one Business applies, one eligible Auditor verifies, the core
 - Investor primary-market and Admin oversight happy paths.
 - Approved MVP logo component/asset package and localization/catalog foundation for responsive web/PWA.
 - End-to-end alpha fixtures, contract schemas, authorization matrix, and machine-readable evidence pack.
+- Exact Alpha-commit quality pack containing the 100% PHP line-coverage report; complete web D-66/D-67 lines/statements/functions, risk-tier branch, and changed-branch reports; architecture results; Pest-aware PHPStan/Larastan output; frontend static/build output; source/risk manifests; and full-suite run identities.
 
 ### Acceptance Criteria
 
@@ -404,10 +435,11 @@ Reach `MVP ALPHA`: one Business applies, one eligible Auditor verifies, the core
 - [ ] Alpha screens have actionable errors/gates and survive a cold reload without losing accepted drafts or committed state.
 - [ ] The current logo/role identity is consistent and accessible across launcher and four applications.
 - [ ] Alpha user-facing strings are catalog-backed; missing-key/hard-coded-string lint and representative pseudo-localization pass without layout or meaning loss.
+- [ ] The exact Alpha commit passes the complete non-TIA Pest suite at 100.0% `app/` line coverage and every Section 11.1 web threshold: 100.0% lines/statements/functions globally and per file, 100.0% critical branches globally and per file, 95.0% non-critical branches globally and at least 90.0% per file, and 100.0% newly changed branches. Every architecture, PHPStan/Larastan, TypeScript, lint, build, and applicable browser gate is green. Coverage alone does not substitute for the financial, authorization, property, concurrency, replay, denial, accessibility, branch/state, or user-journey assertions above.
 
 ### Verification and exit gate
 
-Run golden/property tests, ledger invariants, idempotency/concurrency tests, provider replay tests, policy/Resource parity and denial suites, Inertia browser journeys, PWA reload checks, accessibility smoke checks, and a witnessed alpha chain. Phase 1 may exit only as `MVP ALPHA`; no real-money, production, or regulatory claim is permitted.
+Run golden/property tests, ledger invariants, idempotency/concurrency tests, provider replay tests, policy/Resource parity and denial suites, complete Vitest/React coverage, Inertia browser journeys, PWA reload checks, accessibility smoke checks, and a witnessed alpha chain. Archive the exact commit's full PHP coverage; web metric matrix, risk-tier and immutable base/head changed-branch reports; architecture; Pest-aware PHPStan; frontend static/build; and source/risk manifest outputs. Impacted-test results may support iteration but are not Alpha exit evidence. Phase 1 may exit only as `MVP ALPHA`; no real-money, production, or regulatory claim is permitted.
 
 ---
 
@@ -446,6 +478,7 @@ Turn the alpha path into a complete operating lifecycle in which every named scr
 - [ ] Preserve drafts, position, offline queue, and committed facts across refresh, close/reopen, reconnect, and deployment-compatible Resource changes.
 - [ ] Prove report completion, photo upload, and critical dashboards under throttled mobile networks; keep performance/accessibility/security budgets continuously green.
 - [ ] Keep the Investor Automation screen visibly gated with the missing approval and next step; it cannot execute Plus mandates in the MVP.
+- [ ] Extend the Pest behavior/architecture and Vitest/React behavior suites with every lifecycle slice, including offline sync, provider replay/reversal, reconciliation, distress, authorization, screen-state branches, and secondary-eligibility invalidation; preserve every Section 11 PHP and D-66/D-67 web threshold plus zero-error static analysis.
 
 ### Deliverables
 
@@ -456,6 +489,7 @@ Turn the alpha path into a complete operating lifecycle in which every named scr
 - Distress/dispute/recovery state machines, immutable amendments, and provider/reconciliation runbooks.
 - Secondary eligibility/read models, state-transition fixtures, disclosure facts, and halt prerequisites ready for Phase 3 settlement integration.
 - Full lifecycle test, device/browser, performance, accessibility, and operational evidence packs.
+- Exact Phase 2 commit quality pack containing full PHP coverage and complete Section 11.1 web metric/branch evidence, architecture, Pest-aware PHPStan/Larastan, frontend static/build, source/risk manifests, and test-run evidence.
 
 ### Acceptance Criteria
 
@@ -469,10 +503,11 @@ Turn the alpha path into a complete operating lifecycle in which every named scr
 - [ ] Every lifecycle transition that makes a Holding ineligible immediately removes or blocks its secondary action and deterministically cancels or suspends affected open reservations under the approved D-26 rules.
 - [ ] A cold reload/reconnect loses no accepted draft, offline capture, position, or committed state.
 - [ ] Business, Auditor, Investor, and Admin acceptance matrices from PDF pages 6, 8, 11, and 13 are either passing or explicitly mapped to Phase 3 finish work; no conflicting PDF rule is used as evidence.
+- [ ] The exact Phase 2 exit commit passes the complete non-TIA Pest suite at 100.0% `app/` line coverage and every applicable D-66/D-67 web threshold, including 100.0% newly changed branches; every architecture and static/build gate is green, and no exclusion, risk downgrade, or suppression conceals an offline, UI-state, provider, reconciliation, or lifecycle path.
 
 ### Verification and exit gate
 
-Run time-travel schedules/windows, accounting properties, provider replay/reversal, offline kill/reorder/corruption, camera/geo/permission, reconciliation, state-transition, notification, authorization, browser/PWA device, accessibility, and throttled-network suites. Exit requires witnessed monthly lifecycle, offline visit, distress/recovery, and daily reconciliation evidence.
+Run time-travel schedules/windows, accounting properties, provider replay/reversal, offline kill/reorder/corruption, camera/geo/permission, reconciliation, state-transition, notification, authorization, complete Vitest/React coverage, browser/PWA device, accessibility, and throttled-network suites. Archive fresh full PHP coverage; web metric matrix, risk-tier and immutable base/head changed-branch reports; architecture; Pest-aware PHPStan; frontend static/build; and source/risk manifest outputs for the exact exit commit. Exit requires witnessed monthly lifecycle, offline visit, distress/recovery, and daily reconciliation evidence.
 
 ---
 
@@ -510,6 +545,7 @@ Produce a polished, secure, accessible, BRS-compliant, sandbox-ready responsive-
 - [ ] Run the 12 spine, 8 Business, 8 Auditor, 10 Investor, 8 Admin, launcher/demo, and applicable BRS acceptance matrices with immutable linked evidence; no row may disappear, and any scoped deferral requires its signed conflict disposition.
 - [ ] Execute an internal no-real-participant/no-money rehearsal of support, reconciliation, incident, daily-review, rollback, and stop procedures.
 - [ ] Prepare checked `dev -> uat` release, migration/rollback, operations, support, and go/no-go evidence without promoting to production or presenting fixtures as live.
+- [ ] Run the exact RC commit through the authoritative clean-checkout PHP and web gates: non-TIA Pest at 100.0% `app/` lines and the complete D-66/D-67 Vitest metric, risk-tier branch, and changed-branch gates, plus all architecture, PHPStan/Larastan, TypeScript, lint, build, browser, and accessibility checks. Publish outputs with the SHA and reject impacted-only, stale, or different-SHA evidence.
 
 ### Deliverables
 
@@ -518,6 +554,7 @@ Produce a polished, secure, accessible, BRS-compliant, sandbox-ready responsive-
 - Resettable isolated demo book and scripted Business/Auditor/Investor/Admin/regulator demonstrations.
 - Accessibility, performance, resilience, privacy, security, financial-certification, UAT, and internal-rehearsal dossiers.
 - MVP acceptance matrix with evidence links, exceptions, owners, and signed release-candidate go/no-go record.
+- Exact RC-commit cross-platform quality dossier: complete PHP coverage; web lines/statements/functions, risk-tier branch, and immutable base/head changed-branch reports; architecture-test results; Pest-aware PHPStan/Larastan and frontend static/build output; source/risk manifests; and dedicated TIA-baseline identity for subsequent developer use.
 
 ### Acceptance Criteria
 
@@ -530,10 +567,11 @@ Produce a polished, secure, accessible, BRS-compliant, sandbox-ready responsive-
 - [ ] Demo reset is deterministic and isolated; no visitor can touch real records or confuse seeded activity with live activity.
 - [ ] The approved new logo is derived from rights-cleared canonical vector masters and is consistent, accessible, and legible across launcher, four applications, reports, favicons/PWA assets, and demo material.
 - [ ] Accountable Product, Finance/Risk, Compliance/Legal, Audit Partner operations, Security, Engineering, Design/Brand, independent test, Support, and Operations owners sign the MVP RC.
+- [ ] The exact RC commit passes clean-checkout full PHP and web executions—not impacted-test replays—with 100.0% `app/` lines and every D-66/D-67 client metric, risk-tier branch, and changed-branch threshold; all architecture/static/build gates pass, and no unexplained exclusion, risk downgrade, ignored error, warning, risky test, or deprecation remains.
 
 ### Verification and exit gate
 
-Run the full CI gate, contract/accounting/concurrency suites, responsive browser/PWA E2E, secondary failure injection, device/browser matrix, accessibility, 3G/load/soak, restore/rollback, security reviews, financial reconstruction, and witnessed acceptance. D-61 and every other MVP-scope disposition must be signed. Exit creates a sandbox-ready `MVP RELEASE CANDIDATE`; it does not close production/live BRS acceptance.
+Run the authoritative full PHP/web CI gates, contract/accounting/concurrency suites, responsive browser/PWA E2E, secondary failure injection, device/browser matrix, accessibility, 3G/load/soak, restore/rollback, security reviews, financial reconstruction, and witnessed acceptance. Archive PHP coverage; the complete web metric matrix, source/risk manifests, and immutable base/head changed-branch report; architecture; PHPStan/frontend static/build; and exact-SHA evidence. The dedicated baseline workflow may then record TIA state for developer replay. D-61 and every other MVP-scope disposition must be signed. Exit creates a sandbox-ready `MVP RELEASE CANDIDATE`; it does not close production/live BRS acceptance.
 
 ---
 
@@ -567,6 +605,7 @@ Turn the release candidate into `LIVE MVP ACCEPTED` by certifying real rails, op
 - [ ] Reconcile bank/MoMo/provider/ledger/control accounts daily and resolve every break through governed actions.
 - [ ] Record incidents, complaints, defaults/recoveries if they occur, KPI outcomes, policy versions, and every release/rollback decision without hiding adverse evidence.
 - [ ] Promote only through checked `feat/* -> dev -> uat -> main` pull requests and verify production health/reconciliation after each approved release.
+- [ ] Before every pilot promotion, rerun the complete PHP and D-66/D-67 web coverage, architecture, Pest-aware PHPStan, frontend static/build, and applicable browser gates on the exact promoted SHA; any PHP/TypeScript/React/configuration/dependency/risk-manifest change invalidates older evidence.
 
 ### Deliverables
 
@@ -574,6 +613,7 @@ Turn the release candidate into `LIVE MVP ACCEPTED` by certifying real rails, op
 - Live reconciliation, security, operations, incident, complaint, and supervisory reporting dossiers.
 - Complete real Note lifecycle and role-journey evidence.
 - Live MVP acceptance/go-no-go record and post-pilot findings backlog.
+- Per-promotion exact-SHA PHP coverage plus the complete web metric matrix, source/risk manifest hashes, and immutable base/head changed-branch evidence linked to the release and pilot dossiers.
 
 ### Acceptance Criteria
 
@@ -583,10 +623,11 @@ Turn the release candidate into `LIVE MVP ACCEPTED` by certifying real rails, op
 - [ ] Every live exception, complaint, break, incident, and policy action is attributable, controlled, and reconstructible.
 - [ ] No unresolved critical/high security, financial, legal, regulatory, provider, or operational blocker remains at live acceptance.
 - [ ] Pulse-specific BRS AC-11 and native-mobile acceptance remain open until Phases 6 and 5 respectively; `LIVE MVP ACCEPTED` does not misstate full-roadmap completion.
+- [ ] Every promoted pilot SHA passes Section 11's complete PHP and TypeScript/React metric, risk-tier branch, changed-branch, architecture, and static/build gates; no prior SHA, impacted-only output, or risk reclassification without approval is accepted for a changed release.
 
 ### Verification and exit gate
 
-Use live provider evidence, daily reconciliation, supervisor reconstruction, security retest, incident/rollback exercises, participant UAT, regulatory reports, and the complete lifecycle dossier. Exit requires the named regulator/legal/product/finance/security/operations authorities to sign `LIVE MVP ACCEPTED`.
+Use live provider evidence, daily reconciliation, supervisor reconstruction, security retest, incident/rollback exercises, participant UAT, regulatory reports, exact-SHA full PHP coverage and D-66/D-67 web metric/risk-tier/changed-branch outputs, and the complete lifecycle dossier. Exit requires the named regulator/legal/product/finance/security/operations authorities to sign `LIVE MVP ACCEPTED`.
 
 ---
 
@@ -596,7 +637,7 @@ Use live provider evidence, daily reconciliation, supervisor reconstruction, sec
 
 **Estimated two-developer AI-assisted active engineering:** `5–8 focused weeks`, plus app-store review · **Confidence:** Low
 
-**Scheduling note:** Starts after the Phase 3 MVP RC, preferably after Phase 4 stabilizes the live contracts. Auditor native work goes first if Phase 0 recorded an MVP exception; otherwise prioritize the highest-value role sequence. Native clients reuse the same actions/Resources and never fork business rules.
+**Scheduling note:** Starts after the Phase 3 MVP RC, preferably after Phase 4 stabilizes the live contracts. Reserve the first 2–3 focused days for the native runner/source-map and D-67 policy proof; this remains inside the estimate when the selected stack passes, and a failed proof blocks stack acceptance rather than weakening coverage. Auditor native work goes first if Phase 0 recorded an MVP exception; otherwise prioritize the highest-value role sequence. Native clients reuse the same actions/Resources and never fork business rules.
 
 ### Goal
 
@@ -611,6 +652,10 @@ Deliver governed native mobile access for the approved Investor, Business, and A
 ### Checklist
 
 - [ ] Approve one shared mobile stack, application packaging/role strategy, supported OS/device matrix, API support/deprecation window, and store ownership.
+- [ ] Approve native test/coverage runners with the stack decision and enforce 100.0% lines/statements/functions globally and per file for every first-party native target; 100.0% branches globally and per file for critical native/platform-bridge source; 95.0% branches globally and at least 90.0% per file for approved non-critical presentation/platform adapters; and 100.0% newly changed branches. A target whose runners cannot prove the contract cannot be selected or released.
+- [ ] Before accepting the native stack, time-box a runner/source-map proof that includes unimported source and emits file-level line, statement, function, branch-location, and branch-outcome counts for shared source and every authored platform bridge on each shipped target; missing or opaque metrics block the stack decision.
+- [ ] Create native source and risk manifests for platform scaffolding, code generation, declarations, vendor/build output, and every authored file. Mixed/unclassified files default critical; storage, sync, permission, identity/security, camera/location/biometric, push/deep-link authorization, provider, evidence-integrity, and recovery bridges are critical despite an adapter or platform label.
+- [ ] Evaluate shared and platform-specific coverage/policy reports independently so one target cannot average away or conceal a deficient iOS, Android, shared-client, or custom bridge result.
 - [ ] Complete versioned `/api/v1` authentication/token/device, error, pagination, idempotency, concurrency, offline, forced-update, and compatibility contracts.
 - [ ] Reuse the Phase 1–4 application actions, policies, Resources, state machines, exact-money values, and disclosures; prohibit authoritative client-only calculations.
 - [ ] Implement approved Investor and Business mobile journeys with complete gated/error/offline/reconnect states and Resource parity.
@@ -620,12 +665,14 @@ Deliver governed native mobile access for the approved Investor, Business, and A
 - [ ] Approve a per-bundle identity matrix—store/app name, visible and accessible Rozine/role naming, role lockup, icon foreground/background, splash, notification mark, screenshots, and light/dark treatment—for either one role-switching app or each separate role app.
 - [ ] Run real-device permissions, low-storage, process-kill, clock, network, accessibility, battery/background, upgrade/downgrade, and forced-update tests.
 - [ ] Prepare signed builds, privacy declarations, store metadata, review responses, staged rollout, crash/health monitoring, and rollback.
+- [ ] Keep every changed Laravel action, policy, Resource, API controller, sync endpoint, and provider seam within Section 11's 100% PHP line gate, and every shared TypeScript/React/native/platform-bridge file within the D-66/D-67 metric and risk-tier branch gates; real-device evidence remains additional.
 
 ### Deliverables
 
 - Native client(s), versioned mobile API/Resource contracts, device/offline/push services, and compatibility policy.
 - Platform icon/splash/store packages and a signed per-bundle identity matrix based on the approved new logo.
 - Mobile security, accessibility, performance, real-device, store, rollout, and support evidence.
+- Exact server/client commit quality evidence containing PHP, shared-web where applicable, and complete native lines/statements/functions, risk-tier branch, and changed-branch reports; native static analysis, source/risk manifests, real-device tests, and signed-build evidence for every release candidate.
 
 ### Acceptance Criteria
 
@@ -635,10 +682,11 @@ Deliver governed native mobile access for the approved Investor, Business, and A
 - [ ] Supported devices pass accessibility, permissions, performance, upgrade, deep-link, forced-update, and brand-asset tests.
 - [ ] Every signed app bundle matches its approved store/app name, visible/accessibility identity, role treatment, icon layers, splash, notification mark, screenshots, and light/dark matrix.
 - [ ] Store releases are signed, privacy-correct, observable, staged, and rollback-capable.
+- [ ] Every exact server/client release commit passes 100.0% PHP lines and every applicable D-66/D-67 web/native metric, risk-tier branch, and changed-branch threshold; all architecture/static/build gates pass without replacing branch/state, real-device, permission, offline, accessibility, or store gates.
 
 ### Verification and exit gate
 
-Run mobile unit/contract/E2E suites, server Resource parity, real-device/offline/permission matrices, security review, accessibility audit, signed-build validation, and staged store acceptance. Exit requires production-compatible native journeys without a parallel domain implementation.
+Run complete mobile unit/component/integration/contract/E2E and coverage suites, server Resource parity, full PHP/shared-web gates, real-device/offline/permission matrices, security review, accessibility audit, signed-build validation, and staged store acceptance. Archive every global/per-file metric, risk-tier branch report, immutable base/head changed-branch report, and source/risk manifest hash for the exact server/client commits. Exit requires production-compatible native journeys without a parallel domain implementation.
 
 ---
 
@@ -671,11 +719,13 @@ Ship the BRS non-binding public acquisition surface without contaminating the MV
 - [ ] Remove prohibited tax, safety, guarantee, “bank-grade,” unproven encryption, fixed 13%, and other rejected claims.
 - [ ] Complete responsive, accessibility, performance, upload, bot/rate-limit, privacy, content, and environment-isolation tests.
 - [ ] Apply the approved primary Rozine lockup; role lockups appear only in their approved context.
+- [ ] Extend Pest behavior/parity/abuse/privacy/authorization/architecture tests and Vitest/React behavior tests with the Pulse slice; preserve every Section 11 PHP and D-66/D-67 web coverage gate while keeping browser E2E evidence separate.
 
 ### Deliverables
 
 - Remediated Pulse page/endpoints, production-engine calculation Resources, persistent registration/sequence/counter system, governed sample feed, passes, and onboarding handoff.
 - Pulse parity, truthfulness, privacy, abuse, responsive, and conversion evidence.
+- Exact Pulse-commit PHP coverage; complete web lines/statements/functions, risk-tier branch, and immutable base/head changed-branch reports; architecture; Pest-aware PHPStan/Larastan; frontend static/build; source/risk manifests; and browser-test evidence.
 
 ### Acceptance Criteria
 
@@ -684,10 +734,11 @@ Ship the BRS non-binding public acquisition surface without contaminating the MV
 - [ ] Public activity reflects real server facts, and production cannot silently fall back to seeded/random/fictional activity.
 - [ ] Conversion preserves consent/provenance and cannot duplicate a Party.
 - [ ] BRS AC-11 and Appendix A Pulse vectors pass with witnessed evidence.
+- [ ] The exact Pulse exit commit passes complete PHP and web suites at 100.0% `app/` lines and every D-66/D-67 client metric, risk-tier branch, and changed-branch threshold, plus every architecture/static/build gate with zero errors. Pulse eligibility, formula/disclosure, pass/consent, no-funds/non-binding, sample/counter provenance, and conversion branches remain critical.
 
 ### Verification and exit gate
 
-Run calculation/vector parity, aggregate reconciliation, sequence concurrency, pass enumeration/expiry/revocation, upload/abuse, privacy/content scans, responsive browser E2E, and authenticated-conversion tests. Exit closes the deferred Pulse acceptance boundary without changing MVP financial rules.
+Run calculation/vector parity, aggregate reconciliation, sequence concurrency, pass enumeration/expiry/revocation, upload/abuse, privacy/content scans, complete PHP and D-66/D-67 web coverage, responsive browser E2E, and authenticated-conversion tests. Archive the complete metric matrix, risk/source manifest hashes, and immutable base/head changed-branch report. Exit closes the deferred Pulse acceptance boundary without changing MVP financial rules.
 
 ---
 
@@ -719,12 +770,14 @@ Add only extensions with demonstrated value, approved regulation/economics, boun
 - [ ] Keep discretionary managed portfolios and Investor-to-Investor wallet transfers prohibited until separately authorized.
 - [ ] Keep Rozine principal inventory/market making, unapproved reserve cover, and rejected fee models prohibited unless a formal BRS/legal amendment explicitly replaces the invariant.
 - [ ] For every approved tranche, update requirements, threat/data model, policies, migrations, API/Resource compatibility, fixtures, operations, monitoring, and rollback.
+- [ ] Extend behavior and architecture tests before activating each approved tranche; every changed first-party PHP path remains subject to D-65 and every TypeScript/React/native path remains subject to D-66/D-67 metric, risk-tier branch, changed-branch, and static/build gates.
 
 ### Deliverables
 
 - Approved tranche charter and amendment/decision record.
 - Extension implementation with complete domain, web/native/API, Admin/control, test, evidence, operations, and migration/rollback slices.
 - Post-release KPI and policy-impact report.
+- Exact tranche-commit full PHP coverage; complete applicable web/native metric matrices, risk-tier branch and immutable base/head changed-branch reports; architecture/static/build; source/risk manifests; and client/E2E evidence.
 
 ### Acceptance Criteria
 
@@ -732,10 +785,11 @@ Add only extensions with demonstrated value, approved regulation/economics, boun
 - [ ] Every financial/regulatory extension has signed Product, Finance/Risk, Compliance/Legal, Security, Engineering, and applicable CMA approval.
 - [ ] MVP ledger, evidence, authorization, disclosure, reconciliation, performance, and availability acceptance remain green.
 - [ ] Each tranche is independently feature-flagged, reversible where possible, observable, and releasable through the governed branch chain.
+- [ ] Every approved tranche's exact exit commit passes every applicable PHP and D-66/D-67 web/native metric, risk-tier branch, changed-branch, architecture, and static/build gate with zero errors; impacted-only runs never satisfy tranche exit.
 
 ### Verification and exit gate
 
-Define and execute a tranche-specific gate before implementation starts. Track and close each approved tranche independently; unapproved ideas remain in the deferred register and do not prevent an implemented tranche or release from being marked accepted. The umbrella phase remains available for future charters without implying that the whole idea backlog must be built.
+Define and execute a tranche-specific gate before implementation starts, including every applicable Section 11 full PHP and D-66/D-67 web/native quality gate. Archive its metric matrices, source/risk manifest hashes, and immutable base/head changed-branch reports. Track and close each approved tranche independently; unapproved ideas remain in the deferred register and do not prevent an implemented tranche or release from being marked accepted. The umbrella phase remains available for future charters without implying that the whole idea backlog must be built.
 
 ---
 
@@ -767,12 +821,14 @@ Scale the proven marketplace safely, reduce operational cost, and evolve the pro
 - [ ] Recalibrate only through governed policy/model change control, golden vectors, historical replay, impact reports, and named approvals.
 - [ ] Treat multi-country, multi-currency, FX, new instruments, regional identity/registry rails, and new licences as separate discovery/program phases requiring formal authority.
 - [ ] Maintain accessibility, localization, security, dependency, privacy/retention, device/API compatibility, and operational training continuously.
+- [ ] Extend performance, failure, and architecture suites with every optimization; no caching, async, partitioning, archival, provider, web, or native change may lower any applicable Section 11 PHP or D-66/D-67 client coverage/static-analysis gate.
 
 ### Deliverables
 
 - Scale architecture/capacity plan, SLOs/error budgets, cost model, and prioritized remediation tranche.
 - Performance/resilience/recovery evidence, mature operational dashboards/runbooks, and product-outcome dashboards.
 - Governed policy/model impact reports and separately approved expansion charters where applicable.
+- Exact scale-tranche commit quality evidence, including full PHP coverage; complete applicable web/native metric matrices, risk-tier branch and immutable base/head changed-branch reports; source/risk manifest hashes; architecture/static/build; load/failure; and historical-replay outputs.
 
 ### Acceptance Criteria
 
@@ -780,14 +836,15 @@ Scale the proven marketplace safely, reduce operational cost, and evolve the pro
 - [ ] No optimization introduces a second source of truth, hidden manual dependency, unreconciled cache, or non-replayable decision.
 - [ ] BO-1–BO-8 are calculated from durable source events with named owners and no default-derived revenue incentive.
 - [ ] Cross-border, FX, new-product, or regional behavior cannot activate without the required legal/regulatory/product program gate.
+- [ ] Every scale tranche's exact exit commit passes every applicable PHP and D-66/D-67 web/native metric, risk-tier branch, changed-branch, architecture, and static/build gate with zero errors.
 
 ### Verification and exit gate
 
-Run representative load/soak/failure, reconciliation, restore/DR, chaos/provider, security, privacy, accessibility, and historical-replay tests. Exit each scale tranche only when measured objectives improve without regressing any live MVP acceptance criterion.
+Run representative load/soak/failure, reconciliation, restore/DR, chaos/provider, security, privacy, accessibility, historical replay, and full applicable PHP plus D-66/D-67 web/native quality gates. Archive the complete metric/risk-tier/changed-branch evidence. Exit each scale tranche only when measured objectives improve without regressing any live MVP acceptance criterion.
 
 ---
 
-> **Superseded requirement bank:** Work Packages L0–L12 below preserve the detailed checklist material from the former 13-phase sequence for crosswalk and ticket decomposition. Their phase numbers, statuses, estimates, scheduling notes, dependencies, and exit-transition wording are no longer the execution order. Phases 0–8 above and the crosswalk in Section 10 govern delivery.
+> **Superseded requirement bank:** Work Packages L0–L12 below preserve the detailed checklist material from the former 13-phase sequence for crosswalk and ticket decomposition. Their phase numbers, statuses, estimates, scheduling notes, dependencies, and exit-transition wording are no longer the execution order. Phases 0–8 above and the crosswalk in Section 10 govern delivery. Every retained verification idea inherits Section 11's complete PHP, web, and applicable native coverage/static/build gates; abbreviated archive wording cannot weaken D-65/D-66/D-67.
 
 ## Work Package L0 — Governance, source reconciliation, and reproducible baseline
 
@@ -1688,7 +1745,8 @@ Every implementation pull request must include evidence proportionate to its ris
 - Pest unit/feature tests using factories and deterministic fakes; contract tests for every changed Resource.
 - Authorization-denial and sensitive-field-omission tests, not only happy paths.
 - Exact-money, idempotency, concurrency, transition, and event/outbox tests for financial/workflow changes.
-- Type/static analysis, formatting, linting, frontend build, and the repository's strict coverage gate.
+- The exact commands and evidence required by Sections 11.1–11.4: full 100% first-party PHP lines; D-66/D-67 web/applicable-native metric, risk-tier branch, and changed-branch coverage; architecture tests; Pest-aware PHPStan/Larastan; and correctly scoped impacted-test acceleration.
+- Formatting, linting, frontend type checks, frontend production build, and applicable browser/native test gates.
 - Responsive screenshots or browser checks for relevant loading, empty, error, denied, frozen, offline, and success states.
 - MVP responsive-web/PWA tests, including mobile-browser/offline evidence where relevant; Phase 5 additionally requires native API/client and real-device evidence for permissions, biometrics, camera, location, background work, push, and offline sync.
 - Accessibility evidence for changed user journeys.
@@ -1697,7 +1755,73 @@ Every implementation pull request must include evidence proportionate to its ris
 - New-logo manifest/component/surface evidence for any changed header, launcher, icon, report, notification, or release asset.
 - Product/content/legal approval for money, risk, disclosure, verification, privacy, or regulatory wording.
 
-A phase is `COMPLETE` only when all acceptance criteria have linked evidence and no open red decision invalidates the result.
+### 11.1 First-party coverage and risk-tier contract
+
+| Surface | Included source and hard gate | Authoritative clean-checkout evidence |
+|---|---|---|
+| Laravel/PHP | Every executable first-party line under `app/`, the approved `phpunit.xml` coverage source. | `./vendor/bin/pest --ci --no-tia --coverage --min=100` with Xdebug or PCOV, machine-readable report, and exact SHA. |
+| Inertia TypeScript/React web/PWA | Every human-authored executable `.ts`/`.tsx` file under `resources/js` plus authored PWA/service-worker source, including matched files no test imports. Enforce 100.0% lines/statements/functions globally and per file; 100.0% critical branches globally and per file; 95.0% non-critical branches globally and at least 90.0% per file; and 100.0% newly changed branches. | `npm run test:web:coverage` from `npm ci`, using the Phase 0 Vitest/V8 configuration plus the checked-in source/risk manifests and changed-branch checker; archive machine-readable summary/LCOV, manifest identities, comparison base, and exact SHA. |
+| Future native clients | From the first native source commit—including any thin-Auditor MVP exception—every human-authored executable client and platform-bridge file for every shipped target. Enforce the same lines/statements/functions, risk-tier branch, per-file, and changed-branch thresholds with approved stack-native runner(s). | Canonical full client coverage commands and machine-readable per-target reports fixed with the Phase 5 stack decision, plus source/risk manifest identities, comparison base, and exact client/server release commits. |
+
+- New first-party behavior belongs inside the applicable measured source scope. Generated Wayfinder/API clients, declaration-only artifacts, test/configuration files, vendor code, and build output may be excluded only through exact paths in a checked-in machine-readable source manifest that records generator/provenance, owner, rationale, approver, and review trigger. Broad component/page/hook/library/platform exclusions are prohibited; customized generated or vendored code re-enters scope.
+- A separate checked-in machine-readable risk manifest classifies every authored executable web/native/platform-bridge path as `critical` or `non-critical`; mixed, uncertain, unclassified, new, moved, or renamed source fails closed as `critical` until reviewed. One critical branch makes its containing file critical until the concerns are split. A downgrade from `critical` requires the other developer plus the relevant Finance/Risk, Security/Privacy, or Audit/Compliance owner, and the pull request must prove that governed behavior was removed rather than relocated.
+- For D-67, `critical` always includes client/native source that calculates, decides, authorizes, mutates, validates, signs, schedules, expires, freezes, retries, reconciles, omits, redacts, or maps contracts for: money/fees/returns; wallet, ledger, Holding or ownership; primary/secondary orders, reservations, matching, fill/cancel/expiry/halt or settlement; idempotency/reconciliation; statement/parser lineage; underwriting, rating, capacity, eligibility, limits, rounding or disclosures; authentication, authorization, active role, consent, KYC/KYB, AML/sanctions, disputes, privacy/retention, prohibited data or sensitive-field handling; policy/override/versioned state transitions; audit events/outbox, evidence, seals, accreditation/dispatch/conflicts, provenance or immutable records; mandatory notices or regulatory reports; provider callbacks, timeouts, retries, reversals or failure recovery; PWA/native camera, location, biometrics, secure storage, permissions, offline queues, process recovery, conflict resolution or sync integrity; conditional API/Resource schema parity; and Pulse no-funds/non-binding/truthfulness safeguards.
+- `Non-critical` is limited to presentation or platform-adapter source that renders or transports already-authoritative decisions without financial/trust branching, persisted state mutation, permission/security decisions, offline/retry/conflict behavior, or provider/evidence integrity logic. Device camera/location/biometric/secure-storage/push adapters and their denial, retry, process-death, or recovery paths remain critical when they protect a BRS guarantee.
+- Current Pulse TypeScript/React remains covered while it is retained or reachable; its post-MVP product sequencing is not a coverage exemption. Dead code is deleted, not hidden. `components/ui` or similar starter code is covered unless exact files are proven immutable generated/vendored artifacts and application behavior is prohibited there.
+- `@codeCoverageIgnore*`, V8/Istanbul ignore directives, native equivalents, and broad source exclusions are forbidden for reachable first-party PHP, web/PWA, or native behavior. Any truly unreachable framework glue exception names the exact path, owner, rationale, approver, expiry/review date, and removal plan.
+- For web coverage, `coverage.include` (or its version-correct equivalent) must enumerate authored executable source so an unimported file cannot disappear from the denominator. Produce one complete machine-readable report, then use the checked-in policy validator to calculate separate critical and non-critical denominators and enforce global/per-file thresholds without automatic lowering or cross-cohort averaging. Native runners require equivalent unimported-source collection and per-target enforcement; a stack or custom Swift/Kotlin/Dart/TypeScript bridge that cannot produce the required metrics is not release-capable.
+- The set of authored files in each complete coverage report must equal the expanded source-manifest set. Thresholds use exact covered/total counts rather than rounded display percentages; a 100.0% metric passes only when covered equals total, while 95.0% and 90.0% compare exact ratios. A zero denominator is `N/A` and cannot improve an aggregate. The policy validator itself has unit tests and fail/pass controls for every metric, tier, manifest, mapping, ratio, and SHA rule.
+- “Newly changed branches” means every branch introduced or changed relative to the reviewed pull-request target merge base, calculated from machine-readable coverage and diff/source-map evidence. The changed-branch gate is 100.0% for both risk tiers and is re-evaluated against the exact target at each `feat/* -> dev -> uat -> main` hop; generated-only drift cannot be used to dilute the denominator.
+- Every branch outcome in a new file is changed. A rename/move is treated as new unless content and source-map identity are proven. If diff, AST, branch-map, or source-map evidence cannot safely map a changed region, every branch in the affected authored file is treated as changed; if the affected file or required metric cannot be established, the gate fails.
+- Numeric coverage never replaces correct assertions. Tests must prove exact-money/property vectors, transition/denial/state matrices, concurrent settlement, provider failure/reversal, React interaction/accessibility, offline/recovery, browser/PWA, and real-device outcomes. Branch thresholds describe execution evidence, not correctness or regulatory acceptance.
+- D-65 remains the PHP numeric line-coverage contract. PHP code in the same critical domains still requires exhaustive risk-based branch/state/denial/property tests, but D-67's statement/function/branch percentages apply to TypeScript/React and native/platform-bridge runners only unless a later approved decision adds a proven PHP branch-metric gate.
+- Snapshot-only rendering, shallow implementation-detail tests, test focus/skip markers, and zero-test success cannot establish coverage acceptance. Temporary uncovered line/statement/function, unimported in-scope file, uncovered critical branch, below-floor non-critical branch file, uncovered changed branch, and invalid risk downgrade must each make the gate fail before the controls are removed.
+- Every PR archives all applicable machine-readable coverage reports, source/risk manifest hashes, comparison-base identity, runner/lock identities, and the exact commit SHA. Every phase exit and `dev -> uat -> main` promotion regenerates full PHP and client evidence for the promoted SHA; an older report, different SHA, TIA replay, watch run, or changed-test subset is insufficient.
+
+### 11.2 Pest architecture-test contract
+
+Phase 0 registers `tests/Architecture` as a Pest/PHPUnit suite and creates executable `arch()` rules. Rules expand with each module and initially enforce:
+
+| Boundary | Required Pest architecture protection |
+|---|---|
+| Global first-party PHP | Apply appropriate Pest PHP/security presets, require the approved strict-typing convention, and prohibit `dd`, `dump`, `die`, `var_dump`, and other approved debug/unsafe calls in release code. |
+| HTTP/Inertia/API transport | Controllers and Form Requests follow naming/inheritance conventions and delegate governed behavior to application actions; they cannot depend directly on provider implementations or bypass protected ledger, underwriting, audit, or secondary entry points. |
+| Application and Domain | Domain code cannot depend on `Illuminate\*`, `Laravel\*`, HTTP, Inertia, API Resources, Eloquent, queues, storage, presentation code, wall-clock/global-randomness helpers, or provider implementations. Application actions own orchestration/transactions and depend on injected contracts/ports rather than vendor SDKs. |
+| Eloquent API Resources | Resources follow naming/inheritance conventions and may shape already-authorized, deliberately loaded data; they cannot depend on mutation actions, provider adapters, or own financial/workflow decisions. Behavior tests additionally prove that Resources do not query or mutate state. |
+| Integrations and providers | Concrete adapters stay in the approved Integration/Infrastructure namespace behind application-owned interfaces; vendor DTOs/SDK types cannot leak into Domain contracts or Resource schemas. |
+| Protected financial/evidence seams | Once module namespaces are frozen, `toOnlyUse`/`toOnlyBeUsedIn`-style rules prevent direct use of ledger posting, settlement, underwriting publication, seal, and immutable-evidence internals outside their approved actions/jobs. |
+
+Before enabling module-specific rules, Phase 0 freezes a namespace/module manifest in an architecture decision record; tests enforce the selected vertical-module or horizontal layout rather than inventing a second structure. Existing starter/legacy exceptions must name exact classes, owner, reason, removal phase, and expiry; namespace-wide `ignoring()` and permanent violation baselines are prohibited.
+
+An architecture test is part of the normal Pest suite, not a documentation-only convention. Every boundary change updates the rule and its controlled fail/pass evidence in the same pull request. A human review and behavior tests remain necessary where dependency analysis cannot prove absence of database writes or business calculations.
+
+### 11.3 Pest first-party PHPStan and Larastan contract
+
+- Add `pestphp/pest-plugin-phpstan:^5.0`, keep Larastan for Laravel-aware analysis, include `vendor/pestphp/pest-plugin-phpstan/extension.neon`, and add `tests/` to the existing PHPStan paths.
+- Keep the repository's current PHPStan level 7 as the initial no-regression minimum, reach zero errors across application/configuration/database/route/test paths, then raise the level only through a separately evidenced change. No blanket baseline or ignore may hide money, authorization, audit/evidence, secondary, provider, or test-definition errors.
+- `composer ci:check:static` must include the same Pest-aware PHPStan configuration used locally and in CI. The plugin must validate Pest's functional API and test constructs, including typed `expect()` chains, closure context, duplicate descriptions, and invalid `covers()`/`throws()` references.
+- Phase 0 removes starter placeholder test helpers and proves the gate using a temporary invalid Pest construct that fails analysis before being reverted.
+
+### 11.4 TIA engine, client impacted-test modes, and CI topology
+
+Pest TIA is a PHP/Pest developer-speed layer over trusted full-suite evidence. It does not calculate or satisfy the TypeScript/React or native coverage gates; those ecosystems may use their own watch/related-test modes locally under the same non-authoritative rule.
+
+| Context | Required behavior |
+|---|---|
+| Local PHP developer/agent loop | Use `./vendor/bin/pest --parallel --tia` with Xdebug or PCOV. Prefer `pest()->tia()->locally()`; optionally enable `baselined()` after the GitHub artifact path is proven. |
+| Local web/native developer/agent loop | Use the approved Vitest/native watch or related-test mode for rapid feedback, followed by focused behavior/static checks before handoff. These runs do not establish the numeric coverage gate. |
+| Pull request and branch-promotion CI | Run `./vendor/bin/pest --ci --no-tia --coverage --min=100`, the complete `npm run test:web:coverage` plus its source/risk-policy and changed-branch validator, and the complete native coverage/policy suites whenever native source exists. Do not restore TIA result caches into the PHP gate or count any replay/watch/changed-test result as authoritative evidence. |
+| Dedicated shared-baseline workflow | On the approved baseline branch and schedule, run the full suite with `--tia --fresh` and the 100% threshold, then upload the `./vendor/bin/pest --baseline` directory as the named `pest-tia-baseline` artifact. This is the only CI job allowed to use `--tia`. |
+| Missing, stale, incompatible, or unavailable baseline | Record a fresh local baseline or continue with the normal full CI suite. Never fail open, reuse a different project/SHA as release proof, or commit machine-specific TIA state. |
+| Phase/release exit | Archive full PHP coverage; applicable web/native global/per-file metric matrices, risk-tier branch reports, immutable base/head changed-branch reports, and source/risk manifest hashes; architecture/static/build results; commit SHA; runtime/dependency lock identities; and applicable PostgreSQL/browser/device evidence. Refresh the shared Pest TIA baseline only after all authoritative gates pass. |
+
+CI may front-load `./vendor/bin/pest --ci --no-tia --group=arch`, an explicitly maintained non-TIA `critical` group, and focused client smoke/static jobs. These are additive fast-fail signals; none replaces the complete PHP gate, the full-source D-66/D-67 client gate, or the 100% newly changed-branch gate.
+
+Phase 0 removes `--tia` and TIA cache restore/save steps from the existing main `tests.yml` test job, preserves the separate `tia-baseline.yml`, and validates its artifact/fetch fallback. PHP lockfiles, `phpunit.xml`, PHP/runtime changes, build configuration, and large refactors force a fresh TIA graph. JavaScript/native lockfiles, coverage configuration, source-map/transpiler settings, source/risk manifests, generated-code rules, diff-base logic, and client source changes force new complete client metric and changed-branch reports rather than a Pest TIA refresh. The runtime matrix exercises both the minimum supported PHP version and the deployed PHP version; Phase 0 resolves the current PHP 8.4 CI versus PHP 8.5 deployment/tooling contract without weakening D-65/D-66/D-67.
+
+CI compares the checked-out `HEAD`, the workflow's expected tested SHA, the policy artifact's head SHA, and the deployment candidate before accepting evidence. Pull requests use the merge base with the exact target SHA; every promotion recalculates against that hop's target. A merge queue may test its deterministic merge SHA, but only that tested commit may be promoted.
+
+A phase is `COMPLETE` only when all acceptance criteria have linked evidence, its exact exit commit passes Sections 11.1–11.4, and no open red decision invalidates the result.
 
 ## 12. Data and integration readiness register
 
@@ -1724,10 +1848,10 @@ A phase is `COMPLETE` only when all acceptance criteria have linked evidence and
 Each phase is decomposed into reviewable vertical slices containing domain, Resource, Inertia/PWA surface, Admin/control, tests, audit/observability, and documentation. Native client slices are added only in Phase 5.
 
 1. Branch each slice from `dev` using `feat/*`.
-2. Merge to `dev` only when slice evidence is attached; Phase 1's alpha remains isolated and cannot be represented as shipped MVP.
-3. At Phase 3, promote the signed MVP release candidate from `dev` to `uat` in its own pull request and perform internal no-money rehearsal.
+2. Merge to `dev` only when the exact slice SHA passes full non-TIA PHP coverage, every complete clean-checkout D-66/D-67 web/applicable-native metric and changed-branch gate, architecture/static/type/lint/build, and applicable browser/device gates and the evidence is attached; Phase 1's alpha remains isolated and cannot be represented as shipped MVP.
+3. At Phase 3, regenerate every applicable full PHP/web/native gate on the exact signed MVP release-candidate SHA, promote those commits from `dev` to `uat` in their own pull request, and perform the internal no-money rehearsal.
 4. Do not promote the regulated MVP to `main` until Phase 4 approvals, provider certification, participant/cap/stop controls, and production readiness are signed.
-5. Promote the same verified commits from `uat` to `main` in a separate checked pull request; verify migrations, queues/schedules, providers, reconciliation, responsive web/PWA, and rollback.
+5. Promote the same verified commits from `uat` to `main` in a separate checked pull request only after the exact promoted SHA passes every applicable complete PHP/web/native gate; verify migrations, queues/schedules, providers, reconciliation, responsive web/PWA/native clients, and rollback.
 6. Keep Phases 5–8 in isolated feature flags/branches until the preceding release gate and their own approval are satisfied; they cannot change the governed pilot scope implicitly.
 7. Verify `rozine.rw`, background processes, metrics, provider callbacks, financial reconciliation, security, and user-critical journeys after every approved production deployment.
 
@@ -1738,7 +1862,7 @@ No feature branch goes directly to `main`, and a green local or `dev` result is 
 - Phase kickoff: confirm decisions, entry criteria, owner, threat/data review, and acceptance fixtures.
 - Slice review: demonstrate one vertical path on responsive web/PWA and shared Resources with failure states and audit evidence; add native parity only in Phase 5.
 - Weekly risk review: decisions, providers, policy drift, security/privacy, reconciliation, performance, and phase exit evidence.
-- Phase exit: independent acceptance against every checkbox, with unmet criteria keeping status open.
+- Phase exit: independent acceptance against every checkbox plus inspection of the exact SHA's PHP line report; client lines/statements/functions matrix; critical and non-critical branch reports; immutable base/head changed-branch report; source/risk manifests; architecture/static/build results; and every exclusion, classification, ignore, or suppression. Unmet criteria keep status open.
 - MVP milestone review: label the outcome precisely as Alpha, Release Candidate, or Live Accepted.
 - Release review: UAT/live evidence, migration/rollback, operational readiness, support, regulatory/legal approval, and explicit go/no-go.
 
@@ -1756,6 +1880,7 @@ These are working assumptions, not hidden product decisions:
 - Provider integrations use adapter contracts and fakes until vendors and sandboxes are selected.
 - Kinyarwanda, English, and French are localization-ready from Phase 1; launch languages remain a decision.
 - The two-developer Codex/Claude Code agent-native target is an eight-week stretch, Week 9 planning commitment, and Week 10 remediation ceiling for a pre-production engineering MVP release candidate that includes mandatory secondary trading. Exact dates remain provisional until developer/reviewer availability, D-26/D-27 and other red decisions, PWA assurance, providers, and pilot scope are confirmed.
+- The Section 11 cross-platform quality contract is included in every applicable estimate: 100.0% PHP lines; 100.0% client lines/statements/functions globally and per file; 100.0% critical branches globally and per file; 95.0% non-critical branches globally and at least 90.0% per file; 100.0% newly changed branches; source/risk manifests; architecture/static/build gates; local impacted-test acceleration; and complete clean-checkout release evidence. The client rules apply to TypeScript/React immediately and future native/platform-bridge source from its first commit. No phase may trade these controls for schedule; if the existing untested client baseline cannot close D-66/D-67 in Phase 0, rebaseline the delivery window.
 - Existing Pulse code is reusable only where it passes the reconciled policy and contract tests.
 - The six new-logo JPEGs are reference direction, not production masters; exact colors, canonical lockup, vectors, provenance, and surface rules remain Phase 0 gates.
 
@@ -1767,7 +1892,7 @@ Answer by ID; short answers are sufficient. Red gates must be resolved before th
 
 - **D-01:** Should the BRS remain the governing authority for all C-01–C-34 conflicts, or is an amended BRS already planned?
 - **D-02 — `PLANNING DEFAULT 2026-08-19`:** Use three distinct targets: Phase 1 `MVP ALPHA`, Phase 3 sandbox-ready responsive-web `MVP RELEASE CANDIDATE`, and Phase 4 `LIVE MVP ACCEPTED`. Confirm the target dates for the release candidate and regulated pilot separately.
-- **D-03:** For post-MVP Phase 5, will native mobile use React Native/Expo, Flutter, or another stack? Is it one role-switching app or separate Investor, Business, and Auditor apps? If role-switching, every shell must expose persistent active-role context.
+- **D-03:** For post-MVP Phase 5, will native mobile use React Native/Expo, Flutter, or another stack? Is it one role-switching app or separate Investor, Business, and Auditor apps? If role-switching, every shell must expose persistent active-role context. The selected stack and any custom Swift/Kotlin/Dart/TypeScript bridge must support every D-66/D-67 global, per-file, risk-tier branch, and changed-branch gate from the first native commit.
 - **D-04 — `PLANNING DEFAULT 2026-08-19`:** The MVP is responsive web/PWA with no app-store dependency. Phase 0 must prove the Auditor PWA assurance contract; if it fails, approve and estimate a thin-native Auditor exception. Full native clients follow in Phase 5.
 - **D-05:** Is one person allowed to be an Investor, Business owner, and/or Audit Partner under one Party/login? Which combinations are prohibited?
 - **D-06 — `PLANNING DEFAULT 2026-08-19`:** Admin, compliance, treasury, and supervisor controls required by the delivered marketplace are MVP work inside Phases 1–4. Pulse remains in this roadmap but follows the MVP in Phase 6.
@@ -1848,6 +1973,9 @@ Answer by ID; short answers are sufficient. Red gates must be resolved before th
 - **D-54:** What support hours, escalation owners, operational staffing, Audit Partner support, reconciliation ownership, and incident communication are expected?
 - **D-55 — `UPDATED 2026-08-20`:** Plan for two dedicated expert developers orchestrating Codex and Claude Code across at most four bounded implementation/test worktrees with daily integration. Use an eight-week stretch target, Week 9 planning commitment, and Week 10 remediation ceiling for the pre-production responsive-web MVP RC, including mandatory secondary trading. Phase gates and second-human review for authorization, migrations, money, underwriting/risk, privacy, seals, provider callbacks, secondary settlement, and release-critical work remain mandatory. Confirm named availability, non-engineering reviewers, PWA assurance result, and separate MVP-RC/regulatory-pilot dates before converting this into a calendar commitment.
 - **D-58:** What is the smallest supported mobile-web viewport and the launch device/browser/OS matrix, including orientation, safe-area, keyboard, zoom, and text-scaling expectations?
+- **D-65 — `ENGINEERING QUALITY APPROVED 2026-08-23`:** Enforce 100.0% Pest line coverage over the approved first-party PHP source scope (`app/` initially), Pest architecture tests for the modular-monolith boundaries, and Pest's first-party PHPStan plugin over application and test code. Use the TIA engine for local developer/agent acceleration and a dedicated shared-baseline workflow only; every pull request, phase exit, and promotion runs the complete clean-checkout suite without TIA on the exact commit. Coverage never substitutes for risk-based assertions or client/browser/device evidence.
+- **D-66 — `ENGINEERING QUALITY APPROVED 2026-08-23`:** Enforce 100.0% executable line coverage globally and per file over all shipped human-authored TypeScript/React web/PWA source and, from the first native-client commit including any thin-Auditor exception, all human-authored executable native and platform-bridge source. Only exact generated, declaration-only, test/configuration, vendor, and build artifacts may be excluded through the reviewed machine-readable manifest. Every pull request, phase exit, and promotion runs the complete clean-checkout client suite on the exact SHA; watch/related-test modes are local acceleration only. Coverage never substitutes for type/lint/build, component/contract, branch/state, browser/device, accessibility, offline/recovery, or platform tests.
+- **D-67 — `ENGINEERING QUALITY APPROVED 2026-08-24`:** For every included human-authored TypeScript/React web/PWA and native/platform-bridge file, enforce 100.0% line, statement, and function coverage globally and per file. Client files containing financial or trust-boundary behavior require 100.0% branch coverage globally and per file. Remaining approved presentation/platform-adapter files require at least 95.0% branch coverage globally and 90.0% per file. Every branch introduced or modified relative to the recorded target merge base requires 100.0% coverage regardless of class. The reviewed machine-readable source/risk manifests govern exact exclusions and classification; mixed, uncertain, new, moved, renamed, or unclassified files default to critical. Every pull request, phase exit, and promotion archives full exact-SHA metric reports plus immutable base/head changed-branch evidence. D-65 remains the PHP numeric line-coverage contract; risk-based PHP branch/state assertions remain mandatory even though D-67's additional numeric metrics are client/native gates.
 
 ## Appendix A — Underwriting decision worksheet and golden-vector pack
 
@@ -2294,6 +2422,7 @@ Any change to evidence normalization, EngineScore, TargetDSCR, capacity, rating,
 - [x] MVP acceptance families, BRS requirement families, and former Work Packages L0–L12 are crosswalked to active phases.
 - [ ] The Phase 0 register maps every individual BO/BR/FR/NFR/IR/CR/AC ID to a checklist item, deliverable, test/evidence owner, and acceptance gate.
 - [x] Financial integrity, offline evidence, authorization, privacy, accessibility, localization, observability, testing, and release promotion are cross-phase gates.
+- [x] Every active phase explicitly carries the Section 11 quality contract: 100.0% `app/` PHP lines; 100.0% client lines/statements/functions globally and per file; 100.0% critical branches globally and per file; 95.0% non-critical branches globally and at least 90.0% per file; 100.0% newly changed branches; reviewed source/risk manifests; architecture/static/build gates; local impacted-test acceleration only; and exact-SHA complete clean-checkout phase/release evidence for web and applicable native targets.
 - [x] Appendix A provides the underwriting policy worksheet, vector record schema, minimum vector matrix, candidate arithmetic example, layer-parity gate, and policy change control.
 - [ ] Appendix A's decision rows, `READY-TO-BASELINE`, `BLOCKED`, and `QUARANTINED` vectors have approved dispositions, owners, concrete fixtures, hashes, and sign-offs.
 - [ ] Product and regulatory owners have answered the red questions and approved the governing defaults.
@@ -2302,4 +2431,12 @@ Any change to evidence normalization, EngineScore, TargetDSCR, capacity, rating,
 ## 18. Reference links
 
 - [Laravel 13 Eloquent API Resources](https://laravel.com/docs/13.x/eloquent-resources)
+- [Pest test coverage and threshold enforcement](https://pestphp.com/docs/test-coverage)
+- [Pest architecture testing](https://pestphp.com/docs/arch-testing)
+- [Pest TIA engine](https://pestphp.com/docs/tia)
+- [Pest 5 first-party PHPStan plugin](https://pestphp.com/docs/pest5-now-available#content-first-party-phpstan-plugin)
+- [Pest PHPStan configuration](https://pestphp.com/docs/phpstan)
+- [Vitest coverage configuration](https://vitest.dev/guide/coverage.html)
+- [Vitest coverage thresholds](https://vitest.dev/config/coverage.html)
+- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
 - [Reference phased-plan structure](https://github.com/hussain4real/AAC/blob/main/docs/MAACC_Phased_Implementation_Plan.md)
