@@ -539,11 +539,9 @@ type WriteOptions = {
     size: number;
     weight: number;
     color: string;
-    top?: number;
-    bottom?: number;
     tracking?: number;
     align?: CanvasTextAlign;
-};
+} & ({ top: number; bottom?: number } | { top?: number; bottom: number });
 
 /**
  * Draw a run of text into the box the rendered card gives it, sitting the
@@ -565,7 +563,7 @@ function write(
     const ascent = metrics.fontBoundingBoxAscent || options.size * 0.8;
     const descent = metrics.fontBoundingBoxDescent || options.size * 0.2;
 
-    const top = options.top ?? (options.bottom ?? 0) - (ascent + descent);
+    const top = options.top ?? options.bottom! - (ascent + descent);
     const boxHeight =
         options.bottom !== undefined && options.top !== undefined
             ? options.bottom - options.top

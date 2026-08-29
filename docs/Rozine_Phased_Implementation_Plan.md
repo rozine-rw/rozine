@@ -2,7 +2,7 @@
 
 **Document status:** Draft; underwriting/Pulse decisions D-11, D-11A–C, D-13, D-14, and D-19A are product-approved candidates, not activated; remaining product, operational, technical, and regulatory gates stay open
 
-**Prepared:** 18 August 2026 · **MVP-first refactor:** 19 August 2026 · **Agent-native secondary-market schedule:** 20 August 2026 · **Cross-platform risk-tiered coverage revision:** 24 August 2026
+**Prepared:** 18 August 2026 · **MVP-first refactor:** 19 August 2026 · **Agent-native secondary-market schedule:** 20 August 2026 · **Cross-platform risk-tiered coverage revision:** 24 August 2026 · **Phase 0 governance and brand-input update:** 27 August 2026 · **Named internal-role update:** 28 August 2026
 
 **Scope:** First deliver a responsive-web/PWA MVP containing the Business, Auditor, Investor, and Admin applications, shared launcher, transactional core, and mandatory Investor-to-Investor secondary trading; then deliver governed pilot evidence, native mobile, Pulse, and approved product extensions as explicit post-MVP phases
 **Delivery model:** Laravel 13 monolith; Inertia.js 3 + React 19 for the MVP web/PWA; versioned Laravel API for post-MVP native mobile; the same Eloquent API Resources provide Inertia data and mobile API representations
@@ -34,7 +34,7 @@ When sources disagree, use this order until an authorized decision changes it:
 1. Confirmed user or product-owner decision recorded in the decision log.
 2. `Rozine-BRS` v1.0 and activated decisions for financial, underwriting, audit-integrity, regulatory, security, marketplace, prohibited-data, and full-product behavior.
 3. `Rozine MVP Spec.pdf` for MVP packaging, screen coverage, explicit exclusions, acceptance intent, and the three-wave delivery order, but never as a silent override of item 2.
-4. The six files currently in `docs/New Logo/` for the latest intended star mark and role-lockup direction, subject to canonical-master, exact-color, provenance, and usage approval.
+4. The 31 SVG files currently in `docs/New Logo/` for the latest intended star mark, core lockups, role lockups, and background variants, subject to canonical selection, exact-color approval, provenance, and usage approval.
 5. `Rozine-Branding-Styles` for visual language, accessibility intent, application tokens, and content presentation where it does not conflict with the approved new-logo master.
 6. `Rozine-Business-Plan` for market intent, operating model, rollout sequence, and economics where the BRS is silent.
 7. The loan-sizing PDF as an unapproved formula candidate requiring reconciliation and golden tests.
@@ -45,7 +45,7 @@ Any approved departure from the BRS must become a dated, versioned policy decisi
 
 ## 3. Reviewed source inventory
 
-The current source audit covers 18 planning inputs: 17 non-plan files presently in `docs/` plus the externally supplied 14-page `Rozine MVP Spec.pdf`. The implementation-plan file itself is not counted as an input. The earlier 60-image logo inventory has been superseded and is not current source evidence.
+The current source audit covers 44 planning inputs: 43 non-plan source files presently in `docs/` plus the externally supplied 14-page `Rozine MVP Spec.pdf`. The implementation plan and generated Phase 0 governance records are not counted as inputs. The earlier 60-image and six-JPEG logo inventories have been superseded and are retained only in Git history and the governed manifest.
 
 | Source group | Files reviewed | How it informs this plan |
 |---|---:|---|
@@ -55,22 +55,20 @@ The current source audit covers 18 planning inputs: 17 non-plan files presently 
 | MVP specification | `/Users/amisha/Downloads/Rozine MVP Spec.pdf` · 14 pages · created 18 August 2026 | MVP screen/state coverage, three build waves, responsive-web packaging, role acceptance criteria, launcher/demo intent, and explicit exclusions. Conflicting business rules are quarantined in Section 8. |
 | Formula note | `resources/Pre-qualified loan formulas (loan sizing on Pulse).pdf` | Candidate Pulse scoring, yield, and capacity calculations; conflicts must be resolved before reuse. |
 | Audience/prototype references | Business Brief, Investor Brief, Pulse, and Pulse Desktop standalone HTML files | Page language, information hierarchy, interaction ideas, and evidence of prototype behavior. Conflicting claims are quarantined in Section 8. |
-| Current logo references | Six SHA-unique JPEGs in `New Logo/` | Two white-on-blue Rozine lockups, a rounded-square star tile, and explicit Investor-blue, Business-green, and Auditor-orange wordmarks. All are flattened, RGB, non-semantic WhatsApp exports. |
+| Current logo sources | 31 SHA-unique SVGs in `New Logo/` | Core and role lockups, star/icon treatments, and light/dark/colored-background variants. The files are valid SVG documents and are hash-recorded; their non-semantic Frame names, canonical selection, rights, and final usage matrix remain unresolved. |
 
-The current logo audit found a new stylized star mark, two unresolved primary Rozine lockups, explicit role lockups, approximate JPEG colors that differ from the brand-guide tokens, and no vector/transparent master, authoritative color values, font/outline provenance, monochrome/dark variant, small-size mark, or complete PWA/native icon and splash package. The square JPEG has baked white corners and is a visual reference, not a production icon master. Phase 0 decides the direction and receives or commissions the rights-cleared canonical masters; Phase 1 implements reusable MVP components; Phase 3 finalizes and release-certifies web/PWA, report, and demo assets; Phase 5 creates and tests native/store packages. Unused promotional variants are post-MVP.
+The current logo audit found a 31-file SVG package containing the stylized star, competing core lockups, explicit Investor/Business/Auditor lockups, icon treatments, and light, dark, blue, green, and orange background variants. XML syntax and SHA-256 identity are verified. The package embeds candidate colors including core blue `#0039FF`, Business green `#1D9E75`, and Auditor orange `#C2661F`, but only Robert's Brand approval can make a color, lockup, or surface rule authoritative. Non-semantic Frame filenames, duplicate/competing treatments, font/outline provenance, rights, compact/favicons/PWA semantics, and the promised PNG derivatives remain unresolved. Phase 0 selects and rights-clears canonical masters; Phase 1 implements reusable MVP components; Phase 3 finalizes and release-certifies web/PWA, report, and demo assets; Phase 5 creates and tests native/store packages. Unused promotional variants are post-MVP.
 
-### 3.1 Current logo reference manifest
+### 3.1 Current logo source manifest
 
-All six files are unique RGB JPEGs without transparency. Their non-semantic filenames are preserved here for source traceability only and must not become production asset names.
+All 31 current files are SHA-unique SVG documents with valid XML. Their non-semantic Frame filenames are preserved for source traceability only and must not become production asset names. `docs/phase-0/brand-source-manifest.json` records every file and hash; the six superseded JPEG reference hashes remain there as history even though those files have been removed.
 
-| Source file in `docs/New Logo/` | Dimensions | Evidenced treatment | Planning disposition |
+| Source family in `docs/New Logo/` | Files | Evidenced treatment | Planning disposition |
 |---|---:|---|---|
-| `WhatsApp Image 2026-08-18 at 20.57.17.jpeg` | 1280×621 | Lowercase white `rozine` on blue; star integrated at the `i` | Candidate primary lockup under D-51. |
-| `WhatsApp Image 2026-08-18 at 20.58.37.jpeg` | 1280×474 | Detached leading white star plus lowercase `rozine` on blue | Competing primary lockup under D-51. |
-| `WhatsApp Image 2026-08-18 at 20.57.18 (2).jpeg` | 1280×1280 | White star on a blue rounded-square tile with baked white corners | Visual reference only; never an icon master. |
-| `WhatsApp Image 2026-08-18 at 20.57.18 (1).jpeg` | 1280×398 | Blue `investor` role wordmark with integrated star | Role-identity input under D-51/D-52/D-63. |
-| `WhatsApp Image 2026-08-18 at 20.57.18.jpeg` | 1280×392 | Green `business` role wordmark with integrated star | Role-identity input under D-51/D-52/D-63. |
-| `WhatsApp Image 2026-08-18 at 20.57.19.jpeg` | 1280×462 | Orange `auditor` role wordmark with integrated star | Role-identity input under D-51/D-52/D-63. |
+| Core lockups and wordmarks | `Frame 83–86`, `89–90`, `101–104` | Competing star/wordmark compositions on white, blue, and black | Robert selects the canonical core lockup and approved contrast variants under D-51/D-57. |
+| Business family | `Frame 92–94`, `109` | Green-background and green-on-white lockup/icon treatments | Candidate Business identity; exact semantic use and accessible name remain pending under D-52/D-63. |
+| Auditor family | `Frame 95–100`, `110` | Orange-background and orange-on-white lockup/icon treatments | Candidate Auditor identity; exact semantic use and accessible name remain pending under D-52/D-63. |
+| Investor and shared icon family | `Frame 87–88`, `91`, `105–108`, `111–113` | White, black, blue, gradient, and standalone-star treatments plus Investor lockup | Candidate Investor/shared identity; favicon/PWA suitability and surface rules require D-51/D-57/D-63 approval. |
 
 ## 4. Confirmed architecture
 
@@ -125,12 +123,12 @@ The shared Resource catalog should include, at minimum: Party, BusinessProfile, 
 | Framework | Laravel 13, Inertia React 3, React 19, Tailwind CSS 4, Fortify, Sanctum, Wayfinder, and Pest are configured. | Keep the selected stack; do not introduce a parallel backend or web SPA API layer. |
 | Pulse | Public Pulse page, investor/business registration, polling, a listing Resource, and a server-side underwriting class exist. | Reuse the transport patterns only after formula and data-source reconciliation. |
 | Shared representation | `PulseListingResource` is already resolved for Inertia. | Generalize this proven pattern into a formal cross-transport Resource contract. |
-| Frontend verification | The current `resources/js` tree contains 173 TypeScript/TSX files, but `package.json` exposes only lint, format, type-check, and build commands; no frontend test runner, React component-testing library, test files, or JavaScript coverage gate is configured. Generated Wayfinder output and non-executable declarations share the tree with human-authored code. | Phase 0 must classify the executable source and risk tiers, install/configure the approved React test stack, baseline all retained first-party TypeScript/React code at 100% lines/statements/functions globally and per file, enforce the D-67 branch thresholds, and keep generated/type-only exclusions explicit and machine-readable. |
+| Frontend verification | Vitest, V8, jsdom, React Testing Library, user-event, accessibility matchers, and the fail-closed D-67 validator are configured. The complete suite passes 226 tests and covers all 101 retained authored executable files at 100% lines, statements, functions, and branches; 66 generated files and 6 declaration-only files have machine-readable provenance. | Preserve the exact source/risk manifests, complete-suite gate, generated-source drift control, changed-branch evidence, and behavior-first assertions with every UI slice; do not treat the green foundation as Phase 1 product coverage. |
 | Identity | Starter authentication, account settings, two-factor authentication, and passkey-related foundations exist. | Extend to Party, multi-role authorization, KYC/KYB, staff/Auditor MFA, and mobile token lifecycle. |
 | Mobile API | Only a minimal authenticated user route is present. | Versioned role APIs and sync contracts remain to be built. |
 | Role products | No complete Business, Investor, or Auditor marketplace journey was found. | Most role phases are `NOT STARTED`. |
-| Runtime baseline | Route discovery currently fails because `laravel/head` is present in `composer.json` and `composer.lock` but absent from the installed `vendor` tree; installed dependencies are out of sync with the lock. | Phase 0 must restore a reproducible booting baseline before feature work. |
-| CI and delivery | Pest 5, Larastan, an `app/` coverage source, a `--coverage --min=100` CI command, and a dedicated TIA-baseline workflow exist. Architecture tests and the Pest PHPStan plugin are not configured, while the main clean-checkout CI job currently uses `--tia`. | Phase 0 must preserve 100% PHP line coverage, add architecture and Pest-aware static-analysis gates, and remove TIA from the authoritative CI test job. TIA remains a local acceleration engine plus a dedicated shared-baseline workflow. Preserve `feat/* -> dev -> uat -> main` promotion and attach full-suite evidence at every hop. |
+| Runtime baseline | Clean locked Composer/npm installation, Laravel 13.23 boot, route discovery, PHP tests/static analysis, and production build are green locally on PHP 8.5.8. D-73 fixes PHP 8.4 minimum compatibility and PHP 8.5 canonical deployment/coverage. | Preserve clean-install reproducibility, obtain hosted exact-SHA PHP 8.4/8.5 evidence, pin PHP 8.5 in deployment evidence, and add the authoritative PostgreSQL concurrency lane before Phase 0 exits. |
+| CI and delivery | Pest 5, 100% `app/` line coverage, the initial six-test Architecture suite with a controlled fail/pass proof, Pest's first-party PHPStan plugin, complete non-TIA PHP CI, complete D-66/D-67 web CI, and a separate TIA-baseline workflow are configured. The main CI matrix includes PHP 8.4 and 8.5. | Complete module-specific architecture rules and negative controls, PostgreSQL race evidence, hosted candidate/target exact-SHA runs, latest-SHA non-author review, and fail-closed deployment admission. TIA remains acceleration evidence only. |
 
 ## 6. Product invariants across every phase
 
@@ -198,7 +196,7 @@ The following conflicts are not implementation details. Each must be accepted as
 | C-16 | Business-plan float/interest language may conflict with segregated-funds and no-spread positioning. | Legal/accounting decision required before any interest ownership or treasury behavior is built. |
 | C-17 | “Bank-grade” and “end-to-end encrypted” claims are broader than proven controls. | Replace with precise claims backed by implemented architecture and review. |
 | C-18 | “How safe” rating language conflicts with explicit capital-loss risk. | Describe verified business quality/standing, never safety or capital protection. |
-| C-19 | The six replacement JPEGs establish a star mark and explicit Investor-blue, Business-green, and Auditor-orange wordmarks, but provide two competing Rozine lockups and sampled colors that differ from the brand-guide tokens. JPEG sampling cannot establish authoritative hex values. | Treat all six as direction references. Use the guide's application tokens until the brand owner supplies/approves canonical vector masters, exact colors, one primary lockup, accessible role naming, and surface rules. Retire the legacy asset set. |
+| C-19 | The 31 replacement SVGs establish a star mark and explicit Investor-blue, Business-green, and Auditor-orange wordmarks, but still provide competing Rozine lockups and candidate colors that differ from the brand-guide tokens. File delivery does not itself establish brand authority. | Treat the SVG package as received source evidence. Use the guide's application tokens until Robert approves canonical vector masters, exact colors, one primary lockup, accessible role naming, rights, and surface rules. Retire the legacy asset set only through that approval. |
 | C-20 | MVP PDF pages 2 and 14 specify four web apps plus a launcher, no native stores, and omit Pulse; the full BRS and prior roadmap include mobile and Pulse. | Use responsive web/PWA for the MVP and move native and Pulse to explicit post-MVP phases. If Auditor PWA assurance fails, a narrowly scoped native companion becomes an MVP exception. Full-BRS AC-11 remains open until Pulse ships. |
 | C-21 | MVP PDF page 5 says 3–6-month terms, five years of statements, and a 35% revenue ceiling. | Retain BRS tenors 3/6/9/12; D-14's six-month minimum, 6–11-month manual route, 12+ potential auto route, special-case 12-month requirement, and maximum 24-month retained history; and no revenue cap unless D-12 formally approves one. |
 | C-22 | MVP PDF page 5 implies a penalty and then default after day 7. | Do not invent a penalty. Reporting/arrears consequences follow approved policy; D-11C's 90-DPD or dual-approved unlikely-to-pay default backstop remains fixed. Early payoff preserves the promised total return. |
@@ -211,7 +209,7 @@ The following conflicts are not implementation details. Each must be accepted as
 | C-29 | MVP PDF pages 9–10 require Plus bands, auto-deployment, a 50% raise cap, and five-note language without an approved BRS policy. | Keep the Automation screen as an honest gated explainer in the MVP; move executable Plus to Phase 7 until product, fee, concentration, suitability, and legal policy are formally approved. |
 | C-30 | MVP PDF pages 2–3 say every displayed figure traces to a ledger entry, but ratings/capacity are not ledger facts. | Monetary amounts and balances trace to ledger/schedule entries. Ratings, capacity, health, and evidence facts trace to retained inputs, derivations, policy versions, and immutable events. |
 | C-31 | MVP PDF page 14 asks demo Businesses across “all three ratings”; the BRS has four rating bands. | Seed all four BRS bands. Distressed is historical/non-listable and cannot appear as an eligible deal. |
-| C-32 | The MVP PDF embeds a logo treatment while the user supplied a replacement six-JPEG logo set afterward. | The replacement set governs current direction once Phase 0 approves a canonical master; embedded PDF branding is non-authoritative reference art. |
+| C-32 | The MVP PDF embeds a logo treatment while the user supplied a replacement 31-SVG logo package afterward. | The replacement package governs current direction once Phase 0 approves a canonical master; embedded PDF branding is non-authoritative reference art. |
 | C-33 | MVP PDF pages 2 and 9 promise both MoMo networks and same-day withdrawals. | Treat these as provider targets, not unconditional acceptance promises, until D-21/D-38 contracts, cutoffs, reversals, limits, and reconciliation behavior are approved. |
 | C-34 | MVP PDF page 5 requires exactly two directors/signatories, each ID-verified; the BRS does not establish a universal two-person company/signing rule and entity mandates may differ. | Do not hard-code two. Resolve D-64 before freezing the Party/application model; verify every person required by the approved KYB, ownership, corporate-authority, and signing-mandate policy. The PDF's tax-clearance document remains prohibited under C-01. |
 
@@ -232,11 +230,11 @@ A phase is ready to start only when:
 
 A **focused week** is an elapsed active-engineering window for the two-developer team, not a person-week and not a promise that an external gate closes in that interval. Phase ranges begin from a satisfied entry gate or an approved preparatory-slice exception. Such an exception may open only non-activatable contracts, fixtures, read models, UI scaffolding, or test infrastructure; governed behavior, money movement, and acceptance still wait for the predecessor gate. Existing `IN PROGRESS` or `PARTIAL FOUNDATION` work receives schedule credit only after Phase 0 proves it satisfies the applicable acceptance criteria.
 
-The MVP baseline is exactly **two dedicated developers** working on one Laravel/Inertia responsive-web/PWA product. Developer A primarily owns domain, data, underwriting, ledger, providers, authorization, and security-sensitive seams. Developer B primarily owns Inertia, PWA/offline capture and sync, workflows, accessibility, and client-contract seams. Ownership rotates for knowledge transfer, and both developers jointly own architecture and integration. Native app-store clients are deliberately outside the MVP estimate.
+The MVP baseline is exactly **two dedicated developers** working on one Laravel/Inertia responsive-web/PWA product. Developer A primarily owns domain, data, underwriting, ledger, providers, authorization, and security-sensitive seams. Developer B primarily owns Inertia, PWA/offline capture and sync, workflows, accessibility, and client-contract seams. Under D-74 for Phase 1, Developer A is Aminu and Developer B is Erastus; both jointly freeze contracts, integrate at the named checkpoints, cross-review the other lane, and own architecture and acceptance. Native app-store clients are deliberately outside the MVP estimate.
 
-Each developer may run Codex and Claude Code concurrently as bounded workers in isolated branches/worktrees. One agent implements a narrow slice while another generates or adversarially reviews tests, fixtures, contracts, and documentation; roles alternate. Agents may not concurrently edit the same migration, authorization policy, Resource, state machine, underwriting rule, ledger posting rule, or integration contract. Keep at most four agent worktrees and two human-reviewed merge candidates active, integrate at least daily, and require the other developer's review for authorization, migrations, privacy, underwriting/risk, money, seals, provider callbacks, and release-critical transitions. AI output is not independent approval.
+Each developer may run Codex and Claude Code concurrently as bounded workers in isolated branches/worktrees. One agent implements a narrow slice while another generates or adversarially reviews tests, fixtures, contracts, and documentation; roles alternate. Agents may not concurrently edit the same migration, authorization policy, Resource, state machine, underwriting rule, ledger posting rule, or integration contract. Keep at most four agent worktrees and two human-reviewed merge candidates active, integrate at least daily, and require the other developer's review of the latest candidate SHA for authorization, migrations, privacy, underwriting/risk, money, seals, provider callbacks, promotions, and release-critical transitions. A new commit invalidates that review until the reviewer approves the new SHA. AI output is not independent approval.
 
-Product, Finance/Risk, Compliance/Legal, Audit Partner operations, independent QA/UAT/test, security, provider, and regulator owners remain external accountable reviewers. Each MVP phase includes its own Admin/control, automated-test, observability, accessibility, and hardening slice; these are not deferred to a final clean-up phase or treated as free agent capacity.
+The confirmed internal project approval pool is **Aminu, Erastus, Robert, and Kimani**. Robert owns Product, Design, Brand, Business, and internal Legal; Aminu and Erastus jointly own Engineering and Security; Kimani owns Audit Operations, Compliance, and Finance/Risk. Each applicable record must still capture every required named-owner signature and record conflicts or abstentions. Any pool member who was not the sole author may act as the independent-test approver, or the record may name an eligible external delegate. Naming an owner does not itself approve a decision or replace external legal/regulatory/CMA, ICPAR/Audit Partner, provider-certification, penetration-test, or independent-assurance authority where one is required. Each MVP phase includes its own Admin/control, automated-test, observability, accessibility, and hardening slice; these are not deferred to a final clean-up phase or treated as free agent capacity.
 
 The four MVP phase estimates represent approximately `7.5–10.5 focused weeks` of active engineering when serialized. The estimate assumes both developers are expert Codex/Claude Code operators supervising four bounded implementation/test worktrees, freezing shared contracts early, integrating daily, and making blocking product decisions within one business day. Contract-first overlap creates an **eight-week stretch target**, **Week 9 planning commitment**, and **Week 10 remediation ceiling** for the pre-production engineering MVP release candidate. Mandatory Investor-to-Investor secondary trading is included; it is not a contingency item.
 
@@ -256,7 +254,7 @@ External tracks should start in Phase 0 and run concurrently; these allowances a
 | External track | Indicative additional calendar allowance |
 |---|---:|
 | Provider selection, contracting, and sandbox credentials | `4–12+ weeks` |
-| Canonical logo/vector reconstruction, rights clearance, and brand-owner approval | `1–4+ weeks` |
+| SVG semantic/provenance/rights validation, PNG receipt, canonical selection, and brand-owner approval | Delivery-dependent; `0.5–2 focused days` after the remaining source evidence is complete |
 | Live bank/MoMo/ICPAR integration certification | `6–16+ weeks` |
 | CMA/sandbox/legal review and authorization | `8–24+ weeks`, potentially longer |
 | Independent QA/UAT/test personnel and participant scheduling/execution | `2–6+ weeks` |
@@ -304,7 +302,7 @@ Create one approved MVP contract before feature expansion: preserve BRS safety a
 
 - No previous phase.
 - Covers every later MVP and post-MVP surface because it fixes authority, vocabulary, platform boundaries, evidence, and release gates.
-- Requires Product, Finance/Risk, Compliance/Legal, Audit Partner operations, Engineering, Design/Brand, Security, and independent-test owners.
+- Uses the confirmed Aminu/Erastus/Robert/Kimani internal approval pool: Robert owns Product/Design/Brand, Business, and internal Legal; Aminu and Erastus jointly own Engineering/Security; Kimani owns Audit Operations/Compliance and Finance/Risk. Each applicable record captures the required named-owner signatures, and independent-test approval comes from a pool member who was not the sole author or an eligible external delegate. Legally or professionally required external approvals remain separate.
 
 ### Checklist
 
@@ -316,27 +314,36 @@ Create one approved MVP contract before feature expansion: preserve BRS safety a
 - [ ] Complete/sign Appendix A's underwriting worksheet and disposition every vector required by the Phase 1 chain.
 - [ ] Close D-26/D-27 and freeze the secondary-market contract before the Holding, Order, reservation, fee-posting, record-date, halt, and settlement schemas are finalized; mandatory secondary scope may not be traded away for schedule.
 - [ ] Run a time-boxed PWA assurance spike for Auditor offline packages, in-browser camera-only capture, geolocation, timestamp/provenance, process interruption, durable local encryption, reconnect, conflict, and sync. Record a thin-native MVP exception if any mandatory guarantee cannot be met.
-- [ ] Reconcile `composer.json`, `composer.lock`, and installed dependencies; prove application boot, route discovery, focused tests, static/type checks, and the production frontend build from a clean install.
-- [ ] Freeze the coverage contract: `phpunit.xml` measures every executable line under `app/`; `./vendor/bin/pest --ci --no-tia --coverage --min=100` is the authoritative clean-checkout gate; no reachable first-party behavior may use `@codeCoverageIgnore*` or an unapproved source exclusion.
-- [ ] Inventory every TypeScript/TSX file and create machine-readable source and risk manifests distinguishing human-authored executable web source from generated Wayfinder/routes/actions, declaration-only files, vendor/build output, and dead code, then classifying every authored executable file as `critical` or `non-critical` under Section 11.1. Delete dead code; do not use MVP deferral, low testability, directory location, or presentation naming as an exclusion or risk downgrade.
-- [ ] Add a Vite-compatible Vitest runner with V8 coverage, jsdom, React Testing Library, user-event, and accessible DOM matchers; include unimported matched files and emit the complete global/per-file line, statement, function, and branch dataset needed by D-67.
-- [ ] Add a checked-in deterministic coverage-policy validator because a single runner threshold block does not express the full risk-tier policy. From the complete report plus source/risk manifests it must enforce 100% lines/statements/functions globally and per file, 100% branches globally and per file for critical source, 95% branches globally and at least 90% per file for approved non-critical presentation/platform adapters, and 100% coverage for every newly changed branch against recorded base/head SHAs.
-- [ ] Add canonical `test:web`, `test:web:watch`, and `test:web:coverage` scripts; the authoritative frontend command runs the complete suite once, emits machine-readable coverage, and invokes the coverage-policy validator, while watch/related-test selection is local acceleration only.
-- [ ] Establish behavior-first React test conventions for Inertia pages/layouts, forms, hooks, state/error/offline branches, Resources/prop contracts, active-role authorization presentation, and accessibility queries; prohibit shallow implementation-detail tests and snapshot-only coverage claims.
-- [ ] Create `tests/Architecture/ArchitectureTest.php` plus module-specific architecture files as needed, register the Architecture suite in `phpunit.xml`, and cover the Section 4 dependency rules, naming/inheritance rules, strict types, prohibited debug calls, and the Domain/Application/HTTP/Resource/Integration boundaries defined in Section 11.
-- [ ] Add the Pest 5 first-party `pestphp/pest-plugin-phpstan`, register its extension in `phpstan.neon`, include `tests/` in analysis, retain Larastan for Laravel awareness, and make zero-error Pest-aware analysis part of `composer ci:check:static`.
-- [ ] Correct the TIA topology: configure local TIA with a coverage driver and optional fetched shared baseline; keep `--tia --fresh` only in the dedicated baseline workflow; remove `--tia` and TIA result-cache restoration from the authoritative pull-request/promotion CI test job so every clean checkout executes every test.
-- [ ] Centralize non-drifting Composer/npm commands for the local impacted-test loops, full PHP and D-66/D-67 web coverage gates, architecture suite, Pest-aware static analysis, frontend type/lint/build gates, changed-branch calculation, and future native hooks; make `composer ci:check` invoke the authoritative applicable gates rather than leaving thresholds only inside workflow YAML.
-- [ ] Resolve the PHP 8.4 minimum-versus-8.5 deployment contract and add CI lanes for the canonical coverage runtime, every supported/deployed runtime, and PostgreSQL-backed locking/concurrency/queue behavior; SQLite may remain a fast unit/feature lane but cannot certify financial or secondary settlement races.
-- [ ] Make the full quality/build check a required status for the exact SHA at each `feat/* -> dev -> uat -> main` hop and make deployment workflows refuse a SHA without that evidence.
+- [x] Reconcile `composer.json`, `composer.lock`, and installed dependencies; prove application boot, route discovery, focused tests, static/type checks, and the production frontend build from a clean install.
+- [x] Freeze the coverage contract: `phpunit.xml` measures every executable line under `app/`; `./vendor/bin/pest --ci --no-tia --coverage --min=100` is the authoritative clean-checkout gate; no reachable first-party behavior may use `@codeCoverageIgnore*` or an unapproved source exclusion.
+- [x] Inventory every TypeScript/TSX file and create machine-readable source and risk manifests distinguishing human-authored executable web source from generated Wayfinder/routes/actions, declaration-only files, vendor/build output, and dead code, then classifying every authored executable file as `critical` or `non-critical` under Section 11.1. Delete dead code; do not use MVP deferral, low testability, directory location, or presentation naming as an exclusion or risk downgrade.
+- [x] Add a Vite-compatible Vitest runner with V8 coverage, jsdom, React Testing Library, user-event, and accessible DOM matchers; include unimported matched files and emit the complete global/per-file line, statement, function, and branch dataset needed by D-67.
+- [x] Add a checked-in deterministic coverage-policy validator because a single runner threshold block does not express the full risk-tier policy. From the complete report plus source/risk manifests it must enforce 100% lines/statements/functions globally and per file, 100% branches globally and per file for critical source, 95% branches globally and at least 90% per file for approved non-critical presentation/platform adapters, and 100% coverage for every newly changed branch against recorded base/head SHAs.
+- [x] Add canonical `test:web`, `test:web:watch`, and `test:web:coverage` scripts; the authoritative frontend command runs the complete suite once, emits machine-readable coverage, and invokes the coverage-policy validator, while watch/related-test selection is local acceleration only.
+- [x] Establish behavior-first React test conventions for Inertia pages/layouts, forms, hooks, state/error/offline branches, Resources/prop contracts, active-role authorization presentation, and accessibility queries; prohibit shallow implementation-detail tests and snapshot-only coverage claims.
+- [x] Approve ADR-0001: the Domain/Application/Infrastructure/HTTP namespace boundaries, shared application/domain layer, `/api/v1`, shared Eloquent Resource serialization boundary, and three exact legacy dispositions.
+- [ ] Complete the existing `tests/Architecture/ArchitectureTest.php` rule catalog with module-specific architecture files as needed and cover the Section 4 dependency rules, naming/inheritance rules, strict types, prohibited debug calls, and the Domain/Application/HTTP/Resource/Integration boundaries defined in Section 11; isolate or remove `PulseController` before Phase 1 begins.
+- [x] Add the Pest 5 first-party `pestphp/pest-plugin-phpstan`, register its extension in `phpstan.neon`, include `tests/` in analysis, retain Larastan for Laravel awareness, and make zero-error Pest-aware analysis part of `composer ci:check:static`.
+- [x] Correct the TIA topology: configure local TIA with a coverage driver and optional fetched shared baseline; keep `--tia --fresh` only in the dedicated baseline workflow; remove `--tia` and TIA result-cache restoration from the authoritative pull-request/promotion CI test job so every clean checkout executes every test.
+- [x] Centralize non-drifting Composer/npm commands for the local impacted-test loops, full PHP and D-66/D-67 web coverage gates, architecture suite, Pest-aware static analysis, frontend type/lint/build gates, changed-branch calculation, and future native hooks; make `composer ci:check` invoke the authoritative applicable gates rather than leaving thresholds only inside workflow YAML.
+- [x] Approve PHP 8.4 as the minimum supported runtime and PHP 8.5 as the canonical deployment and coverage runtime; exercise both versions in CI and use PostgreSQL—not SQLite—as the authoritative concurrency/locking environment.
+- [x] Approve and pin Node 24.15.0 for local development, both normal CI jobs, production asset builds, and the TIA baseline workflow; retain npm 10.9.8 as the deterministic package-manager contract.
+- [ ] Prove the approved runtime contract through hosted PHP 8.4 compatibility and PHP 8.5 canonical gates, pin PHP 8.5 in deployment evidence, and add PostgreSQL-backed locking/concurrency/queue tests for protected financial and secondary-settlement paths; SQLite may remain a fast unit/feature lane but cannot certify races.
+- [ ] Operate the approved two-developer promotion control at each `feat/* -> dev -> uat -> main` hop: attach complete clean-checkout evidence for the exact candidate SHA, record the non-author developer's approval of that SHA, rerun the applicable hosted gates on the resulting target-branch SHA, and make deployment workflows—including manual dispatch—refuse missing, failed, stale, or mismatched evidence. Paid private-branch protection is intentionally not required and must not be claimed as enabled.
 - [ ] Prove the quality controls with reversible negative checks: an uncovered PHP line fails; an uncovered client line/statement/function fails globally and per file; an entirely unimported in-scope file fails; missing/drifting source or risk manifest entries fail; an uncovered critical branch fails; non-critical branch results below either 95% global or 90% per file fail using exact counts; one uncovered newly changed branch fails; a risk-manifest downgrade of governed behavior fails; stale/unmappable base-head or mismatched tested-SHA evidence fails; a forbidden dependency fails the architecture suite; and an invalid Pest construct fails PHPStan. Remove every temporary violation after evidence is captured.
 - [ ] Capture the baseline schema, routes, authentication, existing Pulse boundary, CI gates, deployment environments, and current migration/data state.
 - [ ] Approve one of the two supplied Rozine lockups, the star mark, the three role lockups, exact source colors, font/outline ownership, role-accessible names, and whether reconstruction is authorized.
 - [ ] Replace WhatsApp filenames with a semantic asset manifest without deleting source evidence; record the six current JPEGs as references and retire the legacy 60-image inventory.
-- [ ] Receive the original source or commission an approved reconstruction; rights-clear and sign off canonical vector/transparent star and outlined-wordmark masters before any release asset is derived.
+- [x] Receive and hash all 31 SVG sources and validate their XML syntax.
+- [ ] Complete semantic mapping, duplicate/canonical selection, font/outline provenance, usage-rights validation, authoritative-color approval, and Robert's Brand sign-off before any release asset is derived.
+- [ ] Receive and hash the promised PNG derivatives/references; PNG files cannot replace the approved vector master.
 - [ ] Define canonical monochrome, dark, favicon/PWA, Apple-touch, and responsive-header outputs from those masters; treat the rounded-square JPEG only as a visual reference.
 - [ ] Define environment isolation, feature flags, seeded-demo boundaries, and reset controls so demo/UAT facts cannot look live or touch real records.
 - [ ] Start KYC/KYB, registry, ICPAR, parsing, bank, MoMo, storage, maps, legal, and CMA tracks with named owners.
+
+**Phase 0B/C evidence (2026-08-24):** the approved Pest-aware PHPStan, Vitest/React/V8, exact source/risk manifests, D-67 validator, immutable-SHA evidence, generated-source drift check, canonical PHP/web commands, and dependency remediation are implemented. The PHP gate passes 107 tests/417 assertions at 100% first-party line coverage with zero PHPStan errors. The complete client suite passes 226 tests and covers all 101 critical authored files at exact 100%: 1,154/1,154 statements, 727/727 branches, 487/487 functions, and 1,134/1,134 lines. Vitest measures authored source without React Compiler-generated scaffolding; the production Vite build retains the compiler. Composer and npm audits report zero advisories after upgrading `league/commonmark` 2.8.3 → 2.10.0 and remediating the approved npm findings.
+
+**Phase 0 governance and Engineering update (2026-08-29):** Aminu, Erastus, Robert, and Kimani are the confirmed internal approval pool. Robert owns Product/Design/Brand, Business, and internal Legal; Aminu and Erastus jointly own Engineering/Security; Kimani owns Audit Operations/Compliance and Finance/Risk. Each applicable record must still capture every required named-owner signature. Independent-test approval may come from any pool member who was not the sole author or from an eligible external delegate. D-72 accepts ADR-0001 as written, and D-73 fixes PHP 8.4 minimum compatibility, PHP 8.5 canonical deployment/coverage, both CI lanes, and PostgreSQL-authoritative concurrency evidence; their remaining implementation and exact-SHA evidence gates stay open. The two-developer team will not make a paid GitHub plan or private-branch-protection feature a Phase 0 dependency; D-68 preserves checked pull requests, immutable exact-SHA hosted evidence, non-author review, and fail-closed deployment admission without claiming that GitHub technically blocks direct pushes. The 31-file SVG package is now received, syntax-validated, and hash-recorded. PNG receipt, semantic/canonical selection, font/outline provenance, exact colors, rights, surface rules, and Robert's Brand approval remain pending, so D-51, D-52, D-56, D-57, and D-63 remain open. External legal/regulatory/CMA, ICPAR/Audit Partner, provider-certification, penetration-test, and independent-assurance authority remains separate.
 
 ### Deliverables
 
@@ -346,7 +353,7 @@ Create one approved MVP contract before feature expansion: preserve BRS safety a
 - Versioned cross-platform quality contract: PHP and web/native coverage scopes, generated/non-executable manifest, critical/non-critical risk manifest, D-67 metric/branch thresholds, changed-branch checker, architecture rule catalog, Pest-aware PHPStan configuration, Vitest/React test foundation, local impacted-test instructions, dedicated TIA baseline workflow, and full-suite CI evidence.
 - Auditor PWA assurance report and, if required, scoped native-exception decision.
 - Approved architecture decision records, error/state vocabulary, and release definitions.
-- New-logo approval record, six-file source manifest, rights/licensing record, approved canonical vector/transparent and outlined-wordmark masters, derived-asset brief, and legacy retirement record.
+- New-logo approval record, governed 31-SVG source manifest plus PNG receipt record, rights/licensing record, approved canonical vector/transparent and outlined-wordmark masters, derived-asset brief, and legacy retirement record.
 - Provider/regulatory dependency plan with owners, due dates, fakes, and certification gates.
 
 ### Acceptance Criteria
@@ -359,11 +366,11 @@ Create one approved MVP contract before feature expansion: preserve BRS safety a
 - [ ] The web/PWA Auditor route is either proven capable in principle or replaced by a documented, estimated thin-native exception.
 - [ ] Application boot, route discovery, focused tests, static/type checks, and production asset build are green from the approved clean baseline.
 - [ ] The full non-TIA clean-checkout Pest suite reports `100.0%` line coverage for all in-scope `app/` code; there is no unexplained coverage exclusion, ignored error, risky test, warning, or deprecation.
-- [ ] The complete clean-checkout Vitest suite reports 100.0% lines/statements/functions globally and per file for all retained human-authored TypeScript/React code; 100.0% critical branches globally and per file; at least 95.0% non-critical branches globally and 90.0% per file; and 100.0% newly changed branches. Every negative control fails as expected, and no behavioral file is hidden or misclassified by either manifest.
+- [x] The complete clean-checkout Vitest suite reports 100.0% lines/statements/functions globally and per file for all retained human-authored TypeScript/React code; 100.0% critical branches globally and per file; at least 95.0% non-critical branches globally and 90.0% per file; and 100.0% newly changed branches. Every negative control fails as expected, and no behavioral file is hidden or misclassified by either manifest.
 - [ ] Architecture tests fail on a controlled forbidden-dependency example and pass after its removal; the rule catalog covers shared Resources, thin transports, application actions, Domain isolation, provider ports/adapters, and protected financial/evidence seams.
 - [ ] PHPStan/Larastan analyses `app/`, configured first-party paths, and `tests/` with the Pest extension and zero errors; TIA works locally from a fresh or downloaded baseline, while the normal CI job demonstrably runs the complete suite without TIA.
-- [ ] Canonical Composer/npm and CI commands agree; PHP coverage and complete web metric/risk-tier/changed-branch reports, manifest/report-set equality, frontend type/lint/build checks, the supported/deployed PHP matrix, PostgreSQL financial-concurrency lane, and exact-SHA required deployment check are green from a clean install.
-- [ ] All six current logo references are accounted for; one primary lockup/mark direction and the role naming contract are approved; rights-cleared vector/transparent masters exist; no flattened JPEG is treated as a production master.
+- [ ] Canonical Composer/npm and CI commands agree; PHP coverage and complete web metric/risk-tier/changed-branch reports, manifest/report-set equality, frontend type/lint/build checks, the supported/deployed PHP matrix, PostgreSQL financial-concurrency lane, documented latest-SHA second-developer review, and fail-closed exact-SHA deployment admission are green from a clean install.
+- [ ] All 31 current SVG sources are accounted for; one primary lockup/mark direction and the role naming contract are approved; rights-cleared vector/transparent masters and promised PNG derivatives exist; no unapproved source is treated as a production master.
 - [ ] Native mobile, Pulse, Plus execution, and every other deferred item have an explicit destination phase and cannot leak into the MVP critical path without change control.
 
 ### Verification and exit gate
@@ -378,7 +385,7 @@ Archive the source/risk manifests, rendered-PDF review, conflict register, PWA s
 
 **Estimated two-developer agent-native active engineering:** `2.5–3 focused weeks` · **Confidence:** Low
 
-**Scheduling note:** Place this work in Weeks 1–3 and build one thin but real vertical chain rather than completing one application at a time. One developer integrates domain/ledger/provider and secondary-ready Holding seams while the other integrates launcher/role workflows; agents work on isolated action, Resource, UI, fixture, and adversarial-test slices. No real money or participant data is enabled.
+**Scheduling note:** Place this work in Weeks 1–3. Days 1–2 are a joint contract freeze; after that, Aminu's server/API/domain lane and Erastus's Inertia React UI/UX lane run in parallel and meet at five mandatory integration checkpoints. Agents work only on bounded, non-overlapping action, Resource, UI, fixture, and adversarial-test slices. No real money or participant data is enabled.
 
 ### Goal
 
@@ -390,37 +397,66 @@ Reach `MVP ALPHA`: one Business applies, one eligible Auditor verifies, the core
 - Implements the happy path across the launcher, Business, Auditor, Investor, and Admin applications.
 - Uses deterministic provider fakes and isolated acceptance fixtures; it is not a shippable or regulated pilot.
 
+### Parallel ownership and contract-first workflow
+
+| Workstream | Owner | Timing | Responsibility |
+|---|---|---|---|
+| Phase 1.0 — Contract freeze | Aminu and Erastus | Days 1–2 | Aminu publishes and Erastus validates action inputs/results, transaction boundaries, named web and `/api/v1` routes, Form Request shapes, shared Resource schemas, TypeScript prop types, exact-money serialization, stable state/error/message codes, deterministic fixtures, authorization/active-role rules, and event/reconnect contracts. |
+| Phase 1A — Server, API, and authoritative logic | Aminu | Weeks 1–3, parallel | Own Domain/Application/Infrastructure code, models, migrations, factories, policies, provider ports/adapters, Form Requests, Inertia and API controllers, shared Resources, `/api/v1` Phase 1 endpoints, financial/security rules, observability, and PHP evidence. |
+| Phase 1B — Inertia React UI/UX | Erastus | Weeks 1–3, parallel | Own the launcher and four role surfaces, forms and interactions, typed Resource consumption, Wayfinder calls, responsive/PWA presentation, accessibility, localization, client state/reconnect behavior, and TypeScript/React/browser evidence. |
+| Phase 1C — Integration and Alpha acceptance | Aminu and Erastus | Daily and at exit | Integrate at the five named checkpoints, approve shared-contract changes together, cross-review the other lane's latest SHA, run full exact-SHA gates, and witness the complete Alpha chain. |
+
+The split assigns implementation ownership without splitting the system. Inertia pages consume the same Resources through Laravel web controllers and do not call the public API over HTTP. React may present previews returned by the server but may not calculate authoritative money, underwriting, eligibility, permissions, fees, ownership, or workflow transitions. Native authentication, device registration, and app-store clients remain Phase 5 work even though Phase 1 establishes `/api/v1` parity for the implemented actions.
+
 ### Checklist
 
-- [ ] Establish shared application actions, record-level policies, state machines, exact-RWF value objects, outbox/events, machine-readable errors, and Eloquent Resource contracts.
-- [ ] Implement one Fortify identity/Party model with role membership, explicit active-role context, MFA where required, consent, and a launcher that shows only authorized applications and preserves return position.
-- [ ] Apply the approved star mark and role lockups through typed, accessible `LogoMark`/`LogoLockup` components; prevent stretching, duplicate accessible names, and role-color-only identification.
-- [ ] Externalize all user-visible strings from the first role slice; establish Kinyarwanda, English, and French catalogs, stable message codes, missing-key/hard-coded-string lint, and pseudo-localization even though the launch-language subset remains D-07.
-- [ ] Implement minimal KYC/KYB, company lookup without prohibited tax identifiers, D-64-approved director/owner/signatory and corporate-authority evidence, and registered bank/MoMo rails.
+#### Phase 1.0 — Joint contract freeze
+
+- [ ] Freeze action inputs/results and transaction boundaries; web and `/api/v1` route names; Form Request shapes; shared Resource schemas; exact-RWF serialization; stable state/error/message codes; authorization/active-role rules; TypeScript prop contracts; deterministic provider and journey fixtures; outbox events; and refresh/reconnect behavior.
+- [ ] Freeze the vertical integration order and one accountable editor for every shared migration, state machine, action, policy, Resource, route contract, and generated type; contract changes require both developers' approval before either lane proceeds.
+- [ ] Prove one exemplar action through an Inertia controller and `/api/v1` controller returns the same Resource facts, stable codes, authorization outcome, and fixture identity without the web application calling its API over HTTP.
+
+#### Phase 1A — Aminu: server, API, and authoritative logic
+
+- [ ] Establish shared application actions, record-level policies, state machines, exact-RWF value objects, outbox/events, machine-readable errors, Eloquent Resource contracts, and the matching Inertia plus `/api/v1` transport adapters.
+- [ ] Implement the Fortify identity/Party model, role membership, active-role authorization, MFA/consent rules, and server contracts for the launcher; reassess the two approved Fortify exceptions without duplicating them for mobile.
+- [ ] Implement minimal KYC/KYB, company lookup without prohibited tax identifiers, D-64-approved director/owner/signatory and corporate-authority evidence, and registered bank/MoMo provider contracts/fakes.
 - [ ] Implement immutable statement upload, parsing/normalization/correction lineage, policy-versioned underwriting, capacity, DSCR, rating, pricing, schedule, and actionable refusal using Appendix A fixtures.
-- [ ] Implement one Business registration, resumable application, exact pre-acceptance economics, audit timeline, digital acceptance, listing, and raise-progress view.
-- [ ] Implement Auditor accreditation/ICPAR status, eligible assignment, conflict declaration, procedures, evidence reconciliation, immutable online filing, co-signature, and verification seal for the alpha fixture.
-- [ ] Ensure no Auditor or staff input can set a rating, capacity, yield, or credit verdict.
-- [ ] Implement balanced double-entry accounts, segregated client/company/control balances, immutable journals, compensating reversals, ledger-derived wallet balances, and actor-attributed events.
-- [ ] Implement idempotent deposit, reservation, primary settlement, Holding creation, disbursement, one scheduled repayment, Investor payout, and receipts using provider fakes.
-- [ ] Define and contract-test the secondary-ready Holding lot, eligibility snapshot, Order, cash/unit reservation, chosen-ask, 3% seller-fee posting, halt, cancellation/expiry, record-date, and exactly-once settlement interfaces; executable trading remains feature-flagged until Phase 3 acceptance.
-- [ ] Implement Investor verification, wallet readiness, deal list/detail, audit evidence, unavoidable cost/risk confirmation, exact RWF 5,000 purchase, and initial portfolio position.
-- [ ] Implement Admin application queue, party view, maker-checker disbursement boundary, ledger drill-down, event log, and reason-required controls needed by the alpha.
-- [ ] Propagate committed funding, balance, Holding, disbursement, and repayment changes to every affected online role without manual reload and reconcile after reconnect.
-- [ ] Cover the initial loading, empty, validation, authorization, policy-gated, provider-failure, retry, and success states for every alpha screen.
-- [ ] Build Phase 1 controls, logs, metrics, alerts, fixtures, and denial tests in the same slices; no later Admin/hardening phase is allowed to supply missing safety retrospectively.
-- [ ] Add PHP unit/feature/contract/property/concurrency/denial/architecture tests and behavior-first TypeScript/React page/component/hook tests with each vertical slice; use TIA and Vitest watch/related-test modes locally but run both complete coverage suites before integration and Alpha acceptance.
+- [ ] Implement the Business application/listing and Auditor accreditation, assignment, conflict, procedure, evidence, reconciliation, filing, co-signature, and seal actions; enforce that no Auditor or staff input can set a rating, capacity, yield, or credit verdict.
+- [ ] Implement balanced double-entry accounts, segregated client/company/control balances, immutable journals, compensating reversals, ledger-derived wallet balances, actor-attributed events, idempotent deposit/reservation/primary settlement, Holding creation, disbursement, one repayment, Investor payout, reconciliation identifiers, and receipts using provider fakes.
+- [ ] Define and contract-test the secondary-ready Holding lot, eligibility snapshot, Order, cash/unit reservation, chosen ask, 3% seller-fee posting, halt, cancellation/expiry, record date, and exactly-once settlement interfaces; executable trading remains feature-flagged until Phase 3 acceptance.
+- [ ] Implement the Investor and Admin server contracts, authorization, queues, maker-checker boundary, ledger drill-down, reason-required controls, outbox delivery, logs, metrics, and alerts needed by Alpha.
+- [ ] Add PHP unit, feature, Resource/API parity, property, denial, idempotency, PostgreSQL concurrency, and architecture tests with each slice; maintain 100% PHP line coverage and zero-error Pest-aware PHPStan/Larastan.
+
+#### Phase 1B — Erastus: Inertia React UI/UX and client behavior
+
+- [ ] Implement the typed launcher, authorized application list, persistent active-role context, role switching, and return-position behavior against the frozen identity/Resource fixtures.
+- [ ] Apply the approved star mark and role lockups through typed, accessible `LogoMark`/`LogoLockup` components; prevent stretching, duplicate accessible names, and role-color-only identification.
+- [ ] Externalize user-visible strings from the first slice; establish Kinyarwanda, English, and French catalogs, stable message-code mapping, missing-key/hard-coded-string lint, and pseudo-localization even though the launch-language subset remains D-07.
+- [ ] Implement the Business registration, resumable application, exact server-returned pre-acceptance economics, audit timeline, digital acceptance, listing, and raise-progress screens.
+- [ ] Implement Auditor accreditation/status, eligible-job, conflict, procedure, evidence-reconciliation, online-filing, co-signature, and seal screens without client-authoritative financial or credit logic.
+- [ ] Implement Investor verification, wallet readiness, deal list/detail, audit evidence, unavoidable cost/risk confirmation, exact RWF 5,000 purchase, portfolio position, payout, and receipt screens from shared Resources.
+- [ ] Implement the Admin application queue, party view, maker-checker presentation, ledger drill-down, event log, and reason-required control screens.
+- [ ] Cover loading, empty, validation, authorization, policy-gated, provider-failure, retry, success, cold-reload, responsive, accessible, and reconnect states; propagate committed server events without manual reload and reconcile from authoritative Resources after reconnect.
+- [ ] Add behavior-first Vitest/React Testing Library page, component, form, hook, accessibility, and Resource-fixture tests plus browser journeys; maintain every D-66/D-67 metric, TypeScript, lint, and production-build gate.
+
+#### Phase 1C — Joint integration and Alpha acceptance
+
+- [ ] Integrate checkpoint 1: Party, authorization, active role, and launcher.
+- [ ] Integrate checkpoint 2: Business application, statement parsing, underwriting, and Auditor filing.
+- [ ] Integrate checkpoint 3: wallet, Investor purchase, ledger, primary settlement, and Admin disbursement.
+- [ ] Integrate checkpoint 4: repayment, payout, online propagation/reconnect, and secondary-ready Holding/Order contracts.
+- [ ] Integrate checkpoint 5: the complete witnessed Business → Auditor → Core → Investor → Admin Alpha chain and exact-SHA evidence pack.
+- [ ] At every checkpoint, reconcile Resource schema, TypeScript contract, deterministic fixture, authorization, error-code, and route identities; each developer reviews the other lane's latest SHA and the exact candidate passes the full non-TIA PHP gate, complete web coverage gate, architecture/static/type/lint/build gates, and applicable browser checks.
+- [ ] Build Phase 1 controls, logs, metrics, alerts, fixtures, denial cases, and recovery evidence inside the same slices; no later Admin/hardening phase may supply missing safety retrospectively.
 
 ### Deliverables
 
-- Shared Laravel actions/policies/state machines, exact-money types, events/outbox, Resources, and responsive application shells.
-- Party/role/launcher, minimal KYC/KYB, Business application, deterministic underwriting, and online Auditor verification.
-- Balanced ledger, wallet, primary settlement, disbursement, repayment, payout, reconciliation identifiers, and receipts.
-- Frozen secondary-ready Holding/Order/reservation/fee/halt contracts with concurrency and prohibited-principal-path tests.
-- Investor primary-market and Admin oversight happy paths.
-- Approved MVP logo component/asset package and localization/catalog foundation for responsive web/PWA.
-- End-to-end alpha fixtures, contract schemas, authorization matrix, and machine-readable evidence pack.
-- Exact Alpha-commit quality pack containing the 100% PHP line-coverage report; complete web D-66/D-67 lines/statements/functions, risk-tier branch, and changed-branch reports; architecture results; Pest-aware PHPStan/Larastan output; frontend static/build output; source/risk manifests; and full-suite run identities.
+**Aminu — server/API/domain:** shared Laravel actions, policies, state machines, exact-money types, events/outbox, models/migrations/factories, provider adapters, Inertia/API controllers, shared Resources, `/api/v1` Phase 1 endpoints, Party/KYC/KYB, deterministic underwriting, Auditor workflow, balanced ledger, wallet, primary settlement, disbursement, repayment, payout, reconciliation, Admin controls, and frozen secondary-ready Holding/Order/reservation/fee/halt contracts.
+
+**Erastus — Inertia React UI/UX:** typed launcher and role switching; Business, Auditor, Investor, and Admin Alpha surfaces; approved logo components; localization/catalog foundation; responsive/PWA, accessibility, reload/reconnect, and complete screen-state behavior.
+
+**Joint:** approved contract schemas, TypeScript prop contracts, deterministic end-to-end fixtures, authorization matrix, five integration-checkpoint records, prohibited-client-authority and prohibited-principal-path evidence, witnessed Alpha chain, and the exact Alpha-commit quality pack containing 100% PHP line coverage; complete D-66/D-67 web metric, branch, and changed-branch reports; architecture; Pest-aware PHPStan/Larastan; frontend static/build; source/risk manifests; browser results; review attestations; and full-suite run identities.
 
 ### Acceptance Criteria
 
@@ -433,13 +469,16 @@ Reach `MVP ALPHA`: one Business applies, one eligible Auditor verifies, the core
 - [ ] A user sees only authorized records and applications; role switching never leaks state or requires a second login.
 - [ ] One committed core change appears in all affected online applications without manual reload and converges after reconnect.
 - [ ] Alpha screens have actionable errors/gates and survive a cold reload without losing accepted drafts or committed state.
+- [ ] Every Phase 1 action exposed through both transports returns the same authorized Resource facts, stable codes, exact-money serialization, and policy version through Inertia and `/api/v1`; the web application never calls its own public API over HTTP.
+- [ ] No React component, hook, form, browser store, Resource, or controller contains authoritative money, underwriting, eligibility, permission, fee, ownership, or transition logic; server-side denial tests prove client requests cannot override it.
+- [ ] All five integration checkpoints have matching Resource/TypeScript/fixture identities, approval of shared contract changes by both developers, cross-review of the latest candidate SHA, and complete applicable gates.
 - [ ] The current logo/role identity is consistent and accessible across launcher and four applications.
 - [ ] Alpha user-facing strings are catalog-backed; missing-key/hard-coded-string lint and representative pseudo-localization pass without layout or meaning loss.
 - [ ] The exact Alpha commit passes the complete non-TIA Pest suite at 100.0% `app/` line coverage and every Section 11.1 web threshold: 100.0% lines/statements/functions globally and per file, 100.0% critical branches globally and per file, 95.0% non-critical branches globally and at least 90.0% per file, and 100.0% newly changed branches. Every architecture, PHPStan/Larastan, TypeScript, lint, build, and applicable browser gate is green. Coverage alone does not substitute for the financial, authorization, property, concurrency, replay, denial, accessibility, branch/state, or user-journey assertions above.
 
 ### Verification and exit gate
 
-Run golden/property tests, ledger invariants, idempotency/concurrency tests, provider replay tests, policy/Resource parity and denial suites, complete Vitest/React coverage, Inertia browser journeys, PWA reload checks, accessibility smoke checks, and a witnessed alpha chain. Archive the exact commit's full PHP coverage; web metric matrix, risk-tier and immutable base/head changed-branch reports; architecture; Pest-aware PHPStan; frontend static/build; and source/risk manifest outputs. Impacted-test results may support iteration but are not Alpha exit evidence. Phase 1 may exit only as `MVP ALPHA`; no real-money, production, or regulatory claim is permitted.
+At each of the five checkpoints, run Resource/API/Inertia parity, authorization, stable-error, exact-money, and deterministic-fixture contract tests plus the applicable PHP and React slice suites. At Alpha exit, run golden/property tests, ledger invariants, idempotency/PostgreSQL concurrency tests, provider replay tests, policy/Resource parity and denial suites, complete Vitest/React coverage, Inertia browser journeys, PWA reload checks, accessibility smoke checks, and the witnessed end-to-end chain. Archive the exact commit's full PHP coverage; web metric matrix, risk-tier and immutable base/head changed-branch reports; architecture; Pest-aware PHPStan; frontend static/build; source/risk manifest outputs; and both developers' latest-SHA reviews. Impacted-test results may support iteration but are not Alpha exit evidence. Phase 1 may exit only as `MVP ALPHA`; no real-money, production, or regulatory claim is permitted.
 
 ---
 
@@ -566,7 +605,7 @@ Produce a polished, secure, accessible, BRS-compliant, sandbox-ready responsive-
 - [ ] No unresolved high-severity security finding, unreconciled financial break, unowned operational blocker, or uncontrolled demo/live-data path remains.
 - [ ] Demo reset is deterministic and isolated; no visitor can touch real records or confuse seeded activity with live activity.
 - [ ] The approved new logo is derived from rights-cleared canonical vector masters and is consistent, accessible, and legible across launcher, four applications, reports, favicons/PWA assets, and demo material.
-- [ ] Accountable Product, Finance/Risk, Compliance/Legal, Audit Partner operations, Security, Engineering, Design/Brand, independent test, Support, and Operations owners sign the MVP RC.
+- [ ] Accountable Product, Finance/Risk, Compliance, Legal, internal Audit Operations, applicable external ICPAR/Audit Partner, Security, Engineering, Design/Brand, independent test, Support, and Operations owners sign the MVP RC.
 - [ ] The exact RC commit passes clean-checkout full PHP and web executions—not impacted-test replays—with 100.0% `app/` lines and every D-66/D-67 client metric, risk-tier branch, and changed-branch threshold; all architecture/static/build gates pass, and no unexplained exclusion, risk downgrade, ignored error, warning, risky test, or deprecation remains.
 
 ### Verification and exit gate
@@ -782,7 +821,7 @@ Add only extensions with demonstrated value, approved regulation/economics, boun
 ### Acceptance Criteria
 
 - [ ] No extension begins from an unapproved “Not in MVP” bullet or prototype constant.
-- [ ] Every financial/regulatory extension has signed Product, Finance/Risk, Compliance/Legal, Security, Engineering, and applicable CMA approval.
+- [ ] Every financial/regulatory extension has signed Product, Finance/Risk, Compliance, Legal, Security, Engineering, and applicable CMA approval.
 - [ ] MVP ledger, evidence, authorization, disclosure, reconciliation, performance, and availability acceptance remain green.
 - [ ] Each tranche is independently feature-flagged, reversible where possible, observable, and releasable through the governed branch chain.
 - [ ] Every approved tranche's exact exit commit passes every applicable PHP and D-66/D-67 web/native metric, risk-tier branch, changed-branch, architecture, and static/build gate with zero errors; impacted-only runs never satisfy tranche exit.
@@ -858,7 +897,7 @@ Create a single, approved implementation baseline: reconcile conflicting policy,
 
 - No external provider is required to complete the documentation portion.
 - All later Business, Investor, Auditor, Admin, and Pulse surfaces depend on this phase.
-- Product, finance, legal/compliance, Audit Partner operations, engineering, design, and security owners must be represented in approvals.
+- Product, Finance/Risk, Compliance, Legal, internal Audit Operations, applicable external ICPAR/Audit Partner, Engineering, Design, and Security owners must be represented in approvals.
 
 ### Checklist
 
@@ -891,13 +930,13 @@ Create a single, approved implementation baseline: reconcile conflicting policy,
 
 ### Acceptance Criteria
 
-- [ ] All 18 current planning inputs are represented by the source register or an asset-family entry, including every one of the six current logo JPEGs and the external MVP Specification.
+- [ ] All 44 current planning inputs are represented by the source register or an asset-family entry, including every one of the 31 current logo SVGs, the new standalone website reference, and the external MVP Specification.
 - [ ] Every C-01–C-34 conflict has an approved outcome, owner, and affected phase.
 - [ ] Every Appendix A `DECISION` row has an approved value/algorithm and every golden vector has a named owner, expected result, and policy version.
 - [ ] A clean checkout installs, boots, lists non-vendor routes, builds assets, and runs the focused baseline checks without undocumented manual repair.
 - [ ] No baseline route, schema, Resource, log field, fixture, or analytics event contains prohibited tax-identifier data.
 - [ ] CI and deployment promotion rules are documented and demonstrably match repository configuration.
-- [ ] Product, legal/compliance, finance, design, Audit Partner operations, security, and engineering approve the baseline or record explicit exceptions.
+- [ ] Product, Compliance, Legal, Finance/Risk, Design, internal Audit Operations, applicable external ICPAR/Audit Partner, Security, and Engineering approve the baseline or record explicit exceptions.
 
 ### Retained verification ideas
 
@@ -941,7 +980,7 @@ Build the shared platform seams that let web and mobile deliver the same authori
 - [ ] Define and test accessible foreground pairs or darker action variants for green/orange interface surfaces. The supplied role logos are green-on-white and orange-on-white; logo text may be contrast-exempt, but their sampled ratios do not authorize the same colors for normal UI text or controls.
 - [ ] Preserve word-number-color rating order and prohibit gradients behind content; none of the current logo JPEGs establishes an approved gradient treatment.
 - [ ] Create responsive shells and reusable navigation, cards, tables/lists, stepper, timeline, money, rating, status, evidence, empty/error/offline, disclosure, and confirmation components.
-- [ ] Inventory all six SHA-unique JPEG logo references, replace non-semantic WhatsApp filenames in production use, and record intended lockup, role, surface, background, safe area, clearspace, minimum rendered size, theme, accessibility treatment, provenance, and platform target.
+- [ ] Inventory all 31 SHA-unique SVG logo sources, replace non-semantic Frame filenames in production use, and record intended lockup, role, surface, background, safe area, clearspace, minimum rendered size, theme, accessibility treatment, provenance, and platform target.
 - [ ] Record the former 60-image logo family as superseded/decommissioned source material; do not silently retain an obsolete mark or infer production masters from the old duplicates.
 - [ ] Consume and verify the Phase 0-approved, rights-cleared vector/transparent masters, outlined wordmarks, provenance, and font/licence record; any later reconstruction or simplification still requires written brand-owner approval and visual sign-off.
 - [ ] Normalize SVG viewBoxes, optical clearspace, minimum sizes, aspect ratios, and transparent padding; do not use the flattened JPEG canvases or baked whitespace as layout spacing.
@@ -973,7 +1012,7 @@ Build the shared platform seams that let web and mobile deliver the same authori
 - [ ] No Resource performs writes or owns domain calculations.
 - [ ] Responsive shells work without horizontal overflow at agreed breakpoints and meet the chosen accessibility standard.
 - [ ] Automated contrast plus forced-colors/high-contrast checks pass for text, controls, status pills, focus, and role accents; a logo exemption does not exempt surrounding UI.
-- [ ] All six current logo references are accounted for, the legacy family is explicitly retired, and provenance, licensing, exact colors, canonical masters, role naming, and production variants are unambiguous.
+- [ ] All 31 current SVG sources and promised PNG derivatives are accounted for, the legacy family is explicitly retired, and provenance, licensing, exact colors, canonical masters, role naming, and production variants are unambiguous.
 - [ ] Logo components do not stretch, use the approved lockup by surface, expose one accessible name without duplicate screen-reader output, and never expose a WhatsApp source filename as visible or accessible text.
 - [ ] Real 16/32px browser-tab checks, OS light/dark checks, PWA masks, and star/gap legibility pass for MVP assets; Android/iOS mask and notification checks pass in the native-mobile work package.
 - [ ] The approved background matrix covers the supplied core and role treatments plus suitable dark, monochrome, and high-contrast fallbacks.
@@ -1481,7 +1520,7 @@ Make every essential marketplace action observable, governable, policy-versioned
 
 - Distribute required controls through active Phases 1–4; route only separately approved advanced operations to active Phase 7.
 - Covers FR-400–FR-418 and control dependencies for every role journey.
-- Requires compliance/legal decisions, regulatory-report contracts, retention policy, and operational ownership.
+- Requires separate Compliance and Legal decisions, regulatory-report contracts, retention policy, and operational ownership.
 
 #### Authoritative staff capability matrix
 
@@ -1677,7 +1716,7 @@ Retain the assurance checklist for remapping: active Phases 1–3 prove the resp
 - [ ] AC-11: Pulse moves no funds, issues no instrument, public counters reflect real registrations, and production samples are consented rotating pre-qualified Businesses.
 - [ ] AC-12: penetration and independent security review leave no unresolved high-severity finding.
 - [ ] Restore, rollback, provider-outage, forced-update, maintenance, and incident exercises meet approved objectives.
-- [ ] Product, finance, Audit Partner operations, legal/compliance, security, engineering, design, support, and operations sign the go/no-go record.
+- [ ] Product, Finance/Risk, internal Audit Operations, applicable external ICPAR/Audit Partner, Compliance, Legal, Security, Engineering, Design, Support, and Operations sign the go/no-go record.
 
 ### Retained verification ideas
 
@@ -1817,7 +1856,7 @@ Pest TIA is a PHP/Pest developer-speed layer over trusted full-suite evidence. I
 
 CI may front-load `./vendor/bin/pest --ci --no-tia --group=arch`, an explicitly maintained non-TIA `critical` group, and focused client smoke/static jobs. These are additive fast-fail signals; none replaces the complete PHP gate, the full-source D-66/D-67 client gate, or the 100% newly changed-branch gate.
 
-Phase 0 removes `--tia` and TIA cache restore/save steps from the existing main `tests.yml` test job, preserves the separate `tia-baseline.yml`, and validates its artifact/fetch fallback. PHP lockfiles, `phpunit.xml`, PHP/runtime changes, build configuration, and large refactors force a fresh TIA graph. JavaScript/native lockfiles, coverage configuration, source-map/transpiler settings, source/risk manifests, generated-code rules, diff-base logic, and client source changes force new complete client metric and changed-branch reports rather than a Pest TIA refresh. The runtime matrix exercises both the minimum supported PHP version and the deployed PHP version; Phase 0 resolves the current PHP 8.4 CI versus PHP 8.5 deployment/tooling contract without weakening D-65/D-66/D-67.
+Phase 0 removes `--tia` and TIA cache restore/save steps from the existing main `tests.yml` test job, preserves the separate `tia-baseline.yml`, and validates its artifact/fetch fallback. PHP lockfiles, `phpunit.xml`, PHP/runtime changes, build configuration, and large refactors force a fresh TIA graph. JavaScript/native lockfiles, coverage configuration, source-map/transpiler settings, source/risk manifests, generated-code rules, diff-base logic, and client source changes force new complete client metric and changed-branch reports rather than a Pest TIA refresh. Under D-73, the runtime matrix exercises PHP 8.4 as the minimum supported compatibility lane and PHP 8.5 as the canonical deployment/coverage lane; PostgreSQL is the only authoritative concurrency/locking environment for protected financial, ledger, reservation, secondary-settlement, and queue behavior. SQLite remains non-authoritative acceleration only. Under D-75, Node 24.15.0 is the single local/CI/build/TIA runtime and npm 10.9.8 is the pinned package-manager contract.
 
 CI compares the checked-out `HEAD`, the workflow's expected tested SHA, the policy artifact's head SHA, and the deployment candidate before accepting evidence. Pull requests use the merge base with the exact target SHA; every promotion recalculates against that hop's target. A merge queue may test its deterministic merge SHA, but only that tested commit may be promoted.
 
@@ -1847,8 +1886,10 @@ A phase is `COMPLETE` only when all acceptance criteria have linked evidence, it
 
 Each phase is decomposed into reviewable vertical slices containing domain, Resource, Inertia/PWA surface, Admin/control, tests, audit/observability, and documentation. Native client slices are added only in Phase 5.
 
+Under D-74, Phase 1 may use paired server/API and Inertia UI branches after the joint contract freeze. A lane may iterate independently against the approved Resource/fixture contract, but no checkpoint is complete or merge-ready until the paired slices integrate, contract identities match, both developers approve any shared-contract change, and each developer reviews the other's exact latest SHA.
+
 1. Branch each slice from `dev` using `feat/*`.
-2. Merge to `dev` only when the exact slice SHA passes full non-TIA PHP coverage, every complete clean-checkout D-66/D-67 web/applicable-native metric and changed-branch gate, architecture/static/type/lint/build, and applicable browser/device gates and the evidence is attached; Phase 1's alpha remains isolated and cannot be represented as shipped MVP.
+2. Merge to `dev` only when the exact slice SHA passes full non-TIA PHP coverage, every complete clean-checkout D-66/D-67 web/applicable-native metric and changed-branch gate, architecture/static/type/lint/build, and applicable browser/device gates; the evidence is attached and the non-author developer has approved that exact latest SHA. Phase 1's alpha remains isolated and cannot be represented as shipped MVP.
 3. At Phase 3, regenerate every applicable full PHP/web/native gate on the exact signed MVP release-candidate SHA, promote those commits from `dev` to `uat` in their own pull request, and perform the internal no-money rehearsal.
 4. Do not promote the regulated MVP to `main` until Phase 4 approvals, provider certification, participant/cap/stop controls, and production readiness are signed.
 5. Promote the same verified commits from `uat` to `main` in a separate checked pull request only after the exact promoted SHA passes every applicable complete PHP/web/native gate; verify migrations, queues/schedules, providers, reconciliation, responsive web/PWA/native clients, and rollback.
@@ -1856,6 +1897,8 @@ Each phase is decomposed into reviewable vertical slices containing domain, Reso
 7. Verify `rozine.rw`, background processes, metrics, provider callbacks, financial reconciliation, security, and user-critical journeys after every approved production deployment.
 
 No feature branch goes directly to `main`, and a green local or `dev` result is not production acceptance.
+
+Under D-68, the two-developer team deliberately does not purchase a GitHub upgrade solely for private-branch protection. Until repository-native protection is available, every hop still uses a checked pull request, records the other developer's approval of the latest SHA, archives immutable full-suite evidence, and reruns the applicable gates on the resulting target-branch SHA. Deployment must consume only that successful target SHA and fail closed on missing, failed, stale, or mismatched evidence. A direct or unreviewed push is a policy violation that must fail promotion attestation, remain undeployed, and be reverted through a reviewed pull request; this operating control is not a claim that GitHub technically blocks the push.
 
 ## 14. Suggested phase review cadence
 
@@ -1882,7 +1925,7 @@ These are working assumptions, not hidden product decisions:
 - The two-developer Codex/Claude Code agent-native target is an eight-week stretch, Week 9 planning commitment, and Week 10 remediation ceiling for a pre-production engineering MVP release candidate that includes mandatory secondary trading. Exact dates remain provisional until developer/reviewer availability, D-26/D-27 and other red decisions, PWA assurance, providers, and pilot scope are confirmed.
 - The Section 11 cross-platform quality contract is included in every applicable estimate: 100.0% PHP lines; 100.0% client lines/statements/functions globally and per file; 100.0% critical branches globally and per file; 95.0% non-critical branches globally and at least 90.0% per file; 100.0% newly changed branches; source/risk manifests; architecture/static/build gates; local impacted-test acceleration; and complete clean-checkout release evidence. The client rules apply to TypeScript/React immediately and future native/platform-bridge source from its first commit. No phase may trade these controls for schedule; if the existing untested client baseline cannot close D-66/D-67 in Phase 0, rebaseline the delivery window.
 - Existing Pulse code is reusable only where it passes the reconciled policy and contract tests.
-- The six new-logo JPEGs are reference direction, not production masters; exact colors, canonical lockup, vectors, provenance, and surface rules remain Phase 0 gates.
+- The 31 new-logo SVGs are received source evidence, not approved production masters. XML validity and hashes are evidenced under D-56; PNG receipt, exact colors, canonical lockup, semantic mapping, vector provenance/rights, and surface rules remain Phase 0 gates.
 
 ## 16. Clarifying questions and decision log
 
@@ -1956,7 +1999,7 @@ Answer by ID; short answers are sufficient. Red gates must be resolved before th
 
 - **D-51:** Which supplied Rozine treatment is canonical: the star integrated at the `i` or the detached leading star? Confirm the standalone star and the Investor, Business, and Auditor lockups, and define horizontal/compact, favicon/PWA, monochrome, and dark variants from a rights-cleared vector master before Phase 0 exits.
 - **D-52:** What are the authoritative source colors for the new core blue, Investor blue, Business green, and Auditor orange, and do they amend the guide's `#0A5CFF`, `#12A150`, and `#DD8A00` application tokens? JPEG samples are not acceptable color specifications.
-- **D-56:** Can the original Figma/vector emblem and wordmark source, font/outline provenance, and usage rights be provided, or must a new canonical master be commissioned and approved before Phase 0 exits?
+- **D-56 — `SVG RECEIVED/HASHED 2026-08-29; BRAND VALIDATION/PNG PENDING`:** Aminu supplied 31 SVG logo sources; all are present in the governed package, parse as XML, and have immutable SHA-256 records. Robert is the accountable Brand approver. Receipt and syntax validation do not approve production use: Phase 0 remains blocked until PNG derivatives are received, competing/duplicate files are semantically mapped, canonical vector masters are selected, font/outline provenance, exact colors, usage rights, and required variants are approved. PNG cannot substitute for an approved vector master. D-51, D-52, D-57, and D-63 remain open.
 - **D-57:** Which light, dark, and colored backgrounds are approved for each logo treatment, and may role accents ever tint the mark or only the interface?
 - **D-63:** Are the standalone `investor`, `business`, and `auditor` wordmarks complete visible application identities, or must every header/accessibility name pair them with `Rozine` (for example, `Rozine Investor`)?
 
@@ -1976,6 +2019,14 @@ Answer by ID; short answers are sufficient. Red gates must be resolved before th
 - **D-65 — `ENGINEERING QUALITY APPROVED 2026-08-23`:** Enforce 100.0% Pest line coverage over the approved first-party PHP source scope (`app/` initially), Pest architecture tests for the modular-monolith boundaries, and Pest's first-party PHPStan plugin over application and test code. Use the TIA engine for local developer/agent acceleration and a dedicated shared-baseline workflow only; every pull request, phase exit, and promotion runs the complete clean-checkout suite without TIA on the exact commit. Coverage never substitutes for risk-based assertions or client/browser/device evidence.
 - **D-66 — `ENGINEERING QUALITY APPROVED 2026-08-23`:** Enforce 100.0% executable line coverage globally and per file over all shipped human-authored TypeScript/React web/PWA source and, from the first native-client commit including any thin-Auditor exception, all human-authored executable native and platform-bridge source. Only exact generated, declaration-only, test/configuration, vendor, and build artifacts may be excluded through the reviewed machine-readable manifest. Every pull request, phase exit, and promotion runs the complete clean-checkout client suite on the exact SHA; watch/related-test modes are local acceleration only. Coverage never substitutes for type/lint/build, component/contract, branch/state, browser/device, accessibility, offline/recovery, or platform tests.
 - **D-67 — `ENGINEERING QUALITY APPROVED 2026-08-24`:** For every included human-authored TypeScript/React web/PWA and native/platform-bridge file, enforce 100.0% line, statement, and function coverage globally and per file. Client files containing financial or trust-boundary behavior require 100.0% branch coverage globally and per file. Remaining approved presentation/platform-adapter files require at least 95.0% branch coverage globally and 90.0% per file. Every branch introduced or modified relative to the recorded target merge base requires 100.0% coverage regardless of class. The reviewed machine-readable source/risk manifests govern exact exclusions and classification; mixed, uncertain, new, moved, renamed, or unclassified files default to critical. Every pull request, phase exit, and promotion archives full exact-SHA metric reports plus immutable base/head changed-branch evidence. D-65 remains the PHP numeric line-coverage contract; risk-based PHP branch/state assertions remain mandatory even though D-67's additional numeric metrics are client/native gates.
+- **D-68 — `RELEASE GOVERNANCE APPROVED 2026-08-27`:** Do not make a paid GitHub plan or hosted private-branch-protection feature a dependency for the current two-developer team. Preserve `feat/* -> dev -> uat -> main` pull requests, complete hosted gates on the exact candidate and resulting target-branch SHAs, and require approval of the latest candidate SHA by the non-author developer. Deployment workflows, including manual dispatch, must fail closed when matching CI evidence or review attestation is missing, failed, stale, or mismatched. A direct or unreviewed push is a documented policy violation, cannot deploy, and must be reverted through a reviewed pull request. Reassess native branch protection if repository access or team size expands.
+- **D-69 — `INTERNAL OWNERSHIP MAP CONFIRMED 2026-08-27`:** Aminu, Erastus, Robert, and Kimani form the internal project approval pool. Robert owns Product, Design, and Brand; Aminu and Erastus jointly own Engineering and Security; Kimani owns Audit Operations and Compliance. At confirmation, Finance/Risk, Legal, and independent-test assignment were still open; D-70 supersedes that interim condition. Every decision, policy, phase, and evidence record must record its accountable owner, required signatures, and any conflict or abstention. This pool does not replace legally or professionally required external counsel, CMA/sandbox, ICPAR/Audit Partner, provider-certification, penetration-test, or independent-assurance authority.
+- **D-70 — `SMALL-TEAM SHARED INTERNAL RESPONSIBILITIES APPROVED 2026-08-28; SUPERSEDED BY D-71`:** This interim decision assigned Business, Finance/Risk, and internal Legal collectively to the four-person pool. D-71 replaces that shared allocation with named owners; D-70 remains only as decision history.
+- **D-71 — `NAMED INTERNAL ROLE OWNERSHIP APPROVED 2026-08-28`:** Robert is the Business owner and internal Legal owner. Kimani is the Finance/Risk owner. Existing assignments remain: Robert owns Product, Design, and Brand; Kimani owns Audit Operations and Compliance; Aminu and Erastus jointly own Engineering and Security. Each applicable record must capture every required named-owner signature, conflict, or abstention. Independent-test approval may be supplied by any pool member who was not the sole author of the governed work or expected results, or by an eligible named external delegate. Ownership and eligibility do not themselves approve a record. Legally or professionally required external counsel, CMA/sandbox, ICPAR/Audit Partner, provider certification, penetration testing, and independent assurance remain separate gates and cannot be self-approved by the internal pool.
+- **D-72 — `MODULAR-MONOLITH ARCHITECTURE APPROVED 2026-08-28`:** Approve ADR-0001 as written. Rozine uses the documented Domain/Application/Infrastructure/HTTP boundaries, one shared application/domain layer for Inertia and versioned API transports, `/api/v1` for future native clients, and shared Eloquent API Resources as the serialization—not business-logic—boundary. The three named legacy dispositions are accepted. `PulseController` must be isolated or removed before Phase 1 starts; the two Fortify actions remain controlled framework exceptions and are reassessed with the Phase 1 identity module. Approval closes the decision, not the remaining implementation, architecture-test, or hosted-evidence gates.
+- **D-73 — `PHP AND DATABASE RUNTIME CONTRACT APPROVED 2026-08-28`:** PHP 8.4 is the minimum supported runtime. PHP 8.5 is the canonical deployment and coverage runtime. Both versions run in CI. PostgreSQL is authoritative for financial, ledger, reservation, secondary-settlement, queue, locking, and concurrency evidence; SQLite may accelerate isolated unit/feature tests but cannot certify those behaviors. Hosted exact-SHA evidence, the deployment PHP 8.5 pin, and PostgreSQL race tests remain required before Phase 0 exits.
+- **D-74 — `PHASE 1 PARALLEL OWNERSHIP APPROVED 2026-08-28`:** Following a joint contract freeze, Aminu owns the authoritative server/API/domain/application/data/integration/security implementation and PHP evidence. Erastus owns Inertia React UI/UX, client behavior, responsive/PWA presentation, accessibility, localization, and TypeScript/React/browser evidence. Both approve shared contract changes, integrate at five defined checkpoints, and cross-review the exact latest SHA. This split assigns implementation responsibility; it does not divide the domain, permit Inertia to call the public API, move authoritative behavior into the client, defer safety, or weaken any Phase 1 acceptance or coverage gate.
+- **D-75 — `NODE RUNTIME CONTRACT APPROVED 2026-08-29`:** Pin Node 24.15.0 for local development, both normal CI jobs, production asset generation, and the Pest TIA baseline workflow. Keep npm 10.9.8 pinned for deterministic lockfile installs. `.nvmrc`, package engine metadata, lock metadata, and hosted workflows must agree; a runtime change invalidates prior client build/coverage evidence and requires a clean install plus the complete client gate.
 
 ## Appendix A — Underwriting decision worksheet and golden-vector pack
 
@@ -1986,7 +2037,7 @@ This appendix is the approval and test contract for statement evidence, underwri
 - `FIXED` means the BRS already governs the invariant. Implementation may clarify representation but cannot change the rule without a formal BRS amendment.
 - `DECISION` means no production behavior may be encoded until the named decision is approved.
 - `MIXED` combines a fixed invariant with one or more parameters or edge cases requiring approval.
-- `PRODUCT APPROVED` records the selected product behavior from the 18 August 2026 plan review. It does not activate policy or replace the named Finance/Risk, Compliance/Legal, Audit operations, Engineering, independent-test, or CMA/sandbox approvals.
+- `PRODUCT APPROVED` records the selected product behavior from the 18 August 2026 plan review. It does not activate policy or replace the named Finance/Risk, Compliance, Legal, internal Audit Operations, applicable external ICPAR/Audit Partner, Engineering, Security, independent-test, or CMA/sandbox approvals.
 - `READY-TO-BASELINE` means the BRS or a recorded product-approved candidate fixes the expected behavior, but the concrete fixture, hashes, activated policy/calculator versions, and independent approvals do not yet exist. It is not executable release evidence or proof of policy activation.
 - A golden vector is `BASELINED` only when its inputs, intermediate values, expected outputs, rounding, policy version, and approvals are complete.
 - A vector is `BLOCKED` when any expected value depends on an unresolved decision. A blocked vector is a release gate, not permission to use prototype behavior.
@@ -2004,12 +2055,17 @@ This appendix is the approval and test contract for statement evidence, underwri
 | Effective date/time | `NOT ACTIVATED`; activation time must be stored in UTC with the approved Rwanda display convention |
 | Supersedes | `None` for the candidate bundle; prototype behavior is not an active predecessor policy |
 | Product decision approval | `APPROVED` in the plan review on 18 August 2026 |
-| Named business/product owner | `TBD` |
-| Finance/risk owner | `TBD` |
-| Compliance/legal owner | `TBD` |
-| Audit Partner operations owner | `TBD` |
-| Engineering owner | `TBD` |
-| Independent test approver | `TBD`; must not be the sole author of the expected results |
+| Internal project approval pool | Aminu; Erastus; Robert; Kimani — confirmed 27 August 2026; this names the pool but does not activate the worksheet |
+| Product owner | Robert — confirmed Product owner; a signature is still required on each applicable decision record |
+| Business owner | Robert — confirmed Business owner; a signature is still required on each applicable decision record |
+| Finance/risk owner | Kimani — confirmed Finance/Risk owner; a signature is still required on each applicable decision record |
+| Compliance owner | Kimani — confirmed Compliance owner; a signature is still required on each applicable decision record |
+| Internal Legal owner | Robert — confirmed internal Legal owner; a signature is still required on each applicable decision record; required external counsel remains separate |
+| External legal/regulatory counsel | `TBD` where law, regulation, sandbox conditions, or the approved policy requires external authority; no internal signature substitutes for it |
+| Internal Audit Operations owner | Kimani — confirmed Audit Operations owner; a signature is still required on each applicable decision record; external ICPAR/Audit Partner authority remains separate |
+| Engineering owner | Aminu and Erastus — confirmed joint Engineering owners; at least one accountable signature plus the required non-author review must be recorded per decision |
+| Security owner | Aminu and Erastus — confirmed joint Security owners; at least one accountable signature plus the required non-author review must be recorded per decision |
+| Independent test approver | Any internal pool member who was not the sole author of the governed work or expected results, or an eligible named external delegate; the accountable approver and signature remain required per record |
 | Regulatory/CMA or sandbox approval | `TBD`; no approval is inferred from this product decision |
 | Source versions | BRS v1.0; product decisions D-11, D-11A–C, D-13, D-14, and D-19A dated 18 August 2026. Open dispositions remain `UW-06`–`UW-08`, `UW-13`, D-12/`UW-17`, `UW-25`, the A.3.4 activation matrix, and every other unanswered decision in Section 16. |
 | Fixture-set hash | `TBD` after machine-readable fixtures exist |
@@ -2145,7 +2201,7 @@ Implementations may optimize the greatest-valid-principal search but must return
 - Probability of default is `null` with state `NOT_CALIBRATED` at launch, never `0%` or a fabricated estimate. A later numeric PD requires a new versioned, independently validated calibration decision and remains visible only to explicitly authorized Approver, Compliance, and Superadmin risk functions.
 - Rating remains the sole public business-quality measure. Health, standing, risk band, and PD must be labelled as different operational indicators and may never be presented as substitute ratings.
 
-Before activation, Finance/Risk and Compliance/Legal must sign the complete trigger-to-standing/risk-band/action/cure matrix. No implementation may infer an unlisted trigger, cure period, or customer effect from the vocabulary alone.
+Before activation, Finance/Risk, Compliance, and Legal must sign the complete trigger-to-standing/risk-band/action/cure matrix. No implementation may infer an unlisted trigger, cure period, or customer effect from the vocabulary alone.
 
 #### A.3.5 `evidence-policy-v1`
 
@@ -2244,12 +2300,17 @@ expected:
   disclosures: []
 parity_targets: [domain, persistence, resource, inertia, api_v1, mobile_contract]
 approvals:
-  product: TBD
-  finance_risk: TBD
-  compliance_legal: TBD
-  audit_partner_operations: TBD
-  engineering: TBD
-  independent_test: TBD
+  product: ROBERT_PENDING_SIGNATURE
+  business: ROBERT_PENDING_SIGNATURE
+  finance_risk: KIMANI_PENDING_SIGNATURE
+  compliance: KIMANI_PENDING_SIGNATURE
+  internal_legal: ROBERT_PENDING_SIGNATURE
+  external_legal_regulatory: TBD_WHERE_REQUIRED
+  internal_audit_operations: KIMANI_PENDING_SIGNATURE
+  external_icpar_audit_partner: TBD
+  engineering: AMINU_ERASTUS_PENDING_SIGNATURE
+  security: AMINU_ERASTUS_PENDING_SIGNATURE
+  independent_test: NON_AUTHOR_POOL_MEMBER_OR_EXTERNAL_DELEGATE_PENDING_SIGNATURE
   regulatory_cma_sandbox: TBD
 ```
 
@@ -2407,7 +2468,7 @@ Any change to evidence normalization, EngineScore, TargetDSCR, capacity, rating,
 4. Run the full vector suite across every required execution layer.
 5. Produce an impact report for outstanding offers, Live Notes, existing schedules, Pulse passes, and historical disclosures.
 6. State explicitly whether recalculation is prohibited, prospective, or requires an approved migration/amendment.
-7. Receive named Business/Product, Finance/Risk, Compliance/Legal, Audit Partner operations, Engineering, independent-test, and applicable CMA/sandbox approval before activation.
+7. Receive named Business, Product, Finance/Risk, Compliance, Legal, internal Audit Operations, applicable external ICPAR/Audit Partner, Engineering, Security, independent-test, and applicable CMA/sandbox approval before activation.
 
 ## 17. Plan validation checklist
 
@@ -2417,7 +2478,7 @@ Any change to evidence normalization, EngineScore, TargetDSCR, capacity, rating,
 - [x] Investor-to-Investor secondary trading is non-deferrable MVP scope, is distributed across Phases 1–3, and retains eligibility, disclosure, reservation, concurrency, fee, halt, atomic on-platform settlement, reconciliation, and prohibited-principal-path gates.
 - [x] Required compliance, treasury, supervisor, provider, and operational dependencies are included; Pulse is retained as explicit post-MVP BRS scope.
 - [x] The confirmed Laravel/Inertia MVP, versioned post-MVP mobile API, shared action layer, and shared Eloquent Resource architecture are explicit.
-- [x] All 18 current planning inputs—including the MVP Specification and six new-logo JPEGs—are accounted for, and the former logo family is recorded as superseded.
+- [x] All 44 current planning inputs—including the MVP Specification, the new standalone website reference, and 31 new-logo SVGs—are accounted for, and the former six-JPEG and legacy logo families are recorded as superseded.
 - [x] Source conflicts are explicit and are not silently blended.
 - [x] MVP acceptance families, BRS requirement families, and former Work Packages L0–L12 are crosswalked to active phases.
 - [ ] The Phase 0 register maps every individual BO/BR/FR/NFR/IR/CR/AC ID to a checklist item, deliverable, test/evidence owner, and acceptance gate.

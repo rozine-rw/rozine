@@ -2,8 +2,10 @@ import js from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
 import prettier from 'eslint-config-prettier/flat';
 import importPlugin from 'eslint-plugin-import';
+import jestDom from 'eslint-plugin-jest-dom';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
+import testingLibrary from 'eslint-plugin-testing-library';
 import globals from 'globals';
 import typescript from 'typescript-eslint';
 
@@ -95,12 +97,24 @@ export default [
             '@stylistic': stylistic,
         },
         rules: {
-            '@stylistic/brace-style': ['error', '1tbs', { allowSingleLine: false }],
+            '@stylistic/brace-style': [
+                'error',
+                '1tbs',
+                { allowSingleLine: false },
+            ],
             '@stylistic/padding-line-between-statements': [
                 'error',
                 ...paddingAroundControl,
             ],
         },
+    },
+    {
+        ...testingLibrary.configs['flat/react'],
+        files: ['tests/web/**/*.{ts,tsx}'],
+    },
+    {
+        ...jestDom.configs['flat/recommended'],
+        files: ['tests/web/**/*.{ts,tsx}'],
     },
     {
         ignores: [
@@ -111,7 +125,6 @@ export default [
             'tailwind.config.js',
             'vite.config.ts',
             'resources/js/actions/**',
-            'resources/js/components/ui/*',
             'resources/js/routes/**',
             'resources/js/wayfinder/**',
         ],
@@ -123,7 +136,11 @@ export default [
         },
         rules: {
             curly: ['error', 'all'],
-            '@stylistic/brace-style': ['error', '1tbs', { allowSingleLine: false }],
+            '@stylistic/brace-style': [
+                'error',
+                '1tbs',
+                { allowSingleLine: false },
+            ],
         },
     },
 ];
