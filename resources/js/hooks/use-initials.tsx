@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 export type GetInitialsFn = (fullName: string) => string;
 
 function getInitial(name: string): string {
-    return Array.from(name)[0] ?? '';
+    return Array.from(name)[0]!;
 }
 
 export function useInitials(): GetInitialsFn {

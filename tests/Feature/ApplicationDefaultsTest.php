@@ -8,11 +8,12 @@ use Illuminate\Validation\Rules\Password;
 test('production is held to a strict password policy', function () {
     app()->detectEnvironment(fn () => 'production');
 
-    expect(Password::default())->toBeInstanceOf(Password::class);
+    expect(Password::default()->toPasswordRulesString())
+        ->toBe('minlength: 12; required: lower; required: upper; required: digit; required: special;');
 });
 
 test('anything other than production leaves password rules to the defaults', function () {
-    expect(Password::default())->toBeInstanceOf(Password::class);
+    expect(Password::default()->toPasswordRulesString())->toBe('minlength: 8;');
 });
 
 test('the two factor challenge is limited per login attempt', function () {
