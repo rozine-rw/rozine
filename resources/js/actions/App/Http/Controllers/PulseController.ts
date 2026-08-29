@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\PulseController::storeInvestor
-* @see app/Http/Controllers/PulseController.php:43
+* @see app/Http/Controllers/PulseController.php:42
 * @route '/pulse/investor'
 */
 export const storeInvestor = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +97,7 @@ storeInvestor.definition = {
 
 /**
 * @see \App\Http\Controllers\PulseController::storeInvestor
-* @see app/Http/Controllers/PulseController.php:43
+* @see app/Http/Controllers/PulseController.php:42
 * @route '/pulse/investor'
 */
 storeInvestor.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ storeInvestor.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PulseController::storeInvestor
-* @see app/Http/Controllers/PulseController.php:43
+* @see app/Http/Controllers/PulseController.php:42
 * @route '/pulse/investor'
 */
 storeInvestor.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +116,7 @@ storeInvestor.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\PulseController::storeInvestor
-* @see app/Http/Controllers/PulseController.php:43
+* @see app/Http/Controllers/PulseController.php:42
 * @route '/pulse/investor'
 */
 const storeInvestorForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -126,7 +126,7 @@ const storeInvestorForm = (options?: RouteQueryOptions): RouteFormDefinition<'po
 
 /**
 * @see \App\Http\Controllers\PulseController::storeInvestor
-* @see app/Http/Controllers/PulseController.php:43
+* @see app/Http/Controllers/PulseController.php:42
 * @route '/pulse/investor'
 */
 storeInvestorForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -138,7 +138,7 @@ storeInvestor.form = storeInvestorForm
 
 /**
 * @see \App\Http\Controllers\PulseController::storeBusiness
-* @see app/Http/Controllers/PulseController.php:66
+* @see app/Http/Controllers/PulseController.php:65
 * @route '/pulse/business'
 */
 export const storeBusiness = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -153,7 +153,7 @@ storeBusiness.definition = {
 
 /**
 * @see \App\Http\Controllers\PulseController::storeBusiness
-* @see app/Http/Controllers/PulseController.php:66
+* @see app/Http/Controllers/PulseController.php:65
 * @route '/pulse/business'
 */
 storeBusiness.url = (options?: RouteQueryOptions) => {
@@ -162,7 +162,7 @@ storeBusiness.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PulseController::storeBusiness
-* @see app/Http/Controllers/PulseController.php:66
+* @see app/Http/Controllers/PulseController.php:65
 * @route '/pulse/business'
 */
 storeBusiness.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -172,7 +172,7 @@ storeBusiness.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\PulseController::storeBusiness
-* @see app/Http/Controllers/PulseController.php:66
+* @see app/Http/Controllers/PulseController.php:65
 * @route '/pulse/business'
 */
 const storeBusinessForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -182,7 +182,7 @@ const storeBusinessForm = (options?: RouteQueryOptions): RouteFormDefinition<'po
 
 /**
 * @see \App\Http\Controllers\PulseController::storeBusiness
-* @see app/Http/Controllers/PulseController.php:66
+* @see app/Http/Controllers/PulseController.php:65
 * @route '/pulse/business'
 */
 storeBusinessForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

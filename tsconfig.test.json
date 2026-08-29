@@ -1,0 +1,16 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "resolveJsonModule": true,
+        "types": ["node", "vitest/globals", "@testing-library/jest-dom"]
+    },
+    "include": [
+        "resources/js/**/*.ts",
+        "resources/js/**/*.d.ts",
+        "resources/js/**/*.tsx",
+        "tests/web/**/*.ts",
+        "tests/web/**/*.tsx",
+        "vitest.config.ts",
+        "config/client-source-manifest.json"
+    ]
+}

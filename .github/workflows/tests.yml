@@ -3,6 +3,8 @@ name: tests
 on:
   push:
     branches:
+      - dev
+      - uat
       - main
   pull_request:
 
@@ -11,7 +13,15 @@ permissions:
 
 jobs:
   ci:
+    name: PHP ${{ matrix.php-version }} quality gate
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - '8.4'
+          - '8.5'
 
     steps:
       - name: Checkout code
@@ -19,35 +29,31 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
-          php-version: '8.4'
+          php-version: ${{ matrix.php-version }}
           tools: composer:v2
           coverage: xdebug
 
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '22'
+          node-version: '24.15.0'
           cache: npm
+
+      - name: Pin npm
+        run: |
+          npm install --global npm@10.9.8
+          test "$(npm --version)" = "10.9.8"
 
       - name: Install Node dependencies from lock file
         run: npm ci
 
       - name: Install PHP dependencies from lock file
         run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
-
-      - name: Restore PHP-specific TIA state
-        id: tia-cache
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
-        with:
-          path: ~/.pest/tia
-          key: pest-tia-${{ runner.os }}-${{ runner.arch }}-php-8.4-${{ hashFiles('composer.lock', 'package-lock.json', 'phpunit.xml') }}-${{ github.sha }}
-          restore-keys: |
-            pest-tia-${{ runner.os }}-${{ runner.arch }}-php-8.4-${{ hashFiles('composer.lock', 'package-lock.json', 'phpunit.xml') }}-
-            pest-tia-${{ runner.os }}-${{ runner.arch }}-php-8.4-
 
       - name: Copy environment file
         run: cp .env.example .env
@@ -58,21 +64,101 @@ jobs:
       - name: Run database migrations
         run: php artisan migrate --force
 
-      - name: Run non-test engineering checks
-        run: composer ci:check:static
-
       - name: Build production assets
         run: npm run build
 
-      # A graph restored by fallback key was recorded against a different tree,
-      # so the lines it remembers no longer map onto this one and any test it
-      # replays reports as uncovered. Only an exact hit is safe to reuse.
-      - name: Enforce complete PHP line coverage with TIA
-        run: ./vendor/bin/pest --coverage --min=100 --compact --tia ${{ steps.tia-cache.outputs.cache-hit == 'true' && '' || '--fresh' }}
+      - name: Run authoritative static and PHP test gates
+        run: composer ci:check:php
 
-      - name: Save PHP-specific TIA state
-        if: steps.tia-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      - name: Record PHP evidence identity
+        if: always()
+        run: |
+          mkdir -p coverage/php
+          git rev-parse HEAD > coverage/php/tested-sha.txt
+          php --version | head -n 1 > coverage/php/runtime.txt
+
+      - name: Upload PHP coverage evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          path: ~/.pest/tia
-          key: ${{ steps.tia-cache.outputs.cache-primary-key }}
+          name: php-coverage-${{ matrix.php-version }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: coverage/php
+          if-no-files-found: warn
+          retention-days: 30
+
+  web:
+    name: TypeScript/React quality gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout exact tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.15.0'
+          cache: npm
+
+      - name: Pin npm
+        run: |
+          npm install --global npm@10.9.8
+          test "$(npm --version)" = "10.9.8"
+
+      - name: Install Node dependencies from lock file
+        run: npm ci
+
+      - name: Reject high-severity dependency advisories
+        run: npm audit --audit-level=high
+
+      - name: Resolve immutable coverage comparison
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          PR_TARGET_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_TARGET_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            target_sha="$PR_TARGET_SHA"
+          else
+            target_sha="$PUSH_TARGET_SHA"
+          fi
+
+          if ! [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Head SHA is not a full immutable Git SHA." >&2
+            exit 1
+          fi
+
+          if ! [[ "$target_sha" =~ ^[0-9a-f]{40}$ ]] || [[ "$target_sha" =~ ^0+$ ]]; then
+            echo "Target SHA is unavailable; changed-branch coverage fails closed." >&2
+            exit 1
+          fi
+
+          base_sha="$(git merge-base "$target_sha" "$HEAD_SHA")"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+
+          echo "CLIENT_COVERAGE_BASE_SHA=$base_sha" >> "$GITHUB_ENV"
+          echo "CLIENT_COVERAGE_HEAD_SHA=$HEAD_SHA" >> "$GITHUB_ENV"
+          echo "CLIENT_COVERAGE_TARGET_SHA=$target_sha" >> "$GITHUB_ENV"
+
+      - name: Run authoritative TypeScript and React gates
+        run: npm run ci:web
+
+      - name: Upload client coverage evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: client-coverage-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            coverage/web
+            .coverage-provenance/client.json
+            config/client-source-manifest.json
+            config/client-risk-manifest.json
+          if-no-files-found: warn
+          retention-days: 30
