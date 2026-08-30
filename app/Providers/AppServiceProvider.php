@@ -63,7 +63,8 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function configureHead(): void
     {
-        $description = 'Earn up to 15% by investing in Rwandan businesses from just RWF 5,000.';
+        // Mirrors the headline and standfirst the marketing site actually shows.
+        $description = 'Earn up to 18% lending to profitable Rwandan businesses. Buy 3 to 6 month debt notes in audited private businesses, from just RWF 5,000.';
 
         // Stable browser hints, rendered into the first HTML response and then left untouched.
         Head::inertiaGlobals(fn (HeadBuilder $head) => $head
