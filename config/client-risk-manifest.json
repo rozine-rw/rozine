@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "02f740c72fe7f72a9ea3f291d1b7eede277601601310b85fca38ad2fefd4f7a5",
-    "coverageSetSha256": "5b3dab264c740aab1ea2d40d9526d165317c7941c73237c9d5b58496254f7b9d",
+    "sourceManifestSha256": "d44e26759734e554886a167b59848137734b148f6030979b9b6d1c227e503a5e",
+    "coverageSetSha256": "e257ea36a495b010a2baf141861da98010f8c84f022b7673d3f8870deeeb5eac",
     "thresholds": {
         "critical": {
             "global": {
@@ -144,6 +144,7 @@
         "resources/js/pages/auth/two-factor-challenge.tsx",
         "resources/js/pages/auth/verify-email.tsx",
         "resources/js/pages/dashboard.tsx",
+        "resources/js/pages/home.tsx",
         "resources/js/pages/pulse.tsx",
         "resources/js/pages/settings/appearance.tsx",
         "resources/js/pages/settings/profile.tsx",

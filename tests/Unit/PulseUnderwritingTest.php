@@ -112,7 +112,7 @@ test('the surplus the smallest loan needs falls as the term lengthens', function
     $overThree = PulseUnderwriting::surplusForMinimumLoan($score, 3);
     $overTwelve = PulseUnderwriting::surplusForMinimumLoan($score, 12);
 
-    expect(round($overTwelve))->toBe(595_898.0)
+    expect(round($overTwelve))->toBe(357_539.0)
         ->and($overThree)->toBeGreaterThan($overTwelve);
 });
 
@@ -142,7 +142,7 @@ test('a sizing carries persisted and presentation facts from one calculation', f
         'cover_ratio' => 1.25,
         'below_minimum' => false,
         'at_maximum' => false,
-        'required_surplus' => 595_898.44,
+        'required_surplus' => 357_539.06,
         'status' => 'pre_qualified',
     ]);
 });
@@ -164,7 +164,7 @@ test('pledges are canonicalized to the approved band and step', function (int $g
     'minimum' => [5_000, 5_000],
     'round down' => [7_499, 5_000],
     'half step rounds up' => [7_500, 10_000],
-    'above maximum' => [50_000_001, 50_000_000],
+    'above maximum' => [200_000_001, 200_000_000],
 ]);
 
 test('an investor projection uses the supplied yield', function () {
@@ -175,7 +175,7 @@ test('an investor projection uses the supplied yield', function () {
 test('policy options are produced by the domain', function () {
     $policy = PulseUnderwriting::policy(2026);
 
-    expect($policy['terms'])->toBe([3, 6, 9, 12])
+    expect($policy['terms'])->toBe([3, 4, 5, 6, 9, 12])
         ->and($policy['sectors'])->toBe([
             'Agriculture',
             'Retail & trade',
@@ -190,7 +190,7 @@ test('policy options are produced by the domain', function () {
         ->and($policy['registration_years'][30])->toBe(1996)
         ->and($policy['pledge'])->toBe([
             'minimum' => 5_000,
-            'maximum' => 50_000_000,
+            'maximum' => 200_000_000,
             'step' => 5_000,
             'default' => 500_000,
         ]);

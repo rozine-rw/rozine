@@ -59,7 +59,7 @@ final class EloquentPulseSignupRepository implements PulseSignupRepository
     }
 
     /**
-     * @param  array{name: string, contact_method: string, contact: string, province: string, district: string, ip_address: string|null, user_agent: string|null}  $signup
+     * @param  array{name: string, contact_method: string, contact: string, province?: string, district?: string, country?: string, ip_address: string|null, user_agent: string|null}  $signup
      * @param  array{pledge_amount: int, projected_return: int, blended_yield: float}  $investment
      * @return array{queue_number: string}
      */
@@ -101,6 +101,19 @@ final class EloquentPulseSignupRepository implements PulseSignupRepository
     }
 
     /**
+     * @param  array{name: string, contact_method: string, contact: string, province: string, district: string, ip_address: string|null, user_agent: string|null}  $signup
+     * @param  array{annual_revenue: int, annual_costs: int, term_months: int}  $figures
+     * @return array{queue_number: string}
+     */
+    public function createBusinessLead(array $signup, array $figures): array
+    {
+        $record = $this->newSignup($signup, PulseSignupType::Business);
+        $record->fill($figures)->save();
+
+        return ['queue_number' => (string) $record->queue_number];
+    }
+
+    /**
      * @param  Builder<PulseSignup>  $signups
      */
     private function average(Builder $signups, string $column, int $precision = 0): ?float
@@ -111,7 +124,7 @@ final class EloquentPulseSignupRepository implements PulseSignupRepository
     }
 
     /**
-     * @param  array{name: string, contact_method: string, contact: string, province: string, district: string, ip_address: string|null, user_agent: string|null}  $signup
+     * @param  array{name: string, contact_method: string, contact: string, province?: string, district?: string, country?: string, ip_address: string|null, user_agent: string|null}  $signup
      */
     private function newSignup(array $signup, PulseSignupType $type): PulseSignup
     {

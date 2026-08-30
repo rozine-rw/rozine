@@ -28,6 +28,7 @@ class PulseSignup extends Model
         'contact',
         'province',
         'district',
+        'country',
         'listed',
         'queue_number',
         'pledge_amount',
