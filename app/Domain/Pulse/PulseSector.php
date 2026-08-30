@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Enums;
+namespace App\Domain\Pulse;
 
 enum PulseSector: string
 {
@@ -13,7 +13,7 @@ enum PulseSector: string
     case Other = 'Other';
 
     /**
-     * Get the points this sector adds to a business' strength score.
+     * Get the points this sector adds to the Pulse strength score.
      */
     public function score(): int
     {

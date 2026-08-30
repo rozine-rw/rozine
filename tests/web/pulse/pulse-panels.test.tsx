@@ -5,7 +5,22 @@ import { describe, expect, it, vi } from 'vitest';
 import { BusinessPanel } from '@/components/pulse/business-panel';
 import type { BusinessFigures } from '@/components/pulse/business-panel';
 import { InvestorPanel } from '@/components/pulse/investor-panel';
-import type { BusinessNote, Sizing } from '@/lib/pulse';
+import type { BusinessNote, PulsePolicy, Sizing } from '@/lib/pulse';
+
+const policy: PulsePolicy = {
+    terms: [3, 6, 9, 12],
+    sectors: ['Agriculture', 'Other'],
+    registration_years: [2026, 2025, 2020],
+    minimum_revenue: 15_000_000,
+    minimum_loan: 5_000_000,
+    maximum_loan: 50_000_000,
+    pledge: {
+        minimum: 5_000,
+        maximum: 50_000_000,
+        step: 5_000,
+        default: 500_000,
+    },
+};
 
 const figures = (changes: Partial<BusinessFigures> = {}): BusinessFigures => ({
     name: 'GreenLeaf Agro',
@@ -17,21 +32,20 @@ const figures = (changes: Partial<BusinessFigures> = {}): BusinessFigures => ({
 });
 
 const sizing = (changes: Partial<Sizing> = {}): Sizing => ({
-    score: 80,
     rating: {
         band: 'Strong',
-        score: '4.0',
-        color: { light: 'green', dark: 'lightgreen' },
-        background: { light: 'palegreen', dark: 'darkgreen' },
+        score: 4,
     },
-    flatRate: 12.5,
-    sizedAmount: 10_000_000,
-    qualifiedAmount: 10_000_000,
-    monthlyRepayment: 1_000_000,
-    coverRatio: 1.5,
-    belowMinimum: false,
-    atMaximum: false,
-    requiredSurplus: 500_000,
+    flat_rate: 12.5,
+    sized_amount: 10_000_000,
+    qualified_amount: 10_000_000,
+    monthly_repayment: 1_000_000,
+    monthly_surplus: 1_500_000,
+    cover_ratio: 1.5,
+    below_minimum: false,
+    at_maximum: false,
+    required_surplus: 500_000,
+    status: 'pre_qualified',
     ...changes,
 });
 
@@ -47,6 +61,7 @@ const businessDefaults = () => ({
     progressLabel: 'CHECKING YOUR FIGURES',
     figures: figures(),
     sizing: sizing(),
+    policy,
     termIndex: 1,
     canSize: true,
     onFiguresChange: vi.fn(),
@@ -66,9 +81,9 @@ const note = (): BusinessNote => ({
     rating_band: 'Strong',
     rating_score: '4.0',
     accent: 0,
+    projected_return: 565_000,
     avatar: { light: 'green', dark: 'lightgreen' },
     ratingColor: { light: 'green', dark: 'lightgreen' },
-    projectedReturn: 'RWF 565,000',
 });
 
 const investorDefaults = () => ({
@@ -80,6 +95,8 @@ const investorDefaults = () => ({
     pledge: 500_000,
     payout: 565_000,
     notes: [note()],
+    policy,
+    canSave: true,
     exampleOpen: false,
     onExampleToggle: vi.fn(),
     onPledgeChange: vi.fn(),
@@ -125,10 +142,12 @@ describe('BusinessPanel', () => {
             registeredYear: '2026',
         });
         expect(props.onSize).toHaveBeenCalledOnce();
-        expect(screen.getByText('LEFT OVER EACH MONTH')).toBeInTheDocument();
+        expect(
+            screen.getByText('RWF 15M+ revenue in the last 12 months'),
+        ).toBeInTheDocument();
     });
 
-    it('shows the disabled, empty, null-stat state without a surplus', () => {
+    it('shows the disabled, empty, and null-stat state', () => {
         const props = businessDefaults();
 
         render(
@@ -146,12 +165,9 @@ describe('BusinessPanel', () => {
             screen.getByRole('button', { name: 'Check loan amount →' }),
         ).toBeDisabled();
         expect(screen.getAllByText('—')).toHaveLength(2);
-        expect(
-            screen.queryByText('LEFT OVER EACH MONTH'),
-        ).not.toBeInTheDocument();
     });
 
-    it('warns when costs consume revenue and covers every disabled style branch', () => {
+    it('does not make a browser-side eligibility decision from equal costs', () => {
         const props = businessDefaults();
 
         render(
@@ -162,14 +178,13 @@ describe('BusinessPanel', () => {
                     annualRevenue: 12_000_000,
                     annualCosts: 12_000_000,
                 })}
-                canSize={false}
+                canSize
             />,
         );
 
         expect(
-            screen.getByText('COSTS EXCEED WHAT YOU MADE'),
-        ).toBeInTheDocument();
-        expect(screen.getByText('Check the figures')).toBeInTheDocument();
+            screen.getByRole('button', { name: 'Check loan amount →' }),
+        ).toBeEnabled();
     });
 
     it('renders parsing progress', () => {
@@ -203,7 +218,7 @@ describe('BusinessPanel', () => {
             <BusinessPanel
                 {...businessDefaults()}
                 result
-                sizing={sizing({ atMaximum: true, coverRatio: 0.75 })}
+                sizing={sizing({ at_maximum: true, cover_ratio: 0.75 })}
             />,
         );
 
@@ -220,8 +235,9 @@ describe('BusinessPanel', () => {
                 {...props}
                 result
                 sizing={sizing({
-                    belowMinimum: true,
-                    sizedAmount: 2_000_000,
+                    below_minimum: true,
+                    sized_amount: 2_000_000,
+                    status: 'waitlisted',
                 })}
             />,
         );
@@ -253,7 +269,7 @@ describe('BusinessPanel', () => {
                 sizing={sizing({ rating })}
             />,
         );
-        expect(screen.getByText(rating.score)).toBeInTheDocument();
+        expect(screen.getByText(rating.score.toFixed(1))).toBeInTheDocument();
     });
 });
 
@@ -283,6 +299,8 @@ describe('InvestorPanel', () => {
                 averageYield={null}
                 averageTerm={null}
                 notes={[]}
+                payout={null}
+                canSave={false}
             />,
         );
 
@@ -295,6 +313,10 @@ describe('InvestorPanel', () => {
             screen.getByText(/No businesses have pre-qualified/),
         ).toBeVisible();
         expect(screen.getAllByText('—')).toHaveLength(2);
+        expect(screen.getByText('Calculating on the server…')).toBeVisible();
+        expect(
+            screen.getByRole('button', { name: 'Save your spot →' }),
+        ).toBeDisabled();
     });
 
     it('accepts typed and ranged pledges, including empty input', () => {
@@ -319,26 +341,21 @@ describe('InvestorPanel', () => {
 
         expect(select).toHaveBeenCalledOnce();
         expect(props.onPledgeChange).toHaveBeenCalledWith(1_234_567);
-        expect(props.onPledgeChange).toHaveBeenCalledWith(500_000);
+        expect(props.onPledgeChange).toHaveBeenCalledWith(0);
         expect(props.onPledgeChange).toHaveBeenCalledWith(25_000);
-        expect(props.onPledgeChange).toHaveBeenCalledWith(5_000);
+        expect(props.onPledgeChange).toHaveBeenCalledWith(0);
     });
 
-    it.each([
-        [1_000, 5_000],
-        [50_000_001, 50_000_000],
-        [12_499, 10_000],
-        [12_501, 15_000],
-    ])('commits typed pledge %d to %d on blur', (pledge, expected) => {
+    it('does not normalize a typed pledge in the browser on blur', () => {
         const props = investorDefaults();
 
-        render(<InvestorPanel {...props} pledge={pledge} />);
+        render(<InvestorPanel {...props} pledge={12_501} />);
         fireEvent.blur(screen.getByLabelText('Pledge amount'));
 
-        expect(props.onPledgeChange).toHaveBeenCalledWith(expected);
+        expect(props.onPledgeChange).not.toHaveBeenCalled();
     });
 
-    it('caps a typed pledge at the maximum', () => {
+    it('passes an oversized typed pledge to server preview validation', () => {
         const props = investorDefaults();
 
         render(<InvestorPanel {...props} />);
@@ -346,6 +363,6 @@ describe('InvestorPanel', () => {
             target: { value: '999999999' },
         });
 
-        expect(props.onPledgeChange).toHaveBeenCalledWith(50_000_000);
+        expect(props.onPledgeChange).toHaveBeenCalledWith(999_999_999);
     });
 });

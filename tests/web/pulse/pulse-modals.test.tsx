@@ -51,6 +51,7 @@ const investorDefaults = () => ({
     step: 'notes' as const,
     pledge: 500_000,
     payout: 565_000,
+    blendedYield: 13,
     queueNumber: '#0144',
     districts,
     details: details({ name: 'Diane Uwase' }),

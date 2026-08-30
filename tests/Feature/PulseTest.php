@@ -1,10 +1,10 @@
 <?php
 
+use App\Domain\Pulse\PulseSector;
+use App\Domain\Pulse\PulseUnderwriting;
 use App\Enums\PulseContactMethod;
-use App\Enums\PulseSector;
 use App\Enums\PulseSignupType;
 use App\Models\PulseSignup;
-use App\Support\PulseUnderwriting;
 use Inertia\Testing\AssertableInertia;
 
 /**
@@ -30,12 +30,28 @@ function businessSignup(array $overrides = []): array
 }
 
 test('the home route shows the pulse waitlist without authentication', function () {
+    $this->travelTo(now()->setDate(2026, 7, 29));
+
     $response = $this->get(route('home'));
 
     $response->assertOk();
     $response->assertInertia(fn (AssertableInertia $page) => $page
         ->component('pulse')
         ->has('districts.Kigali City')
+        ->where('policy.terms', [3, 6, 9, 12])
+        ->where('policy.sectors.0', 'Agriculture')
+        ->where('policy.registration_years.0', 2026)
+        ->where('policy.registration_years.30', 1996)
+        ->where('policy.minimum_revenue', 15_000_000)
+        ->where('policy.minimum_loan', 5_000_000)
+        ->where('policy.maximum_loan', 50_000_000)
+        ->where('policy.pledge.minimum', 5_000)
+        ->where('policy.pledge.maximum', 50_000_000)
+        ->where('policy.pledge.step', 5_000)
+        ->where('policy.pledge.default', 500_000)
+        ->where('investor_preview.pledge_amount', 500_000)
+        ->where('investor_preview.projected_return', 565_000)
+        ->where('investor_preview.blended_yield', 13)
         ->where('traction.pledged', 0)
         ->where('traction.investors', 0)
         ->where('traction.businesses', 0)
@@ -71,13 +87,15 @@ test('the businesses an investor can back are the ones that pre-qualified', func
     $response = $this->get(route('home'));
 
     $response->assertInertia(fn (AssertableInertia $page) => $page
-        ->has('listings', 1)
-        ->where('listings.0.name', 'Kivu Coffee Co.')
-        ->where('listings.0.initial', 'K')
-        ->where('listings.0.term', '12mo')
-        ->where('listings.0.yield', '14.1%')
-        ->where('listings.0.rating_band', 'Stable')
-        ->where('listings.0.rating_score', '3.4')
+        ->has('investor_preview.listings', 1)
+        ->where('investor_preview.listings.0.name', 'Kivu Coffee Co.')
+        ->where('investor_preview.listings.0.initial', 'K')
+        ->where('investor_preview.listings.0.term', '12mo')
+        ->where('investor_preview.listings.0.yield', '14.1%')
+        ->where('investor_preview.listings.0.yield_rate', 14.1)
+        ->where('investor_preview.listings.0.rating_band', 'Stable')
+        ->where('investor_preview.listings.0.rating_score', '3.4')
+        ->where('investor_preview.listings.0.projected_return', 570_500)
     );
 });
 
@@ -91,8 +109,8 @@ test('a business that did not consent is listed without its name', function () {
     $response = $this->get(route('home'));
 
     $response->assertInertia(fn (AssertableInertia $page) => $page
-        ->where('listings.0.name', 'Business in Karongi')
-        ->where('listings.0.initial', 'K')
+        ->where('investor_preview.listings.0.name', 'Business in Karongi')
+        ->where('investor_preview.listings.0.initial', 'K')
     );
 });
 
@@ -106,10 +124,125 @@ test('the newest businesses are listed first and the list is capped', function (
     $response = $this->get(route('home'));
 
     $response->assertInertia(fn (AssertableInertia $page) => $page
-        ->has('listings', 14)
-        ->where('listings.0.name', 'Business 15')
-        ->where('listings.13.name', 'Business 2')
+        ->has('investor_preview.listings', 14)
+        ->where('investor_preview.listings.0.name', 'Business 15')
+        ->where('investor_preview.listings.13.name', 'Business 2')
     );
+});
+
+test('an investor preview is server-authoritative, unwrapped and non-persisting', function () {
+    PulseSignup::factory()->business()->create([
+        'name' => 'Kivu Coffee Co.',
+        'district' => 'Karongi',
+        'listed' => true,
+        'term_months' => 12,
+        'flat_rate' => 14.1,
+        'rating_band' => 'Stable',
+        'rating_score' => 3.4,
+    ]);
+
+    $response = $this->postJson(route('pulse.investor.preview'), [
+        'pledge_amount' => 502_499,
+    ]);
+
+    $response->assertOk()
+        ->assertJsonMissingPath('data')
+        ->assertJsonPath('pledge_amount', 500_000)
+        ->assertJsonPath('projected_return', 565_000)
+        ->assertJsonPath('blended_yield', 13)
+        ->assertJsonPath('listings.0.name', 'Kivu Coffee Co.')
+        ->assertJsonPath('listings.0.projected_return', 570_500);
+
+    expect(array_keys($response->json()))->toBe([
+        'pledge_amount',
+        'projected_return',
+        'blended_yield',
+        'listings',
+    ])->and(PulseSignup::query()->count())->toBe(1);
+});
+
+test('an investor preview holds any input inside the published pledge policy', function (int $given, int $expected) {
+    $this->postJson(route('pulse.investor.preview'), ['pledge_amount' => $given])
+        ->assertOk()
+        ->assertJsonPath('pledge_amount', $expected);
+
+    expect(PulseSignup::query()->count())->toBe(0);
+})->with([
+    'empty amount' => [0, 5_000],
+    'half step' => [7_500, 10_000],
+    'above maximum' => [50_000_001, 50_000_000],
+]);
+
+test('a business preview returns one authoritative sizing without persisting it', function () {
+    $this->travelTo(now()->setDate(2026, 7, 29));
+
+    $response = $this->postJson(route('pulse.business.preview'), [
+        'annual_revenue' => 120_000_000,
+        'annual_costs' => 90_000_000,
+        'sector' => 'Logistics',
+        'registered_year' => 2018,
+        'term_months' => 12,
+        'score' => 92,
+        'qualified_amount' => 900_000_000,
+    ]);
+
+    $response->assertOk()
+        ->assertJsonMissingPath('data')
+        ->assertJsonPath('rating.band', 'Stable')
+        ->assertJsonPath('rating.score', 3.9)
+        ->assertJsonPath('flat_rate', 14.41)
+        ->assertJsonPath('sized_amount', 20_900_000)
+        ->assertJsonPath('qualified_amount', 20_900_000)
+        ->assertJsonPath('monthly_repayment', 1_992_684.38)
+        ->assertJsonPath('monthly_surplus', 2_500_000)
+        ->assertJsonPath('cover_ratio', 1.25)
+        ->assertJsonPath('below_minimum', false)
+        ->assertJsonPath('at_maximum', false)
+        ->assertJsonPath('required_surplus', 595_898.44)
+        ->assertJsonPath('status', 'pre_qualified');
+
+    expect(array_keys($response->json()))->toBe([
+        'rating',
+        'flat_rate',
+        'sized_amount',
+        'qualified_amount',
+        'monthly_repayment',
+        'monthly_surplus',
+        'cover_ratio',
+        'below_minimum',
+        'at_maximum',
+        'required_surplus',
+        'status',
+    ])->and(PulseSignup::query()->count())->toBe(0);
+});
+
+test('business preview validation uses the same policy and messages as signup', function () {
+    $response = $this->postJson(route('pulse.business.preview'), [
+        'annual_revenue' => 14_000_000,
+        'annual_costs' => 14_000_000,
+        'sector' => 'Cryptocurrency',
+        'registered_year' => 1995,
+        'term_months' => 7,
+    ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'annual_revenue',
+            'annual_costs',
+            'sector',
+            'registered_year',
+            'term_months',
+        ])
+        ->assertJsonPath(
+            'errors.annual_costs.0',
+            'Your costs have to be lower than your revenue to pre-qualify.',
+        );
+});
+
+test('an investor preview rejects a negative pledge', function () {
+    $this->postJson(route('pulse.investor.preview'), ['pledge_amount' => -1])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('pledge_amount');
 });
 
 test('traction averages come from the businesses that have been sized', function () {
@@ -142,7 +275,7 @@ test('a business that sized under the smallest loan is not offered to investors'
     $response = $this->get(route('home'));
 
     $response->assertInertia(fn (AssertableInertia $page) => $page
-        ->has('listings', 0)
+        ->has('investor_preview.listings', 0)
         ->where('traction.businesses', 1)
         ->where('traction.average_loan', null)
     );
@@ -178,12 +311,19 @@ test('an investor can pledge', function () {
         'contact' => '0788 123 456',
         'province' => 'Kigali City',
         'district' => 'Gasabo',
-        'pledge_amount' => 500_000,
+        'pledge_amount' => 502_499,
+        'projected_return' => 1,
+        'blended_yield' => 0,
+        'queue_number' => '#9999',
     ]);
 
-    $response->assertOk();
-    $response->assertJsonPath('queue_number', '#0001');
-    $response->assertJsonPath('traction.pledged', 500_000);
+    $response->assertOk()
+        ->assertJsonMissingPath('data')
+        ->assertJsonPath('queue_number', '#0001')
+        ->assertJsonPath('traction.pledged', 500_000)
+        ->assertJsonPath('investor_preview.pledge_amount', 500_000)
+        ->assertJsonPath('investor_preview.projected_return', 565_000)
+        ->assertJsonPath('investor_preview.blended_yield', 13);
 
     $signup = PulseSignup::query()->sole();
 
@@ -373,9 +513,16 @@ test('a business claims a pass on the figures it reported', function () {
 
     $response = $this->postJson(route('pulse.business.store'), businessSignup());
 
-    $response->assertOk();
-    $response->assertJsonPath('queue_number', '#0001');
-    $response->assertJsonPath('loan_number', '#1');
+    $response->assertOk()
+        ->assertJsonMissingPath('data')
+        ->assertJsonPath('queue_number', '#0001')
+        ->assertJsonPath('loan_number', '#1')
+        ->assertJsonPath('traction.businesses', 1)
+        ->assertJsonPath('business_preview.rating.band', 'Stable')
+        ->assertJsonPath('business_preview.rating.score', 3.9)
+        ->assertJsonPath('business_preview.flat_rate', 14.41)
+        ->assertJsonPath('business_preview.qualified_amount', 20_900_000)
+        ->assertJsonPath('business_preview.status', 'pre_qualified');
 
     $signup = PulseSignup::query()->sole();
 
