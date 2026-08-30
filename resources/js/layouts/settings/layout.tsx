@@ -14,17 +14,14 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Profile',
         href: edit(),
-        icon: null,
     },
     {
         title: 'Security',
         href: editSecurity(),
-        icon: null,
     },
     {
         title: 'Appearance',
         href: editAppearance(),
-        icon: null,
     },
 ];
 
@@ -54,12 +51,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                     'bg-muted': isCurrentOrParentUrl(item.href),
                                 })}
                             >
-                                <Link href={item.href}>
-                                    {item.icon && (
-                                        <item.icon className="h-4 w-4" />
-                                    )}
-                                    {item.title}
-                                </Link>
+                                <Link href={item.href}>{item.title}</Link>
                             </Button>
                         ))}
                     </nav>

@@ -16,6 +16,7 @@ export function PulseModal({
         <>
             <div
                 onClick={onClose}
+                data-testid="pulse-modal-backdrop"
                 className="fixed inset-0 z-50 bg-[var(--rz-overlay)] backdrop-blur-[5px]"
                 aria-hidden="true"
             />
