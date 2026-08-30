@@ -757,3 +757,15 @@ body:has(.rz-site) {
         position: static !important;
     }
 }
+
+/* Below 720px the export shows two Help links: the one in the nav, and a
+   second in a mobile-only row beneath it. The row is meant to replace the
+   nav copy, but the class that would hide that copy (.rz-nav-links) is
+   defined in the export and never applied to any element, so both render.
+   Keep the one in the nav, where it sits beside the audience toggle, and
+   drop the duplicate row. */
+@media (max-width: 720px) {
+    .rz-site .rz-mobile-only {
+        display: none !important;
+    }
+}
