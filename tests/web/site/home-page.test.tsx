@@ -262,3 +262,19 @@ describe('every control the design builds', () => {
         expect(site.state.H).toBeDefined();
     });
 });
+
+describe('where the footer points people', () => {
+    it('links the accounts Rozine actually posts from', () => {
+        mountSite();
+
+        const href = (label: string) =>
+            screen.getByLabelText(label).getAttribute('href');
+
+        expect(href('Instagram')).toBe('https://www.instagram.com/rozineapp');
+        expect(href('X')).toBe('https://x.com/rozineapp');
+        expect(href('LinkedIn')).toBe(
+            'https://www.linkedin.com/company/rozine/',
+        );
+        expect(href('Email')).toBe('mailto:hello@rozine.rw');
+    });
+});
