@@ -1,6 +1,8 @@
 import { Head, router, useHttp, usePoll } from '@inertiajs/react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+    previewBusiness,
+    previewInvestor,
     storeBusiness,
     storeInvestor,
 } from '@/actions/App/Http/Controllers/PulseController';
@@ -20,26 +22,37 @@ import { PulseHero, TractionCards } from '@/components/pulse/pulse-hero';
 import { PulseToast } from '@/components/pulse/pulse-toast';
 import type { SignupDetails } from '@/components/pulse/signup-fields';
 import {
-    BLENDED_YIELD,
-    businessNotes,
+    decorateListings,
+    decorateRating,
     isValidContact,
     isValidName,
-    MINIMUM_REVENUE,
-    sizingFor,
-    TERMS,
 } from '@/lib/pulse';
-import type { ContactMethod, Listing, Traction } from '@/lib/pulse';
+import type {
+    ContactMethod,
+    InvestorPreview,
+    PulsePolicy,
+    Sizing,
+    Traction,
+} from '@/lib/pulse';
 
 type PulseProps = {
     traction: Traction;
-    listings: Listing[];
     districts: Record<string, string[]>;
+    policy: PulsePolicy;
+    investor_preview: InvestorPreview;
 };
 
-type SignupResponse = {
+type InvestorSignupResponse = {
     queue_number: string;
-    loan_number?: string;
     traction: Traction;
+    investor_preview: InvestorPreview;
+};
+
+type BusinessSignupResponse = {
+    queue_number: string;
+    loan_number: string;
+    traction: Traction;
+    business_preview: Sizing;
 };
 
 type SignupPayload = {
@@ -61,6 +74,18 @@ type BusinessPayload = SignupPayload & {
     registered_year: number;
     term_months: number;
     listed: boolean;
+};
+
+type InvestorPreviewPayload = {
+    pledge_amount: number;
+};
+
+type BusinessPreviewPayload = {
+    annual_revenue: number;
+    annual_costs: number;
+    sector: string;
+    registered_year: number;
+    term_months: number;
 };
 
 const EMPTY_DETAILS: SignupDetails = {
@@ -90,18 +115,29 @@ const EMPTY_FIGURES: BusinessFigures = {
 /** The stages the sizing counts through before it reports a figure. */
 const SIZING_STEPS = [24, 46, 68, 88, 100];
 
-export default function Pulse({ traction, listings, districts }: PulseProps) {
+export default function Pulse({
+    traction,
+    districts,
+    policy,
+    investor_preview: initialInvestorPreview,
+}: PulseProps) {
     const [toastMessage, setToastMessage] = useState('');
     const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const sizingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
     const resultTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const investorPreviewTimer = useRef<ReturnType<typeof setTimeout> | null>(
+        null,
+    );
+    const investorPreviewSequence = useRef(0);
 
     const topbar = useRef<HTMLDivElement>(null);
     const investorPanel = useRef<HTMLDivElement>(null);
     const businessPanel = useRef<HTMLDivElement>(null);
 
     // Investor flow.
-    const [pledge, setPledge] = useState(500000);
+    const [pledge, setPledge] = useState(policy.pledge.default);
+    const [investorPreview, setInvestorPreview] =
+        useState<InvestorPreview | null>(initialInvestorPreview);
     const [investorOpen, setInvestorOpen] = useState(false);
     const [investorStep, setInvestorStep] = useState<'notes' | 'pledged'>(
         'notes',
@@ -123,14 +159,15 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
     const [loanNumber, setLoanNumber] = useState('#1,480');
     const [termIndex, setTermIndex] = useState(3);
     const [progress, setProgress] = useState(0);
+    const [sizing, setSizing] = useState<Sizing | null>(null);
     // The checkbox asks to be hidden, so the listing consent is its inverse.
     const [businessAnonymous, setBusinessAnonymous] = useState(false);
 
-    const investorSignup = useHttp<InvestorPayload, SignupResponse>({
+    const investorSignup = useHttp<InvestorPayload, InvestorSignupResponse>({
         ...EMPTY_PAYLOAD,
         pledge_amount: 0,
     });
-    const businessSignup = useHttp<BusinessPayload, SignupResponse>({
+    const businessSignup = useHttp<BusinessPayload, BusinessSignupResponse>({
         ...EMPTY_PAYLOAD,
         annual_revenue: 0,
         annual_costs: 0,
@@ -139,53 +176,65 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
         term_months: 12,
         listed: false,
     });
+    const investorPreviewRequest = useHttp<
+        InvestorPreviewPayload,
+        InvestorPreview
+    >({
+        pledge_amount: policy.pledge.default,
+    });
+    const businessPreviewRequest = useHttp<BusinessPreviewPayload, Sizing>({
+        annual_revenue: 0,
+        annual_costs: 0,
+        sector: '',
+        registered_year: 0,
+        term_months: policy.terms[0],
+    });
+    const cancelInvestorPreview = investorPreviewRequest.cancel;
+    const cancelBusinessPreview = businessPreviewRequest.cancel;
+
+    const clearSizingTimers = useCallback((): void => {
+        if (sizingTimer.current) {
+            clearInterval(sizingTimer.current);
+            sizingTimer.current = null;
+        }
+
+        if (resultTimer.current) {
+            clearTimeout(resultTimer.current);
+            resultTimer.current = null;
+        }
+    }, []);
 
     // The figures on the page are whatever the database holds, refreshed in
     // place so a signup made elsewhere shows up without a reload.
-    usePoll(10000, { only: ['traction', 'listings'], async: true });
+    usePoll(10000, { only: ['traction'], async: true });
 
     useEffect(() => {
-        const timers = [toastTimer, sizingTimer, resultTimer];
-
         return () => {
-            timers.forEach((timer) => {
-                if (timer.current) {
-                    clearTimeout(
-                        timer.current as ReturnType<typeof setTimeout>,
-                    );
-                    clearInterval(
-                        timer.current as ReturnType<typeof setInterval>,
-                    );
-                }
-            });
+            if (toastTimer.current) {
+                clearTimeout(toastTimer.current);
+            }
+
+            clearSizingTimers();
+
+            if (investorPreviewTimer.current) {
+                clearTimeout(investorPreviewTimer.current);
+            }
+
+            cancelInvestorPreview();
+            cancelBusinessPreview();
         };
-    }, []);
+    }, [cancelBusinessPreview, cancelInvestorPreview, clearSizingTimers]);
 
     const notes = useMemo(
-        () => businessNotes(listings, pledge),
-        [listings, pledge],
+        () => decorateListings(investorPreview?.listings ?? []),
+        [investorPreview],
     );
 
-    const term = TERMS[termIndex];
-    const sizing = useMemo(
-        () =>
-            sizingFor(
-                figures.annualRevenue,
-                figures.annualCosts,
-                figures.sector,
-                parseInt(figures.registeredYear, 10) || 0,
-                term,
-            ),
-        [figures, term],
-    );
-
-    const payout = pledge * (1 + BLENDED_YIELD / 100);
-
+    const term = policy.terms[termIndex];
     const canSize =
-        isValidName(figures.name) &&
-        figures.annualRevenue >= MINIMUM_REVENUE &&
+        figures.name.trim() !== '' &&
+        figures.annualRevenue > 0 &&
         figures.annualCosts > 0 &&
-        figures.annualCosts < figures.annualRevenue &&
         figures.sector !== '' &&
         figures.registeredYear !== '';
 
@@ -248,42 +297,102 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
         };
     }
 
-    /**
-     * Count the sizing through its stages. The figures are the visitor's own,
-     * so nothing is fetched — the pause is the model being read back to them.
-     */
-    function startSizing(): void {
+    /** Request a non-persisting, server-authoritative sizing preview. */
+    function startSizing(termMonths = term): void {
         if (!canSize) {
             return;
         }
 
         clearSizingTimers();
+        businessPreviewRequest.cancel();
+        setSizing(null);
         setBusinessOpen(false);
         setBusinessStep('parsing');
         setProgress(8);
 
-        let step = 0;
-
-        sizingTimer.current = setInterval(() => {
-            setProgress(SIZING_STEPS[step]);
-
-            if (step >= SIZING_STEPS.length - 1) {
+        businessPreviewRequest.setData({
+            annual_revenue: figures.annualRevenue,
+            annual_costs: figures.annualCosts,
+            sector: figures.sector,
+            registered_year: parseInt(figures.registeredYear, 10),
+            term_months: termMonths,
+        });
+        businessPreviewRequest.post(previewBusiness.url(), {
+            onSuccess: (response) => {
                 clearSizingTimers();
+                setSizing(response);
+                setProgress(100);
                 resultTimer.current = setTimeout(
                     () => setBusinessStep('result'),
                     360,
                 );
+            },
+            onError: (errors) => {
+                clearSizingTimers();
+                setBusinessStep('idle');
+                reportErrors(errors);
+            },
+            onNetworkError: () => {
+                clearSizingTimers();
+                setBusinessStep('idle');
+                toast('We could not reach the server. Please try again.');
+            },
+        });
+
+        let step = 0;
+
+        const activeSizingTimer = setInterval(() => {
+            setProgress(SIZING_STEPS[step]);
+
+            if (step >= SIZING_STEPS.length - 1) {
+                clearInterval(activeSizingTimer);
+                sizingTimer.current = null;
             }
 
             step++;
         }, 320);
+        sizingTimer.current = activeSizingTimer;
     }
 
-    function clearSizingTimers(): void {
-        if (sizingTimer.current) {
-            clearInterval(sizingTimer.current);
-            sizingTimer.current = null;
+    /** Debounce previews and ignore any superseded response. */
+    function changePledge(nextPledge: number): void {
+        const sequence = ++investorPreviewSequence.current;
+
+        setPledge(nextPledge);
+        setInvestorPreview(null);
+        investorPreviewRequest.cancel();
+
+        if (investorPreviewTimer.current) {
+            clearTimeout(investorPreviewTimer.current);
         }
+
+        investorPreviewTimer.current = setTimeout(() => {
+            investorPreviewRequest.setData({ pledge_amount: nextPledge });
+            investorPreviewRequest.post(previewInvestor.url(), {
+                onSuccess: (response) => {
+                    if (investorPreviewSequence.current === sequence) {
+                        setPledge(response.pledge_amount);
+                        setInvestorPreview(response);
+                    }
+                },
+                onError: (errors) => {
+                    if (investorPreviewSequence.current === sequence) {
+                        reportErrors(errors);
+                    }
+                },
+                onNetworkError: () => {
+                    if (investorPreviewSequence.current === sequence) {
+                        toast(
+                            'We could not refresh the projection. Please try again.',
+                        );
+                    }
+                },
+            });
+        }, 250);
+    }
+
+    function refreshInvestorPreview(): void {
+        changePledge(pledge);
     }
 
     function submitInvestor(): void {
@@ -294,8 +403,10 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
         investorSignup.post(storeInvestor.url(), {
             onSuccess: (response) => {
                 setInvestorQueue(response.queue_number);
+                setPledge(response.investor_preview.pledge_amount);
+                setInvestorPreview(response.investor_preview);
                 setInvestorStep('pledged');
-                router.reload({ only: ['traction', 'listings'], async: true });
+                router.reload({ only: ['traction'], async: true });
             },
             onError: reportErrors,
             onNetworkError: () =>
@@ -316,9 +427,11 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
         businessSignup.post(storeBusiness.url(), {
             onSuccess: (response) => {
                 setBusinessQueue(response.queue_number);
-                setLoanNumber(response.loan_number ?? loanNumber);
+                setLoanNumber(response.loan_number);
+                setSizing(response.business_preview);
                 setBusinessStep('pass');
-                router.reload({ only: ['traction', 'listings'], async: true });
+                refreshInvestorPreview();
+                router.reload({ only: ['traction'], async: true });
             },
             onError: reportErrors,
             onNetworkError: () =>
@@ -353,11 +466,16 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
                         averageYield={traction.average_yield}
                         averageTerm={traction.average_term}
                         pledge={pledge}
-                        payout={payout}
+                        payout={investorPreview?.projected_return ?? null}
                         notes={notes}
+                        policy={policy}
+                        canSave={
+                            investorPreview?.pledge_amount === pledge &&
+                            !investorPreviewRequest.processing
+                        }
                         exampleOpen={exampleOpen}
                         onExampleToggle={() => setExampleOpen((open) => !open)}
-                        onPledgeChange={setPledge}
+                        onPledgeChange={changePledge}
                         onSaveSpot={() => {
                             setInvestorStep('notes');
                             setInvestorOpen(true);
@@ -381,6 +499,7 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
                         progressLabel={progressLabel}
                         figures={figures}
                         sizing={sizing}
+                        policy={policy}
                         termIndex={termIndex}
                         canSize={canSize}
                         onFiguresChange={(changes) =>
@@ -389,8 +508,11 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
                                 ...changes,
                             }))
                         }
-                        onSize={startSizing}
-                        onTermChange={setTermIndex}
+                        onSize={() => startSizing()}
+                        onTermChange={(index) => {
+                            setTermIndex(index);
+                            startSizing(policy.terms[index]);
+                        }}
                         onSaveSpot={() => {
                             setBusinessDetails((current) => ({
                                 ...current,
@@ -406,23 +528,26 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
                 <PulseFooter />
             </div>
 
-            {businessOpen && (
+            {businessOpen && sizing && (
                 <BusinessModal
-                    step={businessStep === 'idle' ? 'result' : businessStep}
+                    step={businessStep === 'pass' ? 'pass' : 'result'}
                     progress={progress}
                     progressLabel={progressLabel}
-                    qualifiedAmount={sizing.qualifiedAmount}
-                    belowMinimum={sizing.belowMinimum}
-                    rating={sizing.rating}
+                    qualifiedAmount={sizing.qualified_amount}
+                    belowMinimum={sizing.below_minimum}
+                    rating={decorateRating(
+                        sizing.rating.band,
+                        sizing.rating.score,
+                    )}
                     termLabel={`${term}mo`}
-                    flatRate={`${sizing.flatRate.toFixed(1)}%`}
+                    flatRate={`${sizing.flat_rate.toFixed(1)}%`}
                     queueNumber={businessQueue}
                     loanNumber={loanNumber}
                     districts={districts}
                     details={businessDetails}
                     anonymous={businessAnonymous}
                     contactError={businessSignup.errors.contact}
-                    canSubmit={isComplete(businessDetails) && canSize}
+                    canSubmit={isComplete(businessDetails)}
                     processing={businessSignup.processing}
                     onAnonymousChange={setBusinessAnonymous}
                     onChange={(changes) => {
@@ -444,11 +569,12 @@ export default function Pulse({ traction, listings, districts }: PulseProps) {
                 />
             )}
 
-            {investorOpen && (
+            {investorOpen && investorPreview && (
                 <InvestorModal
                     step={investorStep}
                     pledge={pledge}
-                    payout={payout}
+                    payout={investorPreview.projected_return}
+                    blendedYield={investorPreview.blended_yield}
                     queueNumber={investorQueue}
                     districts={districts}
                     details={investorDetails}

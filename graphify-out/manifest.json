@@ -1,0 +1,357 @@
+{
+  "/Users/amisha/www/rozine/docs/Rozine-BRS.md": {
+    "mtime": 1785221438.7297654,
+    "ast_hash": "216120034c3fcd40c4be257a0a8f9ed9",
+    "semantic_hash": "216120034c3fcd40c4be257a0a8f9ed9"
+  },
+  "/Users/amisha/www/rozine/docs/Rozine-Branding-Styles.md": {
+    "mtime": 1785221438.7299187,
+    "ast_hash": "ebf3991c989db6816d27dfd181aba6d3",
+    "semantic_hash": "ebf3991c989db6816d27dfd181aba6d3"
+  },
+  "/Users/amisha/www/rozine/docs/Rozine-Business-Plan.md": {
+    "mtime": 1785221438.730057,
+    "ast_hash": "a389eff2a54617b24123f7b7ba8b238e",
+    "semantic_hash": "a389eff2a54617b24123f7b7ba8b238e"
+  },
+  "/Users/amisha/www/rozine/docs/resources/Rozine Business Brief (standalone).html": {
+    "mtime": 1787031783.809427,
+    "ast_hash": "7187363f4cc3de67af66116b4b4655b8",
+    "semantic_hash": "7187363f4cc3de67af66116b4b4655b8"
+  },
+  "/Users/amisha/www/rozine/docs/resources/Rozine Investor Brief (standalone).html": {
+    "mtime": 1787031783.8097885,
+    "ast_hash": "aa764eb824e61b095e72bbf64a303959",
+    "semantic_hash": "aa764eb824e61b095e72bbf64a303959"
+  },
+  "/Users/amisha/www/rozine/docs/resources/Rozine Pulse (standalone).html": {
+    "mtime": 1787031783.810189,
+    "ast_hash": "cb062f75d890dbbbcf94cd5abd83c227",
+    "semantic_hash": "cb062f75d890dbbbcf94cd5abd83c227"
+  },
+  "/Users/amisha/www/rozine/docs/resources/Rozine Pulse Desktop (standalone).html": {
+    "mtime": 1787031783.8118494,
+    "ast_hash": "688da3996ea1554e26f84cc9c3245e2a",
+    "semantic_hash": "688da3996ea1554e26f84cc9c3245e2a"
+  },
+  "/Users/amisha/www/rozine/docs/Rozine-BRS.pdf": {
+    "mtime": 1785145320.0774148,
+    "ast_hash": "b450898e3881ec87f4507c75840e3fc1",
+    "semantic_hash": "b450898e3881ec87f4507c75840e3fc1"
+  },
+  "/Users/amisha/www/rozine/docs/Rozine-Branding-Styles.pdf": {
+    "mtime": 1785145320.078835,
+    "ast_hash": "a6787ad066a21ca411cf00dd55fcd7e8",
+    "semantic_hash": "a6787ad066a21ca411cf00dd55fcd7e8"
+  },
+  "/Users/amisha/www/rozine/docs/Rozine-Business-Plan.pdf": {
+    "mtime": 1785145320.079836,
+    "ast_hash": "dba0592c2ffee5db267e750dcf81cc27",
+    "semantic_hash": "dba0592c2ffee5db267e750dcf81cc27"
+  },
+  "/Users/amisha/www/rozine/docs/resources/Pre-qualified loan formulas (loan sizing on Pulse).pdf": {
+    "mtime": 1785387941.0666192,
+    "ast_hash": "809ae320debda2c3ff566b6ce0aab46d",
+    "semantic_hash": "809ae320debda2c3ff566b6ce0aab46d"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 28.png": {
+    "mtime": 1785145320.069166,
+    "ast_hash": "a9b603a5db443178ec980458e8a85be6",
+    "semantic_hash": "a9b603a5db443178ec980458e8a85be6"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 30.png": {
+    "mtime": 1785145320.0694737,
+    "ast_hash": "7ab965162ec56d3f29451636fb4e887b",
+    "semantic_hash": "7ab965162ec56d3f29451636fb4e887b"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 32.png": {
+    "mtime": 1785145320.069582,
+    "ast_hash": "928fc0211a231088ba9a9c91cc33d6a0",
+    "semantic_hash": "928fc0211a231088ba9a9c91cc33d6a0"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 34.png": {
+    "mtime": 1785145320.0697107,
+    "ast_hash": "027b67b8dc3f226e1001973803bfe43e",
+    "semantic_hash": "027b67b8dc3f226e1001973803bfe43e"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 36.png": {
+    "mtime": 1785145320.0698657,
+    "ast_hash": "98129334738acbfdfb1925b438807f37",
+    "semantic_hash": "98129334738acbfdfb1925b438807f37"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 37.png": {
+    "mtime": 1785145320.0701878,
+    "ast_hash": "ed0858f8175637be7b05a873d2c78f85",
+    "semantic_hash": "ed0858f8175637be7b05a873d2c78f85"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 38.png": {
+    "mtime": 1785145320.0703242,
+    "ast_hash": "9ac2cec8db745ce687915bd428781cd2",
+    "semantic_hash": "9ac2cec8db745ce687915bd428781cd2"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 39.png": {
+    "mtime": 1785145320.0704467,
+    "ast_hash": "ecb239ccbd2b9c478e6fe93615a577e1",
+    "semantic_hash": "ecb239ccbd2b9c478e6fe93615a577e1"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 40.png": {
+    "mtime": 1785145320.070573,
+    "ast_hash": "d1defdd7a872443e5583ec9af2c425d5",
+    "semantic_hash": "d1defdd7a872443e5583ec9af2c425d5"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 41.png": {
+    "mtime": 1785145320.0706868,
+    "ast_hash": "fff526192c6b04f8fae2ed2ca86e656e",
+    "semantic_hash": "fff526192c6b04f8fae2ed2ca86e656e"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 42.png": {
+    "mtime": 1785145320.0708277,
+    "ast_hash": "d896c28bd9079039cf69d83b7232af17",
+    "semantic_hash": "d896c28bd9079039cf69d83b7232af17"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 43.png": {
+    "mtime": 1785145320.0709672,
+    "ast_hash": "71bd2647b4df7f4184d4a9ecce0c7f3a",
+    "semantic_hash": "71bd2647b4df7f4184d4a9ecce0c7f3a"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 44.png": {
+    "mtime": 1785145320.0711112,
+    "ast_hash": "6aa3f5f1d71dcd0886c80944d7cd2f47",
+    "semantic_hash": "6aa3f5f1d71dcd0886c80944d7cd2f47"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 45.png": {
+    "mtime": 1785145320.0712502,
+    "ast_hash": "71c519dcc611bbdfccf2a23730ad58e1",
+    "semantic_hash": "71c519dcc611bbdfccf2a23730ad58e1"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 46.png": {
+    "mtime": 1785145320.0713568,
+    "ast_hash": "027b67b8dc3f226e1001973803bfe43e",
+    "semantic_hash": "027b67b8dc3f226e1001973803bfe43e"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 47.png": {
+    "mtime": 1785145320.0714588,
+    "ast_hash": "dbdb52991ab2788aa2f799424b8bedb6",
+    "semantic_hash": "dbdb52991ab2788aa2f799424b8bedb6"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 48.png": {
+    "mtime": 1785145320.0715647,
+    "ast_hash": "218199ad3a79d9d64eab969213965270",
+    "semantic_hash": "218199ad3a79d9d64eab969213965270"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 49.png": {
+    "mtime": 1785145320.0716903,
+    "ast_hash": "838bfdd5f94d0a21c7d848c5a16305d5",
+    "semantic_hash": "838bfdd5f94d0a21c7d848c5a16305d5"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 50.png": {
+    "mtime": 1785145320.0718567,
+    "ast_hash": "c5a48a006956fbb52e1c60d684cdfad2",
+    "semantic_hash": "c5a48a006956fbb52e1c60d684cdfad2"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 51.png": {
+    "mtime": 1785145320.072006,
+    "ast_hash": "257ca4eb6ea6b83ac3ffb9ce59a4ef57",
+    "semantic_hash": "257ca4eb6ea6b83ac3ffb9ce59a4ef57"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 52.png": {
+    "mtime": 1785145320.072107,
+    "ast_hash": "94512de18f2d11390da89abdee693452",
+    "semantic_hash": "94512de18f2d11390da89abdee693452"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 53.png": {
+    "mtime": 1785145320.0722082,
+    "ast_hash": "1bbea77da75833fd091fca2e17e769e4",
+    "semantic_hash": "1bbea77da75833fd091fca2e17e769e4"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 54.png": {
+    "mtime": 1785145320.0723226,
+    "ast_hash": "6d369131a5a5eba1407811fe9fd21340",
+    "semantic_hash": "6d369131a5a5eba1407811fe9fd21340"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 55.png": {
+    "mtime": 1785145320.0724347,
+    "ast_hash": "aa14066153ead89870269b9024d79c3e",
+    "semantic_hash": "aa14066153ead89870269b9024d79c3e"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 56.png": {
+    "mtime": 1785145320.0725768,
+    "ast_hash": "e25bfebea56eebe2162e953a534e3af3",
+    "semantic_hash": "e25bfebea56eebe2162e953a534e3af3"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 57.png": {
+    "mtime": 1785145320.0727222,
+    "ast_hash": "d65b88c1ea5cbe764ad7230fd7f45973",
+    "semantic_hash": "d65b88c1ea5cbe764ad7230fd7f45973"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 58.png": {
+    "mtime": 1785145320.0728908,
+    "ast_hash": "e22d14d2483560667c330bf26deffa3f",
+    "semantic_hash": "e22d14d2483560667c330bf26deffa3f"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 59.png": {
+    "mtime": 1785145320.0730288,
+    "ast_hash": "5e797f1d915eaf5282d6fef19e9f807d",
+    "semantic_hash": "5e797f1d915eaf5282d6fef19e9f807d"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 60.png": {
+    "mtime": 1785145320.0731533,
+    "ast_hash": "b94f4bfafaab485945d86ca0bef89687",
+    "semantic_hash": "b94f4bfafaab485945d86ca0bef89687"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/Frame 61.png": {
+    "mtime": 1785145320.0732415,
+    "ast_hash": "3bac35451507c0b0a8a19df5fe61333f",
+    "semantic_hash": "3bac35451507c0b0a8a19df5fe61333f"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Frame 58.png": {
+    "mtime": 1785145320.0733764,
+    "ast_hash": "e22d14d2483560667c330bf26deffa3f",
+    "semantic_hash": "e22d14d2483560667c330bf26deffa3f"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Frame 59.png": {
+    "mtime": 1785145320.0734777,
+    "ast_hash": "5e797f1d915eaf5282d6fef19e9f807d",
+    "semantic_hash": "5e797f1d915eaf5282d6fef19e9f807d"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Frame 60.png": {
+    "mtime": 1785145320.0735762,
+    "ast_hash": "b94f4bfafaab485945d86ca0bef89687",
+    "semantic_hash": "b94f4bfafaab485945d86ca0bef89687"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Frame 61.png": {
+    "mtime": 1785145320.0736585,
+    "ast_hash": "3bac35451507c0b0a8a19df5fe61333f",
+    "semantic_hash": "3bac35451507c0b0a8a19df5fe61333f"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Group 1.png": {
+    "mtime": 1785145320.0737529,
+    "ast_hash": "c45bbf536b2645fe66b48b0f6fab6b3e",
+    "semantic_hash": "c45bbf536b2645fe66b48b0f6fab6b3e"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Group 10.png": {
+    "mtime": 1785145320.0739212,
+    "ast_hash": "fe0e45ab76f0124b35bcf4024b851e17",
+    "semantic_hash": "fe0e45ab76f0124b35bcf4024b851e17"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Group 11.png": {
+    "mtime": 1785145320.074074,
+    "ast_hash": "8275489d23ea1c011d26dfdb9a067376",
+    "semantic_hash": "8275489d23ea1c011d26dfdb9a067376"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Group 12.png": {
+    "mtime": 1785145320.074211,
+    "ast_hash": "0fab2f1493f84e0bf0d0b79c53cc1dca",
+    "semantic_hash": "0fab2f1493f84e0bf0d0b79c53cc1dca"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Group 2.png": {
+    "mtime": 1785145320.0743277,
+    "ast_hash": "0eca45e039c46458aaceb72ca91ae5ad",
+    "semantic_hash": "0eca45e039c46458aaceb72ca91ae5ad"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Group 3.png": {
+    "mtime": 1785145320.0744283,
+    "ast_hash": "14faad46db3a8f288fba73c1150cd5cf",
+    "semantic_hash": "14faad46db3a8f288fba73c1150cd5cf"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Group 4.png": {
+    "mtime": 1785145320.0745215,
+    "ast_hash": "8cabf53c33549437e4d3440677409cdd",
+    "semantic_hash": "8cabf53c33549437e4d3440677409cdd"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Group 5.png": {
+    "mtime": 1785145320.0746338,
+    "ast_hash": "222391e18902cdfed798d3f077b4431a",
+    "semantic_hash": "222391e18902cdfed798d3f077b4431a"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Group 8.png": {
+    "mtime": 1785145320.0747573,
+    "ast_hash": "03180230c71ebe009651b0d46955db2c",
+    "semantic_hash": "03180230c71ebe009651b0d46955db2c"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Group 9.png": {
+    "mtime": 1785145320.0748956,
+    "ast_hash": "d8a9c94721324fb08858ba1ed991a5df",
+    "semantic_hash": "d8a9c94721324fb08858ba1ed991a5df"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Union-1.png": {
+    "mtime": 1785145320.0750015,
+    "ast_hash": "d17de8a5f17a47ee422f17bf282b5db9",
+    "semantic_hash": "d17de8a5f17a47ee422f17bf282b5db9"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Union-10.png": {
+    "mtime": 1785145320.0750935,
+    "ast_hash": "7f0d1034d27e25db2024f710a959f805",
+    "semantic_hash": "7f0d1034d27e25db2024f710a959f805"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Union-11.png": {
+    "mtime": 1785145320.075304,
+    "ast_hash": "b3997fe253233410527988d719d9b744",
+    "semantic_hash": "b3997fe253233410527988d719d9b744"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Union-12.png": {
+    "mtime": 1785145320.0753918,
+    "ast_hash": "50ca4ce4a00a5d624a1126ede6554518",
+    "semantic_hash": "50ca4ce4a00a5d624a1126ede6554518"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Union-13.png": {
+    "mtime": 1785145320.0754626,
+    "ast_hash": "39f2e1dbc12724c38271886b2945f55a",
+    "semantic_hash": "39f2e1dbc12724c38271886b2945f55a"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Union-14.png": {
+    "mtime": 1785145320.0755334,
+    "ast_hash": "d17de8a5f17a47ee422f17bf282b5db9",
+    "semantic_hash": "d17de8a5f17a47ee422f17bf282b5db9"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Union-15.png": {
+    "mtime": 1785145320.0756195,
+    "ast_hash": "332b9510e697e14f72688e43e072b39c",
+    "semantic_hash": "332b9510e697e14f72688e43e072b39c"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Union-2.png": {
+    "mtime": 1785145320.0756853,
+    "ast_hash": "332b9510e697e14f72688e43e072b39c",
+    "semantic_hash": "332b9510e697e14f72688e43e072b39c"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Union-3.png": {
+    "mtime": 1785145320.0757556,
+    "ast_hash": "7f0d1034d27e25db2024f710a959f805",
+    "semantic_hash": "7f0d1034d27e25db2024f710a959f805"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Union-4.png": {
+    "mtime": 1785145320.0758233,
+    "ast_hash": "50ca4ce4a00a5d624a1126ede6554518",
+    "semantic_hash": "50ca4ce4a00a5d624a1126ede6554518"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Union-5.png": {
+    "mtime": 1785145320.075901,
+    "ast_hash": "39f2e1dbc12724c38271886b2945f55a",
+    "semantic_hash": "39f2e1dbc12724c38271886b2945f55a"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Union-6.png": {
+    "mtime": 1785145320.0759878,
+    "ast_hash": "d17de8a5f17a47ee422f17bf282b5db9",
+    "semantic_hash": "d17de8a5f17a47ee422f17bf282b5db9"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Union-7.png": {
+    "mtime": 1785145320.0760775,
+    "ast_hash": "332b9510e697e14f72688e43e072b39c",
+    "semantic_hash": "332b9510e697e14f72688e43e072b39c"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Union-8.png": {
+    "mtime": 1785145320.0761547,
+    "ast_hash": "50ca4ce4a00a5d624a1126ede6554518",
+    "semantic_hash": "50ca4ce4a00a5d624a1126ede6554518"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Union-9.png": {
+    "mtime": 1785145320.076225,
+    "ast_hash": "39f2e1dbc12724c38271886b2945f55a",
+    "semantic_hash": "39f2e1dbc12724c38271886b2945f55a"
+  },
+  "/Users/amisha/www/rozine/docs/New Logo/PNGs/Union.png": {
+    "mtime": 1785145320.0762923,
+    "ast_hash": "7f0d1034d27e25db2024f710a959f805",
+    "semantic_hash": "7f0d1034d27e25db2024f710a959f805"
+  }
+}

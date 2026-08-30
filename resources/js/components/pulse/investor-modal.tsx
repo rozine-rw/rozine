@@ -13,12 +13,13 @@ import {
 } from '@/components/pulse/pulse-modal';
 import { SignupFields } from '@/components/pulse/signup-fields';
 import type { SignupDetails } from '@/components/pulse/signup-fields';
-import { BLENDED_YIELD, formatCompact } from '@/lib/pulse';
+import { formatCompact } from '@/lib/pulse';
 
 type InvestorModalProps = {
     step: 'notes' | 'pledged';
     pledge: number;
     payout: number;
+    blendedYield: number;
     queueNumber: string;
     districts: Record<string, string[]>;
     details: SignupDetails;
@@ -38,6 +39,7 @@ export function InvestorModal({
     step,
     pledge,
     payout,
+    blendedYield,
     queueNumber,
     districts,
     details,
@@ -120,7 +122,7 @@ export function InvestorModal({
                             />
                             <PassStat
                                 label="AVG YIELD"
-                                value={`${BLENDED_YIELD.toFixed(1)}%`}
+                                value={`${blendedYield.toFixed(1)}%`}
                             />
                         </PassFooter>
                     </PassCard>
@@ -139,7 +141,7 @@ export function InvestorModal({
                                 },
                                 {
                                     label: 'AVG YIELD',
-                                    value: `${BLENDED_YIELD.toFixed(1)}%`,
+                                    value: `${blendedYield.toFixed(1)}%`,
                                 },
                             ],
                         }}

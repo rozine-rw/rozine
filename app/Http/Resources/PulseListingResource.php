@@ -2,14 +2,10 @@
 
 namespace App\Http\Resources;
 
-use App\Models\PulseSignup;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
 
-/**
- * @mixin PulseSignup
- */
 class PulseListingResource extends JsonResource
 {
     /**
@@ -22,19 +18,23 @@ class PulseListingResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $label = $this->listed ? $this->name : "Business in {$this->district}";
+        /** @var array{id: int, name: string, district: string, listed: bool, term_months: int, flat_rate: float, rating_band: string, rating_score: float, projected_return: int} $listing */
+        $listing = $this->resource;
+
+        $label = $listing['listed'] ? $listing['name'] : "Business in {$listing['district']}";
 
         return [
-            'id' => $this->id,
-            'initial' => Str::upper(Str::substr($this->listed ? $this->name : $this->district, 0, 1)),
+            'id' => $listing['id'],
+            'initial' => Str::upper(Str::substr($listing['listed'] ? $listing['name'] : $listing['district'], 0, 1)),
             'name' => $label,
-            'district' => $this->district,
-            'term' => "{$this->term_months}mo",
-            'yield' => number_format((float) $this->flat_rate, 1).'%',
-            'yield_rate' => (float) $this->flat_rate,
-            'rating_band' => $this->rating_band,
-            'rating_score' => number_format((float) $this->rating_score, 1),
-            'accent' => $this->id % 10,
+            'district' => $listing['district'],
+            'term' => "{$listing['term_months']}mo",
+            'yield' => number_format($listing['flat_rate'], 1).'%',
+            'yield_rate' => $listing['flat_rate'],
+            'rating_band' => $listing['rating_band'],
+            'rating_score' => number_format($listing['rating_score'], 1),
+            'accent' => $listing['id'] % 10,
+            'projected_return' => $listing['projected_return'],
         ];
     }
 }
