@@ -3,11 +3,18 @@ import { createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import Home from '@/pages/home';
 
-const mocks = vi.hoisted(() => ({ post: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+    post: vi.fn(),
+    download: vi.fn(),
+}));
 
 vi.mock('@inertiajs/react', () => ({
     Head: () => null,
     router: { post: mocks.post },
+}));
+
+vi.mock('@/lib/pass-card-image', () => ({
+    downloadPassCard: mocks.download,
 }));
 
 const mountSite = () => {
@@ -60,6 +67,7 @@ const readyBusiness = (site: Home) => {
 beforeEach(() => {
     document.body.innerHTML = '';
     mocks.post.mockReset();
+    mocks.download.mockReset().mockResolvedValue(undefined);
     window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
 });
 
@@ -279,7 +287,69 @@ describe('a business asking to borrow', () => {
 });
 
 describe('the card a signup can keep', () => {
-    it('confirms a saved investor card and clears the note after a moment', () => {
+    it('hands the investor the card they are looking at', async () => {
+        const site = mountSite();
+
+        act(() => {
+            site.setState({
+                sent: true,
+                name: 'Diane Uwase',
+                country: 'Rwanda',
+                depIdx: 22,
+                term: 6,
+            });
+        });
+        await act(async () => {
+            await site.invVals().shareBtns[0].on();
+        });
+
+        expect(mocks.download).toHaveBeenCalledOnce();
+
+        const spec = mocks.download.mock.calls[0][0];
+
+        expect(spec).toMatchObject({
+            surface: 'site',
+            tone: 'investor',
+            tag: 'INVESTOR NOTE',
+            caption: 'PUTTING TO WORK',
+            holder: 'DIANE UWASE \u00b7 Rwanda',
+        });
+        expect(spec.amount).toMatch(/^RWF /);
+        expect(spec.stats.map((s: { label: string }) => s.label)).toEqual([
+            'YOU GET BACK',
+            'TERM',
+        ]);
+        expect(site.state.shareMsg).toBe('Card saved to your device');
+    });
+
+    it('hands the business the card they are looking at', async () => {
+        const site = mountSite();
+
+        act(() => {
+            site.setState({ page: 'biz' });
+            site.bSet({ sent: true, biz: 'Kigali Coffee', dist: 'Gasabo' });
+        });
+        await act(async () => {
+            await site.bizVals().shareBtns[0].on();
+        });
+
+        const spec = mocks.download.mock.calls[0][0];
+
+        expect(spec).toMatchObject({
+            surface: 'site',
+            tone: 'business',
+            tag: 'BORROWING REQUEST',
+            caption: 'ASKING TO BORROW',
+            holder: 'KIGALI COFFEE \u00b7 Gasabo',
+        });
+        expect(spec.stats.map((s: { label: string }) => s.label)).toEqual([
+            'TERM',
+            'FLAT CHARGE',
+        ]);
+        expect(site.state.B.shareMsg).toBe('Card saved to your device');
+    });
+
+    it('clears the note a moment after the card is saved', async () => {
         vi.useFakeTimers();
 
         const site = mountSite();
@@ -287,8 +357,8 @@ describe('the card a signup can keep', () => {
         act(() => {
             site.setState({ sent: true, name: 'Diane', country: 'Rwanda' });
         });
-        act(() => {
-            site.invVals().shareBtns[0].on();
+        await act(async () => {
+            await site.invVals().shareBtns[0].on();
         });
 
         expect(site.state.shareMsg).toBe('Card saved to your device');
@@ -300,7 +370,38 @@ describe('the card a signup can keep', () => {
         expect(site.state.shareMsg).toBe('');
     });
 
-    it('confirms a saved business card and clears the note after a moment', () => {
+    it('says so when the card cannot be drawn', async () => {
+        mocks.download.mockRejectedValue(new Error('no canvas here'));
+
+        const site = mountSite();
+
+        act(() => {
+            site.setState({ sent: true, name: 'Diane', country: 'Rwanda' });
+        });
+        await act(async () => {
+            await site.invVals().shareBtns[0].on();
+        });
+
+        expect(site.state.shareMsg).toBe('The card could not be saved');
+    });
+
+    it('says so when a business card cannot be drawn', async () => {
+        mocks.download.mockRejectedValue(new Error('no canvas here'));
+
+        const site = mountSite();
+
+        act(() => {
+            site.setState({ page: 'biz' });
+            site.bSet({ sent: true, biz: 'Kigali Coffee' });
+        });
+        await act(async () => {
+            await site.bizVals().shareBtns[0].on();
+        });
+
+        expect(site.state.B.shareMsg).toBe('The card could not be saved');
+    });
+
+    it('clears a business note a moment later too', async () => {
         vi.useFakeTimers();
 
         const site = mountSite();
@@ -309,8 +410,8 @@ describe('the card a signup can keep', () => {
             site.setState({ page: 'biz' });
             site.bSet({ sent: true, biz: 'Kigali Coffee' });
         });
-        act(() => {
-            site.bizVals().shareBtns[0].on();
+        await act(async () => {
+            await site.bizVals().shareBtns[0].on();
         });
 
         expect(site.state.B.shareMsg).toBe('Card saved to your device');
