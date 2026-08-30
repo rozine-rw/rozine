@@ -12784,7 +12784,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                                 }}
                                             >
                                                 <a
-                                                    href="https://instagram.com/rozine.rw"
+                                                    href="https://www.instagram.com/rozineapp"
                                                     aria-label="Instagram"
                                                     title="Instagram"
                                                     style={{
@@ -12817,7 +12817,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                                     </svg>
                                                 </a>
                                                 <a
-                                                    href="https://x.com/rozine.rw"
+                                                    href="https://x.com/rozineapp"
                                                     aria-label="X"
                                                     title="X"
                                                     style={{
@@ -12850,7 +12850,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                                     </svg>
                                                 </a>
                                                 <a
-                                                    href="https://www.linkedin.com/company/rozine"
+                                                    href="https://www.linkedin.com/company/rozine/"
                                                     aria-label="LinkedIn"
                                                     title="LinkedIn"
                                                     style={{
