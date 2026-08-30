@@ -10,7 +10,7 @@
 
 ## Goal of the foundation slices
 
-Establish an honest, reproducible PHP and TypeScript/React quality baseline and safe decision boundary before new MVP domain work starts. These slices introduce no domain behavior, schema, money rule, provider, or brand asset; production edits are limited to removing unreachable branches, encoding existing invariants, and making the account-deletion cancel action explicitly non-submitting.
+Establish an honest, reproducible PHP and TypeScript/React quality baseline and safe decision boundary before new MVP domain work starts. These slices introduce no domain behavior, schema, money rule, provider, or production brand activation; the new SVG/PNG files are governed source evidence only, while production edits are limited to removing unreachable branches, encoding existing invariants, and making the account-deletion cancel action explicitly non-submitting.
 
 ## Completed baseline checks
 
@@ -47,7 +47,7 @@ After the Phase 0B/C changes, `composer ci:check:php` is green with 107 tests, 4
 - [x] Add the initial Pest Architecture suite and remove starter placeholder helpers.
 - [x] Prove the architecture rule with a temporary Resource-to-calculator violation that fails, then remove it and restore a green six-test architecture suite.
 - [x] Make the local/CI Pint check deterministic without a parallel localhost-worker requirement.
-- [x] Preserve the six superseded JPEG hashes as historical references, receive and hash all 31 replacement SVGs, and validate their XML syntax.
+- [x] Preserve the six superseded JPEG hashes as historical references; receive and hash Robert's 31 replacement SVGs and 31 matching PNGs; validate SVG XML plus PNG RGBA/alpha, basename, and dimension parity.
 - [x] Add Pest's first-party PHPStan plugin, register it with PHPStan, and analyze `tests/`.
 - [x] Add the standalone Vitest/React Testing Library/V8 foundation and fail-closed D-66/D-67 enforcement engine.
 - [x] Backfill behavior tests until the complete D-67 metric/risk-tier baseline is green.
@@ -60,7 +60,7 @@ After the Phase 0B/C changes, `composer ci:check:php` is green with 107 tests, 4
 - [x] D-73 sets PHP 8.4 as the minimum supported runtime, PHP 8.5 as the canonical deployment/coverage runtime, both versions in CI, and PostgreSQL as the authoritative locking/concurrency environment.
 - [x] D-75 pins Node 24.15.0 across local metadata, both normal CI jobs, production builds, and the TIA baseline workflow while retaining npm 10.9.8.
 - [x] D-74 assigns the Phase 1 server/API/domain/application/data/security lane and PHP evidence to Aminu, the Inertia React UI/UX/client/PWA/accessibility lane and web evidence to Erastus, and the contract freeze, five integration checkpoints, cross-review, and Alpha acceptance to both.
-- [ ] Decision approval does not replace execution evidence: isolate or remove `PulseController`, finish the module architecture-rule catalog and negative controls, pin PHP 8.5 in deployment evidence, obtain hosted exact-SHA results for both runtime lanes, and prove PostgreSQL financial/secondary race behavior before Phase 0 exits.
+- [ ] Decision approval does not replace execution evidence: the 2026-08-29 working tree has isolated `PulseController` behind tested Domain/Application/Infrastructure/HTTP boundaries, but the broader module architecture-rule catalog and negative controls, clean exact-SHA evidence, PHP 8.5 deployment pin, hosted results for both runtime lanes, and PostgreSQL financial/secondary race proof remain required before Phase 0 exits.
 
 ## Phase 0B quality-contract evidence
 
@@ -82,7 +82,7 @@ The original fail-closed D-67 baseline was 44/4,574 statements (0.96%), 31/3,642
 
 The governing plan's source order remains active. No unsigned PDF/prototype constant may change money, underwriting, authorization, evidence, secondary trading, or regulatory behavior.
 
-The six superseded JPEGs remain hash-recorded as historical references in `brand-source-manifest.json`; their files have been replaced by 31 SHA-unique SVG sources in `docs/New Logo/`. On 29 August 2026, every SVG was hash-recorded and passed XML syntax validation. That proves receipt and file identity, not brand approval: PNG derivatives are still missing, and semantic mapping, duplicate/canonical selection, font/outline provenance, exact colors, usage rights, surface rules, and Robert's Brand approval remain pending. No runtime asset is replaced until D-51, D-52, D-56, D-57, and D-63 are approved.
+The six superseded JPEGs remain hash-recorded as historical references in `brand-source-manifest.json`; their files have been replaced by 31 SHA-unique SVG sources and 31 matching PNG sources in `docs/New Logo/`. The user confirmed that Robert supplied both packages. On 29 August 2026, every SVG was hash-recorded and passed XML syntax validation, while every PNG was hash-recorded, validated as RGBA with alpha, and matched one-to-one to its SVG basename and `viewBox` dimensions. The source archive `PNGs.zip` is recorded at SHA-256 `de04dac504360a6e05866707e55677b18253f7bc4b1d7293303aca0cbd1675bc`. Receipt and file identity do not constitute brand approval: semantic mapping, duplicate/canonical selection, exact colors, vector/font/outline provenance, usage rights, required variants and surface rules, accessibility approval, and Robert's explicit Brand approval remain pending. No runtime asset is replaced until D-51, D-52, D-56, D-57, and D-63 are approved.
 
 The confirmed internal project approval pool is Aminu, Erastus, Robert, and Kimani. Under D-71, Robert owns Product, Design, Brand, Business, and internal Legal; Aminu and Erastus jointly own Engineering and Security; Kimani owns Audit Operations, Compliance, and Finance/Risk. Each applicable record must still capture every required named-owner signature, conflict, or abstention. Any pool member who was not the sole author may supply the independent-test approval, or the record may name an eligible external delegate. Required external legal/regulatory/CMA, ICPAR/Audit Partner, provider-certification, penetration-test, and independent-assurance approvals remain separate.
 
@@ -100,9 +100,9 @@ Current runtime brand references remain deliberately unchanged:
 ## Exit blockers carried forward
 
 - The Aminu/Erastus/Robert/Kimani ownership map, including Robert as Business/internal Legal owner and Kimani as Finance/Risk owner, is recorded; internal ownership assignment is no longer a Phase 0 blocker. The remaining internal governance work is to name an eligible non-author independent-test approver on each applicable record and capture all required owner signatures for the Phase 1 red decisions—including the Party model and secondary-market contract.
-- The 31 SVG sources are received, syntax-validated, and hash-recorded. The PNG derivatives, semantic/canonical mapping, font/outline provenance, exact colors, usage rights, and surface rules remain pending; Robert must provide the applicable Product/Brand and internal Legal sign-offs, while Accessibility approval and any required external rights/legal clearance remain separately pending for D-51, D-52, D-56, D-57, and D-63 and the rights-cleared masters.
+- Robert's 31 SVG and 31 matching PNG sources are received, validated, and hash-recorded; PNG receipt is no longer a blocker. Semantic/canonical mapping, exact colors, vector/font/outline provenance, usage rights, required variants and surface rules, accessibility approval, and Robert's explicit Product/Brand and internal Legal sign-offs remain pending, alongside any required external rights/legal clearance for D-51, D-52, D-56, D-57, and D-63 and the rights-cleared masters.
 - The Auditor PWA assurance spike remains open.
-- ADR-0001 and the PHP/database runtime contract are approved; `PulseController` isolation/removal, the complete architecture-rule evidence, the PHP 8.5 deployment pin, hosted PHP 8.4/8.5 evidence, and PostgreSQL race tests remain open.
+- ADR-0001 and the PHP/database runtime contract are approved. The 2026-08-29 working tree closes the specific `PulseController` legacy exception and removes authoritative Pulse calculations from React and Resources, with 100% local PHP and web coverage plus green static/build gates. Clean committed exact-SHA evidence, the complete architecture-rule catalog, the PHP 8.5 deployment pin, hosted PHP 8.4/8.5 evidence, and PostgreSQL race tests remain open; the public-waitlist `count()+1` numbering is not concurrency-certified.
 - Paid private-branch protection is intentionally out of scope; hosted promotion attestation, non-author latest-SHA review, and fail-closed exact-SHA deployment evidence remain open. Current deployment workflows still deploy directly on push.
 
 Phase 0 remains `IN PROGRESS`; this evidence does not claim Phase 0 acceptance or permission to begin governed feature behavior.

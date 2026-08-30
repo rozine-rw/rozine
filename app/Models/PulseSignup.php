@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use App\Domain\Pulse\PulseSector;
+use App\Domain\Pulse\PulseUnderwriting;
 use App\Enums\PulseContactMethod;
-use App\Enums\PulseSector;
 use App\Enums\PulseSignupType;
-use App\Support\PulseUnderwriting;
 use Database\Factories\PulseSignupFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
