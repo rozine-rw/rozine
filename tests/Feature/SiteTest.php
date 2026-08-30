@@ -107,6 +107,38 @@ test('the same person cannot join the waitlist twice from the site', function ()
     expect(PulseSignup::query()->count())->toBe(1);
 });
 
+test('an investor who prefers email is reached that way', function () {
+    $this->post(route('site.investor.store'), siteInvestor([
+        'contact_method' => 'email',
+        'contact' => 'Diane@Example.COM',
+    ]))->assertRedirect();
+
+    expect(PulseSignup::query()->sole()->contact)->toBe('diane@example.com');
+});
+
+test('an investor email has to look like an email', function () {
+    $this->postJson(route('site.investor.store'), siteInvestor([
+        'contact_method' => 'email',
+        'contact' => 'not-an-email',
+    ]))->assertJsonValidationErrors('contact');
+});
+
+test('a business that prefers email is reached that way', function () {
+    $this->post(route('site.business.store'), siteBusiness([
+        'contact_method' => 'email',
+        'contact' => 'Owner@Kigalicoffee.RW',
+    ]))->assertRedirect();
+
+    expect(PulseSignup::query()->sole()->contact)->toBe('owner@kigalicoffee.rw');
+});
+
+test('a business email has to look like an email', function () {
+    $this->postJson(route('site.business.store'), siteBusiness([
+        'contact_method' => 'email',
+        'contact' => 'owner@',
+    ]))->assertJsonValidationErrors('contact');
+});
+
 test('a business reaching us through the site is recorded with the figures it reported', function () {
     $this->post(route('site.business.store'), siteBusiness())->assertRedirect();
 

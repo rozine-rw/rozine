@@ -21,10 +21,12 @@ declare module 'react' {
     }
 }
 
+type SiteProps = object;
+
 type SiteState = Record<string, any>;
 type SiteVals = Record<string, any>;
 
-export default class Home extends Component<Record<string, never>, SiteState> {
+export default class Home extends Component<SiteProps, SiteState> {
     private _raf = 0;
 
     private _sm?: ReturnType<typeof setTimeout>;
@@ -292,10 +294,8 @@ export default class Home extends Component<Record<string, never>, SiteState> {
                 ? this.digits(c).length >= 9
                 : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c);
         const nm = String(s.name || '').trim();
-        const ok =
-            nm.length > 1 &&
-            contactOk &&
-            String(s.country || '').trim().length > 1;
+        const countryName = String(s.country || '').trim();
+        const ok = nm.length > 1 && contactOk && countryName.length > 1;
 
         const _btn = (on: boolean) =>
             on
@@ -416,7 +416,7 @@ export default class Home extends Component<Record<string, never>, SiteState> {
                         name: nm,
                         contact_method: s.mode || 'phone',
                         contact: this.siteContact(s.mode || 'phone', s.code, c),
-                        country: String(s.country || '').trim(),
+                        country: countryName,
                         pledge_amount: dep,
                     },
                     {
@@ -549,11 +549,8 @@ export default class Home extends Component<Record<string, never>, SiteState> {
             ],
         };
         const prov = s.prov || '';
-        const leadOk =
-            String(s.biz || '').trim().length > 1 &&
-            contactOk &&
-            prov &&
-            s.dist;
+        const tradingName = String(s.biz || '').trim();
+        const leadOk = tradingName.length > 1 && contactOk && prov && s.dist;
 
         const _btn = (on: boolean) => ({
             bd: on ? '#1e3aff' : '#e2e8f2',
@@ -689,7 +686,7 @@ export default class Home extends Component<Record<string, never>, SiteState> {
                 router.post(
                     storeBusiness.url(),
                     {
-                        name: String(s.biz || '').trim(),
+                        name: tradingName,
                         contact_method: s.mode || 'phone',
                         contact: this.siteContact(
                             s.mode || 'phone',
@@ -1515,7 +1512,7 @@ export default class Home extends Component<Record<string, never>, SiteState> {
                                                             gap: '7px',
                                                         }}
                                                     >
-                                                        {(terms ?? []).map(
+                                                        {terms.map(
                                                             (
                                                                 t: any,
                                                                 tI: number,
@@ -1581,7 +1578,7 @@ export default class Home extends Component<Record<string, never>, SiteState> {
                                                             gap: '7px',
                                                         }}
                                                     >
-                                                        {(bands ?? []).map(
+                                                        {bands.map(
                                                             (
                                                                 b: any,
                                                                 bI: number,
@@ -6367,10 +6364,7 @@ export default class Home extends Component<Record<string, never>, SiteState> {
                                                                                     '#f0f3f9',
                                                                             }}
                                                                         >
-                                                                            {(
-                                                                                modes ??
-                                                                                []
-                                                                            ).map(
+                                                                            {modes.map(
                                                                                 (
                                                                                     md: any,
                                                                                     mdI: number,
@@ -6454,10 +6448,7 @@ export default class Home extends Component<Record<string, never>, SiteState> {
                                                                                 cursor: 'pointer',
                                                                             }}
                                                                         >
-                                                                            {(
-                                                                                codes ??
-                                                                                []
-                                                                            ).map(
+                                                                            {codes.map(
                                                                                 (
                                                                                     c: any,
                                                                                     cI: number,
@@ -7040,10 +7031,7 @@ export default class Home extends Component<Record<string, never>, SiteState> {
                                                                         gap: '7px',
                                                                     }}
                                                                 >
-                                                                    {(
-                                                                        shareBtns ??
-                                                                        []
-                                                                    ).map(
+                                                                    {shareBtns.map(
                                                                         (
                                                                             sb: any,
                                                                             sbI: number,
@@ -7579,7 +7567,7 @@ export default class Home extends Component<Record<string, never>, SiteState> {
                                                                 gap: '7px',
                                                             }}
                                                         >
-                                                            {(terms ?? []).map(
+                                                            {terms.map(
                                                                 (
                                                                     t: any,
                                                                     tI: number,
@@ -10665,10 +10653,7 @@ export default class Home extends Component<Record<string, never>, SiteState> {
                                                                                     '#f0f3f9',
                                                                             }}
                                                                         >
-                                                                            {(
-                                                                                modes ??
-                                                                                []
-                                                                            ).map(
+                                                                            {modes.map(
                                                                                 (
                                                                                     md: any,
                                                                                     mdI: number,
@@ -10752,10 +10737,7 @@ export default class Home extends Component<Record<string, never>, SiteState> {
                                                                                 cursor: 'pointer',
                                                                             }}
                                                                         >
-                                                                            {(
-                                                                                codes ??
-                                                                                []
-                                                                            ).map(
+                                                                            {codes.map(
                                                                                 (
                                                                                     c: any,
                                                                                     cI: number,
@@ -10873,10 +10855,7 @@ export default class Home extends Component<Record<string, never>, SiteState> {
                                                                             <option value="">
                                                                                 Province
                                                                             </option>
-                                                                            {(
-                                                                                provinces ??
-                                                                                []
-                                                                            ).map(
+                                                                            {provinces.map(
                                                                                 (
                                                                                     p: any,
                                                                                     pI: number,
@@ -10936,10 +10915,7 @@ export default class Home extends Component<Record<string, never>, SiteState> {
                                                                             <option value="">
                                                                                 District
                                                                             </option>
-                                                                            {(
-                                                                                districts ??
-                                                                                []
-                                                                            ).map(
+                                                                            {districts.map(
                                                                                 (
                                                                                     d: any,
                                                                                     dI: number,
@@ -11438,10 +11414,7 @@ export default class Home extends Component<Record<string, never>, SiteState> {
                                                                         gap: '7px',
                                                                     }}
                                                                 >
-                                                                    {(
-                                                                        shareBtns ??
-                                                                        []
-                                                                    ).map(
+                                                                    {shareBtns.map(
                                                                         (
                                                                             sb: any,
                                                                             sbI: number,
@@ -12446,191 +12419,182 @@ export default class Home extends Component<Record<string, never>, SiteState> {
                                             'clamp(44px,6vw,72px) clamp(18px,4vw,44px) clamp(56px,8vw,100px)',
                                     }}
                                 >
-                                    {(groups ?? []).map(
-                                        (g: any, gI: number) => (
-                                            <Fragment key={gI}>
+                                    {groups.map((g: any, gI: number) => (
+                                        <Fragment key={gI}>
+                                            <div
+                                                style={{
+                                                    marginBottom:
+                                                        'clamp(36px,5vw,52px)',
+                                                }}
+                                            >
                                                 <div
                                                     style={{
-                                                        marginBottom:
-                                                            'clamp(36px,5vw,52px)',
+                                                        display: 'flex',
+                                                        alignItems: 'baseline',
+                                                        gap: '13px',
+                                                        margin: '0 0 12px',
                                                     }}
                                                 >
-                                                    <div
+                                                    <span
+                                                        aria-hidden="true"
                                                         style={{
-                                                            display: 'flex',
-                                                            alignItems:
-                                                                'baseline',
-                                                            gap: '13px',
-                                                            margin: '0 0 12px',
+                                                            fontSize:
+                                                                'clamp(30px,3.4vw,44px)',
+                                                            fontWeight: '800',
+                                                            letterSpacing:
+                                                                '-.05em',
+                                                            lineHeight: '.9',
+                                                            color: 'transparent',
+                                                            WebkitTextStroke:
+                                                                '1.3px rgba(12,24,48,.16)',
                                                         }}
                                                     >
-                                                        <span
-                                                            aria-hidden="true"
-                                                            style={{
-                                                                fontSize:
-                                                                    'clamp(30px,3.4vw,44px)',
-                                                                fontWeight:
-                                                                    '800',
-                                                                letterSpacing:
-                                                                    '-.05em',
-                                                                lineHeight:
-                                                                    '.9',
-                                                                color: 'transparent',
-                                                                WebkitTextStroke:
-                                                                    '1.3px rgba(12,24,48,.16)',
-                                                            }}
-                                                        >
-                                                            {g.n}
-                                                        </span>
-                                                        <h2
-                                                            style={{
-                                                                margin: '0',
-                                                                fontSize:
-                                                                    'clamp(22px,2.6vw,30px)',
-                                                                fontWeight:
-                                                                    '800',
-                                                                letterSpacing:
-                                                                    '-.03em',
-                                                            }}
-                                                        >
-                                                            {g.title}
-                                                        </h2>
-                                                    </div>
-                                                    <div
+                                                        {g.n}
+                                                    </span>
+                                                    <h2
                                                         style={{
-                                                            display: 'flex',
-                                                            flexDirection:
-                                                                'column',
-                                                            gap: '9px',
+                                                            margin: '0',
+                                                            fontSize:
+                                                                'clamp(22px,2.6vw,30px)',
+                                                            fontWeight: '800',
+                                                            letterSpacing:
+                                                                '-.03em',
                                                         }}
                                                     >
-                                                        {(g.items ?? []).map(
-                                                            (
-                                                                q: any,
-                                                                qI: number,
-                                                            ) => (
-                                                                <Fragment
-                                                                    key={qI}
+                                                        {g.title}
+                                                    </h2>
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        gap: '9px',
+                                                    }}
+                                                >
+                                                    {g.items.map(
+                                                        (
+                                                            q: any,
+                                                            qI: number,
+                                                        ) => (
+                                                            <Fragment key={qI}>
+                                                                <div
+                                                                    className="rz-glass"
+                                                                    style={{
+                                                                        borderRadius:
+                                                                            '16px',
+                                                                        overflow:
+                                                                            'hidden',
+                                                                        background:
+                                                                            'rgba(255,255,255,.58)',
+                                                                        backdropFilter:
+                                                                            'blur(18px) saturate(1.45)',
+                                                                        WebkitBackdropFilter:
+                                                                            'blur(18px) saturate(1.45)',
+                                                                        border: '1px solid rgba(12,24,48,.09)',
+                                                                        boxShadow:
+                                                                            '0 1px 2px rgba(12,24,48,.03), 0 20px 40px -24px rgba(12,24,48,.16)',
+                                                                    }}
                                                                 >
-                                                                    <div
-                                                                        className="rz-glass"
+                                                                    <button
+                                                                        onClick={
+                                                                            q.toggle
+                                                                        }
                                                                         style={{
-                                                                            borderRadius:
-                                                                                '16px',
-                                                                            overflow:
-                                                                                'hidden',
+                                                                            width: '100%',
+                                                                            padding:
+                                                                                '17px 20px',
+                                                                            display:
+                                                                                'flex',
+                                                                            alignItems:
+                                                                                'baseline',
+                                                                            gap: '16px',
                                                                             background:
-                                                                                'rgba(255,255,255,.58)',
-                                                                            backdropFilter:
-                                                                                'blur(18px) saturate(1.45)',
-                                                                            WebkitBackdropFilter:
-                                                                                'blur(18px) saturate(1.45)',
-                                                                            border: '1px solid rgba(12,24,48,.09)',
-                                                                            boxShadow:
-                                                                                '0 1px 2px rgba(12,24,48,.03), 0 20px 40px -24px rgba(12,24,48,.16)',
+                                                                                'none',
+                                                                            border: 'none',
+                                                                            cursor: 'pointer',
+                                                                            textAlign:
+                                                                                'left',
+                                                                            fontFamily:
+                                                                                'inherit',
                                                                         }}
                                                                     >
-                                                                        <button
-                                                                            onClick={
-                                                                                q.toggle
-                                                                            }
+                                                                        <span
                                                                             style={{
-                                                                                width: '100%',
-                                                                                padding:
-                                                                                    '17px 20px',
+                                                                                flex: '1 1 auto',
+                                                                                fontSize:
+                                                                                    'clamp(15.5px,1.4vw,17.5px)',
+                                                                                fontWeight:
+                                                                                    '600',
+                                                                                letterSpacing:
+                                                                                    '-.015em',
+                                                                                color: '#0c1830',
+                                                                            }}
+                                                                        >
+                                                                            {
+                                                                                q.q
+                                                                            }
+                                                                        </span>
+                                                                        <span
+                                                                            style={{
+                                                                                flex: '0 0 auto',
+                                                                                width: '22px',
+                                                                                height: '22px',
+                                                                                borderRadius:
+                                                                                    '7px',
+                                                                                background:
+                                                                                    'rgba(30,58,255,.09)',
+                                                                                color: '#1e3aff',
                                                                                 display:
                                                                                     'flex',
                                                                                 alignItems:
-                                                                                    'baseline',
-                                                                                gap: '16px',
-                                                                                background:
-                                                                                    'none',
-                                                                                border: 'none',
-                                                                                cursor: 'pointer',
-                                                                                textAlign:
-                                                                                    'left',
-                                                                                fontFamily:
-                                                                                    'inherit',
+                                                                                    'center',
+                                                                                justifyContent:
+                                                                                    'center',
+                                                                                fontSize:
+                                                                                    '14px',
+                                                                                fontWeight:
+                                                                                    '700',
+                                                                                lineHeight:
+                                                                                    '1',
                                                                             }}
                                                                         >
-                                                                            <span
+                                                                            {
+                                                                                q.mark
+                                                                            }
+                                                                        </span>
+                                                                    </button>
+                                                                    {q.open ? (
+                                                                        <>
+                                                                            <p
                                                                                 style={{
-                                                                                    flex: '1 1 auto',
+                                                                                    margin: '0',
+                                                                                    padding:
+                                                                                        '0 20px 19px',
+                                                                                    maxWidth:
+                                                                                        '640px',
                                                                                     fontSize:
-                                                                                        'clamp(15.5px,1.4vw,17.5px)',
-                                                                                    fontWeight:
-                                                                                        '600',
-                                                                                    letterSpacing:
-                                                                                        '-.015em',
-                                                                                    color: '#0c1830',
-                                                                                }}
-                                                                            >
-                                                                                {
-                                                                                    q.q
-                                                                                }
-                                                                            </span>
-                                                                            <span
-                                                                                style={{
-                                                                                    flex: '0 0 auto',
-                                                                                    width: '22px',
-                                                                                    height: '22px',
-                                                                                    borderRadius:
-                                                                                        '7px',
-                                                                                    background:
-                                                                                        'rgba(30,58,255,.09)',
-                                                                                    color: '#1e3aff',
-                                                                                    display:
-                                                                                        'flex',
-                                                                                    alignItems:
-                                                                                        'center',
-                                                                                    justifyContent:
-                                                                                        'center',
-                                                                                    fontSize:
-                                                                                        '14px',
-                                                                                    fontWeight:
-                                                                                        '700',
+                                                                                        '15px',
                                                                                     lineHeight:
-                                                                                        '1',
+                                                                                        '1.7',
+                                                                                    color: '#69748a',
+                                                                                    animation:
+                                                                                        'rz-pop .3s ease both',
                                                                                 }}
                                                                             >
                                                                                 {
-                                                                                    q.mark
+                                                                                    q.a
                                                                                 }
-                                                                            </span>
-                                                                        </button>
-                                                                        {q.open ? (
-                                                                            <>
-                                                                                <p
-                                                                                    style={{
-                                                                                        margin: '0',
-                                                                                        padding:
-                                                                                            '0 20px 19px',
-                                                                                        maxWidth:
-                                                                                            '640px',
-                                                                                        fontSize:
-                                                                                            '15px',
-                                                                                        lineHeight:
-                                                                                            '1.7',
-                                                                                        color: '#69748a',
-                                                                                        animation:
-                                                                                            'rz-pop .3s ease both',
-                                                                                    }}
-                                                                                >
-                                                                                    {
-                                                                                        q.a
-                                                                                    }
-                                                                                </p>
-                                                                            </>
-                                                                        ) : null}
-                                                                    </div>
-                                                                </Fragment>
-                                                            ),
-                                                        )}
-                                                    </div>
+                                                                            </p>
+                                                                        </>
+                                                                    ) : null}
+                                                                </div>
+                                                            </Fragment>
+                                                        ),
+                                                    )}
                                                 </div>
-                                            </Fragment>
-                                        ),
-                                    )}
+                                            </div>
+                                        </Fragment>
+                                    ))}
 
                                     <div
                                         style={{

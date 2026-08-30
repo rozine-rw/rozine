@@ -375,7 +375,7 @@
     "src": "resources/css/fonts/eb2491d6.woff2"
   },
   "resources/js/app.tsx": {
-    "file": "assets/app-CyhCBoGL.js",
+    "file": "assets/app-ChyvNcQU.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
@@ -554,7 +554,7 @@
     ]
   },
   "resources/js/pages/home.tsx": {
-    "file": "assets/home-BmE2uDZL.js",
+    "file": "assets/home-C7DSpes3.js",
     "name": "home",
     "src": "resources/js/pages/home.tsx",
     "isDynamicEntry": true,

@@ -26,6 +26,7 @@
         "resources/js/actions/App/Http/Controllers/Settings/ProfileController.ts",
         "resources/js/actions/App/Http/Controllers/Settings/SecurityController.ts",
         "resources/js/actions/App/Http/Controllers/Settings/index.ts",
+        "resources/js/actions/App/Http/Controllers/SiteController.ts",
         "resources/js/actions/App/Http/Controllers/index.ts",
         "resources/js/actions/App/Http/index.ts",
         "resources/js/actions/App/index.ts",
@@ -80,6 +81,9 @@
         "resources/js/routes/register/index.ts",
         "resources/js/routes/sanctum/index.ts",
         "resources/js/routes/security/index.ts",
+        "resources/js/routes/site/business/index.ts",
+        "resources/js/routes/site/index.ts",
+        "resources/js/routes/site/investor/index.ts",
         "resources/js/routes/storage/index.ts",
         "resources/js/routes/storage/local/index.ts",
         "resources/js/routes/two-factor/index.ts",
@@ -194,6 +198,7 @@
         "resources/js/pages/auth/two-factor-challenge.tsx",
         "resources/js/pages/auth/verify-email.tsx",
         "resources/js/pages/dashboard.tsx",
+        "resources/js/pages/home.tsx",
         "resources/js/pages/pulse.tsx",
         "resources/js/pages/settings/appearance.tsx",
         "resources/js/pages/settings/profile.tsx",
@@ -201,10 +206,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 173,
-        "generated": 66,
+        "totalTrackedSources": 178,
+        "generated": 70,
         "declarationOnly": 6,
-        "authoredExecutable": 101
+        "authoredExecutable": 102
     },
-    "coverageSetSha256": "5b3dab264c740aab1ea2d40d9526d165317c7941c73237c9d5b58496254f7b9d"
+    "coverageSetSha256": "e257ea36a495b010a2baf141861da98010f8c84f022b7673d3f8870deeeb5eac"
 }
