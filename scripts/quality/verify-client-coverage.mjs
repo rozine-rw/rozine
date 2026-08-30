@@ -117,6 +117,12 @@ const readJson = (targetPath) => {
     return { text, value: JSON.parse(text) };
 };
 
+/**
+ * Git output for a large promotion — a release branch carrying many merges —
+ * runs well past Node's 1 MB default and aborts the check with ENOBUFS.
+ */
+const GIT_MAX_BUFFER = 64 * 1024 * 1024;
+
 export const filesAtCommit = (repoRoot, commitSha, scopes) =>
     execFileSync(
         'git',
@@ -124,6 +130,7 @@ export const filesAtCommit = (repoRoot, commitSha, scopes) =>
         {
             cwd: repoRoot,
             encoding: 'utf8',
+            maxBuffer: GIT_MAX_BUFFER,
         },
     )
         .split('\n')
@@ -148,7 +155,7 @@ const resolveFullCommit = ({ repoRoot, label, value }) => {
     const resolved = execFileSync(
         'git',
         ['rev-parse', '--verify', `${value}^{commit}`],
-        { cwd: repoRoot, encoding: 'utf8' },
+        { cwd: repoRoot, encoding: 'utf8', maxBuffer: GIT_MAX_BUFFER },
     ).trim();
 
     if (resolved !== value) {
@@ -179,6 +186,7 @@ const resolveShaContract = (repoRoot, options) => {
     const checkoutHeadSha = execFileSync('git', ['rev-parse', 'HEAD'], {
         cwd: repoRoot,
         encoding: 'utf8',
+        maxBuffer: GIT_MAX_BUFFER,
     }).trim();
 
     if (checkoutHeadSha !== headSha) {
@@ -190,7 +198,7 @@ const resolveShaContract = (repoRoot, options) => {
     const mergeBaseSha = execFileSync(
         'git',
         ['merge-base', targetSha, headSha],
-        { cwd: repoRoot, encoding: 'utf8' },
+        { cwd: repoRoot, encoding: 'utf8', maxBuffer: GIT_MAX_BUFFER },
     ).trim();
 
     if (mergeBaseSha !== baseSha) {
@@ -214,7 +222,7 @@ export const assertPathsMatchHead = (repoRoot, paths, label) => {
     const dirty = execFileSync(
         'git',
         ['status', '--porcelain=v1', '--untracked-files=all', '--', ...paths],
-        { cwd: repoRoot, encoding: 'utf8' },
+        { cwd: repoRoot, encoding: 'utf8', maxBuffer: GIT_MAX_BUFFER },
     ).trim();
 
     if (dirty.length > 0) {
@@ -299,7 +307,7 @@ const changedAuthoredLines = ({
             '--',
             'resources/js',
         ],
-        { cwd: repoRoot, encoding: 'utf8' },
+        { cwd: repoRoot, encoding: 'utf8', maxBuffer: GIT_MAX_BUFFER },
     );
     const authoredSet = new Set(authoredPaths);
 
