@@ -1,6 +1,8 @@
 import { Head, router } from '@inertiajs/react';
 import { Component, Fragment, createElement } from 'react';
 
+import { downloadPassCard } from '@/lib/pass-card-image';
+import type { PassCardSpec } from '@/lib/pass-card-image';
 import { store as storeBusiness } from '@/routes/site/business';
 import { store as storeInvestor } from '@/routes/site/investor';
 
@@ -205,7 +207,7 @@ export default class Home extends Component<SiteProps, SiteState> {
         this._raf = requestAnimationFrame(step);
     }
 
-    shareBtns() {
+    shareBtns(card: PassCardSpec) {
         const R = createElement;
         const dl = R(
             'svg',
@@ -234,7 +236,14 @@ export default class Home extends Component<SiteProps, SiteState> {
                 icon: dl,
                 bg: '#f8fafd',
                 fg: '#0c1830',
-                on: () => flash('Card saved to your device'),
+                on: async () => {
+                    try {
+                        await downloadPassCard(card);
+                        flash('Card saved to your device');
+                    } catch {
+                        flash('The card could not be saved');
+                    }
+                },
             },
         ];
     }
@@ -399,7 +408,21 @@ export default class Home extends Component<SiteProps, SiteState> {
             cardName: nm.toUpperCase() || 'YOUR NAME',
             cardCountry: String(s.country || '').trim() || 'Rwanda',
             shareMsg: s.shareMsg || '',
-            shareBtns: this.shareBtns(),
+            shareBtns: this.shareBtns({
+                surface: 'site',
+                tone: 'investor',
+                tag: 'INVESTOR NOTE',
+                holder:
+                    (nm.toUpperCase() || 'YOUR NAME') +
+                    ' \u00b7 ' +
+                    (countryName || 'Rwanda'),
+                caption: 'PUTTING TO WORK',
+                amount: this.rwf(dep),
+                stats: [
+                    { label: 'YOU GET BACK', value: this.rwf(dep + ret) },
+                    { label: 'TERM', value: s.term + ' months' },
+                ],
+            }),
             subDisabled: !ok,
             subBg: ok ? '#1e3aff' : '#eef1f7',
             subFg: ok ? '#ffffff' : '#8894a8',
@@ -452,7 +475,7 @@ export default class Home extends Component<SiteProps, SiteState> {
         );
     }
 
-    bShareBtns() {
+    bShareBtns(card: PassCardSpec) {
         const R = createElement;
         const dl = R(
             'svg',
@@ -481,7 +504,14 @@ export default class Home extends Component<SiteProps, SiteState> {
                 icon: dl,
                 bg: '#f8fafd',
                 fg: '#0c1830',
-                on: () => flash('Card saved to your device'),
+                on: async () => {
+                    try {
+                        await downloadPassCard(card);
+                        flash('Card saved to your device');
+                    } catch {
+                        flash('The card could not be saved');
+                    }
+                },
             },
         ];
     }
@@ -667,7 +697,26 @@ export default class Home extends Component<SiteProps, SiteState> {
             distDisabled: !prov,
             distCur: prov ? 'pointer' : 'not-allowed',
             shareMsg: s.shareMsg || '',
-            shareBtns: this.bShareBtns(),
+            shareBtns: this.bShareBtns({
+                surface: 'site',
+                tone: 'business',
+                tag: 'BORROWING REQUEST',
+                holder:
+                    (tradingName.toUpperCase() || 'YOUR BUSINESS') +
+                    ' \u00b7 ' +
+                    ((s.dist ? s.dist : prov) || 'Rwanda'),
+                caption: 'ASKING TO BORROW',
+                amount: ok ? this.rwf(qual) : '\u2014',
+                stats: [
+                    { label: 'TERM', value: m + ' months' },
+                    {
+                        label: 'FLAT CHARGE',
+                        value: ok
+                            ? charge.toFixed(1).replace(/\.0$/, '') + '%'
+                            : '\u2014',
+                    },
+                ],
+            }),
             cardBiz:
                 String(s.biz || '')
                     .trim()
