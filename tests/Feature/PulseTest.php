@@ -29,24 +29,24 @@ function businessSignup(array $overrides = []): array
     ], $overrides);
 }
 
-test('the home route shows the pulse waitlist without authentication', function () {
+test('the pulse route shows the pulse waitlist without authentication', function () {
     $this->travelTo(now()->setDate(2026, 7, 29));
 
-    $response = $this->get(route('home'));
+    $response = $this->get(route('pulse'));
 
     $response->assertOk();
     $response->assertInertia(fn (AssertableInertia $page) => $page
         ->component('pulse')
         ->has('districts.Kigali City')
-        ->where('policy.terms', [3, 6, 9, 12])
+        ->where('policy.terms', [3, 4, 5, 6, 9, 12])
         ->where('policy.sectors.0', 'Agriculture')
         ->where('policy.registration_years.0', 2026)
         ->where('policy.registration_years.30', 1996)
         ->where('policy.minimum_revenue', 15_000_000)
-        ->where('policy.minimum_loan', 5_000_000)
-        ->where('policy.maximum_loan', 50_000_000)
+        ->where('policy.minimum_loan', 3_000_000)
+        ->where('policy.maximum_loan', 100_000_000)
         ->where('policy.pledge.minimum', 5_000)
-        ->where('policy.pledge.maximum', 50_000_000)
+        ->where('policy.pledge.maximum', 200_000_000)
         ->where('policy.pledge.step', 5_000)
         ->where('policy.pledge.default', 500_000)
         ->where('investor_preview.pledge_amount', 500_000)
@@ -62,7 +62,7 @@ test('traction reported on the waitlist grows with the signups recorded', functi
     PulseSignup::factory()->investor()->create(['pledge_amount' => 250_000]);
     PulseSignup::factory()->business()->create(['qualified_amount' => 90_000_000]);
 
-    $response = $this->get(route('home'));
+    $response = $this->get(route('pulse'));
 
     $response->assertInertia(fn (AssertableInertia $page) => $page
         ->where('traction.pledged', 250_000)
@@ -84,7 +84,7 @@ test('the businesses an investor can back are the ones that pre-qualified', func
     ]);
     PulseSignup::factory()->investor()->create();
 
-    $response = $this->get(route('home'));
+    $response = $this->get(route('pulse'));
 
     $response->assertInertia(fn (AssertableInertia $page) => $page
         ->has('investor_preview.listings', 1)
@@ -106,7 +106,7 @@ test('a business that did not consent is listed without its name', function () {
         'listed' => false,
     ]);
 
-    $response = $this->get(route('home'));
+    $response = $this->get(route('pulse'));
 
     $response->assertInertia(fn (AssertableInertia $page) => $page
         ->where('investor_preview.listings.0.name', 'Business in Karongi')
@@ -121,7 +121,7 @@ test('the newest businesses are listed first and the list is capped', function (
         'created_at' => now()->subDays(20 - $sequence->index),
     ])->create();
 
-    $response = $this->get(route('home'));
+    $response = $this->get(route('pulse'));
 
     $response->assertInertia(fn (AssertableInertia $page) => $page
         ->has('investor_preview.listings', 14)
@@ -170,7 +170,7 @@ test('an investor preview holds any input inside the published pledge policy', f
 })->with([
     'empty amount' => [0, 5_000],
     'half step' => [7_500, 10_000],
-    'above maximum' => [50_000_001, 50_000_000],
+    'above maximum' => [200_000_001, 200_000_000],
 ]);
 
 test('a business preview returns one authoritative sizing without persisting it', function () {
@@ -198,7 +198,7 @@ test('a business preview returns one authoritative sizing without persisting it'
         ->assertJsonPath('cover_ratio', 1.25)
         ->assertJsonPath('below_minimum', false)
         ->assertJsonPath('at_maximum', false)
-        ->assertJsonPath('required_surplus', 595_898.44)
+        ->assertJsonPath('required_surplus', 357_539.06)
         ->assertJsonPath('status', 'pre_qualified');
 
     expect(array_keys($response->json()))->toBe([
@@ -259,7 +259,7 @@ test('traction averages come from the businesses that have been sized', function
         'term_months' => 12,
     ]);
 
-    $response = $this->get(route('home'));
+    $response = $this->get(route('pulse'));
 
     $response->assertInertia(fn (AssertableInertia $page) => $page
         ->where('traction.average_loan', 90_000_000)
@@ -272,7 +272,7 @@ test('traction averages come from the businesses that have been sized', function
 test('a business that sized under the smallest loan is not offered to investors', function () {
     PulseSignup::factory()->waitlisted()->create(['listed' => true]);
 
-    $response = $this->get(route('home'));
+    $response = $this->get(route('pulse'));
 
     $response->assertInertia(fn (AssertableInertia $page) => $page
         ->has('investor_preview.listings', 0)
@@ -282,7 +282,7 @@ test('a business that sized under the smallest loan is not offered to investors'
 });
 
 test('there is no average to report until a business has been sized', function () {
-    $response = $this->get(route('home'));
+    $response = $this->get(route('pulse'));
 
     $response->assertInertia(fn (AssertableInertia $page) => $page
         ->where('traction.average_loan', null)
@@ -591,14 +591,14 @@ test('a business sizing under the smallest loan still takes a place in the queue
         ->toBeLessThan(PulseUnderwriting::MIN_LOAN);
 });
 
-test('a pledge above the largest loan Rozine writes is turned away', function () {
+test('a pledge above the largest pledge Rozine accepts is turned away', function () {
     $response = $this->postJson(route('pulse.investor.store'), [
         'name' => 'Diane Uwase',
         'contact_method' => 'phone',
         'contact' => '0788 123 456',
         'province' => 'Kigali City',
         'district' => 'Gasabo',
-        'pledge_amount' => PulseUnderwriting::MAX_LOAN + 5_000,
+        'pledge_amount' => PulseUnderwriting::PLEDGE_MAXIMUM + PulseUnderwriting::PLEDGE_STEP,
     ]);
 
     $response->assertJsonValidationErrors('pledge_amount');
