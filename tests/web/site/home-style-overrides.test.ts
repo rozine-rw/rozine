@@ -22,4 +22,9 @@ describe('the departures we make from the design export', () => {
         expect(collapse).toBeGreaterThan(-1);
         expect(css).toContain('grid-template-columns: 1fr !important');
     });
+    it('shows one Help link below 720px, not two', () => {
+        expect(css.replace(/\s+/g, ' ')).toContain(
+            '@media (max-width: 720px) { .rz-site .rz-mobile-only { display: none !important; } }',
+        );
+    });
 });
