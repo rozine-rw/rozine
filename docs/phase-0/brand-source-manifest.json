@@ -1,6 +1,6 @@
 {
-    "schemaVersion": 2,
-    "status": "svg-package-received-validation-pending",
+    "schemaVersion": 3,
+    "status": "svg-and-png-packages-received-brand-validation-pending",
     "recordedAt": "2026-08-24",
     "updatedAt": "2026-08-29",
     "authority": {
@@ -36,8 +36,9 @@
         "independenceRule": "The sole author cannot provide the independent-test approval; use another eligible pool member or an eligible named external delegate."
     },
     "sourceDelivery": {
-        "committedBy": "Aminu",
-        "committedAt": "2026-08-27",
+        "suppliedBy": "Robert",
+        "supplierConfirmation": "user-confirmed",
+        "packagesRecordedAt": "2026-08-29",
         "svg": {
             "receiptStatus": "received",
             "receivedAt": "2026-08-29",
@@ -172,17 +173,342 @@
             ]
         },
         "png": {
-            "receiptStatus": "not-received",
-            "validationStatus": "pending"
+            "receiptStatus": "received",
+            "receivedAt": "2026-08-29",
+            "fileCount": 31,
+            "formatValidation": "passed-rgba-with-alpha",
+            "basenameMatchToSvg": "passed-one-to-one",
+            "dimensionMatchToSvgViewBox": "passed-one-to-one",
+            "semanticValidation": "pending",
+            "sourceArchive": {
+                "name": "PNGs.zip",
+                "sha256": "de04dac504360a6e05866707e55677b18253f7bc4b1d7293303aca0cbd1675bc",
+                "suppliedBy": "Robert",
+                "supplierConfirmation": "user-confirmed"
+            },
+            "files": [
+                {
+                    "sourcePath": "docs/New Logo/Frame 83.png",
+                    "sha256": "289d1b56401f2641b85a927b39acfe5910a36902b462907bc53cc67f34b5145f",
+                    "width": 7545,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 83.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 84.png",
+                    "sha256": "00227a7d350ad78fe1ce2728baf603e986428a506ecfc8ecd7fc243fc55231ec",
+                    "width": 7545,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 84.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 85.png",
+                    "sha256": "71faba618f283d0cc79487b83802451ad37cda2ace05fb31dd9069bf1b8f1d5f",
+                    "width": 5766,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 85.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 86.png",
+                    "sha256": "7b2de8f7e3b41e304b1f8852594e6063b98a16f305428698277c3e56294796d4",
+                    "width": 5766,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 86.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 87.png",
+                    "sha256": "c13e22dca791af4648ef483b73465c455898eaa9215e95922b8f89dd1957fd88",
+                    "width": 2796,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 87.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 88.png",
+                    "sha256": "ad46e5a02d144035fbc21f293707dd27502b3a3dd50152e52e8a93f7594b295c",
+                    "width": 2796,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 88.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 89.png",
+                    "sha256": "adf3c5fcae8af6ee5855f89b17f3f16dd283411d5fa59016701bd53ced73204f",
+                    "width": 7545,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 89.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 90.png",
+                    "sha256": "0294cadf2b08ac2f992d4c537126db48b6c6b72d26fac41cac967e4ee62f1dd3",
+                    "width": 5766,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 90.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 91.png",
+                    "sha256": "05ff3b5f4db84e3fce0d83aa6afe2a510541f2cb06876e50caa066718222e0ad",
+                    "width": 2796,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 91.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 92.png",
+                    "sha256": "74862a0544b5b13e81daa1e8b4f2e9f5dff342ca75402448684a5b0f83670eee",
+                    "width": 7545,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 92.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 93.png",
+                    "sha256": "3b16d611710dcd181eafd9e315ef022cf11394eef493756b38b751072370c752",
+                    "width": 5766,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 93.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 94.png",
+                    "sha256": "53ed83ef9a1f2225294daed6d0346322d5e9a9d4efd5a410e625327cb453dd4d",
+                    "width": 2796,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 94.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 95.png",
+                    "sha256": "8879210f687a75cf123eab44d66799b9f793ce5f6e71f5856751be7dc5d0d927",
+                    "width": 7545,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 95.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 96.png",
+                    "sha256": "edf6bac964a12e75025354d20326fafac5aea26db69e3e25e665186b5e185ccd",
+                    "width": 7545,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 96.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 97.png",
+                    "sha256": "7de33259529c57c12fb459610845ad60f7ae2406e84853a2afab4c4bf4567825",
+                    "width": 5766,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 97.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 98.png",
+                    "sha256": "3502ba7b08a4f7fa9b35e55c6ebdc07464dc2235106f17f351ea9613482a843e",
+                    "width": 5766,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 98.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 99.png",
+                    "sha256": "1f587ad6c8dc297ae984574afd239dcc83470871e4854f0e824a0a5df70b526d",
+                    "width": 2796,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 99.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 100.png",
+                    "sha256": "b598a7e5589e77df78907276d189574d65b16617925aaa189c0b60652b54c4fa",
+                    "width": 2796,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 100.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 101.png",
+                    "sha256": "dc3e6cdd1676d3125c24ce0837f144a9c517a6b47eef5130d07abd059bae1a25",
+                    "width": 7545,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 101.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 102.png",
+                    "sha256": "217924c2d75def1bafd72a07cf141104bb5a4ca68928d1eb5258c0038fcdabdd",
+                    "width": 7545,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 102.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 103.png",
+                    "sha256": "ab3e37c08408fb9f9059706d343500a032d19f8e2e34844959b9643abec538da",
+                    "width": 5766,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 103.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 104.png",
+                    "sha256": "20951f78699bef04782169369eacb211b56bba18bf87de6aa895c7dc3f56220a",
+                    "width": 5766,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 104.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 105.png",
+                    "sha256": "64a041c5f486766c1974e32dbd51183b2e876c087960fef6e4a3eab3d02beac7",
+                    "width": 2796,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 105.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 106.png",
+                    "sha256": "1d6153230c61cd428a33e53f93a2b9647f6daea3a2ee73d44be8a37175e07c4d",
+                    "width": 2796,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 106.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 107.png",
+                    "sha256": "d485f3105235905e14e555cc8fce6ab4fb39733e03c4d46f6369d61b14f371d6",
+                    "width": 2796,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 107.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 108.png",
+                    "sha256": "b0b9427cd95d1c474b3e5a69e70f2ad133d94db69395597ea4c0dbdd3932fc50",
+                    "width": 7170,
+                    "height": 2231,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 108.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 109.png",
+                    "sha256": "fdae725919efa6855aa8ba03963637e2dc3ae8aed967a5220840246d38d8e0e7",
+                    "width": 7277,
+                    "height": 2231,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 109.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 110.png",
+                    "sha256": "39f96945fb21f82286f30262ed73b2b9d79a25d6626fcad57dba9557a8c9d93d",
+                    "width": 6169,
+                    "height": 2231,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 110.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 111.png",
+                    "sha256": "e4a6b6e5862f3855ff72dc62b2e39939af37d1e8877fd7c87695c045c3efbe9b",
+                    "width": 2796,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 111.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 112.png",
+                    "sha256": "8c9a1e30dd5de3f76b3ec30262fb2416251321879869bf7cd5420d17980c77c4",
+                    "width": 2796,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 112.svg",
+                    "dimensionMatch": true
+                },
+                {
+                    "sourcePath": "docs/New Logo/Frame 113.png",
+                    "sha256": "e1cc17852de37b76e19b2d7fc8070bca68a8ad4f14e6f63dd131af7725e6a3cf",
+                    "width": 2796,
+                    "height": 2796,
+                    "colorMode": "RGBA",
+                    "hasAlpha": true,
+                    "correspondingSvg": "Frame 113.svg",
+                    "dimensionMatch": true
+                }
+            ]
         },
         "requiredValidation": [
-            "file hashes and semantic identity",
+            "semantic mapping and duplicate disposition",
             "canonical SVG selection",
             "font and outline provenance",
             "usage rights",
             "authoritative colors",
             "background and role-lockup rules",
-            "required monochrome, dark, compact, favicon, PWA, and Apple-touch variants"
+            "accessible role names and contrast or use approval",
+            "required monochrome, dark, compact, favicon, PWA, and Apple-touch variants",
+            "Robert explicit Brand approval"
         ]
     },
     "policy": {

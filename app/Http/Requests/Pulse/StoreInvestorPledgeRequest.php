@@ -3,7 +3,7 @@
 namespace App\Http\Requests\Pulse;
 
 use App\Concerns\PulseSignupValidationRules;
-use App\Support\PulseUnderwriting;
+use App\Domain\Pulse\PulseUnderwriting;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -19,7 +19,12 @@ class StoreInvestorPledgeRequest extends FormRequest
     public function rules(): array
     {
         return array_merge($this->signupRules(), [
-            'pledge_amount' => ['required', 'integer', 'min:5000', 'max:'.PulseUnderwriting::MAX_LOAN],
+            'pledge_amount' => [
+                'required',
+                'integer',
+                'min:'.PulseUnderwriting::PLEDGE_MINIMUM,
+                'max:'.PulseUnderwriting::PLEDGE_MAXIMUM,
+            ],
         ]);
     }
 

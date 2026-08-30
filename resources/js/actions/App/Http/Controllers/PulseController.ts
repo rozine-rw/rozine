@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PulseController::index
-* @see app/Http/Controllers/PulseController.php:24
+* @see app/Http/Controllers/PulseController.php:26
 * @route '/'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\PulseController::index
-* @see app/Http/Controllers/PulseController.php:24
+* @see app/Http/Controllers/PulseController.php:26
 * @route '/'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PulseController::index
-* @see app/Http/Controllers/PulseController.php:24
+* @see app/Http/Controllers/PulseController.php:26
 * @route '/'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PulseController::index
-* @see app/Http/Controllers/PulseController.php:24
+* @see app/Http/Controllers/PulseController.php:26
 * @route '/'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PulseController::index
-* @see app/Http/Controllers/PulseController.php:24
+* @see app/Http/Controllers/PulseController.php:26
 * @route '/'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\PulseController::index
-* @see app/Http/Controllers/PulseController.php:24
+* @see app/Http/Controllers/PulseController.php:26
 * @route '/'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PulseController::index
-* @see app/Http/Controllers/PulseController.php:24
+* @see app/Http/Controllers/PulseController.php:26
 * @route '/'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,8 +81,120 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 index.form = indexForm
 
 /**
+* @see \App\Http\Controllers\PulseController::previewInvestor
+* @see app/Http/Controllers/PulseController.php:40
+* @route '/pulse/investor/preview'
+*/
+export const previewInvestor = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: previewInvestor.url(options),
+    method: 'post',
+})
+
+previewInvestor.definition = {
+    methods: ["post"],
+    url: '/pulse/investor/preview',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\PulseController::previewInvestor
+* @see app/Http/Controllers/PulseController.php:40
+* @route '/pulse/investor/preview'
+*/
+previewInvestor.url = (options?: RouteQueryOptions) => {
+    return previewInvestor.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PulseController::previewInvestor
+* @see app/Http/Controllers/PulseController.php:40
+* @route '/pulse/investor/preview'
+*/
+previewInvestor.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: previewInvestor.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\PulseController::previewInvestor
+* @see app/Http/Controllers/PulseController.php:40
+* @route '/pulse/investor/preview'
+*/
+const previewInvestorForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: previewInvestor.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\PulseController::previewInvestor
+* @see app/Http/Controllers/PulseController.php:40
+* @route '/pulse/investor/preview'
+*/
+previewInvestorForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: previewInvestor.url(options),
+    method: 'post',
+})
+
+previewInvestor.form = previewInvestorForm
+
+/**
+* @see \App\Http\Controllers\PulseController::previewBusiness
+* @see app/Http/Controllers/PulseController.php:52
+* @route '/pulse/business/preview'
+*/
+export const previewBusiness = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: previewBusiness.url(options),
+    method: 'post',
+})
+
+previewBusiness.definition = {
+    methods: ["post"],
+    url: '/pulse/business/preview',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\PulseController::previewBusiness
+* @see app/Http/Controllers/PulseController.php:52
+* @route '/pulse/business/preview'
+*/
+previewBusiness.url = (options?: RouteQueryOptions) => {
+    return previewBusiness.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PulseController::previewBusiness
+* @see app/Http/Controllers/PulseController.php:52
+* @route '/pulse/business/preview'
+*/
+previewBusiness.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: previewBusiness.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\PulseController::previewBusiness
+* @see app/Http/Controllers/PulseController.php:52
+* @route '/pulse/business/preview'
+*/
+const previewBusinessForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: previewBusiness.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\PulseController::previewBusiness
+* @see app/Http/Controllers/PulseController.php:52
+* @route '/pulse/business/preview'
+*/
+previewBusinessForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: previewBusiness.url(options),
+    method: 'post',
+})
+
+previewBusiness.form = previewBusinessForm
+
+/**
 * @see \App\Http\Controllers\PulseController::storeInvestor
-* @see app/Http/Controllers/PulseController.php:42
+* @see app/Http/Controllers/PulseController.php:68
 * @route '/pulse/investor'
 */
 export const storeInvestor = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +209,7 @@ storeInvestor.definition = {
 
 /**
 * @see \App\Http\Controllers\PulseController::storeInvestor
-* @see app/Http/Controllers/PulseController.php:42
+* @see app/Http/Controllers/PulseController.php:68
 * @route '/pulse/investor'
 */
 storeInvestor.url = (options?: RouteQueryOptions) => {
@@ -106,7 +218,7 @@ storeInvestor.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PulseController::storeInvestor
-* @see app/Http/Controllers/PulseController.php:42
+* @see app/Http/Controllers/PulseController.php:68
 * @route '/pulse/investor'
 */
 storeInvestor.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +228,7 @@ storeInvestor.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\PulseController::storeInvestor
-* @see app/Http/Controllers/PulseController.php:42
+* @see app/Http/Controllers/PulseController.php:68
 * @route '/pulse/investor'
 */
 const storeInvestorForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -126,7 +238,7 @@ const storeInvestorForm = (options?: RouteQueryOptions): RouteFormDefinition<'po
 
 /**
 * @see \App\Http\Controllers\PulseController::storeInvestor
-* @see app/Http/Controllers/PulseController.php:42
+* @see app/Http/Controllers/PulseController.php:68
 * @route '/pulse/investor'
 */
 storeInvestorForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -138,7 +250,7 @@ storeInvestor.form = storeInvestorForm
 
 /**
 * @see \App\Http\Controllers\PulseController::storeBusiness
-* @see app/Http/Controllers/PulseController.php:65
+* @see app/Http/Controllers/PulseController.php:89
 * @route '/pulse/business'
 */
 export const storeBusiness = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -153,7 +265,7 @@ storeBusiness.definition = {
 
 /**
 * @see \App\Http\Controllers\PulseController::storeBusiness
-* @see app/Http/Controllers/PulseController.php:65
+* @see app/Http/Controllers/PulseController.php:89
 * @route '/pulse/business'
 */
 storeBusiness.url = (options?: RouteQueryOptions) => {
@@ -162,7 +274,7 @@ storeBusiness.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PulseController::storeBusiness
-* @see app/Http/Controllers/PulseController.php:65
+* @see app/Http/Controllers/PulseController.php:89
 * @route '/pulse/business'
 */
 storeBusiness.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -172,7 +284,7 @@ storeBusiness.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\PulseController::storeBusiness
-* @see app/Http/Controllers/PulseController.php:65
+* @see app/Http/Controllers/PulseController.php:89
 * @route '/pulse/business'
 */
 const storeBusinessForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -182,7 +294,7 @@ const storeBusinessForm = (options?: RouteQueryOptions): RouteFormDefinition<'po
 
 /**
 * @see \App\Http\Controllers\PulseController::storeBusiness
-* @see app/Http/Controllers/PulseController.php:65
+* @see app/Http/Controllers/PulseController.php:89
 * @route '/pulse/business'
 */
 storeBusinessForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -192,6 +304,6 @@ storeBusinessForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'pos
 
 storeBusiness.form = storeBusinessForm
 
-const PulseController = { index, storeInvestor, storeBusiness }
+const PulseController = { index, previewInvestor, previewBusiness, storeInvestor, storeBusiness }
 
 export default PulseController

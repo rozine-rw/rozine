@@ -8,19 +8,15 @@ import {
 } from '@/components/pulse/panel';
 import { StatCurrency, StatTile } from '@/components/pulse/stat-tile';
 import {
-    BUSINESS_CRITERIA,
+    decorateRating,
     digitsOnly,
     formatAbbrev,
     formatAverage,
     formatCompact,
     formatFull,
     formatNumber,
-    monthlySurplus,
-    registrationYears,
-    SECTORS,
-    TERMS,
 } from '@/lib/pulse';
-import type { Rating, Sizing } from '@/lib/pulse';
+import type { PulsePolicy, Rating, Sizing } from '@/lib/pulse';
 
 export type BusinessFigures = {
     name: string;
@@ -41,7 +37,8 @@ type BusinessPanelProps = {
     progress: number;
     progressLabel: string;
     figures: BusinessFigures;
-    sizing: Sizing;
+    sizing: Sizing | null;
+    policy: PulsePolicy;
     termIndex: number;
     canSize: boolean;
     onFiguresChange: (figures: Partial<BusinessFigures>) => void;
@@ -66,6 +63,7 @@ export function BusinessPanel({
     progressLabel,
     figures,
     sizing,
+    policy,
     termIndex,
     canSize,
     onFiguresChange,
@@ -73,19 +71,20 @@ export function BusinessPanel({
     onTermChange,
     onSaveSpot,
 }: BusinessPanelProps) {
-    const surplus = monthlySurplus(figures.annualRevenue, figures.annualCosts);
-    const showSurplus = figures.annualRevenue > 0 && figures.annualCosts > 0;
-    const overspent =
-        showSurplus && figures.annualCosts >= figures.annualRevenue;
+    const businessCriteria = [
+        'Registered with RDB',
+        `${formatCompact(policy.minimum_revenue)}+ revenue in the last 12 months`,
+        'Showing clear profit',
+    ];
 
     return (
         <PulsePanel tone="business" panelRef={panelRef}>
             <PanelLabel color="var(--rz-green-fg)">FOR BUSINESSES</PanelLabel>
             <PanelHeading>Check loan amount you qualify for.</PanelHeading>
-            <PanelCriteria tone="business" items={BUSINESS_CRITERIA} />
+            <PanelCriteria tone="business" items={businessCriteria} />
             <div className="mt-[11px] rounded-[10px] border border-[var(--rz-note-border)] bg-[var(--rz-note-bg)] px-3 py-[9px] text-[11.5px] leading-[1.45] text-[var(--rz-note-fg)]">
                 Repaid <strong className="text-[var(--rz-fg)]">monthly</strong>{' '}
-                over a 3, 6, 9 or 12-month term.
+                over a {policy.terms.join(', ')}-month term.
             </div>
             <div className="mt-5">
                 <div className="mt-[13px] grid grid-cols-[1fr_90px_90px] gap-2 md:grid-cols-[1.25fr_1fr_1fr]">
@@ -146,14 +145,7 @@ export function BusinessPanel({
                             onChange={(annualCosts) =>
                                 onFiguresChange({ annualCosts })
                             }
-                        >
-                            {showSurplus && (
-                                <SurplusStrip
-                                    overspent={overspent}
-                                    surplus={surplus}
-                                />
-                            )}
-                        </AmountField>
+                        />
                         <div className="flex gap-[9px]">
                             <div className="min-w-0 flex-1">
                                 <FieldLabel>What you do</FieldLabel>
@@ -161,9 +153,7 @@ export function BusinessPanel({
                                     label="What you do"
                                     value={figures.sector}
                                     placeholder="Choose one"
-                                    options={SECTORS.map(
-                                        (sector) => sector.value,
-                                    )}
+                                    options={policy.sectors}
                                     onChange={(sector) =>
                                         onFiguresChange({ sector })
                                     }
@@ -175,7 +165,9 @@ export function BusinessPanel({
                                     label="Registered in"
                                     value={figures.registeredYear}
                                     placeholder="Year"
-                                    options={registrationYears().map(String)}
+                                    options={policy.registration_years.map(
+                                        String,
+                                    )}
                                     onChange={(registeredYear) =>
                                         onFiguresChange({ registeredYear })
                                     }
@@ -221,7 +213,7 @@ export function BusinessPanel({
                 </div>
             )}
 
-            {result && (
+            {result && sizing && (
                 <div className="mt-5">
                     <div className="flex items-center gap-[7px] text-[10px] font-semibold whitespace-nowrap text-[var(--rz-green-fg)]">
                         <span className="rz-num">
@@ -233,27 +225,33 @@ export function BusinessPanel({
                         </span>
                     </div>
                     <div className="mt-2.5">
-                        <RatingPill rating={sizing.rating} />
+                        <RatingPill
+                            rating={decorateRating(
+                                sizing.rating.band,
+                                sizing.rating.score,
+                            )}
+                        />
                     </div>
-                    {!sizing.belowMinimum && (
+                    {!sizing.below_minimum && (
                         <div className="mt-4">
                             <div className="text-[11px] font-bold tracking-[0.16em] text-[var(--rz-dim)]">
                                 PRE-QUALIFIED
                             </div>
                             <div className="mt-2 flex items-end justify-between gap-3">
                                 <span className="rz-num text-[42px] leading-[0.9] font-bold tracking-[-0.035em] text-[var(--rz-fg-strong)]">
-                                    {formatCompact(sizing.qualifiedAmount)}
+                                    {formatCompact(sizing.qualified_amount)}
                                 </span>
                             </div>
-                            {sizing.atMaximum && (
+                            {sizing.at_maximum && (
                                 <div className="mt-2 text-[11.5px] leading-[1.45] text-[var(--rz-note-fg)]">
-                                    Your figures support more, but RWF 50M is
-                                    the largest loan on Rozine.
+                                    Your figures support more, but{' '}
+                                    {formatCompact(policy.maximum_loan)} is the
+                                    largest loan on Rozine.
                                 </div>
                             )}
                         </div>
                     )}
-                    {sizing.belowMinimum && (
+                    {sizing.below_minimum && (
                         <div className="mt-4 rounded-xl border border-[var(--rz-warn-border)] bg-[var(--rz-warn-bg)] px-3.5 py-[13px]">
                             <div className="text-[11px] font-bold tracking-[0.16em] text-[var(--rz-warn-fg)]">
                                 NOT YET
@@ -261,19 +259,19 @@ export function BusinessPanel({
                             <div className="mt-[7px] text-[13.5px] leading-[1.5] text-[var(--rz-criteria)]">
                                 On these figures you would size at{' '}
                                 <strong className="rz-num text-[var(--rz-fg)]">
-                                    {formatCompact(sizing.sizedAmount)}
+                                    {formatCompact(sizing.sized_amount)}
                                 </strong>
                                 . Rozine loans start at{' '}
                                 <strong className="text-[var(--rz-fg)]">
-                                    RWF 5M
+                                    {formatCompact(policy.minimum_loan)}
                                 </strong>
                                 .
                             </div>
                             <div className="mt-[7px] text-[12px] leading-[1.5] text-[var(--rz-muted)]">
-                                To reach RWF 5M over this term you would need
-                                about{' '}
+                                To reach {formatCompact(policy.minimum_loan)}{' '}
+                                over this term you would need about{' '}
                                 <strong className="rz-num text-[var(--rz-strong)]">
-                                    {formatFull(sizing.requiredSurplus)}
+                                    {formatFull(sizing.required_surplus)}
                                 </strong>{' '}
                                 left over each month. Register anyway and we
                                 will size you again at launch.
@@ -281,7 +279,7 @@ export function BusinessPanel({
                         </div>
                     )}
                     <div className="mt-[18px] flex gap-0.5 rounded-[10px] border border-[var(--rz-seg-border)] bg-[var(--rz-seg-bg)] p-[3px]">
-                        {TERMS.map((term, index) => (
+                        {policy.terms.map((term, index) => (
                             <button
                                 key={term}
                                 type="button"
@@ -296,28 +294,28 @@ export function BusinessPanel({
                             </button>
                         ))}
                     </div>
-                    {!sizing.belowMinimum && (
+                    {!sizing.below_minimum && (
                         <div className="mt-3 flex gap-0.5 overflow-hidden rounded-xl border border-[var(--rz-line)]">
                             <ResultFigure
                                 label="FLAT RETURN"
                                 color="var(--rz-green-fg)"
                             >
-                                {sizing.flatRate.toFixed(1)}%
+                                {sizing.flat_rate.toFixed(1)}%
                             </ResultFigure>
                             <ResultFigure label="MONTHLY" color="var(--rz-fg)">
-                                {formatCompact(sizing.monthlyRepayment)}
+                                {formatCompact(sizing.monthly_repayment)}
                             </ResultFigure>
                             <ResultFigure
                                 label="DSCR"
                                 color="var(--rz-green-fg)"
                                 last
                             >
-                                {sizing.coverRatio >= 1 && '✓ '}
-                                {sizing.coverRatio.toFixed(2)}×
+                                {sizing.cover_ratio >= 1 && '✓ '}
+                                {sizing.cover_ratio.toFixed(2)}×
                             </ResultFigure>
                         </div>
                     )}
-                    {sizing.belowMinimum && (
+                    {sizing.below_minimum && (
                         <div className="mt-2.5 text-[11.5px] leading-[1.45] text-[var(--rz-hint)]">
                             Try a longer term above — it lowers the monthly
                             surplus you need.
@@ -328,7 +326,7 @@ export function BusinessPanel({
                         onClick={onSaveSpot}
                         className="rz-cta mt-5 h-12 w-full shrink-0 cursor-pointer rounded-[10px] border-none bg-[#0f7a3d] text-[14px] font-semibold text-white transition-[filter] duration-150"
                     >
-                        {sizing.belowMinimum
+                        {sizing.below_minimum
                             ? 'Join the launch waitlist →'
                             : 'Save your spot →'}
                     </button>
@@ -346,13 +344,11 @@ function AmountField({
     hint,
     value,
     onChange,
-    children,
 }: {
     label: string;
     hint: string;
     value: number;
     onChange: (value: number) => void;
-    children?: ReactNode;
 }) {
     return (
         <div>
@@ -375,43 +371,6 @@ function AmountField({
             <div className="mt-[7px] text-[10.5px] leading-[1.45] text-[var(--rz-hint)]">
                 {hint}
             </div>
-            {children}
-        </div>
-    );
-}
-
-/**
- * What a business is left with each month, or the warning that it is left with
- * nothing at all.
- */
-function SurplusStrip({
-    overspent,
-    surplus,
-}: {
-    overspent: boolean;
-    surplus: number;
-}) {
-    return (
-        <div
-            className="mt-[9px] flex items-center justify-between gap-2.5 rounded-[10px] border px-[11px] py-[9px]"
-            style={{
-                background: overspent
-                    ? 'rgba(229,72,77,.08)'
-                    : 'rgba(18,161,80,.08)',
-                borderColor: overspent
-                    ? 'rgba(229,72,77,.3)'
-                    : 'rgba(18,161,80,.28)',
-                color: overspent ? 'var(--rz-error)' : 'var(--rz-green-fg)',
-            }}
-        >
-            <span className="text-[10.5px] font-bold tracking-[0.08em]">
-                {overspent
-                    ? 'COSTS EXCEED WHAT YOU MADE'
-                    : 'LEFT OVER EACH MONTH'}
-            </span>
-            <span className="rz-num text-[13px] font-bold">
-                {overspent ? 'Check the figures' : formatFull(surplus)}
-            </span>
         </div>
     );
 }

@@ -13,11 +13,9 @@ import {
     formatAverage,
     formatFull,
     formatNumber,
-    INVESTOR_CRITERIA,
-    MAX_PLEDGE,
-    MIN_PLEDGE,
+    INVESTOR_CONTEXT,
 } from '@/lib/pulse';
-import type { BusinessNote } from '@/lib/pulse';
+import type { BusinessNote, PulsePolicy } from '@/lib/pulse';
 
 type InvestorPanelProps = {
     panelRef: RefObject<HTMLDivElement | null>;
@@ -26,8 +24,10 @@ type InvestorPanelProps = {
     averageYield: number | null;
     averageTerm: number | null;
     pledge: number;
-    payout: number;
+    payout: number | null;
     notes: BusinessNote[];
+    policy: PulsePolicy;
+    canSave: boolean;
     exampleOpen: boolean;
     onExampleToggle: () => void;
     onPledgeChange: (pledge: number) => void;
@@ -47,6 +47,8 @@ export function InvestorPanel({
     pledge,
     payout,
     notes,
+    policy,
+    canSave,
     exampleOpen,
     onExampleToggle,
     onPledgeChange,
@@ -56,7 +58,7 @@ export function InvestorPanel({
         <PulsePanel tone="investor" panelRef={panelRef}>
             <PanelLabel color="var(--rz-blue-fg)">FOR INVESTORS</PanelLabel>
             <PanelHeading>Set amount to invest.</PanelHeading>
-            <PanelCriteria tone="investor" items={INVESTOR_CRITERIA} />
+            <PanelCriteria tone="investor" items={INVESTOR_CONTEXT} />
             <button
                 type="button"
                 onClick={onExampleToggle}
@@ -115,21 +117,21 @@ export function InvestorPanel({
             <div className="mt-[22px] flex flex-col items-start justify-between gap-1.5 md:flex-row md:items-baseline md:gap-2.5">
                 <PledgeAmount pledge={pledge} onChange={onPledgeChange} />
                 <span className="rz-num text-[13px] font-semibold text-[var(--rz-blue-fg)]">
-                    → {formatFull(payout)} back
+                    {payout === null
+                        ? 'Calculating on the server…'
+                        : `→ ${formatFull(payout)} back`}
                 </span>
             </div>
             <input
                 type="range"
                 className="rz-slider mt-6 mb-2"
-                min={MIN_PLEDGE}
-                max={MAX_PLEDGE}
-                step={MIN_PLEDGE}
+                min={policy.pledge.minimum}
+                max={policy.pledge.maximum}
+                step={policy.pledge.step}
                 value={pledge}
                 aria-label="Adjust pledge amount"
                 onChange={(event) =>
-                    onPledgeChange(
-                        parseInt(event.target.value, 10) || MIN_PLEDGE,
-                    )
+                    onPledgeChange(parseInt(event.target.value, 10) || 0)
                 }
             />
             <div className="mt-5">
@@ -192,7 +194,7 @@ export function InvestorPanel({
                         </div>
                         <div className="shrink-0 text-right">
                             <div className="rz-num text-[11.5px] font-bold text-[var(--rz-green-fg)]">
-                                {note.projectedReturn}
+                                {formatFull(note.projected_return)}
                             </div>
                         </div>
                     </div>
@@ -200,8 +202,9 @@ export function InvestorPanel({
             </div>
             <button
                 type="button"
+                disabled={!canSave}
                 onClick={onSaveSpot}
-                className="rz-cta mt-auto h-12 w-full shrink-0 cursor-pointer rounded-[10px] border-none bg-[#0a5cff] text-[14px] font-semibold text-white transition-[filter] duration-150 md:mt-0"
+                className="rz-cta mt-auto h-12 w-full shrink-0 rounded-[10px] border-none bg-[#0a5cff] text-[14px] font-semibold text-white transition-[filter] duration-150 enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 md:mt-0"
             >
                 Save your spot →
             </button>
@@ -239,33 +242,18 @@ function PledgeAmount({
                     aria-label="Pledge amount"
                     onFocus={(event) => event.currentTarget.select()}
                     onChange={(event) => {
-                        const typed = Math.min(
-                            digitsOnly(event.target.value, 9),
-                            MAX_PLEDGE,
-                        );
+                        const typed = digitsOnly(event.target.value);
 
                         setDraft(typed === 0 ? '' : formatNumber(typed));
 
-                        if (typed > 0) {
-                            onChange(typed);
-                        }
+                        onChange(typed);
                     }}
                     onBlur={() => {
                         setDraft(null);
-                        onChange(commit(pledge));
                     }}
                     className="absolute inset-0 w-full border-none bg-transparent p-0 font-[inherit] tracking-[inherit] text-[inherit] outline-none"
                 />
             </span>
         </span>
     );
-}
-
-/**
- * Settle a typed amount onto a figure the slider can also hold.
- */
-function commit(pledge: number): number {
-    const held = Math.min(Math.max(pledge, MIN_PLEDGE), MAX_PLEDGE);
-
-    return Math.round(held / MIN_PLEDGE) * MIN_PLEDGE;
 }
