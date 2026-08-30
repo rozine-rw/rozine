@@ -48,6 +48,11 @@ jobs:
               set -euo pipefail
               cd /var/www/rozine
               composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+              # Wayfinder generates the typed client from Laravel's route list
+              # during the asset build, and Laravel answers from the cached
+              # route file left by the previous deploy. Drop the stale caches
+              # first, or a deploy that adds a route builds a client without it.
+              php artisan optimize:clear
               npm ci --no-audit --no-fund || npm install --no-audit --no-fund
               npm run build
               php artisan migrate --force
