@@ -739,3 +739,21 @@ body:has(.rz-site) {
         animation-iteration-count: 1 !important;
     }
 }
+
+/* ---------------------------------------------------------------------------
+ * Deliberate departures from the design export.
+ * ------------------------------------------------------------------------ */
+
+/* The "how it works" heading is pinned with an inline position:sticky so it
+   holds its place beside the steps while they scroll past, which is the point
+   of the two-column layout. Below 760px that grid collapses to one column, so
+   the heading instead pins directly on top of the steps scrolling underneath
+   it, and because it has no background the two sets of text overlap. The
+   export behaves this way as well; we depart from it deliberately and let the
+   heading scroll away once the columns stack. Needs !important to beat the
+   inline style the export sets. */
+@media (max-width: 760px) {
+    .rz-site .rz-how-grid > :first-child {
+        position: static !important;
+    }
+}
