@@ -8,7 +8,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vite-plus/test';
 import {
     evaluateChangedBranchCoverage,
     evaluateClientCoveragePolicy,
@@ -22,6 +22,7 @@ import {
 } from '../../../scripts/quality/client-coverage-policy.mjs';
 import {
     assertPathsMatchHead,
+    governedToolchainStaticPaths,
     trackedClientSources,
 } from '../../../scripts/quality/verify-client-coverage.mjs';
 import {
@@ -394,6 +395,19 @@ describe('changed-branch enforcement', () => {
 });
 
 describe('exact checkout inventory', () => {
+    it('governs Vite+ runtime, configuration, and hook inputs without retired files', () => {
+        expect(governedToolchainStaticPaths).toEqual(
+            expect.arrayContaining([
+                '.node-version',
+                '.vite-hooks/pre-commit',
+                'vite.config.ts',
+                'vitest.config.ts',
+            ]),
+        );
+        expect(governedToolchainStaticPaths).not.toContain('.nvmrc');
+        expect(governedToolchainStaticPaths).not.toContain('eslint.config.js');
+    });
+
     it('derives source inventory from supplied HEAD and rejects untracked or renamed escapes', () => {
         const repository = mkdtempSync(
             path.join(tmpdir(), 'rozine-coverage-policy-'),

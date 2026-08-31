@@ -8,7 +8,14 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps, ReactNode } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+} from 'vite-plus/test';
 import TwoFactorRecoveryCodes from '@/components/two-factor-recovery-codes';
 
 type FormProps = {

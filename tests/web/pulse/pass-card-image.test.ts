@@ -1,4 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+} from 'vite-plus/test';
 import { downloadPassCard, drawPassCard } from '@/lib/pass-card-image';
 import type { PassCardSpec } from '@/lib/pass-card-image';
 
@@ -257,5 +264,105 @@ describe('downloadPassCard', () => {
             'The card could not be encoded.',
         );
         expect(URL.createObjectURL).not.toHaveBeenCalled();
+    });
+});
+
+describe('the marketing site surface', () => {
+    it('draws its own palette and mark rather than the Pulse ones', async () => {
+        const context = makeContext();
+
+        contextQueue = [context, context, context];
+
+        await drawPassCard(investorCard({ surface: 'site', badge: undefined }));
+
+        // the site card paints its own gradient, with its own middle stop
+        const gradient = (
+            context.createRadialGradient as ReturnType<typeof vi.fn>
+        ).mock.results[0].value;
+
+        expect(gradient.addColorStop).toHaveBeenCalledWith(0, '#4a63ff');
+        expect(gradient.addColorStop).toHaveBeenCalledWith(0.38, '#1e3aff');
+        expect(gradient.addColorStop).toHaveBeenCalledWith(1, '#0a1440');
+    });
+
+    it('lays the business card out in green', async () => {
+        const context = makeContext();
+
+        contextQueue = [context, context, context];
+
+        await drawPassCard(
+            investorCard({
+                surface: 'site',
+                tone: 'business',
+                badge: undefined,
+            }),
+        );
+
+        const gradient = (
+            context.createRadialGradient as ReturnType<typeof vi.fn>
+        ).mock.results[0].value;
+
+        expect(gradient.addColorStop).toHaveBeenCalledWith(0, '#22b585');
+        expect(gradient.addColorStop).toHaveBeenCalledWith(0.4, '#17795a');
+    });
+
+    it('writes the label alone when there is no badge to pair it with', async () => {
+        const context = makeContext();
+
+        contextQueue = [context, context, context];
+
+        await drawPassCard(investorCard({ surface: 'site', badge: undefined }));
+
+        const written = (
+            context.fillText as ReturnType<typeof vi.fn>
+        ).mock.calls.map((call) => call[0]);
+
+        expect(written).toContain('PLEDGING INVESTOR');
+        // the bordered badge is the Pulse pass's, and is not drawn here
+        expect(written).not.toContain('#0142');
+    });
+
+    it('names a site download so it is not mistaken for a Pulse pass', async () => {
+        const anchors: HTMLAnchorElement[] = [];
+        const create = document.createElement.bind(document);
+
+        vi.spyOn(document, 'createElement').mockImplementation(
+            (tag: string) => {
+                const el = create(tag) as HTMLElement;
+
+                if (tag === 'a') {
+                    anchors.push(el as HTMLAnchorElement);
+                }
+
+                return el;
+            },
+        );
+
+        await downloadPassCard(
+            investorCard({ surface: 'site', badge: undefined }),
+        );
+
+        expect(anchors.at(-1)?.download).toBe('rozine-investor-card.png');
+    });
+
+    it('still names a Pulse download a pass', async () => {
+        const anchors: HTMLAnchorElement[] = [];
+        const create = document.createElement.bind(document);
+
+        vi.spyOn(document, 'createElement').mockImplementation(
+            (tag: string) => {
+                const el = create(tag) as HTMLElement;
+
+                if (tag === 'a') {
+                    anchors.push(el as HTMLAnchorElement);
+                }
+
+                return el;
+            },
+        );
+
+        await downloadPassCard(investorCard());
+
+        expect(anchors.at(-1)?.download).toBe('rozine-pulse-investor-pass.png');
     });
 });

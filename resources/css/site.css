@@ -1,0 +1,771 @@
+/* Ported verbatim from docs/resources/Rozine.rw (standalone).html — do not hand-edit. */
+/* cyrillic-ext */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./fonts/eb2491d6.woff2') format('woff2');
+    unicode-range:
+        U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./fonts/e10f4e2f.woff2') format('woff2');
+    unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./fonts/9e10c9e8.woff2') format('woff2');
+    unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./fonts/bc628974.woff2') format('woff2');
+    unicode-range:
+        U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./fonts/c1184fbf.woff2') format('woff2');
+    unicode-range:
+        U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
+        U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329,
+        U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./fonts/cc7500e2.woff2') format('woff2');
+    unicode-range:
+        U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+        U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+        U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./fonts/03c1332d.woff2') format('woff2');
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+        U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('./fonts/eb2491d6.woff2') format('woff2');
+    unicode-range:
+        U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('./fonts/e10f4e2f.woff2') format('woff2');
+    unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('./fonts/9e10c9e8.woff2') format('woff2');
+    unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('./fonts/bc628974.woff2') format('woff2');
+    unicode-range:
+        U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('./fonts/c1184fbf.woff2') format('woff2');
+    unicode-range:
+        U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
+        U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329,
+        U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('./fonts/cc7500e2.woff2') format('woff2');
+    unicode-range:
+        U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+        U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+        U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('./fonts/03c1332d.woff2') format('woff2');
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+        U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('./fonts/eb2491d6.woff2') format('woff2');
+    unicode-range:
+        U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('./fonts/e10f4e2f.woff2') format('woff2');
+    unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('./fonts/9e10c9e8.woff2') format('woff2');
+    unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('./fonts/bc628974.woff2') format('woff2');
+    unicode-range:
+        U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('./fonts/c1184fbf.woff2') format('woff2');
+    unicode-range:
+        U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
+        U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329,
+        U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('./fonts/cc7500e2.woff2') format('woff2');
+    unicode-range:
+        U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+        U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+        U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('./fonts/03c1332d.woff2') format('woff2');
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+        U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./fonts/eb2491d6.woff2') format('woff2');
+    unicode-range:
+        U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./fonts/e10f4e2f.woff2') format('woff2');
+    unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./fonts/9e10c9e8.woff2') format('woff2');
+    unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./fonts/bc628974.woff2') format('woff2');
+    unicode-range:
+        U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./fonts/c1184fbf.woff2') format('woff2');
+    unicode-range:
+        U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
+        U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329,
+        U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./fonts/cc7500e2.woff2') format('woff2');
+    unicode-range:
+        U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+        U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+        U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./fonts/03c1332d.woff2') format('woff2');
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+        U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('./fonts/eb2491d6.woff2') format('woff2');
+    unicode-range:
+        U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('./fonts/e10f4e2f.woff2') format('woff2');
+    unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('./fonts/9e10c9e8.woff2') format('woff2');
+    unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('./fonts/bc628974.woff2') format('woff2');
+    unicode-range:
+        U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('./fonts/c1184fbf.woff2') format('woff2');
+    unicode-range:
+        U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
+        U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329,
+        U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('./fonts/cc7500e2.woff2') format('woff2');
+    unicode-range:
+        U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+        U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+        U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('./fonts/03c1332d.woff2') format('woff2');
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+        U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+.rz-site,
+.rz-site *,
+.rz-site *::before,
+.rz-site *::after {
+    box-sizing: border-box;
+}
+html:has(.rz-site) {
+    scroll-behavior: smooth;
+}
+html:has(.rz-site),
+body:has(.rz-site) {
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+}
+.rz-site {
+    font-family:
+        'Inter',
+        -apple-system,
+        system-ui,
+        sans-serif;
+    color: #0c1830;
+    -webkit-font-smoothing: antialiased;
+    /* The design is authored against the UA default line-height; Tailwind's
+       preflight sets 1.5 on <html>, which would inherit in and grow every
+       text box. Restore `normal` for the site subtree only. */
+    line-height: normal;
+    letter-spacing: normal;
+    font-feature-settings: normal;
+    font-variation-settings: normal;
+}
+.rz-site a {
+    color: #1e3aff;
+    text-decoration: none;
+}
+.rz-site a:hover {
+    color: #1428a4;
+}
+.rz-site ::selection {
+    background: #1e3aff;
+    color: #fff;
+}
+.rz-site input,
+.rz-site button,
+.rz-site select {
+    font: inherit;
+    color: inherit;
+}
+/* The design is authored against UA defaults; Tailwind's preflight zeroes the
+   2px margin Chrome gives a range input, which shifts the slider track 2px.
+   The design's own inline margin-top still wins over this rule. */
+.rz-site input[type='range'] {
+    margin: 2px;
+}
+/* Preflight also makes replaced elements block/middle-aligned. The design is
+   authored against the UA defaults (inline/baseline), which changes the line
+   box around inline icons. Elements the design wants as blocks say so in their
+   own inline style, which still wins over this rule. */
+.rz-site img,
+.rz-site svg,
+.rz-site video,
+.rz-site canvas,
+.rz-site audio,
+.rz-site iframe,
+.rz-site embed,
+.rz-site object {
+    display: inline;
+    vertical-align: baseline;
+}
+@keyframes rz-rise {
+    from {
+        opacity: 0;
+        transform: translateY(26px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+@keyframes rz-fill {
+    from {
+        transform: scaleX(0);
+    }
+    to {
+        transform: scaleX(1);
+    }
+}
+@keyframes rz-pop {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: none;
+    }
+}
+@keyframes rz-ring {
+    0% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+    70%,
+    100% {
+        transform: scale(2.6);
+        opacity: 0;
+    }
+}
+@keyframes rz-flow-r {
+    0% {
+        left: 7%;
+        opacity: 0;
+        transform: translateY(-50%) rotate(-8deg);
+    }
+    10% {
+        opacity: 1;
+    }
+    50% {
+        top: 38%;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        left: 85%;
+        top: 50%;
+        opacity: 0;
+        transform: translateY(-50%) rotate(6deg);
+    }
+}
+@keyframes rz-flow-l {
+    0% {
+        left: 85%;
+        opacity: 0;
+        transform: translateY(-50%) rotate(8deg);
+    }
+    10% {
+        opacity: 1;
+    }
+    50% {
+        top: 64%;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        left: 7%;
+        top: 52%;
+        opacity: 0;
+        transform: translateY(-50%) rotate(-6deg);
+    }
+}
+@keyframes rz-check-pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(29, 158, 117, 0.5);
+    }
+    70%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 18px rgba(29, 158, 117, 0);
+    }
+}
+@keyframes rz-node-float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-7px);
+    }
+}
+@keyframes rz-dash {
+    to {
+        stroke-dashoffset: -24;
+    }
+}
+@keyframes rz-count-bar {
+    0% {
+        height: 12%;
+    }
+    100% {
+        height: var(--h, 60%);
+    }
+}
+@keyframes rz-marquee {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+@keyframes rz-line {
+    from {
+        transform: scaleY(0);
+    }
+    to {
+        transform: scaleY(1);
+    }
+}
+@keyframes rz-badge {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+.rz-track {
+    display: flex;
+    width: max-content;
+    animation: rz-marquee 78s linear infinite;
+}
+.rz-strip:hover .rz-track {
+    animation-play-state: paused;
+}
+.rz-tile img {
+    transition:
+        transform 0.6s ease,
+        filter 0.4s ease;
+}
+.rz-tile:hover img {
+    transform: scale(1.06);
+    filter: saturate(1.1);
+}
+.rz-line {
+    transform-origin: top;
+    animation: rz-line linear both;
+    animation-timeline: view();
+    animation-range: entry 30% cover 45%;
+}
+.rz-badge {
+    animation: rz-badge cubic-bezier(0.2, 1.4, 0.4, 1) both;
+    animation-timeline: view();
+    animation-range: entry 25% entry 75%;
+}
+@media (prefers-reduced-motion: reduce) {
+    .rz-track {
+        animation: none;
+    }
+}
+@media (max-width: 760px) {
+    .rz-how-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+.rz-step {
+    transition: background 0.3s ease;
+}
+.rz-step:hover {
+    background: rgba(30, 58, 255, 0.035);
+}
+.rz-glass {
+    transition:
+        transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow 0.32s ease;
+}
+.rz-glass:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 1px 2px rgba(12, 24, 48, 0.04),
+        0 34px 66px -26px rgba(12, 24, 48, 0.26);
+}
+.rz-site h1,
+.rz-site h2,
+.rz-site h3 {
+    font-feature-settings: 'ss03', 'cv11';
+    text-wrap: balance;
+}
+.rz-kick {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+.rz-kick::before {
+    content: '';
+    width: 28px;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.5;
+    flex: 0 0 auto;
+}
+.rz-mobile-only {
+    display: none;
+}
+.rz-seg-short {
+    display: none;
+}
+@media (max-width: 560px) {
+    .rz-sig {
+        flex-wrap: wrap !important;
+        white-space: normal !important;
+        min-width: 0 !important;
+    }
+    .rz-sig-dash {
+        display: none !important;
+    }
+    .rz-social {
+        margin-left: 0 !important;
+    }
+}
+@media (max-width: 720px) {
+    .rz-seg {
+        gap: 3px !important;
+        padding: 2px !important;
+    }
+    .rz-seg > a {
+        padding: 6px 11px !important;
+        font-size: 12.5px !important;
+    }
+    .rz-seg-long {
+        display: none !important;
+    }
+    .rz-seg-short {
+        display: inline !important;
+    }
+}
+@media (max-width: 720px) {
+    .rz-nav-links {
+        display: none !important;
+    }
+    .rz-mobile-only {
+        display: flex !important;
+    }
+    .rz-hide-mobile {
+        display: none !important;
+    }
+}
+.rz-rise {
+    animation: rz-rise linear both;
+    animation-timeline: view();
+    animation-range: entry 5% cover 28%;
+}
+.rz-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 5px;
+    border-radius: 999px;
+    background: #e2e8f2;
+    outline: none;
+}
+.rz-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #1e3aff;
+    border: 4px solid #fff;
+    box-shadow: 0 2px 10px rgba(30, 58, 255, 0.5);
+    cursor: pointer;
+}
+.rz-range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #1e3aff;
+    border: 4px solid #fff;
+    cursor: pointer;
+}
+@media (prefers-reduced-motion: reduce) {
+    .rz-site * {
+        animation-duration: 0.001s !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * Deliberate departures from the design export.
+ * ------------------------------------------------------------------------ */
+
+/* The "how it works" heading is pinned with an inline position:sticky so it
+   holds its place beside the steps while they scroll past, which is the point
+   of the two-column layout. Below 760px that grid collapses to one column, so
+   the heading instead pins directly on top of the steps scrolling underneath
+   it, and because it has no background the two sets of text overlap. The
+   export behaves this way as well; we depart from it deliberately and let the
+   heading scroll away once the columns stack. Needs !important to beat the
+   inline style the export sets. */
+@media (max-width: 760px) {
+    .rz-site .rz-how-grid > :first-child {
+        position: static !important;
+    }
+}
+
+/* Below 720px the export shows two Help links: the one in the nav, and a
+   second in a mobile-only row beneath it. The row is meant to replace the
+   nav copy, but the class that would hide that copy (.rz-nav-links) is
+   defined in the export and never applied to any element, so both render.
+   Keep the one in the nav, where it sits beside the audience toggle, and
+   drop the duplicate row. */
+@media (max-width: 720px) {
+    .rz-site .rz-mobile-only {
+        display: none !important;
+    }
+}

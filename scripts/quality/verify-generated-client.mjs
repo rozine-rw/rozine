@@ -20,7 +20,11 @@ try {
             '--',
             ...generatedRoots,
         ],
-        { encoding: 'utf8' },
+        {
+            encoding: 'utf8',
+            // a large promotion lists far more than Node's 1 MB default allows
+            maxBuffer: 64 * 1024 * 1024,
+        },
     );
     const errors = evaluateGeneratedClientStatus(status);
 

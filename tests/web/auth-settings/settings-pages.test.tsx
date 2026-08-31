@@ -2,7 +2,14 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import type { ComponentProps, ReactNode } from 'react';
 import { forwardRef } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+} from 'vite-plus/test';
 import SettingsLayout from '@/layouts/settings/layout';
 import Appearance from '@/pages/settings/appearance';
 import Profile from '@/pages/settings/profile';

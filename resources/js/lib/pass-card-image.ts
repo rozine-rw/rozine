@@ -12,14 +12,33 @@ export type PassCardStat = {
     value: string;
 };
 
+/**
+ * Which card is being drawn. The Pulse app and the marketing site share this
+ * layout but not their palette, their watermark or their mark, so each names
+ * its own surface rather than the two designs drifting apart in two renderers.
+ */
+export type PassCardSurface = 'pulse' | 'site';
+
 export type PassCardSpec = {
     tone: 'investor' | 'business';
     tag: string;
-    badge: string;
+    /** Omit for a plain right-aligned label, as the site card draws it. */
+    badge?: string;
     holder: string;
     caption?: string;
     amount: string;
     stats: PassCardStat[];
+    surface?: PassCardSurface;
+};
+
+type SurfaceStyle = {
+    logo: string;
+    watermark: string;
+    amountSize: number;
+    tones: Record<
+        PassCardSpec['tone'],
+        { stops: [string, string, string]; middle: number }
+    >;
 };
 
 const WIDTH = 900;
@@ -77,16 +96,37 @@ const LAYOUT = {
     footerGap: 24,
 };
 
-const TONES = {
-    investor: ['#3f83ff', '#0a44c4', '#061640'],
-    business: ['#17c268', '#0a7c47', '#052a1c'],
+const SURFACES: Record<PassCardSurface, SurfaceStyle> = {
+    pulse: {
+        logo: '/images/rozine-wordmark-white.png',
+        watermark: '/images/rozine-wing-white.png',
+        amountSize: 99,
+        tones: {
+            investor: { stops: ['#3f83ff', '#0a44c4', '#061640'], middle: 0.4 },
+            business: { stops: ['#17c268', '#0a7c47', '#052a1c'], middle: 0.4 },
+        },
+    },
+    site: {
+        logo: '/site/img/25d454a5.png',
+        watermark: '/site/img/ed8e027e.png',
+        amountSize: 90,
+        tones: {
+            investor: {
+                stops: ['#4a63ff', '#1e3aff', '#0a1440'],
+                middle: 0.38,
+            },
+            business: {
+                stops: ['#22b585', '#17795a', '#052a1c'],
+                middle: 0.4,
+            },
+        },
+    },
 };
 
-const WORDMARK = '/images/rozine-wordmark-white.png';
+const surfaceOf = (spec: PassCardSpec): SurfaceStyle =>
+    SURFACES[spec.surface ?? 'pulse'];
 
-const WING = '/images/rozine-wing-white.png';
-
-/** The wing tile the card repeats, at the size the design stretches it to. */
+/** The mark tile the card repeats, at the size the design stretches it to. */
 const TILE = { width: 36, height: 20 };
 
 /**
@@ -107,7 +147,10 @@ export async function downloadPassCard(spec: PassCardSpec): Promise<void> {
     const link = document.createElement('a');
 
     link.href = url;
-    link.download = `rozine-pulse-${spec.tone}-pass.png`;
+    link.download =
+        spec.surface === 'site'
+            ? `rozine-${spec.tone}-card.png`
+            : `rozine-pulse-${spec.tone}-pass.png`;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -131,9 +174,10 @@ export async function drawPassCard(
         throw new Error('This browser cannot draw the card.');
     }
 
-    const [wordmark, wing] = await Promise.all([
-        loadImage(WORDMARK),
-        loadImage(WING),
+    const surface = surfaceOf(spec);
+    const [wordmark, watermark] = await Promise.all([
+        loadImage(surface.logo),
+        loadImage(surface.watermark),
         loadFonts(),
     ]);
 
@@ -143,7 +187,7 @@ export async function drawPassCard(
     ctx.roundRect(0, 0, WIDTH, HEIGHT, RADIUS);
     ctx.clip();
 
-    paintBackground(ctx, spec.tone);
+    paintBackground(ctx, spec);
 
     // An inset shadow lies over the background but under everything the card
     // holds, so the layers below are painted after it.
@@ -154,7 +198,7 @@ export async function drawPassCard(
         'rgba(255,255,255,0.3)',
     );
 
-    paintWings(ctx, wing);
+    paintWings(ctx, watermark);
     paintCorner(ctx);
     paintHeader(ctx, spec, wordmark);
     paintBody(ctx, spec);
@@ -164,9 +208,10 @@ export async function drawPassCard(
 
 function paintBackground(
     ctx: CanvasRenderingContext2D,
-    tone: PassCardSpec['tone'],
+    spec: PassCardSpec,
 ): void {
-    const [start, middle, end] = TONES[tone];
+    const tone = surfaceOf(spec).tones[spec.tone];
+    const [start, middle, end] = tone.stops;
 
     // radial-gradient(150% 130% at 14% 0%, …) — an ellipse, so the circular
     // gradient canvas offers is stretched onto one.
@@ -179,7 +224,7 @@ function paintBackground(
 
     const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radiusX);
     gradient.addColorStop(0, start);
-    gradient.addColorStop(0.4, middle);
+    gradient.addColorStop(tone.middle, middle);
     gradient.addColorStop(1, end);
 
     ctx.fillStyle = gradient;
@@ -189,7 +234,7 @@ function paintBackground(
 
 function paintWings(
     ctx: CanvasRenderingContext2D,
-    wing: HTMLImageElement,
+    mark: HTMLImageElement,
 ): void {
     const tile = document.createElement('canvas');
     tile.width = TILE.width * SCALE;
@@ -203,7 +248,7 @@ function paintWings(
 
     // background-size stretches the mark to fill the tile, and the tiles butt
     // up against one another.
-    tileCtx.drawImage(wing, 0, 0, tile.width, tile.height);
+    tileCtx.drawImage(mark, 0, 0, tile.width, tile.height);
 
     const pattern = ctx.createPattern(tile, 'repeat');
 
@@ -307,6 +352,22 @@ function paintHeader(
         logo.height,
     );
 
+    // The site card carries a single label; the Pulse pass pairs that label
+    // with a bordered badge to its right.
+    if (spec.badge === undefined) {
+        write(ctx, spec.tag, {
+            x: WIDTH - EDGE,
+            bottom: GUTTER + lineHeight(ctx, tag.size, 700),
+            size: tag.size,
+            weight: 700,
+            tracking: tag.tracking,
+            color: tag.color,
+            align: 'right',
+        });
+
+        return;
+    }
+
     const badgeHeight =
         badge.padding.top +
         badge.size +
@@ -388,8 +449,8 @@ function paintBadge(
 }
 
 function paintBody(ctx: CanvasRenderingContext2D, spec: PassCardSpec): void {
-    const { holder, caption, amount, statLabel, statValue, statGap, domain } =
-        LAYOUT;
+    const { holder, caption, statLabel, statValue, statGap, domain } = LAYOUT;
+    const amount = { ...LAYOUT.amount, size: surfaceOf(spec).amountSize };
 
     const bottom = HEIGHT - GUTTER;
 

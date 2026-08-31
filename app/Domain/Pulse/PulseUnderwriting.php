@@ -15,20 +15,25 @@ final class PulseUnderwriting
      */
     public const BLENDED_YIELD = 13.0;
 
-    /** @var list<int> */
-    public const TERMS = [3, 6, 9, 12];
+    /**
+     * Every term the platform accepts. The marketing site offers 3-6 months and
+     * the Pulse app offers 3/6/9/12, so the union is accepted server-side.
+     *
+     * @var list<int>
+     */
+    public const TERMS = [3, 4, 5, 6, 9, 12];
 
     public const MINIMUM_REVENUE = 15_000_000;
 
     public const EARLIEST_REGISTRATION_YEAR = 1996;
 
-    public const MIN_LOAN = 5_000_000;
+    public const MIN_LOAN = 3_000_000;
 
-    public const MAX_LOAN = 50_000_000;
+    public const MAX_LOAN = 100_000_000;
 
     public const PLEDGE_MINIMUM = 5_000;
 
-    public const PLEDGE_MAXIMUM = 50_000_000;
+    public const PLEDGE_MAXIMUM = 200_000_000;
 
     public const PLEDGE_STEP = 5_000;
 
