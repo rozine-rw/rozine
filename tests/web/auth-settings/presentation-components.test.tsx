@@ -1,7 +1,7 @@
 // eslint-disable-next-line testing-library/no-manual-cleanup
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ComponentProps } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import AlertError from '@/components/alert-error';
 import AppearanceTabs from '@/components/appearance-tabs';
 import InputError from '@/components/input-error';

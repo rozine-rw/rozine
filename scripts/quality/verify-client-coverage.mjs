@@ -253,24 +253,30 @@ const filesRecursively = (repoRoot, directory) => {
     return files;
 };
 
-export const governedToolchainPaths = (repoRoot, headSha) => {
-    const staticPaths = [
-        '.npmrc',
-        '.nvmrc',
-        'eslint.config.js',
-        'package-lock.json',
-        'package.json',
-        'tsconfig.json',
-        'tsconfig.test.json',
-        'vite.config.ts',
-        'vitest.config.ts',
-        'config/client-risk-manifest.json',
-        'config/client-source-manifest.json',
-    ];
+export const governedToolchainStaticPaths = Object.freeze([
+    '.npmrc',
+    '.node-version',
+    '.vite-hooks/pre-commit',
+    'package-lock.json',
+    'package.json',
+    'tsconfig.json',
+    'tsconfig.test.json',
+    'vite.config.ts',
+    'vitest.config.ts',
+    'config/client-risk-manifest.json',
+    'config/client-source-manifest.json',
+]);
 
+const governedToolchainStatusPaths = Object.freeze([
+    ...governedToolchainStaticPaths,
+    'scripts/quality',
+    'tests/web',
+]);
+
+export const governedToolchainPaths = (repoRoot, headSha) => {
     return [
         ...new Set([
-            ...staticPaths,
+            ...governedToolchainStaticPaths,
             ...filesAtCommit(repoRoot, headSha, [
                 'scripts/quality',
                 'tests/web',
@@ -350,21 +356,7 @@ const prepare = ({ repoRoot, options, shaContract, manifestContract }) => {
     assertPathsMatchHead(repoRoot, ['resources/js'], 'Governed client source');
     assertPathsMatchHead(
         repoRoot,
-        [
-            '.npmrc',
-            '.nvmrc',
-            'eslint.config.js',
-            'package-lock.json',
-            'package.json',
-            'tsconfig.json',
-            'tsconfig.test.json',
-            'vite.config.ts',
-            'vitest.config.ts',
-            'config/client-risk-manifest.json',
-            'config/client-source-manifest.json',
-            'scripts/quality',
-            'tests/web',
-        ],
+        governedToolchainStatusPaths,
         'Coverage toolchain',
     );
     const provenancePath = resolveFromRepo(repoRoot, options.provenance);
@@ -398,21 +390,7 @@ const verify = ({ repoRoot, options, shaContract, manifestContract }) => {
     assertPathsMatchHead(repoRoot, ['resources/js'], 'Governed client source');
     assertPathsMatchHead(
         repoRoot,
-        [
-            '.npmrc',
-            '.nvmrc',
-            'eslint.config.js',
-            'package-lock.json',
-            'package.json',
-            'tsconfig.json',
-            'tsconfig.test.json',
-            'vite.config.ts',
-            'vitest.config.ts',
-            'config/client-risk-manifest.json',
-            'config/client-source-manifest.json',
-            'scripts/quality',
-            'tests/web',
-        ],
+        governedToolchainStatusPaths,
         'Coverage toolchain',
     );
     const artifactPaths = {

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vite-plus/test';
 import { BusinessModal } from '@/components/pulse/business-modal';
 import { InvestorModal } from '@/components/pulse/investor-modal';
 import type { SignupDetails } from '@/components/pulse/signup-fields';

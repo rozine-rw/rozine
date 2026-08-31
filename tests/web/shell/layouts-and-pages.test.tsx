@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import type { ComponentProps, ReactNode } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
 import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 import AppLayout from '@/layouts/app-layout';

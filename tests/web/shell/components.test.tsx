@@ -5,7 +5,7 @@ import type {
     MouseEvent as ReactMouseEvent,
     ReactNode,
 } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import { AppContent } from '@/components/app-content';
 import { AppHeader } from '@/components/app-header';
 import AppLogo from '@/components/app-logo';

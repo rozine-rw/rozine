@@ -7,26 +7,26 @@
         "node": "24.15.0"
     },
     "scripts": {
-        "build": "vite build",
-        "build:ssr": "vite build && vite build --ssr",
-        "dev": "vite",
-        "format": "prettier --write resources/ tests/web/ scripts/quality/ vitest.config.ts tsconfig.test.json",
-        "format:check": "prettier --check resources/ tests/web/ scripts/quality/ vitest.config.ts tsconfig.test.json",
-        "lint": "eslint . --fix",
-        "lint:check": "eslint .",
+        "build": "vp build",
+        "build:ssr": "vp build && vp build --ssr",
+        "dev": "vp dev",
+        "format": "vp fmt resources/ tests/web/ scripts/quality/ vitest.config.ts tsconfig.test.json",
+        "format:check": "vp fmt --check resources/ tests/web/ scripts/quality/ vitest.config.ts tsconfig.test.json",
+        "lint": "vp lint . --fix",
+        "lint:check": "vp lint .",
         "types:check": "tsc --noEmit --project tsconfig.json && tsc --noEmit --project tsconfig.test.json",
-        "test:web": "vitest run --config vitest.config.ts",
-        "test:web:watch": "vitest --config vitest.config.ts",
+        "test:web": "vp test run --config vitest.config.ts",
+        "test:web:watch": "vp test watch --config vitest.config.ts",
         "test:web:coverage:prepare": "node scripts/quality/verify-client-coverage.mjs --prepare",
-        "test:web:coverage:collect": "vitest run --config vitest.config.ts --coverage",
+        "test:web:coverage:collect": "vp test run --config vitest.config.ts --coverage",
         "test:web:coverage:verify": "node scripts/quality/verify-client-coverage.mjs",
         "test:web:coverage": "npm run test:web:coverage:prepare && npm run test:web:coverage:collect && npm run test:web:coverage:verify",
         "generated:check": "node scripts/quality/verify-generated-client.mjs",
         "ci:web:foundation": "npm run lint:check && npm run format:check && npm run types:check && npm run test:web && npm run build && npm run generated:check",
-        "ci:web": "npm run lint:check && npm run format:check && npm run types:check && npm run test:web:coverage && npm run build && npm run generated:check"
+        "ci:web": "npm run lint:check && npm run format:check && npm run types:check && npm run test:web:coverage && npm run build && npm run generated:check",
+        "prepare": "vp config"
     },
     "devDependencies": {
-        "@eslint/js": "^9.19.0",
         "@laravel/vite-plugin-wayfinder": "^0.1.3",
         "@stylistic/eslint-plugin": "^5.10.0",
         "@testing-library/dom": "10.4.1",
@@ -36,18 +36,10 @@
         "@types/node": "^22.13.5",
         "@vitest/coverage-v8": "4.1.11",
         "babel-plugin-react-compiler": "^1.0.0",
-        "eslint": "^9.17.0",
-        "eslint-config-prettier": "^10.0.1",
-        "eslint-import-resolver-typescript": "^4.4.4",
-        "eslint-plugin-import": "^2.32.0",
         "eslint-plugin-jest-dom": "5.10.1",
-        "eslint-plugin-react": "^7.37.3",
-        "eslint-plugin-react-hooks": "^7.0.0",
         "eslint-plugin-testing-library": "7.16.2",
         "jsdom": "30.0.1",
-        "prettier": "^3.4.2",
-        "prettier-plugin-tailwindcss": "^0.6.11",
-        "typescript-eslint": "^8.23.0",
+        "vite-plus": "0.3.0",
         "vitest": "4.1.11"
     },
     "dependencies": {
@@ -74,7 +66,6 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "concurrently": "^9.0.1",
-        "globals": "^15.14.0",
         "input-otp": "^1.4.2",
         "laravel-vite-plugin": "^3.0.0",
         "lucide-react": "^0.475.0",
@@ -85,7 +76,7 @@
         "tailwindcss": "^4.0.0",
         "tw-animate-css": "^1.4.0",
         "typescript": "^5.7.2",
-        "vite": "^8.0.0"
+        "vite": "npm:@voidzero-dev/vite-plus-core@0.3.0"
     },
     "optionalDependencies": {
         "@rollup/rollup-linux-x64-gnu": "4.9.5",
@@ -94,5 +85,9 @@
         "@tailwindcss/oxide-win32-x64-msvc": "^4.0.1",
         "lightningcss-linux-x64-gnu": "^1.29.1",
         "lightningcss-win32-x64-msvc": "^1.29.1"
+    },
+    "overrides": {
+        "vite": "npm:@voidzero-dev/vite-plus-core@0.3.0",
+        "vitest": "4.1.11"
     }
 }
