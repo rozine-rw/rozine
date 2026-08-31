@@ -67,6 +67,7 @@ describe('application entry point', () => {
 
         expect(options.title('Dashboard')).toBe('Dashboard - Laravel');
         expect(options.title('')).toBe('Laravel');
+        expect(options.layout('home')).toBeNull();
         expect(options.layout('welcome')).toBeNull();
         expect(options.layout('pulse')).toBeNull();
         expect(options.layout('auth/login')).toBe(state.authLayout);

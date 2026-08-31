@@ -314,11 +314,15 @@ describe('shell building blocks', () => {
         expect(screen.getByText('Rozine')).toBeInTheDocument();
         expect(screen.getByRole('presentation')).toHaveAttribute(
             'src',
-            '/images/rozine-wing-white.png',
+            '/images/rozine-star-white.png',
         );
         expect(screen.getByTitle('Brand mark')).toHaveClass('custom-mark');
         expect(screen.getByTitle('Brand mark')).toHaveStyle(
             'background-color: rgb(255, 0, 0); mask-size: contain',
+        );
+        // the star is square, unlike the wide wing mark it replaced
+        expect(screen.getByTitle('Brand mark')).toHaveStyle(
+            'aspect-ratio: 1 / 1',
         );
     });
 

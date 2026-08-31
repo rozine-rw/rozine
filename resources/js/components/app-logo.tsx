@@ -5,11 +5,11 @@ export default function AppLogo() {
 
     return (
         <>
-            <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-[#0a5cff]">
+            <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-[#0039ff]">
                 <img
-                    src="/images/rozine-wing-white.png"
+                    src="/images/rozine-star-white.png"
                     alt=""
-                    className="w-5 object-contain"
+                    className="w-4.5 object-contain"
                 />
             </div>
             <div className="ml-1 grid flex-1 text-left text-sm">
