@@ -1,0 +1,52 @@
+name: Deployment admission
+
+# D-68 fail-closed deployment admission. Callers must run this before any step
+# that touches a server: it refuses missing, failed, in-progress, stale, or
+# mismatched evidence, and it refuses a candidate that no non-author developer
+# approved at its final SHA.
+
+on:
+  workflow_call:
+    inputs:
+      target_branch:
+        description: Branch whose tip is being deployed.
+        required: true
+        type: string
+      environment:
+        description: Human-readable environment name, used for the evidence artifact.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+jobs:
+  admit:
+    name: Verify deployment evidence
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout admission script
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Verify exact-SHA evidence and non-author approval
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          CANDIDATE_SHA: ${{ github.sha }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+          ATTESTATION_PATH: admission/deployment-admission.json
+        run: bash .github/scripts/verify-deployment-admission.sh
+
+      - name: Upload admission attestation
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: deployment-admission-${{ inputs.environment }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: admission
+          if-no-files-found: warn
+          retention-days: 90

@@ -99,6 +99,9 @@
             "@php -r \"is_dir('coverage/php') || mkdir('coverage/php', 0777, true);\"",
             "@php vendor/bin/pest --ci --no-tia --coverage --min=100 --coverage-clover=coverage/php/clover.xml --compact"
         ],
+        "test:php:pgsql": [
+            "@php vendor/bin/pest -c phpunit.pgsql.xml --ci --no-tia --compact"
+        ],
         "test:php:tia": [
             "@php vendor/bin/pest --parallel --tia"
         ],
@@ -140,5 +143,8 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "scripts-descriptions": {
+        "test:php:pgsql": "Run the whole suite plus the Concurrency suite against PostgreSQL, the only environment D-73 lets certify locking and race behaviour."
+    }
 }

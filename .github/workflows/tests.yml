@@ -177,3 +177,131 @@ jobs:
             config/client-risk-manifest.json
           if-no-files-found: warn
           retention-days: 30
+
+  concurrency:
+    name: PostgreSQL concurrency lane
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: rozine
+          POSTGRES_PASSWORD: rozine
+          POSTGRES_DB: rozine_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rozine -d rozine_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout exact tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          # D-73 makes 8.5 the canonical runtime; the race evidence is recorded
+          # on the version that is actually deployed.
+          php-version: '8.5'
+          tools: composer:v2
+          # pcntl forks the parallel writers; without it the race test cannot
+          # run at all, and a silently skipped race test is not evidence.
+          extensions: pdo_pgsql, pgsql, pcntl, posix
+          coverage: none
+
+      - name: Install PHP dependencies from lock file
+        run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Copy environment file
+        run: cp .env.example .env
+
+      - name: Generate application key
+        run: php artisan key:generate
+
+      - name: Run the suite and the concurrency evidence against PostgreSQL
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: rozine_test
+          DB_USERNAME: rozine
+          DB_PASSWORD: rozine
+        run: composer test:php:pgsql
+
+      - name: Record PostgreSQL evidence identity
+        if: always()
+        run: |
+          mkdir -p coverage/pgsql
+          git rev-parse HEAD > coverage/pgsql/tested-sha.txt
+          php --version | head -n 1 > coverage/pgsql/runtime.txt
+          psql "postgresql://rozine:rozine@127.0.0.1:5432/rozine_test" -tAc 'select version();' \
+            > coverage/pgsql/database.txt
+
+      - name: Upload PostgreSQL concurrency evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pgsql-concurrency-${{ github.run_id }}-${{ github.run_attempt }}
+          path: coverage/pgsql
+          if-no-files-found: warn
+          retention-days: 30
+
+  negative-controls:
+    name: PHP gate negative controls
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout exact tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+          # The coverage control needs a driver; without one it skips, and a
+          # skipped control is not evidence that the coverage gate can go red.
+          coverage: xdebug
+
+      - name: Install PHP dependencies from lock file
+        run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Copy environment file
+        run: cp .env.example .env
+
+      - name: Generate application key
+        run: php artisan key:generate
+
+      - name: Prove each PHP gate rejects the violation it exists to catch
+        run: bash scripts/quality/verify-negative-controls.sh
+
+      - name: Confirm no planted violation survived the run
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::the negative-control run left the tree dirty"
+            git status --porcelain
+            exit 1
+          fi
+
+  admission:
+    name: Deployment admission negative controls
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout exact tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Prove the D-68 gate refuses every unevidenced candidate
+        run: bash .github/scripts/test-deployment-admission.sh

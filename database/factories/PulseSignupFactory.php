@@ -33,7 +33,7 @@ class PulseSignupFactory extends Factory
             'province' => $province,
             'district' => fake()->randomElement($districts[$province]),
             'listed' => false,
-            'queue_number' => '#'.str_pad((string) fake()->numberBetween(120, 299), 4, '0', STR_PAD_LEFT),
+            'queue_number' => '#'.str_pad((string) fake()->unique()->numberBetween(120, 299), 4, '0', STR_PAD_LEFT),
             'pledge_amount' => fake()->numberBetween(1, 2000) * 5000,
             'blended_yield' => PulseUnderwriting::BLENDED_YIELD,
         ];
@@ -95,7 +95,7 @@ class PulseSignupFactory extends Factory
                         (int) now()->year,
                     ),
                 ),
-                'loan_number' => '#'.number_format(fake()->numberBetween(1470, 1509)),
+                'loan_number' => '#'.number_format(fake()->unique()->numberBetween(1470, 1599)),
             ];
         });
     }

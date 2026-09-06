@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,5 +18,14 @@ use Tests\TestCase;
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
+
+/*
+ * Concurrency tests observe each other's writes across separate connections and
+ * separate processes, so they cannot run inside the rolled-back transaction
+ * that RefreshDatabase opens. They commit for real and truncate afterwards.
+ */
+pest()->extend(TestCase::class)
+    ->use(DatabaseTruncation::class)
+    ->in('Concurrency');
 
 pest()->tia()->locally();
