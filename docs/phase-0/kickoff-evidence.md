@@ -78,6 +78,60 @@ After the Phase 0B/C changes, `composer ci:check:php` is green with 107 tests, 4
 
 The original fail-closed D-67 baseline was 44/4,574 statements (0.96%), 31/3,642 branches (0.85%), 6/442 functions (1.35%), and 28/2,777 lines (1.00%). That run correctly failed, but its test transform also mapped React Compiler-generated memoization scaffolding back onto authored files. The corrected coverage transform measures human-authored TS/TSX while the production build retains the compiler. The resulting authored denominator is now completely covered: 1,154/1,154 statements, 727/727 branches, 487/487 functions, and 1,134/1,134 lines. No authored file, risk classification, or policy threshold was removed or weakened.
 
+## Phase 0D — release gates, concurrency lane, and the Auditor platform decision (2026-09-06)
+
+- [x] **D-68 deployment admission.** Both environments deployed on push with no gate of any kind:
+  no check that the quality gates had run on the deployed SHA, that they passed, or that a second
+  developer had seen it, and `workflow_dispatch` was equally open. Admission now refuses unless the
+  candidate is a full 40-hex SHA, is still the tip of its target branch, has a successful `tests`
+  run on that exact SHA with every required job individually successful, arrived through a merged
+  pull request, and carries an APPROVED review of that pull request's final head SHA from someone
+  other than its author. An in-progress run is waited out, never read as a pass. Eleven negative
+  controls run in CI against a stubbed GitHub API, covering a failed run, a skipped job, a direct
+  push, an author self-approval, and an approval naming a superseded commit. Verified against live
+  data: the gate admits `dev` at `9af16b4` and names the non-author approver of pull request #67.
+- [x] **D-73 PHP 8.5 deployment pin.** Both environments previously ran whatever bare `php`
+  resolved to on the server. The shared remote script now resolves PHP 8.5 explicitly and aborts if
+  the server answers with anything else.
+- [x] **D-73 PostgreSQL concurrency lane.** `phpunit.pgsql.xml` runs the whole suite plus a
+  Concurrency suite that exists only on PostgreSQL, wired into CI against `postgres:17` on the
+  canonical 8.5 runtime with `pcntl` so the parallel writers can fork.
+- [x] **Waitlist numbering concurrency defect closed.** Queue and loan numbers were `count() + 1`
+  read outside any lock, so concurrent signups took the same number and a deleted row caused
+  reuse. Numbering is now claimed from a counter row under `lockForUpdate`, never undercutting a
+  number already issued, with unique indexes as a backstop. Proven by reverting the fix: the
+  parallel test fails and the delete case raises the unique violation. Running the suite on
+  PostgreSQL also exposed a latent factory defect — queue and loan numbers were drawn from 40-value
+  ranges and had been issuing duplicates that no index existed to catch.
+- [x] **Architecture rule catalog generalised.** Two rules named `PulseController` and the Pulse
+  repository directly, making them assertions about one feature rather than about the architecture.
+  All rules are now stated over namespaces. Added: configuration read through `config()` rather than
+  `env()`; controllers reaching no further than the application layer; domain results depending only
+  on their inputs, with no clock or random source; application code orchestrating through contracts
+  rather than Eloquent; Resources touching no database; and infrastructure concretions named only by
+  the provider that binds them.
+- [x] **PHP gate negative controls.** Five controls plant the violation each gate exists to catch —
+  a Domain class importing Illuminate, a controller querying a model, an application class naming a
+  concrete adapter, an unreachable first-party line, and both a level-7 type error and an invalid
+  `covers()` inside `tests/`. Each first requires its gate to be green on a clean tree, because a
+  broken gate would otherwise "catch" every violation while catching nothing. CI fails the job if a
+  planted file survives the run.
+- [x] **D-04 decided: Option B.** The Auditor ships as a narrow thin-native secure-capture
+  companion with every ordinary screen on Inertia web/PWA. Recorded in
+  `d-04-auditor-capture-decision.md`.
+
+### What this section does not claim
+
+Local verification used PHP 8.4.23 against a throwaway PostgreSQL instance. Two gates could not run
+on that machine at all: no coverage driver is installed, so the 100% PHP line-coverage gate is
+unverified locally, and PHPStan exits 1 with no output on any input, so static analysis is
+unverified locally. The hosted lanes are the authority for both, and the negative-control harness
+reports itself skipped rather than passing when a gate is unavailable.
+
+These items are implemented but not yet backed by hosted exact-SHA evidence, which is why the
+corresponding plan checklist items stay open until CI records them on a promoted SHA.
+
+
 ## Authority and brand freeze
 
 The governing plan's source order remains active. No unsigned PDF/prototype constant may change money, underwriting, authorization, evidence, secondary trading, or regulatory behavior.
@@ -101,8 +155,8 @@ Current runtime brand references remain deliberately unchanged:
 
 - The Aminu/Erastus/Robert/Kimani ownership map, including Robert as Business/internal Legal owner and Kimani as Finance/Risk owner, is recorded; internal ownership assignment is no longer a Phase 0 blocker. The remaining internal governance work is to name an eligible non-author independent-test approver on each applicable record and capture all required owner signatures for the Phase 1 red decisions—including the Party model and secondary-market contract.
 - Robert's 31 SVG and 31 matching PNG sources are received, validated, and hash-recorded; PNG receipt is no longer a blocker. Semantic/canonical mapping, exact colors, vector/font/outline provenance, usage rights, required variants and surface rules, accessibility approval, and Robert's explicit Product/Brand and internal Legal sign-offs remain pending, alongside any required external rights/legal clearance for D-51, D-52, D-56, D-57, and D-63 and the rights-cleared masters.
-- The Auditor PWA assurance spike remains open.
+- The Auditor PWA assurance spike is closed. D-04 resolved to Option B on 2026-09-06: a narrow thin-native secure-capture companion, with every ordinary Auditor screen on Inertia web/PWA. Option A is disproven on the web platform rather than untested. The exception still needs its estimate and owner entered in the schedule, and the plan treats a Phase 0 native exception as requiring a schedule rebaseline.
 - ADR-0001 and the PHP/database runtime contract are approved. The 2026-08-29 working tree closes the specific `PulseController` legacy exception and removes authoritative Pulse calculations from React and Resources, with 100% local PHP and web coverage plus green static/build gates. Clean committed exact-SHA evidence, the complete architecture-rule catalog, the PHP 8.5 deployment pin, hosted PHP 8.4/8.5 evidence, and PostgreSQL race tests remain open; the public-waitlist `count()+1` numbering is not concurrency-certified.
-- Paid private-branch protection is intentionally out of scope; hosted promotion attestation, non-author latest-SHA review, and fail-closed exact-SHA deployment evidence remain open. Current deployment workflows still deploy directly on push.
+- Paid private-branch protection is intentionally out of scope. Fail-closed exact-SHA deployment admission, non-author latest-SHA review, and the PHP 8.5 deployment pin are implemented as of 2026-09-06; deployment workflows no longer deploy on push without evidence. Hosted promotion attestation on a promoted SHA remains to be recorded.
 
 Phase 0 remains `IN PROGRESS`; this evidence does not claim Phase 0 acceptance or permission to begin governed feature behavior.
