@@ -6,6 +6,7 @@ use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Enums\PulseSignupType;
 use App\Models\PulseSignup;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Number;
 
 final class EloquentPulseSignupRepository implements PulseSignupRepository
@@ -91,7 +92,9 @@ final class EloquentPulseSignupRepository implements PulseSignupRepository
             'rating_band' => $sizing['rating_band'],
             'rating_score' => $sizing['rating_score'],
             'listed' => $listed,
-            'loan_number' => '#'.Number::format(PulseSignup::query()->businesses()->count() + 1),
+            'loan_number' => '#'.Number::format(
+                $this->claimNext('loan_number', fn (): int => $this->highestIssued('loan_number', null)),
+            ),
         ])->save();
 
         return [
@@ -114,6 +117,63 @@ final class EloquentPulseSignupRepository implements PulseSignupRepository
     }
 
     /**
+     * Claim the next value in a numbering series.
+     *
+     * The counter row is locked for the life of the transaction, so a second
+     * caller arriving mid-claim waits for the first to commit rather than
+     * reading the same value. Counting rows instead - the previous approach -
+     * gave concurrent signups identical numbers and reused a number whenever a
+     * row was deleted.
+     *
+     * The claim never undercuts a number already in the table. A signup's
+     * number is its place in the queue, so a row that arrived without going
+     * through the counter (a seed, an import, a factory) still has to count.
+     *
+     * @param  callable(): int  $highestIssued
+     */
+    private function claimNext(string $series, callable $highestIssued): int
+    {
+        return DB::transaction(function () use ($series, $highestIssued): int {
+            DB::table('signup_counters')->insertOrIgnore(['name' => $series, 'value' => 0]);
+
+            $counter = (int) DB::table('signup_counters')
+                ->where('name', $series)
+                ->lockForUpdate()
+                ->value('value');
+
+            $claimed = max($counter, $highestIssued()) + 1;
+
+            DB::table('signup_counters')->where('name', $series)->update(['value' => $claimed]);
+
+            return $claimed;
+        });
+    }
+
+    /**
+     * The highest number handed out in a series so far.
+     *
+     * Stored numbers are display strings such as `#0007` and `#1,204`, so the
+     * value is read back through the digits. The scan is proportional to the
+     * waitlist, which is the right trade while it is a waitlist; a numeric
+     * column would replace it if these series ever grow into the platform.
+     */
+    private function highestIssued(string $column, ?PulseSignupType $type): int
+    {
+        $issued = PulseSignup::query()
+            ->whereNotNull($column)
+            ->when($type !== null, fn (Builder $signups) => $signups->where('type', $type))
+            ->pluck($column);
+
+        $highest = 0;
+
+        foreach ($issued as $value) {
+            $highest = max($highest, (int) preg_replace('/\D/', '', (string) $value));
+        }
+
+        return $highest;
+    }
+
+    /**
      * @param  Builder<PulseSignup>  $signups
      */
     private function average(Builder $signups, string $column, int $precision = 0): ?float
@@ -132,7 +192,10 @@ final class EloquentPulseSignupRepository implements PulseSignupRepository
             ...$signup,
             'type' => $type,
             'queue_number' => '#'.str_pad(
-                (string) (PulseSignup::query()->where('type', $type)->count() + 1),
+                (string) $this->claimNext(
+                    'queue_number:'.$type->value,
+                    fn (): int => $this->highestIssued('queue_number', $type),
+                ),
                 4,
                 '0',
                 STR_PAD_LEFT,
