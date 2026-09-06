@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
@@ -11,9 +10,28 @@ use Illuminate\Support\Facades\DB;
  * plants the state it has to cope with, and runs it forward again.
  */
 
-function numberingMigration(): Migration
+/**
+ * The shape a migration file actually returns.
+ *
+ * Migrations are anonymous classes, and Illuminate's Migration base class
+ * declares neither up() nor down() - the migrator reaches them reflectively.
+ * Naming the shape here lets the calls below be type-checked instead of being
+ * silently unverifiable. It is a documentation type only: the migration does
+ * not implement it, so the accessor returns object at runtime.
+ */
+interface NumberingMigration
 {
-    /** @var Migration $migration */
+    public function up(): void;
+
+    public function down(): void;
+}
+
+/**
+ * @return NumberingMigration
+ */
+function numberingMigration(): object
+{
+    /** @var NumberingMigration $migration */
     $migration = require database_path('migrations/2026_09_06_121310_serialize_pulse_signup_numbering.php');
 
     return $migration;
