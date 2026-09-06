@@ -47,6 +47,7 @@ gate_fails() {
 }
 
 control() {
+  ran=$((ran + 1))
   echo "--> $1: $2"
 }
 
@@ -61,18 +62,34 @@ report() {
   echo
 }
 
+ALL_CONTROLS=(domain-purity transport-boundary adapter-leak php-coverage phpstan-tests)
+
 selected() {
-  [ "$#" -eq 0 ] && return 0
-  local wanted="$1"
-  shift
-  for name in "$@"; do
+  local wanted="$1" name
+  for name in "${REQUESTED[@]}"; do
     [ "${name}" = "${wanted}" ] && return 0
   done
   return 1
 }
 
 LOG_DIR="$(mktemp -d)"
-REQUESTED=("$@")
+ran=0
+
+# An empty array does not expand to zero arguments under `set -u` idioms, so
+# resolve the selection here rather than at each call site. Getting this wrong
+# is silent: every control deselects itself and the run reports success having
+# proved nothing.
+if [ "$#" -eq 0 ]; then
+  REQUESTED=("${ALL_CONTROLS[@]}")
+else
+  REQUESTED=("$@")
+  for requested in "${REQUESTED[@]}"; do
+    if ! printf '%s\n' "${ALL_CONTROLS[@]}" | grep -qx -- "${requested}"; then
+      echo "unknown control '${requested}'. Known: ${ALL_CONTROLS[*]}" >&2
+      exit 64
+    fi
+  done
+fi
 
 # A control only means something if the gate was green to begin with. A gate
 # that is broken, unavailable, or already red would "catch" every violation and
@@ -105,7 +122,7 @@ echo
 # ---------------------------------------------------------------------------
 # Architecture: a domain class that reaches for the framework.
 # ---------------------------------------------------------------------------
-if selected domain-purity "${REQUESTED[@]:-}"; then
+if selected domain-purity; then
   control domain-purity "a Domain class importing Illuminate must fail the architecture suite"
 
   plant app/Domain/NegativeControl/ReachesForTheFramework.php <<'VIOLATION'
@@ -138,7 +155,7 @@ fi
 # ---------------------------------------------------------------------------
 # Architecture: a controller that queries the database itself.
 # ---------------------------------------------------------------------------
-if selected transport-boundary "${REQUESTED[@]:-}"; then
+if selected transport-boundary; then
   control transport-boundary "a controller querying persistence directly must fail the architecture suite"
 
   plant app/Http/Controllers/NegativeControlController.php <<'VIOLATION'
@@ -170,7 +187,7 @@ fi
 # ---------------------------------------------------------------------------
 # Architecture: an adapter named outside the provider that binds it.
 # ---------------------------------------------------------------------------
-if selected adapter-leak "${REQUESTED[@]:-}"; then
+if selected adapter-leak; then
   control adapter-leak "an application class naming a concrete adapter must fail the architecture suite"
 
   plant app/Application/NegativeControl/NamesAnAdapter.php <<'VIOLATION'
@@ -200,7 +217,7 @@ fi
 # ---------------------------------------------------------------------------
 # Coverage: a first-party line no test reaches.
 # ---------------------------------------------------------------------------
-if selected php-coverage "${REQUESTED[@]:-}"; then
+if selected php-coverage; then
   control php-coverage "an uncovered first-party line must fail the 100% coverage gate"
 
   if ! php -r 'exit(extension_loaded("xdebug") || extension_loaded("pcov") ? 0 : 1);'; then
@@ -233,7 +250,7 @@ fi
 # ---------------------------------------------------------------------------
 # Static analysis: proves tests/ is analysed, and analysed by the Pest plugin.
 # ---------------------------------------------------------------------------
-if selected phpstan-tests "${REQUESTED[@]:-}"; then
+if selected phpstan-tests; then
   control phpstan-tests "an invalid construct inside tests/ must fail static analysis"
 
   plant tests/Feature/NegativeControlAnalysisTest.php <<'VIOLATION'
@@ -275,4 +292,12 @@ else
 fi
 
 echo "${pass} caught, ${fail} not caught, ${skipped} skipped"
+
+# A run that executed no control is not a pass. Without this the harness
+# reports success for having done nothing, which is worse than no harness.
+if [ "${ran}" -ne "${#REQUESTED[@]}" ]; then
+  echo "expected ${#REQUESTED[@]} controls to run, ${ran} did; the selection is broken" >&2
+  exit 1
+fi
+
 [ "${fail}" -eq 0 ]
