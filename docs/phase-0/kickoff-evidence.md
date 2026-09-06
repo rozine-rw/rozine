@@ -120,16 +120,35 @@ The original fail-closed D-67 baseline was 44/4,574 statements (0.96%), 31/3,642
   companion with every ordinary screen on Inertia web/PWA. Recorded in
   `d-04-auditor-capture-decision.md`.
 
+### Hosted evidence
+
+All six jobs green on `477956a8d2363a63c9db7023cbe48f2f3b5354df`, workflow run `34036806259`:
+
+| Job | Result |
+|---|---|
+| PHP 8.4 quality gate | success |
+| PHP 8.5 quality gate | success |
+| PostgreSQL concurrency lane | success |
+| TypeScript/React quality gate | success |
+| Deployment admission negative controls | success — 11 cases |
+| PHP gate negative controls | success — 6 caught, 0 not caught, 0 skipped |
+
+Every negative control fired on the hosted runtime, including the two that cannot run locally: an
+unreachable first-party line was rejected by the 100% coverage gate, and an invalid construct inside
+`tests/` was rejected by static analysis.
+
 ### What this section does not claim
 
-Local verification used PHP 8.4.23 against a throwaway PostgreSQL instance. Two gates could not run
-on that machine at all: no coverage driver is installed, so the 100% PHP line-coverage gate is
-unverified locally, and PHPStan exits 1 with no output on any input, so static analysis is
-unverified locally. The hosted lanes are the authority for both, and the negative-control harness
-reports itself skipped rather than passing when a gate is unavailable.
+Local verification used PHP 8.4.23 against a throwaway PostgreSQL instance. Two gates cannot run on
+that machine at all: no coverage driver is installed, and PHPStan exits 1 with no output on any
+input. The hosted lanes are the authority for both. The negative-control harness reports itself
+skipped rather than passing when a gate is unavailable, and fails outright if a selected control
+does not report at all — a defect found when the hosted job reported success having executed no
+control.
 
-These items are implemented but not yet backed by hosted exact-SHA evidence, which is why the
-corresponding plan checklist items stay open until CI records them on a promoted SHA.
+This is exact-SHA evidence for a feature branch. Promotion to `uat` and `main` regenerates it on the
+resulting target-branch SHA, which is what the admission gate now requires before either environment
+will accept a deployment.
 
 
 ## Authority and brand freeze
