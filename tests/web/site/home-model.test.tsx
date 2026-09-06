@@ -1,6 +1,13 @@
 import { render } from '@testing-library/react';
 import { createRef } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+} from 'vite-plus/test';
 import Home from '@/pages/home';
 
 const mocks = vi.hoisted(() => ({ post: vi.fn() }));
