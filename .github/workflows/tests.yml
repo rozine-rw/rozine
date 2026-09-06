@@ -177,3 +177,17 @@ jobs:
             config/client-risk-manifest.json
           if-no-files-found: warn
           retention-days: 30
+
+  admission:
+    name: Deployment admission negative controls
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout exact tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Prove the D-68 gate refuses every unevidenced candidate
+        run: bash .github/scripts/test-deployment-admission.sh
