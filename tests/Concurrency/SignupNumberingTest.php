@@ -22,9 +22,9 @@ beforeEach(function (): void {
 });
 
 /**
- * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
  */
-function registerBusiness(string $contact, array $overrides = []): array
+function registerBusiness(string $contact): array
 {
     return app(RegisterPulseBusiness::class)->handle(
         [
@@ -35,7 +35,6 @@ function registerBusiness(string $contact, array $overrides = []): array
             'district' => 'Gasabo',
             'ip_address' => '127.0.0.1',
             'user_agent' => 'pest',
-            ...$overrides,
         ],
         annualRevenue: 48_000_000,
         annualCosts: 30_000_000,

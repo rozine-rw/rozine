@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
@@ -10,12 +11,12 @@ use Illuminate\Support\Facades\DB;
  * plants the state it has to cope with, and runs it forward again.
  */
 
-/**
- * @return object{up: callable, down: callable}
- */
-function numberingMigration(): object
+function numberingMigration(): Migration
 {
-    return require database_path('migrations/2026_09_06_121310_serialize_pulse_signup_numbering.php');
+    /** @var Migration $migration */
+    $migration = require database_path('migrations/2026_09_06_121310_serialize_pulse_signup_numbering.php');
+
+    return $migration;
 }
 
 /**
