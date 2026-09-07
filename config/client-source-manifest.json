@@ -94,6 +94,7 @@
         "resources/js/wayfinder/index.ts"
     ],
     "declarationOnlyPaths": [
+        "resources/js/lib/i18n/types.ts",
         "resources/js/types/auth.ts",
         "resources/js/types/global.d.ts",
         "resources/js/types/index.ts",
@@ -115,6 +116,7 @@
         "resources/js/components/breadcrumbs.tsx",
         "resources/js/components/delete-user.tsx",
         "resources/js/components/heading.tsx",
+        "resources/js/components/i18n-provider.tsx",
         "resources/js/components/input-error.tsx",
         "resources/js/components/manage-passkeys.tsx",
         "resources/js/components/manage-two-factor.tsx",
@@ -178,6 +180,7 @@
         "resources/js/hooks/use-initials.tsx",
         "resources/js/hooks/use-mobile-navigation.ts",
         "resources/js/hooks/use-mobile.tsx",
+        "resources/js/hooks/use-translation.ts",
         "resources/js/hooks/use-two-factor-auth.ts",
         "resources/js/layouts/app-layout.tsx",
         "resources/js/layouts/app/app-header-layout.tsx",
@@ -187,6 +190,13 @@
         "resources/js/layouts/auth/auth-simple-layout.tsx",
         "resources/js/layouts/auth/auth-split-layout.tsx",
         "resources/js/layouts/settings/layout.tsx",
+        "resources/js/lib/i18n/catalogs/en.ts",
+        "resources/js/lib/i18n/catalogs/fr.ts",
+        "resources/js/lib/i18n/catalogs/rw.ts",
+        "resources/js/lib/i18n/context.ts",
+        "resources/js/lib/i18n/index.ts",
+        "resources/js/lib/i18n/pseudo.ts",
+        "resources/js/lib/i18n/translate.ts",
         "resources/js/lib/pass-card-image.ts",
         "resources/js/lib/pulse.ts",
         "resources/js/lib/utils.ts",
@@ -206,10 +216,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 178,
+        "totalTrackedSources": 188,
         "generated": 70,
-        "declarationOnly": 6,
-        "authoredExecutable": 102
+        "declarationOnly": 7,
+        "authoredExecutable": 111
     },
-    "coverageSetSha256": "e257ea36a495b010a2baf141861da98010f8c84f022b7673d3f8870deeeb5eac"
+    "coverageSetSha256": "0c0eb8359b7761377a2055ed4a0e958969c54a87357c2c485285b1f9345ba265"
 }

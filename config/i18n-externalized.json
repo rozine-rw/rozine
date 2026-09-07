@@ -1,0 +1,22 @@
+{
+    "version": 1,
+    "policy": "Phase 1B localization foundation",
+    "description": "Files whose user-visible strings must be fully externalized. The hard-coded-string lint runs against exactly this list, so the surface grows slice by slice instead of failing the whole tree on day one. Add every file you externalize; never remove one.",
+    "owner": "Rozine engineering",
+    "reviewTrigger": "Any listed file gains a user-visible string, or a new slice is externalized",
+    "textBearingProps": [
+        "alt",
+        "aria-label",
+        "description",
+        "label",
+        "loadingLabel",
+        "placeholder",
+        "separator",
+        "title",
+        "toggleText"
+    ],
+    "externalizedPaths": [
+        "resources/js/pages/auth/forgot-password.tsx",
+        "resources/js/pages/auth/login.tsx"
+    ]
+}
