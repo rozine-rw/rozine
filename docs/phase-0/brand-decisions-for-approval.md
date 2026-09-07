@@ -1,24 +1,16 @@
 # Brand decisions — D-51, D-52, D-56, D-57, D-63
 
-**Status:** `TWO ITEMS BLOCKED ON A CONTRADICTION 2026-09-07 · LOCKUP, BACKGROUNDS AND NAMING CLOSED`
+**Status:** `ALL SEVEN ITEMS CLOSED 2026-09-07`
 
 **Owner:** Robert — Product, Design, Brand, internal Legal (D-71) ·
 **Answered:** pull request #73, 2026-09-07
 
-Lockup, backgrounds and naming are closed. The rating bands are closed: they move with the role
-colours.
+All seven items are closed. Two took several passes because the answers conflicted, and both are
+recorded below with the reading that resolved them rather than with the conflict.
 
-**Two items are deliberately not recorded**, because recording them would mean recording a
-contradiction:
-
-- **The core blue.** Three separate answers name two different values, and the third names a colour
-  that cannot occupy the slot it was given. Neither reading can be written down until one is chosen.
-- **The wordmark typeface.** The override was given a reason that does not apply. It may still be a
-  decision the brand owner is entitled to make, but it would have to be recorded as an accepted risk
-  with an accurate reason, not as a resolution.
-
-Both were put back to the brand owner on 2026-09-07. Nothing derived from either may be produced
-until they settle — which is why they are blocking rather than pending.
+The wordmark is **reset in Inter**, so D-56's licence defect has a remedy rather than an override.
+The palette follows the **logo's blue everywhere**, which the brand owner settled with "consistency
+matters".
 
 ---
 
@@ -43,33 +35,38 @@ This is an amendment to the approved brand system, not a clarification of it, so
 revision — V1.1 — and it changes the interface, not only the logo files: core blue is the colour of
 every primary button, link, focus ring and active nav state in the product.
 
-**BLOCKED — the answers contradict each other.** Three statements were given:
+**DECIDED — the logo's blue, everywhere.** Settled 2026-09-07: *"Let's have the logo's blue color
+everywhere the blue color is. Consistency matters."*
 
-1. "Go with the logo colors `#0039FF`, `#1D9E75`, `#C2661F`"
-2. "Move them [the bands] to `#1D9E75` / `#0039FF` / `#C2661F` to be consistent with the rest of the
-   app's color palette"
-3. "For the blue color problem, go with `#0A5CFF`"
-
-(1) and (2) make core blue `#0039FF`. (3) makes it `#0A5CFF`. Both cannot hold.
-
-`#0A5CFF` also cannot occupy the slot it was offered for. **Deep Blue is the darker shade** — gradient
-base and pressed states — and `#0A5CFF` is *lighter* than `#0039FF` (lightness 52% against 50%). A
-button using it would brighten when pressed, which reads as a fault rather than as a press.
-
-Two coherent palettes were put back for a single choice. Every value inside an option moves together;
-no mixture of the two is valid.
-
-| | Option 1 — logo files are right | Option 2 — guide is right |
+| Token | V1.0 | **Authoritative** |
 |---|---|---|
-| Core / Investor blue | `#0039FF` | `#0A5CFF` |
-| Deep Blue | `#0027B0` | `#0A3FB0` |
-| Business | `#1D9E75` | `#12A150` |
-| Auditor | `#C2661F` | `#DD8A00` |
-| Rating bands | `#1D9E75` / `#0039FF` / `#C2661F` | `#12A150` / `#0A5CFF` / `#DD8A00` |
-| Consequence | Guide reissued as V1.1; logo files used as delivered | Guide stays V1.0; all 31 logo files re-exported |
+| Core / Investor blue — all product chrome | `#0A5CFF` | **`#0039FF`** |
+| Deep Blue — gradients, pressed states | `#0A3FB0` | **`#0027B0`** |
+| Business | `#12A150` | **`#1D9E75`** |
+| Auditor | `#DD8A00` | **`#C2661F`** |
+| Rating bands — Strong / Stable / Weak | — | **`#1D9E75` / `#0039FF` / `#C2661F`** |
+| Ink, Pulse, neutrals | unchanged | unchanged |
 
-**The rating bands are settled either way:** they move with the role colours rather than staying
-fixed, so the same colour means one thing across the product.
+Deep Blue is derived rather than chosen, at the brand owner's instruction — *"I want a new deep blue
+derived from `#0039FF`"*. `#0027B0` reproduces the exact relationship V1.0 held between `#0A5CFF` and
+`#0A3FB0`: red held, green and blue scaled by the same factors. It lands 12.6 L\* below core blue,
+against the 14.3 the guide originally had, so the press reads at very nearly the original depth.
+
+### How this was read
+
+Two earlier answers pointed elsewhere — "go with `#0A5CFF`, it is clearer and more visible" and "do
+`#0039FF` for the Deep Blue". Both are superseded. Four statements support the palette above,
+including the first, the rating-band answer, the request for a deep blue *derived from* `#0039FF`
+(which only makes sense if `#0039FF` is the base), and the final instruction that settled it. Where a
+reading had to be made rather than quoted, it is marked as one here.
+
+**A note for later, not a reopening:** the guide's own core-to-deep step was 14.3 L\*; this one is
+12.6. Anyone revisiting pressed states should know the depth was preserved deliberately, not
+inherited.
+
+**Consequence:** this amends the approved brand system and requires a dated **V1.1**. It changes
+product chrome as much as the logo — core blue is every primary button, link, focus ring and active
+navigation state — and the blue logo files need no recolouring, since they already carry `#0039FF`.
 
 ---
 
@@ -111,27 +108,20 @@ takes over the interface.
 
 ---
 
-## 6 — Ownership, rights and typeface (D-56) · `DEFECT CONFIRMED`
+## 6 — Ownership, rights and typeface (D-56) · `REMEDY CHOSEN — RESET IN INTER`
 
-**The wordmark is set in San Francisco Pro.** Confirmed by the brand owner, 2026-09-07.
+**The wordmark was set in San Francisco Pro.** Apple licenses that family for user-interface use on
+Apple platforms and for UI mock-ups, prohibits modification, and grants no trademark rights;
+outlining the letters carried the restriction rather than curing it.
 
-An override was then given — keep SF Pro, on the grounds that the apps will eventually ship through
-the App Store. **That has not been recorded as a resolution**, because the reason does not apply:
+An override was proposed and then withdrawn. **The wordmark is reset in Inter**, decided 2026-09-07.
 
-- The mark is already live on the open web at rozine.rw and staging.rozine.rw. A website is not an
-  Apple platform.
-- The MVP is web and PWA. Under D-04 only a thin native capture companion was accepted; every other
-  screen is web, on Android and desktop as much as iOS.
-- Apple's licence covers using the font *in* an interface, not building a logo from it, and it
-  prohibits modification. Outlining letterforms is a modification and the outlines carry the
-  restriction.
-- Trademark registration would be filed in Rwanda and has no relationship to App Store distribution.
+Inter is SIL Open Font License, which expressly permits logos, trademarks and derivative letterforms.
+It is already the product's typeface — self-hosted, licensed, in use — so the wordmark will match the
+interface exactly and the licence question disappears rather than being carried.
 
-Accepting the risk remains the brand and internal Legal owner's call. If it is accepted it will be
-recorded as **`RISK ACCEPTED`** naming the owner and the accurate reason, never as resolved — a record
-that overstates its own certainty is worth less than no record. Under D-71 the internal pool cannot
-self-approve external clearance, so D-39 counsel sees this either way; the override changes only
-whether money has already been spent on the mark by the time they do.
+This is a remedy, not an accepted risk, so D-56 needs no risk record. External clearance under D-39
+remains a separate gate, as it would for any mark.
 
 ### Scope — 19 of 31 files
 
@@ -179,9 +169,9 @@ blocking; it should still be re-exported before any merchandise or campaign use.
 
 ## What closes when the follow-ups do
 
-D-51, D-57 and D-63 are closed. D-52 is decided and produces a dated V1.1 amendment once the rating
-band question is answered. D-56 is not a decision any more — it is a defect with three named remedies,
-and it blocks the wordmark but not the star.
+D-51, D-52, D-57 and D-63 are closed. D-52 produces a dated V1.1 amendment of the brand system.
+D-56's defect has a chosen remedy — reset in Inter — which also requires re-exporting the 19
+wordmark-bearing files. The 12 star-only files are unaffected and their derived icons already ship.
 
 External trademark registration and any legal review beyond this internal record remain separate
 gates.

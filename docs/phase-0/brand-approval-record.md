@@ -1,6 +1,6 @@
 # Brand approval record
 
-**Status:** `LOCKUP, BACKGROUNDS AND NAMING CLOSED 2026-09-07 · CORE BLUE AND WORDMARK TYPEFACE BLOCKED`
+**Status:** `ALL BRAND DECISIONS CLOSED 2026-09-07 · WORDMARK RESET IN INTER PENDING`
 
 **Approver:** Robert — Product, Design, Brand, Business, internal Legal (D-71)
 
@@ -14,16 +14,23 @@ Robert has approved the brand system in [`../Rozine-Branding-Styles.md`](../Rozi
 (**V1.0, July 2026**) as the authoritative brand contract, and has approved the supplied logo package
 as the direction for the mark.
 
-### Colours — D-52 blocked 2026-09-07
+### Colours — D-52 decided 2026-09-07, amending the brand system
 
-**Not recorded.** Three answers name two different core blues, and the third names a value that
-cannot occupy the slot it was given: Deep Blue is the darker shade for gradients and pressed states,
-and `#0A5CFF` is lighter than `#0039FF`. Two complete palettes were put back for a single choice in
-[`brand-decisions-for-approval.md`](brand-decisions-for-approval.md); no value is authoritative until
-one is picked, and no mixture of the two is valid.
+The logo's blue is used everywhere blue appears. This supersedes the V1.0 values and requires a dated
+**V1.1** revision of [`../Rozine-Branding-Styles.md`](../Rozine-Branding-Styles.md).
 
-**Settled either way:** the Strong/Stable/Weak rating bands move with the role colours rather than
-staying fixed, so one colour carries one meaning across the product.
+| Token | V1.0 | **Authoritative** |
+|---|---|---|
+| Rozine Blue — all product chrome | `#0A5CFF` | **`#0039FF`** |
+| Deep Blue — gradients, pressed states | `#0A3FB0` | **`#0027B0`** |
+| Business | `#12A150` | **`#1D9E75`** |
+| Auditor | `#DD8A00` | **`#C2661F`** |
+| Rating bands — Strong / Stable / Weak | `#12A150` `#0A5CFF` `#DD8A00` | **`#1D9E75` `#0039FF` `#C2661F`** |
+| Ink / Pulse / neutrals | `#0C1830` `#08090D` + neutrals | unchanged |
+
+Deep Blue is derived at the brand owner's instruction rather than picked: `#0027B0` reproduces the
+exact ratio V1.0 held between `#0A5CFF` and `#0A3FB0`, landing 12.6 L* below core blue against the
+14.3 the guide originally had.
 
 `#BA0D3B` is **not** in the system. It was proposed on the grounds that it appears in the logos; it
 does not — every occurrence is a half-pixel export artefact in no logo shape. Confirmed dropped.
@@ -78,12 +85,12 @@ The wordmark is set in **San Francisco Pro**. Apple licenses that family for use
 Apple platforms and for UI mock-ups, prohibits modification, and does not grant trademark rights;
 outlining the letters carries the restriction rather than curing it.
 
-An override was given — keep SF Pro, because the apps will eventually ship through the App Store.
-**Not recorded as a resolution:** the mark is already live on the open web, the MVP is web and PWA
-under D-04, the licence covers interface use rather than logo creation, and a Rwandan trademark
-filing has no relationship to App Store distribution. If the risk is accepted it will be recorded as
-`RISK ACCEPTED` with the owner and the accurate reason. D-39 external counsel remains a separate gate
-that D-71 forbids the internal pool from self-approving.
+An override was proposed and then withdrawn. **The wordmark is reset in Inter**, decided 2026-09-07.
+Inter is SIL Open Font License, which expressly permits logos and trademarks, and it is already the
+product's self-hosted typeface — so the mark will match the interface exactly and the licence
+question disappears rather than being carried as a risk. The 19 wordmark-bearing files are
+re-exported; the 12 star-only files are unaffected and their derived icons already ship. D-39
+external clearance remains a separate gate, as it would for any mark.
 
 **19 of the 31 files carry letterforms** and are affected. **The star mark is clean** — 12 files,
 including every crop and colourway of the standalone star — so favicon, app icon and avatar work is
