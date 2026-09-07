@@ -54,9 +54,11 @@ fixtures() { FIXTURES="${WORKDIR}/fx"; rm -rf "${FIXTURES}"; mkdir -p "${FIXTURE
 write_ref()  { echo "{\"object\":{\"sha\":\"$1\"}}" > "${FIXTURES}/ref.json"; }
 write_runs() { echo "{\"workflow_runs\":[{\"id\":99,\"status\":\"$1\",\"conclusion\":$2,\"created_at\":\"2026-09-06T10:00:00Z\"}]}" > "${FIXTURES}/runs.json"; }
 write_jobs() {
-  echo "{\"jobs\":[{\"name\":\"PHP 8.4 quality gate\",\"conclusion\":\"$1\"},
-                   {\"name\":\"PHP 8.5 quality gate\",\"conclusion\":\"$2\"},
-                   {\"name\":\"TypeScript/React quality gate\",\"conclusion\":\"$3\"}]}" > "${FIXTURES}/jobs.json"
+  echo "{\"jobs\":[{\"name\":\"PHP 8.5 quality gate\",\"conclusion\":\"$1\"},
+                   {\"name\":\"TypeScript/React quality gate\",\"conclusion\":\"$2\"},
+                   {\"name\":\"PostgreSQL concurrency lane\",\"conclusion\":\"success\"},
+                   {\"name\":\"PHP gate negative controls\",\"conclusion\":\"success\"},
+                   {\"name\":\"Deployment admission negative controls\",\"conclusion\":\"success\"}]}" > "${FIXTURES}/jobs.json"
 }
 write_pulls() { echo "$1" > "${FIXTURES}/pulls.json"; }
 write_reviews() { echo "$1" > "${FIXTURES}/reviews.json"; }
@@ -71,7 +73,7 @@ baseline() {
   fixtures
   write_ref "${GOOD_SHA}"
   write_runs completed '"success"'
-  write_jobs success success success
+  write_jobs success success
   write_pulls "$(merged_pr)"
   write_reviews "[{\"state\":\"APPROVED\",\"commit_id\":\"${HEAD_SHA}\",\"user\":{\"login\":\"aminu\"},\"submitted_at\":\"2026-09-06T11:30:00Z\"}]"
 }
@@ -121,10 +123,10 @@ check "refuses an in-progress evidence run" refuse "timed out"
 baseline; echo '{"workflow_runs":[]}' > "${FIXTURES}/runs.json"
 check "refuses a candidate with no evidence run at all" refuse "timed out"
 
-baseline; write_jobs success skipped success
+baseline; write_jobs skipped success
 check "refuses a skipped required job inside a green run" refuse "'PHP 8.5 quality gate' is 'skipped'"
 
-baseline; write_jobs success success failure
+baseline; write_jobs success failure
 check "refuses a failed client gate inside the run" refuse "'TypeScript/React quality gate' is 'failure'"
 
 baseline; write_pulls '[]'

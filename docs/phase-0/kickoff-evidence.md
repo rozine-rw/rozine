@@ -42,7 +42,7 @@ After the Phase 0B/C changes, `composer ci:check:php` is green with 107 tests, 4
 - [x] Make one Composer command authoritative for full `--ci --no-tia --coverage --min=100` PHP evidence.
 - [x] Remove TIA state restore/save and `--tia` from normal pull-request/promotion CI.
 - [x] Keep the dedicated TIA baseline workflow and enable TIA only for local developer/agent loops.
-- [x] Configure PHP 8.4 minimum-compatibility and PHP 8.5 canonical deployment/coverage lanes in CI under D-73; hosted evidence remains pending.
+- [x] Configure the PHP runtime lanes in CI under D-73. **Amended 2026-09-07:** the 8.4 minimum-compatibility lane is removed and CI runs PHP 8.5 alone; hosted evidence is recorded below.
 - [x] Pin the clean-build Node runtime to 24.15.0 and build assets before feature tests that render the Vite manifest.
 - [x] Add the initial Pest Architecture suite and remove starter placeholder helpers.
 - [x] Prove the architecture rule with a temporary Resource-to-calculator violation that fails, then remove it and restore a green six-test architecture suite.
@@ -57,7 +57,7 @@ After the Phase 0B/C changes, `composer ci:check:php` is green with 107 tests, 4
 ## Approved Engineering decisions
 
 - [x] D-72 accepts ADR-0001 as written: the modular-monolith namespaces, one shared application/domain layer, `/api/v1`, shared Eloquent API Resources as the serialization boundary, and the three exact legacy dispositions are approved by Engineering on 2026-08-28.
-- [x] D-73 sets PHP 8.4 as the minimum supported runtime, PHP 8.5 as the canonical deployment/coverage runtime, both versions in CI, and PostgreSQL as the authoritative locking/concurrency environment.
+- [x] D-73, as amended on 2026-09-07, sets PHP 8.5 as the sole supported runtime — minimum, canonical, coverage and deployment — with PostgreSQL as the authoritative locking/concurrency environment. The 8.4 lane is removed, so 8.4 is unsupported rather than untested.
 - [x] D-75 pins Node 24.15.0 across local metadata, both normal CI jobs, production builds, and the TIA baseline workflow while retaining npm 10.9.8.
 - [x] D-74 assigns the Phase 1 server/API/domain/application/data/security lane and PHP evidence to Aminu, the Inertia React UI/UX/client/PWA/accessibility lane and web evidence to Erastus, and the contract freeze, five integration checkpoints, cross-review, and Alpha acceptance to both.
 - [ ] Decision approval does not replace execution evidence: the 2026-08-29 working tree has isolated `PulseController` behind tested Domain/Application/Infrastructure/HTTP boundaries, but the broader module architecture-rule catalog and negative controls, clean exact-SHA evidence, PHP 8.5 deployment pin, hosted results for both runtime lanes, and PostgreSQL financial/secondary race proof remain required before Phase 0 exits.
@@ -126,7 +126,6 @@ All six jobs green on `477956a8d2363a63c9db7023cbe48f2f3b5354df`, workflow run `
 
 | Job | Result |
 |---|---|
-| PHP 8.4 quality gate | success |
 | PHP 8.5 quality gate | success |
 | PostgreSQL concurrency lane | success |
 | TypeScript/React quality gate | success |
@@ -139,7 +138,7 @@ unreachable first-party line was rejected by the 100% coverage gate, and an inva
 
 ### What this section does not claim
 
-Local verification used PHP 8.4.23 against a throwaway PostgreSQL instance. Two gates cannot run on
+Local verification used PHP 8.4.23 against a throwaway PostgreSQL instance, before D-73 was amended to require 8.5; the hosted lane is the authority for the supported runtime. Two gates cannot run on
 that machine at all: no coverage driver is installed, and PHPStan exits 1 with no output on any
 input. The hosted lanes are the authority for both. The negative-control harness reports itself
 skipped rather than passing when a gate is unavailable, and fails outright if a selected control
@@ -175,7 +174,7 @@ Current runtime brand references remain deliberately unchanged:
 - The Aminu/Erastus/Robert/Kimani ownership map, including Robert as Business/internal Legal owner and Kimani as Finance/Risk owner, is recorded; internal ownership assignment is no longer a Phase 0 blocker. The remaining internal governance work is to name an eligible non-author independent-test approver on each applicable record and capture all required owner signatures for the Phase 1 red decisions—including the Party model and secondary-market contract.
 - Robert's 31 SVG and 31 matching PNG sources are received, validated, and hash-recorded; PNG receipt is no longer a blocker. Semantic/canonical mapping, exact colors, vector/font/outline provenance, usage rights, required variants and surface rules, accessibility approval, and Robert's explicit Product/Brand and internal Legal sign-offs remain pending, alongside any required external rights/legal clearance for D-51, D-52, D-56, D-57, and D-63 and the rights-cleared masters.
 - The Auditor PWA assurance spike is closed. D-04 resolved to Option B on 2026-09-06: a narrow thin-native secure-capture companion, with every ordinary Auditor screen on Inertia web/PWA. Option A is disproven on the web platform rather than untested. The exception still needs its estimate and owner entered in the schedule, and the plan treats a Phase 0 native exception as requiring a schedule rebaseline.
-- ADR-0001 and the PHP/database runtime contract are approved. The 2026-08-29 working tree closes the specific `PulseController` legacy exception and removes authoritative Pulse calculations from React and Resources, with 100% local PHP and web coverage plus green static/build gates. Clean committed exact-SHA evidence, the complete architecture-rule catalog, the PHP 8.5 deployment pin, hosted PHP 8.4/8.5 evidence, and PostgreSQL race tests remain open; the public-waitlist `count()+1` numbering is not concurrency-certified.
+- ADR-0001 and the PHP/database runtime contract are approved. The 2026-08-29 working tree closes the specific `PulseController` legacy exception and removes authoritative Pulse calculations from React and Resources, with 100% local PHP and web coverage plus green static/build gates. Clean committed exact-SHA evidence, the complete architecture-rule catalog, the PHP 8.5 deployment pin, hosted 8.5 evidence, and PostgreSQL race tests remain open; the public-waitlist `count()+1` numbering is not concurrency-certified.
 - Paid private-branch protection is intentionally out of scope. Fail-closed exact-SHA deployment admission, non-author latest-SHA review, and the PHP 8.5 deployment pin are implemented as of 2026-09-06; deployment workflows no longer deploy on push without evidence. Hosted promotion attestation on a promoted SHA remains to be recorded.
 
 Phase 0 remains `IN PROGRESS`; this evidence does not claim Phase 0 acceptance or permission to begin governed feature behavior.
