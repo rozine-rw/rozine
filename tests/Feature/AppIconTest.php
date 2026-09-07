@@ -1,28 +1,48 @@
 <?php
 
+use Illuminate\Support\Facades\File;
+
 /*
  * The icons derived from the star mark.
  *
- * These assert properties that are invisible until they are wrong on someone's
+ * These assert properties that stay invisible until they are wrong on someone's
  * home screen: a maskable icon whose points get clipped by the launcher's mask,
  * or an Apple touch icon with alpha, which iOS composites onto black rather
  * than honouring. Both had gone wrong once already.
  */
 
 /**
- * @return array{width: int, height: int, pixels: GdImage}
+ * Reads an icon, failing loudly rather than letting a false propagate into GD.
+ *
+ * @return array{width: int, height: int, image: GdImage}
  */
 function icon(string $name): array
 {
     $path = public_path($name);
 
-    expect(file_exists($path))->toBeTrue("public/{$name} is missing");
+    expect(File::exists($path))->toBeTrue("public/{$name} is missing");
 
     $image = imagecreatefrompng($path);
 
-    expect($image)->not->toBeFalse("public/{$name} is not readable as a PNG");
+    if ($image === false) {
+        throw new RuntimeException("public/{$name} is not readable as a PNG.");
+    }
 
-    return ['width' => imagesx($image), 'height' => imagesy($image), 'pixels' => $image];
+    return ['width' => imagesx($image), 'height' => imagesy($image), 'image' => $image];
+}
+
+/**
+ * @return array{red: int, green: int, blue: int, alpha: int}
+ */
+function pixel(GdImage $image, int $x, int $y): array
+{
+    $colour = imagecolorat($image, $x, $y);
+
+    if ($colour === false) {
+        throw new RuntimeException("Pixel {$x},{$y} could not be read.");
+    }
+
+    return imagecolorsforindex($image, $colour);
 }
 
 /**
@@ -33,24 +53,26 @@ function icon(string $name): array
  */
 function contentReach(string $name): float
 {
-    ['width' => $width, 'height' => $height, 'pixels' => $image] = icon($name);
+    ['width' => $width, 'height' => $height, 'image' => $image] = icon($name);
 
-    $background = imagecolorat($image, 0, 0);
+    $background = pixel($image, 0, 0);
     $centreX = ($width - 1) / 2;
     $centreY = ($height - 1) / 2;
     $furthest = 0.0;
 
     for ($y = 0; $y < $height; $y++) {
         for ($x = 0; $x < $width; $x++) {
-            $colour = imagecolorat($image, $x, $y);
+            $colour = pixel($image, $x, $y);
 
-            if ($colour === $background) {
+            if ($colour['alpha'] > 96) {
                 continue;
             }
 
-            $rgba = imagecolorsforindex($image, $colour);
+            $distance = abs($colour['red'] - $background['red'])
+                + abs($colour['green'] - $background['green'])
+                + abs($colour['blue'] - $background['blue']);
 
-            if ($rgba['alpha'] > 96) {
+            if ($distance < 40) {
                 continue;
             }
 
@@ -63,17 +85,37 @@ function contentReach(string $name): float
 
 function isFullyOpaque(string $name): bool
 {
-    ['width' => $width, 'height' => $height, 'pixels' => $image] = icon($name);
+    ['width' => $width, 'height' => $height, 'image' => $image] = icon($name);
 
     for ($y = 0; $y < $height; $y += 3) {
         for ($x = 0; $x < $width; $x += 3) {
-            if (imagecolorsforindex($image, imagecolorat($image, $x, $y))['alpha'] !== 0) {
+            if (pixel($image, $x, $y)['alpha'] !== 0) {
                 return false;
             }
         }
     }
 
     return true;
+}
+
+/**
+ * @return list<array{src: string, sizes: string, type: string, purpose: string}>
+ */
+function manifestIcons(): array
+{
+    /** @var array{icons: list<array{src: string, sizes: string, type: string, purpose: string}>} $manifest */
+    $manifest = json_decode((string) File::get(public_path('site.webmanifest')), true, 512, JSON_THROW_ON_ERROR);
+
+    return $manifest['icons'];
+}
+
+function firstPathData(string $svg): string
+{
+    if (preg_match('/<path d="([^"]+)"/', $svg, $matches) !== 1) {
+        throw new RuntimeException('No path data found in the SVG.');
+    }
+
+    return $matches[1];
 }
 
 it('keeps maskable icons inside the safe circle a launcher guarantees', function (string $name) {
@@ -89,37 +131,37 @@ it('leaves no transparency in icons the platform composites itself', function (s
 })->with(['apple-touch-icon.png', 'icon-maskable-192.png', 'icon-maskable-512.png']);
 
 it('ships every icon the manifest and document head reference', function () {
-    $manifest = json_decode((string) file_get_contents(public_path('site.webmanifest')), true);
+    $icons = manifestIcons();
 
-    expect($manifest['icons'])->not->toBeEmpty();
+    expect($icons)->not->toBeEmpty();
 
-    foreach ($manifest['icons'] as $entry) {
-        ['width' => $width, 'height' => $height] = icon(ltrim((string) $entry['src'], '/'));
+    foreach ($icons as $entry) {
+        ['width' => $width, 'height' => $height] = icon(ltrim($entry['src'], '/'));
 
         expect("{$width}x{$height}")->toBe($entry['sizes']);
     }
 
     foreach (['favicon.ico', 'favicon.svg', 'favicon-96.png', 'apple-touch-icon.png'] as $referenced) {
-        expect(file_exists(public_path($referenced)))->toBeTrue("public/{$referenced} is missing");
+        expect(File::exists(public_path($referenced)))->toBeTrue("public/{$referenced} is missing");
     }
 });
 
 it('declares both a maskable and an unmasked icon for each launcher size', function () {
-    $manifest = json_decode((string) file_get_contents(public_path('site.webmanifest')), true);
+    $purposes = [];
 
-    $purposes = collect($manifest['icons'])->groupBy('purpose')->map->count();
+    foreach (manifestIcons() as $entry) {
+        $purposes[$entry['purpose']] = ($purposes[$entry['purpose']] ?? 0) + 1;
+    }
 
     expect($purposes)->toHaveKeys(['any', 'maskable'])
         ->and($purposes['maskable'])->toBeGreaterThanOrEqual(2);
 });
 
 it('derives the favicon from the approved star mark', function () {
-    $favicon = (string) file_get_contents(public_path('favicon.svg'));
-
-    preg_match('/<path d="([^"]+)"/', $favicon, $faviconPath);
-    preg_match('/<path d="([^"]+)"/', (string) file_get_contents(base_path('docs/New Logo/Frame 87.svg')), $approvedPath);
-
     // Frame 87 is the standalone star from the approved package. If the favicon
     // ever stops matching it, the brand record and the runtime have diverged.
-    expect($faviconPath[1])->toBe($approvedPath[1]);
+    $favicon = firstPathData((string) File::get(public_path('favicon.svg')));
+    $approved = firstPathData((string) File::get(base_path('docs/New Logo/Frame 87.svg')));
+
+    expect($favicon)->toBe($approved);
 });
