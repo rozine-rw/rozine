@@ -162,6 +162,7 @@ export default class Home extends Component<SiteProps, SiteState> {
     }
     componentWillUnmount() {
         cancelAnimationFrame(this._raf);
+        clearTimeout(this._sm);
     }
     chargeFor(dep: number) {
         const B = [
