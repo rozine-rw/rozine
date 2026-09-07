@@ -2,6 +2,7 @@
 
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Tests\Support\NumberingMigration;
 
 /*
  * The numbering migration runs once, against live waitlist rows that were
@@ -9,22 +10,6 @@ use Illuminate\Support\Facades\DB;
  * test rather than a first run in production. Each case rewinds the migration,
  * plants the state it has to cope with, and runs it forward again.
  */
-
-/**
- * The shape a migration file actually returns.
- *
- * Migrations are anonymous classes, and Illuminate's Migration base class
- * declares neither up() nor down() - the migrator reaches them reflectively.
- * Naming the shape here lets the calls below be type-checked instead of being
- * silently unverifiable. It is a documentation type only: the migration does
- * not implement it, so the accessor returns object at runtime.
- */
-interface NumberingMigration
-{
-    public function up(): void;
-
-    public function down(): void;
-}
 
 /**
  * @return NumberingMigration
