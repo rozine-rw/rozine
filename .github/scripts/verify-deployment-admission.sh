@@ -36,9 +36,11 @@ set -euo pipefail
 EVIDENCE_WORKFLOW="${EVIDENCE_WORKFLOW:-tests.yml}"
 WAIT_TIMEOUT_SECONDS="${WAIT_TIMEOUT_SECONDS:-2700}"
 POLL_INTERVAL_SECONDS="${POLL_INTERVAL_SECONDS:-20}"
-REQUIRED_JOBS="${REQUIRED_JOBS:-PHP 8.4 quality gate
-PHP 8.5 quality gate
-TypeScript/React quality gate}"
+REQUIRED_JOBS="${REQUIRED_JOBS:-PHP 8.5 quality gate
+TypeScript/React quality gate
+PostgreSQL concurrency lane
+PHP gate negative controls
+Deployment admission negative controls}"
 
 refuse() {
   echo "::error::Deployment admission REFUSED — $1"
