@@ -1,6 +1,6 @@
 # Brand approval record
 
-**Status:** `BRAND SYSTEM V1.0 APPROVED 2026-09-06 · MARK CONFIRMED AS THE STAR 2026-09-07 · PRIMARY LOCKUP NOT YET SELECTED`
+**Status:** `LOCKUP, COLOURS, BACKGROUNDS AND NAMING DECIDED 2026-09-07 · RIGHTS AND TYPEFACE OPEN`
 
 **Approver:** Robert — Product, Design, Brand, Business, internal Legal (D-71)
 
@@ -14,22 +14,43 @@ Robert has approved the brand system in [`../Rozine-Branding-Styles.md`](../Rozi
 (**V1.0, July 2026**) as the authoritative brand contract, and has approved the supplied logo package
 as the direction for the mark.
 
-### Authoritative colours — closes D-52
+### Authoritative colours — D-52 decided 2026-09-07, amending the brand system
 
-| Token | Value | Use |
-|---|---|---|
-| Rozine Blue | `#0A5CFF` | Primary. Investor app. All product chrome. |
-| Deep Blue | `#0A3FB0` | Gradient base, pressed states. |
-| Ink | `#0C1830` | Headings and key figures. |
-| Business | `#12A150` | Business app accent. |
-| Auditor | `#DD8A00` | Auditor app accent. |
-| Pulse | `#08090D` | Pulse surface. |
-| Slate / Body / Muted / Hairline / Surface | `#3A465E` `#69748A` `#8894A8` `#E7ECF4` `#F8FAFD` | Neutrals. |
-| Rating bands | `#12A150` `#0A5CFF` `#DD8A00` `#E5484D` | Strong / Stable / Weak / Distressed. |
+The brand owner selected the **logo package's colours over the V1.0 guide values**. This is an
+amendment to the approved system and needs a dated V1.1 revision of
+[`../Rozine-Branding-Styles.md`](../Rozine-Branding-Styles.md).
 
-The guide's values stand and no application token may be derived from a raster sample.
+| Token | V1.0 | **Authoritative** | Use |
+|---|---|---|---|
+| Rozine Blue | `#0A5CFF` | **`#0039FF`** | Primary. Investor app. All product chrome. |
+| Business | `#12A150` | **`#1D9E75`** | Business app accent. |
+| Auditor | `#DD8A00` | **`#C2661F`** | Auditor app accent. |
+| Ink | `#0C1830` | `#0C1830` | Headings and key figures. |
+| Pulse | `#08090D` | `#08090D` | Pulse surface. |
+| Slate / Body / Muted / Hairline / Surface | `#3A465E` `#69748A` `#8894A8` `#E7ECF4` `#F8FAFD` | unchanged | Neutrals. |
 
-### The mark is the star — resolves half of D-51
+Two guide tokens derive from the values that moved and are **not yet resolved**: Deep Blue `#0A3FB0`
+(gradient base and pressed states, derived from the old core blue) and the Strong/Stable/Weak rating
+band colours, which are literally the three role colours. See follow-up 2a in
+[`brand-decisions-for-approval.md`](brand-decisions-for-approval.md).
+
+`#BA0D3B` is **not** in the system. It was proposed on the grounds that it appears in the logos; it
+does not — every occurrence is a half-pixel export artefact in no logo shape. Confirmed dropped.
+
+No application token may be derived from a raster sample.
+
+
+
+### Lockup — D-51 decided 2026-09-07
+
+**Primary is the detached leading star** (lockup A): the star set apart, then `rozine`. It is used in
+formal contexts — the platform, documents, reports — and is the mark for every application surface.
+**The star integrated at the `i`** (lockup B) is secondary, for branding, merchandise and campaigns,
+and does not appear in product UI.
+
+The gradient app icon (Frame 107) is dropped; app icons use the flat and monochrome treatments.
+
+### The mark is the star
 
 Confirmed by inspecting all 31 renders. Every frame uses a five-pointed star with a swept lower-left
 tail. The approved guide's section 07 calls the mark **the wing**, and the live runtime asset is still
@@ -50,7 +71,18 @@ problem — the 31 files are 8 artworks in their colourways.
 | App icon, gradient | 1 | Off-palette; see below |
 | Rozine integrated-star lockup, defective export | 1 | See below |
 
-## Three findings that need Robert before anything ships
+### Backgrounds — D-57 decided 2026-09-07
+
+Primary is the blue logo on white; secondary is the white logo on blue. Remaining treatments follow
+the audience and the language of the campaign. Product chrome uses the primary treatment.
+
+### Role naming — D-63 decided 2026-09-07
+
+Paired by default: `Rozine investor`, `Rozine business`, `Rozine auditor`. The standalone title is
+permitted in generic contexts where Rozine is already established; follow-up 4a proposes the exact
+boundary, because an accessible name cannot be conditional.
+
+## Findings behind those decisions
 
 ### 1. `#BA0D3B` is an export artefact, not a brand colour
 
