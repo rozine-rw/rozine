@@ -1,17 +1,24 @@
 # Brand decisions — D-51, D-52, D-56, D-57, D-63
 
-**Status:** `DESIGN DECISIONS CLOSED 2026-09-07 · WORDMARK FONT LICENCE IS A DEFECT · ONE COLOUR ITEM AMBIGUOUS`
+**Status:** `TWO ITEMS BLOCKED ON A CONTRADICTION 2026-09-07 · LOCKUP, BACKGROUNDS AND NAMING CLOSED`
 
 **Owner:** Robert — Product, Design, Brand, internal Legal (D-71) ·
 **Answered:** pull request #73, 2026-09-07
 
-Every design decision is closed. One answer produced a defect rather than a resolution: the wordmark
-is set in **San Francisco Pro**, whose licence does not cover trademark use, so 19 of the 31 files
-need their letterforms replaced before the mark can ship or be registered. The star mark is
-unaffected.
+Lockup, backgrounds and naming are closed. The rating bands are closed: they move with the role
+colours.
 
-One colour item — whether the rating bands move with the role colours — came back ambiguous and is
-the only outstanding question.
+**Two items are deliberately not recorded**, because recording them would mean recording a
+contradiction:
+
+- **The core blue.** Three separate answers name two different values, and the third names a colour
+  that cannot occupy the slot it was given. Neither reading can be written down until one is chosen.
+- **The wordmark typeface.** The override was given a reason that does not apply. It may still be a
+  decision the brand owner is entitled to make, but it would have to be recorded as an accepted risk
+  with an accurate reason, not as a resolution.
+
+Both were put back to the brand owner on 2026-09-07. Nothing derived from either may be produced
+until they settle — which is why they are blocking rather than pending.
 
 ---
 
@@ -36,23 +43,33 @@ This is an amendment to the approved brand system, not a clarification of it, so
 revision — V1.1 — and it changes the interface, not only the logo files: core blue is the colour of
 every primary button, link, focus ring and active nav state in the product.
 
-**Deep Blue — decided.** A new deep blue is to be derived from `#0039FF`, replacing `#0A3FB0`.
+**BLOCKED — the answers contradict each other.** Three statements were given:
 
-Reproducing the exact relationship the guide used between core and deep blue — the old pair scaled
-green by 0.685 and blue by 0.690, holding red — gives **`#0027B0`**. Proposed for confirmation rather
-than adopted, since it is a brand colour.
+1. "Go with the logo colors `#0039FF`, `#1D9E75`, `#C2661F`"
+2. "Move them [the bands] to `#1D9E75` / `#0039FF` / `#C2661F` to be consistent with the rest of the
+   app's color palette"
+3. "For the blue color problem, go with `#0A5CFF`"
 
-**STILL OPEN 2a — do the rating bands move?** Strong / Stable / Weak are literally the three old role
-colours, `#12A150` / `#0A5CFF` / `#DD8A00`. The answer restated that fact without saying whether they
-follow the amendment, so it has not been recorded either way.
+(1) and (2) make core blue `#0039FF`. (3) makes it `#0A5CFF`. Both cannot hold.
 
-- If they **move** to `#1D9E75` / `#0039FF` / `#C2661F`, the rating scale is restated in the new
-  values and one visual language means one thing everywhere.
-- If they **stay**, the bands keep a stable meaning independent of brand changes — defensible for a
-  data scale — but the same green appears in two slightly different shades meaning two different
-  things.
+`#0A5CFF` also cannot occupy the slot it was offered for. **Deep Blue is the darker shade** — gradient
+base and pressed states — and `#0A5CFF` is *lighter* than `#0039FF` (lightness 52% against 50%). A
+button using it would brighten when pressed, which reads as a fault rather than as a press.
 
-Either is workable. It changes the interface palette, so it has to be chosen.
+Two coherent palettes were put back for a single choice. Every value inside an option moves together;
+no mixture of the two is valid.
+
+| | Option 1 — logo files are right | Option 2 — guide is right |
+|---|---|---|
+| Core / Investor blue | `#0039FF` | `#0A5CFF` |
+| Deep Blue | `#0027B0` | `#0A3FB0` |
+| Business | `#1D9E75` | `#12A150` |
+| Auditor | `#C2661F` | `#DD8A00` |
+| Rating bands | `#1D9E75` / `#0039FF` / `#C2661F` | `#12A150` / `#0A5CFF` / `#DD8A00` |
+| Consequence | Guide reissued as V1.1; logo files used as delivered | Guide stays V1.0; all 31 logo files re-exported |
+
+**The rating bands are settled either way:** they move with the role colours rather than staying
+fixed, so the same colour means one thing across the product.
 
 ---
 
@@ -98,15 +115,23 @@ takes over the interface.
 
 **The wordmark is set in San Francisco Pro.** Confirmed by the brand owner, 2026-09-07.
 
-Apple licenses the SF family for user-interface use in software on Apple platforms and for UI
-mock-ups, prohibits modification of the fonts, and does not grant rights to use them in a logo or
-trademark. Converting letterforms to outlines changes the file format, not the licence, so the
-supplied files carry the restriction with them.
+An override was then given — keep SF Pro, on the grounds that the apps will eventually ship through
+the App Store. **That has not been recorded as a resolution**, because the reason does not apply:
 
-This is an engineering reading of a licence, not legal advice. It goes to the internal Legal owner
-and, under D-39, to external counsel. But it should be treated as a real defect until counsel says
-otherwise, because the cost of finding out after registration is far higher than the cost of
-resetting the letterforms now.
+- The mark is already live on the open web at rozine.rw and staging.rozine.rw. A website is not an
+  Apple platform.
+- The MVP is web and PWA. Under D-04 only a thin native capture companion was accepted; every other
+  screen is web, on Android and desktop as much as iOS.
+- Apple's licence covers using the font *in* an interface, not building a logo from it, and it
+  prohibits modification. Outlining letterforms is a modification and the outlines carry the
+  restriction.
+- Trademark registration would be filed in Rwanda and has no relationship to App Store distribution.
+
+Accepting the risk remains the brand and internal Legal owner's call. If it is accepted it will be
+recorded as **`RISK ACCEPTED`** naming the owner and the accurate reason, never as resolved — a record
+that overstates its own certainty is worth less than no record. Under D-71 the internal pool cannot
+self-approve external clearance, so D-39 counsel sees this either way; the override changes only
+whether money has already been spent on the mark by the time they do.
 
 ### Scope — 19 of 31 files
 
