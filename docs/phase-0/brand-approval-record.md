@@ -1,6 +1,6 @@
 # Brand approval record
 
-**Status:** `LOCKUP, COLOURS, BACKGROUNDS AND NAMING DECIDED 2026-09-07 · RIGHTS AND TYPEFACE OPEN`
+**Status:** `DESIGN DECISIONS CLOSED 2026-09-07 · WORDMARK FONT LICENCE IS A DEFECT`
 
 **Approver:** Robert — Product, Design, Brand, Business, internal Legal (D-71)
 
@@ -29,9 +29,10 @@ amendment to the approved system and needs a dated V1.1 revision of
 | Pulse | `#08090D` | `#08090D` | Pulse surface. |
 | Slate / Body / Muted / Hairline / Surface | `#3A465E` `#69748A` `#8894A8` `#E7ECF4` `#F8FAFD` | unchanged | Neutrals. |
 
-Two guide tokens derive from the values that moved and are **not yet resolved**: Deep Blue `#0A3FB0`
-(gradient base and pressed states, derived from the old core blue) and the Strong/Stable/Weak rating
-band colours, which are literally the three role colours. See follow-up 2a in
+**Deep Blue** is replaced by a value derived from the new core blue; `#0027B0` is proposed, matching
+the ratio the guide used between `#0A5CFF` and `#0A3FB0`. The **Strong/Stable/Weak rating band**
+colours are literally the three role colours and it is not yet recorded whether they follow the
+amendment — the single outstanding colour question, tracked in
 [`brand-decisions-for-approval.md`](brand-decisions-for-approval.md).
 
 `#BA0D3B` is **not** in the system. It was proposed on the grounds that it appears in the logos; it
@@ -79,8 +80,20 @@ the audience and the language of the campaign. Product chrome uses the primary t
 ### Role naming — D-63 decided 2026-09-07
 
 Paired by default: `Rozine investor`, `Rozine business`, `Rozine auditor`. The standalone title is
-permitted in generic contexts where Rozine is already established; follow-up 4a proposes the exact
-boundary, because an accessible name cannot be conditional.
+permitted inside a signed-in application, where context already establishes Rozine. The **accessible
+name is always the paired form**, because a screen reader announces one string every time and it is
+the only identity a non-sighted user receives. Everything public-facing stays paired in both.
+
+### Wordmark typeface — D-56 defect confirmed 2026-09-07
+
+The wordmark is set in **San Francisco Pro**. Apple licenses that family for user-interface use on
+Apple platforms and for UI mock-ups, prohibits modification, and does not grant trademark rights;
+outlining the letters carries the restriction rather than curing it.
+
+**19 of the 31 files carry letterforms** and are affected. **The star mark is clean** — 12 files,
+including every crop and colourway of the standalone star — so favicon, app icon and avatar work is
+not blocked. Remedies and scope are in
+[`brand-decisions-for-approval.md`](brand-decisions-for-approval.md).
 
 ## Findings behind those decisions
 
