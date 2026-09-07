@@ -216,6 +216,20 @@ jobs:
           extensions: pdo_pgsql, pgsql, pcntl, posix
           coverage: none
 
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.15.0'
+          cache: npm
+
+      - name: Pin npm
+        run: |
+          npm install --global npm@10.9.8
+          test "$(npm --version)" = "10.9.8"
+
+      - name: Install Node dependencies from lock file
+        run: npm ci
+
       - name: Install PHP dependencies from lock file
         run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
@@ -224,6 +238,12 @@ jobs:
 
       - name: Generate application key
         run: php artisan key:generate
+
+      # This lane runs the whole suite, so it renders Blade and needs the Vite
+      # manifest. public/build is no longer tracked, so it has to be built here
+      # exactly as the PHP quality gate builds it.
+      - name: Build production assets
+        run: npm run build
 
       - name: Run the suite and the concurrency evidence against PostgreSQL
         env:
