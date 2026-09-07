@@ -5,7 +5,8 @@
 **Approver:** Robert — Product, Design, Brand, Business, internal Legal (D-71)
 
 **Semantic map:** [`brand-asset-manifest.json`](brand-asset-manifest.json) · **Identity hashes:**
-[`brand-source-manifest.json`](brand-source-manifest.json)
+[`brand-source-manifest.json`](brand-source-manifest.json) · **Open decisions:**
+[`brand-decisions-for-approval.md`](brand-decisions-for-approval.md)
 
 ## What is approved
 
