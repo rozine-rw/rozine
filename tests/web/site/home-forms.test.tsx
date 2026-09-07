@@ -24,19 +24,19 @@ vi.mock('@/lib/pass-card-image', () => ({
     downloadPassCard: mocks.download,
 }));
 
-const mountSite = () => {
+const renderSite = () => {
     const ref = createRef<Home>();
-
-    render(<Home ref={ref} />);
-
+    const { unmount } = render(<Home ref={ref} />);
     const instance = ref.current;
 
     if (!instance) {
         throw new Error('The site did not mount.');
     }
 
-    return instance;
+    return { site: instance, leavePage: unmount };
 };
+
+const mountSite = () => renderSite().site;
 
 /** The options object the component hands to the Inertia router. */
 const lastPostOptions = () =>
@@ -428,6 +428,31 @@ describe('the card a signup can keep', () => {
         });
 
         expect(site.state.B.shareMsg).toBe('');
+    });
+
+    it('drops the waiting note when the visitor leaves before it clears', async () => {
+        vi.useFakeTimers();
+
+        const { site, leavePage } = renderSite();
+
+        act(() => {
+            site.setState({ sent: true, name: 'Diane', country: 'Rwanda' });
+        });
+        await act(async () => {
+            await site.invVals().shareBtns[0].on();
+        });
+
+        expect(site.state.shareMsg).toBe('Card saved to your device');
+
+        leavePage();
+
+        const touchesState = vi.spyOn(site, 'setState');
+
+        act(() => {
+            vi.advanceTimersByTime(2400);
+        });
+
+        expect(touchesState).not.toHaveBeenCalled();
     });
 });
 
