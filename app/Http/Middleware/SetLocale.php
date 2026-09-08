@@ -59,9 +59,9 @@ class SetLocale
      */
     private function preferences(Request $request): array
     {
-        return array_map(
+        return array_values(array_map(
             static fn (string $language): string => str_replace('_', '-', $language),
             $request->getLanguages(),
-        );
+        ));
     }
 }

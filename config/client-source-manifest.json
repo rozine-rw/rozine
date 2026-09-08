@@ -94,7 +94,6 @@
         "resources/js/wayfinder/index.ts"
     ],
     "declarationOnlyPaths": [
-        "resources/js/lib/i18n/types.ts",
         "resources/js/types/auth.ts",
         "resources/js/types/global.d.ts",
         "resources/js/types/index.ts",
@@ -197,6 +196,7 @@
         "resources/js/lib/i18n/index.ts",
         "resources/js/lib/i18n/pseudo.ts",
         "resources/js/lib/i18n/translate.ts",
+        "resources/js/lib/i18n/types.ts",
         "resources/js/lib/pass-card-image.ts",
         "resources/js/lib/pulse.ts",
         "resources/js/lib/utils.ts",
@@ -218,8 +218,8 @@
     "counts": {
         "totalTrackedSources": 188,
         "generated": 70,
-        "declarationOnly": 7,
-        "authoredExecutable": 111
+        "declarationOnly": 6,
+        "authoredExecutable": 112
     },
-    "coverageSetSha256": "0c0eb8359b7761377a2055ed4a0e958969c54a87357c2c485285b1f9345ba265"
+    "coverageSetSha256": "3e9b347451418bfca792e04c0f4a61a3071374227edb373416953e0365d476fd"
 }

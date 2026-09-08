@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "888f76b3b1d7b344b7681cdf9d7129c620bc5ccbeb1f82d85c050e793ebd0b48",
-    "coverageSetSha256": "0c0eb8359b7761377a2055ed4a0e958969c54a87357c2c485285b1f9345ba265",
+    "sourceManifestSha256": "92c0662da78a23ebec1c0a6c960e64f7713585839ada4366624136f61e9bc48e",
+    "coverageSetSha256": "3e9b347451418bfca792e04c0f4a61a3071374227edb373416953e0365d476fd",
     "thresholds": {
         "critical": {
             "global": {
@@ -142,6 +142,7 @@
         "resources/js/lib/i18n/index.ts",
         "resources/js/lib/i18n/pseudo.ts",
         "resources/js/lib/i18n/translate.ts",
+        "resources/js/lib/i18n/types.ts",
         "resources/js/lib/pass-card-image.ts",
         "resources/js/lib/pulse.ts",
         "resources/js/lib/utils.ts",
