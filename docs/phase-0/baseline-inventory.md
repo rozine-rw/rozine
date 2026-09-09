@@ -145,8 +145,8 @@ facts that would differ between machines, so they are excluded deliberately.
 | `name` | `varchar` | no | — |
 | `contact_method` | `varchar` | no | — |
 | `contact` | `varchar` | no | — |
-| `province` | `varchar` | no | — |
-| `district` | `varchar` | no | — |
+| `province` | `varchar` | yes | — |
+| `district` | `varchar` | yes | — |
 | `queue_number` | `varchar` | no | — |
 | `pledge_amount` | `integer` | yes | — |
 | `projected_return` | `integer` | yes | — |
@@ -167,8 +167,9 @@ facts that would differ between machines, so they are excluded deliberately.
 | `sector` | `varchar` | yes | — |
 | `registered_year` | `integer` | yes | — |
 | `score` | `numeric` | yes | — |
+| `country` | `varchar` | yes | — |
 
-**Indexes:** `primary` on (id) — unique; `pulse_signups_contact_unique` on (contact) — unique; `pulse_signups_type_index` on (type)
+**Indexes:** `primary` on (id) — unique; `pulse_signups_contact_unique` on (contact) — unique; `pulse_signups_loan_number_unique` on (loan_number) — unique; `pulse_signups_type_index` on (type); `pulse_signups_type_queue_number_unique` on (type, queue_number) — unique
 
 ### `sessions`
 
@@ -182,6 +183,15 @@ facts that would differ between machines, so they are excluded deliberately.
 | `last_activity` | `integer` | no | — |
 
 **Indexes:** `sessions_last_activity_index` on (last_activity); `sessions_user_id_index` on (user_id); `sqlite_autoindex_sessions_1` on (id) — unique
+
+### `signup_counters`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `name` | `varchar` | no | — |
+| `value` | `integer` | no | `'0'` |
+
+**Indexes:** `sqlite_autoindex_signup_counters_1` on (name) — unique
 
 ### `users`
 
