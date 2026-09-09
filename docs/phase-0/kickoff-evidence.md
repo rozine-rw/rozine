@@ -180,6 +180,21 @@ of left as bare unchecked boxes:
 
 The promotion control remains deliberately unexercised: `uat` and `main` sit behind `dev`, and
 running a real deployment is held until MVP development begins.
+## Phase 0F — baseline inventory (2026-09-09)
+
+- [x] **Implementation-state inventory captured.** `php artisan inventory:baseline` writes
+  `docs/phase-0/baseline-inventory.md` from the code: runtime contract, full schema with columns and
+  indexes, migration files, first-party routes with middleware, authentication configuration, the
+  ADR-0001 layer inventory, CI workflows and jobs, and both deployment targets. `--check` regenerates
+  and fails on any difference, and runs in CI, so the document cannot drift silently — proven by
+  planting a phantom table row and watching the check reject it.
+
+  Structure only. Row counts and migration run-state are per-environment and excluded by design;
+  including them would make the document differ between machines and render the drift check useless.
+  Deployment secrets appear by name, never by value.
+
+  One thing the capture surfaced: **production and staging deploy with the same `STAGING_SSH_*`
+  credentials**. That was known informally; it is now visible in a governance record.
 
 ## Authority and brand freeze
 
