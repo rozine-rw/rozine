@@ -69,6 +69,9 @@ jobs:
       - name: Run authoritative static and PHP test gates
         run: composer ci:check:php
 
+      - name: Confirm the baseline inventory still describes the code
+        run: php artisan inventory:baseline --check
+
       - name: Record PHP evidence identity
         if: always()
         run: |
