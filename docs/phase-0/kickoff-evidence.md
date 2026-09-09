@@ -150,6 +150,37 @@ resulting target-branch SHA, which is what the admission gate now requires befor
 will accept a deployment.
 
 
+## Phase 0E — recording what the gates already prove (2026-09-09)
+
+No new engineering. The plan understated the position by five items because nothing had been ticked
+since the gates started passing, so each claim was re-verified against a run rather than assumed and
+the record was corrected.
+
+**Now proven and recorded:**
+
+| Item | Evidence |
+|---|---|
+| Reversible negative checks across every quality control | 20 client policy tests plus five PHP controls; hosted run records 6 caught, 0 not caught, 0 skipped |
+| Boot, route discovery, focused tests, static/type checks, production build green from a clean baseline | Hosted CI installs from lock files, migrates, builds, and runs the gates on the exact commit; `generated:check` regenerates the typed client from the live route list |
+| 100.0% PHP line coverage with no risky test, warning or deprecation | 177 tests, 725 assertions, `Total: 100.0 %`, no deprecation/risky/incomplete marker |
+| PHPStan across `app/`, config, database, routes and `tests/` at zero errors; TIA local; CI without TIA | Zero errors; `composer test:php:tia` builds a fresh graph and passes 177 tests; hosted job runs `--no-tia` |
+| Brand lockup, colours, role naming and reconstruction authority | D-51, D-52, D-57, D-63 closed; wordmark reconstructed in Inter |
+
+**Corrected rather than ticked.** Three items were partly done and are now stated precisely instead
+of left as bare unchecked boxes:
+
+- The architecture catalog covers every boundary that exists, but **no strict-typing convention has
+  been approved** so no rule enforces one — 47 of 48 first-party files omit `declare(strict_types=1)`
+  — and the ledger, settlement, seal and evidence rules cannot be written until those namespaces do.
+- Favicon, PWA and Apple-touch outputs ship; monochrome, dark and responsive-header outputs wait on
+  the Inter wordmark.
+- Rights-cleared masters do not exist yet. The 19 wordmark-bearing files need their Inter re-export
+  before any wordmark master is cut. The 12 star-only files were never blocked, which is why the
+  icons could ship.
+
+The promotion control remains deliberately unexercised: `uat` and `main` sit behind `dev`, and
+running a real deployment is held until MVP development begins.
+
 ## Authority and brand freeze
 
 The governing plan's source order remains active. No unsigned PDF/prototype constant may change money, underwriting, authorization, evidence, secondary trading, or regulatory behavior.
