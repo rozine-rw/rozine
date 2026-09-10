@@ -219,7 +219,7 @@ register.form = registerForm
 
 /**
 * @see \App\Http\Controllers\SiteController::home
-* @see app/Http/Controllers/SiteController.php:22
+* @see app/Http/Controllers/SiteController.php:24
 * @route '/'
 */
 export const home = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -234,7 +234,7 @@ home.definition = {
 
 /**
 * @see \App\Http\Controllers\SiteController::home
-* @see app/Http/Controllers/SiteController.php:22
+* @see app/Http/Controllers/SiteController.php:24
 * @route '/'
 */
 home.url = (options?: RouteQueryOptions) => {
@@ -243,7 +243,7 @@ home.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SiteController::home
-* @see app/Http/Controllers/SiteController.php:22
+* @see app/Http/Controllers/SiteController.php:24
 * @route '/'
 */
 home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -253,7 +253,7 @@ home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::home
-* @see app/Http/Controllers/SiteController.php:22
+* @see app/Http/Controllers/SiteController.php:24
 * @route '/'
 */
 home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -263,7 +263,7 @@ home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::home
-* @see app/Http/Controllers/SiteController.php:22
+* @see app/Http/Controllers/SiteController.php:24
 * @route '/'
 */
 const homeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -273,7 +273,7 @@ const homeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::home
-* @see app/Http/Controllers/SiteController.php:22
+* @see app/Http/Controllers/SiteController.php:24
 * @route '/'
 */
 homeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -283,7 +283,7 @@ homeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::home
-* @see app/Http/Controllers/SiteController.php:22
+* @see app/Http/Controllers/SiteController.php:24
 * @route '/'
 */
 homeForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -300,7 +300,7 @@ home.form = homeForm
 
 /**
 * @see \App\Http\Controllers\PulseController::pulse
-* @see app/Http/Controllers/PulseController.php:26
+* @see app/Http/Controllers/PulseController.php:28
 * @route '/pulse'
 */
 export const pulse = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -315,7 +315,7 @@ pulse.definition = {
 
 /**
 * @see \App\Http\Controllers\PulseController::pulse
-* @see app/Http/Controllers/PulseController.php:26
+* @see app/Http/Controllers/PulseController.php:28
 * @route '/pulse'
 */
 pulse.url = (options?: RouteQueryOptions) => {
@@ -324,7 +324,7 @@ pulse.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PulseController::pulse
-* @see app/Http/Controllers/PulseController.php:26
+* @see app/Http/Controllers/PulseController.php:28
 * @route '/pulse'
 */
 pulse.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -334,7 +334,7 @@ pulse.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PulseController::pulse
-* @see app/Http/Controllers/PulseController.php:26
+* @see app/Http/Controllers/PulseController.php:28
 * @route '/pulse'
 */
 pulse.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -344,7 +344,7 @@ pulse.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PulseController::pulse
-* @see app/Http/Controllers/PulseController.php:26
+* @see app/Http/Controllers/PulseController.php:28
 * @route '/pulse'
 */
 const pulseForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -354,7 +354,7 @@ const pulseForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\PulseController::pulse
-* @see app/Http/Controllers/PulseController.php:26
+* @see app/Http/Controllers/PulseController.php:28
 * @route '/pulse'
 */
 pulseForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -364,7 +364,7 @@ pulseForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PulseController::pulse
-* @see app/Http/Controllers/PulseController.php:26
+* @see app/Http/Controllers/PulseController.php:28
 * @route '/pulse'
 */
 pulseForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
