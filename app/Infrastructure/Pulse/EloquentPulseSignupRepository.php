@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\Pulse;
 
 use App\Application\Pulse\Contracts\PulseSignupRepository;

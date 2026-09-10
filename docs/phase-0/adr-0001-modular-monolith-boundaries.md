@@ -35,6 +35,22 @@ Cross-context writes happen only through the target context's application action
 
 `tests/Architecture/ArchitectureTest.php` starts with rules that are true of the current code: PSR-4 casing, prohibited debug/termination helpers, transport naming/inheritance, Resource isolation from actions/infrastructure/calculators, and transport-independent support calculations. Module-specific rules are added with the first module rather than pretending absent namespaces are already enforced.
 
+## Strict typing — D-76, approved 2026-09-10
+
+Aminu approved the strict-types recommendation in this task. Every human-authored PHP file under `app/`, `bootstrap/`, `config/`, `database/`, `routes/`, and `tests/` must begin with `declare(strict_types=1);` after the PHP opening tag and optional comments. A later declaration must not disable or replace it.
+
+The scope includes standalone configuration and route files, anonymous migrations, factories, seeders, Pest test files, and test support code as well as named classes. Blade templates (`*.blade.php`) and generated `bootstrap/cache/**` files are excluded. Vendor, build, and generated artifacts outside these six source roots are outside this convention. No human-authored file is exempt; any future exception must identify the exact file, reason, owner, approver, and expiry before the enforcement scope changes. A generated marker or directory name alone does not grant an exclusion.
+
+`tests/Architecture/StrictTypesTest.php` combines Pest's namespace expectation with a recursive file scan and PHP syntax-tree inspection. It checks every approved directory, including hidden and newly added/untracked PHP files, and rejects missing/disabled declarations, comment or string imitations, late declarations, and redeclarations. These tests run in the normal non-TIA suite and the architecture command. The negative-control harness plants missing and disabled declarations plus hidden-file violations in every source root and requires the corresponding file diagnostic before removing each fixture.
+
+Strict typing does not validate transport input, prohibit an explicit cast, or replace authorization and financial rules. Those remain application responsibilities, and the existing PHPStan and 100% coverage gates continue to apply. Existing behavior must pass before this conversion is accepted.
+
+## Protected-module rule delivery gate
+
+The timing is part of the existing accepted decision: the **first implementation PR** for each ledger, settlement, underwriting-publication, seal, or immutable-evidence module must freeze its actual namespaces and allowed entry points here, add architecture rules over those existing symbols, and demonstrate a controlled failure followed by a passing run in that same PR. The test must assert that its target symbols exist so an empty namespace cannot pass as protection. Renaming or moving a module updates its rule and evidence in the same change.
+
+Aminu owns the server-side implementation and Erastus supplies the non-author review (reversed if Erastus authors that change). These are enforceable module-entry requirements, not claims that future modules are already implemented or tested. Phase 0 establishes the current-source rules and this delivery gate; it does not require building later-phase protected modules early. Their behavior, authorization, immutable-evidence and PostgreSQL concurrency tests remain required with their implementation.
+
 ## Exact legacy exceptions
 
 | Class | Exception | Owner | Removal gate |
