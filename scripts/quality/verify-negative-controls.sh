@@ -32,6 +32,10 @@ cleanup() {
 trap cleanup EXIT
 
 plant() {
+  if [ -e "$1" ] || [ -L "$1" ]; then
+    echo "refusing to overwrite an existing negative-control fixture: $1" >&2
+    exit 1
+  fi
   mkdir -p "$(dirname "$1")"
   cat > "$1"
   PLANTED+=("$1")
@@ -62,7 +66,7 @@ report() {
   echo
 }
 
-ALL_CONTROLS=(domain-purity transport-boundary adapter-leak php-coverage phpstan-tests)
+ALL_CONTROLS=(strict-types domain-purity transport-boundary adapter-leak php-coverage phpstan-tests)
 
 selected() {
   local wanted="$1" name
@@ -120,6 +124,52 @@ fi
 echo
 
 # ---------------------------------------------------------------------------
+# Strict types: include standalone PHP files, not only autoloaded classes.
+# ---------------------------------------------------------------------------
+if selected strict-types; then
+  control strict-types "missing or disabled declarations, including hidden files, in every approved directory must fail"
+
+  if [ "${ARCHITECTURE_GREEN}" != true ]; then
+    report strict-types fail "the architecture suite must be green before testing its strict-types rule"
+  else
+    for directory in app bootstrap config database routes tests; do
+      for mode in missing disabled hidden; do
+        fixture="${directory}/NegativeControlStrictTypes.php"
+        if [ "${mode}" = hidden ]; then
+          fixture="${directory}/.NegativeControlStrictTypes.php"
+        fi
+        if [ "${mode}" != disabled ]; then
+          plant "${fixture}" <<'VIOLATION'
+<?php
+
+// declare(strict_types=1); is documentation, not an executable declaration.
+return [];
+VIOLATION
+        else
+          plant "${fixture}" <<'VIOLATION'
+<?php
+
+declare(strict_types=0);
+
+return [];
+VIOLATION
+        fi
+
+        log="${LOG_DIR}/strict-types-${directory}-${mode}.log"
+        if gate_fails "${log}" vendor/bin/pest --ci --no-tia tests/Architecture/StrictTypesTest.php --filter='requires strict types' --compact \
+          && grep -Fq "${fixture} must start with declare(strict_types=1)" "${log}"; then
+          report strict-types pass "${directory}: ${mode} declaration rejected by the file-scope rule"
+        else
+          report strict-types fail "${directory}: ${mode} declaration did not produce its expected diagnostic"
+          cat "${log}"
+        fi
+        rm -f "${fixture}"
+      done
+    done
+  fi
+fi
+
+# ---------------------------------------------------------------------------
 # Architecture: a domain class that reaches for the framework.
 # ---------------------------------------------------------------------------
 if selected domain-purity; then
@@ -127,6 +177,8 @@ if selected domain-purity; then
 
   plant app/Domain/NegativeControl/ReachesForTheFramework.php <<'VIOLATION'
 <?php
+
+declare(strict_types=1);
 
 namespace App\Domain\NegativeControl;
 
@@ -161,6 +213,8 @@ if selected transport-boundary; then
   plant app/Http/Controllers/NegativeControlController.php <<'VIOLATION'
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\PulseSignup;
@@ -192,6 +246,8 @@ if selected adapter-leak; then
 
   plant app/Application/NegativeControl/NamesAnAdapter.php <<'VIOLATION'
 <?php
+
+declare(strict_types=1);
 
 namespace App\Application\NegativeControl;
 
@@ -226,6 +282,8 @@ if selected php-coverage; then
     plant app/Support/NegativeControlUncovered.php <<'VIOLATION'
 <?php
 
+declare(strict_types=1);
+
 namespace App\Support;
 
 final class NegativeControlUncovered
@@ -255,6 +313,8 @@ if selected phpstan-tests; then
 
   plant tests/Feature/NegativeControlAnalysisTest.php <<'VIOLATION'
 <?php
+
+declare(strict_types=1);
 
 // A plain level-7 type error, proving tests/ is inside the analysed paths.
 it('adds a string to an integer', function (): void {

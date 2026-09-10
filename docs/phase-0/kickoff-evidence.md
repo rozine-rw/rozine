@@ -169,9 +169,7 @@ the record was corrected.
 **Corrected rather than ticked.** Three items were partly done and are now stated precisely instead
 of left as bare unchecked boxes:
 
-- The architecture catalog covers every boundary that exists, but **no strict-typing convention has
-  been approved** so no rule enforces one — 47 of 48 first-party files omit `declare(strict_types=1)`
-  — and the ledger, settlement, seal and evidence rules cannot be written until those namespaces do.
+- At the 2026-09-09 review, strict typing was not approved or enforced. **Superseded by D-76 and Phase 0G below:** the current-source convention is now approved and enforced. Protected-module rules accompany each module's first implementation PR under ADR-0001; absent future modules are not counted as tested.
 - Favicon, PWA and Apple-touch outputs ship; monochrome, dark and responsive-header outputs wait on
   the Inter wordmark.
 - Rights-cleared masters do not exist yet. The 19 wordmark-bearing files need their Inter re-export
@@ -195,6 +193,35 @@ running a real deployment is held until MVP development begins.
 
   One thing the capture surfaced: **production and staging deploy with the same `STAGING_SSH_*`
   credentials**. That was known informally; it is now visible in a governance record.
+
+## Phase 0G — strict typing and protected-module delivery gate (2026-09-10)
+
+**Authority:** Aminu approved the strict-types recommendation in this task. D-76 and ADR-0001 record the exact scope and the previously agreed rule-delivery timing for protected modules. Erastus's review of the implementation is still required before promotion.
+
+- Added `declare(strict_types=1);` to 108 existing PHP files. Together with the existing strict file and the new architecture test, all 110 human-authored PHP files in `app/`, `bootstrap/`, `config/`, `database/`, `routes/`, and `tests/` are covered. Blade templates and generated `bootstrap/cache/**` remain excluded; no human-authored exception was introduced.
+- Added a Pest namespace rule plus a recursive, syntax-tree-based file rule. Configuration, routes, anonymous migrations, tests, support files, and newly added/untracked PHP files cannot escape through the absence of a named class. Regression cases reject comment/string imitations, missing/disabled/late/scoped declarations, redeclarations, and invalid source.
+- Extended the existing CI negative-control harness with missing and disabled standalone declarations plus hidden-file violations in each of the six source roots. These controls exposed that a glob filename filter could omit dotfiles even with hidden-directory scanning enabled; the corrected suffix matcher catches them. All other planted PHP fixtures now enable strict types so their failures still exercise the intended dependency, coverage or static-analysis rule. The harness refuses to overwrite an existing file or symlink.
+- Corrected the `ProfileValidationRules` PHPDoc to describe the actual returned `Unique` rule object and precise lists/array shape. This fixes the strict-mode static-analysis finding without changing validation behavior or adding casts/ignores.
+- Regenerated Wayfinder outputs because source-line references moved. No dependency versions, business rules, authentication flows or coverage thresholds changed.
+
+### Local verification
+
+| Check | Result |
+|---|---|
+| Strict-types rule before conversion | Failed on missing declarations in all six roots; 16 syntax regression cases passed |
+| Strict-types suite after conversion | 23 tests, 135 assertions, all passing |
+| PHP 8.5.8 full non-TIA gate | 206 tests, 889 assertions, 100.0% first-party line coverage |
+| Pint and Pest-aware PHPStan | Passing; zero static-analysis errors |
+| Complete architecture command | 35 tests, 225 assertions, all passing |
+| PHP negative controls | 24 caught, 0 not caught, 0 skipped; includes 18 strict-types cases and successful teardown |
+| Full PostgreSQL suite, isolated local PostgreSQL 18.4 | 210 tests, 901 assertions, including real concurrent writers; the hosted PostgreSQL 17 lane remains the candidate-runtime proof |
+| Clean frontend snapshot | 33 files / 322 tests; D-67 passes all 112 authored files: 1,470/1,470 statements, 1,098/1,098 branches, 605/605 functions and 1,434/1,434 lines |
+| Frontend static/build checks | `vp check`, configured lint/format/TypeScript/i18n gates, production build and Wayfinder drift check pass |
+| Clean snapshot PHP and inventory checks | Full non-TIA PHP gate repeats 206 tests / 889 assertions / 100.0% coverage with zero static-analysis errors; all 11 migrations and `inventory:baseline --check` pass |
+
+Clean-checkout evidence was generated in a disposable checkout at `c10441bf57e5b10e47018cd5b973c95f950e19f9`, based on `aeb85f595f0022d6645a8870b2aaefd95b62ba3e`, with freshly installed locked Composer/npm dependencies and explicit base/target/head identities. The temporary commit contains the implementation and generated outputs; this evidence section was completed afterward. All 123 changed or added non-documentation files match that tested snapshot, and its final working tree is clean. It is not a commit or push on the working feature branch. The frontend reports 32 existing lint warnings, two jsdom canvas notices, and the existing optional-font-fallback warning; none is a new strict-types failure, and no dependency was added to silence them.
+
+These are local implementation checks. The candidate commit still needs hosted CI and the non-author developer's review; this record does not mark Phase 0 accepted or claim future protected modules have been tested.
 
 ## Authority and brand freeze
 

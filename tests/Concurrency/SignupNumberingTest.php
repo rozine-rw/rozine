@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Application\Pulse\RegisterPulseBusiness;
 use App\Domain\Pulse\PulseSector;
 use App\Models\PulseSignup;
