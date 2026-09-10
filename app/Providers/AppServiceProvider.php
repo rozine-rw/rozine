@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Console\Seeds\SeedCommand;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -48,6 +49,10 @@ class AppServiceProvider extends ServiceProvider
         DB::prohibitDestructiveCommands(
             app()->isProduction(),
         );
+
+        // Not part of the facade's set above, and DatabaseSeeder plants a verified
+        // test@example.com account whose factory password is public.
+        SeedCommand::prohibit(app()->isProduction());
 
         Password::defaults(fn (): ?Password => app()->isProduction()
             ? Password::min(12)
