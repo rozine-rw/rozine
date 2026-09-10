@@ -223,6 +223,28 @@ Clean-checkout evidence was generated in a disposable checkout at `c10441bf57e5b
 
 These are local implementation checks. The candidate commit still needs hosted CI and the non-author developer's review; this record does not mark Phase 0 accepted or claim future protected modules have been tested.
 
+## Phase 0H — environment isolation and provider tracks (2026-09-10)
+
+- [x] **Environment isolation defined.** `environment-isolation-policy.md` fixes each environment's
+  purpose and permitted data — real participant data in production and nowhere else — together with
+  seeded-demo boundaries, per-environment reset controls and feature-flag rules. Facts were read from
+  the servers rather than recalled: `APP_DEBUG=false` on both, staging on `APP_ENV=staging`.
+- [x] **Production refuses to seed.** `DB::prohibitDestructiveCommands` covers five commands and not
+  `db:seed`, although `SeedCommand` supports the same prohibition. `DatabaseSeeder` creates
+  `test@example.com` with the factory password `password`, already verified, so one seed on the
+  production box would have planted a known-credential account beside the live waitlist. Tests assert
+  production refuses seeding and wiping, that non-production can still seed, and reset the static
+  prohibition flags after each test so one production-mode test cannot leak into the rest.
+- [ ] **Provider and regulatory tracks owned, not started.** `provider-regulatory-tracks.md` names an
+  owner, decision, first action and certification gate for each of the ten required tracks and four
+  adjacent ones. External engagement is not claimed; the item closes when each owner confirms first
+  contact.
+
+**Found while checking, and urgent:** the Contabo box runs PHP 8.4.23 with only 8.4 FPM pools, while
+D-73 pins deployment to 8.5 and `deploy-remote.sh` aborts on anything else. Every deployment to either
+environment currently fails before its first step. Deployment is deferred by decision until MVP
+development begins; this makes it impossible rather than merely deferred until the server is upgraded.
+
 ## Authority and brand freeze
 
 The governing plan's source order remains active. No unsigned PDF/prototype constant may change money, underwriting, authorization, evidence, secondary trading, or regulatory behavior.
