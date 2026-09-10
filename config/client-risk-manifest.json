@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "d44e26759734e554886a167b59848137734b148f6030979b9b6d1c227e503a5e",
-    "coverageSetSha256": "e257ea36a495b010a2baf141861da98010f8c84f022b7673d3f8870deeeb5eac",
+    "sourceManifestSha256": "92c0662da78a23ebec1c0a6c960e64f7713585839ada4366624136f61e9bc48e",
+    "coverageSetSha256": "3e9b347451418bfca792e04c0f4a61a3071374227edb373416953e0365d476fd",
     "thresholds": {
         "critical": {
             "global": {
@@ -61,6 +61,7 @@
         "resources/js/components/breadcrumbs.tsx",
         "resources/js/components/delete-user.tsx",
         "resources/js/components/heading.tsx",
+        "resources/js/components/i18n-provider.tsx",
         "resources/js/components/input-error.tsx",
         "resources/js/components/manage-passkeys.tsx",
         "resources/js/components/manage-two-factor.tsx",
@@ -124,6 +125,7 @@
         "resources/js/hooks/use-initials.tsx",
         "resources/js/hooks/use-mobile-navigation.ts",
         "resources/js/hooks/use-mobile.tsx",
+        "resources/js/hooks/use-translation.ts",
         "resources/js/hooks/use-two-factor-auth.ts",
         "resources/js/layouts/app-layout.tsx",
         "resources/js/layouts/app/app-header-layout.tsx",
@@ -133,6 +135,14 @@
         "resources/js/layouts/auth/auth-simple-layout.tsx",
         "resources/js/layouts/auth/auth-split-layout.tsx",
         "resources/js/layouts/settings/layout.tsx",
+        "resources/js/lib/i18n/catalogs/en.ts",
+        "resources/js/lib/i18n/catalogs/fr.ts",
+        "resources/js/lib/i18n/catalogs/rw.ts",
+        "resources/js/lib/i18n/context.ts",
+        "resources/js/lib/i18n/index.ts",
+        "resources/js/lib/i18n/pseudo.ts",
+        "resources/js/lib/i18n/translate.ts",
+        "resources/js/lib/i18n/types.ts",
         "resources/js/lib/pass-card-image.ts",
         "resources/js/lib/pulse.ts",
         "resources/js/lib/utils.ts",

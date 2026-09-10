@@ -1,19 +1,45 @@
 <?php
 
-use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\PulseController;
-use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Resources\Json\JsonResource;
+
+/*
+ * Executable form of the ADR-0001 boundaries.
+ *
+ * Rules are stated over namespaces, never over individual classes. A rule that
+ * names a class stops being architecture the moment that class is renamed or a
+ * second one appears beside it, and it says nothing about the module added
+ * next week. Everything below therefore holds for any module placed inside
+ * these layers.
+ *
+ * Section 11.2's sixth boundary - the protected ledger, settlement,
+ * underwriting-publication, seal and immutable-evidence seams - has no rules
+ * here yet because those namespaces do not exist. They arrive with the module
+ * that introduces them; writing rules over absent namespaces would report a
+ * protection that is not there.
+ */
+
+// ---------------------------------------------------------------------------
+// Global first-party PHP
+// ---------------------------------------------------------------------------
 
 arch('application symbols follow their PSR-4 path casing')
     ->expect('App')
     ->toBeCasedCorrectly();
 
 arch('release code excludes debug and termination helpers')
-    ->expect(['dd', 'dump', 'die', 'var_dump'])
+    ->expect(['dd', 'dump', 'die', 'var_dump', 'var_export', 'print_r', 'ray'])
     ->not->toBeUsed();
+
+arch('release code reads configuration rather than the environment')
+    ->expect('env')
+    ->not->toBeUsed()
+    ->ignoring('config');
+
+// ---------------------------------------------------------------------------
+// HTTP, Inertia and API transport
+// ---------------------------------------------------------------------------
 
 arch('controllers use the application controller convention')
     ->expect('App\Http\Controllers')
@@ -27,6 +53,56 @@ arch('form requests own transport validation')
     ->toExtend(FormRequest::class)
     ->toHaveSuffix('Request');
 
+arch('controllers delegate governed behaviour to the application layer')
+    ->expect('App\Http\Controllers')
+    ->not->toUse([
+        'App\Domain',
+        'App\Infrastructure',
+        'App\Models',
+        'Illuminate\Database',
+        'Illuminate\Support\Facades\DB',
+    ]);
+
+// ---------------------------------------------------------------------------
+// Application and Domain
+// ---------------------------------------------------------------------------
+
+arch('domain code is independent from frameworks and outer layers')
+    ->expect('App\Domain')
+    ->not->toUse([
+        'App\Application',
+        'App\Http',
+        'App\Infrastructure',
+        'App\Models',
+        'Illuminate',
+        'Inertia',
+        'Laravel',
+    ]);
+
+arch('domain results depend only on their inputs')
+    ->expect('App\Domain')
+    ->not->toUse([
+        // A rule that reads the clock or the random source cannot be replayed,
+        // which is what makes a historical calculation auditable.
+        'now', 'today', 'time', 'date', 'microtime',
+        'rand', 'mt_rand', 'random_int', 'random_bytes', 'uniqid', 'shuffle', 'array_rand',
+    ]);
+
+arch('application code orchestrates through contracts rather than persistence')
+    ->expect('App\Application')
+    ->not->toUse([
+        'App\Http',
+        'App\Infrastructure',
+        'App\Models',
+        'Illuminate\Database',
+        'Illuminate\Support\Facades\DB',
+        'Inertia',
+    ]);
+
+// ---------------------------------------------------------------------------
+// Eloquent API Resources
+// ---------------------------------------------------------------------------
+
 arch('eloquent resources only shape authorized output')
     ->expect('App\Http\Resources')
     ->toExtend(JsonResource::class)
@@ -38,39 +114,13 @@ arch('eloquent resources only shape authorized output')
         'App\Infrastructure',
         'App\Models',
         'App\Support',
-    ]);
-
-arch('pulse controller delegates business behavior to the application layer')
-    ->expect(PulseController::class)
-    ->not->toUse([
-        'App\Domain',
-        'App\Infrastructure',
-        'App\Models',
-        'App\Support',
         'Illuminate\Database',
         'Illuminate\Support\Facades\DB',
     ]);
 
-arch('domain code is independent from frameworks and outer layers')
-    ->expect('App\Domain')
-    ->not->toUse([
-        'App\Application',
-        'App\Http',
-        'App\Infrastructure',
-        'App\Models',
-        'Illuminate',
-        'Inertia',
-    ]);
-
-arch('application code depends on contracts and domain behavior only')
-    ->expect('App\Application')
-    ->not->toUse([
-        'App\Http',
-        'App\Infrastructure',
-        'App\Models',
-        'Illuminate\Database',
-        'Inertia',
-    ]);
+// ---------------------------------------------------------------------------
+// Integrations and providers
+// ---------------------------------------------------------------------------
 
 arch('infrastructure stays independent from delivery transports')
     ->expect('App\Infrastructure')
@@ -79,8 +129,8 @@ arch('infrastructure stays independent from delivery transports')
         'Inertia',
     ]);
 
-arch('pulse persistence is reached through an application owned contract')
-    ->expect(PulseSignupRepository::class)
-    ->toBeInterfaces()
-    ->and(EloquentPulseSignupRepository::class)
-    ->toImplement(PulseSignupRepository::class);
+arch('infrastructure concretions are reached through their container binding')
+    // Naming an adapter anywhere else is how a provider implementation leaks
+    // past the port that is supposed to hide it.
+    ->expect('App\Infrastructure')
+    ->toOnlyBeUsedIn('App\Providers');

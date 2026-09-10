@@ -1,0 +1,14 @@
+{
+    "name": "Rozine D-04 Auditor Capture Assurance",
+    "short_name": "D-04 Spike",
+    "description": "Time-boxed device-matrix harness proving or failing the Auditor web/PWA capture gates.",
+    "start_url": "./index.html",
+    "scope": "./",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#0039FF",
+    "icons": [
+        { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    ]
+}

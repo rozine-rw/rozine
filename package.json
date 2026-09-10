@@ -21,9 +21,10 @@
         "test:web:coverage:collect": "vp test run --config vitest.config.ts --coverage",
         "test:web:coverage:verify": "node scripts/quality/verify-client-coverage.mjs",
         "test:web:coverage": "npm run test:web:coverage:prepare && npm run test:web:coverage:collect && npm run test:web:coverage:verify",
+        "i18n:check": "node scripts/quality/verify-i18n.mjs",
         "generated:check": "node scripts/quality/verify-generated-client.mjs",
-        "ci:web:foundation": "npm run lint:check && npm run format:check && npm run types:check && npm run test:web && npm run build && npm run generated:check",
-        "ci:web": "npm run lint:check && npm run format:check && npm run types:check && npm run test:web:coverage && npm run build && npm run generated:check",
+        "ci:web:foundation": "npm run lint:check && npm run format:check && npm run types:check && npm run i18n:check && npm run test:web && npm run build && npm run generated:check",
+        "ci:web": "npm run lint:check && npm run format:check && npm run types:check && npm run i18n:check && npm run test:web:coverage && npm run build && npm run generated:check",
         "prepare": "vp config"
     },
     "devDependencies": {

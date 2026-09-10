@@ -1,6 +1,10 @@
 name: Deploy (staging)
 
-# Auto-deploy to the Contabo staging box (staging.rozine.rw) on merge/push to uat.
+# Deploys to the Contabo staging box (staging.rozine.rw) from uat.
+#
+# Deployment is gated: the `admission` job must grant D-68 admission for the
+# exact candidate SHA before `deploy` may touch the server. This applies to
+# manual dispatch too — there is no ungated path to the environment.
 on:
   push:
     branches: [uat]
@@ -10,14 +14,27 @@ concurrency:
   group: deploy-staging
   cancel-in-progress: false
 
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
 jobs:
+  admission:
+    uses: ./.github/workflows/deployment-admission.yml
+    with:
+      target_branch: uat
+      environment: staging
+
   deploy:
+    needs: admission
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout uat
-        uses: actions/checkout@v5
+      - name: Checkout the admitted commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ github.sha }}
 
       - name: Set up SSH
         run: |
@@ -44,22 +61,5 @@ jobs:
       - name: Build, migrate & reload on server
         run: |
           ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new \
-            "${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_SSH_HOST }}" 'bash -lc "
-              set -euo pipefail
-              cd /var/www/rozine
-              composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-              # Wayfinder builds the typed client from the Laravel route list
-              # during the asset build, and Laravel answers from the route
-              # cache left by the previous run. Drop stale caches first, or a
-              # release that adds a route builds a client without it.
-              # NOTE: this block is wrapped in single quotes on the ssh line,
-              # so nothing in here may contain an apostrophe.
-              php artisan optimize:clear
-              npm ci --no-audit --no-fund || npm install --no-audit --no-fund
-              npm run build
-              php artisan migrate --force
-              php artisan config:cache
-              php artisan route:cache
-              php artisan view:cache
-              php artisan queue:restart
-            "'
+            "${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_SSH_HOST }}" \
+            'bash -s -- /var/www/rozine' < .github/scripts/deploy-remote.sh

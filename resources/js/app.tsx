@@ -1,4 +1,5 @@
 import { createInertiaApp } from '@inertiajs/react';
+import I18nProvider from '@/components/i18n-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
@@ -27,10 +28,15 @@ createInertiaApp({
     strictMode: true,
     withApp(app) {
         return (
-            <TooltipProvider delayDuration={0}>
-                {app}
-                <Toaster />
-            </TooltipProvider>
+            // The lang attribute is the one locale the document is already
+            // committed to, so the provider reads that rather than a prop and
+            // cannot disagree with what the page was rendered as.
+            <I18nProvider locale={document.documentElement.lang}>
+                <TooltipProvider delayDuration={0}>
+                    {app}
+                    <Toaster />
+                </TooltipProvider>
+            </I18nProvider>
         );
     },
     progress: {

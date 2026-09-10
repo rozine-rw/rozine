@@ -1,0 +1,303 @@
+#!/usr/bin/env bash
+#
+# Negative controls for the PHP quality gates.
+#
+# A green gate only means something if it can go red. Each control plants a
+# violation the gate is supposed to catch, runs the gate, requires it to fail,
+# then removes the violation. The suite ends by confirming the gate is green
+# again, so a control that "passed" because the gate was already broken is not
+# mistaken for evidence.
+#
+# The client gates have their own negative controls as ordinary Vitest cases in
+# tests/web/quality/client-coverage-policy.test.ts; nothing here duplicates
+# them.
+#
+# Usage: bash scripts/quality/verify-negative-controls.sh [control ...]
+#        with no arguments every control runs.
+
+set -uo pipefail
+
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+PLANTED=()
+pass=0
+fail=0
+skipped=0
+
+cleanup() {
+  for file in "${PLANTED[@]:-}"; do
+    [ -n "${file}" ] && rm -f "${file}"
+  done
+}
+trap cleanup EXIT
+
+plant() {
+  mkdir -p "$(dirname "$1")"
+  cat > "$1"
+  PLANTED+=("$1")
+}
+
+# Runs a gate and reports whether it failed, without leaking its output unless
+# something needs explaining.
+gate_fails() {
+  local log="$1"
+  shift
+  "$@" > "${log}" 2>&1
+  [ $? -ne 0 ]
+}
+
+control() {
+  ran=$((ran + 1))
+  echo "--> $1: $2"
+}
+
+report() {
+  local name="$1" outcome="$2" detail="${3:-}"
+
+  case "${outcome}" in
+    pass) echo "    caught. ${detail}"; pass=$((pass + 1)) ;;
+    fail) echo "    NOT CAUGHT. ${detail}"; fail=$((fail + 1)) ;;
+    skip) echo "    skipped: ${detail}"; skipped=$((skipped + 1)) ;;
+  esac
+  echo
+}
+
+ALL_CONTROLS=(domain-purity transport-boundary adapter-leak php-coverage phpstan-tests)
+
+selected() {
+  local wanted="$1" name
+  for name in "${REQUESTED[@]}"; do
+    [ "${name}" = "${wanted}" ] && return 0
+  done
+  return 1
+}
+
+LOG_DIR="$(mktemp -d)"
+ran=0
+
+# An empty array does not expand to zero arguments under `set -u` idioms, so
+# resolve the selection here rather than at each call site. Getting this wrong
+# is silent: every control deselects itself and the run reports success having
+# proved nothing.
+if [ "$#" -eq 0 ]; then
+  REQUESTED=("${ALL_CONTROLS[@]}")
+else
+  REQUESTED=("$@")
+  for requested in "${REQUESTED[@]}"; do
+    if ! printf '%s\n' "${ALL_CONTROLS[@]}" | grep -qx -- "${requested}"; then
+      echo "unknown control '${requested}'. Known: ${ALL_CONTROLS[*]}" >&2
+      exit 64
+    fi
+  done
+fi
+
+# A control only means something if the gate was green to begin with. A gate
+# that is broken, unavailable, or already red would "catch" every violation and
+# catch nothing at all.
+gate_is_green() {
+  local log="$1"
+  shift
+  "$@" > "${log}" 2>&1
+}
+
+echo "--> precondition: the gates are green before anything is planted"
+ARCHITECTURE_GREEN=false
+STATIC_GREEN=false
+
+if gate_is_green "${LOG_DIR}/pre-arch.log" vendor/bin/pest --ci --no-tia --testsuite=Architecture --compact; then
+  ARCHITECTURE_GREEN=true
+  echo "    architecture suite green"
+else
+  echo "    architecture suite is already red; its controls cannot be attributed and will be skipped"
+fi
+
+if gate_is_green "${LOG_DIR}/pre-static.log" vendor/bin/phpstan analyse --no-progress --error-format=raw; then
+  STATIC_GREEN=true
+  echo "    static analysis green"
+else
+  echo "    static analysis is not green on a clean tree; its control cannot be attributed and will be skipped"
+fi
+echo
+
+# ---------------------------------------------------------------------------
+# Architecture: a domain class that reaches for the framework.
+# ---------------------------------------------------------------------------
+if selected domain-purity; then
+  control domain-purity "a Domain class importing Illuminate must fail the architecture suite"
+
+  plant app/Domain/NegativeControl/ReachesForTheFramework.php <<'VIOLATION'
+<?php
+
+namespace App\Domain\NegativeControl;
+
+use Illuminate\Support\Facades\DB;
+
+final class ReachesForTheFramework
+{
+    public function total(): int
+    {
+        return (int) DB::table('pulse_signups')->count();
+    }
+}
+VIOLATION
+
+  if [ "${ARCHITECTURE_GREEN}" != true ]; then
+    report domain-purity skip "the architecture suite was not green beforehand"
+  elif gate_fails "${LOG_DIR}/domain.log" vendor/bin/pest --ci --no-tia --testsuite=Architecture --compact; then
+    report domain-purity pass "the architecture suite rejected it"
+  else
+    report domain-purity fail "the architecture suite accepted a Domain class using Illuminate"
+  fi
+  rm -f app/Domain/NegativeControl/ReachesForTheFramework.php
+  rmdir app/Domain/NegativeControl 2>/dev/null || true
+fi
+
+# ---------------------------------------------------------------------------
+# Architecture: a controller that queries the database itself.
+# ---------------------------------------------------------------------------
+if selected transport-boundary; then
+  control transport-boundary "a controller querying persistence directly must fail the architecture suite"
+
+  plant app/Http/Controllers/NegativeControlController.php <<'VIOLATION'
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\PulseSignup;
+
+final class NegativeControlController extends Controller
+{
+    public function __invoke(): int
+    {
+        return PulseSignup::query()->count();
+    }
+}
+VIOLATION
+
+  if [ "${ARCHITECTURE_GREEN}" != true ]; then
+    report transport-boundary skip "the architecture suite was not green beforehand"
+  elif gate_fails "${LOG_DIR}/transport.log" vendor/bin/pest --ci --no-tia --testsuite=Architecture --compact; then
+    report transport-boundary pass "the architecture suite rejected it"
+  else
+    report transport-boundary fail "the architecture suite accepted a controller using an Eloquent model"
+  fi
+  rm -f app/Http/Controllers/NegativeControlController.php
+fi
+
+# ---------------------------------------------------------------------------
+# Architecture: an adapter named outside the provider that binds it.
+# ---------------------------------------------------------------------------
+if selected adapter-leak; then
+  control adapter-leak "an application class naming a concrete adapter must fail the architecture suite"
+
+  plant app/Application/NegativeControl/NamesAnAdapter.php <<'VIOLATION'
+<?php
+
+namespace App\Application\NegativeControl;
+
+use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
+
+final class NamesAnAdapter
+{
+    public function __construct(private EloquentPulseSignupRepository $signups) {}
+}
+VIOLATION
+
+  if [ "${ARCHITECTURE_GREEN}" != true ]; then
+    report adapter-leak skip "the architecture suite was not green beforehand"
+  elif gate_fails "${LOG_DIR}/adapter.log" vendor/bin/pest --ci --no-tia --testsuite=Architecture --compact; then
+    report adapter-leak pass "the architecture suite rejected it"
+  else
+    report adapter-leak fail "the architecture suite accepted an adapter named outside its provider"
+  fi
+  rm -f app/Application/NegativeControl/NamesAnAdapter.php
+  rmdir app/Application/NegativeControl 2>/dev/null || true
+fi
+
+# ---------------------------------------------------------------------------
+# Coverage: a first-party line no test reaches.
+# ---------------------------------------------------------------------------
+if selected php-coverage; then
+  control php-coverage "an uncovered first-party line must fail the 100% coverage gate"
+
+  if ! php -r 'exit(extension_loaded("xdebug") || extension_loaded("pcov") ? 0 : 1);'; then
+    report php-coverage skip "no coverage driver on this runtime; the hosted PHP lane is the authority"
+  else
+    plant app/Support/NegativeControlUncovered.php <<'VIOLATION'
+<?php
+
+namespace App\Support;
+
+final class NegativeControlUncovered
+{
+    public function neverCalled(): string
+    {
+        return 'no test reaches this line';
+    }
+}
+VIOLATION
+
+    if gate_fails "${LOG_DIR}/coverage.log" vendor/bin/pest --ci --no-tia --coverage --min=100 --compact; then
+      report php-coverage pass "the coverage gate rejected it"
+    else
+      report php-coverage fail "the coverage gate reported 100% with an unreached file present"
+    fi
+    rm -f app/Support/NegativeControlUncovered.php
+    rmdir app/Support 2>/dev/null || true
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# Static analysis: proves tests/ is analysed, and analysed by the Pest plugin.
+# ---------------------------------------------------------------------------
+if selected phpstan-tests; then
+  control phpstan-tests "an invalid construct inside tests/ must fail static analysis"
+
+  plant tests/Feature/NegativeControlAnalysisTest.php <<'VIOLATION'
+<?php
+
+// A plain level-7 type error, proving tests/ is inside the analysed paths.
+it('adds a string to an integer', function (): void {
+    $sum = 1 + 'not a number';
+
+    expect($sum)->toBeInt();
+});
+
+// A covers() naming a class that does not exist, proving the Pest plugin is
+// registered rather than Larastan alone.
+it('covers a class that was never written', function (): void {
+    expect(true)->toBeTrue();
+})->covers(App\NegativeControl\NeverWritten::class);
+VIOLATION
+
+  if [ "${STATIC_GREEN}" != true ]; then
+    report phpstan-tests skip "static analysis was not green beforehand, so a failure now proves nothing"
+  elif gate_fails "${LOG_DIR}/phpstan.log" vendor/bin/phpstan analyse --no-progress --error-format=raw; then
+    report phpstan-tests pass "static analysis rejected it"
+  else
+    report phpstan-tests fail "static analysis accepted an invalid construct inside tests/"
+  fi
+  rm -f tests/Feature/NegativeControlAnalysisTest.php
+fi
+
+# ---------------------------------------------------------------------------
+# Every violation is gone; the gates must be green again.
+# ---------------------------------------------------------------------------
+echo "--> teardown: every violation is removed and the suite is green again"
+if vendor/bin/pest --ci --no-tia --testsuite=Architecture --compact > "${LOG_DIR}/teardown.log" 2>&1; then
+  report teardown pass "architecture suite green"
+else
+  report teardown fail "a planted violation was left behind"
+  cat "${LOG_DIR}/teardown.log"
+fi
+
+echo "${pass} caught, ${fail} not caught, ${skipped} skipped"
+
+# A run that executed no control is not a pass. Without this the harness
+# reports success for having done nothing, which is worse than no harness.
+if [ "${ran}" -ne "${#REQUESTED[@]}" ]; then
+  echo "expected ${#REQUESTED[@]} controls to run, ${ran} did; the selection is broken" >&2
+  exit 1
+fi
+
+[ "${fail}" -eq 0 ]
