@@ -317,16 +317,23 @@ test('development seeding still uses the existing factory', function () {
     expect(User::where('email', 'test@example.com')->exists())->toBeTrue();
 });
 
-test('framework seed prohibition also blocks nested calls that do not dispatch command events', function () {
-    app()->detectEnvironment(fn (): string => 'production');
-    $isolation = app(EnvironmentIsolation::class);
+test('framework seed prohibition survives provider boot order for nested calls without command events', function (string $environment) {
+    $user = User::factory()->create();
+    $original = DB::connection();
+    $isolation = isolatedConfiguration($environment);
+
+    if ($environment === 'production') {
+        config(['database.connections.pgsql.database' => 'rozine', 'database.connections.pgsql.username' => 'rozine']);
+    }
+
     (new EnvironmentSafetyServiceProvider(app()))->boot($isolation);
+    (new AppServiceProvider(app()))->boot();
 
     $command = app(SeedCommand::class);
     $command->setLaravel(app());
     expect($command->run(new ArrayInput(['--force' => true]), new BufferedOutput))->toBe(1);
-    expect(User::count())->toBe(0);
-});
+    expect($original->table('users')->where('id', $user->id)->value('email'))->toBe($user->email);
+})->with(['production', 'uat', 'staging', 'demo']);
 
 test('real forced artisan calls respect the booted environment prohibitions', function (string $environment, string $command) {
     $user = User::factory()->create();

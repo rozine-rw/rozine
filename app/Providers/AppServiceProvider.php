@@ -8,6 +8,7 @@ use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Console\Seeds\SeedCommand;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -48,6 +49,10 @@ class AppServiceProvider extends ServiceProvider
 
         DB::prohibitDestructiveCommands(
             ! $this->app->make(EnvironmentIsolation::class)->canReset(),
+        );
+
+        SeedCommand::prohibit(
+            ! $this->app->make(EnvironmentIsolation::class)->canSeed(),
         );
 
         Password::defaults(fn (): ?Password => app()->isProduction()

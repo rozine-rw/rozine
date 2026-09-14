@@ -331,6 +331,40 @@ The execution pack identifies the three required physical-device rows and two iO
 
 The remaining demo/UAT **visual** safeguards were not implemented in this preparation pass. The Impeccable UI skill requires product context before visual edits; permission to add a source-derived `PRODUCT.md` was requested and is pending. Existing backend isolation work in Phase 0J remains intact. No native source or financial fixtures were added, and neither the provider-start checkbox nor the environment-isolation checkbox is closed. No commit, push, PR, hosted acceptance or deployment is claimed.
 
+## Phase 0L — upstream environment policy and provider tracks (2026-09-10; reconciled 2026-09-14)
+
+This section retains the evidence brought in by `origin/dev` PR #85 (`a08158c`, merged as `10e085f`) alongside the local Phase 0H–K work. The source called this Phase 0H; it is relabelled here to avoid replacing the MVP crosswalk evidence. Definition is complete, but the broader isolation acceptance item remains open as recorded in Phase 0J. Server observations below belong to the upstream 10 September investigation and were not repeated during conflict resolution.
+
+- [x] **Environment isolation defined.** `environment-isolation-policy.md` fixes each environment's
+  purpose and permitted data — real participant data in production and nowhere else — together with
+  seeded-demo boundaries, per-environment reset controls and feature-flag rules. The upstream record
+  reports `APP_DEBUG=false` on both servers and staging on `APP_ENV=staging`.
+- [x] **Production refuses to seed.** `DB::prohibitDestructiveCommands` covers five commands and not
+  `db:seed`, although `SeedCommand` supports the same prohibition. `DatabaseSeeder` creates
+  `test@example.com` with the factory password `password`, already verified, so one seed on the
+  production box would have planted a known-credential account beside the live waitlist. Tests assert
+  production refuses seeding and wiping, that local/testing can still seed, and reset the static
+  prohibition flags after each test so one production-mode test cannot leak into the rest. The merged
+  guard uses `EnvironmentIsolation::canSeed()` so provider boot order cannot re-enable the framework
+  seed command in UAT/staging or a disabled demo. Nested-command regression tests cover those profiles.
+- [ ] **Provider and regulatory tracks owned, not started.** `provider-regulatory-tracks.md` names an
+  owner, decision, first action and certification gate for each of the ten required tracks and four
+  adjacent ones. External engagement is not claimed; the item closes when each owner confirms first
+  contact. The prepared 13-track dependency register and its required inputs/fake-case evidence remain
+  intact. Different groupings and named leads require owner reconciliation, not an inferred signature.
+
+**Upstream deployment blocker reported 2026-09-10:** the Contabo box ran PHP 8.4.23 with only 8.4 FPM
+pools, while D-73 pins deployment to 8.5 and `deploy-remote.sh` rejects other versions. That reported
+state blocks deployment until operators upgrade and verify it. Deployment remains deferred by decision;
+this merge neither checks nor changes the server, FPM pools, nginx, secrets or live data.
+
+**Merged-state precedence:** the policy's observed `rozine_staging`/`rozine` database identity,
+permitted staging reset and shared outbound credentials do not satisfy the stricter implemented UAT
+profile in Phase 0J. Operators must prepare and verify the isolated database/role, paths and disabled
+outbound credentials before promotion; do not weaken the guard to accommodate the old host. The local
+demo seed/reset switches now exist, but a complete demo, general feature-flag system and hosted proof
+do not. The new documents are retained as dated policy/owner records, not deployment acceptance.
+
 ## Authority and brand freeze
 
 The governing plan's source order remains active. No unsigned PDF/prototype constant may change money, underwriting, authorization, evidence, secondary trading, or regulatory behavior.
