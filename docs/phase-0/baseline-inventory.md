@@ -268,14 +268,14 @@ The ADR-0001 layering as it stands. `tests/Architecture` enforces the dependency
 | Layer | Path | Classes | Contents |
 |---|---|---|---|
 | Domain | `app/Domain` | 2 | `Pulse\PulseSector`, `Pulse\PulseUnderwriting` |
-| Application | `app/Application` | 9 | `Environment\EnvironmentIsolation`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor` |
-| Infrastructure | `app/Infrastructure` | 1 | `Pulse\EloquentPulseSignupRepository` |
+| Application | `app/Application` | 11 | `Environment\Contracts\DemoFixtureStore`, `Environment\EnvironmentIsolation`, `Environment\ResetDemoFixtures`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor` |
+| Infrastructure | `app/Infrastructure` | 2 | `Environment\EloquentDemoFixtureStore`, `Pulse\EloquentPulseSignupRepository` |
 | HTTP — controllers | `app/Http/Controllers` | 5 | `Controller`, `PulseController`, `Settings\ProfileController`, `Settings\SecurityController`, `SiteController` |
 | HTTP — requests | `app/Http/Requests` | 10 | `Pulse\PreviewBusinessRequest`, `Pulse\PreviewInvestorRequest`, `Pulse\StoreBusinessSignupRequest`, `Pulse\StoreInvestorPledgeRequest`, `Settings\PasswordUpdateRequest`, `Settings\ProfileDeleteRequest`, `Settings\ProfileUpdateRequest`, `Settings\TwoFactorAuthenticationRequest`, `Site\StoreSiteBusinessRequest`, `Site\StoreSiteInvestorRequest` |
 | HTTP — resources | `app/Http/Resources` | 7 | `PulseBusinessPreviewResource`, `PulseBusinessSignupReceiptResource`, `PulseInvestorPreviewResource`, `PulseInvestorSignupReceiptResource`, `PulseListingResource`, `PulsePageResource`, `PulsePolicyResource` |
 | HTTP — middleware | `app/Http/Middleware` | 3 | `HandleAppearance`, `HandleInertiaRequests`, `SetLocale` |
 | Models | `app/Models` | 2 | `PulseSignup`, `User` |
-| Console commands | `app/Console/Commands` | 2 | `CaptureBaselineInventory`, `CheckEnvironmentIsolation` |
+| Console commands | `app/Console/Commands` | 3 | `CaptureBaselineInventory`, `CheckEnvironmentIsolation`, `ResetDemo` |
 
 ## CI gates
 
