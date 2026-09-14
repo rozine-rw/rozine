@@ -14,6 +14,7 @@ declare module '@inertiajs/core' {
             auth: Auth;
             sidebarOpen: boolean;
             locale: string;
+            nonLiveEnvironment: 'demo' | 'uat' | null;
             [key: string]: unknown;
         };
     }

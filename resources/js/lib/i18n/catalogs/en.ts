@@ -7,6 +7,10 @@
  * codes stay aligned.
  */
 const en = {
+    'environment.demo': 'Demo — not live',
+    'environment.uat': 'UAT — not live',
+    'environment.synthetic_only':
+        'Use synthetic data only. No real-money transactions.',
     'common.brand.name': 'Rozine',
     'common.action.log_in': 'Log in',
     'common.action.sign_up': 'Sign up',

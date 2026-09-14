@@ -16,6 +16,7 @@
         "toggleText"
     ],
     "externalizedPaths": [
+        "resources/js/components/non-live-notice.tsx",
         "resources/js/pages/auth/forgot-password.tsx",
         "resources/js/pages/auth/login.tsx"
     ]

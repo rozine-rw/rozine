@@ -16,6 +16,7 @@ const state = vi.hoisted(() => ({
     initializeTheme: vi.fn(),
     options: undefined as InertiaOptions | undefined,
     settingsLayout: vi.fn(),
+    publicLayout: vi.fn(),
 }));
 
 vi.mock('@inertiajs/react', () => ({
@@ -41,6 +42,7 @@ vi.mock('@/hooks/use-appearance', () => ({
 vi.mock('@/layouts/app-layout', () => ({ default: state.appLayout }));
 vi.mock('@/layouts/auth-layout', () => ({ default: state.authLayout }));
 vi.mock('@/layouts/settings/layout', () => ({ default: state.settingsLayout }));
+vi.mock('@/layouts/public-layout', () => ({ default: state.publicLayout }));
 
 async function loadApplication(appName: string): Promise<InertiaOptions> {
     vi.resetModules();
@@ -67,9 +69,9 @@ describe('application entry point', () => {
 
         expect(options.title('Dashboard')).toBe('Dashboard - Laravel');
         expect(options.title('')).toBe('Laravel');
-        expect(options.layout('home')).toBeNull();
-        expect(options.layout('welcome')).toBeNull();
-        expect(options.layout('pulse')).toBeNull();
+        expect(options.layout('home')).toBe(state.publicLayout);
+        expect(options.layout('welcome')).toBe(state.publicLayout);
+        expect(options.layout('pulse')).toBe(state.publicLayout);
         expect(options.layout('auth/login')).toBe(state.authLayout);
         expect(options.layout('settings/profile')).toEqual([
             state.appLayout,

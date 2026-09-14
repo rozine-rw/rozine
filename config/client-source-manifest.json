@@ -122,6 +122,7 @@
         "resources/js/components/nav-footer.tsx",
         "resources/js/components/nav-main.tsx",
         "resources/js/components/nav-user.tsx",
+        "resources/js/components/non-live-notice.tsx",
         "resources/js/components/passkey-item.tsx",
         "resources/js/components/passkey-register.tsx",
         "resources/js/components/passkey-verify.tsx",
@@ -188,6 +189,7 @@
         "resources/js/layouts/auth/auth-card-layout.tsx",
         "resources/js/layouts/auth/auth-simple-layout.tsx",
         "resources/js/layouts/auth/auth-split-layout.tsx",
+        "resources/js/layouts/public-layout.tsx",
         "resources/js/layouts/settings/layout.tsx",
         "resources/js/lib/i18n/catalogs/en.ts",
         "resources/js/lib/i18n/catalogs/fr.ts",
@@ -216,10 +218,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 188,
+        "totalTrackedSources": 190,
         "generated": 70,
         "declarationOnly": 6,
-        "authoredExecutable": 112
+        "authoredExecutable": 114
     },
-    "coverageSetSha256": "3e9b347451418bfca792e04c0f4a61a3071374227edb373416953e0365d476fd"
+    "coverageSetSha256": "4ede3e026f7d9771cc838e4e0e5da3228fdb6f189338e146eb65083bcc5cf0d9"
 }
