@@ -268,14 +268,14 @@ The ADR-0001 layering as it stands. `tests/Architecture` enforces the dependency
 | Layer | Path | Classes | Contents |
 |---|---|---|---|
 | Domain | `app/Domain` | 2 | `Pulse\PulseSector`, `Pulse\PulseUnderwriting` |
-| Application | `app/Application` | 8 | `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor` |
+| Application | `app/Application` | 9 | `Environment\EnvironmentIsolation`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor` |
 | Infrastructure | `app/Infrastructure` | 1 | `Pulse\EloquentPulseSignupRepository` |
 | HTTP — controllers | `app/Http/Controllers` | 5 | `Controller`, `PulseController`, `Settings\ProfileController`, `Settings\SecurityController`, `SiteController` |
 | HTTP — requests | `app/Http/Requests` | 10 | `Pulse\PreviewBusinessRequest`, `Pulse\PreviewInvestorRequest`, `Pulse\StoreBusinessSignupRequest`, `Pulse\StoreInvestorPledgeRequest`, `Settings\PasswordUpdateRequest`, `Settings\ProfileDeleteRequest`, `Settings\ProfileUpdateRequest`, `Settings\TwoFactorAuthenticationRequest`, `Site\StoreSiteBusinessRequest`, `Site\StoreSiteInvestorRequest` |
 | HTTP — resources | `app/Http/Resources` | 7 | `PulseBusinessPreviewResource`, `PulseBusinessSignupReceiptResource`, `PulseInvestorPreviewResource`, `PulseInvestorSignupReceiptResource`, `PulseListingResource`, `PulsePageResource`, `PulsePolicyResource` |
 | HTTP — middleware | `app/Http/Middleware` | 3 | `HandleAppearance`, `HandleInertiaRequests`, `SetLocale` |
 | Models | `app/Models` | 2 | `PulseSignup`, `User` |
-| Console commands | `app/Console/Commands` | 1 | `CaptureBaselineInventory` |
+| Console commands | `app/Console/Commands` | 2 | `CaptureBaselineInventory`, `CheckEnvironmentIsolation` |
 
 ## CI gates
 
@@ -291,8 +291,8 @@ The ADR-0001 layering as it stands. `tests/Architecture` enforces the dependency
 
 Secret **names** only — never values. Both environments run behind the D-68 admission gate and pin PHP 8.5 at deploy time.
 
-| Environment | Branch | Server path | Required secrets |
-|---|---|---|---|
-| Deploy (production) | `main` | `/var/www/rozine-prod` | STAGING_SSH_KEY, STAGING_SSH_HOST, STAGING_SSH_USER |
-| Deploy (staging) | `uat` | `/var/www/rozine` | STAGING_SSH_KEY, STAGING_SSH_HOST, STAGING_SSH_USER |
+| Environment | Branch | Server path | Isolation profile | Required secrets |
+|---|---|---|---|---|
+| Deploy (production) | `main` | `/var/www/rozine-prod` | `production` | STAGING_SSH_KEY, STAGING_SSH_HOST, STAGING_SSH_USER |
+| Deploy (staging) | `uat` | `/var/www/rozine` | `uat` | STAGING_SSH_KEY, STAGING_SSH_HOST, STAGING_SSH_USER |
 

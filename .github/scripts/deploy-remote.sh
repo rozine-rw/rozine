@@ -5,11 +5,17 @@
 # verbatim: nothing here is expanded by a local or intermediate shell, and the
 # old "no apostrophes anywhere in this block" hazard is gone.
 #
-# Usage: ssh <host> 'bash -s -- <app-root>' < deploy-remote.sh
+# Usage: ssh <host> 'bash -s -- <app-root> <uat|production>' < deploy-remote.sh
 
 set -euo pipefail
 
 APP_ROOT="${1:?app root is required}"
+EXPECTED_PROFILE="${2:?expected environment profile is required}"
+
+case "${EXPECTED_PROFILE}" in
+  uat|production) ;;
+  *) echo "Deployment refused: expected profile must be uat or production." >&2; exit 1 ;;
+esac
 
 # ---------------------------------------------------------------------------
 # D-73 pins PHP 8.5 as the canonical deployment runtime. Resolve it explicitly
@@ -36,6 +42,11 @@ cd "${APP_ROOT}"
 
 "${PHP_BIN}" "${COMPOSER_BIN}" install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
+# Read the server's actual environment, not a previous release's config cache.
+# Check before cache/database/queue operations can touch external state.
+"${PHP_BIN}" artisan config:clear
+"${PHP_BIN}" artisan isolation:check --expect="${EXPECTED_PROFILE}" --no-interaction
+
 # Wayfinder builds the typed client from the Laravel route list during the
 # asset build, and Laravel answers that list from the route cache left by the
 # previous run. Drop stale caches first, or a release that adds a route builds
@@ -47,6 +58,7 @@ npm run build
 
 "${PHP_BIN}" artisan migrate --force
 "${PHP_BIN}" artisan config:cache
+"${PHP_BIN}" artisan isolation:check --expect="${EXPECTED_PROFILE}" --no-interaction
 "${PHP_BIN}" artisan route:cache
 "${PHP_BIN}" artisan view:cache
 "${PHP_BIN}" artisan queue:restart

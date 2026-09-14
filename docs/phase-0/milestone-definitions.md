@@ -56,8 +56,9 @@ to immutable evidence and no row silently dropped.
 - That real participants behave as fixtures do.
 - That the lifecycle completes in production time. A repayment schedule that passes in a test clock
   has not survived a real month.
-- That Pulse or native clients are ready. Both are explicitly post-MVP, and this milestone must not
-  be read as full-roadmap completion.
+- That Pulse or full native role clients are ready. Both are explicitly post-MVP; D-04's narrow
+  native secure-capture companion is an MVP exception and must meet its own device/security gates.
+  This milestone must not be read as full-roadmap completion.
 
 ---
 

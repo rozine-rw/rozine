@@ -62,4 +62,4 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new \
             "${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_SSH_HOST }}" \
-            'bash -s -- /var/www/rozine-prod' < .github/scripts/deploy-remote.sh
+            'bash -s -- /var/www/rozine-prod production' < .github/scripts/deploy-remote.sh
