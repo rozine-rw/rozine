@@ -9,6 +9,10 @@
 import type { Catalog } from '@/lib/i18n/types';
 
 const rw: Catalog = {
+    'environment.demo': 'Demo — si urubuga nyarwo',
+    'environment.uat': 'UAT — si urubuga nyarwo',
+    'environment.synthetic_only':
+        'Koresha amakuru y’impimbano gusa. Nta guhererekanya amafaranga nyayo.',
     'common.brand.name': 'Rozine',
     'common.action.log_in': 'Injira',
     'common.action.sign_up': 'Iyandikishe',

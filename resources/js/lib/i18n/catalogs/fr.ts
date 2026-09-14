@@ -7,6 +7,10 @@
 import type { Catalog } from '@/lib/i18n/types';
 
 const fr: Catalog = {
+    'environment.demo': 'Démo — hors production',
+    'environment.uat': 'UAT — hors production',
+    'environment.synthetic_only':
+        'Utilisez uniquement des données fictives. Aucune transaction en argent réel.',
     'common.brand.name': 'Rozine',
     'common.action.log_in': 'Se connecter',
     'common.action.sign_up': "S'inscrire",

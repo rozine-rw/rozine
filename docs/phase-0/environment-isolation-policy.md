@@ -3,6 +3,8 @@
 **Status:** `DEFINED 2026-09-10` · **Owners:** Aminu and Erastus — Engineering/Security; Kimani —
 Compliance (data classification); Robert — internal Legal (personal data)
 
+**Implementation addendum, 2026-09-14:** Phase 0M in [kickoff evidence](kickoff-evidence.md) records local demo/UAT notices, temporary switch ownership/expiry, and a guarded synthetic Pulse fixture reset. This is not host-isolation acceptance or the Phase 3 financial demo book. The merged runtime requires `rozine_uat` for both UAT database and role and **denies all UAT/staging seeding and destructive resets**; it supersedes the earlier permissive staging entries below. Historical host observations have not been reverified by this addendum.
+
 The requirement is that demo and UAT facts can never look live or touch real records. That is a
 property of the whole estate, not of one config flag, so this document states what each environment
 is for, what data it may hold, which boundaries hold today with evidence, and which do not yet.
@@ -110,7 +112,7 @@ data is not deterministic, and a non-deterministic demo cannot be compared run t
 
 ## Feature flags
 
-There is no feature-flag mechanism today. This defines one before the first flag is needed.
+The original 2026-09-10 baseline had no general feature-flag mechanism. The current bounded implementation uses `config/isolation.php` through `EnvironmentIsolation` for the two demo fixture switches; it does not introduce a second registry or a flag library.
 
 - **Flags gate unfinished or unapproved behaviour, never unapproved money.** A flag may hide a
   screen or a flow; it may not switch production onto policy that has not been activated. Money,
@@ -134,3 +136,11 @@ decision.
 It does not build the demo environment; Phase 3 does. It does not close the server-isolation gaps;
 each has an owner above. It does not introduce a flag library. It does make one boundary real in code
 — production now refuses to seed — because a boundary that is only written down is not a boundary.
+
+### Locally verified foundation reset (2026-09-14)
+
+`php artisan demo:reset --confirm=pulse-foundation-v1` restores only two reserved Pulse rows in a dedicated `APP_ENV=demo` database, after the existing isolation checks and both `ROZINE_DEMO_ENABLED=true` and `ROZINE_DEMO_RESET_ENABLED=true` opt-ins. Both switches default off; enabling them on any other profile is refused. Their shared Engineering owner, purpose and expiry are recorded in `config/isolation.php`; enabled demo switches fail closed from **2026-10-14 00:00 UTC**, unless Engineering reviews and changes that lease. Disabled production remains unaffected.
+
+The fixture contacts end in `@rozine-demo.invalid`, names explicitly say synthetic, queue identities are `DEMO-INV-0001` and `DEMO-BIZ-0001`, and `user_agent=rozine-synthetic:pulse-foundation-v1` records authored provenance. Every supplied field and timestamp is fixed; database-assigned row IDs remain stable once created. This marker identifies a fixture, not a general-purpose authorization credential. Updates require both the reserved contact and the marker at write time; collisions and database errors roll the whole fixture batch back. No production data is copied or anonymized, no passwords/accounts are created, and no rating, loan, return or live transaction is asserted.
+
+This is a **fixture-set reset, not a whole-database reset**: unrelated signups, accounts, counters, files and queues are retained. No web reset route exists. Use only after dedicated demo provisioning; the command does not migrate a stale schema. Rebuilding the healthy/arrears/frozen/recovery/matured financial demo and provider-specific sandbox behavior remains later gated work.

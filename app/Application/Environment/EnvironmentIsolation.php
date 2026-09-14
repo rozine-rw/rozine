@@ -56,6 +56,10 @@ class EnvironmentIsolation
             throw new LogicException('ISOLATION_LIVE_MONEY_NOT_ACTIVATED');
         }
 
+        if ($demoEnabled && now('UTC')->toDateString() >= $this->config->string('isolation.demo_flags.expires_at')) {
+            throw new LogicException('ISOLATION_DEMO_FLAGS_EXPIRED');
+        }
+
         if ($profile === 'production') {
             $this->assertProductionDatabaseNamespace();
         }
@@ -190,6 +194,15 @@ class EnvironmentIsolation
         if (in_array($command, ['db:wipe', 'migrate:fresh', 'migrate:refresh', 'migrate:reset', 'migrate:rollback'], true)
             && ! $this->canReset()) {
             throw new LogicException('ISOLATION_RESET_DENIED');
+        }
+    }
+
+    public function assertDemoResetAllowed(): void
+    {
+        $this->assertSafeConfiguration('demo');
+
+        if (! $this->canReset()) {
+            throw new LogicException('ISOLATION_DEMO_RESET_DENIED');
         }
     }
 

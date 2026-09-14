@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\Environment\Contracts\DemoFixtureStore;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
+use App\Infrastructure\Environment\EloquentDemoFixtureStore;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Console\Seeds\SeedCommand;
@@ -29,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(PulseSignupRepository::class, EloquentPulseSignupRepository::class);
+        $this->app->bind(DemoFixtureStore::class, EloquentDemoFixtureStore::class);
     }
 
     /**

@@ -16,6 +16,7 @@ const state = vi.hoisted(() => ({
     page: {
         name: 'Rozine',
         auth: { user: undefined as User | undefined },
+        nonLiveEnvironment: null as 'demo' | 'uat' | null,
     },
 }));
 
@@ -107,9 +108,28 @@ const user: User = {
 
 afterEach(() => {
     state.page.auth.user = undefined;
+    state.page.nonLiveEnvironment = null;
 });
 
 describe('application layouts', () => {
+    it('shows one notice in each application and authentication shell', () => {
+        state.page.nonLiveEnvironment = 'uat';
+        const { rerender } = render(<AppLayout>Content</AppLayout>);
+        expect(
+            screen.getAllByRole('note', { name: 'UAT — not live' }),
+        ).toHaveLength(1);
+
+        rerender(<AppHeaderLayout>Content</AppHeaderLayout>);
+        expect(
+            screen.getAllByRole('note', { name: 'UAT — not live' }),
+        ).toHaveLength(1);
+
+        rerender(<AuthLayout>Content</AuthLayout>);
+        expect(
+            screen.getAllByRole('note', { name: 'UAT — not live' }),
+        ).toHaveLength(1);
+    });
+
     it('forwards default and supplied breadcrumbs through the app layout', () => {
         const { rerender } = render(<AppLayout>Default content</AppLayout>);
 

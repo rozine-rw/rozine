@@ -365,6 +365,28 @@ outbound credentials before promotion; do not weaken the guard to accommodate th
 demo seed/reset switches now exist, but a complete demo, general feature-flag system and hosted proof
 do not. The new documents are retained as dated policy/owner records, not deployment acceptance.
 
+## Phase 0M — demo/UAT presentation and synthetic reset safeguards (2026-09-14)
+
+**Status: locally implemented and verified; not deployed or independently accepted.** User-authorized follow-through on the demo/UAT safeguards; the source-derived root [PRODUCT.md](../../PRODUCT.md) supplies the previously missing product context. The existing visual system and assets are preserved; no new brand master, dependency, policy activation or financial module is introduced.
+
+- `HandleInertiaRequests` supplies `nonLiveEnvironment` as an always-included, server-owned prop, including partial reloads. `demo` and `uat`/`staging` show distinct, non-dismissible notices on public, authentication, sidebar and header application layouts. Production gets no non-live notice. Request parameters cannot change the profile. Copy says to use synthetic data and that no real-money transactions occur; it does not certify the origin of arbitrary user-entered records.
+- English, French and Kinyarwanda notice strings are cataloged, pseudo-localized and included in the hard-coded-string guard. French/Kinyarwanda catalog presence is still engineering preparation, not D-07 linguistic sign-off.
+- Existing `config/isolation.php` switches remain default-off and use the existing accessor. Their shared Aminu/Erastus ownership, purpose and 2026-10-14 00:00 UTC expiry are recorded. Enabled switches expire fail-closed; production with switches off remains unaffected. `live_money_enabled` remains fixed false.
+- `demo:reset --confirm=pulse-foundation-v1` restores two reserved, authored synthetic Pulse fixtures only after dedicated-demo configuration and both opt-ins pass. A contract separates application orchestration from database persistence. The complete batch is transactional; writes match contact **and** synthetic provenance, including when a contact appears concurrently. The selected connection is purged and reopened after validation so a cached connection cannot defeat a changed target configuration. Collisions and database failures refuse safely without exposing contacts or SQL.
+- The fixture-set reset preserves unrelated data, accounts, files, counters, queues and other environments. Tests use fresh disposable databases and original-connection sentinels, never the user's local database. No user/schema migration, deployed reset, SMTP, provider, real-money or Erastus device operation was performed.
+
+| Local evidence | Result |
+|---|---|
+| Full PHP regression/architecture/coverage | 408 tests, 2,143 assertions, TIA disabled, 100.0% configured `app/` line coverage |
+| Client behavior/coverage | 329 tests in 34 files; all 114 authored executable files included; 100% lines/statements/functions/branches (1,441/1,477/607/1,104 covered units) |
+| Negative controls | Confirmation, all non-demo environments, both flag-off cases, invalid flag combination, expiry, wrong database, provenance collision, queue collision and transactional failure are exercised. Removing the write-time provenance predicate makes the unowned-contact test fail; restoring it returns green |
+| Static/build | Pint, PHPStan, TypeScript, `vp check`, i18n and Wayfinder drift checks, and production build pass. Existing 32 client lint warnings and two jsdom canvas notices remain |
+| Browser | Disposable loopback demo preview: desktop 1,280px and mobile 390px; public page and login notice visible; Inertia login-to-recovery navigation retains notice with no console errors. French notice visually inspected at 320px without clipping. This is desktop responsive evidence, **not physical-device or dwell evidence**, and not a deployed UAT observation |
+
+At this local-verification checkpoint, the work was uncommitted on `feat/phase-0-demo-safeguards`, retaining the isolation work already merged through PR #86 into `aminu-dev` and subsequently PR #87 into `dev`. The raw complete local coverage collection and manifest checks passed; the review package must attach a fresh immutable-SHA D-67 report, hosted checks and eligible non-author review to the committed candidate. The local results above do not claim changed-branch/exact-SHA promotion acceptance for that dirty checkout.
+
+Remaining: host/DB-grant/egress verification and remediation by the authorized operator; candidate-SHA checks and non-author review; Phase 3 financial-demo fixtures/journeys and provider-specific adapters behind their approvals. Erastus's three physical runs and two 168-hour dwell observations remain unstarted in the authoritative register until he records actual device/start evidence using the existing D-04 handoff. The overall Phase 0 isolation checkbox stays open.
+
 ## Authority and brand freeze
 
 The governing plan's source order remains active. No unsigned PDF/prototype constant may change money, underwriting, authorization, evidence, secondary trading, or regulatory behavior.
