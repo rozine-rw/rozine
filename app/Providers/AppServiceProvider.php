@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
 use Carbon\CarbonImmutable;
@@ -47,12 +48,12 @@ class AppServiceProvider extends ServiceProvider
         Date::use(CarbonImmutable::class);
 
         DB::prohibitDestructiveCommands(
-            app()->isProduction(),
+            ! $this->app->make(EnvironmentIsolation::class)->canReset(),
         );
 
-        // Not part of the facade's set above, and DatabaseSeeder plants a verified
-        // test@example.com account whose factory password is public.
-        SeedCommand::prohibit(app()->isProduction());
+        SeedCommand::prohibit(
+            ! $this->app->make(EnvironmentIsolation::class)->canSeed(),
+        );
 
         Password::defaults(fn (): ?Password => app()->isProduction()
             ? Password::min(12)

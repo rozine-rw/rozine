@@ -1,0 +1,806 @@
+{
+  "schema_version": 1,
+  "prepared_at": "2026-09-10",
+  "status": "PREPARATION_ONLY_NOT_APPROVED",
+  "production_activation": false,
+  "approvals": {
+    "engineering": null,
+    "security": null,
+    "product": null,
+    "compliance": null,
+    "independent_test": null,
+    "external_authority": null
+  },
+  "auditor": {
+    "platform_decision": "D-04_OPTION_B_APPROVED",
+    "estimate_status": "PROPOSED_LOW_CONFIDENCE",
+    "framework": null,
+    "platforms": [
+      "Android",
+      "iOS"
+    ],
+    "engineering_leads": [
+      "Aminu",
+      "Erastus"
+    ],
+    "incremental_developer_days": {
+      "Aminu": [
+        6,
+        10
+      ],
+      "Erastus": [
+        9,
+        15
+      ],
+      "total": [
+        15,
+        25
+      ]
+    },
+    "incremental_focused_weeks": [
+      2,
+      3
+    ],
+    "calendar_commitment": null,
+    "work_packages": [
+      {
+        "id": "CAP-01",
+        "title": "Native boundary and feasibility proof",
+        "aminu_days": [
+          1,
+          1
+        ],
+        "erastus_days": [
+          1,
+          2
+        ],
+        "depends_on": [],
+        "deliverable": "Versioned package/handoff contract, stack feasibility and attestation/distribution proof",
+        "gate": "D-36/D-37 unresolved values remain parameters; no acceptance bypass"
+      },
+      {
+        "id": "CAP-02",
+        "title": "Thin shell and device-bound session",
+        "aminu_days": [
+          1,
+          1
+        ],
+        "erastus_days": [
+          1,
+          2
+        ],
+        "depends_on": [
+          "CAP-01"
+        ],
+        "deliverable": "Narrow native shell, secure handoff, registration/revocation and keystore integration",
+        "gate": "No copied web session, embedded credential or native role client"
+      },
+      {
+        "id": "CAP-03",
+        "title": "Protected camera and provenance",
+        "aminu_days": [
+          1,
+          2
+        ],
+        "erastus_days": [
+          2,
+          3
+        ],
+        "depends_on": [
+          "CAP-02"
+        ],
+        "deliverable": "Camera-only capture and content-bound location/time/integrity envelope with server verification",
+        "gate": "Unsupported integrity or stale/mismatched evidence is not trusted"
+      },
+      {
+        "id": "CAP-04",
+        "title": "Offline custody and revocation",
+        "aminu_days": [
+          1,
+          2
+        ],
+        "erastus_days": [
+          2,
+          3
+        ],
+        "depends_on": [
+          "CAP-02"
+        ],
+        "deliverable": "Encrypted bounded package, process recovery, key loss/expiry/revocation and crypto-shredding",
+        "gate": "No claim of immediate wipe while offline or absolute offline time"
+      },
+      {
+        "id": "CAP-05",
+        "title": "Native upload and web handoff",
+        "aminu_days": [
+          1,
+          2
+        ],
+        "erastus_days": [
+          1,
+          2
+        ],
+        "depends_on": [
+          "CAP-03",
+          "CAP-04"
+        ],
+        "deliverable": "Resumable native queue, idempotent commit and web status/recovery integration",
+        "gate": "Only an acknowledged core commit completes ingestion; no client seal or financial decision"
+      },
+      {
+        "id": "CAP-06",
+        "title": "Platform hardening and independent evidence",
+        "aminu_days": [
+          1,
+          2
+        ],
+        "erastus_days": [
+          2,
+          3
+        ],
+        "depends_on": [
+          "CAP-05"
+        ],
+        "deliverable": "Both-platform negative tests, device matrix, full source/coverage gates and exact-SHA review pack",
+        "gate": "Physical-device and independent-test evidence cannot be replaced by simulated runs"
+      }
+    ],
+    "device_runs": [
+      {
+        "id": "D04-ANDROID-INSTALLED",
+        "matrix_row": 1,
+        "platform": "Android",
+        "mode": "installed",
+        "owner": "Erastus",
+        "status": "NOT_RUN",
+        "device": null,
+        "os_version": null,
+        "started_at": null,
+        "finished_at": null,
+        "artifact": null
+      },
+      {
+        "id": "D04-IOS-INSTALLED",
+        "matrix_row": 3,
+        "platform": "iOS",
+        "mode": "installed",
+        "owner": "Erastus",
+        "status": "NOT_RUN",
+        "device": null,
+        "os_version": null,
+        "started_at": null,
+        "finished_at": null,
+        "artifact": null
+      },
+      {
+        "id": "D04-IOS-TAB",
+        "matrix_row": 4,
+        "platform": "iOS",
+        "mode": "browser_tab",
+        "owner": "Erastus",
+        "status": "NOT_RUN",
+        "device": null,
+        "os_version": null,
+        "started_at": null,
+        "finished_at": null,
+        "artifact": null
+      }
+    ],
+    "dwell_probes": [
+      {
+        "id": "D04-DWELL-01",
+        "platform": "iOS",
+        "mode": "installed",
+        "minimum_elapsed_hours": 168,
+        "status": "NOT_STARTED",
+        "origin": null,
+        "started_at": null,
+        "finished_at": null,
+        "artifact": null
+      },
+      {
+        "id": "D04-DWELL-02",
+        "platform": "iOS",
+        "mode": "browser_tab",
+        "minimum_elapsed_hours": 168,
+        "status": "NOT_STARTED",
+        "origin": null,
+        "started_at": null,
+        "finished_at": null,
+        "artifact": null
+      }
+    ],
+    "blocking_decisions": [
+      "D-29",
+      "D-31",
+      "D-35",
+      "D-36",
+      "D-37",
+      "D-40"
+    ],
+    "candidate_rc_windows": {
+      "stretch": [
+        10,
+        11
+      ],
+      "planning": [
+        11,
+        12
+      ],
+      "remediation": [
+        12,
+        13
+      ]
+    },
+    "source_documents": [
+      "d-04-auditor-capture-decision.md",
+      "d-04-pwa-assurance/README.md",
+      "../Rozine_Phased_Implementation_Plan.md",
+      "../Rozine-BRS.md"
+    ]
+  },
+  "provider_tracks": [
+    {
+      "id": "DEP-01",
+      "name": "Identity / KYC",
+      "requirement_ids": [
+        "IR-3",
+        "CR-1",
+        "NFR-4"
+      ],
+      "decision_ids": [
+        "D-05",
+        "D-15",
+        "D-38",
+        "D-40",
+        "D-64"
+      ],
+      "accountable": "Kimani",
+      "engineering": "Aminu",
+      "requested_inputs": [
+        "Authoritative identity fields, match outcomes, expiry and reverification",
+        "Sandbox terms, service account ownership and permitted synthetic identities"
+      ],
+      "fake_cases": [
+        "verified",
+        "mismatch",
+        "expired",
+        "unavailable"
+      ],
+      "exit_evidence": [
+        "Selected provider/contract with allowed fields and privacy review",
+        "Sandbox outcome evidence and approved KYC decision mapping"
+      ],
+      "status": "PREPARED_NOT_STARTED",
+      "owner_acknowledged_at": null,
+      "next_review_due": "2026-09-14",
+      "due_status": "PROPOSED_NOT_ACCEPTED",
+      "selected_provider": null,
+      "contacted_at": null,
+      "contract_evidence": null,
+      "sandbox_evidence": null,
+      "certification_evidence": null,
+      "live_approval": null,
+      "fake_status": "SPECIFIED_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "DEP-02",
+      "name": "Business registry / KYB",
+      "requirement_ids": [
+        "IR-4",
+        "FR-200",
+        "DR-8"
+      ],
+      "decision_ids": [
+        "D-38",
+        "D-40",
+        "D-64"
+      ],
+      "accountable": "Kimani",
+      "engineering": "Aminu",
+      "requested_inputs": [
+        "Registration/ownership/mandate response schema and authoritative refresh source",
+        "A response sample with prohibited tax identifiers removed"
+      ],
+      "fake_cases": [
+        "active",
+        "dissolved",
+        "ownership_changed",
+        "prohibited_tax_field"
+      ],
+      "exit_evidence": [
+        "Approved ownership/mandate contract and redaction tests",
+        "Evidence that raw/logged/derived data do not retain prohibited TIN/tax fields"
+      ],
+      "status": "PREPARED_NOT_STARTED",
+      "owner_acknowledged_at": null,
+      "next_review_due": "2026-09-14",
+      "due_status": "PROPOSED_NOT_ACCEPTED",
+      "selected_provider": null,
+      "contacted_at": null,
+      "contract_evidence": null,
+      "sandbox_evidence": null,
+      "certification_evidence": null,
+      "live_approval": null,
+      "fake_status": "SPECIFIED_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "DEP-03",
+      "name": "Sanctions / PEP / AML",
+      "requirement_ids": [
+        "CR-2",
+        "CR-3"
+      ],
+      "decision_ids": [
+        "D-15",
+        "D-38",
+        "D-39",
+        "D-40"
+      ],
+      "accountable": "Kimani",
+      "engineering": "Aminu",
+      "requested_inputs": [
+        "Screening sources, matching thresholds, refresh/escalation and case ownership",
+        "Approved restrictions and release authority; no automatic unapproved penalties"
+      ],
+      "fake_cases": [
+        "clear",
+        "possible_match",
+        "confirmed_match",
+        "provider_failure"
+      ],
+      "exit_evidence": [
+        "Approved screening and monitoring policy plus case/appeal mapping",
+        "Certified test cases and audited restrictions/release evidence"
+      ],
+      "status": "PREPARED_NOT_STARTED",
+      "owner_acknowledged_at": null,
+      "next_review_due": "2026-09-14",
+      "due_status": "PROPOSED_NOT_ACCEPTED",
+      "selected_provider": null,
+      "contacted_at": null,
+      "contract_evidence": null,
+      "sandbox_evidence": null,
+      "certification_evidence": null,
+      "live_approval": null,
+      "fake_status": "SPECIFIED_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "DEP-04",
+      "name": "ICPAR / Audit Partner verification",
+      "requirement_ids": [
+        "IR-5",
+        "FR-300",
+        "CR-11"
+      ],
+      "decision_ids": [
+        "D-29",
+        "D-30",
+        "D-33",
+        "D-38"
+      ],
+      "accountable": "Kimani",
+      "engineering": "Aminu",
+      "requested_inputs": [
+        "API, signed file or governed manual route; authoritative ID/certificate/standing fields",
+        "Refresh SLA, suspension and false-match escalation contact"
+      ],
+      "fake_cases": [
+        "active",
+        "expired_certificate",
+        "suspended",
+        "stale_source"
+      ],
+      "exit_evidence": [
+        "ICPAR-authorized source/route and refresh contract",
+        "Accreditation/dispatch denial tests; retained professional approval evidence"
+      ],
+      "status": "PREPARED_NOT_STARTED",
+      "owner_acknowledged_at": null,
+      "next_review_due": "2026-09-14",
+      "due_status": "PROPOSED_NOT_ACCEPTED",
+      "selected_provider": null,
+      "contacted_at": null,
+      "contract_evidence": null,
+      "sandbox_evidence": null,
+      "certification_evidence": null,
+      "live_approval": null,
+      "fake_status": "SPECIFIED_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "DEP-05",
+      "name": "Statement parsing / OCR",
+      "requirement_ids": [
+        "FR-201",
+        "FR-306"
+      ],
+      "decision_ids": [
+        "D-14",
+        "D-38",
+        "D-40"
+      ],
+      "accountable": "Kimani",
+      "engineering": "Aminu",
+      "requested_inputs": [
+        "Authorized bank/MoMo statement corpus, parser formats and processing location",
+        "Confidence/correction lineage and rejection taxonomy; no new evidence types"
+      ],
+      "fake_cases": [
+        "parsed",
+        "low_confidence",
+        "corrupt_document",
+        "unsupported_format"
+      ],
+      "exit_evidence": [
+        "Versioned provider/parser contract and licensed synthetic/redacted corpus",
+        "Source hash to normalized/corrected value lineage and no unapproved underwriting activation"
+      ],
+      "status": "PREPARED_NOT_STARTED",
+      "owner_acknowledged_at": null,
+      "next_review_due": "2026-09-14",
+      "due_status": "PROPOSED_NOT_ACCEPTED",
+      "selected_provider": null,
+      "contacted_at": null,
+      "contract_evidence": null,
+      "sandbox_evidence": null,
+      "certification_evidence": null,
+      "live_approval": null,
+      "fake_status": "SPECIFIED_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "DEP-06",
+      "name": "Bank / custody / reconciliation",
+      "requirement_ids": [
+        "IR-2",
+        "CR-4",
+        "BR-60"
+      ],
+      "decision_ids": [
+        "D-17",
+        "D-20",
+        "D-21",
+        "D-22",
+        "D-23",
+        "D-38",
+        "D-39"
+      ],
+      "accountable": "Kimani",
+      "engineering": "Aminu",
+      "requested_inputs": [
+        "Custody account topology, ownership, permitted rails and settlement identifiers",
+        "Cutoffs, reversals, reconciliation files and authorization requirements"
+      ],
+      "fake_cases": [
+        "pending",
+        "settled",
+        "duplicate_event",
+        "reversed",
+        "reconciliation_break"
+      ],
+      "exit_evidence": [
+        "Signed custody and rail contracts; separated credentials/accounts",
+        "Provider-certified settlement/reversal/reconciliation evidence; lawful live go/no-go"
+      ],
+      "status": "PREPARED_NOT_STARTED",
+      "owner_acknowledged_at": null,
+      "next_review_due": "2026-09-14",
+      "due_status": "PROPOSED_NOT_ACCEPTED",
+      "selected_provider": null,
+      "contacted_at": null,
+      "contract_evidence": null,
+      "sandbox_evidence": null,
+      "certification_evidence": null,
+      "live_approval": null,
+      "fake_status": "SPECIFIED_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "DEP-07",
+      "name": "MoMo / both required networks",
+      "requirement_ids": [
+        "IR-1",
+        "FR-211"
+      ],
+      "decision_ids": [
+        "D-20",
+        "D-21",
+        "D-22",
+        "D-23",
+        "D-38"
+      ],
+      "accountable": "Kimani",
+      "engineering": "Aminu",
+      "requested_inputs": [
+        "Separate coverage/contract and sandbox route for each required network",
+        "Collection/disbursement/funding/withdrawal statuses, signatures, limits and cutoffs"
+      ],
+      "fake_cases": [
+        "pending",
+        "settled",
+        "rejected",
+        "duplicate_event",
+        "reversal",
+        "network_unavailable"
+      ],
+      "exit_evidence": [
+        "A certification record for each network and each enabled operation",
+        "Exactly-once callback/reversal and reconciled external transaction evidence; no promised same-day SLA without contract"
+      ],
+      "status": "PREPARED_NOT_STARTED",
+      "owner_acknowledged_at": null,
+      "next_review_due": "2026-09-14",
+      "due_status": "PROPOSED_NOT_ACCEPTED",
+      "selected_provider": null,
+      "contacted_at": null,
+      "contract_evidence": null,
+      "sandbox_evidence": null,
+      "certification_evidence": null,
+      "live_approval": null,
+      "fake_status": "SPECIFIED_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "DEP-08",
+      "name": "Messaging / SMS / email / push",
+      "requirement_ids": [
+        "IR-6"
+      ],
+      "decision_ids": [
+        "D-38",
+        "D-40",
+        "D-46",
+        "D-48",
+        "D-49"
+      ],
+      "accountable": "Robert",
+      "engineering": "Aminu",
+      "requested_inputs": [
+        "Required/optional notices, consent, language, quiet hours and approved templates",
+        "Delivery callbacks, sender/account ownership, expiry and fallback rules"
+      ],
+      "fake_cases": [
+        "accepted",
+        "delivered",
+        "failed",
+        "duplicate_receipt",
+        "opted_out"
+      ],
+      "exit_evidence": [
+        "Approved communication rules/templates and selected sender providers",
+        "Delivery/fallback/consent evidence with redacted logs; no real messages from demo/UAT"
+      ],
+      "status": "PREPARED_NOT_STARTED",
+      "owner_acknowledged_at": null,
+      "next_review_due": "2026-09-14",
+      "due_status": "PROPOSED_NOT_ACCEPTED",
+      "selected_provider": null,
+      "contacted_at": null,
+      "contract_evidence": null,
+      "sandbox_evidence": null,
+      "certification_evidence": null,
+      "live_approval": null,
+      "fake_status": "SPECIFIED_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "DEP-09",
+      "name": "Storage / backup / key custody",
+      "requirement_ids": [
+        "NFR-3",
+        "NFR-12",
+        "NFR-14",
+        "DR-7"
+      ],
+      "decision_ids": [
+        "D-35",
+        "D-36",
+        "D-38",
+        "D-40",
+        "D-42"
+      ],
+      "accountable": "Aminu",
+      "engineering": "Aminu",
+      "requested_inputs": [
+        "Data classes, region/residency, retention/legal holds and recovery objectives",
+        "Per-environment accounts/buckets/keys, immutable evidence and key recovery/revocation"
+      ],
+      "fake_cases": [
+        "stored",
+        "checksum_mismatch",
+        "access_denied",
+        "key_unavailable",
+        "restore_required"
+      ],
+      "exit_evidence": [
+        "Approved residency/retention and dedicated least-privilege resources",
+        "Negative cross-environment access, backup/restore, key rotation/revocation and retention evidence"
+      ],
+      "status": "PREPARED_NOT_STARTED",
+      "owner_acknowledged_at": null,
+      "next_review_due": "2026-09-14",
+      "due_status": "PROPOSED_NOT_ACCEPTED",
+      "selected_provider": null,
+      "contacted_at": null,
+      "contract_evidence": null,
+      "sandbox_evidence": null,
+      "certification_evidence": null,
+      "live_approval": null,
+      "fake_status": "SPECIFIED_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "DEP-10",
+      "name": "Maps / geocoding",
+      "requirement_ids": [
+        "IR-7",
+        "BR-51",
+        "FR-304"
+      ],
+      "decision_ids": [
+        "D-31",
+        "D-32",
+        "D-37",
+        "D-38",
+        "D-40"
+      ],
+      "accountable": "Kimani",
+      "engineering": "Aminu",
+      "requested_inputs": [
+        "Registered-office/premises coordinate authority and permitted geocoder terms",
+        "Accuracy/boundary/refresh policy; separate live device observations"
+      ],
+      "fake_cases": [
+        "resolved",
+        "ambiguous",
+        "unavailable",
+        "radius_boundary"
+      ],
+      "exit_evidence": [
+        "Approved coordinate and distance contract with synthetic boundary fixtures",
+        "Dispatch uses registered coordinates; no geocoder result treated as attested physical presence"
+      ],
+      "status": "PREPARED_NOT_STARTED",
+      "owner_acknowledged_at": null,
+      "next_review_due": "2026-09-14",
+      "due_status": "PROPOSED_NOT_ACCEPTED",
+      "selected_provider": null,
+      "contacted_at": null,
+      "contract_evidence": null,
+      "sandbox_evidence": null,
+      "certification_evidence": null,
+      "live_approval": null,
+      "fake_status": "SPECIFIED_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "DEP-11",
+      "name": "External legal / contractual clearance",
+      "requirement_ids": [
+        "CR-5",
+        "CR-6",
+        "CR-8",
+        "CR-9",
+        "CR-10",
+        "CR-11"
+      ],
+      "decision_ids": [
+        "D-20",
+        "D-21",
+        "D-26",
+        "D-27",
+        "D-28",
+        "D-35",
+        "D-39",
+        "D-40"
+      ],
+      "accountable": "Robert",
+      "engineering": "Aminu",
+      "requested_inputs": [
+        "Named external counsel, engagement scope and required clearance artifacts",
+        "Note/custody/secondary/disclosure/complaints/privacy/AUP document set"
+      ],
+      "fake_cases": [
+        "missing_clearance",
+        "expired_clearance",
+        "scope_mismatch"
+      ],
+      "exit_evidence": [
+        "Counsel-issued written disposition for the exact product/contract versions",
+        "Internal owner approvals remain separate from external legal authority"
+      ],
+      "status": "PREPARED_NOT_STARTED",
+      "owner_acknowledged_at": null,
+      "next_review_due": "2026-09-14",
+      "due_status": "PROPOSED_NOT_ACCEPTED",
+      "selected_provider": null,
+      "contacted_at": null,
+      "contract_evidence": null,
+      "sandbox_evidence": null,
+      "certification_evidence": null,
+      "live_approval": null,
+      "fake_status": "SPECIFIED_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "DEP-12",
+      "name": "CMA / sandbox / supervisory reporting",
+      "requirement_ids": [
+        "IR-8",
+        "CR-12",
+        "CR-13"
+      ],
+      "decision_ids": [
+        "D-20",
+        "D-39",
+        "D-41",
+        "D-43"
+      ],
+      "accountable": "Kimani",
+      "engineering": "Aminu",
+      "requested_inputs": [
+        "Named supervisory contact/route, application requirements and sandbox conditions",
+        "Return schemas/frequency/channel, acknowledgements/corrections and supervisor visibility"
+      ],
+      "fake_cases": [
+        "return_prepared",
+        "submission_rejected",
+        "acknowledged",
+        "correction_required",
+        "authorization_missing"
+      ],
+      "exit_evidence": [
+        "Written authorization/conditions for the exact pilot scope before real-money operations",
+        "Regulator-approved return/acknowledgement evidence and scoped read-only supervisor controls"
+      ],
+      "status": "PREPARED_NOT_STARTED",
+      "owner_acknowledged_at": null,
+      "next_review_due": "2026-09-14",
+      "due_status": "PROPOSED_NOT_ACCEPTED",
+      "selected_provider": null,
+      "contacted_at": null,
+      "contract_evidence": null,
+      "sandbox_evidence": null,
+      "certification_evidence": null,
+      "live_approval": null,
+      "fake_status": "SPECIFIED_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "DEP-13",
+      "name": "Native integrity / signing / distribution",
+      "requirement_ids": [
+        "FR-304",
+        "FR-311",
+        "NFR-4"
+      ],
+      "decision_ids": [
+        "D-04",
+        "D-35",
+        "D-36",
+        "D-37",
+        "D-38"
+      ],
+      "accountable": "Erastus",
+      "engineering": "Aminu",
+      "requested_inputs": [
+        "Organization-owned Apple/Google accounts, app identifiers and approved distribution route",
+        "Supported OS/device and integrity-verdict policy, signing custody and revocation owner"
+      ],
+      "fake_cases": [
+        "valid_assertion",
+        "replayed_assertion",
+        "request_hash_mismatch",
+        "unsupported_device",
+        "service_unavailable"
+      ],
+      "exit_evidence": [
+        "Actual signed builds on the approved device matrix with server-verified assertions",
+        "Chosen distribution works with attestation; key/credential custody and loss/revocation evidence"
+      ],
+      "status": "PREPARED_NOT_STARTED",
+      "owner_acknowledged_at": null,
+      "next_review_due": "2026-09-14",
+      "due_status": "PROPOSED_NOT_ACCEPTED",
+      "selected_provider": null,
+      "contacted_at": null,
+      "contract_evidence": null,
+      "sandbox_evidence": null,
+      "certification_evidence": null,
+      "live_approval": null,
+      "fake_status": "SPECIFIED_NOT_IMPLEMENTED"
+    }
+  ]
+}

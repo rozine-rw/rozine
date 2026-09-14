@@ -52,10 +52,13 @@ test('production refuses destructive schema commands', function () {
     expect(Artisan::call('db:wipe', ['--force' => true]))->toBe(1);
 });
 
-test('anything other than production can still be seeded', function () {
+test('local and testing environments can still be seeded', function (string $environment) {
+    app()->detectEnvironment(fn (): string => $environment);
+    (new AppServiceProvider(app()))->boot();
+
     expect(Artisan::call('db:seed', ['--force' => true]))->toBe(0)
         ->and(User::query()->where('email', 'test@example.com')->exists())->toBeTrue();
-});
+})->with(['local', 'testing']);
 
 test('anything other than production leaves password rules to the defaults', function () {
     expect(Password::default()->toPasswordRulesString())->toBe('minlength: 8;');
