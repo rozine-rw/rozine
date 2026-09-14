@@ -63,7 +63,10 @@ the domain. Full native role clients remain Phase 5.
 
 1. **This is a scoped MVP exception, and the plan says such an exception requires a schedule
    rebaseline.** The thin-native component is not in the current two-developer Phase 1 estimate. It
-   needs a named owner and an estimate before the Phase 1 window is treated as a commitment.
+   needs a named owner and an accepted estimate before the Phase 1 window is treated as a commitment.
+   The [2026-09-10 incremental delivery plan](auditor-capture-delivery-plan.md) now proposes Aminu's
+   server boundary and Erastus's native/web handoff allocation, 15–25 developer-days and a 2–3-week
+   schedule addition. It is entered in Section 9.1, but A/E have not accepted a calendar commitment.
 2. Phase 1B's Auditor screens remain web/PWA and are unaffected. The online Auditor alpha was always
    Phase 1; offline capture was always Phase 2.
 3. Erasure standard: no browser or mobile API verifies erasure of physical storage. Crypto-shredding
@@ -81,7 +84,11 @@ these cannot be compressed:
 |---|---|---|---|
 | 1 | Run the reduced device matrix (README rows 1, 3, 4) to size the web/native split under Option B | Erastus | No longer a test of Option A |
 | 2 | Start the G3.5 seven-day dwell probe on both an installed and an uninstalled iOS origin | Erastus | Seven calendar days; start on day one of the matrix run |
-| 3 | Estimate the thin-native capture component and enter it in the schedule with an owner | Aminu and Erastus | Consequence 1 above |
+| 3 | Review and accept the prepared thin-native estimate and its schedule/allocation | Aminu and Erastus | Draft and machine-readable arithmetic prepared 2026-09-10; acceptance remains open |
+
+The [execution pack](auditor-capture-delivery-plan.md#device-and-dwell-execution-pack) and
+[readiness register](delivery-readiness.json) give the three device runs and both dwell observations
+stable IDs. Every device result is still `NOT_RUN`; both dwell observations are `NOT_STARTED`.
 
 Item 2 measures Safari's seven-day eviction of script-writable storage for an origin the user has
 not interacted with. Home-screen web apps are exempt; plain tabs are not. It bears on how much

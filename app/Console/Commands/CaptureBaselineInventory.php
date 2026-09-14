@@ -285,20 +285,21 @@ class CaptureBaselineInventory extends Command
 
             preg_match('/^name:\s*(.+)$/m', $contents, $name);
             preg_match('/branches:\s*\[([a-z]+)\]/', $contents, $branch);
-            preg_match("/bash -s -- (\S+)' </", $contents, $root);
+            preg_match("/bash -s -- (\S+) (uat|production)' </", $contents, $root);
             preg_match_all('/secrets\.([A-Z0-9_]+)/', $contents, $secrets);
 
             $rows[] = [
                 trim($name[1] ?? '—'),
                 '`'.($branch[1] ?? '—').'`',
                 '`'.($root[1] ?? '—').'`',
+                '`'.($root[2] ?? '—').'`',
                 implode(', ', array_unique($secrets[1])) ?: '—',
             ];
         }
 
         return $this->markdownTable(
             '## Deployment targets',
-            ['Environment', 'Branch', 'Server path', 'Required secrets'],
+            ['Environment', 'Branch', 'Server path', 'Isolation profile', 'Required secrets'],
             $rows,
             'Secret **names** only — never values. Both environments run behind the D-68 admission gate and pin PHP 8.5 at deploy time.',
         );

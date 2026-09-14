@@ -223,6 +223,114 @@ Clean-checkout evidence was generated in a disposable checkout at `c10441bf57e5b
 
 These are local implementation checks. The candidate commit still needs hosted CI and the non-author developer's review; this record does not mark Phase 0 accepted or claim future protected modules have been tested.
 
+## Phase 0H — MVP crosswalk and deferred scope (2026-09-10)
+
+**Result:** source enumeration and owned delivery/evidence mapping are complete. This closes the two
+Phase 0 document-creation checklist items and the stable-ID/owned-secondary-path mapping criteria;
+it does not close implementation, policy approval or Phase 0 acceptance.
+
+The PDF was already accessible in Downloads. Its absence from the repository had incorrectly been
+reported as a source blocker. A byte-identical copy is now archived as
+[Rozine MVP Spec.pdf](../Rozine%20MVP%20Spec.pdf), and its 14 rendered pages have been visually
+reviewed. The [MVP crosswalk](mvp-crosswalk.md) resolves PDF requirements against the BRS and active
+decisions; the [deferred-scope register](deferred-scope-register.md) preserves explicit exclusions
+and every post-MVP destination without approving them.
+
+| Local verification | Result |
+|---|---|
+| PDF provenance | 14 pages, 759,501 bytes; source/copy byte equality; SHA-256 `5019b5f6a53e44d5f42b539c77429113c1eb5c18c6392b0a0916b0e9dc18642a` |
+| Acceptance rows | 46 unique ordered IDs: 12 spine, 8 Business, 8 Auditor, 10 Investor, 8 Admin; each source title matched to the correct PDF page |
+| Screen/state rows | 38 role screens plus launcher; 92 named states, each matched to its exact PDF screen row; stable generic-state suffixes and explicit profile/filter applicability |
+| Suite/demo and spine coverage | 24 launcher/demo fields, five visitor steps, all nine access rows, three build waves, source feature/journey rows and nine owned secondary checkpoints |
+| Deferred coverage | All 20 PDF exclusion bullets, including repeats/compound scopes; all 43 Phase 5–8 checklist items; former-work-package moved portions routed to 24 owned tranches |
+| Structural checks | Inline Node/pypdf assertions pass ID sequence/uniqueness, source-title/state membership, table widths/non-empty required fields, slice/tranche/decision references, checklist counts, local links and source hash; zero errors |
+| Dependency setup | `vp install` succeeds; its root-package-name-only lockfile normalization was undone, leaving no dependency or lockfile change |
+| Frontend check | `vp check` exits 0: 173 formatted files, zero errors, 32 existing lint warnings |
+| Frontend regression | `vp test run --config vitest.config.ts`: 33 files / 322 tests pass; two existing jsdom canvas notices remain |
+| Diff hygiene | `git diff --check` passes; changes are documentation/source archival only |
+
+Local authoring is based on `dev` commit `7a0ac6286ef596b96d3d8376fecbe6f00a72c2f8` on
+`feat/phase-0-mvp-traceability`. No application code, database, dependencies or financial policy
+changed; PHP/coverage/build/live-provider acceptance was not rerun or claimed by this documentation
+work. The crosswalk's automated and witnessed evidence columns are **requirements for future
+delivery**, not fabricated existing test results. Non-author review, commit/push/PR and hosted
+exact-SHA acceptance are not asserted here.
+
+Important retained gates: Appendix A activation; D-05/D-64 identity/mandates; D-09/D-10/D-15
+fees/units/limits; D-26/D-27 mandatory secondary lifecycle/pricing; D-04 companion implementation
+allocation, estimate/rebaseline and device proof; D-61/D-62 scope signatures; and provider/legal/
+regulatory approvals. G-OPS-01 and G-AUD-01 in the crosswalk expose unbaselined operational
+approval-threshold and audit-quality/tolerance details without inventing a policy value or decision
+signature. Full native clients remain post-MVP, but required secure capture, supervisor access,
+internal APIs, language foundations, notices and secondary cash settlement remain in the MVP.
+
+## Phase 0I — underwriting and secondary decision preparation (2026-09-10)
+
+**Status:** review preparation complete; owner decisions, implementation evidence and Phase 1 contract freeze remain open.
+
+The [underwriting decision review](underwriting-decision-review.md) proposes seven owned decisions for OwnerDraw, debt service, volatility trim, exact Coverage precision, prototype bounds, material-event invalidation and the risk/action/cure matrix. The [secondary contract review](secondary-contract-review.md) expands D-26/D-27 Option A into ten candidate rules, explicit state/command and atomicity contracts, holder-of-record behavior, disclosures, recovery and twelve required implementation scenarios. Neither document is a signature or activated financial policy.
+
+The secondary review exposes a real compatibility decision: an RWF 3,000 remaining-cashflow cap cannot coexist with an RWF 5,000 purchase minimum for that order. The proposed current-BRS outcome is an explained undersized-order denial/hold-to-maturity path, or aggregation of the seller's own eligible same-Note units. Any residual-ticket exception needs an explicit D-10/BRS/legal disposition; no platform buyback or liquidity promise is introduced.
+
+| Local verification | Result |
+|---|---|
+| Source inventory | [Vector register](underwriting-vector-review.json) preserves all 48 Appendix A.5 rows, exact source-row SHA-256 and dispositions: 34 READY-TO-BASELINE, 7 BLOCKED, 6 REJECTED, 1 QUARANTINED; zero BASELINED |
+| Arithmetic evidence | [Fixture pack](policy-review-fixtures.json) has 34 synthetic examples with input hashes; 22 source vectors have partial examples, 26 have none, and secondary arithmetic is additionally covered; no complete vector/layer coverage claimed |
+| Focused review checks | `php artisan test --compact tests/Unit/PhaseZeroPolicyReviewTest.php --no-tia`: 42 tests / 732 assertions pass, including six negative controls for false activation/baseline/signature, changed input, unknown vector and duplicate fixture |
+| Full PHP regression/coverage | `composer test:php:coverage`: 248 tests / 1,622 assertions pass, TIA disabled, 100.0% configured `app/` coverage; this is not coverage of an unimplemented production underwriting or secondary engine |
+| PHP style/static analysis | `vendor/bin/pint --dirty --format agent` and `vendor/bin/phpstan analyse --memory-limit=1G --no-progress` pass; zero PHPStan errors |
+| Frontend check/regression | `vp check` exits 0 with 32 existing warnings; `vp test run --config vitest.config.ts`: 33 files / 322 tests pass with the two existing jsdom canvas notices |
+| Dependency/diff hygiene | `vp install` succeeds; root-name-only lockfile normalization restored; no dependency changes; `git diff --check` passes |
+
+Changes are documentation, machine-readable review artifacts and a **test-only** arithmetic/integrity oracle. No `app/` code, schema, live record, provider or existing Pulse formula changes. The full PHP gate verifies the current application baseline, not SEC-T01–SEC-T12, PostgreSQL settlement races, provider evidence or a deployed new calculator. The required independent approver remains unnamed, all review approvals are null, and the plan's two Phase 0 blocker checkboxes remain unchecked. Existing source-policy statuses and approval-header placeholders are preserved.
+
+Work remains local on `feat/phase-0-mvp-traceability` based on `dev` SHA `7a0ac6286ef596b96d3d8376fecbe6f00a72c2f8`; no commit, push, PR, hosted exact-SHA acceptance or deployment is claimed. Next authority is K/R disposition of UW-R01–UW-R07 and SEC-R01–SEC-R10, A/E contract review, a named eligible non-author reviewer and the separately required external approvals. Actual corpus validation and implementation-layer evidence must follow before baselining/activation.
+
+## Phase 0J — demo/UAT isolation groundwork (2026-09-10)
+
+**Status:** backend/deployment configuration safeguards are implemented and locally verified. The Phase 0 isolation checkbox remains open; no demo journey, hosted isolation, financial activation or Phase 1 acceptance is asserted.
+
+`EnvironmentIsolation` derives its profile from the deployment's `APP_ENV`, never from a request parameter. Unknown environments and malformed flags fail closed. `staging` and `uat` share the `uat` profile; production and local/testing retain their existing resource configuration. Non-live deployments require PostgreSQL database **and** username `rozine_demo` or `rozine_uat`, without URL/read/write overrides; demo alone may use its exact nonsymlinked `database/isolated/rozine_demo.sqlite` file. Production rejects those reserved non-live database identities. These are configuration checks, not proof of PostgreSQL grants or physical separation.
+
+Demo/UAT are restricted to the selected database connection, namespaced database queues, local file cache/sessions, separate compiled views/private/public storage/logs, array-only mail and explicitly faked Laravel HTTP-client requests. Remote/fallback drivers are removed from their runtime configuration. Provider, SMTP, cloud-storage, SQS, Slack-webhook and Redis credentials are rejected without echoing their values. Unsafe storage symlinks and an incorrect existing `public/storage` target are refused. Dedicated filesystem permissions and network egress controls are still required: application configuration does not constrain raw SDK/cURL calls or a host administrator.
+
+Both demo flags default to false. Local/testing retain ordinary fixture/reset behavior; demo seeding requires `ROZINE_DEMO_ENABLED=true`, and destructive Artisan reset operations additionally require `ROZINE_DEMO_RESET_ENABLED=true`. Production/UAT deny seeding and destructive migration commands even with `--force`. Command-event guards, Laravel's built-in command prohibitions and the existing seeder's own guard cover separate invocation paths. There is no new web reset endpoint or synthetic financial book. `live_money_enabled` is fixed false, not an environment switch that can activate an unimplemented money module.
+
+The shared deployment script now requires a fixed `uat` or `production` target, clears the prior config cache and runs `isolation:check --expect=<target>` before `optimize:clear`, migrations or queue restart; it repeats the check after config caching. Both workflows pass their literal target. Existing D-68 admission/review gates are preserved. Hermetic process tests use fake PHP/Composer/npm executables and never SSH or deploy.
+
+| Local verification | Result |
+|---|---|
+| Full PHP regression/coverage | `composer test:php:coverage`: 361 tests / 1,973 assertions pass, TIA disabled, 100.0% configured `app/` line coverage, including the architecture suite |
+| Isolation proof | Invalid flags, database aliases/overrides, credentials, URLs, debug mode and symlinks are rejected; real forced Artisan calls and nested commands preserve test sentinels; fresh-process application boot resolves isolated resources without creating/querying the demo database |
+| Deployment proof | Missing/wrong targets fail; first configuration failure prevents cache clearing/migration/queue restart; cached-configuration failure prevents route/view caching and queue restart; both workflows pass the correct fixed target |
+| PHP quality | Dirty-file Pint passes; Pest-aware PHPStan reports zero errors; deployment Bash syntax passes |
+| Frontend regression/build | `vp check` passes with the 32 existing warnings; configured Vitest run passes 33 files / 322 tests, with two existing jsdom canvas notices; both TypeScript projects and the production build pass |
+| As-built inventory | Generated and checked against a freshly migrated disposable SQLite database; schema is unchanged, and only new classes/commands plus deployment-profile metadata differ. The existing local application database was not migrated or reset |
+| Dependency/diff hygiene | `vp install` succeeds; root-name-only lockfile normalization restored; no dependency changes; `git diff --check` passes |
+
+**Before any UAT promotion:** provision and verify the dedicated least-privilege database/role, use a separate checkout and isolated writable directories, remove external credentials, set `APP_DEBUG=false` and a non-live HTTPS `APP_URL`, and ensure any existing `public/storage` link has the required isolated target. A currently nonconforming deployment will fail at boot/check until its operator prepares these prerequisites; this change does not rename a database, copy live data, rewrite `.env`, repoint a symlink or provision infrastructure automatically. Preserve existing data and backup/recovery access during that preparation.
+
+Remaining closure evidence: real DB grant/host/egress separation, synthetic fixture provenance, an authorized deterministic reset with unaffected-environment sentinels, visible demo/UAT labels and no-live-claims browser proof, candidate-SHA hosted checks and non-author review. Required provider-specific sandbox adapters and any future live activation need their own approved contracts. Work remains local on `feat/phase-0-mvp-traceability`; no commit, push, PR, deployment or production/provider action is claimed.
+
+## Phase 0K — Auditor sizing and external-track preparation (2026-09-10)
+
+**Status:** planning artifacts prepared and locally checked; native implementation, device evidence, owner acceptance and actual provider kickoff remain open.
+
+The [Auditor capture delivery plan](auditor-capture-delivery-plan.md) preserves approved D-04 Option B, assigns the proposed Aminu server / Erastus companion-handoff split, and separates **15–25 incremental developer-days** from already-budgeted shared-core and ordinary web work. The longer Erastus lane gives a **proposed 2–3-focused-week portfolio addition**; Section 9.1 now distinguishes the historical Week 8/9/10 targets from candidate Weeks 10–11/11–12/12–13 windows. These are low-confidence author estimates, not accepted staffing or dates. The first native proof must confirm platform, distribution and source/coverage feasibility; unsupported integrity, offline revocation and time claims are not silently downgraded.
+
+The execution pack identifies the three required physical-device rows and two iOS dwell observations of at least 168 hours each. All are unrun/unstarted. Creating the record did not start a timer, host a harness, touch a device, schedule a reminder or obtain an attestation result. The [provider dependency register](provider-dependency-register.md) prepares 13 tracks covering every IR-1–IR-8 plus AML, parsing, storage, legal and native integrity, with proposed leads and a proposed first review on 14 September 2026. No owner acknowledgement, contact, provider selection, credentials, certification, legal opinion or regulatory authorization is asserted.
+
+| Local verification | Result |
+|---|---|
+| Machine-readable preparation | [delivery-readiness.json](delivery-readiness.json) reconciles six native work packages, A/E/total effort, longer-lane capacity, candidate RC windows, three device runs, two dwell observations and 13 provider tracks |
+| Focused readiness tests | `php artisan test --compact tests/Unit/PhaseZeroDeliveryReadinessTest.php --no-tia`: 16 tests / 68 assertions pass, including 12 negative controls for false approval/contact/device evidence, shortened dwell, estimate/capacity drift, circular dependency, missing integration, unknown gate and duplicate track |
+| Full PHP regression/coverage | `composer test:php:coverage`: 377 tests / 2,042 assertions, TIA disabled, 100.0% configured `app/` line coverage |
+| Static/style | Dirty-file Pint and Pest-aware PHPStan pass; zero static-analysis errors; Markdown tables/IDs validated; `git diff --check` passes |
+| Frontend regression | `vp check` and configured Vitest run pass; 33 files / 322 tests, with the same 32 lint warnings and two jsdom canvas notices |
+| Dependency/state hygiene | `vp install` passes; root-name-only lockfile normalization restored; no dependency, application-code, database or provider changes from this preparation |
+
+The remaining demo/UAT **visual** safeguards were not implemented in this preparation pass. The Impeccable UI skill requires product context before visual edits; permission to add a source-derived `PRODUCT.md` was requested and is pending. Existing backend isolation work in Phase 0J remains intact. No native source or financial fixtures were added, and neither the provider-start checkbox nor the environment-isolation checkbox is closed. No commit, push, PR, hosted acceptance or deployment is claimed.
+
 ## Authority and brand freeze
 
 The governing plan's source order remains active. No unsigned PDF/prototype constant may change money, underwriting, authorization, evidence, secondary trading, or regulatory behavior.

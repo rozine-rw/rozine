@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
 use Carbon\CarbonImmutable;
@@ -46,7 +47,7 @@ class AppServiceProvider extends ServiceProvider
         Date::use(CarbonImmutable::class);
 
         DB::prohibitDestructiveCommands(
-            app()->isProduction(),
+            ! $this->app->make(EnvironmentIsolation::class)->canReset(),
         );
 
         Password::defaults(fn (): ?Password => app()->isProduction()

@@ -68,7 +68,10 @@ it('records the schema, routes and layering as they actually are', function () {
         ->toContain('`app/Infrastructure`')
         // Gates and deployment targets.
         ->toContain('PostgreSQL concurrency lane')
-        ->toContain('/var/www/rozine-prod');
+        ->toContain('/var/www/rozine-prod')
+        ->toContain('Isolation profile')
+        ->toContain('`/var/www/rozine-prod` | `production`')
+        ->toContain('`/var/www/rozine` | `uat`');
 });
 
 it('names deployment secrets without ever recording their values', function () {

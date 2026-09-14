@@ -1,5 +1,11 @@
 # D-04 — Auditor capture assurance spike
 
+**Current routing, 2026-09-10:** [D-04](../d-04-auditor-capture-decision.md) selected Option B on
+2026-09-06. The original option-comparison apparatus below is retained as evidence, not an open
+platform vote. The remaining sizing work uses rows 1, 3 and 4 plus both iOS dwell observations in
+the [capture delivery/execution pack](../auditor-capture-delivery-plan.md). No physical-device or
+dwell result is supplied by the preparation pack; desktop Chromium cannot replace them.
+
 **Phase 0 checklist item:** "Run a time-boxed PWA assurance spike for Auditor offline packages,
 in-browser camera-only capture, geolocation, timestamp/provenance, process interruption, durable
 local encryption, reconnect, conflict, and sync. Record a thin-native MVP exception if any mandatory

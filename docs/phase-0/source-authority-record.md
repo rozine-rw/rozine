@@ -51,13 +51,21 @@ each superseded by items 1 and 2 wherever they disagree.
 | Precedence changes | Reordering this table is itself a decision requiring the Product and internal Legal owner's signature. |
 | External authority | Legal, regulatory, CMA, ICPAR, provider-certification, penetration-test and independent-assurance approvals sit outside this order entirely. Under D-71 the internal pool cannot self-approve them. |
 
-## A gap this record does not paper over
+## MVP source availability and provenance — corrected 2026-09-10
 
-**`Rozine MVP Spec.pdf` is not in the repository.** Item 3 governs MVP packaging, screen coverage and
-explicit exclusions, and the file is absent from `docs/`. The plan's Section 7 reproduces the 38
-screens, so screen coverage is recoverable — but the 12 spine, 8 Business, 8 Auditor, 10 Investor and
-8 Admin acceptance criteria exist only in that PDF, as does the "Not in MVP" list.
+The PDF was already accessible at `/Users/amisha/Downloads/Rozine MVP Spec.pdf`; absence from the
+repository was not absence of the source. The earlier claim that enumeration was blocked was
+incorrect. A byte-identical copy is now archived at [docs/Rozine MVP Spec.pdf](../Rozine%20MVP%20Spec.pdf).
+It is the August 2026 specification, 14 pages and 759,501 bytes, with SHA-256
+`5019b5f6a53e44d5f42b539c77429113c1eb5c18c6392b0a0916b0e9dc18642a`.
+All 14 rendered pages were visually reviewed, including their tables and exclusion lists.
 
-Until it is committed, the MVP crosswalk cannot enumerate its acceptance criteria and the
-deferred-scope register cannot enumerate the PDF's exclusions. Both are recorded as blocked on this
-rather than approximated from memory.
+The [MVP crosswalk](mvp-crosswalk.md) now enumerates all 46 acceptance criteria, 38 role screens plus
+the launcher, 92 literal named screen states, generic-state inheritance, launcher/demo fields and
+source feature/access/build requirements. The [deferred-scope register](deferred-scope-register.md)
+preserves all 20 source exclusion bullets and every Phase 5–8 checklist/old-plan destination.
+
+This corrects source availability and completes mapping, not implementation or policy activation.
+The source order is unchanged; D-61/D-62 scope confirmation, Appendix A activation, the D-04 MVP
+secure-capture rebaseline and other named approval gates remain open. Inclusion in a local working
+tree is not a claim of commit, hosted review, deployment or acceptance.
