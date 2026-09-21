@@ -1,0 +1,1798 @@
+{
+  "schema_version": 1,
+  "version": "engineering-2026-09-20.3",
+  "status": "SYNTHETIC_CONTRACT_REVIEW_NOT_BASELINED",
+  "production_activation": false,
+  "phase_1_development_authorized": false,
+  "evidence_origin": "SYNTHETIC_NORMALIZED_INPUTS_NO_PROVIDER_ATTESTATION",
+  "approvals": {
+    "aminu_engineering": {
+      "status": "SELECTED_SECTIONS_APPROVED",
+      "recorded_on": "2026-09-21",
+      "evidence_type": "DIRECT_USER_RESPONSE_ANNOTATIONS",
+      "source_message_id": "msg_08a35f686d830a89016ab0c52c412487d0b5966cd547f5dd16",
+      "mapped_snapshot_version": "engineering-2026-09-20.2",
+      "scope_ids": ["AR-01", "AR-02", "AR-03", "AR-04", "AR-05", "AR-06"],
+      "full_contract_freeze": false
+    },
+    "erastus_engineering": null,
+    "independent_expected_results": null
+  },
+  "engineering_section_reviews": [
+    {
+      "id": "AR-01",
+      "annotation_index": 1,
+      "user_response": "approved",
+      "start_heading": "### Proposed exact operation order",
+      "end_heading": "## 4. Shared wire and authorization proposal",
+      "content_sha256": "8ea31ce53164830c4c9980068076f47357516158c5969e06407a9cc26e9a7693"
+    },
+    {
+      "id": "AR-02",
+      "annotation_index": 2,
+      "user_response": "correct",
+      "start_heading": "## 4. Shared wire and authorization proposal",
+      "end_heading": "## 5. Proposed actions and logical records",
+      "content_sha256": "caca7572321d1757c7b8db75c0f84ef91a2cc34eea5fb9ebf4ddffd201191d35"
+    },
+    {
+      "id": "AR-03",
+      "annotation_index": 3,
+      "user_response": "correct",
+      "start_heading": "## 5. Proposed actions and logical records",
+      "end_heading": "## 6. Secondary arithmetic, states and concurrency",
+      "content_sha256": "4643d3b0b9a2c729d574e7d88d6c3e84b135ccb0bdcb8385025cdcbff3cce843"
+    },
+    {
+      "id": "AR-04",
+      "annotation_index": 4,
+      "user_response": "correct",
+      "start_heading": "## 6. Secondary arithmetic, states and concurrency",
+      "end_heading": "### Engineering choices proposed for Erastus's review",
+      "content_sha256": "972275671717f5f7e71d19655e70242d6c882ef4b1abb5138fe080c6d63e75a9"
+    },
+    {
+      "id": "AR-05",
+      "annotation_index": 5,
+      "user_response": "agreed",
+      "start_heading": "### Engineering choices proposed for Erastus's review",
+      "end_heading": "## 7. Recovery, holds and policy transitions",
+      "content_sha256": "4ee9a60bcb1463589623c8edf723bceded89c41ef7bb8d0434bc3be97807daeb"
+    },
+    {
+      "id": "AR-06",
+      "annotation_index": 6,
+      "user_response": "correct",
+      "start_heading": "## 7. Recovery, holds and policy transitions",
+      "end_heading": "## 8. Remaining input register - not a repeated questionnaire",
+      "content_sha256": "26dd145cf3ffa79a6497c9eef32e6cdc37a77abcf019f6c8221d8b0c638727eb"
+    }
+  ],
+  "source_hashes": {
+    "stakeholder-policy-consolidation-2026-09-20.md": "881ceccb49f320308e2144d9241bbf5aa6121e06a0ad3f89f06e0a3f0bd27429",
+    "underwriting-vector-review.json": "aa5ce80f6e46138333ea661c8f7db31d998f1fe992b977d1d39a87b4c695a3ce",
+    "policy-review-fixtures.json": "6987beb5a7d1a12dd8937a77f0301adf588d1c8f4042c5c8632e96ee5f67402d",
+    "../Rozine-BRS.md": "0badfe6c175f58ec5c883ab80a9a9c52b921cf802a0f133fbcc251af6fa96f74"
+  },
+  "known_parameters": {
+    "buyer_fee_bps": 35,
+    "seller_fee_bps": 35,
+    "secondary_minimum_gross_rwf": 1000,
+    "loan_floor_rwf": 3000000,
+    "loan_ceiling_rwf": 100000000,
+    "exposure_revenue_bps": 3500,
+    "original_dscr_numerator": 5,
+    "original_dscr_denominator": 4,
+    "final_dscr_numerator": 3,
+    "final_dscr_denominator": 2,
+    "tenors_months": [
+      3,
+      4,
+      5,
+      6
+    ],
+    "listing_seconds": 604800,
+    "checkout_seconds": 300,
+    "bid_seconds": 604800
+  },
+  "missing_parameters": {
+    "four_month_premium": null,
+    "five_month_premium": null,
+    "standard_nocf_method": null,
+    "penalty_rate": null,
+    "reserve_funding_arrangement": null,
+    "hold_business_calendar": null
+  },
+  "answer_reconciliation": {
+    "reviewed_on": "2026-09-21",
+    "inputs": [
+      {
+        "id": "IN-01",
+        "state": "ANSWER_INCORPORATED_WITH_PARAMETER_GAP",
+        "sources": ["Answers.docx.pdf Q01", "Appendix A.3.1 retained pricing-v1"],
+        "recorded": {
+          "tenors_months": [3, 4, 5, 6],
+          "retained_three_month_premium_bps": 0,
+          "retained_six_month_premium_bps": 50,
+          "premiums_origin": "EXISTING_PRICING_NOT_NEW_ROBERT_VALUES"
+        },
+        "missing_parameter_keys": ["four_month_premium", "five_month_premium"]
+      },
+      {
+        "id": "IN-02",
+        "state": "ANSWER_INCORPORATED_CALCULATION_MAPPING_PENDING",
+        "sources": ["Answers.docx.pdf Q02-Q06", "Robert 2026-09-20 09:52 point 2", "Robert 2026-09-20 11:21 point 1"],
+        "recorded": {
+          "first_time_audited_history_months": 36,
+          "repeat_audited_consecutive_months": 12,
+          "repeat_only_exception": true,
+          "original_passed_baseline_required": true,
+          "minimum_fully_settled_notes": 1,
+          "maximum_late_payments": 0,
+          "all_unmonitored_gap_months_audited": true,
+          "revenue_cap_ttm_months": 12,
+          "repeat_monthly_dscr_numerator": 135,
+          "repeat_monthly_dscr_denominator": 100,
+          "projection_cap_median_revenue_numerator": 12,
+          "projection_cap_median_revenue_denominator": 10,
+          "collection_safeguards": ["BANK_STANDING_ORDER", "LOCKED_MOMO_COLLECTION_ACCOUNT"],
+          "assistant_winsorization_approved": false
+        },
+        "missing_parameter_keys": ["standard_nocf_method"],
+        "engineering_follow_through": ["MONTHLY_EVIDENCE_MAPPING", "MEDIAN_SERIES_AND_FORECAST_MAPPING", "RETENTION_AND_TAXONOMY_VALIDATION"]
+      },
+      {
+        "id": "IN-04",
+        "state": "ANSWER_INCORPORATED_EXECUTION_PARAMETERS_AND_EVIDENCE_PENDING",
+        "sources": ["Robert 2026-09-20 11:21 point 5"],
+        "recorded": {
+          "secondary_ban_from_dpd": 1,
+          "grace_days": [1, 7],
+          "active_recovery_days": [8, 21],
+          "formal_default_stage_days": [22, 30],
+          "uncured_default_deadline_day": 30,
+          "final_capital_resolution_days": [31, 45],
+          "borrower_notice_frequency": "DAILY_SMS_AND_EMAIL",
+          "investor_update_frequency": "WEEKLY_PORTAL",
+          "penalty_interest_in_active_recovery": true,
+          "enforced_daily_repayment_plan": true,
+          "final_resolution_mechanisms": ["LEGAL_LIQUIDATION", "RESERVE_FUND_BUYOUT_OR_PAYOUT"],
+          "day_45_is_progress_checkpoint_only": false
+        },
+        "missing_parameter_keys": ["penalty_rate", "reserve_funding_arrangement"],
+        "execution_details_pending": ["PENALTY_BASIS_ACCRUAL_ROUNDING_ALLOCATION", "DAILY_PLAN_AMOUNT_DERIVATION", "GUARANTEE_COLLATERAL_AND_SHORTFALL_PROCESS"],
+        "operational_arrangements_verified": false
+      }
+    ]
+  },
+  "numeric_cases": [
+    {
+      "id": "EC-001",
+      "kind": "draw",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-03"
+      ],
+      "inputs": {
+        "eligible_draws_rwf": 6000000,
+        "months": 6,
+        "recurring_rwf": 1200000
+      },
+      "expected": {
+        "numerator": 1200000,
+        "denominator": 1
+      }
+    },
+    {
+      "id": "EC-002",
+      "kind": "draw",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-03"
+      ],
+      "inputs": {
+        "eligible_draws_rwf": 3000000,
+        "months": 6,
+        "recurring_rwf": 400000
+      },
+      "expected": {
+        "numerator": 500000,
+        "denominator": 1
+      }
+    },
+    {
+      "id": "EC-003",
+      "kind": "debt",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-03"
+      ],
+      "inputs": {
+        "historical_service_rwf": 3600000,
+        "months": 6,
+        "forward_months_rwf": [
+          400000,
+          900000,
+          300000
+        ]
+      },
+      "expected": {
+        "numerator": 900000,
+        "denominator": 1
+      }
+    },
+    {
+      "id": "EC-004",
+      "kind": "debt",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-03"
+      ],
+      "inputs": {
+        "historical_service_rwf": 4800000,
+        "months": 6,
+        "forward_months_rwf": [
+          400000,
+          600000,
+          300000
+        ]
+      },
+      "expected": {
+        "numerator": 800000,
+        "denominator": 1
+      }
+    },
+    {
+      "id": "EC-005",
+      "kind": "dscr",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-04"
+      ],
+      "inputs": {
+        "numerator": 1249999,
+        "denominator": 1000000
+      },
+      "expected": {
+        "status": "REJECT_ORIGINAL"
+      }
+    },
+    {
+      "id": "EC-006",
+      "kind": "dscr",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-04"
+      ],
+      "inputs": {
+        "numerator": 1250000,
+        "denominator": 1000000
+      },
+      "expected": {
+        "status": "SCALE_REQUIRED"
+      }
+    },
+    {
+      "id": "EC-007",
+      "kind": "dscr",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-04"
+      ],
+      "inputs": {
+        "numerator": 1499999,
+        "denominator": 1000000
+      },
+      "expected": {
+        "status": "SCALE_REQUIRED"
+      }
+    },
+    {
+      "id": "EC-008",
+      "kind": "dscr",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-04"
+      ],
+      "inputs": {
+        "numerator": 1500000,
+        "denominator": 1000000
+      },
+      "expected": {
+        "status": "TARGET_MET"
+      }
+    },
+    {
+      "id": "EC-009",
+      "kind": "dscr",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-04"
+      ],
+      "inputs": {
+        "numerator": 1,
+        "denominator": 0
+      },
+      "expected": {
+        "status": "UNAVAILABLE"
+      }
+    },
+    {
+      "id": "EC-010",
+      "kind": "sizing",
+      "claim": "NORMALIZED_INPUTS_DOWNSTREAM_ONLY",
+      "amendment_ids": [
+        "AM-01",
+        "AM-04",
+        "AM-05",
+        "AM-06"
+      ],
+      "inputs": {
+        "cfads_rwf": 3000000,
+        "requested_rwf": 12000000,
+        "tenor_months": 6,
+        "rate_tenths_percent": 121,
+        "remaining_room_rwf": 100000000
+      },
+      "expected": {
+        "status": "ARITHMETIC_CANDIDATE_ONLY",
+        "principal_rwf": 10704728,
+        "return_rwf": 1295272,
+        "total_rwf": 12000000,
+        "instalments_rwf": [
+          2000000,
+          2000000,
+          2000000,
+          2000000,
+          2000000,
+          2000000
+        ],
+        "rounding_guard_rwf": 0
+      }
+    },
+    {
+      "id": "EC-011",
+      "kind": "sizing",
+      "claim": "NORMALIZED_INPUTS_DOWNSTREAM_ONLY",
+      "amendment_ids": [
+        "AM-01",
+        "AM-04",
+        "AM-05",
+        "AM-06"
+      ],
+      "inputs": {
+        "cfads_rwf": 2000000,
+        "requested_rwf": 10000000,
+        "tenor_months": 6,
+        "rate_tenths_percent": 121,
+        "remaining_room_rwf": 100000000
+      },
+      "expected": {
+        "status": "REJECT_ORIGINAL",
+        "principal_rwf": null
+      }
+    },
+    {
+      "id": "EC-012",
+      "kind": "sizing",
+      "claim": "NORMALIZED_INPUTS_DOWNSTREAM_ONLY",
+      "amendment_ids": [
+        "AM-01",
+        "AM-04",
+        "AM-05",
+        "AM-06"
+      ],
+      "inputs": {
+        "cfads_rwf": 3000000,
+        "requested_rwf": 8000000,
+        "tenor_months": 6,
+        "rate_tenths_percent": 121,
+        "remaining_room_rwf": 100000000
+      },
+      "expected": {
+        "status": "ARITHMETIC_CANDIDATE_ONLY",
+        "principal_rwf": 8000000,
+        "return_rwf": 968000,
+        "total_rwf": 8968000,
+        "instalments_rwf": [
+          1494667,
+          1494667,
+          1494667,
+          1494667,
+          1494667,
+          1494665
+        ],
+        "rounding_guard_rwf": 0
+      }
+    },
+    {
+      "id": "EC-013",
+      "kind": "sizing",
+      "claim": "NORMALIZED_INPUTS_DOWNSTREAM_ONLY",
+      "amendment_ids": [
+        "AM-01",
+        "AM-04",
+        "AM-05",
+        "AM-06"
+      ],
+      "inputs": {
+        "cfads_rwf": 3000000,
+        "requested_rwf": 12000000,
+        "tenor_months": 6,
+        "rate_tenths_percent": 121,
+        "remaining_room_rwf": 2999999
+      },
+      "expected": {
+        "status": "CAPACITY_BELOW_MINIMUM",
+        "principal_rwf": null
+      }
+    },
+    {
+      "id": "EC-014",
+      "kind": "sizing",
+      "claim": "NORMALIZED_INPUTS_DOWNSTREAM_ONLY",
+      "amendment_ids": [
+        "AM-01",
+        "AM-04",
+        "AM-05",
+        "AM-06"
+      ],
+      "inputs": {
+        "cfads_rwf": 3000000,
+        "requested_rwf": 12000000,
+        "tenor_months": 6,
+        "rate_tenths_percent": 121,
+        "remaining_room_rwf": 9000000
+      },
+      "expected": {
+        "status": "ARITHMETIC_CANDIDATE_ONLY",
+        "principal_rwf": 9000000,
+        "return_rwf": 1089000,
+        "total_rwf": 10089000,
+        "instalments_rwf": [
+          1681500,
+          1681500,
+          1681500,
+          1681500,
+          1681500,
+          1681500
+        ],
+        "rounding_guard_rwf": 0
+      }
+    },
+    {
+      "id": "EC-015",
+      "kind": "sizing",
+      "claim": "NORMALIZED_INPUTS_DOWNSTREAM_ONLY",
+      "amendment_ids": [
+        "AM-01",
+        "AM-04",
+        "AM-05",
+        "AM-06"
+      ],
+      "inputs": {
+        "cfads_rwf": 1650000,
+        "requested_rwf": 3000000,
+        "tenor_months": 3,
+        "rate_tenths_percent": 100,
+        "remaining_room_rwf": 100000000
+      },
+      "expected": {
+        "status": "ARITHMETIC_CANDIDATE_ONLY",
+        "principal_rwf": 3000000,
+        "return_rwf": 300000,
+        "total_rwf": 3300000,
+        "instalments_rwf": [
+          1100000,
+          1100000,
+          1100000
+        ],
+        "rounding_guard_rwf": 0
+      }
+    },
+    {
+      "id": "EC-016",
+      "kind": "sizing",
+      "claim": "NORMALIZED_INPUTS_DOWNSTREAM_ONLY",
+      "amendment_ids": [
+        "AM-01",
+        "AM-04",
+        "AM-05",
+        "AM-06"
+      ],
+      "inputs": {
+        "cfads_rwf": 1649999,
+        "requested_rwf": 3000000,
+        "tenor_months": 3,
+        "rate_tenths_percent": 100,
+        "remaining_room_rwf": 100000000
+      },
+      "expected": {
+        "status": "CAPACITY_BELOW_MINIMUM",
+        "principal_rwf": null
+      }
+    },
+    {
+      "id": "EC-017",
+      "kind": "exposure",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-05"
+      ],
+      "inputs": {
+        "ttm_revenue_rwf": 100000000,
+        "platform_principal_rwf": 10000000,
+        "external_principal_rwf": 5000000,
+        "commitments_rwf": 8000000
+      },
+      "expected": {
+        "limit_numerator": 3500000000,
+        "room_numerator": 1200000000,
+        "denominator": 100,
+        "max_whole_room_rwf": 12000000
+      }
+    },
+    {
+      "id": "EC-018",
+      "kind": "exposure",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-05"
+      ],
+      "inputs": {
+        "ttm_revenue_rwf": 100000000,
+        "platform_principal_rwf": 18000000,
+        "external_principal_rwf": 5000000,
+        "commitments_rwf": 0
+      },
+      "expected": {
+        "limit_numerator": 3500000000,
+        "room_numerator": 1200000000,
+        "denominator": 100,
+        "max_whole_room_rwf": 12000000
+      }
+    },
+    {
+      "id": "EC-019",
+      "kind": "exposure",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-05"
+      ],
+      "inputs": {
+        "ttm_revenue_rwf": 9999999,
+        "platform_principal_rwf": 500000,
+        "external_principal_rwf": 0,
+        "commitments_rwf": 0
+      },
+      "expected": {
+        "limit_numerator": 349999965,
+        "room_numerator": 299999965,
+        "denominator": 100,
+        "max_whole_room_rwf": 2999999
+      }
+    },
+    {
+      "id": "EC-020",
+      "kind": "fee",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-11"
+      ],
+      "inputs": {
+        "gross_rwf": 1000,
+        "buyer_bps": 35,
+        "seller_bps": 35
+      },
+      "expected": {
+        "buyer_fee_rwf": 4,
+        "seller_fee_rwf": 4,
+        "buyer_debit_rwf": 1004,
+        "seller_credit_rwf": 996,
+        "platform_fee_rwf": 8
+      }
+    },
+    {
+      "id": "EC-021",
+      "kind": "fee",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-11"
+      ],
+      "inputs": {
+        "gross_rwf": 10000,
+        "buyer_bps": 35,
+        "seller_bps": 35
+      },
+      "expected": {
+        "buyer_fee_rwf": 35,
+        "seller_fee_rwf": 35,
+        "buyer_debit_rwf": 10035,
+        "seller_credit_rwf": 9965,
+        "platform_fee_rwf": 70
+      }
+    },
+    {
+      "id": "EC-022",
+      "kind": "fee",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-11"
+      ],
+      "inputs": {
+        "gross_rwf": 20000,
+        "buyer_bps": 35,
+        "seller_bps": 35
+      },
+      "expected": {
+        "buyer_fee_rwf": 70,
+        "seller_fee_rwf": 70,
+        "buyer_debit_rwf": 20070,
+        "seller_credit_rwf": 19930,
+        "platform_fee_rwf": 140
+      }
+    },
+    {
+      "id": "EC-023",
+      "kind": "fee",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-11"
+      ],
+      "inputs": {
+        "gross_rwf": 1001,
+        "buyer_bps": 35,
+        "seller_bps": 35
+      },
+      "expected": {
+        "buyer_fee_rwf": 4,
+        "seller_fee_rwf": 4,
+        "buyer_debit_rwf": 1005,
+        "seller_credit_rwf": 997,
+        "platform_fee_rwf": 8
+      }
+    },
+    {
+      "id": "EC-024",
+      "kind": "fee",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-11"
+      ],
+      "inputs": {
+        "gross_rwf": 100000000,
+        "buyer_bps": 35,
+        "seller_bps": 35
+      },
+      "expected": {
+        "buyer_fee_rwf": 350000,
+        "seller_fee_rwf": 350000,
+        "buyer_debit_rwf": 100350000,
+        "seller_credit_rwf": 99650000,
+        "platform_fee_rwf": 700000
+      }
+    },
+    {
+      "id": "EC-025",
+      "kind": "price",
+      "claim": "ALLOCATED_LOT_ASSUMPTIONS_ONLY",
+      "amendment_ids": [
+        "AM-10"
+      ],
+      "inputs": {
+        "units": 2,
+        "ask_rwf": 3500,
+        "allocated_principal_rwf": 10000,
+        "allocated_future_gross_rwf": 10800
+      },
+      "expected": {
+        "gross_rwf": 7000,
+        "status": "VALID"
+      }
+    },
+    {
+      "id": "EC-026",
+      "kind": "price",
+      "claim": "ALLOCATED_LOT_ASSUMPTIONS_ONLY",
+      "amendment_ids": [
+        "AM-10"
+      ],
+      "inputs": {
+        "units": 2,
+        "ask_rwf": 3499,
+        "allocated_principal_rwf": 10000,
+        "allocated_future_gross_rwf": 10800
+      },
+      "expected": {
+        "gross_rwf": 6998,
+        "status": "PRICE_OUT_OF_BOUNDS"
+      }
+    },
+    {
+      "id": "EC-027",
+      "kind": "price",
+      "claim": "ALLOCATED_LOT_ASSUMPTIONS_ONLY",
+      "amendment_ids": [
+        "AM-10"
+      ],
+      "inputs": {
+        "units": 2,
+        "ask_rwf": 5401,
+        "allocated_principal_rwf": 10000,
+        "allocated_future_gross_rwf": 10800
+      },
+      "expected": {
+        "gross_rwf": 10802,
+        "status": "PRICE_OUT_OF_BOUNDS"
+      }
+    },
+    {
+      "id": "EC-028",
+      "kind": "price",
+      "claim": "ALLOCATED_LOT_ASSUMPTIONS_ONLY",
+      "amendment_ids": [
+        "AM-10"
+      ],
+      "inputs": {
+        "units": 1,
+        "ask_rwf": 999,
+        "allocated_principal_rwf": 1000,
+        "allocated_future_gross_rwf": 1100
+      },
+      "expected": {
+        "gross_rwf": 999,
+        "status": "TRADE_BELOW_MINIMUM"
+      }
+    },
+    {
+      "id": "EC-029",
+      "kind": "price",
+      "claim": "ALLOCATED_LOT_ASSUMPTIONS_ONLY",
+      "amendment_ids": [
+        "AM-10"
+      ],
+      "inputs": {
+        "units": 2,
+        "ask_rwf": 500,
+        "allocated_principal_rwf": 1000,
+        "allocated_future_gross_rwf": 1100
+      },
+      "expected": {
+        "gross_rwf": 1000,
+        "status": "VALID"
+      }
+    },
+    {
+      "id": "EC-030",
+      "kind": "price",
+      "claim": "ALLOCATED_LOT_ASSUMPTIONS_ONLY",
+      "amendment_ids": [
+        "AM-10"
+      ],
+      "inputs": {
+        "units": 0,
+        "ask_rwf": 1000,
+        "allocated_principal_rwf": 1000,
+        "allocated_future_gross_rwf": 1100
+      },
+      "expected": {
+        "gross_rwf": 0,
+        "status": "INVALID_UNITS"
+      }
+    },
+    {
+      "id": "EC-031",
+      "kind": "fragmentation",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-11"
+      ],
+      "inputs": {
+        "fills_rwf": [
+          1000,
+          1000
+        ],
+        "combined_gross_rwf": 2000,
+        "bps": 35
+      },
+      "expected": {
+        "split_fee_each_side_rwf": 8,
+        "combined_fee_each_side_rwf": 7
+      }
+    },
+    {
+      "id": "EC-032",
+      "kind": "draw",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-03"
+      ],
+      "inputs": {
+        "eligible_draws_rwf": 100,
+        "months": 3,
+        "recurring_rwf": 30
+      },
+      "expected": {
+        "numerator": 100,
+        "denominator": 3
+      }
+    },
+    {
+      "id": "EC-033",
+      "kind": "sizing",
+      "claim": "NORMALIZED_INPUTS_DOWNSTREAM_ONLY",
+      "amendment_ids": [
+        "AM-01",
+        "AM-04",
+        "AM-05",
+        "AM-06"
+      ],
+      "inputs": {
+        "cfads_rwf": 3000031,
+        "requested_rwf": 12000000,
+        "tenor_months": 6,
+        "rate_tenths_percent": 121,
+        "remaining_room_rwf": 100000000
+      },
+      "expected": {
+        "status": "ARITHMETIC_CANDIDATE_ONLY",
+        "principal_rwf": 10704838,
+        "return_rwf": 1295285,
+        "total_rwf": 12000123,
+        "instalments_rwf": [
+          2000021,
+          2000021,
+          2000021,
+          2000021,
+          2000021,
+          2000018
+        ],
+        "rounding_guard_rwf": 1
+      }
+    },
+    {
+      "id": "EC-034",
+      "kind": "dscr",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-04"
+      ],
+      "inputs": {
+        "numerator": 99,
+        "denominator": 100
+      },
+      "expected": {
+        "status": "REJECT_ORIGINAL"
+      }
+    },
+    {
+      "id": "EC-035",
+      "kind": "dscr",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-04"
+      ],
+      "inputs": {
+        "numerator": 1,
+        "denominator": 1
+      },
+      "expected": {
+        "status": "REJECT_ORIGINAL"
+      }
+    },
+    {
+      "id": "EC-036",
+      "kind": "dscr",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-04"
+      ],
+      "inputs": {
+        "numerator": 1249,
+        "denominator": 1000
+      },
+      "expected": {
+        "status": "REJECT_ORIGINAL"
+      }
+    },
+    {
+      "id": "EC-037",
+      "kind": "dscr",
+      "claim": "RECORDED_RULE_ARITHMETIC",
+      "amendment_ids": [
+        "AM-04"
+      ],
+      "inputs": {
+        "numerator": 999,
+        "denominator": 1000
+      },
+      "expected": {
+        "status": "REJECT_ORIGINAL"
+      }
+    }
+  ],
+  "planned_scenarios": [
+    {
+      "id": "SC-01",
+      "condition": "A five-minute checkout is created at 11:59 UTC; parent listing expires at 12:00; settlement attempt at 12:01.",
+      "expected": "Unreserved listing quantity returns to seller at 12:00; reserved quantity may settle before 12:04 only if all other current gates pass.",
+      "amendment_ids": [
+        "AM-09"
+      ],
+      "required_input_ids": [],
+      "evidence_level": "SCENARIO_ONLY_NOT_EXECUTED",
+      "implementation_verified": false
+    },
+    {
+      "id": "SC-02",
+      "condition": "Checkout expires at 12:04 UTC; confirmation reaches the serialized gate exactly at 12:04.",
+      "expected": "RESERVATION_EXPIRED under proposed half-open deadline; cash/unit release occurs once, never both refund and successful settlement.",
+      "amendment_ids": [
+        "AM-09"
+      ],
+      "required_input_ids": [
+        "IN-06"
+      ],
+      "evidence_level": "SCENARIO_ONLY_NOT_EXECUTED",
+      "implementation_verified": false
+    },
+    {
+      "id": "SC-03",
+      "condition": "Note becomes Arrears at 1+ DPD while reserved checkout remains within five minutes.",
+      "expected": "NOTE_INELIGIBLE; normal listing-expiry privilege cannot override the trading ban; uncommitted encumbrances release.",
+      "amendment_ids": [
+        "AM-12"
+      ],
+      "required_input_ids": [],
+      "evidence_level": "SCENARIO_ONLY_NOT_EXECUTED",
+      "implementation_verified": false
+    },
+    {
+      "id": "SC-04",
+      "condition": "Recalculation worker for evidence revision 6 finishes after revision 7 is published.",
+      "expected": "Old result remains history/discarded-stale; it cannot overwrite revision 7 or issue a current offer.",
+      "amendment_ids": [
+        "AM-08"
+      ],
+      "required_input_ids": [],
+      "evidence_level": "SCENARIO_ONLY_NOT_EXECUTED",
+      "implementation_verified": false
+    },
+    {
+      "id": "SC-05",
+      "condition": "Accepted RWF 8M commitment funds and is reclassified to outstanding principal.",
+      "expected": "Borrower-wide exposure unchanged; use EC-017/EC-018 to check aggregate arithmetic, then prove atomic state transfer in implementation.",
+      "amendment_ids": [
+        "AM-05"
+      ],
+      "required_input_ids": [
+        "IN-03"
+      ],
+      "evidence_level": "SCENARIO_ONLY_NOT_EXECUTED",
+      "implementation_verified": false
+    },
+    {
+      "id": "SC-06",
+      "condition": "Automated account hold has no human confirmation 24 elapsed hours after its original flag.",
+      "expected": "Release that hold automatically; independently applicable restrictions still apply.",
+      "amendment_ids": [
+        "AM-12"
+      ],
+      "required_input_ids": [],
+      "evidence_level": "SCENARIO_ONLY_NOT_EXECUTED",
+      "implementation_verified": false
+    },
+    {
+      "id": "SC-07",
+      "condition": "Compliance confirms a hold at hour 23; calendar-defined five-business-day limit later arrives without a confirmed violation.",
+      "expected": "Original flag starts the clock; confirmation must not reset it. Exact expiry fixture needs the approved business calendar.",
+      "amendment_ids": [
+        "AM-12"
+      ],
+      "required_input_ids": [
+        "IN-08"
+      ],
+      "evidence_level": "SCENARIO_ONLY_NOT_EXECUTED",
+      "implementation_verified": false
+    },
+    {
+      "id": "SC-08",
+      "condition": "Client times out after settlement may have committed, then reconnects.",
+      "expected": "Look up the original operation; identical idempotent replay returns its recorded result without new fees/cash/units.",
+      "amendment_ids": [
+        "AM-09",
+        "AM-11"
+      ],
+      "required_input_ids": [
+        "IN-06"
+      ],
+      "evidence_level": "SCENARIO_ONLY_NOT_EXECUTED",
+      "implementation_verified": false
+    },
+    {
+      "id": "SC-09",
+      "condition": "Distinct login accounts share the same verified beneficial owner and attempt a match.",
+      "expected": "Hard deny self/same-beneficial-owner trade, regardless of sufficient funds; do not use login inequality as permission.",
+      "amendment_ids": [
+        "AM-12"
+      ],
+      "required_input_ids": [
+        "IN-09"
+      ],
+      "evidence_level": "SCENARIO_ONLY_NOT_EXECUTED",
+      "implementation_verified": false
+    },
+    {
+      "id": "SC-10",
+      "condition": "Two buyers, seller cancellation and Note halt race for the last units.",
+      "expected": "One serialized lawful outcome; no duplicate sale or post-halt winning settlement. Real PostgreSQL concurrent/fault-injection proof remains required.",
+      "amendment_ids": [
+        "AM-09",
+        "AM-12"
+      ],
+      "required_input_ids": [
+        "IN-06"
+      ],
+      "evidence_level": "SCENARIO_ONLY_NOT_EXECUTED",
+      "implementation_verified": false
+    },
+    {
+      "id": "SC-11",
+      "condition": "Trade crosses a scheduled payout cutoff while the actual payout arrives late.",
+      "expected": "Preserve the cutoff holder's vested entitlement and transfer only future unvested entitlement; prove no double receipt after allocation policy review.",
+      "amendment_ids": [
+        "AM-10"
+      ],
+      "required_input_ids": [
+        "IN-05",
+        "IN-07"
+      ],
+      "evidence_level": "SCENARIO_ONLY_NOT_EXECUTED",
+      "implementation_verified": false
+    },
+    {
+      "id": "SC-12",
+      "condition": "Owner draw records or required audited months are missing.",
+      "expected": "UNDERWRITING_EVIDENCE_REQUIRED; no numerical zero draw, false rating or offer.",
+      "amendment_ids": [
+        "AM-02",
+        "AM-03"
+      ],
+      "required_input_ids": [
+        "IN-02"
+      ],
+      "evidence_level": "SCENARIO_ONLY_NOT_EXECUTED",
+      "implementation_verified": false
+    },
+    {
+      "id": "SC-13",
+      "condition": "Client changes active role, Business ID, quoted fee or aggregate revision before confirmation.",
+      "expected": "Re-authorize server-side and reject forbidden/stale commands; do not trust editable allowed_actions or client fee totals.",
+      "amendment_ids": [
+        "AM-09",
+        "AM-11"
+      ],
+      "required_input_ids": [
+        "IN-09"
+      ],
+      "evidence_level": "SCENARIO_ONLY_NOT_EXECUTED",
+      "implementation_verified": false
+    },
+    {
+      "id": "SC-14",
+      "condition": "A funded bid partially matches at better-than-limit ask; unfilled quantity remains.",
+      "expected": "Post exact per-fill fees, retain sufficient disclosed funding for the remainder and safely release surplus; approval of buffer and minimum-fill mechanics is pending.",
+      "amendment_ids": [
+        "AM-09",
+        "AM-11"
+      ],
+      "required_input_ids": [
+        "IN-06"
+      ],
+      "evidence_level": "SCENARIO_ONLY_NOT_EXECUTED",
+      "implementation_verified": false
+    },
+    {
+      "id": "SC-15",
+      "condition": "Policy changes with active checkout, secondary listing, unfunded primary commitment and issued Note.",
+      "expected": "Grandfather checkout/listing to their original deadlines; reevaluate primary commitment before disbursement; preserve issued terms; do not invent a refund/re-consent rule.",
+      "amendment_ids": [
+        "AM-08"
+      ],
+      "required_input_ids": [
+        "IN-03"
+      ],
+      "evidence_level": "SCENARIO_ONLY_NOT_EXECUTED",
+      "implementation_verified": false
+    },
+    {
+      "id": "SC-16",
+      "condition": "Loan is uncured through Robert's day-30 default boundary and reaches days 31-45.",
+      "expected": "Follow full selected recovery/capital-resolution direction, not a checkpoint-only substitute; numeric penalties, funding and exact timestamps remain blocked on operational inputs.",
+      "amendment_ids": [
+        "AM-07"
+      ],
+      "required_input_ids": [
+        "IN-04",
+        "IN-05"
+      ],
+      "evidence_level": "SCENARIO_ONLY_NOT_EXECUTED",
+      "implementation_verified": false
+    }
+  ],
+  "vector_dispositions": [
+    {
+      "id": "GV-001",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-002",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Replace 6/11/12-month eligibility and 24-month retention expectations with first-time 36 and repeat-track boundaries; keep gaps/staleness cases.",
+      "required_input_ids": [
+        "IN-02",
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-003",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-004",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Use greater-of historical and peak debt service; downstream normalization examples only.",
+      "required_input_ids": [
+        "IN-02",
+        "IN-12"
+      ],
+      "partial_example_ids": [
+        "EC-003",
+        "EC-004"
+      ],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-005",
+      "source_status": "BLOCKED",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Standard seasonality/NOCF method remains missing; do not baseline proposed winsorization.",
+      "required_input_ids": [
+        "IN-02",
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-006",
+      "source_status": "BLOCKED",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Use confirmed owner-draw formula and PDF exceptions; raw evidence cases still required.",
+      "required_input_ids": [
+        "IN-02",
+        "IN-12"
+      ],
+      "partial_example_ids": [
+        "EC-001",
+        "EC-002",
+        "EC-032"
+      ],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-007",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Original request at 0.99 rejects; distinguish current-Note monitoring from new application.",
+      "required_input_ids": [
+        "IN-03",
+        "IN-12"
+      ],
+      "partial_example_ids": [
+        "EC-034"
+      ],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-008",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Original request at 1.00 rejects, not manual approval.",
+      "required_input_ids": [
+        "IN-03",
+        "IN-12"
+      ],
+      "partial_example_ids": [
+        "EC-035"
+      ],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-009",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Original request at 1.249 rejects, even if display shows 1.25.",
+      "required_input_ids": [
+        "IN-03",
+        "IN-12"
+      ],
+      "partial_example_ids": [
+        "EC-036"
+      ],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-010",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Original request at 1.25 enters scaling, not immediate offer authorization; final target 1.50.",
+      "required_input_ids": [
+        "IN-03",
+        "IN-12"
+      ],
+      "partial_example_ids": [
+        "EC-006"
+      ],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-011",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Replace old manual-band downsizing: below 1.25 original request rejects; scale only eligible buffer cases.",
+      "required_input_ids": [
+        "IN-03",
+        "IN-12"
+      ],
+      "partial_example_ids": [
+        "EC-035",
+        "EC-036",
+        "EC-006"
+      ],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-012",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Retain above-capacity denial; reconcile privileged override scope against new hard bounds before baseline.",
+      "required_input_ids": [
+        "IN-09",
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-013",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "4/5 months now valid tenors; 9/12 invalid. Valid tenor is not proof that its pricing input exists.",
+      "required_input_ids": [
+        "IN-01",
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-014",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-015",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Retain 3/6-month formula where unchanged; replace 9/12 matrix with approved 4/5 premiums once supplied.",
+      "required_input_ids": [
+        "IN-01",
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-016",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-017",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-018",
+      "source_status": "BLOCKED",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Exact Coverage and unavailable semantics retained; engineering representation/display needs joint review.",
+      "required_input_ids": [
+        "IN-02",
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-019",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-020",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_ARITHMETIC_SCOPE_ONLY",
+      "rationale": "Retain only the explicitly normalized arithmetic, not actual loan eligibility or end-to-end source evidence.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-021",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_ARITHMETIC_SCOPE_ONLY",
+      "rationale": "Retain only the explicitly normalized arithmetic, not actual loan eligibility or end-to-end source evidence.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-022",
+      "source_status": "BLOCKED",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Rescore with current evidence and policy without stale publication; full numeric output still needs upstream inputs.",
+      "required_input_ids": [
+        "IN-02",
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-023",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-024",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-025",
+      "source_status": "BLOCKED",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Pulse/full-evidence parity remains required; current policy and normalized inputs are not a complete ingestion vector.",
+      "required_input_ids": [
+        "IN-02",
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-026",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-027",
+      "source_status": "REJECTED",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-028",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-029",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-030",
+      "source_status": "BLOCKED",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Replace downstream 1.25 target with 1.50 and new exposure limits; supplied CFADS/rate are assumptions.",
+      "required_input_ids": [
+        "IN-02",
+        "IN-12"
+      ],
+      "partial_example_ids": [
+        "EC-010"
+      ],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-031",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Replace old 1.25 last-franc expected result; test initial cutoff, 1.50 sizing and minimal guard.",
+      "required_input_ids": [
+        "IN-03",
+        "IN-12"
+      ],
+      "partial_example_ids": [
+        "EC-010",
+        "EC-033"
+      ],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-032",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "New original-request thresholds replace old manual Pulse outcomes; all other evidence/eligibility gates remain.",
+      "required_input_ids": [
+        "IN-03",
+        "IN-12"
+      ],
+      "partial_example_ids": [
+        "EC-037",
+        "EC-035",
+        "EC-036",
+        "EC-006"
+      ],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-033",
+      "source_status": "REJECTED",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-034",
+      "source_status": "REJECTED",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-035",
+      "source_status": "REJECTED",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-036",
+      "source_status": "REJECTED",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-037",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Missing evidence remains unavailable; revise historical-month eligibility for first-time/repeat tracks.",
+      "required_input_ids": [
+        "IN-02",
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-038",
+      "source_status": "REJECTED",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-039",
+      "source_status": "QUARANTINED",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Old 5M-50M bounds are not selected; new 3M-100M and 35% borrower-wide exposure are recorded, subject to versioned contract review.",
+      "required_input_ids": [
+        "IN-09",
+        "IN-12"
+      ],
+      "partial_example_ids": [
+        "EC-017",
+        "EC-018",
+        "EC-019"
+      ],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-040",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_ARITHMETIC_SCOPE_ONLY",
+      "rationale": "Retain only the explicitly normalized arithmetic, not actual loan eligibility or end-to-end source evidence.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-041",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_ARITHMETIC_SCOPE_ONLY",
+      "rationale": "Retain only the explicitly normalized arithmetic, not actual loan eligibility or end-to-end source evidence.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-042",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Six-month single-document route does not satisfy the new first-time 36-month baseline; distinguish indicative data from verified eligibility.",
+      "required_input_ids": [
+        "IN-02",
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-043",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-044",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Reconcile old post-grace/30-day score caps with new recovery calendar; do not silently alter unchanged caps.",
+      "required_input_ids": [
+        "IN-05",
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-045",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-046",
+      "source_status": "BLOCKED",
+      "disposition": "REVISE_EXPECTATION_BEFORE_BASELINE",
+      "rationale": "Replace 90-DPD backstop with supplied accelerated recovery; complete action/cure and risk mapping.",
+      "required_input_ids": [
+        "IN-05",
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-047",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    },
+    {
+      "id": "GV-048",
+      "source_status": "READY-TO-BASELINE",
+      "disposition": "RETAIN_SOURCE_EXPECTATION_SCOPE",
+      "rationale": "No direct change identified to this expectation; preserve original scenario scope and obtain complete fixtures/review before baseline.",
+      "required_input_ids": [
+        "IN-12"
+      ],
+      "partial_example_ids": [],
+      "baselined": false,
+      "implementation_verified": false
+    }
+  ],
+  "wire_example": {
+    "evidence_level": "ILLUSTRATIVE_ONLY_NO_EXECUTED_TRADE",
+    "buyer_receipt": {
+      "operation_id": "synthetic-operation-001",
+      "trade_id": "synthetic-trade-001",
+      "units": "2",
+      "gross": {
+        "currency": "RWF",
+        "amount": "10000"
+      },
+      "buyer_fee": {
+        "currency": "RWF",
+        "amount": "35"
+      },
+      "buyer_debit": {
+        "currency": "RWF",
+        "amount": "10035"
+      },
+      "revision": 1,
+      "code": "TRADE_SETTLED"
+    },
+    "seller_receipt": {
+      "operation_id": "synthetic-operation-001",
+      "trade_id": "synthetic-trade-001",
+      "units": "2",
+      "gross": {
+        "currency": "RWF",
+        "amount": "10000"
+      },
+      "seller_fee": {
+        "currency": "RWF",
+        "amount": "35"
+      },
+      "seller_credit": {
+        "currency": "RWF",
+        "amount": "9965"
+      },
+      "revision": 1,
+      "code": "TRADE_SETTLED"
+    }
+  }
+}

@@ -2,6 +2,8 @@
 
 **Status:** `PROPOSED — UNSIGNED — NOT ACTIVATED` · **Version:** review-2026-09-10.1
 
+**Subsequent response, 2026-09-17:** See the [Robert/Kimani consolidated decision sheet](stakeholder-decision-sheet-2026-09-17.md) for captured choices, requested amendments and remaining questions. The proposal and pending-status statements below are the retained 10 September snapshot, not a claim that no answers have since arrived. No policy or historical fixture is activated by the response sheet.
+
 **Goal:** Turn the unresolved Appendix A rules into choices that Robert and Kimani can sign, and prepare reproducible review examples without creating a production underwriting engine or pretending that an unsigned vector is baselined.
 
 ## Authority and deliverables
