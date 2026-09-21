@@ -419,3 +419,341 @@ test('synthetic review example :dataset reproduces its expected arithmetic only'
 
     return $dataset;
 });
+
+test('September stakeholder sheet captures every response without converting questions into choices', function (): void {
+    $sheet = file_get_contents(__DIR__.'/../../docs/phase-0/stakeholder-decision-sheet-2026-09-17.md');
+
+    if ($sheet === false) {
+        throw new UnexpectedValueException('Missing stakeholder decision sheet.');
+    }
+
+    preg_match_all('/^\| (TENOR|HISTORY|UW-R\d{2}|SEC-R\d{2}) \| ([A-Z_]+) \|/m', $sheet, $matches);
+
+    expect($matches[1])->toHaveCount(19)
+        ->and(array_combine($matches[1], $matches[2]))->toBe([
+            'TENOR' => 'CHOICE_CAPTURED',
+            'HISTORY' => 'QUESTION_OPEN',
+            'UW-R01' => 'QUESTION_OPEN',
+            'UW-R02' => 'QUESTION_OPEN',
+            'UW-R03' => 'QUESTION_OPEN',
+            'UW-R04' => 'PARTIAL_ANSWER',
+            'UW-R05' => 'CHOICE_CAPTURED',
+            'UW-R06' => 'CHOICE_CAPTURED',
+            'UW-R07' => 'CHANGE_REQUEST',
+            'SEC-R01' => 'CHOICE_CAPTURED',
+            'SEC-R02' => 'CHOICE_CAPTURED',
+            'SEC-R03' => 'CHOICE_CAPTURED',
+            'SEC-R04' => 'CHOICE_CAPTURED',
+            'SEC-R05' => 'CHOICE_CAPTURED',
+            'SEC-R06' => 'QUESTION_OPEN',
+            'SEC-R07' => 'CHOICE_CAPTURED',
+            'SEC-R08' => 'CHOICE_CAPTURED',
+            'SEC-R09' => 'CHOICE_CAPTURED',
+            'SEC-R10' => 'CHANGE_REQUEST',
+        ]);
+
+    preg_match_all('/^### (Q\d{2}) —/m', $sheet, $questions);
+    preg_match_all('/\bQ\d{2}\b/', $sheet, $references);
+
+    expect($questions[1])->toBe(array_map(fn (int $number): string => sprintf('Q%02d', $number), range(1, 12)))
+        ->and(array_diff($references[0], $questions[1]))->toBe([])
+        ->and(substr_count($sheet, '**Answer:** PENDING.'))->toBe(12)
+        ->and($sheet)->toContain(
+            'PARTIAL_CHOICES_CAPTURED — CLARIFICATIONS_OPEN — NOT_ACTIVATED',
+            'DRAFT_NOT_SENT',
+            'Production activation: NONE. Effective policy version/date: NOT_SET.',
+            'The pasted messages identify Robert as the speaker',
+            "Kimani's individual concurrence",
+            'Strict DSCR is not the Coverage-precision decision',
+            'review-only flags, not automatic penalties',
+            'Phase 0 and the Phase 1 behavioral contract freeze remain open.',
+        );
+});
+
+test('September stakeholder sheet has resolvable local document references', function (): void {
+    $directory = __DIR__.'/../../docs/phase-0/';
+    $sheet = file_get_contents($directory.'stakeholder-decision-sheet-2026-09-17.md');
+
+    if ($sheet === false) {
+        throw new UnexpectedValueException('Missing stakeholder decision sheet.');
+    }
+
+    preg_match_all('/\]\((?!https?:\/\/)([^)]+)\)/', $sheet, $links);
+
+    expect($links[1])->not->toBeEmpty();
+
+    foreach ($links[1] as $link) {
+        expect(is_file($directory.$link))->toBeTrue('Missing decision-sheet reference: '.$link);
+    }
+});
+
+test('historical proposal and phase plan :dataset link to the subsequent response sheet', function (string $filename, string $target): void {
+    $contents = file_get_contents(__DIR__.'/../../docs/'.$filename);
+
+    expect($contents)->toBeString()->toContain(']('.$target.')')
+        ->and(is_file(dirname(__DIR__.'/../../docs/'.$filename).'/'.$target))->toBeTrue();
+})->with([
+    'underwriting' => ['phase-0/underwriting-decision-review.md', 'stakeholder-decision-sheet-2026-09-17.md'],
+    'secondary' => ['phase-0/secondary-contract-review.md', 'stakeholder-decision-sheet-2026-09-17.md'],
+    'phase plan' => ['Rozine_Phased_Implementation_Plan.md', 'phase-0/stakeholder-decision-sheet-2026-09-17.md'],
+]);
+
+test('September 20 reconciliation preserves rule coverage and unresolved authority boundaries', function (): void {
+    $sheet = file_get_contents(__DIR__.'/../../docs/phase-0/stakeholder-decision-sheet-2026-09-20.md');
+
+    if ($sheet === false) {
+        throw new UnexpectedValueException('Missing September 20 reconciliation.');
+    }
+
+    preg_match_all('/^\| ((?:UW|SEC)-R\d{2}) \|/m', $sheet, $rules);
+    preg_match_all('/^### (F\d{2}) /m', $sheet, $questions);
+    preg_match_all('/\bF\d{2}\b/', $sheet, $references);
+
+    expect($rules[1])->toBe([
+        ...array_map(fn (int $number): string => sprintf('UW-R%02d', $number), range(1, 7)),
+        ...array_map(fn (int $number): string => sprintf('SEC-R%02d', $number), range(1, 10)),
+    ])
+        ->and($questions[1])->toBe(array_map(fn (int $number): string => sprintf('F%02d', $number), range(1, 7)))
+        ->and(array_diff($references[0], $questions[1]))->toBe([])
+        ->and(substr_count($sheet, '**Response:** Pending confirmation.'))->toBe(7)
+        ->and($sheet)->toContain(
+            'response-2026-09-20.1',
+            'DECISIONS_RECORDED — RECONCILIATION_OPEN — NOT_ACTIVATED',
+            'Maximum Allowed Secondary Listing Price = Remaining Unpaid Principal x 0.70',
+            'the conflicting maximum formula is not silently corrected or implemented',
+            'Automatic bid matching is a new requested capability',
+            'or 1 whole unit',
+            'ordinary uncalibrated activity flags remain review-only',
+            'No permission to trade distressed notes is inferred',
+            'The effective policy version/date, required approvals and implementation evidence remain open',
+            'Hussain confirmed that "Kamau" refers to Kimani',
+            'db1d40588ced04c128ed6cf0d8ec8fee85ae66e3eaa1a3c2414215982dc22893',
+            'c7a9070ed631df6cef757751bae05f175d6010990be1de5eaa3714912f863974',
+        );
+});
+
+test('September 20 reconciliation links resolve and preserve the prior decision sheet', function (): void {
+    $directory = __DIR__.'/../../docs/phase-0/';
+    $sheet = file_get_contents($directory.'stakeholder-decision-sheet-2026-09-20.md');
+    $plan = file_get_contents(__DIR__.'/../../docs/Rozine_Phased_Implementation_Plan.md');
+
+    if ($sheet === false || $plan === false) {
+        throw new UnexpectedValueException('Missing reconciliation or implementation plan.');
+    }
+
+    preg_match_all('/\]\((?!https?:\/\/)([^)]+)\)/', $sheet, $links);
+
+    expect($links[1])->not->toBeEmpty()
+        ->and($plan)->toContain('](phase-0/stakeholder-decision-sheet-2026-09-20.md)', 'neither gate is closed')
+        ->and(hash_file('sha256', $directory.'stakeholder-decision-sheet-2026-09-17.md'))
+        ->toBe('cdcf0e27380a4e98b84ff79b1ef02054271f7c944b9a27a8bb78b7790457d137');
+
+    foreach ($links[1] as $link) {
+        expect(is_file($directory.$link))->toBeTrue('Missing reconciliation reference: '.$link);
+    }
+});
+
+test('later September 20 answers close specific questions without approving new policy changes', function (): void {
+    $sheet = file_get_contents(__DIR__.'/../../docs/phase-0/stakeholder-decision-closure-2026-09-20.md');
+
+    if ($sheet === false) {
+        throw new UnexpectedValueException('Missing decision closure addendum.');
+    }
+
+    preg_match_all('/^\| (F\d{2}) \| ([A-Z0-9_]+) \|/m', $sheet, $answers);
+    preg_match_all('/^### (C\d{2}) /m', $sheet, $changes);
+    preg_match_all('/\bC\d{2}\b/', $sheet, $references);
+
+    expect(array_combine($answers[1], $answers[2]))->toBe([
+        'F01' => 'DSCR_CHOICE_RESOLVED',
+        'F02' => 'PRICE_BAND_RESOLVED',
+        'F03' => 'MATCHING_RECORDED_FEE_OPEN',
+        'F04' => 'SECONDARY_MINIMUM_RESOLVED',
+        'F05' => 'TRADING_BAN_RESOLVED_RECOVERY_OPEN',
+        'F06' => 'HOLD_TIMERS_RESOLVED',
+        'F07' => 'CONCURRENCE_REPORTED_TRANSITION_OPEN',
+    ])
+        ->and($changes[1])->toBe(['C01', 'C02', 'C03'])
+        ->and(array_diff($references[0], $changes[1]))->toBe([])
+        ->and(substr_count($sheet, '**Decision:** PENDING_OWNER_RESPONSE.'))->toBe(3)
+        ->and($sheet)->toContain(
+            'response-2026-09-20.2',
+            'ANSWERS_RECORDED — THREE_CHANGE_GROUPS_OPEN — NOT_ACTIVATED',
+            'DRAFT_NOT_SENT',
+            'ON_HOLD_BY_USER',
+            'test the original requested amount',
+            'below 1.25 is rejected without downsizing',
+            'final offer reaches at least 1.50',
+            'minimum price is 70% of remaining unpaid principal',
+            'whole unit AND gross consideration of at least RWF 1,000',
+            'execution at the seller\'s ask',
+            'hold expires at 24 hours',
+            'five-business-day clock starts at the original flag timestamp',
+            'Compliance Officer OR Legal Counsel',
+            'Kimani\'s concurrence',
+            'No Phase 1 development until',
+            'rate/amount remains NOT_SET',
+            'not zero-fee defaults',
+            'not a guaranteed payout deadline',
+            'never rewrite already-issued investor holdings',
+            'not a determination of what Rwanda law permits',
+            'Three follow-up groups do not mean only three Phase 0 tasks remain',
+            '58391d6c193e6ab5e9554db12c100154dba6472914e174c6102a9534068f9f8a',
+        );
+});
+
+test('decision closure references resolve while earlier answers and governing rules remain unchanged', function (): void {
+    $directory = __DIR__.'/../../docs/phase-0/';
+    $sheet = file_get_contents($directory.'stakeholder-decision-closure-2026-09-20.md');
+    $plan = file_get_contents(__DIR__.'/../../docs/Rozine_Phased_Implementation_Plan.md');
+
+    if ($sheet === false || $plan === false) {
+        throw new UnexpectedValueException('Missing decision closure addendum or implementation plan.');
+    }
+
+    preg_match_all('/\]\((?!https?:\/\/)([^)]+)\)/', $sheet, $links);
+
+    expect($links[1])->not->toBeEmpty()
+        ->and($plan)->toContain(
+            '](phase-0/stakeholder-decision-closure-2026-09-20.md)',
+            'No preparatory-slice exception is approved for this work',
+            'the existing foundation status is not permission to start',
+        )
+        ->and(hash_file('sha256', $directory.'stakeholder-decision-sheet-2026-09-20.md'))
+        ->toBe('82af54e9d1eb08a5d95cfe022a316595724f3da694c8a949cbf637102c0527d0')
+        ->and(hash_file('sha256', $directory.'stakeholder-decision-sheet-2026-09-17.md'))
+        ->toBe('cdcf0e27380a4e98b84ff79b1ef02054271f7c944b9a27a8bb78b7790457d137')
+        ->and(hash_file('sha256', $directory.'../Rozine-BRS.md'))
+        ->toBe('0badfe6c175f58ec5c883ab80a9a9c52b921cf802a0f133fbcc251af6fa96f74');
+
+    foreach ($links[1] as $link) {
+        expect(is_file($directory.$link))->toBeTrue('Missing decision closure reference: '.$link);
+    }
+});
+
+test('current consolidation covers every rule and closes the three stakeholder follow-ups', function (): void {
+    $sheet = file_get_contents(__DIR__.'/../../docs/phase-0/stakeholder-policy-consolidation-2026-09-20.md');
+
+    if ($sheet === false) {
+        throw new UnexpectedValueException('Missing current stakeholder consolidation.');
+    }
+
+    preg_match_all('/^\| ((?:UW|SEC)-R\d{2}) \|/m', $sheet, $rules);
+    preg_match_all('/^\| (C\d{2}) \| ([A-Z0-9_]+) \|/m', $sheet, $answers);
+
+    expect($rules[1])->toBe([
+        ...array_map(fn (int $number): string => sprintf('UW-R%02d', $number), range(1, 7)),
+        ...array_map(fn (int $number): string => sprintf('SEC-R%02d', $number), range(1, 10)),
+    ])
+        ->and(array_combine($answers[1], $answers[2]))->toBe([
+            'C01' => 'ANSWERED',
+            'C02' => 'RETAIN_ROBERT_AS_PROVIDED',
+            'C03' => 'RETAIN_ROBERT_AS_PROVIDED',
+        ])
+        ->and($sheet)->toContain(
+            'response-2026-09-20.3',
+            'Buyer fee is 0.35%; seller fee is 0.35%; combined nominal rate is 0.7%',
+            'execution price multiplied by units matched',
+            'supersedes 0.5% taker / 0.2% maker and the legacy 3% seller fee; do not stack them',
+            'isolated phrase "70% combined"',
+            'not a 70% charge',
+            'No additional fee clarification is required',
+            'historical and must not be sent as current questions',
+            'd9622386ebbaae2fa27beb65fe03acd158d5a04bee02b1d33133a73b95ad2dfd',
+        );
+});
+
+test('consolidation preserves supplied recovery and transitions without the withdrawn alternatives', function (): void {
+    $sheet = file_get_contents(__DIR__.'/../../docs/phase-0/stakeholder-policy-consolidation-2026-09-20.md');
+
+    expect($sheet)->toBeString()->toContain(
+        'Days 1–7 — grace and automated retries',
+        'Days 8–21 — active recovery',
+        'penalty-interest accrual and an enforced structured daily repayment plan',
+        'Days 22–30 — formal default',
+        'if the balance is not cured by day 30, declare Default',
+        'Days 31–45 maximum — final investor resolution',
+        'reserve-fund buyout/payout mechanisms execute to deliver final capital resolution',
+        "The assistant's alternative that made day 45 only a progress checkpoint is withdrawn",
+        'grandfathered until their five-minute timer completes or expires',
+        'grandfathered on original listing terms until the seven-day window expires',
+        're-evaluated immediately against new DSCR scaling rules and exposure caps before disbursement',
+        'protection of already-issued investor rating/return/schedule snapshots',
+        "without importing the assistant's proposed fresh-acceptance, cancellation/refund or re-consent requirements",
+        'five-business-day clock starts at the original automated flag timestamp',
+        'Compliance Officer OR Legal Counsel',
+        'Missing inputs are not zero/default values',
+        '58391d6c193e6ab5e9554db12c100154dba6472914e174c6102a9534068f9f8a',
+    );
+});
+
+test('published fee examples use equal thirty-five basis point fees and conserve every RWF', function (): void {
+    $sheet = file_get_contents(__DIR__.'/../../docs/phase-0/stakeholder-policy-consolidation-2026-09-20.md');
+
+    if ($sheet === false) {
+        throw new UnexpectedValueException('Missing current stakeholder consolidation.');
+    }
+
+    preg_match_all('/^\| (\d+) \| (\d+) \| (\d+) \| (\d+) \| (\d+) \| (\d+) \|$/m', $sheet, $examples, PREG_SET_ORDER);
+
+    expect(array_column($examples, 1))->toBe(['1000', '10000', '20000'])
+        ->and($sheet)->toContain(
+            'per-fill whole-RWF half-up rounding and no minimum fee',
+            'derived synthetic examples, not executed trades',
+            'gross threshold is applied before the seller fee',
+        );
+
+    foreach ($examples as $example) {
+        [$gross, $buyerFee, $buyerDebit, $sellerFee, $sellerCredit, $platformFee] = array_map('intval', array_slice($example, 1));
+        $roundedFee = intdiv($gross * 35 + 5000, 10000);
+
+        expect($buyerFee)->toBe($roundedFee)
+            ->and($sellerFee)->toBe($roundedFee)
+            ->and($buyerDebit)->toBe($gross + $roundedFee)
+            ->and($sellerCredit)->toBe($gross - $roundedFee)
+            ->and($platformFee)->toBe($buyerFee + $sellerFee)
+            ->and($buyerDebit)->toBe($sellerCredit + $platformFee);
+    }
+});
+
+test('current consolidation preserves historical evidence and leaves contract and exit gates open', function (): void {
+    $directory = __DIR__.'/../../docs/phase-0/';
+    $sheet = file_get_contents($directory.'stakeholder-policy-consolidation-2026-09-20.md');
+    $plan = file_get_contents(__DIR__.'/../../docs/Rozine_Phased_Implementation_Plan.md');
+
+    if ($sheet === false || $plan === false) {
+        throw new UnexpectedValueException('Missing current consolidation or implementation plan.');
+    }
+
+    preg_match_all('/^\| ((?:ER|EXIT)-\d{2}) \|/m', $sheet, $findings);
+    preg_match_all('/\b(?:ER|EXIT)-\d{2}\b/', $sheet, $references);
+    preg_match_all('/\]\((?!https?:\/\/)([^)]+)\)/', $sheet, $links);
+
+    expect($findings[1])->toBe([
+        ...array_map(fn (int $number): string => sprintf('ER-%02d', $number), range(1, 5)),
+        ...array_map(fn (int $number): string => sprintf('EXIT-%02d', $number), range(1, 6)),
+    ])
+        ->and(array_diff($references[0], $findings[1]))->toBe([])
+        ->and($sheet)->toContain(
+            'BUILD_DIRECTION_RECORDED — CONTRACT_FREEZE_PENDING — NO_RUNTIME_ACTIVATION',
+            'ON_HOLD_BY_USER',
+            'DESK_REVIEW_COMPLETE — JOINT_CONTRACT_FREEZE_PENDING',
+            'not Erastus\'s review',
+            '**Exit result:** NOT_CLEARED',
+            'Harness publication is not device evidence',
+            'Do not repeat SSH hardening as undone',
+            'No Phase 1 development started. No runtime policy activated',
+        )
+        ->and($plan)->toContain(
+            '](phase-0/stakeholder-policy-consolidation-2026-09-20.md)',
+            'Keep development on hold until the joint contract freeze and the remaining Phase 0 exit gate',
+            'earlier three-question follow-up is superseded',
+        )
+        ->and(hash_file('sha256', $directory.'stakeholder-decision-closure-2026-09-20.md'))
+        ->toBe('4d91810d87a90f76c0819b45dc0c62765b973b440644b98531a5efc3eb0d8271')
+        ->and($links[1])->not->toBeEmpty();
+
+    foreach ($links[1] as $link) {
+        expect(is_file($directory.$link))->toBeTrue('Missing consolidation reference: '.$link);
+    }
+});

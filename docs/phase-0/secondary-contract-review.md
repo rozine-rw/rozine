@@ -2,6 +2,8 @@
 
 **Status:** `PROPOSED — UNSIGNED — NOT IMPLEMENTED` · **Version:** review-2026-09-10.1
 
+**Subsequent response, 2026-09-17:** See the [Robert/Kimani consolidated decision sheet](stakeholder-decision-sheet-2026-09-17.md) for captured partial-fill/fee choices, other decisions and remaining questions. The proposal and pending-status statements below are the retained 10 September snapshot, not the latest owner choices. Contracts, fees and historical fixtures are not changed or activated by the response sheet.
+
 **Goal:** Give the Phase 1 Holding/Order contract freeze an explicit BRS-safe proposal covering orders, prices, disclosures, settlement, cutoff races and failure recovery. This is not a schema freeze, policy activation or authorization to ship a market.
 
 ## Recommended choices and non-negotiable boundary
