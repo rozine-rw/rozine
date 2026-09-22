@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "version": "engineering-2026-09-20.3",
+  "version": "engineering-2026-09-22.1",
   "status": "SYNTHETIC_CONTRACT_REVIEW_NOT_BASELINED",
   "production_activation": false,
   "phase_1_development_authorized": false,
@@ -15,9 +15,157 @@
       "scope_ids": ["AR-01", "AR-02", "AR-03", "AR-04", "AR-05", "AR-06"],
       "full_contract_freeze": false
     },
-    "erastus_engineering": null,
-    "independent_expected_results": null
+    "erastus_engineering": {
+      "status": "REVIEW_RECORDED_WITH_AMENDMENTS",
+      "reviewer": "Engineersticity",
+      "reviewed_at": "2026-09-21T17:31:17Z",
+      "source_url": "https://github.com/rozine-rw/rozine/issues/91#issuecomment-5764744196",
+      "reviewed_version": "engineering-2026-09-20.3",
+      "reviewed_fixture_sha256": "afa73ed3277e86b356437fe456c8278e1c4acc1451264fb7e6ea3d7610db4b48",
+      "dispositions": {"AR-01": "AGREE", "AR-02": "AGREE_WITH_AMENDMENTS", "AR-03": "AGREE", "AR-04": "AGREE", "AR-05": "CHANGE_REQUIRED", "AR-06": "AGREE"},
+      "full_contract_freeze": false
+    },
+    "independent_expected_results": {
+      "status": "REVIEWER_REPORTED_MATCH",
+      "reviewer": "Engineersticity",
+      "source_url": "https://github.com/rozine-rw/rozine/issues/91#issuecomment-5764744196",
+      "reviewed_version": "engineering-2026-09-20.3",
+      "reviewed_fixture_sha256": "afa73ed3277e86b356437fe456c8278e1c4acc1451264fb7e6ea3d7610db4b48",
+      "numeric_case_count": 37,
+      "vector_disposition_count": 48,
+      "historical_arithmetic_ids": ["GV-020", "GV-021", "GV-026", "GV-040"],
+      "numeric_cases_sha256": "4768c906fa4036ab6cb3ebd72ee3d4329664e4d99eca0489b3ae7912769d495c",
+      "vector_dispositions_sha256": "bd12eea5b9c26594b1cff175696dd874d0d25e940b71c8f8dc0be69b77e9c7da",
+      "current_amendment_examples_reviewed": false,
+      "full_contract_freeze": false
+    },
+    "aminu_amendments": {
+      "status": "ACCEPTED_CHANGES_RECORDED",
+      "recorded_on": "2026-09-22",
+      "evidence_type": "DIRECT_USER_MESSAGES",
+      "scope_ids": ["AR-02", "AR-05"],
+      "amendment_ids": ["A2-1", "A2-2", "A2-3", "A5-1", "A5-2", "A5-3"],
+      "user_responses": ["Okay, agreed with what Erastus proposed for AR-02", "You're correct with your intuition for the locking mechanism", "I agree with you"],
+      "clarifications": ["ALL_REQUIRED_NOTE_LOCKS_BEFORE_WALLETS_FOR_CROSS_NOTE_COMMANDS", "NO_AUTO_INTER_LISTING_COMBINATION_SELLER_SAME_NOTE_BUNDLING_RETAINED"],
+      "revised_hash_reviewed": false,
+      "full_contract_freeze": false
+    }
   },
+  "amended_section_reviews": [
+    {
+      "id": "AR-02",
+      "previous_content_sha256": "caca7572321d1757c7b8db75c0f84ef91a2cc34eea5fb9ebf4ddffd201191d35",
+      "content_sha256": "1e81a481e5b6a557536c9cb13af0511206975527cc8a19f6167413a283748b05",
+      "scope": "ACCEPTED_AMENDMENT_TRANSCRIPTION_NOT_NEW_HASH_SIGNOFF",
+      "erastus_revised_hash_reviewed": false
+    },
+    {
+      "id": "AR-05",
+      "previous_content_sha256": "4ee9a60bcb1463589623c8edf723bceded89c41ef7bb8d0434bc3be97807daeb",
+      "content_sha256": "65e419c3fadee7e35f13e79e0dac314b623ad0e93cfcc9ca42045b7224e2a142",
+      "scope": "ACCEPTED_AMENDMENT_TRANSCRIPTION_NOT_NEW_HASH_SIGNOFF",
+      "erastus_revised_hash_reviewed": false
+    }
+  ],
+  "engineering_amendments": {
+    "idempotency_scope": ["AUTHENTICATED_PARTY", "COMMAND_NAME", "KEY"],
+    "body_hash_fields": "CANONICAL_JSON_PERMITTED_USER_FIELDS_ONLY",
+    "retention_extra_seconds": 86400,
+    "seven_day_command_minimum_retention_seconds": 691200,
+    "resource_not_visible_http_status": 404,
+    "visible_action_forbidden_http_status": 403,
+    "optimistic_financial_ui": false,
+    "countdown_clock": "SERVER_TIME_OFFSET",
+    "lock_order": ["MARKET_GATE", "ALL_REQUIRED_NOTE_GATES_ASCENDING_ID", "DISCOVER_CANDIDATES", "PARTIES_WALLETS_ASCENDING_ID", "ORDERS_HOLDINGS_ASCENDING_ID", "REVALIDATE"],
+    "new_note_lock_while_holding_wallet": false,
+    "retry_idempotency_key": "ORIGINAL_KEY",
+    "fixed_ask_checkout_buffer": false,
+    "sub_minimum_candidate": "SKIP_SINGLE_LISTING_THEN_WAIT_IF_NONE_QUALIFIES",
+    "automatic_inter_listing_combination": false,
+    "seller_same_note_available_unit_bundling": true,
+    "terminal_bid_states": ["FILLED", "CANCELLED", "EXPIRED", "HALTED", "INELIGIBLE"],
+    "implementation_verified": false
+  },
+  "bid_reserve_examples": [
+    {
+      "id": "BA-01", "evidence_level": "SYNTHETIC_ARITHMETIC_NOT_EXECUTED_TRADE",
+      "quantity": 4, "limit_rwf": 1000, "initial_reserve_rwf": 4016,
+      "fills": [
+        {"units": 2, "ask_rwf": 900, "buyer_fee_rwf": 6, "buyer_debit_rwf": 1806, "released_rwf": 202, "remaining_reserve_rwf": 2008},
+        {"units": 2, "ask_rwf": 950, "buyer_fee_rwf": 7, "buyer_debit_rwf": 1907, "released_rwf": 101, "remaining_reserve_rwf": 0}
+      ],
+      "terminal_state": "FILLED", "terminal_release_rwf": 0
+    },
+    {
+      "id": "BA-02", "evidence_level": "SYNTHETIC_ARITHMETIC_NOT_EXECUTED_TRADE",
+      "quantity": 2, "limit_rwf": 1000, "initial_reserve_rwf": 2008,
+      "fills": [
+        {"units": 1, "ask_rwf": 1000, "buyer_fee_rwf": 4, "buyer_debit_rwf": 1004, "released_rwf": 0, "remaining_reserve_rwf": 1004},
+        {"units": 1, "ask_rwf": 1000, "buyer_fee_rwf": 4, "buyer_debit_rwf": 1004, "released_rwf": 0, "remaining_reserve_rwf": 0}
+      ],
+      "terminal_state": "FILLED", "terminal_release_rwf": 0
+    },
+    {
+      "id": "BA-03", "evidence_level": "SYNTHETIC_ARITHMETIC_NOT_EXECUTED_TRADE",
+      "quantity": 4, "limit_rwf": 1000, "initial_reserve_rwf": 4016,
+      "fills": [{"units": 2, "ask_rwf": 900, "buyer_fee_rwf": 6, "buyer_debit_rwf": 1806, "released_rwf": 202, "remaining_reserve_rwf": 2008}],
+      "terminal_state": "CANCELLED", "terminal_release_rwf": 2008
+    },
+    {
+      "id": "BA-04", "evidence_level": "SYNTHETIC_ARITHMETIC_NOT_EXECUTED_TRADE",
+      "quantity": 3, "limit_rwf": 2000, "initial_reserve_rwf": 6021,
+      "fills": [], "terminal_state": "EXPIRED", "terminal_release_rwf": 6021
+    },
+    {
+      "id": "BA-05", "evidence_level": "SYNTHETIC_ARITHMETIC_NOT_EXECUTED_TRADE",
+      "quantity": 2, "limit_rwf": 1000, "initial_reserve_rwf": 2008,
+      "fills": [{"units": 2, "ask_rwf": 1000, "buyer_fee_rwf": 7, "buyer_debit_rwf": 2007, "released_rwf": 1, "remaining_reserve_rwf": 0}],
+      "terminal_state": "FILLED", "terminal_release_rwf": 0
+    },
+    {
+      "id": "BA-06", "evidence_level": "SYNTHETIC_ARITHMETIC_NOT_EXECUTED_TRADE",
+      "quantity": 8, "limit_rwf": 142, "initial_reserve_rwf": 1144,
+      "fills": [{"units": 8, "ask_rwf": 142, "buyer_fee_rwf": 4, "buyer_debit_rwf": 1140, "released_rwf": 4, "remaining_reserve_rwf": 0}],
+      "terminal_state": "FILLED", "terminal_release_rwf": 0
+    }
+  ],
+  "minimum_fill_examples": [
+    {
+      "id": "MF-01", "evidence_level": "SYNTHETIC_SELECTION_NOT_EXECUTED_MATCH",
+      "assumption": "Same Note; A is a residual after an earlier partial fill, not a new sub-minimum listing. All price-band, ownership and other eligibility checks satisfied. Input listings are in ask/sequence priority order.",
+      "bid_units": 2, "limit_rwf": 1000,
+      "listings": [{"id": "A", "available_units": 1, "ask_rwf": 700}, {"id": "B", "available_units": 2, "ask_rwf": 800}],
+      "expected": {"skipped": ["A"], "selected_listing": "B", "units": 2, "gross_rwf": 1600}
+    },
+    {
+      "id": "MF-02", "evidence_level": "SYNTHETIC_SELECTION_NOT_EXECUTED_MATCH",
+      "assumption": "Same seller and Note but separate residual listings after earlier partial fills, not new sub-minimum listings; all other eligibility checks satisfied. No automatic combination.",
+      "bid_units": 2, "limit_rwf": 1000,
+      "listings": [{"id": "A", "available_units": 1, "ask_rwf": 600}, {"id": "B", "available_units": 1, "ask_rwf": 700}],
+      "expected": {"skipped": ["A", "B"], "selected_listing": null, "units": 0, "gross_rwf": 0}
+    },
+    {
+      "id": "MF-03", "evidence_level": "SYNTHETIC_SELECTION_NOT_EXECUTED_MATCH",
+      "assumption": "Seller previously bundled own available, unencumbered same-Note units into one valid listing; all other eligibility checks satisfied.",
+      "bid_units": 2, "limit_rwf": 1000,
+      "listings": [{"id": "SELLER_BUNDLE", "available_units": 2, "ask_rwf": 700}],
+      "expected": {"skipped": [], "selected_listing": "SELLER_BUNDLE", "units": 2, "gross_rwf": 1400}
+    },
+    {
+      "id": "MF-04", "evidence_level": "SYNTHETIC_SELECTION_NOT_EXECUTED_MATCH",
+      "assumption": "Same Note; all other eligibility checks satisfied. The RWF 1,000 boundary is inclusive.",
+      "bid_units": 1, "limit_rwf": 1000,
+      "listings": [{"id": "BOUNDARY", "available_units": 1, "ask_rwf": 1000}],
+      "expected": {"skipped": [], "selected_listing": "BOUNDARY", "units": 1, "gross_rwf": 1000}
+    },
+    {
+      "id": "MF-05", "evidence_level": "SYNTHETIC_SELECTION_NOT_EXECUTED_MATCH",
+      "assumption": "A valid listing can still be too small for this buyer's candidate; no forced extra unit or residual buyout. Other eligibility checks satisfied.",
+      "bid_units": 1, "limit_rwf": 1000,
+      "listings": [{"id": "LARGE_LISTING", "available_units": 2, "ask_rwf": 700}],
+      "expected": {"skipped": ["LARGE_LISTING"], "selected_listing": null, "units": 0, "gross_rwf": 0}
+    }
+  ],
   "engineering_section_reviews": [
     {
       "id": "AR-01",
