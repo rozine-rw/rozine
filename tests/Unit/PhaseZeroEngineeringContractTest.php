@@ -63,8 +63,41 @@ final class PhaseZeroEngineeringReview
                     'scope_ids' => ['AR-01', 'AR-02', 'AR-03', 'AR-04', 'AR-05', 'AR-06'],
                     'full_contract_freeze' => false,
                 ],
-                'erastus_engineering' => null,
-                'independent_expected_results' => null,
+                'erastus_engineering' => [
+                    'status' => 'REVIEW_RECORDED_WITH_AMENDMENTS',
+                    'reviewer' => 'Engineersticity',
+                    'reviewed_at' => '2026-09-21T17:31:17Z',
+                    'source_url' => 'https://github.com/rozine-rw/rozine/issues/91#issuecomment-5764744196',
+                    'reviewed_version' => 'engineering-2026-09-20.3',
+                    'reviewed_fixture_sha256' => 'afa73ed3277e86b356437fe456c8278e1c4acc1451264fb7e6ea3d7610db4b48',
+                    'dispositions' => ['AR-01' => 'AGREE', 'AR-02' => 'AGREE_WITH_AMENDMENTS', 'AR-03' => 'AGREE', 'AR-04' => 'AGREE', 'AR-05' => 'CHANGE_REQUIRED', 'AR-06' => 'AGREE'],
+                    'full_contract_freeze' => false,
+                ],
+                'independent_expected_results' => [
+                    'status' => 'REVIEWER_REPORTED_MATCH',
+                    'reviewer' => 'Engineersticity',
+                    'source_url' => 'https://github.com/rozine-rw/rozine/issues/91#issuecomment-5764744196',
+                    'reviewed_version' => 'engineering-2026-09-20.3',
+                    'reviewed_fixture_sha256' => 'afa73ed3277e86b356437fe456c8278e1c4acc1451264fb7e6ea3d7610db4b48',
+                    'numeric_case_count' => 37,
+                    'vector_disposition_count' => 48,
+                    'historical_arithmetic_ids' => ['GV-020', 'GV-021', 'GV-026', 'GV-040'],
+                    'numeric_cases_sha256' => '4768c906fa4036ab6cb3ebd72ee3d4329664e4d99eca0489b3ae7912769d495c',
+                    'vector_dispositions_sha256' => 'bd12eea5b9c26594b1cff175696dd874d0d25e940b71c8f8dc0be69b77e9c7da',
+                    'current_amendment_examples_reviewed' => false,
+                    'full_contract_freeze' => false,
+                ],
+                'aminu_amendments' => [
+                    'status' => 'ACCEPTED_CHANGES_RECORDED',
+                    'recorded_on' => '2026-09-22',
+                    'evidence_type' => 'DIRECT_USER_MESSAGES',
+                    'scope_ids' => ['AR-02', 'AR-05'],
+                    'amendment_ids' => ['A2-1', 'A2-2', 'A2-3', 'A5-1', 'A5-2', 'A5-3'],
+                    'user_responses' => ['Okay, agreed with what Erastus proposed for AR-02', "You're correct with your intuition for the locking mechanism", 'I agree with you'],
+                    'clarifications' => ['ALL_REQUIRED_NOTE_LOCKS_BEFORE_WALLETS_FOR_CROSS_NOTE_COMMANDS', 'NO_AUTO_INTER_LISTING_COMBINATION_SELLER_SAME_NOTE_BUNDLING_RETAINED'],
+                    'revised_hash_reviewed' => false,
+                    'full_contract_freeze' => false,
+                ],
             ]
             || ($pack['missing_parameters'] ?? null) !== array_fill_keys([
                 'four_month_premium', 'five_month_premium', 'standard_nocf_method',
@@ -81,6 +114,36 @@ final class PhaseZeroEngineeringReview
         }
 
         $vectors = self::records($pack, 'vector_dispositions');
+
+        foreach (['numeric_cases', 'vector_dispositions'] as $collection) {
+            $hash = hash('sha256', json_encode($pack[$collection], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
+
+            if ($hash !== $pack['approvals']['independent_expected_results'][$collection.'_sha256']) {
+                throw new UnexpectedValueException('Original independent review does not cover changed examples.');
+            }
+        }
+
+        if (($pack['engineering_amendments'] ?? null) !== [
+            'idempotency_scope' => ['AUTHENTICATED_PARTY', 'COMMAND_NAME', 'KEY'],
+            'body_hash_fields' => 'CANONICAL_JSON_PERMITTED_USER_FIELDS_ONLY',
+            'retention_extra_seconds' => 86400,
+            'seven_day_command_minimum_retention_seconds' => 691200,
+            'resource_not_visible_http_status' => 404,
+            'visible_action_forbidden_http_status' => 403,
+            'optimistic_financial_ui' => false,
+            'countdown_clock' => 'SERVER_TIME_OFFSET',
+            'lock_order' => ['MARKET_GATE', 'ALL_REQUIRED_NOTE_GATES_ASCENDING_ID', 'DISCOVER_CANDIDATES', 'PARTIES_WALLETS_ASCENDING_ID', 'ORDERS_HOLDINGS_ASCENDING_ID', 'REVALIDATE'],
+            'new_note_lock_while_holding_wallet' => false,
+            'retry_idempotency_key' => 'ORIGINAL_KEY',
+            'fixed_ask_checkout_buffer' => false,
+            'sub_minimum_candidate' => 'SKIP_SINGLE_LISTING_THEN_WAIT_IF_NONE_QUALIFIES',
+            'automatic_inter_listing_combination' => false,
+            'seller_same_note_available_unit_bundling' => true,
+            'terminal_bid_states' => ['FILLED', 'CANCELLED', 'EXPIRED', 'HALTED', 'INELIGIBLE'],
+            'implementation_verified' => false,
+        ]) {
+            throw new UnexpectedValueException('Accepted engineering amendment changed or claims implementation.');
+        }
 
         if (array_column($vectors, 'id') !== array_map(fn (int $number): string => sprintf('GV-%03d', $number), range(1, 48))) {
             throw new UnexpectedValueException('Source-vector coverage changed.');
@@ -389,10 +452,11 @@ test('engineering document covers amendments inputs actions and resolvable refer
         ->and($document)->toContain(hash_file('sha256', $directory.'engineering-contract-fixtures-2026-09-20.json'));
 });
 
-test('direct user review covers exactly the six selected unchanged sections without replacing independent approval', function (): void {
+test('historical user reviews and amended sections retain distinct hashes and approval scopes', function (): void {
     $pack = PhaseZeroEngineeringReview::load();
     PhaseZeroEngineeringReview::validate($pack);
     $records = PhaseZeroEngineeringReview::records($pack, 'engineering_section_reviews');
+    $amended = array_column(PhaseZeroEngineeringReview::records($pack, 'amended_section_reviews'), null, 'id');
     $document = file_get_contents(__DIR__.'/../../docs/phase-0/engineering-contract-draft-2026-09-20.md');
 
     if ($document === false) {
@@ -410,10 +474,11 @@ test('direct user review covers exactly the six selected unchanged sections with
             "### Engineering choices proposed for Erastus's review",
             '## 7. Recovery, holds and policy transitions',
         ])
-        ->and($pack['approvals']['erastus_engineering'])->toBeNull()
-        ->and($pack['approvals']['independent_expected_results'])->toBeNull()
+        ->and(array_keys($amended))->toBe(['AR-02', 'AR-05'])
+        ->and($pack['approvals']['erastus_engineering']['reviewed_version'])->not->toBe($pack['version'])
+        ->and($pack['approvals']['independent_expected_results']['current_amendment_examples_reviewed'])->toBeFalse()
         ->and($document)->toContain(
-            'AMINU_SELECTED_SECTIONS_APPROVED - ERASTUS_REVIEW_PENDING',
+            'ERASTUS_REVIEW_RECORDED - AMINU_AMENDMENTS_ACCEPTED',
             "### 9.1 Aminu's recorded section review - 2026-09-21",
             'No missing input is filled by this approval.',
         );
@@ -427,8 +492,15 @@ test('direct user review covers exactly the six selected unchanged sections with
         }
 
         expect($record['end_heading'])->toBe($records[$index + 1]['start_heading'] ?? '## 8. Remaining input register - not a repeated questionnaire')
-            ->and(hash('sha256', substr($document, $start, $end - $start)))->toBe($record['content_sha256'])
+            ->and(hash('sha256', substr($document, $start, $end - $start)))->toBe($amended[$record['id']]['content_sha256'] ?? $record['content_sha256'])
             ->and($document)->toContain('| '.$record['id'].' | '.$record['annotation_index'].' |');
+
+        if (isset($amended[$record['id']])) {
+            expect($amended[$record['id']]['previous_content_sha256'])->toBe($record['content_sha256'])
+                ->and($amended[$record['id']]['content_sha256'])->not->toBe($record['content_sha256'])
+                ->and($amended[$record['id']]['scope'])->toBe('ACCEPTED_AMENDMENT_TRANSCRIPTION_NOT_NEW_HASH_SIGNOFF')
+                ->and($amended[$record['id']]['erastus_revised_hash_reviewed'])->toBeFalse();
+        }
     }
 });
 
@@ -548,6 +620,150 @@ test('proposed wire receipts use exact RWF strings and audience specific fee fac
         ->and($example['seller_receipt'])->not->toHaveKey('buyer_debit');
 });
 
+test('accepted bid reserve examples conserve cash through partial fills and terminal release :dataset', function (array $fixture): void {
+    $pack = PhaseZeroEngineeringReview::load();
+    $quantity = PhaseZeroEngineeringReview::integer($fixture, 'quantity');
+    $limit = PhaseZeroEngineeringReview::integer($fixture, 'limit_rwf');
+    $perUnitReserve = $limit + intdiv($limit * 35 + 9999, 10000);
+    $reserved = $quantity * $perUnitReserve;
+    $initial = $reserved;
+    $debited = 0;
+    $released = 0;
+
+    expect($fixture['evidence_level'])->toBe('SYNTHETIC_ARITHMETIC_NOT_EXECUTED_TRADE')
+        ->and($reserved)->toBe($fixture['initial_reserve_rwf'])
+        ->and($fixture['fills'])->toBeArray();
+
+    foreach ($fixture['fills'] as $fill) {
+        $units = PhaseZeroEngineeringReview::integer($fill, 'units');
+        $ask = PhaseZeroEngineeringReview::integer($fill, 'ask_rwf');
+        $gross = $units * $ask;
+        $fee = PhaseZeroEngineeringReview::halfUp($gross * 35, 10000);
+        $debit = $gross + $fee;
+        $remainingUnits = $quantity - $units;
+        $remainingReserve = $remainingUnits * $perUnitReserve;
+        $release = $reserved - $debit - $remainingReserve;
+
+        expect($units)->toBeGreaterThan(0)->toBeLessThanOrEqual($quantity)
+            ->and($ask)->toBeLessThanOrEqual($limit)
+            ->and($gross)->toBeGreaterThanOrEqual(1000)
+            ->and($fee)->toBe($fill['buyer_fee_rwf'])
+            ->and($debit)->toBe($fill['buyer_debit_rwf'])
+            ->and($release)->toBeGreaterThanOrEqual(0)->toBe($fill['released_rwf'])
+            ->and($remainingReserve)->toBe($fill['remaining_reserve_rwf']);
+
+        $quantity = $remainingUnits;
+        $reserved = $remainingReserve;
+        $debited += $debit;
+        $released += $release;
+
+        expect($debited + $released + $reserved)->toBe($initial);
+    }
+
+    expect($fixture['terminal_state'])->toBeIn($pack['engineering_amendments']['terminal_bid_states'])
+        ->and($reserved)->toBe($fixture['terminal_release_rwf'])
+        ->and($debited + $released + $fixture['terminal_release_rwf'])->toBe($initial);
+
+    if ($fixture['terminal_state'] === 'FILLED') {
+        expect($quantity)->toBe(0)->and($reserved)->toBe(0);
+    }
+})->with(function (): array {
+    $fixtures = PhaseZeroEngineeringReview::records(PhaseZeroEngineeringReview::load(), 'bid_reserve_examples');
+
+    return array_combine(array_column($fixtures, 'id'), array_map(fn (array $fixture): array => [$fixture], $fixtures));
+});
+
+test('terminal release accounting requires zero repeat release without claiming database race proof :dataset', function (string $state): void {
+    $remainingUnits = $state === 'FILLED' ? 0 : 2;
+    $reserved = $remainingUnits * 1004;
+    $initialReserve = $reserved;
+    $releases = [];
+
+    foreach ([1, 2] as $attempt) {
+        $releases[$attempt] = $reserved;
+        $reserved -= $releases[$attempt];
+    }
+
+    expect($releases)->toBe([1 => $initialReserve, 2 => 0])
+        ->and(array_sum($releases))->toBe($initialReserve)
+        ->and($reserved)->toBe(0);
+})->with(['FILLED', 'CANCELLED', 'EXPIRED', 'HALTED', 'INELIGIBLE']);
+
+test('minimum fill examples skip separate undersized listings without forced extra units :dataset', function (array $fixture): void {
+    $bidUnits = PhaseZeroEngineeringReview::integer($fixture, 'bid_units');
+    $limit = PhaseZeroEngineeringReview::integer($fixture, 'limit_rwf');
+    $skipped = [];
+    $result = ['skipped' => [], 'selected_listing' => null, 'units' => 0, 'gross_rwf' => 0];
+
+    expect($fixture['evidence_level'])->toBe('SYNTHETIC_SELECTION_NOT_EXECUTED_MATCH')
+        ->and($fixture['assumption'])->toBeString()->not->toBeEmpty();
+
+    foreach (PhaseZeroEngineeringReview::records($fixture, 'listings') as $listing) {
+        $ask = PhaseZeroEngineeringReview::integer($listing, 'ask_rwf');
+        $units = min($bidUnits, PhaseZeroEngineeringReview::integer($listing, 'available_units'));
+        $gross = $units * $ask;
+
+        if ($ask > $limit) {
+            continue;
+        }
+
+        if ($units < 1 || $gross < 1000) {
+            $skipped[] = $listing['id'];
+
+            continue;
+        }
+
+        $result = ['skipped' => $skipped, 'selected_listing' => $listing['id'], 'units' => $units, 'gross_rwf' => $gross];
+        break;
+    }
+
+    $result['skipped'] = $skipped;
+
+    expect($result)->toBe($fixture['expected']);
+})->with(function (): array {
+    $fixtures = PhaseZeroEngineeringReview::records(PhaseZeroEngineeringReview::load(), 'minimum_fill_examples');
+
+    return array_combine(array_column($fixtures, 'id'), array_map(fn (array $fixture): array => [$fixture], $fixtures));
+});
+
+test('amendment records and document preserve server authority lock ordering and original review scope', function (): void {
+    $pack = PhaseZeroEngineeringReview::load();
+    PhaseZeroEngineeringReview::validate($pack);
+    $document = file_get_contents(__DIR__.'/../../docs/phase-0/engineering-contract-draft-2026-09-20.md');
+    $rules = $pack['engineering_amendments'];
+
+    expect($rules['seven_day_command_minimum_retention_seconds'])
+        ->toBe($pack['known_parameters']['bid_seconds'] + $rules['retention_extra_seconds'])
+        ->toBe(8 * 24 * 60 * 60)
+        ->and($pack['known_parameters']['listing_seconds'])->toBe($pack['known_parameters']['bid_seconds'])
+        ->and(array_column(PhaseZeroEngineeringReview::records($pack, 'bid_reserve_examples'), 'id'))->toBe(['BA-01', 'BA-02', 'BA-03', 'BA-04', 'BA-05', 'BA-06'])
+        ->and(array_column(PhaseZeroEngineeringReview::records($pack, 'minimum_fill_examples'), 'id'))->toBe(['MF-01', 'MF-02', 'MF-03', 'MF-04', 'MF-05'])
+        ->and($document)->toBeString()->toContain(
+            'unique per authenticated Party and command name',
+            'canonical JSON of permitted user fields only',
+            'at least eight days',
+            'scoped 404 when the actor cannot see the resource at all',
+            '`ACTION_FORBIDDEN` (403) when they can see it but cannot perform the action',
+            'no optimistic UI for reserve, confirm, bid, cancel or settlement',
+            'offset from `server_time`, never the browser clock alone',
+            'ask the user to confirm again; do not retry permission failures',
+            'Ordinary single-Note commands take one Note gate',
+            'all required Note gates in ascending ID order before any wallet lock',
+            'Under the Note gates, discover candidates',
+            'Never acquire additional Note locks while holding wallet locks',
+            'same idempotency key',
+            'No automatic combination of separate listings',
+            'their own available, unencumbered units of the same Note into one listing',
+            'No cross-Note/cross-seller bundle',
+            'new standalone sub-minimum listing',
+            'with no bid buffer',
+            'release the whole remaining reserve exactly once',
+            'reserved cash is zero even if unmatched units remain in order history',
+            $pack['approvals']['erastus_engineering']['source_url'],
+            'eleven new amendment examples and the revised document hash are not covered by that original check',
+        );
+});
+
 test('engineering review rejects fabricated approval implementation or silent defaults :dataset', function (string $mutation): void {
     $pack = PhaseZeroEngineeringReview::load();
 
@@ -573,6 +789,42 @@ test('engineering review rejects fabricated approval implementation or silent de
         case 'independent approval':
             $pack['approvals']['independent_expected_results'] = 'Approved';
             break;
+        case 'erase Erastus review':
+            $pack['approvals']['erastus_engineering'] = null;
+            break;
+        case 'carry Erastus to revised hash':
+            $pack['approvals']['erastus_engineering']['reviewed_version'] = $pack['version'];
+            break;
+        case 'extend independent examples':
+            $pack['approvals']['independent_expected_results']['current_amendment_examples_reviewed'] = true;
+            break;
+        case 'amendment full freeze':
+            $pack['approvals']['aminu_amendments']['full_contract_freeze'] = true;
+            break;
+        case 'change reviewed arithmetic':
+            $pack['numeric_cases'][0]['inputs']['eligible_draws_rwf']++;
+            break;
+        case 'wrong key scope':
+            $pack['engineering_amendments']['idempotency_scope'] = ['KEY'];
+            break;
+        case 'short retention':
+            $pack['engineering_amendments']['seven_day_command_minimum_retention_seconds'] = 604800;
+            break;
+        case 'optimistic finance':
+            $pack['engineering_amendments']['optimistic_financial_ui'] = true;
+            break;
+        case 'late Note lock':
+            $pack['engineering_amendments']['new_note_lock_while_holding_wallet'] = true;
+            break;
+        case 'automatic combination':
+            $pack['engineering_amendments']['automatic_inter_listing_combination'] = true;
+            break;
+        case 'forbid seller bundle':
+            $pack['engineering_amendments']['seller_same_note_available_unit_bundling'] = false;
+            break;
+        case 'amendment runtime claim':
+            $pack['engineering_amendments']['implementation_verified'] = true;
+            break;
         case 'default':
             $pack['missing_parameters']['penalty_rate'] = 0;
             break;
@@ -597,7 +849,7 @@ test('engineering review rejects fabricated approval implementation or silent de
     }
 
     expect(fn () => PhaseZeroEngineeringReview::validate($pack))->toThrow(UnexpectedValueException::class);
-})->with(['activation', 'phase one', 'signature', 'erase recorded approval', 'full contract freeze', 'expand review scope', 'independent approval', 'default', 'invented tenor premium', 'invented seasonality formula', 'invented reserve arrangement', 'baseline', 'runtime race', 'duplicate example']);
+})->with(['activation', 'phase one', 'signature', 'erase recorded approval', 'full contract freeze', 'expand review scope', 'independent approval', 'default', 'invented tenor premium', 'invented seasonality formula', 'invented reserve arrangement', 'baseline', 'runtime race', 'duplicate example', 'erase Erastus review', 'carry Erastus to revised hash', 'extend independent examples', 'amendment full freeze', 'change reviewed arithmetic', 'wrong key scope', 'short retention', 'optimistic finance', 'late Note lock', 'automatic combination', 'forbid seller bundle', 'amendment runtime claim']);
 
 test('unknown review arithmetic is rejected', function (): void {
     expect(fn () => PhaseZeroEngineeringReview::calculate('production_engine', []))->toThrow(UnexpectedValueException::class);
