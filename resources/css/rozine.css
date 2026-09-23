@@ -41,6 +41,7 @@
     --rz-surface-sunken: #f8fafd;
     --rz-surface-muted: #f1f4f9;
     --rz-glass: rgba(255, 255, 255, 0.9);
+    --rz-tabbar: rgba(255, 255, 255, 0.92);
     --rz-launcher-glow: #e8f0fe;
     --rz-launcher-end: #ffffff;
     --rz-brand-mark: #1e3aff;
@@ -128,6 +129,7 @@
     --rz-surface-sunken: #0d1628;
     --rz-surface-muted: #16223a;
     --rz-glass: rgba(10, 18, 32, 0.85);
+    --rz-tabbar: rgba(13, 22, 40, 0.92);
     --rz-launcher-glow: #13224a;
     --rz-launcher-end: #0a1220;
     --rz-brand-mark: #ffffff;
@@ -209,6 +211,7 @@
     --color-rz-surface-sunken: var(--rz-surface-sunken);
     --color-rz-surface-muted: var(--rz-surface-muted);
     --color-rz-glass: var(--rz-glass);
+    --color-rz-tabbar: var(--rz-tabbar);
     --color-rz-brand-mark: var(--rz-brand-mark);
     --color-rz-ink: var(--rz-ink);
     --color-rz-slate: var(--rz-slate);
@@ -263,6 +266,7 @@
  * everything inside it takes that audience's colour, in both themes.
  */
 [data-audience='investor'] {
+    --rz-accent-lockup: var(--rz-investor);
     --rz-accent-fill: var(--rz-investor-fill);
     --rz-accent-soft: var(--rz-investor-soft);
     --rz-accent-app-text: var(--rz-investor-text);
@@ -273,6 +277,7 @@
 }
 
 [data-audience='business'] {
+    --rz-accent-lockup: var(--rz-business);
     --rz-accent-fill: var(--rz-business-fill);
     --rz-accent-soft: var(--rz-business-soft);
     --rz-accent-app-text: var(--rz-business-app-text);
@@ -283,6 +288,7 @@
 }
 
 [data-audience='auditor'] {
+    --rz-accent-lockup: var(--rz-auditor);
     --rz-accent-fill: var(--rz-auditor-fill);
     --rz-accent-soft: var(--rz-auditor-soft);
     --rz-accent-app-text: var(--rz-auditor-text);
@@ -293,6 +299,7 @@
 }
 
 [data-audience='admin'] {
+    --rz-accent-lockup: var(--rz-investor);
     --rz-accent-fill: var(--rz-admin-fill);
     --rz-accent-soft: var(--rz-admin-soft);
     --rz-accent-app-text: var(--rz-investor-text);
@@ -304,6 +311,7 @@
 
 @theme inline {
     --color-rz-accent-fill: var(--rz-accent-fill);
+    --color-rz-accent-lockup: var(--rz-accent-lockup);
     --color-rz-accent-soft: var(--rz-accent-soft);
     --color-rz-accent-app-text: var(--rz-accent-app-text);
     --color-rz-field: var(--rz-field);
@@ -344,6 +352,10 @@
     outline: none;
 }
 
+.dark [data-audience] {
+    --rz-accent-lockup: #ffffff;
+}
+
 .rz-surface {
     font-family: var(--font-rz);
     -webkit-font-smoothing: antialiased;
@@ -352,4 +364,28 @@
 
 .rz-surface ::selection {
     background: var(--rz-selection);
+}
+
+/* The live-raise dot's slow pulse. The design names this animation but never defines it; this is
+   the halo breathing it implies. */
+@keyframes rz-glowdot {
+    0%,
+    100% {
+        box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.1);
+    }
+
+    50% {
+        box-shadow: 0 0 0 6px rgba(29, 158, 117, 0.04);
+    }
+}
+
+/* Horizontal rails and scroll panes scroll without a visible bar, as in the design. */
+.rz-hscroll,
+.rz-scroll {
+    scrollbar-width: none;
+}
+
+.rz-hscroll::-webkit-scrollbar,
+.rz-scroll::-webkit-scrollbar {
+    display: none;
 }
