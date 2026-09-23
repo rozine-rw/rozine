@@ -1,7 +1,383 @@
 {
   "schema_version": 1,
-  "version": "engineering-2026-09-22.1",
-  "status": "SYNTHETIC_CONTRACT_REVIEW_NOT_BASELINED",
+  "version": "engineering-2026-09-23.4",
+  "effective_authority_record": "mvp_baseline",
+  "mvp_previous_snapshot": {
+    "version": "engineering-2026-09-23.3",
+    "fixture_sha256": "5ab03735062470596aa5ef7eba747fb890a29eab4f13a5bcb707789837359c53"
+  },
+  "mvp_baseline": {
+    "status": "MVP_DEFAULTS_SELECTED_BY_USER_DELEGATION",
+    "recorded_on": "2026-09-23",
+    "source": "DIRECT_USER_MESSAGE",
+    "verbatim": "We need to go with defaults for now and no need for Erastus review, we are working towards an MVP for now",
+    "decision_owner": "AMINU",
+    "default_origin": "ASSISTANT_SELECTED_UNDER_EXPLICIT_USER_DELEGATION",
+    "scope": "MVP_SPECIFICATION_DEFAULTS_AND_CURRENT_SPECIFICATION_REVIEW_GATE",
+    "specification_baseline_established": true,
+    "erastus_specification_review": "WAIVED_BY_USER_NOT_PERFORMED",
+    "independent_current_review_performed": false,
+    "direct_robert_kimani_approval_claimed": false,
+    "configuration_groups_resolved": ["CFG-01", "CFG-02", "CFG-03", "CFG-04", "CFG-05"],
+    "remaining_configuration_groups": [],
+    "supersedes": ["completion_candidate.unresolved_configuration", "current_review_status.full_contract_freeze", "CURRENT_SPECIFICATION_REVIEW_GATE", "MC04_COMPONENT_REMAINDER_RESET_PER_INSTALMENT"],
+    "preserves": ["ORIGINAL_REQUEST_DSCR_CUTOFF", "FINAL_DSCR_TARGET", "TENOR_AND_EXPOSURE_BOUNDS", "SECONDARY_35_BPS_EACH_SIDE", "SECONDARY_MINIMUM_AND_PRICE_BAND", "ROBERT_RECOVERY_AND_DAY_45_DIRECTION", "ISSUED_TERMS_IMMUTABILITY", "AR02_AR05_AMENDMENTS"],
+    "configuration": {
+      "CFG-01": {
+        "primary_listing_fee_rwf": 0,
+        "listing_fee_refund_and_tax_policy": {
+          "mode": "EXPLICIT_MVP_WAIVER_NOT_A_MISSING_VALUE",
+          "refund_rwf": 0,
+          "tax_treatment": "NO_LISTING_FEE_CHARGE_NO_EXEMPTION_CLAIM",
+          "other_fee_quotes": "GROSS_INCLUSIVE_NO_UNDISCLOSED_TAX_SURCHARGE",
+          "live_tax_classification_verified": false
+        },
+        "investor_limit_matrix": {
+          "unverified_transaction_limit_rwf": 0,
+          "verified_categories": ["INDIVIDUAL", "LEGAL_ENTITY"],
+          "verified_transaction_gross_limit_rwf": 1000000,
+          "per_note_principal_limit_rwf": 1000000,
+          "per_note_issue_fraction_numerator": 1,
+          "per_note_issue_fraction_denominator": 5,
+          "per_business_principal_limit_rwf": 2000000,
+          "aggregate_principal_limit_rwf": 5000000,
+          "exposure_basis": "OUTSTANDING_PRINCIPAL_PLUS_PRIMARY_AND_SECONDARY_RESERVED_PRINCIPAL_WITHOUT_DOUBLE_COUNT",
+          "threshold_origin": "MVP_PRODUCT_DEFAULTS_NOT_REGULATORY_LIMITS",
+          "stricter_evidenced_external_limit_wins": true
+        },
+        "role_combination_and_mandate_policy": {
+          "external_roles": "INVESTOR_AND_BUSINESS_ALLOWED_AUDIT_PARTNER_MUTUALLY_EXCLUSIVE",
+          "staff_accounts": "SEPARATE_PRIVILEGED_ACCOUNTS",
+          "connected_business_investment_or_trade": "DENIED_FOR_OWNER_DIRECTOR_CONTROLLER_SIGNATORY_OR_DECLARED_CONNECTED_PERSON",
+          "sole_trader": "ONE_VERIFIED_OWNER_SIGNATORY",
+          "legal_entity": "VERIFIED_REGISTRY_AND_EFFECTIVE_ENTITY_MANDATE_ALL_REQUIRED_SIGNATORIES",
+          "verify": ["DECLARED_BENEFICIAL_OWNERS", "CONTROLLERS", "DIRECTORS", "REQUIRED_SIGNATORIES"],
+          "universal_two_director_rule": false,
+          "missing_or_conflicting_authority": "DENY"
+        },
+        "disclosure_and_override_policy": {
+          "public": "ANONYMISED_MARKET_SUMMARY_NO_CUSTOMER_FINANCIAL_DOCUMENTS",
+          "verified_investor": "DISCLOSED_AGGREGATES_RATING_BAND_BASIS_TENOR_SCHEDULE_FEES_RISKS_AND_REPORT_SUMMARY",
+          "holder": "OWN_CONTRACT_RECEIPTS_ENTITLEMENTS_AND_RECOVERY_UPDATES",
+          "business_or_assigned_auditor": "OWN_OR_ASSIGNED_EVIDENCE_ONLY",
+          "compliance_or_legal": "CASE_SCOPED_EVIDENCE",
+          "raw_documents_public": false,
+          "financial_hard_gate_override": false,
+          "operational_exception": "ATTRIBUTED_REASON_NO_FINANCIAL_RULE_BYPASS",
+          "manual_money_adjustments": "TWO_DISTINCT_AUTHORIZED_STAFF_AND_COMPENSATING_ENTRIES"
+        }
+      },
+      "CFG-02": {
+        "issuance_unit_grid": {"primary_face_rwf": 5000, "whole_units_only": true, "primary_minimum_units": 1},
+        "issue_target_remainder_policy": {
+          "method": "FLOOR_FINAL_DSCR_SAFE_PRINCIPAL_TO_5000_BEFORE_ACCEPTANCE",
+          "original_request_test_before_quantization": true,
+          "recompute_return_schedule_caps_and_dscr": true,
+          "round_up": false,
+          "residual_investor_cash_collected": false,
+          "principal_component_allocation": "FLOOR_SHARE_WITH_CYCLIC_REMAINDER_CURSOR_CARRIED_ACROSS_INSTALMENTS",
+          "return_component_allocation": "SEPARATE_CYCLIC_REMAINDER_CURSOR",
+          "reallocate_on_transfer": false
+        }
+      },
+      "CFG-03": {
+        "primary_checkout_and_voluntary_cancellation_policy": {
+          "prefunded_wallet_required": true,
+          "reservation_seconds": 300,
+          "expiry": "MIN_CHECKOUT_DEADLINE_AND_30_DAY_CAMPAIGN_DEADLINE",
+          "partial_primary_execution": false,
+          "oversubscription": "REJECT_NO_AUTOMATIC_EXTRA_OR_PARTIAL_ALLOCATION",
+          "reservation_cancel": "ALLOW_BEFORE_CONFIRMATION_RELEASE_ONCE",
+          "investor_commitment_cancel": "ALLOW_BEFORE_FULL_FUNDING_REFUND_FULL_PRINCIPAL_NO_FEE",
+          "business_campaign_cancel": "ALLOW_BEFORE_FULL_FUNDING_REFUND_ALL_AND_RELEASE_EXPOSURE",
+          "after_full_funding_voluntary_cancel": "DENY",
+          "race_authority": "SERIALIZED_CAMPAIGN_STATE_AT_COMMIT"
+        },
+        "changed_funded_offer_cash_disposition": {
+          "failed_recheck_before_provider_dispatch": "CANCEL_UNISSUED_CAMPAIGN_REFUND_ALL_COMMITTED_INVESTOR_PRINCIPAL_NO_FEE_RELEASE_EXPOSURE",
+          "changed_principal_rate_or_schedule": "NO_AUTOMATIC_REPRICING_OR_TRANSFER_OF_INVESTOR_COMMITMENTS",
+          "eligible_replacement": "SEPARATE_NEW_UNACCEPTED_OFFER_AND_NEW_CAMPAIGN_IF_BORROWER_PROCEEDS",
+          "provider_already_dispatched_or_unknown": "PRESERVE_INTENT_AND_FUNDS_RECONCILE_BEFORE_ANY_REFUND",
+          "already_issued": "PRESERVE_PURCHASED_TERMS_AND_HISTORY",
+          "origin": "NEW_MVP_DEFAULT_NOT_ATTRIBUTED_TO_ROBERT_OR_BACKDATED_APPROVAL"
+        }
+      },
+      "CFG-04": {
+        "origination_due_date_policy": {
+          "timezone": "Africa/Kigali",
+          "anchor": "VERIFIED_DISBURSEMENT_LOCAL_DATE",
+          "first_due_month_offset": 1,
+          "month_end": "ORIGINAL_ANCHOR_DAY_CLAMPED_TO_TARGET_MONTH_END_NO_DRIFT",
+          "due_through": "END_OF_LOCAL_DUE_DATE",
+          "holiday_shift": false
+        },
+        "partial_receipt_holder_distribution": {
+          "order": ["OLDEST_OVERDUE_PRINCIPAL", "DUE_CONTRACTUAL_RETURN", "PENALTIES"],
+          "method": "PER_RECONCILED_RECEIPT_LARGEST_REMAINDER_ON_UNPAID_FROZEN_COMPONENT_ENTITLEMENTS",
+          "tie_break": "IMMUTABLE_UNIT_ORDINAL_ASCENDING",
+          "overpay_a_component": false,
+          "excess": "BORROWER_UNAPPLIED_CASH_NO_AUTOMATIC_PREPAYMENT",
+          "service_fee_bps": 200,
+          "service_fee_basis": "PRINCIPAL_AND_CONTRACTUAL_RETURN_ACTUALLY_REPAID_EXCLUDING_PENALTIES_AND_FEES",
+          "service_fee_collection": "ADDITIONAL_BORROWER_LIABILITY_NOT_DEDUCTED_FROM_INVESTOR_PRINCIPAL",
+          "investor_payout_fee_bps": 100,
+          "auditor_service_fee_share_bps": 2500,
+          "auditor_share_basis": "SERVICE_FEE_ACTUALLY_COLLECTED",
+          "penalty_receipt": "SEPARATE_PLATFORM_PENALTY_REVENUE_NOT_GUARANTEED_INVESTOR_RETURN"
+        },
+        "high_risk_trigger_and_hold_action_scope": {
+          "triggers": ["VERIFIED_ACCOUNT_COMPROMISE", "AUTHENTICATED_PROVIDER_FRAUD_ALERT", "NEW_DESTINATION_WITH_CREDENTIAL_RESET_AND_LARGE_WITHDRAWAL"],
+          "credential_reset_window_seconds": 86400,
+          "large_withdrawal_minimum_rwf": 100000,
+          "large_withdrawal_available_balance_fraction": {"numerator": 4, "denominator": 5},
+          "blocked_actions": ["WITHDRAWAL", "PRIMARY_COMMIT", "SECONDARY_BUY", "SECONDARY_SELL"],
+          "existing_unsettled_orders": "CANCEL_AFFECTED_RESERVATIONS_AND_BIDS_RELEASE_TO_OWNER_BALANCE_SUBJECT_TO_WITHDRAWAL_HOLD",
+          "inflows_and_repayments": "CONTINUE_RECONCILED_CREDIT_NO_EXTERNAL_WITHDRAWAL",
+          "settled_trades": "NEVER_ERASE",
+          "ordinary_frequency_alert": "REVIEW_ONLY"
+        },
+        "formal_finding_authority_policy": {
+          "authorized_by": "COMPLIANCE_OFFICER_OR_LEGAL_COUNSEL_WITH_EVIDENCE_AND_REASON",
+          "default_expiry_calendar_days": 30,
+          "review_every_business_days": 5,
+          "renewal": "NEW_DOCUMENTED_AUTHORIZED_FINDING_NO_AUTOMATIC_RENEWAL",
+          "binding_external_order": "FOLLOW_EVIDENCED_ORDER_SCOPE_AND_DURATION_NOT_TEMPORARY_REVIEW_TIMER",
+          "notice_elapsed_seconds": 86400,
+          "notice_exception": "ONLY_DOCUMENTED_LEGAL_PROHIBITION",
+          "ordinary_arrears_cure": "RECONCILED_OVERDUE_PRINCIPAL_AND_RETURN_ZERO_RELEASE_ARREARS_FLAG_ONLY",
+          "default_cure": "COMPLIANCE_OR_LEGAL_RECONCILIATION_AND_RECORDED_RELEASE",
+          "unpaid_penalties": "SEPARATE_RECEIVABLE_NOT_A_NEW_INSTALMENT_DPD_CLOCK"
+        }
+      },
+      "CFG-05": {
+        "audit_procedure_and_standing_policy": {
+          "procedure_version": "MVP-AUP-1",
+          "steps": ["VERIFY_RAIL_INVENTORY_AND_ORIGINALS", "RECONCILE_COMPLETE_MONTHS_AND_BALANCES", "DEDUPLICATE_AND_CLASSIFY_CASH_FLOWS", "VERIFY_DRAWS_OBLIGATIONS_AND_GAP_AUDITS", "CHECK_PREMISES_AND_CAPTURE_PROVENANCE", "RECOMPUTE_UNDERWRITING_AND_RECORD_EXCEPTIONS", "FACTUAL_FINDINGS_COSIGN_AND_SEAL"],
+          "unexplained_reconciliation_tolerance_rwf": 0,
+          "standing_route": "DOCUMENTED_MANUAL_ICPAR_CHECK",
+          "standing_max_age_days": 30,
+          "standing_rechecked": ["DISPATCH", "COSIGN"],
+          "expired_licence": "DENY_IMMEDIATELY",
+          "professional_engagement_evidence_fabricated": false
+        },
+        "dispatch_conflict_and_lateness_policy": {
+          "radius_metres": 30000,
+          "coordinate_max_age_days": 365,
+          "coordinate_uncertainty": "DISTANCE_PLUS_BOTH_ACCURACY_RADII_MUST_NOT_EXCEED_RADIUS",
+          "concurrent_engagement_cap": 3,
+          "priority": ["FEWEST_ACTIVE_ASSIGNMENTS", "OLDEST_LAST_ASSIGNMENT", "STABLE_PARTNER_ID"],
+          "maximum_consecutive_same_business_reports": 3,
+          "routine_acceptance_hours": 4,
+          "routine_visit_hours_after_acceptance": 48,
+          "flash_acceptance_hours": 1,
+          "flash_completion_hours_from_original_dispatch": 24,
+          "automatic_dispatch_attempts": 3,
+          "exhaustion": "AUDIT_OPERATIONS_QUEUE_WITH_ORIGINAL_DEADLINE",
+          "conflicts": ["CURRENT_FINANCIAL_INTEREST", "OWNER_DIRECTOR_EMPLOYEE_OR_ADVISER_WITHIN_24_MONTHS", "DECLARED_CLOSE_FAMILY_OR_BUSINESS_RELATIONSHIP"],
+          "yield_freeze": "ONLY_EVIDENCED_AUDITOR_ATTRIBUTABLE_SLA_BREACH_PENDING_ADMIN_RESOLUTION",
+          "business_reporting_target_day": 3,
+          "final_report_and_cosign_day": 7
+        },
+        "seal_key_policy": {
+          "format": "JWS_ES256_OVER_JCS_CANONICAL_JSON",
+          "content_digest": "SHA256",
+          "key_owner": "ORGANIZATION_CONTROLLED_MANAGED_SIGNING_SERVICE",
+          "server_key_rotation_days": 90,
+          "device_key_rotation_days": 180,
+          "compromise": "IMMEDIATE_REVOCATION_NEW_CAPTURE_AND_SEAL_DENIED",
+          "historical_seals": "RETAIN_KEY_ID_SIGNING_TIME_AND_REVOCATION_HISTORY_NO_SILENT_REWRITE",
+          "public_verification": "OPAQUE_REPORT_ID_DIGEST_SIGNING_STATUS_AND_AMENDMENT_LINK_ONLY"
+        },
+        "offline_ttl_and_device_support_policy": {
+          "capture_authorization_seconds": 86400,
+          "upload_and_unacknowledged_retention_seconds": 604800,
+          "acknowledged_local_copy_retention_seconds": 86400,
+          "capture_deadline_and_upload_deadline_distinct": true,
+          "reboot_or_untrusted_time": "STOP_NEW_CAPTURE_REQUIRE_ONLINE_PACKAGE_REFRESH",
+          "expired_unacknowledged_package": "CRYPTO_SHRED_AND_RECORD_EVIDENCE_LOSS_NEVER_PASS",
+          "automatic_upload_attempts_per_reconnect": 10,
+          "retry_initial_seconds": 30,
+          "retry_max_seconds": 900,
+          "retry_exhaustion": "VISIBLE_NEEDS_ATTENTION_RETAIN_UNTIL_ACK_OR_RETENTION_DEADLINE",
+          "maximum_images_per_party_report": 5,
+          "maximum_image_bytes": 10485760,
+          "maximum_package_bytes": 52428800,
+          "android_minimum_major": 12,
+          "ios_minimum_major": 16,
+          "device_requirements": "HARDWARE_BOUND_KEY_BIOMETRIC_UNLOCK_CAMERA_ONLY_ACCEPTED_SERVER_INTEGRITY_VERDICT",
+          "gps_accuracy_max_metres": 100,
+          "premises_discrepancy_review_metres": 250,
+          "lost_device": "REVOKE_KEY_AND_PACKAGE_SERVER_SIDE_RECOVER_FROM_COMMITTED_EVIDENCE_RECAPTURE_MISSING_ITEMS",
+          "unsupported_device": "CAPTURE_DENIED_NO_WEAK_FALLBACK",
+          "physical_capability_verified": false
+        },
+        "evidence_retention_schedule": {
+          "necessary_financial_identity_and_signed_audit_records_years": 10,
+          "anchor": "LATER_OF_FINAL_TRANSACTION_AND_END_OF_RELATIONSHIP",
+          "unfunded_rejected_application_working_copies_days": 180,
+          "ordinary_operational_logs_days": 90,
+          "encrypted_backup_rotation_days": 35,
+          "legal_hold": "SUSPEND_DELETION_FOR_IDENTIFIED_RECORDS_UNTIL_AUTHORIZED_RELEASE",
+          "purpose_limitation": "RETAIN_NECESSARY_RECORDS_NOT_ALL_RAW_PERSONAL_DATA",
+          "expiry": "AUTHORIZED_PURGE_OR_IRREVERSIBLE_ANONYMISATION_WITH_MINIMAL_DELETION_RECEIPT"
+        }
+      }
+    },
+    "repeat_projection_mapping": {
+      "nocf_cap": "MIN_CORRESPONDING_AUDITED_MONTH_NOCF_AND_6_OVER_5_TIMES_12_MONTH_MEDIAN_REVENUE",
+      "deductions": "OWNER_DRAW_ONCE_AND_MAX_HISTORICAL_MEAN_DEBT_SERVICE_OR_THAT_MONTH_CONTRACTUAL_DEBT",
+      "monthly_test": "EXACT_CFADS_OVER_ACTUAL_NEW_SCHEDULE_PAYMENT_AT_LEAST_27_OVER_20",
+      "sizing": "LARGEST_5000_MULTIPLE_NOT_ABOVE_STANDARD_CAPACITY_SATISFYING_EVERY_MONTH_AND_ALL_CAPS",
+      "no_eligible_amount": "REJECT_NO_FLOOR_UPSIZING"
+    },
+    "planning_native_allocation": "USE_EXISTING_AMINU_6_TO_10_ERASTUS_9_TO_15_DAY_ESTIMATE_NOT_A_PERSONAL_AVAILABILITY_PROMISE",
+    "actual_external_evidence_verified": false,
+    "implementation_verified": false,
+    "phase_0_exit_verified": false,
+    "phase_1_development_authorized": false,
+    "production_activation": false
+  },
+  "completion_previous_snapshot": {
+    "version": "engineering-2026-09-23.2",
+    "fixture_sha256": "227cb86bb7ff8e11f73650a50eea8dc2a5fbba03b4aefdeda7a857c0395661ee"
+  },
+  "current_review_status": {
+    "recorded_on": "2026-09-23",
+    "source": "DIRECT_USER_REPORT_OF_OWNER_GO_AHEAD",
+    "verbatim": "what does legal/owner needs to review again, they already gave the go ahead because these are minor decisions",
+    "accepted_default_policy_approval": "CONFIRMED_AS_REPORTED_BY_AMINU",
+    "repeat_minor_policy_approval_required": false,
+    "scope": ["accepted_defaults", "financial_defaults"],
+    "supersedes_historical_pending_owner_review_flags": true,
+    "direct_robert_kimani_signature_claimed": false,
+    "external_clearance_verified": false,
+    "reserve_funding_verified": false,
+    "provider_evidence_verified": false,
+    "erastus_current_candidate_reviewed": false,
+    "full_contract_freeze": false
+  },
+  "completion_candidate": {
+    "status": "ENGINEERING_MAPPING_FOR_EXACT_REVISION_REVIEW",
+    "origin": "ENGINEERING_SPECIFICATION_NOT_NEW_STAKEHOLDER_ANSWERS",
+    "document_section": "10",
+    "mechanics": [
+      {"id": "MC-01", "inputs": ["IN-01", "IN-02"], "topic": "MONTHLY_EVIDENCE_TO_CFADS"},
+      {"id": "MC-02", "inputs": ["IN-03", "IN-09"], "topic": "PRIMARY_COMMITMENT_AND_EXPIRY"},
+      {"id": "MC-03", "inputs": ["IN-04", "IN-05"], "topic": "SERVICING_TIME_AND_RECOVERY"},
+      {"id": "MC-04", "inputs": ["IN-06", "IN-07"], "topic": "IMMUTABLE_UNIT_COMPONENT_ALLOCATION"},
+      {"id": "MC-05", "inputs": ["IN-08"], "topic": "HOLD_DEADLINES_AND_CASE_ISOLATION"},
+      {"id": "MC-06", "inputs": ["IN-09"], "topic": "AUTHORITY_AND_MANDATORY_POLICY_INPUTS"},
+      {"id": "MC-07", "inputs": ["IN-10"], "topic": "AUDITOR_EVIDENCE_INGESTION"},
+      {"id": "MC-08", "inputs": ["IN-11", "IN-12"], "topic": "PROVIDER_OUTCOMES_AND_REVIEW_HANDOFF"}
+    ],
+    "monthly_evidence": {
+      "unresolved_classification": "UNDERWRITING_EVIDENCE_REQUIRED",
+      "missing_duplicate_or_unverified_month": "UNDERWRITING_EVIDENCE_REQUIRED",
+      "round_before_final_schedule": false,
+      "owner_draw_and_debt_deducted_once": true,
+      "raw_evidence_retention_period_invented": false
+    },
+    "primary": {
+      "exposure_identity": "ONE_ECONOMIC_COMMITMENT_ACROSS_ALL_STATES",
+      "unfunded_expiry_seconds": 2592000,
+      "late_confirmation_extends_expiry": false,
+      "expiry_refund": "ALL_COMMITTED_INVESTOR_PRINCIPAL_NO_FEE",
+      "failed_predisbursement_recheck": "BLOCK_DISBURSEMENT_PRESERVE_FUNDS_AND_ISSUED_TERMS",
+      "invent_changed_term_reconsent_or_refund": false
+    },
+    "servicing": {
+      "timezone": "Africa/Kigali",
+      "dpd_origin": "CALENDAR_DATE_AFTER_DISCLOSED_DUE_DATE",
+      "automatic_holiday_due_date_shift": false,
+      "default_deadline": "AFTER_END_OF_DPD_30_IF_UNCURED",
+      "penalty_intraday_candidate": "CHARGEABLE_DAY_CLOSING_ELIGIBLE_PRINCIPAL_AFTER_RECONCILED_RECEIPTS",
+      "daily_target_rounding": "HALF_UP_WHOLE_RWF_CAPPED_AT_REMAINING_ARREARS",
+      "backdated_receipt_correction": "ATTRIBUTED_COMPENSATING_ENTRIES_NO_HISTORY_OVERWRITE",
+      "payment_alone_clears_all_restrictions": false
+    },
+    "unit_allocation": {
+      "basis": "FIXED_EQUAL_WEIGHT_ISSUED_UNITS_FOR_ONE_IMMUTABLE_COMPONENT",
+      "method": "FLOOR_SHARE_THEN_ONE_FRANC_TO_FIRST_REMAINDER_UNIT_ORDINALS",
+      "reallocate_after_ownership_transfer": false,
+      "universal_5000_denomination_assumed": false,
+      "partial_receipt_distribution_policy_supplied": false
+    },
+    "holds": {
+      "unconfirmed_expiry_seconds": 86400,
+      "confirmation_at_expiry_allowed": false,
+      "confirmation_restarts_clock": false,
+      "formal_finding": "SEPARATE_EVIDENCED_RESTRICTION_WITH_AUTHORITY_AND_REVIEW_DATE",
+      "release_clears_other_cases": false,
+      "automatic_relist_or_bid_recreation": false,
+      "ordinary_frequency_alert_automatically_freezes": false
+    },
+    "auditor_ingestion": {
+      "identity": ["ASSIGNMENT", "PACKAGE_VERSION", "DEVICE_KEY", "EVIDENCE_ID"],
+      "duplicate_same_digest": "RETURN_ORIGINAL_RECEIPT",
+      "duplicate_changed_digest": "EVIDENCE_CONFLICT",
+      "revoked_or_expired_at_commit": "EVIDENCE_REJECTED",
+      "out_of_order": "STAGED_NOT_REPORT_READY",
+      "receipt_means": "INGESTED_NOT_AUDIT_APPROVED",
+      "invent_offline_ttl_or_retention": false
+    },
+    "provider_outcomes": {
+      "states": ["PENDING", "SUCCEEDED", "FAILED_FINAL", "UNKNOWN"],
+      "timeout": "UNKNOWN_RECONCILE_OR_QUERY_ORIGINAL_OPERATION",
+      "unverified_callback": "NO_FINANCIAL_EFFECT",
+      "duplicate_callback": "RETURN_RECORDED_RESULT_NO_SECOND_POSTING",
+      "late_failure_after_success": "RECONCILIATION_CASE_NOT_BALANCE_REVERSAL",
+      "verified_reversal": "DISTINCT_LINKED_COMPENSATING_OPERATION",
+      "external_request_inside_database_transaction": false,
+      "database_attempts_including_first": 3,
+      "database_retry_identity": "ORIGINAL_IDEMPOTENCY_KEY",
+      "retry_exhausted_code": "RETRYABLE_CONTENTION",
+      "provider_retry_without_idempotency_guarantee": false,
+      "crb_track": "EXPLICIT_DEBT_EVIDENCE_SUBTRACK_NOT_KYC_SUBSTITUTION"
+    },
+    "unresolved_configuration": [
+      {"id": "CFG-01", "inputs": ["IN-09"], "fields": ["primary_listing_fee_rwf", "listing_fee_refund_and_tax_policy", "investor_limit_matrix", "role_combination_and_mandate_policy", "disclosure_and_override_policy"], "blocked_actions": ["AC-02", "AC-03", "AC-04"], "value": null},
+      {"id": "CFG-02", "inputs": ["IN-07"], "fields": ["issuance_unit_grid", "issue_target_remainder_policy"], "blocked_actions": ["AC-03", "AC-04", "AC-06"], "value": null},
+      {"id": "CFG-03", "inputs": ["IN-03", "IN-09"], "fields": ["primary_checkout_and_voluntary_cancellation_policy", "changed_funded_offer_cash_disposition"], "blocked_actions": ["AC-04", "AC-05"], "value": null},
+      {"id": "CFG-04", "inputs": ["IN-05", "IN-08"], "fields": ["origination_due_date_policy", "partial_receipt_holder_distribution", "high_risk_trigger_and_hold_action_scope", "formal_finding_authority_policy"], "blocked_actions": ["AC-05", "AC-07", "AC-10", "AC-13"], "value": null},
+      {"id": "CFG-05", "inputs": ["IN-02", "IN-10"], "fields": ["audit_procedure_and_standing_policy", "dispatch_conflict_and_lateness_policy", "seal_key_policy", "offline_ttl_and_device_support_policy", "evidence_retention_schedule"], "blocked_actions": ["AC-01", "AC-12"], "value": null}
+    ],
+    "missing_configuration_result": "POLICY_INPUT_REQUIRED_NO_ZERO_UNLIMITED_OR_SUCCESS_DEFAULT",
+    "operational_evidence": "SEPARATE_UNVERIFIED_NOT_A_REPEAT_MINOR_POLICY_APPROVAL",
+    "issue_90_modified": false,
+    "independent_current_examples_reviewed": false,
+    "implementation_verified": false,
+    "phase_1_development_authorized": false
+  },
+  "completion_examples": {
+    "scope": "SYNTHETIC_SPECIFICATION_ONLY_NOT_RUNTIME_RACE_OR_PROVIDER_PROOF",
+    "cash_flow": [
+      {"id": "CM-01", "months": 36, "nocf_runs": [{"months": 30, "nocf_rwf": 2400000}, {"months": 6, "nocf_rwf": 7200000}], "draw_total_rwf": 3600000, "draw_commitment_rwf": 100000, "debt_total_rwf": 3600000, "peak_monthly_debt_rwf": 100000, "expected_cfads": {"numerator": 3000000, "denominator": 1}},
+      {"id": "CM-02", "months": 36, "nocf_runs": [{"months": 30, "nocf_rwf": 3000000}, {"months": 6, "nocf_rwf": -1000000}], "draw_total_rwf": 10800000, "draw_commitment_rwf": 400000, "debt_total_rwf": 21600000, "peak_monthly_debt_rwf": 700000, "expected_cfads": {"numerator": 3700000, "denominator": 3}},
+      {"id": "CM-03", "months": 12, "nocf_runs": [{"months": 9, "nocf_rwf": 2000000}, {"months": 3, "nocf_rwf": 6000000}], "draw_total_rwf": 2400000, "draw_commitment_rwf": 200000, "debt_total_rwf": 3600000, "peak_monthly_debt_rwf": 300000, "expected_cfads": {"numerator": 2500000, "denominator": 1}}
+    ],
+    "unit_components": [
+      {"id": "UC-01", "component_rwf": 10001, "units": 3, "expected_rwf": [3334, 3334, 3333]},
+      {"id": "UC-02", "component_rwf": 2, "units": 3, "expected_rwf": [1, 1, 0]},
+      {"id": "UC-03", "component_rwf": 10000, "units": 2, "expected_rwf": [5000, 5000]},
+      {"id": "UC-04", "component_rwf": 0, "units": 3, "expected_rwf": [0, 0, 0]}
+    ],
+    "servicing_dates": [
+      {"due_date": "2026-09-23", "at": "2026-09-23T23:59:59+02:00", "expected_dpd": 0, "expected_default_deadline_elapsed": false},
+      {"due_date": "2026-09-23", "at": "2026-09-24T00:00:00+02:00", "expected_dpd": 1, "expected_default_deadline_elapsed": false},
+      {"due_date": "2026-09-23", "at": "2026-09-26T12:00:00+02:00", "expected_dpd": 3, "expected_default_deadline_elapsed": false},
+      {"due_date": "2026-09-23", "at": "2026-10-23T23:59:59+02:00", "expected_dpd": 30, "expected_default_deadline_elapsed": false},
+      {"due_date": "2026-09-23", "at": "2026-10-24T00:00:00+02:00", "expected_dpd": 31, "expected_default_deadline_elapsed": true}
+    ]
+  },
+  "financial_defaults_previous_snapshot": {
+    "version": "engineering-2026-09-23.1",
+    "fixture_sha256": "8e1c4bd6043f4610c9556ef093ec4e542e0eeda4f3365fb9bce916d8ed666639"
+  },
+  "prior_snapshot": {
+    "version": "engineering-2026-09-22.1",
+    "fixture_sha256": "53e20605a45b30065e29de211836f2f5cf1b0800ab924beefcde69a3c88e352c"
+  },
+  "status": "MVP_SPECIFICATION_DEFAULTS_BASELINED_NOT_IMPLEMENTED",
   "production_activation": false,
   "phase_1_development_authorized": false,
   "evidence_origin": "SYNTHETIC_NORMALIZED_INPUTS_NO_PROVIDER_ATTESTATION",
@@ -244,13 +620,175 @@
     "bid_seconds": 604800
   },
   "missing_parameters": {
-    "four_month_premium": null,
-    "five_month_premium": null,
-    "standard_nocf_method": null,
-    "penalty_rate": null,
-    "reserve_funding_arrangement": null,
-    "hold_business_calendar": null
+    "reserve_funding_arrangement": null
   },
+  "accepted_defaults_snapshot_version": "engineering-2026-09-23.1",
+  "accepted_defaults": {
+    "status": "AMINU_ACCEPTED_PENDING_REQUIRED_REVIEW",
+    "recorded_on": "2026-09-23",
+    "source": "DIRECT_USER_MESSAGE",
+    "verbatim": "go with your proposals",
+    "origin": "ASSISTANT_PROPOSALS_ACCEPTED_BY_AMINU_NOT_ROBERT_KIMANI_ANSWERS",
+    "resolved_parameter_keys": ["four_month_premium", "five_month_premium", "standard_nocf_method", "hold_business_calendar"],
+    "pricing": {
+      "premium_unit": "PERCENTAGE_POINTS_OF_TOTAL_TERM_RETURN_NOT_APR",
+      "premiums_by_tenor": {
+        "3": {"numerator": 0, "denominator": 1},
+        "4": {"numerator": 1, "denominator": 6},
+        "5": {"numerator": 1, "denominator": 3},
+        "6": {"numerator": 1, "denominator": 2}
+      },
+      "minimum_percent": 10,
+      "maximum_percent": 15,
+      "rounding": "HALF_UP_FINAL_RETURN_ONLY_ONE_DECIMAL_PLACE"
+    },
+    "nocf": {
+      "method": "ARITHMETIC_MEAN_VERIFIED_MONTHLY_OPERATING_CASH_FLOW",
+      "first_time_months": 36,
+      "eligible_repeat_months": 12,
+      "retain_seasonal_peaks": true,
+      "retain_negative_months": true,
+      "automatic_trimming": false,
+      "missing_observation": "UNAVAILABLE_NOT_ZERO",
+      "deductions": "CONFIRMED_OWNER_DRAW_AND_EXISTING_DEBT_SERVICE_ONCE"
+    },
+    "projection": {
+      "method": "CORRESPONDING_CALENDAR_MONTH_LATEST_AUDITED_YEAR",
+      "assumed_growth_numerator": 0,
+      "assumed_growth_denominator": 1,
+      "missing_source_month": "UNAVAILABLE_NOT_ZERO",
+      "repeat_projection_cap_and_monthly_dscr": "UNCHANGED_RECORDED_RULES",
+      "final_standard_dscr": "UNCHANGED_RECORDED_RULE"
+    },
+    "hold_calendar": {
+      "timezone": "Africa/Kigali",
+      "eligible_iso_weekdays": [1, 2, 3, 4, 5],
+      "excluded_dates": "OFFICIALLY_OBSERVED_RW_PUBLIC_HOLIDAYS",
+      "business_dates_to_add": 5,
+      "origin": "ORIGINAL_FLAG",
+      "include_origin_date": false,
+      "preserve_local_time": true,
+      "confirmation_restarts_clock": false,
+      "unconfirmed_hold_elapsed_seconds": 86400,
+      "holiday_dataset_verified": false
+    },
+    "penalty": {
+      "basis": "OVERDUE_PRINCIPAL_ONLY",
+      "interest": "SIMPLE_NON_COMPOUNDING",
+      "rate_and_accrual_schedule": "UNRESOLVED_NO_ZERO_DEFAULT"
+    },
+    "required_reviews": {
+      "financial_owner_concurrence": "PENDING",
+      "kimani_credit_risk_and_worked_cases": "PENDING",
+      "rwanda_legal_applicability": "PENDING",
+      "erastus_revised_contract_and_examples": "PENDING"
+    },
+    "full_contract_freeze": false,
+    "implementation_verified": false
+  },
+  "financial_defaults": {
+    "status": "AMINU_ACCEPTED_DESIGN_PENDING_REQUIRED_REVIEW_AND_EVIDENCE",
+    "recorded_on": "2026-09-23",
+    "source": "DIRECT_USER_RESPONSE_ANNOTATION",
+    "source_message_id": "msg_08a35f686d830a89016ab37ebe9cf887d0a04df44f98c2a91f",
+    "annotation_index": 1,
+    "selection": "My recommendation: adopt this as the proposed financial-default package. It would resolve these design choices once approved",
+    "verbatim": "go ahead",
+    "origin": "ASSISTANT_PROPOSALS_ACCEPTED_BY_AMINU_NOT_ROBERT_KIMANI_ANSWERS",
+    "resolved_parameter_keys": ["penalty_rate"],
+    "supersedes": ["accepted_defaults.penalty.rate_and_accrual_schedule"],
+    "penalty": {
+      "annual_rate_bps": 200,
+      "rate_origin": "PROPOSED_PRODUCT_RATE_NOT_REGULATORY_RATE_OR_VALIDATED_MARKET_BENCHMARK",
+      "basis": "OVERDUE_PRINCIPAL_ONLY",
+      "simple_non_compounding": true,
+      "grace_calendar_days_per_principal_amount": 7,
+      "first_chargeable_dpd": 8,
+      "backdated_accrual": false,
+      "day_count": "ACTUAL_DAYS_IN_EACH_CALENDAR_YEAR_365_OR_366",
+      "rounding": "HALF_UP_CUMULATIVE_ACCRUAL_WHOLE_RWF_POST_DIFFERENCE",
+      "stop_events": ["REPAYMENT_OF_THAT_PRINCIPAL", "WRITE_OFF", "APPLICABLE_LEGAL_RESTRICTION"],
+      "day_21_stops_accrual": false,
+      "automatic_collection_cost_surcharge": false
+    },
+    "payment_allocation": ["OLDEST_OVERDUE_PRINCIPAL", "DUE_CONTRACTUAL_INTEREST_OR_RETURN", "PENALTIES"],
+    "daily_recovery_plan": {
+      "first_dpd": 8,
+      "last_dpd_inclusive": 21,
+      "target": "REMAINING_ARREARS_DIVIDED_BY_REMAINING_CALENDAR_DAYS_THROUGH_DAY_21",
+      "recalculate_after_receipts": true,
+      "recovery_team_affordability_review_required": true,
+      "rewrite_issued_investor_schedule": false
+    },
+    "reserve": {
+      "funding_source": "COMPANY_OR_SHAREHOLDER_CAPITAL",
+      "investor_wallet_funding_allowed": false,
+      "expected_future_fee_funding_allowed": false,
+      "coverage_numerator": 1,
+      "coverage_denominator": 1,
+      "coverage_scope": "ALL_OUTSTANDING_PRINCIPAL_PROMISED_PROTECTION_PLUS_NEW_PROTECTED_COMMITMENTS_BEFORE_ACCEPTANCE",
+      "custody": "SEGREGATED_ACCOUNT_WITH_DOCUMENTED_LEGAL_CUSTODY_AND_PAYOUT_ARRANGEMENTS",
+      "payout_basis": "PROTECTED_PRINCIPAL_LESS_PRINCIPAL_ALREADY_RECOVERED",
+      "future_return_or_penalty_income_guaranteed": false,
+      "prepare_from_dpd": 31,
+      "prepare_through_dpd": 44,
+      "complete_by_dpd": 45,
+      "payout_condition": "RECOVERY_HAS_NOT_RESOLVED_PROTECTED_PRINCIPAL",
+      "reconciliation": "DAILY",
+      "distinct_authorized_approvers": 2,
+      "payout_evidence_required": true,
+      "subsequent_recoveries": "REQUIRES_DOCUMENTED_LEGAL_TREATMENT",
+      "insufficient_backing": "BLOCK_ADDITIONAL_PROTECTED_COMMITMENTS",
+      "actual_shortfall": "INCIDENT_NOT_PAID_STATE"
+    },
+    "required_reviews": {
+      "robert_kimani_financial_terms_and_real_arrangement": "PENDING",
+      "rwanda_counsel_applicability_enforceability_disclosures": "PENDING",
+      "aminu_erastus_exact_revision_calculations_and_transitions": "PENDING"
+    },
+    "evidence_verified": {
+      "reserve_funding": false,
+      "custody_and_payout_agreements": false,
+      "legal_review": false,
+      "provider_evidence": false
+    },
+    "full_contract_freeze": false,
+    "implementation_verified": false,
+    "live_lending_or_payout_authorized": false
+  },
+  "financial_penalty_examples": [
+    {"id": "FP-01", "segments": [{"principal_rwf": 3000000, "year": 2026, "first_dpd": 1, "days": 7, "stopped": false}], "expected_accrued_rwf": 0},
+    {"id": "FP-02", "segments": [{"principal_rwf": 3000000, "year": 2026, "first_dpd": 8, "days": 30, "stopped": false}], "expected_accrued_rwf": 4932},
+    {"id": "FP-03", "segments": [{"principal_rwf": 3000000, "year": 2028, "first_dpd": 8, "days": 30, "stopped": false}], "expected_accrued_rwf": 4918},
+    {"id": "FP-04", "segments": [{"principal_rwf": 3000000, "year": 2027, "first_dpd": 8, "days": 1, "stopped": false}, {"principal_rwf": 3000000, "year": 2028, "first_dpd": 9, "days": 1, "stopped": false}], "expected_accrued_rwf": 328},
+    {"id": "FP-05", "segments": [{"principal_rwf": 3000000, "year": 2026, "first_dpd": 7, "days": 2, "stopped": false}], "expected_accrued_rwf": 164},
+    {"id": "FP-06", "segments": [{"principal_rwf": 3000000, "year": 2026, "first_dpd": 21, "days": 2, "stopped": false}], "expected_accrued_rwf": 329},
+    {"id": "FP-07", "segments": [{"principal_rwf": 3000000, "year": 2026, "first_dpd": 8, "days": 1, "stopped": false}, {"principal_rwf": 2000000, "year": 2026, "first_dpd": 9, "days": 1, "stopped": false}], "expected_accrued_rwf": 274},
+    {"id": "FP-08", "segments": [{"principal_rwf": 3000000, "year": 2026, "first_dpd": 8, "days": 2, "stopped": true}], "expected_accrued_rwf": 0}
+  ],
+  "financial_reserve_examples": [
+    {"id": "FR-01", "protected_outstanding_rwf": 10000000, "new_protected_commitment_rwf": 3000000, "verified_available_backing_rwf": 13000000, "expected_admission_backing_passes": true},
+    {"id": "FR-02", "protected_outstanding_rwf": 10000000, "new_protected_commitment_rwf": 3000000, "verified_available_backing_rwf": 12999999, "expected_admission_backing_passes": false},
+    {"id": "FR-03", "protected_outstanding_rwf": 10000000, "new_protected_commitment_rwf": 3000000, "verified_available_backing_rwf": null, "expected_admission_backing_passes": false}
+  ],
+  "financial_examples_scope": "SYNTHETIC_SPECIFICATION_ONLY_NOT_RUNTIME_OR_FUNDED_PROTECTION_PROOF",
+  "default_pricing_examples": [
+    {"rating_hundredths": 500, "tenor_months": 3, "expected_return_tenths_percent": 100},
+    {"rating_hundredths": 500, "tenor_months": 4, "expected_return_tenths_percent": 102},
+    {"rating_hundredths": 500, "tenor_months": 5, "expected_return_tenths_percent": 103},
+    {"rating_hundredths": 500, "tenor_months": 6, "expected_return_tenths_percent": 105},
+    {"rating_hundredths": 480, "tenor_months": 4, "expected_return_tenths_percent": 105},
+    {"rating_hundredths": 200, "tenor_months": 4, "expected_return_tenths_percent": 150},
+    {"rating_hundredths": 100, "tenor_months": 5, "expected_return_tenths_percent": 150}
+  ],
+  "default_hold_examples": [
+    {"flag": "2026-09-23T14:30:00+02:00", "synthetic_holidays": [], "expected": "2026-09-30T14:30:00+02:00"},
+    {"flag": "2026-09-25T23:59:00+02:00", "synthetic_holidays": [], "expected": "2026-10-02T23:59:00+02:00"},
+    {"flag": "2026-09-26T14:30:00+02:00", "synthetic_holidays": [], "expected": "2026-10-02T14:30:00+02:00"},
+    {"flag": "2026-09-23T14:30:00+02:00", "synthetic_holidays": ["2026-09-24"], "expected": "2026-10-01T14:30:00+02:00"}
+  ],
+  "default_examples_scope": "SYNTHETIC_SPECIFICATION_ONLY_NOT_CREDIT_CALIBRATION_OR_OFFICIAL_HOLIDAY_EVIDENCE",
+  "answer_reconciliation_snapshot_version": "engineering-2026-09-22.1",
   "answer_reconciliation": {
     "reviewed_on": "2026-09-21",
     "inputs": [
