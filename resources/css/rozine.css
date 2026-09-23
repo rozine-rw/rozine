@@ -311,6 +311,7 @@
 
 @theme inline {
     --color-rz-accent-fill: var(--rz-accent-fill);
+    --color-rz-investor-text: var(--rz-investor-text);
     --color-rz-accent-lockup: var(--rz-accent-lockup);
     --color-rz-accent-soft: var(--rz-accent-soft);
     --color-rz-accent-app-text: var(--rz-accent-app-text);
@@ -358,6 +359,8 @@
 
 .rz-surface {
     font-family: var(--font-rz);
+    /* The design sets no line height, so text sits at the browser's normal, not Tailwind's 1.5. */
+    line-height: normal;
     -webkit-font-smoothing: antialiased;
     color: var(--rz-ink);
 }
