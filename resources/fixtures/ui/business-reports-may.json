@@ -1,0 +1,187 @@
+{
+    "component": "business/reports",
+    "props": {
+        "reports": {
+            "verified": [
+                {
+                    "id": "RPT-2026-05",
+                    "period": {
+                        "kind": "monthly",
+                        "starts_on": "2026-05-01"
+                    },
+                    "status": "verified",
+                    "inflow": {
+                        "currency": "RWF",
+                        "amount": "33000000"
+                    },
+                    "health": "healthy",
+                    "auditor": "CPA J-P M.",
+                    "seal_by": null,
+                    "link": {
+                        "url": "/preview/business-reports-may",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "RPT-2026-04",
+                    "period": {
+                        "kind": "monthly",
+                        "starts_on": "2026-04-01"
+                    },
+                    "status": "verified",
+                    "inflow": {
+                        "currency": "RWF",
+                        "amount": "31000000"
+                    },
+                    "health": "healthy",
+                    "auditor": "CPA J-P M.",
+                    "seal_by": null,
+                    "link": {
+                        "url": "/preview/business-reports-may",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "RPT-2026-03",
+                    "period": {
+                        "kind": "monthly",
+                        "starts_on": "2026-03-01"
+                    },
+                    "status": "verified",
+                    "inflow": {
+                        "currency": "RWF",
+                        "amount": "29000000"
+                    },
+                    "health": "watch",
+                    "auditor": "CPA J-P M.",
+                    "seal_by": null,
+                    "link": {
+                        "url": "/preview/business-reports-may",
+                        "method": "get"
+                    }
+                }
+            ],
+            "in_audit": [
+                {
+                    "id": "RPT-2026-06",
+                    "period": {
+                        "kind": "monthly",
+                        "starts_on": "2026-06-01"
+                    },
+                    "status": "in_audit",
+                    "inflow": null,
+                    "health": null,
+                    "auditor": "CPA Jean-Paul M.",
+                    "seal_by": "2026-07-07",
+                    "link": {
+                        "url": "/preview/business-reports",
+                        "method": "get"
+                    }
+                }
+            ],
+            "archived": [
+                {
+                    "id": "RPT-2025-FY",
+                    "period": {
+                        "kind": "annual",
+                        "starts_on": "2025-01-01"
+                    },
+                    "status": "archived",
+                    "inflow": {
+                        "currency": "RWF",
+                        "amount": "352000000"
+                    },
+                    "health": "healthy",
+                    "auditor": "CPA J-P M.",
+                    "seal_by": null,
+                    "link": {
+                        "url": "/preview/business-reports-annual",
+                        "method": "get"
+                    }
+                }
+            ]
+        },
+        "report": {
+            "id": "RPT-2026-05",
+            "period": {
+                "kind": "monthly",
+                "starts_on": "2026-05-01"
+            },
+            "archived": false,
+            "published_on": "2026-06-06",
+            "seen_by": 647,
+            "inflow": {
+                "currency": "RWF",
+                "amount": "33100000"
+            },
+            "outflow": {
+                "currency": "RWF",
+                "amount": "26400000"
+            },
+            "health": "healthy",
+            "recap": "Cold-chain volumes held through the dry season and the new Musanze route reached full utilisation. Two supermarket contracts renewed for another twelve months.",
+            "figures": [
+                {
+                    "key": "cash_inflow",
+                    "value": {
+                        "currency": "RWF",
+                        "amount": "33100000"
+                    }
+                },
+                {
+                    "key": "cash_outflow",
+                    "value": {
+                        "currency": "RWF",
+                        "amount": "26400000"
+                    }
+                },
+                {
+                    "key": "net_position",
+                    "value": {
+                        "currency": "RWF",
+                        "amount": "6700000"
+                    }
+                },
+                {
+                    "key": "net_margin",
+                    "percent": "20.2"
+                },
+                {
+                    "key": "days_cash_on_hand",
+                    "count": 74
+                }
+            ],
+            "auditor": {
+                "name": "CPA Jean-Paul M.",
+                "initials": "JM",
+                "note": "Bank and MoMo statements reconciled on site, 4 June. Stock count matched to within 1.2%."
+            }
+        },
+        "policy": {
+            "seal_day": 7,
+            "cosign_minutes": 60
+        },
+        "links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "close": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            }
+        }
+    }
+}

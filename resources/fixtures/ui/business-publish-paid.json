@@ -183,7 +183,7 @@
                     "method": "get"
                 },
                 "reports": {
-                    "url": "/preview/business-home",
+                    "url": "/preview/business-reports",
                     "method": "get"
                 },
                 "profile": {
@@ -235,19 +235,19 @@
         "sources": [
             {
                 "key": "wallet",
-                "detail": "Rozine Wallet \u00b7 RWF 12,383,800 available"
+                "detail": "Rozine Wallet · RWF 12,383,800 available"
             },
             {
                 "key": "mtn",
-                "detail": "MTN Mobile Money \u00b7 +250 788 \u00b7\u00b7\u00b7\u00b7 211 \u00b7 charged instantly"
+                "detail": "MTN Mobile Money · +250 788 ···· 211 · charged instantly"
             },
             {
                 "key": "airtel",
-                "detail": "Airtel Money \u00b7 +250 73 \u00b7\u00b7\u00b7\u00b7 218 \u00b7 charged instantly"
+                "detail": "Airtel Money · +250 73 ···· 218 · charged instantly"
             },
             {
                 "key": "card",
-                "detail": "Visa \u00b7\u00b7\u00b7\u00b7 4291 \u00b7 secured with 3-D Secure"
+                "detail": "Visa ···· 4291 · secured with 3-D Secure"
             }
         ],
         "links": {

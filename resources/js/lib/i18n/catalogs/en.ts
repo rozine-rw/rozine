@@ -509,6 +509,67 @@ const en = {
     'business.note.investors.kind.individual': 'Individual',
     'business.note.investors.kind.institution': 'Institution',
     'business.note.investors.kind.sacco': 'SACCO',
+    'common.ordinal.zero': '{n}th',
+    'common.ordinal.one': '{n}st',
+    'common.ordinal.two': '{n}nd',
+    'common.ordinal.few': '{n}rd',
+    'common.ordinal.many': '{n}th',
+    'common.ordinal.other': '{n}th',
+    'business.reports.title': 'Reports',
+    'business.reports.subtitle':
+        'Verified each month by your on-site Audit Partner.',
+    'business.reports.guide.title': 'How monthly audits work',
+    'business.reports.guide.opens.title': 'Your Audit Partner opens the file',
+    'business.reports.guide.opens.body':
+        'You do not file the report. At the close of each month your assigned CPA opens the audit and pulls your bank, Mobile Money and POS figures straight from the linked feeds.',
+    'business.reports.guide.visit.title': 'Be ready for the site visit',
+    'business.reports.guide.visit.body_before':
+        'They count stock, check your ledgers and seal the audit before the',
+    'business.reports.guide.visit.body_after':
+        '. Your job is to have statements, stock and access ready — we remind you daily for the last seven days of the month.',
+    'business.reports.guide.cosign.title': 'Co-sign, or dispute',
+    'business.reports.guide.cosign.body':
+        'When the audit is sealed you get {minutes} minutes to add a recap and co-sign, or to raise a dispute with counter-proof. Because you never touch the figures, the report is independent — which is exactly what investors pay for.',
+    'business.reports.tabs': 'Report status',
+    'business.reports.tab.verified': 'Published',
+    'business.reports.tab.in_audit': 'In audit',
+    'business.reports.tab.archived': 'Archived',
+    'business.reports.status.verified': 'Verified',
+    'business.reports.status.in_audit': 'In audit',
+    'business.reports.status.archived': 'Archived',
+    'business.reports.health.healthy': 'Healthy',
+    'business.reports.health.watch': 'Watch',
+    'business.reports.health.at_risk': 'At risk',
+    'business.reports.row.filed':
+        'Inflow {inflow} · {health} · audited by {auditor}',
+    'business.reports.row.in_audit': 'With {auditor} · sealed by {date}',
+    'business.reports.row.annual': 'Full year summary',
+    'business.reports.annual': '{year} Annual',
+    'business.reports.empty': 'No reports here yet.',
+    'business.reports.percent': '{value}%',
+    'business.reports.count_of': '{count} of {of}',
+    'business.reports.sheet.live': 'Live to your investors',
+    'business.reports.sheet.archived': 'Archived filing',
+    'business.reports.sheet.published':
+        'Published {date} · seen by {count} investors',
+    'business.reports.sheet.filed': 'Filed {date} · archived',
+    'business.reports.sheet.inflow': 'Inflow',
+    'business.reports.sheet.outflow': 'Outflow',
+    'business.reports.sheet.health': 'Health',
+    'business.reports.sheet.recap': 'What investors read',
+    'business.reports.sheet.figures': 'Figures filed',
+    'business.reports.sheet.audited_by': 'Audited by {name}',
+    'business.reports.sheet.disclosure_live':
+        'This is the whole of what your investors can see for this month. Nothing else about your business is published.',
+    'business.reports.sheet.disclosure_archived':
+        'Archived filings stay on your record but are no longer shown on your investor page.',
+    'business.reports.figure.cash_inflow': 'Cash inflow',
+    'business.reports.figure.cash_outflow': 'Cash outflow',
+    'business.reports.figure.net_position': 'Net position',
+    'business.reports.figure.net_margin': 'Net margin',
+    'business.reports.figure.days_cash_on_hand': 'Days cash on hand',
+    'business.reports.figure.quarters_above_floor':
+        'Quarters above the {floor}% floor',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

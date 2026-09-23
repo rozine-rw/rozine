@@ -527,6 +527,68 @@ const fr: Catalog = {
     'business.note.investors.kind.institution': 'Institution',
     'business.note.investors.kind.sacco': 'SACCO',
 
+    'common.ordinal.zero': '{n}',
+    'common.ordinal.one': '{n}er',
+    'common.ordinal.two': '{n}',
+    'common.ordinal.few': '{n}',
+    'common.ordinal.many': '{n}',
+    'common.ordinal.other': '{n}',
+    'business.reports.title': 'Rapports',
+    'business.reports.subtitle':
+        'Vérifiés chaque mois par votre auditeur sur site.',
+    'business.reports.guide.title': 'Comment fonctionnent les audits mensuels',
+    'business.reports.guide.opens.title': 'Votre auditeur ouvre le dossier',
+    'business.reports.guide.opens.body':
+        "Vous ne déposez pas le rapport. À la clôture de chaque mois, l'expert-comptable qui vous est attribué ouvre l'audit et récupère vos chiffres bancaires, Mobile Money et TPE directement depuis les flux liés.",
+    'business.reports.guide.visit.title': 'Préparez la visite sur site',
+    'business.reports.guide.visit.body_before':
+        "Il compte le stock, vérifie vos registres et scelle l'audit avant le",
+    'business.reports.guide.visit.body_after':
+        '. Votre rôle : avoir relevés, stock et accès prêts — nous vous le rappelons chaque jour pendant les sept derniers jours du mois.',
+    'business.reports.guide.cosign.title': 'Cosignez ou contestez',
+    'business.reports.guide.cosign.body':
+        "Une fois l'audit scellé, vous disposez de {minutes} minutes pour ajouter un résumé et cosigner, ou pour contester avec une contre-preuve. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
+    'business.reports.tabs': 'Statut des rapports',
+    'business.reports.tab.verified': 'Publiés',
+    'business.reports.tab.in_audit': 'En audit',
+    'business.reports.tab.archived': 'Archivés',
+    'business.reports.status.verified': 'Vérifié',
+    'business.reports.status.in_audit': 'En audit',
+    'business.reports.status.archived': 'Archivé',
+    'business.reports.health.healthy': 'Sain',
+    'business.reports.health.watch': 'À surveiller',
+    'business.reports.health.at_risk': 'À risque',
+    'business.reports.row.filed':
+        'Entrées {inflow} · {health} · audité par {auditor}',
+    'business.reports.row.in_audit': 'Chez {auditor} · scellé avant le {date}',
+    'business.reports.row.annual': "Synthèse de l'année",
+    'business.reports.annual': 'Annuel {year}',
+    'business.reports.empty': "Aucun rapport pour l'instant.",
+    'business.reports.percent': '{value} %',
+    'business.reports.count_of': '{count} sur {of}',
+    'business.reports.sheet.live': 'Visible par vos investisseurs',
+    'business.reports.sheet.archived': 'Dépôt archivé',
+    'business.reports.sheet.published':
+        'Publié le {date} · vu par {count} investisseurs',
+    'business.reports.sheet.filed': 'Déposé le {date} · archivé',
+    'business.reports.sheet.inflow': 'Entrées',
+    'business.reports.sheet.outflow': 'Sorties',
+    'business.reports.sheet.health': 'Santé',
+    'business.reports.sheet.recap': 'Ce que lisent les investisseurs',
+    'business.reports.sheet.figures': 'Chiffres déposés',
+    'business.reports.sheet.audited_by': 'Audité par {name}',
+    'business.reports.sheet.disclosure_live':
+        "C'est tout ce que vos investisseurs voient pour ce mois. Rien d'autre sur votre entreprise n'est publié.",
+    'business.reports.sheet.disclosure_archived':
+        'Les dépôts archivés restent à votre dossier mais ne sont plus affichés sur votre page investisseurs.',
+    'business.reports.figure.cash_inflow': 'Entrées de trésorerie',
+    'business.reports.figure.cash_outflow': 'Sorties de trésorerie',
+    'business.reports.figure.net_position': 'Position nette',
+    'business.reports.figure.net_margin': 'Marge nette',
+    'business.reports.figure.days_cash_on_hand': 'Jours de trésorerie',
+    'business.reports.figure.quarters_above_floor':
+        'Trimestres au-dessus du plancher de {floor} %',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

@@ -90,3 +90,20 @@ export const formatDate = (iso: string, locale: string): string =>
         year: 'numeric',
         timeZone: 'Africa/Kigali',
     }).format(new Date(iso));
+
+/**
+ * "7th" / "1er" / "7": a day of the month in words. The suffix comes from the catalog, chosen by
+ * the locale's ordinal plural rule.
+ */
+export const formatOrdinal = (
+    value: number,
+    locale: string,
+    t: (
+        code: `common.ordinal.${Intl.LDMLPluralRule}`,
+        values: { n: number },
+    ) => string,
+): string =>
+    t(
+        `common.ordinal.${new Intl.PluralRules(intlLocale(locale), { type: 'ordinal' }).select(value)}`,
+        { n: value },
+    );

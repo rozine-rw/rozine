@@ -183,7 +183,7 @@
                     "method": "get"
                 },
                 "reports": {
-                    "url": "/preview/business-home",
+                    "url": "/preview/business-reports",
                     "method": "get"
                 },
                 "profile": {

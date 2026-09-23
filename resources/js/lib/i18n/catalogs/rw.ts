@@ -527,6 +527,70 @@ const rw: Catalog = {
     'business.note.investors.kind.institution': 'Ikigo',
     'business.note.investors.kind.sacco': 'SACCO',
 
+    'common.ordinal.zero': '{n}',
+    'common.ordinal.one': '{n}',
+    'common.ordinal.two': '{n}',
+    'common.ordinal.few': '{n}',
+    'common.ordinal.many': '{n}',
+    'common.ordinal.other': '{n}',
+    'business.reports.title': 'Raporo',
+    'business.reports.subtitle':
+        "Bigenzurwa buri kwezi n'umugenzuzi wawe uza aho ukorera.",
+    'business.reports.guide.title': 'Uko igenzura rya buri kwezi rikorwa',
+    'business.reports.guide.opens.title': 'Umugenzuzi wawe afungura dosiye',
+    'business.reports.guide.opens.body':
+        'Si wowe utanga raporo. Iyo ukwezi kurangiye, CPA wagenewe afungura igenzura agakura imibare ya banki, Mobile Money na POS mu masoko yahujwe.',
+    'business.reports.guide.visit.title': "Itegure uruzinduko rw'umugenzuzi",
+    'business.reports.guide.visit.body_before':
+        'Abara ibicuruzwa, agasuzuma ibitabo byawe, agafunga igenzura mbere ya tariki ya',
+    'business.reports.guide.visit.body_after':
+        ". Inshingano yawe ni ugutegura raporo za banki, ibicuruzwa n'uburenganzira bwo kwinjira — tukwibutsa buri munsi mu minsi irindwi ya nyuma y'ukwezi.",
+    'business.reports.guide.cosign.title': 'Shyiraho umukono cyangwa ujurire',
+    'business.reports.guide.cosign.body':
+        'Iyo igenzura rifunzwe, ubona iminota {minutes} yo kongeraho incamake no gushyiraho umukono, cyangwa kujurira ufite ibimenyetso. Kubera ko utigera ukora ku mibare, raporo iba yigenga — ari cyo abashoramari bishyurira.',
+    'business.reports.tabs': 'Uko raporo zihagaze',
+    'business.reports.tab.verified': 'Zatangajwe',
+    'business.reports.tab.in_audit': 'Birimo kugenzurwa',
+    'business.reports.tab.archived': 'Zabitswe',
+    'business.reports.status.verified': 'Byemejwe',
+    'business.reports.status.in_audit': 'Birimo kugenzurwa',
+    'business.reports.status.archived': 'Byabitswe',
+    'business.reports.health.healthy': 'Bimeze neza',
+    'business.reports.health.watch': 'Bikurikiranwe',
+    'business.reports.health.at_risk': 'Biri mu kaga',
+    'business.reports.row.filed':
+        'Ayinjiye {inflow} · {health} · yagenzuwe na {auditor}',
+    'business.reports.row.in_audit':
+        'Biri kwa {auditor} · bifungwa bitarenze {date}',
+    'business.reports.row.annual': "Incamake y'umwaka wose",
+    'business.reports.annual': "Raporo y'umwaka {year}",
+    'business.reports.empty': 'Nta raporo irahari.',
+    'business.reports.percent': '{value}%',
+    'business.reports.count_of': '{count} kuri {of}',
+    'business.reports.sheet.live': 'Abashoramari bawe barayibona',
+    'business.reports.sheet.archived': 'Raporo yabitswe',
+    'business.reports.sheet.published':
+        "Yatangajwe ku wa {date} · yabonywe n'abashoramari {count}",
+    'business.reports.sheet.filed': 'Yatanzwe ku wa {date} · yarabitswe',
+    'business.reports.sheet.inflow': 'Ayinjiye',
+    'business.reports.sheet.outflow': 'Ayasohotse',
+    'business.reports.sheet.health': 'Uko bimeze',
+    'business.reports.sheet.recap': 'Ibyo abashoramari basoma',
+    'business.reports.sheet.figures': 'Imibare yatanzwe',
+    'business.reports.sheet.audited_by': 'Yagenzuwe na {name}',
+    'business.reports.sheet.disclosure_live':
+        'Ibi ni byo byose abashoramari bawe babona kuri uku kwezi. Nta kindi ku kigo cyawe gitangazwa.',
+    'business.reports.sheet.disclosure_archived':
+        "Raporo zabitswe ziguma mu mateka yawe ariko ntizikigaragara ku rupapuro rw'abashoramari.",
+    'business.reports.figure.cash_inflow': 'Amafaranga yinjiye',
+    'business.reports.figure.cash_outflow': 'Amafaranga yasohotse',
+    'business.reports.figure.net_position': 'Igisigaye',
+    'business.reports.figure.net_margin': 'Inyungu nyayo',
+    'business.reports.figure.days_cash_on_hand':
+        'Iminsi amafaranga ahari yamara',
+    'business.reports.figure.quarters_above_floor':
+        'Ibihembwe byarenze igipimo cya {floor}%',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

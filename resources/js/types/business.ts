@@ -440,3 +440,69 @@ export type BusinessNoteProps = {
         investors: RouteLink | null;
     };
 };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Reports (MVP-BUSINESS-SCR-06, design L942–1002, report sheet L1897–1939)                    */
+/* ------------------------------------------------------------------------------------------ */
+
+export type ReportStatus = 'verified' | 'in_audit' | 'archived';
+
+/** The month's health as the audit recorded it. */
+export type ReportHealth = 'healthy' | 'watch' | 'at_risk';
+
+export type ReportPeriod = {
+    kind: 'monthly' | 'annual';
+    /** First day of the month or year, ISO date. */
+    starts_on: string;
+};
+
+export type ReportRow = {
+    id: string;
+    period: ReportPeriod;
+    status: ReportStatus;
+    /** Filed figures; absent while the audit is open. */
+    inflow: Money | null;
+    health: ReportHealth | null;
+    auditor: string;
+    /** While in audit: the day the CPA must seal it by. */
+    seal_by: string | null;
+    /** The report sheet, or audit prep while the audit is open. */
+    link: RouteLink;
+};
+
+/** One filed figure. The engine owns every value; the client only formats it. */
+export type ReportFigure =
+    | { key: 'cash_inflow' | 'cash_outflow' | 'net_position'; value: Money }
+    | { key: 'net_margin'; percent: string }
+    | { key: 'days_cash_on_hand'; count: number }
+    | {
+          key: 'quarters_above_floor';
+          count: number;
+          of: number;
+          floor_percent: string;
+      };
+
+export type ReportDetail = {
+    id: string;
+    period: ReportPeriod;
+    archived: boolean;
+    /** Published (monthly) or filed (annual), ISO date. */
+    published_on: string;
+    /** Investors who opened it; null for an archived filing. */
+    seen_by: number | null;
+    inflow: Money;
+    outflow: Money;
+    health: ReportHealth;
+    recap: string;
+    figures: ReportFigure[];
+    auditor: { name: string; initials: string; note: string };
+};
+
+export type BusinessReportsProps = {
+    reports: Record<ReportStatus, ReportRow[]>;
+    /** The report open in the sheet, addressed by URL. */
+    report: ReportDetail | null;
+    /** Audit-cycle policy the guide quotes: the day audits seal by and the co-sign window. */
+    policy: { seal_day: number; cosign_minutes: number };
+    links: BusinessAppLinks & { close: RouteLink };
+};

@@ -201,7 +201,7 @@
                             "body": "On funding, the business is legally bound to repay principal plus the disclosed return on schedule."
                         },
                         {
-                            "heading": "Rozine\u2019s role",
+                            "heading": "Rozine’s role",
                             "body": "Rozine is a technology platform connecting businesses and investors; it is not a lender, borrower or guarantor of any raise."
                         },
                         {
@@ -441,7 +441,7 @@
                     "method": "get"
                 },
                 "reports": {
-                    "url": "/preview/business-home",
+                    "url": "/preview/business-reports",
                     "method": "get"
                 },
                 "profile": {

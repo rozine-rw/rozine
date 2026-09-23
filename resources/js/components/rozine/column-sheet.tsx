@@ -13,6 +13,8 @@ type ColumnSheetProps = {
      * e.g. .8 for publish, .72 for a transaction). On a phone it is a bottom sheet up to 92%.
      */
     fraction: number;
+    /** Tallest the bottom sheet may grow on a phone; most design sheets stop at 92%. */
+    phoneFraction?: number;
     children: ReactNode;
 };
 
@@ -25,6 +27,7 @@ export function ColumnSheet({
     label,
     close,
     fraction,
+    phoneFraction = 0.92,
     children,
 }: ColumnSheetProps) {
     const { t } = useTranslation();
@@ -43,9 +46,10 @@ export function ColumnSheet({
                 style={
                     {
                         '--rz-sheet-h': `${Math.round(fraction * 100)}%`,
+                        '--rz-sheet-max': `${Math.round(phoneFraction * 100)}%`,
                     } as CSSProperties
                 }
-                className="fixed inset-x-0 bottom-0 z-[49] flex max-h-[92%] animate-[rz-sheetup_.34s_cubic-bezier(.16,1,.3,1)_both] flex-col overflow-hidden rounded-t-3xl bg-rz-surface shadow-[0_-18px_50px_-16px_rgba(20,45,95,.4)] lg:absolute lg:h-[var(--rz-sheet-h)] lg:max-h-none lg:rounded-[20px_20px_18px_18px]"
+                className="fixed inset-x-0 bottom-0 z-[49] flex max-h-[var(--rz-sheet-max)] animate-[rz-sheetup_.34s_cubic-bezier(.16,1,.3,1)_both] flex-col overflow-hidden rounded-t-3xl bg-rz-surface shadow-[0_-18px_50px_-16px_rgba(20,45,95,.4)] lg:absolute lg:h-[var(--rz-sheet-h)] lg:max-h-none lg:rounded-[20px_20px_18px_18px]"
             >
                 <div className="flex shrink-0 justify-center pt-[9px]">
                     <span className="h-1 w-[38px] rounded-[3px] bg-[#e2e7f0] dark:bg-rz-border" />
