@@ -147,5 +147,5 @@ it('has concrete targets for the identity persistence boundary', function (): vo
 })->group('arch');
 
 arch('identity records are only accessed by their adapter and model relationships')
-    ->expect(['App\Models\Party', 'App\Models\RoleMembership'])
+    ->expect(['App\Models\Party', 'App\Models\RoleMembership', 'App\Models\VerifiedPersonIdentity', 'App\Models\IdentityOperator', 'App\Models\IdentityAuditEvent'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Identity', 'App\Models', 'Database\Factories']);

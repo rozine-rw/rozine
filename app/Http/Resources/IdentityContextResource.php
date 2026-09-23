@@ -21,6 +21,8 @@ class IdentityContextResource extends JsonResource
             'code' => $identity['code'],
             'party' => $identity['party'],
             'available_roles' => $identity['available_roles'],
+            'active_role' => $identity['active_role'],
+            'context_revision' => $identity['context_revision'],
             'allowed_actions' => $identity['allowed_actions'],
         ];
     }

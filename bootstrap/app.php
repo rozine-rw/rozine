@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Identity\IdentityViolation;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetLocale;
@@ -32,6 +33,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(fn (IdentityViolation $exception) => response()->json([
+            'message' => $exception->reason,
+            'code' => $exception->reason,
+        ], $exception->status));
+
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );

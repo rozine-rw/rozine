@@ -6,9 +6,11 @@ namespace App\Providers;
 
 use App\Application\Environment\Contracts\DemoFixtureStore;
 use App\Application\Environment\EnvironmentIsolation;
+use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Infrastructure\Environment\EloquentDemoFixtureStore;
+use App\Infrastructure\Identity\EloquentIdentityAccessStore;
 use App\Infrastructure\Identity\EloquentIdentityRepository;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
 use Carbon\CarbonImmutable;
@@ -35,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PulseSignupRepository::class, EloquentPulseSignupRepository::class);
         $this->app->bind(DemoFixtureStore::class, EloquentDemoFixtureStore::class);
         $this->app->bind(IdentityRepository::class, EloquentIdentityRepository::class);
+        $this->app->bind(IdentityAccessStore::class, EloquentIdentityAccessStore::class);
     }
 
     /**

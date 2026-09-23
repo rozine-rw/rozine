@@ -29,16 +29,22 @@ use Laravel\Sanctum\HasApiTokens;
  * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $remember_token
  * @property string|null $party_id
+ * @property string|null $active_membership_id
+ * @property int|null $active_membership_revision
+ * @property int $context_revision
  * @property-read Party|null $party
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'party_id', 'party'])]
+#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'party_id', 'party', 'active_membership_id', 'active_membership_revision', 'context_revision'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+
+    /** @var array<string, mixed> */
+    protected $attributes = ['context_revision' => 0];
 
     /** @return BelongsTo<Party, $this> */
     public function party(): BelongsTo
@@ -57,6 +63,8 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'active_membership_revision' => 'integer',
+            'context_revision' => 'integer',
         ];
     }
 }

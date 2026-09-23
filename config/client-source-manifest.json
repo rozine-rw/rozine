@@ -23,9 +23,11 @@
     },
     "generatedPaths": [
         "resources/js/actions/App/Http/Controllers/Api/V1/IdentityController.ts",
+        "resources/js/actions/App/Http/Controllers/Api/V1/IdentityManagementController.ts",
         "resources/js/actions/App/Http/Controllers/Api/V1/index.ts",
         "resources/js/actions/App/Http/Controllers/Api/index.ts",
         "resources/js/actions/App/Http/Controllers/DashboardController.ts",
+        "resources/js/actions/App/Http/Controllers/IdentityManagementController.ts",
         "resources/js/actions/App/Http/Controllers/PulseController.ts",
         "resources/js/actions/App/Http/Controllers/Settings/ProfileController.ts",
         "resources/js/actions/App/Http/Controllers/Settings/SecurityController.ts",
@@ -72,10 +74,19 @@
         "resources/js/actions/Laravel/Sanctum/index.ts",
         "resources/js/actions/Laravel/index.ts",
         "resources/js/routes/api/index.ts",
+        "resources/js/routes/api/v1/identity/active-role/index.ts",
         "resources/js/routes/api/v1/identity/index.ts",
+        "resources/js/routes/api/v1/identity/memberships/index.ts",
+        "resources/js/routes/api/v1/identity/people/index.ts",
+        "resources/js/routes/api/v1/identity/roles/index.ts",
         "resources/js/routes/api/v1/index.ts",
         "resources/js/routes/appearance/index.ts",
         "resources/js/routes/boost/index.ts",
+        "resources/js/routes/identity/active-role/index.ts",
+        "resources/js/routes/identity/index.ts",
+        "resources/js/routes/identity/memberships/index.ts",
+        "resources/js/routes/identity/people/index.ts",
+        "resources/js/routes/identity/roles/index.ts",
         "resources/js/routes/index.ts",
         "resources/js/routes/login/index.ts",
         "resources/js/routes/passkey/index.ts",
@@ -103,6 +114,7 @@
     "declarationOnlyPaths": [
         "resources/js/types/auth.ts",
         "resources/js/types/global.d.ts",
+        "resources/js/types/identity.ts",
         "resources/js/types/index.ts",
         "resources/js/types/navigation.ts",
         "resources/js/types/ui.ts",
@@ -225,9 +237,9 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 197,
-        "generated": 77,
-        "declarationOnly": 6,
+        "totalTrackedSources": 209,
+        "generated": 88,
+        "declarationOnly": 7,
         "authoredExecutable": 114
     },
     "coverageSetSha256": "4ede3e026f7d9771cc838e4e0e5da3228fdb6f189338e146eb65083bcc5cf0d9"

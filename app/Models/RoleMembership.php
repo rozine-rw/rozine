@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $party_id
  * @property string $role
  * @property string $status
+ * @property int $revision
  * @property-read Party $party
  */
 class RoleMembership extends Model
@@ -26,7 +27,7 @@ class RoleMembership extends Model
     protected $guarded = ['*'];
 
     /** @var array<string, mixed> */
-    protected $attributes = ['status' => 'pending'];
+    protected $attributes = ['status' => 'pending', 'revision' => 1];
 
     /** @return BelongsTo<Party, $this> */
     public function party(): BelongsTo

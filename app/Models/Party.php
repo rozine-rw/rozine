@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -18,10 +19,17 @@ use Illuminate\Support\Carbon;
  * @property string $kind
  * @property Carbon|null $verified_at
  * @property-read Collection<int, RoleMembership> $memberships
+ * @property-read VerifiedPersonIdentity|null $verifiedIdentity
  */
 #[Fillable(['kind'])]
 class Party extends Model
 {
+    /** @return HasOne<VerifiedPersonIdentity, $this> */
+    public function verifiedIdentity(): HasOne
+    {
+        return $this->hasOne(VerifiedPersonIdentity::class);
+    }
+
     /** @use HasFactory<PartyFactory> */
     use HasFactory, HasUlids;
 

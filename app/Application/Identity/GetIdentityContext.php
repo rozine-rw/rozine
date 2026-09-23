@@ -5,37 +5,49 @@ declare(strict_types=1);
 namespace App\Application\Identity;
 
 use App\Application\Identity\Contracts\IdentityRepository;
+use App\Domain\Identity\ActiveRolePolicy;
 use App\Domain\Identity\RoleAccess;
 
+/** @phpstan-import-type AccessSnapshot from ActiveRolePolicy */
 final class GetIdentityContext
 {
-    public function __construct(private IdentityRepository $identities, private RoleAccess $roles) {}
+    public function __construct(private IdentityRepository $identities, private RoleAccess $roles, private ActiveRolePolicy $activeRoles) {}
 
-    /**
-     * @return array{contract_version: string, policy_version: string, code: string, party: array{id: string, kind: string, verification_status: string}|null, available_roles: list<string>, allowed_actions: list<string>}
-     */
+    /** @return array<string, mixed> */
     public function handle(int $userId): array
     {
-        $identity = $this->identities->forUser($userId);
+        return $this->fromSnapshot($this->identities->forUser($userId));
+    }
+
+    /**
+     * @param  AccessSnapshot  $identity
+     * @return array<string, mixed>
+     */
+    public function fromSnapshot(array $identity): array
+    {
         $party = $identity['party'];
         $access = $this->roles->evaluate(
-            $identity['email_verified'],
-            $party['kind'] ?? null,
-            $party['verified'] ?? false,
-            $identity['memberships'],
+            $identity['email_verified'], $party['kind'] ?? null, $party['verified'] ?? false, $identity['memberships'],
         );
+        $activeRole = $this->activeRoles->activeRole($identity);
+        $selectable = array_filter($access['available_roles'], fn (string $role): bool => $role !== 'auditor' || $identity['mfa_confirmed']);
+        $actions = $selectable === [] ? [] : ['identity.select_role'];
+        if ($activeRole !== null) {
+            $actions[] = 'identity.view_role';
+        }
 
         return [
-            'contract_version' => 'identity-v1',
-            'policy_version' => 'engineering-2026-09-23.4',
+            'contract_version' => 'identity-v2',
+            'policy_version' => ActiveRolePolicy::POLICY_VERSION,
             'code' => $access['code'],
             'party' => $party === null ? null : [
-                'id' => $party['id'],
-                'kind' => $party['kind'],
+                'id' => $party['id'], 'kind' => $party['kind'],
                 'verification_status' => $party['verified'] ? 'verified' : 'unverified',
             ],
             'available_roles' => $access['available_roles'],
-            'allowed_actions' => [],
+            'active_role' => $activeRole,
+            'context_revision' => $identity['context_revision'],
+            'allowed_actions' => $actions,
         ];
     }
 }

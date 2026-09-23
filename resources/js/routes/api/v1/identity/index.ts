@@ -1,4 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
+import people from './people'
+import memberships from './memberships'
+import activeRole from './active-role'
+import roles from './roles'
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityController::__invoke
 * @see app/Http/Controllers/Api/V1/IdentityController.php:14
@@ -82,6 +86,10 @@ show.form = showForm
 
 const identity = {
     show: Object.assign(show, show),
+    people: Object.assign(people, people),
+    memberships: Object.assign(memberships, memberships),
+    activeRole: Object.assign(activeRole, activeRole),
+    roles: Object.assign(roles, roles),
 }
 
 export default identity

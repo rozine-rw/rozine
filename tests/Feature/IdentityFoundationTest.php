@@ -83,12 +83,14 @@ it('shares exact identity facts between Inertia and the versioned API', function
     RoleMembership::factory()->for($party)->active()->create(['role' => 'investor']);
 
     $expected = [
-        'contract_version' => 'identity-v1',
+        'contract_version' => 'identity-v2',
         'policy_version' => 'engineering-2026-09-23.4',
         'code' => 'IDENTITY_READY',
         'party' => ['id' => $party->id, 'kind' => 'person', 'verification_status' => 'verified'],
         'available_roles' => ['investor', 'business'],
-        'allowed_actions' => [],
+        'active_role' => null,
+        'context_revision' => 0,
+        'allowed_actions' => ['identity.select_role'],
     ];
 
     $this->actingAs($user)->get(route('dashboard'))

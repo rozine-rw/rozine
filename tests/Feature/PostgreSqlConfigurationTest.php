@@ -30,14 +30,16 @@ test('the test owner cannot connect to the application or demo database', functi
 
 test('the identity migration can be rolled back and reapplied on PostgreSQL', function (): void {
     $migration = require database_path('migrations/2026_09_23_101346_create_identity_parties_and_role_memberships.php');
+    $accessMigration = require database_path('migrations/2026_09_23_143859_add_controlled_identity_access.php');
     $party = Party::factory()->verified()->create();
     $user = User::factory()->for($party)->create();
     RoleMembership::factory()->for($party)->active()->create();
     $accountAttributes = $user->refresh()->getAttributes();
-    unset($accountAttributes['party_id']);
+    unset($accountAttributes['party_id'], $accountAttributes['active_membership_id'], $accountAttributes['active_membership_revision'], $accountAttributes['context_revision']);
 
     expect(Schema::hasIndex('users', ['party_id']))->toBeTrue();
 
+    $accessMigration->down();
     $migration->down();
 
     expect(Schema::hasTable('parties'))->toBeFalse()
@@ -47,6 +49,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and($user->refresh()->getAttributes())->toBe($accountAttributes);
 
     $migration->up();
+    $accessMigration->up();
 
     expect(Schema::hasTable('parties'))->toBeTrue()
         ->and(Schema::hasTable('role_memberships'))->toBeTrue()

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\Party;
+use App\Models\VerifiedPersonIdentity;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -27,6 +28,10 @@ class PartyFactory extends Factory
 
     public function verified(): static
     {
-        return $this->state(fn (): array => ['verified_at' => now()]);
+        return $this->state(fn (): array => ['verified_at' => now()])->afterCreating(function (Party $party): void {
+            if ($party->kind === 'person') {
+                VerifiedPersonIdentity::factory()->create(['party_id' => $party->id]);
+            }
+        });
     }
 }
