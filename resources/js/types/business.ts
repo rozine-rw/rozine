@@ -250,3 +250,20 @@ export type BusinessApplyProps = {
     links: { close: RouteLink; back: RouteLink; next: RouteLink | null };
     actions: { save: RouteAction; submit: RouteAction };
 };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Listing (design "Publish to the Investor feed" sheet L2090–2120)                             */
+/* ------------------------------------------------------------------------------------------ */
+
+export type PaymentSourceKey = 'wallet' | 'mtn' | 'airtel' | 'card';
+
+export type BusinessPublishProps = {
+    home: BusinessHomeProps;
+    application: { id: string; title: string; target: Money };
+    /** The listing fee the server will charge. RWF 0 while CFG-01 waives it for the MVP. */
+    fee: Money;
+    /** How the fee can be paid; empty when there is nothing to pay. */
+    sources: { key: PaymentSourceKey; detail: string }[];
+    links: { close: RouteLink };
+    actions: { publish: RouteAction };
+};

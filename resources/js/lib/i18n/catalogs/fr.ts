@@ -362,6 +362,24 @@ const fr: Catalog = {
     'business.apply.submitted.stage.published': 'Publiée',
     'business.apply.submitted.back_home': "Retour à l'accueil",
 
+    'app.sheet.close': 'Fermer',
+    'business.publish.title': 'Publier sur le fil des investisseurs',
+    'business.publish.body_fee':
+        '{title} a passé la vérification. Payez les frais de demande uniques pour la rendre visible aux investisseurs.',
+    'business.publish.body_free':
+        '{title} a passé la vérification. Aucuns frais de demande à payer — publiez-la pour la rendre visible aux investisseurs.',
+    'business.publish.target': 'Objectif de levée',
+    'business.publish.fee': 'Frais de demande',
+    'business.publish.pay_with': 'Payer avec',
+    'business.publish.source.wallet': 'Portefeuille',
+    'business.publish.source.mtn': 'MTN MoMo',
+    'business.publish.source.airtel': 'Airtel',
+    'business.publish.source.card': 'Carte',
+    'business.publish.pay_and_publish': 'Payer et publier',
+    'business.publish.publish': 'Publier',
+    'business.publish.publishing': 'Publication…',
+    'business.publish.not_yet': 'Pas encore',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

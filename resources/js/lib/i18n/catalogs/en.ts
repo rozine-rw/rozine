@@ -350,6 +350,23 @@ const en = {
     'business.apply.submitted.stage.approved': 'Approved',
     'business.apply.submitted.stage.published': 'Published',
     'business.apply.submitted.back_home': 'Back to Home',
+    'app.sheet.close': 'Close',
+    'business.publish.title': 'Publish to the Investor feed',
+    'business.publish.body_fee':
+        '{title} passed vetting. Pay the one-time application fee to make it live for investors.',
+    'business.publish.body_free':
+        '{title} passed vetting. There is no application fee to pay — publish it to make it live for investors.',
+    'business.publish.target': 'Raise target',
+    'business.publish.fee': 'Application fee',
+    'business.publish.pay_with': 'Pay with',
+    'business.publish.source.wallet': 'Wallet',
+    'business.publish.source.mtn': 'MTN MoMo',
+    'business.publish.source.airtel': 'Airtel',
+    'business.publish.source.card': 'Card',
+    'business.publish.pay_and_publish': 'Pay & publish',
+    'business.publish.publish': 'Publish',
+    'business.publish.publishing': 'Publishing…',
+    'business.publish.not_yet': 'Not yet',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

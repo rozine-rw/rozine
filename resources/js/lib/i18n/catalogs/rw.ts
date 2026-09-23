@@ -361,6 +361,24 @@ const rw: Catalog = {
     'business.apply.submitted.stage.published': 'Yatangajwe',
     'business.apply.submitted.back_home': 'Subira Ahabanza',
 
+    'app.sheet.close': 'Funga',
+    'business.publish.title': "Tangaza ku rubuga rw'abashoramari",
+    'business.publish.body_fee':
+        "{title} yatsinze isuzuma. Ishyura amafaranga y'ubusabe rimwe kugira ngo igaragare ku bashoramari.",
+    'business.publish.body_free':
+        "{title} yatsinze isuzuma. Nta mafaranga y'ubusabe yo kwishyura — yitangaze kugira ngo igaragare ku bashoramari.",
+    'business.publish.target': "Intego y'igishoro",
+    'business.publish.fee': "Amafaranga y'ubusabe",
+    'business.publish.pay_with': 'Ishyura ukoresheje',
+    'business.publish.source.wallet': 'Igikapu',
+    'business.publish.source.mtn': 'MTN MoMo',
+    'business.publish.source.airtel': 'Airtel',
+    'business.publish.source.card': 'Ikarita',
+    'business.publish.pay_and_publish': 'Ishyura utangaze',
+    'business.publish.publish': 'Tangaza',
+    'business.publish.publishing': 'Biratangazwa…',
+    'business.publish.not_yet': 'Si ubu',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

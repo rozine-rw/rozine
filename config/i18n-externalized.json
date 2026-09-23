@@ -35,6 +35,7 @@
         "resources/js/components/business/home/top-row.tsx",
         "resources/js/components/non-live-notice.tsx",
         "resources/js/components/rozine/app-frame.tsx",
+        "resources/js/components/rozine/column-sheet.tsx",
         "resources/js/components/rozine/form.tsx",
         "resources/js/components/rozine/icon.tsx",
         "resources/js/components/rozine/logo.tsx",
@@ -46,6 +47,7 @@
         "resources/js/pages/business/auth/login.tsx",
         "resources/js/pages/business/auth/register.tsx",
         "resources/js/pages/business/home.tsx",
+        "resources/js/pages/business/publish.tsx",
         "resources/js/pages/dashboard.tsx"
     ]
 }

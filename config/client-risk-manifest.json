@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "f8d72aa9f45f04f2565274b09f30c8d2573797a057f36d03068b8586fc7c4274",
-    "coverageSetSha256": "525653c3e4593ed1dada2f9c9febbf24b2f3ba1b281a89818fd61448fa89875d",
+    "sourceManifestSha256": "c3503c02768a2c81832a5bf2ce826e772a9679824cd33ef753c6fe1a6d372659",
+    "coverageSetSha256": "915e3a7fb2f623a1588d9cb19e1fb7630f8d1a834b0402a828373c3ce0675b2e",
     "thresholds": {
         "critical": {
             "global": {
@@ -106,6 +106,7 @@
         "resources/js/components/pulse/signup-fields.tsx",
         "resources/js/components/pulse/stat-tile.tsx",
         "resources/js/components/rozine/app-frame.tsx",
+        "resources/js/components/rozine/column-sheet.tsx",
         "resources/js/components/rozine/form.tsx",
         "resources/js/components/rozine/icon-shapes.ts",
         "resources/js/components/rozine/icon.tsx",
@@ -184,6 +185,7 @@
         "resources/js/pages/business/auth/login.tsx",
         "resources/js/pages/business/auth/register.tsx",
         "resources/js/pages/business/home.tsx",
+        "resources/js/pages/business/publish.tsx",
         "resources/js/pages/dashboard.tsx",
         "resources/js/pages/home.tsx",
         "resources/js/pages/pulse.tsx",
