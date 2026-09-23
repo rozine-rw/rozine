@@ -1955,6 +1955,51 @@ const en = {
     'business.repayments.done.outstanding': 'Outstanding balance',
     'business.repayments.done.made': 'Payments made',
     'business.repayments.done.home': 'Back to dashboard',
+    'business.audit_prep.title': 'Get ready for your audit',
+    'business.audit_prep.window_open': 'Audit window open',
+    'business.audit_prep.next': 'Next audit',
+    'business.audit_prep.first': 'Your first audit',
+    'business.audit_prep.month': '{month} audit',
+    'business.audit_prep.day_left': 'Day left',
+    'business.audit_prep.days_left': 'Days left',
+    'business.audit_prep.intro':
+        'Your Audit Partner opens the {month} file once the month closes and must seal it by {seal}. You cannot start or edit the report — what you can do is make the visit quick and clean.',
+    'business.audit_prep.reassigned':
+        'Your file moved from {from} to {to}, and your history moved with it.',
+    'business.audit_prep.ready': 'Have this ready',
+    'business.audit_prep.item.statements.title':
+        'Bank & Mobile Money statements',
+    'business.audit_prep.item.statements.body':
+        'The full month, to the last day. Your CPA pulls them from the linked feeds, but keep printed copies for the walk-through.',
+    'business.audit_prep.item.stock.title': 'Stock counted and ledgers current',
+    'business.audit_prep.item.stock.body':
+        'Your Audit Partner does a physical count. A stale ledger reads as a variance and cuts your borrowing capacity.',
+    'business.audit_prep.item.access.title':
+        'Access to every bay, store and till',
+    'business.audit_prep.item.access.body':
+        'Anything locked or unreachable on the day is counted as missing.',
+    'business.audit_prep.item.papers.title':
+        'Receipts, purchase orders and waybills filed',
+    'business.audit_prep.item.papers.body':
+        'Month-to-date, in one place. These explain any gap between the feed and the count.',
+    'business.audit_prep.item.person.title': 'Someone with authority on site',
+    'business.audit_prep.item.person.body':
+        'They need a person who can open doors and answer for the numbers — not just staff on shift.',
+    'business.audit_prep.how': 'How the audit runs',
+    'business.audit_prep.flow.closes.title': 'Month closes',
+    'business.audit_prep.flow.closes.body':
+        'Your CPA opens the audit file for the period. Nothing is required from you to start it.',
+    'business.audit_prep.flow.visit.title': 'On-site visit',
+    'business.audit_prep.flow.visit.body':
+        'They count stock, reconcile the till against the banking feed and photograph the evidence, live and geo-tagged.',
+    'business.audit_prep.flow.sealed.title': 'Sealed',
+    'business.audit_prep.flow.sealed.body':
+        'The findings, variances and credit discount factor are sealed under their ICPAR licence.',
+    'business.audit_prep.flow.cosign.title': 'You co-sign',
+    'business.audit_prep.flow.cosign.body':
+        'You get {minutes} minutes to add a recap and co-sign, or to dispute with counter-proof and a refundable escrow.',
+    'business.audit_prep.closing':
+        'You never file the monthly report yourself. Your Audit Partner opens it, verifies it on site and seals it — your part is being ready, then co-signing or disputing what they found.',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

@@ -2009,6 +2009,52 @@ const fr: Catalog = {
     'business.repayments.done.made': 'Paiements effectués',
     'business.repayments.done.home': 'Retour au tableau de bord',
 
+    'business.audit_prep.title': 'Préparez votre audit',
+    'business.audit_prep.window_open': "Fenêtre d'audit ouverte",
+    'business.audit_prep.next': 'Prochain audit',
+    'business.audit_prep.first': 'Votre premier audit',
+    'business.audit_prep.month': 'Audit de {month}',
+    'business.audit_prep.day_left': 'Jour restant',
+    'business.audit_prep.days_left': 'Jours restants',
+    'business.audit_prep.intro':
+        'Votre auditeur ouvre le dossier de {month} à la clôture du mois et doit le sceller avant le {seal}. Vous ne pouvez ni lancer ni modifier le rapport — vous pouvez rendre la visite rapide et sans accroc.',
+    'business.audit_prep.reassigned':
+        'Votre dossier est passé de {from} à {to}, avec tout votre historique.',
+    'business.audit_prep.ready': 'Préparez ceci',
+    'business.audit_prep.item.statements.title':
+        'Relevés bancaires et Mobile Money',
+    'business.audit_prep.item.statements.body':
+        "Le mois complet, jusqu'au dernier jour. Votre expert-comptable les récupère depuis les flux liés, mais gardez des copies imprimées pour la visite.",
+    'business.audit_prep.item.stock.title': 'Stock compté et registres à jour',
+    'business.audit_prep.item.stock.body':
+        "Votre auditeur fait un comptage physique. Un registre pas à jour apparaît comme un écart et réduit votre capacité d'emprunt.",
+    'business.audit_prep.item.access.title':
+        'Accès à chaque entrepôt, magasin et caisse',
+    'business.audit_prep.item.access.body':
+        'Tout ce qui est fermé ou inaccessible le jour J est compté comme manquant.',
+    'business.audit_prep.item.papers.title':
+        'Reçus, bons de commande et lettres de voiture classés',
+    'business.audit_prep.item.papers.body':
+        'Depuis le début du mois, au même endroit. Ils expliquent tout écart entre le flux et le comptage.',
+    'business.audit_prep.item.person.title': 'Une personne habilitée sur place',
+    'business.audit_prep.item.person.body':
+        'Il faut une personne qui peut ouvrir les portes et répondre des chiffres — pas seulement le personnel de service.',
+    'business.audit_prep.how': "Déroulement de l'audit",
+    'business.audit_prep.flow.closes.title': 'Clôture du mois',
+    'business.audit_prep.flow.closes.body':
+        "Votre expert-comptable ouvre le dossier d'audit de la période. Rien n'est requis de votre part pour le lancer.",
+    'business.audit_prep.flow.visit.title': 'Visite sur site',
+    'business.audit_prep.flow.visit.body':
+        'Il compte le stock, rapproche la caisse du flux bancaire et photographie les preuves, en direct et géolocalisées.',
+    'business.audit_prep.flow.sealed.title': 'Scellé',
+    'business.audit_prep.flow.sealed.body':
+        "Les constats, écarts et facteur d'escompte de crédit sont scellés sous sa licence ICPAR.",
+    'business.audit_prep.flow.cosign.title': 'Vous cosignez',
+    'business.audit_prep.flow.cosign.body':
+        'Vous disposez de {minutes} minutes pour ajouter un résumé et cosigner, ou contester avec une contre-preuve et un séquestre remboursable.',
+    'business.audit_prep.closing':
+        "Vous ne déposez jamais le rapport mensuel vous-même. Votre auditeur l'ouvre, le vérifie sur site et le scelle — votre rôle est d'être prêt, puis de cosigner ou contester ses constats.",
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

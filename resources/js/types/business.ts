@@ -788,3 +788,25 @@ export type BusinessRepaymentsProps = {
     };
     actions: { pay: RouteAction; pay_ahead: RouteAction };
 };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Audit prep (MVP-BUSINESS-SCR-07, design L1006–1057)                                         */
+/* ------------------------------------------------------------------------------------------ */
+
+export type BusinessAuditPrepProps = {
+    home: BusinessHomeProps;
+    audit: {
+        /** First day of the month being audited, ISO date. */
+        period: string;
+        /** The window opens in the last days of the month; before that it is the next audit. */
+        window_open: boolean;
+        days_left: number;
+        seal_by: string;
+        /** True until the business has had its first audit. */
+        first: boolean;
+        /** Set when a new Audit Partner took over the file. */
+        reassigned: { from: string; to: string } | null;
+    };
+    policy: { cosign_minutes: number };
+    links: { close: RouteLink };
+};

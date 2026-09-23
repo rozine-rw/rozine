@@ -343,6 +343,7 @@
         "resources/js/pages/auth/two-factor-challenge.tsx",
         "resources/js/pages/auth/verify-email.tsx",
         "resources/js/pages/business/apply.tsx",
+        "resources/js/pages/business/audit-prep.tsx",
         "resources/js/pages/business/auth/login.tsx",
         "resources/js/pages/business/auth/register.tsx",
         "resources/js/pages/business/home.tsx",
@@ -363,10 +364,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 335,
+        "totalTrackedSources": 336,
         "generated": 70,
         "declarationOnly": 12,
-        "authoredExecutable": 253
+        "authoredExecutable": 254
     },
-    "coverageSetSha256": "14868e7399e56a34d6d9de226e1c7affe08741654cfa18c81a29abf64a79cdc1"
+    "coverageSetSha256": "64784479c008ccb72de6a0c28a2590dd2b8ae6236a4dd72940a54c31eff5c3d7"
 }

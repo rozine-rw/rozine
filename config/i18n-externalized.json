@@ -141,6 +141,7 @@
         "resources/js/pages/auth/forgot-password.tsx",
         "resources/js/pages/auth/login.tsx",
         "resources/js/pages/business/apply.tsx",
+        "resources/js/pages/business/audit-prep.tsx",
         "resources/js/pages/business/auth/login.tsx",
         "resources/js/pages/business/auth/register.tsx",
         "resources/js/pages/business/home.tsx",

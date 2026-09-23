@@ -70,7 +70,7 @@ describe('Business Reports', () => {
             screen.getByRole('link', {
                 name: /^June 2026/,
             }),
-        ).toHaveAttribute('href', '/preview/business-reports');
+        ).toHaveAttribute('href', '/preview/business-audit-prep');
 
         await user.click(screen.getByRole('tab', { name: 'Archived' }));
 

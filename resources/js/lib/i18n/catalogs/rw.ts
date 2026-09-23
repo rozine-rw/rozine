@@ -2007,6 +2007,53 @@ const rw: Catalog = {
     'business.repayments.done.made': 'Ubwishyu bwakozwe',
     'business.repayments.done.home': 'Subira ku rupapuro rukuru',
 
+    'business.audit_prep.title': 'Itegure igenzura',
+    'business.audit_prep.window_open': "Igihe cy'igenzura cyatangiye",
+    'business.audit_prep.next': 'Igenzura rikurikira',
+    'business.audit_prep.first': 'Igenzura ryawe rya mbere',
+    'business.audit_prep.month': 'Igenzura rya {month}',
+    'business.audit_prep.day_left': 'Umunsi usigaye',
+    'business.audit_prep.days_left': 'Iminsi isigaye',
+    'business.audit_prep.intro':
+        'Umugenzuzi wawe afungura dosiye ya {month} iyo ukwezi kurangiye kandi agomba kuyifunga bitarenze {seal}. Ntushobora gutangiza cyangwa guhindura raporo — icyo ushobora ni ugutuma uruzinduko rwihuta kandi rugenda neza.',
+    'business.audit_prep.reassigned':
+        'Dosiye yawe yavuye kwa {from} ijya kwa {to}, kandi amateka yawe yajyanye nayo.',
+    'business.audit_prep.ready': 'Tegura ibi',
+    'business.audit_prep.item.statements.title':
+        'Raporo za banki na Mobile Money',
+    'business.audit_prep.item.statements.body':
+        "Ukwezi kose, kugeza ku munsi wa nyuma. CPA wawe azikura mu masoko yahujwe, ariko bika kopi zicapye z'uruzinduko.",
+    'business.audit_prep.item.stock.title':
+        "Ibicuruzwa byabaruwe n'ibitabo bigezweho",
+    'business.audit_prep.item.stock.body':
+        "Umugenzuzi abara ibicuruzwa imbonankubone. Igitabo kitavuguruwe kigaragara nk'ikinyuranyo kandi kigabanya ubushobozi bwo kuguza.",
+    'business.audit_prep.item.access.title':
+        'Kugera ku bubiko bwose, iduka na kesi',
+    'business.audit_prep.item.access.body':
+        "Ikintu cyose gifunze cyangwa kitagerwaho uwo munsi kibarwa nk'icyabuze.",
+    'business.audit_prep.item.papers.title':
+        "Inyemezabwishyu, amabwiriza yo kugura n'inyandiko z'itwara bibitswe neza",
+    'business.audit_prep.item.papers.body':
+        "Kuva ukwezi gutangiye, hamwe. Bisobanura ikinyuranyo cyose hagati y'amakuru n'ibarura.",
+    'business.audit_prep.item.person.title': 'Umuntu ufite ububasha uhari',
+    'business.audit_prep.item.person.body':
+        'Hakenewe umuntu ushobora gufungura inzugi no gusobanura imibare — si abakozi bari ku kazi gusa.',
+    'business.audit_prep.how': 'Uko igenzura rikorwa',
+    'business.audit_prep.flow.closes.title': 'Ukwezi kurarangira',
+    'business.audit_prep.flow.closes.body':
+        "CPA wawe afungura dosiye y'igenzura y'icyo gihe. Nta kintu usabwa kugira ngo bitangire.",
+    'business.audit_prep.flow.visit.title': 'Uruzinduko aho ukorera',
+    'business.audit_prep.flow.visit.body':
+        "Abara ibicuruzwa, agahuza kesi n'amakuru ya banki kandi agafotora ibimenyetso, ako kanya kandi bifite aho byafatiwe.",
+    'business.audit_prep.flow.sealed.title': 'Birafunzwe',
+    'business.audit_prep.flow.sealed.body':
+        "Ibyabonetse, ibinyuranyo n'igipimo cyo kugabanya inguzanyo bifungwa hakoreshejwe uruhushya rwe rwa ICPAR.",
+    'business.audit_prep.flow.cosign.title': 'Ushyiraho umukono',
+    'business.audit_prep.flow.cosign.body':
+        "Ubona iminota {minutes} yo kongeraho incamake no gushyiraho umukono, cyangwa kujurira ufite ibimenyetso n'ingwate isubizwa.",
+    'business.audit_prep.closing':
+        "Ntujya utanga raporo y'ukwezi ubwawe. Umugenzuzi wawe arayifungura, akayigenzura aho ukorera kandi akayifunga — uruhare rwawe ni ukwitegura, hanyuma ugashyiraho umukono cyangwa ukajurira ibyo yabonye.",
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "6da898f13a0db761e8cc5da302d6a666720a94889a78a842e714e0f910cde2b3",
-    "coverageSetSha256": "14868e7399e56a34d6d9de226e1c7affe08741654cfa18c81a29abf64a79cdc1",
+    "sourceManifestSha256": "082bd464fcd7a1553bbf87e6a1afae2615a42b69a5b52cd96356067eed25f04e",
+    "coverageSetSha256": "64784479c008ccb72de6a0c28a2590dd2b8ae6236a4dd72940a54c31eff5c3d7",
     "thresholds": {
         "critical": {
             "global": {
@@ -283,6 +283,7 @@
         "resources/js/pages/auth/two-factor-challenge.tsx",
         "resources/js/pages/auth/verify-email.tsx",
         "resources/js/pages/business/apply.tsx",
+        "resources/js/pages/business/audit-prep.tsx",
         "resources/js/pages/business/auth/login.tsx",
         "resources/js/pages/business/auth/register.tsx",
         "resources/js/pages/business/home.tsx",
