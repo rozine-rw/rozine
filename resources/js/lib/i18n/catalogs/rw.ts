@@ -379,6 +379,93 @@ const rw: Catalog = {
     'business.publish.publishing': 'Biratangazwa…',
     'business.publish.not_yet': 'Si ubu',
 
+    'business.onboarding.back': 'Subira inyuma',
+    'business.onboarding.progress': 'Aho kwiyandikisha bigeze',
+    'business.onboarding.step_label.confirm': 'INTAMBWE YA 1 KURI 4 · RDB',
+    'business.onboarding.step_label.documents': 'INTAMBWE YA 2 KURI 4',
+    'business.onboarding.step_label.bank': 'INTAMBWE YA 3 KURI 4',
+    'business.onboarding.step_label.finish': 'INTAMBWE YA 4 KURI 4',
+    'business.onboarding.cta.confirm': 'Emeza ukomeze',
+    'business.onboarding.cta.documents': 'Komeza',
+    'business.onboarding.cta.bank': 'Komeza',
+    'business.onboarding.cta.finish': 'Soza kwiyandikisha',
+    'business.onboarding.error.certificate':
+        'Ohereza kandi wemeze icyemezo cya RDB kugira ngo ukomeze — nta kigo gishyirwa ku rutonde kitagifite',
+    'business.onboarding.error.bank':
+        "Huza konti ya banki y'ikigo yemejwe kugira ngo ukomeze",
+    'business.onboarding.confirm.title': 'Emeza ikigo cyawe',
+    'business.onboarding.confirm.subtitle':
+        "Byavanywe mu Rwego rw'Igihugu rw'Iterambere (RDB). Bisuzume wemeze ko ari byo.",
+    'business.onboarding.confirm.name': 'Izina ryanditswe',
+    'business.onboarding.confirm.company_code': "Nomero y'ikigo",
+    'business.onboarding.confirm.legal_form': "Ubwoko bw'ikigo",
+    'business.onboarding.confirm.registered': 'Cyanditswe',
+    'business.onboarding.confirm.status': 'Uko gihagaze',
+    'business.onboarding.confirm.status_active': 'Gikora',
+    'business.onboarding.confirm.status_dormant': 'Cyasinziriye',
+    'business.onboarding.confirm.status_deregistered': 'Cyavanywe ku rutonde',
+    'business.onboarding.confirm.staff': 'Abakozi',
+    'business.onboarding.confirm.staff_count': 'Abakozi {count}',
+    'business.onboarding.confirm.address': 'Aderesi yanditswe',
+    'business.onboarding.confirm.industry': "Urwego rw'ubucuruzi",
+    'business.onboarding.confirm.auto_detected': '✓ Byabonetse muri RDB',
+    'business.onboarding.confirm.industry_help':
+        'Twabibonye mu iyandikwa ryawe muri RDB ({category}). Bihindure niba bidahuye.',
+    'business.onboarding.confirm.management': 'Ubuyobozi',
+    'business.onboarding.confirm.shareholders': 'Abanyamigabane',
+    'business.onboarding.documents.title':
+        "Icyemezo cya RDB, ikirango n'amafoto",
+    'business.onboarding.documents.subtitle':
+        'Icyemezo cyo kwandikwa ni itegeko — nta kintu gishyirwa ku rutonde kitagifite. Hanyuma werekane abashoramari uwo uri we.',
+    'business.onboarding.documents.certificate':
+        'Icyemezo cyo kwandikwa muri RDB',
+    'business.onboarding.documents.certificate_required': 'Birakenewe',
+    'business.onboarding.documents.certificate_uploaded': 'Cyoherejwe',
+    'business.onboarding.documents.certificate_verified': 'Cyemejwe',
+    'business.onboarding.documents.certificate_drop':
+        'Shyiraho icyemezo cya RDB (PDF cyangwa ifoto)',
+    'business.onboarding.documents.certificate_number': "Nomero y'icyemezo",
+    'business.onboarding.documents.certificate_placeholder': 'RDB/2019/123456',
+    'business.onboarding.documents.verify_certificate': 'Emeza icyemezo',
+    'business.onboarding.documents.verifying': 'Biri kwemezwa…',
+    'business.onboarding.documents.certificate_on_file': 'Icyemezo cyabitswe',
+    'business.onboarding.documents.logo': 'Ikirango',
+    'business.onboarding.documents.logo_set': 'Ikirango cyashyizweho',
+    'business.onboarding.documents.logo_label': 'Ohereza ikirango cyawe',
+    'business.onboarding.documents.logo_help':
+        'Ikirango gisobanutse gituma abashoramari bakugirira icyizere ako kanya.',
+    'business.onboarding.documents.photos': "Amafoto y'ibimenyetso",
+    'business.onboarding.documents.uploaded': 'Yoherejwe',
+    'business.onboarding.bank.title': "Konti ya banki y'ikigo",
+    'business.onboarding.bank.subtitle':
+        "Aho uzakira amafaranga ukusanyije. Igomba kuba konti y'ikigo yo mu Rwanda iri ku izina ry'ikigo cyawe, ifite nibura abashyira umukono {count}.",
+    'business.onboarding.bank.bank': 'Banki',
+    'business.onboarding.bank.select': 'Hitamo banki yawe…',
+    'business.onboarding.bank.business_account_prefix': 'Iyi ni',
+    'business.onboarding.bank.business_account': "konti y'ikigo",
+    'business.onboarding.bank.business_account_suffix':
+        ' yanditswe, si konti bwite.',
+    'business.onboarding.bank.account_name': 'Izina rya konti',
+    'business.onboarding.bank.use_company_name': "Koresha izina ry'ikigo",
+    'business.onboarding.bank.account_number': 'Nomero ya konti',
+    'business.onboarding.bank.account_number_placeholder': '00012345678',
+    'business.onboarding.bank.signatories': 'Abashyira umukono',
+    'business.onboarding.bank.signatories_count':
+        '{selected} batoranyijwe · hakenewe {required}+',
+    'business.onboarding.bank.link': "Huza konti y'ikigo",
+    'business.onboarding.bank.linking': 'Birahuzwa…',
+    'business.onboarding.bank.linked': "✓ Konti ya banki y'ikigo yahujwe",
+    'business.onboarding.bank.locked':
+        "Ushobora guhuza konti imwe gusa yo kwakiriraho amafaranga. Kugira ngo uyihindure nyuma, vugana n'ubufasha bwa Rozine — ibi birinda amafaranga yawe koherezwa ahandi nta burenganzira.",
+    'business.onboarding.finish.title': 'Byose biteguye',
+    'business.onboarding.finish.subtitle':
+        'Aho ukorera harateguye. Bisuzume mbere yo gusoza.',
+    'business.onboarding.finish.company': 'Ikigo',
+    'business.onboarding.finish.rdb': '✓ RDB',
+    'business.onboarding.finish.contact': 'Aho uboneka',
+    'business.onboarding.finish.payout': 'Konti yakiriraho',
+    'business.onboarding.finish.setting_up': 'Turimo gutegura aho ukorera…',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

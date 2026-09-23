@@ -380,6 +380,95 @@ const fr: Catalog = {
     'business.publish.publishing': 'Publication…',
     'business.publish.not_yet': 'Pas encore',
 
+    'business.onboarding.back': 'Retour',
+    'business.onboarding.progress': 'Progression de la configuration',
+    'business.onboarding.step_label.confirm': 'ÉTAPE 1 SUR 4 · RDB',
+    'business.onboarding.step_label.documents': 'ÉTAPE 2 SUR 4',
+    'business.onboarding.step_label.bank': 'ÉTAPE 3 SUR 4',
+    'business.onboarding.step_label.finish': 'ÉTAPE 4 SUR 4',
+    'business.onboarding.cta.confirm': 'Confirmer et continuer',
+    'business.onboarding.cta.documents': 'Continuer',
+    'business.onboarding.cta.bank': 'Continuer',
+    'business.onboarding.cta.finish': 'Terminer la configuration',
+    'business.onboarding.error.certificate':
+        "Téléversez et vérifiez votre certificat RDB pour continuer — aucune entreprise n'est publiée sans lui",
+    'business.onboarding.error.bank':
+        'Liez un compte bancaire professionnel vérifié pour continuer',
+    'business.onboarding.confirm.title': 'Confirmez votre entreprise',
+    'business.onboarding.confirm.subtitle':
+        'Issu du Rwanda Development Board. Vérifiez et confirmez que tout est exact.',
+    'business.onboarding.confirm.name': 'Raison sociale',
+    'business.onboarding.confirm.company_code': "Code de l'entreprise",
+    'business.onboarding.confirm.legal_form': 'Forme juridique',
+    'business.onboarding.confirm.registered': 'Immatriculée le',
+    'business.onboarding.confirm.status': 'Statut',
+    'business.onboarding.confirm.status_active': 'Active',
+    'business.onboarding.confirm.status_dormant': 'En sommeil',
+    'business.onboarding.confirm.status_deregistered': 'Radiée',
+    'business.onboarding.confirm.staff': 'Effectif',
+    'business.onboarding.confirm.staff_count': '{count} employés',
+    'business.onboarding.confirm.address': 'Adresse du siège',
+    'business.onboarding.confirm.industry': 'Secteur',
+    'business.onboarding.confirm.auto_detected': '✓ Détecté depuis le RDB',
+    'business.onboarding.confirm.industry_help':
+        "Nous l'avons déduit de votre immatriculation RDB ({category}). Modifiez-le s'il ne convient pas.",
+    'business.onboarding.confirm.management': 'Direction',
+    'business.onboarding.confirm.shareholders': 'Actionnaires',
+    'business.onboarding.documents.title': 'Certificat RDB, logo et photos',
+    'business.onboarding.documents.subtitle':
+        "Votre certificat de constitution est obligatoire — rien n'est publié sans lui. Montrez ensuite aux investisseurs qui vous êtes.",
+    'business.onboarding.documents.certificate':
+        'Certificat de constitution RDB',
+    'business.onboarding.documents.certificate_required': 'Obligatoire',
+    'business.onboarding.documents.certificate_uploaded': 'Téléversé',
+    'business.onboarding.documents.certificate_verified': 'Vérifié',
+    'business.onboarding.documents.certificate_drop':
+        'Déposez votre certificat RDB (scan PDF ou photo)',
+    'business.onboarding.documents.certificate_number': 'Numéro du certificat',
+    'business.onboarding.documents.certificate_placeholder': 'RDB/2019/123456',
+    'business.onboarding.documents.verify_certificate':
+        'Vérifier le certificat',
+    'business.onboarding.documents.verifying': 'Vérification…',
+    'business.onboarding.documents.certificate_on_file':
+        'Certificat enregistré',
+    'business.onboarding.documents.logo': 'Logo',
+    'business.onboarding.documents.logo_set': 'Logo ajouté',
+    'business.onboarding.documents.logo_label': 'Téléverser votre logo',
+    'business.onboarding.documents.logo_help':
+        'Un logo soigné inspire tout de suite confiance aux investisseurs.',
+    'business.onboarding.documents.photos': 'Photos justificatives',
+    'business.onboarding.documents.uploaded': 'Téléversée',
+    'business.onboarding.bank.title': 'Compte bancaire professionnel',
+    'business.onboarding.bank.subtitle':
+        "C'est là que vous recevrez les fonds levés. Il doit s'agir d'un compte professionnel rwandais au nom de votre entreprise, avec au moins {count} signataires.",
+    'business.onboarding.bank.bank': 'Banque',
+    'business.onboarding.bank.select': 'Choisissez votre banque…',
+    'business.onboarding.bank.business_account_prefix': "Il s'agit d'un",
+    'business.onboarding.bank.business_account': 'compte professionnel',
+    'business.onboarding.bank.business_account_suffix':
+        " enregistré, pas d'un compte personnel.",
+    'business.onboarding.bank.account_name': 'Intitulé du compte',
+    'business.onboarding.bank.use_company_name':
+        "Utiliser le nom de l'entreprise",
+    'business.onboarding.bank.account_number': 'Numéro de compte',
+    'business.onboarding.bank.account_number_placeholder': '00012345678',
+    'business.onboarding.bank.signatories': 'Signataires',
+    'business.onboarding.bank.signatories_count':
+        '{selected} choisis · {required}+ requis',
+    'business.onboarding.bank.link': 'Lier le compte professionnel',
+    'business.onboarding.bank.linking': 'Liaison…',
+    'business.onboarding.bank.linked': '✓ Compte bancaire professionnel lié',
+    'business.onboarding.bank.locked':
+        "Vous ne pouvez lier qu'un seul compte de versement. Pour le modifier plus tard, contactez l'assistance Rozine — cela protège vos fonds contre tout détournement non autorisé.",
+    'business.onboarding.finish.title': 'Tout est prêt',
+    'business.onboarding.finish.subtitle':
+        'Votre espace est prêt. Vérifiez avant de terminer.',
+    'business.onboarding.finish.company': 'Entreprise',
+    'business.onboarding.finish.rdb': '✓ RDB',
+    'business.onboarding.finish.contact': 'Contact',
+    'business.onboarding.finish.payout': 'Compte de versement',
+    'business.onboarding.finish.setting_up': 'Préparation de votre espace…',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

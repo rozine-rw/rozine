@@ -33,6 +33,12 @@
         "resources/js/components/business/home/notes-section.tsx",
         "resources/js/components/business/home/today-section.tsx",
         "resources/js/components/business/home/top-row.tsx",
+        "resources/js/components/business/onboarding/key-values.tsx",
+        "resources/js/components/business/onboarding/step-bank.tsx",
+        "resources/js/components/business/onboarding/step-confirm.tsx",
+        "resources/js/components/business/onboarding/step-documents.tsx",
+        "resources/js/components/business/onboarding/step-finish.tsx",
+        "resources/js/components/business/onboarding/upload-tile.tsx",
         "resources/js/components/non-live-notice.tsx",
         "resources/js/components/rozine/app-frame.tsx",
         "resources/js/components/rozine/column-sheet.tsx",
@@ -47,6 +53,7 @@
         "resources/js/pages/business/auth/login.tsx",
         "resources/js/pages/business/auth/register.tsx",
         "resources/js/pages/business/home.tsx",
+        "resources/js/pages/business/onboarding.tsx",
         "resources/js/pages/business/publish.tsx",
         "resources/js/pages/dashboard.tsx"
     ]

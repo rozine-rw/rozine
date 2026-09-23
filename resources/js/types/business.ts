@@ -267,3 +267,72 @@ export type BusinessPublishProps = {
     links: { close: RouteLink };
     actions: { publish: RouteAction };
 };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Registration onboarding (MVP-BUSINESS-SCR-09 profile set-up, design L1569–1715)              */
+/* ------------------------------------------------------------------------------------------ */
+
+export type OnboardingStep = 'confirm' | 'documents' | 'bank' | 'finish';
+
+/** What the Rwanda Development Board holds for this company, as the server fetched it. */
+export type RegistryRecord = {
+    name: string;
+    company_code: string;
+    legal_form: string;
+    registered_on: string;
+    status: 'active' | 'dormant' | 'deregistered';
+    staff: number | null;
+    address: string;
+    /** The registry's own activity description, e.g. "Logistics & Freight Transport". */
+    category: string;
+    management: { name: string; role: string }[];
+    shareholders: { name: string; share_pct: number }[];
+};
+
+export type ShowcaseSlot =
+    | 'products'
+    | 'facilities'
+    | 'team'
+    | 'operations'
+    | 'customers'
+    | 'impact'
+    | 'brand';
+
+export type OnboardingDocuments = {
+    certificate: {
+        status: 'required' | 'uploaded' | 'verified';
+        number: string | null;
+        file_name: string | null;
+    };
+    logo_url: string | null;
+    photos: { slot: ShowcaseSlot; url: string | null }[];
+};
+
+export type LinkedBankAccount = {
+    bank_name: string;
+    /** Masked by the server: "Business account ····2231". */
+    masked_number: string;
+};
+
+export type BusinessOnboardingProps = {
+    step: OnboardingStep;
+    registry: RegistryRecord;
+    industry: string;
+    industries: { value: string; label: string }[];
+    documents: OnboardingDocuments;
+    banks: { code: string; name: string }[];
+    bank_account: LinkedBankAccount | null;
+    signatories: { id: string; name: string; role: string }[];
+    /** From the company's verified mandate (D-64); never assumed to be two. */
+    signatories_required: number;
+    contact_masked: string;
+    /** `next` is the following step; the documents and bank steps move on only once their record is on file. */
+    links: { back: RouteLink; next: RouteLink };
+    actions: {
+        confirm: RouteAction;
+        certificate: RouteAction;
+        upload: RouteAction;
+        bank: RouteAction;
+        finish: RouteAction;
+    };
+};

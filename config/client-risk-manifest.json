@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "c3503c02768a2c81832a5bf2ce826e772a9679824cd33ef753c6fe1a6d372659",
-    "coverageSetSha256": "915e3a7fb2f623a1588d9cb19e1fb7630f8d1a834b0402a828373c3ce0675b2e",
+    "sourceManifestSha256": "ceb8a5a5cba45137632964a9cddfb2468314515e12efdbb0ddf0e21d04f7b50d",
+    "coverageSetSha256": "77e892bc77348b7517154c6e11d149e1c890a064421f90124d93f00472386ed0",
     "thresholds": {
         "critical": {
             "global": {
@@ -76,6 +76,12 @@
         "resources/js/components/business/home/notes-section.tsx",
         "resources/js/components/business/home/today-section.tsx",
         "resources/js/components/business/home/top-row.tsx",
+        "resources/js/components/business/onboarding/key-values.tsx",
+        "resources/js/components/business/onboarding/step-bank.tsx",
+        "resources/js/components/business/onboarding/step-confirm.tsx",
+        "resources/js/components/business/onboarding/step-documents.tsx",
+        "resources/js/components/business/onboarding/step-finish.tsx",
+        "resources/js/components/business/onboarding/upload-tile.tsx",
         "resources/js/components/delete-user.tsx",
         "resources/js/components/heading.tsx",
         "resources/js/components/i18n-provider.tsx",
@@ -185,6 +191,7 @@
         "resources/js/pages/business/auth/login.tsx",
         "resources/js/pages/business/auth/register.tsx",
         "resources/js/pages/business/home.tsx",
+        "resources/js/pages/business/onboarding.tsx",
         "resources/js/pages/business/publish.tsx",
         "resources/js/pages/dashboard.tsx",
         "resources/js/pages/home.tsx",
