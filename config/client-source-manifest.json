@@ -145,6 +145,11 @@
         "resources/js/components/business/onboarding/step-documents.tsx",
         "resources/js/components/business/onboarding/step-finish.tsx",
         "resources/js/components/business/onboarding/upload-tile.tsx",
+        "resources/js/components/business/profile/company-form.tsx",
+        "resources/js/components/business/profile/company-records.tsx",
+        "resources/js/components/business/profile/legal-document.tsx",
+        "resources/js/components/business/profile/linked-accounts.tsx",
+        "resources/js/components/business/profile/profile-menu.tsx",
         "resources/js/components/business/reports/audit-guide.tsx",
         "resources/js/components/business/reports/period-label.ts",
         "resources/js/components/business/reports/report-sheet.tsx",
@@ -259,6 +264,7 @@
         "resources/js/pages/business/home.tsx",
         "resources/js/pages/business/note.tsx",
         "resources/js/pages/business/onboarding.tsx",
+        "resources/js/pages/business/profile.tsx",
         "resources/js/pages/business/publish.tsx",
         "resources/js/pages/business/reports.tsx",
         "resources/js/pages/dashboard.tsx",
@@ -270,10 +276,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 242,
+        "totalTrackedSources": 248,
         "generated": 70,
         "declarationOnly": 10,
-        "authoredExecutable": 162
+        "authoredExecutable": 168
     },
-    "coverageSetSha256": "5f79720b3825cb50bd00a3c8739cdec51fb0d26d7269f46573f567ae3ed4acce"
+    "coverageSetSha256": "4d6fd667898091f495b7f2db02aec3c057a58631e42f61eb2bddc53a9d6d59e8"
 }

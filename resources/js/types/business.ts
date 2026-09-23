@@ -506,3 +506,76 @@ export type BusinessReportsProps = {
     policy: { seal_day: number; cosign_minutes: number };
     links: BusinessAppLinks & { close: RouteLink };
 };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Profile (MVP-BUSINESS-SCR-09 company, signatories, documents; design L1460–1479, L1718–1891) */
+/* ------------------------------------------------------------------------------------------ */
+
+export type ProfileSection = 'company' | 'linked' | 'terms' | 'privacy';
+
+export type CompanyProfile = {
+    /** The RDB-registered name: shown, never edited here. */
+    name: string;
+    email: string;
+    /** Ten digits, as the business typed it: "0788123456". */
+    phone: string;
+    address: {
+        province: string;
+        district: string;
+        sector: string;
+        cell: string;
+        street: string;
+    };
+    certificate: {
+        number: string;
+        status: 'verified' | 'expired';
+        expires_on: string | null;
+    };
+    signatories: { name: string; role: string }[];
+    /** From the verified mandate (D-64); never assumed to be two. */
+    signatories_required: number;
+};
+
+export type LinkedAccount = {
+    id: string;
+    kind: 'wallet' | 'bank' | 'mobile_money';
+    name: string;
+    /** Masked by the server: "Business account ····2231". */
+    detail: string;
+    /** Null where only Rozine support can change it, as for the payout bank. */
+    unlink: RouteAction | null;
+};
+
+/** A versioned legal document, as the business accepted it. */
+export type LegalDocument = {
+    version: string;
+    updated_on: string;
+    sections: { heading: string; body: string }[];
+};
+
+export type BusinessProfileProps = {
+    business: {
+        name: string;
+        address_line: string;
+        verified: boolean;
+        rating: BusinessRating;
+    };
+    section: ProfileSection;
+    /** True at the bare Profile URL: a phone shows only the menu, a wide screen opens `section`. */
+    landing: boolean;
+    company: CompanyProfile;
+    /** Provinces and the districts in each, for the address pickers. */
+    provinces: {
+        value: string;
+        label: string;
+        districts: { value: string; label: string }[];
+    }[];
+    linked: { accounts: LinkedAccount[]; add: RouteLink | null } | null;
+    legal: LegalDocument | null;
+    links: BusinessAppLinks & {
+        back: RouteLink;
+        sections: Record<ProfileSection, RouteLink>;
+        sign_out: RouteAction;
+    };
+    actions: { save_company: RouteAction };
+};

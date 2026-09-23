@@ -589,6 +589,62 @@ const fr: Catalog = {
     'business.reports.figure.quarters_above_floor':
         'Trimestres au-dessus du plancher de {floor} %',
 
+    'business.profile.title': 'Profil',
+    'business.profile.verified': '✓ Vérifiée',
+    'business.profile.score': 'Note {score}',
+    'business.profile.menu': 'Menu du profil',
+    'business.profile.section.company': "Informations sur l'entreprise",
+    'business.profile.section.linked': 'Comptes liés',
+    'business.profile.section.terms': 'Conditions générales',
+    'business.profile.section.privacy': 'Note de confidentialité',
+    'business.profile.sign_out': 'Se déconnecter',
+    'business.profile.back': 'Retour au profil',
+    'business.profile.company.name': "Nom de l'entreprise",
+    'business.profile.company.email': 'E-mail professionnel',
+    'business.profile.company.phone': 'Téléphone professionnel',
+    'business.profile.company.phone_placeholder': '0788 123 456',
+    'business.profile.company.address': 'Adresse du siège',
+    'business.profile.company.province': 'Province',
+    'business.profile.company.district': 'District',
+    'business.profile.company.sector': 'Secteur',
+    'business.profile.company.cell': 'Cellule',
+    'business.profile.company.street': 'Rue',
+    'business.profile.company.choose': 'Choisir…',
+    'business.profile.company.sector_placeholder': 'Nom du secteur',
+    'business.profile.company.cell_placeholder': 'Nom de la cellule',
+    'business.profile.company.save': 'Enregistrer',
+    'business.profile.company.saving': 'Enregistrement…',
+    'business.profile.company.saved':
+        "Informations de l'entreprise enregistrées",
+    'business.profile.records.certificate': 'Certificat RDB',
+    'business.profile.records.expired_notice':
+        'Votre certificat RDB a expiré. Téléversez-en un à jour pour continuer à lever des fonds.',
+    'business.profile.records.number': 'Numéro du certificat',
+    'business.profile.records.status': 'Statut',
+    'business.profile.records.status_verified': 'Vérifié',
+    'business.profile.records.status_expired': 'Expiré',
+    'business.profile.records.expires': 'Expire le',
+    'business.profile.records.no_expiry': 'Sans expiration',
+    'business.profile.records.signatories': 'Signataires',
+    'business.profile.records.mandate':
+        '{count} au mandat · {required}+ requis',
+    'business.profile.linked.unlink': 'Dissocier',
+    'business.profile.linked.unlink_named': 'Dissocier {name}',
+    'business.profile.linked.add': '+ Lier un compte de versement',
+    'business.profile.legal.updated':
+        'Dernière mise à jour le {date} · Version {version}',
+    'business.profile.legal.terms_intro':
+        "Veuillez lire attentivement ces Conditions. En enregistrant votre entreprise, en lançant une levée ou en utilisant Rozine de toute autre manière, vous acceptez d'être lié par l'intégralité de ces Conditions. Si vous ne les acceptez pas, vous ne devez pas utiliser la plateforme.",
+    'business.profile.legal.privacy_intro':
+        "Cette Note de confidentialité explique quelles informations Rozine collecte sur votre entreprise, comment nous les utilisons et quels choix s'offrent à vous. En utilisant Rozine, vous consentez aux pratiques décrites ici.",
+    'business.profile.legal.terms_footer':
+        'Ces Conditions sont régies par les lois de la République du Rwanda. Pour toute question, contactez',
+    'business.profile.legal.terms_contact': 'legal@rozine.rw',
+    'business.profile.legal.privacy_footer':
+        'Pour exercer un droit sur vos données ou joindre notre délégué à la protection des données, contactez',
+    'business.profile.legal.privacy_contact': 'privacy@rozine.rw',
+    'business.profile.legal.footer_end': '.',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

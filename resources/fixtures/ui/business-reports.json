@@ -116,7 +116,7 @@
                 "method": "get"
             },
             "profile": {
-                "url": "/preview/business-home",
+                "url": "/preview/business-profile",
                 "method": "get"
             },
             "launcher": {

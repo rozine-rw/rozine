@@ -591,6 +591,61 @@ const rw: Catalog = {
     'business.reports.figure.quarters_above_floor':
         'Ibihembwe byarenze igipimo cya {floor}%',
 
+    'business.profile.title': 'Umwirondoro',
+    'business.profile.verified': '✓ Cyemejwe',
+    'business.profile.score': 'Amanota {score}',
+    'business.profile.menu': 'Ibikubiye mu mwirondoro',
+    'business.profile.section.company': "Amakuru y'ikigo",
+    'business.profile.section.linked': 'Konti zihujwe',
+    'business.profile.section.terms': "Amategeko n'amabwiriza",
+    'business.profile.section.privacy': "Itangazo ku ibanga ry'amakuru",
+    'business.profile.sign_out': 'Sohoka',
+    'business.profile.back': 'Subira ku mwirondoro',
+    'business.profile.company.name': "Izina ry'ikigo",
+    'business.profile.company.email': "Imeli y'ikigo",
+    'business.profile.company.phone': "Telefoni y'ikigo",
+    'business.profile.company.phone_placeholder': '0788 123 456',
+    'business.profile.company.address': 'Aderesi yanditswe',
+    'business.profile.company.province': 'Intara',
+    'business.profile.company.district': 'Akarere',
+    'business.profile.company.sector': 'Umurenge',
+    'business.profile.company.cell': 'Akagari',
+    'business.profile.company.street': 'Umuhanda',
+    'business.profile.company.choose': 'Hitamo…',
+    'business.profile.company.sector_placeholder': "Izina ry'umurenge",
+    'business.profile.company.cell_placeholder': "Izina ry'akagari",
+    'business.profile.company.save': 'Bika impinduka',
+    'business.profile.company.saving': 'Birabikwa…',
+    'business.profile.company.saved': "Amakuru y'ikigo yabitswe",
+    'business.profile.records.certificate': 'Icyemezo cya RDB',
+    'business.profile.records.expired_notice':
+        'Icyemezo cya RDB cyarangiye. Ohereza igishya kugira ngo ukomeze gukusanya.',
+    'business.profile.records.number': "Nomero y'icyemezo",
+    'business.profile.records.status': 'Uko gihagaze',
+    'business.profile.records.status_verified': 'Cyemejwe',
+    'business.profile.records.status_expired': 'Cyarangiye',
+    'business.profile.records.expires': 'Kizarangira',
+    'business.profile.records.no_expiry': 'Nta gihe kirangirira',
+    'business.profile.records.signatories': 'Abashyira umukono',
+    'business.profile.records.mandate':
+        '{count} ku bubasha · hakenewe {required}+',
+    'business.profile.linked.unlink': 'Kuraho',
+    'business.profile.linked.unlink_named': 'Kuraho {name}',
+    'business.profile.linked.add': '+ Huza konti yakiriraho',
+    'business.profile.legal.updated':
+        'Byavuguruwe ku wa {date} · Verisiyo {version}',
+    'business.profile.legal.terms_intro':
+        'Soma aya Mategeko witonze. Iyo wanditse ikigo cyawe, utangiye gukusanya cyangwa ukoresha Rozine mu bundi buryo, uba wemeye kubahiriza aya Mategeko yose. Niba utayemera, ntugomba gukoresha uru rubuga.',
+    'business.profile.legal.privacy_intro':
+        "Iri tangazo risobanura amakuru Rozine ikusanya ku kigo cyawe, uko tuyakoresha, n'amahitamo ufite. Iyo ukoresheje Rozine uba wemeye ibivugwa hano.",
+    'business.profile.legal.terms_footer':
+        "Aya Mategeko agengwa n'amategeko ya Repubulika y'u Rwanda. Ku kibazo cyose, andikira",
+    'business.profile.legal.terms_contact': 'legal@rozine.rw',
+    'business.profile.legal.privacy_footer':
+        "Kugira ngo ukoreshe uburenganzira ku makuru yawe cyangwa uvugane n'ushinzwe kurinda amakuru, andikira",
+    'business.profile.legal.privacy_contact': 'privacy@rozine.rw',
+    'business.profile.legal.footer_end': '.',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

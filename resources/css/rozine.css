@@ -360,8 +360,17 @@
 
 .rz-surface {
     font-family: var(--font-rz);
-    /* The design sets no line height, so text sits at the browser's normal, not Tailwind's 1.5. */
+    /* The design sets no line height, so text sits at the browser's normal, not Tailwind's 1.5.
+       Named sizes (text-sm, text-lg…) carry their own line heights, so those follow suit; an
+       explicit leading-* still wins where the design sets one. */
     line-height: normal;
+    --text-xs--line-height: normal;
+    --text-sm--line-height: normal;
+    --text-base--line-height: normal;
+    --text-lg--line-height: normal;
+    --text-xl--line-height: normal;
+    --text-2xl--line-height: normal;
+    --text-3xl--line-height: normal;
     -webkit-font-smoothing: antialiased;
     color: var(--rz-ink);
 }

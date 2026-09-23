@@ -82,6 +82,15 @@ export const formatDayMonth = (iso: string, locale: string): string =>
         timeZone: 'Africa/Kigali',
     }).format(new Date(iso));
 
+/** "4 August 2026" from an ISO date, as legal documents date themselves. */
+export const formatDateLong = (iso: string, locale: string): string =>
+    new Intl.DateTimeFormat(intlLocale(locale), {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'Africa/Kigali',
+    }).format(new Date(iso));
+
 /** "5 Oct 2026" from an ISO date. */
 export const formatDate = (iso: string, locale: string): string =>
     new Intl.DateTimeFormat(intlLocale(locale), {

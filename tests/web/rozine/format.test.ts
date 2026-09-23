@@ -3,6 +3,7 @@ import {
     formatAmount,
     formatCount,
     formatDate,
+    formatDateLong,
     formatDayMonth,
     formatMillions,
     formatMonthShort,
@@ -46,6 +47,7 @@ describe('Rozine display formatting', () => {
         );
         expect(formatDayMonth('2026-10-07T00:00:00+02:00', 'en')).toBe('7 Oct');
         expect(formatMonthShort('2026-06-01', 'en')).toBe('Jun');
+        expect(formatDateLong('2026-08-04', 'en')).toBe('4 August 2026');
         expect(formatDate('2026-10-05T00:00:00+02:00', 'en')).toBe(
             '5 Oct 2026',
         );
