@@ -1,0 +1,87 @@
+{
+    "component": "investor/portfolio",
+    "props": {
+        "tab": "active",
+        "tabs": [
+            {
+                "key": "active",
+                "active": true,
+                "link": {
+                    "url": "/preview/investor-portfolio",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "matured",
+                "active": false,
+                "link": {
+                    "url": "/preview/investor-portfolio-matured",
+                    "method": "get"
+                }
+            }
+        ],
+        "totals": {
+            "businesses": 0,
+            "value": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "invested": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "gain": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "this_month": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "projected_3m": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "next_payout": null,
+            "avg_monthly": {
+                "currency": "RWF",
+                "amount": "0"
+            }
+        },
+        "holdings": [],
+        "payouts": [],
+        "industries": [],
+        "risk": [],
+        "concentration": null,
+        "idle": {
+            "currency": "RWF",
+            "amount": "1253485"
+        },
+        "links": {
+            "deals": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        }
+    }
+}
