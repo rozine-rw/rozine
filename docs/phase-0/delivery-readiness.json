@@ -178,12 +178,13 @@
         "platform": "iOS",
         "mode": "browser_tab",
         "owner": "Erastus",
-        "status": "NOT_RUN",
-        "device": null,
-        "os_version": null,
-        "started_at": null,
+        "status": "STARTED_INCOMPLETE",
+        "device": "iPhone 16 Pro Max",
+        "os_version": "iOS 27.0",
+        "started_at": "2026-09-23T05:16:31Z",
         "finished_at": null,
-        "artifact": null
+        "artifact": "d-04-pwa-assurance/runs/2026-09-23-iphone16promax-safari-tab.json",
+        "note": "Automatic probes measured on the device and accepted. G3.4, G4.5 and G3.5 were recorded with the harness's Mark pass button without the measured action and are not accepted; they remain PENDING. G6.3 FAIL is mode-limited (no Notification API in an iOS tab) and is measurable only in installed mode. See runs/2026-09-23-iphone16promax-safari-tab.review.md."
       }
     ],
     "dwell_probes": [
