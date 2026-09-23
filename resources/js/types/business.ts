@@ -716,3 +716,75 @@ export type BusinessRatingProps = {
     };
     links: { close: RouteLink; raise: RouteLink | null };
 };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Repayments (MVP-BUSINESS-SCR-05, design L1060–1262)                                         */
+/* ------------------------------------------------------------------------------------------ */
+
+export type RepaymentSource = {
+    key: string;
+    kind: 'wallet' | 'bank' | 'mobile_money';
+    name: string;
+    /** "Balance RWF 12,383,800", "Bank of Kigali ····2231", masked by the server. */
+    detail: string;
+};
+
+export type BusinessRepaymentsProps = {
+    home: BusinessHomeProps;
+    note: { id: string; title: string };
+    progress: {
+        repaid_pct: number;
+        repaid: Money;
+        payments_made: number;
+        payments_total: number;
+        remaining: Money;
+        remaining_months: number;
+        total: Money;
+    };
+    /**
+     * This month's instalment. `days` counts to the due date, or since it when overdue. After a
+     * payment ahead there is nothing due this month; a defaulted note owes the whole balance.
+     */
+    this_month: {
+        state: 'due' | 'overdue' | 'paid' | 'defaulted';
+        amount: Money;
+        due_on: string;
+        days: number;
+        /** The day of the month every instalment falls due: the disbursement day. */
+        due_day: number;
+    };
+    sources: RepaymentSource[];
+    pay_ahead: {
+        options: (
+            | { key: 'next'; months: number; amount: Money }
+            | { key: 'full'; amount: Money; last: boolean }
+        )[];
+        /** The most the business can pay: what is left on the note. */
+        max: Money;
+    } | null;
+    schedule: {
+        due_on: string;
+        amount: Money;
+        status: 'paid' | 'due' | 'overdue' | 'upcoming';
+    }[];
+    /** The approved late-fee ladder, with the total owed at each step for this instalment. */
+    late_ladder: {
+        step: 'due_day' | 'day_7' | 'day_30';
+        fee_percent: string;
+        total: Money;
+    }[];
+    /** Set after a payment is processed: the design's "Payment processed" screen. */
+    receipt: {
+        amount: Money;
+        investors: number;
+        outstanding: Money;
+        payments_made: number;
+        payments_total: number;
+    } | null;
+    links: {
+        close: RouteLink;
+        defer: RouteLink | null;
+        review: RouteLink | null;
+    };
+    actions: { pay: RouteAction; pay_ahead: RouteAction };
+};

@@ -76,9 +76,10 @@ describe('A repaying note', () => {
         expect(
             sheet.getByText('Due 5 Oct 2026 · in 12 days'),
         ).toBeInTheDocument();
-        expect(
-            sheet.queryByRole('link', { name: 'Pay' }),
-        ).not.toBeInTheDocument();
+        expect(sheet.getByRole('link', { name: 'Pay' })).toHaveAttribute(
+            'href',
+            '/preview/business-repayments',
+        );
         expect(
             sheet.queryByRole('link', { name: /View all/ }),
         ).not.toBeInTheDocument();

@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "49cd501dd8198fc27373f34b6385eac6b1bb91a19e110cea23839ab5062c02ca",
-    "coverageSetSha256": "e4665ad056cd7e1f0f947972ae65ea7ee743cd2d46a6fc254475128d848a8779",
+    "sourceManifestSha256": "6da898f13a0db761e8cc5da302d6a666720a94889a78a842e714e0f910cde2b3",
+    "coverageSetSha256": "14868e7399e56a34d6d9de226e1c7affe08741654cfa18c81a29abf64a79cdc1",
     "thresholds": {
         "critical": {
             "global": {
@@ -149,6 +149,12 @@
         "resources/js/components/business/rating/band.ts",
         "resources/js/components/business/rating/capacity-card.tsx",
         "resources/js/components/business/rating/score-card.tsx",
+        "resources/js/components/business/repayments/late-policy.tsx",
+        "resources/js/components/business/repayments/pay-ahead.tsx",
+        "resources/js/components/business/repayments/progress-card.tsx",
+        "resources/js/components/business/repayments/receipt.tsx",
+        "resources/js/components/business/repayments/schedule-list.tsx",
+        "resources/js/components/business/repayments/this-month.tsx",
         "resources/js/components/business/reports/audit-guide.tsx",
         "resources/js/components/business/reports/period-label.ts",
         "resources/js/components/business/reports/report-sheet.tsx",
@@ -285,6 +291,7 @@
         "resources/js/pages/business/profile.tsx",
         "resources/js/pages/business/publish.tsx",
         "resources/js/pages/business/rating.tsx",
+        "resources/js/pages/business/repayments.tsx",
         "resources/js/pages/business/reports.tsx",
         "resources/js/pages/business/wallet.tsx",
         "resources/js/pages/dashboard.tsx",

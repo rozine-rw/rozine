@@ -69,7 +69,7 @@
                     "note_title": "Fleet Expansion Note",
                     "due_on": "2026-10-05T00:00:00+02:00",
                     "link": {
-                        "url": "/preview/business-home",
+                        "url": "/preview/business-repayments",
                         "method": "get"
                     }
                 }
@@ -195,15 +195,15 @@
                     "method": "get"
                 },
                 "wallet": {
-                    "url": "/preview/business-home",
+                    "url": "/preview/business-wallet",
                     "method": "get"
                 },
                 "deposit": {
-                    "url": "/preview/business-home",
+                    "url": "/preview/business-wallet",
                     "method": "get"
                 },
                 "withdraw": {
-                    "url": "/preview/business-home",
+                    "url": "/preview/business-wallet",
                     "method": "get"
                 },
                 "notifications": {
@@ -211,7 +211,7 @@
                     "method": "get"
                 },
                 "rating": {
-                    "url": "/preview/business-home",
+                    "url": "/preview/business-rating",
                     "method": "get"
                 },
                 "apply": {
@@ -481,7 +481,10 @@
                 "url": "/preview/business-home",
                 "method": "get"
             },
-            "pay": null,
+            "pay": {
+                "url": "/preview/business-repayments",
+                "method": "get"
+            },
             "investors": null
         }
     }

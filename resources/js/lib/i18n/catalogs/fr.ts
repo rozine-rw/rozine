@@ -1927,6 +1927,88 @@ const fr: Catalog = {
     'business.rating.financial.margin': 'Marge nette',
     'business.rating.financial.outstanding': 'Encours',
 
+    'business.repayments.title': 'Remboursements',
+    'business.repayments.progress': 'Avancement des remboursements',
+    'business.repayments.payments': '{made} / {total} paiements',
+    'business.repayments.remaining': 'Restant',
+    'business.repayments.total': 'Total',
+    'business.repayments.total_note': 'capital + rendement',
+    'business.repayments.card_title.due': 'Paiement de ce mois',
+    'business.repayments.card_title.overdue': 'Paiement en retard',
+    'business.repayments.card_title.paid': 'Prochain paiement',
+    'business.repayments.card_title.defaulted': 'Montant dû maintenant',
+    'business.repayments.overdue_day':
+        'Échu le {date} · {count} jour de retard',
+    'business.repayments.overdue_days':
+        'Échu le {date} · {count} jours de retard',
+    'business.repayments.paid_ahead':
+        "Payé d'avance — rien à payer avant le {date}",
+    'business.repayments.defaulted':
+        'Cette note est en défaut — le recouvrement judiciaire a commencé',
+    'business.repayments.due_rule':
+        "Les remboursements sont dus le {day} de chaque mois — le jour du décaissement de vos fonds — jusqu'au remboursement complet.",
+    'business.repayments.source': 'Source du paiement',
+    'business.repayments.confirm': 'Confirmer le paiement · {amount}',
+    'business.repayments.ahead.title':
+        "Prenez de l'avance sur vos remboursements",
+    'business.repayments.ahead.subtitle':
+        "Payez en avance — sans pénalité, et votre note s'améliore",
+    'business.repayments.ahead.choose': 'Choisissez un montant',
+    'business.repayments.ahead.next_month': '{count} mois à venir',
+    'business.repayments.ahead.next_months': 'Les {count} prochains mois',
+    'business.repayments.ahead.upfront_one': "Payer {count} échéance d'avance",
+    'business.repayments.ahead.upfront': "Payer {count} échéances d'avance",
+    'business.repayments.ahead.full': 'Solder entièrement',
+    'business.repayments.ahead.one_left': 'Une échéance restante',
+    'business.repayments.ahead.clear_note': 'Solder toute la note',
+    'business.repayments.ahead.custom': 'Montant personnalisé',
+    'business.repayments.ahead.placeholder': 'Saisir un montant',
+    'business.repayments.ahead.up_to': "Tout montant jusqu'à {amount}",
+    'business.repayments.ahead.too_much':
+        'Le montant dépasse ce que vous devez ({amount})',
+    'business.repayments.ahead.why':
+        "Payer d'avance réduit les intérêts plus tôt, libère de la capacité pour votre prochaine levée et renforce votre historique de remboursement — le principal facteur de votre note Rozine.",
+    'business.repayments.ahead.pay_cta': "Payer d'avance · {amount}",
+    'business.repayments.ahead.settle_cta': 'Solder entièrement · {amount}',
+    'business.repayments.ahead.enter': 'Saisissez un montant',
+    'business.repayments.schedule': 'Échéancier',
+    'business.repayments.row.paid': 'Payé · {date}',
+    'business.repayments.row.due': 'Échéance · {date}',
+    'business.repayments.row.overdue': 'En retard · {date}',
+    'business.repayments.status.paid': 'Payé',
+    'business.repayments.status.due': 'À payer',
+    'business.repayments.status.overdue': 'En retard',
+    'business.repayments.status.upcoming': 'À venir',
+    'business.repayments.late.title': 'En cas de retard de paiement',
+    'business.repayments.late.intro':
+        "Des frais de retard s'ajoutent au paiement attendu. Plus le retard dure, plus votre note Rozine baisse.",
+    'business.repayments.late.due_day': 'Échéance manquée',
+    'business.repayments.late.due_day_body':
+        "Des frais de retard de {percent} % s'ajoutent au total attendu à la fin du jour d'échéance.",
+    'business.repayments.late.day_7': 'Impayé au 7e jour',
+    'business.repayments.late.day_7_body':
+        "{percent} % supplémentaires du montant initial s'ajoutent au 7e jour après l'échéance.",
+    'business.repayments.late.day_30': 'Impayé au 30e jour',
+    'business.repayments.late.day_30_body':
+        "{percent} % supplémentaires du montant initial s'ajoutent et le recouvrement judiciaire commence. L'équipe juridique de Rozine ou ses partenaires contactent votre e-mail et votre téléphone professionnels sous 24 heures.",
+    'business.repayments.late.fee': '+{percent} %',
+    'business.repayments.late.fee_legal': '+{percent} % · juridique',
+    'business.repayments.late.total': 'Total dû → {amount}',
+    'business.repayments.late.halted': 'Profil et levées suspendus',
+    'business.repayments.late.halted_body':
+        "Si le 30e jour passe sans paiement ni demande d'examen manuel auprès de l'équipe Rozine, votre profil et vos levées en cours sont suspendus jusqu'à résolution — ou définitivement si Rozine le juge approprié.",
+    'business.repayments.late.warn_title':
+        "Vous le voyez venir ? Dites-le d'abord.",
+    'business.repayments.late.warn_body':
+        "Reportez une échéance à la fin de la durée. Une fois par note, avant l'échéance. Votre note baisse d'un cran et cela coûte plus cher que de payer à temps.",
+    'business.repayments.late.defer': 'Reporter une échéance',
+    'business.repayments.late.review': 'Demander un examen manuel',
+    'business.repayments.done.title': 'Paiement traité',
+    'business.repayments.done.body': '{amount} versés à {count} investisseurs.',
+    'business.repayments.done.outstanding': 'Solde restant dû',
+    'business.repayments.done.made': 'Paiements effectués',
+    'business.repayments.done.home': 'Retour au tableau de bord',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

@@ -68,7 +68,7 @@
                 "note_title": "Fleet Expansion Note",
                 "due_on": "2026-10-05T00:00:00+02:00",
                 "link": {
-                    "url": "/preview/business-home",
+                    "url": "/preview/business-repayments",
                     "method": "get"
                 }
             }

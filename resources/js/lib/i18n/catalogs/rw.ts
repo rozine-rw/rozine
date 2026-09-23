@@ -1926,6 +1926,87 @@ const rw: Catalog = {
     'business.rating.financial.margin': 'Inyungu nyayo',
     'business.rating.financial.outstanding': 'Ibitarishyurwa',
 
+    'business.repayments.title': 'Kwishyura',
+    'business.repayments.progress': 'Aho kwishyura bigeze',
+    'business.repayments.payments': 'Ubwishyu {made} / {total}',
+    'business.repayments.remaining': 'Ibisigaye',
+    'business.repayments.total': 'Igiteranyo',
+    'business.repayments.total_note': 'igishoro + inyungu',
+    'business.repayments.card_title.due': "Ubwishyu bw'uku kwezi",
+    'business.repayments.card_title.overdue': 'Ubwishyu bwatinze',
+    'business.repayments.card_title.paid': 'Ubwishyu butaha',
+    'business.repayments.card_title.defaulted': 'Ayo ugomba kwishyura ubu',
+    'business.repayments.overdue_day':
+        'Byagombaga kwishyurwa ku wa {date} · byatinze umunsi {count}',
+    'business.repayments.overdue_days':
+        'Byagombaga kwishyurwa ku wa {date} · byatinze iminsi {count}',
+    'business.repayments.paid_ahead':
+        'Wishyuye mbere — nta kwishyura mbere ya {date}',
+    'business.repayments.defaulted':
+        'Iyi nyandiko yarenze igihe — gukurikirana mu mategeko byatangiye',
+    'business.repayments.due_rule':
+        'Kwishyura bikorwa ku wa {day} wa buri kwezi — umunsi amafaranga yawe yoherejwe — kugeza byishyuwe byose.',
+    'business.repayments.source': 'Aho kwishyura biva',
+    'business.repayments.confirm': 'Emeza kwishyura · {amount}',
+    'business.repayments.ahead.title': "Ishyura mbere y'igihe",
+    'business.repayments.ahead.subtitle':
+        'Ishyura kare — nta gihano, kandi byongera amanota yawe',
+    'business.repayments.ahead.choose': 'Hitamo amafaranga',
+    'business.repayments.ahead.next_month': 'Ukwezi {count} gutaha',
+    'business.repayments.ahead.next_months': 'Amezi {count} ataha',
+    'business.repayments.ahead.upfront_one': 'Ishyura ubwishyu {count} mbere',
+    'business.repayments.ahead.upfront': 'Ishyura ubwishyu {count} mbere',
+    'business.repayments.ahead.full': 'Ishyura byose',
+    'business.repayments.ahead.one_left': 'Hasigaye ubwishyu bumwe',
+    'business.repayments.ahead.clear_note': 'Soza inyandiko yose',
+    'business.repayments.ahead.custom': 'Amafaranga wihitiyemo',
+    'business.repayments.ahead.placeholder': 'Andika amafaranga',
+    'business.repayments.ahead.up_to':
+        'Amafaranga ayo ari yo yose kugeza kuri {amount}',
+    'business.repayments.ahead.too_much':
+        'Amafaranga arenze ayo ugomba ({amount})',
+    'business.repayments.ahead.why':
+        'Kwishyura mbere bigabanya inyungu vuba, bigasiga ubushobozi bwo gukusanya ubutaha, kandi bigakomeza amateka yawe yo kwishyura — ari byo bigira uruhare runini ku manota yawe ya Rozine.',
+    'business.repayments.ahead.pay_cta': 'Ishyura mbere · {amount}',
+    'business.repayments.ahead.settle_cta': 'Ishyura byose · {amount}',
+    'business.repayments.ahead.enter': 'Andika amafaranga',
+    'business.repayments.schedule': 'Gahunda yo kwishyura',
+    'business.repayments.row.paid': 'Byishyuwe · {date}',
+    'business.repayments.row.due': 'Bigomba kwishyurwa · {date}',
+    'business.repayments.row.overdue': 'Byatinze · {date}',
+    'business.repayments.status.paid': 'Byishyuwe',
+    'business.repayments.status.due': 'Bigomba kwishyurwa',
+    'business.repayments.status.overdue': 'Byatinze',
+    'business.repayments.status.upcoming': 'Biraje',
+    'business.repayments.late.title': 'Iyo ubwishyu butinze',
+    'business.repayments.late.intro':
+        "Amande y'ubukererwe yongerwa ku bwishyu bwari butegerejwe. Uko bitinda kwishyurwa, amanota yawe ya Rozine agabanuka.",
+    'business.repayments.late.due_day': 'Umunsi wo kwishyura warenze',
+    'business.repayments.late.due_day_body':
+        'Amande ya {percent}% yongerwa ku giteranyo cyari gitegerejwe iyo umunsi wo kwishyura urangiye.',
+    'business.repayments.late.day_7': 'Umunsi wa 7 utishyuwe',
+    'business.repayments.late.day_7_body':
+        "Hongerwaho andi {percent}% y'ayari ategerejwe ku munsi wa 7 nyuma y'itariki yo kwishyura.",
+    'business.repayments.late.day_30': 'Umunsi wa 30 utishyuwe',
+    'business.repayments.late.day_30_body':
+        "Hongerwaho andi {percent}% y'ayari ategerejwe kandi gukurikirana mu mategeko bigatangira. Itsinda ry'amategeko rya Rozine cyangwa abafatanyabikorwa bavugana nawe kuri imeli na telefoni y'ikigo mu masaha 24.",
+    'business.repayments.late.fee': '+{percent}%',
+    'business.repayments.late.fee_legal': '+{percent}% · amategeko',
+    'business.repayments.late.total': 'Ayo ugomba kwishyura → {amount}',
+    'business.repayments.late.halted': "Umwirondoro n'ibikorwa birahagarikwa",
+    'business.repayments.late.halted_body':
+        "Iyo umunsi wa 30 urenze nta kwishyura cyangwa gusaba isuzuma ry'abakozi ba Rozine, umwirondoro wawe n'ibikorwa biriho birahagarikwa kugeza bikemutse — cyangwa burundu niba Rozine ibibonye bikwiye.",
+    'business.repayments.late.warn_title': 'Ubibonye biza? Bivuge mbere.',
+    'business.repayments.late.warn_body':
+        "Imura ubwishyu bumwe ubujyane ku iherezo ry'igihe. Rimwe kuri buri nyandiko, mbere y'itariki yo kwishyura. Amanota yawe amanuka urwego rumwe kandi bihenda kurusha kwishyura ku gihe.",
+    'business.repayments.late.defer': 'Imura ubwishyu',
+    'business.repayments.late.review': "Saba isuzuma ry'abakozi",
+    'business.repayments.done.title': 'Ubwishyu bwakozwe',
+    'business.repayments.done.body': '{amount} byishyuwe abashoramari {count}.',
+    'business.repayments.done.outstanding': 'Ibisigaye kwishyurwa',
+    'business.repayments.done.made': 'Ubwishyu bwakozwe',
+    'business.repayments.done.home': 'Subira ku rupapuro rukuru',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',
