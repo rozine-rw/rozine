@@ -1,0 +1,123 @@
+{
+    "component": "auditor/portfolio",
+    "props": {
+        "server_time": "2026-10-03T17:00:00Z",
+        "reports": [
+            {
+                "id": "rp_2",
+                "business": "Huye Motors",
+                "kind": "flash",
+                "month": null,
+                "district": "Gasabo",
+                "filed_on": "2026-10-01",
+                "due_on": "2026-10-02",
+                "status": "awaiting_cosign",
+                "late_days": null,
+                "rejection": null,
+                "link": {
+                    "url": "/preview/auditor-audit-sealed",
+                    "method": "get"
+                }
+            }
+        ],
+        "filter": "awaiting_cosign",
+        "filters": [
+            {
+                "key": "all",
+                "count": 5,
+                "link": {
+                    "url": "/preview/auditor-portfolio",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "awaiting_cosign",
+                "count": 1,
+                "link": {
+                    "url": "/preview/auditor-portfolio-awaiting",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "published",
+                "count": 2,
+                "link": {
+                    "url": "/preview/auditor-portfolio-published",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "late",
+                "count": 1,
+                "link": {
+                    "url": "/preview/auditor-portfolio-late",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "rejected",
+                "count": 1,
+                "link": {
+                    "url": "/preview/auditor-portfolio-rejected",
+                    "method": "get"
+                }
+            }
+        ],
+        "conflicts": {
+            "files": [
+                {
+                    "id": "fa_huye",
+                    "business": "Huye Motors",
+                    "note_id": "RNP-2026-0133"
+                },
+                {
+                    "id": "mr_greenleaf",
+                    "business": "GreenLeaf Agro",
+                    "note_id": "RNP-2026-0118"
+                },
+                {
+                    "id": "mr_intare",
+                    "business": "Intare Supply",
+                    "note_id": "RNP-2026-0102"
+                }
+            ],
+            "record": [
+                {
+                    "id": "cf_1",
+                    "business": "Rubavu Foods",
+                    "note_id": "RNP-2026-0097",
+                    "kind": "family_or_business",
+                    "declared_on": "2026-08-12"
+                }
+            ],
+            "declare": {
+                "url": "/preview/auditor-portfolio-conflict",
+                "method": "post"
+            }
+        },
+        "outcome": null,
+        "open_jobs": 1,
+        "links": {
+            "home": {
+                "url": "/preview/auditor-home",
+                "method": "get"
+            },
+            "jobs": {
+                "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/auditor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/auditor-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-auditor",
+                "method": "get"
+            }
+        }
+    }
+}

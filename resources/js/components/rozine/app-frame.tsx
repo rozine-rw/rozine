@@ -33,6 +33,13 @@ const TAB_BAR_HEIGHT: Record<Audience, string> = {
     auditor: 'h-[84px]',
 };
 
+/** The current sidebar item, as each design draws it. */
+const SIDEBAR_ACTIVE: Record<Audience, string> = {
+    investor: 'bg-rz-page text-rz-accent-app-text',
+    business: 'bg-rz-page text-rz-accent-app-text',
+    auditor: 'bg-rz-accent-soft text-rz-ink',
+};
+
 /**
  * The role-app shell. On a phone: the screen fills the viewport with the design's frosted bottom
  * tab bar. On a wide screen: the design's desktop frame — a 182px sidebar beside the main pane on
@@ -79,7 +86,7 @@ export function AppFrame({
                                 className={cn(
                                     'flex w-full items-center gap-[11px] rounded-[10px] px-3 py-[11px] text-left text-[13.5px] font-semibold',
                                     item.key === active
-                                        ? 'bg-rz-page text-rz-accent-app-text'
+                                        ? SIDEBAR_ACTIVE[audience]
                                         : 'text-[#46526b] hover:bg-rz-page/60 dark:text-rz-secondary',
                                 )}
                             >
