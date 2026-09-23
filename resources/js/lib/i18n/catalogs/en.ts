@@ -81,6 +81,43 @@ const en = {
     'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.body':
         'You have not joined an app yet. Support can set up the one you need.',
 
+    'business.auth.wordmark': 'rozine',
+    'business.auth.for_business': 'For business',
+    'business.auth.rdb_verified': 'RDB verified',
+    'business.auth.secure': 'Secure',
+    'business.auth.please_wait': 'Please wait…',
+    'business.auth.login.head_title': 'Business log in',
+    'business.auth.login.title': 'Welcome back',
+    'business.auth.login.subtitle': 'Log in to your issuer dashboard.',
+    'business.auth.login.email_label': 'Work email',
+    'business.auth.login.email_placeholder': 'you@company.rw',
+    'business.auth.login.password_label': 'Password',
+    'business.auth.login.password_placeholder': '••••••••',
+    'business.auth.login.submit': 'Log in',
+    'business.auth.login.switch_prompt': 'New to Rozine?',
+    'business.auth.login.switch_action': 'Register a business',
+    'business.auth.register.head_title': 'Register your business',
+    'business.auth.register.title': 'Register your business',
+    'business.auth.register.subtitle':
+        'Verify your company with the Rwanda Development Board.',
+    'business.auth.register.code_label': 'RDB company code',
+    'business.auth.register.code_placeholder': '102938475',
+    'business.auth.register.rdb_note':
+        'We verify your company directly with the Rwanda Development Board — no personal login required.',
+    'business.auth.register.matched': '✓ Company matched at RDB',
+    'business.auth.register.name_label': 'Registered business name',
+    'business.auth.register.name_placeholder': 'e.g. Karongi Freight Ltd',
+    'business.auth.register.code_sent':
+        'Enter a 6-digit code sent to the phone and email registered for this business at RDB.',
+    'business.auth.register.otp_label': 'One-time code',
+    'business.auth.register.otp_placeholder': '6-digit code',
+    'business.auth.register.resend': 'Resend code',
+    'business.auth.register.verify_company': 'Verify company code',
+    'business.auth.register.verifying_company': 'Verifying with RDB…',
+    'business.auth.register.verify_code': 'Verify & continue',
+    'business.auth.register.verifying_code': 'Verifying code…',
+    'business.auth.register.switch_prompt': 'Already registered?',
+    'business.auth.register.switch_action': 'Log in',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

@@ -84,6 +84,45 @@ const rw: Catalog = {
     'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.body':
         'Ntabwo urinjira muri porogaramu n’imwe. Ubufasha bushobora kugutegurira iyo ukeneye.',
 
+    'business.auth.wordmark': 'rozine',
+    'business.auth.for_business': 'Ku bucuruzi',
+    'business.auth.rdb_verified': 'Byemejwe na RDB',
+    'business.auth.secure': 'Bifite umutekano',
+    'business.auth.please_wait': 'Tegereza gato…',
+    'business.auth.login.head_title': "Kwinjira k'ubucuruzi",
+    'business.auth.login.title': 'Murakaza neza nanone',
+    'business.auth.login.subtitle':
+        "Injira mu kibaho cyawe cy'utanga impapuro.",
+    'business.auth.login.email_label': "Imeyili y'akazi",
+    'business.auth.login.email_placeholder': 'wowe@ikigo.rw',
+    'business.auth.login.password_label': 'Ijambobanga',
+    'business.auth.login.password_placeholder': '••••••••',
+    'business.auth.login.submit': 'Injira',
+    'business.auth.login.switch_prompt': 'Uri mushya kuri Rozine?',
+    'business.auth.login.switch_action': 'Andikisha ubucuruzi',
+    'business.auth.register.head_title': 'Andikisha ubucuruzi bwawe',
+    'business.auth.register.title': 'Andikisha ubucuruzi bwawe',
+    'business.auth.register.subtitle':
+        'Emeza ikigo cyawe binyuze ku Rwanda Development Board.',
+    'business.auth.register.code_label': "Kode y'ikigo ya RDB",
+    'business.auth.register.code_placeholder': '102938475',
+    'business.auth.register.rdb_note':
+        'Twemeza ikigo cyawe mu buryo butaziguye kuri Rwanda Development Board — nta kwinjira kwawe bwite bisaba.',
+    'business.auth.register.matched': '✓ Ikigo cyabonetse muri RDB',
+    'business.auth.register.name_label': "Izina ry'ubucuruzi ryanditswe",
+    'business.auth.register.name_placeholder': 'urugero: Karongi Freight Ltd',
+    'business.auth.register.code_sent':
+        "Andika kode y'imibare 6 yoherejwe kuri telefone na imeyili byanditswe kuri ubu bucuruzi muri RDB.",
+    'business.auth.register.otp_label': 'Kode ikoreshwa rimwe',
+    'business.auth.register.otp_placeholder': "Kode y'imibare 6",
+    'business.auth.register.resend': 'Ohereza kode nanone',
+    'business.auth.register.verify_company': "Emeza kode y'ikigo",
+    'business.auth.register.verifying_company': 'Birimo kwemezwa na RDB…',
+    'business.auth.register.verify_code': 'Emeza ukomeze',
+    'business.auth.register.verifying_code': 'Kode irimo kwemezwa…',
+    'business.auth.register.switch_prompt': 'Wamaze kwiyandikisha?',
+    'business.auth.register.switch_action': 'Injira',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

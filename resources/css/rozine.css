@@ -88,6 +88,25 @@
     --rz-warning-text: #a55418;
     --rz-warning-tint: rgba(194, 102, 31, 0.13);
 
+    /* In-app accents: filled controls, accent text and 10% icon tiles, per audience */
+    --rz-investor-fill: #1e3aff;
+    --rz-investor-soft: rgba(30, 58, 255, 0.1);
+    --rz-business-fill: #17795a;
+    --rz-business-soft: rgba(29, 158, 117, 0.1);
+    --rz-business-app-text: #17795a;
+    --rz-auditor-fill: #7d420f;
+    --rz-auditor-soft: rgba(194, 102, 31, 0.1);
+    --rz-admin-fill: #1e3aff;
+    --rz-admin-soft: rgba(30, 58, 255, 0.1);
+
+    /* Form fields */
+    --rz-field: #ffffff;
+    --rz-field-border: #e9edf4;
+    --rz-field-soft: #f7f9fc;
+    --rz-field-soft-border: #eef2f9;
+    --rz-label: #5b6578;
+    --rz-disabled: #f4f7fc;
+
     /* Focus and selection */
     --rz-focus-border: #b9cdf7;
     --rz-focus-ring: rgba(30, 58, 255, 0.1);
@@ -152,6 +171,23 @@
     --rz-warning-text: #f0a060;
     --rz-warning-tint: rgba(240, 160, 96, 0.14);
 
+    --rz-investor-fill: #3d57ff;
+    --rz-investor-soft: rgba(99, 120, 255, 0.16);
+    --rz-business-fill: #17795a;
+    --rz-business-soft: rgba(63, 205, 160, 0.14);
+    --rz-business-app-text: #3fcda0;
+    --rz-auditor-fill: #a5581a;
+    --rz-auditor-soft: rgba(240, 160, 96, 0.14);
+    --rz-admin-fill: #3d57ff;
+    --rz-admin-soft: rgba(99, 120, 255, 0.16);
+
+    --rz-field: #0d1628;
+    --rz-field-border: rgba(255, 255, 255, 0.1);
+    --rz-field-soft: #0d1628;
+    --rz-field-soft-border: rgba(255, 255, 255, 0.08);
+    --rz-label: #a3afc6;
+    --rz-disabled: #16223a;
+
     --rz-focus-border: #4f63d9;
     --rz-focus-ring: rgba(99, 120, 255, 0.22);
     --rz-selection: rgba(99, 120, 255, 0.3);
@@ -198,6 +234,18 @@
     --animate-rz-rise: rz-rise 0.6s ease both;
 }
 
+@keyframes rz-fade {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @keyframes rz-rise {
     from {
         opacity: 0;
@@ -215,6 +263,9 @@
  * everything inside it takes that audience's colour, in both themes.
  */
 [data-audience='investor'] {
+    --rz-accent-fill: var(--rz-investor-fill);
+    --rz-accent-soft: var(--rz-investor-soft);
+    --rz-accent-app-text: var(--rz-investor-text);
     --rz-accent: var(--rz-investor);
     --rz-accent-text: var(--rz-investor-text);
     --rz-accent-tint: var(--rz-investor-tint);
@@ -222,6 +273,9 @@
 }
 
 [data-audience='business'] {
+    --rz-accent-fill: var(--rz-business-fill);
+    --rz-accent-soft: var(--rz-business-soft);
+    --rz-accent-app-text: var(--rz-business-app-text);
     --rz-accent: var(--rz-business);
     --rz-accent-text: var(--rz-business-text);
     --rz-accent-tint: var(--rz-business-tint);
@@ -229,6 +283,9 @@
 }
 
 [data-audience='auditor'] {
+    --rz-accent-fill: var(--rz-auditor-fill);
+    --rz-accent-soft: var(--rz-auditor-soft);
+    --rz-accent-app-text: var(--rz-auditor-text);
     --rz-accent: var(--rz-auditor);
     --rz-accent-text: var(--rz-auditor-text);
     --rz-accent-tint: var(--rz-auditor-tint);
@@ -236,6 +293,9 @@
 }
 
 [data-audience='admin'] {
+    --rz-accent-fill: var(--rz-admin-fill);
+    --rz-accent-soft: var(--rz-admin-soft);
+    --rz-accent-app-text: var(--rz-investor-text);
     --rz-accent: var(--rz-admin);
     --rz-accent-text: var(--rz-admin-text);
     --rz-accent-tint: var(--rz-admin-tint);
@@ -243,6 +303,16 @@
 }
 
 @theme inline {
+    --color-rz-accent-fill: var(--rz-accent-fill);
+    --color-rz-accent-soft: var(--rz-accent-soft);
+    --color-rz-accent-app-text: var(--rz-accent-app-text);
+    --color-rz-field: var(--rz-field);
+    --color-rz-field-border: var(--rz-field-border);
+    --color-rz-field-soft: var(--rz-field-soft);
+    --color-rz-field-soft-border: var(--rz-field-soft-border);
+    --color-rz-label: var(--rz-label);
+    --color-rz-disabled: var(--rz-disabled);
+    --color-rz-focus-border: var(--rz-focus-border);
     --color-rz-accent: var(--rz-accent);
     --color-rz-accent-text: var(--rz-accent-text);
     --color-rz-accent-tint: var(--rz-accent-tint);

@@ -16,11 +16,16 @@
         "toggleText"
     ],
     "externalizedPaths": [
+        "resources/js/components/business/business-auth-frame.tsx",
         "resources/js/components/non-live-notice.tsx",
+        "resources/js/components/rozine/form.tsx",
+        "resources/js/components/rozine/icon.tsx",
         "resources/js/components/rozine/logo.tsx",
         "resources/js/components/rozine/role-icon.tsx",
         "resources/js/pages/auth/forgot-password.tsx",
         "resources/js/pages/auth/login.tsx",
+        "resources/js/pages/business/auth/login.tsx",
+        "resources/js/pages/business/auth/register.tsx",
         "resources/js/pages/dashboard.tsx"
     ]
 }

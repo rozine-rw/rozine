@@ -83,6 +83,45 @@ const fr: Catalog = {
     'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.body':
         "Vous n'avez encore rejoint aucune application. Le support peut configurer celle qu'il vous faut.",
 
+    'business.auth.wordmark': 'rozine',
+    'business.auth.for_business': 'Pour les entreprises',
+    'business.auth.rdb_verified': 'Vérifié par le RDB',
+    'business.auth.secure': 'Sécurisé',
+    'business.auth.please_wait': 'Veuillez patienter…',
+    'business.auth.login.head_title': 'Connexion entreprise',
+    'business.auth.login.title': 'Bon retour',
+    'business.auth.login.subtitle':
+        'Connectez-vous à votre tableau de bord émetteur.',
+    'business.auth.login.email_label': 'E-mail professionnel',
+    'business.auth.login.email_placeholder': 'vous@entreprise.rw',
+    'business.auth.login.password_label': 'Mot de passe',
+    'business.auth.login.password_placeholder': '••••••••',
+    'business.auth.login.submit': 'Se connecter',
+    'business.auth.login.switch_prompt': 'Nouveau sur Rozine ?',
+    'business.auth.login.switch_action': 'Enregistrer une entreprise',
+    'business.auth.register.head_title': 'Enregistrer votre entreprise',
+    'business.auth.register.title': 'Enregistrez votre entreprise',
+    'business.auth.register.subtitle':
+        'Vérifiez votre entreprise auprès du Rwanda Development Board.',
+    'business.auth.register.code_label': "Code d'entreprise RDB",
+    'business.auth.register.code_placeholder': '102938475',
+    'business.auth.register.rdb_note':
+        'Nous vérifions votre entreprise directement auprès du Rwanda Development Board — aucune connexion personnelle requise.',
+    'business.auth.register.matched': '✓ Entreprise trouvée au RDB',
+    'business.auth.register.name_label': "Nom enregistré de l'entreprise",
+    'business.auth.register.name_placeholder': 'ex. Karongi Freight Ltd',
+    'business.auth.register.code_sent':
+        "Saisissez le code à 6 chiffres envoyé au téléphone et à l'e-mail enregistrés pour cette entreprise au RDB.",
+    'business.auth.register.otp_label': 'Code à usage unique',
+    'business.auth.register.otp_placeholder': 'Code à 6 chiffres',
+    'business.auth.register.resend': 'Renvoyer le code',
+    'business.auth.register.verify_company': "Vérifier le code d'entreprise",
+    'business.auth.register.verifying_company': 'Vérification auprès du RDB…',
+    'business.auth.register.verify_code': 'Vérifier et continuer',
+    'business.auth.register.verifying_code': 'Vérification du code…',
+    'business.auth.register.switch_prompt': 'Déjà enregistré ?',
+    'business.auth.register.switch_action': 'Se connecter',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

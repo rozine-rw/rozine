@@ -1,0 +1,23 @@
+{
+    "component": "business/auth/register",
+    "props": {
+        "lookup": null,
+        "links": {
+            "login": { "url": "/preview/business-login", "method": "get" }
+        },
+        "actions": {
+            "lookup": {
+                "url": "/preview/business-register-matched",
+                "method": "post"
+            },
+            "verify": {
+                "url": "/preview/business-register-matched",
+                "method": "post"
+            },
+            "resend": {
+                "url": "/preview/business-register-matched",
+                "method": "post"
+            }
+        }
+    }
+}
