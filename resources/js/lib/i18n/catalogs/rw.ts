@@ -39,6 +39,51 @@ const rw: Catalog = {
     'auth.forgot_password.return_prefix': 'Cyangwa subira kuri',
     'auth.forgot_password.return_link': 'kwinjira',
 
+    'suite.head_title': 'Porogaramu zawe',
+    'suite.tagline':
+        "Urwego rw'amasoko y'imari y'abantu bose ku bukungu buri kuzamuka",
+    'suite.motto': 'Intangiriro imwe · ahantu hose',
+    'suite.section.apps': 'Porogaramu zawe',
+    'suite.app.open': 'Fungura porogaramu →',
+    'suite.app.investor.title': 'Umushoramari',
+    'suite.app.investor.description':
+        'Menya ubucuruzi bwagenzuwe, shora imari, ukurikirane inyungu.',
+    'suite.app.business.title': 'Ubucuruzi',
+    'suite.app.business.description':
+        'Shaka igishoro, uhe abashoramari raporo buri kwezi.',
+    'suite.app.auditor.title': 'Umugenzuzi',
+    'suite.app.auditor.description':
+        'Genzura aho ubucuruzi bukorera, genzura raporo, ubone inyungu.',
+    'suite.blocker.action.verify_email': 'Emeza imeyili yawe →',
+    'suite.blocker.action.contact': "Vugana n'ubufasha bwa Rozine →",
+    'suite.blocker.EMAIL_VERIFICATION_REQUIRED.title':
+        'Banza wemeze imeyili yawe',
+    'suite.blocker.EMAIL_VERIFICATION_REQUIRED.body':
+        'Kanda ku murongo twakoherereje, hanyuma porogaramu zawe zigaragare hano.',
+    'suite.blocker.IDENTITY_NOT_LINKED.title':
+        'Umwirondoro wawe ntabwo urategurwa',
+    'suite.blocker.IDENTITY_NOT_LINKED.body':
+        "Konti yawe ntirahuzwa n'umwirondoro wagenzuwe, bityo nta porogaramu irafunguka.",
+    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title':
+        'Umwirondoro wawe uri kugenzurwa',
+    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.body':
+        'Porogaramu zawe zizafunguka igenzura ry’umwirondoro rirangiye.',
+    'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
+        'Hakenewe ububasha bwo gusinya',
+    'suite.blocker.PARTY_AUTHORITY_REQUIRED.body':
+        "Iyi konti y'ikigo ikeneye umusinyi wagenzuwe mbere y'uko porogaramu ifunguka.",
+    'suite.blocker.ROLE_MEMBERSHIP_INVALID.title':
+        'Konti yawe ikeneye kwitabwaho',
+    'suite.blocker.ROLE_MEMBERSHIP_INVALID.body':
+        'Kimwe mu byo wiyandikishijemo nticyasomwe. Ubufasha bushobora kubikosora.',
+    'suite.blocker.ROLE_MEMBERSHIP_CONFLICT.title':
+        'Izi porogaramu ntizishobora guhurizwa hamwe',
+    'suite.blocker.ROLE_MEMBERSHIP_CONFLICT.body':
+        'Umufatanyabikorwa mu igenzura ntashobora no gushora cyangwa gushaka igishoro kuri Rozine. Ubufasha buzagufasha guhitamo.',
+    'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.title': 'Nta porogaramu uragira',
+    'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.body':
+        'Ntabwo urinjira muri porogaramu n’imwe. Ubufasha bushobora kugutegurira iyo ukeneye.',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

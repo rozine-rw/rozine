@@ -18,6 +18,9 @@ createInertiaApp({
             case name === 'welcome':
             case name === 'pulse':
                 return PublicLayout;
+            // The Suite launcher is its own full-page surface, outside any app shell.
+            case name === 'dashboard':
+                return undefined;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('settings/'):

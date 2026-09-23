@@ -96,6 +96,7 @@
     "declarationOnlyPaths": [
         "resources/js/types/auth.ts",
         "resources/js/types/global.d.ts",
+        "resources/js/types/identity.ts",
         "resources/js/types/index.ts",
         "resources/js/types/navigation.ts",
         "resources/js/types/ui.ts",
@@ -142,6 +143,8 @@
         "resources/js/components/pulse/pulse-wordmark.tsx",
         "resources/js/components/pulse/signup-fields.tsx",
         "resources/js/components/pulse/stat-tile.tsx",
+        "resources/js/components/rozine/logo.tsx",
+        "resources/js/components/rozine/role-icon.tsx",
         "resources/js/components/text-link.tsx",
         "resources/js/components/two-factor-recovery-codes.tsx",
         "resources/js/components/two-factor-setup-modal.tsx",
@@ -218,10 +221,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 190,
+        "totalTrackedSources": 193,
         "generated": 70,
-        "declarationOnly": 6,
-        "authoredExecutable": 114
+        "declarationOnly": 7,
+        "authoredExecutable": 116
     },
-    "coverageSetSha256": "4ede3e026f7d9771cc838e4e0e5da3228fdb6f189338e146eb65083bcc5cf0d9"
+    "coverageSetSha256": "eb5180324cc056dcdc105faff43b2e64ec96cb68338264657cfdb5ba09eb2855"
 }

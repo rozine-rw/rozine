@@ -37,6 +37,50 @@ const en = {
     'auth.forgot_password.return_prefix': 'Or, return to',
     'auth.forgot_password.return_link': 'log in',
 
+    'suite.head_title': 'Your apps',
+    'suite.tagline': 'The Retail Capital Markets Layer for Emerging Economies',
+    'suite.motto': 'One live core · every surface',
+    'suite.section.apps': 'Your apps',
+    'suite.app.open': 'Open app →',
+    'suite.app.investor.title': 'Investor',
+    'suite.app.investor.description':
+        'Discover verified businesses, invest, track returns.',
+    'suite.app.business.title': 'Business',
+    'suite.app.business.description':
+        'Raise capital, report to investors monthly.',
+    'suite.app.auditor.title': 'Auditor',
+    'suite.app.auditor.description':
+        'Field-verify on site, audit reports, earn yield.',
+    'suite.blocker.action.verify_email': 'Verify your email →',
+    'suite.blocker.action.contact': 'Contact Rozine support →',
+    'suite.blocker.EMAIL_VERIFICATION_REQUIRED.title':
+        'Verify your email first',
+    'suite.blocker.EMAIL_VERIFICATION_REQUIRED.body':
+        'Confirm the link we emailed you, then your apps appear here.',
+    'suite.blocker.IDENTITY_NOT_LINKED.title':
+        'Your identity is not set up yet',
+    'suite.blocker.IDENTITY_NOT_LINKED.body':
+        'Your sign-in is not linked to a verified identity, so no app can open yet.',
+    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title':
+        'Your identity is being verified',
+    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.body':
+        'Your apps open once your identity verification is complete.',
+    'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
+        'Signing authority is needed',
+    'suite.blocker.PARTY_AUTHORITY_REQUIRED.body':
+        'This organisation account needs a verified signatory before any app can open.',
+    'suite.blocker.ROLE_MEMBERSHIP_INVALID.title':
+        'Your account needs attention',
+    'suite.blocker.ROLE_MEMBERSHIP_INVALID.body':
+        'One of your app memberships could not be read. Support can fix it for you.',
+    'suite.blocker.ROLE_MEMBERSHIP_CONFLICT.title':
+        'These apps cannot be combined',
+    'suite.blocker.ROLE_MEMBERSHIP_CONFLICT.body':
+        'An Audit Partner cannot also invest or raise on Rozine. Support will help you choose.',
+    'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.title': 'No apps yet',
+    'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.body':
+        'You have not joined an app yet. Support can set up the one you need.',
+
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

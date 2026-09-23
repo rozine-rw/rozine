@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "91dcf9ab4ebf5044d7ddb3f540ddbb3aafa03557e36109967053370b027ebed7",
-    "coverageSetSha256": "4ede3e026f7d9771cc838e4e0e5da3228fdb6f189338e146eb65083bcc5cf0d9",
+    "sourceManifestSha256": "7dd965bf37dae0de92202b6e6dec546287a25d1a9cdb406163a3e76e27910f79",
+    "coverageSetSha256": "eb5180324cc056dcdc105faff43b2e64ec96cb68338264657cfdb5ba09eb2855",
     "thresholds": {
         "critical": {
             "global": {
@@ -88,6 +88,8 @@
         "resources/js/components/pulse/pulse-wordmark.tsx",
         "resources/js/components/pulse/signup-fields.tsx",
         "resources/js/components/pulse/stat-tile.tsx",
+        "resources/js/components/rozine/logo.tsx",
+        "resources/js/components/rozine/role-icon.tsx",
         "resources/js/components/text-link.tsx",
         "resources/js/components/two-factor-recovery-codes.tsx",
         "resources/js/components/two-factor-setup-modal.tsx",
