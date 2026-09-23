@@ -53,6 +53,38 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `failed_jobs_connection_queue_failed_at_index` on (connection, queue, failed_at); `failed_jobs_pkey` on (id) — unique; `failed_jobs_uuid_unique` on (uuid) — unique
 
+### `identity_audit_events`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `actor_key` | `varchar` | no | — |
+| `actor_user_id` | `int8` | yes | — |
+| `target_type` | `varchar` | no | — |
+| `target_id` | `varchar` | no | — |
+| `action` | `varchar` | no | — |
+| `reason` | `text` | no | — |
+| `request_id` | `uuid` | no | — |
+| `request_hash` | `bpchar` | no | — |
+| `before` | `jsonb` | no | — |
+| `after` | `jsonb` | no | — |
+| `result` | `jsonb` | no | — |
+| `policy_version` | `varchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `identity_audit_events_actor_key_request_id_unique` on (actor_key, request_id) — unique; `identity_audit_events_pkey` on (id) — unique; `identity_audit_events_target_type_target_id_index` on (target_type, target_id)
+
+### `identity_operators`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `user_id` | `int8` | no | — |
+| `enabled` | `bool` | no | `false` |
+| `created_at` | `timestamp` | yes | — |
+| `updated_at` | `timestamp` | yes | — |
+
+**Indexes:** `identity_operators_pkey` on (user_id) — unique
+
 ### `job_batches`
 
 | Column | Type | Nullable | Default |
@@ -193,6 +225,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `status` | `varchar` | no | `'pending'::character varying` |
 | `created_at` | `timestamp` | yes | — |
 | `updated_at` | `timestamp` | yes | — |
+| `revision` | `int4` | no | `1` |
 
 **Indexes:** `role_memberships_party_id_role_unique` on (party_id, role) — unique; `role_memberships_pkey` on (id) — unique
 
@@ -234,8 +267,23 @@ facts that would differ between machines, so they are excluded deliberately.
 | `two_factor_recovery_codes` | `text` | yes | — |
 | `two_factor_confirmed_at` | `timestamp` | yes | — |
 | `party_id` | `bpchar` | yes | — |
+| `active_membership_id` | `bpchar` | yes | — |
+| `active_membership_revision` | `int4` | yes | — |
+| `context_revision` | `int4` | no | `0` |
 
 **Indexes:** `users_email_unique` on (email) — unique; `users_party_id_index` on (party_id); `users_pkey` on (id) — unique
+
+### `verified_person_identities`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `identity_digest` | `bpchar` | no | — |
+| `party_id` | `bpchar` | no | — |
+| `evidence_reference` | `varchar` | no | — |
+| `created_at` | `timestamp` | yes | — |
+| `updated_at` | `timestamp` | yes | — |
+
+**Indexes:** `verified_person_identities_party_id_unique` on (party_id) — unique; `verified_person_identities_pkey` on (identity_digest) — unique
 
 ## Migrations
 
@@ -255,6 +303,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_08_30_105627_allow_site_signups_without_a_rwandan_address.php |
 | 2026_09_06_121310_serialize_pulse_signup_numbering.php |
 | 2026_09_23_101346_create_identity_parties_and_role_memberships.php |
+| 2026_09_23_143859_add_controlled_identity_access.php |
 
 ## Routes
 
@@ -266,8 +315,16 @@ Vendor routes excluded, matching `route:list --except-vendor`.
 | GET | `/` | `home` | `SiteController@index` | web |
 | GET | `/api/user` | — | `Closure` | api, auth:sanctum |
 | GET | `/api/v1/identity` | `api.v1.identity.show` | `Api\V1\IdentityController@__invoke` | api, auth:sanctum, throttle:60,1 |
+| POST | `/api/v1/identity/active-role` | `api.v1.identity.active-role.store` | `Api\V1\IdentityManagementController@selectRole` | api, auth:sanctum, throttle:60,1 |
+| POST | `/api/v1/identity/memberships` | `api.v1.identity.memberships.update` | `Api\V1\IdentityManagementController@membership` | api, auth:sanctum, throttle:60,1 |
+| POST | `/api/v1/identity/people/resolve` | `api.v1.identity.people.resolve` | `Api\V1\IdentityManagementController@resolvePerson` | api, auth:sanctum, throttle:60,1 |
+| GET | `/api/v1/identity/roles/{role}` | `api.v1.identity.roles.show` | `Api\V1\IdentityManagementController@role` | api, auth:sanctum, throttle:60,1 |
 | POST | `/business` | `site.business.store` | `SiteController@storeBusiness` | web, throttle:10,1 |
 | GET | `/dashboard` | `dashboard` | `DashboardController@__invoke` | web, auth, verified |
+| POST | `/identity/active-role` | `identity.active-role.store` | `IdentityManagementController@selectRole` | web, auth, throttle:60,1 |
+| POST | `/identity/memberships` | `identity.memberships.update` | `IdentityManagementController@membership` | web, auth, throttle:60,1 |
+| POST | `/identity/people/resolve` | `identity.people.resolve` | `IdentityManagementController@resolvePerson` | web, auth, throttle:60,1 |
+| GET | `/identity/roles/{role}` | `identity.roles.show` | `IdentityManagementController@role` | web, auth, throttle:60,1 |
 | POST | `/investor` | `site.investor.store` | `SiteController@storeInvestor` | web, throttle:10,1 |
 | GET | `/pulse` | `pulse` | `PulseController@index` | web |
 | POST | `/pulse/business` | `pulse.business.store` | `PulseController@storeBusiness` | web, throttle:10,1 |
@@ -296,15 +353,15 @@ The ADR-0001 layering as it stands. `tests/Architecture` enforces the dependency
 
 | Layer | Path | Classes | Contents |
 |---|---|---|---|
-| Domain | `app/Domain` | 3 | `Identity\RoleAccess`, `Pulse\PulseSector`, `Pulse\PulseUnderwriting` |
-| Application | `app/Application` | 14 | `Environment\Contracts\DemoFixtureStore`, `Environment\EnvironmentIsolation`, `Environment\ResetDemoFixtures`, `Identity\Contracts\IdentityRepository`, `Identity\GetIdentityContext`, `Identity\RegisterIdentity`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor` |
-| Infrastructure | `app/Infrastructure` | 3 | `Environment\EloquentDemoFixtureStore`, `Identity\EloquentIdentityRepository`, `Pulse\EloquentPulseSignupRepository` |
-| HTTP — controllers | `app/Http/Controllers` | 7 | `Api\V1\IdentityController`, `Controller`, `DashboardController`, `PulseController`, `Settings\ProfileController`, `Settings\SecurityController`, `SiteController` |
-| HTTP — requests | `app/Http/Requests` | 10 | `Pulse\PreviewBusinessRequest`, `Pulse\PreviewInvestorRequest`, `Pulse\StoreBusinessSignupRequest`, `Pulse\StoreInvestorPledgeRequest`, `Settings\PasswordUpdateRequest`, `Settings\ProfileDeleteRequest`, `Settings\ProfileUpdateRequest`, `Settings\TwoFactorAuthenticationRequest`, `Site\StoreSiteBusinessRequest`, `Site\StoreSiteInvestorRequest` |
-| HTTP — resources | `app/Http/Resources` | 8 | `IdentityContextResource`, `PulseBusinessPreviewResource`, `PulseBusinessSignupReceiptResource`, `PulseInvestorPreviewResource`, `PulseInvestorSignupReceiptResource`, `PulseListingResource`, `PulsePageResource`, `PulsePolicyResource` |
+| Domain | `app/Domain` | 6 | `Identity\ActiveRolePolicy`, `Identity\IdentityViolation`, `Identity\MembershipTransitions`, `Identity\RoleAccess`, `Pulse\PulseSector`, `Pulse\PulseUnderwriting` |
+| Application | `app/Application` | 20 | `Environment\Contracts\DemoFixtureStore`, `Environment\EnvironmentIsolation`, `Environment\ResetDemoFixtures`, `Identity\AuthorizeActiveRole`, `Identity\ChangeMembership`, `Identity\ConfigureIdentityOperator`, `Identity\Contracts\IdentityAccessStore`, `Identity\Contracts\IdentityRepository`, `Identity\GetIdentityContext`, `Identity\RegisterIdentity`, `Identity\ResolveVerifiedPerson`, `Identity\SelectActiveRole`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor` |
+| Infrastructure | `app/Infrastructure` | 4 | `Environment\EloquentDemoFixtureStore`, `Identity\EloquentIdentityAccessStore`, `Identity\EloquentIdentityRepository`, `Pulse\EloquentPulseSignupRepository` |
+| HTTP — controllers | `app/Http/Controllers` | 9 | `Api\V1\IdentityController`, `Api\V1\IdentityManagementController`, `Controller`, `DashboardController`, `IdentityManagementController`, `PulseController`, `Settings\ProfileController`, `Settings\SecurityController`, `SiteController` |
+| HTTP — requests | `app/Http/Requests` | 13 | `Identity\ChangeMembershipRequest`, `Identity\ResolvePersonRequest`, `Identity\SelectActiveRoleRequest`, `Pulse\PreviewBusinessRequest`, `Pulse\PreviewInvestorRequest`, `Pulse\StoreBusinessSignupRequest`, `Pulse\StoreInvestorPledgeRequest`, `Settings\PasswordUpdateRequest`, `Settings\ProfileDeleteRequest`, `Settings\ProfileUpdateRequest`, `Settings\TwoFactorAuthenticationRequest`, `Site\StoreSiteBusinessRequest`, `Site\StoreSiteInvestorRequest` |
+| HTTP — resources | `app/Http/Resources` | 9 | `IdentityContextResource`, `IdentityMutationResource`, `PulseBusinessPreviewResource`, `PulseBusinessSignupReceiptResource`, `PulseInvestorPreviewResource`, `PulseInvestorSignupReceiptResource`, `PulseListingResource`, `PulsePageResource`, `PulsePolicyResource` |
 | HTTP — middleware | `app/Http/Middleware` | 3 | `HandleAppearance`, `HandleInertiaRequests`, `SetLocale` |
-| Models | `app/Models` | 4 | `Party`, `PulseSignup`, `RoleMembership`, `User` |
-| Console commands | `app/Console/Commands` | 3 | `CaptureBaselineInventory`, `CheckEnvironmentIsolation`, `ResetDemo` |
+| Models | `app/Models` | 7 | `IdentityAuditEvent`, `IdentityOperator`, `Party`, `PulseSignup`, `RoleMembership`, `User`, `VerifiedPersonIdentity` |
+| Console commands | `app/Console/Commands` | 4 | `CaptureBaselineInventory`, `CheckEnvironmentIsolation`, `ConfigureIdentityOperatorCommand`, `ResetDemo` |
 
 ## CI gates
 
