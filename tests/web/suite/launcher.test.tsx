@@ -12,8 +12,16 @@ vi.mock('@inertiajs/react', () => ({
     Head: ({ title }: { title: string }) => (
         <span data-testid="page-title">{title}</span>
     ),
-    Link: ({ children, ...props }: ComponentProps<'a'>) => (
-        <a {...props}>{children}</a>
+    Link: ({
+        children,
+        href,
+        ...props
+    }: Omit<ComponentProps<'a'>, 'href'> & {
+        href: string | { url: string };
+    }) => (
+        <a href={typeof href === 'string' ? href : href.url} {...props}>
+            {children}
+        </a>
     ),
 }));
 
@@ -53,6 +61,26 @@ describe('Suite launcher', () => {
             '/business',
         );
         expect(screen.queryByText('Auditor')).not.toBeInTheDocument();
+    });
+
+    it('follows the role links the server supplies', () => {
+        render(
+            <Launcher
+                identity={identityFrom(readyFixture)}
+                links={readyFixture.props.links as never}
+            />,
+        );
+
+        const apps = screen.getAllByRole('listitem');
+
+        expect(within(apps[0]).getByRole('link')).toHaveAttribute(
+            'href',
+            '/preview/investor-deals',
+        );
+        expect(within(apps[1]).getByRole('link')).toHaveAttribute(
+            'href',
+            '/preview/business-home',
+        );
     });
 
     it('shows an Audit Partner only the Auditor app', () => {

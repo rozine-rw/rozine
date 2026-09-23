@@ -12,6 +12,20 @@
             },
             "available_roles": ["auditor"],
             "allowed_actions": []
+        },
+        "links": {
+            "investor": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "business": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "auditor": {
+                "url": "/preview/auditor-home",
+                "method": "get"
+            }
         }
     }
 }

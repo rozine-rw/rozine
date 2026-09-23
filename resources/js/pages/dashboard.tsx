@@ -3,10 +3,20 @@ import { LogoLockup } from '@/components/rozine/logo';
 import { RoleIcon } from '@/components/rozine/role-icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { notice as verificationNotice } from '@/routes/verification';
-import type { IdentityCode, IdentityContext, RoleApp } from '@/types';
+import type {
+    IdentityCode,
+    IdentityContext,
+    RoleApp,
+    RouteLink,
+} from '@/types';
 
 type LauncherProps = {
     identity: IdentityContext;
+    /**
+     * Where each role card leads, when the server supplies it (the preview fixtures do, since the
+     * role home routes are reserved but not registered yet). Otherwise the reserved paths apply.
+     */
+    links?: Partial<Record<RoleApp, RouteLink>>;
 };
 
 /** Where each role app starts. Server routes still authorize every request. */
@@ -32,7 +42,7 @@ const blockerAction = (code: Blocker) =>
               label: 'suite.blocker.action.contact' as const,
           };
 
-export default function Launcher({ identity }: LauncherProps) {
+export default function Launcher({ identity, links }: LauncherProps) {
     const { t } = useTranslation();
 
     return (
@@ -96,7 +106,10 @@ export default function Launcher({ identity }: LauncherProps) {
                                     className="flex"
                                 >
                                     <Link
-                                        href={ROLE_APP_PATHS[role]}
+                                        href={
+                                            links?.[role] ??
+                                            ROLE_APP_PATHS[role]
+                                        }
                                         className="rz-app-card flex w-full flex-col rounded-[18px] border border-rz-hairline bg-rz-surface px-[18px] pt-[18px] pb-4 text-left"
                                     >
                                         <span className="flex items-center gap-[11px]">
