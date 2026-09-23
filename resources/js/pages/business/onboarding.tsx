@@ -64,7 +64,7 @@ export default function BusinessOnboarding({
         >
             <Head title={t(`business.onboarding.${step}.title`)} />
             <IconGradients app="business" />
-            <div className="mx-auto w-full max-w-[412px] px-5 pt-[calc(env(safe-area-inset-top)+56px)] pb-10 lg:pt-[60px]">
+            <div className="mx-auto w-full max-w-[412px] px-5 pt-[calc(env(safe-area-inset-top)+10px)] pb-10 lg:pt-[60px]">
                 <div className="flex items-center gap-3">
                     <Link
                         href={links.back}

@@ -31,7 +31,7 @@
                 "amount": "18000000"
             },
             "link": {
-                "url": "/preview/business-home",
+                "url": "/preview/business-note-raising",
                 "method": "get"
             }
         },
@@ -103,7 +103,7 @@
                     "amount": "18000000"
                 },
                 "link": {
-                    "url": "/preview/business-home",
+                    "url": "/preview/business-note-raising",
                     "method": "get"
                 }
             },
@@ -123,7 +123,7 @@
                     "amount": "25000000"
                 },
                 "link": {
-                    "url": "/preview/business-home",
+                    "url": "/preview/business-note-repaying",
                     "method": "get"
                 }
             },
@@ -143,7 +143,7 @@
                     "amount": "20000000"
                 },
                 "link": {
-                    "url": "/preview/business-home",
+                    "url": "/preview/business-note-completed",
                     "method": "get"
                 }
             },

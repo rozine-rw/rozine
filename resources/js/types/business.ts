@@ -336,3 +336,107 @@ export type BusinessOnboardingProps = {
         finish: RouteAction;
     };
 };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Note progress (MVP-BUSINESS-SCR-04 raise progress, design L632–709)                          */
+/* ------------------------------------------------------------------------------------------ */
+
+/**
+ * Where a published note stands, as the server records it. The design draws one dashboard for
+ * every note; its tiles and tracker follow the phase.
+ */
+export type NoteProgress =
+    | {
+          phase: 'raising';
+          raised: Money;
+          target: Money;
+          /** Still to raise, from the server's ledger — the client never subtracts. */
+          remaining: Money;
+          funded_pct: number;
+          investors: number;
+          /** When the listing closes if it has not filled, ISO date. */
+          closes_on: string;
+          days_left: number;
+      }
+    | {
+          phase: 'funded';
+          raised: Money;
+          investors: number;
+          funded_on: string;
+      }
+    | {
+          phase: 'repaying';
+          outstanding: Money;
+          payments_made: number;
+          payments_total: number;
+          repaid_pct: number;
+          repaid: Money;
+          remaining: Money;
+          remaining_months: number;
+          investors: number;
+          health: 'on_time' | 'late';
+          next_payment: {
+              amount: Money;
+              due_on: string;
+              days_until: number;
+          } | null;
+      }
+    | {
+          /** The listing did not fill in time: every committed franc went back, without fee. */
+          phase: 'expired';
+          raised: Money;
+          target: Money;
+          investors: number;
+          closed_on: string;
+      };
+
+export type NotePhoto = {
+    /** Null until the business adds the photo; the design's placeholder tile shows instead. */
+    url: string | null;
+    caption: string;
+};
+
+export type NotePerformanceMonth = {
+    /** First day of the month, ISO date. */
+    month: string;
+    /** Audited revenue for the month. */
+    revenue: Money;
+    paid_on_time: boolean;
+};
+
+/** One range of the trend, with the high and low the server read off it. */
+export type NotePerformanceRange = {
+    months: NotePerformanceMonth[];
+    high: Money;
+    low: Money;
+};
+
+export type NoteInvestor = {
+    initials: string;
+    name: string;
+    kind: 'individual' | 'institution' | 'sacco';
+    amount: Money;
+};
+
+export type BusinessNoteProps = {
+    home: BusinessHomeProps;
+    note: {
+        id: string;
+        title: string;
+        status: NoteStatus;
+        progress: NoteProgress;
+        photos: NotePhoto[];
+        /** Audited history, present once the note has any (design `perfHasData`). */
+        performance: {
+            six_months: NotePerformanceRange;
+            twelve_months: NotePerformanceRange;
+        } | null;
+        recent_investors: NoteInvestor[];
+    };
+    /** `pay` and `investors` stay null until those screens are open to the business. */
+    links: {
+        close: RouteLink;
+        pay: RouteLink | null;
+        investors: RouteLink | null;
+    };
+};

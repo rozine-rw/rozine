@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "ceb8a5a5cba45137632964a9cddfb2468314515e12efdbb0ddf0e21d04f7b50d",
-    "coverageSetSha256": "77e892bc77348b7517154c6e11d149e1c890a064421f90124d93f00472386ed0",
+    "sourceManifestSha256": "6d4abdf968e83873ea4f540f99a20ef1b4564bfb3cf2bed94a5ba5c4cc622b19",
+    "coverageSetSha256": "423f8868dfa6c6f8f158837ebd905a76237fd1493b883f3904f00bd6dc715536",
     "thresholds": {
         "critical": {
             "global": {
@@ -68,6 +68,7 @@
         "resources/js/components/business/apply/wizard-frame.tsx",
         "resources/js/components/business/business-auth-frame.tsx",
         "resources/js/components/business/business-shell.tsx",
+        "resources/js/components/business/detail-sheet.tsx",
         "resources/js/components/business/home/business-hero.tsx",
         "resources/js/components/business/home/capital-section.tsx",
         "resources/js/components/business/home/grow-section.tsx",
@@ -76,6 +77,10 @@
         "resources/js/components/business/home/notes-section.tsx",
         "resources/js/components/business/home/today-section.tsx",
         "resources/js/components/business/home/top-row.tsx",
+        "resources/js/components/business/note/performance-trend.tsx",
+        "resources/js/components/business/note/photo-strip.tsx",
+        "resources/js/components/business/note/progress-summary.tsx",
+        "resources/js/components/business/note/recent-investors.tsx",
         "resources/js/components/business/onboarding/key-values.tsx",
         "resources/js/components/business/onboarding/step-bank.tsx",
         "resources/js/components/business/onboarding/step-confirm.tsx",
@@ -191,6 +196,7 @@
         "resources/js/pages/business/auth/login.tsx",
         "resources/js/pages/business/auth/register.tsx",
         "resources/js/pages/business/home.tsx",
+        "resources/js/pages/business/note.tsx",
         "resources/js/pages/business/onboarding.tsx",
         "resources/js/pages/business/publish.tsx",
         "resources/js/pages/dashboard.tsx",

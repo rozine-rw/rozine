@@ -59,6 +59,13 @@ export const formatMonthYear = (iso: string, locale: string): string =>
         timeZone: 'Africa/Kigali',
     }).format(new Date(iso));
 
+/** "Jun" from an ISO date: a chart's month label. */
+export const formatMonthShort = (iso: string, locale: string): string =>
+    new Intl.DateTimeFormat(intlLocale(locale), {
+        month: 'short',
+        timeZone: 'Africa/Kigali',
+    }).format(new Date(iso));
+
 /** "September 2026" from an ISO date. */
 export const formatMonthYearLong = (iso: string, locale: string): string =>
     new Intl.DateTimeFormat(intlLocale(locale), {
