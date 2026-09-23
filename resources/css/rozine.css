@@ -312,6 +312,7 @@
 @theme inline {
     --color-rz-accent-fill: var(--rz-accent-fill);
     --color-rz-investor-text: var(--rz-investor-text);
+    --color-rz-investor: var(--rz-investor);
     --color-rz-accent-lockup: var(--rz-accent-lockup);
     --color-rz-accent-soft: var(--rz-accent-soft);
     --color-rz-accent-app-text: var(--rz-accent-app-text);
@@ -391,4 +392,41 @@
 .rz-hscroll::-webkit-scrollbar,
 .rz-scroll::-webkit-scrollbar {
     display: none;
+}
+
+/* Sheets rise from the bottom of their column (design rz-sheetup / rz-scrim). */
+@keyframes rz-sheetup {
+    from {
+        transform: translateY(102%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes rz-scrim {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes rz-pop {
+    0% {
+        opacity: 0;
+        transform: scale(0.6);
+    }
+
+    60% {
+        opacity: 1;
+        transform: scale(1.08);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }

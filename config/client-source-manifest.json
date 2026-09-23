@@ -117,11 +117,19 @@
         "resources/js/components/app-sidebar.tsx",
         "resources/js/components/appearance-tabs.tsx",
         "resources/js/components/breadcrumbs.tsx",
+        "resources/js/components/business/apply/step-business.tsx",
+        "resources/js/components/business/apply/step-heading.tsx",
+        "resources/js/components/business/apply/step-raise.tsx",
+        "resources/js/components/business/apply/step-review.tsx",
+        "resources/js/components/business/apply/submitted.tsx",
+        "resources/js/components/business/apply/wizard-cta.tsx",
+        "resources/js/components/business/apply/wizard-frame.tsx",
         "resources/js/components/business/business-auth-frame.tsx",
         "resources/js/components/business/business-shell.tsx",
         "resources/js/components/business/home/business-hero.tsx",
         "resources/js/components/business/home/capital-section.tsx",
         "resources/js/components/business/home/grow-section.tsx",
+        "resources/js/components/business/home/home-body.tsx",
         "resources/js/components/business/home/live-raise-card.tsx",
         "resources/js/components/business/home/notes-section.tsx",
         "resources/js/components/business/home/today-section.tsx",
@@ -161,6 +169,7 @@
         "resources/js/components/rozine/icon.tsx",
         "resources/js/components/rozine/logo.tsx",
         "resources/js/components/rozine/role-icon.tsx",
+        "resources/js/components/rozine/toast.tsx",
         "resources/js/components/text-link.tsx",
         "resources/js/components/two-factor-recovery-codes.tsx",
         "resources/js/components/two-factor-setup-modal.tsx",
@@ -229,6 +238,7 @@
         "resources/js/pages/auth/reset-password.tsx",
         "resources/js/pages/auth/two-factor-challenge.tsx",
         "resources/js/pages/auth/verify-email.tsx",
+        "resources/js/pages/business/apply.tsx",
         "resources/js/pages/business/auth/login.tsx",
         "resources/js/pages/business/auth/register.tsx",
         "resources/js/pages/business/home.tsx",
@@ -241,10 +251,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 213,
+        "totalTrackedSources": 223,
         "generated": 70,
         "declarationOnly": 10,
-        "authoredExecutable": 133
+        "authoredExecutable": 143
     },
-    "coverageSetSha256": "bf31c9508eb68359786e11673e052c3fbb2cdaeffc680152d4ddbff34cd3306a"
+    "coverageSetSha256": "525653c3e4593ed1dada2f9c9febbf24b2f3ba1b281a89818fd61448fa89875d"
 }

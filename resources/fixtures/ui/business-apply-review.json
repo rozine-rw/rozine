@@ -1,0 +1,484 @@
+{
+    "component": "business/apply",
+    "props": {
+        "application": {
+            "id": "APP-2026-0412",
+            "revision": 3,
+            "title": "Cold-Chain Hub",
+            "target": {
+                "currency": "RWF",
+                "amount": "30000000"
+            },
+            "term_months": 6,
+            "use_of_funds": ["equipment", "expansion"],
+            "story": "GreenLeaf Agro supplies maize, beans and horticulture across the Eastern Province and needs cold storage to cut post-harvest losses."
+        },
+        "evidence": {
+            "business": {
+                "name": "GreenLeaf Agro",
+                "company_code": "103847291",
+                "industry": "FMCG",
+                "district": "Gasabo",
+                "established_year": 2018,
+                "officers": [
+                    {
+                        "role": "ceo",
+                        "name": "Robert Mugisha"
+                    },
+                    {
+                        "role": "board_chair",
+                        "name": "Aline Uwase"
+                    }
+                ]
+            },
+            "verified": {
+                "registry": true,
+                "statements": true
+            },
+            "rating": {
+                "band": "strong",
+                "score": "4.8"
+            },
+            "totals": {
+                "revenue": {
+                    "currency": "RWF",
+                    "amount": "1595000000"
+                },
+                "costs": {
+                    "currency": "RWF",
+                    "amount": "1215000000"
+                },
+                "net_profit": {
+                    "currency": "RWF",
+                    "amount": "380000000"
+                }
+            },
+            "years": [
+                {
+                    "year": 2025,
+                    "revenue": {
+                        "currency": "RWF",
+                        "amount": "385000000"
+                    },
+                    "costs": {
+                        "currency": "RWF",
+                        "amount": "289000000"
+                    },
+                    "net_profit": {
+                        "currency": "RWF",
+                        "amount": "96000000"
+                    }
+                },
+                {
+                    "year": 2024,
+                    "revenue": {
+                        "currency": "RWF",
+                        "amount": "352000000"
+                    },
+                    "costs": {
+                        "currency": "RWF",
+                        "amount": "266000000"
+                    },
+                    "net_profit": {
+                        "currency": "RWF",
+                        "amount": "86000000"
+                    }
+                },
+                {
+                    "year": 2023,
+                    "revenue": {
+                        "currency": "RWF",
+                        "amount": "318000000"
+                    },
+                    "costs": {
+                        "currency": "RWF",
+                        "amount": "243000000"
+                    },
+                    "net_profit": {
+                        "currency": "RWF",
+                        "amount": "75000000"
+                    }
+                },
+                {
+                    "year": 2022,
+                    "revenue": {
+                        "currency": "RWF",
+                        "amount": "286000000"
+                    },
+                    "costs": {
+                        "currency": "RWF",
+                        "amount": "220000000"
+                    },
+                    "net_profit": {
+                        "currency": "RWF",
+                        "amount": "66000000"
+                    }
+                },
+                {
+                    "year": 2021,
+                    "revenue": {
+                        "currency": "RWF",
+                        "amount": "254000000"
+                    },
+                    "costs": {
+                        "currency": "RWF",
+                        "amount": "197000000"
+                    },
+                    "net_profit": {
+                        "currency": "RWF",
+                        "amount": "57000000"
+                    }
+                }
+            ],
+            "existing_debt": {
+                "currency": "RWF",
+                "amount": "12000000"
+            },
+            "debt_verified": true,
+            "capacity": {
+                "currency": "RWF",
+                "amount": "33915000"
+            }
+        },
+        "quote": {
+            "status": "ready",
+            "policy_version": "engineering-2026-09-23.4",
+            "principal": {
+                "currency": "RWF",
+                "amount": "30000000"
+            },
+            "term_months": 6,
+            "rate_pct": "10.8",
+            "interest": {
+                "currency": "RWF",
+                "amount": "3240000"
+            },
+            "total": {
+                "currency": "RWF",
+                "amount": "33240000"
+            },
+            "monthly": {
+                "currency": "RWF",
+                "amount": "5540000"
+            },
+            "units": 6000,
+            "unit_price": {
+                "currency": "RWF",
+                "amount": "5000"
+            },
+            "reserve": null,
+            "rate_basis": {
+                "band": "strong",
+                "floor_pct": "10.0",
+                "cap_pct": "15.0",
+                "term_premium_pct": "0.5"
+            }
+        },
+        "acceptance": {
+            "fee_on_approval": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "documents": [
+                {
+                    "kind": "terms",
+                    "version": "2.5",
+                    "summary": [
+                        {
+                            "heading": "Eligibility",
+                            "body": "Only RDB-registered Rwandan businesses with verified bank and mobile-money statements may issue a note. Rozine may approve or decline any application."
+                        },
+                        {
+                            "heading": "Accuracy of information",
+                            "body": "You warrant that all information is true and complete. Rozine relies on RDB registry data and your uploaded statements."
+                        },
+                        {
+                            "heading": "Fees",
+                            "body": "No listing fee is charged for this MVP version. A 2% service fee applies to each repayment instalment, on principal and return actually repaid."
+                        },
+                        {
+                            "heading": "Repayment obligation",
+                            "body": "On funding, the business is legally bound to repay principal plus the disclosed return on schedule."
+                        },
+                        {
+                            "heading": "Rozine\u2019s role",
+                            "body": "Rozine is a technology platform connecting businesses and investors; it is not a lender, borrower or guarantor of any raise."
+                        },
+                        {
+                            "heading": "Governing law",
+                            "body": "These terms are governed by the laws of the Republic of Rwanda."
+                        }
+                    ]
+                },
+                {
+                    "kind": "privacy",
+                    "version": "1.4",
+                    "summary": [
+                        {
+                            "heading": "What we collect",
+                            "body": "Your RDB company record, your uploaded bank and mobile-money statements, and details you enter when issuing a note."
+                        },
+                        {
+                            "heading": "Why we use it",
+                            "body": "To verify your business, compute your rating and capacity, publish notes to investors, and meet Rwandan legal obligations."
+                        },
+                        {
+                            "heading": "What investors see",
+                            "body": "Only your published note, business name, verified badges, sector, location, rating and the photos and story you choose to submit. Your bank details are never shown."
+                        },
+                        {
+                            "heading": "Sharing",
+                            "body": "We share data with RDB, BNR, your assigned Audit Partner and payment partners strictly as needed to operate and comply with the law. We never sell your data."
+                        },
+                        {
+                            "heading": "Retention and rights",
+                            "body": "Records are retained as long as the law requires. You may request access or correction by contacting Rozine."
+                        }
+                    ]
+                }
+            ]
+        },
+        "submission": null,
+        "home": {
+            "business": {
+                "name": "GreenLeaf Agro",
+                "company_code": "103847291",
+                "industry": "FMCG",
+                "district": "Gasabo"
+            },
+            "rating": {
+                "band": "strong",
+                "score": "4.8"
+            },
+            "wallet": {
+                "available": {
+                    "currency": "RWF",
+                    "amount": "12383800"
+                }
+            },
+            "unread_notifications": 2,
+            "live_raise": {
+                "title": "Cold-Chain Hub",
+                "funded_pct": 66,
+                "investors": 284,
+                "raised": {
+                    "currency": "RWF",
+                    "amount": "11900000"
+                },
+                "target": {
+                    "currency": "RWF",
+                    "amount": "18000000"
+                },
+                "link": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                }
+            },
+            "today": [
+                {
+                    "kind": "application_approved",
+                    "title": "Warehouse Robotics",
+                    "fee": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                },
+                {
+                    "kind": "audit_window",
+                    "month": "2026-09-01T00:00:00+02:00",
+                    "window_open": true,
+                    "days_left": 0,
+                    "sealed_by": "2026-10-07T00:00:00+02:00",
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                },
+                {
+                    "kind": "repayment_due",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "4833334"
+                    },
+                    "note_title": "Fleet Expansion Note",
+                    "due_on": "2026-10-05T00:00:00+02:00",
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                }
+            ],
+            "capital": {
+                "raised": {
+                    "currency": "RWF",
+                    "amount": "88000000"
+                },
+                "investors": 1657,
+                "repaid": {
+                    "currency": "RWF",
+                    "amount": "82000000"
+                },
+                "on_time_pct": 100,
+                "active_notes": 1
+            },
+            "notes": [
+                {
+                    "id": "RNP-2026-0118",
+                    "title": "Cold-Chain Hub",
+                    "status": "active",
+                    "created_at": "2026-06-02T09:00:00+02:00",
+                    "funded_pct": 66,
+                    "investors": 284,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "11900000"
+                    },
+                    "target": {
+                        "currency": "RWF",
+                        "amount": "18000000"
+                    },
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "RNP-2024-0042",
+                    "title": "Fleet Expansion",
+                    "status": "repaying",
+                    "created_at": "2026-01-05T09:00:00+02:00",
+                    "funded_pct": 100,
+                    "investors": 647,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "25000000"
+                    },
+                    "target": {
+                        "currency": "RWF",
+                        "amount": "25000000"
+                    },
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "RNP-2025-0071",
+                    "title": "Grain Storage",
+                    "status": "completed",
+                    "created_at": "2025-07-14T09:00:00+02:00",
+                    "funded_pct": 100,
+                    "investors": 412,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "20000000"
+                    },
+                    "target": {
+                        "currency": "RWF",
+                        "amount": "20000000"
+                    },
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "DRAFT-0007",
+                    "title": "Equipment Upgrade",
+                    "status": "draft",
+                    "created_at": null,
+                    "funded_pct": 0,
+                    "investors": 0,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "target": {
+                        "currency": "RWF",
+                        "amount": "15000000"
+                    },
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    },
+                    "resume": {
+                        "url": "/preview/business-apply-business",
+                        "method": "get"
+                    }
+                }
+            ],
+            "headroom": {
+                "currency": "RWF",
+                "amount": "33916731"
+            },
+            "links": {
+                "home": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "reports": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "profile": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "launcher": {
+                    "url": "/preview/launcher-ready",
+                    "method": "get"
+                },
+                "wallet": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "deposit": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "withdraw": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "notifications": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "rating": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "apply": {
+                    "url": "/preview/business-apply-business",
+                    "method": "get"
+                }
+            }
+        },
+        "actions": {
+            "save": {
+                "url": "/preview/business-apply-review",
+                "method": "post"
+            },
+            "submit": {
+                "url": "/preview/business-apply-submitted",
+                "method": "post"
+            }
+        },
+        "step": "review",
+        "links": {
+            "close": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "back": {
+                "url": "/preview/business-apply-raise",
+                "method": "get"
+            },
+            "next": null
+        }
+    }
+}

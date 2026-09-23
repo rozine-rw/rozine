@@ -1,5 +1,5 @@
 import type { Money } from './money';
-import type { RouteLink } from './routing';
+import type { RouteAction, RouteLink } from './routing';
 
 /**
  * Business app page contracts (Phase 1B). Every figure is a server fact; the client only formats
@@ -128,4 +128,125 @@ export type BusinessAppLinks = {
     reports: RouteLink;
     profile: RouteLink;
     launcher: RouteLink;
+};
+
+/* ------------------------------------------------------------------------------------------ */
+/* Raise application (MVP-BUSINESS-SCR-02, design "RNP" wizard L349–629)                       */
+/* ------------------------------------------------------------------------------------------ */
+
+export type ApplyStep = 'business' | 'raise' | 'review' | 'submitted';
+
+export type UseOfFunds =
+    | 'inventory'
+    | 'expansion'
+    | 'equipment'
+    | 'hiring'
+    | 'working_capital'
+    | 'other';
+
+export type TermMonths = 3 | 4 | 5 | 6;
+
+/** The saved draft. It resumes from the server, so a cold reload never loses accepted input. */
+export type ApplicationDraft = {
+    id: string;
+    revision: number;
+    title: string;
+    target: Money | null;
+    term_months: TermMonths | null;
+    use_of_funds: UseOfFunds[];
+    story: string;
+};
+
+export type FinancialYear = {
+    year: number;
+    revenue: Money;
+    costs: Money;
+    net_profit: Money;
+};
+
+/** Step 1: what verified evidence says about the business. Never edited here. */
+export type ApplicationEvidence = {
+    business: BusinessIdentity & {
+        established_year: number | null;
+        officers: { role: 'ceo' | 'board_chair'; name: string }[];
+    };
+    verified: { registry: boolean; statements: boolean };
+    rating: BusinessRating | null;
+    totals: { revenue: Money; costs: Money; net_profit: Money };
+    years: FinancialYear[];
+    existing_debt: Money;
+    debt_verified: boolean;
+    capacity: Money | null;
+};
+
+/**
+ * The server's quote for the requested principal and term (contract AC-01). Every figure is the
+ * engine's; the page shows it, never recomputes it. A refusal carries a stable code and the
+ * server's own explanation.
+ */
+export type ApplicationQuote =
+    | {
+          status: 'ready';
+          policy_version: string;
+          principal: Money;
+          term_months: TermMonths;
+          /** Flat total return over the whole term, one decimal: "12.1". Not an APR. */
+          rate_pct: string;
+          interest: Money;
+          total: Money;
+          monthly: Money;
+          units: number;
+          unit_price: Money;
+          reserve: Money | null;
+          rate_basis: {
+              band: RatingBand | null;
+              floor_pct: string;
+              cap_pct: string;
+              term_premium_pct: string;
+          };
+      }
+    | {
+          status: 'refused';
+          code:
+              | 'CAPACITY_EXCEEDED'
+              | 'CAPACITY_BELOW_MINIMUM'
+              | 'DSCR_BELOW_CUTOFF'
+              | 'POLICY_INPUT_REQUIRED';
+          message: string;
+      };
+
+export type AcceptanceDocument = {
+    kind: 'terms' | 'privacy';
+    version: string;
+    /** The key clauses, as the legal owner summarises them for this version. */
+    summary: { heading: string; body: string }[];
+};
+
+/** Step 3: what the business signs, and what falls due on approval. */
+export type ApplicationAcceptance = {
+    documents: AcceptanceDocument[];
+    fee_on_approval: Money;
+};
+
+export type TimelineStage = {
+    stage: 'submitted' | 'under_review' | 'approved' | 'published';
+    state: 'done' | 'current' | 'pending';
+};
+
+export type ApplicationSubmission = {
+    note_id: string;
+    timeline: TimelineStage[];
+};
+
+export type BusinessApplyProps = {
+    step: ApplyStep;
+    application: ApplicationDraft;
+    evidence: ApplicationEvidence;
+    quote: ApplicationQuote | null;
+    acceptance: ApplicationAcceptance;
+    submission: ApplicationSubmission | null;
+    /** Home, drawn beneath the sheet on a wide screen. */
+    home: BusinessHomeProps;
+    links: { close: RouteLink; back: RouteLink; next: RouteLink | null };
+    actions: { save: RouteAction; submit: RouteAction };
 };

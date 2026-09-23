@@ -41,7 +41,7 @@ export function GrowSection({ headroom, links }: GrowSectionProps) {
                             <span className="size-[7px] shrink-0 rounded-full bg-[#3a63b8]" />
                             {t('business.grow.headroom')}
                         </span>
-                        <span className="dark:text-rz-investor-text mt-[3px] block text-xl font-bold tracking-[-.3px] text-[#1428a4]">
+                        <span className="mt-[3px] block text-xl font-bold tracking-[-.3px] text-[#1428a4] dark:text-rz-investor-text">
                             {formatRwf(headroom)}
                         </span>
                         <span className="mt-px block text-[11.5px] text-rz-secondary">
