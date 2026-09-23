@@ -210,7 +210,7 @@
                 "method": "get"
             },
             "rating": {
-                "url": "/preview/business-home",
+                "url": "/preview/business-rating",
                 "method": "get"
             },
             "apply": {

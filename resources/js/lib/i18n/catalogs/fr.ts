@@ -1843,6 +1843,90 @@ const fr: Catalog = {
     'auditor.availability.radius_sub':
         "Mesurée de votre cabinet enregistré aux locaux de l'entreprise.",
 
+    'business.rating.page_title': 'Santé financière',
+    'business.rating.page_subtitle':
+        'Votre note, votre capacité et vos chiffres vérifiés.',
+    'business.rating.title': 'Note Rozine',
+    'business.rating.out_of': 'sur 5',
+    'business.rating.explainer':
+        'Chaque rapport mensuel audité la met à jour. Une meilleure note débloque plus de capacité et de meilleurs taux pour votre prochaine levée.',
+    'business.rating.drift': "Noté {audited} à l'audit — désormais {now}",
+    'business.rating.refused':
+        'Le moteur de notation ne peut pas encore noter cette entreprise',
+    'business.rating.factors': 'Détail de la note',
+    'business.rating.factor.financial_health': 'Santé financière',
+    'business.rating.factor.repayment_history': 'Historique de remboursement',
+    'business.rating.factor.statement_consistency': 'Cohérence des relevés',
+    'business.rating.factor.growth_outlook': 'Croissance et perspectives',
+    'business.rating.sizing.title': 'Comment votre capacité est calculée',
+    'business.rating.sizing.cash': 'Trésorerie par mois',
+    'business.rating.sizing.cash_note':
+        "marge nette de {margin} % + {depreciation} % d'amortissement réintégré",
+    'business.rating.sizing.multiplier': '× Votre multiplicateur',
+    'business.rating.sizing.tier.none':
+        "Aucune couverture de stock vérifiée pour l'instant",
+    'business.rating.sizing.tier.cover1x':
+        'Votre expert-comptable a vérifié un stock couvrant au moins 1× la levée',
+    'business.rating.sizing.tier.cover2x':
+        'Votre expert-comptable a vérifié un stock couvrant au moins 2× la levée',
+    'business.rating.sizing.carry': 'Mensualité que vous pouvez assumer',
+    'business.rating.sizing.explainer':
+        'Votre capacité correspond à la trésorerie que votre entreprise génère réellement chaque mois, multipliée par ce que permet votre couverture de stock vérifiée, puis plafonnée par la plus basse des cinq limites ci-dessus. Personne chez Rozine ne fixe ce chiffre à la main. Les demandes au-delà de la capacité sont refusées automatiquement.',
+    'business.rating.stock.title': 'Stock enregistré',
+    'business.rating.stock.verified':
+        '{value} compté sur site par votre expert-comptable',
+    'business.rating.stock.indicative':
+        "{value} est habituel pour votre secteur — mais seul un comptage par l'expert-comptable donne un multiplicateur plus élevé",
+    'business.rating.stock.none': 'Aucune position de stock enregistrée',
+    'business.rating.stock.why':
+        'Un prêt qui achète du stock est remboursé par la vente de ce stock : une couverture vérifiée augmente ce que vous pouvez assumer.',
+    'business.rating.limits': "Cinq limites · la plus basse s'applique",
+    'business.rating.limit.capacity': 'Capacité de trésorerie',
+    'business.rating.limit.capacity_detail':
+        'EBITDA {ebitda}/mois × M {multiplier}',
+    'business.rating.limit.capacity_lift':
+        "Augmentez l'EBITDA ou faites vérifier votre stock par l'expert-comptable",
+    'business.rating.limit.revenue_share': "Part du chiffre d'affaires",
+    'business.rating.limit.revenue_share_detail':
+        "{percent} % de {revenue} de chiffre d'affaires annuel audité",
+    'business.rating.limit.revenue_share_lift':
+        "Augmentez le chiffre d'affaires annuel audité",
+    'business.rating.limit.book_share': 'Part du portefeuille',
+    'business.rating.limit.book_share_detail':
+        "{percent} % des {book} d'encours",
+    'business.rating.limit.book_share_lift':
+        "Augmente d'elle-même avec le portefeuille de la plateforme",
+    'business.rating.limit.phase_cap': 'Plafond de la phase {phase}',
+    'business.rating.limit.phase_cap_detail':
+        "Plafond de la plateforme tant que l'encours est inférieur à {book}",
+    'business.rating.limit.phase_cap_lift': 'Augmente à la phase suivante',
+    'business.rating.limit.policy_max': 'Maximum réglementaire',
+    'business.rating.limit.policy_max_detail':
+        'Plafond absolu pour toute levée',
+    'business.rating.limit.policy_max_lift': 'Aucun — ce plafond est absolu',
+    'business.rating.limit.yours': "C'est votre limite",
+    'business.rating.approved': 'Capacité approuvée',
+    'business.rating.bound': 'Ce qui vous limite : {limit}',
+    'business.rating.lift': "Pour l'augmenter — {how}",
+    'business.rating.headroom': 'Marge disponible',
+    'business.rating.headroom_note':
+        'Vous pouvez encore lever ce montant maintenant.',
+    'business.rating.raise': 'Lever',
+    'business.rating.tiers.title':
+        'Ce que permettrait un multiplicateur plus élevé',
+    'business.rating.tiers.applied': 'Appliqué',
+    'business.rating.tiers.not_yet': 'Pas encore',
+    'business.rating.tiers.no_cover':
+        'Aucune couverture de stock requise à ce niveau',
+    'business.rating.tiers.needs':
+        'Nécessite {need}× de couverture · votre stock donne {yours}×',
+    'business.rating.financials': 'Chiffres vérifiés',
+    'business.rating.sources': 'Banque · MoMo',
+    'business.rating.financial.revenue': 'CA mensuel moyen',
+    'business.rating.financial.ebitda': 'EBITDA / mois',
+    'business.rating.financial.margin': 'Marge nette',
+    'business.rating.financial.outstanding': 'Encours',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

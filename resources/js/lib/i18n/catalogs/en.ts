@@ -1802,6 +1802,83 @@ const en = {
     'auditor.availability.radius_title': 'Coverage',
     'auditor.availability.radius_sub':
         'Measured from your registered office to the business premises.',
+    'business.rating.page_title': 'Financial health',
+    'business.rating.page_subtitle':
+        'Your score, capacity and verified financials.',
+    'business.rating.title': 'Rozine rating',
+    'business.rating.out_of': 'out of 5',
+    'business.rating.explainer':
+        'Each audited monthly report updates this. A higher rating unlocks more capacity and lower rates on your next raise.',
+    'business.rating.drift': 'Rated {audited} at audit — now {now}',
+    'business.rating.refused':
+        'The rating engine could not rate this business yet',
+    'business.rating.factors': 'Score breakdown',
+    'business.rating.factor.financial_health': 'Financial health',
+    'business.rating.factor.repayment_history': 'Repayment history',
+    'business.rating.factor.statement_consistency': 'Statement consistency',
+    'business.rating.factor.growth_outlook': 'Growth & outlook',
+    'business.rating.sizing.title': 'How your capacity is sized',
+    'business.rating.sizing.cash': 'Cash a month',
+    'business.rating.sizing.cash_note':
+        'net {margin}% margin + {depreciation}% depreciation added back',
+    'business.rating.sizing.multiplier': '× Your multiplier',
+    'business.rating.sizing.tier.none': 'No verified stock cover on file yet',
+    'business.rating.sizing.tier.cover1x':
+        'Your CPA verified stock covering at least 1× the raise',
+    'business.rating.sizing.tier.cover2x':
+        'Your CPA verified stock covering at least 2× the raise',
+    'business.rating.sizing.carry': 'Monthly payment you can carry',
+    'business.rating.sizing.explainer':
+        'Your capacity is the cash your business actually generates each month, multiplied by what your verified stock cover allows, then capped by the lowest of the five limits above. Nobody at Rozine sets this number by hand. Applications above capacity are rejected automatically.',
+    'business.rating.stock.title': 'Stock on file',
+    'business.rating.stock.verified': '{value} counted on site by your CPA',
+    'business.rating.stock.indicative':
+        '{value} is normal for your sector — but only a CPA count earns a higher multiplier',
+    'business.rating.stock.none': 'No stock position on file',
+    'business.rating.stock.why':
+        'A loan that buys stock is repaid by selling the stock, so verified cover raises what you can carry.',
+    'business.rating.limits': 'Five limits · the lowest one applies',
+    'business.rating.limit.capacity': 'Cash capacity',
+    'business.rating.limit.capacity_detail':
+        'EBITDA {ebitda}/mo × M {multiplier}',
+    'business.rating.limit.capacity_lift':
+        'Raise EBITDA, or have your CPA verify stock cover',
+    'business.rating.limit.revenue_share': 'Share of revenue',
+    'business.rating.limit.revenue_share_detail':
+        '{percent}% of {revenue} audited annual revenue',
+    'business.rating.limit.revenue_share_lift': 'Grow audited annual revenue',
+    'business.rating.limit.book_share': 'Share of book',
+    'business.rating.limit.book_share_detail':
+        '{percent}% of the {book} outstanding book',
+    'business.rating.limit.book_share_lift':
+        'Lifts on its own as the platform book grows',
+    'business.rating.limit.phase_cap': '{phase} phase cap',
+    'business.rating.limit.phase_cap_detail':
+        'Platform cap while the book is under {book}',
+    'business.rating.limit.phase_cap_lift': 'Lifts at the next phase',
+    'business.rating.limit.policy_max': 'Policy maximum',
+    'business.rating.limit.policy_max_detail':
+        'Hard ceiling on any single raise',
+    'business.rating.limit.policy_max_lift': 'None — this is absolute',
+    'business.rating.limit.yours': 'This is your limit',
+    'business.rating.approved': 'Approved capacity',
+    'business.rating.bound': 'What is limiting you: {limit}',
+    'business.rating.lift': 'To raise it — {how}',
+    'business.rating.headroom': 'Headroom available',
+    'business.rating.headroom_note': 'You can raise this much more now.',
+    'business.rating.raise': 'Raise',
+    'business.rating.tiers.title': 'What a higher multiplier would allow',
+    'business.rating.tiers.applied': 'Applied',
+    'business.rating.tiers.not_yet': 'Not yet',
+    'business.rating.tiers.no_cover': 'No stock cover needed at this level',
+    'business.rating.tiers.needs':
+        'Needs {need}× cover · your stock gives {yours}×',
+    'business.rating.financials': 'Verified financials',
+    'business.rating.sources': 'Bank · MoMo',
+    'business.rating.financial.revenue': 'Avg monthly rev.',
+    'business.rating.financial.ebitda': 'EBITDA / month',
+    'business.rating.financial.margin': 'Net margin',
+    'business.rating.financial.outstanding': 'Outstanding',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

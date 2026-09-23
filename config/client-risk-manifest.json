@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "4ddcbdb61f5023ae382f5e3366de969061e04b9d11a80d4c3a55ebcaf822a9e4",
-    "coverageSetSha256": "631c8f2f9feb685379c42efef6619b3c802794c48cb28652c0e7d070f10dbb94",
+    "sourceManifestSha256": "49cd501dd8198fc27373f34b6385eac6b1bb91a19e110cea23839ab5062c02ca",
+    "coverageSetSha256": "e4665ad056cd7e1f0f947972ae65ea7ee743cd2d46a6fc254475128d848a8779",
     "thresholds": {
         "critical": {
             "global": {
@@ -146,6 +146,9 @@
         "resources/js/components/business/profile/legal-document.tsx",
         "resources/js/components/business/profile/linked-accounts.tsx",
         "resources/js/components/business/profile/profile-menu.tsx",
+        "resources/js/components/business/rating/band.ts",
+        "resources/js/components/business/rating/capacity-card.tsx",
+        "resources/js/components/business/rating/score-card.tsx",
         "resources/js/components/business/reports/audit-guide.tsx",
         "resources/js/components/business/reports/period-label.ts",
         "resources/js/components/business/reports/report-sheet.tsx",
@@ -281,6 +284,7 @@
         "resources/js/pages/business/onboarding.tsx",
         "resources/js/pages/business/profile.tsx",
         "resources/js/pages/business/publish.tsx",
+        "resources/js/pages/business/rating.tsx",
         "resources/js/pages/business/reports.tsx",
         "resources/js/pages/business/wallet.tsx",
         "resources/js/pages/dashboard.tsx",

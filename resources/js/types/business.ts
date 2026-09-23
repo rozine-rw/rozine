@@ -653,3 +653,66 @@ export type BusinessWalletProps = {
     };
     actions: Record<WalletFlow, RouteAction>;
 };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Rating & financial health (MVP-BUSINESS-SCR-03, design L811–939)                           */
+/* ------------------------------------------------------------------------------------------ */
+
+/** One of the five limits on a raise; the engine marks the one that binds. */
+export type CapacityLimit = { value: Money; binding: boolean } & (
+    | { key: 'capacity'; ebitda: Money; multiplier: string }
+    | { key: 'revenue_share'; percent: string; revenue: Money }
+    | { key: 'book_share'; percent: string; book: Money }
+    | { key: 'phase_cap'; phase: string; book_under: Money }
+    | { key: 'policy_max' }
+);
+
+/** How the engine sized this business's capacity, exactly as it computed it. */
+export type CapacitySizing = {
+    cash_per_month: Money;
+    net_margin_percent: string;
+    depreciation_percent: string;
+    multiplier: string;
+    cover_tier: 'none' | 'cover1x' | 'cover2x';
+    carry: Money;
+    stock: { state: 'verified' | 'indicative' | 'none'; value: Money | null };
+    limits: CapacityLimit[];
+    approved: Money;
+    headroom: Money;
+    tiers: {
+        multiplier: string;
+        principal: Money;
+        applied: boolean;
+        needs_cover: string | null;
+        your_cover: string;
+    }[];
+};
+
+export type RatingFactorKey =
+    | 'financial_health'
+    | 'repayment_history'
+    | 'statement_consistency'
+    | 'growth_outlook';
+
+export type BusinessRatingProps = {
+    home: BusinessHomeProps;
+    /** Null until the first audited report is rated. */
+    rating: BusinessRating | null;
+    /** Why the engine declined to rate or raise capacity, in its own words. */
+    refusal: { reasons: string[] } | null;
+    /** The rating at the last audit and what has moved it since, when it has drifted. */
+    drift: {
+        audited: BusinessRating;
+        moves: { reason: string; delta: string }[];
+    } | null;
+    /** Published factor scores out of 100, when the engine publishes them. */
+    factors: { key: RatingFactorKey; score: number }[] | null;
+    sizing: CapacitySizing | null;
+    financials: {
+        avg_monthly_revenue: Money;
+        ebitda_month: Money;
+        net_margin_percent: string;
+        outstanding: Money;
+    };
+    links: { close: RouteLink; raise: RouteLink | null };
+};
