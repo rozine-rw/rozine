@@ -67,6 +67,12 @@
         "resources/js/components/business/reports/audit-guide.tsx",
         "resources/js/components/business/reports/period-label.ts",
         "resources/js/components/business/reports/report-sheet.tsx",
+        "resources/js/components/business/wallet/balance-card.tsx",
+        "resources/js/components/business/wallet/flow-panel.tsx",
+        "resources/js/components/business/wallet/method-tile.tsx",
+        "resources/js/components/business/wallet/transaction-history.tsx",
+        "resources/js/components/business/wallet/transaction-row.tsx",
+        "resources/js/components/business/wallet/transaction-sheet.tsx",
         "resources/js/components/non-live-notice.tsx",
         "resources/js/components/rozine/app-frame.tsx",
         "resources/js/components/rozine/column-sheet.tsx",
@@ -93,6 +99,7 @@
         "resources/js/pages/business/profile.tsx",
         "resources/js/pages/business/publish.tsx",
         "resources/js/pages/business/reports.tsx",
+        "resources/js/pages/business/wallet.tsx",
         "resources/js/pages/dashboard.tsx"
     ]
 }

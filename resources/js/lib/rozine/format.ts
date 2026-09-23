@@ -33,6 +33,13 @@ export const formatRwfShort = (money: Money): string => {
     return `RWF ${millions % 1 === 0 ? millions.toFixed(0) : millions.toFixed(1)}M`;
 };
 
+/** A quick-amount chip: "100K", "500K", "1M", "5M". */
+export const formatChip = (money: Money): string => {
+    const value = francs(money);
+
+    return value < 1e6 ? `${Math.round(value / 1e3)}K` : formatMillions(money);
+};
+
 /** Stat-tile figure without the currency: "88M", "3.4M", "1.6B". */
 export const formatMillions = (money: Money): string => {
     const millions = francs(money) / 1e6;
@@ -116,3 +123,15 @@ export const formatOrdinal = (
         `common.ordinal.${new Intl.PluralRules(intlLocale(locale), { type: 'ordinal' }).select(value)}`,
         { n: value },
     );
+
+/** "15 Jun 2026 · 14:32" in Kigali time: when a transaction happened. */
+export const formatDateTime = (iso: string, locale: string): string =>
+    `${formatDate(iso, locale)} · ${new Intl.DateTimeFormat(
+        intlLocale(locale),
+        {
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23',
+            timeZone: 'Africa/Kigali',
+        },
+    ).format(new Date(iso))}`;

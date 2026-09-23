@@ -579,3 +579,77 @@ export type BusinessProfileProps = {
     };
     actions: { save_company: RouteAction };
 };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Wallet (MVP-BUSINESS-SCR-08, design L1315–1457, transaction detail L2378–2413)              */
+/* ------------------------------------------------------------------------------------------ */
+
+export type WalletFlow = 'deposit' | 'withdraw';
+
+export type WalletMethod = {
+    key: string;
+    kind: 'mtn' | 'airtel' | 'bank';
+    name: string;
+};
+
+/**
+ * The server's price for the amount and method on screen: the fee, and either what reaches the
+ * account (withdraw) or the balance after (deposit). A refusal carries the reason instead.
+ */
+export type WalletQuote =
+    | {
+          status: 'ready';
+          flow: WalletFlow;
+          fee: Money;
+          receive: Money;
+          new_balance: Money;
+      }
+    | { status: 'refused'; flow: WalletFlow; message: string };
+
+export type WalletTransactionKind =
+    | 'deposit'
+    | 'withdrawal'
+    | 'disbursement'
+    | 'repayment'
+    | 'services_fee'
+    | 'application_fee';
+
+export type WalletTransaction = {
+    id: string;
+    kind: WalletTransactionKind;
+    direction: 'in' | 'out';
+    /** The bank, network or note the money moved through: "Bank of Kigali", "Fleet Expansion". */
+    via: string;
+    amount: Money;
+    occurred_at: string;
+    status: 'completed' | 'pending' | 'failed';
+    /** Why a transfer failed, so it can be inspected before any retry. */
+    failure_reason: string | null;
+    reference: string;
+    balance_before: Money;
+    balance_after: Money;
+    /** Withdrawals only: the fee and what reached the account. */
+    charges: { gross: Money; fee: Money; net: Money } | null;
+};
+
+export type BusinessWalletProps = {
+    wallet: { available: Money; status: 'active' | 'frozen' };
+    methods: Record<WalletFlow, WalletMethod[]>;
+    quick_amounts: Money[];
+    /** Quoted for the `flow`, `amount` and `method` the page last asked for. */
+    quote: WalletQuote | null;
+    /** Today in Kigali, ISO date, for the quick date ranges. */
+    today: string;
+    transactions: {
+        items: WalletTransaction[];
+        from: string | null;
+        to: string | null;
+    };
+    links: BusinessAppLinks & {
+        back: RouteLink;
+        wallet: RouteLink;
+        export_pdf: RouteLink;
+        export_csv: RouteLink;
+    };
+    actions: Record<WalletFlow, RouteAction>;
+};

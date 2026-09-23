@@ -171,6 +171,12 @@
         "resources/js/components/business/reports/audit-guide.tsx",
         "resources/js/components/business/reports/period-label.ts",
         "resources/js/components/business/reports/report-sheet.tsx",
+        "resources/js/components/business/wallet/balance-card.tsx",
+        "resources/js/components/business/wallet/flow-panel.tsx",
+        "resources/js/components/business/wallet/method-tile.tsx",
+        "resources/js/components/business/wallet/transaction-history.tsx",
+        "resources/js/components/business/wallet/transaction-row.tsx",
+        "resources/js/components/business/wallet/transaction-sheet.tsx",
         "resources/js/components/delete-user.tsx",
         "resources/js/components/heading.tsx",
         "resources/js/components/i18n-provider.tsx",
@@ -292,6 +298,7 @@
         "resources/js/pages/business/profile.tsx",
         "resources/js/pages/business/publish.tsx",
         "resources/js/pages/business/reports.tsx",
+        "resources/js/pages/business/wallet.tsx",
         "resources/js/pages/dashboard.tsx",
         "resources/js/pages/home.tsx",
         "resources/js/pages/pulse.tsx",
@@ -301,10 +308,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 273,
+        "totalTrackedSources": 280,
         "generated": 70,
         "declarationOnly": 11,
-        "authoredExecutable": 192
+        "authoredExecutable": 199
     },
-    "coverageSetSha256": "74fe3bee4b87422c9cd89002f3218f7873e170a7ce5aa54bf3fb7d846f902cfe"
+    "coverageSetSha256": "5112510b9695e44f49fa8b2529a0f4475660adf671a619d1a38ecc5dc44dbcea"
 }

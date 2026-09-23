@@ -3,11 +3,17 @@ import type { CSSProperties, ReactNode } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import type { RouteLink } from '@/types';
 
+const SCRIM =
+    'fixed inset-0 z-[48] animate-[rz-scrim_.22s_ease_both] bg-[rgba(8,14,28,.5)] backdrop-blur-[3px] lg:absolute lg:rounded-2xl lg:bg-[rgba(8,14,28,.42)]';
+
 type ColumnSheetProps = {
     /** Accessible name of the sheet. */
     label: string;
-    /** Where dismissing goes: the scrim and any close control lead back to the page beneath. */
-    close: RouteLink;
+    /**
+     * How dismissing works: a link back to the page beneath, or a callback for a sheet that is
+     * only client state.
+     */
+    close: RouteLink | (() => void);
     /**
      * Share of its column the sheet occupies on a wide screen (design `_colSheetK` fractions,
      * e.g. .8 for publish, .72 for a transaction). On a phone it is a bottom sheet up to 92%.
@@ -34,11 +40,20 @@ export function ColumnSheet({
 
     return (
         <>
-            <Link
-                href={close}
-                aria-label={t('app.sheet.close')}
-                className="fixed inset-0 z-[48] animate-[rz-scrim_.22s_ease_both] bg-[rgba(8,14,28,.5)] backdrop-blur-[3px] lg:absolute lg:rounded-2xl lg:bg-[rgba(8,14,28,.42)]"
-            />
+            {typeof close === 'function' ? (
+                <button
+                    type="button"
+                    onClick={close}
+                    aria-label={t('app.sheet.close')}
+                    className={SCRIM}
+                />
+            ) : (
+                <Link
+                    href={close}
+                    aria-label={t('app.sheet.close')}
+                    className={SCRIM}
+                />
+            )}
             <section
                 role="dialog"
                 aria-modal="true"

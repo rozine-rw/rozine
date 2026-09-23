@@ -194,15 +194,15 @@
                 "method": "get"
             },
             "wallet": {
-                "url": "/preview/business-home",
+                "url": "/preview/business-wallet",
                 "method": "get"
             },
             "deposit": {
-                "url": "/preview/business-home",
+                "url": "/preview/business-wallet",
                 "method": "get"
             },
             "withdraw": {
-                "url": "/preview/business-home",
+                "url": "/preview/business-wallet",
                 "method": "get"
             },
             "notifications": {

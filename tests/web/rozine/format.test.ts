@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vite-plus/test';
 import {
     formatAmount,
     formatCount,
+    formatChip,
     formatDate,
     formatDateLong,
+    formatDateTime,
     formatDayMonth,
     formatMillions,
     formatMonthShort,
@@ -36,6 +38,8 @@ describe('Rozine display formatting', () => {
         expect(formatMillions(money(88000000))).toBe('88M');
         expect(formatMillions(money(3400000))).toBe('3.4M');
         expect(formatMillions(money(1600000000))).toBe('1.6B');
+        expect(formatChip(money(100000))).toBe('100K');
+        expect(formatChip(money(5000000))).toBe('5M');
     });
 
     it('writes dates day-first in English and in the Kigali calendar', () => {
@@ -48,6 +52,9 @@ describe('Rozine display formatting', () => {
         expect(formatDayMonth('2026-10-07T00:00:00+02:00', 'en')).toBe('7 Oct');
         expect(formatMonthShort('2026-06-01', 'en')).toBe('Jun');
         expect(formatDateLong('2026-08-04', 'en')).toBe('4 August 2026');
+        expect(formatDateTime('2026-06-15T12:32:00Z', 'en')).toBe(
+            '15 Jun 2026 · 14:32',
+        );
         expect(formatDate('2026-10-05T00:00:00+02:00', 'en')).toBe(
             '5 Oct 2026',
         );
