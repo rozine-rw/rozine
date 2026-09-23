@@ -21,6 +21,12 @@ beforeEach(function () {
 afterEach(function () {
     app()->detectEnvironment(fn (): string => 'testing');
     config(['database.default' => $this->originalConnection]);
+    $connection = DB::getConnections()['demo_test'] ?? null;
+
+    if ($connection !== null) {
+        $connection->getSchemaBuilder()->dropAllTables();
+    }
+
     DB::purge('demo_test');
     File::deleteDirectory($this->fixtureDirectory);
 });
@@ -34,12 +40,12 @@ function prepareDemoFixtureDatabase(string $directory): void
     app()->useDatabasePath($directory.'/database');
     app()->useStoragePath($directory.'/storage');
     app()->usePublicPath($directory.'/public');
-    $path = database_path('isolated/rozine_demo.sqlite');
-    File::put($path, '');
     config(['database.connections.demo_test' => [
-        'driver' => 'sqlite', 'database' => $path, 'foreign_key_constraints' => true,
+        ...config('database.connections.pgsql'),
+        'url' => null, 'database' => 'rozine_demo', 'username' => 'rozine_demo',
+        'password' => 'rozine_demo', 'search_path' => 'public',
     ]]);
-    Artisan::call('migrate', ['--database' => 'demo_test', '--path' => $migrations, '--realpath' => true, '--force' => true]);
+    expect(Artisan::call('migrate:fresh', ['--database' => 'demo_test', '--path' => $migrations, '--realpath' => true, '--force' => true]))->toBe(0);
     config([
         'database.default' => 'demo_test', 'app.debug' => false,
         'app.url' => 'https://demo.example.test',
@@ -138,7 +144,7 @@ test('database rejection rolls back the complete fixture batch without leaking S
     prepareDemoFixtureDatabase($this->fixtureDirectory);
     $collision = PulseSignup::factory()->business()->create(['queue_number' => 'DEMO-BIZ-0001']);
     $before = $collision->fresh()->getRawOriginal();
-    DB::statement("CREATE TRIGGER reject_demo_business BEFORE INSERT ON pulse_signups WHEN NEW.contact = 'business@rozine-demo.invalid' BEGIN SELECT RAISE(ABORT, 'synthetic-private-error'); END");
+    DB::statement('ALTER TABLE pulse_signups ADD CONSTRAINT "synthetic-private-error" CHECK (contact <> \'business@rozine-demo.invalid\')');
     expect(Artisan::call('demo:reset', ['--confirm' => ResetDemoFixtures::VERSION]))->toBe(1)
         ->and(Artisan::output())->toContain('DEMO_FIXTURE_DATABASE_REJECTED')
         ->not->toContain($collision->contact, 'insert into', 'synthetic-private-error');

@@ -1,0 +1,13 @@
+-- Run only against an empty disposable test server as its administrator.
+-- These passwords are synthetic CI fixtures, never deployment credentials.
+CREATE ROLE rozine LOGIN PASSWORD 'rozine' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION;
+CREATE ROLE rozine_test LOGIN PASSWORD 'rozine_test' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION;
+CREATE ROLE rozine_demo LOGIN PASSWORD 'rozine_demo' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION;
+
+CREATE DATABASE rozine OWNER rozine TEMPLATE template0 ENCODING 'UTF8';
+CREATE DATABASE rozine_test OWNER rozine_test TEMPLATE template0 ENCODING 'UTF8';
+CREATE DATABASE rozine_demo OWNER rozine_demo TEMPLATE template0 ENCODING 'UTF8';
+
+REVOKE ALL ON DATABASE rozine FROM PUBLIC;
+REVOKE ALL ON DATABASE rozine_test FROM PUBLIC;
+REVOKE ALL ON DATABASE rozine_demo FROM PUBLIC;

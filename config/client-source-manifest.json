@@ -22,6 +22,10 @@
         }
     },
     "generatedPaths": [
+        "resources/js/actions/App/Http/Controllers/Api/V1/IdentityController.ts",
+        "resources/js/actions/App/Http/Controllers/Api/V1/index.ts",
+        "resources/js/actions/App/Http/Controllers/Api/index.ts",
+        "resources/js/actions/App/Http/Controllers/DashboardController.ts",
         "resources/js/actions/App/Http/Controllers/PulseController.ts",
         "resources/js/actions/App/Http/Controllers/Settings/ProfileController.ts",
         "resources/js/actions/App/Http/Controllers/Settings/SecurityController.ts",
@@ -67,6 +71,9 @@
         "resources/js/actions/Laravel/Sanctum/Http/index.ts",
         "resources/js/actions/Laravel/Sanctum/index.ts",
         "resources/js/actions/Laravel/index.ts",
+        "resources/js/routes/api/index.ts",
+        "resources/js/routes/api/v1/identity/index.ts",
+        "resources/js/routes/api/v1/index.ts",
         "resources/js/routes/appearance/index.ts",
         "resources/js/routes/boost/index.ts",
         "resources/js/routes/index.ts",
@@ -218,8 +225,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 190,
-        "generated": 70,
+        "totalTrackedSources": 197,
+        "generated": 77,
         "declarationOnly": 6,
         "authoredExecutable": 114
     },

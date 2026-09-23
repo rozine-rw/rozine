@@ -53,6 +53,14 @@ Aminu owns the server-side implementation and Erastus supplies the non-author re
 
 ## Exact legacy exceptions
 
+### Phase 1 identity entry points — 2026-09-23
+
+`App\Domain\Identity\RoleAccess` owns the read-only membership-availability rules. `App\Application\Identity\RegisterIdentity` and `GetIdentityContext` are the application entry points; `App\Application\Identity\Contracts\IdentityRepository` is the persistence port, bound only in `AppServiceProvider` to `App\Infrastructure\Identity\EloquentIdentityRepository`. The adapter creates the account and unverified Party in one transaction and reads current memberships for the authenticated user. It does not provision roles, verify a person, resolve duplicate identities, authorize an entity mandate or grant money permissions.
+
+`App\Models\Party` and `RoleMembership` may be referenced only by the identity adapter, model relationships and factories. The architecture suite asserts that the protected symbols exist and enforces that boundary; the `identity-boundary` negative control introduces a forbidden application-layer Party write, requires that specific rule to fail, removes it and verifies the clean suite.
+
+Fortify remains the single authentication entry point. `CreateNewUser` keeps framework input validation and adapts the ID returned by `RegisterIdentity` to Fortify's required User return type; the governed creation transaction now lives behind the identity port. `ResetUserPassword` remains the existing framework adapter. Neither is duplicated for the API. The shared `IdentityContextResource` serializes the same action result for `DashboardController` and `Api\V1\IdentityController`. This reassessment covers registration and the read model; role switching, MFA/consent, recovery and entity authority remain unfinished Phase 1 work.
+
 | Class | Exception | Owner | Removal gate |
 |---|---|---|---|
 | `App\Http\Controllers\PulseController` | Directly queries `PulseSignup` and calls `PulseUnderwriting`; it predates the application-action boundary. | Aminu and Erastus — Engineering | Isolate or remove before Phase 1 begins; Pulse product scope remains deferred to Phase 6. |

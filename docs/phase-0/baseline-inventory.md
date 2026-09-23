@@ -14,7 +14,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | PHP (declared) | ^8.5 |
 | Laravel | 13.23.0 |
 | Node (pinned) | 24.15.0 |
-| Default database connection | sqlite |
+| Default database connection | pgsql |
 | Concurrency-authoritative connection | pgsql (D-73) |
 
 ## Schema
@@ -25,9 +25,9 @@ facts that would differ between machines, so they are excluded deliberately.
 |---|---|---|---|
 | `key` | `varchar` | no | — |
 | `value` | `text` | no | — |
-| `expiration` | `integer` | no | — |
+| `expiration` | `int8` | no | — |
 
-**Indexes:** `cache_expiration_index` on (expiration); `sqlite_autoindex_cache_1` on (key) — unique
+**Indexes:** `cache_expiration_index` on (expiration); `cache_pkey` on (key) — unique
 
 ### `cache_locks`
 
@@ -35,23 +35,23 @@ facts that would differ between machines, so they are excluded deliberately.
 |---|---|---|---|
 | `key` | `varchar` | no | — |
 | `owner` | `varchar` | no | — |
-| `expiration` | `integer` | no | — |
+| `expiration` | `int8` | no | — |
 
-**Indexes:** `cache_locks_expiration_index` on (expiration); `sqlite_autoindex_cache_locks_1` on (key) — unique
+**Indexes:** `cache_locks_expiration_index` on (expiration); `cache_locks_pkey` on (key) — unique
 
 ### `failed_jobs`
 
 | Column | Type | Nullable | Default |
 |---|---|---|---|
-| `id` | `integer` | no | — |
+| `id` | `int8` | no | `nextval('failed_jobs_id_seq'::regclass)` |
 | `uuid` | `varchar` | no | — |
 | `connection` | `varchar` | no | — |
 | `queue` | `varchar` | no | — |
 | `payload` | `text` | no | — |
 | `exception` | `text` | no | — |
-| `failed_at` | `datetime` | no | `CURRENT_TIMESTAMP` |
+| `failed_at` | `timestamp` | no | `CURRENT_TIMESTAMP` |
 
-**Indexes:** `failed_jobs_connection_queue_failed_at_index` on (connection, queue, failed_at); `failed_jobs_uuid_unique` on (uuid) — unique; `primary` on (id) — unique
+**Indexes:** `failed_jobs_connection_queue_failed_at_index` on (connection, queue, failed_at); `failed_jobs_pkey` on (id) — unique; `failed_jobs_uuid_unique` on (uuid) — unique
 
 ### `job_batches`
 
@@ -59,55 +59,67 @@ facts that would differ between machines, so they are excluded deliberately.
 |---|---|---|---|
 | `id` | `varchar` | no | — |
 | `name` | `varchar` | no | — |
-| `total_jobs` | `integer` | no | — |
-| `pending_jobs` | `integer` | no | — |
-| `failed_jobs` | `integer` | no | — |
+| `total_jobs` | `int4` | no | — |
+| `pending_jobs` | `int4` | no | — |
+| `failed_jobs` | `int4` | no | — |
 | `failed_job_ids` | `text` | no | — |
 | `options` | `text` | yes | — |
-| `cancelled_at` | `integer` | yes | — |
-| `created_at` | `integer` | no | — |
-| `finished_at` | `integer` | yes | — |
+| `cancelled_at` | `int4` | yes | — |
+| `created_at` | `int4` | no | — |
+| `finished_at` | `int4` | yes | — |
 
-**Indexes:** `sqlite_autoindex_job_batches_1` on (id) — unique
+**Indexes:** `job_batches_pkey` on (id) — unique
 
 ### `jobs`
 
 | Column | Type | Nullable | Default |
 |---|---|---|---|
-| `id` | `integer` | no | — |
+| `id` | `int8` | no | `nextval('jobs_id_seq'::regclass)` |
 | `queue` | `varchar` | no | — |
 | `payload` | `text` | no | — |
-| `attempts` | `integer` | no | — |
-| `reserved_at` | `integer` | yes | — |
-| `available_at` | `integer` | no | — |
-| `created_at` | `integer` | no | — |
+| `attempts` | `int2` | no | — |
+| `reserved_at` | `int4` | yes | — |
+| `available_at` | `int4` | no | — |
+| `created_at` | `int4` | no | — |
 
-**Indexes:** `jobs_queue_index` on (queue); `primary` on (id) — unique
+**Indexes:** `jobs_pkey` on (id) — unique; `jobs_queue_index` on (queue)
 
 ### `migrations`
 
 | Column | Type | Nullable | Default |
 |---|---|---|---|
-| `id` | `integer` | no | — |
+| `id` | `int4` | no | `nextval('migrations_id_seq'::regclass)` |
 | `migration` | `varchar` | no | — |
-| `batch` | `integer` | no | — |
+| `batch` | `int4` | no | — |
 
-**Indexes:** `primary` on (id) — unique
+**Indexes:** `migrations_pkey` on (id) — unique
+
+### `parties`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `kind` | `varchar` | no | `'person'::character varying` |
+| `verified_at` | `timestamp` | yes | — |
+| `created_at` | `timestamp` | yes | — |
+| `updated_at` | `timestamp` | yes | — |
+
+**Indexes:** `parties_pkey` on (id) — unique
 
 ### `passkeys`
 
 | Column | Type | Nullable | Default |
 |---|---|---|---|
-| `id` | `integer` | no | — |
-| `user_id` | `integer` | no | — |
+| `id` | `int8` | no | `nextval('passkeys_id_seq'::regclass)` |
+| `user_id` | `int8` | no | — |
 | `name` | `varchar` | no | — |
 | `credential_id` | `varchar` | no | — |
-| `credential` | `text` | no | — |
-| `last_used_at` | `datetime` | yes | — |
-| `created_at` | `datetime` | yes | — |
-| `updated_at` | `datetime` | yes | — |
+| `credential` | `json` | no | — |
+| `last_used_at` | `timestamp` | yes | — |
+| `created_at` | `timestamp` | yes | — |
+| `updated_at` | `timestamp` | yes | — |
 
-**Indexes:** `passkeys_credential_id_unique` on (credential_id) — unique; `passkeys_user_id_index` on (user_id); `primary` on (id) — unique
+**Indexes:** `passkeys_credential_id_unique` on (credential_id) — unique; `passkeys_pkey` on (id) — unique; `passkeys_user_id_index` on (user_id)
 
 ### `password_reset_tokens`
 
@@ -115,32 +127,32 @@ facts that would differ between machines, so they are excluded deliberately.
 |---|---|---|---|
 | `email` | `varchar` | no | — |
 | `token` | `varchar` | no | — |
-| `created_at` | `datetime` | yes | — |
+| `created_at` | `timestamp` | yes | — |
 
-**Indexes:** `sqlite_autoindex_password_reset_tokens_1` on (email) — unique
+**Indexes:** `password_reset_tokens_pkey` on (email) — unique
 
 ### `personal_access_tokens`
 
 | Column | Type | Nullable | Default |
 |---|---|---|---|
-| `id` | `integer` | no | — |
+| `id` | `int8` | no | `nextval('personal_access_tokens_id_seq'::regclass)` |
 | `tokenable_type` | `varchar` | no | — |
-| `tokenable_id` | `integer` | no | — |
+| `tokenable_id` | `int8` | no | — |
 | `name` | `text` | no | — |
 | `token` | `varchar` | no | — |
 | `abilities` | `text` | yes | — |
-| `last_used_at` | `datetime` | yes | — |
-| `expires_at` | `datetime` | yes | — |
-| `created_at` | `datetime` | yes | — |
-| `updated_at` | `datetime` | yes | — |
+| `last_used_at` | `timestamp` | yes | — |
+| `expires_at` | `timestamp` | yes | — |
+| `created_at` | `timestamp` | yes | — |
+| `updated_at` | `timestamp` | yes | — |
 
-**Indexes:** `personal_access_tokens_expires_at_index` on (expires_at); `personal_access_tokens_token_unique` on (token) — unique; `personal_access_tokens_tokenable_type_tokenable_id_index` on (tokenable_type, tokenable_id); `primary` on (id) — unique
+**Indexes:** `personal_access_tokens_expires_at_index` on (expires_at); `personal_access_tokens_pkey` on (id) — unique; `personal_access_tokens_token_unique` on (token) — unique; `personal_access_tokens_tokenable_type_tokenable_id_index` on (tokenable_type, tokenable_id)
 
 ### `pulse_signups`
 
 | Column | Type | Nullable | Default |
 |---|---|---|---|
-| `id` | `integer` | no | — |
+| `id` | `int8` | no | `nextval('pulse_signups_id_seq'::regclass)` |
 | `type` | `varchar` | no | — |
 | `name` | `varchar` | no | — |
 | `contact_method` | `varchar` | no | — |
@@ -148,68 +160,82 @@ facts that would differ between machines, so they are excluded deliberately.
 | `province` | `varchar` | yes | — |
 | `district` | `varchar` | yes | — |
 | `queue_number` | `varchar` | no | — |
-| `pledge_amount` | `integer` | yes | — |
-| `projected_return` | `integer` | yes | — |
+| `pledge_amount` | `int8` | yes | — |
+| `projected_return` | `int8` | yes | — |
 | `blended_yield` | `numeric` | yes | — |
-| `annual_revenue` | `integer` | yes | — |
-| `qualified_amount` | `integer` | yes | — |
-| `term_months` | `integer` | yes | — |
+| `annual_revenue` | `int8` | yes | — |
+| `qualified_amount` | `int8` | yes | — |
+| `term_months` | `int2` | yes | — |
 | `flat_rate` | `numeric` | yes | — |
 | `rating_band` | `varchar` | yes | — |
 | `rating_score` | `numeric` | yes | — |
 | `loan_number` | `varchar` | yes | — |
 | `ip_address` | `varchar` | yes | — |
 | `user_agent` | `text` | yes | — |
-| `created_at` | `datetime` | yes | — |
-| `updated_at` | `datetime` | yes | — |
-| `listed` | `tinyint` | no | `'0'` |
-| `annual_costs` | `integer` | yes | — |
+| `created_at` | `timestamp` | yes | — |
+| `updated_at` | `timestamp` | yes | — |
+| `listed` | `bool` | no | `false` |
+| `annual_costs` | `int8` | yes | — |
 | `sector` | `varchar` | yes | — |
-| `registered_year` | `integer` | yes | — |
+| `registered_year` | `int2` | yes | — |
 | `score` | `numeric` | yes | — |
 | `country` | `varchar` | yes | — |
 
-**Indexes:** `primary` on (id) — unique; `pulse_signups_contact_unique` on (contact) — unique; `pulse_signups_loan_number_unique` on (loan_number) — unique; `pulse_signups_type_index` on (type); `pulse_signups_type_queue_number_unique` on (type, queue_number) — unique
+**Indexes:** `pulse_signups_contact_unique` on (contact) — unique; `pulse_signups_loan_number_unique` on (loan_number) — unique; `pulse_signups_pkey` on (id) — unique; `pulse_signups_type_index` on (type); `pulse_signups_type_queue_number_unique` on (type, queue_number) — unique
+
+### `role_memberships`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `party_id` | `bpchar` | no | — |
+| `role` | `varchar` | no | — |
+| `status` | `varchar` | no | `'pending'::character varying` |
+| `created_at` | `timestamp` | yes | — |
+| `updated_at` | `timestamp` | yes | — |
+
+**Indexes:** `role_memberships_party_id_role_unique` on (party_id, role) — unique; `role_memberships_pkey` on (id) — unique
 
 ### `sessions`
 
 | Column | Type | Nullable | Default |
 |---|---|---|---|
 | `id` | `varchar` | no | — |
-| `user_id` | `integer` | yes | — |
+| `user_id` | `int8` | yes | — |
 | `ip_address` | `varchar` | yes | — |
 | `user_agent` | `text` | yes | — |
 | `payload` | `text` | no | — |
-| `last_activity` | `integer` | no | — |
+| `last_activity` | `int4` | no | — |
 
-**Indexes:** `sessions_last_activity_index` on (last_activity); `sessions_user_id_index` on (user_id); `sqlite_autoindex_sessions_1` on (id) — unique
+**Indexes:** `sessions_last_activity_index` on (last_activity); `sessions_pkey` on (id) — unique; `sessions_user_id_index` on (user_id)
 
 ### `signup_counters`
 
 | Column | Type | Nullable | Default |
 |---|---|---|---|
 | `name` | `varchar` | no | — |
-| `value` | `integer` | no | `'0'` |
+| `value` | `int8` | no | `'0'::bigint` |
 
-**Indexes:** `sqlite_autoindex_signup_counters_1` on (name) — unique
+**Indexes:** `signup_counters_pkey` on (name) — unique
 
 ### `users`
 
 | Column | Type | Nullable | Default |
 |---|---|---|---|
-| `id` | `integer` | no | — |
+| `id` | `int8` | no | `nextval('users_id_seq'::regclass)` |
 | `name` | `varchar` | no | — |
 | `email` | `varchar` | no | — |
-| `email_verified_at` | `datetime` | yes | — |
+| `email_verified_at` | `timestamp` | yes | — |
 | `password` | `varchar` | no | — |
 | `remember_token` | `varchar` | yes | — |
-| `created_at` | `datetime` | yes | — |
-| `updated_at` | `datetime` | yes | — |
+| `created_at` | `timestamp` | yes | — |
+| `updated_at` | `timestamp` | yes | — |
 | `two_factor_secret` | `text` | yes | — |
 | `two_factor_recovery_codes` | `text` | yes | — |
-| `two_factor_confirmed_at` | `datetime` | yes | — |
+| `two_factor_confirmed_at` | `timestamp` | yes | — |
+| `party_id` | `bpchar` | yes | — |
 
-**Indexes:** `primary` on (id) — unique; `users_email_unique` on (email) — unique
+**Indexes:** `users_email_unique` on (email) — unique; `users_party_id_index` on (party_id); `users_pkey` on (id) — unique
 
 ## Migrations
 
@@ -228,6 +254,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_07_29_162848_reshape_pulse_signups_for_self_reported_figures.php |
 | 2026_08_30_105627_allow_site_signups_without_a_rwandan_address.php |
 | 2026_09_06_121310_serialize_pulse_signup_numbering.php |
+| 2026_09_23_101346_create_identity_parties_and_role_memberships.php |
 
 ## Routes
 
@@ -238,7 +265,9 @@ Vendor routes excluded, matching `route:list --except-vendor`.
 | GET | `/.well-known/passkey-endpoints` | `well-known.passkeys` | `Closure` | web |
 | GET | `/` | `home` | `SiteController@index` | web |
 | GET | `/api/user` | — | `Closure` | api, auth:sanctum |
+| GET | `/api/v1/identity` | `api.v1.identity.show` | `Api\V1\IdentityController@__invoke` | api, auth:sanctum, throttle:60,1 |
 | POST | `/business` | `site.business.store` | `SiteController@storeBusiness` | web, throttle:10,1 |
+| GET | `/dashboard` | `dashboard` | `DashboardController@__invoke` | web, auth, verified |
 | POST | `/investor` | `site.investor.store` | `SiteController@storeInvestor` | web, throttle:10,1 |
 | GET | `/pulse` | `pulse` | `PulseController@index` | web |
 | POST | `/pulse/business` | `pulse.business.store` | `PulseController@storeBusiness` | web, throttle:10,1 |
@@ -267,14 +296,14 @@ The ADR-0001 layering as it stands. `tests/Architecture` enforces the dependency
 
 | Layer | Path | Classes | Contents |
 |---|---|---|---|
-| Domain | `app/Domain` | 2 | `Pulse\PulseSector`, `Pulse\PulseUnderwriting` |
-| Application | `app/Application` | 11 | `Environment\Contracts\DemoFixtureStore`, `Environment\EnvironmentIsolation`, `Environment\ResetDemoFixtures`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor` |
-| Infrastructure | `app/Infrastructure` | 2 | `Environment\EloquentDemoFixtureStore`, `Pulse\EloquentPulseSignupRepository` |
-| HTTP — controllers | `app/Http/Controllers` | 5 | `Controller`, `PulseController`, `Settings\ProfileController`, `Settings\SecurityController`, `SiteController` |
+| Domain | `app/Domain` | 3 | `Identity\RoleAccess`, `Pulse\PulseSector`, `Pulse\PulseUnderwriting` |
+| Application | `app/Application` | 14 | `Environment\Contracts\DemoFixtureStore`, `Environment\EnvironmentIsolation`, `Environment\ResetDemoFixtures`, `Identity\Contracts\IdentityRepository`, `Identity\GetIdentityContext`, `Identity\RegisterIdentity`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor` |
+| Infrastructure | `app/Infrastructure` | 3 | `Environment\EloquentDemoFixtureStore`, `Identity\EloquentIdentityRepository`, `Pulse\EloquentPulseSignupRepository` |
+| HTTP — controllers | `app/Http/Controllers` | 7 | `Api\V1\IdentityController`, `Controller`, `DashboardController`, `PulseController`, `Settings\ProfileController`, `Settings\SecurityController`, `SiteController` |
 | HTTP — requests | `app/Http/Requests` | 10 | `Pulse\PreviewBusinessRequest`, `Pulse\PreviewInvestorRequest`, `Pulse\StoreBusinessSignupRequest`, `Pulse\StoreInvestorPledgeRequest`, `Settings\PasswordUpdateRequest`, `Settings\ProfileDeleteRequest`, `Settings\ProfileUpdateRequest`, `Settings\TwoFactorAuthenticationRequest`, `Site\StoreSiteBusinessRequest`, `Site\StoreSiteInvestorRequest` |
-| HTTP — resources | `app/Http/Resources` | 7 | `PulseBusinessPreviewResource`, `PulseBusinessSignupReceiptResource`, `PulseInvestorPreviewResource`, `PulseInvestorSignupReceiptResource`, `PulseListingResource`, `PulsePageResource`, `PulsePolicyResource` |
+| HTTP — resources | `app/Http/Resources` | 8 | `IdentityContextResource`, `PulseBusinessPreviewResource`, `PulseBusinessSignupReceiptResource`, `PulseInvestorPreviewResource`, `PulseInvestorSignupReceiptResource`, `PulseListingResource`, `PulsePageResource`, `PulsePolicyResource` |
 | HTTP — middleware | `app/Http/Middleware` | 3 | `HandleAppearance`, `HandleInertiaRequests`, `SetLocale` |
-| Models | `app/Models` | 2 | `PulseSignup`, `User` |
+| Models | `app/Models` | 4 | `Party`, `PulseSignup`, `RoleMembership`, `User` |
 | Console commands | `app/Console/Commands` | 3 | `CaptureBaselineInventory`, `CheckEnvironmentIsolation`, `ResetDemo` |
 
 ## CI gates

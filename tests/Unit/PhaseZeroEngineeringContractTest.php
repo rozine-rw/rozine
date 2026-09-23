@@ -1653,7 +1653,7 @@ test('MVP delegation closes every configuration group without inventing independ
             'No further Erastus review is required for this MVP specification baseline.',
             hash_file('sha256', __DIR__.'/../../docs/phase-0/engineering-contract-fixtures-2026-09-20.json'),
         )
-        ->and($plan)->toBeString()->toContain('MVP design baseline 2026-09-23', $pack['version'], 'No further joint-freeze review is required for this baseline.');
+        ->and($plan)->toBeString()->toContain('MVP design baseline 2026-09-23', $pack['version'], 'the original contract-freeze scheduling below does not reopen that review');
 
     foreach (['independent_current_review_performed', 'direct_robert_kimani_approval_claimed', 'actual_external_evidence_verified', 'implementation_verified', 'phase_0_exit_verified', 'phase_1_development_authorized', 'production_activation'] as $flag) {
         expect($mvp[$flag])->toBeFalse();
