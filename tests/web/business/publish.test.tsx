@@ -94,7 +94,7 @@ describe('Publish to the Investor feed', () => {
         expect(screen.getByText('RWF 300,000')).toBeInTheDocument();
         expect(
             within(sources).getByRole('radio', { name: 'Wallet' }),
-        ).toHaveAttribute('aria-checked', 'true');
+        ).toBeChecked();
         expect(
             screen.getByText('Rozine Wallet · RWF 12,383,800 available'),
         ).toBeInTheDocument();
