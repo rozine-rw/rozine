@@ -1500,7 +1500,7 @@ const rw: Catalog = {
     'auditor.jobs.head_title': 'Imirimo',
     'auditor.jobs.title': 'Amagenzura yihuse',
     'auditor.jobs.lead':
-        "Igenzura ryo ku kibanza riri mu birometero {radius}. Uwemeye mbere afata dosiye kandi isaha y'amasaha {hours} igatangira.",
+        'Igenzura ryo ku kibanza riri mu birometero {radius}. Uwemeye mbere afata dosiye. Buri igenzura ryihuse rigomba kurangira mu masaha {hours} nyuma yo koherezwa.',
     'auditor.jobs.map_label':
         "Ikarita y'akarere ka km {radius} ufite imirimo {count} ifunguye, aho iri hagereranyijwe",
     'auditor.jobs.map_badge': 'km {radius} · {count} ifunguye',
@@ -1512,7 +1512,6 @@ const rw: Catalog = {
     'auditor.jobs.term': 'Igihe',
     'auditor.jobs.term_months': 'amezi {months}',
     'auditor.jobs.view_file': 'Reba ubusabe bwose →',
-    'auditor.jobs.accept': "Emera utangire isaha y'amasaha {hours}",
     'auditor.jobs.decline': 'Anga',
     'auditor.jobs.declare_conflict': 'Tangaza inyungu bwite',
     'auditor.jobs.empty':
@@ -3013,6 +3012,15 @@ const rw: Catalog = {
 
     'auditor.conflict.not_allowed':
         'Ntukibasha gutanga itangazo kuri iyi dosiye, bityo itangazo ryawe ntiryoherejwe.',
+
+    'auditor.jobs.accept_due': 'Emera · birangire {time}',
+    'auditor.jobs.accept_plain': 'Emera',
+    'auditor.jobs.offer_open':
+        'Icyifuzo gifunguye kugeza {time} · hasigaye {left}',
+    'auditor.jobs.offer_label': 'Igihe gisigaye cyo kwemera iki cyifuzo',
+    'auditor.jobs.offer_closed': 'Iki cyifuzo cyafunzwe',
+    'auditor.command.refused.ASSIGNMENT_ACCEPTANCE_EXPIRED':
+        'Iki cyifuzo cyafunzwe mbere y’uko kwemera kwawe kugera kuri Rozine, bityo ntikwakiriwe. Paji yavuguruwe.',
 
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',

@@ -194,6 +194,7 @@
         "resources/js/components/auditor/jobs/eligible-card.tsx",
         "resources/js/components/auditor/jobs/jobs-body.tsx",
         "resources/js/components/auditor/jobs/monthly-section.tsx",
+        "resources/js/components/auditor/jobs/offer-accept.tsx",
         "resources/js/components/auditor/jobs/radius-map.tsx",
         "resources/js/components/auditor/keyframes.tsx",
         "resources/js/components/auditor/money.ts",
@@ -456,10 +457,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 428,
+        "totalTrackedSources": 429,
         "generated": 100,
         "declarationOnly": 14,
-        "authoredExecutable": 314
+        "authoredExecutable": 315
     },
-    "coverageSetSha256": "08e1e4c1a43754e9b072eb5d335a951bebbb068f61ebbba091cc9fb0ac3ffe62"
+    "coverageSetSha256": "aff0be76ba498722b646b574ee1596252cac39fe23a46c9858952625e1f845ec"
 }

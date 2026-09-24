@@ -22,7 +22,7 @@ const sheetFor = (business = 'Huye Motors') =>
 beforeEach(() => inertia.reset());
 
 describe('Auditor business file', () => {
-    it('previews an offered file read-only, over Jobs, with the clock not yet started', () => {
+    it('previews an offered file read-only, over Jobs, its flash clock already running from dispatch', () => {
         render(<AuditorFile {...props()} />);
 
         expect(screen.getByTestId('head')).toHaveTextContent(
@@ -34,7 +34,9 @@ describe('Auditor business file', () => {
         expect(
             within(sheet).getByText('Application preview'),
         ).toBeInTheDocument();
-        expect(within(sheet).getByRole('timer')).toHaveTextContent('24:00:00');
+        expect(
+            within(sheet).getByRole('timer', { name: 'Time left on this job' }),
+        ).toHaveTextContent(/2[01]:[0-5][0-9]:[0-5][0-9]/u);
         expect(within(sheet).getByText('Gasabo · 11.2km')).toBeInTheDocument();
         expect(within(sheet).getByText('RWF 51.2M')).toBeInTheDocument();
         expect(within(sheet).getByText('6 months')).toBeInTheDocument();
@@ -66,7 +68,7 @@ describe('Auditor business file', () => {
         const { user } = renderWithUser(<AuditorFile {...props()} />);
         const sheet = sheetFor();
         const accept = within(sheet).getByRole('button', {
-            name: 'Accept & start 24h clock',
+            name: 'Accept · due 4 Oct · 16:00',
         });
 
         await user.click(accept);
