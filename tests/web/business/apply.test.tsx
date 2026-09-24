@@ -292,10 +292,22 @@ describe('Apply — step 1, business & finances', () => {
         await user.click(screen.getByRole('button', { name: 'Continue' }));
 
         expect(inertia.calls[0].body).toMatchObject({
-            target: '',
+            target: null,
             term_months: null,
             step: 'raise',
         });
+    });
+
+    it('shows a server error for a field the step does not show as a banner', () => {
+        inertia.errors = {
+            step: 'A draft may resume at the Business or Raise step.',
+        };
+
+        render(<BusinessApply {...props(businessStep)} />);
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'A draft may resume at the Business or Raise step.',
+        );
     });
 
     it('explains ineligibility in the server’s words and shows missing facts as unavailable', () => {
@@ -1657,6 +1669,15 @@ describe('Apply — step 3, review & sign', () => {
         expect(
             screen.queryByRole('button', { name: 'Take a smaller amount' }),
         ).not.toBeInTheDocument();
+    });
+
+    it('keeps the smaller-amount error inline rather than in a banner', () => {
+        inertia.errors = { accepted_principal: 'Too much' };
+
+        render(<BusinessApply {...props(reviewStep)} />);
+
+        expect(screen.getByText('Too much')).toBeInTheDocument();
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
 
     it('marks server field errors and a missing document link', () => {
