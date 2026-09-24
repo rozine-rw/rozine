@@ -2949,6 +2949,26 @@ const en = {
     'auditor.jobs.offer_closed': 'This offer has closed',
     'auditor.command.refused.ASSIGNMENT_ACCEPTANCE_EXPIRED':
         "This offer closed before your acceptance reached Rozine, so it wasn't accepted. The page has been refreshed.",
+    'auditor.standing.reason.ACCREDITATION_REQUIRED':
+        "You don't have an approved accreditation yet.",
+    'auditor.command.refused.ACCREDITATION_REQUIRED':
+        "You don't have an approved accreditation yet. Dispatch can't offer you work until then, so this wasn't changed.",
+    'auditor.standing.reason.ACCREDITATION_EXPIRED':
+        'Your licence has expired. Renew it to receive work again.',
+    'auditor.command.refused.ACCREDITATION_EXPIRED':
+        "Your licence has expired. Renew it to receive work again. Dispatch can't offer you work until then, so this wasn't changed.",
+    'auditor.standing.reason.ACCREDITATION_SUSPENDED':
+        'Your accreditation is suspended by Audit Operations.',
+    'auditor.command.refused.ACCREDITATION_SUSPENDED':
+        "Your accreditation is suspended by Audit Operations. Dispatch can't offer you work until then, so this wasn't changed.",
+    'auditor.standing.reason.STANDING_CHECK_REQUIRED':
+        'A standing check by Audit Operations is due.',
+    'auditor.command.refused.STANDING_CHECK_REQUIRED':
+        "A standing check by Audit Operations is due. Dispatch can't offer you work until then, so this wasn't changed.",
+    'auditor.standing.paused_until_restored':
+        'Dispatch is paused until your standing is restored. Your choice to accept audits is kept.',
+    'auditor.standing.turning_on':
+        "Turning this on won't bring offers until your standing is restored.",
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

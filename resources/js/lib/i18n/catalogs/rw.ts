@@ -3022,6 +3022,27 @@ const rw: Catalog = {
     'auditor.command.refused.ASSIGNMENT_ACCEPTANCE_EXPIRED':
         'Iki cyifuzo cyafunzwe mbere y’uko kwemera kwawe kugera kuri Rozine, bityo ntikwakiriwe. Paji yavuguruwe.',
 
+    'auditor.standing.reason.ACCREDITATION_REQUIRED':
+        'Nta cyemezo cyemejwe urabona.',
+    'auditor.command.refused.ACCREDITATION_REQUIRED':
+        'Nta cyemezo cyemejwe urabona. Ntushobora guhabwa akazi mbere y’icyo gihe, bityo nta cyahinduwe.',
+    'auditor.standing.reason.ACCREDITATION_EXPIRED':
+        'Uruhushya rwawe rwarangiye. Ruvugurure kugira ngo wongere uhabwe akazi.',
+    'auditor.command.refused.ACCREDITATION_EXPIRED':
+        'Uruhushya rwawe rwarangiye. Ruvugurure kugira ngo wongere uhabwe akazi. Ntushobora guhabwa akazi mbere y’icyo gihe, bityo nta cyahinduwe.',
+    'auditor.standing.reason.ACCREDITATION_SUSPENDED':
+        "Icyemezo cyawe cyahagaritswe n'Ishami ry'Igenzura.",
+    'auditor.command.refused.ACCREDITATION_SUSPENDED':
+        "Icyemezo cyawe cyahagaritswe n'Ishami ry'Igenzura. Ntushobora guhabwa akazi mbere y’icyo gihe, bityo nta cyahinduwe.",
+    'auditor.standing.reason.STANDING_CHECK_REQUIRED':
+        "Igenzura ry'uburenganzira bwawe rikorwa n'Ishami ry'Igenzura rirategerejwe.",
+    'auditor.command.refused.STANDING_CHECK_REQUIRED':
+        "Igenzura ry'uburenganzira bwawe rikorwa n'Ishami ry'Igenzura rirategerejwe. Ntushobora guhabwa akazi mbere y’icyo gihe, bityo nta cyahinduwe.",
+    'auditor.standing.paused_until_restored':
+        'Kugabanya akazi byahagaze kugeza uburenganzira bwawe bugaruwe. Icyemezo cyawe cyo kwakira igenzura kiragumaho.',
+    'auditor.standing.turning_on':
+        'Kubifungura ntibizakuzanira ibyifuzo kugeza uburenganzira bwawe bugaruwe.',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',
