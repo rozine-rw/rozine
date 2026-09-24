@@ -39,7 +39,6 @@ const doubles = vi.hoisted(() => ({
         errors: undefined as ConfirmationErrors | undefined,
     },
     appearance: 'light' as 'light' | 'dark',
-    copiedText: null as string | null,
     copy: vi.fn().mockResolvedValue(true),
     showOtpInput: true,
 }));
@@ -139,16 +138,30 @@ vi.mock('@/hooks/use-appearance', () => ({
     }),
 }));
 
-vi.mock('@/hooks/use-clipboard', () => ({
-    useClipboard: () => [doubles.copiedText, doubles.copy],
-}));
+vi.mock('@/hooks/use-clipboard', async () => {
+    const { useState } = await import('react');
+
+    return {
+        useClipboard: () => {
+            const [copiedText, setCopiedText] = useState<string | null>(null);
+
+            return [
+                copiedText,
+                (text: string) => {
+                    setCopiedText(text);
+
+                    return doubles.copy(text);
+                },
+            ];
+        },
+    };
+});
 
 beforeEach(() => {
     doubles.forms.length = 0;
     doubles.formState.processing = false;
     doubles.formState.errors = undefined;
     doubles.appearance = 'light';
-    doubles.copiedText = null;
     doubles.showOtpInput = true;
 });
 
@@ -251,7 +264,7 @@ describe('TwoFactorSetupModal', () => {
             qrCodeSvg: '<svg data-testid="qr-code"></svg>',
             manualSetupKey: 'MANUAL-KEY',
         };
-        const { rerender } = render(<TwoFactorSetupModal {...props} />);
+        render(<TwoFactorSetupModal {...props} />);
 
         expect(screen.getByTestId('qr-code')).toBeInTheDocument();
         expect(screen.getByDisplayValue('MANUAL-KEY')).toHaveAttribute(
@@ -259,15 +272,18 @@ describe('TwoFactorSetupModal', () => {
         );
         fireEvent.click(screen.getByRole('button', { name: 'Copy' }));
         expect(doubles.copy).toHaveBeenCalledWith('MANUAL-KEY');
-
-        doubles.appearance = 'light';
-        doubles.copiedText = 'MANUAL-KEY';
-        rerender(<TwoFactorSetupModal {...props} />);
-
         expect(
             screen.getByRole('button', { name: 'Copied' }),
         ).toBeInTheDocument();
+
+        cleanup();
+        doubles.appearance = 'light';
+        render(<TwoFactorSetupModal {...props} />);
+
         expect(screen.getByTestId('qr-code')).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Copy' }),
+        ).toBeInTheDocument();
     });
 
     it('verifies a complete code, shows errors, and returns to setup', async () => {
