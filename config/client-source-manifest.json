@@ -374,6 +374,7 @@
         "resources/js/lib/pass-card-image.ts",
         "resources/js/lib/pulse.ts",
         "resources/js/lib/rozine/format.ts",
+        "resources/js/lib/rozine/use-role-switch.ts",
         "resources/js/lib/utils.ts",
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/auth/login.tsx",
@@ -429,10 +430,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 401,
+        "totalTrackedSources": 402,
         "generated": 88,
         "declarationOnly": 13,
-        "authoredExecutable": 300
+        "authoredExecutable": 301
     },
-    "coverageSetSha256": "34e5fb7dce7374b37df12889c66b82e646c3dcf2af080c54d39d5f7d6d5bdd56"
+    "coverageSetSha256": "0a47273f81d766b3bf28c92a7f524b2c4d6891541bea9ea5231a6e3bf1a3e211"
 }

@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "fb9a3fddbc6d6cc68efe68f8707e030c2baeb6121f0f9a93fe83cac8f7ef39f3",
-    "coverageSetSha256": "34e5fb7dce7374b37df12889c66b82e646c3dcf2af080c54d39d5f7d6d5bdd56",
+    "sourceManifestSha256": "82c902ed7d4561824c3137d11c413c68faa7660a590eec2e217775c05dd610cc",
+    "coverageSetSha256": "0a47273f81d766b3bf28c92a7f524b2c4d6891541bea9ea5231a6e3bf1a3e211",
     "thresholds": {
         "critical": {
             "global": {
@@ -295,6 +295,7 @@
         "resources/js/lib/pass-card-image.ts",
         "resources/js/lib/pulse.ts",
         "resources/js/lib/rozine/format.ts",
+        "resources/js/lib/rozine/use-role-switch.ts",
         "resources/js/lib/utils.ts",
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/auth/login.tsx",

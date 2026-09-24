@@ -2714,6 +2714,19 @@ const en = {
         'No statements yet. Your first appears after your first full month.',
     'investor.profile.statements.disclaimer':
         'Statements are provided for your records. Rozine does not provide tax advice — consult a qualified adviser about your obligations.',
+    'suite.app.opening': 'Opening…',
+    'suite.app.needs_mfa': 'Needs two-factor authentication',
+    'suite.switch.set_up_mfa': 'Set up two-factor authentication',
+    'suite.switch.try_again': 'Try again',
+    'suite.switch.changed':
+        'Your apps changed in another window. Choose again.',
+    'suite.switch.mfa': 'Set up two-factor authentication to open {app}.',
+    'suite.switch.unavailable': 'You no longer have access to {app}.',
+    'suite.switch.reused':
+        'That request was already used for another choice. Choose {app} again.',
+    'suite.switch.failed': "{app} didn't open.",
+    'suite.switch.offline':
+        "Couldn't reach Rozine to open {app}. Check your connection.",
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

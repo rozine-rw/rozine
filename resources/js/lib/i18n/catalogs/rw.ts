@@ -2777,6 +2777,21 @@ const rw: Catalog = {
     'investor.profile.statements.disclaimer':
         'Inyandiko zitangwa kugira ngo uzibike. Rozine ntitanga inama ku misoro — baza umujyanama wabigize umwuga.',
 
+    'suite.app.opening': 'Birafunguka…',
+    'suite.app.needs_mfa': 'Bisaba kwemeza mu byiciro bibiri',
+    'suite.switch.set_up_mfa': 'Shyiraho kwemeza mu byiciro bibiri',
+    'suite.switch.try_again': 'Ongera ugerageze',
+    'suite.switch.changed':
+        'Porogaramu zawe zahindutse mu yindi dirishya. Ongera uhitemo.',
+    'suite.switch.mfa':
+        'Shyiraho kwemeza mu byiciro bibiri kugira ngo ufungure {app}.',
+    'suite.switch.unavailable': 'Ntukibasha kugera kuri {app}.',
+    'suite.switch.reused':
+        'Iki cyifuzo cyakoreshejwe ku kindi. Ongera uhitemo {app}.',
+    'suite.switch.failed': '{app} ntiyafungutse.',
+    'suite.switch.offline':
+        'Ntibyashobotse kugera kuri Rozine ngo ufungure {app}. Reba murandasi yawe.',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

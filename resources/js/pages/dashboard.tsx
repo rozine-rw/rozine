@@ -2,6 +2,8 @@ import { Head, Link } from '@inertiajs/react';
 import { LogoLockup } from '@/components/rozine/logo';
 import { RoleIcon } from '@/components/rozine/role-icon';
 import { useTranslation } from '@/hooks/use-translation';
+import { useRoleSwitch } from '@/lib/rozine/use-role-switch';
+import { edit as securitySettings } from '@/routes/security';
 import { notice as verificationNotice } from '@/routes/verification';
 import type {
     IdentityCode,
@@ -98,47 +100,142 @@ export default function Launcher({ identity, links }: LauncherProps) {
                     </div>
 
                     {identity.code === 'IDENTITY_READY' ? (
-                        <ul className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
-                            {identity.available_roles.map((role) => (
-                                <li
-                                    key={role}
-                                    data-audience={role}
-                                    className="flex"
-                                >
-                                    <Link
-                                        href={
-                                            links?.[role] ??
-                                            ROLE_APP_PATHS[role]
-                                        }
-                                        className="rz-app-card flex w-full flex-col rounded-[18px] border border-rz-hairline bg-rz-surface px-[18px] pt-[18px] pb-4 text-left"
-                                    >
-                                        <span className="flex items-center gap-[11px]">
-                                            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-rz-accent-tint text-rz-accent-text">
-                                                <RoleIcon
-                                                    role={role}
-                                                    className="size-[22px]"
-                                                />
-                                            </span>
-                                            <span className="text-base font-semibold text-rz-ink">
-                                                {t(`suite.app.${role}.title`)}
-                                            </span>
-                                        </span>
-                                        <span className="mt-3 text-[12.5px] leading-normal text-rz-body">
-                                            {t(`suite.app.${role}.description`)}
-                                        </span>
-                                        <span className="mt-3 text-[12.5px] font-semibold text-rz-accent-text">
-                                            {t('suite.app.open')}
-                                        </span>
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
+                        <RoleApps identity={identity} links={links} />
                     ) : (
                         <BlockerCard code={identity.code} />
                     )}
                 </section>
             </main>
         </div>
+    );
+}
+
+const CARD =
+    'rz-app-card flex w-full flex-col rounded-[18px] border border-rz-hairline bg-rz-surface px-[18px] pt-[18px] pb-4 text-left';
+
+function CardBody({ role, action }: { role: RoleApp; action: string }) {
+    const { t } = useTranslation();
+
+    return (
+        <>
+            <span className="flex items-center gap-[11px]">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-rz-accent-tint text-rz-accent-text">
+                    <RoleIcon role={role} className="size-[22px]" />
+                </span>
+                <span className="text-base font-semibold text-rz-ink">
+                    {t(`suite.app.${role}.title`)}
+                </span>
+            </span>
+            <span className="mt-3 text-[12.5px] leading-normal text-rz-body">
+                {t(`suite.app.${role}.description`)}
+            </span>
+            <span className="mt-3 text-[12.5px] font-semibold text-rz-accent-text">
+                {action}
+            </span>
+        </>
+    );
+}
+
+/**
+ * The role cards. A card opens its app straight away only when that role is already active and
+ * viewable; otherwise it selects the role first (identity-v2). A role that cannot be selected, as
+ * when two-factor authentication is still missing, shows that next step instead.
+ */
+function RoleApps({ identity, links }: LauncherProps) {
+    const { t } = useTranslation();
+    const home = (role: RoleApp) => links?.[role] ?? ROLE_APP_PATHS[role];
+    const roleSwitch = useRoleSwitch(identity, home);
+    const can = (action: IdentityContext['allowed_actions'][number]) =>
+        identity.allowed_actions.includes(action);
+    const problem = roleSwitch.problem;
+
+    return (
+        <>
+            <ul className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+                {identity.available_roles.map((role) => (
+                    <li key={role} data-audience={role} className="flex">
+                        {identity.active_role === role &&
+                        can('identity.view_role') ? (
+                            <Link href={home(role)} className={CARD}>
+                                <CardBody
+                                    role={role}
+                                    action={t('suite.app.open')}
+                                />
+                            </Link>
+                        ) : can('identity.select_role') ? (
+                            <button
+                                type="button"
+                                disabled={roleSwitch.processing}
+                                onClick={() => void roleSwitch.open(role)}
+                                className={CARD}
+                            >
+                                <CardBody
+                                    role={role}
+                                    action={t(
+                                        roleSwitch.processing
+                                            ? 'suite.app.opening'
+                                            : 'suite.app.open',
+                                    )}
+                                />
+                            </button>
+                        ) : (
+                            <div className={`${CARD} cursor-default`}>
+                                <CardBody
+                                    role={role}
+                                    action={t('suite.app.needs_mfa')}
+                                />
+                                <Link
+                                    href={securitySettings()}
+                                    className="mt-2 text-[12.5px] font-semibold text-rz-accent-text underline"
+                                >
+                                    {t('suite.switch.set_up_mfa')}
+                                </Link>
+                            </div>
+                        )}
+                    </li>
+                ))}
+            </ul>
+            {problem !== null && (
+                <div
+                    role="alert"
+                    className="mt-3.5 flex max-w-xl flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-rz-hairline bg-rz-surface px-4 py-3 text-[13px] text-rz-ink"
+                >
+                    <span className="flex-1">
+                        {t(`suite.switch.${problem.kind}`, {
+                            app: t(`suite.app.${problem.role}.title`),
+                        })}
+                    </span>
+                    {problem.kind === 'mfa' && (
+                        <Link
+                            href={securitySettings()}
+                            className="font-semibold text-rz-brand-mark underline"
+                        >
+                            {t('suite.switch.set_up_mfa')}
+                        </Link>
+                    )}
+                    {problem.kind === 'offline' && (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                void roleSwitch.retry(problem.command)
+                            }
+                            className="font-semibold text-rz-brand-mark underline"
+                        >
+                            {t('suite.switch.try_again')}
+                        </button>
+                    )}
+                    {problem.kind === 'failed' && (
+                        <button
+                            type="button"
+                            onClick={() => void roleSwitch.open(problem.role)}
+                            className="font-semibold text-rz-brand-mark underline"
+                        >
+                            {t('suite.switch.try_again')}
+                        </button>
+                    )}
+                </div>
+            )}
+        </>
     );
 }
 

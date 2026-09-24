@@ -2780,6 +2780,21 @@ const fr: Catalog = {
     'investor.profile.statements.disclaimer':
         'Les relevés sont fournis pour vos archives. Rozine ne fournit pas de conseil fiscal — consultez un conseiller qualifié.',
 
+    'suite.app.opening': 'Ouverture…',
+    'suite.app.needs_mfa': "Nécessite l'authentification à deux facteurs",
+    'suite.switch.set_up_mfa': "Configurer l'authentification à deux facteurs",
+    'suite.switch.try_again': 'Réessayer',
+    'suite.switch.changed':
+        'Vos applications ont changé dans une autre fenêtre. Choisissez de nouveau.',
+    'suite.switch.mfa':
+        "Configurez l'authentification à deux facteurs pour ouvrir {app}.",
+    'suite.switch.unavailable': "Vous n'avez plus accès à {app}.",
+    'suite.switch.reused':
+        'Cette demande a déjà servi à un autre choix. Choisissez de nouveau {app}.',
+    'suite.switch.failed': "{app} ne s'est pas ouvert.",
+    'suite.switch.offline':
+        'Impossible de joindre Rozine pour ouvrir {app}. Vérifiez votre connexion.',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

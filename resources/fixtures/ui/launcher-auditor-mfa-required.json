@@ -13,7 +13,7 @@
             "available_roles": ["auditor"],
             "active_role": null,
             "context_revision": 0,
-            "allowed_actions": ["identity.select_role"]
+            "allowed_actions": []
         },
         "links": {
             "investor": {
