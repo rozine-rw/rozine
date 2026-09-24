@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\FindBusinessOperation;
 use App\Application\Business\GetBusinessApplication;
+use App\Application\Business\GetCurrentBusinessApplication;
 use App\Application\Business\SaveBusinessApplication;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Domain\Business\ApplicationDraft;
@@ -12,6 +13,7 @@ use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationVersion;
+use App\Models\BusinessProfile;
 use App\Models\CommandOperation;
 use App\Models\RoleMembership;
 use App\Models\User;
@@ -21,19 +23,66 @@ use Illuminate\Support\Str;
 use Tests\Support\BusinessApplicationFixture;
 use Tests\Support\BusinessAuthorityFixture;
 
-it('creates one resumable application and history version for the same operation identity', function (): void {
+it('resumes an existing draft without creating a second application or rewriting its history', function (): void {
     $fixture = BusinessApplicationFixture::make();
     $user = $fixture['authority']['users'][0];
     $request = (string) Str::uuid();
     $action = app(CreateBusinessApplication::class);
     $first = $action->handle($user->id, 1, $fixture['business']->id, 0, $request);
     expect($action->handle($user->id, 1, $fixture['business']->id, 0, $request))->toBe($first)
-        ->and($first['code'])->toBe('APPLICATION_CREATED')
+        ->and($first['code'])->toBe('APPLICATION_RESUMED')
+        ->and($first['data']['application']['id'])->toBe($fixture['application']->id)
         ->and($first['data']['application']['draft'])->toEqual((new ApplicationDraft)->empty())
         ->and(app(FindBusinessOperation::class)->handle($user->id, 1, 'create', $request))->toBe($first);
+    $this->assertDatabaseCount('business_applications', 1);
+    $this->assertDatabaseCount('business_application_versions', 1);
+    expect($action->handle($user->id, 1, $fixture['business']->id, 2, (string) Str::uuid())['code'])->toBe('VERSION_CONFLICT');
+});
+
+it('reads the current draft without creating an application or changing its revision', function (): void {
+    $authority = BusinessAuthorityFixture::make();
+    BusinessAuthorityFixture::configure($authority);
+    $business = BusinessProfile::query()->where('entity_party_id', $authority['entity'])->firstOrFail();
+    $user = $authority['users'][0];
+    $action = app(GetCurrentBusinessApplication::class);
+    $operationCount = CommandOperation::query()->count();
+    expect($action->handle($user->id, 1, $business->id))->toBeNull();
+    $this->assertDatabaseCount('business_applications', 0);
+    $this->assertDatabaseCount('command_operations', $operationCount);
+    $created = app(CreateBusinessApplication::class)->handle($user->id, 1, $business->id, 0, (string) Str::uuid());
+    expect($created['code'])->toBe('APPLICATION_CREATED')
+        ->and($action->handle($user->id, 1, $business->id))->toEqual($created['data']['application']);
+    $this->assertDatabaseCount('business_application_versions', 1);
+    $other = BusinessApplicationFixture::make();
+    expect(fn () => $action->handle($other['authority']['users'][0]->id, 1, $business->id))->toThrow(CommandRejection::class, 'BUSINESS_NOT_FOUND');
+});
+
+it('resumes saved input at its current revision while preserving immutable earlier retry results', function (): void {
+    $fixture = BusinessApplicationFixture::make();
+    BusinessApplicationFixture::save($fixture);
+    $user = $fixture['authority']['users'][0];
+    $action = app(CreateBusinessApplication::class);
+    $request = (string) Str::uuid();
+    $resumed = $action->handle($user->id, 1, $fixture['business']->id, 0, $request);
+    expect($resumed['revision'])->toBe(2)->and($resumed['data']['application']['draft']['target'])->toBe('8000000');
+    BusinessApplicationFixture::save($fixture, 2, target: '9000000');
+    expect($action->handle($user->id, 1, $fixture['business']->id, 0, $request))->toBe($resumed)
+        ->and(app(GetCurrentBusinessApplication::class)->handle($user->id, 1, $fixture['business']->id)['draft']['target'])->toBe('9000000');
+    $this->assertDatabaseCount('business_applications', 1);
+    $this->assertDatabaseCount('business_application_versions', 3);
+});
+
+it('enforces one open draft in PostgreSQL while retaining submitted applications', function (): void {
+    $fixture = BusinessApplicationFixture::make();
+    expect(fn () => DB::transaction(fn (): BusinessApplication => BusinessApplication::factory()->create(['business_id' => $fixture['business']->id])))
+        ->toThrow(QueryException::class, 'business_application_one_draft');
+    $fixture['application']->forceFill(['status' => 'submitted', 'step' => 'submitted'])->save();
+    $user = $fixture['authority']['users'][0];
+    expect(app(GetCurrentBusinessApplication::class)->handle($user->id, 1, $fixture['business']->id))->toBeNull();
+    $created = app(CreateBusinessApplication::class)->handle($user->id, 1, $fixture['business']->id, 0, (string) Str::uuid());
+    expect($created['code'])->toBe('APPLICATION_CREATED')->and($created['data']['application']['id'])->not->toBe($fixture['application']->id);
     $this->assertDatabaseCount('business_applications', 2);
     $this->assertDatabaseCount('business_application_versions', 2);
-    expect($action->handle($user->id, 1, $fixture['business']->id, 2, (string) Str::uuid())['code'])->toBe('VERSION_CONFLICT');
 });
 
 it('preserves every draft version and does not restore old input when a save is replayed', function (): void {

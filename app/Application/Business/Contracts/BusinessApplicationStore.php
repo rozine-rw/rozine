@@ -23,6 +23,9 @@ interface BusinessApplicationStore
     /** @return Application */
     public function get(int $userId, int $contextRevision, string $businessId, string $applicationId): array;
 
+    /** @return Application|null */
+    public function current(int $userId, int $contextRevision, string $businessId): ?array;
+
     /** @return array<string, mixed> */
     public function findOperation(int $userId, int $contextRevision, string $command, string $requestId): array;
 }

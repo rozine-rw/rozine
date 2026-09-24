@@ -45,6 +45,10 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                         if ($expectedRevision !== 0) {
                             throw new CommandRejection('VERSION_CONFLICT', 409, 0);
                         }
+                        $existing = BusinessApplication::query()->where('business_id', $business['id'])->where('status', 'draft')->lockForUpdate()->first();
+                        if ($existing !== null) {
+                            return new OperationResult('APPLICATION_RESUMED', ['application' => $this->snapshot($existing)], $existing->revision);
+                        }
                         $application = new BusinessApplication;
                         $application->forceFill(['business_id' => $business['id'], 'revision' => 1, 'status' => 'draft', 'step' => 'business',
                             'draft' => $this->drafts->empty(), 'mandate_version' => $business['mandate_version']])->save();
@@ -92,6 +96,17 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
     {
         return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null,
             fn (): array => $this->snapshot($this->application($businessId, $applicationId)));
+    }
+
+    /** @return Application|null */
+    public function current(int $userId, int $contextRevision, string $businessId): ?array
+    {
+        return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null,
+            function () use ($businessId): ?array {
+                $application = BusinessApplication::query()->where('business_id', $businessId)->where('status', 'draft')->first();
+
+                return $application === null ? null : $this->snapshot($application);
+            });
     }
 
     /** @return array<string, mixed> */

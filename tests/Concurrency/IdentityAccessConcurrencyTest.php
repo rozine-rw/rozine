@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\AuthorizeStaffPermission;
@@ -19,6 +20,7 @@ use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
+use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationVersion;
 use App\Models\BusinessMandate;
 use App\Models\BusinessProfile;
@@ -395,6 +397,25 @@ it('holds current consent documents stable until protected acceptance commits', 
     });
     expect($withdraw()['revision'])->toBe(2)
         ->and(app(WithCurrentConsent::class)->handle(fn (?array $release): ?array => $release))->toBeNull();
+});
+
+it('creates or resumes one draft under simultaneous create commands from different mandate holders', function (): void {
+    $authority = BusinessAuthorityFixture::make('organization', 2);
+    BusinessAuthorityFixture::configure($authority);
+    $business = BusinessProfile::query()->where('entity_party_id', $authority['entity'])->firstOrFail();
+    $operations = [];
+    foreach ($authority['users'] as $user) {
+        $request = (string) Str::uuid();
+        $operations[] = function () use ($user, $business, $request): void {
+            app(CreateBusinessApplication::class)->handle($user->id, 1, $business->id, 0, $request);
+        };
+    }
+    expect(runIdentityContenders($operations))->toBe([0, 0])
+        ->and(BusinessApplication::query()->count())->toBe(1)
+        ->and(BusinessApplicationVersion::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'application.create')->count())->toBe(2)
+        ->and(CommandOperation::query()->where('result->code', 'APPLICATION_CREATED')->count())->toBe(1)
+        ->and(CommandOperation::query()->where('result->code', 'APPLICATION_RESUMED')->count())->toBe(1);
 });
 
 it('commits a repeated application save once across two logins for the same Party', function (): void {

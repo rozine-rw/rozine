@@ -39,6 +39,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $consentMigration = require database_path('migrations/2026_09_24_061212_create_consent_releases_table.php');
     $applicationMigration = require database_path('migrations/2026_09_24_063740_create_business_applications_table.php');
     $statementMigration = require database_path('migrations/2026_09_24_070804_create_statement_evidence_tables.php');
+    $openDraftMigration = require database_path('migrations/2026_09_24_075833_add_one_open_draft_constraint_to_business_applications.php');
     $party = Party::factory()->verified()->create();
     $user = User::factory()->for($party)->create();
     RoleMembership::factory()->for($party)->active()->create();
@@ -47,6 +48,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
 
     expect(Schema::hasIndex('users', ['party_id']))->toBeTrue();
 
+    $openDraftMigration->down();
+    expect(Schema::hasIndex('business_applications', 'business_application_one_draft'))->toBeFalse();
     $statementMigration->down();
     $applicationMigration->down();
     $consentMigration->down();
@@ -74,6 +77,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $consentMigration->up();
     $applicationMigration->up();
     $statementMigration->up();
+    $openDraftMigration->up();
 
     expect(Schema::hasTable('parties'))->toBeTrue()
         ->and(Schema::hasTable('role_memberships'))->toBeTrue()
@@ -86,6 +90,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasColumn('business_mandates', 'profile'))->toBeTrue()
         ->and(Schema::hasTable('consent_releases'))->toBeTrue()
         ->and(Schema::hasTable('business_application_versions'))->toBeTrue()
+        ->and(Schema::hasIndex('business_applications', 'business_application_one_draft'))->toBeTrue()
         ->and(Schema::hasTable('statement_originals'))->toBeTrue()
         ->and(Schema::hasTable('statement_extractions'))->toBeTrue();
 });
