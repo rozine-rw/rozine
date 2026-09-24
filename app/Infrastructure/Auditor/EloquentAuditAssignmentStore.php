@@ -6,6 +6,7 @@ namespace App\Infrastructure\Auditor;
 
 use App\Application\Auditor\Contracts\AuditAssignmentStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
+use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
@@ -25,6 +26,7 @@ use App\Models\AuditLocation;
 use App\Models\AuditorIndependenceReview;
 use App\Models\AuditorProfile;
 use Closure;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -33,6 +35,8 @@ use Throwable;
  * @phpstan-import-type Assignment from AuditAssignmentStore
  * @phpstan-import-type AcceptedAssignment from AuditAssignmentStore
  * @phpstan-import-type View from AuditAssignmentStore
+ * @phpstan-import-type OwnConflict from AuditAssignmentStore
+ * @phpstan-import-type ConflictPage from AuditAssignmentStore
  * @phpstan-import-type AuditContext from BusinessAuthorityStore
  * @phpstan-import-type Candidate from AuditorDispatch
  */
@@ -49,6 +53,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         private VerifiedAuditLocation $locations,
         private Wgs84Distance $distance,
         private CanonicalJson $json,
+        private AuthorizeActiveRole $roles,
     ) {}
 
     /** @return array<string, mixed> */
@@ -96,6 +101,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                         $this->participant($record, $partyId, true);
                         $this->revision($record, $expectedRevision);
                         $state = $record->state;
+                        $conflict = null;
                         if ($decision === 'accept') {
                             $candidate = $this->candidate($candidates, $partyId);
                             $reasons = $candidate === null ? ['AUDITOR_INDEPENDENCE_REVIEW_REQUIRED'] : $this->dispatch->reasons($candidate, now()->toDateTimeImmutable());
@@ -114,7 +120,8 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                                 $this->states->decline($reasonCode, $reason);
                             } else {
                                 $this->states->conflict($conflictKind ?? '', $reason);
-                                (new AuditConflictDeclaration)->forceFill(['assignment_id' => $record->id, 'business_id' => $record->business_id,
+                                $conflict = new AuditConflictDeclaration;
+                                $conflict->forceFill(['assignment_id' => $record->id, 'business_id' => $record->business_id,
                                     'party_id' => $partyId, 'kind' => $conflictKind, 'reason' => $reason, 'actor_user_id' => $userId,
                                     'policy_version' => 'engineering-2026-09-23.4'])->save();
                             }
@@ -124,7 +131,9 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
 
                         return new OperationResult(match ($decision) {
                             'accept' => 'ASSIGNMENT_ACCEPTED', 'decline' => 'ASSIGNMENT_DECLINED', default => 'CONFLICT_RECORDED',
-                        }, ['assignment_id' => $record->id, ...($decision === 'decline' ? ['reason_code' => $reasonCode] : [])], $record->revision);
+                        }, ['assignment_id' => $record->id, ...($decision === 'decline' ? ['reason_code' => $reasonCode] : []),
+                            ...($conflict === null ? [] : ['conflict_id' => $conflict->id,
+                                'outcome' => ['resolution' => $state['status'] === 'operations' ? 'reassignment_pending' : 'reassigned']])], $record->revision);
                     });
             }, $decision === 'accept' ? [$partyId] : null);
     }
@@ -180,6 +189,57 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                         'expires_on' => $candidate['standing']['expires_on'], 'checked_at' => $candidate['standing']['checked_at'],
                     ]]);
             }, [$partyId]);
+    }
+
+    /** @return OwnConflict */
+    public function ownConflict(int $userId, int $contextRevision, string $assignmentId): array
+    {
+        $partyId = $this->actorPartyId($userId);
+
+        return $this->roles->handle($userId, 'auditor', $partyId, $contextRevision, function () use ($assignmentId, $partyId): array {
+            $record = $this->ownConflictQuery($partyId)->where('audit_conflict_declarations.assignment_id', $assignmentId)->first()
+                ?? throw new CommandRejection('AUDIT_CONFLICT_NOT_FOUND', 404);
+
+            return $this->conflictReceipt($record);
+        });
+    }
+
+    /** @return ConflictPage */
+    public function ownConflicts(int $userId, int $contextRevision, ?string $before, int $limit): array
+    {
+        $partyId = $this->actorPartyId($userId);
+
+        return $this->roles->handle($userId, 'auditor', $partyId, $contextRevision, function () use ($before, $limit, $partyId): array {
+            if ($limit < 1 || $limit > 100 || ($before !== null && ! preg_match('/^[0-9a-hjkmnp-tv-z]{26}$/D', $before))) {
+                throw new CommandRejection('AUDIT_CONFLICT_PAGE_INVALID', 422);
+            }
+            $query = $this->ownConflictQuery($partyId)->orderByDesc('audit_conflict_declarations.id');
+            if ($before !== null) {
+                $query->where('audit_conflict_declarations.id', '<', $before);
+            }
+            $records = $query->limit($limit + 1)->get();
+            $page = $records->take($limit);
+
+            return ['data' => array_values($page->map(fn (AuditConflictDeclaration $record): array => $this->conflictReceipt($record))->all()),
+                'next_cursor' => $records->count() > $limit ? $page->last()?->id : null];
+        });
+    }
+
+    /** @return Builder<AuditConflictDeclaration> */
+    private function ownConflictQuery(string $partyId): Builder
+    {
+        return AuditConflictDeclaration::query()->where('audit_conflict_declarations.party_id', $partyId)
+            ->join('audit_assignments', 'audit_assignments.id', '=', 'audit_conflict_declarations.assignment_id')
+            ->select('audit_conflict_declarations.*')->addSelect('audit_assignments.status as assignment_status');
+    }
+
+    /** @return OwnConflict */
+    private function conflictReceipt(AuditConflictDeclaration $record): array
+    {
+        return ['assignment_id' => $record->assignment_id, 'business_id' => $record->business_id,
+            'conflict' => ['conflict_id' => $record->id, 'kind' => $record->kind, 'declared_at' => $record->created_at->toIso8601String(),
+                'note' => $record->reason, 'blocking' => true,
+                'status' => $record->getAttribute('assignment_status') === 'operations' ? 'reassignment_pending' : 'reassigned']];
     }
 
     /** @param AcceptedAssignment $assignment */

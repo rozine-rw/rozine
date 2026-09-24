@@ -262,3 +262,11 @@ The expiry worker rolls back and logs a failed row, then continues its bounded b
 
 
 Decline commands carry `reason_code` (`unavailable`, `capacity`, `location`, `other`). The domain requires a factual explanation for `other` and validates optional supplied explanations for the remaining codes. The code is included in the command hash and immutable receipt; the private explanation remains in encrypted assignment history. Missing/unknown codes and invalid explanations are recorded 422 field errors and leave the offer unchanged.
+
+### Own-conflict reads — checkpoint 2 S-C
+
+`GetOwnAuditConflict` and `ListOwnAuditConflicts` extend the Auditor assignment port. Reads hold the actor and Party through current Auditor-role/MFA authorization and projection. They do not require continuing Business mandate or professional standing: a qualified-role holder can read their own historical declaration after assignment access is withdrawn or standing is suspended. Revoked membership, missing MFA, changed identity and stale role context still deny access.
+
+The response contains the declarant's immutable conflict ID, kind, recording instant and private note, plus only `reassignment_pending` or `reassigned` for the current resolution. It carries no replacement identity, source documents, selection basis or new assignment revision. The register is bounded to 1–100 records, uses a descending opaque-ID cursor, and retrieves its minimal assignment status in one query. The query takes no Business or assignment locks after the identity lock, preserving the global lock order. PostgreSQL probes prove membership withdrawal waits through both receipt and register projection.
+
+New `CONFLICT_RECORDED` journal receipts bind the conflict ID and coarse resolution at recording time. Private text remains encrypted in the conflict declaration and is never copied into the journal. This historical command outcome is separate from a later current-status read. Web/API binding must compose the permitted own declaration while preserving the recorded command identity and clocks. Scoped Jobs projections, transport Resources and Operations resolution remain in the same unfinished S-C slice.

@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Application\Auditor\AdvanceExpiredAuditOffers;
+use App\Application\Auditor\GetOwnAuditConflict;
+use App\Application\Auditor\ListOwnAuditConflicts;
 use App\Application\Auditor\MarkAuditLocationMoved;
 use App\Application\Auditor\RecordAuditorIndependence;
 use App\Application\Auditor\SetAuditorAvailability;
@@ -64,6 +66,7 @@ use App\Models\VerifiedOrganizationIdentity;
 use App\Models\VerifiedPersonIdentity;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\AuditAssignmentFixture;
 use Tests\Support\AuditorFixture;
@@ -969,3 +972,76 @@ it('cannot leave a source verification current after a racing source or authorit
     $snapshot = app(GetStatementVerification::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']);
     expect($snapshot === null || ! $snapshot['current'])->toBeTrue();
 })->with(['evidence', 'conflict', 'transcription', 'review', 'standing', 'membership']);
+
+it('serializes replacement Auditor attestation against a former Auditors competing amendment', function (): void {
+    $fixture = AuditAssignmentFixture::make();
+    $sources = AuditAssignmentFixture::statements($fixture);
+    $assignment = AuditAssignmentFixture::request($fixture);
+    $former = AuditAssignmentFixture::recipient($fixture, $assignment);
+    AuditAssignmentFixture::respond($former['user'], $assignment);
+    $assignment->refresh();
+    $first = AuditAssignmentFixture::verifyStatements($fixture, $assignment, $sources['transcription_id']);
+    expect(runIdentityContenders([
+        function () use ($fixture, $assignment, $sources): void {
+            try {
+                AuditAssignmentFixture::verifyStatements($fixture, $assignment, $sources['transcription_id'], verificationRevision: 1);
+            } catch (CommandRejection $exception) {
+                if ($exception->reason !== 'ASSIGNMENT_NOT_FOUND') {
+                    throw $exception;
+                }
+            }
+        },
+        function () use ($fixture, $assignment, $sources, $former): void {
+            AuditAssignmentFixture::respond($former['user'], $assignment, 'conflict', 'New financial interest.', 'financial_interest');
+            $assignment->refresh();
+            $replacement = AuditAssignmentFixture::recipient($fixture, $assignment);
+            AuditAssignmentFixture::respond($replacement['user'], $assignment);
+            $assignment->refresh();
+            $previous = StatementVerification::query()->orderByDesc('revision')->firstOrFail();
+            $receipt = AuditAssignmentFixture::verifyStatements($fixture, $assignment, $sources['transcription_id'], verificationRevision: $previous->revision);
+            if ($receipt['code'] !== 'STATEMENT_SOURCE_VERIFIED') {
+                throw new RuntimeException('Replacement attestation must follow the serialized former amendment.');
+            }
+        },
+    ]))->toBe([0, 0]);
+    $read = app(GetStatementVerification::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']);
+    expect($read['current'])->toBeTrue()->and($read['payload']['assignment']['party_id'])->not->toBe($former['party']->id)
+        ->and(StatementVerification::query()->whereKey($first['data']['verification_id'])->firstOrFail()->sha256)->toBe($first['data']['sha256'])
+        ->and(StatementVerification::query()->count())->toBeIn([2, 3]);
+});
+
+it('holds the own-conflict identity guard through private receipt and register reads', function (string $mode): void {
+    $fixture = AuditAssignmentFixture::make(1);
+    $partner = $fixture['partners'][0];
+    $assignment = AuditAssignmentFixture::request($fixture);
+    AuditAssignmentFixture::respond($partner['user'], $assignment, 'conflict', 'Private relationship.', 'other');
+    $operator = concurrentIdentityOperator();
+    $revoke = fn (): array => app(ChangeMembership::class)->handle($operator->id, $partner['party']->id, 'auditor', 'revoked', 1,
+        'case:revocation', 'Withdraw membership.', (string) Str::uuid());
+    config(['database.connections.conflict_receipt_contender' => config('database.connections.pgsql')]);
+    DB::connection('conflict_receipt_contender')->statement("SET lock_timeout = '500ms'");
+    $default = DB::getDefaultConnection();
+    $event = 'eloquent.retrieved: '.AuditConflictDeclaration::class;
+    Event::listen($event, function () use ($default, $revoke): void {
+        DB::setDefaultConnection('conflict_receipt_contender');
+        try {
+            $revoke();
+            $this->fail('Membership withdrawal must wait until the own-conflict projection completes.');
+        } catch (QueryException $exception) {
+            expect($exception->getCode())->toBe('55P03');
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('conflict_receipt_contender');
+        }
+    });
+    $read = $mode === 'receipt'
+        ? fn (): array => app(GetOwnAuditConflict::class)->handle($partner['user']->id, 1, $assignment->id)
+        : fn (): array => app(ListOwnAuditConflicts::class)->handle($partner['user']->id, 1);
+    try {
+        expect(json_encode($read(), JSON_THROW_ON_ERROR))->toContain('Private relationship.');
+    } finally {
+        Event::forget($event);
+    }
+    $revoke();
+    expect($read)->toThrow(IdentityViolation::class, 'ROLE_MEMBERSHIP_REQUIRED');
+})->with(['receipt', 'register']);

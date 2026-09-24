@@ -10,6 +10,9 @@ use Closure;
  * @phpstan-import-type State from \App\Domain\Auditor\AuditEngagementState
  *
  * @phpstan-type View array{id: string, business_id: string, revision: int, kind: string, status: string, offered_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, allowed_actions: list<string>}
+ * @phpstan-type ConflictReceipt array{conflict_id: string, kind: string, declared_at: string, note: string, blocking: true, status: 'reassignment_pending'|'reassigned'}
+ * @phpstan-type OwnConflict array{assignment_id: string, business_id: string, conflict: ConflictReceipt}
+ * @phpstan-type ConflictPage array{data: list<OwnConflict>, next_cursor: string|null}
  * @phpstan-type Assignment array{id: string, business_id: string, revision: int, state: State}
  * @phpstan-type AcceptedAssignment array{id: string, business_id: string, party_id: string, revision: int, kind: string, business_revision: int, mandate_version: int, mandate_sha256: string, independence: array{id: string, revision: int, checked_at: string, evidence_reference: string, sha256: string}, accreditation: array{profile_revision: int, status: string, licence: string|null, expires_on: string|null, checked_at: string|null}}
  */
@@ -23,6 +26,12 @@ interface AuditAssignmentStore
 
     /** @return View */
     public function get(int $userId, int $contextRevision, string $assignmentId): array;
+
+    /** @return OwnConflict */
+    public function ownConflict(int $userId, int $contextRevision, string $assignmentId): array;
+
+    /** @return ConflictPage */
+    public function ownConflicts(int $userId, int $contextRevision, ?string $before, int $limit): array;
 
     /**
      * Hold current accepted-assignment authority through the protected operation.
