@@ -2969,6 +2969,11 @@ const en = {
         'Dispatch is paused until your standing is restored. Your choice to accept audits is kept.',
     'auditor.standing.turning_on':
         "Turning this on won't bring offers until your standing is restored.",
+    'auditor.accreditation.licence_title': 'Practising licence',
+    'auditor.accreditation.view_certificate':
+        'Download the certificate on record',
+    'auditor.accreditation.view_submitted':
+        'Download the submitted certificate',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

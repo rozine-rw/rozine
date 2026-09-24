@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Identity\IdentityViolation;
+use App\Domain\Operations\CommandRejection;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetLocale;
@@ -35,12 +36,23 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (IdentityViolation $exception, Request $request) {
-            if (! $request->expectsJson() && $request->routeIs('investor.home', 'business.home', 'auditor.home', 'admin.home', 'identity.roles.resume')) {
+            if (! $request->expectsJson() && $request->routeIs('investor.home', 'business.home', 'auditor.home', 'auditor.profile', 'admin.home', 'identity.roles.resume')) {
                 return Inertia::render('identity/access-denied', ['code' => $exception->reason])
                     ->toResponse($request)->setStatusCode($exception->status);
             }
 
             return response()->json(['message' => $exception->reason, 'code' => $exception->reason], $exception->status);
+        });
+
+        // A command refused before it was recorded (an idempotency conflict, a lookup that found
+        // nothing): its own code, and Laravel's errors bag with every 422.
+        $exceptions->render(function (CommandRejection $exception) {
+            $body = ['message' => $exception->reason, 'code' => $exception->reason];
+            if ($exception->status === 422) {
+                $body['errors'] = (object) $exception->fieldErrors;
+            }
+
+            return response()->json($body, $exception->status);
         });
 
         $exceptions->shouldRenderJsonWhen(

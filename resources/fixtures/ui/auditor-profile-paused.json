@@ -75,10 +75,16 @@
             "operation": {
                 "url": "/preview/auditor-operation-{request_id}",
                 "method": "get"
-            }
+            },
+            "certificate": null,
+            "submitted_certificate": null
         },
         "actions": {
             "submit": {
+                "url": "/preview/auditor-profile-pending",
+                "method": "post"
+            },
+            "renew": {
                 "url": "/preview/auditor-profile-pending",
                 "method": "post"
             },

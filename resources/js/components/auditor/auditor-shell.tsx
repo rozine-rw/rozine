@@ -126,7 +126,8 @@ type AuditorShellProps = {
 /**
  * The Auditor app frame. All four design tabs ship: Portfolio carries the partner's filed reports
  * (MVP-AUDITOR-SCR-07) and conflict register (AC-08); its earnings, origination and managed-deal
- * panels are Phase 2 and are left out rather than shipped as dead ends.
+ * panels are Phase 2 and are left out rather than shipped as dead ends. A tab the server sends
+ * without a route is left out too.
  */
 export function AuditorShell({
     title,
@@ -137,30 +138,46 @@ export function AuditorShell({
     children,
 }: AuditorShellProps) {
     const { t } = useTranslation();
-    const nav = (['home', 'jobs', 'portfolio', 'profile'] as const).map(
-        (key) => ({
-            key,
-            label: t(`auditor.nav.${key}`),
-            href: links[key],
-            glyph: (
-                <>
-                    <Glyph className="max-lg:hidden">{DESKTOP[key]}</Glyph>
-                    <span className="relative flex lg:hidden">
-                        <Glyph className="size-[22px]">{PHONE[key]}</Glyph>
-                        {key === 'jobs' && openJobs > 0 && (
-                            <span
-                                aria-label={t('auditor.nav.jobs_badge', {
-                                    count: openJobs,
-                                })}
-                                className="absolute -top-[5px] -right-[9px] flex h-4 min-w-4 items-center justify-center rounded-[10px] bg-rz-accent-fill px-1 text-[10.5px] font-bold text-white"
-                            >
-                                {openJobs}
-                            </span>
-                        )}
-                    </span>
-                </>
-            ),
-        }),
+    const nav = (['home', 'jobs', 'portfolio', 'profile'] as const).flatMap(
+        (key) => {
+            const href = links[key];
+
+            /* A tab whose route is not published yet is left out, never a dead link. */
+            return href === null
+                ? []
+                : [
+                      {
+                          key,
+                          label: t(`auditor.nav.${key}`),
+                          href,
+                          glyph: (
+                              <>
+                                  <Glyph className="max-lg:hidden">
+                                      {DESKTOP[key]}
+                                  </Glyph>
+                                  <span className="relative flex lg:hidden">
+                                      <Glyph className="size-[22px]">
+                                          {PHONE[key]}
+                                      </Glyph>
+                                      {key === 'jobs' && openJobs > 0 && (
+                                          <span
+                                              aria-label={t(
+                                                  'auditor.nav.jobs_badge',
+                                                  {
+                                                      count: openJobs,
+                                                  },
+                                              )}
+                                              className="absolute -top-[5px] -right-[9px] flex h-4 min-w-4 items-center justify-center rounded-[10px] bg-rz-accent-fill px-1 text-[10.5px] font-bold text-white"
+                                          >
+                                              {openJobs}
+                                          </span>
+                                      )}
+                                  </span>
+                              </>
+                          ),
+                      },
+                  ];
+        },
     );
 
     return (

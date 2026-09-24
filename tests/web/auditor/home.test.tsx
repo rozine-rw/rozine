@@ -323,6 +323,35 @@ describe('Auditor Home', () => {
         expect(screen.queryByText(/Closest/)).not.toBeInTheDocument();
     });
 
+    it('leaves out the tabs and the nearby-work link whose routes the server has not published', () => {
+        const base = fixture();
+
+        render(
+            <AuditorHome
+                {...base}
+                links={{ ...base.links, jobs: null, portfolio: null }}
+            />,
+        );
+
+        expect(
+            screen.queryByText(/Flash Audit nearby/),
+        ).not.toBeInTheDocument();
+
+        for (const nav of screen.getAllByRole('navigation', {
+            name: 'App navigation',
+        })) {
+            expect(
+                within(nav).getByRole('link', { name: /^Home/ }),
+            ).toBeInTheDocument();
+            expect(
+                within(nav).queryByRole('link', { name: /Jobs/ }),
+            ).not.toBeInTheDocument();
+            expect(
+                within(nav).queryByRole('link', { name: /Portfolio/ }),
+            ).not.toBeInTheDocument();
+        }
+    });
+
     it('renders every kind of activity the server records', () => {
         const activity: AuditorActivity[] = [
             {

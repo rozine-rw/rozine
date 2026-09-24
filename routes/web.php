@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\AuditorProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IdentityManagementController;
 use App\Http\Controllers\PulseController;
@@ -36,6 +37,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('business', RoleHomeController::class)->name('business.home');
     Route::get('auditor', RoleHomeController::class)->name('auditor.home');
     Route::get('admin', StaffHomeController::class)->name('admin.home');
+    Route::get('auditor/profile', [AuditorProfileController::class, 'show'])->name('auditor.profile');
+});
+
+Route::middleware(['auth', 'throttle:60,1'])->prefix('auditor')->name('auditor.')->group(function (): void {
+    Route::post('accreditation', [AuditorProfileController::class, 'submit'])->name('accreditation.submit');
+    Route::post('accreditation/renewal', [AuditorProfileController::class, 'renew'])->name('accreditation.renew');
+    Route::post('accreditation/withdrawal', [AuditorProfileController::class, 'withdraw'])->name('accreditation.withdraw');
+    Route::get('accreditation/certificates/{certificate}', [AuditorProfileController::class, 'certificate'])
+        ->where('certificate', '[0-9a-z]{26}')->name('accreditation.certificates.show');
+    Route::post('availability', [AuditorProfileController::class, 'availability'])->name('availability.update');
+    Route::get('operations/{request_id}', [AuditorProfileController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
 });
 
 Route::middleware(['auth', 'throttle:60,1'])->prefix('identity')->name('identity.')->group(function (): void {
