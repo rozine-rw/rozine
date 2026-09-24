@@ -225,7 +225,13 @@ final class EloquentStatementStore implements StatementStore
                         'expected_evidence_revision' => $expectedEvidenceRevision, 'expected_verification_revision' => $expectedVerificationRevision,
                         'transcription_id' => $transcriptionId, 'transcription_sha256' => $transcriptionHash, 'review' => $review],
                     function (): void {}, function () use ($assignment, $businessId, $userId, $evidence, $previous, $expectedAssignmentRevision, $expectedEvidenceRevision, $expectedVerificationRevision, $transcriptionId, $transcriptionHash, $review): OperationResult {
-                        if ($assignment['revision'] !== $expectedAssignmentRevision || ($evidence->revision ?? 0) !== $expectedEvidenceRevision || ($previous->revision ?? 0) !== $expectedVerificationRevision) {
+                        if ($assignment['revision'] !== $expectedAssignmentRevision) {
+                            throw new CommandRejection('VERSION_CONFLICT', 409, $assignment['revision']);
+                        }
+                        if (($evidence->revision ?? 0) !== $expectedEvidenceRevision) {
+                            throw new CommandRejection('VERSION_CONFLICT', 409, $evidence->revision ?? 0);
+                        }
+                        if (($previous->revision ?? 0) !== $expectedVerificationRevision) {
                             throw new CommandRejection('VERSION_CONFLICT', 409, $previous->revision ?? 0);
                         }
                         if ($evidence === null) {
@@ -243,7 +249,7 @@ final class EloquentStatementStore implements StatementStore
                         $payload = $transcription['payload'];
                         foreach ($payload['source_hashes'] as $id => $hash) {
                             if (! isset($sourceHashes[$id]) || ! hash_equals($sourceHashes[$id], $hash)) {
-                                throw new CommandRejection('STATEMENT_SOURCE_INTEGRITY_FAILED');
+                                throw new RuntimeException('STATEMENT_SOURCE_INTEGRITY_FAILED');
                             }
                         }
                         $observations = $this->reconciler->reconcile($payload['rails'], $payload['months'], $payload['statements'], array_keys($sourceHashes));
@@ -254,7 +260,8 @@ final class EloquentStatementStore implements StatementStore
                         $verifiedAt = now('UTC')->format('Y-m-d\TH:i:s\Z');
                         $snapshot = ['business_id' => $businessId, 'assignment' => $assignment, 'source_revision' => $evidence->revision,
                             'transcription' => ['id' => $transcription['id'], 'sha256' => $transcription['sha256']], 'source_hashes' => $sourceHashes,
-                            'policy_version' => 'engineering-2026-09-23.4', 'procedure_version' => StatementAuditReview::PROCEDURE, 'review' => $review,
+                            'policy_version' => StatementAuditReview::POLICY_VERSION, 'procedure_version' => StatementAuditReview::PROCEDURE,
+                            'classification_version' => StatementReconciliation::VERSION, 'review' => $review,
                             'verified_at' => $verifiedAt, 'report_approval' => 'not_cosigned', 'observations' => $verified];
                         $record = new StatementVerification;
                         $record->forceFill(['statement_evidence_id' => $evidence->id, 'transcription_id' => $transcription['id'], 'assignment_id' => $assignment['id'],
@@ -314,16 +321,23 @@ final class EloquentStatementStore implements StatementStore
             return null;
         }
         $payload = $record->payload;
+        $transcription = StatementTranscription::query()->where('statement_evidence_id', $evidence?->id)->whereKey($record->transcription_id)->first();
         if (! hash_equals($record->sha256, hash('sha256', $this->json->encode($payload))) || $payload['business_id'] !== $businessId
             || $payload['source_revision'] !== $record->source_revision || $payload['transcription']['id'] !== $record->transcription_id
             || $payload['assignment']['id'] !== $record->assignment_id || $payload['assignment']['party_id'] !== $record->actor_party_id
-            || $payload['policy_version'] !== $record->policy_version || $payload['procedure_version'] !== $record->procedure_version) {
-            throw new CommandRejection('STATEMENT_VERIFICATION_INTEGRITY_FAILED');
+            || $payload['policy_version'] !== $record->policy_version || $payload['procedure_version'] !== $record->procedure_version
+            || $transcription === null || ! hash_equals($payload['transcription']['sha256'], $transcription->sha256)
+            || ! hash_equals($transcription->sha256, hash('sha256', $this->json->encode($transcription->payload)))
+            || $payload['classification_version'] !== $transcription->classification_version
+            || $payload['classification_version'] !== $transcription->payload['classification_version']
+            || array_any($payload['observations'], fn (array $observation): bool => $observation['classification_version'] !== $payload['classification_version'])) {
+            throw new RuntimeException('STATEMENT_VERIFICATION_INTEGRITY_FAILED');
         }
 
         return ['id' => $record->id, 'revision' => $record->revision, 'amends_id' => $record->amends_id, 'sha256' => $record->sha256,
             'current' => $record->id === $latest?->id && $record->source_revision === $evidence?->revision
-                && $payload['assignment']['business_revision'] === $businessRevision && $record->policy_version === 'engineering-2026-09-23.4'
+                && $payload['assignment']['business_revision'] === $businessRevision && $record->policy_version === StatementAuditReview::POLICY_VERSION
+                && $payload['classification_version'] === StatementReconciliation::VERSION
                 && $record->procedure_version === StatementAuditReview::PROCEDURE && $this->assignments->retainsVerification($payload['assignment']), 'payload' => $payload];
     }
 

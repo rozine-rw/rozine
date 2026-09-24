@@ -13,4 +13,7 @@ interface IdentityRepository
 
     /** @return AccessSnapshot */
     public function forUser(int $userId): array;
+
+    /** Current Party facts only; does not authorize an actor or grant access to a record. */
+    public function auditorPartyIsActive(string $partyId): bool;
 }

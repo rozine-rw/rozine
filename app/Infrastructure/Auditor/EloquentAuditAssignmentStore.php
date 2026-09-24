@@ -179,6 +179,11 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     /** @param AcceptedAssignment $assignment */
     public function retainsVerification(array $assignment): bool
     {
+        $profile = AuditorProfile::query()->where('party_id', $assignment['party_id'])->first();
+        if ($profile === null || $profile->state['standing']['status'] !== 'active' || $profile->state['certificate_id'] === null
+            || ! $this->identities->auditorPartyIsActive($assignment['party_id'])) {
+            return false;
+        }
         $record = AuditAssignment::query()->whereKey($assignment['id'])->where('business_id', $assignment['business_id'])
             ->where('party_id', $assignment['party_id'])->whereIn('status', ['accepted', 'completed'])->first();
         if ($record === null || ! AuditAssignmentVersion::query()->where('assignment_id', $record->id)->where('revision', $assignment['revision'])

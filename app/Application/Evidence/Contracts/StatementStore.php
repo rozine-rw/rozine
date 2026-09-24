@@ -18,7 +18,7 @@ namespace App\Application\Evidence\Contracts;
  * @phpstan-type Manifest array{revision: int, documents: list<Document>}
  * @phpstan-type Original array{filename: string, media_type: string, sha256: string, content: string}
  * @phpstan-type AuditFile array{assignment: AcceptedAssignment, evidence: Manifest, transcription: Transcription|null}
- * @phpstan-type VerificationPayload array{business_id: string, assignment: AcceptedAssignment, source_revision: int, transcription: array{id: string, sha256: string}, source_hashes: array<string, string>, policy_version: string, procedure_version: string, review: Review, verified_at: string, report_approval: 'not_cosigned', observations: list<VerifiedObservation>}
+ * @phpstan-type VerificationPayload array{business_id: string, assignment: AcceptedAssignment, source_revision: int, transcription: array{id: string, sha256: string}, source_hashes: array<string, string>, policy_version: string, procedure_version: string, classification_version: string, review: Review, verified_at: string, report_approval: 'not_cosigned', observations: list<VerifiedObservation>}
  * @phpstan-type Verification array{id: string, revision: int, amends_id: string|null, sha256: string, current: bool, payload: VerificationPayload}
  */
 interface StatementStore

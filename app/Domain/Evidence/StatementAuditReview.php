@@ -24,6 +24,8 @@ final class StatementAuditReview
 {
     public const PROCEDURE = 'MVP-AUP-1';
 
+    public const POLICY_VERSION = 'engineering-2026-09-23.4';
+
     public const CHECKS = ['complete_rail_inventory', 'originals_authentic', 'balances_and_transactions',
         'duplicates_and_classification', 'debt_schedules', 'baseline_and_gaps', 'draws_returns_and_exceptions'];
 

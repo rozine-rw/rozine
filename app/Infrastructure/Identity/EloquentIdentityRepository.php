@@ -54,4 +54,13 @@ final class EloquentIdentityRepository implements IdentityRepository
                 ])->all()),
         ];
     }
+
+    public function auditorPartyIsActive(string $partyId): bool
+    {
+        return Party::query()->whereKey($partyId)->where('kind', 'person')->where('verified_at', '<=', now())
+            ->has('verifiedIdentity')
+            ->whereIn('id', RoleMembership::query()->select('party_id')->where('role', 'auditor')->where('status', 'active'))
+            ->whereNotIn('id', RoleMembership::query()->select('party_id')->where('role', '<>', 'auditor')->where('status', 'active'))
+            ->exists();
+    }
 }

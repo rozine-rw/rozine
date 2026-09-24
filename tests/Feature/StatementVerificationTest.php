@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Application\Auditor\RecordAuditorIndependence;
 use App\Application\Auditor\RespondToAuditAssignment;
+use App\Application\Auditor\SubmitAuditorAccreditation;
+use App\Application\Auditor\WithdrawAuditorAccreditation;
 use App\Application\Evidence\FindStatementVerificationOperation;
 use App\Application\Evidence\GetAuditStatementVerification;
 use App\Application\Evidence\GetStatementTranscription;
@@ -13,12 +15,15 @@ use App\Application\Evidence\RecordStatementTranscription;
 use App\Application\Evidence\RecordStatementVerification;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Domain\Evidence\StatementReconciliation;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Domain\Underwriting\CashFlowEvidence;
 use App\Models\AuditorIndependenceReview;
+use App\Models\AuditorProfile;
 use App\Models\CommandOperation;
+use App\Models\RoleMembership;
 use App\Models\StatementEvidence;
 use App\Models\StatementTranscription;
 use App\Models\StatementVerification;
@@ -97,12 +102,25 @@ it('retains factual correction lineage and never lets a replay restore a superse
     expect(fn () => Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id'], $review, requestId: $request))->toThrow(CommandRejection::class, 'IDEMPOTENCY_CONFLICT');
     app(IngestStatement::class)->handle($owner->id, 1, $fixture['business'], 2, 'new.csv', StatementFixture::csv('200'), (string) Str::uuid());
     expect($get->handle($owner->id, 1, $fixture['business'])['current'])->toBeFalse()
+        ->and(Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id'], requestId: $request))->toBe($first)
         ->and(Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id'], $review, evidenceRevision: 3, verificationRevision: 2)['code'])->toBe('STATEMENT_TRANSCRIPTION_STALE');
     $input = StatementFixture::transcription($sources['document_id']);
     $newTranscription = app(RecordStatementTranscription::class)->handle($owner->id, 1, $fixture['business'], 3,
         $input['rails'], $input['months'], $input['statements'], (string) Str::uuid());
     expect(Fixture::verifyStatements($fixture, $assignment, $newTranscription['data']['transcription']['id'], $review, evidenceRevision: 4, verificationRevision: 2)['code'])->toBe('STATEMENT_SOURCE_REVIEW_REQUIRED');
     $this->assertDatabaseCount('statement_verifications', 2);
+});
+
+it('requires the month to finish in Kigali before verifying its sources through the application boundary', function (): void {
+    $this->travelTo(new DateTimeImmutable('2026-08-31T21:59:59Z'));
+    $fixture = Fixture::make(1);
+    $sources = Fixture::statements($fixture);
+    $assignment = Fixture::request($fixture);
+    Fixture::respond($fixture['partners'][0]['user'], $assignment);
+    $assignment->refresh();
+    expect(Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id'])['code'])->toBe('STATEMENT_COMPLETE_MONTH_REQUIRED');
+    $this->travel(1)->seconds();
+    expect(Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id'])['code'])->toBe('STATEMENT_SOURCE_VERIFIED');
 });
 
 it('records rejected factual reviews without approving sources and keeps the rejection stable on retry', function (): void {
@@ -188,9 +206,11 @@ it('pins source and assignment revisions and refuses a changed transcription dig
     $assignment = Fixture::request($fixture);
     $partner = $fixture['partners'][0];
     Fixture::respond($partner['user'], $assignment);
-    expect(Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id'])['code'])->toBe('VERSION_CONFLICT');
+    $staleAssignment = Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id']);
+    expect($staleAssignment['code'])->toBe('VERSION_CONFLICT')->and($staleAssignment['revision'])->toBe(2);
     $assignment->refresh();
-    expect(Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id'], evidenceRevision: 1)['code'])->toBe('VERSION_CONFLICT');
+    $staleEvidence = Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id'], evidenceRevision: 1);
+    expect($staleEvidence['code'])->toBe('VERSION_CONFLICT')->and($staleEvidence['revision'])->toBe(2);
     $review = StatementFixture::review([$sources['document_id'] => hash('sha256', StatementFixture::csv())]);
     $receipt = app(RecordStatementVerification::class)->handle($partner['user']->id, 1, $assignment->id, 2, 2, 0, $sources['transcription_id'], str_repeat('0', 64), $review, (string) Str::uuid());
     expect($receipt['code'])->toBe('STATEMENT_TRANSCRIPTION_STALE');
@@ -235,8 +255,12 @@ it('recomputes reconciliation and checks exact original hashes before granting s
         $record->forceFill(['payload' => $payload, 'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload))]);
     });
     try {
-        $receipt = Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id']);
-        expect($receipt['code'])->toBe(in_array($fault, ['source', 'unknown source'], true) ? 'STATEMENT_SOURCE_INTEGRITY_FAILED' : 'STATEMENT_RECONCILIATION_REQUIRED');
+        if (in_array($fault, ['source', 'unknown source'], true)) {
+            expect(fn () => Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id']))->toThrow(RuntimeException::class, 'STATEMENT_SOURCE_INTEGRITY_FAILED');
+            expect(CommandOperation::query()->where('command', 'statement.verify')->count())->toBe(0);
+        } else {
+            expect(Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id'])['code'])->toBe('STATEMENT_RECONCILIATION_REQUIRED');
+        }
     } finally {
         Event::forget($event);
     }
@@ -258,7 +282,7 @@ it('makes stored verification history immutable and fails closed on a corrupted 
         $record->sha256 = str_repeat('0', 64);
     });
     try {
-        expect(fn () => app(GetStatementVerification::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']))->toThrow(CommandRejection::class, 'STATEMENT_VERIFICATION_INTEGRITY_FAILED');
+        expect(fn () => app(GetStatementVerification::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']))->toThrow(RuntimeException::class, 'STATEMENT_VERIFICATION_INTEGRITY_FAILED');
     } finally {
         Event::forget($event);
     }
@@ -315,7 +339,16 @@ it('preserves historical source verification while withdrawing its current statu
     $partner = $fixture['partners'][0];
     Fixture::respond($partner['user'], $assignment);
     Fixture::verifyStatements($fixture, $assignment->refresh(), $sources['transcription_id']);
-    if ($fault === 'conflict') {
+    if (in_array($fault, ['suspend', 'revoke'], true)) {
+        AuditorFixture::review($partner['staff'], $partner['party']->id, 3, $fault);
+    } elseif ($fault === 'membership') {
+        RoleMembership::query()->where('party_id', $partner['party']->id)->update(['status' => 'suspended']);
+    } elseif ($fault === 'identity') {
+        $partner['party']->forceFill(['verified_at' => null])->save();
+    } elseif ($fault === 'certificate') {
+        $profile = AuditorProfile::query()->where('party_id', $partner['party']->id)->firstOrFail();
+        $profile->forceFill(['state' => [...$profile->state, 'certificate_id' => null]])->save();
+    } elseif ($fault === 'conflict') {
         Fixture::respond($partner['user'], $assignment, 'conflict', 'New financial interest.', 'financial_interest');
     } elseif ($fault === 'mandate') {
         $authority = $fixture['authority'];
@@ -331,7 +364,94 @@ it('preserves historical source verification while withdrawing its current statu
     $read = app(GetStatementVerification::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']);
     expect($read['current'])->toBeFalse()->and($read['payload']['observations'][0]['verified'])->toBeTrue();
     $this->assertDatabaseCount('statement_verifications', 1);
-})->with(['conflict', 'mandate', 'review', 'stale review']);
+})->with(['conflict', 'mandate', 'review', 'stale review', 'suspend', 'revoke', 'membership', 'identity', 'certificate']);
+
+it('retains historical validity through ordinary expiry pause and withdrawal of a pending renewal', function (string $change): void {
+    $fixture = Fixture::make(1);
+    $sources = Fixture::statements($fixture);
+    $assignment = Fixture::request($fixture);
+    $partner = $fixture['partners'][0];
+    Fixture::respond($partner['user'], $assignment);
+    Fixture::verifyStatements($fixture, $assignment->refresh(), $sources['transcription_id']);
+    if ($change === 'renewal') {
+        $submission = app(SubmitAuditorAccreditation::class)->handle($partner['user']->id, 1, 3, 'RENEWAL-CPA', now()->addYears(2)->format('Y-m-d'),
+            'renewal.pdf', "%PDF-1.7\nRenewal claim\n%%EOF", (string) Str::uuid(), true);
+        expect(app(WithdrawAuditorAccreditation::class)->handle($partner['user']->id, 1, 4, $submission['data']['submission_id'], (string) Str::uuid())['code'])->toBe('ACCREDITATION_WITHDRAWN');
+    } else {
+        $profile = AuditorProfile::query()->where('party_id', $partner['party']->id)->firstOrFail();
+        $state = $profile->state;
+        if ($change === 'expiry') {
+            $state['standing']['expires_on'] = now()->subDay()->format('Y-m-d');
+        } else {
+            $state['accepting'] = false;
+        }
+        $profile->forceFill(['state' => $state])->save();
+    }
+    expect(app(GetStatementVerification::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business'])['current'])->toBeTrue();
+})->with(['expiry', 'pause', 'renewal']);
+
+it('keeps a valid historical classification readable but not current after a classifier upgrade', function (): void {
+    $fixture = Fixture::make(1);
+    $sources = Fixture::statements($fixture);
+    $assignment = Fixture::request($fixture);
+    Fixture::respond($fixture['partners'][0]['user'], $assignment);
+    Fixture::verifyStatements($fixture, $assignment->refresh(), $sources['transcription_id']);
+    $transcriptionEvent = 'eloquent.retrieved: '.StatementTranscription::class;
+    $verificationEvent = 'eloquent.retrieved: '.StatementVerification::class;
+    Event::listen($transcriptionEvent, function (StatementTranscription $record): void {
+        $payload = $record->payload;
+        $payload['classification_version'] = 'statement-classification-1';
+        foreach ($payload['observations'] as &$observation) {
+            $observation['classification_version'] = 'statement-classification-1';
+        }
+        unset($observation);
+        $record->forceFill(['classification_version' => 'statement-classification-1', 'payload' => $payload,
+            'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload))]);
+    });
+    Event::listen($verificationEvent, function (StatementVerification $record): void {
+        $payload = $record->payload;
+        $payload['classification_version'] = 'statement-classification-1';
+        foreach ($payload['observations'] as &$observation) {
+            $observation['classification_version'] = 'statement-classification-1';
+        }
+        unset($observation);
+        $payload['transcription']['sha256'] = StatementTranscription::query()->whereKey($record->transcription_id)->firstOrFail()->sha256;
+        $record->forceFill(['payload' => $payload, 'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload))]);
+    });
+    try {
+        $read = app(GetStatementVerification::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']);
+        expect($read['current'])->toBeFalse()->and($read['payload']['classification_version'])->not->toBe(StatementReconciliation::VERSION);
+    } finally {
+        Event::forget($transcriptionEvent);
+        Event::forget($verificationEvent);
+    }
+});
+
+it('refuses a verification whose canonical snapshot disagrees with its transcription or observation classification', function (string $fault): void {
+    $fixture = Fixture::make(1);
+    $sources = Fixture::statements($fixture);
+    $assignment = Fixture::request($fixture);
+    Fixture::respond($fixture['partners'][0]['user'], $assignment);
+    Fixture::verifyStatements($fixture, $assignment->refresh(), $sources['transcription_id']);
+    $event = 'eloquent.retrieved: '.StatementVerification::class;
+    Event::listen($event, function (StatementVerification $record) use ($fault): void {
+        $payload = $record->payload;
+        if ($fault === 'digest') {
+            $payload['transcription']['sha256'] = str_repeat('0', 64);
+        } elseif ($fault === 'observation') {
+            $payload['observations'][0]['classification_version'] = 'wrong';
+        } else {
+            $payload['classification_version'] = 'wrong';
+        }
+        $record->forceFill(['payload' => $payload, 'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload))]);
+    });
+    try {
+        expect(fn () => app(GetStatementVerification::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']))
+            ->toThrow(RuntimeException::class, 'STATEMENT_VERIFICATION_INTEGRITY_FAILED');
+    } finally {
+        Event::forget($event);
+    }
+})->with(['digest', 'observation', 'classification']);
 
 it('supplies the full first-time underwriting window only from persisted Auditor-reviewed source facts', function (): void {
     $fixture = Fixture::make(1);

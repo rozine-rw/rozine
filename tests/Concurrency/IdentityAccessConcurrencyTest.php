@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Auditor\AdvanceExpiredAuditOffers;
 use App\Application\Auditor\MarkAuditLocationMoved;
+use App\Application\Auditor\RecordAuditorIndependence;
 use App\Application\Auditor\SetAuditorAvailability;
 use App\Application\Auditor\VerifyAuditLocation;
 use App\Application\Auditor\WithAcceptedAuditAssignment;
@@ -15,6 +16,7 @@ use App\Application\Evidence\GetAuditStatements;
 use App\Application\Evidence\GetStatementVerification;
 use App\Application\Evidence\IngestStatement;
 use App\Application\Evidence\ReadAuditStatement;
+use App\Application\Evidence\RecordStatementTranscription;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\ChangeMembership;
@@ -923,26 +925,40 @@ it('admits one of two competing factual corrections from the same source review 
         ->toBe(['STATEMENT_SOURCE_VERIFIED', 'VERSION_CONFLICT']);
 });
 
-it('cannot leave a source verification current after a racing evidence change or conflict', function (string $change): void {
+it('cannot leave a source verification current after a racing source or authority change', function (string $change): void {
     $fixture = AuditAssignmentFixture::make(1);
     $sources = AuditAssignmentFixture::statements($fixture);
     $assignment = AuditAssignmentFixture::request($fixture);
     $partner = $fixture['partners'][0];
+    $operator = concurrentIdentityOperator();
     AuditAssignmentFixture::respond($partner['user'], $assignment);
     $assignment->refresh();
     $operations = [
         function () use ($fixture, $assignment, $sources): void {
             try {
                 AuditAssignmentFixture::verifyStatements($fixture, $assignment, $sources['transcription_id']);
-            } catch (CommandRejection $exception) {
-                if ($exception->reason !== 'ASSIGNMENT_NOT_FOUND') {
+            } catch (IdentityViolation|CommandRejection $exception) {
+                if (! in_array($exception->getMessage(), ['ASSIGNMENT_NOT_FOUND', 'ACCREDITATION_SUSPENDED', 'AUDITOR_INDEPENDENCE_REVIEW_REQUIRED', 'ROLE_MEMBERSHIP_REQUIRED'], true)) {
                     throw $exception;
                 }
             }
         },
-        function () use ($fixture, $assignment, $partner, $change): void {
+        function () use ($fixture, $assignment, $partner, $sources, $operator, $change): void {
             if ($change === 'conflict') {
                 AuditAssignmentFixture::respond($partner['user'], $assignment, 'conflict', 'New financial interest.', 'financial_interest');
+            } elseif ($change === 'transcription') {
+                $input = StatementFixture::transcription($sources['document_id']);
+                app(RecordStatementTranscription::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business'], 2,
+                    $input['rails'], $input['months'], $input['statements'], (string) Str::uuid());
+            } elseif ($change === 'review') {
+                app(RecordAuditorIndependence::class)->handle($fixture['staff']->id, $fixture['business'], $partner['party']->id, 1,
+                    [...AuditorIndependenceFixture::facts(), 'financial_interest' => true], now('UTC')->format('Y-m-d\TH:i:s\Z'),
+                    'new:interest', 'Current interest found.', (string) Str::uuid());
+            } elseif ($change === 'standing') {
+                AuditorFixture::review($partner['staff'], $partner['party']->id, 3, 'suspend');
+            } elseif ($change === 'membership') {
+                app(ChangeMembership::class)->handle($operator->id, $partner['party']->id, 'auditor', 'revoked', 1,
+                    'case:revocation', 'Withdraw membership.', (string) Str::uuid());
             } else {
                 app(IngestStatement::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business'], 2,
                     'new.csv', StatementFixture::csv('200'), (string) Str::uuid());
@@ -952,4 +968,4 @@ it('cannot leave a source verification current after a racing evidence change or
     expect(runIdentityContenders($operations))->toBe([0, 0]);
     $snapshot = app(GetStatementVerification::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']);
     expect($snapshot === null || ! $snapshot['current'])->toBeTrue();
-})->with(['evidence', 'conflict']);
+})->with(['evidence', 'conflict', 'transcription', 'review', 'standing', 'membership']);
