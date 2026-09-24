@@ -1,0 +1,198 @@
+{
+    "component": "auditor/portfolio",
+    "props": {
+        "server_time": "2026-10-03T17:00:00Z",
+        "reports": [
+            {
+                "id": "rp_1",
+                "business": "Kivu Coffee Roasters",
+                "kind": "monthly",
+                "month": "2026-09-01",
+                "district": "Rubavu",
+                "filed_on": "2026-10-02",
+                "due_on": "2026-10-07",
+                "status": "published",
+                "late_days": null,
+                "rejection": null,
+                "link": {
+                    "url": "/preview/auditor-audit-sealed-monthly",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "rp_2",
+                "business": "Huye Motors",
+                "kind": "flash",
+                "month": null,
+                "district": "Gasabo",
+                "filed_on": "2026-10-01",
+                "due_on": "2026-10-02",
+                "status": "awaiting_cosign",
+                "late_days": null,
+                "rejection": null,
+                "link": {
+                    "url": "/preview/auditor-audit-sealed",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "rp_3",
+                "business": "Musanze Traders",
+                "kind": "monthly",
+                "month": "2026-08-01",
+                "district": "Musanze",
+                "filed_on": "2026-09-09",
+                "due_on": "2026-09-07",
+                "status": "late",
+                "late_days": 2,
+                "rejection": null,
+                "link": {
+                    "url": "/preview/auditor-audit-sealed-monthly",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "rp_4",
+                "business": "Isoko Energy",
+                "kind": "monthly",
+                "month": "2026-08-01",
+                "district": "Nyarugenge",
+                "filed_on": "2026-09-05",
+                "due_on": "2026-09-07",
+                "status": "rejected",
+                "late_days": null,
+                "rejection": {
+                    "reason": "Rozine review: the cash count sheet attached is for July, not August. The original stays on the record.",
+                    "amend": {
+                        "url": "/preview/auditor-audit-count",
+                        "method": "get"
+                    }
+                },
+                "link": {
+                    "url": "/preview/auditor-audit-sealed-monthly",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "rp_5",
+                "business": "Intare Supply",
+                "kind": "monthly",
+                "month": "2026-08-01",
+                "district": "Kicukiro",
+                "filed_on": "2026-09-04",
+                "due_on": "2026-09-07",
+                "status": "published",
+                "late_days": null,
+                "rejection": null,
+                "link": {
+                    "url": "/preview/auditor-audit-sealed-monthly",
+                    "method": "get"
+                }
+            }
+        ],
+        "filter": "all",
+        "filters": [
+            {
+                "key": "all",
+                "count": 5,
+                "link": {
+                    "url": "/preview/auditor-portfolio",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "awaiting_cosign",
+                "count": 1,
+                "link": {
+                    "url": "/preview/auditor-portfolio-awaiting",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "published",
+                "count": 2,
+                "link": {
+                    "url": "/preview/auditor-portfolio-published",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "late",
+                "count": 1,
+                "link": {
+                    "url": "/preview/auditor-portfolio-late",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "rejected",
+                "count": 1,
+                "link": {
+                    "url": "/preview/auditor-portfolio-rejected",
+                    "method": "get"
+                }
+            }
+        ],
+        "conflicts": {
+            "files": [
+                {
+                    "id": "fa_huye",
+                    "business": "Huye Motors",
+                    "note_id": "RNP-2026-0133"
+                },
+                {
+                    "id": "mr_greenleaf",
+                    "business": "GreenLeaf Agro",
+                    "note_id": "RNP-2026-0118"
+                },
+                {
+                    "id": "mr_intare",
+                    "business": "Intare Supply",
+                    "note_id": "RNP-2026-0102"
+                }
+            ],
+            "record": [
+                {
+                    "id": "cf_1",
+                    "business": "Rubavu Foods",
+                    "note_id": "RNP-2026-0097",
+                    "kind": "family_or_business",
+                    "declared_on": "2026-08-12"
+                }
+            ],
+            "declare": {
+                "url": "/preview/auditor-portfolio-conflict",
+                "method": "post"
+            }
+        },
+        "outcome": {
+            "kind": "conflict_declared",
+            "business": "GreenLeaf Agro",
+            "resolution": "queued",
+            "reassigned_to": null
+        },
+        "open_jobs": 1,
+        "links": {
+            "home": {
+                "url": "/preview/auditor-home",
+                "method": "get"
+            },
+            "jobs": {
+                "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/auditor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/auditor-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-auditor",
+                "method": "get"
+            }
+        }
+    }
+}

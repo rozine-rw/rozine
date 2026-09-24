@@ -171,12 +171,15 @@ final class PhaseZeroDeliveryReadiness
         }
 
         foreach (self::records($auditor, 'device_runs') as $run) {
-            if (($run['status'] ?? null) !== 'NOT_RUN' || ($run['owner'] ?? null) !== 'Erastus'
-                || ! in_array($run['matrix_row'] ?? null, [1, 3, 4], true)) {
+            if (($run['owner'] ?? null) !== 'Erastus' || ! in_array($run['matrix_row'] ?? null, [1, 3, 4], true)) {
                 throw new UnexpectedValueException('A prepared device run is not measured evidence.');
             }
 
-            self::requireNulls($run, ['device', 'os_version', 'started_at', 'finished_at', 'artifact']);
+            match ($run['status'] ?? null) {
+                'NOT_RUN' => self::requireNulls($run, ['device', 'os_version', 'started_at', 'finished_at', 'artifact']),
+                'STARTED_INCOMPLETE' => self::requireFiledRun($run),
+                default => throw new UnexpectedValueException('A prepared device run is not measured evidence.'),
+            };
         }
 
         foreach (self::records($auditor, 'dwell_probes') as $run) {
@@ -251,6 +254,35 @@ final class PhaseZeroDeliveryReadiness
     }
 
     /**
+     * A started run must name the device it ran on and file the export it produced,
+     * and it stays unfinished until every probe of its row is measured.
+     *
+     * @param  array<string, mixed>  $run
+     */
+    private static function requireFiledRun(array $run): void
+    {
+        foreach (['device', 'os_version', 'started_at'] as $key) {
+            $value = $run[$key] ?? null;
+
+            if (! is_string($value) || $value === '') {
+                throw new UnexpectedValueException('A started run must record its device: '.$key);
+            }
+        }
+
+        $artifact = $run['artifact'] ?? null;
+
+        if (! is_string($artifact) || $artifact === '') {
+            throw new UnexpectedValueException('A started run must record its exported artifact.');
+        }
+
+        if (! is_file(__DIR__.'/../../docs/phase-0/'.$artifact)) {
+            throw new UnexpectedValueException('A started run cannot cite a missing artifact: '.$artifact);
+        }
+
+        self::requireNulls($run, ['finished_at']);
+    }
+
+    /**
      * @param  array<string, mixed>  $record
      * @param  list<string>  $keys
      */
@@ -298,6 +330,18 @@ test('readiness negative controls reject invented evidence omitted scope and est
         case 'device pass':
             $pack['auditor']['device_runs'][0]['status'] = 'PASS';
             break;
+        case 'started run unfiled':
+            $pack['auditor']['device_runs'][2]['artifact'] = null;
+            break;
+        case 'started run missing artifact':
+            $pack['auditor']['device_runs'][2]['artifact'] = 'd-04-pwa-assurance/runs/never-exported.json';
+            break;
+        case 'started run finished':
+            $pack['auditor']['device_runs'][2]['finished_at'] = '2026-09-23T05:18:17Z';
+            break;
+        case 'started run undeviced':
+            $pack['auditor']['device_runs'][2]['device'] = null;
+            break;
         case 'dwell shortened':
             $pack['auditor']['dwell_probes'][0]['minimum_elapsed_hours'] = 24;
             break;
@@ -322,8 +366,10 @@ test('readiness negative controls reject invented evidence omitted scope and est
     }
 
     expect(fn () => PhaseZeroDeliveryReadiness::validate($pack))->toThrow(UnexpectedValueException::class);
-})->with(['approval', 'capacity', 'effort', 'cycle', 'device pass', 'dwell shortened', 'dwell started',
-    'contact sent', 'provider selected', 'integration omitted', 'unknown decision', 'duplicate track']);
+})->with(['approval', 'capacity', 'effort', 'cycle', 'device pass', 'started run unfiled',
+    'started run missing artifact', 'started run finished', 'started run undeviced',
+    'dwell shortened', 'dwell started', 'contact sent', 'provider selected', 'integration omitted',
+    'unknown decision', 'duplicate track']);
 
 test('readable delivery documents preserve all IDs and well formed tables', function (string $filename, string $prefix, int $count) {
     $contents = file_get_contents(__DIR__.'/../../docs/phase-0/'.$filename);

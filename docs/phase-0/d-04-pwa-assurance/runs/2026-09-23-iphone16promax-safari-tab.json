@@ -1,0 +1,308 @@
+{
+    "spike": "D-04 Auditor capture assurance",
+    "environment": {
+        "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0 Mobile/15E148 Safari/604.1",
+        "platform": "iPhone",
+        "language": "en-GB",
+        "secureContext": true,
+        "origin": "https://rozine-d04-harness.pages.dev",
+        "displayMode": "browser",
+        "iosStandalone": false,
+        "deviceMemoryGb": "unreported",
+        "hardwareConcurrency": 4,
+        "screen": "440x956 @3x",
+        "startedAt": "2026-09-23T05:16:31.951Z"
+    },
+    "exportedAt": "2026-09-23T05:18:17.178Z",
+    "gates": [
+        {
+            "id": "G1",
+            "title": "G1 — Camera-only capture",
+            "verdict": "PARTIAL",
+            "probes": [
+                {
+                    "id": "G1.1",
+                    "name": "getUserMedia reachable in a secure context",
+                    "manual": false,
+                    "status": "PASS",
+                    "detail": "getUserMedia present.",
+                    "at": "2026-09-23T05:17:19.341Z"
+                },
+                {
+                    "id": "G1.2",
+                    "name": "Rear camera opens and streams",
+                    "manual": false,
+                    "status": "PASS",
+                    "detail": "facingMode=environment, 1920x1080, label=\"Back Triple Camera\"",
+                    "at": "2026-09-23T05:17:21.060Z"
+                },
+                {
+                    "id": "G1.3",
+                    "name": "Frame captured to an encrypted blob with no file picker",
+                    "manual": false,
+                    "status": "PASS",
+                    "detail": "1080x1920, 246879 B, sha256=a678a2c64a960bde7eb9d048b3757cc9…, stored encrypted.",
+                    "at": "2026-09-23T05:17:21.129Z"
+                },
+                {
+                    "id": "G1.4",
+                    "name": "No gallery fallback is reachable from the capture flow",
+                    "manual": true,
+                    "status": "PASS",
+                    "detail": "Confirmed by tester.",
+                    "at": "2026-09-23T05:17:28.264Z"
+                },
+                {
+                    "id": "G1.5",
+                    "name": "Camera-attested source metadata",
+                    "manual": false,
+                    "status": "PARTIAL",
+                    "detail": "Canvas capture yields no EXIF, no camera signature, and no device attestation. Provenance can only be app-generated, so it is only as trustworthy as the client, which is unattested on the web.",
+                    "at": "2026-09-23T05:17:21.129Z"
+                }
+            ]
+        },
+        {
+            "id": "G2",
+            "title": "G2 — Encryption and key custody",
+            "verdict": "UNSUPPORTED",
+            "probes": [
+                {
+                    "id": "G2.1",
+                    "name": "Web Crypto subtle available",
+                    "manual": false,
+                    "status": "PASS",
+                    "detail": "crypto.subtle present.",
+                    "at": "2026-09-23T05:17:21.130Z"
+                },
+                {
+                    "id": "G2.2",
+                    "name": "Package key is non-extractable",
+                    "manual": false,
+                    "status": "PASS",
+                    "detail": "extractable=false and exportKey rejected (InvalidAccessError).",
+                    "at": "2026-09-23T05:17:21.136Z"
+                },
+                {
+                    "id": "G2.3",
+                    "name": "Key survives storage round-trip and still decrypts",
+                    "manual": false,
+                    "status": "PASS",
+                    "detail": "CryptoKey structured-cloned into IndexedDB and decrypted correctly after re-read.",
+                    "at": "2026-09-23T05:17:21.142Z"
+                },
+                {
+                    "id": "G2.4",
+                    "name": "Hardware-backed, user-authentication-bound key custody",
+                    "manual": false,
+                    "status": "UNSUPPORTED",
+                    "detail": "No web API binds an AES CryptoKey to hardware or to device unlock. The key is protected by origin isolation only. A platform authenticator is present, but WebAuthn gates authentication, not key custody, and cannot wrap or release this key.",
+                    "at": "2026-09-23T05:17:21.147Z"
+                }
+            ]
+        },
+        {
+            "id": "G3",
+            "title": "G3 — Interruption and durability",
+            "verdict": "BLOCKED",
+            "probes": [
+                {
+                    "id": "G3.1",
+                    "name": "Storage marked persistent",
+                    "manual": false,
+                    "status": "BLOCKED",
+                    "detail": "Refused while running as a plain tab. Re-measure after installing to the home screen, which is the shipping configuration.",
+                    "at": "2026-09-23T05:17:21.148Z"
+                },
+                {
+                    "id": "G3.2",
+                    "name": "Quota headroom for a field package",
+                    "manual": false,
+                    "status": "PASS",
+                    "detail": "41231 MB free of 41232 MB quota.",
+                    "at": "2026-09-23T05:17:21.148Z"
+                },
+                {
+                    "id": "G3.3",
+                    "name": "Writes commit atomically",
+                    "manual": false,
+                    "status": "PASS",
+                    "detail": "1 → 6 records, 0 malformed.",
+                    "at": "2026-09-23T05:17:21.165Z"
+                },
+                {
+                    "id": "G3.4",
+                    "name": "Records survive a force-quit",
+                    "manual": true,
+                    "status": "PASS",
+                    "detail": "Confirmed by tester.",
+                    "at": "2026-09-23T05:16:38.535Z"
+                },
+                {
+                    "id": "G3.5",
+                    "name": "Records survive a seven-day dwell",
+                    "manual": true,
+                    "status": "PASS",
+                    "detail": "Confirmed by tester.",
+                    "at": "2026-09-23T05:17:04.417Z"
+                }
+            ]
+        },
+        {
+            "id": "G4",
+            "title": "G4 — Ordered, exactly-once sync",
+            "verdict": "UNSUPPORTED",
+            "probes": [
+                {
+                    "id": "G4.1",
+                    "name": "Service worker registered and controlling",
+                    "manual": false,
+                    "status": "PASS",
+                    "detail": "scope=https://rozine-d04-harness.pages.dev/",
+                    "at": "2026-09-23T05:17:21.166Z"
+                },
+                {
+                    "id": "G4.2",
+                    "name": "Background Sync drains the queue without the app open",
+                    "manual": false,
+                    "status": "UNSUPPORTED",
+                    "detail": "SyncManager is absent. The queue can only drain while the app is open and foregrounded.",
+                    "at": "2026-09-23T05:17:21.166Z"
+                },
+                {
+                    "id": "G4.3",
+                    "name": "Duplicate and reordered submissions commit exactly once",
+                    "manual": false,
+                    "status": "PASS",
+                    "detail": "5 submissions of 3 distinct items → 3 committed, 2 rejected as duplicates.",
+                    "at": "2026-09-23T05:17:21.181Z"
+                },
+                {
+                    "id": "G4.4",
+                    "name": "Chunked upload resumes across an interruption",
+                    "manual": false,
+                    "status": "PASS",
+                    "detail": "Interrupted at chunk 3 (HTTP 503); resumed to all 8 chunks committed once each.",
+                    "at": "2026-09-23T05:17:21.186Z"
+                },
+                {
+                    "id": "G4.5",
+                    "name": "Real airplane-mode enqueue and reconnect drain",
+                    "manual": true,
+                    "status": "PASS",
+                    "detail": "Confirmed by tester.",
+                    "at": "2026-09-23T05:17:47.120Z"
+                }
+            ]
+        },
+        {
+            "id": "G5",
+            "title": "G5 — Location, time, and provenance",
+            "verdict": "UNSUPPORTED",
+            "probes": [
+                {
+                    "id": "G5.1",
+                    "name": "High-accuracy fix obtained",
+                    "manual": false,
+                    "status": "PASS",
+                    "detail": "±12 m in 1138 ms.",
+                    "at": "2026-09-23T05:17:22.324Z"
+                },
+                {
+                    "id": "G5.2",
+                    "name": "Mock or spoofed location is detectable",
+                    "manual": false,
+                    "status": "UNSUPPORTED",
+                    "detail": "The Geolocation API exposes no mock-provider flag and no provider identity. A developer-options mock location, a patched browser, or devtools sensor override is indistinguishable from a real fix. Only weak heuristics remain: implausible inter-fix speed, constant accuracy, and identical repeated coordinates.",
+                    "at": "2026-09-23T05:17:22.325Z"
+                },
+                {
+                    "id": "G5.3",
+                    "name": "Device and app integrity attestation",
+                    "manual": false,
+                    "status": "UNSUPPORTED",
+                    "detail": "No web equivalent of App Attest or Play Integrity is available. The page cannot prove it is unmodified, cannot prove the device is not rooted or emulated, and cannot prevent a modified client from submitting fabricated captures with valid-looking provenance.",
+                    "at": "2026-09-23T05:17:22.325Z"
+                },
+                {
+                    "id": "G5.4",
+                    "name": "Capture timestamps resist a tampered device clock",
+                    "manual": false,
+                    "status": "PARTIAL",
+                    "detail": "Wall clock and monotonic origin agree to 0 ms, but both derive from the same settable device clock. Mitigation is a server-signed time token issued with the offline package plus monotonic deltas since package open; that bounds drift within a session but cannot establish absolute time offline.",
+                    "at": "2026-09-23T05:17:55.773Z"
+                }
+            ]
+        },
+        {
+            "id": "G6",
+            "title": "G6 — Revocation and lost device",
+            "verdict": "FAIL",
+            "probes": [
+                {
+                    "id": "G6.1",
+                    "name": "Package self-expires and shreds on open",
+                    "manual": false,
+                    "status": "PASS",
+                    "detail": "Client-enforced TTL evaluates on open and can trigger a shred without the network.",
+                    "at": "2026-09-23T05:17:22.340Z"
+                },
+                {
+                    "id": "G6.2",
+                    "name": "Revocation on next contact",
+                    "manual": false,
+                    "status": "PARTIAL",
+                    "detail": "Check-in path works, so revocation lands whenever the device reconnects. Until then the package stays readable.",
+                    "at": "2026-09-23T05:17:22.342Z"
+                },
+                {
+                    "id": "G6.3",
+                    "name": "Out-of-band remote wipe",
+                    "manual": false,
+                    "status": "FAIL",
+                    "detail": "ReferenceError: Can't find variable: Notification",
+                    "at": "2026-09-23T05:17:22.342Z"
+                },
+                {
+                    "id": "G6.4",
+                    "name": "Residual risk of an indefinitely offline device",
+                    "manual": true,
+                    "status": "PASS",
+                    "detail": "Confirmed by tester.",
+                    "at": "2026-09-23T05:18:05.210Z"
+                }
+            ]
+        },
+        {
+            "id": "G7",
+            "title": "G7 — Purge",
+            "verdict": "UNSUPPORTED",
+            "probes": [
+                {
+                    "id": "G7.1",
+                    "name": "Crypto-shredding renders evidence unreadable",
+                    "manual": false,
+                    "status": "PASS",
+                    "detail": "Ciphertext is unrecoverable after key destruction (OperationError).",
+                    "at": "2026-09-23T05:17:22.357Z"
+                },
+                {
+                    "id": "G7.2",
+                    "name": "Stores and database delete cleanly",
+                    "manual": false,
+                    "status": "PASS",
+                    "detail": "All evidence and queue records removed.",
+                    "at": "2026-09-23T05:17:22.365Z"
+                },
+                {
+                    "id": "G7.3",
+                    "name": "Verified erasure of the underlying media",
+                    "manual": false,
+                    "status": "UNSUPPORTED",
+                    "detail": "No browser API overwrites or verifies erasure of the physical storage behind IndexedDB. Crypto-shredding is the compensating control and must be the approved erasure standard if Option A proceeds.",
+                    "at": "2026-09-23T05:17:22.365Z"
+                }
+            ]
+        }
+    ]
+}

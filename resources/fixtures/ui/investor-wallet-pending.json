@@ -1,0 +1,377 @@
+{
+    "component": "investor/wallet",
+    "props": {
+        "wallet": {
+            "available": {
+                "currency": "RWF",
+                "amount": "1253485"
+            },
+            "status": "active",
+            "pending_withdrawal": {
+                "currency": "RWF",
+                "amount": "300000"
+            }
+        },
+        "funding": {
+            "kind": null,
+            "methods": [
+                {
+                    "id": "mtn-1",
+                    "kind": "mtn",
+                    "label": "MTN MoMo",
+                    "masked": "+250 788 ···· 456"
+                },
+                {
+                    "id": "airtel-1",
+                    "kind": "airtel",
+                    "label": "Airtel",
+                    "masked": "+250 73 ···· 218"
+                },
+                {
+                    "id": "bk-1",
+                    "kind": "bank",
+                    "label": "Bank of Kigali",
+                    "masked": "Account ····2231"
+                }
+            ],
+            "picks": [
+                {
+                    "currency": "RWF",
+                    "amount": "50000"
+                },
+                {
+                    "currency": "RWF",
+                    "amount": "100000"
+                },
+                {
+                    "currency": "RWF",
+                    "amount": "500000"
+                },
+                {
+                    "currency": "RWF",
+                    "amount": "1000000"
+                }
+            ],
+            "quote": null
+        },
+        "earnings": {
+            "from": "2026-03-23T00:00:00+02:00",
+            "to": "2026-09-23T00:00:00+02:00",
+            "ranges": [
+                {
+                    "key": "3m",
+                    "active": false,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "6m",
+                    "active": true,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "12m",
+                    "active": false,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "ytd",
+                    "active": false,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                }
+            ],
+            "totals": {
+                "interest": {
+                    "currency": "RWF",
+                    "amount": "412780"
+                },
+                "received": {
+                    "currency": "RWF",
+                    "amount": "3496540"
+                },
+                "payouts": 14,
+                "avg_monthly": {
+                    "currency": "RWF",
+                    "amount": "582757"
+                }
+            },
+            "months": [
+                {
+                    "month": "2026-09-01T00:00:00+02:00",
+                    "payouts": 5,
+                    "interest": {
+                        "currency": "RWF",
+                        "amount": "96210"
+                    },
+                    "total": {
+                        "currency": "RWF",
+                        "amount": "812400"
+                    }
+                },
+                {
+                    "month": "2026-08-01T00:00:00+02:00",
+                    "payouts": 4,
+                    "interest": {
+                        "currency": "RWF",
+                        "amount": "88430"
+                    },
+                    "total": {
+                        "currency": "RWF",
+                        "amount": "744310"
+                    }
+                },
+                {
+                    "month": "2026-07-01T00:00:00+02:00",
+                    "payouts": 2,
+                    "interest": {
+                        "currency": "RWF",
+                        "amount": "71500"
+                    },
+                    "total": {
+                        "currency": "RWF",
+                        "amount": "603220"
+                    }
+                },
+                {
+                    "month": "2026-06-01T00:00:00+02:00",
+                    "payouts": 1,
+                    "interest": {
+                        "currency": "RWF",
+                        "amount": "58320"
+                    },
+                    "total": {
+                        "currency": "RWF",
+                        "amount": "492910"
+                    }
+                },
+                {
+                    "month": "2026-05-01T00:00:00+02:00",
+                    "payouts": 1,
+                    "interest": {
+                        "currency": "RWF",
+                        "amount": "52110"
+                    },
+                    "total": {
+                        "currency": "RWF",
+                        "amount": "441870"
+                    }
+                },
+                {
+                    "month": "2026-04-01T00:00:00+02:00",
+                    "payouts": 1,
+                    "interest": {
+                        "currency": "RWF",
+                        "amount": "46210"
+                    },
+                    "total": {
+                        "currency": "RWF",
+                        "amount": "401830"
+                    }
+                }
+            ]
+        },
+        "transactions": {
+            "range": "30d",
+            "ranges": [
+                {
+                    "key": "today",
+                    "active": false,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "7d",
+                    "active": false,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "30d",
+                    "active": true,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "all",
+                    "active": false,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                }
+            ],
+            "items": [
+                {
+                    "id": "t1",
+                    "kind": "payout",
+                    "counterparty": "GreenLeaf Agro",
+                    "occurred_at": "2026-09-03T08:02:00+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "150117"
+                    },
+                    "status": "completed",
+                    "link": {
+                        "url": "/preview/investor-wallet-receipt",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "t2",
+                    "kind": "investment",
+                    "counterparty": "Kivu Coffee",
+                    "occurred_at": "2026-09-01T14:22:00+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "-450000"
+                    },
+                    "status": "completed",
+                    "link": {
+                        "url": "/preview/investor-wallet-receipt",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "t3",
+                    "kind": "withdrawal",
+                    "counterparty": "Bank of Kigali",
+                    "occurred_at": "2026-08-28T10:11:00+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "-300000"
+                    },
+                    "status": "pending",
+                    "link": {
+                        "url": "/preview/investor-wallet-receipt",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "t4",
+                    "kind": "deposit",
+                    "counterparty": "MTN Mobile Money",
+                    "occurred_at": "2026-08-20T08:30:00+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "2000000"
+                    },
+                    "status": "completed",
+                    "link": {
+                        "url": "/preview/investor-wallet-receipt",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "t5",
+                    "kind": "deposit",
+                    "counterparty": "Airtel Money",
+                    "occurred_at": "2026-08-18T19:04:00+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "250000"
+                    },
+                    "status": "failed",
+                    "link": {
+                        "url": "/preview/investor-wallet-receipt",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "t6",
+                    "kind": "payout",
+                    "counterparty": "Karongi Freight",
+                    "occurred_at": "2026-08-03T08:01:00+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "166320"
+                    },
+                    "status": "completed",
+                    "link": {
+                        "url": "/preview/investor-wallet-receipt",
+                        "method": "get"
+                    }
+                }
+            ],
+            "exports": {
+                "pdf": {
+                    "url": "/preview/investor-wallet",
+                    "method": "get"
+                },
+                "csv": {
+                    "url": "/preview/investor-wallet",
+                    "method": "get"
+                }
+            }
+        },
+        "receipt": null,
+        "links": {
+            "deals": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "close": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "deposit": {
+                "url": "/preview/investor-wallet-deposit",
+                "method": "get"
+            },
+            "withdraw": {
+                "url": "/preview/investor-wallet-withdraw",
+                "method": "get"
+            },
+            "link_account": {
+                "url": "/preview/investor-profile-linked",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "deposit": {
+                "url": "/preview/investor-wallet",
+                "method": "post"
+            },
+            "withdraw": {
+                "url": "/preview/investor-wallet",
+                "method": "post"
+            }
+        }
+    }
+}

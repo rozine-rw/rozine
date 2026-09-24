@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Application\Identity\RegisterIdentity;
 use App\Http\Controllers\Controller;
+use App\Models\Party;
+use App\Models\RoleMembership;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -136,3 +139,13 @@ arch('infrastructure concretions are reached through their container binding')
     // past the port that is supposed to hide it.
     ->expect('App\Infrastructure')
     ->toOnlyBeUsedIn('App\Providers');
+
+it('has concrete targets for the identity persistence boundary', function (): void {
+    expect(class_exists(Party::class))->toBeTrue()
+        ->and(class_exists(RoleMembership::class))->toBeTrue()
+        ->and(class_exists(RegisterIdentity::class))->toBeTrue();
+})->group('arch');
+
+arch('identity records are only accessed by their adapter and model relationships')
+    ->expect(['App\Models\Party', 'App\Models\RoleMembership', 'App\Models\VerifiedPersonIdentity', 'App\Models\IdentityOperator', 'App\Models\IdentityAuditEvent', 'App\Models\StaffAccount', 'App\Models\RoleBookmark'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Identity', 'App\Models', 'Database\Factories']);

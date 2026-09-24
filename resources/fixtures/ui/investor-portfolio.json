@@ -1,0 +1,432 @@
+{
+    "component": "investor/portfolio",
+    "props": {
+        "tab": "active",
+        "tabs": [
+            {
+                "key": "active",
+                "active": true,
+                "link": {
+                    "url": "/preview/investor-portfolio",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "matured",
+                "active": false,
+                "link": {
+                    "url": "/preview/investor-portfolio-matured",
+                    "method": "get"
+                }
+            }
+        ],
+        "totals": {
+            "businesses": 6,
+            "value": {
+                "currency": "RWF",
+                "amount": "4458462"
+            },
+            "invested": {
+                "currency": "RWF",
+                "amount": "4175000"
+            },
+            "gain": {
+                "currency": "RWF",
+                "amount": "283462"
+            },
+            "this_month": {
+                "currency": "RWF",
+                "amount": "97834"
+            },
+            "projected_3m": {
+                "currency": "RWF",
+                "amount": "1602973"
+            },
+            "next_payout": {
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "859319"
+                },
+                "month": "2026-10-03T00:00:00+02:00"
+            },
+            "avg_monthly": {
+                "currency": "RWF",
+                "amount": "534324"
+            }
+        },
+        "holdings": [
+            {
+                "id": "h-greenleaf",
+                "name": "GreenLeaf Agro",
+                "accent": "green",
+                "industry": "Agriculture",
+                "district": "Gasabo",
+                "health": "healthy",
+                "value": {
+                    "currency": "RWF",
+                    "amount": "882435"
+                },
+                "invested": {
+                    "currency": "RWF",
+                    "amount": "800000"
+                },
+                "gain": {
+                    "currency": "RWF",
+                    "amount": "82435"
+                },
+                "gain_pct": "10.3",
+                "repaid_pct": 83,
+                "matures_on": "2026-11-30T00:00:00+02:00",
+                "payments_made": 5,
+                "payments_total": 6,
+                "link": {
+                    "url": "/preview/investor-holding",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "h-musanze",
+                "name": "Musanze Traders",
+                "accent": "blue",
+                "industry": "Construction",
+                "district": "Nyarugenge",
+                "health": "healthy",
+                "value": {
+                    "currency": "RWF",
+                    "amount": "940950"
+                },
+                "invested": {
+                    "currency": "RWF",
+                    "amount": "900000"
+                },
+                "gain": {
+                    "currency": "RWF",
+                    "amount": "40950"
+                },
+                "gain_pct": "4.5",
+                "repaid_pct": 40,
+                "matures_on": "2027-02-28T00:00:00+02:00",
+                "payments_made": 2,
+                "payments_total": 5,
+                "link": {
+                    "url": "/preview/investor-holding",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "h-isoko",
+                "name": "Isoko Energy",
+                "accent": "ink",
+                "industry": "Energy",
+                "district": "Nyarugenge",
+                "health": "arrears",
+                "value": {
+                    "currency": "RWF",
+                    "amount": "495362"
+                },
+                "invested": {
+                    "currency": "RWF",
+                    "amount": "475000"
+                },
+                "gain": {
+                    "currency": "RWF",
+                    "amount": "20362"
+                },
+                "gain_pct": "4.3",
+                "repaid_pct": 33,
+                "matures_on": "2027-03-31T00:00:00+02:00",
+                "payments_made": 2,
+                "payments_total": 6,
+                "link": {
+                    "url": "/preview/investor-holding",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "h-intare",
+                "name": "Intare Supply",
+                "accent": "purple",
+                "industry": "Hospitality",
+                "district": "Nyarugenge",
+                "health": "healthy",
+                "value": {
+                    "currency": "RWF",
+                    "amount": "1025178"
+                },
+                "invested": {
+                    "currency": "RWF",
+                    "amount": "950000"
+                },
+                "gain": {
+                    "currency": "RWF",
+                    "amount": "75178"
+                },
+                "gain_pct": "7.9",
+                "repaid_pct": 67,
+                "matures_on": "2026-12-31T00:00:00+02:00",
+                "payments_made": 4,
+                "payments_total": 6,
+                "link": {
+                    "url": "/preview/investor-holding",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "h-karongi",
+                "name": "Karongi Freight",
+                "accent": "teal",
+                "industry": "Logistics",
+                "district": "Karongi",
+                "health": "healthy",
+                "value": {
+                    "currency": "RWF",
+                    "amount": "648960"
+                },
+                "invested": {
+                    "currency": "RWF",
+                    "amount": "600000"
+                },
+                "gain": {
+                    "currency": "RWF",
+                    "amount": "48960"
+                },
+                "gain_pct": "8.2",
+                "repaid_pct": 75,
+                "matures_on": "2026-10-31T00:00:00+02:00",
+                "payments_made": 3,
+                "payments_total": 4,
+                "link": {
+                    "url": "/preview/investor-holding",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "h-kivu",
+                "name": "Kivu Coffee",
+                "accent": "green",
+                "industry": "Agriculture",
+                "district": "Rubavu",
+                "health": "watch",
+                "value": {
+                    "currency": "RWF",
+                    "amount": "465577"
+                },
+                "invested": {
+                    "currency": "RWF",
+                    "amount": "450000"
+                },
+                "gain": {
+                    "currency": "RWF",
+                    "amount": "15577"
+                },
+                "gain_pct": "3.5",
+                "repaid_pct": 33,
+                "matures_on": "2026-12-31T00:00:00+02:00",
+                "payments_made": 1,
+                "payments_total": 3,
+                "link": {
+                    "url": "/preview/investor-holding",
+                    "method": "get"
+                }
+            }
+        ],
+        "payouts": [
+            {
+                "month": "2026-10-03T00:00:00+02:00",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "859319"
+                },
+                "payers": [
+                    {
+                        "name": "Musanze Traders",
+                        "accent": "blue",
+                        "amount": {
+                            "currency": "RWF",
+                            "amount": "200475"
+                        }
+                    },
+                    {
+                        "name": "Intare Supply",
+                        "accent": "purple",
+                        "amount": {
+                            "currency": "RWF",
+                            "amount": "177127"
+                        }
+                    },
+                    {
+                        "name": "Karongi Freight",
+                        "accent": "teal",
+                        "amount": {
+                            "currency": "RWF",
+                            "amount": "166320"
+                        }
+                    },
+                    {
+                        "name": "Kivu Coffee",
+                        "accent": "green",
+                        "amount": {
+                            "currency": "RWF",
+                            "amount": "165577"
+                        }
+                    },
+                    {
+                        "name": "GreenLeaf Agro",
+                        "accent": "green",
+                        "amount": {
+                            "currency": "RWF",
+                            "amount": "149820"
+                        }
+                    }
+                ],
+                "bar_pct": 100
+            },
+            {
+                "month": "2026-11-03T00:00:00+02:00",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "543179"
+                },
+                "payers": [
+                    {
+                        "name": "Musanze Traders",
+                        "accent": "blue",
+                        "amount": {
+                            "currency": "RWF",
+                            "amount": "200475"
+                        }
+                    },
+                    {
+                        "name": "Intare Supply",
+                        "accent": "purple",
+                        "amount": {
+                            "currency": "RWF",
+                            "amount": "177127"
+                        }
+                    },
+                    {
+                        "name": "Kivu Coffee",
+                        "accent": "green",
+                        "amount": {
+                            "currency": "RWF",
+                            "amount": "165577"
+                        }
+                    }
+                ],
+                "bar_pct": 63
+            },
+            {
+                "month": "2026-12-03T00:00:00+02:00",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "200475"
+                },
+                "payers": [
+                    {
+                        "name": "Musanze Traders",
+                        "accent": "blue",
+                        "amount": {
+                            "currency": "RWF",
+                            "amount": "200475"
+                        }
+                    }
+                ],
+                "bar_pct": 23
+            }
+        ],
+        "industries": [
+            {
+                "name": "Agriculture",
+                "accent": "green",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "1250000"
+                },
+                "share_pct": 30
+            },
+            {
+                "name": "Hospitality",
+                "accent": "purple",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "950000"
+                },
+                "share_pct": 23
+            },
+            {
+                "name": "Construction",
+                "accent": "blue",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "900000"
+                },
+                "share_pct": 22
+            },
+            {
+                "name": "Logistics",
+                "accent": "teal",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "600000"
+                },
+                "share_pct": 14
+            },
+            {
+                "name": "Energy",
+                "accent": "ink",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "475000"
+                },
+                "share_pct": 11
+            }
+        ],
+        "risk": [
+            {
+                "band": "strong",
+                "share_pct": 55
+            },
+            {
+                "band": "stable",
+                "share_pct": 45
+            },
+            {
+                "band": "weak",
+                "share_pct": 0
+            }
+        ],
+        "concentration": {
+            "status": "balanced"
+        },
+        "idle": {
+            "currency": "RWF",
+            "amount": "1253485"
+        },
+        "links": {
+            "deals": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        }
+    }
+}

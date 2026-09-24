@@ -1,0 +1,215 @@
+{
+    "component": "admin/parties",
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2026-09-23T17:40:00+02:00",
+        "kind": "auditor",
+        "policy": [],
+        "stats": [
+            {
+                "key": "partners",
+                "value": {
+                    "kind": "count",
+                    "value": 14
+                }
+            },
+            {
+                "key": "active_partners",
+                "value": {
+                    "kind": "count",
+                    "value": 11
+                }
+            },
+            {
+                "key": "pending_partners",
+                "value": {
+                    "kind": "count",
+                    "value": 2
+                }
+            },
+            {
+                "key": "licences_expiring",
+                "value": {
+                    "kind": "count",
+                    "value": 1
+                }
+            }
+        ],
+        "chips": [
+            {
+                "key": "all",
+                "count": 14,
+                "link": {
+                    "url": "/preview/admin-auditors",
+                    "method": "get"
+                },
+                "active": true
+            },
+            {
+                "key": "active",
+                "count": 11,
+                "link": {
+                    "url": "/preview/admin-auditors",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "pending",
+                "count": 2,
+                "link": {
+                    "url": "/preview/admin-auditors",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "licence_expired",
+                "count": 1,
+                "link": {
+                    "url": "/preview/admin-auditors",
+                    "method": "get"
+                },
+                "active": false
+            }
+        ],
+        "filters": [],
+        "shown": 4,
+        "total": 4,
+        "directory": {
+            "kind": "auditor",
+            "rows": [
+                {
+                    "id": "aud_diane",
+                    "name": "Diane Uwase, CPA",
+                    "firm": "Uwase & Partners",
+                    "licence": "PPC-0412",
+                    "district": "Gasabo",
+                    "active_engagements": 3,
+                    "on_time_pct": 96,
+                    "share_mtd": {
+                        "currency": "RWF",
+                        "amount": "420000"
+                    },
+                    "standing": "active",
+                    "frozen": false,
+                    "link": {
+                        "url": "/preview/admin-auditors-licence",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "aud_jean",
+                    "name": "Jean Habimana, CPA",
+                    "firm": "Habimana Audit",
+                    "licence": "PPC-0388",
+                    "district": "Huye",
+                    "active_engagements": 1,
+                    "on_time_pct": 88,
+                    "share_mtd": {
+                        "currency": "RWF",
+                        "amount": "160000"
+                    },
+                    "standing": "active",
+                    "frozen": false,
+                    "link": {
+                        "url": "/preview/admin-auditors-licence",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "aud_claude",
+                    "name": "Claude Mukamana, CPA",
+                    "firm": "Mukamana CPA",
+                    "licence": "PPC-0501",
+                    "district": "Musanze",
+                    "active_engagements": 0,
+                    "on_time_pct": null,
+                    "share_mtd": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "standing": "pending",
+                    "frozen": false,
+                    "link": {
+                        "url": "/preview/admin-auditors-licence",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "aud_eric",
+                    "name": "Eric Nshuti, CPA",
+                    "firm": "Nshuti Advisory",
+                    "licence": "PPC-0290",
+                    "district": "Rubavu",
+                    "active_engagements": 0,
+                    "on_time_pct": 91,
+                    "share_mtd": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "standing": "licence_expired",
+                    "frozen": true,
+                    "link": {
+                        "url": "/preview/admin-auditors-licence",
+                        "method": "get"
+                    }
+                }
+            ]
+        },
+        "party": null
+    }
+}

@@ -1,0 +1,212 @@
+{
+    "component": "business/profile",
+    "props": {
+        "business": {
+            "name": "GreenLeaf Agro",
+            "address_line": "North, Musanze",
+            "verified": true,
+            "rating": {
+                "band": "strong",
+                "score": "4.8"
+            }
+        },
+        "section": "linked",
+        "landing": false,
+        "company": {
+            "name": "GreenLeaf Agro",
+            "email": "operations@greenleaf.rw",
+            "phone": "0788013245",
+            "address": {
+                "province": "northern",
+                "district": "musanze",
+                "sector": "Muhoza",
+                "cell": "Kigombe",
+                "street": "KG 5 Ave"
+            },
+            "certificate": {
+                "number": "RDB/2019/004512",
+                "status": "verified",
+                "expires_on": null
+            },
+            "signatories": [
+                {
+                    "name": "Robert Mugisha",
+                    "role": "CEO · Managing Director"
+                },
+                {
+                    "name": "Aline Uwase",
+                    "role": "Board Chair"
+                }
+            ],
+            "signatories_required": 2
+        },
+        "provinces": [
+            {
+                "value": "kigali",
+                "label": "Kigali City",
+                "districts": [
+                    {
+                        "value": "gasabo",
+                        "label": "Gasabo"
+                    },
+                    {
+                        "value": "kicukiro",
+                        "label": "Kicukiro"
+                    },
+                    {
+                        "value": "nyarugenge",
+                        "label": "Nyarugenge"
+                    }
+                ]
+            },
+            {
+                "value": "northern",
+                "label": "Northern",
+                "districts": [
+                    {
+                        "value": "burera",
+                        "label": "Burera"
+                    },
+                    {
+                        "value": "gakenke",
+                        "label": "Gakenke"
+                    },
+                    {
+                        "value": "gicumbi",
+                        "label": "Gicumbi"
+                    },
+                    {
+                        "value": "musanze",
+                        "label": "Musanze"
+                    },
+                    {
+                        "value": "rulindo",
+                        "label": "Rulindo"
+                    }
+                ]
+            },
+            {
+                "value": "southern",
+                "label": "Southern",
+                "districts": [
+                    {
+                        "value": "huye",
+                        "label": "Huye"
+                    },
+                    {
+                        "value": "muhanga",
+                        "label": "Muhanga"
+                    }
+                ]
+            },
+            {
+                "value": "eastern",
+                "label": "Eastern",
+                "districts": [
+                    {
+                        "value": "rwamagana",
+                        "label": "Rwamagana"
+                    },
+                    {
+                        "value": "kayonza",
+                        "label": "Kayonza"
+                    }
+                ]
+            },
+            {
+                "value": "western",
+                "label": "Western",
+                "districts": [
+                    {
+                        "value": "rubavu",
+                        "label": "Rubavu"
+                    },
+                    {
+                        "value": "karongi",
+                        "label": "Karongi"
+                    }
+                ]
+            }
+        ],
+        "linked": {
+            "accounts": [
+                {
+                    "id": "wallet",
+                    "kind": "wallet",
+                    "name": "Rozine Wallet",
+                    "detail": "Balance RWF 12,383,800",
+                    "unlink": null
+                },
+                {
+                    "id": "bank",
+                    "kind": "bank",
+                    "name": "Bank of Kigali",
+                    "detail": "Business account ····2231",
+                    "unlink": null
+                },
+                {
+                    "id": "momo",
+                    "kind": "mobile_money",
+                    "name": "MTN Mobile Money",
+                    "detail": "+250 788 ···· 211",
+                    "unlink": {
+                        "url": "/preview/business-profile-linked",
+                        "method": "delete"
+                    }
+                }
+            ],
+            "add": null
+        },
+        "legal": null,
+        "links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "back": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            },
+            "sections": {
+                "company": {
+                    "url": "/preview/business-profile-company",
+                    "method": "get"
+                },
+                "linked": {
+                    "url": "/preview/business-profile-linked",
+                    "method": "get"
+                },
+                "terms": {
+                    "url": "/preview/business-profile-terms",
+                    "method": "get"
+                },
+                "privacy": {
+                    "url": "/preview/business-profile-privacy",
+                    "method": "get"
+                }
+            },
+            "sign_out": {
+                "url": "/logout",
+                "method": "post"
+            }
+        },
+        "actions": {
+            "save_company": {
+                "url": "/preview/business-profile-company",
+                "method": "put"
+            }
+        }
+    }
+}

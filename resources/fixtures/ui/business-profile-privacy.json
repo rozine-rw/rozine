@@ -1,0 +1,253 @@
+{
+    "component": "business/profile",
+    "props": {
+        "business": {
+            "name": "GreenLeaf Agro",
+            "address_line": "North, Musanze",
+            "verified": true,
+            "rating": {
+                "band": "strong",
+                "score": "4.8"
+            }
+        },
+        "section": "privacy",
+        "landing": false,
+        "company": {
+            "name": "GreenLeaf Agro",
+            "email": "operations@greenleaf.rw",
+            "phone": "0788013245",
+            "address": {
+                "province": "northern",
+                "district": "musanze",
+                "sector": "Muhoza",
+                "cell": "Kigombe",
+                "street": "KG 5 Ave"
+            },
+            "certificate": {
+                "number": "RDB/2019/004512",
+                "status": "verified",
+                "expires_on": null
+            },
+            "signatories": [
+                {
+                    "name": "Robert Mugisha",
+                    "role": "CEO · Managing Director"
+                },
+                {
+                    "name": "Aline Uwase",
+                    "role": "Board Chair"
+                }
+            ],
+            "signatories_required": 2
+        },
+        "provinces": [
+            {
+                "value": "kigali",
+                "label": "Kigali City",
+                "districts": [
+                    {
+                        "value": "gasabo",
+                        "label": "Gasabo"
+                    },
+                    {
+                        "value": "kicukiro",
+                        "label": "Kicukiro"
+                    },
+                    {
+                        "value": "nyarugenge",
+                        "label": "Nyarugenge"
+                    }
+                ]
+            },
+            {
+                "value": "northern",
+                "label": "Northern",
+                "districts": [
+                    {
+                        "value": "burera",
+                        "label": "Burera"
+                    },
+                    {
+                        "value": "gakenke",
+                        "label": "Gakenke"
+                    },
+                    {
+                        "value": "gicumbi",
+                        "label": "Gicumbi"
+                    },
+                    {
+                        "value": "musanze",
+                        "label": "Musanze"
+                    },
+                    {
+                        "value": "rulindo",
+                        "label": "Rulindo"
+                    }
+                ]
+            },
+            {
+                "value": "southern",
+                "label": "Southern",
+                "districts": [
+                    {
+                        "value": "huye",
+                        "label": "Huye"
+                    },
+                    {
+                        "value": "muhanga",
+                        "label": "Muhanga"
+                    }
+                ]
+            },
+            {
+                "value": "eastern",
+                "label": "Eastern",
+                "districts": [
+                    {
+                        "value": "rwamagana",
+                        "label": "Rwamagana"
+                    },
+                    {
+                        "value": "kayonza",
+                        "label": "Kayonza"
+                    }
+                ]
+            },
+            {
+                "value": "western",
+                "label": "Western",
+                "districts": [
+                    {
+                        "value": "rubavu",
+                        "label": "Rubavu"
+                    },
+                    {
+                        "value": "karongi",
+                        "label": "Karongi"
+                    }
+                ]
+            }
+        ],
+        "linked": null,
+        "legal": {
+            "version": "2.5",
+            "updated_on": "2026-08-04",
+            "sections": [
+                {
+                    "heading": "Introduction & scope",
+                    "body": "This Privacy Note explains how Rozine (\"Rozine\", \"we\", \"us\") collects, uses, shares and protects information when your business uses the Rozine platform, applications and website (the \"Platform\").\n\nBy using the Platform, you acknowledge and consent to the practices described here. This Note should be read together with our Terms & Conditions. Rozine is the data controller for the information described below."
+                },
+                {
+                    "heading": "How we collect information",
+                    "body": "We collect information directly from you and your representatives during onboarding and use of the Platform; automatically as you use the Platform (via cookies and similar technologies); and from third parties, including business registries, bank and mobile-money statement providers, independent Audit Partners, identity-verification, payment and mobile-money providers, and fraud-prevention and credit sources you or the relevant party authorise."
+                },
+                {
+                    "heading": "Biometric unlock",
+                    "body": "Where you enable biometric unlock, the fingerprint or face comparison is performed by your own device. We receive only the result of that comparison and never the biometric data your device holds.\n\nYou may turn biometric unlock off at any time in the security settings, and use your password or PIN instead."
+                },
+                {
+                    "heading": "How we use your information",
+                    "body": "We use your information to operate, provide and improve the Platform; verify your business and its representatives and prevent fraud and money laundering; calculate capacity, scores, pricing and analytics; facilitate raises, disbursements, repayments and investor reporting; personalise your experience; communicate with you; enforce our Terms; comply with legal and regulatory obligations; and protect the rights, property, security and interests of Rozine, investors and other users.\n\nWe may also use aggregated or de-identified data for any lawful business purpose, including research, product development and marketing, without further notice to you."
+                },
+                {
+                    "heading": "Legal bases for processing",
+                    "body": "We process your information where necessary to perform our contract with you, to comply with legal obligations, to pursue our legitimate interests (including operating a safe, fraud-resistant platform, protecting investors and developing our services), and, where required, on the basis of consent, which may be withdrawn without affecting prior lawful processing."
+                },
+                {
+                    "heading": "How we share information",
+                    "body": "We may share your information with: investors and prospective investors (including your business profile, financials, scores, updates and repayment status, to the extent necessary to raise capital and service Notes); our service providers and partners (payment processors, cloud hosting, identity-verification, analytics and communications providers); professional advisers; and potential acquirers in a corporate transaction.\n\nWe may also disclose information to regulators, tax authorities, credit bureaux, law-enforcement, courts or other authorities where we believe in good faith that disclosure is required by law, necessary to prevent harm or fraud, part of recovery of amounts owed, or appropriate to protect Rozine’s rights and interests."
+                },
+                {
+                    "heading": "Data obtained from third parties",
+                    "body": "To verify and score your business and manage risk, we obtain and process data from official and third-party sources, including your bank and Mobile Money statements, independent Audit Partner receipts, business registries and payment records, where you or the relevant party has authorised access.\n\nWe are not responsible for the accuracy of information provided by third parties but use it in good faith to operate the Platform and protect investors and users."
+                },
+                {
+                    "heading": "Cookies & tracking technologies",
+                    "body": "We use cookies, SDKs and similar technologies to keep you signed in, remember preferences, measure usage, secure the Platform and improve our services. You can manage cookies through your device or browser settings, but disabling them may limit functionality."
+                },
+                {
+                    "heading": "Data retention",
+                    "body": "We retain your information for as long as your account is active and thereafter for as long as necessary to comply with legal, regulatory, tax, accounting, anti-money-laundering and dispute-resolution requirements, to service outstanding Notes, and to protect Rozine’s legitimate interests.\n\nWhere information is no longer required, we delete or anonymise it. Retention periods may extend for records related to financing, repayments and legal obligations."
+                },
+                {
+                    "heading": "Security",
+                    "body": "We apply technical and organisational measures designed to protect your information, including encryption, access controls and monitoring.\n\nHowever, no system is completely secure, and we cannot guarantee absolute security. To the maximum extent permitted by law, Rozine is not liable for any unauthorised access, loss or disclosure that occurs despite reasonable safeguards. You and your team are responsible for keeping credentials, devices and role permissions secure."
+                },
+                {
+                    "heading": "Your rights & choices",
+                    "body": "Subject to applicable law and reasonable verification, you may request access to, correction of, or deletion of information we hold about your business and its representatives, and may object to or restrict certain processing.\n\nSome rights are limited: we may decline or defer a request where retention is required by law, where it would affect the rights of others (including investors), prevent fraud, interfere with recovery of amounts owed, or interfere with our legitimate interests or the operation of the Platform. To make a request, contact privacy@rozine.rw."
+                },
+                {
+                    "heading": "International & third-party transfers",
+                    "body": "Your information may be processed and stored on servers and by service providers located outside your country. Where we transfer information internationally, we take steps intended to ensure an appropriate level of protection, but by using the Platform you consent to such transfers."
+                },
+                {
+                    "heading": "Representatives & team members",
+                    "body": "Where you invite team members or representatives, you are responsible for ensuring they are authorised and for the roles and permissions you assign. You must have a lawful basis to share their information with us, and you are responsible for their use of the Platform."
+                },
+                {
+                    "heading": "Complaints and the supervisory authority",
+                    "body": "If you are unhappy with how we handle personal information, contact our Data Protection Officer first, at privacy@rozine.rw.\n\nIf you remain dissatisfied, you have the right to lodge a complaint with the supervisory authority responsible for data protection in Rwanda. We will tell you how to reach it on request."
+                },
+                {
+                    "heading": "Changes to this Privacy Note",
+                    "body": "We may update this Privacy Note from time to time. Material changes will be notified through the Platform or by other reasonable means, and your continued use after the changes take effect constitutes acceptance.\n\nThe version published on the Platform is the current and prevailing version."
+                },
+                {
+                    "heading": "Contact us",
+                    "body": "For any privacy question, or to exercise a data right or contact our Data Protection Officer, email privacy@rozine.rw. We will respond within a reasonable time and in accordance with applicable law."
+                }
+            ]
+        },
+        "links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "back": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            },
+            "sections": {
+                "company": {
+                    "url": "/preview/business-profile-company",
+                    "method": "get"
+                },
+                "linked": {
+                    "url": "/preview/business-profile-linked",
+                    "method": "get"
+                },
+                "terms": {
+                    "url": "/preview/business-profile-terms",
+                    "method": "get"
+                },
+                "privacy": {
+                    "url": "/preview/business-profile-privacy",
+                    "method": "get"
+                }
+            },
+            "sign_out": {
+                "url": "/logout",
+                "method": "post"
+            }
+        },
+        "actions": {
+            "save_company": {
+                "url": "/preview/business-profile-company",
+                "method": "put"
+            }
+        }
+    }
+}

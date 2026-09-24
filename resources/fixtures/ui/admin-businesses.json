@@ -1,0 +1,336 @@
+{
+    "component": "admin/parties",
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2026-09-23T17:40:00+02:00",
+        "kind": "business",
+        "policy": [
+            {
+                "key": "min_revenue",
+                "value": "RWF 30M"
+            },
+            {
+                "key": "min_statement_years",
+                "value": "5"
+            },
+            {
+                "key": "rdb_certificate",
+                "value": "Required"
+            },
+            {
+                "key": "max_notes",
+                "value": "5"
+            }
+        ],
+        "stats": [
+            {
+                "key": "total_businesses",
+                "value": {
+                    "kind": "count",
+                    "value": 43
+                }
+            },
+            {
+                "key": "avg_rating",
+                "value": {
+                    "kind": "text",
+                    "value": "Stable 3.3 / 5"
+                }
+            },
+            {
+                "key": "active_notes",
+                "value": {
+                    "kind": "count",
+                    "value": 125
+                }
+            },
+            {
+                "key": "capital_raised",
+                "value": {
+                    "kind": "money",
+                    "value": {
+                        "currency": "RWF",
+                        "amount": "3712400000"
+                    }
+                }
+            }
+        ],
+        "chips": [
+            {
+                "key": "all",
+                "count": 43,
+                "link": {
+                    "url": "/preview/admin-businesses",
+                    "method": "get"
+                },
+                "active": true
+            },
+            {
+                "key": "healthy",
+                "count": 10,
+                "link": {
+                    "url": "/preview/admin-businesses",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "watch",
+                "count": 23,
+                "link": {
+                    "url": "/preview/admin-businesses",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "distressed",
+                "count": 10,
+                "link": {
+                    "url": "/preview/admin-businesses",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "frozen",
+                "count": 1,
+                "link": {
+                    "url": "/preview/admin-businesses",
+                    "method": "get"
+                },
+                "active": false
+            }
+        ],
+        "filters": [
+            {
+                "key": "sector",
+                "value": "all",
+                "options": [
+                    {
+                        "value": "all",
+                        "label": "All sectors"
+                    },
+                    {
+                        "value": "agriculture",
+                        "label": "Agriculture"
+                    },
+                    {
+                        "value": "manufacturing",
+                        "label": "Manufacturing"
+                    }
+                ]
+            },
+            {
+                "key": "sort",
+                "value": "raised",
+                "options": [
+                    {
+                        "value": "raised",
+                        "label": "Sort: Capital raised"
+                    },
+                    {
+                        "value": "name",
+                        "label": "Sort: Name"
+                    }
+                ]
+            }
+        ],
+        "shown": 6,
+        "total": 43,
+        "directory": {
+            "kind": "business",
+            "rows": [
+                {
+                    "id": "biz_rugali",
+                    "name": "Rugali Freight",
+                    "sector": "Manufacturing",
+                    "rating": {
+                        "band": "distressed",
+                        "score": "1.8"
+                    },
+                    "active_notes": 3,
+                    "investors": 1490,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "208000000"
+                    },
+                    "capacity_used_pct": 100,
+                    "health": "distressed",
+                    "frozen": true,
+                    "kyc": "verified",
+                    "link": {
+                        "url": "/preview/admin-businesses-frozen",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "biz_isoko",
+                    "name": "Isoko Farms",
+                    "sector": "Agriculture",
+                    "rating": {
+                        "band": "stable",
+                        "score": "3.1"
+                    },
+                    "active_notes": 3,
+                    "investors": 1136,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "208000000"
+                    },
+                    "capacity_used_pct": 0,
+                    "health": "watch",
+                    "frozen": false,
+                    "kyc": "overdue",
+                    "link": {
+                        "url": "/preview/admin-businesses-frozen",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "biz_nyungwe",
+                    "name": "Nyungwe Fisheries",
+                    "sector": "Hospitality",
+                    "rating": {
+                        "band": "weak",
+                        "score": "2.7"
+                    },
+                    "active_notes": 6,
+                    "investors": 1771,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "187800000"
+                    },
+                    "capacity_used_pct": 34,
+                    "health": "distressed",
+                    "frozen": false,
+                    "kyc": "verified",
+                    "link": {
+                        "url": "/preview/admin-businesses-frozen",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "biz_dairy",
+                    "name": "Rugali Dairy",
+                    "sector": "Retail",
+                    "rating": {
+                        "band": "stable",
+                        "score": "3.1"
+                    },
+                    "active_notes": 5,
+                    "investors": 993,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "162300000"
+                    },
+                    "capacity_used_pct": 88,
+                    "health": "watch",
+                    "frozen": false,
+                    "kyc": "verified",
+                    "link": {
+                        "url": "/preview/admin-businesses-frozen",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "biz_greenleaf",
+                    "name": "GreenLeaf Agro",
+                    "sector": "FMCG",
+                    "rating": {
+                        "band": "strong",
+                        "score": "4.8"
+                    },
+                    "active_notes": 1,
+                    "investors": 1657,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "88000000"
+                    },
+                    "capacity_used_pct": 66,
+                    "health": "healthy",
+                    "frozen": false,
+                    "kyc": "verified",
+                    "link": {
+                        "url": "/preview/admin-businesses-frozen",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "biz_gorilla",
+                    "name": "Gorilla Freight",
+                    "sector": "Energy",
+                    "rating": null,
+                    "active_notes": 0,
+                    "investors": 0,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "capacity_used_pct": 0,
+                    "health": "healthy",
+                    "frozen": false,
+                    "kyc": "pending",
+                    "link": {
+                        "url": "/preview/admin-businesses-frozen",
+                        "method": "get"
+                    }
+                }
+            ]
+        },
+        "party": null
+    }
+}
