@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Application\Auditor\Contracts\AuditorProfileStore;
 use App\Application\Identity\SelectActiveRole;
-use App\Domain\Operations\CommandRejection;
+use App\Domain\Auditor\AccreditationProfile;
+use App\Domain\Auditor\AuditorStanding;
+use App\Models\AuditorProfile;
 use App\Models\CommandOperation;
 use App\Models\Party;
 use App\Models\RoleMembership;
@@ -15,7 +16,6 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Mockery\MockInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\AuditorFixture;
 
@@ -359,9 +359,11 @@ it('renders the error page, not raw JSON, when a browser page read is refused', 
         ->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied')
             ->where('code', 'ACCREDITATION_CERTIFICATE_NOT_FOUND'));
 
-    $this->mock(AuditorProfileStore::class, function (MockInterface $store): void {
-        $store->shouldReceive('accreditation')->andThrow(new CommandRejection('ACCREDITATION_CERTIFICATE_INTEGRITY_FAILED'));
-    });
+    /* A pending submission whose certificate record is missing fails the read's integrity check. */
+    $state = (new AccreditationProfile(new AuditorStanding))->empty();
+    $state['submission'] = ['status' => 'pending', 'id' => strtolower((string) Str::ulid()), 'licence' => 'SYNTHETIC-HTTP-CPA',
+        'expires_on' => '2027-09-30', 'submitted_at' => '2026-09-24T08:00:00Z'];
+    AuditorProfile::factory()->create(['party_id' => $fixture['party']->id, 'state' => $state]);
     $this->get(route('auditor.profile'))->assertStatus(409)
         ->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied')
             ->where('code', 'ACCREDITATION_CERTIFICATE_INTEGRITY_FAILED'));
