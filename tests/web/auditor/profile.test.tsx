@@ -374,10 +374,28 @@ describe('Auditor Profile', () => {
         await user.click(
             screen.getByRole('switch', { name: 'Accepting audits' }),
         );
-        expect(inertia.posts[0]).toMatchObject({
+        expect(inertia.calls[0]).toMatchObject({
             url: '/preview/auditor-profile',
-            data: { accepting: false },
+            body: { accepting: false, expected_revision: 5 },
         });
+    });
+
+    it('keeps the switch still, with a note, when the server does not offer the change', () => {
+        render(
+            <AuditorProfile
+                {...props(availabilityFixture)}
+                allowed_actions={[]}
+            />,
+        );
+
+        expect(
+            screen.getByRole('switch', { name: 'Accepting audits' }),
+        ).toBeDisabled();
+        expect(
+            screen.getByText(
+                "Your availability can't be changed from here right now.",
+            ),
+        ).toBeInTheDocument();
     });
 
     it('reads a paused partner', () => {

@@ -4,16 +4,49 @@ import { formatRwf } from '@/lib/rozine/format';
 import type { Money, RouteLink } from '@/types';
 
 type TopRowProps = {
-    available: Money;
+    /** Null when the server cannot state the balance: it reads "Unavailable", never a guess. */
+    available: Money | null;
     unread: number;
+    /** A destination that does not exist yet hides its control. */
     links: {
-        statement: RouteLink;
-        withdraw: RouteLink;
-        notifications: RouteLink;
+        statement: RouteLink | null;
+        withdraw: RouteLink | null;
+        notifications: RouteLink | null;
     };
 };
 
 const CHIP_SHADOW = 'shadow-[0_3px_10px_-4px_rgba(20,45,95,.10)]';
+
+/** The balance and its label; a link to the statement only when one exists. */
+function Balance({
+    href,
+    label,
+    value,
+}: {
+    href: RouteLink | null;
+    label: string;
+    value: string;
+}) {
+    const body = (
+        <>
+            <span className="block text-[10px] font-semibold tracking-[.07em] text-rz-secondary uppercase">
+                {label}
+            </span>
+            <span className="block truncate text-[13.5px] font-semibold text-rz-ink">
+                {value}
+            </span>
+        </>
+    );
+    const className = 'min-w-0 pr-0.5 text-left leading-[1.05]';
+
+    return href === null ? (
+        <div className={className}>{body}</div>
+    ) : (
+        <Link href={href} className={className}>
+            {body}
+        </Link>
+    );
+}
 
 /** The wallet chip with withdraw and statement, and the bell (design L91–106). */
 export function TopRow({ available, unread, links }: TopRowProps) {
@@ -49,92 +82,96 @@ export function TopRow({ available, unread, links }: TopRowProps) {
                         <circle cx="16.5" cy="13" r="1.4" fill="currentColor" />
                     </svg>
                 </span>
-                <Link
+                <Balance
                     href={links.statement}
-                    className="min-w-0 pr-0.5 text-left leading-[1.05]"
-                >
-                    <span className="block text-[10px] font-semibold tracking-[.07em] text-rz-secondary uppercase">
-                        {t('auditor.home.wallet_balance')}
-                    </span>
-                    <span className="block truncate text-[13.5px] font-semibold text-rz-ink">
-                        {formatRwf(available)}
-                    </span>
-                </Link>
+                    label={t('auditor.home.wallet_balance')}
+                    value={
+                        available === null
+                            ? t('auditor.home.unavailable')
+                            : formatRwf(available)
+                    }
+                />
+                {links.withdraw !== null && (
+                    <Link
+                        href={links.withdraw}
+                        aria-label={t('auditor.home.withdraw')}
+                        className="flex size-[30px] shrink-0 items-center justify-center rounded-[10px] bg-rz-accent-fill"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            aria-hidden
+                            className="size-[15px]"
+                        >
+                            <path
+                                d="M12 19V5M5 12l7-7 7 7"
+                                stroke="#fff"
+                                strokeWidth="2.2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
+                    </Link>
+                )}
+                {links.statement !== null && (
+                    <Link
+                        href={links.statement}
+                        aria-label={t('auditor.home.statement')}
+                        className="flex size-[30px] shrink-0 items-center justify-center rounded-[10px] border border-[#dbe3f0] bg-[#eef2f9] dark:border-rz-border dark:bg-rz-surface-muted"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            aria-hidden
+                            className="size-[15px] text-[#46526b] dark:text-rz-secondary"
+                        >
+                            <path
+                                d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h6M9 17h4"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
+                    </Link>
+                )}
+            </div>
+            {links.notifications !== null && (
                 <Link
-                    href={links.withdraw}
-                    aria-label={t('auditor.home.withdraw')}
-                    className="flex size-[30px] shrink-0 items-center justify-center rounded-[10px] bg-rz-accent-fill"
+                    href={links.notifications}
+                    aria-label={
+                        unread > 0
+                            ? t('auditor.home.notifications_unread', {
+                                  count: unread,
+                              })
+                            : t('auditor.home.notifications')
+                    }
+                    className={`relative ml-auto flex size-[42px] shrink-0 items-center justify-center rounded-xl border border-rz-border bg-rz-surface ${CHIP_SHADOW}`}
                 >
                     <svg
                         viewBox="0 0 24 24"
                         fill="none"
                         aria-hidden
-                        className="size-[15px]"
+                        className="size-[19px] text-[#16233c] dark:text-rz-ink"
                     >
                         <path
-                            d="M12 19V5M5 12l7-7 7 7"
-                            stroke="#fff"
-                            strokeWidth="2.2"
-                            strokeLinecap="round"
+                            d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
                             strokeLinejoin="round"
                         />
-                    </svg>
-                </Link>
-                <Link
-                    href={links.statement}
-                    aria-label={t('auditor.home.statement')}
-                    className="flex size-[30px] shrink-0 items-center justify-center rounded-[10px] border border-[#dbe3f0] bg-[#eef2f9] dark:border-rz-border dark:bg-rz-surface-muted"
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        aria-hidden
-                        className="size-[15px] text-[#46526b] dark:text-rz-secondary"
-                    >
                         <path
-                            d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h6M9 17h4"
+                            d="M10 20a2 2 0 0 0 4 0"
                             stroke="currentColor"
                             strokeWidth="1.8"
                             strokeLinecap="round"
-                            strokeLinejoin="round"
                         />
                     </svg>
+                    {unread > 0 && (
+                        <span className="absolute top-[9px] right-2.5 size-2 rounded-full border-2 border-rz-surface bg-[#b3383c]" />
+                    )}
                 </Link>
-            </div>
-            <Link
-                href={links.notifications}
-                aria-label={
-                    unread > 0
-                        ? t('auditor.home.notifications_unread', {
-                              count: unread,
-                          })
-                        : t('auditor.home.notifications')
-                }
-                className={`relative ml-auto flex size-[42px] shrink-0 items-center justify-center rounded-xl border border-rz-border bg-rz-surface ${CHIP_SHADOW}`}
-            >
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    aria-hidden
-                    className="size-[19px] text-[#16233c] dark:text-rz-ink"
-                >
-                    <path
-                        d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinejoin="round"
-                    />
-                    <path
-                        d="M10 20a2 2 0 0 0 4 0"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                    />
-                </svg>
-                {unread > 0 && (
-                    <span className="absolute top-[9px] right-2.5 size-2 rounded-full border-2 border-rz-surface bg-[#b3383c]" />
-                )}
-            </Link>
+            )}
         </div>
     );
 }

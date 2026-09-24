@@ -2935,6 +2935,11 @@ const en = {
         'Certificate {id} · SHA-256 {digest}…',
     'auditor.accreditation.expiry_label_first': 'Licence expiry date',
     'auditor.accreditation.first_submit': 'Submit your accreditation',
+    'auditor.availability.locked':
+        "Your availability can't be changed from here right now.",
+    'auditor.home.unavailable': 'Unavailable',
+    'auditor.availability.home_paused_locked':
+        'Dispatch is not offering you flash audits',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

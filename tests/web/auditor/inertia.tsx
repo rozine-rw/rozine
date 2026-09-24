@@ -47,6 +47,9 @@ export const inertia = {
     queue: [] as Responder[],
     /** Field errors `useHttp` reports after a 422. */
     httpErrors: {} as Record<string, string>,
+    /** Hold a reload's `onFinish` so a test can see the page while it refreshes. */
+    holdReload: false,
+    finishReload: [] as (() => void)[],
     reset() {
         this.posts = [];
         this.reloads = [];
@@ -59,6 +62,8 @@ export const inertia = {
         this.calls = [];
         this.queue = [];
         this.httpErrors = {};
+        this.holdReload = false;
+        this.finishReload = [];
     },
 };
 
@@ -97,8 +102,16 @@ export const router = {
         inertia.posts.push({ url, data, options });
         run(options);
     },
-    reload: (options?: Record<string, unknown>) => {
+    reload: (options?: { onFinish?: () => void }) => {
         inertia.reloads.push(options);
+
+        if (options?.onFinish) {
+            if (inertia.holdReload) {
+                inertia.finishReload.push(options.onFinish);
+            } else {
+                options.onFinish();
+            }
+        }
     },
     visit: (link: { url: string }) => {
         inertia.visits.push({ url: link.url });

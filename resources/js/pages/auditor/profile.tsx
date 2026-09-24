@@ -35,15 +35,12 @@ export default function AuditorProfile(props: AuditorProfileProps) {
         preview: props.preview_outcome,
     });
     const accreditation = (
-        <>
-            <AuditorCommandNotice placement="page" />
-            <AccreditationSection
-                auditor={props.auditor}
-                accreditation={props.accreditation}
-                allowed={center.allowed}
-                actions={props.actions}
-            />
-        </>
+        <AccreditationSection
+            auditor={props.auditor}
+            accreditation={props.accreditation}
+            allowed={center.allowed}
+            actions={props.actions}
+        />
     );
     const availability = (
         <AvailabilitySection availability={props.availability} />
@@ -123,6 +120,10 @@ export default function AuditorProfile(props: AuditorProfileProps) {
                     </div>
                     <div className={COLUMN}>
                         <div className="rz-scroll px-5 lg:flex-1 lg:overflow-y-auto lg:px-[18px] lg:pt-[18px]">
+                            <AuditorCommandNotice
+                                placement="page"
+                                className="mt-4 lg:mt-0 lg:mb-4"
+                            />
                             {SECTIONS.map(({ key }) => (
                                 <div
                                     key={key}

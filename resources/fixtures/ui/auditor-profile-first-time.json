@@ -4,7 +4,7 @@
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
-        "allowed_actions": ["accreditation.submit"],
+        "allowed_actions": ["accreditation.submit", "availability.update"],
         "section": "accreditation",
         "auditor": {
             "name": "Diane Uwase, CPA",
@@ -30,7 +30,8 @@
             "accepting": false,
             "radius_km": 30,
             "max_active": 3,
-            "toggle": {
+            "revision": 5,
+            "update": {
                 "url": "/preview/auditor-profile",
                 "method": "post"
             }

@@ -3011,6 +3011,13 @@ const fr: Catalog = {
         "Date d'expiration de la licence",
     'auditor.accreditation.first_submit': 'Soumettre votre accréditation',
 
+    'auditor.availability.locked':
+        'Votre disponibilité ne peut pas être modifiée ici pour le moment.',
+    'auditor.home.unavailable': 'Indisponible',
+
+    'auditor.availability.home_paused_locked':
+        "L'affectation ne vous propose pas de missions flash",
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

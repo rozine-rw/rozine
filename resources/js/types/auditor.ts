@@ -30,7 +30,8 @@ export type AuditorAllowedAction =
     | 'audit.amend'
     | 'accreditation.submit'
     | 'accreditation.renew'
-    | 'accreditation.withdraw';
+    | 'accreditation.withdraw'
+    | 'availability.update';
 
 /** What every Auditor page carries (point 1). */
 export type AuditorPageContract = {
@@ -231,7 +232,10 @@ export type AuditorAvailability = {
     accepting: boolean;
     radius_km: number;
     max_active: number;
-    toggle: RouteAction;
+    /** The availability record's revision, sent back as `expected_revision`. */
+    revision: number;
+    /** Where `availability.update` goes; `allowed_actions` decides whether it is offered. */
+    update: RouteAction;
 };
 
 export type AuditorStanding = {
@@ -300,20 +304,25 @@ export type AuditorHomeProps = AuditorPageContract & {
     /** Accrued service-fee share this month (C-23), or null before anything accrues. */
     earned_this_month: Money | null;
     active_deals: number;
-    licence_expires_on: string;
+    /** Null when no licence is on record or the fact is unavailable; never a stand-in date. */
+    licence_expires_on: string | null;
     availability: AuditorAvailability;
     /** Eligible Flash Audits right now and the closest one's distance. */
     nearby: { count: number; closest_km: string | null };
     in_progress: AssignedJob[];
     standing: AuditorStanding;
     activity: AuditorActivity[];
-    wallet: { available: Money };
+    /** The wallet balance, or null when the server cannot state it; never a stand-in amount. */
+    wallet: { available: Money | null };
     unread_notifications: number;
-    links: AuditorAppLinks & {
-        statement: RouteLink;
-        withdraw: RouteLink;
-        notifications: RouteLink;
-    };
+    /** Each destination is null until it exists for this partner; its control is then hidden. */
+    links: AuditorAppLinks &
+        OperationLookupLinks & {
+            statement: RouteLink | null;
+            withdraw: RouteLink | null;
+            notifications: RouteLink | null;
+        };
+    preview_outcome?: AuditorPreviewOutcome;
 };
 
 /* ------------------------------------------------------------------------------------------ */

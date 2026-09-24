@@ -9,7 +9,10 @@ import {
 } from 'react';
 import type { ReactNode } from 'react';
 import { OperationNotice } from '@/components/rozine/operation-notice';
-import { useOperationCommand } from '@/hooks/use-operation-command';
+import {
+    reloadPreservingState,
+    useOperationCommand,
+} from '@/hooks/use-operation-command';
 import type { CommandNotice } from '@/hooks/use-operation-command';
 import { useTranslation } from '@/hooks/use-translation';
 import { refusalRefreshes } from '@/lib/rozine/operation';
@@ -125,6 +128,7 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
         actions: (sent) => sent.route,
         lookup,
         initial,
+        refresh: reloadPreservingState,
         onCompleted: (sent, resource) => {
             const own = callbacks.current.get(sent.payload.request_id);
 
@@ -172,6 +176,11 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
                     return;
                 case 'AUDIT_REJECTED':
                     show({ kind: 'report_rejected', business: sent.business });
+
+                    return;
+                case 'AVAILABILITY_UPDATED':
+                    /* The switch belongs to the page it is on: redraw it there, in place. */
+                    router.reload();
 
                     return;
                 default:

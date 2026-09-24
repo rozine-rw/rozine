@@ -3002,6 +3002,13 @@ const rw: Catalog = {
         'Itariki uruhushya rurangiriraho',
     'auditor.accreditation.first_submit': 'Ohereza icyemezo cyawe',
 
+    'auditor.availability.locked':
+        'Ntushobora guhindura uko uboneka hano muri iki gihe.',
+    'auditor.home.unavailable': 'Ntibiboneka',
+
+    'auditor.availability.home_paused_locked':
+        'Ntuhabwa imirimo yihuse muri iki gihe',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

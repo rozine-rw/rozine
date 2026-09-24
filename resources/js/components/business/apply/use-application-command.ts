@@ -1,4 +1,7 @@
-import { useOperationCommand } from '@/hooks/use-operation-command';
+import {
+    reloadPreservingState,
+    useOperationCommand,
+} from '@/hooks/use-operation-command';
 import type { CommandNotice } from '@/hooks/use-operation-command';
 import type { RouteLink } from '@/types';
 import type {
@@ -56,6 +59,7 @@ export function useApplicationCommand({
             held: preview?.kind === 'unconfirmed' ? preview.command : null,
             notice: initialNotice(preview),
         },
+        refresh: reloadPreservingState,
         onCompleted,
         onRefused,
     });

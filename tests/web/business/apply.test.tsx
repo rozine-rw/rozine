@@ -40,7 +40,10 @@ type Responder = (options: {
 
 const inertia = vi.hoisted(() => ({
     visit: vi.fn(),
-    reload: vi.fn(),
+    /* A reload finishes at once unless a test holds it to watch the page meanwhile. */
+    reload: vi.fn((options?: { onFinish?: () => void }) =>
+        options?.onFinish?.(),
+    ),
     body: {} as Record<string, unknown>,
     calls: [] as {
         url: string;
@@ -1274,6 +1277,62 @@ describe('Apply — step 3, review & sign', () => {
                 url: '/preview/business-apply-submitted',
                 method: 'get',
             }),
+        );
+        expect(inertia.calls[2]).toEqual(inertia.calls[0]);
+    });
+
+    it('refreshes the page’s facts before offering the retry, and retries the held request unchanged', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+        let finishReload: () => void = () => undefined;
+
+        inertia.reload.mockImplementationOnce(
+            (options?: { onFinish?: () => void }) => {
+                finishReload = () => options?.onFinish?.();
+            },
+        );
+        inertia.queue.push(
+            offline(),
+            fails(404, { code: 'OPERATION_NOT_FOUND' }),
+        );
+        const view = render(<BusinessApply {...page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        await waitFor(() =>
+            expect(inertia.reload).toHaveBeenCalledWith({
+                onFinish: expect.any(Function),
+            }),
+        );
+        expect(screen.getByText('Checking what happened')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Try again' }),
+        ).not.toBeInTheDocument();
+
+        act(() => finishReload());
+        expect(
+            await screen.findByRole('button', { name: 'Try again' }),
+        ).toBeInTheDocument();
+
+        /* The refreshed props move on; the held request does not. */
+        view.rerender(
+            <BusinessApply
+                {...page}
+                identity_context_revision={page.identity_context_revision + 1}
+                application={{
+                    ...page.application,
+                    revision: page.application.revision + 1,
+                }}
+            />,
+        );
+        inertia.queue.push(offline(), offline());
+        await user.click(screen.getByRole('button', { name: 'Try again' }));
+
+        await waitFor(() =>
+            expect(inertia.calls.length).toBeGreaterThanOrEqual(3),
         );
         expect(inertia.calls[2]).toEqual(inertia.calls[0]);
     });

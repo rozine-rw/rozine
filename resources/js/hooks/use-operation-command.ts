@@ -1,4 +1,4 @@
-import { useHttp } from '@inertiajs/react';
+import { router, useHttp } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import {
     OPERATION_NOT_FOUND,
@@ -15,7 +15,8 @@ import type { OperationCommand, OperationResource } from '@/types/operation';
  *   outcome is client state only; the server never reports one);
  * - `unconfirmed` — the lookup could not be reached; nothing is resent until it answers;
  * - `pending` — the server recorded the command and is still working on it;
- * - `not_recorded` — the lookup found no result, so the identical command may be sent again;
+ * - `not_recorded` — the lookup found no result and the page's facts have been refreshed, so the
+ *   identical command may be sent again;
  * - `refused` — a definitive answer: stale facts, a conflict, a denial or a scoped not-found.
  */
 export type CommandNotice =
@@ -44,6 +45,11 @@ type Options<C extends OperationCommand, R> = {
     lookup: RouteLink;
     /** A command a synthetic preview seeds as already sent, with what is known about it. */
     initial?: { held: C | null; notice: CommandNotice | null };
+    /**
+     * Reloads the page's authorized facts, keeping its state, before a retry is offered after the
+     * lookup found no recorded result. It must not touch the held command.
+     */
+    refresh: () => Promise<void>;
     onCompleted: (command: C, resource: R) => void;
     onRefused: (command: C, code: string, status: number) => void;
 };
@@ -60,7 +66,14 @@ type Options<C extends OperationCommand, R> = {
 export function useOperationCommand<
     C extends OperationCommand,
     R extends Pick<OperationResource<unknown>, 'status' | 'code'>,
->({ actions, lookup, initial, onCompleted, onRefused }: Options<C, R>) {
+>({
+    actions,
+    lookup,
+    initial,
+    refresh,
+    onCompleted,
+    onRefused,
+}: Options<C, R>) {
     const http = useHttp<Record<string, never>, R>();
     const held = useRef<C | null>(initial?.held ?? null);
     const inFlight = useRef(false);
@@ -142,6 +155,12 @@ export function useOperationCommand<
         }
 
         if (attempt.kind === 'failed' && attempt.code === OPERATION_NOT_FOUND) {
+            /*
+             * No recorded result is not a failure. The page's authorized facts are refreshed first,
+             * still under "checking"; the held command — its original body and `request_id` — is
+             * kept exactly as sent, never rebuilt from the newer props.
+             */
+            await refresh();
             setNotice({ kind: 'not_recorded' });
 
             return;
@@ -247,3 +266,12 @@ export function useOperationCommand<
         retry,
     };
 }
+
+/**
+ * The page's own reload — Inertia keeps component state and scroll on a reload — resolved once it
+ * has finished: the `refresh` both apps pass to `useOperationCommand`.
+ */
+export const reloadPreservingState = (): Promise<void> =>
+    new Promise((resolve) => {
+        router.reload({ onFinish: () => resolve() });
+    });

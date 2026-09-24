@@ -1,11 +1,10 @@
 {
-    "component": "auditor/profile",
+    "component": "auditor/home",
     "props": {
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
-        "allowed_actions": ["accreditation.renew", "availability.update"],
-        "section": "accreditation",
+        "allowed_actions": [],
         "auditor": {
             "name": "Diane Uwase, CPA",
             "firm": "Uwase & Co.",
@@ -13,30 +12,37 @@
             "avatar_url": null,
             "since_year": 2019
         },
-        "quality_score": 99,
-        "on_time_pct": 96,
-        "jobs_done": 9,
-        "accreditation": {
-            "status": "active",
-            "revision": 6,
-            "licence": "ICPAR/P-2026/0481",
-            "expires_on": "2027-03-31",
-            "days_left": 179,
-            "submission": {
-                "status": "none"
-            }
-        },
+        "quality_score": null,
+        "earned_this_month": null,
+        "active_deals": 0,
+        "licence_expires_on": null,
         "availability": {
-            "accepting": true,
+            "accepting": false,
             "radius_km": 30,
             "max_active": 3,
             "revision": 5,
             "update": {
-                "url": "/preview/auditor-profile",
+                "url": "/preview/auditor-home",
                 "method": "post"
             }
         },
-        "open_jobs": 1,
+        "nearby": {
+            "count": 0,
+            "closest_km": null
+        },
+        "in_progress": [],
+        "standing": {
+            "on_time_pct": null,
+            "avg_variance_pct": null,
+            "variance_flagged": false,
+            "jobs_done": 0,
+            "clock_expiries": 0
+        },
+        "activity": [],
+        "wallet": {
+            "available": null
+        },
+        "unread_notifications": 0,
         "links": {
             "home": {
                 "url": "/preview/auditor-home",
@@ -58,29 +64,12 @@
                 "url": "/preview/launcher-auditor",
                 "method": "get"
             },
-            "sections": {
-                "accreditation": {
-                    "url": "/preview/auditor-profile",
-                    "method": "get"
-                },
-                "availability": {
-                    "url": "/preview/auditor-profile-availability",
-                    "method": "get"
-                }
-            },
+            "statement": null,
+            "withdraw": null,
+            "notifications": null,
             "operation": {
                 "url": "/preview/auditor-operation-{request_id}",
                 "method": "get"
-            }
-        },
-        "actions": {
-            "submit": {
-                "url": "/preview/auditor-profile-pending",
-                "method": "post"
-            },
-            "withdraw": {
-                "url": "/preview/auditor-profile",
-                "method": "post"
             }
         }
     }

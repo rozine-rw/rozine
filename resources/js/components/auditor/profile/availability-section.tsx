@@ -1,4 +1,7 @@
-import { useAvailabilityToggle } from '@/components/auditor/availability';
+import {
+    AvailabilityLocked,
+    useAvailabilityToggle,
+} from '@/components/auditor/availability';
 import { DIVIDER, Eyebrow, Toggle } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
@@ -42,7 +45,8 @@ export function AvailabilitySection({
     availability: AuditorAvailability;
 }) {
     const { t } = useTranslation();
-    const { busy, toggle } = useAvailabilityToggle(availability);
+    const { allowed, busy, disabled, toggle } =
+        useAvailabilityToggle(availability);
     const on = availability.accepting;
 
     return (
@@ -65,10 +69,12 @@ export function AvailabilitySection({
                     <Toggle
                         on={on}
                         label={t('auditor.availability.toggle')}
-                        disabled={busy}
+                        disabled={disabled}
+                        aria-busy={busy || undefined}
                         onClick={toggle}
                     />
                 </div>
+                {!allowed && <AvailabilityLocked className="mt-2" />}
                 <PolicyRow
                     title={t('auditor.availability.max_title')}
                     sub={t('auditor.availability.max_sub')}
