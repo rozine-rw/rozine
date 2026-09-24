@@ -17,10 +17,10 @@ const STEPS: { key: 'opens' | 'visit' | 'cosign'; icon: IconName }[] = [
  */
 export function AuditGuide({
     sealDay,
-    cosignMinutes,
+    cosignDay,
 }: {
     sealDay: number;
-    cosignMinutes: number;
+    cosignDay: number;
 }) {
     const { t, locale } = useTranslation();
     const [open, setOpen] = useState(false);
@@ -111,7 +111,11 @@ export function AuditGuide({
                                 )}
                                 {key === 'cosign' &&
                                     t('business.reports.guide.cosign.body', {
-                                        minutes: cosignMinutes,
+                                        day: formatOrdinal(
+                                            cosignDay,
+                                            locale,
+                                            t,
+                                        ),
                                     })}
                             </p>
                         </div>

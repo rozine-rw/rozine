@@ -95,7 +95,7 @@ export default function BusinessReports({
                 </header>
                 <AuditGuide
                     sealDay={policy.seal_day}
-                    cosignMinutes={policy.cosign_minutes}
+                    cosignDay={policy.cosign_day}
                 />
                 <div
                     data-rzcol

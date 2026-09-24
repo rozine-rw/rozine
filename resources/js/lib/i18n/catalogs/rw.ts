@@ -571,7 +571,7 @@ const rw: Catalog = {
     'business.reports.guide.title': 'Uko igenzura rya buri kwezi rikorwa',
     'business.reports.guide.opens.title': 'Umugenzuzi wawe afungura dosiye',
     'business.reports.guide.opens.body':
-        'Si wowe utanga raporo. Iyo ukwezi kurangiye, CPA wagenewe afungura igenzura agakura imibare ya banki, Mobile Money na POS mu masoko yahujwe.',
+        'Si wowe utanga raporo. Iyo ukwezi kurangiye, CPA wagenewe afungura igenzura agakoresha raporo za banki na Mobile Money wohereje.',
     'business.reports.guide.visit.title': "Itegure uruzinduko rw'umugenzuzi",
     'business.reports.guide.visit.body_before':
         'Abara ibicuruzwa, agasuzuma ibitabo byawe, agafunga igenzura mbere ya tariki ya',
@@ -579,7 +579,7 @@ const rw: Catalog = {
         ". Inshingano yawe ni ugutegura raporo za banki, ibicuruzwa n'uburenganzira bwo kwinjira — tukwibutsa buri munsi mu minsi irindwi ya nyuma y'ukwezi.",
     'business.reports.guide.cosign.title': 'Shyiraho umukono cyangwa ujurire',
     'business.reports.guide.cosign.body':
-        'Iyo igenzura rifunzwe, ubona iminota {minutes} yo kongeraho incamake no gushyiraho umukono, cyangwa kujurira ufite ibimenyetso. Kubera ko utigera ukora ku mibare, raporo iba yigenga — ari cyo abashoramari bishyurira.',
+        'Iyo igenzura rifunzwe, wongeraho incamake ugashyiraho umukono bitarenze tariki ya {day}, cyangwa ukajurira ufite ibimenyetso. Kubera ko utigera ukora ku mibare, raporo iba yigenga — ari cyo abashoramari bishyurira.',
     'business.reports.tabs': 'Uko raporo zihagaze',
     'business.reports.tab.verified': 'Zatangajwe',
     'business.reports.tab.in_audit': 'Birimo kugenzurwa',
@@ -2054,7 +2054,7 @@ const rw: Catalog = {
     'business.audit_prep.item.statements.title':
         'Raporo za banki na Mobile Money',
     'business.audit_prep.item.statements.body':
-        "Ukwezi kose, kugeza ku munsi wa nyuma. CPA wawe azikura mu masoko yahujwe, ariko bika kopi zicapye z'uruzinduko.",
+        "Ukwezi kose, kugeza ku munsi wa nyuma. CPA wawe akoresha raporo wohereje — bika kopi zicapye z'uruzinduko.",
     'business.audit_prep.item.stock.title':
         "Ibicuruzwa byabaruwe n'ibitabo bigezweho",
     'business.audit_prep.item.stock.body':
@@ -2066,7 +2066,7 @@ const rw: Catalog = {
     'business.audit_prep.item.papers.title':
         "Inyemezabwishyu, amabwiriza yo kugura n'inyandiko z'itwara bibitswe neza",
     'business.audit_prep.item.papers.body':
-        "Kuva ukwezi gutangiye, hamwe. Bisobanura ikinyuranyo cyose hagati y'amakuru n'ibarura.",
+        "Kuva ukwezi gutangiye, hamwe. Bisobanura ikinyuranyo cyose hagati ya raporo zawe n'ibarura.",
     'business.audit_prep.item.person.title': 'Umuntu ufite ububasha uhari',
     'business.audit_prep.item.person.body':
         'Hakenewe umuntu ushobora gufungura inzugi no gusobanura imibare — si abakozi bari ku kazi gusa.',
@@ -2076,13 +2076,13 @@ const rw: Catalog = {
         "CPA wawe afungura dosiye y'igenzura y'icyo gihe. Nta kintu usabwa kugira ngo bitangire.",
     'business.audit_prep.flow.visit.title': 'Uruzinduko aho ukorera',
     'business.audit_prep.flow.visit.body':
-        "Abara ibicuruzwa, agahuza kesi n'amakuru ya banki kandi agafotora ibimenyetso, ako kanya kandi bifite aho byafatiwe.",
+        'Abara ibicuruzwa, agahuza kesi na raporo zawe kandi agafotora ibimenyetso aho ukorera.',
     'business.audit_prep.flow.sealed.title': 'Birafunzwe',
     'business.audit_prep.flow.sealed.body':
-        "Ibyabonetse, ibinyuranyo n'igipimo cyo kugabanya inguzanyo bifungwa hakoreshejwe uruhushya rwe rwa ICPAR.",
+        "Ibyabonetse n'ibinyuranyo bifungwa hakoreshejwe uruhushya rwe rwa ICPAR.",
     'business.audit_prep.flow.cosign.title': 'Ushyiraho umukono',
     'business.audit_prep.flow.cosign.body':
-        "Ubona iminota {minutes} yo kongeraho incamake no gushyiraho umukono, cyangwa kujurira ufite ibimenyetso n'ingwate isubizwa.",
+        'Wongeraho incamake ugashyiraho umukono bitarenze {date}, cyangwa ukajurira ufite ibimenyetso.',
     'business.audit_prep.closing':
         "Ntujya utanga raporo y'ukwezi ubwawe. Umugenzuzi wawe arayifungura, akayigenzura aho ukorera kandi akayifunga — uruhare rwawe ni ukwitegura, hanyuma ugashyiraho umukono cyangwa ukajurira ibyo yabonye.",
 

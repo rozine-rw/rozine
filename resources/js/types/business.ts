@@ -503,7 +503,7 @@ export type BusinessReportsProps = {
     /** The report open in the sheet, addressed by URL. */
     report: ReportDetail | null;
     /** Audit-cycle policy the guide quotes: the day audits seal by and the co-sign window. */
-    policy: { seal_day: number; cosign_minutes: number };
+    policy: { seal_day: number; cosign_day: number };
     links: BusinessAppLinks & { close: RouteLink };
 };
 
@@ -802,11 +802,12 @@ export type BusinessAuditPrepProps = {
         window_open: boolean;
         days_left: number;
         seal_by: string;
+        /** The day co-signing closes for this month's report, ISO date. */
+        cosign_by: string;
         /** True until the business has had its first audit. */
         first: boolean;
         /** Set when a new Audit Partner took over the file. */
         reassigned: { from: string; to: string } | null;
     };
-    policy: { cosign_minutes: number };
     links: { close: RouteLink };
 };

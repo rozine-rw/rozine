@@ -572,7 +572,7 @@ const fr: Catalog = {
     'business.reports.guide.title': 'Comment fonctionnent les audits mensuels',
     'business.reports.guide.opens.title': 'Votre auditeur ouvre le dossier',
     'business.reports.guide.opens.body':
-        "Vous ne déposez pas le rapport. À la clôture de chaque mois, l'expert-comptable qui vous est attribué ouvre l'audit et récupère vos chiffres bancaires, Mobile Money et TPE directement depuis les flux liés.",
+        "Vous ne déposez pas le rapport. À la clôture de chaque mois, l'expert-comptable qui vous est attribué ouvre l'audit et travaille à partir des relevés bancaires et Mobile Money que vous avez téléversés.",
     'business.reports.guide.visit.title': 'Préparez la visite sur site',
     'business.reports.guide.visit.body_before':
         "Il compte le stock, vérifie vos registres et scelle l'audit avant le",
@@ -580,7 +580,7 @@ const fr: Catalog = {
         '. Votre rôle : avoir relevés, stock et accès prêts — nous vous le rappelons chaque jour pendant les sept derniers jours du mois.',
     'business.reports.guide.cosign.title': 'Cosignez ou contestez',
     'business.reports.guide.cosign.body':
-        "Une fois l'audit scellé, vous disposez de {minutes} minutes pour ajouter un résumé et cosigner, ou pour contester avec une contre-preuve. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
+        "Une fois l'audit scellé, vous ajoutez un résumé et le cosignez avant le {day}, ou vous le contestez avec une contre-preuve. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
     'business.reports.tabs': 'Statut des rapports',
     'business.reports.tab.verified': 'Publiés',
     'business.reports.tab.in_audit': 'En audit',
@@ -2057,7 +2057,7 @@ const fr: Catalog = {
     'business.audit_prep.item.statements.title':
         'Relevés bancaires et Mobile Money',
     'business.audit_prep.item.statements.body':
-        "Le mois complet, jusqu'au dernier jour. Votre expert-comptable les récupère depuis les flux liés, mais gardez des copies imprimées pour la visite.",
+        "Le mois complet, jusqu'au dernier jour. Votre expert-comptable travaille à partir des relevés que vous avez téléversés — gardez des copies imprimées pour la visite.",
     'business.audit_prep.item.stock.title': 'Stock compté et registres à jour',
     'business.audit_prep.item.stock.body':
         "Votre auditeur fait un comptage physique. Un registre pas à jour apparaît comme un écart et réduit votre capacité d'emprunt.",
@@ -2068,7 +2068,7 @@ const fr: Catalog = {
     'business.audit_prep.item.papers.title':
         'Reçus, bons de commande et lettres de voiture classés',
     'business.audit_prep.item.papers.body':
-        'Depuis le début du mois, au même endroit. Ils expliquent tout écart entre le flux et le comptage.',
+        'Depuis le début du mois, au même endroit. Ils expliquent tout écart entre vos relevés et le comptage.',
     'business.audit_prep.item.person.title': 'Une personne habilitée sur place',
     'business.audit_prep.item.person.body':
         'Il faut une personne qui peut ouvrir les portes et répondre des chiffres — pas seulement le personnel de service.',
@@ -2078,13 +2078,13 @@ const fr: Catalog = {
         "Votre expert-comptable ouvre le dossier d'audit de la période. Rien n'est requis de votre part pour le lancer.",
     'business.audit_prep.flow.visit.title': 'Visite sur site',
     'business.audit_prep.flow.visit.body':
-        'Il compte le stock, rapproche la caisse du flux bancaire et photographie les preuves, en direct et géolocalisées.',
+        'Il compte le stock, rapproche la caisse de vos relevés et photographie les preuves sur place.',
     'business.audit_prep.flow.sealed.title': 'Scellé',
     'business.audit_prep.flow.sealed.body':
-        "Les constats, écarts et facteur d'escompte de crédit sont scellés sous sa licence ICPAR.",
+        'Les constats factuels et les écarts sont scellés sous sa licence ICPAR.',
     'business.audit_prep.flow.cosign.title': 'Vous cosignez',
     'business.audit_prep.flow.cosign.body':
-        'Vous disposez de {minutes} minutes pour ajouter un résumé et cosigner, ou contester avec une contre-preuve et un séquestre remboursable.',
+        'Vous ajoutez un résumé et cosignez avant le {date}, ou vous contestez avec une contre-preuve.',
     'business.audit_prep.closing':
         "Vous ne déposez jamais le rapport mensuel vous-même. Votre auditeur l'ouvre, le vérifie sur site et le scelle — votre rôle est d'être prêt, puis de cosigner ou contester ses constats.",
 

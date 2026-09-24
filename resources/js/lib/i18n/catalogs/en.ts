@@ -554,7 +554,7 @@ const en = {
     'business.reports.guide.title': 'How monthly audits work',
     'business.reports.guide.opens.title': 'Your Audit Partner opens the file',
     'business.reports.guide.opens.body':
-        'You do not file the report. At the close of each month your assigned CPA opens the audit and pulls your bank, Mobile Money and POS figures straight from the linked feeds.',
+        'You do not file the report. At the close of each month your assigned CPA opens the audit and works from the bank and Mobile Money statements you uploaded.',
     'business.reports.guide.visit.title': 'Be ready for the site visit',
     'business.reports.guide.visit.body_before':
         'They count stock, check your ledgers and seal the audit before the',
@@ -562,7 +562,7 @@ const en = {
         '. Your job is to have statements, stock and access ready — we remind you daily for the last seven days of the month.',
     'business.reports.guide.cosign.title': 'Co-sign, or dispute',
     'business.reports.guide.cosign.body':
-        'When the audit is sealed you get {minutes} minutes to add a recap and co-sign, or to raise a dispute with counter-proof. Because you never touch the figures, the report is independent — which is exactly what investors pay for.',
+        'When the audit is sealed you add a recap and co-sign it by the {day}, or raise a dispute with counter-proof. Because you never touch the figures, the report is independent — which is exactly what investors pay for.',
     'business.reports.tabs': 'Report status',
     'business.reports.tab.verified': 'Published',
     'business.reports.tab.in_audit': 'In audit',
@@ -2003,7 +2003,7 @@ const en = {
     'business.audit_prep.item.statements.title':
         'Bank & Mobile Money statements',
     'business.audit_prep.item.statements.body':
-        'The full month, to the last day. Your CPA pulls them from the linked feeds, but keep printed copies for the walk-through.',
+        'The full month, to the last day. Your CPA works from the statements you uploaded — keep printed copies for the walk-through.',
     'business.audit_prep.item.stock.title': 'Stock counted and ledgers current',
     'business.audit_prep.item.stock.body':
         'Your Audit Partner does a physical count. A stale ledger reads as a variance and cuts your borrowing capacity.',
@@ -2014,7 +2014,7 @@ const en = {
     'business.audit_prep.item.papers.title':
         'Receipts, purchase orders and waybills filed',
     'business.audit_prep.item.papers.body':
-        'Month-to-date, in one place. These explain any gap between the feed and the count.',
+        'Month-to-date, in one place. These explain any gap between your statements and the count.',
     'business.audit_prep.item.person.title': 'Someone with authority on site',
     'business.audit_prep.item.person.body':
         'They need a person who can open doors and answer for the numbers — not just staff on shift.',
@@ -2024,13 +2024,13 @@ const en = {
         'Your CPA opens the audit file for the period. Nothing is required from you to start it.',
     'business.audit_prep.flow.visit.title': 'On-site visit',
     'business.audit_prep.flow.visit.body':
-        'They count stock, reconcile the till against the banking feed and photograph the evidence, live and geo-tagged.',
+        'They count stock, reconcile the till against your statements and photograph the evidence on site.',
     'business.audit_prep.flow.sealed.title': 'Sealed',
     'business.audit_prep.flow.sealed.body':
-        'The findings, variances and credit discount factor are sealed under their ICPAR licence.',
+        'The factual findings and variances are sealed under their ICPAR licence.',
     'business.audit_prep.flow.cosign.title': 'You co-sign',
     'business.audit_prep.flow.cosign.body':
-        'You get {minutes} minutes to add a recap and co-sign, or to dispute with counter-proof and a refundable escrow.',
+        'You add a recap and co-sign by {date}, or dispute with counter-proof.',
     'business.audit_prep.closing':
         'You never file the monthly report yourself. Your Audit Partner opens it, verifies it on site and seals it — your part is being ready, then co-signing or disputing what they found.',
     'investor.nav.deals': 'Deals',
