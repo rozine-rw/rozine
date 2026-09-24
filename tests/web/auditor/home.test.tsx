@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import {
     afterEach,
     beforeEach,
@@ -13,11 +13,14 @@ import type {
     AuditorActivity,
     AuditorHomeProps,
 } from '@/types/auditor';
+import liveMinimalFixture from '../../../resources/fixtures/ui/auditor-home-live-minimal.json';
 import homeFixture from '../../../resources/fixtures/ui/auditor-home.json';
 import { renderWithUser } from '../helpers/render-with-user';
-import { inertia } from './inertia';
+import { answers, fails, inertia, operation } from './inertia';
 
 vi.mock('@inertiajs/react', () => import('./inertia'));
+
+vi.setConfig({ testTimeout: 30_000 });
 
 const fixture = () => structuredClone(homeFixture.props) as AuditorHomeProps;
 const money = (amount: number) => ({
@@ -112,22 +115,150 @@ describe('Auditor Home', () => {
         expect(screen.getAllByLabelText('1 open Flash Audits')).toHaveLength(2);
     });
 
-    it('asks the server to pause dispatch and waits for its answer', async () => {
-        inertia.hold = true;
+    it('asks the server to pause dispatch as a command and waits for its answer', async () => {
         const { user } = renderWithUser(<AuditorHome {...fixture()} />);
         const toggle = screen.getByRole('switch', { name: 'Accepting audits' });
 
         expect(toggle).toBeChecked();
         await user.click(toggle);
 
-        expect(inertia.posts[0]).toMatchObject({
+        expect(inertia.calls[0]).toEqual({
             url: '/preview/auditor-home',
-            data: { accepting: false },
+            method: 'post',
+            body: {
+                accepting: false,
+                expected_revision: 5,
+                identity_context_revision: 3,
+                request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u),
+            },
         });
         expect(toggle).toBeDisabled();
+        expect(toggle).toHaveAttribute('aria-busy', 'true');
+    });
 
-        act(() => inertia.finish.forEach((finish) => finish()));
+    it('reloads the page in place once the server records the change', async () => {
+        inertia.queue.push(
+            answers(
+                operation({
+                    code: 'AVAILABILITY_UPDATED',
+                    data: {
+                        next: { url: '/preview/auditor-home', method: 'get' },
+                    },
+                }),
+            ),
+        );
+        const { user } = renderWithUser(<AuditorHome {...fixture()} />);
+
+        await user.click(
+            screen.getByRole('switch', { name: 'Accepting audits' }),
+        );
+
+        await waitFor(() => expect(inertia.reloads).toEqual([undefined]));
+        expect(inertia.visits).toEqual([]);
+    });
+
+    it('explains a refused change and keeps the switch as the server has it', async () => {
+        inertia.queue.push(fails(409, { code: 'VERSION_CONFLICT' }));
+        const { user } = renderWithUser(<AuditorHome {...fixture()} />);
+        const toggle = screen.getByRole('switch', { name: 'Accepting audits' });
+
+        await user.click(toggle);
+
+        expect(
+            await screen.findByText(/This record changed since you opened it/u),
+        ).toBeInTheDocument();
+        expect(toggle).toBeChecked();
         expect(toggle).toBeEnabled();
+    });
+
+    it('looks up a lost change, refreshes the page first, then offers the identical retry', async () => {
+        inertia.holdReload = true;
+        inertia.queue.push(
+            fails(503),
+            fails(404, { code: 'OPERATION_NOT_FOUND' }),
+        );
+        const view = renderWithUser(<AuditorHome {...fixture()} />);
+
+        await view.user.click(
+            screen.getByRole('switch', { name: 'Accepting audits' }),
+        );
+
+        await waitFor(() =>
+            expect(inertia.reloads).toEqual([
+                { onFinish: expect.any(Function) },
+            ]),
+        );
+        expect(screen.getByText('Checking what happened')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Try again' }),
+        ).not.toBeInTheDocument();
+
+        act(() => inertia.finishReload.forEach((finish) => finish()));
+        expect(
+            await screen.findByRole('button', { name: 'Try again' }),
+        ).toBeInTheDocument();
+
+        /* The refreshed props move on; the held command does not. */
+        const base = fixture();
+
+        view.rerender(
+            <AuditorHome
+                {...base}
+                identity_context_revision={4}
+                availability={{ ...base.availability, revision: 6 }}
+            />,
+        );
+        await view.user.click(
+            screen.getByRole('button', { name: 'Try again' }),
+        );
+
+        expect(inertia.calls[2]).toEqual(inertia.calls[0]);
+        expect(inertia.calls[2].body).toMatchObject({
+            expected_revision: 5,
+            identity_context_revision: 3,
+        });
+    });
+
+    it('shows the switch without offering it when the server does not allow the change', () => {
+        render(<AuditorHome {...fixture()} allowed_actions={[]} />);
+
+        expect(
+            screen.getByRole('switch', { name: 'Accepting audits' }),
+        ).toBeDisabled();
+        expect(
+            screen.getByText(
+                "Your availability can't be changed from here right now.",
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it('says what the server cannot state yet, and hides destinations that do not exist', () => {
+        render(
+            <AuditorHome
+                {...(structuredClone(
+                    liveMinimalFixture.props,
+                ) as AuditorHomeProps)}
+            />,
+        );
+
+        expect(screen.getAllByText('Unavailable')).toHaveLength(2);
+        expect(screen.getByText('Wallet balance')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: /Wallet balance/ }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: 'Withdraw' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: 'Statement' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: /Notifications/ }),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText(/RWF/u)).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('switch', { name: 'Accepting audits' }),
+        ).toBeDisabled();
     });
 
     it('reads a quiet morning: paused, no score, no earnings, nothing nearby or running', () => {

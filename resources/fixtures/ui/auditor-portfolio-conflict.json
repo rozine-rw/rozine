@@ -1,7 +1,10 @@
 {
     "component": "auditor/portfolio",
     "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": ["conflict.declare"],
         "reports": [
             {
                 "id": "rp_1",
@@ -137,23 +140,29 @@
             "files": [
                 {
                     "id": "fa_huye",
+                    "revision": 4,
                     "business": "Huye Motors",
-                    "note_id": "RNP-2026-0133"
+                    "note_id": "RNP-2026-0133",
+                    "allowed_actions": ["conflict.declare"]
                 },
                 {
                     "id": "mr_greenleaf",
+                    "revision": 5,
                     "business": "GreenLeaf Agro",
-                    "note_id": "RNP-2026-0118"
+                    "note_id": "RNP-2026-0118",
+                    "allowed_actions": ["conflict.declare"]
                 },
                 {
                     "id": "mr_intare",
+                    "revision": 6,
                     "business": "Intare Supply",
-                    "note_id": "RNP-2026-0102"
+                    "note_id": "RNP-2026-0102",
+                    "allowed_actions": ["conflict.declare"]
                 }
             ],
             "record": [
                 {
-                    "id": "cf_1",
+                    "conflict_id": "cf_1",
                     "business": "Rubavu Foods",
                     "note_id": "RNP-2026-0097",
                     "kind": "family_or_business",
@@ -168,8 +177,8 @@
         "outcome": {
             "kind": "conflict_declared",
             "business": "GreenLeaf Agro",
-            "resolution": "queued",
-            "reassigned_to": null
+            "resolution": "reassignment_pending",
+            "blocking": true
         },
         "open_jobs": 1,
         "links": {
@@ -191,6 +200,10 @@
             },
             "launcher": {
                 "url": "/preview/launcher-auditor",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
                 "method": "get"
             }
         }

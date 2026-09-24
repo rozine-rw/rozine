@@ -1,4 +1,8 @@
 import type { Money } from './money';
+import type {
+    OperationCommand,
+    OperationResource as SharedOperationResource,
+} from './operation';
 import type { RouteAction, RouteLink } from './routing';
 
 /**
@@ -118,9 +122,28 @@ export type BusinessHomeProps = {
         withdraw: RouteLink;
         notifications: RouteLink;
         rating: RouteLink;
-        apply: RouteLink;
+        /** Resumes the business's open draft by GET; null when there is none. */
+        apply: RouteLink | null;
     };
+    /**
+     * Starts a raise when there is no open draft and the server allows `application.create`
+     * (option (a) on #96); null otherwise. One open draft per business is the server's rule.
+     */
+    create_application: CreateApplicationEntry | null;
 };
+
+/** The `application.create` command Home posts to start a raise (business-application-v1). */
+export type CreateApplicationEntry = {
+    action: RouteAction;
+    /** The operation lookup: its url holds the literal `{request_id}` token. */
+    operation: RouteLink;
+    identity_context_revision: number;
+    /** The revision the create expects for the business's applications (0 before the first). */
+    expected_revision: number;
+};
+
+/** What a completed `application.create` returns: at least the page to continue to. */
+export type CreateApplicationData = { next: RouteLink };
 
 /** Where the Business shell's tabs and launcher link go. */
 export type BusinessAppLinks = {
@@ -379,33 +402,20 @@ export type ApplicationSnapshot = {
 };
 
 /**
- * The shared operation Resource every command and the operation lookup return
- * (business-application-v1 points 2 and 7). `status` says whether the operation ran; `code` is
- * the specific outcome — `APPLICATION_SAVED`, `APPLICATION_EVALUATED`,
- * `APPLICATION_SIGNATURE_RECORDED`, `APPLICATION_SUBMITTED`, `OPERATION_PENDING`, or a persisted
- * denial's own domain code. A completed evaluation may still hold a refused quote.
+ * The shared operation Resource (business-application-v1 points 2 and 7). `code` is the specific
+ * outcome — `APPLICATION_SAVED`, `APPLICATION_EVALUATED`, `APPLICATION_SIGNATURE_RECORDED`,
+ * `APPLICATION_SUBMITTED`, `OPERATION_PENDING`, or a persisted denial's own domain code. A
+ * completed evaluation may still hold a refused quote.
  */
-export type OperationResource = {
-    operation_id: string;
-    status: 'completed' | 'pending' | 'rejected';
-    code: string;
-    data: ApplicationSnapshot | null;
-    revision: number | null;
-    policy_version: string | null;
-    server_time: string;
-    allowed_actions: string[];
-    field_errors: Record<string, string | string[]>;
-};
+export type OperationResource = SharedOperationResource<ApplicationSnapshot>;
 
 /** A command exactly as sent, kept whole so an uncertain outcome is looked up and retried unchanged. */
-export type ApplicationCommand = {
-    name: ApplicationCommandName;
+export type ApplicationCommand = OperationCommand<ApplicationCommandName> & {
     /**
      * A save that asks to advance the resume pointer (its `step` names the next step); the page
      * moves on to the authorized `next` once the server confirms. Autosaves never advance.
      */
     advance: boolean;
-    payload: Record<string, unknown> & { request_id: string };
 };
 
 /**

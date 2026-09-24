@@ -1,78 +1,129 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+import { useAuditorCommands } from '@/components/auditor/commands';
 import { ConflictSheet } from '@/components/auditor/sheets/conflict-sheet';
 import { ReasonSheet } from '@/components/auditor/sheets/reason-sheet';
 import { useTranslation } from '@/hooks/use-translation';
-import type { JobActions } from '@/types/auditor';
+import type { RouteAction } from '@/types';
+import type {
+    AuditorAllowedAction,
+    DeclineReason,
+    RecordRef,
+    ServerOption,
+} from '@/types/auditor';
 
 type Sheet = 'decline' | 'conflict' | null;
 
+const QUIET_ACTION =
+    'text-[11.5px] font-bold text-rz-secondary disabled:cursor-not-allowed disabled:opacity-60';
+
 /**
- * Decline and conflict for one file, as two quiet text actions and the sheets they open. A
- * conflict can be declared at any point, including mid-procedure (MVP-AUDITOR-AC-08).
+ * Decline and conflict for one assignment, as two quiet text actions and the sheets they open.
+ * Each is offered only when the record's own `allowed_actions` (or, on a record's own page, the
+ * page's) lists it. A conflict stays declarable mid-procedure (MVP-AUDITOR-AC-08) and has its own
+ * command lane, so it waits only on another declaration, never on an ordinary command. Decline
+ * takes one of the server's labelled reasons.
  */
 export function useJobCommands({
-    fileId,
+    assignment,
     business,
-    actions,
+    scope,
+    conflict,
+    decline,
+    initialSheet = null,
 }: {
-    fileId: string;
+    assignment: RecordRef;
     business: string;
-    actions: Pick<JobActions, 'conflict'> &
-        Partial<Pick<JobActions, 'decline'>>;
+    /** The record's own `allowed_actions` on a list page; the page's are used otherwise. */
+    scope?: AuditorAllowedAction[];
+    conflict: RouteAction;
+    /** Where a decline goes and the server's reasons, or null where declining is not offered. */
+    decline: {
+        route: RouteAction;
+        options: ServerOption<DeclineReason>[];
+    } | null;
+    /** A synthetic preview may open a sheet, the decline sheet with a reason chosen. */
+    initialSheet?: {
+        sheet: 'decline' | 'conflict';
+        reason: string | null;
+    } | null;
 }): { links: ReactNode; conflictButton: ReactNode; sheet: ReactNode } {
     const { t } = useTranslation();
-    const [open, setOpen] = useState<Sheet>(null);
+    const center = useAuditorCommands();
+    const [open, setOpen] = useState<Sheet>(initialSheet?.sheet ?? null);
     const close = () => setOpen(null);
-    const decline = actions.decline;
+    const allowed = (action: AuditorAllowedAction) =>
+        scope === undefined ? center.allowed(action) : scope.includes(action);
+    const declining = allowed('assignment.decline') ? decline : null;
+    const canConflict = allowed('conflict.declare');
 
-    const conflictButton = (
+    const conflictButton = canConflict ? (
         <button
             type="button"
             onClick={() => setOpen('conflict')}
-            className="text-[11.5px] font-bold text-rz-secondary"
+            disabled={!center.conflict.idle}
+            className={QUIET_ACTION}
         >
             {t('auditor.jobs.declare_conflict')}
         </button>
-    );
+    ) : null;
 
-    const links = (
-        <div className="flex items-center justify-between gap-3">
-            {decline ? (
-                <button
-                    type="button"
-                    onClick={() => setOpen('decline')}
-                    className="text-[11.5px] font-bold text-rz-secondary"
-                >
-                    {t('auditor.jobs.decline')}
-                </button>
-            ) : (
-                <span />
-            )}
-            {conflictButton}
-        </div>
-    );
+    const links =
+        declining !== null || canConflict ? (
+            <div className="flex items-center justify-between gap-3">
+                {declining !== null ? (
+                    <button
+                        type="button"
+                        onClick={() => setOpen('decline')}
+                        disabled={!center.idle}
+                        className={QUIET_ACTION}
+                    >
+                        {t('auditor.jobs.decline')}
+                    </button>
+                ) : (
+                    <span />
+                )}
+                {conflictButton}
+            </div>
+        ) : null;
 
     let sheet: ReactNode = null;
 
-    if (open === 'decline' && decline) {
+    if (open === 'decline' && declining !== null) {
         sheet = (
             <ReasonSheet
                 title={t('auditor.decline.title', { business })}
                 lead={t('auditor.decline.lead')}
-                label={t('auditor.decline.label')}
                 placeholder={t('auditor.decline.placeholder')}
                 submitLabel={t('auditor.decline.submit')}
-                action={decline}
+                options={declining.options}
+                initialReason={initialSheet?.reason}
+                onSubmit={(fields) =>
+                    center.send(
+                        {
+                            name: 'assignment.decline',
+                            business,
+                            route: declining.route,
+                            scope,
+                            payload: {
+                                assignment_id: assignment.id,
+                                expected_revision: assignment.revision,
+                                ...fields,
+                            },
+                        },
+                        { onCompleted: close },
+                    )
+                }
                 onClose={close}
             />
         );
-    } else if (open === 'conflict') {
+    } else if (open === 'conflict' && canConflict) {
         sheet = (
             <ConflictSheet
                 business={business}
-                fileId={fileId}
-                action={actions.conflict}
+                assignment={assignment}
+                action={conflict}
+                scope={scope}
                 onClose={close}
             />
         );

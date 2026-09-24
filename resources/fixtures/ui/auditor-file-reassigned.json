@@ -1,10 +1,14 @@
 {
     "component": "auditor/file",
     "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": ["conflict.declare"],
         "flash_hours": 24,
         "job": {
             "id": "fa_huye",
+            "revision": 2,
             "business": "Sebeya Logistics",
             "district": "Musanze",
             "distance_km": "9.0",
@@ -124,15 +128,27 @@
             "procedure": {
                 "url": "/preview/auditor-audit-ledger",
                 "method": "get"
+            },
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
+                "method": "get"
             }
         },
         "jobs": {
+            "contract_version": "auditor-filing-v1",
+            "identity_context_revision": 3,
             "server_time": "2026-10-03T17:00:00Z",
+            "allowed_actions": [
+                "assignment.accept",
+                "assignment.decline",
+                "conflict.declare"
+            ],
             "radius_km": 30,
             "flash_hours": 24,
             "eligible": [
                 {
                     "id": "fa_huye",
+                    "revision": 2,
                     "business": "Huye Motors",
                     "sector": "logistics",
                     "district": "Gasabo",
@@ -165,7 +181,12 @@
                             "url": "/preview/auditor-jobs-conflict",
                             "method": "post"
                         }
-                    }
+                    },
+                    "allowed_actions": [
+                        "assignment.accept",
+                        "assignment.decline",
+                        "conflict.declare"
+                    ]
                 }
             ],
             "assigned": [
@@ -185,7 +206,8 @@
                     "link": {
                         "url": "/preview/auditor-audit-ledger",
                         "method": "get"
-                    }
+                    },
+                    "allowed_actions": ["conflict.declare"]
                 },
                 {
                     "id": "fa_murakoze",
@@ -203,7 +225,8 @@
                     "link": {
                         "url": "/preview/auditor-audit-check-in",
                         "method": "get"
-                    }
+                    },
+                    "allowed_actions": ["conflict.declare"]
                 }
             ],
             "monthly": {
@@ -319,8 +342,57 @@
                 "launcher": {
                     "url": "/preview/launcher-auditor",
                     "method": "get"
+                },
+                "operation": {
+                    "url": "/preview/auditor-operation-{request_id}",
+                    "method": "get"
                 }
+            },
+            "decline_options": [
+                {
+                    "code": "unavailable",
+                    "label": "Not available inside the clock",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "capacity",
+                    "label": "At capacity with active work",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "location",
+                    "label": "Cannot reach the site",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "other",
+                    "label": "Other reason",
+                    "requires_explanation": true
+                }
+            ]
+        },
+        "decline_options": [
+            {
+                "code": "unavailable",
+                "label": "Not available inside the clock",
+                "requires_explanation": false
+            },
+            {
+                "code": "capacity",
+                "label": "At capacity with active work",
+                "requires_explanation": false
+            },
+            {
+                "code": "location",
+                "label": "Cannot reach the site",
+                "requires_explanation": false
+            },
+            {
+                "code": "other",
+                "label": "Other reason",
+                "requires_explanation": true
             }
-        }
+        ],
+        "blocked": null
     }
 }

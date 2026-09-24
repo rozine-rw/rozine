@@ -1,3 +1,4 @@
+import { EvidenceList } from '@/components/auditor/audit/evidence';
 import {
     AmberNote,
     CaptureHandoff,
@@ -53,10 +54,14 @@ export function StepCheckIn({
                     <Icon name="pin" tone="amber" />{' '}
                     {recorded === null
                         ? t('auditor.checkin.waiting')
-                        : t('auditor.checkin.position', {
-                              position: recorded.position,
-                              accuracy: recorded.accuracy_m,
-                          })}
+                        : recorded.evidence.position === null
+                          ? t('auditor.checkin.position_unavailable')
+                          : recorded.evidence.accuracy_m === null
+                            ? recorded.evidence.position
+                            : t('auditor.checkin.position', {
+                                  position: recorded.evidence.position,
+                                  accuracy: recorded.evidence.accuracy_m,
+                              })}
                 </span>
             </div>
             {recorded !== null && (
@@ -66,6 +71,9 @@ export function StepCheckIn({
                         time: formatKigaliTime(recorded.at),
                     })}
                 </div>
+            )}
+            {recorded !== null && (
+                <EvidenceList items={[recorded.evidence]} className="mt-3.5" />
             )}
             {recorded?.review && (
                 <AmberNote title={t('auditor.checkin.review_title')}>

@@ -40,7 +40,10 @@ type Responder = (options: {
 
 const inertia = vi.hoisted(() => ({
     visit: vi.fn(),
-    reload: vi.fn(),
+    /* A reload finishes at once unless a test holds it to watch the page meanwhile. */
+    reload: vi.fn((options?: { onFinish?: () => void }) =>
+        options?.onFinish?.(),
+    ),
     body: {} as Record<string, unknown>,
     calls: [] as {
         url: string;
@@ -112,6 +115,7 @@ const operation = (
     data: null,
     revision: 4,
     policy_version: 'engineering-2026-09-23.4',
+    recorded_at: '2026-09-24T09:15:58+02:00',
     server_time: '2026-09-24T09:16:00+02:00',
     allowed_actions: ALL,
     field_errors: {},
@@ -291,10 +295,22 @@ describe('Apply — step 1, business & finances', () => {
         await user.click(screen.getByRole('button', { name: 'Continue' }));
 
         expect(inertia.calls[0].body).toMatchObject({
-            target: '',
+            target: null,
             term_months: null,
             step: 'raise',
         });
+    });
+
+    it('shows a server error for a field the step does not show as a banner', () => {
+        inertia.errors = {
+            step: 'A draft may resume at the Business or Raise step.',
+        };
+
+        render(<BusinessApply {...props(businessStep)} />);
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'A draft may resume at the Business or Raise step.',
+        );
     });
 
     it('explains ineligibility in the server’s words and shows missing facts as unavailable', () => {
@@ -1265,6 +1281,62 @@ describe('Apply — step 3, review & sign', () => {
         expect(inertia.calls[2]).toEqual(inertia.calls[0]);
     });
 
+    it('refreshes the page’s facts before offering the retry, and retries the held request unchanged', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+        let finishReload: () => void = () => undefined;
+
+        inertia.reload.mockImplementationOnce(
+            (options?: { onFinish?: () => void }) => {
+                finishReload = () => options?.onFinish?.();
+            },
+        );
+        inertia.queue.push(
+            offline(),
+            fails(404, { code: 'OPERATION_NOT_FOUND' }),
+        );
+        const view = render(<BusinessApply {...page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        await waitFor(() =>
+            expect(inertia.reload).toHaveBeenCalledWith({
+                onFinish: expect.any(Function),
+            }),
+        );
+        expect(screen.getByText('Checking what happened')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Try again' }),
+        ).not.toBeInTheDocument();
+
+        act(() => finishReload());
+        expect(
+            await screen.findByRole('button', { name: 'Try again' }),
+        ).toBeInTheDocument();
+
+        /* The refreshed props move on; the held request does not. */
+        view.rerender(
+            <BusinessApply
+                {...page}
+                identity_context_revision={page.identity_context_revision + 1}
+                application={{
+                    ...page.application,
+                    revision: page.application.revision + 1,
+                }}
+            />,
+        );
+        inertia.queue.push(offline(), offline());
+        await user.click(screen.getByRole('button', { name: 'Try again' }));
+
+        await waitFor(() =>
+            expect(inertia.calls.length).toBeGreaterThanOrEqual(3),
+        );
+        expect(inertia.calls[2]).toEqual(inertia.calls[0]);
+    });
+
     it('keeps checking an uncertain outcome until the server settles it', async () => {
         const user = userEvent.setup();
         const page = props(reviewStep);
@@ -1656,6 +1728,15 @@ describe('Apply — step 3, review & sign', () => {
         expect(
             screen.queryByRole('button', { name: 'Take a smaller amount' }),
         ).not.toBeInTheDocument();
+    });
+
+    it('keeps the smaller-amount error inline rather than in a banner', () => {
+        inertia.errors = { accepted_principal: 'Too much' };
+
+        render(<BusinessApply {...props(reviewStep)} />);
+
+        expect(screen.getByText('Too much')).toBeInTheDocument();
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
 
     it('marks server field errors and a missing document link', () => {

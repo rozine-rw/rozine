@@ -95,6 +95,7 @@ export function HomeBody({
                         <GrowSection
                             headroom={props.headroom}
                             links={props.links}
+                            createApplication={props.create_application}
                         />
                     </div>
                     {sheet('right')}

@@ -1500,7 +1500,7 @@ const fr: Catalog = {
     'auditor.jobs.lead':
         'Contrôles sur site ouverts dans un rayon de {radius} km. Le premier à accepter verrouille le dossier et lance un délai de {hours} heures.',
     'auditor.jobs.map_label':
-        "Carte de votre rayon d'affectation de {radius} km avec {count} missions ouvertes",
+        "Carte de votre rayon d'affectation de {radius} km avec {count} missions ouvertes à des positions approximatives",
     'auditor.jobs.map_badge': 'Rayon {radius} km · {count} ouvertes',
     'auditor.jobs.assigned': 'Qui vous sont attribuées',
     'auditor.jobs.distance': 'Distance',
@@ -1539,14 +1539,13 @@ const fr: Catalog = {
     'auditor.sheet.cancel': 'Annuler',
     'auditor.decline.title': 'Refuser {business}',
     'auditor.decline.lead':
-        "La mission retourne à l'affectation. Dites pourquoi — le motif est enregistré avec votre refus.",
-    'auditor.decline.label': 'Motif',
+        "La mission retourne à l'affectation. Choisissez un motif ; il est enregistré avec votre refus.",
     'auditor.decline.placeholder':
-        'ex. je ne peux pas me rendre sur site dans le délai',
+        "Ce qui vous empêche d'accepter cette mission",
     'auditor.decline.submit': 'Refuser la mission',
     'auditor.conflict.sheet_title': 'Déclarer un intérêt dans {business}',
     'auditor.conflict.body':
-        "Si vous avez un intérêt dans une entreprise que vous devez vérifier, dites-le. La mission est réattribuée immédiatement et la déclaration est consignée. On ne vous demande jamais d'évaluer un dossier que vous avez apporté — Rozine l'interdit.",
+        "Si vous avez un intérêt dans une entreprise que vous devez vérifier, dites-le. La déclaration est consignée, et un conflit bloquant arrête aussitôt votre travail sur le dossier pendant que les Opérations d'audit organisent la réattribution. On ne vous demande jamais d'évaluer un dossier que vous avez apporté — Rozine l'interdit.",
     'auditor.conflict.kind_label': "Quel type d'intérêt",
     'auditor.conflict.kind.financial_interest': 'Intérêt financier',
     'auditor.conflict.kind.role_tie':
@@ -1554,18 +1553,14 @@ const fr: Catalog = {
     'auditor.conflict.kind.family_or_business':
         "Lien familial ou d'affaires proche",
     'auditor.conflict.kind.other': 'Autre',
-    'auditor.conflict.note_label': 'Précisions (facultatif)',
+    'auditor.conflict.note_label': 'Explication factuelle (obligatoire)',
     'auditor.conflict.note_placeholder':
         "La nature de l'intérêt et depuis quand",
     'auditor.conflict.submit': "Déclarer l'intérêt",
     'auditor.outcome.done': 'Terminé',
     'auditor.outcome.conflict.title': 'Intérêt déclaré',
-    'auditor.outcome.conflict.reassigned':
-        "{business} est désormais suivi par {name}. Vous n'êtes plus sur le dossier et la déclaration est consignée.",
-    'auditor.outcome.conflict.queued':
-        '{business} ne figure plus sur votre liste et attend une réattribution par les opérations. Vous ne pouvez pas le vérifier entre-temps.',
     'auditor.outcome.conflict.recorded':
-        'Votre intérêt dans {business} est consigné. Vous ne pouvez pas vérifier ce dossier.',
+        "Votre déclaration concernant {business} est consignée. Elle n'arrête pas votre travail sur cette mission.",
     'auditor.outcome.declined.title': 'Mission refusée',
     'auditor.outcome.declined.body':
         "{business} est retourné à l'affectation et votre motif est consigné.",
@@ -1573,13 +1568,13 @@ const fr: Catalog = {
     'auditor.outcome.sealed.flash':
         "Le rapport de terrain de {business} est scellé. {business} cosigne d'ici le {date} ; le moteur note l'entreprise à partir de vos constats.",
     'auditor.outcome.sealed.monthly':
-        "Le coffre de preuves de {month} pour {business} est scellé. {business} a jusqu'au {date} pour valider.",
-    'auditor.outcome.suggested.title': 'Renvoyé au fondateur',
+        'Le rapport de {month} pour {business} — ses relevés téléversés et vos constats factuels — est scellé. {business} contresigne avant le {date}.',
+    'auditor.outcome.suggested.title': 'Modifications demandées',
     'auditor.outcome.suggested.body':
-        'Le fondateur va réviser et soumettre à nouveau pour votre audit.',
-    'auditor.outcome.rejected.title': 'Signalé à Rozine',
+        "L'entreprise a reçu votre motif et votre explication, et peut soumettre à nouveau le dépôt pour votre audit.",
+    'auditor.outcome.rejected.title': 'Dépôt rejeté',
     'auditor.outcome.rejected.body':
-        "Ce rapport a été rejeté et transmis à l'administration Rozine.",
+        "Cette version du dépôt ne peut pas être vérifiée et est close avec votre motif consigné. Ce n'est pas un jugement de crédit, et ses preuves et l'historique du rapport sont conservés.",
     'auditor.sheet.back': 'Retour',
     'auditor.file.head_title': '{business} · dossier',
     'auditor.file.label': "Dossier de l'entreprise {business}",
@@ -1642,7 +1637,7 @@ const fr: Catalog = {
     'auditor.audit.outside_tolerance': "L'écart dépasse la tolérance",
     'auditor.capture.title': "Capturé dans l'application de capture Rozine",
     'auditor.capture.body':
-        "Les photos et votre arrivée sur site sont prises en direct dans l'application — appareil photo uniquement, lieu et heure signés sur votre téléphone — pour qu'elles ne puissent être ni antidatées ni empruntées.",
+        "Les photos et votre arrivée sur site sont prises dans l'application de capture, jamais sur le web. L'heure, la position et le contrôle de l'appareil de chaque élément s'affichent tels que le serveur les enregistre.",
     'auditor.capture.open': "Ouvrir l'application de capture",
     'auditor.capture.status.not_started':
         "L'application de capture n'a pas encore été ouverte pour cette mission",
@@ -1748,27 +1743,23 @@ const fr: Catalog = {
     'auditor.seal.note_placeholder': 'Dites ce que vous avez vu et pourquoi',
     'auditor.seal.note_count': '{count} / {max}',
     'auditor.seal.preview': 'Aperçu des constats',
-    'auditor.seal.suggest': 'Suggérer des modifications',
+    'auditor.seal.suggest': 'Demander des modifications',
     'auditor.seal.suggest_lead':
-        'Le rapport de {business} retourne au fondateur pour révision. Dites ce qui doit changer.',
+        "Le dépôt de {business} retourne à l'entreprise pour correction et nouvelle soumission. Choisissez le motif et exposez les faits.",
     'auditor.seal.suggest_placeholder':
         "ex. la fiche de comptage de septembre n'est pas signée",
-    'auditor.seal.suggest_submit': 'Renvoyer',
-    'auditor.seal.reject': 'Rejeter et signaler',
+    'auditor.seal.suggest_submit': 'Demander des modifications',
+    'auditor.seal.reject': 'Rejeter le dépôt',
     'auditor.seal.reject_lead':
-        "Le rapport de {business} est rejeté et transmis à l'administration Rozine. Dites ce que vous avez constaté.",
-    'auditor.seal.reject_placeholder': 'Ce que vous avez constaté sur site',
-    'auditor.seal.reject_submit': 'Rejeter le rapport',
+        "Cette version du dépôt de {business} ne peut pas être vérifiée. Choisissez le motif et exposez les faits — cela concerne le dépôt, pas le crédit de l'entreprise, et ses preuves et son historique sont conservés.",
+    'auditor.seal.reject_placeholder':
+        "Ce que vous avez contrôlé et ce qui n'a pas pu être vérifié",
+    'auditor.seal.reject_submit': 'Rejeter le dépôt',
     'auditor.seal.findings_eyebrow': 'Constats factuels · {version}',
     'auditor.seal.digest': 'Empreinte en attente',
     'auditor.seal.digest_note':
         "Finalisée lors de l'apposition de votre sceau ICPAR. Le PDF signé est compilé par Rozine et publié aux porteurs après l'accord de l'entreprise.",
-    'auditor.seal.apply': 'Apposer le sceau de licence ICPAR',
-    'auditor.seal.pin_title': 'Authentifiez-vous pour sceller',
-    'auditor.seal.pin_lead':
-        'Saisissez votre code PIN Rozine pour apposer la licence {licence}.',
-    'auditor.seal.pin_entered': '{count} chiffres sur {total} saisis',
-    'auditor.seal.pin_delete': 'Effacer un chiffre',
+    'auditor.seal.apply': 'Confirmer avec votre authentificateur',
     'auditor.seal.submit': 'Sceller et soumettre à Rozine',
     'auditor.sealed.title': 'Scellé et déposé',
     'auditor.sealed.body':
@@ -2881,6 +2872,156 @@ const fr: Catalog = {
     'business.apply.review.use_full': "Reprendre l'offre complète",
 
     'business.apply.recalculating': 'Recalcul…',
+    'auditor.capture.unavailable':
+        "L'application de capture n'est pas encore disponible pour cette mission : les photos et l'arrivée sur site ne peuvent pas être prises. Il n'existe aucun moyen de les capturer sur le web.",
+    'auditor.photos.add_unavailable': 'Capture indisponible',
+    'auditor.checkin.position_unavailable': 'Position indisponible',
+    'auditor.ledger.ingested': 'Reçu · pas encore examiné',
+    'auditor.jobs.map_approximate': 'Positions approximatives',
+    'auditor.reason.label': 'Motif',
+    'auditor.reason.explanation_required':
+        'Explication factuelle (obligatoire)',
+    'auditor.reason.explanation_optional': 'Explication (facultative)',
+    'auditor.outcome.conflict.blocking.reassignment_pending':
+        "Votre conflit a été enregistré. Le travail sur cette mission est arrêté pendant que les Opérations d'audit organisent la réattribution.",
+    'auditor.outcome.conflict.blocking.reassigned':
+        'Votre conflit a été enregistré et {business} a été réattribuée. Votre travail sur cette mission est arrêté.',
+    'auditor.outcome.conflict.blocking.recorded':
+        'Votre conflit a été enregistré. Le travail sur cette mission est arrêté.',
+    'auditor.seal.cites': 'Preuves : {ids}',
+    'auditor.seal.evidence': 'Preuves scellées avec ce rapport',
+    'auditor.seal.versions':
+        'Procédure {procedure} · constats {findings} · preuves {evidence}',
+    'auditor.seal.code_title': "Confirmez que c'est bien vous",
+    'auditor.seal.code_lead':
+        "Saisissez le code à six chiffres de votre application d'authentification pour sceller sous la licence {licence}.",
+    'auditor.seal.code_label': "Code d'authentification à six chiffres",
+    'auditor.seal.code_scope':
+        "Ce code confirme seulement que c'est vous qui scellez. Il ne dit rien des téléphones ou appareils utilisés pour capturer les preuves.",
+    'auditor.seal.code_wrong':
+        'Ce code ne correspond pas. Saisissez le code actuel de votre authentificateur.',
+    'auditor.seal.code_expired':
+        "Votre confirmation a expiré avant l'apposition du sceau. Saisissez un nouveau code.",
+    'auditor.seal.code_throttled':
+        'Trop de tentatives. Vous pourrez saisir un nouveau code dans {wait}.',
+    'auditor.seal.code_throttled_later':
+        'Trop de tentatives. Patientez un instant, puis saisissez un nouveau code.',
+    'auditor.seal.code_unreachable':
+        "Impossible de joindre Rozine pour vérifier votre code. Rien n'a été scellé — saisissez un nouveau code pour réessayer.",
+    'auditor.seal.sealing': 'Scellement…',
+    'auditor.seal.mfa_title':
+        "Activez l'authentification à deux facteurs pour sceller",
+    'auditor.seal.mfa_body':
+        "Le scellement demande un code d'une application d'authentification confirmée sur votre compte. Configurez-en une dans vos paramètres de sécurité, puis revenez sceller.",
+    'auditor.seal.mfa_settings': 'Ouvrir les paramètres de sécurité',
+    'auditor.sealed.report_id': 'Rapport',
+    'auditor.sealed.signature_ref': 'Signature',
+    'auditor.sealed.key_id': 'Clé',
+    'auditor.sealed.amended_by':
+        "Le rapport {report} modifie celui-ci ; ce rapport reste tel qu'il a été scellé.",
+    'auditor.sealed.open_amendment': 'Ouvrir la modification',
+    'auditor.audit.amends':
+        'Ceci est une modification liée du rapport {report}. Ce rapport reste publié, inchangé.',
+    'auditor.audit.open_original': "Ouvrir l'original",
+    'auditor.receipt.title': 'Conflit enregistré',
+    'auditor.receipt.body.reassignment_pending':
+        "Votre conflit a été enregistré. Le travail sur cette mission est arrêté pendant que les Opérations d'audit organisent la réattribution.",
+    'auditor.receipt.body.reassigned':
+        "Votre conflit a été enregistré et la mission a été réattribuée. Vous n'avez plus accès au dossier de {business}.",
+    'auditor.receipt.body.recorded':
+        "Votre conflit a été enregistré. Le travail sur cette mission est arrêté et vous n'avez plus accès au dossier de {business}.",
+    'auditor.receipt.status': 'Mission',
+    'auditor.receipt.state.reassignment_pending': 'Réattribution en attente',
+    'auditor.receipt.state.reassigned': 'Réattribuée',
+    'auditor.receipt.state.recorded': 'Enregistré',
+    'auditor.receipt.kind': "Type d'intérêt",
+    'auditor.receipt.declared': 'Déclaré',
+    'auditor.receipt.reference': 'Référence',
+    'auditor.receipt.note': 'Votre explication',
+    'auditor.evidence.title': 'Preuves',
+    'auditor.evidence.captured': 'Capturé',
+    'auditor.evidence.source': 'Source',
+    'auditor.evidence.attestation': "Attestation de l'appareil",
+    'auditor.evidence.position': 'Position',
+    'auditor.evidence.accuracy': 'Précision',
+    'auditor.evidence.metres': '±{metres} m',
+    'auditor.evidence.unavailable': 'Indisponible',
+    'auditor.evidence.digest': 'SHA-256 {digest}…',
+    'auditor.evidence.source_companion_device': 'Application de capture',
+    'auditor.evidence.source_web_upload': 'Téléversement web',
+    'auditor.evidence.attestation_verified': 'Attestée',
+    'auditor.evidence.attestation_unverified': 'Non attestée',
+    'auditor.evidence.attestation_unavailable': 'Indisponible',
+    'auditor.evidence.kind.photo': 'Photo du site',
+    'auditor.evidence.kind.check_in': 'Arrivée sur site',
+    'auditor.evidence.kind.ledger': 'Document de registre',
+    'auditor.evidence.kind.statement': 'Relevé',
+    'auditor.evidence.kind.licence_certificate': 'Certificat de licence',
+    'auditor.command.checking.title': 'Vérification en cours',
+    'auditor.command.checking.body':
+        "La réponse à votre dernière action s'est perdue : Rozine vérifie si elle a été enregistrée. Rien n'est renvoyé entre-temps.",
+    'auditor.command.unconfirmed.title':
+        'Impossible de confirmer votre dernière action',
+    'auditor.command.unconfirmed.body':
+        'Impossible de joindre Rozine pour vérifier si elle a été enregistrée. Vérifiez à nouveau avant toute autre action — elle ne sera pas envoyée deux fois.',
+    'auditor.command.pending.title': 'Enregistrée — traitement en cours',
+    'auditor.command.pending.body':
+        'Rozine a reçu votre dernière action et la traite encore. Vérifiez à nouveau dans un instant.',
+    'auditor.command.not_recorded.title': 'Non enregistrée',
+    'auditor.command.not_recorded.body':
+        "Rozine n'a aucune trace de votre dernière action. Vous pouvez renvoyer la même demande ; elle ne peut pas être appliquée deux fois.",
+    'auditor.command.check_again': 'Vérifier à nouveau',
+    'auditor.command.try_again': 'Réessayer',
+    'auditor.command.refused.VERSION_CONFLICT':
+        'Cet enregistrement a changé depuis son ouverture. La page a été actualisée — vérifiez-la et réessayez.',
+    'auditor.command.refused.IDEMPOTENCY_CONFLICT':
+        'Cette demande a déjà servi à une autre action. Recommencez depuis la page actualisée.',
+    'auditor.command.refused.DIGEST_STALE':
+        'Les preuves ont changé après votre aperçu. Relisez le nouvel aperçu et confirmez avec un nouveau code.',
+    'auditor.command.refused.EVIDENCE_VERSION_STALE':
+        'Les preuves ont changé après votre aperçu. Relisez le nouvel aperçu et confirmez à nouveau.',
+    'auditor.command.refused.FINDINGS_VERSION_STALE':
+        'Les constats ont changé après votre aperçu. Relisez le nouvel aperçu et confirmez à nouveau.',
+    'auditor.command.refused.PROCEDURE_VERSION_STALE':
+        'La version de la procédure a changé. Relisez le nouvel aperçu et confirmez à nouveau.',
+    'auditor.command.refused.MANDATE_STALE':
+        'Les conditions de votre mission ont changé. Relisez la page actualisée et confirmez à nouveau.',
+    'auditor.command.refused.ACTION_FORBIDDEN':
+        'Vous ne pouvez plus effectuer cette action sur cette mission. Votre accès a changé.',
+    'auditor.command.refused.NOT_FOUND':
+        'Cet enregistrement ne vous est pas accessible.',
+    'auditor.command.refused.STEP_UP_INVALID':
+        "Cette confirmation n'a pas abouti. Saisissez un nouveau code de votre authentificateur.",
+    'auditor.command.refused.STEP_UP_EXPIRED':
+        'Cette confirmation a expiré avant le scellement. Saisissez un nouveau code de votre authentificateur.',
+    'auditor.command.refused.denied':
+        "Votre accès a changé : l'action n'a pas été effectuée.",
+    'auditor.command.refused.failed':
+        "L'action n'a pas pu être effectuée. Actualisez la page et réessayez.",
+    'auditor.accreditation.badge.none': 'Non accrédité',
+    'auditor.accreditation.badge.first_pending': "En cours d'examen",
+    'auditor.accreditation.none_line': 'Aucune licence enregistrée',
+    'auditor.accreditation.none_body':
+        "Soumettez votre licence ICPAR pour examen. La soumission ne vous confère aucun statut : vous ne pourrez prendre de missions qu'après qu'un membre autorisé du personnel Rozine a enregistré le contrôle ICPAR et ses dates.",
+    'auditor.accreditation.first_pending_title':
+        "Première accréditation en cours d'examen",
+    'auditor.accreditation.evidence_line':
+        'Certificat {id} · SHA-256 {digest}…',
+    'auditor.accreditation.expiry_label_first':
+        "Date d'expiration de la licence",
+    'auditor.accreditation.first_submit': 'Soumettre votre accréditation',
+
+    'auditor.availability.locked':
+        'Votre disponibilité ne peut pas être modifiée ici pour le moment.',
+    'auditor.home.unavailable': 'Indisponible',
+
+    'auditor.availability.home_paused_locked':
+        "L'affectation ne vous propose pas de missions flash",
+
+    'business.grow.starting': 'Démarrage…',
+
+    'auditor.conflict.not_allowed':
+        "Vous ne pouvez plus faire de déclaration sur ce dossier : votre déclaration n'a pas été envoyée.",
 
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',

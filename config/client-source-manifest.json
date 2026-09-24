@@ -134,6 +134,7 @@
         "resources/js/types/investor.ts",
         "resources/js/types/money.ts",
         "resources/js/types/navigation.ts",
+        "resources/js/types/operation.ts",
         "resources/js/types/routing.ts",
         "resources/js/types/ui.ts",
         "resources/js/types/vite-env.d.ts"
@@ -167,6 +168,7 @@
         "resources/js/components/app-sidebar.tsx",
         "resources/js/components/appearance-tabs.tsx",
         "resources/js/components/auditor/assigned-job-card.tsx",
+        "resources/js/components/auditor/audit/evidence.tsx",
         "resources/js/components/auditor/audit/parts.tsx",
         "resources/js/components/auditor/audit/seal-flow.tsx",
         "resources/js/components/auditor/audit/sealed-status.tsx",
@@ -176,9 +178,12 @@
         "resources/js/components/auditor/audit/step-ledger.tsx",
         "resources/js/components/auditor/audit/step-photos.tsx",
         "resources/js/components/auditor/audit/step-statements.tsx",
+        "resources/js/components/auditor/audit/use-step-up.ts",
         "resources/js/components/auditor/auditor-shell.tsx",
         "resources/js/components/auditor/availability.tsx",
         "resources/js/components/auditor/clock.tsx",
+        "resources/js/components/auditor/commands.tsx",
+        "resources/js/components/auditor/conflict-receipt.tsx",
         "resources/js/components/auditor/detail-sheet.tsx",
         "resources/js/components/auditor/file/file-review.tsx",
         "resources/js/components/auditor/home/activity-list.tsx",
@@ -322,6 +327,7 @@
         "resources/js/components/rozine/icon-shapes.ts",
         "resources/js/components/rozine/icon.tsx",
         "resources/js/components/rozine/logo.tsx",
+        "resources/js/components/rozine/operation-notice.tsx",
         "resources/js/components/rozine/role-icon.tsx",
         "resources/js/components/rozine/toast.tsx",
         "resources/js/components/text-link.tsx",
@@ -363,6 +369,7 @@
         "resources/js/hooks/use-initials.tsx",
         "resources/js/hooks/use-mobile-navigation.ts",
         "resources/js/hooks/use-mobile.tsx",
+        "resources/js/hooks/use-operation-command.ts",
         "resources/js/hooks/use-translation.ts",
         "resources/js/hooks/use-two-factor-auth.ts",
         "resources/js/layouts/app-layout.tsx",
@@ -390,6 +397,7 @@
         "resources/js/lib/pass-card-image.ts",
         "resources/js/lib/pulse.ts",
         "resources/js/lib/rozine/format.ts",
+        "resources/js/lib/rozine/operation.ts",
         "resources/js/lib/utils.ts",
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/auth/login.tsx",
@@ -448,10 +456,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 420,
+        "totalTrackedSources": 428,
         "generated": 100,
-        "declarationOnly": 13,
-        "authoredExecutable": 307
+        "declarationOnly": 14,
+        "authoredExecutable": 314
     },
-    "coverageSetSha256": "aed1d88d76762b5b06b94cbf812b52eee73ea429074bc830df732ae9336c4e96"
+    "coverageSetSha256": "08e1e4c1a43754e9b072eb5d335a951bebbb068f61ebbba091cc9fb0ac3ffe62"
 }

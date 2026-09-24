@@ -17,17 +17,27 @@ import { WizardCta } from '@/components/business/apply/wizard-cta';
 import { WizardFrame } from '@/components/business/apply/wizard-frame';
 import { BusinessShell } from '@/components/business/business-shell';
 import { BlankBody, HomeBody } from '@/components/business/home/home-body';
+import { ErrorBanner } from '@/components/rozine/form';
 import { useToast } from '@/components/rozine/toast';
 import { useTranslation } from '@/hooks/use-translation';
 import type {
     ApplicationCommand,
     ApplicationCommandName,
     ApplicationSnapshot,
+    ApplyStep,
     BusinessApplyProps,
     TermMonths,
 } from '@/types/business';
 
 const PAGE = { business: 1, raise: 2, review: 3 } as const;
+
+/** The fields each step marks inline; a server error for any other field shows as a banner. */
+const SHOWN_FIELDS: Record<ApplyStep, string[]> = {
+    business: [],
+    raise: ['title', 'target', 'term_months', 'story'],
+    review: ['disclosures', 'signature_name'],
+    submitted: [],
+};
 
 /** How long typing settles before the draft is saved and evaluated. */
 const QUOTE_DEBOUNCE_MS = 450;
@@ -222,7 +232,8 @@ export default function BusinessApply(props: BusinessApplyProps) {
      */
     const draftPayload = (pointer: 'raise' | 'review') => ({
         title: raise.title,
-        target: raise.target,
+        /* An empty target is no request yet: the draft holds null, never an empty amount. */
+        target: raise.target === '' ? null : raise.target,
         term_months: raise.term_months,
         use_of_funds: raise.use_of_funds,
         story: raise.story,
@@ -369,28 +380,29 @@ export default function BusinessApply(props: BusinessApplyProps) {
      * `accepted_principal` (or without it, for the full offer), and the new quote is accepted
      * afresh. It is never offered on a refusal.
      */
-    const reduce =
-        step === 'review' && readyQuote !== null && canSign && canEvaluate
-            ? {
-                  busy: !idle,
-                  error: command.errors.accepted_principal,
-                  onReduce: (acceptedPrincipal: string | null) => {
-                      send({
-                          name: 'evaluate',
-                          advance: false,
-                          payload: {
-                              target: application.target?.amount,
-                              term_months: application.term_months,
-                              evidence_version: props.evidence.version,
-                              ...(acceptedPrincipal === null
-                                  ? {}
-                                  : { accepted_principal: acceptedPrincipal }),
-                              ...context(),
-                          },
-                      });
-                  },
-              }
-            : null;
+    const reducible =
+        step === 'review' && readyQuote !== null && canSign && canEvaluate;
+    const reduce = reducible
+        ? {
+              busy: !idle,
+              error: command.errors.accepted_principal,
+              onReduce: (acceptedPrincipal: string | null) => {
+                  send({
+                      name: 'evaluate',
+                      advance: false,
+                      payload: {
+                          target: application.target?.amount,
+                          term_months: application.term_months,
+                          evidence_version: props.evidence.version,
+                          ...(acceptedPrincipal === null
+                              ? {}
+                              : { accepted_principal: acceptedPrincipal }),
+                          ...context(),
+                      },
+                  });
+              },
+          }
+        : null;
 
     const offersCommand = {
         business: props.evidence.eligibility.status === 'eligible' && canSave,
@@ -425,6 +437,14 @@ export default function BusinessApply(props: BusinessApplyProps) {
     ) : null;
 
     const errors = command.errors;
+    const shownFields = reducible
+        ? [...SHOWN_FIELDS[step], 'accepted_principal']
+        : SHOWN_FIELDS[step];
+    /* A field error this step has no field for (e.g. `step`) still reaches the business. */
+    const unshownError = Object.entries(errors).find(
+        ([field, message]) =>
+            message !== undefined && !shownFields.includes(field),
+    )?.[1];
 
     const sheet = (
         <WizardFrame
@@ -451,6 +471,11 @@ export default function BusinessApply(props: BusinessApplyProps) {
                 >
                     {t('business.apply.view_only')}
                 </p>
+            )}
+            {unshownError && (
+                <div className="mb-4">
+                    <ErrorBanner>{unshownError}</ErrorBanner>
+                </div>
             )}
             <form id="business-apply" onSubmit={submit} noValidate>
                 {step === 'business' && (

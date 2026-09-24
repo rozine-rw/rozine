@@ -7,7 +7,8 @@ const RING_PX = 70;
 /**
  * The dispatch radius map (design L213–216). The prototype pulls Leaflet and CARTO tiles from
  * third-party CDNs, which render "API key required" and leak the partner's position; this draws
- * the same ring, office dot and job pins locally from the server's relative positions.
+ * the same ring, office dot and job pins locally from the server's relative positions. Those are
+ * approximate — rounded by the server to 0.1 km — and the map says so (auditor-filing-v1 point 5).
  */
 export function RadiusMap({
     radiusKm,
@@ -54,6 +55,9 @@ export function RadiusMap({
                     <circle cx="12" cy="10" r="2.6" fill="#fff" />
                 </svg>
             ))}
+            <span className="absolute top-2.5 right-2.5 rounded-[10px] border border-[#e0e7f2] bg-white/92 px-[9px] py-[5px] text-[10px] font-semibold text-[#5b6a86] dark:border-rz-border dark:bg-rz-surface/90 dark:text-rz-secondary">
+                {t('auditor.jobs.map_approximate')}
+            </span>
             <span className="absolute bottom-2.5 left-2.5 rounded-[10px] border border-[#e0e7f2] bg-white/92 px-[9px] py-[5px] text-[10.5px] font-bold text-[#5b6a86] uppercase dark:border-rz-border dark:bg-rz-surface/90 dark:text-rz-secondary">
                 {t('auditor.jobs.map_badge', {
                     radius: radiusKm,

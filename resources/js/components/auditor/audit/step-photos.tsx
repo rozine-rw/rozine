@@ -163,17 +163,26 @@ export function StepPhotos({
                         compact={compact}
                     />
                 ))}
-                <li className="flex aspect-square overflow-hidden rounded-2xl border-[1.5px] border-dashed border-[#1e3aff] bg-[#f7faff] dark:border-rz-investor-text dark:bg-rz-surface-sunken">
-                    <a
-                        href={stage.package.handoff.url}
-                        className="flex size-full flex-col items-center justify-center gap-[7px] text-[#1e3aff] dark:text-rz-investor-text"
-                    >
+                {stage.package.handoff === null ? (
+                    <li className="flex aspect-square flex-col items-center justify-center gap-[7px] overflow-hidden rounded-2xl border-[1.5px] border-dashed border-rz-border bg-rz-surface px-2 text-center text-rz-faint">
                         {CameraGlyph}
                         <span className="text-[11px] font-semibold">
-                            {t('auditor.photos.add')}
+                            {t('auditor.photos.add_unavailable')}
                         </span>
-                    </a>
-                </li>
+                    </li>
+                ) : (
+                    <li className="flex aspect-square overflow-hidden rounded-2xl border-[1.5px] border-dashed border-[#1e3aff] bg-[#f7faff] dark:border-rz-investor-text dark:bg-rz-surface-sunken">
+                        <a
+                            href={stage.package.handoff.url}
+                            className="flex size-full flex-col items-center justify-center gap-[7px] text-[#1e3aff] dark:text-rz-investor-text"
+                        >
+                            {CameraGlyph}
+                            <span className="text-[11px] font-semibold">
+                                {t('auditor.photos.add')}
+                            </span>
+                        </a>
+                    </li>
+                )}
             </ul>
             {extras.length > 0 && (
                 <>

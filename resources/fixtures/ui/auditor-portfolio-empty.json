@@ -1,7 +1,10 @@
 {
     "component": "auditor/portfolio",
     "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": ["conflict.declare"],
         "reports": [],
         "filter": "all",
         "filters": [
@@ -75,6 +78,10 @@
             },
             "launcher": {
                 "url": "/preview/launcher-auditor",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
                 "method": "get"
             }
         }

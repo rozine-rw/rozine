@@ -1,12 +1,195 @@
 import type { Money } from './money';
+import type { OperationCommand, OperationResource } from './operation';
 import type { RouteAction, RouteLink } from './routing';
 
 /**
- * Auditor app page contracts (Phase 1B, crosswalk MVP-AUDITOR-SCR-01…07). Every figure, deadline,
- * variance, tolerance and gate is a server fact; the client formats and arranges it and never
- * decides eligibility, money, credit or workflow. No screen asks the partner for a judgement
- * (MVP-AUDITOR-AC-02): the procedure records factual findings, and the engine rates.
+ * Auditor app page contracts (Phase 1B, crosswalk MVP-AUDITOR-SCR-01…07, auditor-filing-v1 as
+ * confirmed on rozine-rw/rozine#96). Every figure, deadline, variance, tolerance and gate is a
+ * server fact; the client formats and arranges it and never decides eligibility, money, credit or
+ * workflow. No screen asks the partner for a judgement (MVP-AUDITOR-AC-02): the procedure records
+ * factual findings, and the engine rates.
  */
+
+/* ------------------------------------------------------------------------------------------ */
+/* auditor-filing-v1: identity, scoped actions, commands and operations                         */
+/* ------------------------------------------------------------------------------------------ */
+
+/**
+ * The commands a page may issue for the current partner, scoped by the server (point 1). A
+ * command that is not listed is never offered; the page never infers one from a licence status or
+ * an assignment. Record IDs in action links grant nothing on their own.
+ */
+export type AuditorAllowedAction =
+    | 'assignment.accept'
+    | 'assignment.decline'
+    | 'conflict.declare'
+    | 'audit.save_step'
+    | 'audit.seal'
+    | 'audit.request_changes'
+    | 'audit.reject'
+    | 'audit.amend'
+    | 'accreditation.submit'
+    | 'accreditation.renew'
+    | 'accreditation.withdraw'
+    | 'availability.update';
+
+/** What every Auditor page carries (point 1). */
+export type AuditorPageContract = {
+    contract_version: 'auditor-filing-v1';
+    /** The identity context every command sends back unchanged. */
+    identity_context_revision: number;
+    /** When the server rendered these facts, ISO 8601; every countdown anchors to it. */
+    server_time: string;
+    allowed_actions: AuditorAllowedAction[];
+};
+
+/**
+ * A reason the server lists and labels: the page shows `label` as sent and never decides which
+ * code needs words — `requires_explanation` says so.
+ */
+export type ServerOption<Code extends string = string> = {
+    code: Code;
+    label: string;
+    requires_explanation: boolean;
+};
+
+/** Why a partner declines an offered file (point 3). */
+export type DeclineReason = 'unavailable' | 'capacity' | 'location' | 'other';
+
+/** Why a monthly filing goes back to the business (confirmation on #96). */
+export type RequestChangesReason =
+    | 'missing_originals'
+    | 'reconciliation_difference'
+    | 'classification_unresolved'
+    | 'debt_evidence_missing'
+    | 'capture_unverified'
+    | 'other';
+
+/** Why a filing version cannot be verified. It concerns that filing, never creditworthiness. */
+export type RejectReason =
+    | 'evidence_unverifiable'
+    | 'procedure_incomplete'
+    | 'other';
+
+/**
+ * One piece of evidence as the server identifies it (point 4). A fact the capture could not supply
+ * is null and reads "Unavailable". The server alone sets `source` and `device_attestation`; online
+ * Alpha fixtures carry `unavailable` and do not pass the D-04 physical-device gate.
+ */
+export type EvidenceItem = {
+    evidence_id: string;
+    kind: 'photo' | 'check_in' | 'ledger' | 'statement' | 'licence_certificate';
+    sha256: string;
+    captured_at: string | null;
+    source: 'companion_device' | 'web_upload';
+    device_attestation: 'verified' | 'unverified' | 'unavailable';
+    /** Formatted coordinates: "-1.9441, 30.0619". */
+    position: string | null;
+    accuracy_m: number | null;
+};
+
+/** Where an assignment stands after a conflict: never who has it next (confirmation on #96). */
+export type ConflictAssignmentStatus =
+    | 'reassignment_pending'
+    | 'reassigned'
+    | 'recorded';
+
+/**
+ * The partner's own receipt for a declared conflict. A blocking conflict removes access to the
+ * file, evidence, step saves and sealing at once; only this receipt and the minimal status remain.
+ */
+export type ConflictReceipt = {
+    conflict_id: string;
+    kind: ConflictKind;
+    declared_at: string;
+    /** The factual explanation the partner gave. */
+    note: string;
+    blocking: boolean;
+    status: ConflictAssignmentStatus;
+};
+
+/** The reference to the record a command targets and the revision it was read at. */
+export type RecordRef = {
+    id: string;
+    revision: number;
+};
+
+/** The operation lookup's command names: each command is named after the action that scopes it. */
+export type AuditorCommandName = AuditorAllowedAction;
+
+/**
+ * A command exactly as sent. Every payload carries one `expected_revision` for its target
+ * aggregate, the page's `identity_context_revision` and its own `request_id` (point 1). A seal's
+ * payload carries the step-up proof, never the authenticator code.
+ */
+export type AuditorCommand = OperationCommand<AuditorCommandName> & {
+    /** Where it goes: the record's own action route. */
+    route: RouteAction;
+    /** The business the command concerns, for the result card. */
+    business: string;
+};
+
+/** The record a sealed report returns (point 6). Algorithm and key custody are the server's. */
+export type SealedRecord = {
+    sealed_at: string;
+    digest: string;
+    licence: string;
+    signature_ref: string;
+    /** Opaque identifiers, shown as sent. */
+    report_id: string;
+    key_id: string;
+};
+
+/**
+ * The authorized updated record(s) a completed command returns, and the page to continue to
+ * (point 7). Which fields are present depends on the operation's `code`.
+ */
+export type AuditorOperationData = {
+    next: RouteLink;
+    /** `CONFLICT_RECORDED`. */
+    conflict?: ConflictReceipt;
+    outcome?: { resolution: ConflictAssignmentStatus };
+    /** `AUDIT_SEALED`. */
+    sealed?: SealedRecord;
+};
+
+/**
+ * The shared operation Resource. Completed codes: `ACCREDITATION_SUBMITTED`,
+ * `ACCREDITATION_WITHDRAWN`, `ASSIGNMENT_ACCEPTED`, `ASSIGNMENT_DECLINED`, `CONFLICT_RECORDED`,
+ * `AUDIT_STEP_SAVED`, `AUDIT_SEALED`, `AUDIT_CHANGES_REQUESTED`, `AUDIT_REJECTED`,
+ * `AUDIT_AMENDMENT_CREATED`; a denial keeps its own code.
+ */
+export type AuditorOperationResource = OperationResource<AuditorOperationData>;
+
+/** What the seal's step-up returns: an opaque, single-use proof that expires (point 2). */
+export type StepUpProof = {
+    proof: string;
+    expires_at: string;
+};
+
+/**
+ * Supplied only by local/testing synthetic fixture previews: seeds a state the page otherwise
+ * reaches only after a live command, so it can be reviewed. The server never sends it.
+ * - `unconfirmed` / `not_recorded` — a command whose answer was lost, before and after the lookup;
+ * - `refused` — a definitive refusal, such as `DIGEST_STALE`;
+ * - `step_up` — the seal's authenticator entry, fresh or after a wrong code, an expired proof or
+ *   throttling (`retry_after` seconds);
+ * - `sheet` — a reason sheet opened with a reason chosen.
+ */
+export type AuditorPreviewOutcome =
+    | { kind: 'unconfirmed'; command: AuditorCommand }
+    | { kind: 'not_recorded'; command: AuditorCommand }
+    | { kind: 'refused'; code: string; status: number }
+    | {
+          kind: 'step_up';
+          state: 'required' | 'wrong_code' | 'expired' | 'throttled';
+          retry_after?: number;
+      }
+    | {
+          kind: 'sheet';
+          sheet: 'decline' | 'request_changes' | 'reject';
+          reason: string | null;
+      };
 
 /* ------------------------------------------------------------------------------------------ */
 /* Shell                                                                                        */
@@ -49,7 +232,10 @@ export type AuditorAvailability = {
     accepting: boolean;
     radius_km: number;
     max_active: number;
-    toggle: RouteAction;
+    /** The availability record's revision, sent back as `expected_revision`. */
+    revision: number;
+    /** Where `availability.update` goes; `allowed_actions` decides whether it is offered. */
+    update: RouteAction;
 };
 
 export type AuditorStanding = {
@@ -88,7 +274,9 @@ export type AssignedJob = {
     status: AssignedJobStatus;
     /** Set when the job came to this partner from another; the original deadline still runs. */
     reassigned_from: string | null;
+    /** Opening the procedure is navigation; this record's commands are scoped by its own list. */
     link: RouteLink;
+    allowed_actions: AuditorAllowedAction[];
 };
 
 /** Recent activity, newest first, as the server records it. */
@@ -111,35 +299,42 @@ export type AuditorActivity =
     | { kind: 'payment_deferred'; at: string; business: string; cause: string }
     | { kind: 'payout'; at: string; amount: Money };
 
-export type AuditorHomeProps = {
-    server_time: string;
+export type AuditorHomeProps = AuditorPageContract & {
     auditor: AuditorIdentity;
     /** The published partner-quality score out of 100; null until the quality policy is live. */
     quality_score: number | null;
     /** Accrued service-fee share this month (C-23), or null before anything accrues. */
     earned_this_month: Money | null;
     active_deals: number;
-    licence_expires_on: string;
+    /** Null when no licence is on record or the fact is unavailable; never a stand-in date. */
+    licence_expires_on: string | null;
     availability: AuditorAvailability;
     /** Eligible Flash Audits right now and the closest one's distance. */
     nearby: { count: number; closest_km: string | null };
     in_progress: AssignedJob[];
     standing: AuditorStanding;
     activity: AuditorActivity[];
-    wallet: { available: Money };
+    /** The wallet balance, or null when the server cannot state it; never a stand-in amount. */
+    wallet: { available: Money | null };
     unread_notifications: number;
-    links: AuditorAppLinks & {
-        statement: RouteLink;
-        withdraw: RouteLink;
-        notifications: RouteLink;
-    };
+    /** Each destination is null until it exists for this partner; its control is then hidden. */
+    links: AuditorAppLinks &
+        OperationLookupLinks & {
+            statement: RouteLink | null;
+            withdraw: RouteLink | null;
+            notifications: RouteLink | null;
+        };
+    preview_outcome?: AuditorPreviewOutcome;
 };
 
 /* ------------------------------------------------------------------------------------------ */
 /* Jobs (MVP-AUDITOR-SCR-01, design L205–323)                                                   */
 /* ------------------------------------------------------------------------------------------ */
 
-/** Commands every offered or assigned file carries; a conflict can always be declared (AC-08). */
+/**
+ * Where an offered or assigned file's commands go. Whether each is offered is `allowed_actions`'
+ * call alone; a conflict stays declarable during an accepted procedure (AC-08).
+ */
 export type JobActions = {
     accept: RouteAction;
     decline: RouteAction;
@@ -148,7 +343,9 @@ export type JobActions = {
 
 /** A Flash Audit this partner is eligible for, offered by dispatch. */
 export type EligibleJob = {
+    /** The assignment offer's ID; its commands send `revision` as `expected_revision`. */
     id: string;
+    revision: number;
     business: string;
     sector: SectorCode;
     district: string;
@@ -158,10 +355,18 @@ export type EligibleJob = {
     /** The engine's DSCR for the case, formatted: "1.12". Null while unrated. */
     dscr: string | null;
     term_months: number;
-    /** Where to draw the pin on the radius map, relative to the registered office. */
+    /**
+     * Where to draw the pin on the radius map, relative to the registered office: approximate,
+     * server-rounded to 0.1 km for presentation only. Dispatch never uses these offsets.
+     */
     map: { east_km: number; north_km: number };
     link: RouteLink;
     actions: JobActions;
+    /**
+     * What the partner may do with this offer (#96 point 3): deadlines, capacity and conflicts
+     * differ per record, so each card is gated by its own list, not the page's.
+     */
+    allowed_actions: AuditorAllowedAction[];
 };
 
 /** A monthly window the partner opens for a note they steward. */
@@ -207,9 +412,10 @@ export type AuditorOutcome =
     | {
           kind: 'conflict_declared';
           business: string;
-          /** Reassigned to a named partner, queued for operations, or on the record only. */
-          resolution: 'reassigned' | 'queued' | 'recorded';
-          reassigned_to: string | null;
+          /** Where the assignment stands; the next partner is never named. */
+          resolution: ConflictAssignmentStatus;
+          /** Whether the conflict stopped this partner's work on the file. */
+          blocking: boolean;
       }
     | { kind: 'job_declined'; business: string }
     | {
@@ -222,15 +428,20 @@ export type AuditorOutcome =
     | { kind: 'changes_requested'; business: string }
     | { kind: 'report_rejected'; business: string };
 
-export type AuditorJobsProps = {
-    server_time: string;
+/** The operation lookup: its url holds the literal `{request_id}` token (point 7). */
+export type OperationLookupLinks = { operation: RouteLink };
+
+export type AuditorJobsProps = AuditorPageContract & {
     radius_km: number;
     flash_hours: number;
     eligible: EligibleJob[];
     assigned: AssignedJob[];
     monthly: { windows: MonthlyWindow[]; reports: MonthlyReportCard[] };
+    /** The server's labelled reasons for declining an offer. */
+    decline_options: ServerOption<DeclineReason>[];
     outcome: AuditorOutcome | null;
-    links: AuditorAppLinks;
+    links: AuditorAppLinks & OperationLookupLinks;
+    preview_outcome?: AuditorPreviewOutcome;
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -272,7 +483,9 @@ export type BusinessFile = {
 };
 
 export type FileJob = {
+    /** The assignment's ID; its commands send `revision` as `expected_revision`. */
     id: string;
+    revision: number;
     business: string;
     district: string;
     distance_km: string;
@@ -282,16 +495,23 @@ export type FileJob = {
     reassigned_from: string | null;
 };
 
-export type AuditorFileProps = {
-    server_time: string;
+export type AuditorFileProps = AuditorPageContract & {
     flash_hours: number;
     job: FileJob;
-    file: BusinessFile;
     actions: JobActions;
-    links: { close: RouteLink; procedure: RouteLink | null };
+    decline_options: ServerOption<DeclineReason>[];
+    links: OperationLookupLinks & {
+        close: RouteLink;
+        procedure: RouteLink | null;
+    };
     /** Jobs, drawn beneath the sheet on a wide screen. */
     jobs: AuditorJobsProps;
-};
+    preview_outcome?: AuditorPreviewOutcome;
+} & (
+        | { file: BusinessFile; blocked: null }
+        /** A blocking conflict: the file is withheld and only the partner's receipt remains. */
+        | { file: null; blocked: ConflictReceipt }
+    );
 
 /* ------------------------------------------------------------------------------------------ */
 /* Audit procedure (MVP-AUDITOR-SCR-03…06, design sheets L1017–1498)                             */
@@ -316,8 +536,11 @@ export type CapturePackage = {
     received: number;
     expected: number;
     last_sync_at: string | null;
-    /** Opens the capture companion on this assignment. */
-    handoff: { url: string };
+    /**
+     * Opens the capture companion on this assignment, as the server supplies it. Null while no
+     * companion handoff exists: the page says capture is unavailable and offers no web capture.
+     */
+    handoff: { url: string } | null;
 };
 
 export type CheckInStage = {
@@ -328,9 +551,8 @@ export type CheckInStage = {
         | {
               state: 'recorded';
               at: string;
-              /** Formatted coordinates: "-1.9441, 30.0619". */
-              position: string;
-              accuracy_m: number;
+              /** The check-in's evidence; a position the capture could not supply is null. */
+              evidence: EvidenceItem;
               /** True when accuracy or distance from the premises sends it to review. */
               review: boolean;
           };
@@ -370,6 +592,12 @@ export type LedgerDocument = {
     state: 'scanning' | 'parsed' | 'failed';
     fields: { label: string; value: string }[];
     failure: string | null;
+    /**
+     * The ingestion outcome: a received document is never an approval or a seal (point 4). Null
+     * before the server has taken it in.
+     */
+    ingestion: 'INGESTED_NOT_AUDIT_APPROVED' | null;
+    evidence: EvidenceItem | null;
 };
 
 export type LedgerStage = {
@@ -383,7 +611,6 @@ export type LedgerStage = {
     /** A document has parsed, so the reconciliation fact can be recorded. */
     ledger_ready: boolean;
     reconciled: boolean;
-    upload: RouteAction;
 };
 
 export type ReviewStage = {
@@ -448,32 +675,55 @@ export type SealStage = {
         min: number;
         max: number;
     };
-    findings: { no: string; title: string; body: string }[];
+    /** Factual findings from the server's finding codes, each citing its evidence. */
+    findings: {
+        code: string;
+        no: string;
+        title: string;
+        body: string;
+        evidence_ids: string[];
+    }[];
+    /** Every piece of evidence the seal covers. */
+    evidence: EvidenceItem[];
+    /** The versions this preview pins; a change needs a new preview and confirmation. */
     procedure_version: string;
+    findings_version: string;
+    evidence_version: string;
     /** The digest of the package that will be sealed. */
     digest: string;
     licence: string;
-    seal: RouteAction;
-    /** Monthly reports only: send back or escalate the business's own submission. */
-    suggest: RouteAction | null;
-    reject: RouteAction | null;
+    /**
+     * The fresh-user confirmation the seal needs: the partner's confirmed authenticator. When it
+     * is not confirmed, the existing security settings are where to set it up.
+     */
+    mfa: { confirmed: boolean; settings: RouteLink };
+    /** Monthly filings only: the server's labelled reasons to request changes or reject. */
+    reason_options: {
+        request_changes: ServerOption<RequestChangesReason>[];
+        reject: ServerOption<RejectReason>[];
+    } | null;
 };
 
 export type CosignState = 'pending' | 'signed' | 'declined' | 'overdue';
 
-export type SealedStage = {
+export type SealedStage = SealedRecord & {
     step: 'sealed';
-    sealed_at: string;
-    digest: string;
-    licence: string;
     cosign: {
         party: string;
         state: CosignState;
+        /** Both the report and the co-signature are due by the 7th; the server sets the date. */
         due_on: string;
         signed_at: string | null;
     };
     published_at: string | null;
-    amend: RouteLink | null;
+    /** A linked amendment of this report, if one exists; this report stays unchanged. */
+    amended_by: { report_id: string; link: RouteLink } | null;
+};
+
+/** A blocking conflict: work stopped, only the partner's receipt shown. */
+export type BlockedStage = {
+    step: 'blocked';
+    conflict: ConflictReceipt;
 };
 
 export type AuditStage =
@@ -484,11 +734,12 @@ export type AuditStage =
     | StatementsStage
     | CountStage
     | SealStage
-    | SealedStage;
+    | SealedStage
+    | BlockedStage;
 
-export type AuditProcedureProps = {
-    server_time: string;
+export type AuditProcedureProps = AuditorPageContract & {
     audit: {
+        /** The audit report's ID; its commands send `revision` as `expected_revision`. */
         id: string;
         kind: 'flash' | 'monthly';
         business: string;
@@ -499,18 +750,37 @@ export type AuditProcedureProps = {
         deadline: Deadline;
         revision: number;
         reassigned_from: string | null;
+        /** Set on a linked amendment: the published report it amends, which stays unchanged. */
+        amends: { report_id: string; link: RouteLink } | null;
     };
+    /** The assignment a conflict declaration targets. */
+    assignment: RecordRef;
     steps: { key: AuditStepKey; state: 'done' | 'current' | 'todo' }[];
     stage: AuditStage;
     /** The server's gate: may this step be committed and the next opened? */
     can_continue: boolean;
     /** What still blocks the step, or what sealing will do, as the server words it. */
     hint: string | null;
-    links: { close: RouteLink; back: RouteLink | null };
-    actions: { save: RouteAction; conflict: RouteAction };
+    links: OperationLookupLinks & { close: RouteLink; back: RouteLink | null };
+    actions: {
+        save: RouteAction;
+        conflict: RouteAction;
+        /** Returns a `StepUpProof` for the authenticator code; not an operation. */
+        step_up: RouteAction;
+        seal: RouteAction;
+        request_changes: RouteAction;
+        reject: RouteAction;
+        amend: RouteAction;
+    };
     outcome: AuditorOutcome | null;
     /** Jobs, drawn beneath the sheet on a wide screen. */
     jobs: AuditorJobsProps;
+    preview_outcome?: AuditorPreviewOutcome;
+    /**
+     * Local/testing previews only: opens the conflict sheet over whatever `preview_outcome`
+     * seeds, so a declaration during another command can be reviewed.
+     */
+    preview_conflict_open?: boolean;
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -541,21 +811,24 @@ export type FiledReport = {
 export type ReportFilter = 'all' | FiledReportStatus;
 
 export type ConflictEntry = {
-    id: string;
+    conflict_id: string;
     business: string;
     note_id: string;
     kind: ConflictKind;
     declared_on: string;
 };
 
+/** An assigned file a conflict can be declared on; the declaration targets its `revision`. */
 export type AssignedFile = {
     id: string;
+    revision: number;
     business: string;
     note_id: string;
+    /** Whether a conflict can be declared on this file is this record's own call. */
+    allowed_actions: AuditorAllowedAction[];
 };
 
-export type AuditorPortfolioProps = {
-    server_time: string;
+export type AuditorPortfolioProps = AuditorPageContract & {
     reports: FiledReport[];
     filter: ReportFilter;
     filters: { key: ReportFilter; count: number; link: RouteLink }[];
@@ -567,38 +840,57 @@ export type AuditorPortfolioProps = {
     outcome: AuditorOutcome | null;
     /** Eligible Flash Audits right now, for the Jobs tab badge. */
     open_jobs: number;
-    links: AuditorAppLinks;
+    links: AuditorAppLinks & OperationLookupLinks;
+    preview_outcome?: AuditorPreviewOutcome;
 };
 
 /* ------------------------------------------------------------------------------------------ */
 /* Profile: accreditation and availability (design L593–1013)                                  */
 /* ------------------------------------------------------------------------------------------ */
 
-export type AccreditationRenewal =
-    | { status: 'none'; submit: RouteAction }
+/**
+ * The partner's latest accreditation submission, first-time or renewal. A pending submission
+ * keeps the identity of the certificate it uploaded (point 3).
+ */
+export type AccreditationSubmission =
+    | { status: 'none' }
     | {
           status: 'pending';
           id: string;
           licence: string;
           expires_on: string;
           submitted_on: string;
-          withdraw: RouteAction;
+          evidence: EvidenceItem;
       }
-    | { status: 'rejected'; id: string; reason: string; submit: RouteAction };
+    | { status: 'rejected'; id: string; reason: string };
 
-export type Accreditation = {
-    licence: string;
-    expires_on: string;
-    /** Days until expiry; negative once expired. The server decides standing. */
-    days_left: number;
-    status: 'active' | 'expired' | 'suspended';
-    renewal: AccreditationRenewal;
-};
+/**
+ * The server's record of the partner's accreditation. `none` is a first-time partner with no
+ * licence on record: a submission confers no standing until an authorized staff member records
+ * the ICPAR check and its dates.
+ */
+export type Accreditation =
+    | {
+          status: 'none';
+          revision: number;
+          licence: null;
+          expires_on: null;
+          days_left: null;
+          submission: AccreditationSubmission;
+      }
+    | {
+          status: 'active' | 'expired' | 'suspended';
+          revision: number;
+          licence: string;
+          expires_on: string;
+          /** Days until expiry; negative once expired. The server decides standing. */
+          days_left: number;
+          submission: AccreditationSubmission;
+      };
 
 export type ProfileSection = 'accreditation' | 'availability';
 
-export type AuditorProfileProps = {
-    server_time: string;
+export type AuditorProfileProps = AuditorPageContract & {
     section: ProfileSection;
     auditor: AuditorIdentity;
     quality_score: number | null;
@@ -606,7 +898,11 @@ export type AuditorProfileProps = {
     jobs_done: number;
     accreditation: Accreditation;
     availability: AuditorAvailability;
+    /** Where the accreditation commands go; `allowed_actions` decides which are offered. */
+    actions: { submit: RouteAction; withdraw: RouteAction };
     /** Eligible Flash Audits right now, for the Jobs tab badge. */
     open_jobs: number;
-    links: AuditorAppLinks & { sections: Record<ProfileSection, RouteLink> };
+    links: AuditorAppLinks &
+        OperationLookupLinks & { sections: Record<ProfileSection, RouteLink> };
+    preview_outcome?: AuditorPreviewOutcome;
 };
