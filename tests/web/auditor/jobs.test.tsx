@@ -37,7 +37,7 @@ describe('Auditor Jobs', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByText(
-                'Open field checks within 30km. First to accept locks the file and starts a 24-hour clock.',
+                "Open field checks within 30km. First to accept locks the file. Each flash audit is due 24 hours after it's sent out.",
             ),
         ).toBeInTheDocument();
         expect(
@@ -79,7 +79,7 @@ describe('Auditor Jobs', () => {
         );
         const { user } = renderWithUser(<AuditorJobs {...props()} />);
         const accept = screen.getByRole('button', {
-            name: 'Accept & start 24h clock',
+            name: 'Accept · due 4 Oct · 16:00',
         });
 
         await user.click(accept);
@@ -106,7 +106,7 @@ describe('Auditor Jobs', () => {
     it('holds a command whose answer is still coming, allowing only a conflict declaration meanwhile', async () => {
         const { user } = renderWithUser(<AuditorJobs {...props()} />);
         const accept = screen.getByRole('button', {
-            name: 'Accept & start 24h clock',
+            name: 'Accept · due 4 Oct · 16:00',
         });
 
         await user.click(accept);
@@ -188,7 +188,7 @@ describe('Auditor Jobs', () => {
 
         await user.click(
             within(open).getByRole('button', {
-                name: 'Accept & start 24h clock',
+                name: 'Accept · due 4 Oct · 16:00',
             }),
         );
         expect(inertia.calls[0].body).toMatchObject({

@@ -1498,7 +1498,7 @@ const fr: Catalog = {
     'auditor.jobs.head_title': 'Missions',
     'auditor.jobs.title': 'Audits flash',
     'auditor.jobs.lead':
-        'Contrôles sur site ouverts dans un rayon de {radius} km. Le premier à accepter verrouille le dossier et lance un délai de {hours} heures.',
+        'Contrôles sur site ouverts dans un rayon de {radius} km. Le premier à accepter verrouille le dossier. Chaque audit flash est dû {hours} heures après son envoi.',
     'auditor.jobs.map_label':
         "Carte de votre rayon d'affectation de {radius} km avec {count} missions ouvertes à des positions approximatives",
     'auditor.jobs.map_badge': 'Rayon {radius} km · {count} ouvertes',
@@ -1510,7 +1510,6 @@ const fr: Catalog = {
     'auditor.jobs.term': 'Durée',
     'auditor.jobs.term_months': '{months} mois',
     'auditor.jobs.view_file': 'Voir le dossier complet →',
-    'auditor.jobs.accept': 'Accepter et lancer le délai de {hours} h',
     'auditor.jobs.decline': 'Refuser',
     'auditor.jobs.declare_conflict': 'Déclarer un conflit',
     'auditor.jobs.empty':
@@ -3022,6 +3021,35 @@ const fr: Catalog = {
 
     'auditor.conflict.not_allowed':
         "Vous ne pouvez plus faire de déclaration sur ce dossier : votre déclaration n'a pas été envoyée.",
+
+    'auditor.jobs.accept_due': 'Accepter · dû le {time}',
+    'auditor.jobs.accept_plain': 'Accepter',
+    'auditor.jobs.offer_open': "Offre ouverte jusqu'au {time} · encore {left}",
+    'auditor.jobs.offer_label': 'Temps restant pour accepter cette offre',
+    'auditor.jobs.offer_closed': 'Cette offre est close',
+    'auditor.command.refused.ASSIGNMENT_ACCEPTANCE_EXPIRED':
+        "Cette offre s'est close avant que votre acceptation n'arrive chez Rozine : elle n'a pas été acceptée. La page a été actualisée.",
+
+    'auditor.standing.reason.ACCREDITATION_REQUIRED':
+        "Vous n'avez pas encore d'accréditation approuvée.",
+    'auditor.command.refused.ACCREDITATION_REQUIRED':
+        "Vous n'avez pas encore d'accréditation approuvée. Aucune mission ne peut vous être proposée d'ici là : rien n'a été modifié.",
+    'auditor.standing.reason.ACCREDITATION_EXPIRED':
+        'Votre licence a expiré. Renouvelez-la pour recevoir à nouveau des missions.',
+    'auditor.command.refused.ACCREDITATION_EXPIRED':
+        "Votre licence a expiré. Renouvelez-la pour recevoir à nouveau des missions. Aucune mission ne peut vous être proposée d'ici là : rien n'a été modifié.",
+    'auditor.standing.reason.ACCREDITATION_SUSPENDED':
+        "Votre accréditation est suspendue par les Opérations d'audit.",
+    'auditor.command.refused.ACCREDITATION_SUSPENDED':
+        "Votre accréditation est suspendue par les Opérations d'audit. Aucune mission ne peut vous être proposée d'ici là : rien n'a été modifié.",
+    'auditor.standing.reason.STANDING_CHECK_REQUIRED':
+        "Un contrôle de statut par les Opérations d'audit est attendu.",
+    'auditor.command.refused.STANDING_CHECK_REQUIRED':
+        "Un contrôle de statut par les Opérations d'audit est attendu. Aucune mission ne peut vous être proposée d'ici là : rien n'a été modifié.",
+    'auditor.standing.paused_until_restored':
+        "L'affectation est suspendue jusqu'au rétablissement de votre statut. Votre choix d'accepter des audits est conservé.",
+    'auditor.standing.turning_on':
+        "L'activer n'apportera pas d'offres tant que votre statut n'est pas rétabli.",
 
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',

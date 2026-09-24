@@ -229,6 +229,10 @@ export type AuditorIdentity = {
  * here; only the partner's own on/off choice is a command.
  */
 export type AuditorAvailability = {
+    /**
+     * The partner's saved preference, not whether work is arriving: dispatch also needs
+     * `standing.current`.
+     */
     accepting: boolean;
     radius_km: number;
     max_active: number;
@@ -238,7 +242,23 @@ export type AuditorAvailability = {
     update: RouteAction;
 };
 
-export type AuditorStanding = {
+/** Why a partner's standing does not let dispatch offer them work right now. */
+export type StandingReason =
+    | 'ACCREDITATION_REQUIRED'
+    | 'ACCREDITATION_EXPIRED'
+    | 'ACCREDITATION_SUSPENDED'
+    | 'STANDING_CHECK_REQUIRED';
+
+/**
+ * Whether dispatch may offer this partner work right now, evaluated fresh by the server from the
+ * persisted record (#96). It is separate from `availability.accepting`, the partner's saved
+ * preference: work arrives only when both hold. The standing-check cadence is server policy.
+ */
+export type DispatchStanding =
+    | { current: true; reason: null }
+    | { current: false; reason: StandingReason };
+
+export type AuditorStanding = DispatchStanding & {
     /** Share of jobs closed inside their clock, or null before the first closes. */
     on_time_pct: number | null;
     /** Average recorded variance, one decimal: "2.1". Null before any finding. */
@@ -260,7 +280,12 @@ export type Deadline = {
 
 export type AssignedJobStatus = 'in_progress' | 'overdue' | 'awaiting_cosign';
 
-/** Accepted work still running its clock. */
+/**
+ * Accepted work still running its clock. `deadline.due_at` is the offer's `complete_by` for a flash
+ * audit — 24 hours from dispatch — and the server's `visit_by` for a routine one; a reassigned job
+ * keeps its original deadline. A monthly report's seal and co-sign date (the 7th) is separate: it
+ * comes from the report calendar, not from this clock.
+ */
 export type AssignedJob = {
     id: string;
     kind: 'flash' | 'monthly';
@@ -360,6 +385,14 @@ export type EligibleJob = {
      * server-rounded to 0.1 km for presentation only. Dispatch never uses these offsets.
      */
     map: { east_km: number; north_km: number };
+    /** When this offer closes (ISO): an hour for a flash audit, four for routine, never past `complete_by`. */
+    accept_by: string;
+    /**
+     * When a flash audit is due (ISO): 24 hours from its original dispatch, whoever accepts it and
+     * however often it is reoffered. Null for a routine offer — the monthly calendar owns that
+     * deadline (inputs by the 3rd, report and co-signatures by the 7th).
+     */
+    complete_by: string | null;
     link: RouteLink;
     actions: JobActions;
     /**
@@ -489,14 +522,23 @@ export type FileJob = {
     business: string;
     district: string;
     distance_km: string;
-    /** Offered: the clock has not started. Assigned: it runs from `deadline`. */
+    /**
+     * Offered or assigned. A flash audit's clock runs from its original dispatch either way;
+     * accepting does not start it.
+     */
     state: 'offered' | 'assigned';
+    /**
+     * Once assigned: `due_at` is `complete_by` for a flash audit and `visit_by` for a routine one.
+     */
     deadline: Deadline | null;
+    /** While offered: when the offer closes. Null once assigned, which is what `state` also says. */
+    accept_by: string | null;
+    /** The flash deadline from dispatch; null for routine. */
+    complete_by: string | null;
     reassigned_from: string | null;
 };
 
 export type AuditorFileProps = AuditorPageContract & {
-    flash_hours: number;
     job: FileJob;
     actions: JobActions;
     decline_options: ServerOption<DeclineReason>[];
@@ -897,6 +939,8 @@ export type AuditorProfileProps = AuditorPageContract & {
     on_time_pct: number | null;
     jobs_done: number;
     accreditation: Accreditation;
+    /** Whether dispatch may offer work now; read with `availability.accepting`. */
+    standing: DispatchStanding;
     availability: AuditorAvailability;
     /** Where the accreditation commands go; `allowed_actions` decides which are offered. */
     actions: { submit: RouteAction; withdraw: RouteAction };

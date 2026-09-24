@@ -140,6 +140,8 @@
                         "east_km": 8.4,
                         "north_km": 7.1
                     },
+                    "accept_by": "2026-10-03T17:40:00Z",
+                    "complete_by": "2026-10-04T14:00:00Z",
                     "link": {
                         "url": "/preview/auditor-file",
                         "method": "get"

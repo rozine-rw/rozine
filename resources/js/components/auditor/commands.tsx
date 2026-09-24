@@ -43,6 +43,11 @@ const FINAL_REFUSALS: ReadonlySet<string> = new Set([
 /** The refusal codes with their own explanation; any other 403 reads as a changed access. */
 const REFUSALS = [
     'VERSION_CONFLICT',
+    'ASSIGNMENT_ACCEPTANCE_EXPIRED',
+    'ACCREDITATION_REQUIRED',
+    'ACCREDITATION_EXPIRED',
+    'ACCREDITATION_SUSPENDED',
+    'STANDING_CHECK_REQUIRED',
     'IDEMPOTENCY_CONFLICT',
     'DIGEST_STALE',
     'EVIDENCE_VERSION_STALE',

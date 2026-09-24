@@ -1463,7 +1463,7 @@ const en = {
     'auditor.jobs.head_title': 'Jobs',
     'auditor.jobs.title': 'Flash Audits',
     'auditor.jobs.lead':
-        'Open field checks within {radius}km. First to accept locks the file and starts a {hours}-hour clock.',
+        "Open field checks within {radius}km. First to accept locks the file. Each flash audit is due {hours} hours after it's sent out.",
     'auditor.jobs.map_label':
         'Map of your {radius} km dispatch radius with {count} open jobs at approximate positions',
     'auditor.jobs.map_badge': '{radius}km radius · {count} open',
@@ -1475,7 +1475,6 @@ const en = {
     'auditor.jobs.term': 'Term',
     'auditor.jobs.term_months': '{months}mo',
     'auditor.jobs.view_file': 'View full application →',
-    'auditor.jobs.accept': 'Accept & start {hours}h clock',
     'auditor.jobs.decline': 'Decline',
     'auditor.jobs.declare_conflict': 'Declare a conflict',
     'auditor.jobs.empty':
@@ -2943,6 +2942,33 @@ const en = {
     'business.grow.starting': 'Starting…',
     'auditor.conflict.not_allowed':
         "You can no longer declare on this file, so your declaration hasn't been sent.",
+    'auditor.jobs.accept_due': 'Accept · due {time}',
+    'auditor.jobs.accept_plain': 'Accept',
+    'auditor.jobs.offer_open': 'Offer open until {time} · {left} left',
+    'auditor.jobs.offer_label': 'Time left to accept this offer',
+    'auditor.jobs.offer_closed': 'This offer has closed',
+    'auditor.command.refused.ASSIGNMENT_ACCEPTANCE_EXPIRED':
+        "This offer closed before your acceptance reached Rozine, so it wasn't accepted. The page has been refreshed.",
+    'auditor.standing.reason.ACCREDITATION_REQUIRED':
+        "You don't have an approved accreditation yet.",
+    'auditor.command.refused.ACCREDITATION_REQUIRED':
+        "You don't have an approved accreditation yet. Dispatch can't offer you work until then, so this wasn't changed.",
+    'auditor.standing.reason.ACCREDITATION_EXPIRED':
+        'Your licence has expired. Renew it to receive work again.',
+    'auditor.command.refused.ACCREDITATION_EXPIRED':
+        "Your licence has expired. Renew it to receive work again. Dispatch can't offer you work until then, so this wasn't changed.",
+    'auditor.standing.reason.ACCREDITATION_SUSPENDED':
+        'Your accreditation is suspended by Audit Operations.',
+    'auditor.command.refused.ACCREDITATION_SUSPENDED':
+        "Your accreditation is suspended by Audit Operations. Dispatch can't offer you work until then, so this wasn't changed.",
+    'auditor.standing.reason.STANDING_CHECK_REQUIRED':
+        'A standing check by Audit Operations is due.',
+    'auditor.command.refused.STANDING_CHECK_REQUIRED':
+        "A standing check by Audit Operations is due. Dispatch can't offer you work until then, so this wasn't changed.",
+    'auditor.standing.paused_until_restored':
+        'Dispatch is paused until your standing is restored. Your choice to accept audits is kept.',
+    'auditor.standing.turning_on':
+        "Turning this on won't bring offers until your standing is restored.",
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

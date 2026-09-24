@@ -277,6 +277,8 @@ describe('Auditor Home', () => {
                 unread_notifications={0}
                 auditor={{ ...props.auditor, avatar_url: '/avatar.png' }}
                 standing={{
+                    current: true,
+                    reason: null,
                     on_time_pct: null,
                     avg_variance_pct: null,
                     variance_flagged: true,

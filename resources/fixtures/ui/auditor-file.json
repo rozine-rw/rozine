@@ -9,7 +9,6 @@
             "assignment.decline",
             "conflict.declare"
         ],
-        "flash_hours": 24,
         "job": {
             "id": "fa_huye",
             "revision": 2,
@@ -18,6 +17,8 @@
             "distance_km": "11.2",
             "state": "offered",
             "deadline": null,
+            "accept_by": "2026-10-03T17:40:00Z",
+            "complete_by": "2026-10-04T14:00:00Z",
             "reassigned_from": null
         },
         "file": {
@@ -158,6 +159,8 @@
                         "east_km": 8.4,
                         "north_km": 7.1
                     },
+                    "accept_by": "2026-10-03T17:40:00Z",
+                    "complete_by": "2026-10-04T14:00:00Z",
                     "link": {
                         "url": "/preview/auditor-file",
                         "method": "get"
