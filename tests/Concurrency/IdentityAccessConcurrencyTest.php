@@ -3,15 +3,19 @@
 declare(strict_types=1);
 
 use App\Application\Auditor\AdvanceExpiredAuditOffers;
+use App\Application\Auditor\GetAuditOperationsCase;
 use App\Application\Auditor\GetOwnAuditConflict;
 use App\Application\Auditor\ListOwnAuditConflicts;
 use App\Application\Auditor\MarkAuditLocationMoved;
 use App\Application\Auditor\RecordAuditorIndependence;
+use App\Application\Auditor\ResolveAuditAssignment;
 use App\Application\Auditor\SetAuditorAvailability;
 use App\Application\Auditor\VerifyAuditLocation;
 use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Auditor\WithdrawAuditorAccreditation;
 use App\Application\Business\CreateBusinessApplication;
+use App\Application\Business\GetAuditApplication;
+use App\Application\Business\SaveBusinessApplication;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\Contracts\StatementExtractionQueue;
 use App\Application\Evidence\GetAuditStatements;
@@ -1045,3 +1049,106 @@ it('holds the own-conflict identity guard through private receipt and register r
     $revoke();
     expect($read)->toThrow(IdentityViolation::class, 'ROLE_MEMBERSHIP_REQUIRED');
 })->with(['receipt', 'register']);
+
+it('holds current offered assignment and Business authority through the actual application summary read', function (string $fault): void {
+    $this->freezeTime();
+    $fixture = AuditAssignmentFixture::make(1);
+    $partner = $fixture['partners'][0];
+    $owner = $fixture['authority']['users'][0];
+    $created = app(CreateBusinessApplication::class)->handle($owner->id, 1, $fixture['business'], 0, (string) Str::uuid());
+    $id = $created['data']['application']['id'];
+    $assignment = AuditAssignmentFixture::request($fixture);
+    $operator = concurrentIdentityOperator();
+    $change = match ($fault) {
+        'conflict' => fn (): array => AuditAssignmentFixture::respond($partner['user'], $assignment, 'conflict', 'New financial interest.', 'other'),
+        'draft' => fn (): array => app(SaveBusinessApplication::class)->handle($owner->id, 1, $fixture['business'], $id, 1,
+            BusinessApplicationFixture::fields(), 'raise', (string) Str::uuid()),
+        'standing' => fn (): array => AuditorFixture::review($partner['staff'], $partner['party']->id, 3, 'suspend'),
+        default => fn (): array => app(ChangeMembership::class)->handle($operator->id, $partner['party']->id, 'auditor', 'revoked', 1,
+            'case:revocation', 'Withdraw membership.', (string) Str::uuid()),
+    };
+    config(['database.connections.audit_jobs_contender' => config('database.connections.pgsql')]);
+    DB::connection('audit_jobs_contender')->statement("SET lock_timeout = '500ms'");
+    $default = DB::getDefaultConnection();
+    $event = 'eloquent.retrieved: '.BusinessApplication::class;
+    Event::listen($event, function () use ($default, $change): void {
+        DB::setDefaultConnection('audit_jobs_contender');
+        try {
+            $change();
+            $this->fail('The case summary must hold assignment and Business authority through its read.');
+        } catch (QueryException $exception) {
+            expect($exception->getCode())->toBe('55P03');
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('audit_jobs_contender');
+        }
+    });
+    try {
+        expect(app(GetAuditApplication::class)->handle($partner['user']->id, 1, $assignment->id)['application']['target'])->toBeNull();
+    } finally {
+        Event::forget($event);
+    }
+    $change();
+    if ($fault === 'draft') {
+        expect(app(GetAuditApplication::class)->handle($partner['user']->id, 1, $assignment->id)['application']['target'])->toBe('8000000');
+    } else {
+        expect(fn () => app(GetAuditApplication::class)->handle($partner['user']->id, 1, $assignment->id))->toThrow(match ($fault) {
+            'membership' => IdentityViolation::class, default => CommandRejection::class,
+        });
+    }
+})->with(['conflict', 'draft', 'standing', 'membership']);
+
+it('serializes duplicate and competing Operations resolutions without restarting a closed case', function (bool $duplicate): void {
+    $this->freezeTime();
+    $fixture = AuditAssignmentFixture::make(0);
+    $assignment = AuditAssignmentFixture::request($fixture);
+    $requestId = (string) Str::uuid();
+    $close = function () use ($fixture, $assignment, $requestId): void {
+        $result = app(ResolveAuditAssignment::class)->handle($fixture['staff']->id, $assignment->id, 1, 'close', 'Close case.', $requestId);
+        if ($result['http_status'] !== 200) {
+            throw new CommandRejection($result['code'], $result['http_status']);
+        }
+    };
+    $redispatch = function () use ($fixture, $assignment): void {
+        $result = app(ResolveAuditAssignment::class)->handle($fixture['staff']->id, $assignment->id, 1, 'redispatch', 'Check candidates.', (string) Str::uuid());
+        if ($result['http_status'] !== 200) {
+            throw new CommandRejection($result['code'], $result['http_status']);
+        }
+    };
+    expect(runIdentityContenders([$close, $duplicate ? $close : $redispatch]))->toBe($duplicate ? [0, 0] : [0, 2])
+        ->and($assignment->refresh()->revision)->toBe(2)->and($assignment->state['attempt'])->toBe(0)
+        ->and($assignment->state['original_dispatch_at'])->toBe(now('UTC')->format('Y-m-d\TH:i:s\Z'))
+        ->and(AuditAssignmentVersion::query()->where('assignment_id', $assignment->id)->count())->toBe(2);
+})->with([true, false]);
+
+it('holds staff assignment-management authority through an Operations case read', function (): void {
+    $fixture = AuditAssignmentFixture::make(0);
+    $assignment = AuditAssignmentFixture::request($fixture);
+    $withdraw = fn (): array => app(ConfigureStaffAccess::class)->handle($fixture['staff']->id, true, 'Withdraw management.', (string) Str::uuid(), ['analyst']);
+    config(['database.connections.audit_operations_contender' => config('database.connections.pgsql')]);
+    DB::connection('audit_operations_contender')->statement("SET lock_timeout = '500ms'");
+    $default = DB::getDefaultConnection();
+    $event = 'eloquent.retrieved: '.AuditAssignment::class;
+    Event::listen($event, function () use ($default, $withdraw): void {
+        if (DB::transactionLevel() === 0) {
+            return;
+        }
+        DB::setDefaultConnection('audit_operations_contender');
+        try {
+            $withdraw();
+            $this->fail('Staff revocation must wait for the Operations projection.');
+        } catch (QueryException $exception) {
+            expect($exception->getCode())->toBe('55P03');
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('audit_operations_contender');
+        }
+    });
+    try {
+        expect(app(GetAuditOperationsCase::class)->handle($fixture['staff']->id, $assignment->id)['status'])->toBe('operations');
+    } finally {
+        Event::forget($event);
+    }
+    $withdraw();
+    expect(fn () => app(GetAuditOperationsCase::class)->handle($fixture['staff']->id, $assignment->id))->toThrow(IdentityViolation::class, 'STAFF_PERMISSION_REQUIRED');
+});

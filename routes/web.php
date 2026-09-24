@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\AuditOperationsController;
+use App\Http\Controllers\AuditorJobsController;
 use App\Http\Controllers\AuditorProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IdentityManagementController;
@@ -41,6 +43,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'throttle:60,1'])->prefix('auditor')->name('auditor.')->group(function (): void {
+    Route::get('jobs', [AuditorJobsController::class, 'index'])->middleware('cache.headers:private;no_store')->name('jobs.index');
+    Route::get('jobs/{assignment}', [AuditorJobsController::class, 'show'])->where('assignment', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('jobs.show');
+    Route::get('conflicts', [AuditorJobsController::class, 'conflicts'])->middleware('cache.headers:private;no_store')->name('conflicts.index');
+    Route::get('jobs/{assignment}/conflict', [AuditorJobsController::class, 'conflict'])->where('assignment', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('conflicts.show');
+    foreach (['accept', 'decline', 'conflict'] as $decision) {
+        Route::post('jobs/{assignment}/'.$decision, [AuditorJobsController::class, 'respond'])->where('assignment', '[0-9a-z]{26}')->defaults('decision', $decision)->name('jobs.'.$decision);
+    }
+    Route::get('assignment-operations/{request_id}', [AuditorJobsController::class, 'operation'])->whereUuid('request_id')->middleware('cache.headers:private;no_store')->name('jobs.operations.show');
     Route::post('accreditation', [AuditorProfileController::class, 'submit'])->name('accreditation.submit');
     Route::post('accreditation/renewal', [AuditorProfileController::class, 'renew'])->name('accreditation.renew');
     Route::post('accreditation/withdrawal', [AuditorProfileController::class, 'withdraw'])->name('accreditation.withdraw');
@@ -48,6 +58,14 @@ Route::middleware(['auth', 'throttle:60,1'])->prefix('auditor')->name('auditor.'
         ->where('certificate', '[0-9a-z]{26}')->name('accreditation.certificates.show');
     Route::post('availability', [AuditorProfileController::class, 'availability'])->name('availability.update');
     Route::get('operations/{request_id}', [AuditorProfileController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
+});
+
+Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/audit-assignments')->name('staff.audit.')->group(function (): void {
+    Route::get('operations/{request_id}', [AuditOperationsController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
+    Route::get('{assignment}', [AuditOperationsController::class, 'show'])->where('assignment', '[0-9a-z]{26}')->name('show');
+    foreach (['redispatch', 'close'] as $decision) {
+        Route::post('{assignment}/'.$decision, [AuditOperationsController::class, 'resolve'])->where('assignment', '[0-9a-z]{26}')->defaults('decision', $decision)->name($decision);
+    }
 });
 
 Route::middleware(['auth', 'throttle:60,1'])->prefix('identity')->name('identity.')->group(function (): void {
