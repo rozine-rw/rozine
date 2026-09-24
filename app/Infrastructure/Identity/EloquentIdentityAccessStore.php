@@ -1,0 +1,296 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Infrastructure\Identity;
+
+use App\Application\Identity\Contracts\IdentityAccessStore;
+use App\Application\Identity\Contracts\IdentityRepository;
+use App\Domain\Identity\ActiveRolePolicy;
+use App\Domain\Identity\IdentityViolation;
+use App\Domain\Identity\MembershipTransitions;
+use App\Models\IdentityAuditEvent;
+use App\Models\IdentityOperator;
+use App\Models\Party;
+use App\Models\RoleMembership;
+use App\Models\User;
+use App\Models\VerifiedPersonIdentity;
+use Closure;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Laravel\Fortify\Features;
+
+/** @phpstan-import-type AccessSnapshot from ActiveRolePolicy */
+final class EloquentIdentityAccessStore implements IdentityAccessStore
+{
+    public function __construct(
+        private IdentityRepository $identities,
+        private MembershipTransitions $transitions,
+        private ActiveRolePolicy $roles,
+    ) {}
+
+    /** @return array<string, mixed> */
+    public function configureOperator(int $userId, bool $enabled, string $reason, string $requestId): array
+    {
+        return DB::transaction(function () use ($userId, $enabled, $reason, $requestId): array {
+            $user = User::query()->lockForUpdate()->findOrFail($userId);
+            $hash = $this->requestHash(['operator.configure', $userId, $enabled, $reason], $reason, $requestId);
+
+            if (($replay = $this->replay('console', $requestId, $hash)) !== null) {
+                return $replay;
+            }
+
+            $party = $this->lockParty($user->party_id);
+
+            if ($enabled && (! $this->emailVerified($user) || ! $this->mfaConfirmed($user))) {
+                throw new IdentityViolation('OPERATOR_VERIFIED_EMAIL_AND_MFA_REQUIRED');
+            }
+
+            if ($enabled && $party !== null && ($party->kind !== 'person' || $party->verified_at !== null
+                || $party->memberships()->exists() || $party->verifiedIdentity()->exists()
+                || User::query()->where('party_id', $party->id)->whereKeyNot($userId)->exists())) {
+                throw new IdentityViolation('DEDICATED_STAFF_ACCOUNT_REQUIRED');
+            }
+
+            $operator = IdentityOperator::query()->find($userId);
+            if (! $enabled && $operator === null) {
+                throw new IdentityViolation('IDENTITY_OPERATOR_NOT_FOUND', 404);
+            }
+            $before = ['enabled' => $operator->enabled ?? false, 'party_id' => $user->party_id];
+            $operator ??= new IdentityOperator;
+            $operator->forceFill(['user_id' => $userId, 'enabled' => $enabled])->save();
+
+            if ($enabled) {
+                $user->forceFill([
+                    'party_id' => null, 'active_membership_id' => null,
+                    'active_membership_revision' => null, 'context_revision' => $user->context_revision + 1,
+                ])->save();
+            }
+
+            $result = ['code' => $enabled ? 'IDENTITY_OPERATOR_ENABLED' : 'IDENTITY_OPERATOR_DISABLED', 'user_id' => $userId];
+            $this->record('console', null, 'user', (string) $userId, 'operator.configure', $reason, $requestId, $hash,
+                $before, ['enabled' => $enabled, 'party_id' => $user->party_id], $result);
+
+            return $result;
+        }, 3);
+    }
+
+    /** @return array<string, mixed> */
+    public function resolvePerson(int $actorId, int $userId, string $identityReference, string $evidenceReference, string $reason, string $requestId): array
+    {
+        return DB::transaction(function () use ($actorId, $userId, $identityReference, $evidenceReference, $reason, $requestId): array {
+            $users = User::query()->whereKey([$actorId, $userId])->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+            $this->authorizeOperator($users->get($actorId));
+            $user = $users->get($userId);
+
+            if ($user === null) {
+                throw new IdentityViolation('IDENTITY_RECORD_NOT_FOUND', 404);
+            }
+
+            $this->evidenceRequired($evidenceReference);
+            if (mb_strlen($identityReference) > 255 || ! preg_match('/^[a-z0-9._-]+:[A-Za-z0-9._-]{1,128}$/D', $identityReference)) {
+                throw new IdentityViolation('IDENTITY_REFERENCE_INVALID', 422);
+            }
+
+            $digest = hash('sha256', $identityReference);
+            $hash = $this->requestHash(['person.resolve', $userId, $digest, $evidenceReference, $reason], $reason, $requestId);
+            if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
+                return $replay;
+            }
+
+            if (! $this->emailVerified($user) || IdentityOperator::query()->whereKey($userId)->exists()) {
+                throw new IdentityViolation('VERIFIED_PARTICIPANT_ACCOUNT_REQUIRED');
+            }
+
+            DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', ['identity:'.$digest]);
+            $identity = VerifiedPersonIdentity::query()->find($digest);
+            $partyIds = array_filter([$user->party_id, $identity?->party_id]);
+            $parties = Party::query()->whereKey($partyIds)->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+            $source = $parties->get($user->party_id);
+            $party = $identity === null ? $source : $parties->get($identity->party_id);
+
+            if ($source !== null && ($source->kind !== 'person'
+                || ($source->id !== $identity?->party_id && ($source->memberships()->exists() || $source->verifiedIdentity()->exists())))) {
+                throw new IdentityViolation('IDENTITY_RECONCILIATION_REQUIRED', 409);
+            }
+
+            if ($identity !== null && ($party === null || $party->kind !== 'person' || $party->verified_at === null
+                || $party->verified_at->gt(now()))) {
+                throw new IdentityViolation('IDENTITY_VERIFICATION_REQUIRED');
+            }
+
+            $before = ['party_id' => $user->party_id];
+            if ($identity === null) {
+                $party ??= Party::query()->create(['kind' => 'person']);
+                $party->forceFill(['verified_at' => now()])->save();
+                (new VerifiedPersonIdentity)->forceFill([
+                    'identity_digest' => $digest, 'party_id' => $party->id, 'evidence_reference' => $evidenceReference,
+                ])->save();
+            }
+
+            /** @var Party $party */
+            $user->forceFill([
+                'party_id' => $party->id, 'active_membership_id' => null,
+                'active_membership_revision' => null, 'context_revision' => $user->context_revision + 1,
+            ])->save();
+            $result = ['code' => 'VERIFIED_PERSON_RESOLVED', 'user_id' => $userId, 'party_id' => $party->id];
+            $this->record('user:'.$actorId, $actorId, 'user', (string) $userId, 'person.resolve', $reason, $requestId, $hash,
+                $before, ['party_id' => $party->id, 'evidence_reference' => $evidenceReference, 'identity_digest' => $digest], $result);
+
+            return $result;
+        }, 3);
+    }
+
+    /** @return array<string, mixed> */
+    public function changeMembership(int $actorId, string $partyId, string $role, string $status, int $expectedRevision, string $evidenceReference, string $reason, string $requestId): array
+    {
+        return DB::transaction(function () use ($actorId, $partyId, $role, $status, $expectedRevision, $evidenceReference, $reason, $requestId): array {
+            $this->authorizeOperator(User::query()->lockForUpdate()->find($actorId));
+            $this->evidenceRequired($evidenceReference);
+            $hash = $this->requestHash(['membership.change', $partyId, $role, $status, $expectedRevision, $evidenceReference, $reason], $reason, $requestId);
+            if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
+                return $replay;
+            }
+
+            $party = $this->lockParty($partyId);
+            if ($party === null) {
+                throw new IdentityViolation('IDENTITY_RECORD_NOT_FOUND', 404);
+            }
+            if ($party->kind !== 'person') {
+                throw new IdentityViolation('PARTY_AUTHORITY_REQUIRED');
+            }
+            if (in_array($status, ['pending', 'active'], true) && ($party->verified_at === null
+                || $party->verified_at->gt(now()) || ! $party->verifiedIdentity()->exists())) {
+                throw new IdentityViolation('IDENTITY_VERIFICATION_REQUIRED');
+            }
+
+            $memberships = $party->memberships()->get();
+            $revision = $this->transitions->nextRevision($role, $status, $expectedRevision,
+                array_values($memberships->map(fn (RoleMembership $membership): array => [
+                    'role' => $membership->role, 'status' => $membership->status, 'revision' => $membership->revision,
+                ])->all()));
+            $membership = $memberships->firstWhere('role', $role);
+            $before = $membership === null ? [] : ['status' => $membership->status, 'revision' => $membership->revision];
+            $membership ??= new RoleMembership;
+            $membership->forceFill(['party_id' => $partyId, 'role' => $role, 'status' => $status, 'revision' => $revision])->save();
+            $result = ['code' => 'MEMBERSHIP_UPDATED', 'party_id' => $partyId, 'membership' => [
+                'id' => $membership->id, 'role' => $role, 'status' => $status, 'revision' => $revision,
+            ]];
+            $this->record('user:'.$actorId, $actorId, 'membership', $membership->id, 'membership.change', $reason, $requestId, $hash,
+                $before, ['status' => $status, 'revision' => $revision, 'evidence_reference' => $evidenceReference], $result);
+
+            return $result;
+        }, 3);
+    }
+
+    public function selectRole(int $userId, string $role, int $expectedRevision, string $requestId): void
+    {
+        DB::transaction(function () use ($userId, $role, $expectedRevision, $requestId): void {
+            $user = User::query()->lockForUpdate()->findOrFail($userId);
+            $this->lockParty($user->party_id);
+            $identity = $this->identities->forUser($userId);
+            $membership = $this->roles->selectable($identity, $role);
+            $reason = 'Participant selected the active role.';
+            $hash = $this->requestHash(['role.select', $role, $expectedRevision], $reason, $requestId);
+            if ($this->replay('user:'.$userId, $requestId, $hash) !== null) {
+                return;
+            }
+            if ($identity['context_revision'] !== $expectedRevision) {
+                throw new IdentityViolation('ACTIVE_ROLE_REVISION_CONFLICT', 409);
+            }
+
+            $before = ['membership_id' => $user->active_membership_id, 'context_revision' => $user->context_revision];
+            $user->forceFill([
+                'active_membership_id' => $membership['id'], 'active_membership_revision' => $membership['revision'],
+                'context_revision' => $expectedRevision + 1,
+            ])->save();
+            $after = ['membership_id' => $membership['id'], 'membership_revision' => $membership['revision'], 'context_revision' => $expectedRevision + 1];
+            $this->record('user:'.$userId, $userId, 'user', (string) $userId, 'role.select', $reason, $requestId, $hash,
+                $before, $after, $after);
+        }, 3);
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(AccessSnapshot): TResult  $operation
+     * @return TResult
+     */
+    public function withActiveRole(int $userId, string $role, ?string $recordPartyId, ?int $expectedContext, Closure $operation): mixed
+    {
+        return DB::transaction(function () use ($userId, $role, $recordPartyId, $expectedContext, $operation): mixed {
+            $user = User::query()->lockForUpdate()->findOrFail($userId);
+            $this->lockParty($user->party_id);
+            $identity = $this->identities->forUser($userId);
+            $this->roles->authorize($identity, $role, $recordPartyId, $expectedContext);
+
+            return $operation($identity);
+        }, 3);
+    }
+
+    private function authorizeOperator(?User $user): void
+    {
+        if ($user === null || $user->party_id !== null || ! $this->emailVerified($user)
+            || ! $this->mfaConfirmed($user) || ! IdentityOperator::query()->whereKey($user->id)->where('enabled', true)->exists()) {
+            throw new IdentityViolation('IDENTITY_OPERATOR_REQUIRED');
+        }
+    }
+
+    private function emailVerified(User $user): bool
+    {
+        return $user->email_verified_at !== null && $user->email_verified_at->lte(now());
+    }
+
+    private function mfaConfirmed(User $user): bool
+    {
+        return Features::enabled(Features::twoFactorAuthentication()) && $user->two_factor_secret !== null
+            && $user->two_factor_confirmed_at !== null && $user->two_factor_confirmed_at->lte(now());
+    }
+
+    private function lockParty(?string $partyId): ?Party
+    {
+        return $partyId === null ? null : Party::query()->lockForUpdate()->find($partyId);
+    }
+
+    private function evidenceRequired(string $evidence): void
+    {
+        if (trim($evidence) === '' || mb_strlen($evidence) > 255) {
+            throw new IdentityViolation('IDENTITY_EVIDENCE_REQUIRED', 422);
+        }
+    }
+
+    /** @param list<mixed> $input */
+    private function requestHash(array $input, string $reason, string $requestId): string
+    {
+        if (trim($reason) === '' || mb_strlen($reason) > 1000 || ! Str::isUuid($requestId)) {
+            throw new IdentityViolation('IDENTITY_COMMAND_INVALID', 422);
+        }
+
+        return hash('sha256', json_encode($input, JSON_THROW_ON_ERROR));
+    }
+
+    /** @return array<string, mixed>|null */
+    private function replay(string $actorKey, string $requestId, string $hash): ?array
+    {
+        $event = IdentityAuditEvent::query()->where('actor_key', $actorKey)->where('request_id', $requestId)->first();
+        if ($event !== null && ! hash_equals($event->request_hash, $hash)) {
+            throw new IdentityViolation('IDEMPOTENCY_KEY_REUSED', 409);
+        }
+
+        return $event?->result;
+    }
+
+    /**
+     * @param  array<string, mixed>  $before
+     * @param  array<string, mixed>  $after
+     * @param  array<string, mixed>  $result
+     */
+    private function record(string $actorKey, ?int $actorId, string $targetType, string $targetId, string $action, string $reason, string $requestId, string $hash, array $before, array $after, array $result): void
+    {
+        (new IdentityAuditEvent)->forceFill([
+            'actor_key' => $actorKey, 'actor_user_id' => $actorId, 'target_type' => $targetType, 'target_id' => $targetId,
+            'action' => $action, 'reason' => $reason, 'request_id' => $requestId, 'request_hash' => $hash,
+            'before' => $before, 'after' => $after, 'result' => $result, 'policy_version' => ActiveRolePolicy::POLICY_VERSION,
+        ])->save();
+    }
+}

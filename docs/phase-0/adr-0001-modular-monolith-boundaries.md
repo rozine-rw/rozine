@@ -53,6 +53,32 @@ Aminu owns the server-side implementation and Erastus supplies the non-author re
 
 ## Exact legacy exceptions
 
+### Phase 1 identity entry points — 2026-09-23
+
+`App\Domain\Identity\RoleAccess`, `MembershipTransitions` and `ActiveRolePolicy` own role availability, the membership lifecycle and active-role decisions. The application entry points are `RegisterIdentity`, `GetIdentityContext`, `ResolveVerifiedPerson`, `ChangeMembership`, `SelectActiveRole`, `AuthorizeActiveRole` and `ConfigureIdentityOperator` under `App\Application\Identity`. `Contracts\IdentityRepository` and `Contracts\IdentityAccessStore` bind only in `AppServiceProvider` to the two `App\Infrastructure\Identity\EloquentIdentity*` adapters. Registration remains atomic and grants no verification or membership.
+
+`Party`, `RoleMembership`, `VerifiedPersonIdentity`, `IdentityOperator` and `IdentityAuditEvent` may be referenced only by the identity adapters, model relationships and factories. The architecture suite asserts concrete identity targets and enforces that boundary. The `identity-boundary` negative control plants a forbidden application-layer Party write, requires that rule to fail, removes it and verifies a clean suite.
+
+Identity administration requires a dedicated staff account with verified email, confirmed MFA and a current enabled operator record. A trusted deployment operator uses `php artisan identity:operator <user-id> --reason="..." --no-interaction` to grant this narrow capability, or adds `--revoke` to withdraw it. It cannot be granted through HTTP or registration. Granting refuses an account with verified identity, membership history, an organization Party or a shared Party; an unused registration Party can be detached with an audit record. Revoking access remains possible without valid MFA. This is the identity operator bootstrap, not the full Admin permission matrix or a live staff onboarding approval.
+
+`ResolveVerifiedPerson` records the operator's attestation against reviewed external evidence: the namespace-qualified provider reference identifies the same person across logins, and a separate evidence reference and reason are mandatory. The provider reference is hashed for matching and is never exposed in public Resources. A PostgreSQL advisory lock plus unique identity/Party keys serialize resolution. Existing verified identity/membership histories are rejected for explicit reconciliation instead of being moved or merged. This action does not fetch documents, run an external KYC/KYB provider, validate corporate mandates or grant transaction eligibility.
+
+Membership commands lock the operator and Party, recheck current authority, enforce allowed state transitions and Auditor exclusivity, compare the membership revision, and write the mutation and immutable audit receipt in the same transaction. `pending` and `suspended` roles retain the exclusivity constraint; `revoked` is terminal. Actor-scoped request UUIDs and canonical permitted-input hashes give one effect for retries and reject changed payloads. Audit entries retain actor, target, reason, before/after, request identity, policy version and server time. PostgreSQL rejects updates/deletes of audit entries. The actor ID is historical data without a cascading user foreign key, so account deletion cannot rewrite the audit event.
+
+Selection stores a membership ID and revision plus a monotonically increasing context revision on the authenticated account. `AuthorizeActiveRole::handle` holds the user and Party locks through its callback; future role-scoped mutations must supply the record's server-resolved Party and the expected context revision there. Missing/revoked verification, an inactive or revised membership, the wrong role/owner, a stale context or missing Auditor MFA fails closed. A suspended membership's reinstatement does not restore a previously selected role. GET role context uses the same authorization boundary. The identity Resource currently exposes only `identity.select_role` and `identity.view_role`, never financial, company-mandate or audit-filing permissions.
+
+| Operation | Named web route | Named API route | Shared application entry point |
+|---|---|---|---|
+| Read identity/launcher facts | `dashboard` | `api.v1.identity.show` | `GetIdentityContext` / `IdentityContextResource` (`identity-v2`) |
+| Resolve reviewed person identity | `identity.people.resolve` | `api.v1.identity.people.resolve` | `ResolveVerifiedPerson` |
+| Provision/change a membership | `identity.memberships.update` | `api.v1.identity.memberships.update` | `ChangeMembership` |
+| Select active role | `identity.active-role.store` | `api.v1.identity.active-role.store` | `SelectActiveRole` |
+| Read authorized role context | `identity.roles.show` | `api.v1.identity.roles.show` | `AuthorizeActiveRole` |
+
+Web commands use authenticated, CSRF-protected Laravel routes; API commands use Sanctum and require the relevant `identity:manage`, `identity:select-role` or `identity:access` ability for bearer tokens as well as current server-side authority. Both adapters serialize the same shared Resources; the Inertia dashboard consumes the shared result directly. `resources/js/types/identity.ts` defines the type-only client contract and named Wayfinder routes expose the matching transports.
+
+Fortify remains the single authentication entry point. `CreateNewUser` keeps framework validation and adapts the ID returned by `RegisterIdentity` to Fortify's User return type. `ResetUserPassword` remains the existing framework adapter; neither is duplicated for the API. Consent, recovery policy, complete staff permissions, entity authority, Auditor biometric binding and transactional authorization remain unfinished Phase 1 work. The local regressions cover web/API parity, cross-login restrictions, stale/replayed commands, immutable auditing and four PostgreSQL races; they do not replace latest-commit non-author review or checkpoint acceptance.
+
 | Class | Exception | Owner | Removal gate |
 |---|---|---|---|
 | `App\Http\Controllers\PulseController` | Directly queries `PulseSignup` and calls `PulseUnderwriting`; it predates the application-action boundary. | Aminu and Erastus — Engineering | Isolate or remove before Phase 1 begins; Pulse product scope remains deferred to Phase 6. |

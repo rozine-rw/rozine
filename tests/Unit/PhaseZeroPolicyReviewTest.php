@@ -616,8 +616,8 @@ test('decision closure references resolve while earlier answers and governing ru
     expect($links[1])->not->toBeEmpty()
         ->and($plan)->toContain(
             '](phase-0/stakeholder-decision-closure-2026-09-20.md)',
-            'Phase 1 implementation has not been started or authorized by this defaults-only update',
-            'remaining Phase 0 evidence, including #90, is tracked separately from design choices',
+            'Aminu\'s subsequent request to start Phase 1 authorizes implementation',
+            'Issue #90 and remaining operational/external evidence stay open as separate gates',
         )
         ->and(hash_file('sha256', $directory.'stakeholder-decision-sheet-2026-09-20.md'))
         ->toBe('82af54e9d1eb08a5d95cfe022a316595724f3da694c8a949cbf637102c0527d0')
@@ -746,10 +746,10 @@ test('current consolidation preserves historical evidence and leaves contract an
         )
         ->and($plan)->toContain(
             '](phase-0/stakeholder-policy-consolidation-2026-09-20.md)',
-            'Erastus\'s current specification review is waived by Aminu, not performed.',
-            'No further joint-freeze review is required for this baseline.',
-            'Phase 1 implementation has not been started or authorized by this defaults-only update',
-            'earlier three-question follow-up is superseded',
+            'Erastus\'s current specification review remains waived, not performed',
+            'the original contract-freeze scheduling below does not reopen that review',
+            'Earlier defaults-only snapshots retain their historical authorization flags',
+            'No whole checkpoint, Phase 0 exit, Alpha acceptance or deployment is claimed',
         )
         ->and(hash_file('sha256', $directory.'stakeholder-decision-closure-2026-09-20.md'))
         ->toBe('4d91810d87a90f76c0819b45dc0c62765b973b440644b98531a5efc3eb0d8271')

@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
  * the same moment. SQLite serialises every writer and so cannot tell a correct
  * implementation from that one; only PostgreSQL can, which is why D-73 makes it
  * the authoritative environment for this evidence and why this suite is
- * registered in phpunit.pgsql.xml alone.
+ * included in both PostgreSQL PHPUnit configurations.
  */
 
 beforeEach(function (): void {

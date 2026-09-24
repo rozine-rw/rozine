@@ -16,6 +16,21 @@ jobs:
     name: PHP ${{ matrix.php-version }} quality gate
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
     strategy:
       fail-fast: false
       matrix:
@@ -30,11 +45,20 @@ jobs:
           persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
+      - name: Provision isolated PostgreSQL databases
+        env:
+          PGHOST: 127.0.0.1
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: postgres
+        run: psql -X -v ON_ERROR_STOP=1 -f .github/scripts/prepare-test-databases.sql
+
       - name: Setup PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
           php-version: ${{ matrix.php-version }}
           tools: composer:v2
+          extensions: pdo_pgsql, pgsql, pcntl, posix
           coverage: xdebug
 
       - name: Setup Node
@@ -61,6 +85,8 @@ jobs:
         run: php artisan key:generate
 
       - name: Run database migrations
+        env:
+          DB_PASSWORD: rozine
         run: php artisan migrate --force
 
       - name: Build production assets
@@ -70,6 +96,8 @@ jobs:
         run: composer ci:check:php
 
       - name: Confirm the baseline inventory still describes the code
+        env:
+          DB_PASSWORD: rozine
         run: php artisan inventory:baseline --check
 
       - name: Record PHP evidence identity
@@ -188,13 +216,13 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_USER: rozine
-          POSTGRES_PASSWORD: rozine
-          POSTGRES_DB: rozine_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U rozine -d rozine_test"
+          --health-cmd "pg_isready -U postgres -d postgres"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
@@ -205,6 +233,14 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Provision isolated PostgreSQL databases
+        env:
+          PGHOST: 127.0.0.1
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: postgres
+        run: psql -X -v ON_ERROR_STOP=1 -f .github/scripts/prepare-test-databases.sql
 
       - name: Setup PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
@@ -248,21 +284,20 @@ jobs:
         run: npm run build
 
       - name: Run the suite and the concurrency evidence against PostgreSQL
-        env:
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5432
-          DB_DATABASE: rozine_test
-          DB_USERNAME: rozine
-          DB_PASSWORD: rozine
         run: composer test:php:pgsql
 
       - name: Record PostgreSQL evidence identity
         if: always()
+        env:
+          PGHOST: 127.0.0.1
+          PGUSER: rozine_test
+          PGPASSWORD: rozine_test
+          PGDATABASE: rozine_test
         run: |
           mkdir -p coverage/pgsql
           git rev-parse HEAD > coverage/pgsql/tested-sha.txt
           php --version | head -n 1 > coverage/pgsql/runtime.txt
-          psql "postgresql://rozine:rozine@127.0.0.1:5432/rozine_test" -tAc 'select version();' \
+          psql -X -tAc 'select version();' \
             > coverage/pgsql/database.txt
 
       - name: Upload PostgreSQL concurrency evidence
@@ -278,12 +313,35 @@ jobs:
     name: PHP gate negative controls
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout exact tested commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Provision isolated PostgreSQL databases
+        env:
+          PGHOST: 127.0.0.1
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: postgres
+        run: psql -X -v ON_ERROR_STOP=1 -f .github/scripts/prepare-test-databases.sql
 
       - name: Setup PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
@@ -292,6 +350,7 @@ jobs:
           tools: composer:v2
           # The coverage control needs a driver; without one it skips, and a
           # skipped control is not evidence that the coverage gate can go red.
+          extensions: pdo_pgsql, pgsql, pcntl, posix
           coverage: xdebug
 
       - name: Install PHP dependencies from lock file

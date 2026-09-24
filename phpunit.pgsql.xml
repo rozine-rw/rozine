@@ -3,15 +3,13 @@
     PostgreSQL test lane.
 
     D-73 makes PostgreSQL the only environment that can certify locking,
-    concurrency, ledger and settlement behaviour; SQLite stays a fast lane for
-    isolated unit and feature work but cannot prove a race. This configuration
-    runs the whole suite against PostgreSQL and adds the Concurrency suite,
-    which exists only here because its assertions are meaningless without real
-    row locks and real parallel connections.
+    concurrency, ledger and settlement behaviour. The default phpunit.xml now
+    uses PostgreSQL too; this explicit lane remains for the existing CI gate.
+    Both configurations run the whole suite including Concurrency.
 
-    Values below are defaults, not overrides: PHPUnit leaves an env variable
-    alone when the environment already defines it, so CI and a developer's own
-    instance can point the lane elsewhere without editing this file.
+    Force the test database and role so inherited application settings cannot
+    redirect RefreshDatabase onto application data. Host, port and password
+    can still select a dedicated test server; never use a live server.
 -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
@@ -38,18 +36,24 @@
         </include>
     </source>
     <php>
-        <env name="APP_ENV" value="testing"/>
+        <!-- Laravel reads $_SERVER before getenv; keep both sources isolated. -->
+        <server name="APP_ENV" value="testing"/>
+        <server name="DB_CONNECTION" value="pgsql"/>
+        <server name="DB_DATABASE" value="rozine_test"/>
+        <server name="DB_USERNAME" value="rozine_test"/>
+        <server name="DB_URL" value=""/>
+        <env name="APP_ENV" value="testing" force="true"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="pgsql"/>
+        <env name="DB_CONNECTION" value="pgsql" force="true"/>
         <env name="DB_HOST" value="127.0.0.1"/>
         <env name="DB_PORT" value="5432"/>
-        <env name="DB_DATABASE" value="rozine_test"/>
-        <env name="DB_USERNAME" value="rozine"/>
-        <env name="DB_PASSWORD" value="rozine"/>
-        <env name="DB_URL" value=""/>
+        <env name="DB_DATABASE" value="rozine_test" force="true"/>
+        <env name="DB_USERNAME" value="rozine_test" force="true"/>
+        <env name="DB_PASSWORD" value="rozine_test"/>
+        <env name="DB_URL" value="" force="true"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
