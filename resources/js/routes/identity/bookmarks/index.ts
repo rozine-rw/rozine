@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::show
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:16
+* @see app/Http/Controllers/RoleBookmarkController.php:16
 * @route '/identity/bookmarks/{role}'
 */
 export const show = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::show
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:16
+* @see app/Http/Controllers/RoleBookmarkController.php:16
 * @route '/identity/bookmarks/{role}'
 */
 show.url = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ show.url = (args: { role: string | number } | [role: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::show
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:16
+* @see app/Http/Controllers/RoleBookmarkController.php:16
 * @route '/identity/bookmarks/{role}'
 */
 show.get = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ show.get = (args: { role: string | number } | [role: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::show
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:16
+* @see app/Http/Controllers/RoleBookmarkController.php:16
 * @route '/identity/bookmarks/{role}'
 */
 show.head = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ show.head = (args: { role: string | number } | [role: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::show
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:16
+* @see app/Http/Controllers/RoleBookmarkController.php:16
 * @route '/identity/bookmarks/{role}'
 */
 const showForm = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ const showForm = (args: { role: string | number } | [role: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::show
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:16
+* @see app/Http/Controllers/RoleBookmarkController.php:16
 * @route '/identity/bookmarks/{role}'
 */
 showForm.get = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ showForm.get = (args: { role: string | number } | [role: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::show
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:16
+* @see app/Http/Controllers/RoleBookmarkController.php:16
 * @route '/identity/bookmarks/{role}'
 */
 showForm.head = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -100,7 +100,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::store
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:23
+* @see app/Http/Controllers/RoleBookmarkController.php:23
 * @route '/identity/bookmarks'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -115,7 +115,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::store
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:23
+* @see app/Http/Controllers/RoleBookmarkController.php:23
 * @route '/identity/bookmarks'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -124,7 +124,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::store
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:23
+* @see app/Http/Controllers/RoleBookmarkController.php:23
 * @route '/identity/bookmarks'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -134,7 +134,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::store
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:23
+* @see app/Http/Controllers/RoleBookmarkController.php:23
 * @route '/identity/bookmarks'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -144,7 +144,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::store
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:23
+* @see app/Http/Controllers/RoleBookmarkController.php:23
 * @route '/identity/bookmarks'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

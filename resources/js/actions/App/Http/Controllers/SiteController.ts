@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SiteController::index
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:24
+* @see app/Http/Controllers/SiteController.php:24
 * @route '/'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\SiteController::index
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:24
+* @see app/Http/Controllers/SiteController.php:24
 * @route '/'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SiteController::index
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:24
+* @see app/Http/Controllers/SiteController.php:24
 * @route '/'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::index
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:24
+* @see app/Http/Controllers/SiteController.php:24
 * @route '/'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::index
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:24
+* @see app/Http/Controllers/SiteController.php:24
 * @route '/'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\SiteController::index
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:24
+* @see app/Http/Controllers/SiteController.php:24
 * @route '/'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::index
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:24
+* @see app/Http/Controllers/SiteController.php:24
 * @route '/'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\SiteController::storeInvestor
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:32
+* @see app/Http/Controllers/SiteController.php:32
 * @route '/investor'
 */
 export const storeInvestor = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +97,7 @@ storeInvestor.definition = {
 
 /**
 * @see \App\Http\Controllers\SiteController::storeInvestor
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:32
+* @see app/Http/Controllers/SiteController.php:32
 * @route '/investor'
 */
 storeInvestor.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ storeInvestor.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SiteController::storeInvestor
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:32
+* @see app/Http/Controllers/SiteController.php:32
 * @route '/investor'
 */
 storeInvestor.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +116,7 @@ storeInvestor.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\SiteController::storeInvestor
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:32
+* @see app/Http/Controllers/SiteController.php:32
 * @route '/investor'
 */
 const storeInvestorForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -126,7 +126,7 @@ const storeInvestorForm = (options?: RouteQueryOptions): RouteFormDefinition<'po
 
 /**
 * @see \App\Http\Controllers\SiteController::storeInvestor
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:32
+* @see app/Http/Controllers/SiteController.php:32
 * @route '/investor'
 */
 storeInvestorForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -138,7 +138,7 @@ storeInvestor.form = storeInvestorForm
 
 /**
 * @see \App\Http\Controllers\SiteController::storeBusiness
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:49
+* @see app/Http/Controllers/SiteController.php:49
 * @route '/business'
 */
 export const storeBusiness = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -153,7 +153,7 @@ storeBusiness.definition = {
 
 /**
 * @see \App\Http\Controllers\SiteController::storeBusiness
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:49
+* @see app/Http/Controllers/SiteController.php:49
 * @route '/business'
 */
 storeBusiness.url = (options?: RouteQueryOptions) => {
@@ -162,7 +162,7 @@ storeBusiness.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SiteController::storeBusiness
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:49
+* @see app/Http/Controllers/SiteController.php:49
 * @route '/business'
 */
 storeBusiness.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -172,7 +172,7 @@ storeBusiness.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\SiteController::storeBusiness
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:49
+* @see app/Http/Controllers/SiteController.php:49
 * @route '/business'
 */
 const storeBusinessForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -182,7 +182,7 @@ const storeBusinessForm = (options?: RouteQueryOptions): RouteFormDefinition<'po
 
 /**
 * @see \App\Http\Controllers\SiteController::storeBusiness
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/SiteController.php:49
+* @see app/Http/Controllers/SiteController.php:49
 * @route '/business'
 */
 storeBusinessForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

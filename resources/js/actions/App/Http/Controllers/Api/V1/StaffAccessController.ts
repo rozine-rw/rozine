@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Api\V1\StaffAccessController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/StaffAccessController.php:14
+* @see app/Http/Controllers/Api/V1/StaffAccessController.php:14
 * @route '/api/v1/staff-access'
 */
 const StaffAccessController = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ StaffAccessController.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\StaffAccessController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/StaffAccessController.php:14
+* @see app/Http/Controllers/Api/V1/StaffAccessController.php:14
 * @route '/api/v1/staff-access'
 */
 StaffAccessController.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ StaffAccessController.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\V1\StaffAccessController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/StaffAccessController.php:14
+* @see app/Http/Controllers/Api/V1/StaffAccessController.php:14
 * @route '/api/v1/staff-access'
 */
 StaffAccessController.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ StaffAccessController.get = (options?: RouteQueryOptions): RouteDefinition<'get'
 
 /**
 * @see \App\Http\Controllers\Api\V1\StaffAccessController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/StaffAccessController.php:14
+* @see app/Http/Controllers/Api/V1/StaffAccessController.php:14
 * @route '/api/v1/staff-access'
 */
 StaffAccessController.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ StaffAccessController.head = (options?: RouteQueryOptions): RouteDefinition<'hea
 
 /**
 * @see \App\Http\Controllers\Api\V1\StaffAccessController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/StaffAccessController.php:14
+* @see app/Http/Controllers/Api/V1/StaffAccessController.php:14
 * @route '/api/v1/staff-access'
 */
 const StaffAccessControllerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const StaffAccessControllerForm = (options?: RouteQueryOptions): RouteFormDefini
 
 /**
 * @see \App\Http\Controllers\Api\V1\StaffAccessController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/StaffAccessController.php:14
+* @see app/Http/Controllers/Api/V1/StaffAccessController.php:14
 * @route '/api/v1/staff-access'
 */
 StaffAccessControllerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ StaffAccessControllerForm.get = (options?: RouteQueryOptions): RouteFormDefiniti
 
 /**
 * @see \App\Http\Controllers\Api\V1\StaffAccessController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/StaffAccessController.php:14
+* @see app/Http/Controllers/Api/V1/StaffAccessController.php:14
 * @route '/api/v1/staff-access'
 */
 StaffAccessControllerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

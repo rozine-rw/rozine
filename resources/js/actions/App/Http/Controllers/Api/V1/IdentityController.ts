@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityController.php:14
+* @see app/Http/Controllers/Api/V1/IdentityController.php:14
 * @route '/api/v1/identity'
 */
 const IdentityController = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ IdentityController.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityController.php:14
+* @see app/Http/Controllers/Api/V1/IdentityController.php:14
 * @route '/api/v1/identity'
 */
 IdentityController.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ IdentityController.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityController.php:14
+* @see app/Http/Controllers/Api/V1/IdentityController.php:14
 * @route '/api/v1/identity'
 */
 IdentityController.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ IdentityController.get = (options?: RouteQueryOptions): RouteDefinition<'get'> =
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityController.php:14
+* @see app/Http/Controllers/Api/V1/IdentityController.php:14
 * @route '/api/v1/identity'
 */
 IdentityController.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ IdentityController.head = (options?: RouteQueryOptions): RouteDefinition<'head'>
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityController.php:14
+* @see app/Http/Controllers/Api/V1/IdentityController.php:14
 * @route '/api/v1/identity'
 */
 const IdentityControllerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const IdentityControllerForm = (options?: RouteQueryOptions): RouteFormDefinitio
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityController.php:14
+* @see app/Http/Controllers/Api/V1/IdentityController.php:14
 * @route '/api/v1/identity'
 */
 IdentityControllerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ IdentityControllerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityController.php:14
+* @see app/Http/Controllers/Api/V1/IdentityController.php:14
 * @route '/api/v1/identity'
 */
 IdentityControllerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

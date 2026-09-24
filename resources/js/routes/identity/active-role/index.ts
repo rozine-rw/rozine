@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\IdentityManagementController::store
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/IdentityManagementController.php:39
+* @see app/Http/Controllers/IdentityManagementController.php:39
 * @route '/identity/active-role'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::store
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/IdentityManagementController.php:39
+* @see app/Http/Controllers/IdentityManagementController.php:39
 * @route '/identity/active-role'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::store
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/IdentityManagementController.php:39
+* @see app/Http/Controllers/IdentityManagementController.php:39
 * @route '/identity/active-role'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::store
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/IdentityManagementController.php:39
+* @see app/Http/Controllers/IdentityManagementController.php:39
 * @route '/identity/active-role'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::store
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/IdentityManagementController.php:39
+* @see app/Http/Controllers/IdentityManagementController.php:39
 * @route '/identity/active-role'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

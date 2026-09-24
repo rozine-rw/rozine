@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Api\V1\StaffAccessController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/StaffAccessController.php:14
+* @see app/Http/Controllers/Api/V1/StaffAccessController.php:14
 * @route '/api/v1/staff-access'
 */
 export const show = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\StaffAccessController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/StaffAccessController.php:14
+* @see app/Http/Controllers/Api/V1/StaffAccessController.php:14
 * @route '/api/v1/staff-access'
 */
 show.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ show.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\V1\StaffAccessController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/StaffAccessController.php:14
+* @see app/Http/Controllers/Api/V1/StaffAccessController.php:14
 * @route '/api/v1/staff-access'
 */
 show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\StaffAccessController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/StaffAccessController.php:14
+* @see app/Http/Controllers/Api/V1/StaffAccessController.php:14
 * @route '/api/v1/staff-access'
 */
 show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\StaffAccessController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/StaffAccessController.php:14
+* @see app/Http/Controllers/Api/V1/StaffAccessController.php:14
 * @route '/api/v1/staff-access'
 */
 const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\StaffAccessController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/StaffAccessController.php:14
+* @see app/Http/Controllers/Api/V1/StaffAccessController.php:14
 * @route '/api/v1/staff-access'
 */
 showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\StaffAccessController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/StaffAccessController.php:14
+* @see app/Http/Controllers/Api/V1/StaffAccessController.php:14
 * @route '/api/v1/staff-access'
 */
 showForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

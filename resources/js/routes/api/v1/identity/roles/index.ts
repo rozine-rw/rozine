@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::show
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:48
+* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:48
 * @route '/api/v1/identity/roles/{role}'
 */
 export const show = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::show
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:48
+* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:48
 * @route '/api/v1/identity/roles/{role}'
 */
 show.url = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ show.url = (args: { role: string | number } | [role: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::show
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:48
+* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:48
 * @route '/api/v1/identity/roles/{role}'
 */
 show.get = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ show.get = (args: { role: string | number } | [role: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::show
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:48
+* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:48
 * @route '/api/v1/identity/roles/{role}'
 */
 show.head = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ show.head = (args: { role: string | number } | [role: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::show
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:48
+* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:48
 * @route '/api/v1/identity/roles/{role}'
 */
 const showForm = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ const showForm = (args: { role: string | number } | [role: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::show
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:48
+* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:48
 * @route '/api/v1/identity/roles/{role}'
 */
 showForm.get = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ showForm.get = (args: { role: string | number } | [role: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::show
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:48
+* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:48
 * @route '/api/v1/identity/roles/{role}'
 */
 showForm.head = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

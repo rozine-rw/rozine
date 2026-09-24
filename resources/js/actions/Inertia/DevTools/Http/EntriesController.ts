@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \Inertia\DevTools\Http\EntriesController::index
-* @see Users/engineersticity/Documents/projects/rozine/vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:17
+* @see vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:17
 * @route '/_inertia/devtools/entries'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \Inertia\DevTools\Http\EntriesController::index
-* @see Users/engineersticity/Documents/projects/rozine/vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:17
+* @see vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:17
 * @route '/_inertia/devtools/entries'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \Inertia\DevTools\Http\EntriesController::index
-* @see Users/engineersticity/Documents/projects/rozine/vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:17
+* @see vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:17
 * @route '/_inertia/devtools/entries'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \Inertia\DevTools\Http\EntriesController::index
-* @see Users/engineersticity/Documents/projects/rozine/vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:17
+* @see vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:17
 * @route '/_inertia/devtools/entries'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \Inertia\DevTools\Http\EntriesController::index
-* @see Users/engineersticity/Documents/projects/rozine/vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:17
+* @see vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:17
 * @route '/_inertia/devtools/entries'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \Inertia\DevTools\Http\EntriesController::index
-* @see Users/engineersticity/Documents/projects/rozine/vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:17
+* @see vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:17
 * @route '/_inertia/devtools/entries'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \Inertia\DevTools\Http\EntriesController::index
-* @see Users/engineersticity/Documents/projects/rozine/vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:17
+* @see vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:17
 * @route '/_inertia/devtools/entries'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \Inertia\DevTools\Http\EntriesController::show
-* @see Users/engineersticity/Documents/projects/rozine/vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:37
+* @see vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:37
 * @route '/_inertia/devtools/entries/{id}'
 */
 export const show = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +97,7 @@ show.definition = {
 
 /**
 * @see \Inertia\DevTools\Http\EntriesController::show
-* @see Users/engineersticity/Documents/projects/rozine/vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:37
+* @see vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:37
 * @route '/_inertia/devtools/entries/{id}'
 */
 show.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -124,7 +124,7 @@ show.url = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \Inertia\DevTools\Http\EntriesController::show
-* @see Users/engineersticity/Documents/projects/rozine/vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:37
+* @see vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:37
 * @route '/_inertia/devtools/entries/{id}'
 */
 show.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -134,7 +134,7 @@ show.get = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \Inertia\DevTools\Http\EntriesController::show
-* @see Users/engineersticity/Documents/projects/rozine/vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:37
+* @see vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:37
 * @route '/_inertia/devtools/entries/{id}'
 */
 show.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -144,7 +144,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 
 /**
 * @see \Inertia\DevTools\Http\EntriesController::show
-* @see Users/engineersticity/Documents/projects/rozine/vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:37
+* @see vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:37
 * @route '/_inertia/devtools/entries/{id}'
 */
 const showForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -154,7 +154,7 @@ const showForm = (args: { id: string | number } | [id: string | number ] | strin
 
 /**
 * @see \Inertia\DevTools\Http\EntriesController::show
-* @see Users/engineersticity/Documents/projects/rozine/vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:37
+* @see vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:37
 * @route '/_inertia/devtools/entries/{id}'
 */
 showForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -164,7 +164,7 @@ showForm.get = (args: { id: string | number } | [id: string | number ] | string 
 
 /**
 * @see \Inertia\DevTools\Http\EntriesController::show
-* @see Users/engineersticity/Documents/projects/rozine/vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:37
+* @see vendor/inertiajs/inertia-laravel/src/DevTools/Http/EntriesController.php:37
 * @route '/_inertia/devtools/entries/{id}'
 */
 showForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

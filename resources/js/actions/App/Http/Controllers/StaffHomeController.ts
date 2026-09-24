@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffHomeController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/StaffHomeController.php:15
+* @see app/Http/Controllers/StaffHomeController.php:15
 * @route '/admin'
 */
 const StaffHomeController = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ StaffHomeController.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffHomeController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/StaffHomeController.php:15
+* @see app/Http/Controllers/StaffHomeController.php:15
 * @route '/admin'
 */
 StaffHomeController.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ StaffHomeController.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffHomeController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/StaffHomeController.php:15
+* @see app/Http/Controllers/StaffHomeController.php:15
 * @route '/admin'
 */
 StaffHomeController.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ StaffHomeController.get = (options?: RouteQueryOptions): RouteDefinition<'get'> 
 
 /**
 * @see \App\Http\Controllers\StaffHomeController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/StaffHomeController.php:15
+* @see app/Http/Controllers/StaffHomeController.php:15
 * @route '/admin'
 */
 StaffHomeController.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ StaffHomeController.head = (options?: RouteQueryOptions): RouteDefinition<'head'
 
 /**
 * @see \App\Http\Controllers\StaffHomeController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/StaffHomeController.php:15
+* @see app/Http/Controllers/StaffHomeController.php:15
 * @route '/admin'
 */
 const StaffHomeControllerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const StaffHomeControllerForm = (options?: RouteQueryOptions): RouteFormDefiniti
 
 /**
 * @see \App\Http\Controllers\StaffHomeController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/StaffHomeController.php:15
+* @see app/Http/Controllers/StaffHomeController.php:15
 * @route '/admin'
 */
 StaffHomeControllerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ StaffHomeControllerForm.get = (options?: RouteQueryOptions): RouteFormDefinition
 
 /**
 * @see \App\Http\Controllers\StaffHomeController::__invoke
-* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/StaffHomeController.php:15
+* @see app/Http/Controllers/StaffHomeController.php:15
 * @route '/admin'
 */
 StaffHomeControllerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
