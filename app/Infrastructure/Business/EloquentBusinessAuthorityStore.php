@@ -126,12 +126,12 @@ final class EloquentBusinessAuthorityStore implements BusinessAuthorityStore
      * @param  Closure(Business): TResult  $operation
      * @return TResult
      */
-    public function withReview(int $actorId, string $businessId, bool $requireVerified, Closure $operation): mixed
+    public function withReview(int $actorId, string $businessId, bool $requireVerified, Closure $operation, array $additionalPersonPartyIds = []): mixed
     {
-        return DB::transaction(function () use ($actorId, $businessId, $requireVerified, $operation): mixed {
+        return DB::transaction(function () use ($actorId, $businessId, $requireVerified, $operation, $additionalPersonPartyIds): mixed {
             $business = BusinessProfile::query()->lockForUpdate()->find($businessId);
 
-            return $this->staff->handle($actorId, 'businesses.verify', function () use ($business, $requireVerified, $operation): mixed {
+            return $this->staff->handle($actorId, 'businesses.verify', function () use ($business, $requireVerified, $operation, $additionalPersonPartyIds): mixed {
                 $mandate = $business === null ? null : BusinessMandate::query()->where('business_id', $business->id)->where('version', $business->mandate_version)->first();
                 if ($business === null || $mandate === null) {
                     throw new CommandRejection('BUSINESS_NOT_FOUND', 404);
@@ -147,7 +147,7 @@ final class EloquentBusinessAuthorityStore implements BusinessAuthorityStore
                     throw new CommandRejection('MANDATE_REQUIRED', 403);
                 }
 
-                return $this->verifiedParties->handle($business->entity_kind, $business->entity_party_id, array_column($terms['people'], 'party_id'),
+                return $this->verifiedParties->handle($business->entity_kind, $business->entity_party_id, array_values(array_unique([...array_column($terms['people'], 'party_id'), ...$additionalPersonPartyIds])),
                     fn (): mixed => $operation($record), $business->profile['company_code'] === null ? null : 'RDB:'.$business->profile['company_code']);
             });
         }, 3);

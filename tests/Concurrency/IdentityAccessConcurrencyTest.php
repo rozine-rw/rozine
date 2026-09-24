@@ -27,6 +27,8 @@ use App\Domain\Operations\OperationResult;
 use App\Models\AuditLocation;
 use App\Models\AuditLocationVersion;
 use App\Models\AuditorCertificate;
+use App\Models\AuditorIndependenceReview;
+use App\Models\AuditorIndependenceVersion;
 use App\Models\AuditorProfile;
 use App\Models\AuditorProfileVersion;
 use App\Models\BusinessApplication;
@@ -51,6 +53,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\AuditorFixture;
+use Tests\Support\AuditorIndependenceFixture;
 use Tests\Support\BusinessApplicationFixture;
 use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\ConsentFixture;
@@ -636,4 +639,41 @@ it('serializes a move against re-verification so stale evidence cannot replace t
     $movedWon = $history->getAttribute('command') === 'audit.location.moved';
     expect($location->state['point'] === null)->toBe($movedWon)
         ->and(AuditLocationVersion::query()->count())->toBe(2);
+});
+
+it('records one independence review for concurrent identical Operations retries', function (): void {
+    $fixture = AuditorIndependenceFixture::make();
+    $request = (string) Str::uuid();
+    $this->freezeTime();
+    $record = function () use ($fixture, $request): void {
+        $result = AuditorIndependenceFixture::record($fixture, request: $request);
+        if ($result['http_status'] !== 200) {
+            throw new CommandRejection($result['code'], $result['http_status']);
+        }
+    };
+    expect(runIdentityContenders([$record, $record]))->toBe([0, 0])
+        ->and(AuditorIndependenceReview::query()->count())->toBe(1)
+        ->and(AuditorIndependenceVersion::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'audit.independence.review')->count())->toBe(1);
+});
+
+it('locks crossed Business and Auditor identities without reverse-order Party deadlocks', function (): void {
+    $left = AuditorIndependenceFixture::make('person', 1);
+    $right = AuditorIndependenceFixture::make('person', 1);
+    $left['party'] = $right['authority']['people'][0];
+    $right['party'] = $left['authority']['people'][0];
+    $operations = [];
+    foreach ([$left, $right] as $fixture) {
+        $operations[] = function () use ($fixture): void {
+            DB::transaction(function () use ($fixture): void {
+                $result = AuditorIndependenceFixture::record($fixture);
+                if ($result['http_status'] !== 200) {
+                    throw new CommandRejection($result['code'], $result['http_status']);
+                }
+            });
+        };
+    }
+    expect(runIdentityContenders($operations))->toBe([0, 0])
+        ->and(AuditorIndependenceReview::query()->count())->toBe(2)
+        ->and(AuditorIndependenceVersion::query()->count())->toBe(2);
 });

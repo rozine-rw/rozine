@@ -34,7 +34,8 @@ interface BusinessAuthorityStore
      * @template TResult
      *
      * @param  Closure(Business): TResult  $operation
+     * @param  list<string>  $additionalPersonPartyIds
      * @return TResult
      */
-    public function withReview(int $actorId, string $businessId, bool $requireVerified, Closure $operation): mixed;
+    public function withReview(int $actorId, string $businessId, bool $requireVerified, Closure $operation, array $additionalPersonPartyIds = []): mixed;
 }
