@@ -28,7 +28,7 @@ export type CommandNotice =
 
 type Attempt<R> =
     | { kind: 'resource'; resource: R }
-    | { kind: 'invalid' }
+    | { kind: 'invalid'; errors: Record<string, unknown> }
     | { kind: 'failed'; status: number; code: string | null }
     | { kind: 'unreachable' };
 
@@ -87,11 +87,15 @@ export function useOperationCommand<
         body: Record<string, unknown>,
     ): Promise<Attempt<R>> => {
         let failure: Attempt<R> = { kind: 'unreachable' };
+        let fieldErrors: Record<string, unknown> = {};
 
         http.transform(() => body);
 
         try {
             const resource = (await http.submit(route, {
+                onError: (errors) => {
+                    fieldErrors = errors;
+                },
                 onHttpException: (response) => {
                     failure = {
                         kind: 'failed',
@@ -103,7 +107,7 @@ export function useOperationCommand<
 
             /* A 422 resolves without a body: useHttp has put the field errors in `errors`. */
             return resource === undefined
-                ? { kind: 'invalid' }
+                ? { kind: 'invalid', errors: fieldErrors }
                 : { kind: 'resource', resource };
         } catch {
             return failure;
@@ -134,6 +138,20 @@ export function useOperationCommand<
         refuse(command, resource.code, 200);
     };
 
+    /**
+     * A validation refusal (HTTP 422) is definitive: useHttp has put its field errors on the page
+     * for a correction, which goes as a new command with a new `request_id` — never the same one
+     * again. A 422 with no field errors to show still says the command was refused.
+     */
+    const invalid = (errors: Record<string, unknown>) => {
+        held.current = null;
+        setNotice(
+            Object.keys(errors).length === 0
+                ? { kind: 'refused', code: fallbackCode(422), status: 422 }
+                : null,
+        );
+    };
+
     const lookUp = async (command: C) => {
         setNotice({ kind: 'checking' });
 
@@ -150,6 +168,13 @@ export function useOperationCommand<
 
         if (attempt.kind === 'resource') {
             conclude(command, attempt.resource);
+
+            return;
+        }
+
+        /* The lookup replayed a recorded 422: the command was refused, not lost. */
+        if (attempt.kind === 'invalid') {
+            invalid(attempt.errors);
 
             return;
         }
@@ -200,7 +225,7 @@ export function useOperationCommand<
         }
 
         if (attempt.kind === 'invalid') {
-            held.current = null;
+            invalid(attempt.errors);
 
             return;
         }

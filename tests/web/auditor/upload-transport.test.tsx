@@ -85,3 +85,143 @@ describe('Operation commands over the real transport', () => {
         );
     });
 });
+
+describe('Operation lookups over the real transport', () => {
+    type Reply = () => Promise<{
+        status: number;
+        data: string;
+        headers: Record<string, string>;
+    }>;
+
+    const replies: Reply[] = [];
+    const offline: Reply = () => Promise.reject(new Error('Network down'));
+    const replay =
+        (status: number, body: unknown): Reply =>
+        () =>
+            Promise.resolve({
+                status,
+                data: JSON.stringify(body),
+                headers: {},
+            });
+
+    const lostThen = (...rest: Reply[]) => {
+        replies.push(offline, ...rest);
+        http.setClient({
+            request: (config) => {
+                sent.push(config);
+
+                return (replies.shift() ?? offline)();
+            },
+        });
+    };
+
+    const hook = () =>
+        renderHook(() =>
+            useOperationCommand<OperationCommand, typeof resource>({
+                actions: {
+                    'application.evaluate': {
+                        url: '/evaluate',
+                        method: 'post',
+                    },
+                },
+                lookup: { url: '/operations/{request_id}', method: 'get' },
+                refresh: () => Promise.resolve(),
+                onCompleted: vi.fn(),
+                onRefused: vi.fn(),
+            }),
+        );
+
+    const evaluate = (request_id: string): OperationCommand => ({
+        name: 'application.evaluate',
+        payload: { target: '99000000', request_id },
+    });
+
+    afterEach(() => {
+        replies.length = 0;
+    });
+
+    it('settles a lost command whose lookup replays a recorded 422, keeping its field errors for a new request', async () => {
+        lostThen(
+            replay(422, {
+                code: 'APPLICATION_INPUT_INVALID',
+                errors: { target: ['Enter a whole RWF amount.'] },
+            }),
+        );
+        const { result } = hook();
+
+        act(() => {
+            result.current.send(evaluate('a1'));
+        });
+
+        await waitFor(() =>
+            expect(result.current.errors).toEqual({
+                target: 'Enter a whole RWF amount.',
+            }),
+        );
+        expect(result.current.notice).toBeNull();
+        expect(result.current.unresolved).toBe(false);
+
+        /* The held command is released: a correction goes under a new request ID. */
+        let accepted = false;
+
+        act(() => {
+            accepted = result.current.send(evaluate('a2'));
+        });
+        expect(accepted).toBe(true);
+        expect(sent.at(-1)?.url).toBe('/evaluate');
+    });
+
+    it('reports a replayed 422 that carries no field errors as refused', async () => {
+        lostThen(replay(422, { code: 'APPLICATION_INPUT_INVALID' }));
+        const { result } = hook();
+
+        act(() => {
+            result.current.send(evaluate('b1'));
+        });
+
+        await waitFor(() =>
+            expect(result.current.notice).toEqual({
+                kind: 'refused',
+                code: 'REQUEST_FAILED',
+                status: 422,
+            }),
+        );
+        expect(result.current.unresolved).toBe(false);
+    });
+
+    it('keeps a command unknown when the lookup itself cannot be reached', async () => {
+        lostThen(offline);
+        const { result } = hook();
+
+        act(() => {
+            result.current.send(evaluate('c1'));
+        });
+
+        await waitFor(() =>
+            expect(result.current.notice).toEqual({ kind: 'unconfirmed' }),
+        );
+        expect(result.current.unresolved).toBe(true);
+    });
+
+    it('keeps a first 422 as field errors on the page', async () => {
+        replies.push(replay(422, { errors: { target: ['Too large'] } }));
+        http.setClient({
+            request: (config) => {
+                sent.push(config);
+
+                return (replies.shift() ?? offline)();
+            },
+        });
+        const { result } = hook();
+
+        act(() => {
+            result.current.send(evaluate('d1'));
+        });
+
+        await waitFor(() =>
+            expect(result.current.errors).toEqual({ target: 'Too large' }),
+        );
+        expect(result.current.notice).toBeNull();
+        expect(sent).toHaveLength(1);
+    });
+});
