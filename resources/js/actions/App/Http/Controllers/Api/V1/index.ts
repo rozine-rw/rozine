@@ -2,6 +2,7 @@ import IdentityController from './IdentityController'
 import StaffAccessController from './StaffAccessController'
 import IdentityManagementController from './IdentityManagementController'
 import RoleBookmarkController from './RoleBookmarkController'
+import AuditorJobsController from './AuditorJobsController'
 import AuditorProfileController from './AuditorProfileController'
 
 const V1 = {
@@ -9,6 +10,7 @@ const V1 = {
     StaffAccessController: Object.assign(StaffAccessController, StaffAccessController),
     IdentityManagementController: Object.assign(IdentityManagementController, IdentityManagementController),
     RoleBookmarkController: Object.assign(RoleBookmarkController, RoleBookmarkController),
+    AuditorJobsController: Object.assign(AuditorJobsController, AuditorJobsController),
     AuditorProfileController: Object.assign(AuditorProfileController, AuditorProfileController),
 }
 
