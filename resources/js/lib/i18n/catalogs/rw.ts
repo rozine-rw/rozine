@@ -1438,7 +1438,7 @@ const rw: Catalog = {
     'auditor.nav.jobs': 'Imirimo',
     'auditor.nav.portfolio': 'Ibyo ushinzwe',
     'auditor.nav.profile': 'Umwirondoro',
-    'auditor.nav.jobs_badge': 'Igenzura ryihuse {count} rifunguye',
+    'auditor.nav.jobs_badge': 'Imirimo {count} ifunguye',
     'auditor.clock.label': 'Igihe gisigaye kuri uyu murimo',
     'auditor.clock.time_left': 'Igihe gisigaye',
     'auditor.time.minutes_ago': 'hashize iminota {count}',

@@ -19,6 +19,7 @@ import conflictFixture from '../../../resources/fixtures/ui/auditor-jobs-conflic
 import emptyFixture from '../../../resources/fixtures/ui/auditor-jobs-empty.json';
 import liveMinimalFixture from '../../../resources/fixtures/ui/auditor-jobs-live-minimal.json';
 import overdueFixture from '../../../resources/fixtures/ui/auditor-jobs-overdue.json';
+import pagedLastFixture from '../../../resources/fixtures/ui/auditor-jobs-paged-last.json';
 import pagedFixture from '../../../resources/fixtures/ui/auditor-jobs-paged.json';
 import scopedFixture from '../../../resources/fixtures/ui/auditor-jobs-scoped.json';
 import jobsFixture from '../../../resources/fixtures/ui/auditor-jobs.json';
@@ -691,12 +692,12 @@ describe('Auditor Jobs on the live S-C projection', () => {
         render(<AuditorJobs {...props(liveMinimalFixture)} />);
 
         const map = screen.getByRole('img', {
-            name: 'Map of your 30 km dispatch radius with 2 open jobs at approximate positions',
+            name: 'Map of your 30 km dispatch radius with 2 jobs on this page at approximate positions',
         });
         const pins = within(map).getAllByTestId('radius-pin');
 
         expect(
-            within(map).getByText('30km radius · 2 open'),
+            within(map).getByText('30km radius · 2 on this page'),
         ).toBeInTheDocument();
         expect(pins).toHaveLength(1);
         expect(pins[0]).toHaveStyle({
@@ -827,9 +828,7 @@ describe('Auditor Jobs, paged', () => {
         ).toBeInTheDocument();
         expect(screen.queryByText(/2 open/u)).not.toBeInTheDocument();
         /* A page count is never a total: the Jobs tab carries no badge. */
-        expect(
-            screen.queryByLabelText(/open Flash Audits/u),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByLabelText(/open offers/u)).not.toBeInTheDocument();
         expect(screen.getByText('Assigned to you')).toBeInTheDocument();
     });
 
@@ -866,15 +865,38 @@ describe('Auditor Jobs, paged', () => {
         ).toBeInTheDocument();
     });
 
-    it('offers no Show more on the last page, and counts its offers as the total', () => {
-        render(<AuditorJobs {...props(liveMinimalFixture)} />);
+    it('offers no Show more on the last page, yet still counts only that page', () => {
+        render(<AuditorJobs {...props(pagedLastFixture)} />);
 
         expect(
             screen.queryByRole('link', { name: 'Show more' }),
         ).not.toBeInTheDocument();
+        /* The last page after `?before=` holds a subset: no badge, and the map says so. */
+        expect(screen.queryByLabelText(/open offers/u)).not.toBeInTheDocument();
         expect(
-            screen.getAllByLabelText('2 open Flash Audits').length,
+            screen.getByText('30km radius · 2 on this page'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('img', {
+                name: 'Map of your 30 km dispatch radius with 2 jobs on this page at approximate positions',
+            }),
+        ).toBeInTheDocument();
+    });
+
+    it('counts a synthetic preview without paging as the complete list, monthly offers included', () => {
+        const base = props(liveMinimalFixture);
+
+        delete base.pagination;
+        render(<AuditorJobs {...base} />);
+
+        expect(
+            screen.getAllByLabelText('2 open offers').length,
         ).toBeGreaterThan(0);
+        expect(screen.getByText('30km radius · 2 open')).toBeInTheDocument();
+        expect(screen.getByText('Monthly visit')).toBeInTheDocument();
+        expect(
+            screen.queryByLabelText(/Flash Audits/u),
+        ).not.toBeInTheDocument();
     });
 });
 

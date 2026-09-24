@@ -357,6 +357,16 @@ export function useAuditorCommands(): AuditorCommandCenter {
     return center;
 }
 
+/**
+ * Whether the page's commands have all settled: none in flight and none held for its lookup, in
+ * either lane. A page without commands is always settled.
+ */
+export function useCommandsSettled(): boolean {
+    const center = useContext(CommandContext);
+
+    return center === null || (center.idle && center.conflict.idle);
+}
+
 /** Marks a sheet as open while it is mounted, when the page has commands. */
 export function useSheetPresence(): void {
     const center = useContext(CommandContext);

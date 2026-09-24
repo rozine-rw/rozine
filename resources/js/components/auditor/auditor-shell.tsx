@@ -1,7 +1,9 @@
 import { Head } from '@inertiajs/react';
 import type { ReactNode } from 'react';
+import { useCommandsSettled } from '@/components/auditor/commands';
 import { AuditorKeyframes } from '@/components/auditor/keyframes';
 import { AppFrame } from '@/components/rozine/app-frame';
+import { useAccessRefresh } from '@/hooks/use-access-refresh';
 import { useTranslation } from '@/hooks/use-translation';
 import type { AuditorAppLinks } from '@/types/auditor';
 
@@ -128,6 +130,12 @@ type AuditorShellProps = {
  * (MVP-AUDITOR-SCR-07) and conflict register (AC-08); its earnings, origination and managed-deal
  * panels are Phase 2 and are left out rather than shipped as dead ends. A tab the server sends
  * without a route is left out too.
+ *
+ * Every Auditor page reconciles its access here: on focus, reconnect or a return to the tab it
+ * reloads its full current facts, so authority withdrawn meanwhile — by another tab switching the
+ * active role or by an operator — lands on the page the server now renders. The reload waits while
+ * a command is in flight or held for its lookup, and runs once it settles. A fixture preview
+ * reloads its own fixture, which changes nothing.
  */
 export function AuditorShell({
     title,
@@ -138,6 +146,8 @@ export function AuditorShell({
     children,
 }: AuditorShellProps) {
     const { t } = useTranslation();
+
+    useAccessRefresh(null, true, useCommandsSettled());
     const nav = (['home', 'jobs', 'portfolio', 'profile'] as const).flatMap(
         (key) => {
             const href = links[key];

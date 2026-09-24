@@ -24,11 +24,12 @@ type JobsBodyProps = AuditorJobsProps & {
 };
 
 /**
- * The Jobs tab badge: the open offers, but only when this page holds them all. A page with more
- * behind it counts only itself, so no badge claims a total.
+ * The Jobs tab badge: the open offers, but only on a synthetic preview, which holds the complete
+ * list. A live, paged page counts only its own records, even on its last page — the server sends
+ * no total — so no badge claims one.
  */
 export const openOffers = (jobs: AuditorJobsProps): number =>
-    jobs.pagination?.next ? 0 : jobs.eligible.length;
+    jobs.pagination === undefined ? jobs.eligible.length : 0;
 
 /**
  * Jobs (MVP-AUDITOR-SCR-01, design L205–323): the Flash Audits dispatch offers this partner, with
@@ -110,7 +111,7 @@ export function JobsBody({
                     <RadiusMap
                         radiusKm={props.radius_km}
                         jobs={props.eligible}
-                        paged={next !== null}
+                        paged={props.pagination !== undefined}
                     />
                     {!assignedBeside && props.assigned.length > 0 && (
                         <section>
