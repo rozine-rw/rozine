@@ -183,9 +183,11 @@ function AuditSheet(props: AuditProcedureProps) {
     const commands = useJobCommands({
         assignment: props.assignment,
         business: audit.business,
-        allowed: center.allowed,
         conflict: actions.conflict,
         decline: null,
+        initialSheet: props.preview_conflict_open
+            ? { sheet: 'conflict', reason: null }
+            : null,
     });
     const seal = useSealFlow({
         stage: stage.step === 'seal' ? stage : NO_SEAL,

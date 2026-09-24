@@ -352,11 +352,13 @@ describe('Seal — authenticator step-up', () => {
         await user.click(
             screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
         );
+        /* A 422 that does not name the code is not a wrong code. */
         await waitFor(() =>
             expect(screen.getByRole('alert')).toHaveTextContent(
-                "That code didn't match. Enter the current code from your authenticator.",
+                "This couldn't be done. Refresh the page and try again.",
             ),
         );
+        expect(screen.queryByText(/didn't match/u)).not.toBeInTheDocument();
         expect(inertia.calls).toHaveLength(2);
     });
 
@@ -442,11 +444,23 @@ describe('Seal — authenticator step-up', () => {
             "You can't do this on this assignment any more. Your access changed.",
         ],
         [
+            fails(403, { code: 'IDENTITY_CONTEXT_CHANGED' }),
+            "Your access changed, so this wasn't done.",
+        ],
+        [
+            fails(409, { code: 'STEP_UP_INVALID' }),
+            "That confirmation didn't go through. Enter a new code from your authenticator.",
+        ],
+        [
+            fails(409, { code: 'STEP_UP_EXPIRED' }),
+            'That confirmation expired before the seal. Enter a new code from your authenticator.',
+        ],
+        [
             offline(),
             "Rozine couldn't be reached to check your code. Nothing was sealed — enter a new code to try again.",
         ],
     ])(
-        'explains a step-up that could not finish: %#',
+        'explains a step-up that could not finish, never as a wrong code: %#',
         async (responder, text) => {
             inertia.queue.push(responder);
             const { user } = await openCode();
@@ -457,9 +471,55 @@ describe('Seal — authenticator step-up', () => {
             );
 
             expect(await screen.findByRole('alert')).toHaveTextContent(text);
+            expect(screen.queryByText(/didn't match/u)).not.toBeInTheDocument();
             expect(inertia.reloads).toHaveLength(0);
+            expect(codeField()).toHaveValue('');
+            expect(codeField()).toBeEnabled();
         },
     );
+
+    it('closes the sheet on a seal the server denies, and says so on the page', async () => {
+        inertia.queue.push(
+            answers(PROOF),
+            fails(403, { code: 'ACTION_FORBIDDEN' }),
+        );
+        const { user } = await openCode();
+
+        await user.paste('123456');
+        await user.click(
+            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+        );
+
+        expect(
+            await screen.findByText(
+                "You can't do this on this assignment any more. Your access changed.",
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('dialog', { name: 'Huye Motors' }),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText(/didn't match/u)).not.toBeInTheDocument();
+        expect(inertia.reloads).toHaveLength(0);
+    });
+
+    it('asks for a new code when the seal finds its proof invalid', async () => {
+        inertia.queue.push(
+            answers(PROOF),
+            fails(409, { code: 'STEP_UP_INVALID' }),
+        );
+        const { user } = await openCode();
+
+        await user.paste('123456');
+        await user.click(
+            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+        );
+
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            "That confirmation didn't go through. Enter a new code from your authenticator.",
+        );
+        expect(screen.queryByText(/didn't match/u)).not.toBeInTheDocument();
+        expect(inertia.reloads).toHaveLength(0);
+    });
 
     it('waits out a throttle the server sends with Retry-After', async () => {
         inertia.queue.push(

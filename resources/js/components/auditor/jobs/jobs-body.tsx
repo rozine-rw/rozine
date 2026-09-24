@@ -7,7 +7,7 @@ import { ColumnPad, TabColumns } from '@/components/auditor/tab-columns';
 import type { ColumnOverlay } from '@/components/auditor/tab-columns';
 import { EmptyState, Eyebrow, ScreenTitle } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
-import type { AuditorAllowedAction, AuditorJobsProps } from '@/types/auditor';
+import type { AuditorJobsProps } from '@/types/auditor';
 
 type JobsBodyProps = AuditorJobsProps & {
     overlay?: ColumnOverlay | null;
@@ -28,8 +28,6 @@ export function JobsBody({
     ...props
 }: JobsBodyProps) {
     const { t } = useTranslation();
-    const allowed = (action: AuditorAllowedAction) =>
-        props.allowed_actions.includes(action);
 
     return (
         <TabColumns
@@ -73,7 +71,6 @@ export function JobsBody({
                                     job={job}
                                     serverTime={props.server_time}
                                     flashHours={props.flash_hours}
-                                    allowed={allowed}
                                     declineOptions={props.decline_options}
                                 />
                             ))}

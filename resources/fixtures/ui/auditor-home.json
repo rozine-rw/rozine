@@ -50,7 +50,8 @@
                 "link": {
                     "url": "/preview/auditor-audit-review",
                     "method": "get"
-                }
+                },
+                "allowed_actions": ["conflict.declare"]
             },
             {
                 "id": "fa_greenleaf",
@@ -68,7 +69,8 @@
                 "link": {
                     "url": "/preview/auditor-audit-check-in",
                     "method": "get"
-                }
+                },
+                "allowed_actions": ["conflict.declare"]
             }
         ],
         "standing": {

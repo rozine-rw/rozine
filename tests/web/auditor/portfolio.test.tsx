@@ -5,6 +5,7 @@ import type { AuditorPortfolioProps } from '@/types/auditor';
 import conflictFixture from '../../../resources/fixtures/ui/auditor-portfolio-conflict.json';
 import emptyFixture from '../../../resources/fixtures/ui/auditor-portfolio-empty.json';
 import lateFixture from '../../../resources/fixtures/ui/auditor-portfolio-late.json';
+import scopedFixture from '../../../resources/fixtures/ui/auditor-portfolio-scoped.json';
 import portfolioFixture from '../../../resources/fixtures/ui/auditor-portfolio.json';
 import { renderWithUser } from '../helpers/render-with-user';
 import { inertia } from './inertia';
@@ -155,14 +156,41 @@ describe('Auditor Portfolio', () => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
-    it('lists assigned files without a way to declare when the server does not allow it', () => {
-        render(<AuditorPortfolio {...props()} allowed_actions={[]} />);
+    it('lists assigned files without a way to declare when no file allows it', () => {
+        const base = props();
+
+        render(
+            <AuditorPortfolio
+                {...base}
+                conflicts={{
+                    ...base.conflicts,
+                    files: base.conflicts.files.map((file) => ({
+                        ...file,
+                        allowed_actions: [],
+                    })),
+                }}
+            />,
+        );
 
         expect(
             screen.queryByRole('button', { name: 'GreenLeaf Agro' }),
         ).not.toBeInTheDocument();
         expect(
             screen.getByText('Rubavu Foods · RNP-2026-0097'),
+        ).toBeInTheDocument();
+    });
+
+    it('offers a declaration only on the files that allow one', () => {
+        render(<AuditorPortfolio {...props(scopedFixture)} />);
+
+        expect(
+            screen.getByText('Declare on any of your 2 assigned files'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'GreenLeaf Agro' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Huye Motors' }),
         ).toBeInTheDocument();
     });
 

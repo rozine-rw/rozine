@@ -44,7 +44,7 @@ import sealed from '../../../resources/fixtures/ui/auditor-audit-sealed.json';
 import statementsUnavailable from '../../../resources/fixtures/ui/auditor-audit-statements-unavailable.json';
 import statements from '../../../resources/fixtures/ui/auditor-audit-statements.json';
 import { renderWithUser } from '../helpers/render-with-user';
-import { answers, inertia, invalid, operation } from './inertia';
+import { answers, fails, inertia, invalid, operation } from './inertia';
 
 vi.mock('@inertiajs/react', () => import('./inertia'));
 
@@ -498,13 +498,35 @@ describe('Audit procedure — ledger reconciliation', () => {
             }),
         );
         expect(click).toHaveBeenCalled();
+
+        const saved = operation({
+            code: 'AUDIT_STEP_SAVED',
+            revision: 8,
+            data: {
+                next: { url: '/preview/auditor-audit-ledger', method: 'get' },
+            },
+        });
+
+        inertia.queue.push(answers(saved), answers(saved));
         await user.upload(input, file);
 
-        expect(inertia.posts[0]).toMatchObject({
-            url: '/preview/auditor-audit-ledger',
-            data: { document: file, replaces: 'ld_2', ...COMMAND },
-            options: { forceFormData: true },
+        expect(inertia.calls[0]).toEqual({
+            url: '/preview/auditor-jobs',
+            method: 'post',
+            body: {
+                step: 'ledger',
+                document: file,
+                replaces: 'ld_2',
+                ...COMMAND,
+            },
         });
+        /* The receipt verifies nothing on its own: the page goes where the server says. */
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([
+                { url: '/preview/auditor-audit-ledger' },
+            ]),
+        );
+        expect(inertia.posts).toHaveLength(0);
 
         await user.click(
             within(dialog).getByRole('button', {
@@ -512,10 +534,40 @@ describe('Audit procedure — ledger reconciliation', () => {
             }),
         );
         await user.upload(input, file);
-        expect(inertia.posts[1].data).toMatchObject({ replaces: null });
+        expect(inertia.calls[1].body).toMatchObject({ replaces: null });
 
         fireEvent.change(input, { target: { files: [] } });
-        expect(inertia.posts).toHaveLength(2);
+        expect(inertia.calls).toHaveLength(2);
+    });
+
+    it('looks up a lost upload and resends the same upload, with the same request, only if unrecorded', async () => {
+        inertia.queue.push(
+            fails(503),
+            fails(404, { code: 'OPERATION_NOT_FOUND' }),
+        );
+        const { user } = renderWithUser(<AuditorAudit {...props(ledger)} />);
+        const input = screen.getByLabelText('Ledger document file');
+        const file = new File(['%PDF'], 'stock-book.pdf', {
+            type: 'application/pdf',
+        });
+
+        await user.upload(input, file);
+
+        expect(
+            await screen.findByRole('button', { name: 'Try again' }),
+        ).toBeInTheDocument();
+        expect(inertia.reloads).toEqual([{ onFinish: expect.any(Function) }]);
+        expect(
+            screen.getByRole('button', { name: /Add another ledger document/ }),
+        ).toBeDisabled();
+
+        await user.click(screen.getByRole('button', { name: 'Try again' }));
+
+        expect(inertia.calls[2]).toEqual(inertia.calls[0]);
+        expect(inertia.calls[2].body).toMatchObject({ document: file });
+        expect(inertia.calls[1].url).toMatch(
+            /^\/preview\/auditor-operation-[0-9a-f-]{36}$/u,
+        );
     });
 
     it('records whether the ledgers reconcile and commits the step', async () => {
@@ -908,9 +960,16 @@ describe('Audit procedure — after the seal', () => {
         });
 
         await user.click(amend);
-        expect(inertia.calls[0]).toMatchObject({
+        /* Exactly the amendment's target and revision, plus the common fields. */
+        expect(inertia.calls[0]).toEqual({
             url: '/preview/auditor-audit-amendment',
-            body: { audit_id: 'mr_greenleaf', expected_revision: 3 },
+            method: 'post',
+            body: {
+                audit_id: 'mr_greenleaf',
+                expected_revision: 3,
+                identity_context_revision: 3,
+                request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u),
+            },
         });
         await waitFor(() =>
             expect(inertia.visits).toEqual([
@@ -1055,12 +1114,8 @@ describe('Audit procedure — a blocking conflict', () => {
             kind: 'financial_interest',
         });
 
-        const result = await screen.findByRole('alertdialog', {
-            name: 'Interest declared',
-        });
-
-        expect(result).toHaveAccessibleDescription(
-            'Your conflict has been recorded. Work on this assignment is stopped.',
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([{ url: '/preview/auditor-jobs' }]),
         );
         expect(
             within(sheet()).queryByText('Checked in on site · 18:02'),

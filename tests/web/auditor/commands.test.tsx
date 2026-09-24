@@ -11,7 +11,7 @@ import { BottomSheet } from '@/components/auditor/sheets/bottom-sheet';
 import AuditorAudit from '@/pages/auditor/audit';
 import AuditorJobs from '@/pages/auditor/jobs';
 import type { AuditProcedureProps, AuditorJobsProps } from '@/types/auditor';
-import review from '../../../resources/fixtures/ui/auditor-audit-review.json';
+import photos from '../../../resources/fixtures/ui/auditor-audit-photos.json';
 import unknown from '../../../resources/fixtures/ui/auditor-audit-seal-unknown.json';
 import jobsFixture from '../../../resources/fixtures/ui/auditor-jobs.json';
 import { renderWithUser } from '../helpers/render-with-user';
@@ -161,12 +161,17 @@ describe('Auditor commands', () => {
     it('sends nothing the page itself does not allow', async () => {
         const { user } = renderWithUser(
             <AuditorAudit
-                {...(structuredClone(review.props) as AuditProcedureProps)}
+                {...(structuredClone(photos.props) as AuditProcedureProps)}
+                allowed_actions={['conflict.declare']}
             />,
         );
 
-        /* The Jobs backdrop allows accepting, but the procedure page does not. */
-        await user.click(accept());
+        expect(
+            screen.queryByRole('button', { name: 'Continue' }),
+        ).not.toBeInTheDocument();
+
+        /* Enter in the step's one field still submits its form; the save is not allowed. */
+        await user.type(screen.getByLabelText('Extra 1'), '{Enter}');
 
         expect(inertia.calls).toEqual([]);
     });

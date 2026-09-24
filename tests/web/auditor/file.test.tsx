@@ -158,13 +158,11 @@ describe('Auditor business file', () => {
             screen.getByRole('button', { name: 'Declare interest' }),
         );
 
-        const result = await screen.findByRole('alertdialog', {
-            name: 'Interest declared',
-        });
-
-        expect(result).toHaveAccessibleDescription(
-            'Your conflict has been recorded. Work on this assignment is stopped while Audit Operations arranges reassignment.',
+        /* The receipt's destination is followed at once; no result card waits in between. */
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([{ url: '/preview/auditor-jobs' }]),
         );
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
 
         const sheet = sheetFor();
 
@@ -182,11 +180,6 @@ describe('Auditor business file', () => {
         expect(
             within(sheet).getByRole('link', { name: 'Back to jobs' }),
         ).toHaveAttribute('href', '/preview/auditor-jobs');
-
-        await user.click(within(result).getByRole('button', { name: 'Done' }));
-        await waitFor(() =>
-            expect(inertia.visits).toEqual([{ url: '/preview/auditor-jobs' }]),
-        );
     });
 
     it('shows only the receipt for a file a blocking conflict has withdrawn', () => {

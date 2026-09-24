@@ -102,7 +102,15 @@ export type CommandRequest = {
     route: RouteAction;
     /** The command's fields, with its target's `expected_revision`. */
     payload: Record<string, unknown>;
+    /**
+     * The target record's own `allowed_actions`, where a list page scopes each record; the
+     * page's list otherwise.
+     */
+    scope?: AuditorAllowedAction[];
 };
+
+/** Which command lane a notice belongs to. */
+export type CommandLane = 'ordinary' | 'conflict';
 
 /**
  * The Auditor's JSON commands (auditor-filing-v1 points 1 and 7), through the shared operation
@@ -111,15 +119,106 @@ export type CommandRequest = {
  * looked up — never blindly resent — when its answer is lost.
  *
  * A completed command either moves to the server's `next` page or, where the partner should hear
- * what happened, shows the result card first. A blocking conflict withdraws the file at once: the
- * page swaps it for the partner's receipt before anything else happens.
+ * what happened, shows the result card first.
+ *
+ * A conflict declaration runs in its own lane (#96 point 6), with its own `request_id`, lookup and
+ * notice: it can be declared while an ordinary command is in flight or its outcome unknown, and
+ * that command stays held as it was. A recorded blocking conflict withdraws the private content at
+ * once and follows the receipt's destination; nothing the earlier command answers later moves the
+ * page again.
  */
 export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
     const initial = initialFrom(preview);
     const callbacks = useRef(new Map<string, CommandCallbacks>());
+    const withdrawn = useRef(false);
     const [result, setResult] = useState<Result | null>(null);
     const [blocked, setBlocked] = useState<ConflictReceipt | null>(null);
     const [sheets, setSheets] = useState(0);
+
+    const onCompleted = (
+        sent: AuditorCommand,
+        resource: AuditorOperationResource,
+    ) => {
+        const own = callbacks.current.get(sent.payload.request_id);
+
+        callbacks.current.delete(sent.payload.request_id);
+        own?.onCompleted?.(resource);
+
+        /* After a blocking conflict, an earlier command's late answer moves nothing. */
+        if (withdrawn.current) {
+            return;
+        }
+
+        const { data } = resource;
+
+        if (data === null) {
+            router.reload();
+
+            return;
+        }
+
+        const show = (outcome: AuditorOutcome) =>
+            setResult({ outcome, next: data.next });
+
+        switch (resource.code) {
+            case 'ASSIGNMENT_DECLINED':
+                show({ kind: 'job_declined', business: sent.business });
+
+                return;
+            case 'CONFLICT_RECORDED': {
+                const receipt = data.conflict as ConflictReceipt;
+
+                if (receipt.blocking) {
+                    withdrawn.current = true;
+                    setBlocked(receipt);
+                    router.visit(data.next);
+
+                    return;
+                }
+
+                show({
+                    kind: 'conflict_declared',
+                    business: sent.business,
+                    resolution: data.outcome?.resolution ?? receipt.status,
+                    blocking: receipt.blocking,
+                });
+
+                return;
+            }
+            case 'AUDIT_CHANGES_REQUESTED':
+                show({
+                    kind: 'changes_requested',
+                    business: sent.business,
+                });
+
+                return;
+            case 'AUDIT_REJECTED':
+                show({ kind: 'report_rejected', business: sent.business });
+
+                return;
+            case 'AVAILABILITY_UPDATED':
+                /* The switch belongs to the page it is on: redraw it there, in place. */
+                router.reload();
+
+                return;
+            default:
+                router.visit(data.next);
+        }
+    };
+
+    const onRefused = (sent: AuditorCommand, code: string, status: number) => {
+        const own = callbacks.current.get(sent.payload.request_id);
+
+        callbacks.current.delete(sent.payload.request_id);
+
+        if (own?.onRefused?.(code, status) === true) {
+            return;
+        }
+
+        if (refusalNeedsFreshFacts(code, status)) {
+            router.reload();
+        }
+    };
 
     const command = useOperationCommand<
         AuditorCommand,
@@ -129,77 +228,18 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
         lookup,
         initial,
         refresh: reloadPreservingState,
-        onCompleted: (sent, resource) => {
-            const own = callbacks.current.get(sent.payload.request_id);
-
-            callbacks.current.delete(sent.payload.request_id);
-            own?.onCompleted?.(resource);
-
-            const { data } = resource;
-
-            if (data === null) {
-                router.reload();
-
-                return;
-            }
-
-            const show = (outcome: AuditorOutcome) =>
-                setResult({ outcome, next: data.next });
-
-            switch (resource.code) {
-                case 'ASSIGNMENT_DECLINED':
-                    show({ kind: 'job_declined', business: sent.business });
-
-                    return;
-                case 'CONFLICT_RECORDED': {
-                    const receipt = data.conflict as ConflictReceipt;
-
-                    if (receipt.blocking) {
-                        setBlocked(receipt);
-                    }
-
-                    show({
-                        kind: 'conflict_declared',
-                        business: sent.business,
-                        resolution: data.outcome?.resolution ?? receipt.status,
-                        blocking: receipt.blocking,
-                    });
-
-                    return;
-                }
-                case 'AUDIT_CHANGES_REQUESTED':
-                    show({
-                        kind: 'changes_requested',
-                        business: sent.business,
-                    });
-
-                    return;
-                case 'AUDIT_REJECTED':
-                    show({ kind: 'report_rejected', business: sent.business });
-
-                    return;
-                case 'AVAILABILITY_UPDATED':
-                    /* The switch belongs to the page it is on: redraw it there, in place. */
-                    router.reload();
-
-                    return;
-                default:
-                    router.visit(data.next);
-            }
-        },
-        onRefused: (sent, code, status) => {
-            const own = callbacks.current.get(sent.payload.request_id);
-
-            callbacks.current.delete(sent.payload.request_id);
-
-            if (own?.onRefused?.(code, status) === true) {
-                return;
-            }
-
-            if (refusalNeedsFreshFacts(code, status)) {
-                router.reload();
-            }
-        },
+        onCompleted,
+        onRefused,
+    });
+    const conflict = useOperationCommand<
+        AuditorCommand,
+        AuditorOperationResource
+    >({
+        actions: (sent) => sent.route,
+        lookup,
+        refresh: reloadPreservingState,
+        onCompleted,
+        onRefused,
     });
 
     const allowed = (action: AuditorAllowedAction): boolean =>
@@ -210,18 +250,19 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
      * `request_id`; the target's `expected_revision` comes with the payload.
      */
     const send = (
-        { name, business, route, payload }: CommandRequest,
+        { name, business, route, payload, scope }: CommandRequest,
         own: CommandCallbacks = {},
     ): boolean => {
-        if (!allowed(name)) {
+        if (!(scope ?? page.allowed_actions).includes(name)) {
             return false;
         }
 
         const request_id = crypto.randomUUID();
+        const lane = name === 'conflict.declare' ? conflict : command;
 
         callbacks.current.set(request_id, own);
 
-        return command.send({
+        return lane.send({
             name,
             business,
             route,
@@ -247,6 +288,15 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
         send,
         checkAgain: command.checkAgain,
         retry: command.retry,
+        /** The conflict lane: its own state, so a declaration never waits on another command. */
+        conflict: {
+            busy: conflict.busy,
+            notice: conflict.notice,
+            idle: !conflict.busy && !conflict.unresolved,
+            errors: conflict.errors,
+            checkAgain: conflict.checkAgain,
+            retry: conflict.retry,
+        },
         result,
         /** Dismissing the result card moves on to the page the server named. */
         finish: () => {
@@ -326,26 +376,52 @@ export const refusalNeedsFreshFacts = (code: string, status: number): boolean =>
  */
 export function AuditorCommandNotice({
     placement,
+    lane = 'ordinary',
     className,
 }: {
     placement: 'page' | 'sheet';
+    /** A sheet shows its own lane; the page shows both. */
+    lane?: CommandLane;
+    className?: string;
+}) {
+    const center = useAuditorCommands();
+
+    if (placement === 'page') {
+        return center.sheetOpen ? null : (
+            <>
+                <LaneNotice lane="ordinary" className={className} />
+                <LaneNotice lane="conflict" className={className} />
+            </>
+        );
+    }
+
+    return <LaneNotice lane={lane} className={className} />;
+}
+
+/** One lane's notice, if it has one. */
+function LaneNotice({
+    lane,
+    className,
+}: {
+    lane: CommandLane;
     className?: string;
 }) {
     const { t } = useTranslation();
     const refused = useRefusalText();
     const center = useAuditorCommands();
-    const { notice } = center;
+    const state = lane === 'conflict' ? center.conflict : center;
+    const { notice } = state;
 
-    if (notice === null || (placement === 'page' && center.sheetOpen)) {
+    if (notice === null) {
         return null;
     }
 
     return (
         <OperationNotice
             notice={notice}
-            busy={center.busy}
-            onCheckAgain={center.checkAgain}
-            onRetry={center.retry}
+            busy={state.busy}
+            onCheckAgain={state.checkAgain}
+            onRetry={state.retry}
             className={className}
             copy={{
                 refused,

@@ -5,18 +5,12 @@ import { useJobCommands } from '@/components/auditor/job-commands';
 import { compactRwf } from '@/components/auditor/money';
 import { SectorTile, StatTile } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
-import type {
-    AuditorAllowedAction,
-    DeclineReason,
-    EligibleJob,
-    ServerOption,
-} from '@/types/auditor';
+import type { DeclineReason, EligibleJob, ServerOption } from '@/types/auditor';
 
 type EligibleCardProps = {
     job: EligibleJob;
     serverTime: string;
     flashHours: number;
-    allowed: (action: AuditorAllowedAction) => boolean;
     declineOptions: ServerOption<DeclineReason>[];
 };
 
@@ -24,13 +18,12 @@ type EligibleCardProps = {
  * One open Flash Audit (design L218–239). The figures are the engine's; accepting asks the server,
  * which decides whether this partner still gets the file. Decline and conflict sit under the
  * accept button: the design has neither, and the brief requires both (SCR-01-ST-03, AC-08). Each
- * command shows only when the page's `allowed_actions` lists it.
+ * command shows only when this offer's own `allowed_actions` lists it (#96 point 3).
  */
 export function EligibleCard({
     job,
     serverTime,
     flashHours,
-    allowed,
     declineOptions,
 }: EligibleCardProps) {
     const { t } = useTranslation();
@@ -39,7 +32,7 @@ export function EligibleCard({
     const commands = useJobCommands({
         assignment: { id: job.id, revision: job.revision },
         business: job.business,
-        allowed,
+        scope: job.allowed_actions,
         conflict: job.actions.conflict,
         decline: { route: job.actions.decline, options: declineOptions },
     });
@@ -49,6 +42,7 @@ export function EligibleCard({
             name: 'assignment.accept',
             business: job.business,
             route: job.actions.accept,
+            scope: job.allowed_actions,
             payload: { assignment_id: job.id, expected_revision: job.revision },
         });
 
@@ -100,7 +94,7 @@ export function EligibleCard({
                     {t('auditor.jobs.view_file')}
                 </span>
             </Link>
-            {allowed('assignment.accept') && (
+            {job.allowed_actions.includes('assignment.accept') && (
                 <button
                     type="button"
                     onClick={accept}

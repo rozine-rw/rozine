@@ -274,7 +274,9 @@ export type AssignedJob = {
     status: AssignedJobStatus;
     /** Set when the job came to this partner from another; the original deadline still runs. */
     reassigned_from: string | null;
+    /** Opening the procedure is navigation; this record's commands are scoped by its own list. */
     link: RouteLink;
+    allowed_actions: AuditorAllowedAction[];
 };
 
 /** Recent activity, newest first, as the server records it. */
@@ -360,6 +362,11 @@ export type EligibleJob = {
     map: { east_km: number; north_km: number };
     link: RouteLink;
     actions: JobActions;
+    /**
+     * What the partner may do with this offer (#96 point 3): deadlines, capacity and conflicts
+     * differ per record, so each card is gated by its own list, not the page's.
+     */
+    allowed_actions: AuditorAllowedAction[];
 };
 
 /** A monthly window the partner opens for a note they steward. */
@@ -604,7 +611,6 @@ export type LedgerStage = {
     /** A document has parsed, so the reconciliation fact can be recorded. */
     ledger_ready: boolean;
     reconciled: boolean;
-    upload: RouteAction;
 };
 
 export type ReviewStage = {
@@ -770,6 +776,11 @@ export type AuditProcedureProps = AuditorPageContract & {
     /** Jobs, drawn beneath the sheet on a wide screen. */
     jobs: AuditorJobsProps;
     preview_outcome?: AuditorPreviewOutcome;
+    /**
+     * Local/testing previews only: opens the conflict sheet over whatever `preview_outcome`
+     * seeds, so a declaration during another command can be reviewed.
+     */
+    preview_conflict_open?: boolean;
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -800,7 +811,7 @@ export type FiledReport = {
 export type ReportFilter = 'all' | FiledReportStatus;
 
 export type ConflictEntry = {
-    id: string;
+    conflict_id: string;
     business: string;
     note_id: string;
     kind: ConflictKind;
@@ -813,6 +824,8 @@ export type AssignedFile = {
     revision: number;
     business: string;
     note_id: string;
+    /** Whether a conflict can be declared on this file is this record's own call. */
+    allowed_actions: AuditorAllowedAction[];
 };
 
 export type AuditorPortfolioProps = AuditorPageContract & {

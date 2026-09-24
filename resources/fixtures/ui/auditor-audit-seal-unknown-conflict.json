@@ -427,8 +427,38 @@
             "revision": 4
         },
         "preview_outcome": {
-            "kind": "step_up",
-            "state": "wrong_code"
-        }
+            "kind": "unconfirmed",
+            "command": {
+                "name": "audit.seal",
+                "route": {
+                    "url": "/preview/auditor-audit-sealed",
+                    "method": "post"
+                },
+                "business": "Huye Motors",
+                "payload": {
+                    "audit_id": "fa_huye",
+                    "expected_revision": 7,
+                    "digest": "sha256:9f2c4e71b0a85d3e6c1f47a2d9b83e05c6a1f24d7e98b3c05a6d1e2f47b8c9d0",
+                    "procedure_version": "MVP-AUP-1",
+                    "findings_version": "fnd-2026-10-03.2",
+                    "evidence_version": "ev-2026-10-03.5",
+                    "evidence_ids": [
+                        "ev_huye_checkin",
+                        "ev_huye_storefront",
+                        "ev_huye_stock",
+                        "ev_huye_till",
+                        "ev_huye_extra_1",
+                        "ev_huye_ledger_1"
+                    ],
+                    "note": "Six crates of stock were in the delivery van when I counted the store.",
+                    "step_up": {
+                        "proof": "stp_01J9Q3VZ8C0N7R"
+                    },
+                    "identity_context_revision": 3,
+                    "request_id": "3c8f1e52-7a4d-4b9e-a0c6-5d2f8e1b7a94"
+                }
+            }
+        },
+        "preview_conflict_open": true
     }
 }

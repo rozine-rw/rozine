@@ -11,6 +11,7 @@ import conflictRecordedFixture from '../../../resources/fixtures/ui/auditor-jobs
 import conflictFixture from '../../../resources/fixtures/ui/auditor-jobs-conflict.json';
 import emptyFixture from '../../../resources/fixtures/ui/auditor-jobs-empty.json';
 import overdueFixture from '../../../resources/fixtures/ui/auditor-jobs-overdue.json';
+import scopedFixture from '../../../resources/fixtures/ui/auditor-jobs-scoped.json';
 import jobsFixture from '../../../resources/fixtures/ui/auditor-jobs.json';
 import { renderWithUser } from '../helpers/render-with-user';
 import { answers, inertia, invalid, operation } from './inertia';
@@ -102,7 +103,7 @@ describe('Auditor Jobs', () => {
         );
     });
 
-    it('holds a command whose answer is still coming, and allows nothing else meanwhile', async () => {
+    it('holds a command whose answer is still coming, allowing only a conflict declaration meanwhile', async () => {
         const { user } = renderWithUser(<AuditorJobs {...props()} />);
         const accept = screen.getByRole('button', {
             name: 'Accept & start 24h clock',
@@ -115,12 +116,22 @@ describe('Auditor Jobs', () => {
         expect(screen.getByRole('button', { name: 'Decline' })).toBeDisabled();
         expect(
             screen.getByRole('button', { name: 'Declare a conflict' }),
-        ).toBeDisabled();
+        ).toBeEnabled();
     });
 
-    it('offers only the commands the server allows', () => {
+    it('offers only the commands the record allows', () => {
+        const base = props();
+
         render(
-            <AuditorJobs {...props()} allowed_actions={['conflict.declare']} />,
+            <AuditorJobs
+                {...base}
+                eligible={[
+                    {
+                        ...base.eligible[0],
+                        allowed_actions: ['conflict.declare'],
+                    },
+                ]}
+            />,
         );
 
         expect(
@@ -135,10 +146,17 @@ describe('Auditor Jobs', () => {
     });
 
     it('offers no quiet actions at all when neither is allowed', () => {
+        const base = props();
+
         render(
             <AuditorJobs
-                {...props()}
-                allowed_actions={['assignment.accept']}
+                {...base}
+                eligible={[
+                    {
+                        ...base.eligible[0],
+                        allowed_actions: ['assignment.accept'],
+                    },
+                ]}
             />,
         );
 
@@ -148,6 +166,34 @@ describe('Auditor Jobs', () => {
         expect(
             screen.queryByRole('button', { name: 'Decline' }),
         ).not.toBeInTheDocument();
+    });
+
+    it('gates each offer by its own actions, not the page’s', async () => {
+        inertia.queue.push(answers(operation({ code: 'ASSIGNMENT_ACCEPTED' })));
+        const { user } = renderWithUser(
+            <AuditorJobs {...props(scopedFixture)} />,
+        );
+        const open = screen.getByRole('article', { name: 'Huye Motors' });
+        const full = screen.getByRole('article', { name: 'Isoko Energy' });
+
+        expect(
+            within(full).queryByRole('button', { name: /Accept/ }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(full).queryByRole('button', { name: 'Decline' }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(full).getByRole('button', { name: 'Declare a conflict' }),
+        ).toBeInTheDocument();
+
+        await user.click(
+            within(open).getByRole('button', {
+                name: 'Accept & start 24h clock',
+            }),
+        );
+        expect(inertia.calls[0].body).toMatchObject({
+            assignment_id: 'fa_huye',
+        });
     });
 
     it('shows an unrated case without a DSCR', () => {

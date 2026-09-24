@@ -53,48 +53,47 @@
                     "assignment.decline",
                     "conflict.declare"
                 ]
-            }
-        ],
-        "assigned": [
-            {
-                "id": "fa_sebeya",
-                "kind": "flash",
-                "business": "Sebeya Logistics",
-                "district": "Musanze",
-                "distance_km": "9.0",
-                "deadline": {
-                    "due_at": "2026-10-03T15:00:00Z"
-                },
-                "step": 3,
-                "steps": 5,
-                "status": "overdue",
-                "reassigned_from": "Chantal Rwema, CPA",
-                "link": {
-                    "url": "/preview/auditor-audit-ledger",
-                    "method": "get"
-                },
-                "allowed_actions": ["conflict.declare"]
             },
             {
-                "id": "fa_murakoze",
-                "kind": "flash",
-                "business": "Murakoze Tech",
+                "id": "fa_isoko",
+                "revision": 3,
+                "business": "Isoko Energy",
+                "sector": "energy",
                 "district": "Kicukiro",
-                "distance_km": "7.7",
-                "deadline": {
-                    "due_at": "2026-10-04T13:59:55Z"
+                "offered_at": "2026-10-03T15:30:00Z",
+                "distance_km": "6.4",
+                "requested": {
+                    "currency": "RWF",
+                    "amount": "18400000"
                 },
-                "step": 2,
-                "steps": 5,
-                "status": "in_progress",
-                "reassigned_from": null,
+                "dscr": "1.18",
+                "term_months": 4,
+                "map": {
+                    "east_km": -3.1,
+                    "north_km": 5.6
+                },
                 "link": {
-                    "url": "/preview/auditor-audit-check-in",
+                    "url": "/preview/auditor-file",
                     "method": "get"
+                },
+                "actions": {
+                    "accept": {
+                        "url": "/preview/auditor-audit-review",
+                        "method": "post"
+                    },
+                    "decline": {
+                        "url": "/preview/auditor-jobs-declined",
+                        "method": "post"
+                    },
+                    "conflict": {
+                        "url": "/preview/auditor-jobs-conflict",
+                        "method": "post"
+                    }
                 },
                 "allowed_actions": ["conflict.declare"]
             }
         ],
+        "assigned": [],
         "monthly": {
             "windows": [
                 {

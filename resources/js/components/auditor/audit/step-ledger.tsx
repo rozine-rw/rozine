@@ -1,4 +1,4 @@
-import { router, usePoll } from '@inertiajs/react';
+import { usePoll } from '@inertiajs/react';
 import { useEffect, useRef } from 'react';
 import type { ChangeEvent } from 'react';
 import {
@@ -11,6 +11,7 @@ import {
     useVariancePreview,
 } from '@/components/auditor/audit/parts';
 import type { StepContext } from '@/components/auditor/audit/parts';
+import { useAuditorCommands } from '@/components/auditor/commands';
 import { Tick } from '@/components/auditor/ui';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
@@ -29,9 +30,11 @@ const RELOAD = ['stage', 'can_continue', 'hint'];
 
 function DocumentRow({
     document,
+    canUpload,
     onRescan,
 }: {
     document: LedgerDocument;
+    canUpload: boolean;
     onRescan: () => void;
 }) {
     const { t } = useTranslation();
@@ -108,6 +111,7 @@ function DocumentRow({
                     <button
                         type="button"
                         onClick={onRescan}
+                        disabled={!canUpload}
                         className="mt-[9px] h-[38px] w-full rounded-[10px] border border-[#f0c9c6] bg-rz-surface text-[12px] font-bold text-[#c8322b] dark:border-[rgba(255,107,111,.3)] dark:text-rz-danger-text"
                     >
                         {t('auditor.ledger.rescan')}
@@ -132,6 +136,8 @@ export function StepLedger({
     context: StepContext;
 }) {
     const { t } = useTranslation();
+    const center = useAuditorCommands();
+    const canUpload = center.allowed('audit.save_step') && center.idle;
     const { form, submit, errors } = useStepForm(context, {
         observed_stock: stage.observed_stock?.amount ?? '',
         reconciled: stage.reconciled,
@@ -172,18 +178,23 @@ export function StepLedger({
             return;
         }
 
-        router.post(
-            stage.upload.url,
-            {
-                document: chosen,
-                replaces: replaces.current,
+        /*
+         * `audit.save_step` for the ledger, sent as multipart because it carries the file. Its
+         * receipt verifies nothing and advances nothing on its own; a lost answer is looked up
+         * and, if unrecorded, resent as the same upload with the same request.
+         */
+        center.send({
+            name: 'audit.save_step',
+            business: context.business,
+            route: context.save,
+            payload: {
+                step: 'ledger',
                 audit_id: context.auditId,
                 expected_revision: context.revision,
-                identity_context_revision: context.identityContextRevision,
-                request_id: crypto.randomUUID(),
+                document: chosen,
+                replaces: replaces.current,
             },
-            { forceFormData: true, preserveScroll: true, only: RELOAD },
-        );
+        });
         event.target.value = '';
     };
 
@@ -259,6 +270,7 @@ export function StepLedger({
                     <DocumentRow
                         key={document.id}
                         document={document}
+                        canUpload={canUpload}
                         onRescan={() => pick(document.id)}
                     />
                 ))}
@@ -275,6 +287,7 @@ export function StepLedger({
             <button
                 type="button"
                 onClick={() => pick(null)}
+                disabled={!canUpload}
                 className="mt-[9px] flex w-full items-center justify-center gap-[9px] rounded-xl border-[1.5px] border-dashed border-rz-secondary bg-[#f8fafc] p-3.5 dark:bg-rz-surface-sunken"
             >
                 <span aria-hidden className="text-[15px] text-rz-secondary">

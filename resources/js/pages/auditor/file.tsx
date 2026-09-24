@@ -39,7 +39,6 @@ function FileSheet({ receipt, ...props }: FileSheetProps) {
     const commands = useJobCommands({
         assignment: { id: job.id, revision: job.revision },
         business: job.business,
-        allowed,
         conflict: props.actions.conflict,
         decline:
             job.state === 'offered'

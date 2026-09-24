@@ -150,7 +150,7 @@
                     "revision": 5,
                     "business": "GreenLeaf Agro",
                     "note_id": "RNP-2026-0118",
-                    "allowed_actions": ["conflict.declare"]
+                    "allowed_actions": []
                 },
                 {
                     "id": "mr_intare",

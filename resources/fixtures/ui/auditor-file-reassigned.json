@@ -181,7 +181,12 @@
                             "url": "/preview/auditor-jobs-conflict",
                             "method": "post"
                         }
-                    }
+                    },
+                    "allowed_actions": [
+                        "assignment.accept",
+                        "assignment.decline",
+                        "conflict.declare"
+                    ]
                 }
             ],
             "assigned": [
@@ -201,7 +206,8 @@
                     "link": {
                         "url": "/preview/auditor-audit-ledger",
                         "method": "get"
-                    }
+                    },
+                    "allowed_actions": ["conflict.declare"]
                 },
                 {
                     "id": "fa_murakoze",
@@ -219,7 +225,8 @@
                     "link": {
                         "url": "/preview/auditor-audit-check-in",
                         "method": "get"
-                    }
+                    },
+                    "allowed_actions": ["conflict.declare"]
                 }
             ],
             "monthly": {

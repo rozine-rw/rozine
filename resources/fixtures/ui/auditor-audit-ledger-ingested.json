@@ -118,11 +118,7 @@
                 }
             ],
             "ledger_ready": true,
-            "reconciled": true,
-            "upload": {
-                "url": "/preview/auditor-audit-ledger",
-                "method": "post"
-            }
+            "reconciled": true
         },
         "can_continue": true,
         "hint": null,
@@ -218,7 +214,12 @@
                             "url": "/preview/auditor-jobs-conflict",
                             "method": "post"
                         }
-                    }
+                    },
+                    "allowed_actions": [
+                        "assignment.accept",
+                        "assignment.decline",
+                        "conflict.declare"
+                    ]
                 }
             ],
             "assigned": [],

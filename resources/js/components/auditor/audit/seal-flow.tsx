@@ -41,7 +41,8 @@ type Nested = 'preview' | 'code' | 'request_changes' | 'reject' | null;
 
 /**
  * Where the authenticator entry stands. A code is never kept after its request: every state
- * after an attempt asks for a new one.
+ * after an attempt asks for a new one. Only a 422 naming the code is `wrong_code`; an identity or
+ * authorization refusal (403) or a stale report is never presented as one (#96 point 1).
  */
 type Entry =
     | { kind: 'ready' }
@@ -270,9 +271,16 @@ export function useSealFlow({
             },
             {
                 onCompleted: close,
-                onRefused: (refusal) => {
+                onRefused: (refusal, status) => {
                     if (STEP_UP_REFUSALS.has(refusal)) {
-                        setEntry({ kind: 'expired' });
+                        setEntry(
+                            refusal === 'STEP_UP_EXPIRED'
+                                ? { kind: 'expired' }
+                                : {
+                                      kind: 'failed',
+                                      message: refusalText(refusal, status),
+                                  },
+                        );
 
                         return true;
                     }
@@ -306,7 +314,15 @@ export function useSealFlow({
 
                 return;
             case 'invalid':
-                setEntry({ kind: 'wrong_code', message: result.message });
+                /* Only a 422 naming the code is a wrong code; any other 422 is not. */
+                setEntry(
+                    result.message === null
+                        ? {
+                              kind: 'failed',
+                              message: refusalText('REQUEST_FAILED', 422),
+                          }
+                        : { kind: 'wrong_code', message: result.message },
+                );
 
                 return;
             case 'unreachable':

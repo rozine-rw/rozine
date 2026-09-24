@@ -15,7 +15,11 @@ import { FieldError } from '@/components/rozine/form';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import type { RouteAction } from '@/types';
-import type { ConflictKind, RecordRef } from '@/types/auditor';
+import type {
+    AuditorAllowedAction,
+    ConflictKind,
+    RecordRef,
+} from '@/types/auditor';
 
 export const CONFLICT_KINDS: ConflictKind[] = [
     'financial_interest',
@@ -29,6 +33,8 @@ type ConflictSheetProps = {
     /** The assignment the declaration targets, at the revision the page read. */
     assignment: RecordRef;
     action: RouteAction;
+    /** The record's own `allowed_actions` on a list page. */
+    scope?: AuditorAllowedAction[];
     onClose: () => void;
 };
 
@@ -36,19 +42,24 @@ type ConflictSheetProps = {
  * Declaring an interest (design L390–414, AC-08; auditor-filing-v1 point 3). The design declares
  * on one tap; this asks which of the four kinds of interest it is and for a factual explanation,
  * because the declaration goes on the permanent record. The server decides whether it blocks the
- * work and where the assignment goes.
+ * work and where the assignment goes. The declaration runs in its own command lane; if the
+ * assignment turns out stale, the page refreshes and the typed kind and explanation stay here for
+ * the partner to send again — never discarded, never resent on their own.
  */
 export function ConflictSheet({
     business,
     assignment,
     action,
+    scope,
     onClose,
 }: ConflictSheetProps) {
     const { t } = useTranslation();
     const center = useAuditorCommands();
     const [kind, setKind] = useState<ConflictKind | null>(null);
     const [note, setNote] = useState('');
-    const ready = kind !== null && note.trim() !== '' && center.idle;
+    /* Its own lane: only an unresolved declaration holds another one back. */
+    const lane = center.conflict;
+    const ready = kind !== null && note.trim() !== '' && lane.idle;
 
     /* The button is enabled only once a kind is chosen, so `kind` is set here. */
     const submit = () =>
@@ -57,6 +68,7 @@ export function ConflictSheet({
                 name: 'conflict.declare',
                 business,
                 route: action,
+                scope,
                 payload: {
                     assignment_id: assignment.id,
                     expected_revision: assignment.revision,
@@ -73,7 +85,11 @@ export function ConflictSheet({
             lead={t('auditor.conflict.body')}
             onClose={onClose}
         >
-            <AuditorCommandNotice placement="sheet" className="mt-3.5" />
+            <AuditorCommandNotice
+                placement="sheet"
+                lane="conflict"
+                className="mt-3.5"
+            />
             <div className="mt-3.5">
                 <ChoiceChips
                     legend={t('auditor.conflict.kind_label')}
@@ -83,7 +99,7 @@ export function ConflictSheet({
                     }))}
                     value={kind}
                     onChange={setKind}
-                    error={center.errors.kind}
+                    error={lane.errors.kind}
                     errorId="auditor-conflict-kind-error"
                 />
                 <label
@@ -97,11 +113,11 @@ export function ConflictSheet({
                     value={note}
                     onChange={(event) => setNote(event.target.value)}
                     placeholder={t('auditor.conflict.note_placeholder')}
-                    aria-invalid={center.errors.note ? true : undefined}
+                    aria-invalid={lane.errors.note ? true : undefined}
                     className={cn(NOTE_FIELD, 'min-h-[72px]')}
                 />
                 <FieldError id="auditor-conflict-note-error">
-                    {center.errors.note}
+                    {lane.errors.note}
                 </FieldError>
                 <div className="mt-3 flex gap-[9px]">
                     <button
@@ -115,7 +131,7 @@ export function ConflictSheet({
                         type="button"
                         onClick={submit}
                         disabled={!ready}
-                        aria-busy={center.busy || undefined}
+                        aria-busy={lane.busy || undefined}
                         className={cn(FORM_PRIMARY, 'flex-[2]')}
                     >
                         {t('auditor.conflict.submit')}

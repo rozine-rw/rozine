@@ -88,24 +88,27 @@
                     "id": "fa_huye",
                     "revision": 4,
                     "business": "Huye Motors",
-                    "note_id": "RNP-2026-0133"
+                    "note_id": "RNP-2026-0133",
+                    "allowed_actions": ["conflict.declare"]
                 },
                 {
                     "id": "mr_greenleaf",
                     "revision": 5,
                     "business": "GreenLeaf Agro",
-                    "note_id": "RNP-2026-0118"
+                    "note_id": "RNP-2026-0118",
+                    "allowed_actions": ["conflict.declare"]
                 },
                 {
                     "id": "mr_intare",
                     "revision": 6,
                     "business": "Intare Supply",
-                    "note_id": "RNP-2026-0102"
+                    "note_id": "RNP-2026-0102",
+                    "allowed_actions": ["conflict.declare"]
                 }
             ],
             "record": [
                 {
-                    "id": "cf_1",
+                    "conflict_id": "cf_1",
                     "business": "Rubavu Foods",
                     "note_id": "RNP-2026-0097",
                     "kind": "family_or_business",
