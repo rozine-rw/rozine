@@ -119,9 +119,13 @@ export function ReasonSheet({
         (!explain || reason.trim() !== '') &&
         center.idle;
 
-    /* The button is enabled only once a reason is chosen, so `chosen` is set here. */
+    /*
+     * The button is enabled only once a reason is chosen, so `code` is set here. It reads the
+     * chosen code, never `chosen.code`: the React Compiler memoises this closure on the property
+     * it reads, which it would evaluate while nothing is chosen yet and crash the sheet.
+     */
     const submit = () =>
-        onSubmit({ reason_code: chosen!.code, reason: reason.trim() });
+        onSubmit({ reason_code: code as string, reason: reason.trim() });
 
     return (
         <BottomSheet title={title} lead={lead} onClose={onClose}>
