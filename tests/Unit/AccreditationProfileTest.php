@@ -13,7 +13,7 @@ it('keeps self submitted claims separate from independently reviewed standing', 
     expect($pending['standing']['status'])->toBe('none')->and(($pending['submission']['licence'] ?? null))->toBe('CPA-A')->and($pending['accepting'])->toBeFalse();
     $approved = $policy->review($pending, 'approve', 'certificate-a', '2026-09-24T08:00:00Z', 'manual-register-check', 'Reviewed', $now);
     expect($approved['certificate_id'])->toBe('certificate-a')->and($approved['standing']['status'])->toBe('active');
-    $renewal = $policy->submit($policy->availability($approved, true, $now), 'certificate-b', 'CPA-B', '2027-01-01', $now);
+    $renewal = $policy->submit($policy->availability($approved, true, $now), 'certificate-b', 'CPA-B', '2027-01-01', $now, true);
     expect($renewal['standing'])->toBe($approved['standing']);
     $rejected = $policy->review($renewal, 'reject', 'certificate-b', '2026-09-24T08:00:00Z', 'manual-register-check', 'Wrong document', $now);
     expect($rejected['standing'])->toBe($approved['standing'])->and($rejected['accepting'])->toBeTrue()

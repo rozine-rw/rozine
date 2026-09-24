@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 use App\Application\Identity\RegisterIdentity;
 use App\Http\Controllers\Controller;
+use App\Models\AuditAssignment;
+use App\Models\AuditAssignmentVersion;
+use App\Models\AuditConflictDeclaration;
 use App\Models\AuditLocation;
 use App\Models\AuditLocationVersion;
 use App\Models\AuditorCertificate;
+use App\Models\AuditorIndependenceReview;
+use App\Models\AuditorIndependenceVersion;
 use App\Models\AuditorProfile;
 use App\Models\AuditorProfileVersion;
 use App\Models\BusinessApplication;
@@ -203,9 +208,14 @@ it('has concrete targets for the auditor accreditation boundary', function (): v
         ->and(class_exists(AuditorProfileVersion::class))->toBeTrue()
         ->and(class_exists(AuditLocation::class))->toBeTrue()
         ->and(class_exists(AuditLocationVersion::class))->toBeTrue()
+        ->and(class_exists(AuditorIndependenceReview::class))->toBeTrue()
+        ->and(class_exists(AuditorIndependenceVersion::class))->toBeTrue()
+        ->and(class_exists(AuditAssignment::class))->toBeTrue()
+        ->and(class_exists(AuditAssignmentVersion::class))->toBeTrue()
+        ->and(class_exists(AuditConflictDeclaration::class))->toBeTrue()
         ->and(class_exists(AuditorCertificate::class))->toBeTrue();
 })->group('arch');
 
 arch('auditor accreditation records are only accessed by their adapter')
-    ->expect(['App\Models\AuditorProfile', 'App\Models\AuditorProfileVersion', 'App\Models\AuditorCertificate', 'App\Models\AuditLocation', 'App\Models\AuditLocationVersion'])
+    ->expect(['App\Models\AuditorProfile', 'App\Models\AuditorProfileVersion', 'App\Models\AuditorCertificate', 'App\Models\AuditLocation', 'App\Models\AuditLocationVersion', 'App\Models\AuditorIndependenceReview', 'App\Models\AuditorIndependenceVersion', 'App\Models\AuditAssignment', 'App\Models\AuditAssignmentVersion', 'App\Models\AuditConflictDeclaration'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Auditor', 'App\Models', 'Database\Factories']);

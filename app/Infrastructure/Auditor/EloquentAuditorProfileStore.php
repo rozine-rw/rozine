@@ -49,10 +49,10 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
 
         return $this->executeOwn($userId, $contextRevision, $expectedRevision, $renew ? 'accreditation.renew' : 'accreditation.submit', $requestId,
             ['licence' => $licence, 'expires_on' => $expiresOn, 'filename_sha256' => hash('sha256', $filename), 'sha256' => hash('sha256', $content)],
-            function (array $state) use ($certificateId, $licence, $expiresOn, $filename, $content, &$source): array {
+            function (array $state) use ($certificateId, $licence, $expiresOn, $filename, $content, $renew, &$source): array {
                 $source = $this->certificates->describe($filename, $content);
 
-                return $this->profiles->submit($state, $certificateId, $licence, $expiresOn, now()->toDateTimeImmutable());
+                return $this->profiles->submit($state, $certificateId, $licence, $expiresOn, now()->toDateTimeImmutable(), $renew);
             },
             function (AuditorProfile $record) use ($certificateId, $content, $userId, &$source): void {
                 (new AuditorCertificate)->forceFill([...$source, 'id' => $certificateId, 'auditor_profile_id' => $record->id,
@@ -77,7 +77,7 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
     /** @return array<string, mixed> */
     public function review(int $actorId, string $partyId, int $expectedRevision, string $decision, ?string $submissionId, string $checkedAt, string $reference, string $reason, string $requestId): array
     {
-        return $this->locked($partyId, function (?AuditorProfile $profile) use ($actorId, $partyId, $expectedRevision, $decision, $submissionId, $checkedAt, $reference, $reason, $requestId): array {
+        return $this->reviewAccess($actorId, $partyId, $decision, function (?AuditorProfile $profile) use ($actorId, $partyId, $expectedRevision, $decision, $submissionId, $checkedAt, $reference, $reason, $requestId): array {
             return $this->journal->execute('staff:'.$actorId, $actorId, 'accreditation.review', $requestId, 'auditor.party', $partyId,
                 ['expected_revision' => $expectedRevision, 'decision' => $decision, 'submission_id' => $submissionId,
                     'checked_at' => $checkedAt, 'reference' => $reference, 'reason' => $reason],
@@ -103,7 +103,7 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
     {
         $partyId = $this->party($userId);
 
-        return $this->locked($partyId, fn (?AuditorProfile $profile): array => $this->roles->handle($userId, 'auditor', $partyId, $contextRevision,
+        return $this->own($userId, $contextRevision, $partyId, fn (?AuditorProfile $profile): array => $this->roles->handle($userId, 'auditor', $partyId, $contextRevision,
             function () use ($profile, $contextRevision): array {
                 $state = $profile->state ?? $this->profiles->empty();
                 $hash = $state['submission']['status'] === 'pending'
@@ -121,7 +121,7 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
     {
         $partyId = $this->party($userId);
 
-        return $this->locked($partyId, fn (?AuditorProfile $profile): array => $this->roles->handle($userId, 'auditor', $partyId, $contextRevision,
+        return $this->own($userId, $contextRevision, $partyId, fn (?AuditorProfile $profile): array => $this->roles->handle($userId, 'auditor', $partyId, $contextRevision,
             fn (): array => $this->snapshot($profile, $partyId)));
     }
 
@@ -133,7 +133,7 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
         }
         $partyId = $this->party($userId);
 
-        return $this->locked($partyId, fn (): array => $this->journal->find('party:'.$partyId, $command, $requestId,
+        return $this->own($userId, $contextRevision, $partyId, fn (): array => $this->journal->find('party:'.$partyId, $command, $requestId,
             function (string $type, string $id) use ($userId, $contextRevision, $partyId): void {
                 if ($type !== 'auditor.party' || $id !== $partyId) {
                     throw new CommandRejection('OPERATION_NOT_FOUND', 404);
@@ -145,7 +145,7 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
     /** @return Download */
     public function readCertificate(int $userId, ?int $contextRevision, string $partyId, string $certificateId, bool $staff): array
     {
-        return $this->locked($partyId, function (?AuditorProfile $profile) use ($userId, $contextRevision, $partyId, $certificateId, $staff): array {
+        $readCertificate = function (?AuditorProfile $profile) use ($certificateId): array {
             $read = function () use ($profile, $certificateId): array {
                 $certificate = $profile === null ? null : AuditorCertificate::query()->where('auditor_profile_id', $profile->id)->whereKey($certificateId)->first();
                 if ($certificate === null) {
@@ -158,15 +158,17 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
 
                 return ['filename' => $certificate->filename, 'media_type' => $certificate->media_type, 'content' => $content, 'sha256' => $certificate->sha256];
             };
-            if ($staff) {
-                return $this->staff->handle($userId, 'audit.partners.verify', $read);
-            }
-            if ($contextRevision === null) {
-                throw new IdentityViolation('ACTIVE_ROLE_REVISION_CONFLICT', 409);
-            }
 
-            return $this->roles->handle($userId, 'auditor', $partyId, $contextRevision, $read);
-        });
+            return $read();
+        };
+        if ($staff) {
+            return $this->staff->handle($userId, 'audit.partners.verify', fn (): array => $this->locked($partyId, $readCertificate));
+        }
+        if ($contextRevision === null) {
+            throw new IdentityViolation('ACTIVE_ROLE_REVISION_CONFLICT', 409);
+        }
+
+        return $this->own($userId, $contextRevision, $partyId, $readCertificate);
     }
 
     /**
@@ -179,7 +181,7 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
     {
         $partyId = $this->party($userId);
 
-        return $this->locked($partyId, fn (?AuditorProfile $profile): array => $this->journal->execute('party:'.$partyId, $userId, $command, $requestId, 'auditor.party', $partyId,
+        return $this->own($userId, $contextRevision, $partyId, fn (?AuditorProfile $profile): array => $this->journal->execute('party:'.$partyId, $userId, $command, $requestId, 'auditor.party', $partyId,
             ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, ...$input],
             function () use ($userId, $contextRevision, $partyId): void {
                 $this->roles->handle($userId, 'auditor', $partyId, $contextRevision, fn (): bool => true);
@@ -203,7 +205,32 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
     }
 
     /**
-     * Acquires the aggregate before identity locks for both staff and participant commands.
+     * @template TResult
+     *
+     * @param  Closure(AuditorProfile|null): TResult  $operation
+     * @return TResult
+     */
+    private function own(int $userId, int $contextRevision, string $partyId, Closure $operation): mixed
+    {
+        return $this->roles->handle($userId, 'auditor', $partyId, $contextRevision,
+            fn (): mixed => $this->locked($partyId, $operation));
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(AuditorProfile|null): TResult  $operation
+     * @return TResult
+     */
+    private function reviewAccess(int $actorId, string $partyId, string $decision, Closure $operation): mixed
+    {
+        return $this->staff->handle($actorId, 'audit.partners.verify', fn (): mixed => in_array($decision, ['approve', 'recheck'], true)
+            ? $this->verifiedParties->handle('person', $partyId, [$partyId], fn (): mixed => $this->locked($partyId, $operation))
+            : $this->locked($partyId, $operation));
+    }
+
+    /**
+     * The actor and required Party locks precede this aggregate on every entry point.
      *
      * @template TResult
      *

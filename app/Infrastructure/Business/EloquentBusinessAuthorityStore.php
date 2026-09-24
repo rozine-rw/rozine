@@ -7,6 +7,7 @@ namespace App\Infrastructure\Business;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Identity\AuthorizeEntityRole;
 use App\Application\Identity\AuthorizeStaffPermission;
+use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Identity\WithVerifiedParties;
 use App\Application\Operations\Contracts\OperationJournal;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\DB;
  * @phpstan-import-type Profile from MandateAuthority
  * @phpstan-import-type Terms from MandateAuthority
  * @phpstan-import-type Business from BusinessAuthorityStore
+ * @phpstan-import-type AuditContext from BusinessAuthorityStore
  * @phpstan-import-type AccessSnapshot from \App\Domain\Identity\ActiveRolePolicy
  */
 final class EloquentBusinessAuthorityStore implements BusinessAuthorityStore
@@ -30,6 +32,7 @@ final class EloquentBusinessAuthorityStore implements BusinessAuthorityStore
         private AuthorizeStaffPermission $staff,
         private AuthorizeEntityRole $roles,
         private IdentityRepository $identities,
+        private IdentityAccessStore $auditAccess,
         private WithVerifiedParties $verifiedParties,
         private MandateAuthority $authority,
         private OperationJournal $journal,
@@ -126,12 +129,12 @@ final class EloquentBusinessAuthorityStore implements BusinessAuthorityStore
      * @param  Closure(Business): TResult  $operation
      * @return TResult
      */
-    public function withReview(int $actorId, string $businessId, bool $requireVerified, Closure $operation): mixed
+    public function withReview(int $actorId, string $businessId, bool $requireVerified, Closure $operation, array $additionalPersonPartyIds = []): mixed
     {
-        return DB::transaction(function () use ($actorId, $businessId, $requireVerified, $operation): mixed {
+        return DB::transaction(function () use ($actorId, $businessId, $requireVerified, $operation, $additionalPersonPartyIds): mixed {
             $business = BusinessProfile::query()->lockForUpdate()->find($businessId);
 
-            return $this->staff->handle($actorId, 'businesses.verify', function () use ($business, $requireVerified, $operation): mixed {
+            return $this->staff->handle($actorId, 'businesses.verify', function () use ($business, $requireVerified, $operation, $additionalPersonPartyIds): mixed {
                 $mandate = $business === null ? null : BusinessMandate::query()->where('business_id', $business->id)->where('version', $business->mandate_version)->first();
                 if ($business === null || $mandate === null) {
                     throw new CommandRejection('BUSINESS_NOT_FOUND', 404);
@@ -147,9 +150,51 @@ final class EloquentBusinessAuthorityStore implements BusinessAuthorityStore
                     throw new CommandRejection('MANDATE_REQUIRED', 403);
                 }
 
-                return $this->verifiedParties->handle($business->entity_kind, $business->entity_party_id, array_column($terms['people'], 'party_id'),
+                return $this->verifiedParties->handle($business->entity_kind, $business->entity_party_id, array_values(array_unique([...array_column($terms['people'], 'party_id'), ...$additionalPersonPartyIds])),
                     fn (): mixed => $operation($record), $business->profile['company_code'] === null ? null : 'RDB:'.$business->profile['company_code']);
             });
+        }, 3);
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  list<string>  $candidateIds
+     * @param  Closure(AuditContext): TResult  $operation
+     * @return TResult
+     */
+    public function withAudit(?int $userId, ?int $contextRevision, string $businessId, array $candidateIds, bool $requireVerified, Closure $operation): mixed
+    {
+        return DB::transaction(function () use ($userId, $contextRevision, $businessId, $candidateIds, $requireVerified, $operation): mixed {
+            $business = BusinessProfile::query()->lockForUpdate()->find($businessId);
+            $mandates = BusinessMandate::query()->where('business_id', $businessId)->orderBy('version')->get();
+            $mandate = $mandates->firstWhere('version', $business?->mandate_version);
+            if ($business === null || $mandate === null) {
+                throw new CommandRejection('BUSINESS_NOT_FOUND', 404);
+            }
+            $terms = $mandate->terms;
+            $now = now('UTC')->format('Y-m-d\TH:i:s\Z');
+            $current = $terms['status'] === 'active' && $terms['effective_at'] <= $now && ($terms['expires_at'] === null || $terms['expires_at'] > $now);
+            $ties = [];
+            foreach ($mandates as $index => $version) {
+                $next = $mandates->get($index + 1);
+                $ended = $next === null ? $now : max($next->terms['effective_at'], $next->created_at->utc()->format('Y-m-d\TH:i:s\Z'));
+                foreach ($version->terms['people'] as $person) {
+                    $ties[$person['party_id']] = ['current' => $version->version === $mandate->version && $current, 'ended_at' => $ended];
+                }
+            }
+
+            return $this->auditAccess->withAuditAccess($userId, $contextRevision, $business->entity_kind, $business->entity_party_id,
+                array_column($terms['people'], 'party_id'), $candidateIds, $requireVerified,
+                function (array $eligible, ?string $actorPartyId, bool $verified) use ($business, $terms, $current, $ties, $requireVerified, $operation): mixed {
+                    if ($requireVerified && ! $current) {
+                        throw new CommandRejection('MANDATE_REQUIRED', 403);
+                    }
+
+                    return $operation(['business' => ['id' => $business->id, 'entity_kind' => $business->entity_kind, 'entity_party_id' => $business->entity_party_id,
+                        'profile' => $business->profile, 'revision' => $business->revision, 'mandate_version' => $business->mandate_version, 'mandate' => $terms],
+                        'candidate_ids' => $eligible, 'actor_party_id' => $actorPartyId, 'current' => $current && $verified, 'role_ties' => $ties]);
+                }, $business->profile['company_code'] === null ? null : 'RDB:'.$business->profile['company_code']);
         }, 3);
     }
 }

@@ -18,10 +18,11 @@ final class WithBusinessReview
      * @template TResult
      *
      * @param  Closure(Business): TResult  $operation
+     * @param  list<string>  $additionalPersonPartyIds
      * @return TResult
      */
-    public function handle(int $actorId, string $businessId, bool $requireVerified, Closure $operation): mixed
+    public function handle(int $actorId, string $businessId, bool $requireVerified, Closure $operation, array $additionalPersonPartyIds = []): mixed
     {
-        return $this->store->withReview($actorId, $businessId, $requireVerified, $operation);
+        return $this->store->withReview($actorId, $businessId, $requireVerified, $operation, $additionalPersonPartyIds);
     }
 }

@@ -11,6 +11,7 @@ use Closure;
  * @phpstan-import-type Terms from \App\Domain\Business\MandateAuthority
  * @phpstan-import-type AccessSnapshot from \App\Domain\Identity\ActiveRolePolicy
  *
+ * @phpstan-type AuditContext array{business: Business, candidate_ids: list<string>, actor_party_id: string|null, current: bool, role_ties: array<string, array{current: bool, ended_at: string|null}>}
  * @phpstan-type Business array{id: string, entity_kind: string, entity_party_id: string, profile: Profile, revision: int, mandate_version: int, mandate: Terms}
  */
 interface BusinessAuthorityStore
@@ -34,7 +35,17 @@ interface BusinessAuthorityStore
      * @template TResult
      *
      * @param  Closure(Business): TResult  $operation
+     * @param  list<string>  $additionalPersonPartyIds
      * @return TResult
      */
-    public function withReview(int $actorId, string $businessId, bool $requireVerified, Closure $operation): mixed;
+    public function withReview(int $actorId, string $businessId, bool $requireVerified, Closure $operation, array $additionalPersonPartyIds = []): mixed;
+
+    /**
+     * @template TResult
+     *
+     * @param  list<string>  $candidateIds
+     * @param  Closure(AuditContext): TResult  $operation
+     * @return TResult
+     */
+    public function withAudit(?int $userId, ?int $contextRevision, string $businessId, array $candidateIds, bool $requireVerified, Closure $operation): mixed;
 }

@@ -2,12 +2,18 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\AdvanceExpiredAuditOffers;
 use App\Application\Auditor\MarkAuditLocationMoved;
+use App\Application\Auditor\SetAuditorAvailability;
 use App\Application\Auditor\VerifyAuditLocation;
+use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Auditor\WithdrawAuditorAccreditation;
 use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\Contracts\StatementExtractionQueue;
+use App\Application\Evidence\GetAuditStatements;
+use App\Application\Evidence\IngestStatement;
+use App\Application\Evidence\ReadAuditStatement;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\ChangeMembership;
@@ -24,9 +30,14 @@ use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
+use App\Models\AuditAssignment;
+use App\Models\AuditAssignmentVersion;
+use App\Models\AuditConflictDeclaration;
 use App\Models\AuditLocation;
 use App\Models\AuditLocationVersion;
 use App\Models\AuditorCertificate;
+use App\Models\AuditorIndependenceReview;
+use App\Models\AuditorIndependenceVersion;
 use App\Models\AuditorProfile;
 use App\Models\AuditorProfileVersion;
 use App\Models\BusinessApplication;
@@ -50,7 +61,9 @@ use App\Models\VerifiedPersonIdentity;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Tests\Support\AuditAssignmentFixture;
 use Tests\Support\AuditorFixture;
+use Tests\Support\AuditorIndependenceFixture;
 use Tests\Support\BusinessApplicationFixture;
 use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\ConsentFixture;
@@ -637,3 +650,182 @@ it('serializes a move against re-verification so stale evidence cannot replace t
     expect($location->state['point'] === null)->toBe($movedWon)
         ->and(AuditLocationVersion::query()->count())->toBe(2);
 });
+
+it('records one independence review for concurrent identical Operations retries', function (): void {
+    $fixture = AuditorIndependenceFixture::make();
+    $request = (string) Str::uuid();
+    $this->freezeTime();
+    $record = function () use ($fixture, $request): void {
+        $result = AuditorIndependenceFixture::record($fixture, request: $request);
+        if ($result['http_status'] !== 200) {
+            throw new CommandRejection($result['code'], $result['http_status']);
+        }
+    };
+    expect(runIdentityContenders([$record, $record]))->toBe([0, 0])
+        ->and(AuditorIndependenceReview::query()->count())->toBe(1)
+        ->and(AuditorIndependenceVersion::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'audit.independence.review')->count())->toBe(1);
+});
+
+it('locks crossed Business and Auditor identities without reverse-order Party deadlocks', function (): void {
+    $left = AuditorIndependenceFixture::make('person', 1);
+    $right = AuditorIndependenceFixture::make('person', 1);
+    $left['party'] = $right['authority']['people'][0];
+    $right['party'] = $left['authority']['people'][0];
+    $operations = [];
+    foreach ([$left, $right] as $fixture) {
+        $operations[] = function () use ($fixture): void {
+            DB::transaction(function () use ($fixture): void {
+                $result = AuditorIndependenceFixture::record($fixture);
+                if ($result['http_status'] !== 200) {
+                    throw new CommandRejection($result['code'], $result['http_status']);
+                }
+            });
+        };
+    }
+    expect(runIdentityContenders($operations))->toBe([0, 0])
+        ->and(AuditorIndependenceReview::query()->count())->toBe(2)
+        ->and(AuditorIndependenceVersion::query()->count())->toBe(2);
+});
+
+it('creates one audit offer for simultaneous identical Operations requests', function (): void {
+    $this->freezeTime();
+    $fixture = AuditAssignmentFixture::make();
+    $request = (string) Str::uuid();
+    $operation = function () use ($fixture, $request): void {
+        AuditAssignmentFixture::request($fixture, requestId: $request);
+    };
+    expect(runIdentityContenders([$operation, $operation]))->toBe([0, 0])
+        ->and(AuditAssignment::query()->count())->toBe(1)
+        ->and(AuditAssignmentVersion::query()->count())->toBe(1);
+});
+
+it('admits only one competing acceptance when an Auditor has two active engagements', function (): void {
+    $this->freezeTime();
+    $fixture = AuditAssignmentFixture::make(1);
+    $other = AuditAssignmentFixture::make(0);
+    $partner = $fixture['partners'][0];
+    AuditAssignmentFixture::independence($other['staff'], $other['business'], $partner['party']->id);
+    $left = AuditAssignmentFixture::request($fixture);
+    $right = AuditAssignmentFixture::request($other);
+    AuditAssignmentFixture::engagement($partner['party']->id);
+    AuditAssignmentFixture::engagement($partner['party']->id);
+    $linked = User::factory()->withTwoFactor()->for($partner['party'])->create();
+    app(SelectActiveRole::class)->handle($linked->id, 'auditor', 0, (string) Str::uuid());
+    $operations = [];
+    foreach ([$left, $right] as $index => $record) {
+        $user = $index === 0 ? $partner['user'] : $linked;
+        $operations[] = function () use ($user, $record): void {
+            $receipt = AuditAssignmentFixture::respond($user, $record);
+            if ($receipt['http_status'] !== 200) {
+                throw new CommandRejection($receipt['code'], $receipt['http_status']);
+            }
+        };
+    }
+    expect(runIdentityContenders($operations))->toBe([0, 3])
+        ->and(AuditAssignment::query()->where('party_id', $partner['party']->id)->where('status', 'accepted')->count())->toBe(3);
+});
+
+it('advances an expired audit only once across duplicate scheduler workers', function (): void {
+    $this->freezeTime();
+    $fixture = AuditAssignmentFixture::make();
+    $record = AuditAssignmentFixture::request($fixture);
+    $this->travel(1)->hours();
+    $worker = function (): void {
+        app(AdvanceExpiredAuditOffers::class)->handle(100);
+    };
+    expect(runIdentityContenders([$worker, $worker]))->toBe([0, 0])
+        ->and($record->refresh()->state['attempt'])->toBe(2)
+        ->and(AuditAssignmentVersion::query()->count())->toBe(2);
+});
+
+it('commits one conflict and one reassignment for concurrent identical declarations', function (): void {
+    $this->freezeTime();
+    $fixture = AuditAssignmentFixture::make();
+    $record = AuditAssignmentFixture::request($fixture);
+    $partner = AuditAssignmentFixture::recipient($fixture, $record);
+    $request = (string) Str::uuid();
+    $declare = function () use ($partner, $record, $request): void {
+        AuditAssignmentFixture::respond($partner['user'], $record, 'conflict', 'Current private relationship.', 'other', $request);
+    };
+    expect(runIdentityContenders([$declare, $declare]))->toBe([0, 0])
+        ->and(AuditConflictDeclaration::query()->count())->toBe(1)
+        ->and(AuditAssignmentVersion::query()->count())->toBe(2)
+        ->and($record->refresh()->state['attempt'])->toBe(2);
+});
+
+it('orders assignment locks consistently against office invalidation and availability changes', function (): void {
+    $this->freezeTime();
+    $fixture = AuditAssignmentFixture::make(1);
+    $partner = $fixture['partners'][0];
+    $operations = [
+        function () use ($fixture): void {
+            DB::transaction(fn () => AuditAssignmentFixture::request($fixture));
+        },
+        function () use ($partner): void {
+            DB::transaction(function () use ($partner): void {
+                app(MarkAuditLocationMoved::class)->handle($partner['staff']->id, 'office', $partner['party']->id, 1,
+                    now('UTC')->format('Y-m-d\TH:i:s\Z'), 'Moved office.', (string) Str::uuid());
+            });
+        },
+        function () use ($partner): void {
+            DB::transaction(fn () => app(SetAuditorAvailability::class)->handle($partner['user']->id, 1, 3, false, (string) Str::uuid()));
+        },
+    ];
+    expect(runIdentityContenders($operations))->toBe([0, 0, 0]);
+    $record = AuditAssignment::query()->firstOrFail();
+    if ($record->status === 'offered') {
+        expect(AuditAssignmentFixture::respond($partner['user'], $record)['http_status'])->toBe(403);
+    }
+    expect(AuditorProfile::query()->firstOrFail()->state['accepting'])->toBeFalse()
+        ->and(AuditLocation::query()->where('office_party_id', $partner['party']->id)->firstOrFail()->state['point'])->toBeNull();
+});
+
+it('holds accepted-assignment and Business authority throughout a protected statement read', function (string $fault): void {
+    $fixture = AuditAssignmentFixture::make(1);
+    $sources = AuditAssignmentFixture::statements($fixture);
+    $assignment = AuditAssignmentFixture::request($fixture);
+    $partner = $fixture['partners'][0];
+    $operator = concurrentIdentityOperator();
+    AuditAssignmentFixture::respond($partner['user'], $assignment);
+    $assignment->refresh();
+    $change = match ($fault) {
+        'conflict' => fn (): array => AuditAssignmentFixture::respond($partner['user'], $assignment, 'conflict', 'New financial interest.', 'financial_interest'),
+        'evidence' => fn (): array => app(IngestStatement::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business'], 2,
+            'new.csv', StatementFixture::csv('200'), (string) Str::uuid()),
+        'standing' => fn (): array => AuditorFixture::review($partner['staff'], $partner['party']->id, 3, 'suspend'),
+        default => fn (): array => app(ChangeMembership::class)->handle($operator->id, $partner['party']->id, 'auditor', 'revoked', 1,
+            'case:revocation', 'Withdraw membership.', (string) Str::uuid()),
+    };
+    config(['database.connections.audit_statement_contender' => config('database.connections.pgsql')]);
+    DB::connection('audit_statement_contender')->statement("SET lock_timeout = '500ms'");
+    $default = DB::getDefaultConnection();
+
+    app(WithAcceptedAuditAssignment::class)->handle($partner['user']->id, 1, $assignment->id, function () use ($default, $change, $partner, $assignment, $sources): void {
+        DB::setDefaultConnection('audit_statement_contender');
+        try {
+            $change();
+            $this->fail('A competing authority change must wait for the protected read.');
+        } catch (QueryException $exception) {
+            expect($exception->getCode())->toBe('55P03');
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('audit_statement_contender');
+        }
+        expect(app(ReadAuditStatement::class)->handle($partner['user']->id, 1, $assignment->id, $sources['document_id'])['content'])->toBe(StatementFixture::csv());
+    });
+    $change();
+    if ($fault === 'evidence') {
+        $file = app(GetAuditStatements::class)->handle($partner['user']->id, 1, $assignment->id);
+        expect($file['evidence']['revision'])->toBe(3)->and($file['transcription']['current'])->toBeFalse();
+    } else {
+        try {
+            app(ReadAuditStatement::class)->handle($partner['user']->id, 1, $assignment->id, $sources['document_id']);
+            $this->fail('New reads must observe the committed authority withdrawal.');
+        } catch (IdentityViolation|CommandRejection $exception) {
+            expect($exception->getMessage())->toBe(match ($fault) {
+                'conflict' => 'ASSIGNMENT_NOT_FOUND', 'standing' => 'ACCREDITATION_SUSPENDED', default => 'ROLE_MEMBERSHIP_REQUIRED',
+            });
+        }
+    }
+})->with(['conflict', 'evidence', 'standing', 'membership']);

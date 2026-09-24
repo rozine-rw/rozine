@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\Auditor\Contracts\AuditAssignmentStore;
 use App\Application\Auditor\Contracts\AuditLocationStore;
+use App\Application\Auditor\Contracts\AuditorIndependenceStore;
 use App\Application\Auditor\Contracts\AuditorProfileStore;
 use App\Application\Business\Contracts\BusinessApplicationStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
@@ -19,7 +21,9 @@ use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
+use App\Infrastructure\Auditor\EloquentAuditAssignmentStore;
 use App\Infrastructure\Auditor\EloquentAuditLocationStore;
+use App\Infrastructure\Auditor\EloquentAuditorIndependenceStore;
 use App\Infrastructure\Auditor\EloquentAuditorProfileStore;
 use App\Infrastructure\Business\EloquentBusinessApplicationStore;
 use App\Infrastructure\Business\EloquentBusinessAuthorityStore;
@@ -65,6 +69,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ConsentCatalog::class, EloquentConsentCatalog::class);
         $this->app->bind(StatementStore::class, EloquentStatementStore::class);
         $this->app->bind(AuditorProfileStore::class, EloquentAuditorProfileStore::class);
+        $this->app->bind(AuditAssignmentStore::class, EloquentAuditAssignmentStore::class);
+        $this->app->bind(AuditorIndependenceStore::class, EloquentAuditorIndependenceStore::class);
         $this->app->bind(AuditLocationStore::class, EloquentAuditLocationStore::class);
         $this->app->bind(StatementTextExtractor::class, IsolatedStatementTextExtractor::class);
         $this->app->bind(StatementExtractionQueue::class, EloquentStatementExtractionQueue::class);
