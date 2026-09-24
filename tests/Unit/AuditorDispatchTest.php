@@ -67,6 +67,8 @@ it('excludes unsafe candidates without waiving standing capacity rotation confli
             break;
         case 'unknown move time': $candidate['office']['moved_at'] = 'unknown';
             break;
+        case 'same second move': $candidate['office']['moved_at'] = $candidate['office']['verified_at'];
+            break;
         case 'missing accuracy': $candidate['office']['uncertainty_m'] = null;
             break;
         case 'negative accuracy': $candidate['premises']['uncertainty_m'] = -1;
@@ -93,7 +95,7 @@ it('excludes unsafe candidates without waiving standing capacity rotation confli
     ['unresolved declaration', 'AUDITOR_CONFLICT'], ['role at cutoff', 'AUDITOR_CONFLICT'], ['invalid role date', 'AUDITOR_CONFLICT'],
     ['office not verified', 'AUDITOR_LOCATION_REVIEW_REQUIRED'], ['office stale', 'AUDITOR_LOCATION_REVIEW_REQUIRED'],
     ['premises future', 'AUDITOR_LOCATION_REVIEW_REQUIRED'], ['premises moved', 'AUDITOR_LOCATION_REVIEW_REQUIRED'],
-    ['unknown move time', 'AUDITOR_LOCATION_REVIEW_REQUIRED'], ['missing accuracy', 'AUDITOR_LOCATION_REVIEW_REQUIRED'],
+    ['unknown move time', 'AUDITOR_LOCATION_REVIEW_REQUIRED'], ['same second move', 'AUDITOR_LOCATION_REVIEW_REQUIRED'], ['missing accuracy', 'AUDITOR_LOCATION_REVIEW_REQUIRED'],
     ['negative accuracy', 'AUDITOR_LOCATION_REVIEW_REQUIRED'], ['unbounded accuracy', 'AUDITOR_LOCATION_REVIEW_REQUIRED'],
     ['unknown distance', 'AUDITOR_OUTSIDE_RADIUS'], ['negative distance', 'AUDITOR_OUTSIDE_RADIUS'], ['far beyond radius', 'AUDITOR_OUTSIDE_RADIUS'],
     ['one metre outside', 'AUDITOR_OUTSIDE_RADIUS'],
@@ -101,7 +103,8 @@ it('excludes unsafe candidates without waiving standing capacity rotation confli
 
 it('accepts exactly current location verification and an expired lookback with capacity remaining', function (): void {
     $candidate = AuditorFixture::candidate();
-    $candidate['office']['verified_at'] = $candidate['office']['moved_at'] = '2025-09-24T08:00:00Z';
+    $candidate['office']['verified_at'] = '2025-09-24T08:00:00Z';
+    $candidate['office']['moved_at'] = '2025-09-24T07:59:59Z';
     $candidate['role_tie_ended_at'] = '2024-09-24T07:59:59Z';
     $candidate['active_count'] = $candidate['consecutive_reports'] = 2;
     expect((new AuditorDispatch(new AuditorStanding))->select([$candidate], new DateTimeImmutable('2026-09-24T08:00:00Z')))->toBe('partner-a');

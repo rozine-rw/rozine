@@ -32,7 +32,7 @@ final class VerifiedAuditLocation
         $point = $this->geodesic->point($latitude, $longitude);
         $checked = $this->timestamp($verifiedAt, $now);
         if ($uncertainty < 0 || $uncertainty > 30000 || $checked < $now->modify('-365 days')
-            || ($state['moved_at'] !== null && $verifiedAt < $state['moved_at'])) {
+            || ($state['moved_at'] !== null && $verifiedAt <= $state['moved_at'])) {
             throw new CommandRejection('AUDIT_LOCATION_REVIEW_REQUIRED', 422);
         }
         $this->text($reference, 255);

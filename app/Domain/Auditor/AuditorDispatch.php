@@ -97,7 +97,7 @@ final class AuditorDispatch
 
         return $location['uncertainty_m'] !== null && $location['uncertainty_m'] >= 0 && $location['uncertainty_m'] <= 30000
             && $verified !== null && $verified <= $now && $verified >= $now->modify('-365 days')
-            && ($location['moved_at'] === null || ($moved !== null && $moved <= $verified));
+            && ($location['moved_at'] === null || ($moved !== null && $moved < $verified));
     }
 
     private function timestamp(?string $value): ?DateTimeImmutable

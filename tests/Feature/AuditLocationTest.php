@@ -73,6 +73,8 @@ it('invalidates same-second moves and never restores old coordinates on an opera
     expect($moved->handle($staff, 'office', $party, 2, now('UTC')->subSecond()->format('Y-m-d\TH:i:s\Z'), 'Late move event.', (string) Str::uuid())['code'])->toBe('AUDIT_LOCATION_MOVE_STALE');
     expect(app(VerifyAuditLocation::class)->handle($staff, 'office', $party, 2, '-1', '30', 20,
         now('UTC')->subSecond()->format('Y-m-d\TH:i:s\Z'), 'synthetic:old', 'Old verification.', (string) Str::uuid())['code'])->toBe('AUDIT_LOCATION_REVIEW_REQUIRED');
+    expect(verifySyntheticAuditLocation($staff, $party, revision: 2)['code'])->toBe('AUDIT_LOCATION_REVIEW_REQUIRED');
+    $this->travel(1)->seconds();
     expect(verifySyntheticAuditLocation($staff, $party, revision: 2)['revision'])->toBe(3);
     expect(AuditLocationVersion::query()->where('revision', 1)->firstOrFail()->snapshot['state']['point'])->not->toBeNull();
     $this->assertDatabaseCount('audit_location_versions', 3);
