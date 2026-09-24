@@ -22,11 +22,13 @@ use App\Models\AuditorIndependenceReview;
 use App\Models\AuditorProfile;
 use App\Models\CommandOperation;
 use App\Models\RoleMembership;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\Support\AuditAssignmentFixture as Fixture;
@@ -69,6 +71,86 @@ it('accepts a current routine offer with a persisted 48 hour visit clock', funct
         ->and(app(FindAuditAssignmentOperation::class)->handle($partner['user']->id, 1, 'assignment.accept', $request))->toBe($receipt)
         ->and(app(GetAuditAssignment::class)->handle($partner['user']->id, 1, $record->id)['visit_by'])->toBe(now('UTC')->addHours(48)->format('Y-m-d\TH:i:s\Z'));
     expect($record->refresh()->state['complete_by'])->toBeNull()->and($record->status)->toBe('accepted');
+});
+
+it('uses the explicit offer instant even when the PostgreSQL session is outside UTC', function (string $zone): void {
+    DB::statement("SET LOCAL TIME ZONE '{$zone}'");
+    $fixture = Fixture::make(1);
+    $record = Fixture::request($fixture);
+    $offeredAt = $record->state['offered_at'];
+    expect(Fixture::respond($fixture['partners'][0]['user'], $record)['code'])->toBe('ASSIGNMENT_ACCEPTED');
+    $version = AuditAssignmentVersion::query()->where('assignment_id', $record->id)->where('revision', 2)->firstOrFail();
+    expect($version->selection_basis['candidates'][0]['last_assigned_at'])->toBe($offeredAt)
+        ->and(app(GetAuditAssignment::class)->handle($fixture['partners'][0]['user']->id, 1, $record->id)['status'])->toBe('accepted');
+})->with(['America/New_York', 'Asia/Qatar']);
+
+it('returns an expired receipt after a worker or staff member reoffers the former recipient job', function (bool $worker): void {
+    $fixture = Fixture::make();
+    $record = Fixture::request($fixture);
+    $partner = Fixture::recipient($fixture, $record);
+    $this->travel(1)->hours();
+    if ($worker) {
+        expect(app(AdvanceExpiredAuditOffers::class)->handle(100))->toBe(1);
+    } else {
+        expect(app(AdvanceAuditAssignment::class)->handle($fixture['staff']->id, $record->id, 1, (string) Str::uuid())['code'])->toBe('ASSIGNMENT_ADVANCED');
+    }
+    foreach (['accept', 'decline'] as $decision) {
+        $receipt = Fixture::respond($partner['user'], $record, $decision, 'Cannot attend.');
+        expect($receipt['code'])->toBe('ASSIGNMENT_ACCEPTANCE_EXPIRED')->and($receipt['http_status'])->toBe(409)
+            ->and(json_encode($receipt, JSON_THROW_ON_ERROR))->not->toContain($record->fresh()->party_id);
+    }
+    expect(fn () => app(GetAuditAssignment::class)->handle($partner['user']->id, 1, $record->id))
+        ->toThrow(CommandRejection::class, 'ASSIGNMENT_ACCEPTANCE_EXPIRED');
+    expect($record->refresh()->revision)->toBe(2)->and($record->state['attempt'])->toBe(2);
+})->with([true, false]);
+
+it('rejects a late decline before worker pickup but still records a safety conflict', function (): void {
+    $fixture = Fixture::make();
+    $record = Fixture::request($fixture);
+    $partner = Fixture::recipient($fixture, $record);
+    $this->travel(1)->hours();
+    expect(Fixture::respond($partner['user'], $record, 'decline', 'Cannot attend.')['code'])->toBe('ASSIGNMENT_ACCEPTANCE_EXPIRED')
+        ->and($record->refresh()->revision)->toBe(1)
+        ->and(AuditAssignmentVersion::query()->count())->toBe(1);
+    expect(Fixture::respond($partner['user'], $record, 'conflict', 'New financial interest.', 'financial_interest')['code'])->toBe('CONFLICT_RECORDED')
+        ->and($record->refresh()->revision)->toBe(2);
+});
+
+it('keeps former declines and conflicts private when a later recipients offer expires', function (string $decision): void {
+    $fixture = Fixture::make(3);
+    $record = Fixture::request($fixture);
+    $partner = Fixture::recipient($fixture, $record);
+    Fixture::respond($partner['user'], $record, $decision, 'Cannot proceed.', $decision === 'conflict' ? 'other' : null);
+    $this->travel(1)->hours();
+    expect(app(AdvanceExpiredAuditOffers::class)->handle(100))->toBe(1);
+    expect(fn () => app(GetAuditAssignment::class)->handle($partner['user']->id, 1, $record->id))->toThrow(CommandRejection::class, 'ASSIGNMENT_NOT_FOUND');
+    expect(Fixture::respond($partner['user'], $record)['code'])->toBe('ASSIGNMENT_NOT_FOUND');
+})->with(['decline', 'conflict']);
+
+it('isolates a corrupt expired assignment and continues the remaining batch without logging private payloads', function (): void {
+    $first = Fixture::make(1);
+    $poisoned = Fixture::request($first);
+    $this->travel(1)->seconds();
+    $second = Fixture::make(2);
+    $healthy = Fixture::request($second);
+    DB::table('audit_assignments')->where('id', $poisoned->id)->update(['state' => 'private-corrupt-payload']);
+    $this->travel(2)->hours();
+    Log::shouldReceive('error')->once()->with('AUDIT_OFFER_ADVANCE_FAILED', [
+        'assignment_id' => $poisoned->id, 'exception_type' => DecryptException::class,
+    ]);
+    expect(app(AdvanceExpiredAuditOffers::class)->handle(100))->toBe(1)
+        ->and($healthy->refresh()->revision)->toBe(2)
+        ->and($poisoned->refresh()->revision)->toBe(1)
+        ->and(AuditAssignmentVersion::query()->where('assignment_id', $poisoned->id)->count())->toBe(1);
+});
+
+it('does not disclose Business authority failures to an unrelated Auditor', function (): void {
+    $fixture = Fixture::make(2);
+    $record = Fixture::request($fixture);
+    $other = array_values(array_filter($fixture['partners'], fn (array $partner): bool => $partner['party']->id !== $record->party_id))[0];
+    $fixture['authority']['people'][0]->forceFill(['verified_at' => null])->save();
+    expect(fn () => app(GetAuditAssignment::class)->handle($other['user']->id, 1, $record->id))->toThrow(CommandRejection::class, 'ASSIGNMENT_NOT_FOUND')
+        ->and(fn () => Fixture::respond($other['user'], $record))->toThrow(CommandRejection::class, 'ASSIGNMENT_NOT_FOUND');
 });
 
 it('atomically records a private conflict withdraws access and reoffers without resetting the deadline', function (): void {

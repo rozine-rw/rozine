@@ -19,6 +19,8 @@ test('database tests use PostgreSQL with a dedicated nonprivileged owner', funct
         ->and($identity->rolcreaterole)->toBeFalse()
         ->and(config('queue.batching.database'))->toBe('pgsql')
         ->and(config('queue.failed.database'))->toBe('pgsql');
+    expect(config('database.connections.pgsql.timezone'))->toBe('UTC')
+        ->and(DB::selectOne('SHOW TIME ZONE')->TimeZone)->toBe('UTC');
 });
 
 test('the test owner cannot connect to the application or demo database', function (): void {

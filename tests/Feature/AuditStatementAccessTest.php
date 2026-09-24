@@ -161,7 +161,7 @@ it('rejects an unrelated Auditor and does not infer private access from staff or
             expect(fn () => app(GetAuditStatements::class)->handle($other['user']->id, 1, $assignment->id))->toThrow(CommandRejection::class, 'ASSIGNMENT_NOT_FOUND');
         }
     }
-    expect(fn () => app(GetAuditStatements::class)->handle($fixture['authority']['users'][0]->id, 1, $assignment->id))->toThrow(IdentityViolation::class)
+    expect(fn () => app(GetAuditStatements::class)->handle($fixture['authority']['users'][0]->id, 1, $assignment->id))->toThrow(CommandRejection::class, 'ASSIGNMENT_NOT_FOUND')
         ->and(fn () => app(ReadAuditStatement::class)->handle($fixture['staff']->id, 1, $assignment->id, $sources['document_id']))->toThrow(IdentityViolation::class)
         ->and(fn () => app(GetAuditStatements::class)->handle($partner['user']->id, 1, 'missing'))->toThrow(CommandRejection::class, 'ASSIGNMENT_NOT_FOUND');
 });
@@ -177,6 +177,21 @@ it('preserves access to accepted work when new-offer availability is paused or c
     app(SetAuditorAvailability::class)->handle($partner['user']->id, 1, 3, false, (string) Str::uuid());
     expect(app(GetAuditStatements::class)->handle($partner['user']->id, 1, $assignment->id)['evidence']['revision'])->toBe(2)
         ->and(AuditorProfile::query()->firstOrFail()->state['accepting'])->toBeFalse();
+});
+
+it('retains authorized accepted evidence for late remediation without extending the Flash deadline', function (): void {
+    $this->freezeTime();
+    $fixture = Fixture::make(1);
+    $sources = Fixture::statements($fixture);
+    $assignment = Fixture::request($fixture);
+    $partner = $fixture['partners'][0];
+    Fixture::respond($partner['user'], $assignment);
+    $deadline = $assignment->state['complete_by'];
+    $this->travel(25)->hours();
+    expect(app(ReadAuditStatement::class)->handle($partner['user']->id, 1, $assignment->id, $sources['document_id'])['content'])->toBe(StatementFixture::csv())
+        ->and(app(GetAuditStatements::class)->handle($partner['user']->id, 1, $assignment->id)['transcription']['verified'])->toBeFalse()
+        ->and($assignment->refresh()->state['complete_by'])->toBe($deadline)
+        ->and($assignment->status)->toBe('accepted');
 });
 
 it('checks original and transcription integrity on the Auditor read path', function (string $fault): void {

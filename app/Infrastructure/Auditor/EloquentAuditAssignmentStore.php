@@ -24,6 +24,8 @@ use App\Models\AuditLocation;
 use App\Models\AuditorIndependenceReview;
 use App\Models\AuditorProfile;
 use Closure;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * @phpstan-import-type State from AuditEngagementState
@@ -76,7 +78,8 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         if (! in_array($decision, ['accept', 'decline', 'conflict'], true)) {
             throw new CommandRejection('ASSIGNMENT_DECISION_INVALID', 422);
         }
-        $businessId = $this->businessId($assignmentId);
+        $partyId = $this->actorPartyId($userId);
+        $businessId = $this->businessId($assignmentId, $partyId);
 
         return $this->scope($userId, $contextRevision, $businessId, $decision === 'accept',
             function (array $context, array $candidates) use ($userId, $contextRevision, $assignmentId, $expectedRevision, $decision, $conflictKind, $reason, $requestId): array {
@@ -101,6 +104,9 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                             if ($decision === 'decline' && $state['status'] !== 'offered') {
                                 throw new CommandRejection('ASSIGNMENT_NOT_OFFERED');
                             }
+                            if ($decision === 'decline' && $state['accept_by'] <= now('UTC')->format('Y-m-d\TH:i:s\Z')) {
+                                throw new CommandRejection('ASSIGNMENT_ACCEPTANCE_EXPIRED');
+                            }
                             $this->states->reason($reason);
                             if ($decision === 'conflict') {
                                 $this->states->conflict($conflictKind ?? '', $reason);
@@ -116,13 +122,15 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                             'accept' => 'ASSIGNMENT_ACCEPTED', 'decline' => 'ASSIGNMENT_DECLINED', default => 'CONFLICT_RECORDED',
                         }, ['assignment_id' => $record->id], $record->revision);
                     });
-            });
+            }, $decision === 'accept' ? [$partyId] : null);
     }
 
     /** @return View */
     public function get(int $userId, int $contextRevision, string $assignmentId): array
     {
-        return $this->scope($userId, $contextRevision, $this->businessId($assignmentId), true,
+        $partyId = $this->actorPartyId($userId);
+
+        return $this->scope($userId, $contextRevision, $this->businessId($assignmentId, $partyId), true,
             function (array $context, array $candidates) use ($assignmentId): array {
                 [$record, $candidate] = $this->current($context, $candidates, $assignmentId);
                 $state = $record->state;
@@ -137,7 +145,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                 return ['id' => $record->id, 'business_id' => $record->business_id, 'revision' => $record->revision,
                     'kind' => $state['kind'], 'status' => $state['status'], 'offered_at' => $state['offered_at'],
                     'accept_by' => $state['accept_by'], 'complete_by' => $state['complete_by'], 'visit_by' => $state['visit_by'], 'allowed_actions' => $actions];
-            });
+            }, [$partyId]);
     }
 
     /**
@@ -148,7 +156,9 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
      */
     public function withAccepted(int $userId, int $contextRevision, string $assignmentId, Closure $operation): mixed
     {
-        return $this->scope($userId, $contextRevision, $this->businessId($assignmentId), true,
+        $partyId = $this->actorPartyId($userId);
+
+        return $this->scope($userId, $contextRevision, $this->businessId($assignmentId, $partyId), true,
             function (array $context, array $candidates) use ($assignmentId, $operation): mixed {
                 [$record, $candidate, $profile] = $this->current($context, $candidates, $assignmentId);
                 if ($record->status !== 'accepted') {
@@ -161,7 +171,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                         'profile_revision' => $profile->revision, 'licence' => $candidate['standing']['licence'],
                         'expires_on' => $candidate['standing']['expires_on'], 'checked_at' => $candidate['standing']['checked_at'],
                     ]]);
-            });
+            }, [$partyId]);
     }
 
     /** @param AcceptedAssignment $assignment */
@@ -220,12 +230,12 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             if ($type !== 'audit.assignment') {
                 throw new CommandRejection('OPERATION_NOT_FOUND', 404);
             }
-            $this->scope($userId, $contextRevision, $this->businessId($id), false, function (array $context) use ($id, $partyId): void {
+            $this->scope($userId, $contextRevision, $this->businessId($id, $partyId), false, function (array $context) use ($id, $partyId): void {
                 if ($context['actor_party_id'] !== $partyId) {
                     throw new CommandRejection('OPERATION_NOT_FOUND', 404);
                 }
                 $this->participant(AuditAssignment::query()->lockForUpdate()->findOrFail($id), $partyId, false);
-            });
+            }, [$partyId]);
         });
     }
 
@@ -237,16 +247,20 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         $count = 0;
         $due = AuditAssignment::query()->where('status', 'offered')->where('accept_by', '<=', now('UTC')->format('Y-m-d\TH:i:s\Z'))->orderBy('accept_by')->orderBy('id')->limit($limit)->get();
         foreach ($due as $offer) {
-            $count += $this->scope(null, null, $offer->business_id, false, function (array $context, array $candidates) use ($offer): int {
-                $record = AuditAssignment::query()->lockForUpdate()->findOrFail($offer->id);
-                if ($record->status !== 'offered' || $record->state['accept_by'] > now('UTC')->format('Y-m-d\TH:i:s\Z')) {
-                    return 0;
-                }
-                $state = $this->offer($record->state, $context, $candidates);
-                $this->persist($record, $state, null, 'audit.assignment.expire', 'Offer expired without acceptance.', $candidates, $context);
+            try {
+                $count += $this->scope(null, null, $offer->business_id, false, function (array $context, array $candidates) use ($offer): int {
+                    $record = AuditAssignment::query()->lockForUpdate()->findOrFail($offer->id);
+                    if ($record->status !== 'offered' || $record->state['accept_by'] > now('UTC')->format('Y-m-d\TH:i:s\Z')) {
+                        return 0;
+                    }
+                    $state = $this->offer($record->state, $context, $candidates);
+                    $this->persist($record, $state, null, 'audit.assignment.expire', 'Offer expired without acceptance.', $candidates, $context);
 
-                return 1;
-            });
+                    return 1;
+                });
+            } catch (Throwable $exception) {
+                Log::error('AUDIT_OFFER_ADVANCE_FAILED', ['assignment_id' => $offer->id, 'exception_type' => $exception::class]);
+            }
         }
 
         return $count;
@@ -276,17 +290,20 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     }
 
     /**
-     * Business -> actor -> sorted Parties -> sorted profiles -> locations -> independence -> assignment -> journal.
-     * Candidate IDs are discovered before the transaction; new candidates join the next dispatch.
+     * Business -> actor -> sorted Parties -> sorted profiles -> locations -> independence.
+     * Responses lock assignment then journal; new requests lock journal then look up the assignment.
+     * The Business lock serializes both paths. Participant reads/acceptance lock only their candidate.
+     * The Party lock serializes capacity across Businesses and all logins for that Auditor.
      *
      * @template TResult
      *
      * @param  Closure(AuditContext, list<Candidate>): TResult  $operation
+     * @param  list<string>|null  $candidateIds
      * @return TResult
      */
-    private function scope(?int $userId, ?int $contextRevision, string $businessId, bool $requireVerified, Closure $operation): mixed
+    private function scope(?int $userId, ?int $contextRevision, string $businessId, bool $requireVerified, Closure $operation, ?array $candidateIds = null): mixed
     {
-        $ids = array_values(AuditorProfile::query()->orderBy('party_id')->get(['party_id'])->map(fn (AuditorProfile $profile): string => $profile->party_id)->all());
+        $ids = $candidateIds ?? array_values(AuditorProfile::query()->orderBy('party_id')->get(['party_id'])->map(fn (AuditorProfile $profile): string => $profile->party_id)->all());
 
         return $this->businesses->withAudit($userId, $contextRevision, $businessId, $ids, $requireVerified,
             function (array $context) use ($ids, $operation): mixed {
@@ -294,9 +311,9 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                 $businessId = $context['business']['id'];
                 $premises = AuditLocation::query()->where('business_id', $businessId)->lockForUpdate()->first();
                 $offices = AuditLocation::query()->whereIn('office_party_id', $ids)->orderBy('office_party_id')->lockForUpdate()->get()->keyBy('office_party_id');
-                $reviews = AuditorIndependenceReview::query()->where('business_id', $businessId)->orderBy('party_id')->lockForUpdate()->get()->keyBy('party_id');
+                $reviews = AuditorIndependenceReview::query()->where('business_id', $businessId)->whereIn('party_id', $ids)->orderBy('party_id')->lockForUpdate()->get()->keyBy('party_id');
                 $activeCounts = AuditAssignment::query()->whereIn('party_id', $ids)->where('status', 'accepted')->get(['party_id'])->countBy('party_id');
-                $lastOffers = AuditAssignmentVersion::query()->selectRaw('DISTINCT ON (party_id) party_id, created_at')->whereIn('party_id', $ids)->where('status', 'offered')->orderBy('party_id')->orderByDesc('created_at')->get()->keyBy('party_id');
+                $lastOffers = AuditAssignmentVersion::query()->selectRaw('DISTINCT ON (party_id) party_id, snapshot')->whereIn('party_id', $ids)->where('status', 'offered')->orderBy('party_id')->orderByDesc('id')->get()->keyBy('party_id');
                 $reports = array_values(AuditAssignment::query()->where('business_id', $businessId)->where('status', 'completed')->orderByDesc('completed_at')->orderByDesc('id')->limit(3)->get()->map(fn (AuditAssignment $report): string => $report->party_id ?? '')->all());
                 $conflicted = AuditConflictDeclaration::query()->where('business_id', $businessId)->pluck('party_id')->all();
                 $candidates = [];
@@ -316,7 +333,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                     $candidates[] = ['id' => $profile->party_id, 'standing' => $profile->state['standing'], 'accepting' => $profile->state['accepting'],
                         'active_count' => $activeCounts->get($profile->party_id, 0),
                         'consecutive_reports' => $this->consecutive($reports, $profile->party_id),
-                        'last_assigned_at' => $last?->created_at?->utc()->format('Y-m-d\TH:i:s\Z'), 'office' => $office, 'premises' => $site,
+                        'last_assigned_at' => $last === null ? null : $last->snapshot['state']['offered_at'], 'office' => $office, 'premises' => $site,
                         'distance_upper_bound_m' => $office['point'] === null || $site['point'] === null ? null : $this->distance->upperBound($office['point'], $site['point']),
                         ...$facts, 'current_role_tie' => $facts['current_role_tie'] || ($tie['current'] ?? false),
                         'role_tie_ended_at' => $tie === null ? $facts['role_tie_ended_at'] : max($tie['ended_at'], $facts['role_tie_ended_at']),
@@ -371,14 +388,34 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
 
     private function participant(AuditAssignment $record, string $partyId, bool $current): void
     {
-        if (! in_array($partyId, $record->state['tried'], true) || ($current && ($record->party_id !== $partyId || ! in_array($record->status, ['offered', 'accepted'], true)))) {
+        if (! in_array($partyId, $record->state['tried'], true)) {
+            throw new CommandRejection('ASSIGNMENT_NOT_FOUND', 404);
+        }
+        if ($current && ($record->party_id !== $partyId || ! in_array($record->status, ['offered', 'accepted'], true))) {
+            $offer = AuditAssignmentVersion::query()->where('assignment_id', $record->id)->where('party_id', $partyId)
+                ->where('status', 'offered')->orderByDesc('revision')->first(['revision']);
+            $exit = $offer === null ? null : AuditAssignmentVersion::query()->where('assignment_id', $record->id)
+                ->where('revision', '>', $offer->revision)->orderBy('revision')->first(['command']);
+            if ($exit !== null && in_array($exit->command, ['audit.assignment.expire', 'audit.assignment.advance'], true)) {
+                throw new CommandRejection('ASSIGNMENT_ACCEPTANCE_EXPIRED');
+            }
             throw new CommandRejection('ASSIGNMENT_NOT_FOUND', 404);
         }
     }
 
-    private function businessId(string $id): string
+    private function actorPartyId(int $userId): string
     {
-        return AuditAssignment::query()->find($id)->business_id ?? throw new CommandRejection('ASSIGNMENT_NOT_FOUND', 404);
+        return $this->identities->forUser($userId)['party']['id'] ?? throw new IdentityViolation('IDENTITY_NOT_LINKED');
+    }
+
+    private function businessId(string $id, ?string $participantId = null): string
+    {
+        $record = AuditAssignment::query()->find($id) ?? throw new CommandRejection('ASSIGNMENT_NOT_FOUND', 404);
+        if ($participantId !== null) {
+            $this->participant($record, $participantId, false);
+        }
+
+        return $record->business_id;
     }
 
     private function revision(AuditAssignment $record, int $expected): void

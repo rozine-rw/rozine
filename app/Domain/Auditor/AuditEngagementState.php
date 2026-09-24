@@ -31,7 +31,7 @@ final class AuditEngagementState
     public function offer(array $state, ?string $partyId, DateTimeImmutable $now): array
     {
         $clock = $this->clock->offer($state['kind'], new DateTimeImmutable($state['original_dispatch_at']), $now, $state['attempt'] + 1);
-        $next = [...$state, 'party_id' => null, 'status' => 'operations', 'accept_by' => null, 'visit_by' => null, 'accepted_at' => null,
+        $next = [...$state, 'party_id' => null, 'status' => 'operations', 'offered_at' => null, 'accept_by' => null, 'visit_by' => null, 'accepted_at' => null,
             'operations_reason' => $clock['operations_required'] ? 'AUDIT_DISPATCH_EXHAUSTED' : 'AUDIT_NO_ELIGIBLE_PARTNER'];
         if ($partyId === null || $clock['operations_required']) {
             return $next;

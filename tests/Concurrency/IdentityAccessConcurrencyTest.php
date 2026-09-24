@@ -741,6 +741,67 @@ it('advances an expired audit only once across duplicate scheduler workers', fun
         ->and(AuditAssignmentVersion::query()->count())->toBe(2);
 });
 
+it('never accepts an offer at its deadline while the expiry worker reoffers it', function (): void {
+    $this->freezeTime();
+    $fixture = AuditAssignmentFixture::make();
+    $assignment = AuditAssignmentFixture::request($fixture);
+    $partner = AuditAssignmentFixture::recipient($fixture, $assignment);
+    $this->travel(1)->hours();
+    expect(runIdentityContenders([
+        function () use ($partner, $assignment): void {
+            expect(AuditAssignmentFixture::respond($partner['user'], $assignment)['code'])->toBe('ASSIGNMENT_ACCEPTANCE_EXPIRED');
+        },
+        function (): void {
+            app(AdvanceExpiredAuditOffers::class)->handle(100);
+        },
+    ]))->toBe([0, 0]);
+    expect($assignment->refresh()->revision)->toBe(2)->and($assignment->state['attempt'])->toBe(2)
+        ->and($assignment->status)->toBe('offered')->and($assignment->party_id)->not->toBe($partner['party']->id);
+});
+
+it('does not lock an unrelated Auditor during protected accepted evidence reads', function (): void {
+    $fixture = AuditAssignmentFixture::make(2);
+    $assignment = AuditAssignmentFixture::request($fixture);
+    $partner = AuditAssignmentFixture::recipient($fixture, $assignment);
+    AuditAssignmentFixture::respond($partner['user'], $assignment);
+    $other = array_values(array_filter($fixture['partners'], fn (array $candidate): bool => $candidate['party']->id !== $partner['party']->id))[0];
+    config(['database.connections.unrelated_auditor' => config('database.connections.pgsql')]);
+    DB::connection('unrelated_auditor')->statement("SET lock_timeout = '500ms'");
+    $default = DB::getDefaultConnection();
+    app(WithAcceptedAuditAssignment::class)->handle($partner['user']->id, 1, $assignment->id, function () use ($other, $default): void {
+        DB::setDefaultConnection('unrelated_auditor');
+        try {
+            expect(app(SetAuditorAvailability::class)->handle($other['user']->id, 1, 3, false, (string) Str::uuid())['code'])->toBe('AVAILABILITY_UPDATED');
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('unrelated_auditor');
+        }
+    });
+    expect(AuditorProfile::query()->where('party_id', $other['party']->id)->firstOrFail()->state['accepting'])->toBeFalse();
+});
+
+it('serializes a Business conflict against another Business dispatch for the same Auditor', function (): void {
+    $this->freezeTime();
+    $first = AuditAssignmentFixture::make(1);
+    $second = AuditAssignmentFixture::make(0);
+    $partner = $first['partners'][0];
+    AuditAssignmentFixture::independence($second['staff'], $second['business'], $partner['party']->id);
+    $assignment = AuditAssignmentFixture::request($first);
+    AuditAssignmentFixture::respond($partner['user'], $assignment);
+    $assignment->refresh();
+    expect(runIdentityContenders([
+        function () use ($partner, $assignment): void {
+            AuditAssignmentFixture::respond($partner['user'], $assignment, 'conflict', 'Interest in the first Business.', 'financial_interest');
+        },
+        function () use ($second): void {
+            AuditAssignmentFixture::request($second);
+        },
+    ]))->toBe([0, 0]);
+    expect($assignment->refresh()->status)->toBe('operations')
+        ->and(AuditAssignment::query()->where('business_id', $second['business'])->firstOrFail()->party_id)->toBe($partner['party']->id)
+        ->and(AuditConflictDeclaration::query()->count())->toBe(1);
+});
+
 it('commits one conflict and one reassignment for concurrent identical declarations', function (): void {
     $this->freezeTime();
     $fixture = AuditAssignmentFixture::make();
