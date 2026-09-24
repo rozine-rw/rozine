@@ -1,4 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
+import jobs from './jobs'
+import conflicts from './conflicts'
 import accreditation from './accreditation'
 import availability from './availability'
 import operations from './operations'
@@ -167,6 +169,8 @@ profile.form = profileForm
 const auditor = {
     home: Object.assign(home, home),
     profile: Object.assign(profile, profile),
+    jobs: Object.assign(jobs, jobs),
+    conflicts: Object.assign(conflicts, conflicts),
     accreditation: Object.assign(accreditation, accreditation),
     availability: Object.assign(availability, availability),
     operations: Object.assign(operations, operations),
