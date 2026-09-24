@@ -40,6 +40,10 @@
                 }
             }
         },
+        "standing": {
+            "current": false,
+            "reason": "ACCREDITATION_REQUIRED"
+        },
         "availability": {
             "accepting": false,
             "radius_km": 30,

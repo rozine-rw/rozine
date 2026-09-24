@@ -26,6 +26,10 @@
                 "status": "none"
             }
         },
+        "standing": {
+            "current": true,
+            "reason": null
+        },
         "availability": {
             "accepting": true,
             "radius_km": 30,

@@ -32,6 +32,8 @@
         },
         "in_progress": [],
         "standing": {
+            "current": false,
+            "reason": "ACCREDITATION_REQUIRED",
             "on_time_pct": null,
             "avg_variance_pct": null,
             "variance_flagged": false,

@@ -229,6 +229,10 @@ export type AuditorIdentity = {
  * here; only the partner's own on/off choice is a command.
  */
 export type AuditorAvailability = {
+    /**
+     * The partner's saved preference, not whether work is arriving: dispatch also needs
+     * `standing.current`.
+     */
     accepting: boolean;
     radius_km: number;
     max_active: number;
@@ -238,7 +242,23 @@ export type AuditorAvailability = {
     update: RouteAction;
 };
 
-export type AuditorStanding = {
+/** Why a partner's standing does not let dispatch offer them work right now. */
+export type StandingReason =
+    | 'ACCREDITATION_REQUIRED'
+    | 'ACCREDITATION_EXPIRED'
+    | 'ACCREDITATION_SUSPENDED'
+    | 'STANDING_CHECK_REQUIRED';
+
+/**
+ * Whether dispatch may offer this partner work right now, evaluated fresh by the server from the
+ * persisted record (#96). It is separate from `availability.accepting`, the partner's saved
+ * preference: work arrives only when both hold. The standing-check cadence is server policy.
+ */
+export type DispatchStanding =
+    | { current: true; reason: null }
+    | { current: false; reason: StandingReason };
+
+export type AuditorStanding = DispatchStanding & {
     /** Share of jobs closed inside their clock, or null before the first closes. */
     on_time_pct: number | null;
     /** Average recorded variance, one decimal: "2.1". Null before any finding. */
@@ -919,6 +939,8 @@ export type AuditorProfileProps = AuditorPageContract & {
     on_time_pct: number | null;
     jobs_done: number;
     accreditation: Accreditation;
+    /** Whether dispatch may offer work now; read with `availability.accepting`. */
+    standing: DispatchStanding;
     availability: AuditorAvailability;
     /** Where the accreditation commands go; `allowed_actions` decides which are offered. */
     actions: { submit: RouteAction; withdraw: RouteAction };

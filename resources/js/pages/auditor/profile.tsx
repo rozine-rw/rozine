@@ -43,7 +43,10 @@ export default function AuditorProfile(props: AuditorProfileProps) {
         />
     );
     const availability = (
-        <AvailabilitySection availability={props.availability} />
+        <AvailabilitySection
+            availability={props.availability}
+            standing={props.standing}
+        />
     );
 
     return (
