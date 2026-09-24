@@ -103,3 +103,19 @@ export function HomeBody({
         </div>
     );
 }
+
+/**
+ * The same two columns with nothing in them, for a sheet opened without Home (no stand-in
+ * balances). A phone shows only the sheet.
+ */
+export function BlankBody({ overlay }: { overlay: ColumnOverlay }) {
+    return (
+        <div className="lg:flex lg:h-full lg:gap-4 lg:px-5 lg:pt-4 lg:pb-5">
+            {(['left', 'right'] as const).map((column) => (
+                <div key={column} data-rzcol className={COLUMN}>
+                    {overlay.column === column && overlay.content}
+                </div>
+            ))}
+        </div>
+    );
+}

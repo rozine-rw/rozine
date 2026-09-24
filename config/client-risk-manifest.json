@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "0e4124132b549ba97bacd3ad3e763bdcbeb12fd9d38dd3ad864d44d44a172fb5",
-    "coverageSetSha256": "6b812b7c014b8db7840df62c1f04369d6039e625d5331685273630303de3d8aa",
+    "sourceManifestSha256": "573548a27591b3c9b438feac0214482283ac1495a9036043cc0d9d8e59db3881",
+    "coverageSetSha256": "aed1d88d76762b5b06b94cbf812b52eee73ea429074bc830df732ae9336c4e96",
     "thresholds": {
         "critical": {
             "global": {
@@ -113,11 +113,14 @@
         "resources/js/components/auditor/tab-columns.tsx",
         "resources/js/components/auditor/ui.tsx",
         "resources/js/components/breadcrumbs.tsx",
+        "resources/js/components/business/apply/operation-outcome.ts",
+        "resources/js/components/business/apply/outcome-banner.tsx",
         "resources/js/components/business/apply/step-business.tsx",
         "resources/js/components/business/apply/step-heading.tsx",
         "resources/js/components/business/apply/step-raise.tsx",
         "resources/js/components/business/apply/step-review.tsx",
         "resources/js/components/business/apply/submitted.tsx",
+        "resources/js/components/business/apply/use-application-command.ts",
         "resources/js/components/business/apply/wizard-cta.tsx",
         "resources/js/components/business/apply/wizard-frame.tsx",
         "resources/js/components/business/business-auth-frame.tsx",

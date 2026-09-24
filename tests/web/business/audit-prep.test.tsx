@@ -44,7 +44,9 @@ describe('Get ready for your audit', () => {
         ).toBeInTheDocument();
         expect(sheet.queryByRole('status')).not.toBeInTheDocument();
         expect(
-            sheet.getByText(/You get 60 minutes to add a recap and co-sign/),
+            sheet.getByText(
+                'You add a recap and co-sign by 7 Oct, or dispute with counter-proof.',
+            ),
         ).toBeInTheDocument();
         expect(sheet.getByRole('link', { name: 'Back' })).toHaveAttribute(
             'href',

@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 import {
@@ -10,68 +10,190 @@ import {
     vi,
 } from 'vite-plus/test';
 import BusinessApply from '@/pages/business/apply';
-import type { BusinessApplyProps } from '@/types/business';
+import type {
+    ApplicationQuote,
+    ApplicationSnapshot,
+    BusinessApplyProps,
+    OperationResource,
+} from '@/types/business';
 import businessStep from '../../../resources/fixtures/ui/business-apply-business.json';
+import cosignStep from '../../../resources/fixtures/ui/business-apply-cosign.json';
+import ineligibleStep from '../../../resources/fixtures/ui/business-apply-ineligible.json';
+import minimalStep from '../../../resources/fixtures/ui/business-apply-live-minimal.json';
+import staleStep from '../../../resources/fixtures/ui/business-apply-quote-stale.json';
 import raiseStep from '../../../resources/fixtures/ui/business-apply-raise.json';
+import refusedStep from '../../../resources/fixtures/ui/business-apply-refused.json';
 import reviewStep from '../../../resources/fixtures/ui/business-apply-review.json';
 import submittedStep from '../../../resources/fixtures/ui/business-apply-submitted.json';
+import unknownStep from '../../../resources/fixtures/ui/business-apply-unknown.json';
 
-type Transform = (data: Record<string, unknown>) => Record<string, unknown>;
+vi.setConfig({ testTimeout: 30_000 });
+
+type Responder = (options: {
+    onHttpException?: (response: {
+        status: number;
+        data: string;
+        headers: Record<string, string>;
+    }) => void;
+}) => Promise<unknown>;
 
 const inertia = vi.hoisted(() => ({
     visit: vi.fn(),
     reload: vi.fn(),
-    posts: [] as { url: string; payload: Record<string, unknown> }[],
+    body: {} as Record<string, unknown>,
+    calls: [] as {
+        url: string;
+        method: string;
+        body: Record<string, unknown>;
+    }[],
+    queue: [] as Responder[],
     errors: {} as Record<string, string>,
-    processing: false,
 }));
 
-vi.mock('@inertiajs/react', async () => {
-    const { useRef, useState } = await import('react');
-
-    return {
-        Head: ({ title }: { title: string }) => (
-            <span data-testid="head">{title}</span>
-        ),
-        Link: ({
-            href,
-            children,
-            ...props
-        }: Omit<ComponentProps<'a'>, 'href'> & { href: { url: string } }) => (
-            <a href={href.url} {...props}>
-                {children}
-            </a>
-        ),
-        router: { visit: inertia.visit, reload: inertia.reload },
-        useForm: <T extends Record<string, unknown>>(initial: T) => {
-            const [data, setData] = useState(initial);
-            const transform = useRef<Transform>((value) => value);
-
-            return {
-                data,
-                setData: (next: (current: T) => T) => setData(next),
-                errors: inertia.errors,
-                processing: inertia.processing,
-                transform: (fn: Transform) => {
-                    transform.current = fn;
-                },
-                post: (url: string) =>
-                    inertia.posts.push({
-                        url,
-                        payload: transform.current(data),
-                    }),
-            };
+vi.mock('@inertiajs/react', () => ({
+    Head: ({ title }: { title: string }) => (
+        <span data-testid="head">{title}</span>
+    ),
+    Link: ({
+        href,
+        children,
+        ...props
+    }: Omit<ComponentProps<'a'>, 'href'> & { href: { url: string } }) => (
+        <a href={href.url} {...props}>
+            {children}
+        </a>
+    ),
+    router: { visit: inertia.visit, reload: inertia.reload },
+    useHttp: () => ({
+        errors: inertia.errors,
+        processing: false,
+        clearErrors: () => undefined,
+        transform: (callback: () => Record<string, unknown>) => {
+            inertia.body = callback();
         },
-    };
-});
+        submit: (
+            route: { url: string; method: string },
+            options: Parameters<Responder>[0],
+        ) => {
+            inertia.calls.push({ ...route, body: inertia.body });
+            const respond = inertia.queue.shift();
+
+            return respond ? respond(options) : new Promise(() => undefined);
+        },
+    }),
+}));
+
+type ReadyQuote = Extract<ApplicationQuote, { status: 'ready' }>;
 
 const props = (fixture: { props: unknown }) =>
     structuredClone(fixture.props) as BusinessApplyProps;
 
+const ALL = ['application.save', 'application.evaluate', 'application.submit'];
+
+const snapshotOf = (
+    page: BusinessApplyProps,
+    overrides: Partial<ApplicationSnapshot> = {},
+): ApplicationSnapshot => ({
+    application: page.application,
+    quote: page.quote,
+    acceptance: page.acceptance,
+    submission: page.submission,
+    next: { url: '/preview/business-apply-review', method: 'get' },
+    ...overrides,
+});
+
+const operation = (
+    overrides: Partial<OperationResource> = {},
+): OperationResource => ({
+    operation_id: 'op-1',
+    status: 'completed',
+    code: 'APPLICATION_SAVED',
+    data: null,
+    revision: 4,
+    policy_version: 'engineering-2026-09-23.4',
+    server_time: '2026-09-24T09:16:00+02:00',
+    allowed_actions: ALL,
+    field_errors: {},
+    ...overrides,
+});
+
+const answers =
+    (resource?: OperationResource): Responder =>
+    () =>
+        Promise.resolve(resource);
+
+const fails =
+    (status: number, body?: unknown): Responder =>
+    (options) => {
+        options.onHttpException?.({
+            status,
+            data: body === undefined ? '' : JSON.stringify(body),
+            headers: {},
+        });
+
+        return Promise.reject(new Error(`HTTP ${status}`));
+    };
+
+const offline = (): Responder => () =>
+    Promise.reject(new Error('Network error'));
+
+/** A 25M, 4-month quote: the request the autosave tests type. */
+const quoteFor25m = (base: ReadyQuote): ReadyQuote => ({
+    ...base,
+    quote_id: 'QTE-2026-0412-03',
+    quote_revision: 3,
+    requested_principal: { currency: 'RWF', amount: '25000000' },
+    principal: { currency: 'RWF', amount: '25000000' },
+    term_months: 4,
+    rate_pct: '10.6',
+    interest: { currency: 'RWF', amount: '2650000' },
+    total: { currency: 'RWF', amount: '27650000' },
+    units: '5000',
+    schedule: [1, 2, 3, 4].map((instalment) => ({
+        instalment,
+        amount: { currency: 'RWF' as const, amount: '6912500' },
+    })),
+});
+
+const typeRequest = async (user: ReturnType<typeof userEvent.setup>) => {
+    const target = screen.getByLabelText('Fundraising target (RWF)');
+
+    await user.clear(target);
+    await user.type(target, '025000000x');
+    await user.click(screen.getByRole('button', { name: '4' }));
+};
+
+const acceptEverything = async (
+    user: ReturnType<typeof userEvent.setup>,
+    page: BusinessApplyProps,
+) => {
+    await user.click(
+        screen.getByRole('checkbox', { name: /^I accept this offer/u }),
+    );
+
+    for (const disclosure of page.acceptance.disclosures) {
+        await user.click(
+            screen.getByRole('checkbox', { name: disclosure.text }),
+        );
+    }
+
+    await user.click(
+        screen.getByRole('checkbox', {
+            name: 'I agree to the Terms & Conditions.',
+        }),
+    );
+    await user.click(
+        screen.getByRole('checkbox', { name: 'I have read the Privacy Note.' }),
+    );
+    await user.click(screen.getByLabelText('Your full name'));
+    await user.paste('Robert Mugisha');
+};
+
 beforeEach(() => {
-    inertia.posts = [];
+    inertia.calls = [];
+    inertia.queue = [];
+    inertia.body = {};
     inertia.errors = {};
-    inertia.processing = false;
 });
 
 afterEach(() => {
@@ -96,7 +218,11 @@ describe('Apply — step 1, business & finances', () => {
             screen.getByText('✓ Statements verified · OCR'),
         ).toBeInTheDocument();
         expect(screen.getByText('Est. 2018')).toBeInTheDocument();
-        expect(screen.getByText('Board chair')).toBeInTheDocument();
+        expect(screen.getByText('Chief Executive Officer')).toBeInTheDocument();
+        expect(screen.getByText('Board Chair')).toBeInTheDocument();
+        expect(
+            screen.queryByText('Not eligible to raise yet'),
+        ).not.toBeInTheDocument();
         expect(
             screen.getByText('Financial standing · 5-year'),
         ).toBeInTheDocument();
@@ -104,6 +230,7 @@ describe('Apply — step 1, business & finances', () => {
         expect(screen.getByText('RWF 1.6B')).toBeInTheDocument();
         expect(screen.getByText('✓ CRB verified')).toBeInTheDocument();
         expect(screen.getByText('RWF 33,915,000')).toBeInTheDocument();
+        expect(screen.queryByText('Unavailable')).not.toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Close' })).toHaveAttribute(
             'href',
             '/preview/business-home',
@@ -115,39 +242,57 @@ describe('Apply — step 1, business & finances', () => {
             url: '/preview/business-apply-raise',
             method: 'get',
         });
+        expect(inertia.calls).toHaveLength(0);
     });
 
-    it('reads a business with no audit, capacity, officers or verifications yet', () => {
-        const pending = props(businessStep);
+    it('explains ineligibility in the server’s words and shows missing facts as unavailable', () => {
+        render(<BusinessApply {...props(ineligibleStep)} />);
 
-        pending.evidence = {
-            ...pending.evidence,
+        expect(
+            screen.getByText('Not eligible to raise yet'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                /^A first raise needs 36 complete, consecutive months/u,
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getAllByText('Unavailable')).toHaveLength(5);
+        expect(screen.getAllByText('Pending audit')).toHaveLength(2);
+        expect(screen.getByText('Est. 2023')).toBeInTheDocument();
+        expect(screen.queryByText('✓ CRB verified')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Continue' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('reads a business with no officers, founding year or verifications, and offers no dead Continue', () => {
+        const bare = props(businessStep);
+
+        bare.evidence = {
+            ...bare.evidence,
             business: {
-                ...pending.evidence.business,
+                ...bare.evidence.business,
                 established_year: null,
                 officers: [],
             },
             verified: { registry: false, statements: false },
-            rating: null,
-            debt_verified: false,
-            capacity: null,
         };
-        pending.links.next = null;
+        bare.links.next = null;
 
-        render(<BusinessApply {...pending} />);
+        render(<BusinessApply {...bare} />);
 
         expect(screen.queryByText('✓ RDB verified')).not.toBeInTheDocument();
-        expect(screen.queryByText('Board chair')).not.toBeInTheDocument();
-        expect(screen.queryByText('✓ CRB verified')).not.toBeInTheDocument();
-        expect(screen.getAllByText('Pending audit')).toHaveLength(2);
+        expect(screen.queryByText('Board Chair')).not.toBeInTheDocument();
+        expect(screen.queryByText(/^Est\./u)).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Continue' }),
+        ).not.toBeInTheDocument();
     });
 });
 
-describe('Apply — step 2, your raise', () => {
-    it('shows the server quote and asks for a fresh one only after typing settles', async () => {
+describe('Apply — step 2, the quote', () => {
+    it('reads the server quote on load — offer, schedule and residual — without evaluating', () => {
         vi.useFakeTimers({ shouldAdvanceTime: true });
-        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-
         render(<BusinessApply {...props(raiseStep)} />);
 
         expect(
@@ -155,80 +300,274 @@ describe('Apply — step 2, your raise', () => {
         ).toHaveValue('Cold-Chain Hub');
         expect(screen.getByText('14/40')).toBeInTheDocument();
         expect(screen.getByLabelText('Fundraising target (RWF)')).toHaveValue(
-            '30,000,000',
+            '35,000,000',
         );
-        expect(screen.getByText('10.8%')).toBeInTheDocument();
-        expect(screen.getByText('6,000')).toBeInTheDocument();
-        expect(screen.getByText('RWF 3,240,000')).toBeInTheDocument();
-        expect(screen.getByText('RWF 33,240,000')).toBeInTheDocument();
-        expect(screen.getByText('RWF 5,540,000 / month')).toBeInTheDocument();
+        expect(screen.getByText('10.9%')).toBeInTheDocument();
+        expect(screen.getByText('6,783')).toBeInTheDocument();
+        expect(screen.getByText('RWF 33,915,000')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'You asked for RWF 35,000,000 · this is the offer you accept when you sign',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByText('RWF 3,696,735')).toBeInTheDocument();
+        expect(screen.getByText('RWF 37,611,735')).toBeInTheDocument();
+
+        const schedule = within(
+            screen.getByRole('list', { name: 'Repayment schedule' }),
+        ).getAllByRole('listitem');
+
+        expect(schedule).toHaveLength(6);
+        expect(schedule[0]).toHaveTextContent('Instalment 1RWF 6,268,622');
+        expect(schedule[5]).toHaveTextContent(
+            'Instalment 6 · finalRWF 6,268,625',
+        );
         expect(
             screen.queryByText('Investor protection reserve'),
         ).not.toBeInTheDocument();
-        act(() => vi.advanceTimersByTime(1000));
-        expect(inertia.reload).not.toHaveBeenCalled();
 
-        const target = screen.getByLabelText('Fundraising target (RWF)');
+        act(() => {
+            vi.advanceTimersByTime(2000);
+        });
+        expect(inertia.calls).toHaveLength(0);
+    });
 
-        await user.clear(target);
-        await user.type(target, '025000000x');
-        expect(target).toHaveValue('25,000,000');
-        await user.click(screen.getByRole('button', { name: '4' }));
+    it('saves the typed request after 450 ms, evaluates the saved draft, then shows the new quote', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+        const page = props(raiseStep);
+        const saved = {
+            ...page.application,
+            revision: 4,
+            target: { currency: 'RWF' as const, amount: '25000000' },
+            term_months: 4 as const,
+        };
+        const quote = quoteFor25m(page.quote as ReadyQuote);
+
+        inertia.queue.push(
+            answers(
+                operation({
+                    data: snapshotOf(page, { application: saved }),
+                }),
+            ),
+            answers(
+                operation({
+                    code: 'APPLICATION_EVALUATED',
+                    revision: 5,
+                    data: snapshotOf(page, {
+                        application: { ...saved, revision: 5 },
+                        quote,
+                    }),
+                }),
+            ),
+            answers(
+                operation({
+                    revision: 6,
+                    data: snapshotOf(page, {
+                        application: { ...saved, revision: 6 },
+                        quote,
+                    }),
+                }),
+            ),
+        );
+        render(<BusinessApply {...page} />);
+
+        await typeRequest(user);
+        expect(screen.getByLabelText('Fundraising target (RWF)')).toHaveValue(
+            '25,000,000',
+        );
         expect(screen.getByRole('button', { name: '4' })).toHaveAttribute(
             'aria-pressed',
             'true',
         );
-        act(() => vi.advanceTimersByTime(450));
-
-        expect(inertia.reload).toHaveBeenCalledTimes(1);
-
-        const [{ only, data, onStart, onFinish }] = inertia.reload.mock
-            .lastCall as [
-            {
-                only: string[];
-                data: Record<string, unknown>;
-                onStart: () => void;
-                onFinish: () => void;
-            },
-        ];
-
-        expect(only).toEqual(['quote']);
-        expect(data).toEqual({ target: '25000000', term_months: 4 });
-        act(() => onStart());
         expect(
             screen.getByRole('button', { name: 'Continue' }),
         ).toHaveAttribute('aria-disabled', 'true');
-        act(() => onFinish());
+        expect(inertia.calls).toHaveLength(0);
+
+        act(() => {
+            vi.advanceTimersByTime(450);
+        });
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(2));
+
+        const [save, evaluate] = inertia.calls;
+
+        expect(save).toEqual({
+            url: '/preview/business-apply-draft',
+            method: 'post',
+            body: {
+                title: 'Cold-Chain Hub',
+                target: '25000000',
+                term_months: 4,
+                use_of_funds: ['equipment', 'expansion'],
+                story: page.application.story,
+                step: 'raise',
+                identity_context_revision: 4,
+                expected_revision: 3,
+                request_id: expect.any(String),
+            },
+        });
+        expect(evaluate).toEqual({
+            url: '/preview/business-apply-evaluations',
+            method: 'post',
+            body: {
+                target: '25000000',
+                term_months: 4,
+                evidence_version: 'ev-2026-09-21.3',
+                identity_context_revision: 4,
+                expected_revision: 4,
+                request_id: expect.any(String),
+            },
+        });
+        expect(evaluate.body.request_id).not.toBe(save.body.request_id);
+
+        expect(await screen.findByText('RWF 27,650,000')).toBeInTheDocument();
+        expect(screen.getByText('5,000')).toBeInTheDocument();
+        expect(screen.queryByText(/^You asked for/u)).not.toBeInTheDocument();
         expect(
-            screen.getByRole('button', { name: 'Continue' }),
-        ).not.toHaveAttribute('aria-disabled');
+            within(
+                screen.getByRole('list', { name: 'Repayment schedule' }),
+            ).getAllByRole('listitem'),
+        ).toHaveLength(4);
+        expect(inertia.reload).toHaveBeenCalledWith({
+            only: [
+                'allowed_actions',
+                'identity_context_revision',
+                'server_time',
+                'evidence',
+            ],
+        });
+
+        const cta = screen.getByRole('button', { name: 'Continue' });
+
+        expect(cta).not.toHaveAttribute('aria-disabled');
+        await user.click(screen.getByRole('button', { name: 'Hiring' }));
+        await user.click(screen.getByRole('button', { name: 'Expansion' }));
+        await user.click(cta);
+
+        await waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith({
+                url: '/preview/business-apply-review',
+                method: 'get',
+            }),
+        );
+        expect(inertia.calls[2].body).toMatchObject({
+            target: '25000000',
+            term_months: 4,
+            use_of_funds: ['equipment', 'hiring'],
+            step: 'raise',
+            expected_revision: 5,
+        });
     });
 
-    it('saves the raise at its revision when complete', async () => {
-        const user = userEvent.setup();
+    it('shows a refused evaluation in the server’s words and never resends the same request', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+        const page = props(raiseStep);
+        const refusal: ApplicationQuote = {
+            status: 'refused',
+            code: 'DSCR_BELOW_CUTOFF',
+            message: 'Cash flow does not cover RWF 25,000,000 over 4 months.',
+        };
 
+        inertia.queue.push(
+            answers(operation({ data: snapshotOf(page) })),
+            answers(
+                operation({
+                    code: 'APPLICATION_EVALUATED',
+                    data: snapshotOf(page, { quote: refusal }),
+                }),
+            ),
+        );
+        render(<BusinessApply {...page} />);
+
+        await typeRequest(user);
+        act(() => {
+            vi.advanceTimersByTime(450);
+        });
+
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            'Cash flow does not cover RWF 25,000,000 over 4 months.',
+        );
+        expect(
+            screen.getByLabelText('Fundraising target (RWF)'),
+        ).toHaveAttribute('aria-invalid', 'true');
+
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(
+            screen.getByText('Complete this step to continue'),
+        ).toBeInTheDocument();
+        act(() => {
+            vi.advanceTimersByTime(2000);
+        });
+        expect(inertia.calls).toHaveLength(2);
+    });
+
+    it('opens on a refusal without re-evaluating it', () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        render(<BusinessApply {...props(refusedStep)} />);
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            /^Your verified cash flow does not cover repayments/u,
+        );
+        act(() => {
+            vi.advanceTimersByTime(2000);
+        });
+        expect(inertia.calls).toHaveLength(0);
+    });
+
+    it('evaluates a saved draft that has no quote yet, without saving it again', async () => {
+        const page = props(raiseStep);
+
+        page.quote = null;
+        render(<BusinessApply {...page} />);
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(1));
+        expect(inertia.calls[0].url).toBe(
+            '/preview/business-apply-evaluations',
+        );
+        expect(inertia.calls[0].body).toMatchObject({
+            target: '35000000',
+            term_months: 6,
+            expected_revision: 3,
+        });
+        expect(screen.getByRole('button', { name: 'Saving…' })).toBeDisabled();
+    });
+
+    it('stops on a version conflict, refreshes, and asks again only when told to', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+        inertia.queue.push(fails(409, { code: 'VERSION_CONFLICT' }));
         render(<BusinessApply {...props(raiseStep)} />);
 
-        await user.click(screen.getByRole('button', { name: 'Inventory' }));
-        await user.click(screen.getByRole('button', { name: 'Expansion' }));
-        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        await typeRequest(user);
+        act(() => {
+            vi.advanceTimersByTime(450);
+        });
 
-        expect(inertia.posts).toEqual([
-            {
-                url: '/preview/business-apply-review',
-                payload: expect.objectContaining({
-                    step: 'raise',
-                    revision: 3,
-                    title: 'Cold-Chain Hub',
-                    target: '30000000',
-                    term_months: 6,
-                    use_of_funds: ['equipment', 'inventory'],
-                }),
-            },
-        ]);
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            "This application changed since you opened it. We've loaded the latest version — check it and try again.",
+        );
+        expect(inertia.reload).toHaveBeenCalledWith();
+        act(() => {
+            vi.advanceTimersByTime(2000);
+        });
+        expect(inertia.calls).toHaveLength(1);
+
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        act(() => {
+            vi.advanceTimersByTime(450);
+        });
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(2));
+        expect(inertia.calls[1].body.request_id).not.toBe(
+            inertia.calls[0].body.request_id,
+        );
     });
 
-    it('reminds instead of saving an incomplete raise, and marks server field errors', async () => {
+    it('marks server field errors and releases the command after a 422', async () => {
         vi.useFakeTimers({ shouldAdvanceTime: true });
         const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 
@@ -238,12 +577,84 @@ describe('Apply — step 2, your raise', () => {
             term_months: 'Pick a term',
             story: 'Too long',
         };
+        inertia.queue.push(answers());
         render(<BusinessApply {...props(raiseStep)} />);
 
         expect(
             screen.getByLabelText('Note title · what this raise is for'),
         ).toHaveAttribute('aria-invalid', 'true');
         expect(screen.getByText('Pick a term')).toBeInTheDocument();
+        expect(screen.getByText('Too long')).toBeInTheDocument();
+
+        await typeRequest(user);
+        act(() => {
+            vi.advanceTimersByTime(450);
+        });
+        await waitFor(() => expect(inertia.calls).toHaveLength(1));
+
+        await user.click(screen.getByRole('button', { name: '5' }));
+        act(() => {
+            vi.advanceTimersByTime(450);
+        });
+        await waitFor(() => expect(inertia.calls).toHaveLength(2));
+        expect(inertia.calls[1].body).toMatchObject({ term_months: 5 });
+    });
+
+    it('looks up an autosave whose answer was lost, then carries on', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+        const page = props(raiseStep);
+
+        inertia.queue.push(
+            offline(),
+            answers(operation({ data: snapshotOf(page) })),
+        );
+        render(<BusinessApply {...page} />);
+
+        await typeRequest(user);
+        act(() => {
+            vi.advanceTimersByTime(450);
+        });
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(3));
+
+        const [save, lookup, evaluate] = inertia.calls;
+
+        expect(lookup).toEqual({
+            url: `/preview/business-operation-${String(save.body.request_id)}`,
+            method: 'get',
+            body: { command: 'save' },
+        });
+        expect(evaluate.url).toBe('/preview/business-apply-evaluations');
+    });
+
+    it('offers no command when the server allows none', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+        const page = props(raiseStep);
+
+        page.allowed_actions = [];
+        render(<BusinessApply {...page} />);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'You can view this application, but not change it.',
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Continue' }),
+        ).not.toBeInTheDocument();
+
+        await typeRequest(user);
+        act(() => {
+            vi.advanceTimersByTime(2000);
+        });
+        expect(inertia.calls).toHaveLength(0);
+    });
+
+    it('reminds instead of saving an incomplete raise', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+        render(<BusinessApply {...props(raiseStep)} />);
 
         await user.clear(
             screen.getByLabelText('Note title · what this raise is for'),
@@ -253,29 +664,13 @@ describe('Apply — step 2, your raise', () => {
         expect(
             screen.getByText('Complete this step to continue'),
         ).toBeInTheDocument();
-        expect(inertia.posts).toHaveLength(0);
-        act(() => vi.advanceTimersByTime(2000));
+        act(() => {
+            vi.advanceTimersByTime(2000);
+        });
         expect(
             screen.queryByText('Complete this step to continue'),
         ).not.toBeInTheDocument();
-    });
-
-    it('shows a refusal in the server’s words', () => {
-        const refused = props(raiseStep);
-
-        refused.quote = {
-            status: 'refused',
-            code: 'CAPACITY_EXCEEDED',
-            message: 'Above your approved capacity of RWF 33,915,000.',
-        };
-        render(<BusinessApply {...refused} />);
-
-        expect(screen.getByRole('alert')).toHaveTextContent(
-            'Above your approved capacity of RWF 33,915,000.',
-        );
-        expect(
-            screen.getByLabelText('Fundraising target (RWF)'),
-        ).toHaveAttribute('aria-invalid', 'true');
+        expect(inertia.calls).toHaveLength(0);
     });
 
     it('shows dashes until there is a quote to show', () => {
@@ -293,9 +688,12 @@ describe('Apply — step 2, your raise', () => {
             '',
         );
         expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(4);
+        expect(
+            screen.queryByRole('list', { name: 'Repayment schedule' }),
+        ).not.toBeInTheDocument();
     });
 
-    it('explains the rate and the note unit from the quote', async () => {
+    it('explains the rate with the exact term premium, and the note unit', async () => {
         const user = userEvent.setup();
 
         render(<BusinessApply {...props(raiseStep)} />);
@@ -308,7 +706,7 @@ describe('Apply — step 2, your raise', () => {
 
         expect(rate).toHaveTextContent('Rated Strong');
         expect(rate).toHaveTextContent('10.0%');
-        expect(rate).toHaveTextContent('+0.5 points for this term');
+        expect(rate).toHaveTextContent('+9/1000 term premium');
         expect(rate).toHaveTextContent('Never above 15.0%');
 
         await user.click(within(rate).getByRole('button', { name: 'Close' }));
@@ -329,17 +727,13 @@ describe('Apply — step 2, your raise', () => {
         const user = userEvent.setup();
         const pending = props(raiseStep);
 
+        pending.allowed_actions = [];
         pending.quote = {
-            ...(pending.quote as Extract<
-                BusinessApplyProps['quote'],
-                { status: 'ready' }
-            >),
-            reserve: { currency: 'RWF', amount: '324000' },
+            ...(pending.quote as ReadyQuote),
+            reserve: { currency: 'RWF', amount: '369673' },
             rate_basis: {
+                ...(pending.quote as ReadyQuote).rate_basis,
                 band: null,
-                floor_pct: '10.0',
-                cap_pct: '15.0',
-                term_premium_pct: '0.5',
             },
         };
         const { rerender } = render(<BusinessApply {...pending} />);
@@ -347,7 +741,7 @@ describe('Apply — step 2, your raise', () => {
         expect(
             screen.getByText('Investor protection reserve'),
         ).toBeInTheDocument();
-        expect(screen.getByText('RWF 324,000')).toBeInTheDocument();
+        expect(screen.getByText('RWF 369,673')).toBeInTheDocument();
         await user.click(
             screen.getByRole('button', { name: 'How this rate is set' }),
         );
@@ -374,8 +768,10 @@ describe('Apply — step 2, your raise', () => {
 
     it('counts the story in words and the title to its limit', async () => {
         const user = userEvent.setup();
+        const page = props(raiseStep);
 
-        render(<BusinessApply {...props(raiseStep)} />);
+        page.allowed_actions = [];
+        render(<BusinessApply {...page} />);
 
         const story = screen.getByLabelText(
             'Why should investors trust your business?',
@@ -404,9 +800,7 @@ describe('Apply — step 2, your raise', () => {
         await user.paste('x'.repeat(45));
         expect(screen.getByText('40/40')).toHaveClass('text-rz-danger-text');
     });
-});
 
-describe('Apply — explainers and dead links', () => {
     it('closes each explainer from outside it', async () => {
         const user = userEvent.setup();
 
@@ -424,83 +818,573 @@ describe('Apply — explainers and dead links', () => {
         await user.click(screen.getAllByRole('button', { name: 'Close' })[0]);
         expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
     });
-
-    it('stays put when the server offers no next step', async () => {
-        const user = userEvent.setup();
-        const stuck = props(businessStep);
-
-        stuck.links.next = null;
-        inertia.visit.mockClear();
-        render(<BusinessApply {...stuck} />);
-
-        await user.click(screen.getByRole('button', { name: 'Continue' }));
-
-        expect(inertia.visit).not.toHaveBeenCalled();
-    });
 });
 
 describe('Apply — step 3, review & sign', () => {
-    it('submits only once every disclosure, agreement and the signature are in', async () => {
+    it('signs only after the offer, every disclosure, both agreements and the attestation', async () => {
         const user = userEvent.setup();
+        const page = props(reviewStep);
+        const quote = page.quote as ReadyQuote;
 
-        render(<BusinessApply {...props(reviewStep)} />);
+        render(<BusinessApply {...page} />);
 
         expect(screen.getByText('Sign here')).toBeInTheDocument();
         expect(screen.getByText('RWF 0')).toBeInTheDocument();
+        expect(
+            screen.getByText('10.9% flat', { exact: false }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText("Signatures the company's mandate requires: 2"),
+        ).toBeInTheDocument();
+
+        const signers = within(
+            screen.getByRole('list', { name: 'Signatories' }),
+        ).getAllByRole('listitem');
+
+        expect(signers[0]).toHaveTextContent(
+            'Robert MugishaChief Executive OfficerPending',
+        );
         expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute(
             'href',
             '/preview/business-apply-raise',
         );
 
-        await user.click(screen.getByRole('button', { name: 'Submit note' }));
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
         expect(
             screen.getByText('Complete this step to continue'),
         ).toBeInTheDocument();
 
-        for (const box of screen.getAllByRole('checkbox')) {
-            await user.click(box);
-        }
+        const first = page.acceptance.disclosures[0].text;
+
+        await user.click(screen.getByRole('checkbox', { name: first }));
+        await user.click(screen.getByRole('checkbox', { name: first }));
+        await acceptEverything(user, page);
+        expect(
+            screen.getByText('Robert Mugisha', { selector: 'span' }),
+        ).toBeInTheDocument();
 
         await user.click(
-            screen.getByRole('checkbox', {
-                name: 'I confirm the accuracy of all information provided.',
-            }),
+            screen.getByRole('button', { name: 'Sign application' }),
         );
-        await user.click(
-            screen.getByRole('checkbox', {
-                name: 'I confirm the accuracy of all information provided.',
-            }),
-        );
-        await user.click(screen.getByLabelText('Your full name'));
-        await user.paste('Robert Mugisha');
-        expect(screen.getByLabelText('Your full name')).toHaveValue(
-            'Robert Mugisha',
-        );
-        expect(screen.getByText('Robert Mugisha')).toBeInTheDocument();
 
-        await user.click(screen.getByRole('button', { name: 'Submit note' }));
-
-        expect(inertia.posts).toEqual([
+        expect(inertia.calls).toEqual([
             {
-                url: '/preview/business-apply-submitted',
-                payload: {
-                    disclosures: [
-                        'obligations',
-                        'statements',
-                        'repayment',
-                        'accuracy',
-                    ],
+                url: '/preview/business-apply-signatures',
+                method: 'post',
+                body: {
+                    identity_context_revision: 4,
+                    expected_revision: 3,
+                    request_id: expect.any(String),
+                    quote_id: quote.quote_id,
+                    quote_revision: 2,
+                    evidence_version: 'ev-2026-09-21.3',
+                    mandate_version: page.acceptance.mandate_version,
+                    accepted_principal: '33915000',
+                    disclosures: page.acceptance.disclosures.map(
+                        ({ key, version, sha256 }) => ({
+                            key,
+                            version,
+                            sha256,
+                        }),
+                    ),
+                    documents: page.acceptance.documents.map(
+                        ({ kind, version, sha256 }) => ({
+                            kind,
+                            version,
+                            sha256,
+                        }),
+                    ),
                     terms: true,
                     privacy: true,
                     signature_name: 'Robert Mugisha',
-                    revision: 3,
-                    documents: [
-                        { kind: 'terms', version: '2.5' },
-                        { kind: 'privacy', version: '1.4' },
-                    ],
                 },
             },
         ]);
+        expect(
+            screen.getByRole('button', { name: 'Signing…' }),
+        ).toHaveAttribute('aria-busy', 'true');
+    });
+
+    it('records one signature and stays to show who still has to sign', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+        const acceptance = structuredClone(page.acceptance);
+
+        acceptance.signers[0] = {
+            ...acceptance.signers[0],
+            state: 'signed',
+            signed_at: '2026-09-24T09:20:00+02:00',
+        };
+        inertia.queue.push(
+            answers(
+                operation({
+                    code: 'APPLICATION_SIGNATURE_RECORDED',
+                    allowed_actions: [],
+                    data: snapshotOf(page, { acceptance }),
+                }),
+            ),
+        );
+        render(<BusinessApply {...page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        expect(
+            await screen.findByText(/^Signed · 24 Sep/u),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Waiting for Aline Uwase to sign.',
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Sign application' }),
+        ).not.toBeInTheDocument();
+        expect(inertia.reload).toHaveBeenCalledWith({
+            only: expect.arrayContaining(['allowed_actions']),
+        });
+        expect(inertia.visit).not.toHaveBeenCalled();
+    });
+
+    it('moves on to the submitted page once the last signature completes the application', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+
+        inertia.queue.push(
+            answers(
+                operation({
+                    code: 'APPLICATION_SUBMITTED',
+                    data: snapshotOf(page, {
+                        next: {
+                            url: '/preview/business-apply-submitted',
+                            method: 'get',
+                        },
+                    }),
+                }),
+            ),
+        );
+        render(<BusinessApply {...page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        await waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith({
+                url: '/preview/business-apply-submitted',
+                method: 'get',
+            }),
+        );
+    });
+
+    it('reloads when a completed command carries no snapshot', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+
+        inertia.queue.push(answers(operation({ data: null })));
+        render(<BusinessApply {...page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        await waitFor(() => expect(inertia.reload).toHaveBeenCalledWith());
+    });
+
+    it('asks for a fresh acceptance when the quote went stale, without resending', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+
+        inertia.queue.push(fails(409, { code: 'QUOTE_STALE' }));
+        render(<BusinessApply {...page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            'Your quote changed before you signed. Check the new offer and accept it again.',
+        );
+        expect(
+            screen.getByRole('checkbox', { name: /^I accept this offer/u }),
+        ).not.toBeChecked();
+        expect(
+            screen.getByRole('checkbox', {
+                name: 'I agree to the Terms & Conditions.',
+            }),
+        ).toBeChecked();
+        expect(inertia.reload).toHaveBeenCalledWith();
+        expect(inertia.calls).toHaveLength(1);
+    });
+
+    it('asks for the signature again when the mandate went stale, under a new request ID', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+
+        inertia.queue.push(fails(409, { code: 'MANDATE_STALE' }));
+        render(<BusinessApply {...page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            "The company's signing mandate changed before you signed. Check who must sign now, then sign again.",
+        );
+        expect(screen.getByLabelText('Your full name')).toHaveValue('');
+        expect(screen.getByText('Sign here')).toBeInTheDocument();
+        expect(
+            screen.getByRole('checkbox', { name: /^I accept this offer/u }),
+        ).toBeChecked();
+        expect(inertia.reload).toHaveBeenCalledWith();
+
+        await user.click(screen.getByLabelText('Your full name'));
+        await user.paste('Robert Mugisha');
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        expect(inertia.calls).toHaveLength(2);
+
+        const [first, second] = inertia.calls.map((call) => call.body);
+
+        expect(second.request_id).not.toBe(first.request_id);
+        expect({ ...second, request_id: null }).toEqual({
+            ...first,
+            request_id: null,
+        });
+    });
+
+    it('asks to re-read and re-accept when a document version was rejected as stale', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+
+        inertia.queue.push(
+            answers(
+                operation({
+                    status: 'rejected',
+                    code: 'DOCUMENT_VERSION_STALE',
+                }),
+            ),
+        );
+        render(<BusinessApply {...page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            'A document or disclosure changed before you signed.',
+        );
+        expect(
+            screen.getByRole('checkbox', {
+                name: 'I agree to the Terms & Conditions.',
+            }),
+        ).not.toBeChecked();
+        expect(
+            screen.getByRole('checkbox', {
+                name: page.acceptance.disclosures[0].text,
+            }),
+        ).not.toBeChecked();
+        expect(
+            screen.getByRole('checkbox', { name: /^I accept this offer/u }),
+        ).toBeChecked();
+    });
+
+    it.each([
+        [
+            403,
+            { code: 'MANDATE_REQUIRED' },
+            "Your verified mandate doesn't let you sign for this business.",
+        ],
+        [403, undefined, "You can't do this for this business."],
+        [
+            403,
+            { code: 'PARTY_AUTHORITY_REQUIRED' },
+            'Your access has changed. Return to your apps and try again.',
+        ],
+        [
+            404,
+            { code: 'NOT_FOUND' },
+            'This application is no longer available to you.',
+        ],
+    ])('never retries a %i denial (%j)', async (status, body, message) => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+
+        inertia.queue.push(fails(status, body));
+        render(<BusinessApply {...page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        expect(await screen.findByRole('alert')).toHaveTextContent(message);
+        expect(inertia.reload).not.toHaveBeenCalled();
+        expect(
+            screen.queryByRole('button', { name: 'Try again' }),
+        ).not.toBeInTheDocument();
+        expect(inertia.calls).toHaveLength(1);
+    });
+
+    it.each([
+        [
+            409,
+            { code: 'IDEMPOTENCY_CONFLICT' },
+            'This request was already used with different details',
+        ],
+        [
+            400,
+            '<html>',
+            "The server couldn't complete this. We've loaded the latest version.",
+        ],
+    ])('refreshes after a %i refusal', async (status, body, message) => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+
+        inertia.queue.push(fails(status, body));
+        render(<BusinessApply {...page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        expect(await screen.findByRole('alert')).toHaveTextContent(message);
+        expect(inertia.reload).toHaveBeenCalledWith();
+    });
+
+    it('looks up a lost answer and retries the identical request only when nothing was recorded', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+
+        inertia.queue.push(
+            offline(),
+            fails(404, { code: 'OPERATION_NOT_FOUND' }),
+            answers(
+                operation({
+                    code: 'APPLICATION_SUBMITTED',
+                    data: snapshotOf(page, {
+                        next: {
+                            url: '/preview/business-apply-submitted',
+                            method: 'get',
+                        },
+                    }),
+                }),
+            ),
+        );
+        render(<BusinessApply {...page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        expect(
+            await screen.findByText('No result recorded'),
+        ).toBeInTheDocument();
+        expect(inertia.calls[1]).toEqual({
+            url: `/preview/business-operation-${String(inertia.calls[0].body.request_id)}`,
+            method: 'get',
+            body: { command: 'submit' },
+        });
+
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+        expect(inertia.calls).toHaveLength(2);
+
+        await user.click(screen.getByRole('button', { name: 'Try again' }));
+
+        await waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith({
+                url: '/preview/business-apply-submitted',
+                method: 'get',
+            }),
+        );
+        expect(inertia.calls[2]).toEqual(inertia.calls[0]);
+    });
+
+    it('keeps checking an uncertain outcome until the server settles it', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+
+        inertia.queue.push(fails(503), offline());
+        render(<BusinessApply {...page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        expect(
+            await screen.findByText("We couldn't confirm this yet"),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Try again' }),
+        ).not.toBeInTheDocument();
+
+        inertia.queue.push(
+            answers(
+                operation({ status: 'pending', code: 'OPERATION_PENDING' }),
+            ),
+        );
+        await user.click(screen.getByRole('button', { name: 'Check again' }));
+        expect(
+            await screen.findByText('Still being processed'),
+        ).toBeInTheDocument();
+
+        inertia.queue.push(fails(500));
+        await user.click(screen.getByRole('button', { name: 'Check again' }));
+        expect(
+            await screen.findByText("We couldn't confirm this yet"),
+        ).toBeInTheDocument();
+
+        inertia.queue.push(
+            answers(operation({ status: 'rejected', code: 'QUOTE_STALE' })),
+        );
+        await user.click(screen.getByRole('button', { name: 'Check again' }));
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            'Your quote changed before you signed.',
+        );
+        expect(inertia.calls.map((call) => call.method)).toEqual([
+            'post',
+            'get',
+            'get',
+            'get',
+            'get',
+        ]);
+    });
+
+    it('shows the lookup while it runs', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+
+        inertia.queue.push(offline());
+        render(<BusinessApply {...page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        expect(
+            await screen.findByText('Checking what happened'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Check again' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('treats a denied lookup as final', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+
+        inertia.queue.push(offline(), fails(403));
+        render(<BusinessApply {...page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            "You can't do this for this business.",
+        );
+    });
+
+    it('resumes the fixture’s unconfirmed command with its original request ID', async () => {
+        const user = userEvent.setup();
+        const page = props(unknownStep);
+
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByText("We couldn't confirm this yet"),
+        ).toBeInTheDocument();
+
+        await user.click(screen.getByRole('button', { name: 'Check again' }));
+
+        expect(inertia.calls[0]).toEqual({
+            url: '/preview/business-operation-6f1c2d3e-4b5a-4c6d-8e7f-90a1b2c3d4e5',
+            method: 'get',
+            body: { command: 'submit' },
+        });
+    });
+
+    it('opens on the stale-quote preview with its refusal shown', () => {
+        render(<BusinessApply {...props(staleStep)} />);
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Your quote changed before you signed.',
+        );
+    });
+
+    it('waits for a co-signatory when the current person has signed', () => {
+        render(<BusinessApply {...props(cosignStep)} />);
+
+        const signers = within(
+            screen.getByRole('list', { name: 'Signatories' }),
+        ).getAllByRole('listitem');
+
+        expect(signers[0]).toHaveTextContent('Signed · 24 Sep');
+        expect(signers[1]).toHaveTextContent('Pending');
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Waiting for Aline Uwase to sign.',
+        );
+        expect(screen.queryByText('Risk disclosures')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('checkbox', { name: /^I accept this offer/u }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Sign application' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('explains who may sign when the current person may not, and marks an undated signature', () => {
+        const page = props(cosignStep);
+
+        page.acceptance.signers = page.acceptance.signers.map((signer) => ({
+            ...signer,
+            state: 'signed' as const,
+            signed_at: null,
+        }));
+        page.quote = null;
+        render(<BusinessApply {...page} />);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            "Only a signatory on the company's verified mandate can sign this application.",
+        );
+        expect(screen.getAllByText('Signed')).toHaveLength(2);
+        expect(
+            screen.getByText(
+                'There is no offer to accept yet. Go back to your raise to get a quote.',
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it('cannot sign without an offer to accept', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+
+        page.quote = null;
+        render(<BusinessApply {...page} />);
+
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+        expect(
+            screen.getByText('Complete this step to continue'),
+        ).toBeInTheDocument();
+        expect(inertia.calls).toHaveLength(0);
     });
 
     it('opens each document summary and closes it three ways', async () => {
@@ -542,23 +1426,23 @@ describe('Apply — step 3, review & sign', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('labels the busy submission and a missing document link', () => {
-        inertia.processing = true;
+    it('marks server field errors and a missing document link', () => {
         inertia.errors = {
             signature_name: 'Sign with your full name',
             disclosures: 'Tick every disclosure',
         };
-        const busy = props(reviewStep);
+        const page = props(reviewStep);
 
-        busy.acceptance.documents = [];
-        render(<BusinessApply {...busy} />);
+        page.acceptance.documents = [];
+        render(<BusinessApply {...page} />);
 
-        expect(
-            screen.getByRole('button', { name: 'Submitting…' }),
-        ).toHaveAttribute('aria-busy', 'true');
         expect(
             screen.queryByRole('button', { name: 'Read' }),
         ).not.toBeInTheDocument();
+        expect(screen.getByLabelText('Your full name')).toHaveAttribute(
+            'aria-invalid',
+            'true',
+        );
         expect(
             screen.getByText('Sign with your full name'),
         ).toBeInTheDocument();
@@ -567,7 +1451,7 @@ describe('Apply — step 3, review & sign', () => {
 });
 
 describe('Apply — submitted', () => {
-    it('confirms the submission with its note ID and live review timeline', () => {
+    it('confirms the submission with its application ID and live review timeline', () => {
         render(<BusinessApply {...props(submittedStep)} />);
 
         expect(
@@ -575,16 +1459,17 @@ describe('Apply — submitted', () => {
         ).not.toBeInTheDocument();
         expect(
             screen.getByRole('heading', {
-                name: 'Your note has been submitted',
+                name: 'Your application has been submitted',
             }),
         ).toBeInTheDocument();
-        expect(screen.getByText('Note ID · RNP-2026-0412')).toBeInTheDocument();
+        expect(
+            screen.getByText('Application ID · APP-2026-0412'),
+        ).toBeInTheDocument();
+        expect(screen.queryByText(/^Note ID/u)).not.toBeInTheDocument();
 
-        const timeline = screen.getByRole('list', {
-            name: 'Application progress',
-        });
-
-        const stages = within(timeline).getAllByRole('listitem');
+        const stages = within(
+            screen.getByRole('list', { name: 'Application progress' }),
+        ).getAllByRole('listitem');
 
         expect(stages).toHaveLength(4);
         expect(stages[1]).toHaveTextContent('Under review');
@@ -598,11 +1483,16 @@ describe('Apply — submitted', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('labels a saving raise', () => {
-        inertia.processing = true;
-        render(<BusinessApply {...props(raiseStep)} />);
+    it('shows the note ID once the server has issued one', () => {
+        const page = props(submittedStep);
 
-        expect(screen.getByRole('button', { name: 'Saving…' })).toBeDisabled();
+        page.submission = {
+            ...page.submission!,
+            note_id: 'RNP-2026-0412',
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(screen.getByText('Note ID · RNP-2026-0412')).toBeInTheDocument();
     });
 
     it('renders nothing in the sheet body without a submission record', () => {
@@ -613,8 +1503,54 @@ describe('Apply — submitted', () => {
 
         expect(
             screen.queryByRole('heading', {
-                name: 'Your note has been submitted',
+                name: 'Your application has been submitted',
             }),
+        ).not.toBeInTheDocument();
+    });
+});
+
+describe('Apply — without Home', () => {
+    it('opens the sheet over an empty backdrop and hides the destinations the server left out', () => {
+        render(<BusinessApply {...props(minimalStep)} />);
+
+        expect(
+            screen.getByRole('dialog', { name: 'Raise application' }),
+        ).toBeInTheDocument();
+        expect(screen.queryByText('GreenLeaf Agro')).not.toBeInTheDocument();
+
+        const nav = screen.getByRole('navigation', { name: 'App navigation' });
+
+        expect(within(nav).getByRole('link', { name: 'Home' })).toHaveAttribute(
+            'href',
+            '/preview/business-home',
+        );
+        expect(
+            within(nav).queryByRole('link', { name: 'Reports' }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(nav).queryByRole('link', { name: 'Profile' }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Launcher' })).toHaveAttribute(
+            'href',
+            '/preview/launcher-ready',
+        );
+    });
+
+    it('reads its navigation from shell_links rather than Home', () => {
+        const page = props(raiseStep);
+
+        page.shell_links = { ...page.shell_links, profile: null };
+        render(<BusinessApply {...page} />);
+
+        expect(screen.getAllByText('GreenLeaf Agro').length).toBeGreaterThan(0);
+
+        const nav = screen.getByRole('navigation', { name: 'App navigation' });
+
+        expect(
+            within(nav).getByRole('link', { name: 'Reports' }),
+        ).toHaveAttribute('href', '/preview/business-reports');
+        expect(
+            within(nav).queryByRole('link', { name: 'Profile' }),
         ).not.toBeInTheDocument();
     });
 });

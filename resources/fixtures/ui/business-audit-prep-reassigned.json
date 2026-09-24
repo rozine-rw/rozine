@@ -225,14 +225,12 @@
             "window_open": true,
             "days_left": 1,
             "seal_by": "2026-10-07",
+            "cosign_by": "2026-10-07",
             "first": false,
             "reassigned": {
                 "from": "CPA Jean-Paul M.",
                 "to": "CPA Diane U."
             }
-        },
-        "policy": {
-            "cosign_minutes": 60
         },
         "links": {
             "close": {

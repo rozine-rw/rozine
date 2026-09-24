@@ -230,27 +230,10 @@
         },
         "fee": {
             "currency": "RWF",
-            "amount": "300000"
+            "amount": "0"
         },
-        "sources": [
-            {
-                "key": "wallet",
-                "detail": "Rozine Wallet · RWF 12,383,800 available"
-            },
-            {
-                "key": "mtn",
-                "detail": "MTN Mobile Money · +250 788 ···· 211 · charged instantly"
-            },
-            {
-                "key": "airtel",
-                "detail": "Airtel Money · +250 73 ···· 218 · charged instantly"
-            },
-            {
-                "key": "card",
-                "detail": "Visa ···· 4291 · secured with 3-D Secure"
-            }
-        ],
-        "allowed_actions": ["application.publish"],
+        "sources": [],
+        "allowed_actions": [],
         "links": {
             "close": {
                 "url": "/preview/business-home",

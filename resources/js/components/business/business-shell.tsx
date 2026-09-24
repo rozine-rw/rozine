@@ -2,7 +2,7 @@ import { Head } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { AppFrame } from '@/components/rozine/app-frame';
 import { useTranslation } from '@/hooks/use-translation';
-import type { BusinessAppLinks } from '@/types/business';
+import type { BusinessShellLinks } from '@/types/business';
 
 export type BusinessTab = 'home' | 'reports' | 'profile';
 
@@ -50,14 +50,15 @@ const GLYPHS: Record<BusinessTab, ReactNode> = {
 type BusinessShellProps = {
     title: string;
     tab: BusinessTab;
-    links: BusinessAppLinks;
+    links: BusinessShellLinks;
     showTabBar?: boolean;
     children: ReactNode;
 };
 
 /**
  * The Business app frame. The design's fourth tab, Market, is secondary trading, which is outside
- * the MVP for issuers, so it is left out rather than shipped as a dead end.
+ * the MVP for issuers, so it is left out rather than shipped as a dead end. A destination the
+ * server leaves null is hidden from the sidebar and the tab bar alike.
  */
 export function BusinessShell({
     title,
@@ -67,12 +68,20 @@ export function BusinessShell({
     children,
 }: BusinessShellProps) {
     const { t } = useTranslation();
-    const nav = (['home', 'reports', 'profile'] as const).map((key) => ({
-        key,
-        label: t(`business.nav.${key}`),
-        href: links[key],
-        glyph: GLYPHS[key],
-    }));
+    const nav = (['home', 'reports', 'profile'] as const).flatMap((key) => {
+        const href = links[key];
+
+        return href === null
+            ? []
+            : [
+                  {
+                      key,
+                      label: t(`business.nav.${key}`),
+                      href,
+                      glyph: GLYPHS[key],
+                  },
+              ];
+    });
 
     return (
         <AppFrame

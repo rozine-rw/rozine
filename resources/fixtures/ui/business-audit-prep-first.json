@@ -225,11 +225,9 @@
             "window_open": false,
             "days_left": 12,
             "seal_by": "2026-10-07",
+            "cosign_by": "2026-10-07",
             "first": true,
             "reassigned": null
-        },
-        "policy": {
-            "cosign_minutes": 60
         },
         "links": {
             "close": {

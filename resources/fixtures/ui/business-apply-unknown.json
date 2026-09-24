@@ -5,8 +5,12 @@
         "business_id": "BUS-103847291",
         "identity_context_revision": 4,
         "server_time": "2026-09-24T09:15:00+02:00",
-        "allowed_actions": [],
-        "step": "submitted",
+        "allowed_actions": [
+            "application.save",
+            "application.evaluate",
+            "application.submit"
+        ],
+        "step": "review",
         "application": {
             "id": "APP-2026-0412",
             "revision": 3,
@@ -334,42 +338,21 @@
                     "party_id": "PTY-7F3A21",
                     "name": "Robert Mugisha",
                     "role": "Chief Executive Officer",
-                    "state": "signed",
-                    "signed_at": "2026-09-24T08:42:00+02:00"
+                    "state": "pending",
+                    "signed_at": null
                 },
                 {
                     "party_id": "PTY-2C9D84",
                     "name": "Aline Uwase",
                     "role": "Board Chair",
-                    "state": "signed",
-                    "signed_at": "2026-09-24T09:05:00+02:00"
+                    "state": "pending",
+                    "signed_at": null
                 }
             ],
             "required_signatures": 2,
-            "signatures_complete": true
+            "signatures_complete": false
         },
-        "submission": {
-            "application_id": "APP-2026-0412",
-            "note_id": null,
-            "timeline": [
-                {
-                    "stage": "submitted",
-                    "state": "done"
-                },
-                {
-                    "stage": "under_review",
-                    "state": "current"
-                },
-                {
-                    "stage": "approved",
-                    "state": "pending"
-                },
-                {
-                    "stage": "published",
-                    "state": "pending"
-                }
-            ]
-        },
+        "submission": null,
         "home": {
             "business": {
                 "name": "GreenLeaf Agro",
@@ -613,7 +596,7 @@
                 "method": "get"
             },
             "back": {
-                "url": "/preview/business-home",
+                "url": "/preview/business-apply-raise",
                 "method": "get"
             },
             "next": null,
@@ -634,6 +617,60 @@
             "submit": {
                 "url": "/preview/business-apply-signatures",
                 "method": "post"
+            }
+        },
+        "preview_outcome": {
+            "kind": "unconfirmed",
+            "command": {
+                "name": "submit",
+                "advance": false,
+                "payload": {
+                    "identity_context_revision": 4,
+                    "expected_revision": 3,
+                    "request_id": "6f1c2d3e-4b5a-4c6d-8e7f-90a1b2c3d4e5",
+                    "quote_id": "QTE-2026-0412-02",
+                    "quote_revision": 2,
+                    "evidence_version": "ev-2026-09-21.3",
+                    "mandate_version": "mandate-2026-08-14.2",
+                    "accepted_principal": "33915000",
+                    "disclosures": [
+                        {
+                            "key": "accuracy",
+                            "version": "1.0",
+                            "sha256": "2b7048406a85452ab90348d2cb40f8d427dbbd62c998ee0fdc7188479878cc23"
+                        },
+                        {
+                            "key": "obligations",
+                            "version": "1.0",
+                            "sha256": "b2d8e82fa0fbbe0533ffef56e365ac5a932a43cadfdfa5a5c2e47c09502223e8"
+                        },
+                        {
+                            "key": "statements",
+                            "version": "1.0",
+                            "sha256": "217d1076f14d6328055fe484ffb7cd3dc88a3ba2339decf19734bb4c8ad591f0"
+                        },
+                        {
+                            "key": "repayment",
+                            "version": "1.0",
+                            "sha256": "f8811a550e5f2bb3b2e2a9948ebb082d404ae7f4ac156273aea74a06c6a061e0"
+                        }
+                    ],
+                    "documents": [
+                        {
+                            "kind": "terms",
+                            "version": "2.5",
+                            "sha256": "81d2efe16aa18c882335b9e5e6ccdbf5f21a6b67d825210c50cfef6a54487702"
+                        },
+                        {
+                            "kind": "privacy",
+                            "version": "1.4",
+                            "sha256": "d16b280698e387260fe6fcce704aede7a23421f0cf63ea550f9216057ec3dbc6"
+                        }
+                    ],
+                    "terms": true,
+                    "privacy": true,
+                    "signature_name": "Robert Mugisha"
+                }
             }
         }
     }

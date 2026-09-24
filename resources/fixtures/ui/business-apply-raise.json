@@ -1,19 +1,33 @@
 {
     "component": "business/apply",
     "props": {
+        "contract_version": "business-application-v1",
+        "business_id": "BUS-103847291",
+        "identity_context_revision": 4,
+        "server_time": "2026-09-24T09:15:00+02:00",
+        "allowed_actions": [
+            "application.save",
+            "application.evaluate",
+            "application.submit"
+        ],
+        "step": "raise",
         "application": {
             "id": "APP-2026-0412",
             "revision": 3,
             "title": "Cold-Chain Hub",
             "target": {
                 "currency": "RWF",
-                "amount": "30000000"
+                "amount": "35000000"
             },
             "term_months": 6,
             "use_of_funds": ["equipment", "expansion"],
             "story": "GreenLeaf Agro supplies maize, beans and horticulture across the Eastern Province and needs cold storage to cut post-harvest losses."
         },
         "evidence": {
+            "version": "ev-2026-09-21.3",
+            "eligibility": {
+                "status": "eligible"
+            },
             "business": {
                 "name": "GreenLeaf Agro",
                 "company_code": "103847291",
@@ -22,12 +36,12 @@
                 "established_year": 2018,
                 "officers": [
                     {
-                        "role": "ceo",
-                        "name": "Robert Mugisha"
+                        "name": "Robert Mugisha",
+                        "role": "Chief Executive Officer"
                     },
                     {
-                        "role": "board_chair",
-                        "name": "Aline Uwase"
+                        "name": "Aline Uwase",
+                        "role": "Board Chair"
                     }
                 ]
             },
@@ -142,47 +156,97 @@
         },
         "quote": {
             "status": "ready",
+            "quote_id": "QTE-2026-0412-02",
+            "quote_revision": 2,
             "policy_version": "engineering-2026-09-23.4",
+            "evidence_version": "ev-2026-09-21.3",
+            "calculation_version": "calc-2026-09-23.1",
+            "mandate_version": "mandate-2026-08-14.2",
+            "requested_principal": {
+                "currency": "RWF",
+                "amount": "35000000"
+            },
             "principal": {
                 "currency": "RWF",
-                "amount": "30000000"
+                "amount": "33915000"
             },
             "term_months": 6,
-            "rate_pct": "10.8",
+            "rate_pct": "10.9",
             "interest": {
                 "currency": "RWF",
-                "amount": "3240000"
+                "amount": "3696735"
             },
             "total": {
                 "currency": "RWF",
-                "amount": "33240000"
+                "amount": "37611735"
             },
-            "monthly": {
-                "currency": "RWF",
-                "amount": "5540000"
-            },
-            "units": 6000,
+            "units": "6783",
             "unit_price": {
                 "currency": "RWF",
                 "amount": "5000"
             },
             "reserve": null,
+            "schedule": [
+                {
+                    "instalment": 1,
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "6268622"
+                    }
+                },
+                {
+                    "instalment": 2,
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "6268622"
+                    }
+                },
+                {
+                    "instalment": 3,
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "6268622"
+                    }
+                },
+                {
+                    "instalment": 4,
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "6268622"
+                    }
+                },
+                {
+                    "instalment": 5,
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "6268622"
+                    }
+                },
+                {
+                    "instalment": 6,
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "6268625"
+                    }
+                }
+            ],
+            "reason_codes": ["PRINCIPAL_CAPPED_AT_CAPACITY"],
             "rate_basis": {
                 "band": "strong",
                 "floor_pct": "10.0",
                 "cap_pct": "15.0",
-                "term_premium_pct": "0.5"
+                "term_premium": {
+                    "numerator": "9",
+                    "denominator": "1000"
+                }
             }
         },
         "acceptance": {
-            "fee_on_approval": {
-                "currency": "RWF",
-                "amount": "0"
-            },
             "documents": [
                 {
                     "kind": "terms",
                     "version": "2.5",
+                    "sha256": "81d2efe16aa18c882335b9e5e6ccdbf5f21a6b67d825210c50cfef6a54487702",
                     "summary": [
                         {
                             "heading": "Eligibility",
@@ -213,6 +277,7 @@
                 {
                     "kind": "privacy",
                     "version": "1.4",
+                    "sha256": "d16b280698e387260fe6fcce704aede7a23421f0cf63ea550f9216057ec3dbc6",
                     "summary": [
                         {
                             "heading": "What we collect",
@@ -236,7 +301,56 @@
                         }
                     ]
                 }
-            ]
+            ],
+            "disclosures": [
+                {
+                    "key": "accuracy",
+                    "version": "1.0",
+                    "sha256": "2b7048406a85452ab90348d2cb40f8d427dbbd62c998ee0fdc7188479878cc23",
+                    "text": "I confirm the accuracy of all information provided."
+                },
+                {
+                    "key": "obligations",
+                    "version": "1.0",
+                    "sha256": "b2d8e82fa0fbbe0533ffef56e365ac5a932a43cadfdfa5a5c2e47c09502223e8",
+                    "text": "I understand the legal obligations of issuing this note."
+                },
+                {
+                    "key": "statements",
+                    "version": "1.0",
+                    "sha256": "217d1076f14d6328055fe484ffb7cd3dc88a3ba2339decf19734bb4c8ad591f0",
+                    "text": "I will upload my monthly bank & MoMo statements on time for Audit Partner auditing."
+                },
+                {
+                    "key": "repayment",
+                    "version": "1.0",
+                    "sha256": "f8811a550e5f2bb3b2e2a9948ebb082d404ae7f4ac156273aea74a06c6a061e0",
+                    "text": "I acknowledge the repayment obligations to investors."
+                }
+            ],
+            "fee_on_approval": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "mandate_version": "mandate-2026-08-14.2",
+            "signers": [
+                {
+                    "party_id": "PTY-7F3A21",
+                    "name": "Robert Mugisha",
+                    "role": "Chief Executive Officer",
+                    "state": "pending",
+                    "signed_at": null
+                },
+                {
+                    "party_id": "PTY-2C9D84",
+                    "name": "Aline Uwase",
+                    "role": "Board Chair",
+                    "state": "pending",
+                    "signed_at": null
+                }
+            ],
+            "required_signatures": 2,
+            "signatures_complete": false
         },
         "submission": null,
         "home": {
@@ -458,17 +572,24 @@
                 }
             }
         },
-        "actions": {
-            "save": {
-                "url": "/preview/business-apply-review",
-                "method": "post"
+        "shell_links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
             },
-            "submit": {
-                "url": "/preview/business-apply-submitted",
-                "method": "post"
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
             }
         },
-        "step": "raise",
         "links": {
             "close": {
                 "url": "/preview/business-home",
@@ -478,7 +599,25 @@
                 "url": "/preview/business-apply-business",
                 "method": "get"
             },
-            "next": null
+            "next": null,
+            "operation": {
+                "url": "/preview/business-operation-{request_id}",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "save": {
+                "url": "/preview/business-apply-draft",
+                "method": "post"
+            },
+            "evaluate": {
+                "url": "/preview/business-apply-evaluations",
+                "method": "post"
+            },
+            "submit": {
+                "url": "/preview/business-apply-signatures",
+                "method": "post"
+            }
         }
     }
 }
