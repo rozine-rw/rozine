@@ -351,7 +351,7 @@ const rw: Catalog = {
     'business.apply.review.document.privacy': "Itangazo ry'ibanga",
     'business.apply.review.read': 'Soma',
     'business.apply.review.document_intro':
-        "Rozine · Repubulika y'u Rwanda · verisiyo {version}. Incamake y'ingingo z'ingenzi — amasezerano yuzuye ari muri Umwirondoro.",
+        "Rozine · Repubulika y'u Rwanda · verisiyo {version}. Incamake y'ingingo z'ingenzi, hanyuma inyandiko yuzuye wemera.",
     'business.apply.review.got_it': 'Nabyumvise',
     'business.apply.review.sign_submit': 'Sinya wohereze',
     'business.apply.review.full_name': 'Amazina yawe yose',
@@ -2860,6 +2860,20 @@ const rw: Catalog = {
 
     'business.apply.outcome.refused.MANDATE_STALE':
         "Ububasha bwo gusinya bw'ikigo bwahindutse mbere y'uko usinya. Reba abagomba gusinya ubu, hanyuma wongere usinye.",
+
+    'business.apply.review.document_summary': 'Incamake',
+    'business.apply.review.document_full_text': 'Inyandiko yuzuye',
+    'business.apply.review.reduce.open': 'Fata amafaranga make',
+    'business.apply.review.reduce.label': 'Amafaranga ushaka (RWF)',
+    'business.apply.review.reduce.help':
+        'Kugeza ku yo wahawe, mu mpapuro zuzuye za {unit}. Turongera kubara icyifuzo kuri aya mafaranga, ukongera kucyemera.',
+    'business.apply.review.reduce.submit': 'Ongera ubare',
+    'business.apply.review.reduce.cancel': 'Guma ku cyifuzo',
+    'business.apply.review.reduced':
+        'Wahisemo {principal} kuri {offered} wahawe.',
+    'business.apply.review.use_full': 'Fata ayo wahawe yose',
+
+    'business.apply.recalculating': 'Turimo kubara…',
 
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
