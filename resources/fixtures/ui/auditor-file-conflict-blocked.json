@@ -17,7 +17,9 @@
             },
             "accept_by": null,
             "complete_by": "2026-10-04T13:59:55Z",
-            "reassigned_from": null
+            "reassigned_from": null,
+            "kind": "flash",
+            "allowed_actions": []
         },
         "file": null,
         "actions": {
@@ -101,7 +103,9 @@
                         "assignment.accept",
                         "assignment.decline",
                         "conflict.declare"
-                    ]
+                    ],
+                    "deadline": null,
+                    "reassigned_from": null
                 }
             ],
             "assigned": [],

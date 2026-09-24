@@ -53,7 +53,9 @@
                     "url": "/preview/auditor-audit-review",
                     "method": "get"
                 },
-                "allowed_actions": ["conflict.declare"]
+                "allowed_actions": ["conflict.declare"],
+                "accept_by": null,
+                "complete_by": "2026-10-04T13:59:55Z"
             },
             {
                 "id": "fa_greenleaf",
@@ -74,7 +76,9 @@
                     "url": "/preview/auditor-audit-check-in",
                     "method": "get"
                 },
-                "allowed_actions": ["conflict.declare"]
+                "allowed_actions": ["conflict.declare"],
+                "accept_by": null,
+                "complete_by": "2026-10-04T08:59:55Z"
             }
         ],
         "standing": {

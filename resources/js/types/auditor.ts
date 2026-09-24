@@ -211,6 +211,8 @@ export type AuditorAppLinks = {
     portfolio: RouteLink | null;
     profile: RouteLink;
     launcher: RouteLink;
+    /** The partner's own conflict receipts (GET `/auditor/conflicts`), where the server sends it. */
+    conflicts?: RouteLink | null;
 };
 
 /** Business sector, as a code so the file tile takes the design's sector colour. */
@@ -304,9 +306,16 @@ export type AssignedJob = {
     kind: 'flash' | 'monthly';
     business: string;
     district: string;
-    /** Distance from the registered office, already formatted by the server: "7.7". */
-    distance_km: string;
+    /**
+     * Distance from the registered office, already formatted by the server: "7.7". Null when it
+     * cannot be stated; the card then gives the district alone.
+     */
+    distance_km: string | null;
     deadline: Deadline;
+    /** Accepted: no offer window is left. */
+    accept_by: null;
+    /** The flash deadline from the original dispatch; null for monthly. */
+    complete_by: string | null;
     /**
      * Where the procedure stands. Both are null until the procedure publishes its steps (S-D);
      * the card then shows no step progress rather than a stand-in "Step 0 of 0".
@@ -431,6 +440,10 @@ export type EligibleJob = {
      * deadline (inputs by the 3rd, report and co-signatures by the 7th).
      */
     complete_by: string | null;
+    /** An offer has no running deadline of its own yet: always null. */
+    deadline: null;
+    /** Offers are never shown as reassigned: always null. */
+    reassigned_from: null;
     link: RouteLink;
     actions: JobActions;
     /**
@@ -595,9 +608,12 @@ export type FileJob = {
     /** The assignment's ID; its commands send `revision` as `expected_revision`. */
     id: string;
     revision: number;
+    /** A Flash Audit or a monthly (routine) visit. */
+    kind: 'flash' | 'monthly';
     business: string;
     district: string;
-    distance_km: string;
+    /** Formatted: "11.2". Null when it cannot be stated; the header then gives the district alone. */
+    distance_km: string | null;
     /**
      * Offered or assigned. A flash audit's clock runs from its original dispatch either way;
      * accepting does not start it.
@@ -613,6 +629,8 @@ export type FileJob = {
     complete_by: string | null;
     /** Set when the file was reassigned to this partner; never shown, so no partner is named. */
     reassigned_from: string | null;
+    /** This record's own actions; the page's `allowed_actions` repeats them. */
+    allowed_actions: AuditorAllowedAction[];
 };
 
 /**
@@ -987,13 +1005,13 @@ export type OwnConflict = {
 
 /**
  * The partner's own conflict receipts (GET `/auditor/conflicts`, `auditor.conflicts.index`), a
- * bounded page with its own `pagination`. The single receipt (GET `/auditor/conflicts/{assignment}`,
+ * bounded page with its own `pagination`. The single receipt (GET `/auditor/jobs/{assignment}/conflict`,
  * `auditor.conflicts.show`) is the same shape with one entry, and is where a completed
  * declaration's `data.next` leads. It is read-only: no command is offered here.
  */
 export type AuditorConflictsProps = AuditorPageContract & {
     conflicts: OwnConflict[];
-    links: AuditorAppLinks;
+    links: AuditorAppLinks & OperationLookupLinks;
     pagination: AuditorPagination;
 };
 

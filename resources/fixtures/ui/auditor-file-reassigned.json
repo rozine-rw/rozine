@@ -17,7 +17,9 @@
             },
             "accept_by": null,
             "complete_by": "2026-10-04T05:00:00Z",
-            "reassigned_from": "Chantal Rwema, CPA"
+            "reassigned_from": "Chantal Rwema, CPA",
+            "kind": "flash",
+            "allowed_actions": ["conflict.declare"]
         },
         "file": {
             "raise": {
@@ -191,7 +193,9 @@
                         "assignment.accept",
                         "assignment.decline",
                         "conflict.declare"
-                    ]
+                    ],
+                    "deadline": null,
+                    "reassigned_from": null
                 }
             ],
             "assigned": [
@@ -214,7 +218,9 @@
                         "url": "/preview/auditor-audit-ledger",
                         "method": "get"
                     },
-                    "allowed_actions": ["conflict.declare"]
+                    "allowed_actions": ["conflict.declare"],
+                    "accept_by": null,
+                    "complete_by": "2026-10-03T15:00:00Z"
                 },
                 {
                     "id": "fa_murakoze",
@@ -235,7 +241,9 @@
                         "url": "/preview/auditor-audit-check-in",
                         "method": "get"
                     },
-                    "allowed_actions": ["conflict.declare"]
+                    "allowed_actions": ["conflict.declare"],
+                    "accept_by": null,
+                    "complete_by": "2026-10-04T13:59:55Z"
                 }
             ],
             "monthly": {

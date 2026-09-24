@@ -1470,8 +1470,7 @@ const rw: Catalog = {
     'auditor.home.nearby_sub':
         'Irya hafi ni kuri km {distance} · uwemeye mbere afata dosiye',
     'auditor.home.in_progress': 'Birakorwa',
-    'auditor.job.progress_line':
-        '{district} · km {distance} · Intambwe {step} kuri {steps}',
+    'auditor.job.step_of': 'Intambwe {step} kuri {steps}',
     'auditor.job.status.overdue': 'Yarenze igihe',
     'auditor.job.status.awaiting_cosign': 'Bitegereje gusinyirwa',
     'auditor.job.reassigned': 'Wahawe uyu murimo',
@@ -1513,6 +1512,7 @@ const rw: Catalog = {
     'auditor.jobs.sector_unavailable': 'Urwego ntirubonetse',
     'auditor.jobs.kind_monthly': 'Isura rya buri kwezi',
     'auditor.jobs.show_more': 'Erekana ibindi',
+    'auditor.jobs.conflicts_link': 'Inyungu wagaragaje →',
     'auditor.jobs.page_empty':
         'Nta kigaragara kuri uru rupapuro. Imirimo ya mbere ishobora gukurikiraho.',
     'auditor.jobs.assigned_empty': 'Nta murimo wemeye uri ku isaha ubu.',

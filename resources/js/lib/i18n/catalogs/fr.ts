@@ -1468,8 +1468,7 @@ const fr: Catalog = {
     'auditor.home.nearby_sub':
         'Le plus proche à {distance} km · le premier à accepter verrouille le dossier',
     'auditor.home.in_progress': 'En cours',
-    'auditor.job.progress_line':
-        '{district} · {distance} km · Étape {step} sur {steps}',
+    'auditor.job.step_of': 'Étape {step} sur {steps}',
     'auditor.job.status.overdue': 'En retard',
     'auditor.job.status.awaiting_cosign': 'En attente de cosignature',
     'auditor.job.reassigned': 'Vous a été réattribué',
@@ -1511,6 +1510,7 @@ const fr: Catalog = {
     'auditor.jobs.sector_unavailable': 'Secteur indisponible',
     'auditor.jobs.kind_monthly': 'Visite mensuelle',
     'auditor.jobs.show_more': 'Afficher plus',
+    'auditor.jobs.conflicts_link': 'Vos conflits déclarés →',
     'auditor.jobs.page_empty':
         'Rien à afficher sur cette page. Des missions plus anciennes peuvent suivre.',
     'auditor.jobs.assigned_empty':

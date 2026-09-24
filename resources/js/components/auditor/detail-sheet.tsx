@@ -93,7 +93,8 @@ type JobHeaderProps = {
     close: RouteLink;
     business: string;
     district: string;
-    distanceKm: string;
+    /** Null when the distance cannot be stated: the district then stands alone. */
+    distanceKm: string | null;
     serverTime: string;
     /** The job's deadline; null for a routine offer, whose deadline the report calendar owns. */
     dueAt: string | null;
@@ -130,10 +131,12 @@ export function JobHeader({
                         {business}
                     </h2>
                     <p className="mt-px text-[11.5px] text-rz-secondary">
-                        {t('auditor.file.place', {
-                            district,
-                            distance: distanceKm,
-                        })}
+                        {distanceKm === null
+                            ? district
+                            : t('auditor.file.place', {
+                                  district,
+                                  distance: distanceKm,
+                              })}
                     </p>
                 </div>
                 {clock && dueAt !== null && (

@@ -15,16 +15,21 @@
                 "url": "/auditor/jobs",
                 "method": "get"
             },
-            "portfolio": {
-                "url": "/preview/auditor-portfolio",
-                "method": "get"
-            },
+            "portfolio": null,
             "profile": {
                 "url": "/auditor/profile",
                 "method": "get"
             },
             "launcher": {
                 "url": "/dashboard",
+                "method": "get"
+            },
+            "conflicts": {
+                "url": "/auditor/conflicts",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/auditor/assignment-operations/{request_id}",
                 "method": "get"
             }
         },

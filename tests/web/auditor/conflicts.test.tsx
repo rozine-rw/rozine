@@ -31,12 +31,16 @@ describe('Auditor conflicts', () => {
         ).toBeInTheDocument();
         expect(screen.getAllByRole('article')).toHaveLength(4);
 
+        /* Portfolio is not served yet, so the receipts sit under Jobs, where their link is. */
         for (const nav of screen.getAllByRole('navigation', {
             name: 'App navigation',
         })) {
             expect(
-                within(nav).getByRole('link', { name: /Portfolio/u }),
+                within(nav).getByRole('link', { name: /^Jobs/u }),
             ).toHaveAttribute('aria-current', 'page');
+            expect(
+                within(nav).queryByRole('link', { name: /Portfolio/u }),
+            ).not.toBeInTheDocument();
         }
 
         /* No Business name, note ID or Business ID reaches the page. */
@@ -103,7 +107,7 @@ describe('Auditor conflicts', () => {
 
         expect(screen.getByRole('link', { name: 'Show more' })).toHaveAttribute(
             'href',
-            '/auditor/conflicts?before=01k6a1b5c9d3e7f1g5h9j3k7l1',
+            '/auditor/conflicts?before=01k6a1b5c9d3e7f1g5h9j3k7l1&limit=25',
         );
     });
 
@@ -157,5 +161,29 @@ describe('Auditor conflicts', () => {
                 name: 'Business on record · Ref. asg_42',
             }),
         ).toBeInTheDocument();
+    });
+});
+
+describe('Auditor conflicts once Portfolio is served', () => {
+    it('sits under the Portfolio tab', () => {
+        const base = props();
+
+        render(
+            <AuditorConflicts
+                {...base}
+                links={{
+                    ...base.links,
+                    portfolio: { url: '/auditor/portfolio', method: 'get' },
+                }}
+            />,
+        );
+
+        for (const nav of screen.getAllByRole('navigation', {
+            name: 'App navigation',
+        })) {
+            expect(
+                within(nav).getByRole('link', { name: /Portfolio/u }),
+            ).toHaveAttribute('aria-current', 'page');
+        }
     });
 });

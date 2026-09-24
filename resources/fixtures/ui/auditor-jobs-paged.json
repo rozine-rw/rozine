@@ -4,11 +4,7 @@
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
-        "allowed_actions": [
-            "assignment.accept",
-            "assignment.decline",
-            "conflict.declare"
-        ],
+        "allowed_actions": [],
         "radius_km": 30,
         "flash_hours": 24,
         "eligible": [
@@ -34,6 +30,8 @@
                 },
                 "accept_by": "2026-10-03T17:50:00Z",
                 "complete_by": "2026-10-04T16:20:00Z",
+                "deadline": null,
+                "reassigned_from": null,
                 "link": {
                     "url": "/auditor/jobs/01k6m3x2v8q4r7t9w1y5z0b3c6",
                     "method": "get"
@@ -80,6 +78,8 @@
                 },
                 "accept_by": "2026-10-03T19:10:00Z",
                 "complete_by": null,
+                "deadline": null,
+                "reassigned_from": null,
                 "link": {
                     "url": "/auditor/jobs/01k6m2h7n4c8d2f5g9j3k6p1q4",
                     "method": "get"
@@ -117,6 +117,8 @@
                 "deadline": {
                     "due_at": "2026-10-04T09:00:00Z"
                 },
+                "accept_by": null,
+                "complete_by": "2026-10-04T09:00:00Z",
                 "step": null,
                 "steps": null,
                 "status": "in_progress",
@@ -161,16 +163,17 @@
                 "url": "/auditor/jobs",
                 "method": "get"
             },
-            "portfolio": {
-                "url": "/preview/auditor-portfolio",
-                "method": "get"
-            },
+            "portfolio": null,
             "profile": {
                 "url": "/auditor/profile",
                 "method": "get"
             },
             "launcher": {
                 "url": "/dashboard",
+                "method": "get"
+            },
+            "conflicts": {
+                "url": "/auditor/conflicts",
                 "method": "get"
             },
             "operation": {
@@ -180,7 +183,7 @@
         },
         "pagination": {
             "next": {
-                "url": "/auditor/jobs?before=01k6kz9w3e7r1t5y8u2i6o0p3a",
+                "url": "/auditor/jobs?before=01k6kz9w3e7r1t5y8u2i6o0p3a&limit=25",
                 "method": "get"
             }
         }

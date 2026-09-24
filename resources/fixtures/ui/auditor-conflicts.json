@@ -64,10 +64,7 @@
                 "url": "/auditor/jobs",
                 "method": "get"
             },
-            "portfolio": {
-                "url": "/preview/auditor-portfolio",
-                "method": "get"
-            },
+            "portfolio": null,
             "profile": {
                 "url": "/auditor/profile",
                 "method": "get"
@@ -75,11 +72,19 @@
             "launcher": {
                 "url": "/dashboard",
                 "method": "get"
+            },
+            "conflicts": {
+                "url": "/auditor/conflicts",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/auditor/assignment-operations/{request_id}",
+                "method": "get"
             }
         },
         "pagination": {
             "next": {
-                "url": "/auditor/conflicts?before=01k6a1b5c9d3e7f1g5h9j3k7l1",
+                "url": "/auditor/conflicts?before=01k6a1b5c9d3e7f1g5h9j3k7l1&limit=25",
                 "method": "get"
             }
         }

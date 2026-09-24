@@ -405,4 +405,25 @@ describe('Auditor business file on the live S-C projection', () => {
             within(sheet).queryByText('What you must clear on site'),
         ).not.toBeInTheDocument();
     });
+
+    it('gives the district alone and leaves out an empty use of funds', () => {
+        const base = live();
+        const file = base.file as BusinessFile;
+
+        render(
+            <AuditorFile
+                {...base}
+                job={{ ...base.job, distance_km: null }}
+                file={{ ...file, raise: { ...file.raise, use_of_funds: '' } }}
+                blocked={null}
+            />,
+        );
+
+        const sheet = liveSheet();
+
+        expect(within(sheet).getByText('Kicukiro')).toBeInTheDocument();
+        expect(
+            within(sheet).queryByText(/Working capital/u),
+        ).not.toBeInTheDocument();
+    });
 });

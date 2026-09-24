@@ -374,7 +374,7 @@ describe('Auditor Jobs', () => {
                 assignment_id: 'fa_huye',
                 expected_revision: 2,
                 kind: 'financial_interest',
-                note: 'Shareholder',
+                reason: 'Shareholder',
             },
         });
 
@@ -388,7 +388,9 @@ describe('Auditor Jobs', () => {
     });
 
     it('shows the server’s field errors on a declaration', async () => {
-        inertia.queue.push(invalid({ kind: 'Choose one.', note: 'Too long.' }));
+        inertia.queue.push(
+            invalid({ kind: 'Choose one.', reason: 'Too long.' }),
+        );
         const { user } = renderWithUser(<AuditorJobs {...props()} />);
 
         await user.click(
@@ -771,8 +773,42 @@ describe('Auditor Jobs on the live S-C projection', () => {
     });
 });
 
+describe('Auditor Jobs, live details', () => {
+    it('links to the partner’s own conflict receipts when the server sends that link', () => {
+        render(<AuditorJobs {...props(liveMinimalFixture)} />);
+
+        expect(
+            screen.getByRole('link', { name: 'Your declared conflicts →' }),
+        ).toHaveAttribute('href', '/auditor/conflicts');
+    });
+
+    it('gives the district alone when the distance cannot be stated', () => {
+        const base = props(liveMinimalFixture);
+
+        render(
+            <AuditorJobs
+                {...base}
+                assigned={[
+                    {
+                        ...base.assigned[0],
+                        distance_km: null,
+                        step: 2,
+                        steps: 5,
+                    },
+                ]}
+            />,
+        );
+
+        expect(
+            within(
+                screen.getByRole('link', { name: /Gikondo Metal Works/u }),
+            ).getByText('Kicukiro · Step 2 of 5'),
+        ).toBeInTheDocument();
+    });
+});
+
 describe('Auditor Jobs, paged', () => {
-    const NEXT = '/auditor/jobs?before=01k6kz9w3e7r1t5y8u2i6o0p3a';
+    const NEXT = '/auditor/jobs?before=01k6kz9w3e7r1t5y8u2i6o0p3a&limit=25';
 
     it('ends the page in Show more and counts only this page', () => {
         render(<AuditorJobs {...props(pagedFixture)} />);

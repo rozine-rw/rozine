@@ -33,7 +33,8 @@ function OwnConflictReceipt({ entry }: { entry: OwnConflict }) {
  * by Audit Operations. The private read names no Business, note, case or replacement partner, so
  * each receipt reads "Business on record" with a short assignment reference. The single receipt a
  * completed declaration leads to is this page with one entry. It sits under Portfolio, the tab its
- * register lives on, and offers no command.
+ * register lives on, or under Jobs — where its link is — while Portfolio is not served. It offers
+ * no command.
  */
 export default function AuditorConflicts(props: AuditorConflictsProps) {
     const { t } = useTranslation();
@@ -42,7 +43,7 @@ export default function AuditorConflicts(props: AuditorConflictsProps) {
     return (
         <AuditorShell
             title={t('auditor.conflicts.head_title')}
-            tab="portfolio"
+            tab={props.links.portfolio === null ? 'jobs' : 'portfolio'}
             links={props.links}
             openJobs={0}
         >

@@ -1433,8 +1433,7 @@ const en = {
     'auditor.home.nearby_sub':
         'Closest {distance}km · first to accept locks the file',
     'auditor.home.in_progress': 'In progress',
-    'auditor.job.progress_line':
-        '{district} · {distance}km · Step {step} of {steps}',
+    'auditor.job.step_of': 'Step {step} of {steps}',
     'auditor.job.status.overdue': 'Overdue',
     'auditor.job.status.awaiting_cosign': 'Awaiting co-signature',
     'auditor.job.reassigned': 'Reassigned to you',
@@ -1476,6 +1475,7 @@ const en = {
     'auditor.jobs.sector_unavailable': 'Sector unavailable',
     'auditor.jobs.kind_monthly': 'Monthly visit',
     'auditor.jobs.show_more': 'Show more',
+    'auditor.jobs.conflicts_link': 'Your declared conflicts →',
     'auditor.jobs.page_empty':
         'Nothing to show on this page. Earlier jobs may follow.',
     'auditor.jobs.assigned_empty':

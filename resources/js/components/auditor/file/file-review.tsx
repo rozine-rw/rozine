@@ -221,9 +221,11 @@ export function FileReview({
                         ? t('auditor.jobs.sector_unavailable')
                         : t(`auditor.sector.${raise.sector}`)}
                 </p>
-                <p className="mt-1 text-[12.5px] leading-[1.5] text-rz-slate">
-                    {raise.use_of_funds}
-                </p>
+                {raise.use_of_funds !== '' && (
+                    <p className="mt-1 text-[12.5px] leading-[1.5] text-rz-slate">
+                        {raise.use_of_funds}
+                    </p>
+                )}
             </div>
 
             <Section title={t('auditor.file.documents')}>

@@ -34,17 +34,19 @@ export function AssignedJobCard({
                         {job.business}
                     </p>
                     <p className="mt-0.5 text-[11.5px] text-rz-secondary">
-                        {progress === null
-                            ? t('auditor.file.place', {
-                                  district: job.district,
-                                  distance: job.distance_km,
-                              })
-                            : t('auditor.job.progress_line', {
-                                  district: job.district,
-                                  distance: job.distance_km,
-                                  step: progress.step,
-                                  steps: progress.steps,
-                              })}
+                        {[
+                            job.district,
+                            job.distance_km === null
+                                ? null
+                                : t('auditor.jobs.km', {
+                                      distance: job.distance_km,
+                                  }),
+                            progress === null
+                                ? null
+                                : t('auditor.job.step_of', progress),
+                        ]
+                            .filter((part) => part !== null)
+                            .join(' · ')}
                     </p>
                 </div>
                 <ClockChip

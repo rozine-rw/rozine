@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { AssignedJobCard } from '@/components/auditor/assigned-job-card';
 import { EligibleCard } from '@/components/auditor/jobs/eligible-card';
@@ -144,6 +145,14 @@ export function JobsBody({
                         )
                     )}
                     {next !== null && <ShowMore next={next} />}
+                    {props.links.conflicts && (
+                        <Link
+                            href={props.links.conflicts}
+                            className="mt-3.5 block text-center text-[12px] font-bold text-rz-ink"
+                        >
+                            {t('auditor.jobs.conflicts_link')}
+                        </Link>
+                    )}
                 </ColumnPad>
             }
             right={right}
