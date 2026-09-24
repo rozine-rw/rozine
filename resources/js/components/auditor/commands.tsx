@@ -124,8 +124,8 @@ export type CommandLane = 'ordinary' | 'conflict';
  * A conflict declaration runs in its own lane (#96 point 6), with its own `request_id`, lookup and
  * notice: it can be declared while an ordinary command is in flight or its outcome unknown, and
  * that command stays held as it was. A recorded blocking conflict withdraws the private content at
- * once and follows the receipt's destination; nothing the earlier command answers later moves the
- * page again.
+ * once and follows the receipt's destination; nothing the earlier command answers later — a
+ * completion, a refusal or a lookup that found nothing — moves or reloads the page again.
  */
 export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
     const initial = initialFrom(preview);
@@ -142,12 +142,13 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
         const own = callbacks.current.get(sent.payload.request_id);
 
         callbacks.current.delete(sent.payload.request_id);
-        own?.onCompleted?.(resource);
 
         /* After a blocking conflict, an earlier command's late answer moves nothing. */
         if (withdrawn.current) {
             return;
         }
+
+        own?.onCompleted?.(resource);
 
         const { data } = resource;
 
@@ -211,6 +212,11 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
 
         callbacks.current.delete(sent.payload.request_id);
 
+        /* Once access is withdrawn, only the conflict receipt steers the page. */
+        if (withdrawn.current) {
+            return;
+        }
+
         if (own?.onRefused?.(code, status) === true) {
             return;
         }
@@ -220,6 +226,10 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
         }
     };
 
+    /* A lookup that found nothing refreshes the page, unless access was withdrawn meanwhile. */
+    const refresh = (): Promise<void> =>
+        withdrawn.current ? Promise.resolve() : reloadPreservingState();
+
     const command = useOperationCommand<
         AuditorCommand,
         AuditorOperationResource
@@ -227,7 +237,7 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
         actions: (sent) => sent.route,
         lookup,
         initial,
-        refresh: reloadPreservingState,
+        refresh,
         onCompleted,
         onRefused,
     });
@@ -237,7 +247,7 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
     >({
         actions: (sent) => sent.route,
         lookup,
-        refresh: reloadPreservingState,
+        refresh,
         onCompleted,
         onRefused,
     });

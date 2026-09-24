@@ -166,8 +166,20 @@ export function useOperationCommand<
             return;
         }
 
-        if (attempt.kind === 'failed' && attempt.status === 403) {
-            refuse(command, attempt.code ?? fallbackCode(403), 403);
+        /*
+         * The lookup replays a recorded refusal with its own status (a 409 conflict, a scoped
+         * 404): that is a definitive answer, not an unknown one. A denial is final too.
+         */
+        if (
+            attempt.kind === 'failed' &&
+            !isUncertainStatus(attempt.status) &&
+            (attempt.code !== null || attempt.status === 403)
+        ) {
+            refuse(
+                command,
+                attempt.code ?? fallbackCode(attempt.status),
+                attempt.status,
+            );
 
             return;
         }

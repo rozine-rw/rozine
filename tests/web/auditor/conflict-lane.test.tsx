@@ -136,6 +136,48 @@ describe('Conflict declarations in their own lane', () => {
         expect(inertia.visits).toEqual([{ url: '/preview/auditor-jobs' }]);
     });
 
+    it('lets neither a late refusal nor a late lookup miss reload the page after a blocking receipt', async () => {
+        inertia.queue.push(recorded(true));
+        const { user } = renderWithUser(
+            <AuditorAudit {...props(unknownConflict)} />,
+        );
+
+        await declare(user);
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([{ url: '/preview/auditor-jobs' }]),
+        );
+
+        /* The held seal's lookup now answers with a stale refusal. */
+        inertia.queue.push(fails(409, { code: 'VERSION_CONFLICT' }));
+        await user.click(screen.getByRole('button', { name: 'Check again' }));
+        await waitFor(() => expect(inertia.calls).toHaveLength(2));
+
+        expect(inertia.reloads).toHaveLength(0);
+        expect(inertia.visits).toEqual([{ url: '/preview/auditor-jobs' }]);
+    });
+
+    it('does not refresh after a blocking receipt when the held command has no recorded result', async () => {
+        inertia.queue.push(recorded(true));
+        const { user } = renderWithUser(
+            <AuditorAudit {...props(unknownConflict)} />,
+        );
+
+        await declare(user);
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([{ url: '/preview/auditor-jobs' }]),
+        );
+
+        inertia.queue.push(fails(404, { code: 'OPERATION_NOT_FOUND' }));
+        await user.click(screen.getByRole('button', { name: 'Check again' }));
+
+        /* The original request stays held for an explicit retry; nothing reloads. */
+        expect(
+            await screen.findByRole('button', { name: 'Try again' }),
+        ).toBeInTheDocument();
+        expect(inertia.reloads).toHaveLength(0);
+        expect(inertia.visits).toEqual([{ url: '/preview/auditor-jobs' }]);
+    });
+
     it('keeps a stale declaration in the form for the partner to send again', async () => {
         inertia.queue.push(fails(409, { code: 'VERSION_CONFLICT' }));
         const view = renderWithUser(<AuditorAudit {...props(review)} />);

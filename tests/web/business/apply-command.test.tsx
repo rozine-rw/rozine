@@ -8,10 +8,14 @@ import {
 import { useApplicationCommand } from '@/components/business/apply/use-application-command';
 import type { ApplicationCommand } from '@/types/business';
 
+type HttpOptions = {
+    onHttpException?: (response: { status: number; data: string }) => void;
+};
+
 const http = vi.hoisted(() => ({
     calls: [] as { url: string; body: unknown }[],
     body: undefined as unknown,
-    responses: [] as (() => Promise<unknown>)[],
+    responses: [] as ((options: HttpOptions) => Promise<unknown>)[],
 }));
 
 vi.mock('@inertiajs/react', () => ({
@@ -21,11 +25,11 @@ vi.mock('@inertiajs/react', () => ({
         transform: (callback: () => unknown) => {
             http.body = callback();
         },
-        submit: (route: { url: string }) => {
+        submit: (route: { url: string }, options: HttpOptions) => {
             http.calls.push({ url: route.url, body: http.body });
             const respond = http.responses.shift();
 
-            return respond ? respond() : new Promise(() => undefined);
+            return respond ? respond(options) : new Promise(() => undefined);
         },
     }),
 }));
@@ -108,6 +112,70 @@ describe('Application commands', () => {
             url: '/operations/c',
             body: { command: 'save' },
         });
+    });
+});
+
+describe('Operation lookups', () => {
+    const replays =
+        (status: number, code?: string) => (options: HttpOptions) => {
+            options.onHttpException?.({
+                status,
+                data: code === undefined ? '' : JSON.stringify({ code }),
+            });
+
+            return Promise.reject(new Error(`HTTP ${status}`));
+        };
+
+    it.each([
+        [409, 'VERSION_CONFLICT'],
+        [404, 'NOT_FOUND'],
+        [403, undefined],
+    ])(
+        'settles a lost command as refused when the lookup replays its recorded %i',
+        async (status, code) => {
+            const onRefused = vi.fn();
+            const { result } = renderHook(() =>
+                useApplicationCommand({ ...options, onRefused }),
+            );
+
+            http.responses.push(
+                () => Promise.reject(new Error('offline')),
+                replays(status, code),
+            );
+            act(() => {
+                result.current.send(command('d'));
+            });
+
+            await waitFor(() =>
+                expect(result.current.notice).toEqual({
+                    kind: 'refused',
+                    code: code ?? 'ACTION_FORBIDDEN',
+                    status,
+                }),
+            );
+            expect(onRefused).toHaveBeenCalledWith(
+                command('d'),
+                code ?? 'ACTION_FORBIDDEN',
+                status,
+            );
+            expect(result.current.unresolved).toBe(false);
+        },
+    );
+
+    it('keeps the outcome unknown when the lookup itself fails without a recorded answer', async () => {
+        const { result } = renderHook(() => useApplicationCommand(options));
+
+        http.responses.push(
+            () => Promise.reject(new Error('offline')),
+            replays(502),
+        );
+        act(() => {
+            result.current.send(command('e'));
+        });
+
+        await waitFor(() =>
+            expect(result.current.notice).toEqual({ kind: 'unconfirmed' }),
+        );
     });
 });
 
