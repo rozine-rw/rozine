@@ -1463,7 +1463,7 @@ const en = {
     'auditor.jobs.head_title': 'Jobs',
     'auditor.jobs.title': 'Flash Audits',
     'auditor.jobs.lead':
-        'Open field checks within {radius}km. First to accept locks the file and starts a {hours}-hour clock.',
+        "Open field checks within {radius}km. First to accept locks the file. Each flash audit is due {hours} hours after it's sent out.",
     'auditor.jobs.map_label':
         'Map of your {radius} km dispatch radius with {count} open jobs at approximate positions',
     'auditor.jobs.map_badge': '{radius}km radius · {count} open',
@@ -1475,7 +1475,6 @@ const en = {
     'auditor.jobs.term': 'Term',
     'auditor.jobs.term_months': '{months}mo',
     'auditor.jobs.view_file': 'View full application →',
-    'auditor.jobs.accept': 'Accept & start {hours}h clock',
     'auditor.jobs.decline': 'Decline',
     'auditor.jobs.declare_conflict': 'Declare a conflict',
     'auditor.jobs.empty':
@@ -2943,6 +2942,13 @@ const en = {
     'business.grow.starting': 'Starting…',
     'auditor.conflict.not_allowed':
         "You can no longer declare on this file, so your declaration hasn't been sent.",
+    'auditor.jobs.accept_due': 'Accept · due {time}',
+    'auditor.jobs.accept_plain': 'Accept',
+    'auditor.jobs.offer_open': 'Offer open until {time} · {left} left',
+    'auditor.jobs.offer_label': 'Time left to accept this offer',
+    'auditor.jobs.offer_closed': 'This offer has closed',
+    'auditor.command.refused.ASSIGNMENT_ACCEPTANCE_EXPIRED':
+        "This offer closed before your acceptance reached Rozine, so it wasn't accepted. The page has been refreshed.",
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

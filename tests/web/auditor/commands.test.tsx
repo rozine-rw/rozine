@@ -24,7 +24,7 @@ vi.setConfig({ testTimeout: 30_000 });
 const jobs = () => structuredClone(jobsFixture.props) as AuditorJobsProps;
 
 const accept = () =>
-    screen.getByRole('button', { name: 'Accept & start 24h clock' });
+    screen.getByRole('button', { name: 'Accept · due 4 Oct · 16:00' });
 
 beforeEach(() => inertia.reset());
 

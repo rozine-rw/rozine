@@ -70,7 +70,6 @@ export function JobsBody({
                                     key={job.id}
                                     job={job}
                                     serverTime={props.server_time}
-                                    flashHours={props.flash_hours}
                                     declineOptions={props.decline_options}
                                 />
                             ))}

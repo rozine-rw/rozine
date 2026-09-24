@@ -5,7 +5,6 @@
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
         "allowed_actions": ["conflict.declare"],
-        "flash_hours": 24,
         "job": {
             "id": "fa_huye",
             "revision": 2,
@@ -16,6 +15,8 @@
             "deadline": {
                 "due_at": "2026-10-04T05:00:00Z"
             },
+            "accept_by": null,
+            "complete_by": "2026-10-04T05:00:00Z",
             "reassigned_from": "Chantal Rwema, CPA"
         },
         "file": {
@@ -164,6 +165,8 @@
                         "east_km": 8.4,
                         "north_km": 7.1
                     },
+                    "accept_by": "2026-10-03T17:40:00Z",
+                    "complete_by": "2026-10-04T14:00:00Z",
                     "link": {
                         "url": "/preview/auditor-file",
                         "method": "get"

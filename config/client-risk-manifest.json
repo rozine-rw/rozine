@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "483bc5d7fcd3f926ae9075e2c6773e5a42d7b885eb632db54398bf24b0c76502",
-    "coverageSetSha256": "08e1e4c1a43754e9b072eb5d335a951bebbb068f61ebbba091cc9fb0ac3ffe62",
+    "sourceManifestSha256": "d244f8ceab26e6a8c42fd7633168c2bea1dd200ba2b240f986daf9f4f8fbb007",
+    "coverageSetSha256": "aff0be76ba498722b646b574ee1596252cac39fe23a46c9858952625e1f845ec",
     "thresholds": {
         "critical": {
             "global": {
@@ -102,6 +102,7 @@
         "resources/js/components/auditor/jobs/eligible-card.tsx",
         "resources/js/components/auditor/jobs/jobs-body.tsx",
         "resources/js/components/auditor/jobs/monthly-section.tsx",
+        "resources/js/components/auditor/jobs/offer-accept.tsx",
         "resources/js/components/auditor/jobs/radius-map.tsx",
         "resources/js/components/auditor/keyframes.tsx",
         "resources/js/components/auditor/money.ts",

@@ -95,9 +95,8 @@ type JobHeaderProps = {
     district: string;
     distanceKm: string;
     serverTime: string;
+    /** The job's deadline; null for a routine offer, whose deadline the report calendar owns. */
     dueAt: string | null;
-    /** The clock's length, shown while a job is only offered. */
-    hours?: number;
     steps?: ReactNode;
     /** Whether the clock shows; work stopped by a blocking conflict has none to run. */
     clock?: boolean;
@@ -112,7 +111,6 @@ export function JobHeader({
     distanceKm,
     serverTime,
     dueAt,
-    hours,
     steps,
     clock = true,
 }: JobHeaderProps) {
@@ -138,11 +136,10 @@ export function JobHeader({
                         })}
                     </p>
                 </div>
-                {clock && (
+                {clock && dueAt !== null && (
                     <ClockChip
                         serverTime={serverTime}
                         dueAt={dueAt}
-                        hours={hours}
                         size="sheet"
                     />
                 )}
