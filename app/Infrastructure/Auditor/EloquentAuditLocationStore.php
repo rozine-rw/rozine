@@ -87,7 +87,7 @@ final class EloquentAuditLocationStore implements AuditLocationStore
 
     /**
      * Authority remains locked around every operation and replay. Premises take the Business lock
-     * first; office writes lock only their own location before staff and verified identity records.
+     * first; both paths lock the actor and verified Parties before location records.
      *
      * @template TResult
      *
@@ -104,10 +104,10 @@ final class EloquentAuditLocationStore implements AuditLocationStore
                 fn (): mixed => $this->locked($kind, $subjectId, $operation));
         }
 
-        return $this->locked($kind, $subjectId, fn (?AuditLocation $location): mixed => $this->staff->handle($actorId, 'audit.partners.verify',
+        return $this->staff->handle($actorId, 'audit.partners.verify',
             fn (): mixed => $requireVerified
-                ? $this->parties->handle('person', $subjectId, [$subjectId], fn (): mixed => $operation($location))
-                : $operation($location)));
+                ? $this->parties->handle('person', $subjectId, [$subjectId], fn (): mixed => $this->locked($kind, $subjectId, $operation))
+                : $this->locked($kind, $subjectId, $operation));
     }
 
     /**

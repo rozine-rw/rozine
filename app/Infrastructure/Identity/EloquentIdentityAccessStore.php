@@ -483,6 +483,58 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
         }, 3);
     }
 
+    /**
+     * Locks all required and optional Parties once, in stable order. An ineligible candidate is
+     * excluded without making another candidate unavailable. Participant authority is separate
+     * from Business membership; assignment ownership remains the Auditor adapter's responsibility.
+     *
+     * @template TResult
+     *
+     * @param  list<string>  $personPartyIds
+     * @param  list<string>  $candidateIds
+     * @param  Closure(list<string>, string|null, bool): TResult  $operation
+     * @return TResult
+     */
+    public function withAuditAccess(?int $userId, ?int $contextRevision, string $entityKind, string $entityPartyId, array $personPartyIds, array $candidateIds, bool $requireVerified, Closure $operation, ?string $registryReference = null): mixed
+    {
+        return DB::transaction(function () use ($userId, $contextRevision, $entityKind, $entityPartyId, $personPartyIds, $candidateIds, $requireVerified, $operation, $registryReference): mixed {
+            $user = $userId === null ? null : User::query()->lockForUpdate()->findOrFail($userId);
+            if ($userId === null && $contextRevision !== null) {
+                throw new IdentityViolation('ACTIVE_ROLE_REQUIRED');
+            }
+            if ($userId !== null && $contextRevision === null) {
+                $this->withStaffPermission($userId, 'audit.assignments.manage', fn (): bool => true);
+            }
+            $ids = array_values(array_unique([$entityPartyId, ...$personPartyIds, ...$candidateIds, ...($user?->party_id === null ? [] : [$user->party_id])]));
+            $parties = Party::query()->whereKey($ids)->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+            if ($contextRevision !== null) {
+                $this->roles->authorize($this->identities->forUser($userId), 'auditor', null, $contextRevision);
+            }
+            $verified = true;
+            try {
+                $this->withVerifiedParties($entityKind, $entityPartyId, $personPartyIds, fn (): bool => true, $registryReference);
+            } catch (IdentityViolation $exception) {
+                if ($requireVerified) {
+                    throw $exception;
+                }
+                $verified = false;
+            }
+            $verifiedPeople = VerifiedPersonIdentity::query()->whereIn('party_id', $candidateIds)->pluck('party_id')->all();
+            $memberships = RoleMembership::query()->whereIn('party_id', $candidateIds)->where('status', 'active')->get()->groupBy('party_id');
+            $eligible = [];
+            foreach (array_unique($candidateIds) as $id) {
+                $party = $parties->get($id);
+                if ($party !== null && $party->kind === 'person' && $party->verified_at !== null && $party->verified_at->lte(now())
+                    && in_array($id, $verifiedPeople, true) && $memberships->has($id)
+                    && $memberships[$id]->contains('role', 'auditor') && $memberships[$id]->every(fn (RoleMembership $membership): bool => $membership->role === 'auditor')) {
+                    $eligible[] = $id;
+                }
+            }
+
+            return $operation($eligible, $user?->party_id, $verified);
+        }, 3);
+    }
+
     private function authorizeOperator(?User $user): void
     {
         if ($user === null || $user->party_id !== null || ! $this->emailVerified($user)

@@ -45,6 +45,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $auditorMigration = require database_path('migrations/2026_09_24_093501_create_auditor_profiles_and_accreditation_history.php');
     $locationMigration = require database_path('migrations/2026_09_24_103630_create_audit_locations_and_history.php');
     $independenceMigration = require database_path('migrations/2026_09_24_110246_create_auditor_independence_reviews_and_history.php');
+    $assignmentMigration = require database_path('migrations/2026_09_24_113400_create_audit_assignments_and_conflicts.php');
     $party = Party::factory()->verified()->create();
     $user = User::factory()->for($party)->create();
     RoleMembership::factory()->for($party)->active()->create();
@@ -53,6 +54,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
 
     expect(Schema::hasIndex('users', ['party_id']))->toBeTrue();
 
+    $assignmentMigration->down();
     $independenceMigration->down();
     $locationMigration->down();
     $auditorMigration->down();
@@ -93,6 +95,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $auditorMigration->up();
     $locationMigration->up();
     $independenceMigration->up();
+    $assignmentMigration->up();
 
     expect(Schema::hasTable('parties'))->toBeTrue()
         ->and(Schema::hasTable('role_memberships'))->toBeTrue()

@@ -63,6 +63,17 @@ interface IdentityAccessStore
      */
     public function withEntityRole(int $userId, string $role, int $expectedContext, string $entityKind, string $entityPartyId, array $personPartyIds, Closure $operation, ?string $registryReference = null): mixed;
 
+    /**
+     * @template TResult
+     *
+     * @param  list<string>  $personPartyIds
+     * @param  list<string>  $candidateIds
+     * @param  Closure(list<string>, string|null, bool): TResult  $operation
+     * @param  int|null  $userId  Null is reserved for the trusted offer-expiry worker; a participant context always requires an actor.
+     * @return TResult
+     */
+    public function withAuditAccess(?int $userId, ?int $contextRevision, string $entityKind, string $entityPartyId, array $personPartyIds, array $candidateIds, bool $requireVerified, Closure $operation, ?string $registryReference = null): mixed;
+
     /** @return array<string, mixed> */
     public function changeMembership(int $actorId, string $partyId, string $role, string $status, int $expectedRevision, string $evidenceReference, string $reason, string $requestId): array;
 
