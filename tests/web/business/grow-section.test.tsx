@@ -150,6 +150,29 @@ describe('Home — starting a raise', () => {
         ]);
     });
 
+    it('follows next when a concurrent create resumed the existing draft instead', async () => {
+        const user = userEvent.setup();
+
+        inertia.queue.push(() =>
+            Promise.resolve({
+                ...resource({ next: link('/business/apply?resume=1') }),
+                code: 'APPLICATION_RESUMED',
+            }),
+        );
+        renderGrow(null, entry);
+
+        await user.click(
+            screen.getByRole('button', { name: 'Apply for a raise' }),
+        );
+
+        await waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith(
+                link('/business/apply?resume=1'),
+            ),
+        );
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
     it('shows that it is starting while the command runs', async () => {
         const user = userEvent.setup();
 

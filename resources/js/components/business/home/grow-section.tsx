@@ -38,7 +38,9 @@ function ApplyLabel({ children }: { children: ReactNode }) {
 
 /**
  * Starts a raise with `application.create` when no draft is open (#96, option (a)): the common
- * command fields, an unknown outcome looked up before any resend, then the server's `next`.
+ * command fields, an unknown outcome looked up before any resend, then the server's `next`. A
+ * concurrent create completes as `APPLICATION_RESUMED` with the existing draft; both completed
+ * codes simply follow `next`.
  */
 function CreateApplication({ entry }: { entry: CreateApplicationEntry }) {
     const { t } = useTranslation();
