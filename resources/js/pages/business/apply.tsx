@@ -1,118 +1,306 @@
-import { router, useForm } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+import { router } from '@inertiajs/react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
+import {
+    OPERATION_CODES,
+    refusalRefreshes,
+} from '@/components/business/apply/operation-outcome';
+import { OutcomeBanner } from '@/components/business/apply/outcome-banner';
 import { StepBusiness } from '@/components/business/apply/step-business';
 import { StepRaise } from '@/components/business/apply/step-raise';
 import type { RaiseFields } from '@/components/business/apply/step-raise';
-import {
-    DISCLOSURES,
-    StepReview,
-} from '@/components/business/apply/step-review';
+import { StepReview } from '@/components/business/apply/step-review';
 import type { ReviewFields } from '@/components/business/apply/step-review';
 import { Submitted } from '@/components/business/apply/submitted';
+import { useApplicationCommand } from '@/components/business/apply/use-application-command';
 import { WizardCta } from '@/components/business/apply/wizard-cta';
 import { WizardFrame } from '@/components/business/apply/wizard-frame';
 import { BusinessShell } from '@/components/business/business-shell';
-import { HomeBody } from '@/components/business/home/home-body';
+import { BlankBody, HomeBody } from '@/components/business/home/home-body';
 import { useToast } from '@/components/rozine/toast';
 import { useTranslation } from '@/hooks/use-translation';
-import type { BusinessApplyProps } from '@/types/business';
+import type {
+    ApplicationCommand,
+    ApplicationSnapshot,
+    BusinessApplyProps,
+    TermMonths,
+} from '@/types/business';
 
 const PAGE = { business: 1, raise: 2, review: 3 } as const;
 
-/** How long typing settles before the server is asked for a fresh quote. */
+/** How long typing settles before the draft is saved and evaluated. */
 const QUOTE_DEBOUNCE_MS = 450;
 
+/** The props a confirmed command does not carry; they are refreshed once its snapshot is shown. */
+const REMAINING_PROPS = [
+    'allowed_actions',
+    'identity_context_revision',
+    'server_time',
+    'evidence',
+];
+
+type Snapshot = Omit<ApplicationSnapshot, 'next'> & {
+    allowed_actions: string[];
+};
+
+/** The original request an evaluation answers: the target and term, exactly as typed. */
+const requestKey = (
+    target: string | null | undefined,
+    term: TermMonths | null,
+): string => `${target ?? ''}|${term ?? ''}`;
+
+/** The request a save or evaluation carried. */
+const payloadKey = (payload: ApplicationCommand['payload']): string =>
+    requestKey(
+        payload.target as string,
+        payload.term_months as TermMonths | null,
+    );
+
 /**
- * Apply for a raise (MVP-BUSINESS-SCR-02). The draft, the quote and the submission are the
- * server's; this page collects input, asks for quotes and shows exactly what comes back.
+ * Apply for a raise (MVP-BUSINESS-SCR-02, business-application-v1). The draft, the quote and the
+ * signatures are the server's: this page collects input, sends the JSON commands the server
+ * allows, and shows exactly what comes back. A page load only reads the current quote; a new one
+ * exists only after the draft is saved and `application.evaluate` runs. A changed request is a new
+ * evaluation and a new decision — the page never shrinks a refused request on its own.
  */
 export default function BusinessApply(props: BusinessApplyProps) {
     const { t } = useTranslation();
     const { toast, show } = useToast();
-    const { application, step, quote, links, actions } = props;
-    const [quoting, setQuoting] = useState(false);
-    const firstQuote = useRef(true);
+    const { step, links, actions } = props;
+    const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+    const application = snapshot?.application ?? props.application;
+    const quote = snapshot === null ? props.quote : snapshot.quote;
+    const acceptance = snapshot?.acceptance ?? props.acceptance;
+    const submission =
+        snapshot === null ? props.submission : snapshot.submission;
+    const allowedActions: string[] =
+        snapshot?.allowed_actions ?? props.allowed_actions;
+    const readyQuote = quote?.status === 'ready' ? quote : null;
+    const canSave = allowedActions.includes('application.save');
+    const canEvaluate =
+        canSave && allowedActions.includes('application.evaluate');
+    const canSign = allowedActions.includes('application.submit');
 
-    const raise = useForm<RaiseFields>({
+    const revision = useRef(props.application.revision);
+    const savedKey = useRef(
+        requestKey(
+            props.application.target?.amount,
+            props.application.term_months,
+        ),
+    );
+
+    useEffect(() => {
+        revision.current = props.application.revision;
+    }, [props.application.revision]);
+
+    const [raise, setRaise] = useState<RaiseFields>({
         title: application.title,
         target: application.target?.amount ?? '',
         term_months: application.term_months,
         use_of_funds: application.use_of_funds,
         story: application.story,
     });
-
-    const review = useForm<ReviewFields>({
+    const [review, setReview] = useState<ReviewFields>({
         disclosures: [],
         terms: false,
         privacy: false,
+        accept_offer: false,
         signature_name: '',
     });
+    const key = requestKey(raise.target, raise.term_months);
+    const [evaluatedKey, setEvaluatedKey] = useState<string | null>(() => {
+        if (props.quote === null) {
+            return null;
+        }
 
-    const { target, term_months: termMonths } = raise.data;
+        /* A refusal answers the saved draft; a ready quote names its own request. */
+        return props.quote.status === 'ready'
+            ? requestKey(
+                  props.quote.requested_principal.amount,
+                  props.quote.term_months,
+              )
+            : requestKey(
+                  props.application.target?.amount,
+                  props.application.term_months,
+              );
+    });
+    const [haltedKey, setHaltedKey] = useState<string | null>(null);
+
+    const context = () => ({
+        identity_context_revision: props.identity_context_revision,
+        expected_revision: revision.current,
+        request_id: crypto.randomUUID(),
+    });
+
+    const command = useApplicationCommand({
+        actions,
+        lookup: links.operation,
+        preview: props.preview_outcome,
+        onCompleted: (sent, resource) => {
+            const { data } = resource;
+
+            if (data === null) {
+                router.reload();
+
+                return;
+            }
+
+            revision.current = data.application.revision;
+            setSnapshot({
+                application: data.application,
+                quote: data.quote,
+                acceptance: data.acceptance,
+                submission: data.submission,
+                allowed_actions: resource.allowed_actions,
+            });
+
+            if (sent.name !== 'submit') {
+                const sentKey = payloadKey(sent.payload);
+
+                savedKey.current = sentKey;
+
+                if (sent.name === 'evaluate') {
+                    setEvaluatedKey(sentKey);
+                }
+            }
+
+            if (sent.advance || resource.code === OPERATION_CODES.submitted) {
+                router.visit(data.next);
+
+                return;
+            }
+
+            router.reload({ only: REMAINING_PROPS });
+        },
+        onRefused: (sent, code, status) => {
+            if (sent.name !== 'submit') {
+                setHaltedKey(payloadKey(sent.payload));
+            }
+
+            if (code === 'QUOTE_STALE') {
+                setReview((fields) => ({ ...fields, accept_offer: false }));
+            }
+
+            if (code === 'MANDATE_STALE') {
+                setReview((fields) => ({ ...fields, signature_name: '' }));
+            }
+
+            if (code === 'DOCUMENT_VERSION_STALE') {
+                setReview((fields) => ({
+                    ...fields,
+                    disclosures: [],
+                    terms: false,
+                    privacy: false,
+                }));
+            }
+
+            if (refusalRefreshes(code, status)) {
+                setSnapshot(null);
+                router.reload();
+            }
+        },
+    });
+
+    const draftPayload = () => ({
+        title: raise.title,
+        target: raise.target,
+        term_months: raise.term_months,
+        use_of_funds: raise.use_of_funds,
+        story: raise.story,
+        step: 'raise',
+        ...context(),
+    });
+
+    /* Save the typed request, then evaluate the saved draft — one command at a time. */
+    const startEvaluation = useEffectEvent((draftSaved: boolean) => {
+        if (draftSaved) {
+            command.send({
+                name: 'evaluate',
+                advance: false,
+                payload: {
+                    target: raise.target,
+                    term_months: raise.term_months,
+                    evidence_version: props.evidence.version,
+                    ...context(),
+                },
+            });
+
+            return;
+        }
+
+        command.send({ name: 'save', advance: false, payload: draftPayload() });
+    });
+
+    const armed =
+        step === 'raise' &&
+        canEvaluate &&
+        !command.busy &&
+        !command.unresolved &&
+        raise.target !== '' &&
+        raise.term_months !== null &&
+        key !== evaluatedKey &&
+        key !== haltedKey;
 
     useEffect(() => {
-        if (step !== 'raise') {
+        if (!armed) {
             return;
         }
 
-        if (firstQuote.current) {
-            firstQuote.current = false;
-
-            return;
-        }
-
-        const timer = window.setTimeout(() => {
-            router.reload({
-                only: ['quote'],
-                data: { target, term_months: termMonths },
-                onStart: () => setQuoting(true),
-                onFinish: () => setQuoting(false),
-            });
-        }, QUOTE_DEBOUNCE_MS);
+        const draftSaved = key === savedKey.current;
+        const timer = window.setTimeout(
+            () => startEvaluation(draftSaved),
+            draftSaved ? 0 : QUOTE_DEBOUNCE_MS,
+        );
 
         return () => window.clearTimeout(timer);
-    }, [step, target, termMonths]);
+    }, [armed, key]);
 
     const remind = () => show(t('business.apply.incomplete'));
+    const idle = !command.busy && !command.unresolved;
 
     const raiseReady =
-        raise.data.title.trim() !== '' &&
-        raise.data.target !== '' &&
-        raise.data.term_months !== null &&
-        quote?.status === 'ready' &&
-        !quoting;
+        raise.title.trim() !== '' &&
+        readyQuote !== null &&
+        evaluatedKey === key &&
+        idle;
 
     const reviewReady =
-        DISCLOSURES.every((item) => review.data.disclosures.includes(item)) &&
-        review.data.terms &&
-        review.data.privacy &&
-        review.data.signature_name.trim().length >= 2;
+        readyQuote !== null &&
+        review.accept_offer &&
+        acceptance.disclosures.every((disclosure) =>
+            review.disclosures.includes(disclosure.key),
+        ) &&
+        review.terms &&
+        review.privacy &&
+        review.signature_name.trim().length >= 2 &&
+        idle;
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
 
         if (step === 'business') {
-            if (links.next !== null) {
-                router.visit(links.next);
-            }
+            /* The Continue button exists only when the server offers a next step. */
+            router.visit(links.next!);
 
             return;
         }
 
         if (step === 'raise') {
             if (!raiseReady) {
+                if (haltedKey === key) {
+                    setHaltedKey(null);
+                }
+
                 remind();
 
                 return;
             }
 
-            raise.transform((data) => ({
-                ...data,
-                step,
-                revision: application.revision,
-            }));
-            raise.post(actions.save.url, { preserveScroll: true });
+            command.send({
+                name: 'save',
+                advance: true,
+                payload: draftPayload(),
+            });
 
             return;
         }
@@ -123,36 +311,62 @@ export default function BusinessApply(props: BusinessApplyProps) {
             return;
         }
 
-        review.transform((data) => ({
-            ...data,
-            revision: application.revision,
-            documents: props.acceptance.documents.map(({ kind, version }) => ({
-                kind,
-                version,
-            })),
-        }));
-        review.post(actions.submit.url, { preserveScroll: true });
+        command.send({
+            name: 'submit',
+            advance: false,
+            payload: {
+                ...context(),
+                quote_id: readyQuote.quote_id,
+                quote_revision: readyQuote.quote_revision,
+                evidence_version: readyQuote.evidence_version,
+                mandate_version: acceptance.mandate_version,
+                accepted_principal: readyQuote.principal.amount,
+                disclosures: acceptance.disclosures.map(
+                    ({ key: disclosure, version, sha256 }) => ({
+                        key: disclosure,
+                        version,
+                        sha256,
+                    }),
+                ),
+                documents: acceptance.documents.map(
+                    ({ kind, version, sha256 }) => ({ kind, version, sha256 }),
+                ),
+                terms: review.terms,
+                privacy: review.privacy,
+                signature_name: review.signature_name.trim(),
+            },
+        });
     };
 
-    const cta =
-        step === 'submitted' ? null : (
-            <WizardCta
-                ready={
-                    step === 'business' ||
-                    (step === 'raise' ? raiseReady : reviewReady)
-                }
-                busy={raise.processing || review.processing}
-                form="business-apply"
-            >
-                {step === 'review'
-                    ? review.processing
-                        ? t('business.apply.submitting')
-                        : t('business.apply.submit')
-                    : raise.processing
-                      ? t('business.apply.saving')
-                      : t('business.apply.continue')}
-            </WizardCta>
-        );
+    const offersCommand = {
+        business:
+            props.evidence.eligibility.status === 'eligible' &&
+            links.next !== null,
+        raise: canSave,
+        review: canSign,
+        submitted: false,
+    }[step];
+
+    const cta = offersCommand ? (
+        <WizardCta
+            ready={
+                step === 'business' ||
+                (step === 'raise' ? raiseReady : reviewReady)
+            }
+            busy={command.busy}
+            form="business-apply"
+        >
+            {step === 'review'
+                ? command.busy
+                    ? t('business.apply.submitting')
+                    : t('business.apply.submit')
+                : command.busy
+                  ? t('business.apply.saving')
+                  : t('business.apply.continue')}
+        </WizardCta>
+    ) : null;
+
+    const errors = command.errors;
 
     const sheet = (
         <WizardFrame
@@ -164,19 +378,35 @@ export default function BusinessApply(props: BusinessApplyProps) {
             dismissible={step === 'business'}
             cta={cta}
         >
+            {command.notice && (
+                <OutcomeBanner
+                    notice={command.notice}
+                    busy={command.busy}
+                    onCheckAgain={command.checkAgain}
+                    onRetry={command.retry}
+                />
+            )}
+            {step === 'raise' && !canSave && (
+                <p
+                    role="status"
+                    className="mb-4 rounded-2xl border border-[#dbe7ff] bg-rz-surface p-4 text-xs leading-[1.55] text-rz-secondary dark:border-rz-border"
+                >
+                    {t('business.apply.view_only')}
+                </p>
+            )}
             <form id="business-apply" onSubmit={submit} noValidate>
                 {step === 'business' && (
                     <StepBusiness evidence={props.evidence} />
                 )}
                 {step === 'raise' && (
                     <StepRaise
-                        fields={raise.data}
-                        errors={raise.errors}
+                        fields={raise}
+                        errors={errors}
                         quote={quote}
-                        quoting={quoting}
+                        quoting={command.busy || key !== evaluatedKey}
                         onChange={(field, value) =>
-                            raise.setData((data) => ({
-                                ...data,
+                            setRaise((fields) => ({
+                                ...fields,
                                 [field]: value,
                             }))
                         }
@@ -184,20 +414,22 @@ export default function BusinessApply(props: BusinessApplyProps) {
                 )}
                 {step === 'review' && (
                     <StepReview
-                        acceptance={props.acceptance}
-                        fields={review.data}
-                        errors={review.errors}
+                        acceptance={acceptance}
+                        quote={readyQuote}
+                        canSign={canSign}
+                        fields={review}
+                        errors={errors}
                         onChange={(field, value) =>
-                            review.setData((data) => ({
-                                ...data,
+                            setReview((fields) => ({
+                                ...fields,
                                 [field]: value,
                             }))
                         }
                     />
                 )}
             </form>
-            {step === 'submitted' && props.submission !== null && (
-                <Submitted submission={props.submission} home={links.close} />
+            {step === 'submitted' && submission !== null && (
+                <Submitted submission={submission} home={links.close} />
             )}
         </WizardFrame>
     );
@@ -206,14 +438,18 @@ export default function BusinessApply(props: BusinessApplyProps) {
         <BusinessShell
             title={t('business.apply.head_title')}
             tab="home"
-            links={props.home.links}
+            links={props.shell_links}
             showTabBar={false}
         >
-            <HomeBody
-                {...props.home}
-                backdrop
-                overlay={{ column: 'right', content: sheet }}
-            />
+            {props.home === null ? (
+                <BlankBody overlay={{ column: 'right', content: sheet }} />
+            ) : (
+                <HomeBody
+                    {...props.home}
+                    backdrop
+                    overlay={{ column: 'right', content: sheet }}
+                />
+            )}
             {toast}
         </BusinessShell>
     );

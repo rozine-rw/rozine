@@ -255,18 +255,16 @@ const fr: Catalog = {
     'business.apply.step_of': 'Étape {step} sur {total}',
     'business.apply.continue': 'Continuer',
     'business.apply.saving': 'Enregistrement…',
-    'business.apply.submit': 'Soumettre la note',
-    'business.apply.submitting': 'Envoi…',
+    'business.apply.submit': 'Signer la demande',
+    'business.apply.submitting': 'Signature…',
     'business.apply.incomplete': 'Terminez cette étape pour continuer',
     'business.apply.business.title': 'Entreprise et finances',
     'business.apply.business.subtitle':
-        'À partir de votre certificat RDB et de 5 ans de relevés bancaires et mobile money, vérifiés par OCR. Vérifiez — si tout est correct, continuez.',
+        'À partir de votre certificat RDB et de vos relevés bancaires et mobile money vérifiés. Vérifiez — si tout est correct, continuez.',
     'business.apply.business.rdb_verified': '✓ Vérifié par le RDB',
     'business.apply.business.statements_verified': '✓ Relevés vérifiés · OCR',
     'business.apply.business.active': '● Active',
     'business.apply.business.established': 'Fondée en {year}',
-    'business.apply.business.officer.ceo': 'Directeur général',
-    'business.apply.business.officer.board_chair': 'Président du conseil',
     'business.apply.business.standing': 'Situation financière · {years} ans',
     'business.apply.business.ocr_verified': 'OCR · vérifié',
     'business.apply.business.revenue': "Chiffre d'affaires",
@@ -280,7 +278,7 @@ const fr: Catalog = {
         '· trésorerie × couverture des stocks',
     'business.apply.business.capacity_pending': 'Audit en attente',
     'business.apply.business.capacity_body':
-        'La plus grande levée que la trésorerie de votre entreprise peut supporter selon la couverture de stocks vérifiée. Les demandes supérieures sont refusées automatiquement.',
+        'La plus grande levée que la trésorerie de votre entreprise peut supporter selon la couverture de stocks vérifiée. Chaque offre est calibrée dans cette limite.',
     'business.apply.raise.title': 'Votre levée',
     'business.apply.raise.subtitle':
         'Fixez vos conditions et présentez-vous aux investisseurs.',
@@ -302,8 +300,7 @@ const fr: Catalog = {
     'business.apply.raise.rate_rated': 'Notée {band}',
     'business.apply.raise.rate_best': 'Meilleure notation, 3 mois',
     'business.apply.raise.rate_best_detail': 'Meilleur taux sur Rozine',
-    'business.apply.raise.rate_term_detail':
-        '+{points} points pour cette durée',
+    'business.apply.raise.rate_term_detail': '+{ratio} de prime de durée',
     'business.apply.raise.rate_cap': 'Jamais au-dessus de {cap} %',
     'business.apply.raise.quote_pending':
         'Saisissez un objectif et une durée pour voir votre offre.',
@@ -317,7 +314,6 @@ const fr: Catalog = {
     'business.apply.raise.interest_basis':
         '({rate} % forfaitaire · {months} mois)',
     'business.apply.raise.you_repay': 'Vous remboursez',
-    'business.apply.raise.per_month': '{amount} / mois',
     'business.apply.raise.first_payment':
         "À partir d'un mois après le financement",
     'business.apply.raise.reserve': 'Réserve de protection des investisseurs',
@@ -351,14 +347,6 @@ const fr: Catalog = {
     'business.apply.review.subtitle':
         'Reconnaissez les risques, acceptez les conditions et signez pour soumettre.',
     'business.apply.review.risk_disclosures': 'Informations sur les risques',
-    'business.apply.review.disclosure.accuracy':
-        "Je confirme l'exactitude de toutes les informations fournies.",
-    'business.apply.review.disclosure.obligations':
-        "Je comprends les obligations légales liées à l'émission de cette note.",
-    'business.apply.review.disclosure.statements':
-        "Je téléverserai à temps mes relevés bancaires et MoMo mensuels pour l'audit du partenaire.",
-    'business.apply.review.disclosure.repayment':
-        'Je reconnais les obligations de remboursement envers les investisseurs.',
     'business.apply.review.agreements': 'Accords',
     'business.apply.review.agree_terms_prefix': "J'accepte les",
     'business.apply.review.agree_privacy_prefix': "J'ai lu la",
@@ -380,10 +368,10 @@ const fr: Catalog = {
     'business.apply.review.fee_note':
         'Aucuns frais sur le montant levé, et rien au-delà du taux annoncé. Facturés une fois la note approuvée, avant sa mise en ligne.',
     'business.apply.review.binding':
-        "Votre signature engage légalement l'entreprise aux obligations divulguées. L'identifiant de la note est généré à la soumission.",
-    'business.apply.submitted.title': 'Votre note a été soumise',
+        "Votre signature engage légalement l'entreprise aux obligations divulguées. L'identifiant de la demande est attribué à la soumission.",
+    'business.apply.submitted.title': 'Votre demande a été soumise',
     'business.apply.submitted.body':
-        "Votre note est en cours d'examen. Vous serez notifié à chaque étape.",
+        "Votre demande est en cours d'examen. Vous serez notifié à chaque étape.",
     'business.apply.submitted.note_id': 'ID de la note · {id}',
     'business.apply.submitted.funded_title': 'Une fois entièrement financée',
     'business.apply.submitted.funded_body':
@@ -2812,6 +2800,73 @@ const fr: Catalog = {
         "Aucun relevé pour l'instant. Le premier arrive après votre premier mois complet.",
     'investor.profile.statements.disclaimer':
         'Les relevés sont fournis pour vos archives. Rozine ne fournit pas de conseil fiscal — consultez un conseiller qualifié.',
+
+    'business.apply.business.unavailable': 'Indisponible',
+    'business.apply.business.ineligible': 'Pas encore éligible à une levée',
+    'business.apply.raise.resized':
+        "Vous avez demandé {requested} · voici l'offre que vous acceptez en signant",
+    'business.apply.raise.schedule': 'Échéancier de remboursement',
+    'business.apply.raise.instalment': 'Échéance {n}',
+    'business.apply.raise.instalment_final': 'Échéance {n} · dernière',
+    'business.apply.review.your_offer': 'Votre offre',
+    'business.apply.review.flat_rate': '{rate} % fixe',
+    'business.apply.review.accept_offer':
+        "J'accepte cette offre : {principal} sur {months} mois, remboursés selon l'échéancier ci-dessus.",
+    'business.apply.review.no_offer':
+        "Il n'y a pas encore d'offre à accepter. Revenez à votre levée pour obtenir une cotation.",
+    'business.apply.review.signatories': 'Signataires',
+    'business.apply.review.signatures_required':
+        'Signatures exigées par le mandat de la société : {count}',
+    'business.apply.review.signed_on': 'Signé · {date}',
+    'business.apply.review.signer.signed': 'Signé',
+    'business.apply.review.signer.pending': 'En attente',
+    'business.apply.review.attestation':
+        "Saisir votre nom confirme que vous signez vous-même. C'est votre compte vérifié, et non ce nom, qui signe.",
+    'business.apply.review.waiting':
+        'En attente de la signature de {names}. La demande est soumise dès que toutes les signatures requises sont réunies.',
+    'business.apply.review.cannot_sign':
+        'Seul un signataire du mandat vérifié de la société peut signer cette demande.',
+    'business.apply.view_only':
+        'Vous pouvez consulter cette demande, mais pas la modifier.',
+    'business.apply.submitted.application_id': 'ID de la demande · {id}',
+    'business.apply.outcome.checking.title': 'Vérification en cours',
+    'business.apply.outcome.checking.body':
+        'La connexion a été coupée avant la réponse du serveur. Nous vérifions si votre demande a été reçue.',
+    'business.apply.outcome.unconfirmed.title':
+        "Impossible de confirmer pour l'instant",
+    'business.apply.outcome.unconfirmed.body':
+        "Rien ne sera renvoyé tant que le serveur n'aura pas confirmé ce qu'il est advenu de votre demande.",
+    'business.apply.outcome.pending.title': 'Traitement en cours',
+    'business.apply.outcome.pending.body':
+        'Le serveur a reçu votre demande et la traite encore.',
+    'business.apply.outcome.not_recorded.title': 'Aucun résultat enregistré',
+    'business.apply.outcome.not_recorded.body':
+        "Le serveur n'a encore aucun résultat pour votre demande. Vous pouvez renvoyer exactement la même demande.",
+    'business.apply.outcome.check_again': 'Vérifier à nouveau',
+    'business.apply.outcome.try_again': 'Réessayer',
+    'business.apply.outcome.refused.VERSION_CONFLICT':
+        'Cette demande a changé depuis son ouverture. Nous avons chargé la dernière version — vérifiez-la et réessayez.',
+    'business.apply.outcome.refused.IDEMPOTENCY_CONFLICT':
+        "Cette demande a déjà été utilisée avec d'autres informations ; elle n'a donc pas été renvoyée. Nous avons chargé la dernière version.",
+    'business.apply.outcome.refused.QUOTE_STALE':
+        'Votre cotation a changé avant votre signature. Vérifiez la nouvelle offre et acceptez-la à nouveau.',
+    'business.apply.outcome.refused.DOCUMENT_VERSION_STALE':
+        'Un document ou une déclaration a changé avant votre signature. Lisez la nouvelle version et acceptez-la à nouveau.',
+    'business.apply.outcome.refused.ACTION_FORBIDDEN':
+        'Vous ne pouvez pas effectuer cette action pour cette entreprise.',
+    'business.apply.outcome.refused.MANDATE_REQUIRED':
+        'Votre mandat vérifié ne vous permet pas de signer pour cette entreprise.',
+    'business.apply.outcome.refused.NOT_FOUND':
+        'Cette demande ne vous est plus accessible.',
+    'business.apply.outcome.refused.denied':
+        'Votre accès a changé. Revenez à vos applications et réessayez.',
+    'business.apply.outcome.refused.failed':
+        "Le serveur n'a pas pu terminer cette action. Nous avons chargé la dernière version.",
+    'business.publish.unavailable':
+        "La publication s'ouvrira une fois votre demande approuvée et entièrement signée, et le processus de mise en ligne prêt.",
+
+    'business.apply.outcome.refused.MANDATE_STALE':
+        'Le mandat de signature de la société a changé avant votre signature. Vérifiez qui doit signer désormais, puis signez à nouveau.',
 
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',

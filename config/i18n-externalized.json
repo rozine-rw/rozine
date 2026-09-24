@@ -67,6 +67,7 @@
         "resources/js/components/auditor/sheets/reason-sheet.tsx",
         "resources/js/components/auditor/tab-columns.tsx",
         "resources/js/components/auditor/ui.tsx",
+        "resources/js/components/business/apply/outcome-banner.tsx",
         "resources/js/components/business/apply/step-business.tsx",
         "resources/js/components/business/apply/step-heading.tsx",
         "resources/js/components/business/apply/step-raise.tsx",

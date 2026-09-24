@@ -6,7 +6,7 @@
         "identity_context_revision": 4,
         "server_time": "2026-09-24T09:15:00+02:00",
         "allowed_actions": [],
-        "step": "submitted",
+        "step": "review",
         "application": {
             "id": "APP-2026-0412",
             "revision": 3,
@@ -341,35 +341,14 @@
                     "party_id": "PTY-2C9D84",
                     "name": "Aline Uwase",
                     "role": "Board Chair",
-                    "state": "signed",
-                    "signed_at": "2026-09-24T09:05:00+02:00"
+                    "state": "pending",
+                    "signed_at": null
                 }
             ],
             "required_signatures": 2,
-            "signatures_complete": true
+            "signatures_complete": false
         },
-        "submission": {
-            "application_id": "APP-2026-0412",
-            "note_id": null,
-            "timeline": [
-                {
-                    "stage": "submitted",
-                    "state": "done"
-                },
-                {
-                    "stage": "under_review",
-                    "state": "current"
-                },
-                {
-                    "stage": "approved",
-                    "state": "pending"
-                },
-                {
-                    "stage": "published",
-                    "state": "pending"
-                }
-            ]
-        },
+        "submission": null,
         "home": {
             "business": {
                 "name": "GreenLeaf Agro",
@@ -613,7 +592,7 @@
                 "method": "get"
             },
             "back": {
-                "url": "/preview/business-home",
+                "url": "/preview/business-apply-raise",
                 "method": "get"
             },
             "next": null,

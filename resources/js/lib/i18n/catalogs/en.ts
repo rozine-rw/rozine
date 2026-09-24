@@ -248,19 +248,17 @@ const en = {
     'business.apply.step_of': 'Step {step} of {total}',
     'business.apply.continue': 'Continue',
     'business.apply.saving': 'Saving…',
-    'business.apply.submit': 'Submit note',
-    'business.apply.submitting': 'Submitting…',
+    'business.apply.submit': 'Sign application',
+    'business.apply.submitting': 'Signing…',
     'business.apply.incomplete': 'Complete this step to continue',
     'business.apply.business.title': 'Business & finances',
     'business.apply.business.subtitle':
-        'From your RDB certificate and 5 years of bank & mobile-money statements, verified by OCR. Review it — if it looks right, continue.',
+        'From your RDB certificate and your verified bank & mobile-money statements. Review it — if it looks right, continue.',
     'business.apply.business.rdb_verified': '✓ RDB verified',
     'business.apply.business.statements_verified':
         '✓ Statements verified · OCR',
     'business.apply.business.active': '● Active',
     'business.apply.business.established': 'Est. {year}',
-    'business.apply.business.officer.ceo': 'CEO',
-    'business.apply.business.officer.board_chair': 'Board chair',
     'business.apply.business.standing': 'Financial standing · {years}-year',
     'business.apply.business.ocr_verified': 'OCR · verified',
     'business.apply.business.revenue': 'Revenue',
@@ -273,7 +271,7 @@ const en = {
     'business.apply.business.capacity_basis': '· cash × stock cover',
     'business.apply.business.capacity_pending': 'Pending audit',
     'business.apply.business.capacity_body':
-        'The largest raise the cash your business generates can carry at your verified stock cover. Applications above this are rejected automatically.',
+        'The largest raise the cash your business generates can carry at your verified stock cover. Every offer is sized within it.',
     'business.apply.raise.title': 'Your raise',
     'business.apply.raise.subtitle': 'Set your terms and pitch to investors.',
     'business.apply.raise.fundraise': '1 · Fundraise',
@@ -294,7 +292,7 @@ const en = {
     'business.apply.raise.rate_rated': 'Rated {band}',
     'business.apply.raise.rate_best': 'Strongest rating, 3 months',
     'business.apply.raise.rate_best_detail': 'Best rate on Rozine',
-    'business.apply.raise.rate_term_detail': '+{points} points for this term',
+    'business.apply.raise.rate_term_detail': '+{ratio} term premium',
     'business.apply.raise.rate_cap': 'Never above {cap}%',
     'business.apply.raise.quote_pending':
         'Enter a target and a term to see your quote.',
@@ -307,7 +305,6 @@ const en = {
     'business.apply.raise.interest': '+ Interest',
     'business.apply.raise.interest_basis': '({rate}% flat · {months} months)',
     'business.apply.raise.you_repay': 'You repay',
-    'business.apply.raise.per_month': '{amount} / month',
     'business.apply.raise.first_payment': 'Starting 1 month after funding',
     'business.apply.raise.reserve': 'Investor protection reserve',
     'business.apply.raise.reserve_detail':
@@ -340,14 +337,6 @@ const en = {
     'business.apply.review.subtitle':
         'Acknowledge the risks, agree to the terms, and sign to submit.',
     'business.apply.review.risk_disclosures': 'Risk disclosures',
-    'business.apply.review.disclosure.accuracy':
-        'I confirm the accuracy of all information provided.',
-    'business.apply.review.disclosure.obligations':
-        'I understand the legal obligations of issuing this note.',
-    'business.apply.review.disclosure.statements':
-        'I will upload my monthly bank & MoMo statements on time for Audit Partner auditing.',
-    'business.apply.review.disclosure.repayment':
-        'I acknowledge the repayment obligations to investors.',
     'business.apply.review.agreements': 'Agreements',
     'business.apply.review.agree_terms_prefix': 'I agree to the',
     'business.apply.review.agree_privacy_prefix': 'I have read the',
@@ -369,10 +358,10 @@ const en = {
     'business.apply.review.fee_note':
         'No fee on the amount you raise, and nothing on top of your quoted rate. Charged once your note is approved, before it goes live.',
     'business.apply.review.binding':
-        'Your signature legally binds the business to the disclosed obligations. Note ID is generated on submission.',
-    'business.apply.submitted.title': 'Your note has been submitted',
+        'Your signature legally binds the business to the disclosed obligations. Your application ID is issued on submission.',
+    'business.apply.submitted.title': 'Your application has been submitted',
     'business.apply.submitted.body':
-        "Your note is being reviewed. You'll be notified at each stage.",
+        "Your application is being reviewed. You'll be notified at each stage.",
     'business.apply.submitted.note_id': 'Note ID · {id}',
     'business.apply.submitted.funded_title': 'Once fully funded',
     'business.apply.submitted.funded_body':
@@ -2747,6 +2736,70 @@ const en = {
         'No statements yet. Your first appears after your first full month.',
     'investor.profile.statements.disclaimer':
         'Statements are provided for your records. Rozine does not provide tax advice — consult a qualified adviser about your obligations.',
+    'business.apply.business.unavailable': 'Unavailable',
+    'business.apply.business.ineligible': 'Not eligible to raise yet',
+    'business.apply.raise.resized':
+        'You asked for {requested} · this is the offer you accept when you sign',
+    'business.apply.raise.schedule': 'Repayment schedule',
+    'business.apply.raise.instalment': 'Instalment {n}',
+    'business.apply.raise.instalment_final': 'Instalment {n} · final',
+    'business.apply.review.your_offer': 'Your offer',
+    'business.apply.review.flat_rate': '{rate}% flat',
+    'business.apply.review.accept_offer':
+        'I accept this offer: {principal} over {months} months, repaid on the schedule above.',
+    'business.apply.review.no_offer':
+        'There is no offer to accept yet. Go back to your raise to get a quote.',
+    'business.apply.review.signatories': 'Signatories',
+    'business.apply.review.signatures_required':
+        "Signatures the company's mandate requires: {count}",
+    'business.apply.review.signed_on': 'Signed · {date}',
+    'business.apply.review.signer.signed': 'Signed',
+    'business.apply.review.signer.pending': 'Pending',
+    'business.apply.review.attestation':
+        'Typing your name confirms you are signing yourself. Your verified account, not this name, is what signs.',
+    'business.apply.review.waiting':
+        'Waiting for {names} to sign. The application is submitted once every required signature is in.',
+    'business.apply.review.cannot_sign':
+        "Only a signatory on the company's verified mandate can sign this application.",
+    'business.apply.view_only':
+        'You can view this application, but not change it.',
+    'business.apply.submitted.application_id': 'Application ID · {id}',
+    'business.apply.outcome.checking.title': 'Checking what happened',
+    'business.apply.outcome.checking.body':
+        "The connection dropped before the server answered. We're asking whether your request went through.",
+    'business.apply.outcome.unconfirmed.title': "We couldn't confirm this yet",
+    'business.apply.outcome.unconfirmed.body':
+        'Nothing will be sent again until the server confirms what happened to your request.',
+    'business.apply.outcome.pending.title': 'Still being processed',
+    'business.apply.outcome.pending.body':
+        'The server has your request and is still working on it.',
+    'business.apply.outcome.not_recorded.title': 'No result recorded',
+    'business.apply.outcome.not_recorded.body':
+        'The server has no result for your request yet. You can send exactly the same request again.',
+    'business.apply.outcome.check_again': 'Check again',
+    'business.apply.outcome.try_again': 'Try again',
+    'business.apply.outcome.refused.VERSION_CONFLICT':
+        "This application changed since you opened it. We've loaded the latest version — check it and try again.",
+    'business.apply.outcome.refused.IDEMPOTENCY_CONFLICT':
+        "This request was already used with different details, so it was not sent again. We've loaded the latest version.",
+    'business.apply.outcome.refused.QUOTE_STALE':
+        'Your quote changed before you signed. Check the new offer and accept it again.',
+    'business.apply.outcome.refused.DOCUMENT_VERSION_STALE':
+        'A document or disclosure changed before you signed. Read the new version and accept it again.',
+    'business.apply.outcome.refused.ACTION_FORBIDDEN':
+        "You can't do this for this business.",
+    'business.apply.outcome.refused.MANDATE_REQUIRED':
+        "Your verified mandate doesn't let you sign for this business.",
+    'business.apply.outcome.refused.NOT_FOUND':
+        'This application is no longer available to you.',
+    'business.apply.outcome.refused.denied':
+        'Your access has changed. Return to your apps and try again.',
+    'business.apply.outcome.refused.failed':
+        "The server couldn't complete this. We've loaded the latest version.",
+    'business.publish.unavailable':
+        'Publishing opens once your application is approved and fully signed, and the listing flow is ready.',
+    'business.apply.outcome.refused.MANDATE_STALE':
+        "The company's signing mandate changed before you signed. Check who must sign now, then sign again.",
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.
