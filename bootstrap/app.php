@@ -45,8 +45,14 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // A command refused before it was recorded (an idempotency conflict, a lookup that found
-        // nothing): its own code, and Laravel's errors bag with every 422.
-        $exceptions->render(function (CommandRejection $exception) {
+        // nothing): its own code, and Laravel's errors bag with every 422. A page read in the
+        // browser gets the error page instead of raw JSON; commands, lookups and the API keep JSON.
+        $exceptions->render(function (CommandRejection $exception, Request $request) {
+            if (! $request->expectsJson() && ! $request->is('api/*') && $request->isMethod('GET')) {
+                return Inertia::render('identity/access-denied', ['code' => $exception->reason])
+                    ->toResponse($request)->setStatusCode($exception->status);
+            }
+
             $body = ['message' => $exception->reason, 'code' => $exception->reason];
             if ($exception->status === 422) {
                 $body['errors'] = (object) $exception->fieldErrors;

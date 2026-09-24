@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\Contracts\AuditorProfileStore;
 use App\Application\Identity\SelectActiveRole;
+use App\Domain\Operations\CommandRejection;
 use App\Models\CommandOperation;
 use App\Models\Party;
 use App\Models\RoleMembership;
@@ -13,6 +15,7 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
+use Mockery\MockInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\AuditorFixture;
 
@@ -346,6 +349,24 @@ it('serves only the Auditor own certificate privately under a neutral name', fun
         ->assertJsonPath('code', 'ACCREDITATION_CERTIFICATE_NOT_FOUND');
     $other['user']->forceFill(['two_factor_confirmed_at' => null])->save();
     $this->getJson(route('auditor.accreditation.certificates.show', $submission))->assertForbidden()->assertJsonPath('code', 'MFA_REQUIRED');
+});
+
+it('renders the error page, not raw JSON, when a browser page read is refused', function (): void {
+    $fixture = AuditorFixture::make();
+    $this->actingAs($fixture['user']);
+
+    $this->get(route('auditor.accreditation.certificates.show', str_repeat('0', 26)))->assertNotFound()
+        ->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied')
+            ->where('code', 'ACCREDITATION_CERTIFICATE_NOT_FOUND'));
+
+    $this->mock(AuditorProfileStore::class, function (MockInterface $store): void {
+        $store->shouldReceive('accreditation')->andThrow(new CommandRejection('ACCREDITATION_CERTIFICATE_INTEGRITY_FAILED'));
+    });
+    $this->get(route('auditor.profile'))->assertStatus(409)
+        ->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied')
+            ->where('code', 'ACCREDITATION_CERTIFICATE_INTEGRITY_FAILED'));
+    $this->getJson(route('auditor.profile'))->assertStatus(409)
+        ->assertExactJson(['message' => 'ACCREDITATION_CERTIFICATE_INTEGRITY_FAILED', 'code' => 'ACCREDITATION_CERTIFICATE_INTEGRITY_FAILED']);
 });
 
 it('names each image certificate by its verified type', function (string $name, string $content, string $type, string $extension): void {
