@@ -354,7 +354,7 @@ const fr: Catalog = {
     'business.apply.review.document.privacy': 'Note de confidentialité',
     'business.apply.review.read': 'Lire',
     'business.apply.review.document_intro':
-        "Rozine · République du Rwanda · version {version}. Résumé des clauses clés — l'accord complet est disponible dans Profil.",
+        'Rozine · République du Rwanda · version {version}. Un résumé des clauses clés, puis le texte intégral que vous acceptez.',
     'business.apply.review.got_it': 'Compris',
     'business.apply.review.sign_submit': 'Signer et soumettre',
     'business.apply.review.full_name': 'Votre nom complet',
@@ -2867,6 +2867,20 @@ const fr: Catalog = {
 
     'business.apply.outcome.refused.MANDATE_STALE':
         'Le mandat de signature de la société a changé avant votre signature. Vérifiez qui doit signer désormais, puis signez à nouveau.',
+
+    'business.apply.review.document_summary': 'Résumé',
+    'business.apply.review.document_full_text': 'Texte intégral',
+    'business.apply.review.reduce.open': 'Prendre un montant inférieur',
+    'business.apply.review.reduce.label': 'Montant souhaité (RWF)',
+    'business.apply.review.reduce.help':
+        "Jusqu'à l'offre, par billets entiers de {unit}. Nous recalculons l'offre pour ce montant et vous l'acceptez à nouveau.",
+    'business.apply.review.reduce.submit': 'Recalculer',
+    'business.apply.review.reduce.cancel': "Garder l'offre",
+    'business.apply.review.reduced':
+        'Vous avez choisi {principal} sur les {offered} proposés.',
+    'business.apply.review.use_full': "Reprendre l'offre complète",
+
+    'business.apply.recalculating': 'Recalcul…',
 
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',

@@ -267,8 +267,13 @@ export type ApplicationQuote =
           mandate_version: string;
           /** What the business asked for, as saved in the draft. */
           requested_principal: Money;
-          /** The offer: the request resized and quantized to the RWF 5,000 note grid. */
+          /**
+           * The principal this quote is for: the offer, or a lower amount the business chose to
+           * accept (evaluated again with `accepted_principal`). On the RWF 5,000 note grid.
+           */
           principal: Money;
+          /** The most the evaluation offers: the request resized and quantized to the note grid. */
+          offered_principal: Money;
           term_months: TermMonths;
           /** Flat total return over the whole term, one decimal: "12.1". Not an APR. */
           rate_pct: string;
@@ -302,6 +307,11 @@ export type AcceptanceDocument = {
     sha256: string;
     /** The key clauses, as the legal owner summarises them for this version. */
     summary: { heading: string; body: string }[];
+    /**
+     * The complete immutable text `sha256` hashes, shown in full as plain text (line breaks kept)
+     * beside the summary before acceptance, so the hash binds text the signer can read.
+     */
+    body: string;
 };
 
 /** A risk disclosure in the server's words, at an immutable version. */
@@ -390,7 +400,10 @@ export type OperationResource = {
 /** A command exactly as sent, kept whole so an uncertain outcome is looked up and retried unchanged. */
 export type ApplicationCommand = {
     name: ApplicationCommandName;
-    /** A save that moves on to the authorized `next` page once confirmed. */
+    /**
+     * A save that asks to advance the resume pointer (its `step` names the next step); the page
+     * moves on to the authorized `next` once the server confirms. Autosaves never advance.
+     */
     advance: boolean;
     payload: Record<string, unknown> & { request_id: string };
 };
@@ -426,8 +439,8 @@ export type BusinessApplyProps = {
     shell_links: BusinessShellLinks;
     links: {
         close: RouteLink;
+        /** Back to an earlier step as a view-step query; it never moves the stored pointer. */
         back: RouteLink;
-        next: RouteLink | null;
         /**
          * The operation lookup. Its url holds the literal `{request_id}` token, which the page
          * replaces; the command name goes as the `command` query.

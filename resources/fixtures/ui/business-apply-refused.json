@@ -190,7 +190,8 @@
                             "heading": "Governing law",
                             "body": "These terms are governed by the laws of the Republic of Rwanda."
                         }
-                    ]
+                    ],
+                    "body": "TEST TEXT — synthetic fixture, not the approved Terms & Conditions.\n\n1. Scope\nThese test terms stand in for the approved document until Legal supplies it.\n\n2. Repayment\nThe business repays the accepted principal and the flat return on the schedule shown.\n\n3. Governing law\nThe laws of Rwanda."
                 },
                 {
                     "kind": "privacy",
@@ -217,7 +218,8 @@
                             "heading": "Retention and rights",
                             "body": "Records are retained as long as the law requires. You may request access or correction by contacting Rozine."
                         }
-                    ]
+                    ],
+                    "body": "TEST TEXT — synthetic fixture, not the approved Privacy Note.\n\n1. What we collect\nTest wording only.\n\n2. How long we keep it\nTest wording only."
                 }
             ],
             "disclosures": [
@@ -517,7 +519,6 @@
                 "url": "/preview/business-apply-business",
                 "method": "get"
             },
-            "next": null,
             "operation": {
                 "url": "/preview/business-operation-{request_id}",
                 "method": "get"

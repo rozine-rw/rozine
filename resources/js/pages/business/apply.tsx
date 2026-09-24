@@ -21,6 +21,7 @@ import { useToast } from '@/components/rozine/toast';
 import { useTranslation } from '@/hooks/use-translation';
 import type {
     ApplicationCommand,
+    ApplicationCommandName,
     ApplicationSnapshot,
     BusinessApplyProps,
     TermMonths,
@@ -154,6 +155,11 @@ export default function BusinessApply(props: BusinessApplyProps) {
                 allowed_actions: resource.allowed_actions,
             });
 
+            if (sent.name === 'evaluate') {
+                /* A new quote is a new decision: its offer is accepted afresh. */
+                setReview((fields) => ({ ...fields, accept_offer: false }));
+            }
+
             if (sent.name !== 'submit') {
                 const sentKey = payloadKey(sent.payload);
 
@@ -201,20 +207,33 @@ export default function BusinessApply(props: BusinessApplyProps) {
         },
     });
 
-    const draftPayload = () => ({
+    /** The last command sent, so the busy label names what is running. */
+    const [sending, setSending] = useState<ApplicationCommandName | null>(null);
+
+    const send = (next: ApplicationCommand) => {
+        if (command.send(next)) {
+            setSending(next.name);
+        }
+    };
+
+    /**
+     * The draft as typed. `step` is the resume pointer the save asks for: autosaves keep `raise`,
+     * and each Continue asks to advance; the server validates the move and answers with `next`.
+     */
+    const draftPayload = (pointer: 'raise' | 'review') => ({
         title: raise.title,
         target: raise.target,
         term_months: raise.term_months,
         use_of_funds: raise.use_of_funds,
         story: raise.story,
-        step: 'raise',
+        step: pointer,
         ...context(),
     });
 
     /* Save the typed request, then evaluate the saved draft — one command at a time. */
     const startEvaluation = useEffectEvent((draftSaved: boolean) => {
         if (draftSaved) {
-            command.send({
+            send({
                 name: 'evaluate',
                 advance: false,
                 payload: {
@@ -228,7 +247,11 @@ export default function BusinessApply(props: BusinessApplyProps) {
             return;
         }
 
-        command.send({ name: 'save', advance: false, payload: draftPayload() });
+        send({
+            name: 'save',
+            advance: false,
+            payload: draftPayload('raise'),
+        });
     });
 
     const armed =
@@ -279,8 +302,11 @@ export default function BusinessApply(props: BusinessApplyProps) {
         event.preventDefault();
 
         if (step === 'business') {
-            /* The Continue button exists only when the server offers a next step. */
-            router.visit(links.next!);
+            send({
+                name: 'save',
+                advance: true,
+                payload: draftPayload('raise'),
+            });
 
             return;
         }
@@ -296,10 +322,10 @@ export default function BusinessApply(props: BusinessApplyProps) {
                 return;
             }
 
-            command.send({
+            send({
                 name: 'save',
                 advance: true,
-                payload: draftPayload(),
+                payload: draftPayload('review'),
             });
 
             return;
@@ -311,7 +337,7 @@ export default function BusinessApply(props: BusinessApplyProps) {
             return;
         }
 
-        command.send({
+        send({
             name: 'submit',
             advance: false,
             payload: {
@@ -338,10 +364,36 @@ export default function BusinessApply(props: BusinessApplyProps) {
         });
     };
 
+    /**
+     * A lower accepted principal for a ready offer: the saved request is evaluated again with
+     * `accepted_principal` (or without it, for the full offer), and the new quote is accepted
+     * afresh. It is never offered on a refusal.
+     */
+    const reduce =
+        step === 'review' && readyQuote !== null && canSign && canEvaluate
+            ? {
+                  busy: !idle,
+                  error: command.errors.accepted_principal,
+                  onReduce: (acceptedPrincipal: string | null) => {
+                      send({
+                          name: 'evaluate',
+                          advance: false,
+                          payload: {
+                              target: application.target?.amount,
+                              term_months: application.term_months,
+                              evidence_version: props.evidence.version,
+                              ...(acceptedPrincipal === null
+                                  ? {}
+                                  : { accepted_principal: acceptedPrincipal }),
+                              ...context(),
+                          },
+                      });
+                  },
+              }
+            : null;
+
     const offersCommand = {
-        business:
-            props.evidence.eligibility.status === 'eligible' &&
-            links.next !== null,
+        business: props.evidence.eligibility.status === 'eligible' && canSave,
         raise: canSave,
         review: canSign,
         submitted: false,
@@ -350,15 +402,21 @@ export default function BusinessApply(props: BusinessApplyProps) {
     const cta = offersCommand ? (
         <WizardCta
             ready={
-                step === 'business' ||
-                (step === 'raise' ? raiseReady : reviewReady)
+                {
+                    business: idle,
+                    raise: raiseReady,
+                    review: reviewReady,
+                    submitted: false,
+                }[step]
             }
             busy={command.busy}
             form="business-apply"
         >
             {step === 'review'
                 ? command.busy
-                    ? t('business.apply.submitting')
+                    ? sending === 'evaluate'
+                        ? t('business.apply.recalculating')
+                        : t('business.apply.submitting')
                     : t('business.apply.submit')
                 : command.busy
                   ? t('business.apply.saving')
@@ -417,6 +475,7 @@ export default function BusinessApply(props: BusinessApplyProps) {
                         acceptance={acceptance}
                         quote={readyQuote}
                         canSign={canSign}
+                        reduce={reduce}
                         fields={review}
                         errors={errors}
                         onChange={(field, value) =>

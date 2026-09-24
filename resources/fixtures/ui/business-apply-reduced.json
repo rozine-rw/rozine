@@ -10,10 +10,10 @@
             "application.evaluate",
             "application.submit"
         ],
-        "step": "raise",
+        "step": "review",
         "application": {
             "id": "APP-2026-0412",
-            "revision": 3,
+            "revision": 4,
             "title": "Cold-Chain Hub",
             "target": {
                 "currency": "RWF",
@@ -156,8 +156,8 @@
         },
         "quote": {
             "status": "ready",
-            "quote_id": "QTE-2026-0412-02",
-            "quote_revision": 2,
+            "quote_id": "QTE-2026-0412-02-reduced",
+            "quote_revision": 3,
             "policy_version": "engineering-2026-09-23.4",
             "evidence_version": "ev-2026-09-21.3",
             "calculation_version": "calc-2026-09-23.1",
@@ -168,7 +168,7 @@
             },
             "principal": {
                 "currency": "RWF",
-                "amount": "33915000"
+                "amount": "30000000"
             },
             "offered_principal": {
                 "currency": "RWF",
@@ -178,13 +178,13 @@
             "rate_pct": "10.9",
             "interest": {
                 "currency": "RWF",
-                "amount": "3696735"
+                "amount": "3270000"
             },
             "total": {
                 "currency": "RWF",
-                "amount": "37611735"
+                "amount": "33270000"
             },
-            "units": "6783",
+            "units": "6000",
             "unit_price": {
                 "currency": "RWF",
                 "amount": "5000"
@@ -195,42 +195,42 @@
                     "instalment": 1,
                     "amount": {
                         "currency": "RWF",
-                        "amount": "6268622"
+                        "amount": "5545000"
                     }
                 },
                 {
                     "instalment": 2,
                     "amount": {
                         "currency": "RWF",
-                        "amount": "6268622"
+                        "amount": "5545000"
                     }
                 },
                 {
                     "instalment": 3,
                     "amount": {
                         "currency": "RWF",
-                        "amount": "6268622"
+                        "amount": "5545000"
                     }
                 },
                 {
                     "instalment": 4,
                     "amount": {
                         "currency": "RWF",
-                        "amount": "6268622"
+                        "amount": "5545000"
                     }
                 },
                 {
                     "instalment": 5,
                     "amount": {
                         "currency": "RWF",
-                        "amount": "6268622"
+                        "amount": "5545000"
                     }
                 },
                 {
                     "instalment": 6,
                     "amount": {
                         "currency": "RWF",
-                        "amount": "6268625"
+                        "amount": "5545000"
                     }
                 }
             ],
@@ -602,7 +602,7 @@
                 "method": "get"
             },
             "back": {
-                "url": "/preview/business-apply-business",
+                "url": "/preview/business-apply-raise",
                 "method": "get"
             },
             "operation": {

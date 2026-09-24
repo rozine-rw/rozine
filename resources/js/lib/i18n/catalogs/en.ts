@@ -344,7 +344,7 @@ const en = {
     'business.apply.review.document.privacy': 'Privacy Note',
     'business.apply.review.read': 'Read',
     'business.apply.review.document_intro':
-        'Rozine · Republic of Rwanda · version {version}. Summary of the key clauses — the full agreement is available in Profile.',
+        'Rozine · Republic of Rwanda · version {version}. A summary of the key clauses, then the full text you accept.',
     'business.apply.review.got_it': 'Got it',
     'business.apply.review.sign_submit': 'Sign & submit',
     'business.apply.review.full_name': 'Your full name',
@@ -2800,6 +2800,18 @@ const en = {
         'Publishing opens once your application is approved and fully signed, and the listing flow is ready.',
     'business.apply.outcome.refused.MANDATE_STALE':
         "The company's signing mandate changed before you signed. Check who must sign now, then sign again.",
+    'business.apply.review.document_summary': 'Summary',
+    'business.apply.review.document_full_text': 'Full text',
+    'business.apply.review.reduce.open': 'Take a smaller amount',
+    'business.apply.review.reduce.label': 'Amount you want (RWF)',
+    'business.apply.review.reduce.help':
+        'Up to the offer, in whole notes of {unit}. We recalculate the offer for this amount and you accept it again.',
+    'business.apply.review.reduce.submit': 'Recalculate',
+    'business.apply.review.reduce.cancel': 'Keep the offer',
+    'business.apply.review.reduced':
+        'You chose {principal} of the {offered} offered.',
+    'business.apply.review.use_full': 'Use the full offer',
+    'business.apply.recalculating': 'Recalculating…',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

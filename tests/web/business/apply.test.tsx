@@ -22,6 +22,7 @@ import ineligibleStep from '../../../resources/fixtures/ui/business-apply-inelig
 import minimalStep from '../../../resources/fixtures/ui/business-apply-live-minimal.json';
 import staleStep from '../../../resources/fixtures/ui/business-apply-quote-stale.json';
 import raiseStep from '../../../resources/fixtures/ui/business-apply-raise.json';
+import reducedStep from '../../../resources/fixtures/ui/business-apply-reduced.json';
 import refusedStep from '../../../resources/fixtures/ui/business-apply-refused.json';
 import reviewStep from '../../../resources/fixtures/ui/business-apply-review.json';
 import submittedStep from '../../../resources/fixtures/ui/business-apply-submitted.json';
@@ -201,10 +202,23 @@ afterEach(() => {
 });
 
 describe('Apply — step 1, business & finances', () => {
-    it('shows the verified record read-only and moves on to step 2', async () => {
+    it('shows the verified record read-only and saves the draft to move on to step 2', async () => {
         const user = userEvent.setup();
+        const page = props(businessStep);
 
-        render(<BusinessApply {...props(businessStep)} />);
+        inertia.queue.push(
+            answers(
+                operation({
+                    data: snapshotOf(page, {
+                        next: {
+                            url: '/preview/business-apply-raise',
+                            method: 'get',
+                        },
+                    }),
+                }),
+            ),
+        );
+        render(<BusinessApply {...page} />);
 
         expect(screen.getByTestId('head')).toHaveTextContent(
             'Apply for a raise',
@@ -238,11 +252,49 @@ describe('Apply — step 1, business & finances', () => {
 
         await user.click(screen.getByRole('button', { name: 'Continue' }));
 
-        expect(inertia.visit).toHaveBeenCalledWith({
-            url: '/preview/business-apply-raise',
-            method: 'get',
+        await waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith({
+                url: '/preview/business-apply-raise',
+                method: 'get',
+            }),
+        );
+        expect(inertia.calls).toEqual([
+            {
+                url: '/preview/business-apply-draft',
+                method: 'post',
+                body: {
+                    title: page.application.title,
+                    target: page.application.target?.amount,
+                    term_months: page.application.term_months,
+                    use_of_funds: page.application.use_of_funds,
+                    story: page.application.story,
+                    step: 'raise',
+                    identity_context_revision: page.identity_context_revision,
+                    expected_revision: page.application.revision,
+                    request_id: expect.any(String),
+                },
+            },
+        ]);
+    });
+
+    it('starts a business with no draft yet from an empty request', async () => {
+        const user = userEvent.setup();
+        const page = props(businessStep);
+
+        page.application = {
+            ...page.application,
+            target: null,
+            term_months: null,
+        };
+        render(<BusinessApply {...page} />);
+
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+        expect(inertia.calls[0].body).toMatchObject({
+            target: '',
+            term_months: null,
+            step: 'raise',
         });
-        expect(inertia.calls).toHaveLength(0);
     });
 
     it('explains ineligibility in the server’s words and shows missing facts as unavailable', () => {
@@ -277,7 +329,7 @@ describe('Apply — step 1, business & finances', () => {
             },
             verified: { registry: false, statements: false },
         };
-        bare.links.next = null;
+        bare.allowed_actions = [];
 
         render(<BusinessApply {...bare} />);
 
@@ -456,7 +508,7 @@ describe('Apply — step 2, the quote', () => {
             target: '25000000',
             term_months: 4,
             use_of_funds: ['equipment', 'hiring'],
-            step: 'raise',
+            step: 'review',
             expected_revision: 5,
         });
     });
@@ -1404,6 +1456,10 @@ describe('Apply — step 3, review & sign', () => {
 
         expect(terms).toHaveTextContent('version 2.5');
         expect(terms).toHaveTextContent('Governing law');
+        expect(within(terms).getByText('Full text')).toBeInTheDocument();
+        expect(
+            within(terms).getByText(/^TEST TEXT — synthetic fixture/u),
+        ).toHaveClass('whitespace-pre-line');
         await user.click(within(terms).getByRole('button', { name: 'Got it' }));
         expect(
             screen.queryByRole('dialog', { name: 'Terms & Conditions' }),
@@ -1423,6 +1479,182 @@ describe('Apply — step 3, review & sign', () => {
         await user.click(screen.getAllByRole('button', { name: 'Close' })[0]);
         expect(
             screen.queryByRole('dialog', { name: 'Privacy Note' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('evaluates a smaller accepted amount against the saved request and asks for acceptance again', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+        const quote = page.quote as ReadyQuote;
+        const smaller: ReadyQuote = {
+            ...quote,
+            quote_id: 'quote-smaller',
+            quote_revision: 3,
+            principal: { currency: 'RWF', amount: '30000000' },
+            total: { currency: 'RWF', amount: '33270000' },
+        };
+
+        inertia.queue.push(
+            answers(
+                operation({
+                    code: 'APPLICATION_EVALUATED',
+                    data: snapshotOf(page, { quote: smaller }),
+                }),
+            ),
+            answers(
+                operation({
+                    code: 'APPLICATION_EVALUATED',
+                    data: snapshotOf(page, { quote }),
+                }),
+            ),
+        );
+        render(<BusinessApply {...page} />);
+
+        await user.click(
+            screen.getByRole('checkbox', { name: /^I accept this offer/u }),
+        );
+        await user.click(
+            screen.getByRole('button', { name: 'Take a smaller amount' }),
+        );
+
+        const recalculate = screen.getByRole('button', {
+            name: 'Recalculate',
+        });
+
+        expect(recalculate).toBeDisabled();
+        expect(
+            screen.getByText(/^Up to the offer, in whole notes of RWF 5,000/u),
+        ).toBeInTheDocument();
+
+        const amount = screen.getByLabelText('Amount you want (RWF)');
+
+        await user.type(amount, '030,000,000');
+        expect(amount).toHaveValue('30,000,000');
+        await user.click(recalculate);
+
+        expect(
+            await screen.findByText(
+                'You chose RWF 30,000,000 of the RWF 33,915,000 offered.',
+            ),
+        ).toBeInTheDocument();
+        expect(inertia.calls[0]).toEqual({
+            url: '/preview/business-apply-evaluations',
+            method: 'post',
+            body: {
+                target: page.application.target?.amount,
+                term_months: page.application.term_months,
+                evidence_version: page.evidence.version,
+                accepted_principal: '30000000',
+                identity_context_revision: page.identity_context_revision,
+                expected_revision: page.application.revision,
+                request_id: expect.any(String),
+            },
+        });
+        expect(
+            screen.getByRole('checkbox', { name: /^I accept this offer/u }),
+        ).not.toBeChecked();
+
+        await user.click(
+            screen.getByRole('button', { name: 'Use the full offer' }),
+        );
+
+        await waitFor(() =>
+            expect(screen.queryByText(/^You chose/u)).not.toBeInTheDocument(),
+        );
+        expect(inertia.calls[1].body).not.toHaveProperty('accepted_principal');
+        expect(inertia.calls[1].body.request_id).not.toBe(
+            inertia.calls[0].body.request_id,
+        );
+    });
+
+    it('recalculates on Enter, ignores an empty amount and can put the control away', async () => {
+        const user = userEvent.setup();
+
+        render(<BusinessApply {...props(reviewStep)} />);
+
+        await user.click(
+            screen.getByRole('button', { name: 'Take a smaller amount' }),
+        );
+
+        const amount = screen.getByLabelText('Amount you want (RWF)');
+
+        await user.type(amount, '{Enter}');
+        expect(inertia.calls).toHaveLength(0);
+        await user.type(amount, 'x{Tab}');
+        expect(amount).toHaveValue('');
+
+        await user.type(amount, '25000000{Enter}');
+        expect(inertia.calls[0].body).toMatchObject({
+            accepted_principal: '25000000',
+        });
+        expect(
+            screen.getByRole('button', { name: 'Recalculating…' }),
+        ).toHaveAttribute('aria-busy', 'true');
+
+        await user.type(amount, '{Enter}');
+        expect(inertia.calls).toHaveLength(1);
+
+        await user.click(
+            screen.getByRole('button', { name: 'Keep the offer' }),
+        );
+        expect(
+            screen.queryByLabelText('Amount you want (RWF)'),
+        ).not.toBeInTheDocument();
+    });
+
+    it('opens the smaller-amount control on the server’s field error for it', () => {
+        inertia.errors = {
+            accepted_principal:
+                'Choose a whole number of notes up to the offer',
+        };
+
+        render(<BusinessApply {...props(reviewStep)} />);
+
+        expect(screen.getByLabelText('Amount you want (RWF)')).toHaveAttribute(
+            'aria-invalid',
+            'true',
+        );
+        expect(
+            screen.getByText('Choose a whole number of notes up to the offer'),
+        ).toBeInTheDocument();
+    });
+
+    it('opens the reduced-offer preview on its recalculated schedule', () => {
+        render(<BusinessApply {...props(reducedStep)} />);
+
+        expect(
+            screen.getByText(
+                'You chose RWF 30,000,000 of the RWF 33,915,000 offered.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(
+                screen.getByRole('list', { name: 'Repayment schedule' }),
+            ).getAllByText('RWF 5,545,000'),
+        ).toHaveLength(6);
+    });
+
+    it('shows a chosen smaller amount without offering to change it to someone who may not sign', () => {
+        const page = props(reviewStep);
+        const quote = page.quote as ReadyQuote;
+
+        page.quote = {
+            ...quote,
+            principal: { currency: 'RWF', amount: '30000000' },
+        };
+        page.allowed_actions = ['application.save'];
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByText(
+                'You chose RWF 30,000,000 of the RWF 33,915,000 offered.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Use the full offer' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Take a smaller amount' }),
         ).not.toBeInTheDocument();
     });
 
