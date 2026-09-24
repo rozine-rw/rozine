@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\SaveBusinessApplication;
 use App\Models\AuditAssignment;
+use App\Models\RoleMembership;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -179,10 +180,26 @@ it('runs the real-record Auditor Jobs accept decline conflict and receipt journe
             await page.getByRole("heading", {name:"Conflict recorded"}).waitFor();
             '.$noOverflow.'
             await page.screenshot({path:"conflict-receipt-mobile.png", fullPage:true, animations:"disabled"});
+            await page.goto('.json_encode($base.'/auditor/jobs').');
+            await page.getByRole("heading", {name:"Flash Audits"}).waitFor();
             if (errors.length) throw new Error(JSON.stringify(errors));
             return {conflictReceipt:true, fileDenied:true, register:true, mobile:true};
         }']);
         file_put_contents($directory.'/conflict-result.txt', $result);
+
+        /*
+         * With Jobs still open, an operator withdraws the Auditor membership. Regaining focus makes
+         * the page ask for its facts again, and it lands on the access-denied page.
+         */
+        RoleMembership::query()->where('party_id', $partner['party']->id)->where('role', 'auditor')->update(['status' => 'revoked']);
+        $result = $run(['run-code', 'async (page) => {
+            await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+            await page.getByRole("heading", {name:"Access needs to be checked"}).waitFor();
+            if (!page.url().endsWith("/auditor/jobs")) throw new Error("Denied page moved: " + page.url());
+            await page.screenshot({path:"access-withdrawn-mobile.png", fullPage:true, animations:"disabled"});
+            return {withdrawnOnFocus:true};
+        }']);
+        file_put_contents($directory.'/withdrawn-result.txt', $result);
 
         expect($accepted->refresh()->party_id)->not->toBe($partner['party']->id)
             ->and($declined->refresh()->party_id)->not->toBe($partner['party']->id)
