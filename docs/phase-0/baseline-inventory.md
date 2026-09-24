@@ -326,6 +326,7 @@ Vendor routes excluded, matching `route:list --except-vendor`.
 | POST | `/identity/people/resolve` | `identity.people.resolve` | `IdentityManagementController@resolvePerson` | web, auth, throttle:60,1 |
 | GET | `/identity/roles/{role}` | `identity.roles.show` | `IdentityManagementController@role` | web, auth, throttle:60,1 |
 | POST | `/investor` | `site.investor.store` | `SiteController@storeInvestor` | web, throttle:10,1 |
+| GET | `/preview/{fixture}` | — | `Closure` | web |
 | GET | `/pulse` | `pulse` | `PulseController@index` | web |
 | POST | `/pulse/business` | `pulse.business.store` | `PulseController@storeBusiness` | web, throttle:10,1 |
 | POST | `/pulse/business/preview` | `pulse.business.preview` | `PulseController@previewBusiness` | web, throttle:60,1 |
