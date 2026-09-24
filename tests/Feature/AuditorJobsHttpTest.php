@@ -15,6 +15,7 @@ use App\Models\AuditorProfile;
 use App\Models\RoleMembership;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditAssignmentFixture as Fixture;
@@ -224,6 +225,28 @@ it('does not hide an unexpected projection failure behind a successful command r
         Event::forget($event);
     }
 });
+
+it('replaces withdrawn Auditor pages with the access page while API denials remain JSON', function (string $path): void {
+    $fixture = Fixture::make(1);
+    $assignment = Fixture::request($fixture);
+    $partner = $fixture['partners'][0];
+    Fixture::respond($partner['user'], $assignment, 'conflict', 'Private relationship.', 'other');
+    RoleMembership::query()->where('party_id', $partner['party']->id)->update(['status' => 'revoked']);
+    $path = str_replace('{assignment}', $assignment->id, $path);
+
+    $this->actingAs($partner['user'])->get($path)->assertForbidden()
+        ->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied')->where('code', 'ROLE_MEMBERSHIP_REQUIRED')
+            ->missing('eligible')->missing('assigned')->missing('job')->missing('conflicts'));
+    $this->get($path, ['X-Inertia' => 'true', 'X-Inertia-Version' => (string) Inertia::getVersion()])->assertForbidden()->assertHeader('X-Inertia', 'true')
+        ->assertJsonPath('component', 'identity/access-denied')->assertJsonPath('props.code', 'ROLE_MEMBERSHIP_REQUIRED');
+    Sanctum::actingAs($partner['user'], ['auditor:read']);
+    $this->getJson('/api/v1'.$path)->assertForbidden()->assertJsonPath('code', 'ROLE_MEMBERSHIP_REQUIRED')->assertJsonMissingPath('component');
+})->with([
+    'Jobs' => '/auditor/jobs',
+    'file' => '/auditor/jobs/{assignment}',
+    'own conflicts' => '/auditor/conflicts',
+    'own receipt' => '/auditor/jobs/{assignment}/conflict',
+]);
 
 it('keeps a command outcome immutable while clearing actions after Business verification or actor authority is lost', function (): void {
     $fixture = Fixture::make(1);
