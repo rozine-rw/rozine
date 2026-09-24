@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::index
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:29
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:29
 * @route '/user/passkeys/options'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::index
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:29
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:29
 * @route '/user/passkeys/options'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::index
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:29
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:29
 * @route '/user/passkeys/options'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::index
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:29
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:29
 * @route '/user/passkeys/options'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::index
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:29
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:29
 * @route '/user/passkeys/options'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::index
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:29
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:29
 * @route '/user/passkeys/options'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::index
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:29
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:29
 * @route '/user/passkeys/options'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::store
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:48
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:48
 * @route '/user/passkeys'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +97,7 @@ store.definition = {
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::store
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:48
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:48
 * @route '/user/passkeys'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::store
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:48
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:48
 * @route '/user/passkeys'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +116,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::store
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:48
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:48
 * @route '/user/passkeys'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -126,7 +126,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::store
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:48
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:48
 * @route '/user/passkeys'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -138,7 +138,7 @@ store.form = storeForm
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::destroy
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:68
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:68
 * @route '/user/passkeys/{passkey}'
 */
 export const destroy = (args: { passkey: number | { id: number } } | [passkey: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -153,7 +153,7 @@ destroy.definition = {
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::destroy
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:68
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:68
 * @route '/user/passkeys/{passkey}'
 */
 destroy.url = (args: { passkey: number | { id: number } } | [passkey: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -186,7 +186,7 @@ destroy.url = (args: { passkey: number | { id: number } } | [passkey: number | {
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::destroy
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:68
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:68
 * @route '/user/passkeys/{passkey}'
 */
 destroy.delete = (args: { passkey: number | { id: number } } | [passkey: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -196,7 +196,7 @@ destroy.delete = (args: { passkey: number | { id: number } } | [passkey: number 
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::destroy
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:68
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:68
 * @route '/user/passkeys/{passkey}'
 */
 const destroyForm = (args: { passkey: number | { id: number } } | [passkey: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -211,7 +211,7 @@ const destroyForm = (args: { passkey: number | { id: number } } | [passkey: numb
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyRegistrationController::destroy
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:68
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyRegistrationController.php:68
 * @route '/user/passkeys/{passkey}'
 */
 destroyForm.delete = (args: { passkey: number | { id: number } } | [passkey: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

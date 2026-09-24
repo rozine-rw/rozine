@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \Laravel\Fortify\Http\Controllers\NewPasswordController::create
-* @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:45
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:45
 * @route '/reset-password/{token}'
 */
 export const create = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ create.definition = {
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\NewPasswordController::create
-* @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:45
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:45
 * @route '/reset-password/{token}'
 */
 create.url = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ create.url = (args: { token: string | number } | [token: string | number ] | str
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\NewPasswordController::create
-* @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:45
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:45
 * @route '/reset-password/{token}'
 */
 create.get = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ create.get = (args: { token: string | number } | [token: string | number ] | str
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\NewPasswordController::create
-* @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:45
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:45
 * @route '/reset-password/{token}'
 */
 create.head = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ create.head = (args: { token: string | number } | [token: string | number ] | st
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\NewPasswordController::create
-* @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:45
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:45
 * @route '/reset-password/{token}'
 */
 const createForm = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ const createForm = (args: { token: string | number } | [token: string | number ]
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\NewPasswordController::create
-* @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:45
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:45
 * @route '/reset-password/{token}'
 */
 createForm.get = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ createForm.get = (args: { token: string | number } | [token: string | number ] |
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\NewPasswordController::create
-* @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:45
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:45
 * @route '/reset-password/{token}'
 */
 createForm.head = (args: { token: string | number } | [token: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -100,7 +100,7 @@ create.form = createForm
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\NewPasswordController::store
-* @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:56
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:56
 * @route '/reset-password'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -115,7 +115,7 @@ store.definition = {
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\NewPasswordController::store
-* @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:56
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:56
 * @route '/reset-password'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -124,7 +124,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\NewPasswordController::store
-* @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:56
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:56
 * @route '/reset-password'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -134,7 +134,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\NewPasswordController::store
-* @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:56
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:56
 * @route '/reset-password'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -144,7 +144,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\NewPasswordController::store
-* @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:56
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:56
 * @route '/reset-password'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

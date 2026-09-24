@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
 * @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::store
-* @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:58
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:58
 * @route '/login'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::store
-* @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:58
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:58
 * @route '/login'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::store
-* @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:58
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:58
 * @route '/login'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::store
-* @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:58
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:58
 * @route '/login'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::store
-* @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:58
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:58
 * @route '/login'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

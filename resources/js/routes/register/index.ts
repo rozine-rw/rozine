@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
 * @see \Laravel\Fortify\Http\Controllers\RegisteredUserController::store
-* @see vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
 * @route '/register'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\RegisteredUserController::store
-* @see vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
 * @route '/register'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\RegisteredUserController::store
-* @see vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
 * @route '/register'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\RegisteredUserController::store
-* @see vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
 * @route '/register'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \Laravel\Fortify\Http\Controllers\RegisteredUserController::store
-* @see vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
 * @route '/register'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

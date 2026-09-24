@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\IdentityManagementController::show
-* @see app/Http/Controllers/IdentityManagementController.php:47
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/IdentityManagementController.php:47
 * @route '/identity/roles/{role}'
 */
 export const show = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::show
-* @see app/Http/Controllers/IdentityManagementController.php:47
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/IdentityManagementController.php:47
 * @route '/identity/roles/{role}'
 */
 show.url = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ show.url = (args: { role: string | number } | [role: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::show
-* @see app/Http/Controllers/IdentityManagementController.php:47
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/IdentityManagementController.php:47
 * @route '/identity/roles/{role}'
 */
 show.get = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ show.get = (args: { role: string | number } | [role: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::show
-* @see app/Http/Controllers/IdentityManagementController.php:47
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/IdentityManagementController.php:47
 * @route '/identity/roles/{role}'
 */
 show.head = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ show.head = (args: { role: string | number } | [role: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::show
-* @see app/Http/Controllers/IdentityManagementController.php:47
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/IdentityManagementController.php:47
 * @route '/identity/roles/{role}'
 */
 const showForm = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ const showForm = (args: { role: string | number } | [role: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::show
-* @see app/Http/Controllers/IdentityManagementController.php:47
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/IdentityManagementController.php:47
 * @route '/identity/roles/{role}'
 */
 showForm.get = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ showForm.get = (args: { role: string | number } | [role: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::show
-* @see app/Http/Controllers/IdentityManagementController.php:47
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/IdentityManagementController.php:47
 * @route '/identity/roles/{role}'
 */
 showForm.head = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -100,7 +100,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::resume
-* @see app/Http/Controllers/RoleBookmarkController.php:32
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:32
 * @route '/identity/roles/{role}/resume'
 */
 export const resume = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ resume.definition = {
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::resume
-* @see app/Http/Controllers/RoleBookmarkController.php:32
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:32
 * @route '/identity/roles/{role}/resume'
 */
 resume.url = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -142,7 +142,7 @@ resume.url = (args: { role: string | number } | [role: string | number ] | strin
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::resume
-* @see app/Http/Controllers/RoleBookmarkController.php:32
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:32
 * @route '/identity/roles/{role}/resume'
 */
 resume.get = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -152,7 +152,7 @@ resume.get = (args: { role: string | number } | [role: string | number ] | strin
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::resume
-* @see app/Http/Controllers/RoleBookmarkController.php:32
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:32
 * @route '/identity/roles/{role}/resume'
 */
 resume.head = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -162,7 +162,7 @@ resume.head = (args: { role: string | number } | [role: string | number ] | stri
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::resume
-* @see app/Http/Controllers/RoleBookmarkController.php:32
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:32
 * @route '/identity/roles/{role}/resume'
 */
 const resumeForm = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -172,7 +172,7 @@ const resumeForm = (args: { role: string | number } | [role: string | number ] |
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::resume
-* @see app/Http/Controllers/RoleBookmarkController.php:32
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:32
 * @route '/identity/roles/{role}/resume'
 */
 resumeForm.get = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -182,7 +182,7 @@ resumeForm.get = (args: { role: string | number } | [role: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\RoleBookmarkController::resume
-* @see app/Http/Controllers/RoleBookmarkController.php:32
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/RoleBookmarkController.php:32
 * @route '/identity/roles/{role}/resume'
 */
 resumeForm.head = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

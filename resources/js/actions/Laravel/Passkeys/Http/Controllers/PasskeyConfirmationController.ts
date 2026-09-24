@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyConfirmationController::index
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:27
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:27
 * @route '/passkeys/confirm/options'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyConfirmationController::index
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:27
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:27
 * @route '/passkeys/confirm/options'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyConfirmationController::index
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:27
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:27
 * @route '/passkeys/confirm/options'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyConfirmationController::index
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:27
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:27
 * @route '/passkeys/confirm/options'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyConfirmationController::index
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:27
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:27
 * @route '/passkeys/confirm/options'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyConfirmationController::index
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:27
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:27
 * @route '/passkeys/confirm/options'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyConfirmationController::index
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:27
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:27
 * @route '/passkeys/confirm/options'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyConfirmationController::store
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:50
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:50
 * @route '/passkeys/confirm'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +97,7 @@ store.definition = {
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyConfirmationController::store
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:50
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:50
 * @route '/passkeys/confirm'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyConfirmationController::store
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:50
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:50
 * @route '/passkeys/confirm'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +116,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyConfirmationController::store
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:50
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:50
 * @route '/passkeys/confirm'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -126,7 +126,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \Laravel\Passkeys\Http\Controllers\PasskeyConfirmationController::store
-* @see vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:50
+* @see Users/engineersticity/Documents/projects/rozine/vendor/laravel/passkeys/src/Http/Controllers/PasskeyConfirmationController.php:50
 * @route '/passkeys/confirm'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

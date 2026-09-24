@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::update
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:30
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:30
 * @route '/api/v1/identity/memberships'
 */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::update
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:30
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:30
 * @route '/api/v1/identity/memberships'
 */
 update.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::update
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:30
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:30
 * @route '/api/v1/identity/memberships'
 */
 update.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ update.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::update
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:30
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:30
 * @route '/api/v1/identity/memberships'
 */
 const updateForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ const updateForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::update
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:30
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:30
 * @route '/api/v1/identity/memberships'
 */
 updateForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

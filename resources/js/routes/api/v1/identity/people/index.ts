@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::resolve
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:21
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:21
 * @route '/api/v1/identity/people/resolve'
 */
 export const resolve = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ resolve.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::resolve
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:21
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:21
 * @route '/api/v1/identity/people/resolve'
 */
 resolve.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ resolve.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::resolve
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:21
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:21
 * @route '/api/v1/identity/people/resolve'
 */
 resolve.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ resolve.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::resolve
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:21
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:21
 * @route '/api/v1/identity/people/resolve'
 */
 const resolveForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ const resolveForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::resolve
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:21
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:21
 * @route '/api/v1/identity/people/resolve'
 */
 resolveForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::resolvePerson
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:21
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:21
 * @route '/api/v1/identity/people/resolve'
 */
 export const resolvePerson = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ resolvePerson.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::resolvePerson
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:21
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:21
 * @route '/api/v1/identity/people/resolve'
 */
 resolvePerson.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ resolvePerson.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::resolvePerson
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:21
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:21
 * @route '/api/v1/identity/people/resolve'
 */
 resolvePerson.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ resolvePerson.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::resolvePerson
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:21
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:21
 * @route '/api/v1/identity/people/resolve'
 */
 const resolvePersonForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ const resolvePersonForm = (options?: RouteQueryOptions): RouteFormDefinition<'po
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::resolvePerson
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:21
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:21
 * @route '/api/v1/identity/people/resolve'
 */
 resolvePersonForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -57,7 +57,7 @@ resolvePerson.form = resolvePersonForm
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::membership
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:30
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:30
 * @route '/api/v1/identity/memberships'
 */
 export const membership = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -72,7 +72,7 @@ membership.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::membership
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:30
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:30
 * @route '/api/v1/identity/memberships'
 */
 membership.url = (options?: RouteQueryOptions) => {
@@ -81,7 +81,7 @@ membership.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::membership
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:30
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:30
 * @route '/api/v1/identity/memberships'
 */
 membership.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -91,7 +91,7 @@ membership.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::membership
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:30
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:30
 * @route '/api/v1/identity/memberships'
 */
 const membershipForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -101,7 +101,7 @@ const membershipForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::membership
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:30
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:30
 * @route '/api/v1/identity/memberships'
 */
 membershipForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -113,7 +113,7 @@ membership.form = membershipForm
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::selectRole
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:40
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:40
 * @route '/api/v1/identity/active-role'
 */
 export const selectRole = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -128,7 +128,7 @@ selectRole.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::selectRole
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:40
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:40
 * @route '/api/v1/identity/active-role'
 */
 selectRole.url = (options?: RouteQueryOptions) => {
@@ -137,7 +137,7 @@ selectRole.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::selectRole
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:40
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:40
 * @route '/api/v1/identity/active-role'
 */
 selectRole.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -147,7 +147,7 @@ selectRole.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::selectRole
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:40
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:40
 * @route '/api/v1/identity/active-role'
 */
 const selectRoleForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -157,7 +157,7 @@ const selectRoleForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::selectRole
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:40
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:40
 * @route '/api/v1/identity/active-role'
 */
 selectRoleForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -169,7 +169,7 @@ selectRole.form = selectRoleForm
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::role
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:48
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:48
 * @route '/api/v1/identity/roles/{role}'
 */
 export const role = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -184,7 +184,7 @@ role.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::role
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:48
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:48
 * @route '/api/v1/identity/roles/{role}'
 */
 role.url = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -211,7 +211,7 @@ role.url = (args: { role: string | number } | [role: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::role
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:48
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:48
 * @route '/api/v1/identity/roles/{role}'
 */
 role.get = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -221,7 +221,7 @@ role.get = (args: { role: string | number } | [role: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::role
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:48
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:48
 * @route '/api/v1/identity/roles/{role}'
 */
 role.head = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -231,7 +231,7 @@ role.head = (args: { role: string | number } | [role: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::role
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:48
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:48
 * @route '/api/v1/identity/roles/{role}'
 */
 const roleForm = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -241,7 +241,7 @@ const roleForm = (args: { role: string | number } | [role: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::role
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:48
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:48
 * @route '/api/v1/identity/roles/{role}'
 */
 roleForm.get = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -251,7 +251,7 @@ roleForm.get = (args: { role: string | number } | [role: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityManagementController::role
-* @see app/Http/Controllers/Api/V1/IdentityManagementController.php:48
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityManagementController.php:48
 * @route '/api/v1/identity/roles/{role}'
 */
 roleForm.head = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

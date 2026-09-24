@@ -5,7 +5,7 @@ import { InstalmentSchedule } from '@/components/business/apply/step-raise';
 import { FieldError } from '@/components/rozine/form';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatDayMonth, formatRwf } from '@/lib/rozine/format';
+import { formatAmount, formatDayMonth, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     AcceptanceDocument,
@@ -30,6 +30,8 @@ type StepReviewProps = {
     quote: Extract<ApplicationQuote, { status: 'ready' }> | null;
     /** Whether `allowed_actions` lets the current person sign now. */
     canSign: boolean;
+    /** Present when the current person may evaluate a lower amount for this ready offer. */
+    reduce: ReduceControl | null;
     fields: ReviewFields;
     errors: Partial<Record<string, string>>;
     onChange: <K extends keyof ReviewFields>(
@@ -64,7 +66,10 @@ function SectionLabel({ children }: { children: ReactNode }) {
     );
 }
 
-/** The summary popup behind each "Read" link (design L2646–2672). */
+/**
+ * The document behind each "Read" link (design L2646–2672): the approved summary, then the complete
+ * text its hash binds, as escaped plain text with its line breaks.
+ */
 function DocumentSheet({
     document,
     onClose,
@@ -113,7 +118,10 @@ function DocumentSheet({
                             version: document.version,
                         })}
                     </p>
-                    <div className="mt-4 flex flex-col gap-4">
+                    <h4 className="mt-4 text-[11px] font-bold tracking-[.05em] text-rz-slate uppercase">
+                        {t('business.apply.review.document_summary')}
+                    </h4>
+                    <div className="mt-2.5 flex flex-col gap-4">
                         {document.summary.map((clause) => (
                             <div key={clause.heading}>
                                 <p className="text-[13.5px] font-bold text-rz-ink">
@@ -125,6 +133,12 @@ function DocumentSheet({
                             </div>
                         ))}
                     </div>
+                    <h4 className="mt-6 border-t border-[#eef2f9] pt-4 text-[11px] font-bold tracking-[.05em] text-rz-slate uppercase dark:border-rz-divider">
+                        {t('business.apply.review.document_full_text')}
+                    </h4>
+                    <p className="mt-2.5 text-[12.5px] leading-[1.6] whitespace-pre-line text-rz-secondary">
+                        {document.body}
+                    </p>
                 </div>
                 <div className="shrink-0 border-t border-[#eef2f9] px-5 pt-3.5 pb-[22px] dark:border-rz-divider">
                     <button
@@ -140,6 +154,115 @@ function DocumentSheet({
     );
 }
 
+/** Asking for less than a ready offer: a new evaluation, never a way round a refusal. */
+export type ReduceControl = {
+    busy: boolean;
+    error: string | undefined;
+    /** Evaluates again at this principal, or at the full offer when null. */
+    onReduce: (acceptedPrincipal: string | null) => void;
+};
+
+/**
+ * "Take a smaller amount": the business names a lower principal and the server evaluates it again
+ * against the saved request (business-application-v1, `accepted_principal`). The server decides
+ * whether the amount is acceptable; the page only collects it.
+ */
+function ReduceOffer({
+    quote,
+    control,
+}: {
+    quote: Extract<ApplicationQuote, { status: 'ready' }>;
+    control: ReduceControl;
+}) {
+    const { t } = useTranslation();
+    const [open, setOpen] = useState(control.error !== undefined);
+    const [amount, setAmount] = useState('');
+    const recalculate = () => {
+        if (amount !== '') {
+            control.onReduce(amount);
+        }
+    };
+
+    if (!open) {
+        return (
+            <button
+                type="button"
+                onClick={() => setOpen(true)}
+                className="mt-3 p-0 text-[12.5px] font-bold text-rz-accent-app-text"
+            >
+                {t('business.apply.review.reduce.open')}
+            </button>
+        );
+    }
+
+    return (
+        <div className="mt-3.5 border-t border-[#eef2f9] pt-3.5 dark:border-rz-divider">
+            <label
+                htmlFor="accepted_principal"
+                className="mb-1.5 block text-xs font-semibold text-rz-label uppercase"
+            >
+                {t('business.apply.review.reduce.label')}
+            </label>
+            <input
+                id="accepted_principal"
+                inputMode="numeric"
+                value={
+                    amount === ''
+                        ? ''
+                        : formatAmount({ currency: 'RWF', amount })
+                }
+                onChange={(event) =>
+                    setAmount(
+                        event.target.value
+                            .replace(/\D/gu, '')
+                            .replace(/^0+/u, ''),
+                    )
+                }
+                onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        recalculate();
+                    }
+                }}
+                aria-invalid={control.error !== undefined || undefined}
+                aria-describedby="accepted-principal-help"
+                className="w-full rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[13px] text-[15px] font-semibold text-rz-ink outline-none focus:border-rz-focus-border"
+            />
+            <p
+                id="accepted-principal-help"
+                className="mt-1.5 text-[11px] leading-[1.45] text-rz-secondary"
+            >
+                {t('business.apply.review.reduce.help', {
+                    unit: formatRwf(quote.unit_price),
+                })}
+            </p>
+            <FieldError id="accepted-principal-error">
+                {control.error}
+            </FieldError>
+            <div className="mt-3 flex items-center gap-4">
+                <button
+                    type="button"
+                    disabled={amount === '' || control.busy}
+                    onClick={recalculate}
+                    className="h-10 rounded-xl bg-rz-accent-fill px-4 text-[13px] font-semibold text-white disabled:opacity-50"
+                >
+                    {t('business.apply.review.reduce.submit')}
+                </button>
+                <button
+                    type="button"
+                    onClick={() => {
+                        setAmount('');
+                        setOpen(false);
+                    }}
+                    className="p-0 text-[12.5px] font-semibold text-rz-slate"
+                >
+                    {t('business.apply.review.reduce.cancel')}
+                </button>
+            </div>
+        </div>
+    );
+}
+
 /**
  * The offer being signed (business-application-v1 points 4 and 6): the server's resized and
  * quantized principal with its full schedule, accepted explicitly — never recomputed after signing.
@@ -149,14 +272,17 @@ function OfferCard({
     acceptable,
     on,
     onToggle,
+    reduce,
 }: {
     quote: Extract<ApplicationQuote, { status: 'ready' }>;
     /** Only a person who may sign now is asked to accept the offer. */
     acceptable: boolean;
     on: boolean;
     onToggle: () => void;
+    reduce: ReduceControl | null;
 }) {
     const { t } = useTranslation();
+    const reduced = quote.principal.amount !== quote.offered_principal.amount;
 
     return (
         <div
@@ -200,6 +326,28 @@ function OfferCard({
                 </div>
                 <InstalmentSchedule schedule={quote.schedule} />
             </div>
+            {reduced && (
+                <p className="mt-3 text-xs leading-normal text-rz-secondary">
+                    {t('business.apply.review.reduced', {
+                        principal: formatRwf(quote.principal),
+                        offered: formatRwf(quote.offered_principal),
+                    })}
+                    {reduce && (
+                        <>
+                            {' '}
+                            <button
+                                type="button"
+                                disabled={reduce.busy}
+                                onClick={() => reduce.onReduce(null)}
+                                className="p-0 font-bold text-rz-accent-app-text disabled:opacity-50"
+                            >
+                                {t('business.apply.review.use_full')}
+                            </button>
+                        </>
+                    )}
+                </p>
+            )}
+            {reduce && <ReduceOffer quote={quote} control={reduce} />}
             {acceptable && (
                 <button
                     type="button"
@@ -291,6 +439,7 @@ export function StepReview({
     acceptance,
     quote,
     canSign,
+    reduce,
     fields,
     errors,
     onChange,
@@ -363,6 +512,7 @@ export function StepReview({
                     onToggle={() =>
                         onChange('accept_offer', !fields.accept_offer)
                     }
+                    reduce={reduce}
                 />
             ) : (
                 <p className="mt-[11px] text-[12.5px] text-rz-secondary">

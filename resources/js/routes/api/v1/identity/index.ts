@@ -6,7 +6,7 @@ import roles from './roles'
 import bookmarks from './bookmarks'
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityController::__invoke
-* @see app/Http/Controllers/Api/V1/IdentityController.php:14
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityController.php:14
 * @route '/api/v1/identity'
 */
 export const show = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -21,7 +21,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityController::__invoke
-* @see app/Http/Controllers/Api/V1/IdentityController.php:14
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityController.php:14
 * @route '/api/v1/identity'
 */
 show.url = (options?: RouteQueryOptions) => {
@@ -30,7 +30,7 @@ show.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityController::__invoke
-* @see app/Http/Controllers/Api/V1/IdentityController.php:14
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityController.php:14
 * @route '/api/v1/identity'
 */
 show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -40,7 +40,7 @@ show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityController::__invoke
-* @see app/Http/Controllers/Api/V1/IdentityController.php:14
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityController.php:14
 * @route '/api/v1/identity'
 */
 show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -50,7 +50,7 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityController::__invoke
-* @see app/Http/Controllers/Api/V1/IdentityController.php:14
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityController.php:14
 * @route '/api/v1/identity'
 */
 const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -60,7 +60,7 @@ const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityController::__invoke
-* @see app/Http/Controllers/Api/V1/IdentityController.php:14
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityController.php:14
 * @route '/api/v1/identity'
 */
 showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -70,7 +70,7 @@ showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\IdentityController::__invoke
-* @see app/Http/Controllers/Api/V1/IdentityController.php:14
+* @see Users/engineersticity/Documents/projects/rozine/app/Http/Controllers/Api/V1/IdentityController.php:14
 * @route '/api/v1/identity'
 */
 showForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
