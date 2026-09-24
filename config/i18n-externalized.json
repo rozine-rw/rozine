@@ -18,6 +18,9 @@
     "externalizedPaths": [
         "resources/js/components/non-live-notice.tsx",
         "resources/js/pages/auth/forgot-password.tsx",
-        "resources/js/pages/auth/login.tsx"
+        "resources/js/pages/auth/login.tsx",
+        "resources/js/pages/identity/access-denied.tsx",
+        "resources/js/pages/identity/role-home.tsx",
+        "resources/js/pages/identity/staff-home.tsx"
     ]
 }

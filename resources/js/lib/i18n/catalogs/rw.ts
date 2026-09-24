@@ -9,6 +9,23 @@
 import type { Catalog } from '@/lib/i18n/types';
 
 const rw: Catalog = {
+    'identity.home.investor': 'Ahagenewe umushoramari',
+    'identity.home.business': 'Ahagenewe ubucuruzi',
+    'identity.home.auditor': 'Ahagenewe umugenzuzi',
+    'identity.home.admin': 'Ahagenewe abakozi',
+    'identity.home.overview': 'Incamake',
+    'identity.home.access': 'Uburenganzira bwa konti',
+    'identity.home.ready': 'Konti yawe yemerewe kwinjira hano.',
+    'identity.home.verified': 'Umwirondoro wawe waremejwe.',
+    'identity.home.staff_ready': 'Konti yawe y’umukozi yemerewe kwinjira hano.',
+    'identity.home.back': 'Hitamo porogaramu',
+    'identity.home.settings': 'Igenamiterere rya konti',
+    'identity.home.saving': 'Kubika aho ugeze…',
+    'identity.home.failed':
+        'Ntitwashoboye kubika aho ugeze. Subira aho uhitamo porogaramu urebe uburenganzira bwawe.',
+    'identity.denied.title': 'Uburenganzira bugomba kugenzurwa',
+    'identity.denied.body':
+        'Konti yawe nticyemerewe gufungura uru rupapuro mu nshingano wahisemo. Hitamo porogaramu wongere kugenzura uburenganzira bwawe.',
     'environment.demo': 'Demo — si urubuga nyarwo',
     'environment.uat': 'UAT — si urubuga nyarwo',
     'environment.synthetic_only':

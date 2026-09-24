@@ -215,6 +215,23 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `pulse_signups_contact_unique` on (contact) — unique; `pulse_signups_loan_number_unique` on (loan_number) — unique; `pulse_signups_pkey` on (id) — unique; `pulse_signups_type_index` on (type); `pulse_signups_type_queue_number_unique` on (type, queue_number) — unique
 
+### `role_bookmarks`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `user_id` | `int8` | no | — |
+| `role` | `varchar` | no | — |
+| `membership_id` | `bpchar` | no | — |
+| `membership_revision` | `int4` | no | — |
+| `route` | `varchar` | no | — |
+| `parameters` | `jsonb` | no | — |
+| `query` | `jsonb` | no | — |
+| `created_at` | `timestamp` | yes | — |
+| `updated_at` | `timestamp` | yes | — |
+
+**Indexes:** `role_bookmarks_pkey` on (id) — unique; `role_bookmarks_user_id_role_unique` on (user_id, role) — unique
+
 ### `role_memberships`
 
 | Column | Type | Nullable | Default |
@@ -250,6 +267,17 @@ facts that would differ between machines, so they are excluded deliberately.
 | `value` | `int8` | no | `'0'::bigint` |
 
 **Indexes:** `signup_counters_pkey` on (name) — unique
+
+### `staff_accounts`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `user_id` | `int8` | no | — |
+| `enabled` | `bool` | no | `false` |
+| `created_at` | `timestamp` | yes | — |
+| `updated_at` | `timestamp` | yes | — |
+
+**Indexes:** `staff_accounts_pkey` on (user_id) — unique
 
 ### `users`
 
@@ -304,6 +332,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_06_121310_serialize_pulse_signup_numbering.php |
 | 2026_09_23_101346_create_identity_parties_and_role_memberships.php |
 | 2026_09_23_143859_add_controlled_identity_access.php |
+| 2026_09_24_020204_create_staff_access_and_role_bookmarks.php |
 
 ## Routes
 
@@ -313,18 +342,28 @@ Vendor routes excluded, matching `route:list --except-vendor`.
 |---|---|---|---|---|
 | GET | `/.well-known/passkey-endpoints` | `well-known.passkeys` | `Closure` | web |
 | GET | `/` | `home` | `SiteController@index` | web |
+| GET | `/admin` | `admin.home` | `StaffHomeController@__invoke` | web, auth, verified |
 | GET | `/api/user` | — | `Closure` | api, auth:sanctum |
 | GET | `/api/v1/identity` | `api.v1.identity.show` | `Api\V1\IdentityController@__invoke` | api, auth:sanctum, throttle:60,1 |
 | POST | `/api/v1/identity/active-role` | `api.v1.identity.active-role.store` | `Api\V1\IdentityManagementController@selectRole` | api, auth:sanctum, throttle:60,1 |
+| POST | `/api/v1/identity/bookmarks` | `api.v1.identity.bookmarks.store` | `Api\V1\RoleBookmarkController@store` | api, auth:sanctum, throttle:60,1 |
+| GET | `/api/v1/identity/bookmarks/{role}` | `api.v1.identity.bookmarks.show` | `Api\V1\RoleBookmarkController@show` | api, auth:sanctum, throttle:60,1 |
 | POST | `/api/v1/identity/memberships` | `api.v1.identity.memberships.update` | `Api\V1\IdentityManagementController@membership` | api, auth:sanctum, throttle:60,1 |
 | POST | `/api/v1/identity/people/resolve` | `api.v1.identity.people.resolve` | `Api\V1\IdentityManagementController@resolvePerson` | api, auth:sanctum, throttle:60,1 |
 | GET | `/api/v1/identity/roles/{role}` | `api.v1.identity.roles.show` | `Api\V1\IdentityManagementController@role` | api, auth:sanctum, throttle:60,1 |
+| GET | `/api/v1/staff-access` | `api.v1.staff-access.show` | `Api\V1\StaffAccessController@__invoke` | api, auth:sanctum, throttle:60,1 |
+| GET | `/auditor` | `auditor.home` | `RoleHomeController@__invoke` | web, auth, verified |
+| GET | `/business` | `business.home` | `RoleHomeController@__invoke` | web, auth, verified |
 | POST | `/business` | `site.business.store` | `SiteController@storeBusiness` | web, throttle:10,1 |
 | GET | `/dashboard` | `dashboard` | `DashboardController@__invoke` | web, auth, verified |
 | POST | `/identity/active-role` | `identity.active-role.store` | `IdentityManagementController@selectRole` | web, auth, throttle:60,1 |
+| POST | `/identity/bookmarks` | `identity.bookmarks.store` | `RoleBookmarkController@store` | web, auth, throttle:60,1 |
+| GET | `/identity/bookmarks/{role}` | `identity.bookmarks.show` | `RoleBookmarkController@show` | web, auth, throttle:60,1 |
 | POST | `/identity/memberships` | `identity.memberships.update` | `IdentityManagementController@membership` | web, auth, throttle:60,1 |
 | POST | `/identity/people/resolve` | `identity.people.resolve` | `IdentityManagementController@resolvePerson` | web, auth, throttle:60,1 |
 | GET | `/identity/roles/{role}` | `identity.roles.show` | `IdentityManagementController@role` | web, auth, throttle:60,1 |
+| GET | `/identity/roles/{role}/resume` | `identity.roles.resume` | `RoleBookmarkController@resume` | web, auth, throttle:60,1 |
+| GET | `/investor` | `investor.home` | `RoleHomeController@__invoke` | web, auth, verified |
 | POST | `/investor` | `site.investor.store` | `SiteController@storeInvestor` | web, throttle:10,1 |
 | GET | `/pulse` | `pulse` | `PulseController@index` | web |
 | POST | `/pulse/business` | `pulse.business.store` | `PulseController@storeBusiness` | web, throttle:10,1 |
@@ -353,15 +392,15 @@ The ADR-0001 layering as it stands. `tests/Architecture` enforces the dependency
 
 | Layer | Path | Classes | Contents |
 |---|---|---|---|
-| Domain | `app/Domain` | 6 | `Identity\ActiveRolePolicy`, `Identity\IdentityViolation`, `Identity\MembershipTransitions`, `Identity\RoleAccess`, `Pulse\PulseSector`, `Pulse\PulseUnderwriting` |
-| Application | `app/Application` | 20 | `Environment\Contracts\DemoFixtureStore`, `Environment\EnvironmentIsolation`, `Environment\ResetDemoFixtures`, `Identity\AuthorizeActiveRole`, `Identity\ChangeMembership`, `Identity\ConfigureIdentityOperator`, `Identity\Contracts\IdentityAccessStore`, `Identity\Contracts\IdentityRepository`, `Identity\GetIdentityContext`, `Identity\RegisterIdentity`, `Identity\ResolveVerifiedPerson`, `Identity\SelectActiveRole`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor` |
+| Domain | `app/Domain` | 7 | `Identity\ActiveRolePolicy`, `Identity\BookmarkDestination`, `Identity\IdentityViolation`, `Identity\MembershipTransitions`, `Identity\RoleAccess`, `Pulse\PulseSector`, `Pulse\PulseUnderwriting` |
+| Application | `app/Application` | 24 | `Environment\Contracts\DemoFixtureStore`, `Environment\EnvironmentIsolation`, `Environment\ResetDemoFixtures`, `Identity\AuthorizeActiveRole`, `Identity\ChangeMembership`, `Identity\ConfigureIdentityOperator`, `Identity\ConfigureStaffAccess`, `Identity\Contracts\IdentityAccessStore`, `Identity\Contracts\IdentityRepository`, `Identity\GetIdentityContext`, `Identity\GetRoleBookmark`, `Identity\GetStaffAccess`, `Identity\RegisterIdentity`, `Identity\ResolveVerifiedPerson`, `Identity\SaveRoleBookmark`, `Identity\SelectActiveRole`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor` |
 | Infrastructure | `app/Infrastructure` | 4 | `Environment\EloquentDemoFixtureStore`, `Identity\EloquentIdentityAccessStore`, `Identity\EloquentIdentityRepository`, `Pulse\EloquentPulseSignupRepository` |
-| HTTP — controllers | `app/Http/Controllers` | 9 | `Api\V1\IdentityController`, `Api\V1\IdentityManagementController`, `Controller`, `DashboardController`, `IdentityManagementController`, `PulseController`, `Settings\ProfileController`, `Settings\SecurityController`, `SiteController` |
-| HTTP — requests | `app/Http/Requests` | 13 | `Identity\ChangeMembershipRequest`, `Identity\ResolvePersonRequest`, `Identity\SelectActiveRoleRequest`, `Pulse\PreviewBusinessRequest`, `Pulse\PreviewInvestorRequest`, `Pulse\StoreBusinessSignupRequest`, `Pulse\StoreInvestorPledgeRequest`, `Settings\PasswordUpdateRequest`, `Settings\ProfileDeleteRequest`, `Settings\ProfileUpdateRequest`, `Settings\TwoFactorAuthenticationRequest`, `Site\StoreSiteBusinessRequest`, `Site\StoreSiteInvestorRequest` |
-| HTTP — resources | `app/Http/Resources` | 9 | `IdentityContextResource`, `IdentityMutationResource`, `PulseBusinessPreviewResource`, `PulseBusinessSignupReceiptResource`, `PulseInvestorPreviewResource`, `PulseInvestorSignupReceiptResource`, `PulseListingResource`, `PulsePageResource`, `PulsePolicyResource` |
+| HTTP — controllers | `app/Http/Controllers` | 14 | `Api\V1\IdentityController`, `Api\V1\IdentityManagementController`, `Api\V1\RoleBookmarkController`, `Api\V1\StaffAccessController`, `Controller`, `DashboardController`, `IdentityManagementController`, `PulseController`, `RoleBookmarkController`, `RoleHomeController`, `Settings\ProfileController`, `Settings\SecurityController`, `SiteController`, `StaffHomeController` |
+| HTTP — requests | `app/Http/Requests` | 14 | `Identity\ChangeMembershipRequest`, `Identity\ResolvePersonRequest`, `Identity\SaveRoleBookmarkRequest`, `Identity\SelectActiveRoleRequest`, `Pulse\PreviewBusinessRequest`, `Pulse\PreviewInvestorRequest`, `Pulse\StoreBusinessSignupRequest`, `Pulse\StoreInvestorPledgeRequest`, `Settings\PasswordUpdateRequest`, `Settings\ProfileDeleteRequest`, `Settings\ProfileUpdateRequest`, `Settings\TwoFactorAuthenticationRequest`, `Site\StoreSiteBusinessRequest`, `Site\StoreSiteInvestorRequest` |
+| HTTP — resources | `app/Http/Resources` | 11 | `IdentityContextResource`, `IdentityMutationResource`, `PulseBusinessPreviewResource`, `PulseBusinessSignupReceiptResource`, `PulseInvestorPreviewResource`, `PulseInvestorSignupReceiptResource`, `PulseListingResource`, `PulsePageResource`, `PulsePolicyResource`, `RoleBookmarkResource`, `StaffAccessResource` |
 | HTTP — middleware | `app/Http/Middleware` | 3 | `HandleAppearance`, `HandleInertiaRequests`, `SetLocale` |
-| Models | `app/Models` | 7 | `IdentityAuditEvent`, `IdentityOperator`, `Party`, `PulseSignup`, `RoleMembership`, `User`, `VerifiedPersonIdentity` |
-| Console commands | `app/Console/Commands` | 4 | `CaptureBaselineInventory`, `CheckEnvironmentIsolation`, `ConfigureIdentityOperatorCommand`, `ResetDemo` |
+| Models | `app/Models` | 9 | `IdentityAuditEvent`, `IdentityOperator`, `Party`, `PulseSignup`, `RoleBookmark`, `RoleMembership`, `StaffAccount`, `User`, `VerifiedPersonIdentity` |
+| Console commands | `app/Console/Commands` | 5 | `CaptureBaselineInventory`, `CheckEnvironmentIsolation`, `ConfigureIdentityOperatorCommand`, `ConfigureStaffAccessCommand`, `ResetDemo` |
 
 ## CI gates
 

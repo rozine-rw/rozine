@@ -7,6 +7,24 @@
 import type { Catalog } from '@/lib/i18n/types';
 
 const fr: Catalog = {
+    'identity.home.investor': 'Espace investisseur',
+    'identity.home.business': 'Espace entreprise',
+    'identity.home.auditor': 'Espace auditeur',
+    'identity.home.admin': 'Espace personnel',
+    'identity.home.overview': 'Vue générale',
+    'identity.home.access': 'Accès au compte',
+    'identity.home.ready': 'Votre compte a accès à cet espace.',
+    'identity.home.verified': 'Votre identité est vérifiée.',
+    'identity.home.staff_ready':
+        'Votre compte personnel est autorisé à ouvrir cet espace.',
+    'identity.home.back': 'Choisir une application',
+    'identity.home.settings': 'Paramètres du compte',
+    'identity.home.saving': 'Enregistrement de votre position…',
+    'identity.home.failed':
+        'Impossible de mettre à jour votre position. Revenez au lanceur pour vérifier votre accès.',
+    'identity.denied.title': 'Votre accès doit être vérifié',
+    'identity.denied.body':
+        'Votre compte ne peut plus ouvrir cette page avec le rôle sélectionné. Choisissez une application pour actualiser votre accès.',
     'environment.demo': 'Démo — hors production',
     'environment.uat': 'UAT — hors production',
     'environment.synthetic_only':

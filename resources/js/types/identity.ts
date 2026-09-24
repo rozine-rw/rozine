@@ -61,3 +61,28 @@ export type ResolveVerifiedPersonInput = {
     reason: string;
     request_id: string;
 };
+
+export type StaffAccess = {
+    contract_version: 'staff-access-v1';
+    can_open_admin: boolean;
+    allowed_actions: 'admin.open'[];
+};
+
+export type RoleBookmark = {
+    contract_version: 'role-bookmark-v1';
+    role: MarketplaceRole;
+    context_revision: number;
+    route: `${MarketplaceRole}.home`;
+    parameters: Record<string, never>;
+    query: { section?: 'overview' | 'access' };
+    url: string;
+};
+
+export type SaveRoleBookmarkInput = {
+    role: MarketplaceRole;
+    route: `${MarketplaceRole}.home`;
+    parameters: Record<string, never>;
+    query: { section: 'overview' | 'access' };
+    expected_revision: number;
+    request_id: string;
+};

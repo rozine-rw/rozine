@@ -7,6 +7,24 @@
  * codes stay aligned.
  */
 const en = {
+    'identity.home.investor': 'Investor workspace',
+    'identity.home.business': 'Business workspace',
+    'identity.home.auditor': 'Auditor workspace',
+    'identity.home.admin': 'Staff workspace',
+    'identity.home.overview': 'Overview',
+    'identity.home.access': 'Account access',
+    'identity.home.ready': 'Your account has access to this workspace.',
+    'identity.home.verified': 'Your identity is verified.',
+    'identity.home.staff_ready':
+        'Your staff account has permission to open this workspace.',
+    'identity.home.back': 'Choose an app',
+    'identity.home.settings': 'Account settings',
+    'identity.home.saving': 'Saving your position…',
+    'identity.home.failed':
+        'We could not update your position. Return to the launcher to check your access.',
+    'identity.denied.title': 'Access needs to be checked',
+    'identity.denied.body':
+        'Your account can no longer open this page in the selected role. Choose an app to refresh your access.',
     'environment.demo': 'Demo — not live',
     'environment.uat': 'UAT — not live',
     'environment.synthetic_only':
