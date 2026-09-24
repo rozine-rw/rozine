@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\Business\Contracts\BusinessApplicationStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Environment\Contracts\DemoFixtureStore;
 use App\Application\Environment\EnvironmentIsolation;
@@ -13,6 +14,7 @@ use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
+use App\Infrastructure\Business\EloquentBusinessApplicationStore;
 use App\Infrastructure\Business\EloquentBusinessAuthorityStore;
 use App\Infrastructure\Environment\EloquentDemoFixtureStore;
 use App\Infrastructure\Identity\EloquentConsentCatalog;
@@ -49,6 +51,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CanonicalJson::class, JcsCanonicalJson::class);
         $this->app->bind(OperationJournal::class, EloquentOperationJournal::class);
         $this->app->bind(BusinessAuthorityStore::class, EloquentBusinessAuthorityStore::class);
+        $this->app->bind(BusinessApplicationStore::class, EloquentBusinessApplicationStore::class);
         $this->app->bind(ConsentCatalog::class, EloquentConsentCatalog::class);
     }
 

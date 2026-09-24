@@ -276,21 +276,23 @@ VIOLATION
 fi
 
 if selected business-boundary; then
-  control business-boundary "bypassing the business adapter to write a mandate must fail the protected rule"
-  plant app/Application/Business/NegativeControlBusinessWrite.php <<'VIOLATION'
+  control business-boundary "bypassing the business adapter to write authority or application records must fail the protected rule"
+  for business_model in BusinessMandate BusinessApplication BusinessApplicationVersion; do
+  echo "    checking ${business_model}"
+  plant app/Application/Business/NegativeControlBusinessWrite.php <<VIOLATION
 <?php
 
 declare(strict_types=1);
 
 namespace App\Application\Business;
 
-use App\Models\BusinessMandate;
+use App\\Models\\${business_model};
 
 final class NegativeControlBusinessWrite
 {
-    public function handle(): BusinessMandate
+    public function handle(): ${business_model}
     {
-        return BusinessMandate::query()->create([]);
+        return ${business_model}::query()->create([]);
     }
 }
 VIOLATION
@@ -303,6 +305,7 @@ VIOLATION
     cat "${LOG_DIR}/business.log"
   fi
   rm -f app/Application/Business/NegativeControlBusinessWrite.php
+  done
 fi
 
 if selected transport-boundary; then

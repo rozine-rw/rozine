@@ -19,6 +19,7 @@ use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
+use App\Models\BusinessApplicationVersion;
 use App\Models\BusinessMandate;
 use App\Models\BusinessProfile;
 use App\Models\CommandOperation;
@@ -34,6 +35,7 @@ use App\Models\VerifiedPersonIdentity;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Tests\Support\BusinessApplicationFixture;
 use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\ConsentFixture;
 
@@ -389,4 +391,39 @@ it('holds current consent documents stable until protected acceptance commits', 
     });
     expect($withdraw()['revision'])->toBe(2)
         ->and(app(WithCurrentConsent::class)->handle(fn (?array $release): ?array => $release))->toBeNull();
+});
+
+it('commits a repeated application save once across two logins for the same Party', function (): void {
+    $fixture = BusinessApplicationFixture::make();
+    $secondLogin = User::factory()->for($fixture['authority']['people'][0])->create();
+    app(SelectActiveRole::class)->handle($secondLogin->id, 'business', 0, (string) Str::uuid());
+    $fixture['authority']['users'][] = $secondLogin;
+    $request = (string) Str::uuid();
+    expect(runIdentityContenders([
+        function () use ($fixture, $request): void {
+            BusinessApplicationFixture::save($fixture, 1, $request, actor: 0);
+        },
+        function () use ($fixture, $request): void {
+            BusinessApplicationFixture::save($fixture, 1, $request, actor: 1);
+        },
+    ]))->toBe([0, 0])
+        ->and($fixture['application']->refresh()->revision)->toBe(2)
+        ->and(BusinessApplicationVersion::query()->count())->toBe(2)
+        ->and(CommandOperation::query()->where('command', 'application.save')->count())->toBe(1);
+});
+
+it('admits one competing application edit from the same saved revision', function (): void {
+    $fixture = BusinessApplicationFixture::make('organization', 2);
+    $operations = [];
+    foreach ([0, 1] as $actor) {
+        $operations[] = function () use ($fixture, $actor): void {
+            $result = BusinessApplicationFixture::save($fixture, target: $actor === 0 ? '8000000' : '9000000', actor: $actor);
+            if ($result['code'] === 'VERSION_CONFLICT') {
+                throw new CommandRejection('VERSION_CONFLICT');
+            }
+        };
+    }
+    expect(runIdentityContenders($operations))->toBe([0, 2])
+        ->and($fixture['application']->refresh()->revision)->toBe(2)
+        ->and(BusinessApplicationVersion::query()->count())->toBe(2);
 });

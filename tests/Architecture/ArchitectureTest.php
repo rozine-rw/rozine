@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Application\Identity\RegisterIdentity;
 use App\Http\Controllers\Controller;
+use App\Models\BusinessApplication;
+use App\Models\BusinessApplicationVersion;
 use App\Models\BusinessMandate;
 use App\Models\BusinessProfile;
 use App\Models\CommandOperation;
@@ -167,9 +169,11 @@ arch('command outcomes are only accessed by the journal adapter')
 
 it('has concrete targets for the business authority boundary', function (): void {
     expect(class_exists(BusinessProfile::class))->toBeTrue()
-        ->and(class_exists(BusinessMandate::class))->toBeTrue();
+        ->and(class_exists(BusinessMandate::class))->toBeTrue()
+        ->and(class_exists(BusinessApplication::class))->toBeTrue()
+        ->and(class_exists(BusinessApplicationVersion::class))->toBeTrue();
 })->group('arch');
 
 arch('business authority records are only accessed by their adapter')
-    ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessMandate'])
+    ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Models', 'Database\Factories']);
