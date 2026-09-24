@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Business;
 
+use App\Application\Auditor\WithCurrentAuditAssignment;
 use App\Application\Business\Contracts\BusinessApplicationStore;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Identity\Contracts\IdentityRepository;
@@ -18,6 +19,7 @@ use App\Models\BusinessApplicationVersion;
 /**
  * @phpstan-import-type Fields from ApplicationDraft
  * @phpstan-import-type Application from BusinessApplicationStore
+ * @phpstan-import-type AuditApplication from BusinessApplicationStore
  * @phpstan-import-type Business from \App\Application\Business\Contracts\BusinessAuthorityStore
  */
 final class EloquentBusinessApplicationStore implements BusinessApplicationStore
@@ -27,6 +29,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
         private IdentityRepository $identities,
         private OperationJournal $journal,
         private ApplicationDraft $drafts,
+        private WithCurrentAuditAssignment $assignments,
     ) {}
 
     /** @return array<string, mixed> */
@@ -135,6 +138,18 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                         }
                     });
             });
+    }
+
+    /** @return AuditApplication */
+    public function audit(int $userId, int $contextRevision, string $assignmentId): array
+    {
+        return $this->assignments->handle($userId, $contextRevision, $assignmentId, function (array $work): array {
+            $application = BusinessApplication::query()->where('business_id', $work['assignment']['business_id'])->orderByDesc('id')->first();
+
+            return ['work' => $work, 'application' => $application === null ? null : ['id' => $application->id, 'revision' => $application->revision,
+                'title' => $application->draft['title'], 'target' => $application->draft['target'], 'term_months' => $application->draft['term_months'],
+                'use_of_funds' => $application->draft['use_of_funds']]];
+        });
     }
 
     private function application(string $businessId, string $applicationId): BusinessApplication

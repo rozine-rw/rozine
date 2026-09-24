@@ -37,6 +37,9 @@ use Throwable;
  * @phpstan-import-type View from AuditAssignmentStore
  * @phpstan-import-type OwnConflict from AuditAssignmentStore
  * @phpstan-import-type ConflictPage from AuditAssignmentStore
+ * @phpstan-import-type Work from AuditAssignmentStore
+ * @phpstan-import-type WorkIdentifiers from AuditAssignmentStore
+ * @phpstan-import-type OperationsCase from AuditAssignmentStore
  * @phpstan-import-type AuditContext from BusinessAuthorityStore
  * @phpstan-import-type Candidate from AuditorDispatch
  */
@@ -146,19 +149,70 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         return $this->scope($userId, $contextRevision, $this->businessId($assignmentId, $partyId), true,
             function (array $context, array $candidates) use ($assignmentId): array {
                 [$record, $candidate] = $this->current($context, $candidates, $assignmentId);
-                $state = $record->state;
-                $actions = ['conflict.declare'];
-                if ($state['status'] === 'offered') {
-                    $actions[] = 'assignment.decline';
-                    if ($this->dispatch->reasons($candidate, now()->toDateTimeImmutable()) === []) {
-                        $actions[] = 'assignment.accept';
-                    }
-                }
 
-                return ['id' => $record->id, 'business_id' => $record->business_id, 'revision' => $record->revision,
-                    'kind' => $state['kind'], 'status' => $state['status'], 'offered_at' => $state['offered_at'],
-                    'accept_by' => $state['accept_by'], 'complete_by' => $state['complete_by'], 'visit_by' => $state['visit_by'], 'allowed_actions' => $actions];
+                return $this->view($record, $candidate);
             }, [$partyId]);
+    }
+
+    /** @return WorkIdentifiers */
+    public function workIdentifiers(int $userId, int $contextRevision, ?string $before, int $limit): array
+    {
+        $partyId = $this->actorPartyId($userId);
+
+        return $this->roles->handle($userId, 'auditor', $partyId, $contextRevision, function () use ($partyId, $before, $limit): array {
+            if ($limit < 1 || $limit > 50 || ($before !== null && ! preg_match('/^[0-9a-hjkmnp-tv-z]{26}$/D', $before))) {
+                throw new CommandRejection('AUDIT_JOBS_PAGE_INVALID', 422);
+            }
+            $query = AuditAssignment::query()->where('party_id', $partyId)->whereIn('status', ['offered', 'accepted'])->orderByDesc('id');
+            if ($before !== null) {
+                $query->where('id', '<', $before);
+            }
+            $records = $query->limit($limit + 1)->get(['id']);
+            $page = $records->take($limit);
+
+            return ['party_id' => $partyId, 'ids' => array_values($page->modelKeys()), 'next_cursor' => $records->count() > $limit ? $page->last()?->id : null];
+        });
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(Work): TResult  $operation
+     * @return TResult
+     */
+    public function withCurrent(int $userId, int $contextRevision, string $assignmentId, Closure $operation): mixed
+    {
+        $partyId = $this->actorPartyId($userId);
+
+        return $this->scope($userId, $contextRevision, $this->businessId($assignmentId, $partyId), true,
+            function (array $context, array $candidates) use ($assignmentId, $operation): mixed {
+                [$record, $candidate] = $this->current($context, $candidates, $assignmentId);
+                $profile = $context['business']['profile'];
+
+                return $operation(['assignment' => $this->view($record, $candidate),
+                    'business' => ['name' => $profile['name'], 'industry' => $profile['industry'], 'district' => $profile['district']],
+                    'distance_upper_bound_m' => $candidate['distance_upper_bound_m']]);
+            }, [$partyId]);
+    }
+
+    /**
+     * @param  Candidate  $candidate
+     * @return View
+     */
+    private function view(AuditAssignment $record, array $candidate): array
+    {
+        $state = $record->state;
+        $actions = ['conflict.declare'];
+        if ($state['status'] === 'offered') {
+            $actions[] = 'assignment.decline';
+            if ($this->dispatch->reasons($candidate, now()->toDateTimeImmutable()) === []) {
+                $actions[] = 'assignment.accept';
+            }
+        }
+
+        return ['id' => $record->id, 'business_id' => $record->business_id, 'revision' => $record->revision,
+            'kind' => $state['kind'], 'status' => $state['status'], 'offered_at' => $state['offered_at'],
+            'accept_by' => $state['accept_by'], 'complete_by' => $state['complete_by'], 'visit_by' => $state['visit_by'], 'allowed_actions' => $actions];
     }
 
     /**
@@ -239,7 +293,9 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         return ['assignment_id' => $record->assignment_id, 'business_id' => $record->business_id,
             'conflict' => ['conflict_id' => $record->id, 'kind' => $record->kind, 'declared_at' => $record->created_at->toIso8601String(),
                 'note' => $record->reason, 'blocking' => true,
-                'status' => $record->getAttribute('assignment_status') === 'operations' ? 'reassignment_pending' : 'reassigned']];
+                'status' => match ($record->getAttribute('assignment_status')) {
+                    'operations' => 'reassignment_pending', 'closed' => 'closed', default => 'reassigned',
+                }]];
     }
 
     /** @param AcceptedAssignment $assignment */
@@ -360,6 +416,69 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                         return new OperationResult('ASSIGNMENT_ADVANCED', ['assignment_id' => $record->id], $record->revision);
                     });
             });
+    }
+
+    /** @return OperationsCase */
+    public function operationsCase(int $actorId, string $assignmentId): array
+    {
+        return $this->scope($actorId, null, $this->businessId($assignmentId), false, function () use ($assignmentId): array {
+            $record = AuditAssignment::query()->lockForUpdate()->findOrFail($assignmentId);
+            $state = $record->state;
+
+            return ['id' => $record->id, 'business_id' => $record->business_id, 'revision' => $record->revision, 'kind' => $state['kind'],
+                'status' => $state['status'], 'original_dispatch_at' => $state['original_dispatch_at'], 'complete_by' => $state['complete_by'],
+                'attempt' => $state['attempt'], 'operations_reason' => $state['operations_reason'], 'closed_at' => $state['closed_at'] ?? null,
+                'allowed_actions' => $this->states->operationsActions($state, now()->toDateTimeImmutable())];
+        }, []);
+    }
+
+    /** @return array<string, mixed> */
+    public function resolve(int $actorId, string $assignmentId, int $expectedRevision, string $decision, string $reason, string $requestId): array
+    {
+        if (! in_array($decision, ['redispatch', 'close'], true)) {
+            throw new CommandRejection('ASSIGNMENT_RESOLUTION_INVALID', 422);
+        }
+
+        return $this->scope($actorId, null, $this->businessId($assignmentId), false,
+            function (array $context, array $candidates) use ($actorId, $assignmentId, $expectedRevision, $decision, $reason, $requestId): array {
+                $record = AuditAssignment::query()->lockForUpdate()->findOrFail($assignmentId);
+                $command = 'audit.assignment.'.$decision;
+
+                return $this->journal->execute('staff:'.$actorId, $actorId, $command, $requestId, 'audit.assignment', $assignmentId,
+                    ['expected_revision' => $expectedRevision, 'reason' => $reason], function (): void {},
+                    function () use ($record, $context, $candidates, $actorId, $expectedRevision, $command, $decision, $reason): OperationResult {
+                        $this->revision($record, $expectedRevision);
+                        $this->states->reason($reason);
+                        if ($record->status !== 'operations') {
+                            throw new CommandRejection('ASSIGNMENT_NOT_IN_OPERATIONS');
+                        }
+                        $now = now()->toDateTimeImmutable();
+                        if (! in_array($command, $this->states->operationsActions($record->state, $now), true)) {
+                            throw new CommandRejection('AUDIT_DISPATCH_EXHAUSTED');
+                        }
+                        $state = $decision === 'close' ? $this->states->close($record->state, $now) : $this->offer($record->state, $context, $candidates);
+                        $this->persist($record, $state, $actorId, $command, $reason, $candidates, $context);
+
+                        return new OperationResult(match ($state['status']) {
+                            'closed' => 'ASSIGNMENT_CLOSED', 'offered' => 'ASSIGNMENT_REDISPATCHED', default => 'ASSIGNMENT_REDISPATCH_PENDING',
+                        }, ['assignment_id' => $record->id], $record->revision);
+                    });
+            }, $decision === 'close' ? [] : null);
+    }
+
+    /** @return array<string, mixed> */
+    public function findResolutionOperation(int $actorId, string $command, string $requestId): array
+    {
+        if (! in_array($command, ['audit.assignment.redispatch', 'audit.assignment.close'], true)) {
+            throw new CommandRejection('OPERATION_NOT_FOUND', 404);
+        }
+
+        return $this->journal->find('staff:'.$actorId, $command, $requestId, function (string $type, string $id) use ($actorId): void {
+            if ($type !== 'audit.assignment') {
+                throw new CommandRejection('OPERATION_NOT_FOUND', 404);
+            }
+            $this->operationsCase($actorId, $id);
+        });
     }
 
     /**

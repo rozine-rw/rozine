@@ -8,7 +8,7 @@ use App\Domain\Operations\CommandRejection;
 use DateTimeImmutable;
 
 /**
- * @phpstan-type State array{kind: string, status: string, party_id: string|null, original_dispatch_at: string, offered_at: string|null, accepted_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, attempt: int, tried: list<string>, operations_reason: string|null}
+ * @phpstan-type State array{kind: string, status: string, party_id: string|null, original_dispatch_at: string, offered_at: string|null, accepted_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, attempt: int, tried: list<string>, operations_reason: string|null, closed_at?: string}
  */
 final class AuditEngagementState
 {
@@ -65,6 +65,33 @@ final class AuditEngagementState
         if (trim($reason) === '' || strlen($reason) > 2000 || preg_match('//u', $reason) !== 1 || preg_match('/[\p{Cc}\p{Cf}]/u', $reason) === 1) {
             throw new CommandRejection('ASSIGNMENT_REASON_REQUIRED', 422, fieldErrors: ['reason' => ['A concise reason is required.']]);
         }
+    }
+
+    /**
+     * @param  State  $state
+     * @return list<string>
+     */
+    public function operationsActions(array $state, DateTimeImmutable $now): array
+    {
+        if ($state['status'] !== 'operations') {
+            return [];
+        }
+        $clock = $this->clock->offer($state['kind'], new DateTimeImmutable($state['original_dispatch_at']), $now, $state['attempt'] + 1);
+
+        return $clock['operations_required'] ? ['audit.assignment.close'] : ['audit.assignment.redispatch', 'audit.assignment.close'];
+    }
+
+    /**
+     * @param  State  $state
+     * @return State
+     */
+    public function close(array $state, DateTimeImmutable $now): array
+    {
+        if ($state['status'] !== 'operations') {
+            throw new CommandRejection('ASSIGNMENT_NOT_IN_OPERATIONS');
+        }
+
+        return [...$state, 'status' => 'closed', 'closed_at' => $this->time($now), 'operations_reason' => 'AUDIT_OPERATIONS_CLOSED'];
     }
 
     public function conflict(string $kind, string $reason): void

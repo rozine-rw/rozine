@@ -6,8 +6,10 @@ namespace App\Application\Business\Contracts;
 
 /**
  * @phpstan-import-type Fields from \App\Domain\Business\ApplicationDraft
+ * @phpstan-import-type Work from \App\Application\Auditor\Contracts\AuditAssignmentStore
  *
  * @phpstan-type Application array{id: string, business_id: string, revision: int, status: string, step: string, draft: Fields, mandate_version: int}
+ * @phpstan-type AuditApplication array{work: Work, application: array{id: string, revision: int, title: string, target: string|null, term_months: int|null, use_of_funds: list<string>}|null}
  */
 interface BusinessApplicationStore
 {
@@ -25,6 +27,9 @@ interface BusinessApplicationStore
 
     /** @return Application|null */
     public function current(int $userId, int $contextRevision, string $businessId): ?array;
+
+    /** @return AuditApplication */
+    public function audit(int $userId, int $contextRevision, string $assignmentId): array;
 
     /** @return array<string, mixed> */
     public function findOperation(int $userId, int $contextRevision, string $command, string $requestId): array;
