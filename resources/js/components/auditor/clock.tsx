@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
+import { formatDayMonth } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 
 /**
@@ -48,10 +49,11 @@ const clockTone = (remainingMs: number): string => {
 
 type ClockChipProps = {
     serverTime: string;
-    /** The deadline, or null while a job is only offered: the chip then shows the full window. */
-    dueAt: string | null;
-    /** The clock length in hours, shown before it starts. */
-    hours?: number;
+    /**
+     * The deadline. A flash audit's runs from its original dispatch, so an offer already has one;
+     * there is no stand-in window before acceptance.
+     */
+    dueAt: string;
     size?: 'card' | 'sheet';
 };
 
@@ -59,12 +61,11 @@ type ClockChipProps = {
 export function ClockChip({
     serverTime,
     dueAt,
-    hours = 24,
     size = 'card',
 }: ClockChipProps) {
     const { t } = useTranslation();
     const now = useServerNow(serverTime);
-    const remaining = dueAt === null ? null : Date.parse(dueAt) - now;
+    const remaining = Date.parse(dueAt) - now;
 
     return (
         <div
@@ -73,9 +74,7 @@ export function ClockChip({
             className={cn(
                 'shrink-0 rounded-[10px] py-[5px] text-right',
                 size === 'card' ? 'px-[9px]' : 'px-2.5',
-                remaining === null
-                    ? 'bg-rz-page text-rz-secondary dark:bg-rz-surface-muted'
-                    : clockTone(remaining),
+                clockTone(remaining),
             )}
         >
             <p className="text-[10px] font-bold uppercase">
@@ -87,9 +86,7 @@ export function ClockChip({
                     size === 'card' ? 'text-[14px]' : 'text-[15px]',
                 )}
             >
-                {remaining === null
-                    ? formatCountdown(hours * 3600 * 1000)
-                    : formatCountdown(remaining)}
+                {formatCountdown(remaining)}
             </p>
         </div>
     );
@@ -116,6 +113,10 @@ export function useAgo(serverTime: string): (at: string) => string {
         return t('auditor.time.days_ago', { count: Math.round(hours / 24) });
     };
 }
+
+/** "4 Oct · 13:59", Kigali time: when an offer closes or an audit falls due. */
+export const formatDueAt = (iso: string, locale: string): string =>
+    `${formatDayMonth(iso, locale)} · ${formatKigaliTime(iso)}`;
 
 /** "14:02", Kigali time. */
 export const formatKigaliTime = (iso: string): string =>

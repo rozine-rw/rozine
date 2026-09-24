@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import { useAgo } from '@/components/auditor/clock';
 import { useAuditorCommands } from '@/components/auditor/commands';
 import { useJobCommands } from '@/components/auditor/job-commands';
+import { OfferAccept } from '@/components/auditor/jobs/offer-accept';
 import { compactRwf } from '@/components/auditor/money';
 import { SectorTile, StatTile } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
@@ -10,7 +11,6 @@ import type { DeclineReason, EligibleJob, ServerOption } from '@/types/auditor';
 type EligibleCardProps = {
     job: EligibleJob;
     serverTime: string;
-    flashHours: number;
     declineOptions: ServerOption<DeclineReason>[];
 };
 
@@ -23,7 +23,6 @@ type EligibleCardProps = {
 export function EligibleCard({
     job,
     serverTime,
-    flashHours,
     declineOptions,
 }: EligibleCardProps) {
     const { t } = useTranslation();
@@ -94,17 +93,16 @@ export function EligibleCard({
                     {t('auditor.jobs.view_file')}
                 </span>
             </Link>
-            {job.allowed_actions.includes('assignment.accept') && (
-                <button
-                    type="button"
-                    onClick={accept}
-                    disabled={!center.idle}
-                    aria-busy={center.busy || undefined}
-                    className="mt-3 h-[46px] w-full cursor-pointer rounded-xl bg-rz-accent-fill text-[14px] font-bold text-white disabled:cursor-wait disabled:opacity-80"
-                >
-                    {t('auditor.jobs.accept', { hours: flashHours })}
-                </button>
-            )}
+            <OfferAccept
+                serverTime={serverTime}
+                acceptBy={job.accept_by}
+                completeBy={job.complete_by}
+                canAccept={job.allowed_actions.includes('assignment.accept')}
+                busy={center.busy}
+                disabled={!center.idle}
+                onAccept={accept}
+                buttonClassName="mt-3 h-[46px] w-full cursor-pointer rounded-xl bg-rz-accent-fill text-[14px] font-bold text-white disabled:cursor-wait disabled:opacity-80"
+            />
             {commands.links !== null && (
                 <div className="mt-2.5">{commands.links}</div>
             )}

@@ -11,6 +11,7 @@ import { DetailSheet, JobHeader } from '@/components/auditor/detail-sheet';
 import { FileReview } from '@/components/auditor/file/file-review';
 import { useJobCommands } from '@/components/auditor/job-commands';
 import { JobsBody } from '@/components/auditor/jobs/jobs-body';
+import { OfferAccept } from '@/components/auditor/jobs/offer-accept';
 import { OutcomeModal } from '@/components/auditor/sheets/outcome-modal';
 import { useTranslation } from '@/hooks/use-translation';
 import type {
@@ -65,17 +66,18 @@ function FileSheet({ receipt, ...props }: FileSheetProps) {
     let primary = null;
 
     if (blocked === null) {
-        if (job.state === 'offered') {
-            primary = allowed('assignment.accept') && (
-                <button
-                    type="button"
-                    onClick={accept}
+        if (job.accept_by !== null) {
+            primary = (
+                <OfferAccept
+                    serverTime={props.server_time}
+                    acceptBy={job.accept_by}
+                    completeBy={job.complete_by}
+                    canAccept={allowed('assignment.accept')}
+                    busy={center.busy}
                     disabled={!center.idle}
-                    aria-busy={center.busy || undefined}
-                    className={SHEET_PRIMARY}
-                >
-                    {t('auditor.jobs.accept', { hours: props.flash_hours })}
-                </button>
+                    onAccept={accept}
+                    buttonClassName={SHEET_PRIMARY}
+                />
             );
         } else if (links.procedure !== null) {
             primary = (
@@ -109,8 +111,7 @@ function FileSheet({ receipt, ...props }: FileSheetProps) {
                     district={job.district}
                     distanceKm={job.distance_km}
                     serverTime={props.server_time}
-                    dueAt={job.deadline?.due_at ?? null}
-                    hours={props.flash_hours}
+                    dueAt={job.deadline?.due_at ?? job.complete_by}
                     clock={blocked === null}
                 />
             }
