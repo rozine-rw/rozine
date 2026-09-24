@@ -11,11 +11,11 @@
                 "verification_status": "verified"
             },
             "available_roles": ["investor", "business"],
+            "allowed_actions": ["identity.select_role"],
             "active_role": null,
-            "context_revision": 0,
-            "allowed_actions": ["identity.select_role"]
+            "context_revision": 0
         },
-        "links": {
+        "preview_links": {
             "investor": {
                 "url": "/preview/investor-deals",
                 "method": "get"

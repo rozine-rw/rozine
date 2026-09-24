@@ -7,6 +7,39 @@
  * codes stay aligned.
  */
 const en = {
+    'suite.sign_out': 'Sign out',
+    'suite.preview': 'Preview with sample data',
+    'suite.mfa_required':
+        'Set up two-factor authentication to open the Auditor app.',
+    'suite.mfa_setup': 'Set up two-factor authentication',
+    'suite.network_error':
+        'We could not confirm the switch. Check your connection and retry.',
+    'suite.command_conflict':
+        'This request could not be reused. Refresh your access before choosing an app again.',
+    'suite.access_changed':
+        'Your access or active app has changed. Refresh your access, then choose an app again.',
+    'suite.retry': 'Retry switch',
+    'suite.refresh_access': 'Refresh access',
+    'suite.admin': 'Open staff workspace',
+    'suite.opening': 'Opening your app…',
+    'identity.home.investor': 'Investor workspace',
+    'identity.home.business': 'Business workspace',
+    'identity.home.auditor': 'Auditor workspace',
+    'identity.home.admin': 'Staff workspace',
+    'identity.home.overview': 'Overview',
+    'identity.home.access': 'Account access',
+    'identity.home.ready': 'Your account has access to this workspace.',
+    'identity.home.verified': 'Your identity is verified.',
+    'identity.home.staff_ready':
+        'Your staff account has permission to open this workspace.',
+    'identity.home.back': 'Choose an app',
+    'identity.home.settings': 'Account settings',
+    'identity.home.saving': 'Saving your position…',
+    'identity.home.failed':
+        'We could not update your position. Return to the launcher to check your access.',
+    'identity.denied.title': 'Access needs to be checked',
+    'identity.denied.body':
+        'Your account can no longer open this page in the selected role. Choose an app to refresh your access.',
     'environment.demo': 'Demo — not live',
     'environment.uat': 'UAT — not live',
     'environment.synthetic_only':
@@ -2714,19 +2747,6 @@ const en = {
         'No statements yet. Your first appears after your first full month.',
     'investor.profile.statements.disclaimer':
         'Statements are provided for your records. Rozine does not provide tax advice — consult a qualified adviser about your obligations.',
-    'suite.app.opening': 'Opening…',
-    'suite.app.needs_mfa': 'Needs two-factor authentication',
-    'suite.switch.set_up_mfa': 'Set up two-factor authentication',
-    'suite.switch.try_again': 'Try again',
-    'suite.switch.changed':
-        'Your apps changed in another window. Choose again.',
-    'suite.switch.mfa': 'Set up two-factor authentication to open {app}.',
-    'suite.switch.unavailable': 'You no longer have access to {app}.',
-    'suite.switch.reused':
-        'That request was already used for another choice. Choose {app} again.',
-    'suite.switch.failed': "{app} didn't open.",
-    'suite.switch.offline':
-        "Couldn't reach Rozine to open {app}. Check your connection.",
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

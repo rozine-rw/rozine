@@ -9,6 +9,38 @@
 import type { Catalog } from '@/lib/i18n/types';
 
 const rw: Catalog = {
+    'suite.sign_out': 'Sohoka',
+    'suite.preview': 'Igerageza rikoresha amakuru y’icyitegererezo',
+    'suite.mfa_required':
+        'Shyiraho kwemeza kwinjira mu buryo bubiri kugira ngo ufungure porogaramu y’umugenzuzi.',
+    'suite.mfa_setup': 'Shyiraho kwemeza kwinjira mu buryo bubiri',
+    'suite.network_error':
+        'Ntitwashoboye kwemeza guhindura inshingano. Reba umurongo wa interineti wongere ugerageze.',
+    'suite.command_conflict':
+        'Ubu busabe ntibushobora kongera gukoreshwa. Ongera ugenzure uburenganzira bwawe mbere yo guhitamo porogaramu.',
+    'suite.access_changed':
+        'Uburenganzira bwawe cyangwa porogaramu ukoresha byahindutse. Ongera ubigenzure, hanyuma uhitemo porogaramu.',
+    'suite.retry': 'Ongera uhindure inshingano',
+    'suite.refresh_access': 'Ongera ugenzure uburenganzira',
+    'suite.admin': 'Fungura ahagenewe abakozi',
+    'suite.opening': 'Gufungura porogaramu yawe…',
+    'identity.home.investor': 'Ahagenewe umushoramari',
+    'identity.home.business': 'Ahagenewe ubucuruzi',
+    'identity.home.auditor': 'Ahagenewe umugenzuzi',
+    'identity.home.admin': 'Ahagenewe abakozi',
+    'identity.home.overview': 'Incamake',
+    'identity.home.access': 'Uburenganzira bwa konti',
+    'identity.home.ready': 'Konti yawe yemerewe kwinjira hano.',
+    'identity.home.verified': 'Umwirondoro wawe waremejwe.',
+    'identity.home.staff_ready': 'Konti yawe y’umukozi yemerewe kwinjira hano.',
+    'identity.home.back': 'Hitamo porogaramu',
+    'identity.home.settings': 'Igenamiterere rya konti',
+    'identity.home.saving': 'Kubika aho ugeze…',
+    'identity.home.failed':
+        'Ntitwashoboye kubika aho ugeze. Subira aho uhitamo porogaramu urebe uburenganzira bwawe.',
+    'identity.denied.title': 'Uburenganzira bugomba kugenzurwa',
+    'identity.denied.body':
+        'Konti yawe nticyemerewe gufungura uru rupapuro mu nshingano wahisemo. Hitamo porogaramu wongere kugenzura uburenganzira bwawe.',
     'environment.demo': 'Demo — si urubuga nyarwo',
     'environment.uat': 'UAT — si urubuga nyarwo',
     'environment.synthetic_only':
@@ -2776,21 +2808,6 @@ const rw: Catalog = {
         "Nta nyandiko iraboneka. Iya mbere izaza nyuma y'ukwezi kwa mbere kwuzuye.",
     'investor.profile.statements.disclaimer':
         'Inyandiko zitangwa kugira ngo uzibike. Rozine ntitanga inama ku misoro — baza umujyanama wabigize umwuga.',
-
-    'suite.app.opening': 'Birafunguka…',
-    'suite.app.needs_mfa': 'Bisaba kwemeza mu byiciro bibiri',
-    'suite.switch.set_up_mfa': 'Shyiraho kwemeza mu byiciro bibiri',
-    'suite.switch.try_again': 'Ongera ugerageze',
-    'suite.switch.changed':
-        'Porogaramu zawe zahindutse mu yindi dirishya. Ongera uhitemo.',
-    'suite.switch.mfa':
-        'Shyiraho kwemeza mu byiciro bibiri kugira ngo ufungure {app}.',
-    'suite.switch.unavailable': 'Ntukibasha kugera kuri {app}.',
-    'suite.switch.reused':
-        'Iki cyifuzo cyakoreshejwe ku kindi. Ongera uhitemo {app}.',
-    'suite.switch.failed': '{app} ntiyafungutse.',
-    'suite.switch.offline':
-        'Ntibyashobotse kugera kuri Rozine ngo ufungure {app}. Reba murandasi yawe.',
 
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',

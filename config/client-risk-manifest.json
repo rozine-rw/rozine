@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "82c902ed7d4561824c3137d11c413c68faa7660a590eec2e217775c05dd610cc",
-    "coverageSetSha256": "0a47273f81d766b3bf28c92a7f524b2c4d6891541bea9ea5231a6e3bf1a3e211",
+    "sourceManifestSha256": "0e4124132b549ba97bacd3ad3e763bdcbeb12fd9d38dd3ad864d44d44a172fb5",
+    "coverageSetSha256": "6b812b7c014b8db7840df62c1f04369d6039e625d5331685273630303de3d8aa",
     "thresholds": {
         "critical": {
             "global": {
@@ -261,6 +261,7 @@
         "resources/js/components/ui/tooltip.tsx",
         "resources/js/components/user-info.tsx",
         "resources/js/components/user-menu-content.tsx",
+        "resources/js/hooks/use-access-refresh.ts",
         "resources/js/hooks/use-appearance.tsx",
         "resources/js/hooks/use-clipboard.ts",
         "resources/js/hooks/use-current-url.ts",
@@ -295,7 +296,6 @@
         "resources/js/lib/pass-card-image.ts",
         "resources/js/lib/pulse.ts",
         "resources/js/lib/rozine/format.ts",
-        "resources/js/lib/rozine/use-role-switch.ts",
         "resources/js/lib/utils.ts",
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/auth/login.tsx",
@@ -332,6 +332,9 @@
         "resources/js/pages/business/wallet.tsx",
         "resources/js/pages/dashboard.tsx",
         "resources/js/pages/home.tsx",
+        "resources/js/pages/identity/access-denied.tsx",
+        "resources/js/pages/identity/role-home.tsx",
+        "resources/js/pages/identity/staff-home.tsx",
         "resources/js/pages/investor/auth/access.tsx",
         "resources/js/pages/investor/auth/intro.tsx",
         "resources/js/pages/investor/auth/sign-up.tsx",

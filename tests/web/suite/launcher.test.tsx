@@ -1,30 +1,19 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { LogoLockup, LogoMark } from '@/components/rozine/logo';
 import Launcher from '@/pages/dashboard';
 import type { IdentityCode, IdentityContext } from '@/types';
-import auditorBlockedFixture from '../../../resources/fixtures/ui/launcher-auditor-mfa-required.json';
 import auditorFixture from '../../../resources/fixtures/ui/launcher-auditor.json';
 import readyFixture from '../../../resources/fixtures/ui/launcher-ready.json';
-import selectedFixture from '../../../resources/fixtures/ui/launcher-selected.json';
 import pendingFixture from '../../../resources/fixtures/ui/launcher-verification-pending.json';
 
-type HttpOptions = {
-    onHttpException: (response: { status: number; data: string }) => void;
-};
-
-const inertia = vi.hoisted(() => ({
-    posts: [] as { url: string; body: unknown }[],
-    respond: (() => Promise.resolve(undefined)) as (
-        options: HttpOptions,
-    ) => Promise<unknown>,
-    visits: [] as unknown[],
-    reloads: [] as unknown[],
-    processing: false,
+const mocks = vi.hoisted(() => ({
+    command: { processing: false, transform: vi.fn(), submit: vi.fn() },
+    visit: vi.fn(),
+    reload: vi.fn(),
 }));
-
 vi.mock('@inertiajs/react', () => ({
     Head: ({ title }: { title: string }) => (
         <span data-testid="page-title">{title}</span>
@@ -32,354 +21,331 @@ vi.mock('@inertiajs/react', () => ({
     Link: ({
         children,
         href,
+        as,
+        preserveState: _preserveState,
         ...props
     }: Omit<ComponentProps<'a'>, 'href'> & {
         href: string | { url: string };
-    }) => (
-        <a href={typeof href === 'string' ? href : href.url} {...props}>
-            {children}
-        </a>
-    ),
-    router: {
-        visit: (target: unknown) => inertia.visits.push(target),
-        reload: (options: unknown) => inertia.reloads.push(options),
-    },
-    useHttp: () => {
-        let transform = (data: unknown) => data;
-
-        return {
-            processing: inertia.processing,
-            transform: (callback: (data: unknown) => unknown) => {
-                transform = callback;
-            },
-            post: (url: string, options: HttpOptions) => {
-                inertia.posts.push({ url, body: transform({}) });
-
-                return inertia.respond(options);
-            },
-        };
-    },
+        as?: string;
+        preserveState?: boolean;
+    }) =>
+        as === 'button' ? (
+            <button>{children}</button>
+        ) : (
+            <a href={typeof href === 'string' ? href : href.url} {...props}>
+                {children}
+            </a>
+        ),
+    useHttp: () => mocks.command,
+    router: { visit: mocks.visit, reload: mocks.reload },
 }));
-
 const identityFrom = (fixture: { props: { identity: unknown } }) =>
     fixture.props.identity as IdentityContext;
-
-const answer = (identity: IdentityContext) => () =>
-    Promise.resolve({ data: identity });
-
-const refuse = (status: number, data: string) => (options: HttpOptions) => {
-    options.onHttpException({ status, data });
-
-    return Promise.reject(new Error(`HTTP ${status}`));
-};
-
-const command = (role: string, request: string, revision = 0) => ({
-    url: '/identity/active-role',
-    body: { role, expected_revision: revision, request_id: request },
+const ready = identityFrom(readyFixture);
+const selected = (
+    role: 'investor' | 'business' | 'auditor',
+): IdentityContext => ({
+    ...ready,
+    active_role: role,
+    context_revision: 1,
+    allowed_actions: ['identity.select_role', 'identity.view_role'],
 });
-
-let uuid = 0;
-
 beforeEach(() => {
-    inertia.posts = [];
-    inertia.visits = [];
-    inertia.reloads = [];
-    inertia.processing = false;
-    inertia.respond = () => Promise.resolve(undefined);
-    uuid = 0;
-    vi.spyOn(crypto, 'randomUUID').mockImplementation(
-        () =>
-            `00000000-0000-4000-8000-00000000000${++uuid}` as `${string}-${string}-${string}-${string}-${string}`,
-    );
+    vi.clearAllMocks();
+    mocks.command.processing = false;
 });
 
 describe('Suite launcher', () => {
-    it('lists exactly the authorized role apps, each in its own audience colour', () => {
-        render(<Launcher identity={identityFrom(readyFixture)} />);
-
-        expect(screen.getByTestId('page-title')).toHaveTextContent('Your apps');
+    it('shows authorized roles and selects the role before visiting its authorized return position', async () => {
+        mocks.command.submit.mockResolvedValue({ data: selected('investor') });
+        render(<Launcher identity={ready} />);
         expect(screen.getByRole('img', { name: 'Rozine' })).toBeInTheDocument();
-        expect(
-            screen.getByText(
-                'The Retail Capital Markets Layer for Emerging Economies',
-            ),
-        ).toBeInTheDocument();
-
+        expect(screen.getByTestId('page-title')).toHaveTextContent('Your apps');
         const apps = screen.getAllByRole('listitem');
-
-        expect(apps).toHaveLength(2);
         expect(apps.map((app) => app.dataset.audience)).toEqual([
             'investor',
             'business',
         ]);
-
-        const investor = within(apps[0]).getByRole('button');
-
-        expect(investor).toHaveTextContent('Investor');
-        expect(investor).toHaveTextContent(
+        expect(within(apps[0]).getByRole('button')).toHaveTextContent(
             'Discover verified businesses, invest, track returns.',
         );
-        expect(investor).toHaveTextContent('Open app →');
         expect(screen.queryByText('Auditor')).not.toBeInTheDocument();
-        expect(screen.queryByRole('link')).not.toBeInTheDocument();
+        await userEvent.click(within(apps[0]).getByRole('button'));
+        expect(mocks.command.transform.mock.calls[0][0]()).toEqual({
+            role: 'investor',
+            expected_revision: 0,
+            request_id: expect.any(String),
+        });
+        expect(mocks.command.submit).toHaveBeenCalledWith(
+            expect.objectContaining({
+                url: '/identity/active-role',
+                method: 'post',
+            }),
+            expect.any(Object),
+        );
+        expect(mocks.visit).toHaveBeenCalledWith(
+            expect.objectContaining({ url: '/identity/roles/investor/resume' }),
+        );
     });
-
-    it('selects a role on the server before opening its app', async () => {
-        const user = userEvent.setup();
-        const identity = identityFrom(readyFixture);
-
-        inertia.respond = answer({ ...identity, active_role: 'business' });
-        render(<Launcher identity={identity} />);
-
-        await user.click(screen.getByRole('button', { name: /Business/ }));
-
-        expect(inertia.posts).toEqual([
-            command('business', '00000000-0000-4000-8000-000000000001'),
-        ]);
-        expect(inertia.visits).toEqual(['/business']);
-    });
-
-    it('opens the already active role straight away and switches to another', async () => {
-        const user = userEvent.setup();
-        const identity = identityFrom(selectedFixture);
-
-        inertia.respond = answer({ ...identity, active_role: 'investor' });
+    it('uses explicitly marked synthetic preview links without changing a real account role', async () => {
         render(
             <Launcher
-                identity={identity}
-                links={readyFixture.props.links as never}
+                identity={ready}
+                preview_links={readyFixture.props.preview_links as never}
             />,
         );
-
-        const [investor, business] = screen.getAllByRole('listitem');
-
-        expect(within(business).getByRole('link')).toHaveAttribute(
-            'href',
-            '/preview/business-home',
-        );
-
-        await user.click(within(investor).getByRole('button'));
-
-        expect(inertia.posts).toEqual([
-            command('investor', '00000000-0000-4000-8000-000000000001', 4),
-        ]);
-        expect(inertia.visits).toEqual([
-            { url: '/preview/investor-deals', method: 'get' },
-        ]);
-    });
-
-    it('shows an Audit Partner only the Auditor app', () => {
-        render(<Launcher identity={identityFrom(auditorFixture)} />);
-
-        const [auditor] = screen.getAllByRole('listitem');
-
-        expect(screen.getAllByRole('listitem')).toHaveLength(1);
-        expect(auditor.dataset.audience).toBe('auditor');
-        expect(within(auditor).getByRole('button')).toHaveTextContent(
-            'Field-verify on site, audit reports, earn yield.',
-        );
-    });
-
-    it('sends an Audit Partner without two-factor authentication to set it up', () => {
-        render(<Launcher identity={identityFrom(auditorBlockedFixture)} />);
-
-        const [auditor] = screen.getAllByRole('listitem');
-
-        expect(within(auditor).queryByRole('button')).not.toBeInTheDocument();
-        expect(auditor).toHaveTextContent('Needs two-factor authentication');
         expect(
-            within(auditor).getByRole('link', {
-                name: 'Set up two-factor authentication',
-            }),
-        ).toHaveAttribute('href', '/settings/security');
-    });
-
-    it('holds the cards while a switch is in flight', () => {
-        inertia.processing = true;
-        render(<Launcher identity={identityFrom(readyFixture)} />);
-
-        for (const card of screen.getAllByRole('button')) {
-            expect(card).toBeDisabled();
-            expect(card).toHaveTextContent('Opening…');
-        }
-    });
-
-    it('refreshes identity when the role changed in another window', async () => {
-        const user = userEvent.setup();
-
-        inertia.respond = refuse(
-            409,
-            JSON.stringify({ code: 'ACTIVE_ROLE_REVISION_CONFLICT' }),
-        );
-        render(<Launcher identity={identityFrom(readyFixture)} />);
-
-        await user.click(screen.getByRole('button', { name: /Investor/ }));
-
-        expect(screen.getByRole('alert')).toHaveTextContent(
-            'Your apps changed in another window. Choose again.',
-        );
-        expect(inertia.reloads).toEqual([{ only: ['identity'] }]);
-        expect(inertia.visits).toEqual([]);
-    });
-
-    it('asks for two-factor authentication when the server requires it', async () => {
-        const user = userEvent.setup();
-
-        inertia.respond = refuse(403, JSON.stringify({ code: 'MFA_REQUIRED' }));
-        render(<Launcher identity={identityFrom(auditorFixture)} />);
-
-        await user.click(screen.getByRole('button', { name: /Auditor/ }));
-
-        const alert = within(screen.getByRole('alert'));
-
-        expect(
-            alert.getByText(
-                'Set up two-factor authentication to open Auditor.',
-            ),
+            screen.getByText('Preview with sample data'),
         ).toBeInTheDocument();
+        await userEvent.click(screen.getByRole('button', { name: 'Investor' }));
+        expect(mocks.visit).toHaveBeenCalledWith({
+            url: '/preview/investor-deals',
+            method: 'get',
+        });
+        expect(mocks.command.submit).not.toHaveBeenCalled();
+    });
+    it('resumes an already selected authorized role without generating another switch', async () => {
+        render(<Launcher identity={selected('business')} />);
+        await userEvent.click(screen.getByRole('button', { name: 'Business' }));
+        expect(mocks.command.submit).not.toHaveBeenCalled();
+        expect(mocks.visit).toHaveBeenCalledWith(
+            expect.objectContaining({ url: '/identity/roles/business/resume' }),
+        );
+    });
+    it('shows the Auditor app only for that membership and enables MFA setup when selection is denied', async () => {
+        mocks.command.submit.mockResolvedValue({ data: selected('auditor') });
+        const view = render(
+            <Launcher identity={identityFrom(auditorFixture)} />,
+        );
+        expect(screen.getAllByRole('listitem')).toHaveLength(1);
+        await userEvent.click(screen.getByRole('button', { name: 'Auditor' }));
+        expect(mocks.visit).toHaveBeenCalledWith(
+            expect.objectContaining({ url: '/identity/roles/auditor/resume' }),
+        );
+        view.rerender(
+            <Launcher
+                identity={{
+                    ...identityFrom(auditorFixture),
+                    allowed_actions: [],
+                }}
+            />,
+        );
+        expect(screen.getByRole('button', { name: 'Auditor' })).toBeDisabled();
         expect(
-            alert.getByRole('link', {
+            screen.getByRole('link', {
                 name: 'Set up two-factor authentication',
             }),
         ).toHaveAttribute('href', '/settings/security');
-        expect(inertia.reloads).toEqual([]);
     });
-
-    it('clears a role the account no longer holds', async () => {
-        const user = userEvent.setup();
-
-        inertia.respond = refuse(
-            403,
-            JSON.stringify({ code: 'ROLE_NOT_AVAILABLE' }),
-        );
-        render(<Launcher identity={identityFrom(readyFixture)} />);
-
-        await user.click(screen.getByRole('button', { name: /Business/ }));
-
-        expect(screen.getByRole('alert')).toHaveTextContent(
-            'You no longer have access to Business.',
-        );
-        expect(inertia.reloads).toEqual([{ only: ['identity'] }]);
+    it('does not treat an available role or ready code as permission to select it', () => {
+        render(<Launcher identity={{ ...ready, allowed_actions: [] }} />);
+        expect(screen.getByRole('button', { name: 'Investor' })).toBeDisabled();
     });
-
-    it('never silently retries a request ID the server has seen with other input', async () => {
-        const user = userEvent.setup();
-
-        inertia.respond = refuse(
-            409,
-            JSON.stringify({ code: 'IDEMPOTENCY_KEY_REUSED' }),
+    it('allows resuming the selected role when viewing is granted but selection is unavailable', async () => {
+        render(
+            <Launcher
+                identity={{
+                    ...selected('investor'),
+                    allowed_actions: ['identity.view_role'],
+                }}
+            />,
         );
-        render(<Launcher identity={identityFrom(readyFixture)} />);
-
-        await user.click(screen.getByRole('button', { name: /Business/ }));
-
-        expect(screen.getByRole('alert')).toHaveTextContent(
-            'That request was already used for another choice. Choose Business again.',
+        expect(screen.getByRole('button', { name: 'Business' })).toBeDisabled();
+        await userEvent.click(screen.getByRole('button', { name: 'Investor' }));
+        expect(mocks.visit).toHaveBeenCalledOnce();
+    });
+    it('gives an explicit staff grant its own entry without inventing a marketplace role', () => {
+        const view = render(
+            <Launcher
+                identity={identityFrom(pendingFixture)}
+                staff_access={{
+                    contract_version: 'staff-access-v1',
+                    can_open_admin: true,
+                    allowed_actions: ['admin.open'],
+                }}
+            />,
         );
         expect(
-            screen.queryByRole('button', { name: 'Try again' }),
+            screen.getByRole('link', { name: 'Open staff workspace' }),
+        ).toHaveAttribute('href', '/admin');
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        view.rerender(
+            <Launcher
+                identity={ready}
+                staff_access={{
+                    contract_version: 'staff-access-v1',
+                    can_open_admin: true,
+                    allowed_actions: [],
+                }}
+            />,
+        );
+        expect(
+            screen.queryByRole('link', { name: 'Open staff workspace' }),
         ).not.toBeInTheDocument();
-        expect(inertia.posts).toHaveLength(1);
+        view.rerender(
+            <Launcher
+                identity={ready}
+                staff_access={{
+                    contract_version: 'staff-access-v1',
+                    can_open_admin: false,
+                    allowed_actions: [],
+                }}
+            />,
+        );
+        expect(
+            screen.queryByRole('link', { name: 'Open staff workspace' }),
+        ).not.toBeInTheDocument();
     });
-
+    it('keeps the role buttons disabled while a command is in flight', async () => {
+        let resolve: (value: { data: IdentityContext }) => void = () => {};
+        mocks.command.submit.mockReturnValue(
+            new Promise((done) => {
+                resolve = done;
+            }),
+        );
+        render(<Launcher identity={ready} />);
+        await userEvent.click(screen.getByRole('button', { name: 'Investor' }));
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Opening your app',
+        );
+        expect(screen.getByRole('button', { name: 'Business' })).toBeDisabled();
+        await act(async () => {
+            resolve({ data: selected('investor') });
+        });
+    });
+    it('ignores a duplicate click when the HTTP request has started before the next render', () => {
+        render(<Launcher identity={ready} />);
+        mocks.command.processing = true;
+        fireEvent.click(screen.getByRole('button', { name: 'Investor' }));
+        expect(mocks.command.submit).not.toHaveBeenCalled();
+    });
     it.each([
-        ['an unknown code', JSON.stringify({ code: 'SOMETHING_ELSE' })],
-        ['a body without a code', JSON.stringify({ message: 'Nope' })],
-        ['a body that is not JSON', '<html>Server error</html>'],
+        { ...selected('business') },
+        { ...selected('investor'), allowed_actions: [] },
     ])(
-        'says the app did not open on %s, and tries again with a new request',
-        async (_, body) => {
-            const user = userEvent.setup();
-            const identity = identityFrom(readyFixture);
-
-            inertia.respond = refuse(500, body);
-            render(<Launcher identity={identity} />);
-
-            await user.click(screen.getByRole('button', { name: /Investor/ }));
-
-            expect(screen.getByRole('alert')).toHaveTextContent(
-                "Investor didn't open.",
+        'does not navigate on an old replay or response lacking current authority',
+        async (data) => {
+            mocks.command.submit.mockResolvedValue({ data });
+            render(<Launcher identity={ready} />);
+            await userEvent.click(
+                screen.getByRole('button', { name: 'Investor' }),
             );
-
-            inertia.respond = answer({ ...identity, active_role: 'investor' });
-            await user.click(screen.getByRole('button', { name: 'Try again' }));
-
-            expect(inertia.posts).toEqual([
-                command('investor', '00000000-0000-4000-8000-000000000001'),
-                command('investor', '00000000-0000-4000-8000-000000000002'),
-            ]);
-            expect(inertia.visits).toEqual(['/investor']);
+            expect(await screen.findByRole('alert')).toHaveTextContent(
+                'Your access or active app has changed',
+            );
+            expect(mocks.visit).not.toHaveBeenCalled();
         },
     );
+    it.each([
+        'ACTIVE_ROLE_REVISION_CONFLICT',
+        'IDEMPOTENCY_KEY_REUSED',
+        'ROLE_NOT_AVAILABLE',
+        'ACTIVE_ROLE_REQUIRED',
+        'MFA_REQUIRED',
+        'IDENTITY_VERIFICATION_REQUIRED',
+    ])('clears stale role content and offers recovery for %s', async (code) => {
+        mocks.command.submit.mockImplementation(async (_route, options) => {
+            options.onHttpException({
+                status:
+                    code.includes('CONFLICT') ||
+                    code === 'IDEMPOTENCY_KEY_REUSED'
+                        ? 409
+                        : 403,
+                data: JSON.stringify({ code }),
+            });
 
-    it('does not open an app the server did not make active', async () => {
-        const user = userEvent.setup();
-        const identity = identityFrom(readyFixture);
-
-        inertia.respond = answer({ ...identity, active_role: 'investor' });
-        render(<Launcher identity={identity} />);
-
-        await user.click(screen.getByRole('button', { name: /Business/ }));
-
-        expect(screen.getByRole('alert')).toHaveTextContent(
-            "Business didn't open.",
-        );
-        expect(inertia.visits).toEqual([]);
-    });
-
-    it('treats a rejected command as not opened', async () => {
-        const user = userEvent.setup();
-
-        render(<Launcher identity={identityFrom(readyFixture)} />);
-
-        await user.click(screen.getByRole('button', { name: /Business/ }));
-
-        expect(screen.getByRole('alert')).toHaveTextContent(
-            "Business didn't open.",
-        );
-    });
-
-    it('resends the same command after a lost connection', async () => {
-        const user = userEvent.setup();
-        const identity = identityFrom(readyFixture);
-
-        inertia.respond = () => Promise.reject(new Error('Network down'));
-        render(<Launcher identity={identity} />);
-
-        await user.click(screen.getByRole('button', { name: /Investor/ }));
-
-        expect(screen.getByRole('alert')).toHaveTextContent(
-            "Couldn't reach Rozine to open Investor. Check your connection.",
-        );
-
-        inertia.respond = answer({ ...identity, active_role: 'investor' });
-        await user.click(screen.getByRole('button', { name: 'Try again' }));
-
-        expect(inertia.posts).toEqual([
-            command('investor', '00000000-0000-4000-8000-000000000001'),
-            command('investor', '00000000-0000-4000-8000-000000000001'),
-        ]);
-        expect(inertia.visits).toEqual(['/investor']);
-    });
-
-    it('explains a pending verification and offers a real next step instead of apps', () => {
-        render(<Launcher identity={identityFrom(pendingFixture)} />);
-
+            throw new Error(code);
+        });
+        render(<Launcher identity={ready} />);
+        await userEvent.click(screen.getByRole('button', { name: 'Investor' }));
+        expect(await screen.findByRole('alert')).toBeInTheDocument();
         expect(screen.queryByRole('list')).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Refresh access' }),
+        ).toHaveAttribute('href', '/dashboard');
+        expect(
+            screen.queryByRole('button', { name: 'Retry switch' }),
+        ).not.toBeInTheDocument();
 
-        const notice = screen.getByRole('status');
+        if (code === 'MFA_REQUIRED') {
+            expect(
+                screen.getByRole('link', {
+                    name: 'Set up two-factor authentication',
+                }),
+            ).toHaveAttribute('href', '/settings/security');
+        }
 
-        expect(notice).toHaveTextContent('Your identity is being verified');
-        expect(notice).toHaveTextContent(
-            'Your apps open once your identity verification is complete.',
+        expect(mocks.visit).not.toHaveBeenCalled();
+    });
+    it.each(['not-json', '{}', '{"code":42}', 'null'])(
+        'handles an unexpected server error body without displaying it (%s)',
+        async (data) => {
+            mocks.command.submit.mockImplementation(async (_route, options) => {
+                options.onHttpException({ status: 500, data });
+
+                throw new Error('failed');
+            });
+            render(<Launcher identity={ready} />);
+            await userEvent.click(
+                screen.getByRole('button', { name: 'Investor' }),
+            );
+            expect(await screen.findByRole('alert')).toHaveTextContent(
+                'Refresh your access',
+            );
+            expect(mocks.visit).not.toHaveBeenCalled();
+        },
+    );
+    it('handles input validation as a failed command requiring a fresh decision', async () => {
+        mocks.command.submit.mockImplementation(async (_route, options) => {
+            options.onError({ request_id: 'Invalid' });
+
+            throw new Error('validation');
+        });
+        render(<Launcher identity={ready} />);
+        await userEvent.click(screen.getByRole('button', { name: 'Investor' }));
+        expect(await screen.findByRole('alert')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Retry switch' }),
+        ).not.toBeInTheDocument();
+    });
+    it('retries an uncertain network result with the identical command UUID and payload', async () => {
+        mocks.command.submit
+            .mockRejectedValueOnce(new Error('Connection lost'))
+            .mockResolvedValueOnce({ data: selected('investor') });
+        render(<Launcher identity={ready} />);
+        await userEvent.click(screen.getByRole('button', { name: 'Investor' }));
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            'Check your connection',
+        );
+        await userEvent.click(
+            screen.getByRole('button', { name: 'Retry switch' }),
+        );
+        expect(mocks.command.transform.mock.calls[0][0]()).toEqual(
+            mocks.command.transform.mock.calls[1][0](),
+        );
+        expect(mocks.visit).toHaveBeenCalledOnce();
+    });
+    it('disables app choices while fresh access is being loaded after returning to the tab', () => {
+        render(<Launcher identity={ready} />);
+        act(() => {
+            window.dispatchEvent(new Event('focus'));
+        });
+        expect(screen.getByRole('button', { name: 'Investor' })).toBeDisabled();
+        act(() => {
+            mocks.reload.mock.calls[0][0].onFinish();
+        });
+        expect(screen.getByRole('button', { name: 'Investor' })).toBeEnabled();
+    });
+    it('explains pending verification with a real next step', () => {
+        render(<Launcher identity={identityFrom(pendingFixture)} />);
+        expect(screen.queryByRole('list')).not.toBeInTheDocument();
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Your identity is being verified',
         );
         expect(
-            within(notice).getByRole('link', {
-                name: 'Contact Rozine support →',
-            }),
+            screen.getByRole('link', { name: 'Contact Rozine support →' }),
         ).toHaveAttribute('href', 'mailto:hello@rozine.rw');
     });
-
     it.each<[Exclude<IdentityCode, 'IDENTITY_READY'>, string, string, string]>([
         [
             'EMAIL_VERIFICATION_REQUIRED',

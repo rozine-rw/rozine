@@ -11,9 +11,9 @@
                 "verification_status": "unverified"
             },
             "available_roles": [],
+            "allowed_actions": [],
             "active_role": null,
-            "context_revision": 0,
-            "allowed_actions": []
+            "context_revision": 0
         }
     }
 }

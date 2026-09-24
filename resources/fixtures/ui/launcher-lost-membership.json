@@ -4,18 +4,18 @@
         "identity": {
             "contract_version": "identity-v2",
             "policy_version": "engineering-2026-09-23.4",
-            "code": "IDENTITY_READY",
+            "code": "ROLE_MEMBERSHIP_REQUIRED",
             "party": {
-                "id": "01K5TFIXTUREPARTY000000002",
+                "id": "01K5TFIXTUREPARTY000000001",
                 "kind": "person",
                 "verification_status": "verified"
             },
-            "available_roles": ["auditor"],
+            "available_roles": [],
+            "allowed_actions": [],
             "active_role": null,
-            "context_revision": 0,
-            "allowed_actions": []
+            "context_revision": 3
         },
-        "links": {
+        "preview_links": {
             "investor": {
                 "url": "/preview/investor-deals",
                 "method": "get"

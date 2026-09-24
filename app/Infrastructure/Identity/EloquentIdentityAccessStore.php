@@ -7,12 +7,15 @@ namespace App\Infrastructure\Identity;
 use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Domain\Identity\ActiveRolePolicy;
+use App\Domain\Identity\BookmarkDestination;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Identity\MembershipTransitions;
 use App\Models\IdentityAuditEvent;
 use App\Models\IdentityOperator;
 use App\Models\Party;
+use App\Models\RoleBookmark;
 use App\Models\RoleMembership;
+use App\Models\StaffAccount;
 use App\Models\User;
 use App\Models\VerifiedPersonIdentity;
 use Closure;
@@ -27,6 +30,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
         private IdentityRepository $identities,
         private MembershipTransitions $transitions,
         private ActiveRolePolicy $roles,
+        private BookmarkDestination $destinations,
     ) {}
 
     /** @return array<string, mixed> */
@@ -76,6 +80,52 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
     }
 
     /** @return array<string, mixed> */
+    public function configureStaff(int $userId, bool $enabled, string $reason, string $requestId): array
+    {
+        return DB::transaction(function () use ($userId, $enabled, $reason, $requestId): array {
+            $user = User::query()->lockForUpdate()->findOrFail($userId);
+            $hash = $this->requestHash(['staff.configure', $userId, $enabled, $reason], $reason, $requestId);
+
+            if (($replay = $this->replay('console', $requestId, $hash)) !== null) {
+                return $replay;
+            }
+
+            $party = $this->lockParty($user->party_id);
+
+            if ($enabled && (! $this->emailVerified($user) || ! $this->mfaConfirmed($user))) {
+                throw new IdentityViolation('STAFF_VERIFIED_EMAIL_AND_MFA_REQUIRED');
+            }
+
+            if ($enabled && $party !== null && ($party->kind !== 'person' || $party->verified_at !== null
+                || $party->memberships()->exists() || $party->verifiedIdentity()->exists()
+                || User::query()->where('party_id', $party->id)->whereKeyNot($userId)->exists())) {
+                throw new IdentityViolation('DEDICATED_STAFF_ACCOUNT_REQUIRED');
+            }
+
+            $staff = StaffAccount::query()->find($userId);
+            if (! $enabled && $staff === null) {
+                throw new IdentityViolation('STAFF_ACCOUNT_NOT_FOUND', 404);
+            }
+            $before = ['enabled' => $staff->enabled ?? false, 'party_id' => $user->party_id];
+            $staff ??= new StaffAccount;
+            $staff->forceFill(['user_id' => $userId, 'enabled' => $enabled])->save();
+
+            if ($enabled) {
+                $user->forceFill([
+                    'party_id' => null, 'active_membership_id' => null,
+                    'active_membership_revision' => null, 'context_revision' => $user->context_revision + 1,
+                ])->save();
+            }
+
+            $result = ['code' => $enabled ? 'STAFF_ACCESS_ENABLED' : 'STAFF_ACCESS_DISABLED', 'user_id' => $userId];
+            $this->record('console', null, 'user', (string) $userId, 'staff.configure', $reason, $requestId, $hash,
+                $before, ['enabled' => $enabled, 'party_id' => $user->party_id], $result);
+
+            return $result;
+        }, 3);
+    }
+
+    /** @return array<string, mixed> */
     public function resolvePerson(int $actorId, int $userId, string $identityReference, string $evidenceReference, string $reason, string $requestId): array
     {
         return DB::transaction(function () use ($actorId, $userId, $identityReference, $evidenceReference, $reason, $requestId): array {
@@ -98,7 +148,8 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
                 return $replay;
             }
 
-            if (! $this->emailVerified($user) || IdentityOperator::query()->whereKey($userId)->exists()) {
+            if (! $this->emailVerified($user) || IdentityOperator::query()->whereKey($userId)->exists()
+                || StaffAccount::query()->whereKey($userId)->exists()) {
                 throw new IdentityViolation('VERIFIED_PARTICIPANT_ACCOUNT_REQUIRED');
             }
 
@@ -226,6 +277,81 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
 
             return $operation($identity);
         }, 3);
+    }
+
+    /** @return array<string, mixed> */
+    public function staffAccess(int $userId, bool $required = false): array
+    {
+        return DB::transaction(function () use ($userId, $required): array {
+            $user = User::query()->lockForUpdate()->findOrFail($userId);
+            $allowed = $user->party_id === null && $this->emailVerified($user) && $this->mfaConfirmed($user)
+                && StaffAccount::query()->whereKey($userId)->where('enabled', true)->exists();
+            if ($required && ! $allowed) {
+                throw new IdentityViolation('STAFF_ACCESS_REQUIRED');
+            }
+
+            return ['contract_version' => 'staff-access-v1', 'can_open_admin' => $allowed,
+                'allowed_actions' => $allowed ? ['admin.open'] : []];
+        }, 3);
+    }
+
+    /** @return array<string, mixed> */
+    public function bookmark(int $userId, string $role): array
+    {
+        return $this->withActiveRole($userId, $role, null, null,
+            fn (array $identity): array => $this->currentBookmark($userId, $role, $identity));
+    }
+
+    /**
+     * @param  array<string, mixed>  $parameters
+     * @param  array<string, mixed>  $query
+     * @return array<string, mixed>
+     */
+    public function saveBookmark(int $userId, string $role, string $route, array $parameters, array $query, int $expectedContext, string $requestId): array
+    {
+        return $this->withActiveRole($userId, $role, null, $expectedContext,
+            function (array $identity) use ($userId, $role, $route, $parameters, $query, $expectedContext, $requestId): array {
+                $destination = $this->destinations->validate($role, $route, $parameters, $query);
+                $reason = 'Participant saved a role navigation position.';
+                $hash = $this->requestHash(['bookmark.save', $role, $destination, $expectedContext], $reason, $requestId);
+                if ($this->replay('user:'.$userId, $requestId, $hash) !== null) {
+                    return $this->currentBookmark($userId, $role, $identity);
+                }
+                $bookmark = RoleBookmark::query()->where('user_id', $userId)->where('role', $role)->first();
+                $before = $bookmark?->only(['route', 'parameters', 'query', 'membership_id', 'membership_revision']) ?? [];
+                $bookmark ??= new RoleBookmark;
+                $after = array_merge($destination, [
+                    'membership_id' => $identity['active_membership_id'],
+                    'membership_revision' => $identity['active_membership_revision'],
+                ]);
+                $bookmark->forceFill(array_merge($after, ['user_id' => $userId, 'role' => $role]))->save();
+                $result = $this->currentBookmark($userId, $role, $identity);
+                $this->record('user:'.$userId, $userId, 'bookmark', $bookmark->id, 'bookmark.save', $reason, $requestId, $hash,
+                    $before, $after, $result);
+
+                return $result;
+            });
+    }
+
+    /**
+     * @param  AccessSnapshot  $identity
+     * @return array<string, mixed>
+     */
+    private function currentBookmark(int $userId, string $role, array $identity): array
+    {
+        $bookmark = RoleBookmark::query()->where('user_id', $userId)->where('role', $role)->first();
+        $destination = $this->destinations->validate($role, $role.'.home', [], []);
+        if ($bookmark !== null && $bookmark->membership_id === $identity['active_membership_id']
+            && $bookmark->membership_revision === $identity['active_membership_revision']) {
+            try {
+                $destination = $this->destinations->validate($role, $bookmark->route, $bookmark->parameters, $bookmark->query);
+            } catch (IdentityViolation) {
+                // Removed or invalid destinations resolve to the authorized home.
+            }
+        }
+
+        return array_merge(['contract_version' => 'role-bookmark-v1', 'role' => $role,
+            'context_revision' => $identity['context_revision']], $destination);
     }
 
     private function authorizeOperator(?User $user): void

@@ -62,7 +62,32 @@ export type ResolveVerifiedPersonInput = {
     request_id: string;
 };
 
-/** The launcher's names for the identity-v2 facts, derived so there is only one contract. */
+export type StaffAccess = {
+    contract_version: 'staff-access-v1';
+    can_open_admin: boolean;
+    allowed_actions: 'admin.open'[];
+};
+
+export type RoleBookmark = {
+    contract_version: 'role-bookmark-v1';
+    role: MarketplaceRole;
+    context_revision: number;
+    route: `${MarketplaceRole}.home`;
+    parameters: Record<string, never>;
+    query: { section?: 'overview' | 'access' };
+    url: string;
+};
+
+export type SaveRoleBookmarkInput = {
+    role: MarketplaceRole;
+    route: `${MarketplaceRole}.home`;
+    parameters: Record<string, never>;
+    query: { section: 'overview' | 'access' };
+    expected_revision: number;
+    request_id: string;
+};
+
+/** UI aliases derive from the server identity contract. */
 export type RoleApp = MarketplaceRole;
 export type IdentityCode = IdentityContext['code'];
 export type IdentityParty = NonNullable<IdentityContext['party']>;

@@ -7,6 +7,39 @@
 import type { Catalog } from '@/lib/i18n/types';
 
 const fr: Catalog = {
+    'suite.sign_out': 'Se déconnecter',
+    'suite.preview': 'Aperçu avec des données fictives',
+    'suite.mfa_required':
+        'Configurez la double authentification pour ouvrir l’application Auditeur.',
+    'suite.mfa_setup': 'Configurer la double authentification',
+    'suite.network_error':
+        'Nous n’avons pas pu confirmer le changement. Vérifiez votre connexion et réessayez.',
+    'suite.command_conflict':
+        'Cette demande ne peut pas être réutilisée. Actualisez votre accès avant de choisir à nouveau une application.',
+    'suite.access_changed':
+        'Votre accès ou application active a changé. Actualisez votre accès, puis choisissez une application.',
+    'suite.retry': 'Réessayer le changement',
+    'suite.refresh_access': 'Actualiser l’accès',
+    'suite.admin': 'Ouvrir l’espace personnel',
+    'suite.opening': 'Ouverture de votre application…',
+    'identity.home.investor': 'Espace investisseur',
+    'identity.home.business': 'Espace entreprise',
+    'identity.home.auditor': 'Espace auditeur',
+    'identity.home.admin': 'Espace personnel',
+    'identity.home.overview': 'Vue générale',
+    'identity.home.access': 'Accès au compte',
+    'identity.home.ready': 'Votre compte a accès à cet espace.',
+    'identity.home.verified': 'Votre identité est vérifiée.',
+    'identity.home.staff_ready':
+        'Votre compte personnel est autorisé à ouvrir cet espace.',
+    'identity.home.back': 'Choisir une application',
+    'identity.home.settings': 'Paramètres du compte',
+    'identity.home.saving': 'Enregistrement de votre position…',
+    'identity.home.failed':
+        'Impossible de mettre à jour votre position. Revenez au lanceur pour vérifier votre accès.',
+    'identity.denied.title': 'Votre accès doit être vérifié',
+    'identity.denied.body':
+        'Votre compte ne peut plus ouvrir cette page avec le rôle sélectionné. Choisissez une application pour actualiser votre accès.',
     'environment.demo': 'Démo — hors production',
     'environment.uat': 'UAT — hors production',
     'environment.synthetic_only':
@@ -2779,21 +2812,6 @@ const fr: Catalog = {
         "Aucun relevé pour l'instant. Le premier arrive après votre premier mois complet.",
     'investor.profile.statements.disclaimer':
         'Les relevés sont fournis pour vos archives. Rozine ne fournit pas de conseil fiscal — consultez un conseiller qualifié.',
-
-    'suite.app.opening': 'Ouverture…',
-    'suite.app.needs_mfa': "Nécessite l'authentification à deux facteurs",
-    'suite.switch.set_up_mfa': "Configurer l'authentification à deux facteurs",
-    'suite.switch.try_again': 'Réessayer',
-    'suite.switch.changed':
-        'Vos applications ont changé dans une autre fenêtre. Choisissez de nouveau.',
-    'suite.switch.mfa':
-        "Configurez l'authentification à deux facteurs pour ouvrir {app}.",
-    'suite.switch.unavailable': "Vous n'avez plus accès à {app}.",
-    'suite.switch.reused':
-        'Cette demande a déjà servi à un autre choix. Choisissez de nouveau {app}.',
-    'suite.switch.failed': "{app} ne s'est pas ouvert.",
-    'suite.switch.offline':
-        'Impossible de joindre Rozine pour ouvrir {app}. Vérifiez votre connexion.',
 
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
