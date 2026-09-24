@@ -35,7 +35,8 @@ it('requires an accepted assignment and leaves missing audit evidence explicitly
     Fixture::respond($user, $offer);
     $file = app(GetAuditStatements::class)->handle($user->id, 1, $offer->id);
     expect($file['assignment'])->toBe(['id' => $offer->id, 'business_id' => $fixture['business'], 'party_id' => $user->party_id,
-        'revision' => 2, 'kind' => 'flash', 'business_revision' => 1, 'mandate_version' => 1])
+        'revision' => 2, 'kind' => 'flash', 'business_revision' => 1, 'mandate_version' => 1,
+        'accreditation' => ['profile_revision' => 3, 'licence' => 'SYNTHETIC-CPA', 'expires_on' => now()->addYear()->format('Y-m-d'), 'checked_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')]])
         ->and($file['evidence'])->toBe(['revision' => 0, 'documents' => []])->and($file['transcription'])->toBeNull()
         ->and(app(GetAuditTranscription::class)->handle($user->id, 1, $offer->id))->toBeNull()
         ->and(fn () => app(ReadAuditStatement::class)->handle($user->id, 1, $offer->id, 'unknown'))->toThrow(CommandRejection::class, 'STATEMENT_NOT_FOUND');

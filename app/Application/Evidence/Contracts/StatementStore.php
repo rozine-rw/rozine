@@ -9,6 +9,8 @@ namespace App\Application\Evidence\Contracts;
  * @phpstan-import-type Statement from \App\Domain\Evidence\StatementReconciliation
  * @phpstan-import-type Observation from \App\Domain\Evidence\StatementReconciliation
  * @phpstan-import-type AcceptedAssignment from \App\Application\Auditor\Contracts\AuditAssignmentStore
+ * @phpstan-import-type Review from \App\Domain\Evidence\StatementAuditReview
+ * @phpstan-import-type VerifiedObservation from \App\Domain\Evidence\StatementAuditReview
  *
  * @phpstan-type TranscriptionPayload array{business_id: string, source_revision: int, classification_version: string, rails: list<Rail>, months: list<string>, statements: list<Statement>, source_hashes: array<string, string>, observations: list<Observation>}
  * @phpstan-type Transcription array{id: string, revision: int, amends_id: string|null, sha256: string, current: bool, verified: false, payload: TranscriptionPayload}
@@ -16,6 +18,8 @@ namespace App\Application\Evidence\Contracts;
  * @phpstan-type Manifest array{revision: int, documents: list<Document>}
  * @phpstan-type Original array{filename: string, media_type: string, sha256: string, content: string}
  * @phpstan-type AuditFile array{assignment: AcceptedAssignment, evidence: Manifest, transcription: Transcription|null}
+ * @phpstan-type VerificationPayload array{business_id: string, assignment: AcceptedAssignment, source_revision: int, transcription: array{id: string, sha256: string}, source_hashes: array<string, string>, policy_version: string, procedure_version: string, review: Review, verified_at: string, report_approval: 'not_cosigned', observations: list<VerifiedObservation>}
+ * @phpstan-type Verification array{id: string, revision: int, amends_id: string|null, sha256: string, current: bool, payload: VerificationPayload}
  */
 interface StatementStore
 {
@@ -50,4 +54,19 @@ interface StatementStore
 
     /** @return Transcription|null */
     public function auditTranscription(int $userId, int $contextRevision, string $assignmentId, ?string $transcriptionId): ?array;
+
+    /**
+     * @param  Review  $review
+     * @return array<string, mixed>
+     */
+    public function verify(int $userId, int $contextRevision, string $assignmentId, int $expectedAssignmentRevision, int $expectedEvidenceRevision, int $expectedVerificationRevision, string $transcriptionId, string $transcriptionHash, array $review, string $requestId): array;
+
+    /** @return Verification|null */
+    public function verification(int $userId, int $contextRevision, string $businessId, ?string $verificationId): ?array;
+
+    /** @return Verification|null */
+    public function auditVerification(int $userId, int $contextRevision, string $assignmentId, ?string $verificationId): ?array;
+
+    /** @return array<string, mixed> */
+    public function findVerificationOperation(int $userId, int $contextRevision, string $requestId): array;
 }

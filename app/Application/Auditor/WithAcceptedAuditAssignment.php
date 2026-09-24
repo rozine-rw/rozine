@@ -22,4 +22,10 @@ final class WithAcceptedAuditAssignment
     {
         return $this->store->withAccepted($userId, $contextRevision, $assignmentId, $operation);
     }
+
+    /** @param AcceptedAssignment $assignment */
+    public function retainsVerification(array $assignment): bool
+    {
+        return $this->store->retainsVerification($assignment);
+    }
 }

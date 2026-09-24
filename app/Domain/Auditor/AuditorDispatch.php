@@ -13,6 +13,7 @@ use DateTimeZone;
  * Distance is a conservative geodesic upper bound in whole metres, not a rounded UI distance.
  *
  * @phpstan-import-type Standing from AuditorStanding
+ * @phpstan-import-type Facts from AuditorIndependence
  *
  * @phpstan-type Location array{verified_at: string|null, moved_at: string|null, uncertainty_m: int|null}
  * @phpstan-type Candidate array{id: string, standing: Standing, accepting: bool, active_count: int, consecutive_reports: int, last_assigned_at: string|null, office: Location, premises: Location, distance_upper_bound_m: int|null, financial_interest: bool, current_role_tie: bool, role_tie_ended_at: string|null, family_or_business_conflict: bool, unresolved_conflict: bool}
@@ -48,11 +49,7 @@ final class AuditorDispatch
         if ($candidate['consecutive_reports'] >= 3) {
             $reasons[] = 'AUDITOR_ROTATION_REQUIRED';
         }
-        $tie = $this->timestamp($candidate['role_tie_ended_at']);
-        $cutoffMonth = $now->modify('first day of this month')->modify('-24 months');
-        $cutoff = $cutoffMonth->setDate((int) $cutoffMonth->format('Y'), (int) $cutoffMonth->format('m'), min((int) $now->format('d'), (int) $cutoffMonth->format('t')));
-        if ($candidate['financial_interest'] || $candidate['current_role_tie'] || $candidate['family_or_business_conflict'] || $candidate['unresolved_conflict']
-            || ($candidate['role_tie_ended_at'] !== null && ($tie === null || $tie >= $cutoff))) {
+        if ($this->hasConflict($candidate, $now)) {
             $reasons[] = 'AUDITOR_CONFLICT';
         }
         if (! $this->locationCurrent($candidate['office'], $now) || ! $this->locationCurrent($candidate['premises'], $now)) {
@@ -64,6 +61,18 @@ final class AuditorDispatch
         }
 
         return $reasons;
+    }
+
+    /** @param Facts $facts */
+    public function hasConflict(array $facts, DateTimeImmutable $now): bool
+    {
+        $now = $now->setTimezone(new DateTimeZone('UTC'));
+        $tie = $this->timestamp($facts['role_tie_ended_at']);
+        $cutoffMonth = $now->modify('first day of this month')->modify('-24 months');
+        $cutoff = $cutoffMonth->setDate((int) $cutoffMonth->format('Y'), (int) $cutoffMonth->format('m'), min((int) $now->format('d'), (int) $cutoffMonth->format('t')));
+
+        return $facts['financial_interest'] || $facts['current_role_tie'] || $facts['family_or_business_conflict'] || $facts['unresolved_conflict']
+            || ($facts['role_tie_ended_at'] !== null && ($tie === null || $tie >= $cutoff));
     }
 
     /**

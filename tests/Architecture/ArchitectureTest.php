@@ -26,6 +26,7 @@ use App\Models\StatementEvidence;
 use App\Models\StatementExtraction;
 use App\Models\StatementOriginal;
 use App\Models\StatementTranscription;
+use App\Models\StatementVerification;
 use App\Models\VerifiedOrganizationIdentity;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -196,11 +197,12 @@ it('has concrete targets for the immutable statement evidence boundary', functio
     expect(class_exists(StatementEvidence::class))->toBeTrue()
         ->and(class_exists(StatementOriginal::class))->toBeTrue()
         ->and(class_exists(StatementExtraction::class))->toBeTrue()
-        ->and(class_exists(StatementTranscription::class))->toBeTrue();
+        ->and(class_exists(StatementTranscription::class))->toBeTrue()
+        ->and(class_exists(StatementVerification::class))->toBeTrue();
 })->group('arch');
 
 arch('statement evidence records are only accessed by their adapter')
-    ->expect(['App\Models\StatementEvidence', 'App\Models\StatementOriginal', 'App\Models\StatementExtraction', 'App\Models\StatementTranscription'])
+    ->expect(['App\Models\StatementEvidence', 'App\Models\StatementOriginal', 'App\Models\StatementExtraction', 'App\Models\StatementTranscription', 'App\Models\StatementVerification'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Evidence', 'App\Models', 'Database\Factories']);
 
 it('has concrete targets for the auditor accreditation boundary', function (): void {

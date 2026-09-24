@@ -6,6 +6,7 @@ namespace Tests\Support;
 
 use App\Application\Evidence\IngestStatement;
 use App\Application\Evidence\RecordStatementTranscription;
+use App\Domain\Evidence\StatementAuditReview;
 use Illuminate\Support\Str;
 
 /**
@@ -14,11 +15,29 @@ use Illuminate\Support\Str;
  * @phpstan-import-type Statement from \App\Domain\Evidence\StatementReconciliation
  * @phpstan-import-type Transaction from \App\Domain\Evidence\StatementReconciliation
  * @phpstan-import-type DrawRef from \App\Domain\Evidence\StatementReconciliation
+ * @phpstan-import-type Review from StatementAuditReview
  *
  * @phpstan-type TranscriptionInput array{rails: list<Rail>, months: list<string>, statements: list<Statement>}
  */
 final class StatementFixture
 {
+    /**
+     * @param  array<string, string>  $hashes
+     * @return Review
+     */
+    public static function review(array $hashes): array
+    {
+        $checks = [];
+        foreach ($hashes as $id => $hash) {
+            $checks[$id] = ['sha256' => $hash, 'reference' => 'synthetic:original-reviewed'];
+        }
+
+        return ['procedure_version' => StatementAuditReview::PROCEDURE, 'checks' => array_fill_keys(StatementAuditReview::CHECKS, true),
+            'source_checks' => $checks, 'inventory_reference' => 'synthetic:complete-inventory', 'obligations' => [],
+            'recurring_owner_draw' => '200', 'owner_draw_reference' => 'synthetic:recurring-draw',
+            'findings' => 'Synthetic factual review only; no external obligations identified.'];
+    }
+
     /** @return TranscriptionInput */
     public static function transcription(string $documentId): array
     {

@@ -12,6 +12,7 @@ use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\Contracts\StatementExtractionQueue;
 use App\Application\Evidence\GetAuditStatements;
+use App\Application\Evidence\GetStatementVerification;
 use App\Application\Evidence\IngestStatement;
 use App\Application\Evidence\ReadAuditStatement;
 use App\Application\Identity\AuthorizeActiveRole;
@@ -55,6 +56,7 @@ use App\Models\StatementEvidence;
 use App\Models\StatementExtraction;
 use App\Models\StatementOriginal;
 use App\Models\StatementTranscription;
+use App\Models\StatementVerification;
 use App\Models\User;
 use App\Models\VerifiedOrganizationIdentity;
 use App\Models\VerifiedPersonIdentity;
@@ -829,3 +831,64 @@ it('holds accepted-assignment and Business authority throughout a protected stat
         }
     }
 })->with(['conflict', 'evidence', 'standing', 'membership']);
+
+it('records identical concurrent source verifications once', function (): void {
+    $fixture = AuditAssignmentFixture::make(1);
+    $sources = AuditAssignmentFixture::statements($fixture);
+    $assignment = AuditAssignmentFixture::request($fixture);
+    AuditAssignmentFixture::respond($fixture['partners'][0]['user'], $assignment);
+    $assignment->refresh();
+    $request = (string) Str::uuid();
+    $verify = function () use ($fixture, $assignment, $sources, $request): void {
+        AuditAssignmentFixture::verifyStatements($fixture, $assignment, $sources['transcription_id'], requestId: $request);
+    };
+    expect(runIdentityContenders([$verify, $verify]))->toBe([0, 0]);
+    expect(StatementVerification::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'statement.verify')->count())->toBe(1);
+});
+
+it('admits one of two competing factual corrections from the same source review revision', function (): void {
+    $fixture = AuditAssignmentFixture::make(1);
+    $sources = AuditAssignmentFixture::statements($fixture);
+    $assignment = AuditAssignmentFixture::request($fixture);
+    AuditAssignmentFixture::respond($fixture['partners'][0]['user'], $assignment);
+    $assignment->refresh();
+    $verify = function () use ($fixture, $assignment, $sources): void {
+        AuditAssignmentFixture::verifyStatements($fixture, $assignment, $sources['transcription_id']);
+    };
+    expect(runIdentityContenders([$verify, $verify]))->toBe([0, 0]);
+    expect(StatementVerification::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'statement.verify')->orderBy('id')->get()->map(fn (CommandOperation $operation): string => $operation->result['code'])->sort()->values()->all())
+        ->toBe(['STATEMENT_SOURCE_VERIFIED', 'VERSION_CONFLICT']);
+});
+
+it('cannot leave a source verification current after a racing evidence change or conflict', function (string $change): void {
+    $fixture = AuditAssignmentFixture::make(1);
+    $sources = AuditAssignmentFixture::statements($fixture);
+    $assignment = AuditAssignmentFixture::request($fixture);
+    $partner = $fixture['partners'][0];
+    AuditAssignmentFixture::respond($partner['user'], $assignment);
+    $assignment->refresh();
+    $operations = [
+        function () use ($fixture, $assignment, $sources): void {
+            try {
+                AuditAssignmentFixture::verifyStatements($fixture, $assignment, $sources['transcription_id']);
+            } catch (CommandRejection $exception) {
+                if ($exception->reason !== 'ASSIGNMENT_NOT_FOUND') {
+                    throw $exception;
+                }
+            }
+        },
+        function () use ($fixture, $assignment, $partner, $change): void {
+            if ($change === 'conflict') {
+                AuditAssignmentFixture::respond($partner['user'], $assignment, 'conflict', 'New financial interest.', 'financial_interest');
+            } else {
+                app(IngestStatement::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business'], 2,
+                    'new.csv', StatementFixture::csv('200'), (string) Str::uuid());
+            }
+        },
+    ];
+    expect(runIdentityContenders($operations))->toBe([0, 0]);
+    $snapshot = app(GetStatementVerification::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']);
+    expect($snapshot === null || ! $snapshot['current'])->toBeTrue();
+})->with(['evidence', 'conflict']);

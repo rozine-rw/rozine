@@ -11,16 +11,19 @@ use App\Application\Auditor\SetAuditorAvailability;
 use App\Application\Auditor\VerifyAuditLocation;
 use App\Application\Evidence\IngestStatement;
 use App\Application\Evidence\RecordStatementTranscription;
+use App\Application\Evidence\RecordStatementVerification;
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Domain\Auditor\AuditEngagementState;
 use App\Models\AuditAssignment;
 use App\Models\BusinessProfile;
 use App\Models\Party;
+use App\Models\StatementTranscription;
 use App\Models\User;
 use Illuminate\Support\Str;
 
 /**
  * @phpstan-import-type Fixture from BusinessAuthorityFixture as BusinessFixture
+ * @phpstan-import-type Review from \App\Domain\Evidence\StatementAuditReview
  *
  * @phpstan-type Partner array{user: User, party: Party, staff: User}
  * @phpstan-type Fixture array{staff: User, business: string, authority: BusinessFixture, partners: list<Partner>}
@@ -69,6 +72,20 @@ final class AuditAssignmentFixture
             $input['rails'], $input['months'], $input['statements'], (string) Str::uuid());
 
         return ['document_id' => $documentId, 'transcription_id' => $transcription['data']['transcription']['id']];
+    }
+
+    /**
+     * @param  Fixture  $fixture
+     * @param  Review|null  $review
+     * @return array<string, mixed>
+     */
+    public static function verifyStatements(array $fixture, AuditAssignment $assignment, string $transcriptionId, ?array $review = null, int $evidenceRevision = 2, int $verificationRevision = 0, ?string $requestId = null): array
+    {
+        $transcription = StatementTranscription::query()->whereKey($transcriptionId)->firstOrFail();
+        $user = self::recipient($fixture, $assignment)['user'];
+
+        return app(RecordStatementVerification::class)->handle($user->id, 1, $assignment->id, $assignment->revision, $evidenceRevision, $verificationRevision,
+            $transcriptionId, $transcription->sha256, $review ?? StatementFixture::review($transcription->payload['source_hashes']), $requestId ?? (string) Str::uuid());
     }
 
     public static function independence(User $staff, string $businessId, string $partyId, int $revision = 0): void

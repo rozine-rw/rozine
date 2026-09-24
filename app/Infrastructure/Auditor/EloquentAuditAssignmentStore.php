@@ -150,21 +150,45 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     {
         return $this->scope($userId, $contextRevision, $this->businessId($assignmentId), true,
             function (array $context, array $candidates) use ($assignmentId, $operation): mixed {
-                [$record, $candidate] = $this->current($context, $candidates, $assignmentId);
+                [$record, $candidate, $profile] = $this->current($context, $candidates, $assignmentId);
                 if ($record->status !== 'accepted') {
                     throw new CommandRejection('ASSIGNMENT_NOT_ACCEPTED', 403);
                 }
 
                 return $operation(['id' => $record->id, 'business_id' => $record->business_id, 'party_id' => $candidate['id'],
                     'revision' => $record->revision, 'kind' => $record->state['kind'], 'business_revision' => $context['business']['revision'],
-                    'mandate_version' => $context['business']['mandate_version']]);
+                    'mandate_version' => $context['business']['mandate_version'], 'accreditation' => [
+                        'profile_revision' => $profile->revision, 'licence' => $candidate['standing']['licence'],
+                        'expires_on' => $candidate['standing']['expires_on'], 'checked_at' => $candidate['standing']['checked_at'],
+                    ]]);
             });
+    }
+
+    /** @param AcceptedAssignment $assignment */
+    public function retainsVerification(array $assignment): bool
+    {
+        $record = AuditAssignment::query()->whereKey($assignment['id'])->where('business_id', $assignment['business_id'])
+            ->where('party_id', $assignment['party_id'])->whereIn('status', ['accepted', 'completed'])->first();
+        if ($record === null || ! AuditAssignmentVersion::query()->where('assignment_id', $record->id)->where('revision', $assignment['revision'])
+            ->where('party_id', $assignment['party_id'])->where('status', 'accepted')->exists()
+            || AuditAssignmentVersion::query()->where('assignment_id', $record->id)->where('revision', '>', $assignment['revision'])->whereIn('status', ['offered', 'operations'])->exists()
+            || AuditConflictDeclaration::query()->where('business_id', $assignment['business_id'])->where('party_id', $assignment['party_id'])->exists()) {
+            return false;
+        }
+        $review = AuditorIndependenceReview::query()->where('business_id', $assignment['business_id'])->where('party_id', $assignment['party_id'])->first();
+        try {
+            $facts = $this->independence->facts($review?->state, $assignment['mandate_version'], now()->toDateTimeImmutable());
+        } catch (CommandRejection) {
+            return false;
+        }
+
+        return ! $this->dispatch->hasConflict($facts, now()->toDateTimeImmutable());
     }
 
     /**
      * @param  AuditContext  $context
      * @param  list<Candidate>  $candidates
-     * @return array{AuditAssignment, Candidate}
+     * @return array{AuditAssignment, Candidate, AuditorProfile}
      */
     private function current(array $context, array $candidates, string $assignmentId): array
     {
@@ -181,7 +205,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             throw new CommandRejection('AUDITOR_INDEPENDENCE_REVIEW_REQUIRED', 403);
         }
 
-        return [$record, $candidate];
+        return [$record, $candidate, $profile];
     }
 
     /** @return array<string, mixed> */
