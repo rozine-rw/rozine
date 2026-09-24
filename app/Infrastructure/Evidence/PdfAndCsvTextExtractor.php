@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Infrastructure\Evidence;
 
 use App\Application\Evidence\Contracts\StatementTextExtractor;
-use Exception;
 use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Parser;
 use SplTempFileObject;
+use Throwable;
 
 /** @phpstan-import-type Extraction from StatementTextExtractor */
 final class PdfAndCsvTextExtractor implements StatementTextExtractor
@@ -21,7 +21,7 @@ final class PdfAndCsvTextExtractor implements StatementTextExtractor
         if (! in_array($mediaType, ['application/pdf', 'text/csv'], true)) {
             return $this->review('unsupported-1', 'STATEMENT_TYPE_UNSUPPORTED');
         }
-        $version = $mediaType === 'application/pdf' ? 'smalot-pdfparser-2.12.5' : 'utf8-csv-1';
+        $version = $mediaType === 'application/pdf' ? 'smalot-pdfparser-2.12.5' : 'utf8-csv-2';
         $text = $content;
         $records = null;
         if ($mediaType === 'application/pdf') {
@@ -31,7 +31,7 @@ final class PdfAndCsvTextExtractor implements StatementTextExtractor
             try {
                 $document = (new Parser([], $config))->parseContent($content);
                 $text = $document->getText();
-            } catch (Exception) {
+            } catch (Throwable) {
                 return $this->review($version, 'PDF_TEXT_UNAVAILABLE');
             }
         }
@@ -43,7 +43,7 @@ final class PdfAndCsvTextExtractor implements StatementTextExtractor
         }
         if ($mediaType === 'text/csv') {
             $stream = new SplTempFileObject;
-            $stream->fwrite($text);
+            $stream->fwrite(str_replace(["\r\n", "\r"], "\n", $text));
             $stream->rewind();
             $columns = null;
             $records = 0;

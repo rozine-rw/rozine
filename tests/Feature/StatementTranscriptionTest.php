@@ -139,7 +139,7 @@ it('requires current Business authority for recording, history reads and operati
     $authority['terms']['people'] = array_map(fn (array $person): array => $person['party_id'] === $authority['people'][1]->id
         ? [...$person, 'permissions' => ['business.view']] : $person, $authority['terms']['people']);
     BusinessAuthorityFixture::configure($authority, 1);
-    expect($get->handle($authority['users'][1]->id, 1, $fixture['business']->id, $id)['id'])->toBe($id)
+    expect(fn () => $get->handle($authority['users'][1]->id, 1, $fixture['business']->id, $id))->toThrow(CommandRejection::class, 'ACTION_FORBIDDEN')
         ->and(fn () => StatementFixture::transcribe($fixture, $input, 2, actor: 1))->toThrow(CommandRejection::class, 'ACTION_FORBIDDEN');
     $authority['terms']['status'] = 'revoked';
     BusinessAuthorityFixture::configure($authority, 2);

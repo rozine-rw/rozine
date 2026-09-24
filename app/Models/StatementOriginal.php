@@ -20,11 +20,11 @@ class StatementOriginal extends Model
     protected $guarded = ['*'];
 
     /** @var list<string> */
-    protected $hidden = ['content'];
+    protected $hidden = ['content', 'filename'];
 
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['content' => 'encrypted', 'size_bytes' => 'integer', 'evidence_revision' => 'integer'];
+        return ['content' => 'encrypted', 'filename' => 'encrypted', 'size_bytes' => 'integer', 'evidence_revision' => 'integer'];
     }
 }

@@ -12,7 +12,8 @@ it('reconciles all rails without counting financing or transfers as revenue or d
     $result = (new StatementReconciliation)->reconcile($fixture['rails'], $fixture['months'], $fixture['statements'], $fixture['sources']);
     expect($result)->toBe([[
         'month' => '2026-08', 'operating_inflow' => '1000', 'operating_outflow' => '300',
-        'owner_draw' => '200', 'debt_service' => '150', 'verified' => false,
+        'owner_draw' => '200', 'debt_service' => '150', 'financing_inflow' => '2000',
+        'transfer_inflow' => '500', 'transfer_outflow' => '500', 'verified' => false,
         'source_ids' => ['original-a', 'original-b'], 'rail_ids' => ['bank-a', 'momo-b'],
         'classification_version' => StatementReconciliation::VERSION,
     ]]);
@@ -38,6 +39,8 @@ it('checks balance continuity after ordering complete months and respects a rail
     $fixture = StatementFixture::reconciliation();
     $fixture['months'] = ['2026-09', '2026-08'];
     $fixture['rails'][1]['active_until'] = '2026-08';
+    $fixture['statements'][1]['closing_balance'] = '0';
+    $fixture['statements'][1]['transactions'][] = StatementFixture::transaction('closing-cost', '-400', 'operating_outflow', source: 'original-b');
     $fixture['statements'][] = ['rail_id' => 'bank-a', 'month' => '2026-09', 'opening_balance' => '2950', 'closing_balance' => '2950',
         'source_ids' => ['original-a'], 'transactions' => []];
     $reconciler = new StatementReconciliation;
@@ -229,3 +232,131 @@ it('requires attributable same-month returns and refuses total returns above the
     ['malformed rail', 'STATEMENT_REFERENCE_INVALID'], ['malformed reference', 'STATEMENT_REFERENCE_INVALID'], ['negative return', 'STATEMENT_CLASSIFICATION_REQUIRED'],
     ['excess across returns', 'OWNER_RETURN_EXCEEDS_DRAW'],
 ]);
+
+it('refuses cash-flow inflation through an unmatched transfer or a debt repayment disguised as financing', function (string $case, string $reason): void {
+    $fixture = StatementFixture::reconciliation();
+    switch ($case) {
+        case 'expense hidden as transfer':
+            $fixture['statements'][0]['transactions'][1]['classification'] = 'transfer';
+            break;
+        case 'debt hidden as financing':
+            $fixture['statements'][0]['transactions'][6]['classification'] = 'financing';
+            break;
+        case 'transferred sales counted twice':
+            $fixture['statements'][1]['transactions'][0]['classification'] = 'operating_inflow';
+            $fixture['statements'][1]['transactions'][0]['transfer_of'] = null;
+            break;
+        case 'unmatched amount':
+            $fixture['statements'][1]['transactions'][0]['amount'] = '501';
+            $fixture['statements'][1]['closing_balance'] = '401';
+            break;
+        case 'counterpart points elsewhere':
+            $fixture['statements'][1]['transactions'][0]['transfer_of'] = ['rail_id' => 'bank-a', 'month' => '2026-08', 'reference' => 'another-transfer'];
+            break;
+        case 'same rail':
+            $fixture['statements'][0]['transactions'][3]['transfer_of'] = ['rail_id' => 'bank-a', 'month' => '2026-08', 'reference' => 'transfer-in'];
+            break;
+        case 'outside observed window':
+            $fixture['statements'][0]['transactions'][3]['transfer_of'] = ['rail_id' => 'momo-b', 'month' => '2026-09', 'reference' => 'transfer-in'];
+            break;
+        case 'undeclared rail':
+            $fixture['statements'][0]['transactions'][3]['transfer_of'] = ['rail_id' => 'undeclared', 'month' => '2026-08', 'reference' => 'transfer-in'];
+            break;
+        case 'reference on nontransfer':
+            $fixture['statements'][0]['transactions'][0]['transfer_of'] = ['rail_id' => 'momo-b', 'month' => '2026-08', 'reference' => 'transfer-in'];
+            break;
+        case 'duplicate changes counterpart':
+            $duplicate = $fixture['statements'][0]['transactions'][3];
+            $duplicate['transfer_of'] = ['rail_id' => 'momo-b', 'month' => '2026-08', 'reference' => 'different'];
+            $fixture['statements'][0]['transactions'][] = $duplicate;
+            break;
+    }
+    expect(fn () => (new StatementReconciliation)->reconcile($fixture['rails'], $fixture['months'], $fixture['statements'], $fixture['sources']))
+        ->toThrow(CommandRejection::class, $reason);
+})->with([
+    ['expense hidden as transfer', 'STATEMENT_TRANSFER_COUNTERPART_REQUIRED'], ['debt hidden as financing', 'STATEMENT_CLASSIFICATION_REQUIRED'],
+    ['transferred sales counted twice', 'STATEMENT_TRANSFER_COUNTERPART_REQUIRED'], ['unmatched amount', 'STATEMENT_TRANSFER_COUNTERPART_REQUIRED'],
+    ['counterpart points elsewhere', 'STATEMENT_TRANSFER_COUNTERPART_REQUIRED'], ['same rail', 'STATEMENT_TRANSFER_COUNTERPART_REQUIRED'],
+    ['outside observed window', 'STATEMENT_TRANSFER_COUNTERPART_REQUIRED'], ['undeclared rail', 'STATEMENT_TRANSFER_COUNTERPART_REQUIRED'],
+    ['reference on nontransfer', 'STATEMENT_CLASSIFICATION_REQUIRED'], ['duplicate changes counterpart', 'STATEMENT_DUPLICATE_CONFLICT'],
+]);
+
+it('matches a transfer across the year boundary and opens the receiving rail at zero', function (): void {
+    $rails = [
+        ['id' => 'bank', 'active_from' => '2026-12', 'active_until' => null],
+        ['id' => 'momo', 'active_from' => '2027-01', 'active_until' => null],
+    ];
+    $statements = [
+        ['rail_id' => 'bank', 'month' => '2026-12', 'opening_balance' => '1000', 'closing_balance' => '500', 'source_ids' => ['original-a'],
+            'transactions' => [StatementFixture::transaction('sent', '-500', 'transfer', '2026-12-31', transferOf: ['rail_id' => 'momo', 'month' => '2027-01', 'reference' => 'received'])]],
+        ['rail_id' => 'bank', 'month' => '2027-01', 'opening_balance' => '500', 'closing_balance' => '500', 'source_ids' => ['original-a'], 'transactions' => []],
+        ['rail_id' => 'momo', 'month' => '2027-01', 'opening_balance' => '0', 'closing_balance' => '500', 'source_ids' => ['original-b'],
+            'transactions' => [StatementFixture::transaction('received', '500', 'transfer', '2027-01-01', 'original-b', transferOf: ['rail_id' => 'bank', 'month' => '2026-12', 'reference' => 'sent'])]],
+    ];
+    $reconciler = new StatementReconciliation;
+    $result = $reconciler->reconcile($rails, ['2027-01', '2026-12'], $statements, ['original-a', 'original-b']);
+    expect(array_column($result, 'operating_inflow'))->toBe(['0', '0'])
+        ->and(array_column($result, 'transfer_inflow'))->toBe(['0', '500'])
+        ->and(array_column($result, 'transfer_outflow'))->toBe(['500', '0']);
+    $statements[2]['opening_balance'] = '1';
+    $statements[2]['closing_balance'] = '501';
+    expect(fn () => $reconciler->reconcile($rails, ['2026-12', '2027-01'], $statements, ['original-a', 'original-b']))
+        ->toThrow(CommandRejection::class, 'STATEMENT_RAIL_BOUNDARY_BALANCE_REQUIRED');
+});
+
+it('refuses to close a rail with an unexplained remaining balance', function (): void {
+    $fixture = StatementFixture::reconciliation();
+    $fixture['rails'][1]['active_until'] = '2026-08';
+    expect(fn () => (new StatementReconciliation)->reconcile($fixture['rails'], $fixture['months'], $fixture['statements'], $fixture['sources']))
+        ->toThrow(CommandRejection::class, 'STATEMENT_RAIL_BOUNDARY_BALANCE_REQUIRED');
+});
+
+it('retains both original references for an economic duplicate without doubling revenue', function (): void {
+    $fixture = StatementFixture::reconciliation();
+    $fixture['statements'][0]['source_ids'][] = 'original-b';
+    $duplicate = $fixture['statements'][0]['transactions'][0];
+    $duplicate['source_ids'] = ['original-b'];
+    $fixture['statements'][0]['transactions'][] = $duplicate;
+    $result = (new StatementReconciliation)->reconcile($fixture['rails'], $fixture['months'], $fixture['statements'], $fixture['sources']);
+    expect($result[0]['operating_inflow'])->toBe('1000')->and($result[0]['source_ids'])->toBe(['original-a', 'original-b']);
+});
+
+it('accepts zero entries in each classification without inventing income or deductions', function (): void {
+    $fixture = StatementFixture::reconciliation();
+    foreach ($fixture['statements'] as &$statement) {
+        $statement['opening_balance'] = $statement['closing_balance'] = '0';
+        foreach ($statement['transactions'] as &$transaction) {
+            $transaction['amount'] = '0';
+        }
+        unset($transaction);
+    }
+    unset($statement);
+    $result = (new StatementReconciliation)->reconcile($fixture['rails'], $fixture['months'], $fixture['statements'], $fixture['sources'])[0];
+    foreach (['operating_inflow', 'operating_outflow', 'owner_draw', 'debt_service', 'financing_inflow', 'transfer_inflow', 'transfer_outflow'] as $field) {
+        expect($result[$field])->toBe('0');
+    }
+});
+
+it('reconciles exactly thirty-six consecutive months and preserves an overdraft across year boundaries', function (): void {
+    $months = $statements = [];
+    $start = new DateTimeImmutable('2024-01-01');
+    for ($index = 0; $index < 36; $index++) {
+        $month = $start->modify('+'.$index.' months')->format('Y-m');
+        $months[] = $month;
+        $statements[] = ['rail_id' => 'bank', 'month' => $month, 'opening_balance' => '-500', 'closing_balance' => '-500',
+            'source_ids' => ['original-a'], 'transactions' => []];
+    }
+    $result = (new StatementReconciliation)->reconcile([['id' => 'bank', 'active_from' => '2023-12', 'active_until' => null]], $months, $statements, ['original-a']);
+    expect($result)->toHaveCount(36)->and($result[35]['month'])->toBe('2026-12')->and(array_unique(array_column($result, 'operating_inflow')))->toBe(['0']);
+});
+
+it('validates actual leap days instead of normalizing invalid dates', function (string $month, bool $valid): void {
+    $statement = ['rail_id' => 'bank', 'month' => $month, 'opening_balance' => '0', 'closing_balance' => '10', 'source_ids' => ['original-a'],
+        'transactions' => [StatementFixture::transaction('sale', '10', 'operating_inflow', $month.'-29')]];
+    $reconcile = fn (): array => (new StatementReconciliation)->reconcile([['id' => 'bank', 'active_from' => '2027-01', 'active_until' => null]], [$month], [$statement], ['original-a']);
+    if ($valid) {
+        expect($reconcile()[0]['operating_inflow'])->toBe('10');
+    } else {
+        expect($reconcile)->toThrow(CommandRejection::class, 'STATEMENT_TRANSACTION_DATE_INVALID');
+    }
+})->with([['2028-02', true], ['2027-02', false]]);

@@ -41,6 +41,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $statementMigration = require database_path('migrations/2026_09_24_070804_create_statement_evidence_tables.php');
     $openDraftMigration = require database_path('migrations/2026_09_24_075833_add_one_open_draft_constraint_to_business_applications.php');
     $transcriptionMigration = require database_path('migrations/2026_09_24_081222_create_statement_transcriptions_table.php');
+    $filenameMigration = require database_path('migrations/2026_09_24_085637_encrypt_statement_original_filenames.php');
     $party = Party::factory()->verified()->create();
     $user = User::factory()->for($party)->create();
     RoleMembership::factory()->for($party)->active()->create();
@@ -49,6 +50,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
 
     expect(Schema::hasIndex('users', ['party_id']))->toBeTrue();
 
+    $filenameMigration->down();
     $transcriptionMigration->down();
     $openDraftMigration->down();
     expect(Schema::hasIndex('business_applications', 'business_application_one_draft'))->toBeFalse();
@@ -81,6 +83,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $statementMigration->up();
     $openDraftMigration->up();
     $transcriptionMigration->up();
+    $filenameMigration->up();
 
     expect(Schema::hasTable('parties'))->toBeTrue()
         ->and(Schema::hasTable('role_memberships'))->toBeTrue()

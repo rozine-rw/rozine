@@ -18,6 +18,7 @@ use App\Models\StatementOriginal;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\BusinessApplicationFixture;
 use Tests\Support\BusinessAuthorityFixture;
@@ -30,7 +31,10 @@ it('starts with missing evidence without inventing observations or mutating stat
     $this->assertDatabaseCount('statement_evidence', 0);
 });
 
-it('atomically retains encrypted originals and extraction lineage with replayable receipts', function (): void {
+it('atomically retains encrypted originals and pending extraction lineage with replayable receipts before parsing', function (): void {
+    $extractor = $this->createMock(StatementTextExtractor::class);
+    $extractor->expects($this->never())->method('extract');
+    $this->app->instance(StatementTextExtractor::class, $extractor);
     $fixture = BusinessApplicationFixture::make();
     $request = (string) Str::uuid();
     $result = StatementFixture::ingest($fixture, requestId: $request);
@@ -41,11 +45,10 @@ it('atomically retains encrypted originals and extraction lineage with replayabl
         ->and(app(FindStatementOperation::class)->handle($fixture['authority']['users'][0]->id, 1, $request))->toBe($result)
         ->and($original->content)->toBe(StatementFixture::csv())
         ->and($original->getRawOriginal('content'))->not->toContain('SYNTHETIC-ONLY')
-        ->and($extraction->getRawOriginal('text'))->not->toContain('SYNTHETIC-ONLY')
-        ->and($extraction->text)->toBe(StatementFixture::csv())
+        ->and($extraction->text)->toBeNull()
         ->and($original->toArray())->not->toHaveKey('content')
         ->and($extraction->toArray())->not->toHaveKey('text')
-        ->and($result['data']['evidence']['documents'][0]['extraction']['status'])->toBe('text_extracted')
+        ->and($result['data']['evidence']['documents'][0]['extraction']['status'])->toBe('pending')
         ->and(json_encode($result))->not->toContain('SYNTHETIC-ONLY');
     $download = app(ReadStatementOriginal::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']->id, $original->id);
     expect($download['content'])->toBe(StatementFixture::csv())->and($download['sha256'])->toBe(hash('sha256', $download['content']));
@@ -61,7 +64,32 @@ it('retains non-UTF8 PDF bytes exactly through encrypted storage and authorized 
         'original.pdf', $content, (string) Str::uuid());
     $original = app(ReadStatementOriginal::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']->id, $result['data']['document_id']);
     expect($original['content'])->toBe($content)
-        ->and($result['data']['evidence']['documents'][0]['extraction']['status'])->toBe('text_extracted');
+        ->and($result['data']['evidence']['documents'][0]['extraction']['status'])->toBe('pending');
+});
+
+it('encrypts original filenames and exposes generated display names in manifests and journal receipts', function (): void {
+    $fixture = BusinessApplicationFixture::make();
+    $name = 'PRIVATE-SYNTHETIC-ACCOUNT-123.csv';
+    $receipt = app(IngestStatement::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']->id, 0, $name, StatementFixture::csv(), (string) Str::uuid());
+    $original = StatementOriginal::query()->firstOrFail();
+    expect($original->filename)->toBe($name)->and($original->getRawOriginal('filename'))->not->toContain('PRIVATE-SYNTHETIC')
+        ->and($original->toArray())->not->toHaveKey('filename')
+        ->and($receipt['data']['evidence']['documents'][0]['filename'])->toBe('statement-'.$original->id.'.csv')
+        ->and(json_encode($receipt))->not->toContain($name)
+        ->and(json_encode(CommandOperation::query()->where('command', 'statement.ingest')->firstOrFail()->getAttributes()))->not->toContain($name)
+        ->and(app(ReadStatementOriginal::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']->id, $original->id)['filename'])->toBe($name);
+});
+
+it('round trips existing original filenames through the privacy migration without changing immutable source bytes', function (): void {
+    $original = StatementOriginal::factory()->create(['filename' => 'legacy-synthetic.csv']);
+    $rawContent = $original->getRawOriginal('content');
+    $migration = require database_path('migrations/2026_09_24_085637_encrypt_statement_original_filenames.php');
+    $migration->down();
+    expect(DB::table('statement_originals')->where('id', $original->id)->value('filename'))->toBe('legacy-synthetic.csv');
+    $migration->up();
+    expect($original->refresh()->filename)->toBe('legacy-synthetic.csv')->and($original->getRawOriginal('content'))->toBe($rawContent)
+        ->and(fn () => DB::transaction(fn (): bool => $original->forceFill(['filename' => 'rewrite.csv'])->save()))
+        ->toThrow(QueryException::class, 'Statement originals and extractions are immutable');
 });
 
 it('deduplicates original bytes and preserves superseded source bytes when new evidence arrives', function (): void {
@@ -94,21 +122,22 @@ it('retains an unreadable original for review without approving or fabricating i
     $result = app(IngestStatement::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']->id, 0,
         'original.pdf', $content, (string) Str::uuid());
     expect($result['code'])->toBe('INGESTED_NOT_AUDIT_APPROVED')
-        ->and($result['data']['evidence']['documents'][0]['extraction']['reason_codes'])->toBe(['PDF_TEXT_UNAVAILABLE'])
+        ->and($result['data']['evidence']['documents'][0]['extraction']['status'])->toBe('pending')
         ->and(StatementOriginal::query()->firstOrFail()->content)->toBe($content);
 });
 
-it('rolls back source storage and outcomes on unexpected extraction failures so retry can recover', function (): void {
+it('rolls back source storage and outcomes together if pending lineage cannot be committed', function (): void {
     $fixture = BusinessApplicationFixture::make();
     $request = (string) Str::uuid();
-    $real = app(StatementTextExtractor::class);
-    $extractor = $this->createMock(StatementTextExtractor::class);
-    $extractor->method('extract')->willThrowException(new RuntimeException('synthetic worker failure'));
-    $this->app->instance(StatementTextExtractor::class, $extractor);
-    expect(fn () => StatementFixture::ingest($fixture, requestId: $request))->toThrow(RuntimeException::class, 'synthetic worker failure');
+    $event = 'eloquent.creating: '.StatementExtraction::class;
+    Event::listen($event, fn () => throw new RuntimeException('synthetic persistence failure'));
+    try {
+        expect(fn () => StatementFixture::ingest($fixture, requestId: $request))->toThrow(RuntimeException::class, 'synthetic persistence failure');
+    } finally {
+        Event::forget($event);
+    }
     $this->assertDatabaseCount('statement_evidence', 0);
     expect(CommandOperation::query()->where('command', 'statement.ingest')->count())->toBe(0);
-    $this->app->instance(StatementTextExtractor::class, $real);
     expect(StatementFixture::ingest($fixture, requestId: $request)['code'])->toBe('INGESTED_NOT_AUDIT_APPROVED');
 });
 
@@ -132,14 +161,18 @@ it('scopes original downloads manifests and outcomes to current authority', func
         ->toThrow(CommandRejection::class, 'MANDATE_REQUIRED');
 });
 
-it('does not let a view-only mandate upload evidence', function (): void {
+it('keeps raw evidence private from a view-only mandate while allowing safe metadata', function (): void {
     $fixture = BusinessApplicationFixture::make('organization', 2);
+    $receipt = StatementFixture::ingest($fixture);
     $authority = $fixture['authority'];
     $authority['terms']['required_signatories'] = [$authority['people'][0]->id];
     $authority['terms']['people'] = array_map(fn (array $person): array => $person['party_id'] === $authority['people'][1]->id
         ? [...$person, 'permissions' => ['business.view']] : $person, $authority['terms']['people']);
     BusinessAuthorityFixture::configure($authority, 1);
-    expect(fn () => StatementFixture::ingest($fixture, actor: 1))->toThrow(CommandRejection::class, 'ACTION_FORBIDDEN');
+    expect(fn () => StatementFixture::ingest($fixture, actor: 1))->toThrow(CommandRejection::class, 'ACTION_FORBIDDEN')
+        ->and(fn () => app(ReadStatementOriginal::class)->handle($authority['users'][1]->id, 1, $fixture['business']->id, $receipt['data']['document_id']))
+        ->toThrow(CommandRejection::class, 'ACTION_FORBIDDEN')
+        ->and(app(GetStatementEvidence::class)->handle($authority['users'][1]->id, 1, $fixture['business']->id)['documents'])->toHaveCount(1);
 });
 
 it('fails closed on stored original integrity or incomplete extraction lineage', function (string $fault): void {

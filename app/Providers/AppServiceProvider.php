@@ -8,6 +8,7 @@ use App\Application\Business\Contracts\BusinessApplicationStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Environment\Contracts\DemoFixtureStore;
 use App\Application\Environment\EnvironmentIsolation;
+use App\Application\Evidence\Contracts\StatementExtractionQueue;
 use App\Application\Evidence\Contracts\StatementStore;
 use App\Application\Evidence\Contracts\StatementTextExtractor;
 use App\Application\Identity\Contracts\ConsentCatalog;
@@ -19,8 +20,9 @@ use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Infrastructure\Business\EloquentBusinessApplicationStore;
 use App\Infrastructure\Business\EloquentBusinessAuthorityStore;
 use App\Infrastructure\Environment\EloquentDemoFixtureStore;
+use App\Infrastructure\Evidence\EloquentStatementExtractionQueue;
 use App\Infrastructure\Evidence\EloquentStatementStore;
-use App\Infrastructure\Evidence\PdfAndCsvTextExtractor;
+use App\Infrastructure\Evidence\IsolatedStatementTextExtractor;
 use App\Infrastructure\Identity\EloquentConsentCatalog;
 use App\Infrastructure\Identity\EloquentIdentityAccessStore;
 use App\Infrastructure\Identity\EloquentIdentityRepository;
@@ -58,7 +60,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(BusinessApplicationStore::class, EloquentBusinessApplicationStore::class);
         $this->app->bind(ConsentCatalog::class, EloquentConsentCatalog::class);
         $this->app->bind(StatementStore::class, EloquentStatementStore::class);
-        $this->app->bind(StatementTextExtractor::class, PdfAndCsvTextExtractor::class);
+        $this->app->bind(StatementTextExtractor::class, IsolatedStatementTextExtractor::class);
+        $this->app->bind(StatementExtractionQueue::class, EloquentStatementExtractionQueue::class);
     }
 
     /**

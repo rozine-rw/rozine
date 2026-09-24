@@ -6,7 +6,6 @@ namespace App\Infrastructure\Evidence;
 
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\Contracts\StatementStore;
-use App\Application\Evidence\Contracts\StatementTextExtractor;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
@@ -35,7 +34,6 @@ final class EloquentStatementStore implements StatementStore
         private IdentityRepository $identities,
         private OperationJournal $journal,
         private StatementSource $sources,
-        private StatementTextExtractor $extractor,
         private StatementReconciliation $reconciler,
         private CanonicalJson $json,
     ) {}
@@ -66,11 +64,11 @@ final class EloquentStatementStore implements StatementStore
                         }
                         $original = StatementOriginal::query()->where('statement_evidence_id', $evidence->id)->where('sha256', $source['sha256'])->first(['id']);
                         if ($original === null) {
-                            $extraction = $this->extractor->extract($content, $source['media_type']);
                             $original = new StatementOriginal;
                             $original->forceFill([...$source, 'statement_evidence_id' => $evidence->id, 'evidence_revision' => $revision + 1,
                                 'content' => $content, 'actor_user_id' => $userId, 'actor_party_id' => $partyId])->save();
-                            (new StatementExtraction)->forceFill([...$extraction, 'statement_original_id' => $original->id, 'revision' => 1])->save();
+                            (new StatementExtraction)->forceFill(['statement_original_id' => $original->id, 'revision' => 1,
+                                'parser_version' => 'pending-1', 'status' => 'pending', 'reason_codes' => [], 'text' => null, 'record_count' => null])->save();
                             $evidence->forceFill(['revision' => $revision + 1])->save();
                         }
 
@@ -90,7 +88,7 @@ final class EloquentStatementStore implements StatementStore
     /** @return Original */
     public function read(int $userId, int $contextRevision, string $businessId, string $documentId): array
     {
-        return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null,
+        return $this->authority->handle($userId, $contextRevision, $businessId, 'application.save', null,
             function () use ($businessId, $documentId): array {
                 $evidence = StatementEvidence::query()->where('business_id', $businessId)->first();
                 $original = StatementOriginal::query()->where('statement_evidence_id', $evidence?->id)->whereKey($documentId)->first()
@@ -181,7 +179,7 @@ final class EloquentStatementStore implements StatementStore
     /** @return Transcription|null */
     public function transcription(int $userId, int $contextRevision, string $businessId, ?string $transcriptionId): ?array
     {
-        return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null,
+        return $this->authority->handle($userId, $contextRevision, $businessId, 'application.save', null,
             function () use ($businessId, $transcriptionId): ?array {
                 $evidence = StatementEvidence::query()->where('business_id', $businessId)->first();
                 $query = StatementTranscription::query()->where('statement_evidence_id', $evidence?->id)->orderByDesc('evidence_revision');
@@ -213,14 +211,14 @@ final class EloquentStatementStore implements StatementStore
             return ['revision' => 0, 'documents' => []];
         }
         $originals = StatementOriginal::query()->where('statement_evidence_id', $evidence->id)->orderBy('evidence_revision')
-            ->get(['id', 'filename', 'sha256', 'media_type', 'size_bytes', 'created_at']);
+            ->get(['id', 'sha256', 'media_type', 'size_bytes', 'created_at']);
         $extractions = StatementExtraction::query()->whereIn('statement_original_id', $originals->modelKeys())
             ->orderByDesc('revision')->get(['id', 'statement_original_id', 'revision', 'parser_version', 'status', 'reason_codes', 'record_count'])
             ->unique('statement_original_id')->keyBy('statement_original_id');
         $documents = [];
         foreach ($originals as $original) {
             $extraction = $extractions->get($original->id) ?? throw new RuntimeException('Statement extraction is missing.');
-            $documents[] = ['id' => $original->id, 'filename' => $original->filename, 'sha256' => $original->sha256,
+            $documents[] = ['id' => $original->id, 'filename' => 'statement-'.$original->id.($original->media_type === 'application/pdf' ? '.pdf' : '.csv'), 'sha256' => $original->sha256,
                 'media_type' => $original->media_type, 'size_bytes' => $original->size_bytes, 'received_at' => $original->created_at->toIso8601String(),
                 'extraction' => ['id' => $extraction->id, 'revision' => $extraction->revision, 'parser_version' => $extraction->parser_version,
                     'status' => $extraction->status, 'reason_codes' => $extraction->reason_codes, 'record_count' => $extraction->record_count]];

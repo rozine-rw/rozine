@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Application\Evidence\Contracts\StatementTextExtractor;
+use App\Infrastructure\Evidence\PdfAndCsvTextExtractor;
 use Tests\Support\StatementFixture;
 
 it('extracts text from a real PDF without treating it as verified financial data', function (): void {
-    $result = app(StatementTextExtractor::class)->extract(StatementFixture::pdf(), 'application/pdf');
+    $result = app(PdfAndCsvTextExtractor::class)->extract(StatementFixture::pdf(), 'application/pdf');
     expect($result['status'])->toBe('text_extracted')->and($result['text'])->toContain('Synthetic statement fixture only')
         ->and($result['parser_version'])->toBe('smalot-pdfparser-2.12.5')
         ->and($result['record_count'])->toBeNull()->and($result)->not->toHaveKey('verified');
@@ -14,13 +14,27 @@ it('extracts text from a real PDF without treating it as verified financial data
 
 it('preserves CSV text and recognizes quoted multiline records without financial coercion', function (): void {
     $text = "date,description,amount\n2026-08-01,\"First line\nsecond line\",9007199254740993\n\n";
-    $result = app(StatementTextExtractor::class)->extract($text, 'text/csv');
+    $result = app(PdfAndCsvTextExtractor::class)->extract($text, 'text/csv');
     expect($result['text'])->toBe($text)->and($result['status'])->toBe('text_extracted')
         ->and($result['record_count'])->toBe(2)->and($result['reason_codes'])->toBe([]);
 });
 
+it('preserves BOM and line-ending bytes while recognizing exported CSV records', function (string $ending, string $bom): void {
+    $text = $bom.'date,amount'.$ending.'2026-08-01,100'.$ending;
+    $result = app(PdfAndCsvTextExtractor::class)->extract($text, 'text/csv');
+    expect($result['status'])->toBe('text_extracted')->and($result['text'])->toBe($text)->and($result['record_count'])->toBe(2);
+})->with(["\n", "\r\n", "\r"])->with(['', "\xEF\xBB\xBF"]);
+
+it('accepts exactly the extracted-text limit without truncating the source', function (): void {
+    $prefix = "reference,amount\n";
+    $text = $prefix.str_repeat('x', PdfAndCsvTextExtractor::MAX_TEXT_BYTES - strlen($prefix) - 2).',0';
+    $result = app(PdfAndCsvTextExtractor::class)->extract($text, 'text/csv');
+    expect(strlen($text))->toBe(PdfAndCsvTextExtractor::MAX_TEXT_BYTES)->and($result['status'])->toBe('text_extracted')
+        ->and($result['text'])->toBe($text)->and($result['record_count'])->toBe(2);
+});
+
 it('returns actionable extraction feedback instead of inventing data', function (string $content, string $mediaType, string $reason): void {
-    $result = app(StatementTextExtractor::class)->extract($content, $mediaType);
+    $result = app(PdfAndCsvTextExtractor::class)->extract($content, $mediaType);
     expect($result['status'])->toBe('needs_review')->and($result['reason_codes'])->toBe([$reason])
         ->and($result['text'])->toBeNull()->and($result['record_count'])->toBeNull();
 })->with([

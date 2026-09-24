@@ -63,14 +63,14 @@ final class StatementFixture
                         self::transaction('sales', '1000', 'operating_inflow'),
                         self::transaction('cost', '-200', 'operating_outflow'),
                         self::transaction('loan', '2000', 'financing'),
-                        self::transaction('transfer-out', '-500', 'transfer'),
+                        self::transaction('transfer-out', '-500', 'transfer', transferOf: ['rail_id' => 'momo-b', 'month' => '2026-08', 'reference' => 'transfer-in']),
                         self::transaction('draw', '-300', 'owner_draw'),
                         self::transaction('returned', '100', 'owner_return', returnOf: ['rail_id' => 'bank-a', 'month' => '2026-08', 'reference' => 'draw']),
                         self::transaction('debt', '-150', 'debt_service'),
                     ]],
                 ['rail_id' => 'momo-b', 'month' => '2026-08', 'opening_balance' => '0', 'closing_balance' => '400',
                     'source_ids' => ['original-b'], 'transactions' => [
-                        self::transaction('transfer-in', '500', 'transfer', source: 'original-b'),
+                        self::transaction('transfer-in', '500', 'transfer', source: 'original-b', transferOf: ['rail_id' => 'bank-a', 'month' => '2026-08', 'reference' => 'transfer-out']),
                         self::transaction('momo-cost', '-100', 'operating_outflow', source: 'original-b'),
                     ]],
             ],
@@ -79,12 +79,13 @@ final class StatementFixture
 
     /**
      * @param  DrawRef|null  $returnOf
+     * @param  DrawRef|null  $transferOf
      * @return Transaction
      */
-    public static function transaction(string $reference, string $amount, string $classification, string $date = '2026-08-15', string $source = 'original-a', ?array $returnOf = null, ?string $exceptionId = null): array
+    public static function transaction(string $reference, string $amount, string $classification, string $date = '2026-08-15', string $source = 'original-a', ?array $returnOf = null, ?string $exceptionId = null, ?array $transferOf = null): array
     {
         return ['reference' => $reference, 'date' => $date, 'amount' => $amount, 'classification' => $classification,
-            'source_ids' => [$source], 'return_of' => $returnOf, 'exception_id' => $exceptionId];
+            'source_ids' => [$source], 'return_of' => $returnOf, 'transfer_of' => $transferOf, 'exception_id' => $exceptionId];
     }
 
     public static function csv(string $amount = '100'): string
@@ -103,6 +104,28 @@ final class StatementFixture
             '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
             '<< /Length '.strlen($stream).">>\nstream\n".$stream."\nendstream",
         ];
+
+        return self::pdfObjects($objects);
+    }
+
+    public static function expandingPdf(): string
+    {
+        $compressed = gzcompress(str_repeat('x', 8 * 1024 * 1024));
+        if ($compressed === false) {
+            throw new \RuntimeException('Could not prepare synthetic compressed PDF.');
+        }
+        $objects = ['<< /Type /Catalog /Pages 2 0 R >>', '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 100] /Contents 4 0 R >>'];
+        for ($index = 0; $index < 60; $index++) {
+            $objects[] = '<< /Filter /FlateDecode /Length '.strlen($compressed).">>\nstream\n".$compressed."\nendstream";
+        }
+
+        return self::pdfObjects($objects);
+    }
+
+    /** @param list<string> $objects */
+    public static function pdfObjects(array $objects, string $trailer = ''): string
+    {
         $pdf = "%PDF-1.4\n%\xe2\xe3\xcf\xd3\n";
         $offsets = [];
         foreach ($objects as $index => $object) {
@@ -110,12 +133,13 @@ final class StatementFixture
             $pdf .= ($index + 1)." 0 obj\n".$object."\nendobj\n";
         }
         $start = strlen($pdf);
-        $pdf .= "xref\n0 6\n0000000000 65535 f \n";
+        $size = count($objects) + 1;
+        $pdf .= "xref\n0 {$size}\n0000000000 65535 f \n";
         foreach ($offsets as $offset) {
             $pdf .= sprintf("%010d 00000 n \n", $offset);
         }
 
-        return $pdf."trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n{$start}\n%%EOF\n";
+        return $pdf."trailer\n<< /Size {$size} /Root 1 0 R {$trailer} >>\nstartxref\n{$start}\n%%EOF\n";
     }
 
     /**

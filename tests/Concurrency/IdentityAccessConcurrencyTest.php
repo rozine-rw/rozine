@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\WithBusinessAuthority;
+use App\Application\Evidence\Contracts\StatementExtractionQueue;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\ChangeMembership;
@@ -527,4 +528,17 @@ it('admits one competing statement import against the same evidence revision', f
     expect(runIdentityContenders($operations))->toBe([0, 2])
         ->and(StatementEvidence::query()->firstOrFail()->revision)->toBe(1)
         ->and(StatementOriginal::query()->count())->toBe(1);
+});
+
+it('appends one terminal extraction when committed workers race on the same original', function (): void {
+    $fixture = BusinessApplicationFixture::make();
+    StatementFixture::ingest($fixture);
+    $process = function (): void {
+        app(StatementExtractionQueue::class)->processPending(1);
+    };
+    expect(runIdentityContenders([$process, $process]))->toBe([0, 0])
+        ->and(StatementExtraction::query()->orderBy('revision')->pluck('revision')->all())->toBe([1, 2])
+        ->and(StatementExtraction::query()->where('revision', 2)->firstOrFail()->status)->toBe('text_extracted')
+        ->and(StatementOriginal::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'statement.ingest')->count())->toBe(1);
 });

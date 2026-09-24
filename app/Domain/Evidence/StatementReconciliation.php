@@ -14,13 +14,13 @@ use DateTimeImmutable;
  *
  * @phpstan-type Rail array{id: string, active_from: string, active_until: string|null}
  * @phpstan-type DrawRef array{rail_id: string, month: string, reference: string}
- * @phpstan-type Transaction array{reference: string, date: string, amount: string, classification: string, source_ids: list<string>, return_of: DrawRef|null, exception_id: string|null}
+ * @phpstan-type Transaction array{reference: string, date: string, amount: string, classification: string, source_ids: list<string>, return_of: DrawRef|null, transfer_of: DrawRef|null, exception_id: string|null}
  * @phpstan-type Statement array{rail_id: string, month: string, opening_balance: string, closing_balance: string, source_ids: list<string>, transactions: list<Transaction>}
- * @phpstan-type Observation array{month: string, operating_inflow: string, operating_outflow: string, owner_draw: string, debt_service: string, verified: false, source_ids: list<string>, rail_ids: list<string>, classification_version: string}
+ * @phpstan-type Observation array{month: string, operating_inflow: string, operating_outflow: string, owner_draw: string, debt_service: string, financing_inflow: string, transfer_inflow: string, transfer_outflow: string, verified: false, source_ids: list<string>, rail_ids: list<string>, classification_version: string}
  */
 final class StatementReconciliation
 {
-    public const VERSION = 'statement-classification-1';
+    public const VERSION = 'statement-classification-2';
 
     /**
      * $months and $availableSources come from the authorized observation window and source catalog.
@@ -79,8 +79,10 @@ final class StatementReconciliation
         }
         $observations = [];
         $closing = [];
+        $transfers = [];
         foreach ($months as $month) {
             $inflow = $outflow = $draws = $debt = BigInteger::zero();
+            $financing = $transferIn = $transferOut = BigInteger::zero();
             $sources = $active = $drawEntries = $returns = [];
             foreach ($rails as $rail) {
                 $statement = $indexed[$month.'/'.$rail['id']] ?? null;
@@ -91,6 +93,10 @@ final class StatementReconciliation
                 $sources = array_merge($sources, $statement['source_ids']);
                 $opening = $this->amount($statement['opening_balance']);
                 $ending = $this->amount($statement['closing_balance']);
+                if (($rail['active_from'] === $month && $month > $months[0] && ! $opening->isZero())
+                    || ($rail['active_until'] === $month && ! $ending->isZero())) {
+                    throw new CommandRejection('STATEMENT_RAIL_BOUNDARY_BALANCE_REQUIRED', 422);
+                }
                 if (isset($closing[$rail['id']]) && ! $opening->isEqualTo($closing[$rail['id']])) {
                     throw new CommandRejection('STATEMENT_BALANCE_CONTINUITY_REQUIRED', 422);
                 }
@@ -104,8 +110,10 @@ final class StatementReconciliation
                         throw new CommandRejection('STATEMENT_TRANSACTION_DATE_INVALID', 422);
                     }
                     $return = $transaction['return_of'];
+                    $transfer = $transaction['transfer_of'];
                     $fingerprint = [$transaction['date'], $transaction['amount'], $transaction['classification'],
-                        $return === null ? null : [$return['month'], $return['rail_id'], $return['reference']], $transaction['exception_id']];
+                        $return === null ? null : [$return['month'], $return['rail_id'], $return['reference']],
+                        $transfer === null ? null : [$transfer['month'], $transfer['rail_id'], $transfer['reference']], $transaction['exception_id']];
                     if (isset($seen[$transaction['reference']])) {
                         if ($seen[$transaction['reference']] !== $fingerprint) {
                             throw new CommandRejection('STATEMENT_DUPLICATE_CONFLICT', 422);
@@ -117,9 +125,10 @@ final class StatementReconciliation
                     $amount = $this->amount($transaction['amount']);
                     $kind = $transaction['classification'];
                     if (! in_array($kind, ['operating_inflow', 'operating_outflow', 'financing', 'transfer', 'owner_draw', 'owner_return', 'debt_service'], true)
-                        || ($amount->isNegative() && in_array($kind, ['operating_inflow', 'owner_return'], true))
+                        || ($amount->isNegative() && in_array($kind, ['operating_inflow', 'owner_return', 'financing'], true))
                         || ($amount->isPositive() && in_array($kind, ['operating_outflow', 'owner_draw', 'debt_service'], true))
-                        || ($return !== null && $kind !== 'owner_return') || ($transaction['exception_id'] !== null && $kind !== 'owner_draw')) {
+                        || ($return !== null && $kind !== 'owner_return') || ($transfer !== null && $kind !== 'transfer')
+                        || ($transaction['exception_id'] !== null && $kind !== 'owner_draw')) {
                         throw new CommandRejection('STATEMENT_CLASSIFICATION_REQUIRED', 422);
                     }
                     $balance = $balance->plus($amount);
@@ -150,6 +159,18 @@ final class StatementReconciliation
                         $outflow = $outflow->plus($amount->abs());
                     } elseif ($kind === 'debt_service') {
                         $debt = $debt->plus($amount->abs());
+                    } elseif ($kind === 'financing') {
+                        $financing = $financing->plus($amount);
+                    } elseif ($kind === 'transfer') {
+                        if ($transfer === null || $transfer['rail_id'] === $rail['id']) {
+                            throw new CommandRejection('STATEMENT_TRANSFER_COUNTERPART_REQUIRED', 422);
+                        }
+                        $this->month($transfer['month']);
+                        $this->identifier($transfer['rail_id']);
+                        $this->identifier($transfer['reference']);
+                        $transfers[$drawKey] = ['amount' => $amount, 'counterpart' => $transfer['month'].'/'.$transfer['rail_id'].'/'.$transfer['reference']];
+                        $transferIn = $transferIn->plus($amount->isPositive() ? $amount : 0);
+                        $transferOut = $transferOut->plus($amount->isNegative() ? $amount->abs() : 0);
                     }
                 }
                 if (! $balance->isEqualTo($ending)) {
@@ -175,8 +196,15 @@ final class StatementReconciliation
             sort($sources);
             sort($active);
             $observations[] = ['month' => $month, 'operating_inflow' => (string) $inflow, 'operating_outflow' => (string) $outflow,
-                'owner_draw' => (string) $draws, 'debt_service' => (string) $debt, 'verified' => false,
+                'owner_draw' => (string) $draws, 'debt_service' => (string) $debt, 'financing_inflow' => (string) $financing,
+                'transfer_inflow' => (string) $transferIn, 'transfer_outflow' => (string) $transferOut, 'verified' => false,
                 'source_ids' => $sources, 'rail_ids' => $active, 'classification_version' => self::VERSION];
+        }
+        foreach ($transfers as $key => $transfer) {
+            $counterpart = $transfers[$transfer['counterpart']] ?? null;
+            if ($counterpart === null || $counterpart['counterpart'] !== $key || ! $counterpart['amount']->isEqualTo($transfer['amount']->negated())) {
+                throw new CommandRejection('STATEMENT_TRANSFER_COUNTERPART_REQUIRED', 422);
+            }
         }
 
         return $observations;

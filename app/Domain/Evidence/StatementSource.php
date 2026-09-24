@@ -15,7 +15,7 @@ final class StatementSource
     public function describe(string $filename, string $content): array
     {
         if ($filename === '' || strlen($filename) > 180 || ! mb_check_encoding($filename, 'UTF-8')
-            || preg_match('/[\\x00-\\x1f\\x7f\\\\\\/]/', $filename) === 1) {
+            || preg_match('/[\\p{Cc}\\p{Cf}\\\\\\/]/u', $filename) === 1) {
             throw new CommandRejection('STATEMENT_FILENAME_INVALID', 422, fieldErrors: ['file' => ['Use a plain PDF or CSV filename.']]);
         }
         $length = strlen($content);
