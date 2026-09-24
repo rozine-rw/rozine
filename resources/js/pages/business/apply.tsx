@@ -380,28 +380,29 @@ export default function BusinessApply(props: BusinessApplyProps) {
      * `accepted_principal` (or without it, for the full offer), and the new quote is accepted
      * afresh. It is never offered on a refusal.
      */
-    const reduce =
-        step === 'review' && readyQuote !== null && canSign && canEvaluate
-            ? {
-                  busy: !idle,
-                  error: command.errors.accepted_principal,
-                  onReduce: (acceptedPrincipal: string | null) => {
-                      send({
-                          name: 'evaluate',
-                          advance: false,
-                          payload: {
-                              target: application.target?.amount,
-                              term_months: application.term_months,
-                              evidence_version: props.evidence.version,
-                              ...(acceptedPrincipal === null
-                                  ? {}
-                                  : { accepted_principal: acceptedPrincipal }),
-                              ...context(),
-                          },
-                      });
-                  },
-              }
-            : null;
+    const reducible =
+        step === 'review' && readyQuote !== null && canSign && canEvaluate;
+    const reduce = reducible
+        ? {
+              busy: !idle,
+              error: command.errors.accepted_principal,
+              onReduce: (acceptedPrincipal: string | null) => {
+                  send({
+                      name: 'evaluate',
+                      advance: false,
+                      payload: {
+                          target: application.target?.amount,
+                          term_months: application.term_months,
+                          evidence_version: props.evidence.version,
+                          ...(acceptedPrincipal === null
+                              ? {}
+                              : { accepted_principal: acceptedPrincipal }),
+                          ...context(),
+                      },
+                  });
+              },
+          }
+        : null;
 
     const offersCommand = {
         business: props.evidence.eligibility.status === 'eligible' && canSave,
@@ -436,10 +437,9 @@ export default function BusinessApply(props: BusinessApplyProps) {
     ) : null;
 
     const errors = command.errors;
-    const shownFields =
-        reduce === null
-            ? SHOWN_FIELDS[step]
-            : [...SHOWN_FIELDS[step], 'accepted_principal'];
+    const shownFields = reducible
+        ? [...SHOWN_FIELDS[step], 'accepted_principal']
+        : SHOWN_FIELDS[step];
     /* A field error this step has no field for (e.g. `step`) still reaches the business. */
     const unshownError = Object.entries(errors).find(
         ([field, message]) =>
