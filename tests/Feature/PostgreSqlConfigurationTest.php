@@ -32,6 +32,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $migration = require database_path('migrations/2026_09_23_101346_create_identity_parties_and_role_memberships.php');
     $accessMigration = require database_path('migrations/2026_09_23_143859_add_controlled_identity_access.php');
     $navigationMigration = require database_path('migrations/2026_09_24_020204_create_staff_access_and_role_bookmarks.php');
+    $staffRolesMigration = require database_path('migrations/2026_09_24_042532_add_roles_to_staff_accounts.php');
+    $organizationMigration = require database_path('migrations/2026_09_24_050223_create_verified_organization_identities_table.php');
+    $operationsMigration = require database_path('migrations/2026_09_24_052148_create_command_operations_table.php');
+    $businessMigration = require database_path('migrations/2026_09_24_053517_create_business_profiles_and_mandates.php');
     $party = Party::factory()->verified()->create();
     $user = User::factory()->for($party)->create();
     RoleMembership::factory()->for($party)->active()->create();
@@ -40,6 +44,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
 
     expect(Schema::hasIndex('users', ['party_id']))->toBeTrue();
 
+    $businessMigration->down();
+    $operationsMigration->down();
+    $organizationMigration->down();
+    $staffRolesMigration->down();
     $navigationMigration->down();
     $accessMigration->down();
     $migration->down();
@@ -53,10 +61,18 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $migration->up();
     $accessMigration->up();
     $navigationMigration->up();
+    $staffRolesMigration->up();
+    $organizationMigration->up();
+    $operationsMigration->up();
+    $businessMigration->up();
 
     expect(Schema::hasTable('parties'))->toBeTrue()
         ->and(Schema::hasTable('role_memberships'))->toBeTrue()
         ->and(Schema::hasColumn('users', 'party_id'))->toBeTrue()
         ->and(Schema::hasIndex('users', ['party_id']))->toBeTrue()
-        ->and($user->refresh()->party_id)->toBeNull();
+        ->and($user->refresh()->party_id)->toBeNull()
+        ->and(Schema::hasColumn('staff_accounts', 'roles'))->toBeTrue()
+        ->and(Schema::hasTable('verified_organization_identities'))->toBeTrue()
+        ->and(Schema::hasTable('command_operations'))->toBeTrue()
+        ->and(Schema::hasColumn('business_mandates', 'profile'))->toBeTrue();
 });

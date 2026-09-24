@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 use App\Application\Identity\RegisterIdentity;
 use App\Http\Controllers\Controller;
+use App\Models\BusinessMandate;
+use App\Models\BusinessProfile;
+use App\Models\CommandOperation;
 use App\Models\Party;
 use App\Models\RoleMembership;
+use App\Models\VerifiedOrganizationIdentity;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -143,9 +147,27 @@ arch('infrastructure concretions are reached through their container binding')
 it('has concrete targets for the identity persistence boundary', function (): void {
     expect(class_exists(Party::class))->toBeTrue()
         ->and(class_exists(RoleMembership::class))->toBeTrue()
+        ->and(class_exists(VerifiedOrganizationIdentity::class))->toBeTrue()
         ->and(class_exists(RegisterIdentity::class))->toBeTrue();
 })->group('arch');
 
 arch('identity records are only accessed by their adapter and model relationships')
-    ->expect(['App\Models\Party', 'App\Models\RoleMembership', 'App\Models\VerifiedPersonIdentity', 'App\Models\IdentityOperator', 'App\Models\IdentityAuditEvent', 'App\Models\StaffAccount', 'App\Models\RoleBookmark'])
+    ->expect(['App\Models\Party', 'App\Models\RoleMembership', 'App\Models\VerifiedPersonIdentity', 'App\Models\VerifiedOrganizationIdentity', 'App\Models\IdentityOperator', 'App\Models\IdentityAuditEvent', 'App\Models\StaffAccount', 'App\Models\RoleBookmark'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Identity', 'App\Models', 'Database\Factories']);
+
+it('has concrete targets for the command outcome boundary', function (): void {
+    expect(class_exists(CommandOperation::class))->toBeTrue();
+})->group('arch');
+
+arch('command outcomes are only accessed by the journal adapter')
+    ->expect('App\Models\CommandOperation')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Operations', 'App\Models', 'Database\Factories']);
+
+it('has concrete targets for the business authority boundary', function (): void {
+    expect(class_exists(BusinessProfile::class))->toBeTrue()
+        ->and(class_exists(BusinessMandate::class))->toBeTrue();
+})->group('arch');
+
+arch('business authority records are only accessed by their adapter')
+    ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessMandate'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Models', 'Database\Factories']);

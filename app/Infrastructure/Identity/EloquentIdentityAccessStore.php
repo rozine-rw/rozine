@@ -10,6 +10,7 @@ use App\Domain\Identity\ActiveRolePolicy;
 use App\Domain\Identity\BookmarkDestination;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Identity\MembershipTransitions;
+use App\Domain\Identity\StaffPermission;
 use App\Models\IdentityAuditEvent;
 use App\Models\IdentityOperator;
 use App\Models\Party;
@@ -17,6 +18,7 @@ use App\Models\RoleBookmark;
 use App\Models\RoleMembership;
 use App\Models\StaffAccount;
 use App\Models\User;
+use App\Models\VerifiedOrganizationIdentity;
 use App\Models\VerifiedPersonIdentity;
 use Closure;
 use Illuminate\Support\Facades\DB;
@@ -79,12 +81,21 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
         }, 3);
     }
 
-    /** @return array<string, mixed> */
-    public function configureStaff(int $userId, bool $enabled, string $reason, string $requestId): array
+    /**
+     * @param  list<string>  $roles
+     * @return array<string, mixed>
+     */
+    public function configureStaff(int $userId, bool $enabled, string $reason, string $requestId, array $roles = []): array
     {
-        return DB::transaction(function () use ($userId, $enabled, $reason, $requestId): array {
+        $roles = StaffPermission::normalizeRoles($roles);
+
+        return DB::transaction(function () use ($userId, $enabled, $reason, $requestId, $roles): array {
             $user = User::query()->lockForUpdate()->findOrFail($userId);
-            $hash = $this->requestHash(['staff.configure', $userId, $enabled, $reason], $reason, $requestId);
+            $input = ['staff.configure', $userId, $enabled, $reason];
+            if ($roles !== []) {
+                $input[] = $roles;
+            }
+            $hash = $this->requestHash($input, $reason, $requestId);
 
             if (($replay = $this->replay('console', $requestId, $hash)) !== null) {
                 return $replay;
@@ -106,9 +117,9 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             if (! $enabled && $staff === null) {
                 throw new IdentityViolation('STAFF_ACCOUNT_NOT_FOUND', 404);
             }
-            $before = ['enabled' => $staff->enabled ?? false, 'party_id' => $user->party_id];
+            $before = ['enabled' => $staff->enabled ?? false, 'party_id' => $user->party_id, 'roles' => $staff->roles ?? []];
             $staff ??= new StaffAccount;
-            $staff->forceFill(['user_id' => $userId, 'enabled' => $enabled])->save();
+            $staff->forceFill(['user_id' => $userId, 'enabled' => $enabled, 'roles' => $roles])->save();
 
             if ($enabled) {
                 $user->forceFill([
@@ -119,7 +130,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
 
             $result = ['code' => $enabled ? 'STAFF_ACCESS_ENABLED' : 'STAFF_ACCESS_DISABLED', 'user_id' => $userId];
             $this->record('console', null, 'user', (string) $userId, 'staff.configure', $reason, $requestId, $hash,
-                $before, ['enabled' => $enabled, 'party_id' => $user->party_id], $result);
+                $before, ['enabled' => $enabled, 'party_id' => $user->party_id, 'roles' => $roles], $result);
 
             return $result;
         }, 3);
@@ -284,14 +295,33 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
     {
         return DB::transaction(function () use ($userId, $required): array {
             $user = User::query()->lockForUpdate()->findOrFail($userId);
+            $staff = StaffAccount::query()->find($userId);
             $allowed = $user->party_id === null && $this->emailVerified($user) && $this->mfaConfirmed($user)
-                && StaffAccount::query()->whereKey($userId)->where('enabled', true)->exists();
+                && $staff !== null && $staff->enabled;
             if ($required && ! $allowed) {
                 throw new IdentityViolation('STAFF_ACCESS_REQUIRED');
             }
 
             return ['contract_version' => 'staff-access-v1', 'can_open_admin' => $allowed,
-                'allowed_actions' => $allowed ? ['admin.open'] : []];
+                'allowed_actions' => $allowed ? StaffPermission::forRoles($staff->roles) : []];
+        }, 3);
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(): TResult  $operation
+     * @return TResult
+     */
+    public function withStaffPermission(int $userId, string $permission, Closure $operation): mixed
+    {
+        return DB::transaction(function () use ($userId, $permission, $operation): mixed {
+            $access = $this->staffAccess($userId, true);
+            if (! in_array($permission, $access['allowed_actions'], true)) {
+                throw new IdentityViolation('STAFF_PERMISSION_REQUIRED');
+            }
+
+            return $operation();
         }, 3);
     }
 
@@ -352,6 +382,105 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
 
         return array_merge(['contract_version' => 'role-bookmark-v1', 'role' => $role,
             'context_revision' => $identity['context_revision']], $destination);
+    }
+
+    /** @return array<string, mixed> */
+    public function resolveOrganization(int $actorId, string $registryReference, string $evidenceReference, string $reason, string $requestId): array
+    {
+        return $this->withStaffPermission($actorId, 'businesses.verify', function () use ($actorId, $registryReference, $evidenceReference, $reason, $requestId): array {
+            $this->evidenceRequired($evidenceReference);
+            $reference = strtoupper($registryReference);
+            if (! preg_match('/^RDB:[A-Z0-9][A-Z0-9.-]{1,127}$/D', $reference)) {
+                throw new IdentityViolation('REGISTRY_REFERENCE_INVALID', 422);
+            }
+            $digest = hash('sha256', $reference);
+            $hash = $this->requestHash(['organization.resolve', $digest, $evidenceReference, $reason], $reason, $requestId);
+            if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
+                return $replay;
+            }
+            DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', ['organization:'.$digest]);
+            $identity = VerifiedOrganizationIdentity::query()->find($digest);
+            $party = $identity === null ? null : $this->lockParty($identity->party_id);
+            if ($identity !== null && ($party === null || $party->kind !== 'organization' || $party->verified_at === null || $party->verified_at->gt(now()))) {
+                throw new IdentityViolation('ORGANIZATION_VERIFICATION_REQUIRED');
+            }
+            $before = ['party_id' => $party?->id];
+            if ($identity === null) {
+                $party = new Party;
+                $party->forceFill(['kind' => 'organization', 'verified_at' => now()])->save();
+                (new VerifiedOrganizationIdentity)->forceFill([
+                    'registry_digest' => $digest, 'party_id' => $party->id, 'evidence_reference' => $evidenceReference,
+                ])->save();
+            }
+            $result = ['code' => 'ORGANIZATION_RESOLVED', 'party_id' => $party->id];
+            $this->record('user:'.$actorId, $actorId, 'party', $party->id, 'organization.resolve', $reason, $requestId, $hash,
+                $before, ['party_id' => $party->id, 'evidence_reference' => $evidenceReference], $result);
+
+            return $result;
+        });
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  list<string>  $personPartyIds
+     * @param  Closure(): TResult  $operation
+     * @return TResult
+     */
+    public function withVerifiedParties(string $entityKind, string $entityPartyId, array $personPartyIds, Closure $operation, ?string $registryReference = null): mixed
+    {
+        return DB::transaction(function () use ($entityKind, $entityPartyId, $personPartyIds, $operation, $registryReference): mixed {
+            if (! in_array($entityKind, ['person', 'organization'], true) || $personPartyIds === []
+                || ($entityKind === 'person' && ! in_array($entityPartyId, $personPartyIds, true))) {
+                throw new IdentityViolation('PARTY_AUTHORITY_REQUIRED');
+            }
+            $personIds = array_values(array_unique($personPartyIds));
+            $ids = array_values(array_unique([$entityPartyId, ...$personIds]));
+            $parties = Party::query()->whereKey($ids)->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+            if ($parties->count() !== count($ids)) {
+                throw new IdentityViolation('PARTY_AUTHORITY_REQUIRED');
+            }
+            foreach ($parties as $party) {
+                $expectedKind = $party->id === $entityPartyId ? $entityKind : 'person';
+                if ($party->kind !== $expectedKind || $party->verified_at === null || $party->verified_at->gt(now())) {
+                    throw new IdentityViolation('PARTY_AUTHORITY_REQUIRED');
+                }
+            }
+            if (VerifiedPersonIdentity::query()->whereIn('party_id', $personIds)->count() !== count($personIds)
+                || ($entityKind === 'organization' && ! VerifiedOrganizationIdentity::query()->where('party_id', $entityPartyId)->exists())) {
+                throw new IdentityViolation('PARTY_AUTHORITY_REQUIRED');
+            }
+            if ($registryReference !== null && ($entityKind !== 'organization'
+                || ! VerifiedOrganizationIdentity::query()->where('party_id', $entityPartyId)->whereKey(hash('sha256', strtoupper($registryReference)))->exists())) {
+                throw new IdentityViolation('ORGANIZATION_REFERENCE_MISMATCH');
+            }
+
+            return $operation();
+        }, 3);
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  list<string>  $personPartyIds
+     * @param  Closure(AccessSnapshot): TResult  $operation
+     * @return TResult
+     */
+    public function withEntityRole(int $userId, string $role, int $expectedContext, string $entityKind, string $entityPartyId, array $personPartyIds, Closure $operation, ?string $registryReference = null): mixed
+    {
+        return DB::transaction(function () use ($userId, $role, $expectedContext, $entityKind, $entityPartyId, $personPartyIds, $operation, $registryReference): mixed {
+            $user = User::query()->lockForUpdate()->findOrFail($userId);
+            if ($user->party_id === null || ! in_array($user->party_id, $personPartyIds, true)) {
+                throw new IdentityViolation('MANDATE_REQUIRED');
+            }
+
+            return $this->withVerifiedParties($entityKind, $entityPartyId, $personPartyIds, function () use ($userId, $role, $expectedContext, $operation): mixed {
+                $identity = $this->identities->forUser($userId);
+                $this->roles->authorize($identity, $role, null, $expectedContext);
+
+                return $operation($identity);
+            }, $registryReference);
+        }, 3);
     }
 
     private function authorizeOperator(?User $user): void
