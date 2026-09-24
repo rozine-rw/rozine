@@ -66,7 +66,7 @@ report() {
   echo
 }
 
-ALL_CONTROLS=(strict-types domain-purity transport-boundary adapter-leak php-coverage phpstan-tests)
+ALL_CONTROLS=(strict-types domain-purity transport-boundary identity-boundary adapter-leak php-coverage phpstan-tests)
 
 selected() {
   local wanted="$1" name
@@ -202,6 +202,41 @@ VIOLATION
   fi
   rm -f app/Domain/NegativeControl/ReachesForTheFramework.php
   rmdir app/Domain/NegativeControl 2>/dev/null || true
+fi
+
+# ---------------------------------------------------------------------------
+# Architecture: only the identity adapter may access protected Party records.
+# ---------------------------------------------------------------------------
+if selected identity-boundary; then
+  control identity-boundary "an application action writing Party records directly must fail the identity rule"
+
+  plant app/Application/Identity/NegativeControlIdentityWrite.php <<'VIOLATION'
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Identity;
+
+use App\Models\Party;
+
+final class NegativeControlIdentityWrite
+{
+    public function handle(): Party
+    {
+        return Party::query()->create(['kind' => 'person']);
+    }
+}
+VIOLATION
+
+  if [ "${ARCHITECTURE_GREEN}" != true ]; then
+    report identity-boundary fail "the architecture suite must be green beforehand"
+  elif gate_fails "${LOG_DIR}/identity.log" vendor/bin/pest --ci --no-tia tests/Architecture/ArchitectureTest.php --filter='identity records are only accessed' --compact; then
+    report identity-boundary pass "the identity persistence rule rejected it"
+  else
+    report identity-boundary fail "the identity persistence rule accepted a direct Party write"
+    cat "${LOG_DIR}/identity.log"
+  fi
+  rm -f app/Application/Identity/NegativeControlIdentityWrite.php
 fi
 
 # ---------------------------------------------------------------------------
