@@ -426,6 +426,23 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `statement_original_digest_unique` on (statement_evidence_id, sha256) — unique; `statement_original_revision_unique` on (statement_evidence_id, evidence_revision) — unique; `statement_originals_pkey` on (id) — unique
 
+### `statement_transcriptions`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `statement_evidence_id` | `bpchar` | no | — |
+| `evidence_revision` | `int4` | no | — |
+| `amends_id` | `bpchar` | yes | — |
+| `classification_version` | `varchar` | no | — |
+| `payload` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `actor_party_id` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `statement_transcription_revision_unique` on (statement_evidence_id, evidence_revision) — unique; `statement_transcriptions_amends_id_unique` on (amends_id) — unique; `statement_transcriptions_pkey` on (id) — unique
+
 ### `users`
 
 | Column | Type | Nullable | Default |
@@ -500,6 +517,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_24_063740_create_business_applications_table.php |
 | 2026_09_24_070804_create_statement_evidence_tables.php |
 | 2026_09_24_075833_add_one_open_draft_constraint_to_business_applications.php |
+| 2026_09_24_081222_create_statement_transcriptions_table.php |
 
 ## Routes
 
@@ -561,13 +579,13 @@ The ADR-0001 layering as it stands. `tests/Architecture` enforces the dependency
 | Layer | Path | Classes | Contents |
 |---|---|---|---|
 | Domain | `app/Domain` | 22 | `Business\ApplicationDraft`, `Business\MandateAuthority`, `Evidence\StatementReconciliation`, `Evidence\StatementSource`, `Identity\ActiveRolePolicy`, `Identity\BookmarkDestination`, `Identity\ConsentDocuments`, `Identity\IdentityViolation`, `Identity\MembershipTransitions`, `Identity\RoleAccess`, `Identity\StaffPermission`, `Operations\CommandRejection`, `Operations\OperationResult`, `Pulse\PulseSector`, `Pulse\PulseUnderwriting`, `Underwriting\CashFlowEvidence`, `Underwriting\EngineScorecard`, `Underwriting\ExactFinancialValue`, `Underwriting\FlatReturnPricing`, `Underwriting\LoanCapacity`, `Underwriting\LoanSchedule`, `Underwriting\UnderwritingViolation` |
-| Application | `app/Application` | 48 | `Business\ConfigureBusinessAuthority`, `Business\Contracts\BusinessApplicationStore`, `Business\Contracts\BusinessAuthorityStore`, `Business\CreateBusinessApplication`, `Business\FindBusinessOperation`, `Business\GetBusinessApplication`, `Business\GetCurrentBusinessApplication`, `Business\SaveBusinessApplication`, `Business\WithBusinessAuthority`, `Environment\Contracts\DemoFixtureStore`, `Environment\EnvironmentIsolation`, `Environment\ResetDemoFixtures`, `Evidence\Contracts\StatementStore`, `Evidence\Contracts\StatementTextExtractor`, `Evidence\FindStatementOperation`, `Evidence\GetStatementEvidence`, `Evidence\IngestStatement`, `Evidence\ReadStatementOriginal`, `Identity\AuthorizeActiveRole`, `Identity\AuthorizeEntityRole`, `Identity\AuthorizeStaffPermission`, `Identity\ChangeMembership`, `Identity\ConfigureIdentityOperator`, `Identity\ConfigureStaffAccess`, `Identity\Contracts\ConsentCatalog`, `Identity\Contracts\IdentityAccessStore`, `Identity\Contracts\IdentityRepository`, `Identity\GetIdentityContext`, `Identity\GetRoleBookmark`, `Identity\GetStaffAccess`, `Identity\RecordConsentRelease`, `Identity\RegisterIdentity`, `Identity\ResolveVerifiedOrganization`, `Identity\ResolveVerifiedPerson`, `Identity\SaveRoleBookmark`, `Identity\SelectActiveRole`, `Identity\WithCurrentConsent`, `Identity\WithVerifiedParties`, `Operations\Contracts\CanonicalJson`, `Operations\Contracts\OperationJournal`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor` |
+| Application | `app/Application` | 50 | `Business\ConfigureBusinessAuthority`, `Business\Contracts\BusinessApplicationStore`, `Business\Contracts\BusinessAuthorityStore`, `Business\CreateBusinessApplication`, `Business\FindBusinessOperation`, `Business\GetBusinessApplication`, `Business\GetCurrentBusinessApplication`, `Business\SaveBusinessApplication`, `Business\WithBusinessAuthority`, `Environment\Contracts\DemoFixtureStore`, `Environment\EnvironmentIsolation`, `Environment\ResetDemoFixtures`, `Evidence\Contracts\StatementStore`, `Evidence\Contracts\StatementTextExtractor`, `Evidence\FindStatementOperation`, `Evidence\GetStatementEvidence`, `Evidence\GetStatementTranscription`, `Evidence\IngestStatement`, `Evidence\ReadStatementOriginal`, `Evidence\RecordStatementTranscription`, `Identity\AuthorizeActiveRole`, `Identity\AuthorizeEntityRole`, `Identity\AuthorizeStaffPermission`, `Identity\ChangeMembership`, `Identity\ConfigureIdentityOperator`, `Identity\ConfigureStaffAccess`, `Identity\Contracts\ConsentCatalog`, `Identity\Contracts\IdentityAccessStore`, `Identity\Contracts\IdentityRepository`, `Identity\GetIdentityContext`, `Identity\GetRoleBookmark`, `Identity\GetStaffAccess`, `Identity\RecordConsentRelease`, `Identity\RegisterIdentity`, `Identity\ResolveVerifiedOrganization`, `Identity\ResolveVerifiedPerson`, `Identity\SaveRoleBookmark`, `Identity\SelectActiveRole`, `Identity\WithCurrentConsent`, `Identity\WithVerifiedParties`, `Operations\Contracts\CanonicalJson`, `Operations\Contracts\OperationJournal`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor` |
 | Infrastructure | `app/Infrastructure` | 11 | `Business\EloquentBusinessApplicationStore`, `Business\EloquentBusinessAuthorityStore`, `Environment\EloquentDemoFixtureStore`, `Evidence\EloquentStatementStore`, `Evidence\PdfAndCsvTextExtractor`, `Identity\EloquentConsentCatalog`, `Identity\EloquentIdentityAccessStore`, `Identity\EloquentIdentityRepository`, `Operations\EloquentOperationJournal`, `Operations\JcsCanonicalJson`, `Pulse\EloquentPulseSignupRepository` |
 | HTTP — controllers | `app/Http/Controllers` | 14 | `Api\V1\IdentityController`, `Api\V1\IdentityManagementController`, `Api\V1\RoleBookmarkController`, `Api\V1\StaffAccessController`, `Controller`, `DashboardController`, `IdentityManagementController`, `PulseController`, `RoleBookmarkController`, `RoleHomeController`, `Settings\ProfileController`, `Settings\SecurityController`, `SiteController`, `StaffHomeController` |
 | HTTP — requests | `app/Http/Requests` | 14 | `Identity\ChangeMembershipRequest`, `Identity\ResolvePersonRequest`, `Identity\SaveRoleBookmarkRequest`, `Identity\SelectActiveRoleRequest`, `Pulse\PreviewBusinessRequest`, `Pulse\PreviewInvestorRequest`, `Pulse\StoreBusinessSignupRequest`, `Pulse\StoreInvestorPledgeRequest`, `Settings\PasswordUpdateRequest`, `Settings\ProfileDeleteRequest`, `Settings\ProfileUpdateRequest`, `Settings\TwoFactorAuthenticationRequest`, `Site\StoreSiteBusinessRequest`, `Site\StoreSiteInvestorRequest` |
 | HTTP — resources | `app/Http/Resources` | 12 | `IdentityContextResource`, `IdentityMutationResource`, `OperationResource`, `PulseBusinessPreviewResource`, `PulseBusinessSignupReceiptResource`, `PulseInvestorPreviewResource`, `PulseInvestorSignupReceiptResource`, `PulseListingResource`, `PulsePageResource`, `PulsePolicyResource`, `RoleBookmarkResource`, `StaffAccessResource` |
 | HTTP — middleware | `app/Http/Middleware` | 3 | `HandleAppearance`, `HandleInertiaRequests`, `SetLocale` |
-| Models | `app/Models` | 19 | `BusinessApplication`, `BusinessApplicationVersion`, `BusinessMandate`, `BusinessProfile`, `CommandOperation`, `ConsentRelease`, `IdentityAuditEvent`, `IdentityOperator`, `Party`, `PulseSignup`, `RoleBookmark`, `RoleMembership`, `StaffAccount`, `StatementEvidence`, `StatementExtraction`, `StatementOriginal`, `User`, `VerifiedOrganizationIdentity`, `VerifiedPersonIdentity` |
+| Models | `app/Models` | 20 | `BusinessApplication`, `BusinessApplicationVersion`, `BusinessMandate`, `BusinessProfile`, `CommandOperation`, `ConsentRelease`, `IdentityAuditEvent`, `IdentityOperator`, `Party`, `PulseSignup`, `RoleBookmark`, `RoleMembership`, `StaffAccount`, `StatementEvidence`, `StatementExtraction`, `StatementOriginal`, `StatementTranscription`, `User`, `VerifiedOrganizationIdentity`, `VerifiedPersonIdentity` |
 | Console commands | `app/Console/Commands` | 5 | `CaptureBaselineInventory`, `CheckEnvironmentIsolation`, `ConfigureIdentityOperatorCommand`, `ConfigureStaffAccessCommand`, `ResetDemo` |
 
 ## CI gates

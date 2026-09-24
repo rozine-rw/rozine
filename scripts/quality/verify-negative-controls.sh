@@ -309,8 +309,8 @@ VIOLATION
 fi
 
 if selected evidence-boundary; then
-  control evidence-boundary "bypassing the evidence adapter to write statement originals or extractions must fail"
-  for evidence_model in StatementEvidence StatementOriginal StatementExtraction; do
+  control evidence-boundary "bypassing the evidence adapter to write statement sources or reconciliations must fail"
+  for evidence_model in StatementEvidence StatementOriginal StatementExtraction StatementTranscription; do
   echo "    checking ${evidence_model}"
   plant app/Application/Evidence/NegativeControlEvidenceWrite.php <<VIOLATION
 <?php

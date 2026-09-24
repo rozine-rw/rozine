@@ -34,6 +34,7 @@ use App\Models\RoleMembership;
 use App\Models\StatementEvidence;
 use App\Models\StatementExtraction;
 use App\Models\StatementOriginal;
+use App\Models\StatementTranscription;
 use App\Models\User;
 use App\Models\VerifiedOrganizationIdentity;
 use App\Models\VerifiedPersonIdentity;
@@ -451,6 +452,45 @@ it('admits one competing application edit from the same saved revision', functio
     expect(runIdentityContenders($operations))->toBe([0, 2])
         ->and($fixture['application']->refresh()->revision)->toBe(2)
         ->and(BusinessApplicationVersion::query()->count())->toBe(2);
+});
+
+it('serializes competing reconciliation revisions under the Business authority lock', function (): void {
+    $fixture = BusinessApplicationFixture::make('organization', 2);
+    $source = StatementFixture::ingest($fixture);
+    $input = StatementFixture::transcription($source['data']['document_id']);
+    $operations = [];
+    foreach ([0, 1] as $actor) {
+        $operations[] = function () use ($fixture, $input, $actor): void {
+            $result = StatementFixture::transcribe($fixture, $input, actor: $actor);
+            if ($result['code'] === 'VERSION_CONFLICT') {
+                throw new CommandRejection('VERSION_CONFLICT');
+            }
+        };
+    }
+    expect(runIdentityContenders($operations))->toBe([0, 2])
+        ->and(StatementTranscription::query()->count())->toBe(1)
+        ->and(StatementEvidence::query()->firstOrFail()->revision)->toBe(2);
+});
+
+it('records an identical reconciliation retry once across two logins for one Party', function (): void {
+    $fixture = BusinessApplicationFixture::make();
+    $source = StatementFixture::ingest($fixture);
+    $input = StatementFixture::transcription($source['data']['document_id']);
+    $second = User::factory()->for($fixture['authority']['people'][0])->create();
+    app(SelectActiveRole::class)->handle($second->id, 'business', 0, (string) Str::uuid());
+    $fixture['authority']['users'][] = $second;
+    $request = (string) Str::uuid();
+    expect(runIdentityContenders([
+        function () use ($fixture, $input, $request): void {
+            StatementFixture::transcribe($fixture, $input, requestId: $request);
+        },
+        function () use ($fixture, $input, $request): void {
+            StatementFixture::transcribe($fixture, $input, requestId: $request, actor: 1);
+        },
+    ]))->toBe([0, 0])
+        ->and(StatementTranscription::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'statement.reconcile')->count())->toBe(1)
+        ->and(StatementEvidence::query()->firstOrFail()->revision)->toBe(2);
 });
 
 it('commits one immutable statement receipt across simultaneous logins of the same Party', function (): void {

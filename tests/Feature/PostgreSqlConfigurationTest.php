@@ -40,6 +40,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $applicationMigration = require database_path('migrations/2026_09_24_063740_create_business_applications_table.php');
     $statementMigration = require database_path('migrations/2026_09_24_070804_create_statement_evidence_tables.php');
     $openDraftMigration = require database_path('migrations/2026_09_24_075833_add_one_open_draft_constraint_to_business_applications.php');
+    $transcriptionMigration = require database_path('migrations/2026_09_24_081222_create_statement_transcriptions_table.php');
     $party = Party::factory()->verified()->create();
     $user = User::factory()->for($party)->create();
     RoleMembership::factory()->for($party)->active()->create();
@@ -48,6 +49,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
 
     expect(Schema::hasIndex('users', ['party_id']))->toBeTrue();
 
+    $transcriptionMigration->down();
     $openDraftMigration->down();
     expect(Schema::hasIndex('business_applications', 'business_application_one_draft'))->toBeFalse();
     $statementMigration->down();
@@ -78,6 +80,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $applicationMigration->up();
     $statementMigration->up();
     $openDraftMigration->up();
+    $transcriptionMigration->up();
 
     expect(Schema::hasTable('parties'))->toBeTrue()
         ->and(Schema::hasTable('role_memberships'))->toBeTrue()
@@ -92,5 +95,6 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasTable('business_application_versions'))->toBeTrue()
         ->and(Schema::hasIndex('business_applications', 'business_application_one_draft'))->toBeTrue()
         ->and(Schema::hasTable('statement_originals'))->toBeTrue()
-        ->and(Schema::hasTable('statement_extractions'))->toBeTrue();
+        ->and(Schema::hasTable('statement_extractions'))->toBeTrue()
+        ->and(Schema::hasTable('statement_transcriptions'))->toBeTrue();
 });

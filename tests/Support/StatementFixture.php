@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Application\Evidence\IngestStatement;
+use App\Application\Evidence\RecordStatementTranscription;
 use Illuminate\Support\Str;
 
 /**
@@ -13,9 +14,32 @@ use Illuminate\Support\Str;
  * @phpstan-import-type Statement from \App\Domain\Evidence\StatementReconciliation
  * @phpstan-import-type Transaction from \App\Domain\Evidence\StatementReconciliation
  * @phpstan-import-type DrawRef from \App\Domain\Evidence\StatementReconciliation
+ *
+ * @phpstan-type TranscriptionInput array{rails: list<Rail>, months: list<string>, statements: list<Statement>}
  */
 final class StatementFixture
 {
+    /** @return TranscriptionInput */
+    public static function transcription(string $documentId): array
+    {
+        $input = self::reconciliation();
+        $statements = array_values(array_map(fn (array $statement): array => [...$statement, 'source_ids' => [$documentId],
+            'transactions' => array_values(array_map(fn (array $transaction): array => [...$transaction, 'source_ids' => [$documentId]], $statement['transactions']))], $input['statements']));
+
+        return ['rails' => $input['rails'], 'months' => $input['months'], 'statements' => $statements];
+    }
+
+    /**
+     * @param  ApplicationFixture  $fixture
+     * @param  TranscriptionInput  $input
+     * @return array<string, mixed>
+     */
+    public static function transcribe(array $fixture, array $input, int $revision = 1, ?string $requestId = null, int $actor = 0): array
+    {
+        return app(RecordStatementTranscription::class)->handle($fixture['authority']['users'][$actor]->id, 1, $fixture['business']->id,
+            $revision, $input['rails'], $input['months'], $input['statements'], $requestId ?? (string) Str::uuid());
+    }
+
     /**
      * @return array{rails: array{Rail, Rail}, months: array{string}, sources: array{string, string}, statements: array{
      *   array{rail_id: string, month: string, opening_balance: string, closing_balance: string, source_ids: list<string>,
