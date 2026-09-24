@@ -7,9 +7,62 @@ namespace Tests\Support;
 use App\Application\Evidence\IngestStatement;
 use Illuminate\Support\Str;
 
-/** @phpstan-import-type ApplicationFixture from BusinessApplicationFixture */
+/**
+ * @phpstan-import-type ApplicationFixture from BusinessApplicationFixture
+ * @phpstan-import-type Rail from \App\Domain\Evidence\StatementReconciliation
+ * @phpstan-import-type Statement from \App\Domain\Evidence\StatementReconciliation
+ * @phpstan-import-type Transaction from \App\Domain\Evidence\StatementReconciliation
+ * @phpstan-import-type DrawRef from \App\Domain\Evidence\StatementReconciliation
+ */
 final class StatementFixture
 {
+    /**
+     * @return array{rails: array{Rail, Rail}, months: array{string}, sources: array{string, string}, statements: array{
+     *   array{rail_id: string, month: string, opening_balance: string, closing_balance: string, source_ids: list<string>,
+     *     transactions: array{Transaction, Transaction, Transaction, Transaction, Transaction, Transaction, Transaction}},
+     *   array{rail_id: string, month: string, opening_balance: string, closing_balance: string, source_ids: list<string>,
+     *     transactions: array{Transaction, Transaction}}
+     * }}
+     */
+    public static function reconciliation(): array
+    {
+        return [
+            'rails' => [
+                ['id' => 'bank-a', 'active_from' => '2026-08', 'active_until' => null],
+                ['id' => 'momo-b', 'active_from' => '2026-08', 'active_until' => null],
+            ],
+            'months' => ['2026-08'],
+            'sources' => ['original-a', 'original-b'],
+            'statements' => [
+                ['rail_id' => 'bank-a', 'month' => '2026-08', 'opening_balance' => '1000', 'closing_balance' => '2950',
+                    'source_ids' => ['original-a'], 'transactions' => [
+                        self::transaction('sales', '1000', 'operating_inflow'),
+                        self::transaction('cost', '-200', 'operating_outflow'),
+                        self::transaction('loan', '2000', 'financing'),
+                        self::transaction('transfer-out', '-500', 'transfer'),
+                        self::transaction('draw', '-300', 'owner_draw'),
+                        self::transaction('returned', '100', 'owner_return', returnOf: ['rail_id' => 'bank-a', 'month' => '2026-08', 'reference' => 'draw']),
+                        self::transaction('debt', '-150', 'debt_service'),
+                    ]],
+                ['rail_id' => 'momo-b', 'month' => '2026-08', 'opening_balance' => '0', 'closing_balance' => '400',
+                    'source_ids' => ['original-b'], 'transactions' => [
+                        self::transaction('transfer-in', '500', 'transfer', source: 'original-b'),
+                        self::transaction('momo-cost', '-100', 'operating_outflow', source: 'original-b'),
+                    ]],
+            ],
+        ];
+    }
+
+    /**
+     * @param  DrawRef|null  $returnOf
+     * @return Transaction
+     */
+    public static function transaction(string $reference, string $amount, string $classification, string $date = '2026-08-15', string $source = 'original-a', ?array $returnOf = null, ?string $exceptionId = null): array
+    {
+        return ['reference' => $reference, 'date' => $date, 'amount' => $amount, 'classification' => $classification,
+            'source_ids' => [$source], 'return_of' => $returnOf, 'exception_id' => $exceptionId];
+    }
+
     public static function csv(string $amount = '100'): string
     {
         return "date,reference,amount\n2026-08-01,SYNTHETIC-ONLY,{$amount}\n";

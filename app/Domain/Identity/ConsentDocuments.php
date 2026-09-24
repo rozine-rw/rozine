@@ -7,6 +7,10 @@ namespace App\Domain\Identity;
 use App\Domain\Operations\CommandRejection;
 
 /**
+ * The digest identifies the exact body. The consent catalog makes the entire release immutable
+ * and rejects reuse of a document version with any changed content, including its summary.
+ * Acceptance must use that locked current release, not independently supplied document arrays.
+ *
  * @phpstan-type Summary array{heading: string, body: string}
  * @phpstan-type DocumentInput array{kind: string, version: string, body: string, summary: list<Summary>}
  * @phpstan-type DisclosureInput array{key: string, version: string, text: string}
