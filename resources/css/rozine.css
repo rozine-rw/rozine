@@ -1,0 +1,501 @@
+/*
+ * Rozine product design tokens (Phase 1B).
+ *
+ * Light values are copied exactly from the Claude Design project "Rozine" (Suite, Investor,
+ * Business, Auditor and Admin sources). The design ships no dark mode, so every dark value below
+ * is derived: Midnight Navy surfaces seeded from the Admin console's dormant `th*` dark tokens,
+ * with each audience accent lifted until its text passes contrast on those surfaces.
+ */
+
+/* Inter is a variable font: one face per subset covers every weight the design uses (400–900). */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('./fonts/cc7500e2.woff2') format('woff2');
+    unicode-range:
+        U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+        U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+        U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('./fonts/03c1332d.woff2') format('woff2');
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+        U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+    /* Surfaces */
+    --rz-frame: #e6eaf1;
+    --rz-page: #f4f7fc;
+    --rz-page-console: #f6f8fc;
+    --rz-surface: #ffffff;
+    --rz-surface-sunken: #f8fafd;
+    --rz-surface-muted: #f1f4f9;
+    --rz-glass: rgba(255, 255, 255, 0.9);
+    --rz-tabbar: rgba(255, 255, 255, 0.92);
+    --rz-launcher-glow: #e8f0fe;
+    --rz-launcher-end: #ffffff;
+    --rz-brand-mark: #1e3aff;
+
+    /* Ink and text */
+    --rz-ink: #0c1830;
+    --rz-slate: #3a465e;
+    --rz-body: #69748a;
+    --rz-secondary: #5b6578;
+    --rz-muted: #8a94a8;
+    --rz-faint: #9aa3b5;
+    --rz-group: #aab4c6;
+
+    /* Lines */
+    --rz-hairline: #e7ecf4;
+    --rz-divider: #e2e8f2;
+    --rz-border: #e9edf4;
+
+    /* Audience accents: fill, text-on-surface and 14% tint */
+    --rz-investor: #1e3aff;
+    --rz-investor-text: #1e3aff;
+    --rz-investor-tint: rgba(30, 58, 255, 0.14);
+    --rz-investor-glow: rgba(30, 58, 255, 0.55);
+    --rz-business: #1d9e75;
+    --rz-business-text: #1d9e75;
+    --rz-business-strong: #17795a;
+    --rz-business-tint: rgba(29, 158, 117, 0.14);
+    --rz-business-glow: rgba(29, 158, 117, 0.5);
+    --rz-auditor: #c2661f;
+    --rz-auditor-text: #c2661f;
+    --rz-auditor-strong: #7d420f;
+    --rz-auditor-tint: rgba(194, 102, 31, 0.14);
+    --rz-auditor-glow: rgba(194, 102, 31, 0.5);
+    --rz-admin: #3a465e;
+    --rz-admin-text: #3a465e;
+    --rz-admin-tint: rgba(160, 168, 184, 0.16);
+    --rz-admin-glow: rgba(58, 70, 94, 0.45);
+
+    /* Status */
+    --rz-positive: #17795a;
+    --rz-positive-tint: rgba(29, 158, 117, 0.12);
+    --rz-danger: #e5484d;
+    --rz-danger-text: #c0392b;
+    --rz-danger-tint: rgba(229, 72, 77, 0.12);
+    --rz-warning-text: #a55418;
+    --rz-warning-tint: rgba(194, 102, 31, 0.13);
+
+    /* In-app accents: filled controls, accent text and 10% icon tiles, per audience */
+    --rz-investor-fill: #1e3aff;
+    --rz-investor-soft: rgba(30, 58, 255, 0.1);
+    --rz-business-fill: #17795a;
+    --rz-business-soft: rgba(29, 158, 117, 0.1);
+    --rz-business-app-text: #17795a;
+    --rz-auditor-fill: #7d420f;
+    --rz-auditor-soft: rgba(194, 102, 31, 0.1);
+    --rz-admin-fill: #1e3aff;
+    --rz-admin-soft: rgba(30, 58, 255, 0.1);
+
+    /* Form fields */
+    --rz-field: #ffffff;
+    --rz-field-border: #e9edf4;
+    --rz-field-soft: #f7f9fc;
+    --rz-field-soft-border: #eef2f9;
+    --rz-label: #5b6578;
+    --rz-disabled: #f4f7fc;
+
+    /* Focus and selection */
+    --rz-focus-border: #b9cdf7;
+    --rz-focus-ring: rgba(30, 58, 255, 0.1);
+    --rz-selection: rgba(30, 58, 255, 0.16);
+
+    /* Elevation: flat, resting, lifted */
+    --rz-shadow-resting: 0 3px 10px -4px rgba(20, 45, 95, 0.14);
+    --rz-shadow-lifted: 0 14px 34px -14px rgba(20, 45, 95, 0.32);
+
+    /* Widest the desktop apps grow before extra space becomes page background */
+    --rz-desktop-max: 1440px;
+}
+
+.dark {
+    --rz-frame: #070d19;
+    --rz-page: #0a1220;
+    --rz-page-console: #0a1220;
+    --rz-surface: #101a2e;
+    --rz-surface-sunken: #0d1628;
+    --rz-surface-muted: #16223a;
+    --rz-glass: rgba(10, 18, 32, 0.85);
+    --rz-tabbar: rgba(13, 22, 40, 0.92);
+    --rz-launcher-glow: #13224a;
+    --rz-launcher-end: #0a1220;
+    --rz-brand-mark: #ffffff;
+
+    --rz-ink: #f2f6fd;
+    --rz-slate: #c3cbdc;
+    --rz-body: #93a1bd;
+    --rz-secondary: #a3afc6;
+    --rz-muted: #7c89a5;
+    --rz-faint: #6b7a99;
+    --rz-group: #5d6b87;
+
+    --rz-hairline: rgba(255, 255, 255, 0.08);
+    --rz-divider: rgba(255, 255, 255, 0.07);
+    --rz-border: rgba(255, 255, 255, 0.09);
+
+    --rz-investor: #3d57ff;
+    --rz-investor-text: #99a3ff;
+    --rz-investor-tint: rgba(61, 87, 255, 0.22);
+    --rz-investor-glow: rgba(61, 87, 255, 0.5);
+    --rz-business: #1d9e75;
+    --rz-business-text: #3fcda0;
+    --rz-business-strong: #3fcda0;
+    --rz-business-tint: rgba(29, 158, 117, 0.2);
+    --rz-business-glow: rgba(63, 205, 160, 0.35);
+    --rz-auditor: #c2661f;
+    --rz-auditor-text: #f0a060;
+    --rz-auditor-strong: #f0a060;
+    --rz-auditor-tint: rgba(194, 102, 31, 0.22);
+    --rz-auditor-glow: rgba(240, 160, 96, 0.3);
+    --rz-admin: #93a1bd;
+    --rz-admin-text: #c3cbdc;
+    --rz-admin-tint: rgba(147, 161, 189, 0.16);
+    --rz-admin-glow: rgba(147, 161, 189, 0.3);
+
+    --rz-positive: #3fcda0;
+    --rz-positive-tint: rgba(63, 205, 160, 0.14);
+    --rz-danger: #ff6b6f;
+    --rz-danger-text: #ff8285;
+    --rz-danger-tint: rgba(255, 107, 111, 0.14);
+    --rz-warning-text: #f0a060;
+    --rz-warning-tint: rgba(240, 160, 96, 0.14);
+
+    --rz-investor-fill: #3d57ff;
+    --rz-investor-soft: rgba(99, 120, 255, 0.16);
+    --rz-business-fill: #17795a;
+    --rz-business-soft: rgba(63, 205, 160, 0.14);
+    --rz-business-app-text: #3fcda0;
+    --rz-auditor-fill: #a5581a;
+    --rz-auditor-soft: rgba(240, 160, 96, 0.14);
+    --rz-admin-fill: #3d57ff;
+    --rz-admin-soft: rgba(99, 120, 255, 0.16);
+
+    --rz-field: #0d1628;
+    --rz-field-border: rgba(255, 255, 255, 0.1);
+    --rz-field-soft: #0d1628;
+    --rz-field-soft-border: rgba(255, 255, 255, 0.08);
+    --rz-label: #a3afc6;
+    --rz-disabled: #16223a;
+
+    --rz-focus-border: #4f63d9;
+    --rz-focus-ring: rgba(99, 120, 255, 0.22);
+    --rz-selection: rgba(99, 120, 255, 0.3);
+
+    --rz-shadow-resting: 0 3px 10px -4px rgba(0, 0, 0, 0.5);
+    --rz-shadow-lifted: 0 14px 34px -14px rgba(0, 0, 0, 0.7);
+}
+
+@theme inline {
+    --font-rz:
+        -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui,
+        sans-serif;
+    --font-rz-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+    --color-rz-frame: var(--rz-frame);
+    --color-rz-page: var(--rz-page);
+    --color-rz-page-console: var(--rz-page-console);
+    --color-rz-surface: var(--rz-surface);
+    --color-rz-surface-sunken: var(--rz-surface-sunken);
+    --color-rz-surface-muted: var(--rz-surface-muted);
+    --color-rz-glass: var(--rz-glass);
+    --color-rz-tabbar: var(--rz-tabbar);
+    --color-rz-brand-mark: var(--rz-brand-mark);
+    --color-rz-ink: var(--rz-ink);
+    --color-rz-slate: var(--rz-slate);
+    --color-rz-body: var(--rz-body);
+    --color-rz-secondary: var(--rz-secondary);
+    --color-rz-muted: var(--rz-muted);
+    --color-rz-faint: var(--rz-faint);
+    --color-rz-group: var(--rz-group);
+    --color-rz-hairline: var(--rz-hairline);
+    --color-rz-divider: var(--rz-divider);
+    --color-rz-border: var(--rz-border);
+    --color-rz-positive: var(--rz-positive);
+    --color-rz-positive-tint: var(--rz-positive-tint);
+    --color-rz-danger: var(--rz-danger);
+    --color-rz-danger-text: var(--rz-danger-text);
+    --color-rz-danger-tint: var(--rz-danger-tint);
+    --color-rz-warning-text: var(--rz-warning-text);
+    --color-rz-warning-tint: var(--rz-warning-tint);
+
+    --shadow-rz-resting: var(--rz-shadow-resting);
+    --shadow-rz-lifted: var(--rz-shadow-lifted);
+
+    --animate-rz-rise: rz-rise 0.6s ease both;
+}
+
+@keyframes rz-fade {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes rz-rise {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/*
+ * Audience accent scope. Components read `--rz-accent*`; a surface sets `data-audience` once and
+ * everything inside it takes that audience's colour, in both themes.
+ */
+[data-audience='investor'] {
+    --rz-accent-lockup: var(--rz-investor);
+    --rz-accent-fill: var(--rz-investor-fill);
+    --rz-accent-soft: var(--rz-investor-soft);
+    --rz-accent-app-text: var(--rz-investor-text);
+    --rz-accent: var(--rz-investor);
+    --rz-accent-text: var(--rz-investor-text);
+    --rz-accent-tint: var(--rz-investor-tint);
+    --rz-accent-glow: var(--rz-investor-glow);
+}
+
+[data-audience='business'] {
+    --rz-accent-lockup: var(--rz-business);
+    --rz-accent-fill: var(--rz-business-fill);
+    --rz-accent-soft: var(--rz-business-soft);
+    --rz-accent-app-text: var(--rz-business-app-text);
+    --rz-accent: var(--rz-business);
+    --rz-accent-text: var(--rz-business-text);
+    --rz-accent-tint: var(--rz-business-tint);
+    --rz-accent-glow: var(--rz-business-glow);
+}
+
+[data-audience='auditor'] {
+    --rz-accent-lockup: var(--rz-auditor);
+    --rz-accent-fill: var(--rz-auditor-fill);
+    --rz-accent-soft: var(--rz-auditor-soft);
+    --rz-accent-app-text: var(--rz-auditor-text);
+    --rz-accent: var(--rz-auditor);
+    --rz-accent-text: var(--rz-auditor-text);
+    --rz-accent-tint: var(--rz-auditor-tint);
+    --rz-accent-glow: var(--rz-auditor-glow);
+}
+
+[data-audience='admin'] {
+    --rz-accent-lockup: var(--rz-investor);
+    --rz-accent-fill: var(--rz-admin-fill);
+    --rz-accent-soft: var(--rz-admin-soft);
+    --rz-accent-app-text: var(--rz-investor-text);
+    --rz-accent: var(--rz-admin);
+    --rz-accent-text: var(--rz-admin-text);
+    --rz-accent-tint: var(--rz-admin-tint);
+    --rz-accent-glow: var(--rz-admin-glow);
+}
+
+@theme inline {
+    --color-rz-accent-fill: var(--rz-accent-fill);
+    --color-rz-investor-text: var(--rz-investor-text);
+    --color-rz-investor: var(--rz-investor);
+    --color-rz-accent-lockup: var(--rz-accent-lockup);
+    --color-rz-accent-soft: var(--rz-accent-soft);
+    --color-rz-accent-app-text: var(--rz-accent-app-text);
+    --color-rz-field: var(--rz-field);
+    --color-rz-field-border: var(--rz-field-border);
+    --color-rz-field-soft: var(--rz-field-soft);
+    --color-rz-field-soft-border: var(--rz-field-soft-border);
+    --color-rz-label: var(--rz-label);
+    --color-rz-disabled: var(--rz-disabled);
+    --color-rz-focus-border: var(--rz-focus-border);
+    --color-rz-accent: var(--rz-accent);
+    --color-rz-accent-text: var(--rz-accent-text);
+    --color-rz-accent-tint: var(--rz-accent-tint);
+}
+
+/* Suite launcher: the soft blue wash behind the app cards. */
+.rz-launcher-bg {
+    background: radial-gradient(
+        1300px 720px at 22% -12%,
+        var(--rz-launcher-glow) 0%,
+        var(--rz-page) 46%,
+        var(--rz-launcher-end) 100%
+    );
+}
+
+/* Launcher app card: lifts 4px and takes its audience accent on hover or keyboard focus. */
+.rz-app-card {
+    transition:
+        transform 0.2s,
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+.rz-app-card:hover,
+.rz-app-card:focus-visible {
+    transform: translateY(-4px);
+    border-color: var(--rz-accent);
+    box-shadow: 0 18px 38px -20px var(--rz-accent-glow);
+    outline: none;
+}
+
+.dark [data-audience] {
+    --rz-accent-lockup: #ffffff;
+}
+
+.rz-surface {
+    font-family: var(--font-rz);
+    /* The design sets no line height, so text sits at the browser's normal, not Tailwind's 1.5.
+       Named sizes (text-sm, text-lg…) carry their own line heights, so those follow suit; an
+       explicit leading-* still wins where the design sets one. */
+    line-height: normal;
+    --text-xs--line-height: normal;
+    --text-sm--line-height: normal;
+    --text-base--line-height: normal;
+    --text-lg--line-height: normal;
+    --text-xl--line-height: normal;
+    --text-2xl--line-height: normal;
+    --text-3xl--line-height: normal;
+    -webkit-font-smoothing: antialiased;
+    color: var(--rz-ink);
+}
+
+.rz-surface ::selection {
+    background: var(--rz-selection);
+}
+
+/* The live-raise dot's slow pulse. The design names this animation but never defines it; this is
+   the halo breathing it implies. */
+@keyframes rz-glowdot {
+    0%,
+    100% {
+        box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.1);
+    }
+
+    50% {
+        box-shadow: 0 0 0 6px rgba(29, 158, 117, 0.04);
+    }
+}
+
+/* Horizontal rails and scroll panes scroll without a visible bar, as in the design. */
+.rz-hscroll,
+.rz-scroll {
+    scrollbar-width: none;
+}
+
+.rz-hscroll::-webkit-scrollbar,
+.rz-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+/* Sheets rise from the bottom of their column (design rz-sheetup / rz-scrim). */
+@keyframes rz-sheetup {
+    from {
+        transform: translateY(102%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes rz-scrim {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes rz-pop {
+    0% {
+        opacity: 0;
+        transform: scale(0.6);
+    }
+
+    60% {
+        opacity: 1;
+        transform: scale(1.08);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Console drawers slide in from the right edge of their column (design Admin rz-slide). */
+@keyframes rz-slide {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* The wallet's deposit/withdraw panel rolls down under its button, which fills as a pill. */
+@keyframes rz-rolldown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scaleY(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+    }
+}
+
+@keyframes rz-pillin {
+    from {
+        opacity: 0;
+        transform: scale(0.86);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Investor app motion the design names (Investor / SwipeCard sources): the live dot and the pop. */
+@keyframes rz-live {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(29, 158, 117, 0.5);
+    }
+
+    70% {
+        box-shadow: 0 0 0 5px rgba(29, 158, 117, 0);
+    }
+}
+
+@keyframes rz-copop {
+    from {
+        opacity: 0;
+        transform: translateY(38px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

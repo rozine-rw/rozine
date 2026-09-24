@@ -77,7 +77,8 @@ describe('application entry point', () => {
             state.appLayout,
             state.settingsLayout,
         ]);
-        expect(options.layout('dashboard')).toBe(state.appLayout);
+        expect(options.layout('dashboard')).toBeUndefined();
+        expect(options.layout('anything-else')).toBe(state.appLayout);
         expect(options.strictMode).toBe(true);
         expect(options.progress).toEqual({ color: '#4B5563' });
         expect(state.initializeTheme).toHaveBeenCalledOnce();

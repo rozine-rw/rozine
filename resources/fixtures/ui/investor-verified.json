@@ -1,0 +1,18 @@
+{
+    "component": "investor/verified",
+    "props": {
+        "wallet": {
+            "available": {
+                "currency": "RWF",
+                "amount": "0"
+            }
+        },
+        "open_deals": 6,
+        "links": {
+            "deals": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            }
+        }
+    }
+}

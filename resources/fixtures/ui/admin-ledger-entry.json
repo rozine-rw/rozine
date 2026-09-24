@@ -1,0 +1,266 @@
+{
+    "component": "admin/ledger",
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2026-09-23T17:40:00+02:00",
+        "entries": [
+            {
+                "id": "LED-1932",
+                "at": "2026-09-23T20:36:51+02:00",
+                "kind": "auditor_share",
+                "from": "Rozine Platform",
+                "to": "Diane Uwase, CPA",
+                "reference": "RNP-2024-0042 · audit",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "80000"
+                },
+                "link": {
+                    "url": "/preview/admin-ledger-entry",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "LED-1931",
+                "at": "2026-09-23T19:43:35+02:00",
+                "kind": "secondary",
+                "from": "Eric Mugisha",
+                "to": "Diane Niyonsaba",
+                "reference": "RNP-2026-1054",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "41000"
+                },
+                "link": {
+                    "url": "/preview/admin-ledger-entry",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "LED-1930",
+                "at": "2026-09-23T18:47:30+02:00",
+                "kind": "deposit",
+                "from": "Bank · Equity (external)",
+                "to": "Linda Gatera",
+                "reference": "inflow",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "1800000"
+                },
+                "link": {
+                    "url": "/preview/admin-ledger-entry",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "LED-1929",
+                "at": "2026-09-23T17:49:11+02:00",
+                "kind": "deposit",
+                "from": "Bank · I&M (external)",
+                "to": "Emmanuel Uwera",
+                "reference": "inflow",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "47000"
+                },
+                "link": {
+                    "url": "/preview/admin-ledger-entry",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "LED-1928",
+                "at": "2026-09-23T16:20:37+02:00",
+                "kind": "disbursement",
+                "from": "Settlement account",
+                "to": "GreenLeaf Agro",
+                "reference": "PAY-2026-0598",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "12000000"
+                },
+                "link": {
+                    "url": "/preview/admin-ledger-entry",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "LED-1927",
+                "at": "2026-09-23T15:54:16+02:00",
+                "kind": "service_fee",
+                "from": "GreenLeaf Agro",
+                "to": "Rozine Platform",
+                "reference": "RNP-2025-0091",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "96000"
+                },
+                "link": {
+                    "url": "/preview/admin-ledger-entry",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "LED-1926",
+                "at": "2026-09-23T15:34:42+02:00",
+                "kind": "repayment",
+                "from": "Sebeya Logistics",
+                "to": "Investor pool · RNP-2024-0042",
+                "reference": "RNP-2024-0042",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "4833334"
+                },
+                "link": {
+                    "url": "/preview/admin-ledger-entry",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "LED-1925",
+                "at": "2026-09-23T13:31:45+02:00",
+                "kind": "contra",
+                "from": "GreenLeaf Agro",
+                "to": "Settlement account",
+                "reference": "LED-1911",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "25000"
+                },
+                "link": {
+                    "url": "/preview/admin-ledger-entry",
+                    "method": "get"
+                }
+            }
+        ],
+        "total": 1932,
+        "more": {
+            "url": "/preview/admin-ledger",
+            "method": "get"
+        },
+        "entry": {
+            "id": "LED-1928",
+            "at": "2026-09-23T16:20:37+02:00",
+            "kind": "disbursement",
+            "from": "Settlement account",
+            "to": "GreenLeaf Agro",
+            "reference": "PAY-2026-0598",
+            "amount": {
+                "currency": "RWF",
+                "amount": "12000000"
+            },
+            "link": {
+                "url": "/preview/admin-ledger-entry",
+                "method": "get"
+            },
+            "operation_id": "op_7f3c21a9e4",
+            "posted_by": {
+                "actor": "System · disbursement dsb_0598",
+                "at": "2026-09-23T16:20:37+02:00",
+                "reason": null
+            },
+            "postings": [
+                {
+                    "account": "Settlement account (client funds)",
+                    "account_code": "2100-SET",
+                    "debit": {
+                        "currency": "RWF",
+                        "amount": "12000000"
+                    },
+                    "credit": null
+                },
+                {
+                    "account": "GreenLeaf Agro · payout destination",
+                    "account_code": "2300-BIZ-0412",
+                    "debit": null,
+                    "credit": {
+                        "currency": "RWF",
+                        "amount": "12000000"
+                    }
+                }
+            ],
+            "totals": {
+                "debit": {
+                    "currency": "RWF",
+                    "amount": "12000000"
+                },
+                "credit": {
+                    "currency": "RWF",
+                    "amount": "12000000"
+                }
+            },
+            "balanced": true,
+            "contra_of": null,
+            "contra_by": {
+                "id": "LED-1925",
+                "link": {
+                    "url": "/preview/admin-ledger-entry",
+                    "method": "get"
+                }
+            },
+            "links": {
+                "close": {
+                    "url": "/preview/admin-ledger",
+                    "method": "get"
+                },
+                "events": {
+                    "url": "/preview/admin-events",
+                    "method": "get"
+                }
+            }
+        }
+    }
+}

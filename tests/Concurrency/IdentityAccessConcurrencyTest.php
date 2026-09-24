@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\ChangeMembership;
+use App\Application\Identity\GetRoleBookmark;
 use App\Application\Identity\ResolveVerifiedPerson;
+use App\Application\Identity\SaveRoleBookmark;
 use App\Application\Identity\SelectActiveRole;
 use App\Domain\Identity\IdentityViolation;
 use App\Models\IdentityAuditEvent;
 use App\Models\IdentityOperator;
 use App\Models\Party;
+use App\Models\RoleBookmark;
 use App\Models\RoleMembership;
 use App\Models\User;
 use App\Models\VerifiedPersonIdentity;
@@ -135,4 +138,31 @@ it('holds authority through a role-scoped operation and denies new work after re
         'case:revocation', 'Withdraw authority.', (string) Str::uuid());
     expect(fn () => app(AuthorizeActiveRole::class)->handle($user->id, 'investor', $party->id, 1, fn (): bool => true))
         ->toThrow(IdentityViolation::class, 'ROLE_MEMBERSHIP_REQUIRED');
+});
+
+it('deduplicates simultaneous bookmark saves and serializes them against role changes', function (): void {
+    $party = Party::factory()->verified()->create();
+    $user = User::factory()->for($party)->create();
+    RoleMembership::factory()->for($party)->active()->create();
+    RoleMembership::factory()->for($party)->active()->create(['role' => 'business']);
+    app(SelectActiveRole::class)->handle($user->id, 'investor', 0, (string) Str::uuid());
+    $requestId = (string) Str::uuid();
+    $save = function () use ($user, $requestId): void {
+        app(SaveRoleBookmark::class)->handle($user->id, 'investor', 'investor.home', [], ['section' => 'access'], 1, $requestId);
+    };
+    expect(runIdentityContenders([$save, $save]))->toBe([0, 0]);
+    expect(RoleBookmark::query()->count())->toBe(1)
+        ->and(IdentityAuditEvent::query()->where('action', 'bookmark.save')->count())->toBe(1);
+    $statuses = runIdentityContenders([
+        function () use ($user): void {
+            app(SaveRoleBookmark::class)->handle($user->id, 'investor', 'investor.home', [], ['section' => 'overview'], 1, (string) Str::uuid());
+        },
+        function () use ($user): void {
+            app(SelectActiveRole::class)->handle($user->id, 'business', 1, (string) Str::uuid());
+        },
+    ]);
+    expect($statuses)->toBeIn([[0, 0], [0, 2]]);
+    expect($user->refresh()->context_revision)->toBe(2);
+    expect(fn () => app(GetRoleBookmark::class)->handle($user->id, 'investor'))
+        ->toThrow(IdentityViolation::class, 'ACTIVE_ROLE_REQUIRED');
 });

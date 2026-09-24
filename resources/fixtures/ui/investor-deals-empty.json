@@ -1,0 +1,109 @@
+{
+    "component": "investor/deals",
+    "props": {
+        "server_time": "2026-09-23T09:00:00+02:00",
+        "wallet": {
+            "available": {
+                "currency": "RWF",
+                "amount": "1253485"
+            },
+            "next_payout": {
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "912400"
+                },
+                "due_on": "2026-10-03T00:00:00+02:00"
+            }
+        },
+        "unread_notifications": 2,
+        "gate": {
+            "status": "eligible"
+        },
+        "sorts": [
+            {
+                "key": "all",
+                "active": true,
+                "link": {
+                    "url": "/preview/investor-deals",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "top_interest",
+                "active": false,
+                "link": {
+                    "url": "/preview/investor-deals",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "top_rated",
+                "active": false,
+                "link": {
+                    "url": "/preview/investor-deals",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "top_picks",
+                "active": false,
+                "link": {
+                    "url": "/preview/investor-deals",
+                    "method": "get"
+                }
+            }
+        ],
+        "industries": [
+            {
+                "industry": null,
+                "count": 0,
+                "active": true,
+                "link": {
+                    "url": "/preview/investor-deals",
+                    "method": "get"
+                }
+            }
+        ],
+        "deals": [],
+        "focus": null,
+        "quote": null,
+        "links": {
+            "deals": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "deposit": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "withdraw": {
+                "url": "/preview/investor-wallet-withdraw",
+                "method": "get"
+            },
+            "checkout": {
+                "url": "/preview/investor-checkout",
+                "method": "get"
+            }
+        }
+    }
+}

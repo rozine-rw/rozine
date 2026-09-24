@@ -1,0 +1,411 @@
+{
+    "component": "business/rating",
+    "props": {
+        "home": {
+            "business": {
+                "name": "GreenLeaf Agro",
+                "company_code": "103847291",
+                "industry": "FMCG",
+                "district": "Gasabo"
+            },
+            "rating": {
+                "band": "strong",
+                "score": "4.8"
+            },
+            "wallet": {
+                "available": {
+                    "currency": "RWF",
+                    "amount": "12383800"
+                }
+            },
+            "unread_notifications": 2,
+            "live_raise": {
+                "title": "Cold-Chain Hub",
+                "funded_pct": 66,
+                "investors": 284,
+                "raised": {
+                    "currency": "RWF",
+                    "amount": "11900000"
+                },
+                "target": {
+                    "currency": "RWF",
+                    "amount": "18000000"
+                },
+                "link": {
+                    "url": "/preview/business-note-raising",
+                    "method": "get"
+                }
+            },
+            "today": [
+                {
+                    "kind": "application_approved",
+                    "title": "Warehouse Robotics",
+                    "fee": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                },
+                {
+                    "kind": "audit_window",
+                    "month": "2026-09-01T00:00:00+02:00",
+                    "window_open": true,
+                    "days_left": 0,
+                    "sealed_by": "2026-10-07T00:00:00+02:00",
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                },
+                {
+                    "kind": "repayment_due",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "4833334"
+                    },
+                    "note_title": "Fleet Expansion Note",
+                    "due_on": "2026-10-05T00:00:00+02:00",
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                }
+            ],
+            "capital": {
+                "raised": {
+                    "currency": "RWF",
+                    "amount": "88000000"
+                },
+                "investors": 1657,
+                "repaid": {
+                    "currency": "RWF",
+                    "amount": "82000000"
+                },
+                "on_time_pct": 100,
+                "active_notes": 1
+            },
+            "notes": [
+                {
+                    "id": "RNP-2026-0118",
+                    "title": "Cold-Chain Hub",
+                    "status": "active",
+                    "created_at": "2026-06-02T09:00:00+02:00",
+                    "funded_pct": 66,
+                    "investors": 284,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "11900000"
+                    },
+                    "target": {
+                        "currency": "RWF",
+                        "amount": "18000000"
+                    },
+                    "link": {
+                        "url": "/preview/business-note-raising",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "RNP-2024-0042",
+                    "title": "Fleet Expansion",
+                    "status": "repaying",
+                    "created_at": "2026-01-05T09:00:00+02:00",
+                    "funded_pct": 100,
+                    "investors": 647,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "25000000"
+                    },
+                    "target": {
+                        "currency": "RWF",
+                        "amount": "25000000"
+                    },
+                    "link": {
+                        "url": "/preview/business-note-repaying",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "RNP-2025-0071",
+                    "title": "Grain Storage",
+                    "status": "completed",
+                    "created_at": "2025-07-14T09:00:00+02:00",
+                    "funded_pct": 100,
+                    "investors": 412,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "20000000"
+                    },
+                    "target": {
+                        "currency": "RWF",
+                        "amount": "20000000"
+                    },
+                    "link": {
+                        "url": "/preview/business-note-completed",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "DRAFT-0007",
+                    "title": "Equipment Upgrade",
+                    "status": "draft",
+                    "created_at": null,
+                    "funded_pct": 0,
+                    "investors": 0,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "target": {
+                        "currency": "RWF",
+                        "amount": "15000000"
+                    },
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    },
+                    "resume": {
+                        "url": "/preview/business-apply-business",
+                        "method": "get"
+                    }
+                }
+            ],
+            "headroom": {
+                "currency": "RWF",
+                "amount": "33916731"
+            },
+            "links": {
+                "home": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "reports": {
+                    "url": "/preview/business-reports",
+                    "method": "get"
+                },
+                "profile": {
+                    "url": "/preview/business-profile",
+                    "method": "get"
+                },
+                "launcher": {
+                    "url": "/preview/launcher-ready",
+                    "method": "get"
+                },
+                "wallet": {
+                    "url": "/preview/business-wallet",
+                    "method": "get"
+                },
+                "deposit": {
+                    "url": "/preview/business-wallet",
+                    "method": "get"
+                },
+                "withdraw": {
+                    "url": "/preview/business-wallet",
+                    "method": "get"
+                },
+                "notifications": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "rating": {
+                    "url": "/preview/business-rating",
+                    "method": "get"
+                },
+                "apply": {
+                    "url": "/preview/business-apply-business",
+                    "method": "get"
+                }
+            }
+        },
+        "rating": {
+            "band": "strong",
+            "score": "4.8"
+        },
+        "refusal": null,
+        "drift": {
+            "audited": {
+                "band": "strong",
+                "score": "4.9"
+            },
+            "moves": [
+                {
+                    "reason": "August revenue came in below trend",
+                    "delta": "-0.15"
+                },
+                {
+                    "reason": "Repayment made on time",
+                    "delta": "+0.05"
+                }
+            ]
+        },
+        "factors": [
+            {
+                "key": "financial_health",
+                "score": 91
+            },
+            {
+                "key": "repayment_history",
+                "score": 96
+            },
+            {
+                "key": "statement_consistency",
+                "score": 82
+            },
+            {
+                "key": "growth_outlook",
+                "score": 87
+            }
+        ],
+        "sizing": {
+            "cash_per_month": {
+                "currency": "RWF",
+                "amount": "9800000"
+            },
+            "net_margin_percent": "18.4",
+            "depreciation_percent": "3.1",
+            "multiplier": "1.6",
+            "cover_tier": "cover1x",
+            "carry": {
+                "currency": "RWF",
+                "amount": "15680000"
+            },
+            "stock": {
+                "state": "verified",
+                "value": {
+                    "currency": "RWF",
+                    "amount": "21000000"
+                }
+            },
+            "limits": [
+                {
+                    "key": "capacity",
+                    "value": {
+                        "currency": "RWF",
+                        "amount": "94080000"
+                    },
+                    "binding": false,
+                    "ebitda": {
+                        "currency": "RWF",
+                        "amount": "9800000"
+                    },
+                    "multiplier": "1.6"
+                },
+                {
+                    "key": "revenue_share",
+                    "value": {
+                        "currency": "RWF",
+                        "amount": "117600000"
+                    },
+                    "binding": false,
+                    "percent": "35",
+                    "revenue": {
+                        "currency": "RWF",
+                        "amount": "336000000"
+                    }
+                },
+                {
+                    "key": "book_share",
+                    "value": {
+                        "currency": "RWF",
+                        "amount": "92500000"
+                    },
+                    "binding": false,
+                    "percent": "2.5",
+                    "book": {
+                        "currency": "RWF",
+                        "amount": "3700000000"
+                    }
+                },
+                {
+                    "key": "phase_cap",
+                    "value": {
+                        "currency": "RWF",
+                        "amount": "80000000"
+                    },
+                    "binding": true,
+                    "phase": "Launch",
+                    "book_under": {
+                        "currency": "RWF",
+                        "amount": "5000000000"
+                    }
+                },
+                {
+                    "key": "policy_max",
+                    "value": {
+                        "currency": "RWF",
+                        "amount": "100000000"
+                    },
+                    "binding": false
+                }
+            ],
+            "approved": {
+                "currency": "RWF",
+                "amount": "80000000"
+            },
+            "headroom": {
+                "currency": "RWF",
+                "amount": "33916731"
+            },
+            "tiers": [
+                {
+                    "multiplier": "0.8",
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "47040000"
+                    },
+                    "applied": true,
+                    "needs_cover": null,
+                    "your_cover": "1.34"
+                },
+                {
+                    "multiplier": "1.6",
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "94080000"
+                    },
+                    "applied": true,
+                    "needs_cover": "1.0",
+                    "your_cover": "1.34"
+                },
+                {
+                    "multiplier": "2.4",
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "141120000"
+                    },
+                    "applied": false,
+                    "needs_cover": "2.0",
+                    "your_cover": "1.34"
+                }
+            ]
+        },
+        "financials": {
+            "avg_monthly_revenue": {
+                "currency": "RWF",
+                "amount": "28000000"
+            },
+            "ebitda_month": {
+                "currency": "RWF",
+                "amount": "9800000"
+            },
+            "net_margin_percent": "18.4",
+            "outstanding": {
+                "currency": "RWF",
+                "amount": "46083269"
+            }
+        },
+        "links": {
+            "close": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "raise": {
+                "url": "/preview/business-apply-business",
+                "method": "get"
+            }
+        }
+    }
+}

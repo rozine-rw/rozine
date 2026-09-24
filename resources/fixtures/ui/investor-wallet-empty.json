@@ -1,0 +1,210 @@
+{
+    "component": "investor/wallet",
+    "props": {
+        "wallet": {
+            "available": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "status": "active",
+            "pending_withdrawal": null
+        },
+        "funding": {
+            "kind": null,
+            "methods": [
+                {
+                    "id": "mtn-1",
+                    "kind": "mtn",
+                    "label": "MTN MoMo",
+                    "masked": "+250 788 ···· 456"
+                },
+                {
+                    "id": "airtel-1",
+                    "kind": "airtel",
+                    "label": "Airtel",
+                    "masked": "+250 73 ···· 218"
+                },
+                {
+                    "id": "bk-1",
+                    "kind": "bank",
+                    "label": "Bank of Kigali",
+                    "masked": "Account ····2231"
+                }
+            ],
+            "picks": [
+                {
+                    "currency": "RWF",
+                    "amount": "50000"
+                },
+                {
+                    "currency": "RWF",
+                    "amount": "100000"
+                },
+                {
+                    "currency": "RWF",
+                    "amount": "500000"
+                },
+                {
+                    "currency": "RWF",
+                    "amount": "1000000"
+                }
+            ],
+            "quote": null
+        },
+        "earnings": {
+            "from": "2026-03-23T00:00:00+02:00",
+            "to": "2026-09-23T00:00:00+02:00",
+            "ranges": [
+                {
+                    "key": "3m",
+                    "active": false,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "6m",
+                    "active": true,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "12m",
+                    "active": false,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "ytd",
+                    "active": false,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                }
+            ],
+            "totals": {
+                "interest": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "received": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "payouts": 0,
+                "avg_monthly": {
+                    "currency": "RWF",
+                    "amount": "0"
+                }
+            },
+            "months": []
+        },
+        "transactions": {
+            "range": "30d",
+            "ranges": [
+                {
+                    "key": "today",
+                    "active": false,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "7d",
+                    "active": false,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "30d",
+                    "active": true,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "all",
+                    "active": false,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                }
+            ],
+            "items": [],
+            "exports": {
+                "pdf": {
+                    "url": "/preview/investor-wallet",
+                    "method": "get"
+                },
+                "csv": {
+                    "url": "/preview/investor-wallet",
+                    "method": "get"
+                }
+            }
+        },
+        "receipt": null,
+        "links": {
+            "deals": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "close": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "deposit": {
+                "url": "/preview/investor-wallet-deposit",
+                "method": "get"
+            },
+            "withdraw": {
+                "url": "/preview/investor-wallet-withdraw",
+                "method": "get"
+            },
+            "link_account": {
+                "url": "/preview/investor-profile-linked",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "deposit": {
+                "url": "/preview/investor-wallet",
+                "method": "post"
+            },
+            "withdraw": {
+                "url": "/preview/investor-wallet",
+                "method": "post"
+            }
+        }
+    }
+}

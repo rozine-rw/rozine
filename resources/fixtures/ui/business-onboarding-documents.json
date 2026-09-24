@@ -1,0 +1,272 @@
+{
+    "component": "business/onboarding",
+    "props": {
+        "step": "documents",
+        "registry": {
+            "name": "Karongi Freight Ltd",
+            "company_code": "102938475",
+            "legal_form": "Private Limited Company (Ltd)",
+            "registered_on": "2019-03-14",
+            "status": "active",
+            "staff": 120,
+            "address": "KG 5 Ave, Kigombe Cell, Muhoza, Musanze — Northern Province",
+            "category": "Logistics & Freight Transport",
+            "management": [
+                {
+                    "name": "Robert Mugisha",
+                    "role": "CEO · Managing Director"
+                },
+                {
+                    "name": "Aline Uwase",
+                    "role": "Board Chair"
+                },
+                {
+                    "name": "Jean Bosco",
+                    "role": "Finance Director"
+                }
+            ],
+            "shareholders": [
+                {
+                    "name": "Robert Mugisha",
+                    "share_pct": 52
+                },
+                {
+                    "name": "Aline Uwase",
+                    "share_pct": 30
+                },
+                {
+                    "name": "Kivu Capital Partners",
+                    "share_pct": 18
+                }
+            ]
+        },
+        "industry": "logistics_transport",
+        "industries": [
+            {
+                "value": "agriculture_agribusiness",
+                "label": "Agriculture & Agribusiness"
+            },
+            {
+                "value": "logistics_transport",
+                "label": "Logistics & Transport"
+            },
+            {
+                "value": "manufacturing",
+                "label": "Manufacturing"
+            },
+            {
+                "value": "retail_wholesale",
+                "label": "Retail & Wholesale"
+            },
+            {
+                "value": "food_beverage",
+                "label": "Food & Beverage"
+            },
+            {
+                "value": "technology_software",
+                "label": "Technology & Software"
+            },
+            {
+                "value": "energy_utilities",
+                "label": "Energy & Utilities"
+            },
+            {
+                "value": "construction_real_estate",
+                "label": "Construction & Real Estate"
+            },
+            {
+                "value": "financial_services",
+                "label": "Financial Services"
+            },
+            {
+                "value": "healthcare_pharma",
+                "label": "Healthcare & Pharma"
+            },
+            {
+                "value": "hospitality_tourism",
+                "label": "Hospitality & Tourism"
+            },
+            {
+                "value": "education_training",
+                "label": "Education & Training"
+            },
+            {
+                "value": "professional_services",
+                "label": "Professional Services"
+            },
+            {
+                "value": "media_creative",
+                "label": "Media & Creative"
+            },
+            {
+                "value": "mining_extraction",
+                "label": "Mining & Extraction"
+            },
+            {
+                "value": "other",
+                "label": "Other"
+            }
+        ],
+        "documents": {
+            "certificate": {
+                "status": "required",
+                "number": null,
+                "file_name": null
+            },
+            "logo_url": null,
+            "photos": [
+                {
+                    "slot": "products",
+                    "url": null
+                },
+                {
+                    "slot": "facilities",
+                    "url": null
+                },
+                {
+                    "slot": "team",
+                    "url": null
+                },
+                {
+                    "slot": "operations",
+                    "url": null
+                },
+                {
+                    "slot": "customers",
+                    "url": null
+                },
+                {
+                    "slot": "impact",
+                    "url": null
+                },
+                {
+                    "slot": "brand",
+                    "url": null
+                }
+            ]
+        },
+        "banks": [
+            {
+                "code": "bank_of_kigali",
+                "name": "Bank of Kigali"
+            },
+            {
+                "code": "bpr_bank_rwanda",
+                "name": "BPR Bank Rwanda"
+            },
+            {
+                "code": "equity_bank_rwanda",
+                "name": "Equity Bank Rwanda"
+            },
+            {
+                "code": "i_m_bank_rwanda",
+                "name": "I&M Bank Rwanda"
+            },
+            {
+                "code": "kcb_bank_rwanda",
+                "name": "KCB Bank Rwanda"
+            },
+            {
+                "code": "access_bank_rwanda",
+                "name": "Access Bank Rwanda"
+            },
+            {
+                "code": "ecobank_rwanda",
+                "name": "Ecobank Rwanda"
+            },
+            {
+                "code": "ncba_bank_rwanda",
+                "name": "NCBA Bank Rwanda"
+            },
+            {
+                "code": "guaranty_trust_bank_rwanda",
+                "name": "Guaranty Trust Bank Rwanda"
+            },
+            {
+                "code": "bank_of_africa_rwanda",
+                "name": "Bank of Africa Rwanda"
+            },
+            {
+                "code": "urwego_bank",
+                "name": "Urwego Bank"
+            },
+            {
+                "code": "ab_bank_rwanda",
+                "name": "AB Bank Rwanda"
+            },
+            {
+                "code": "unguka_bank",
+                "name": "Unguka Bank"
+            },
+            {
+                "code": "zigama_css",
+                "name": "Zigama CSS"
+            },
+            {
+                "code": "development_bank_of_rwanda_brd",
+                "name": "Development Bank of Rwanda (BRD)"
+            },
+            {
+                "code": "other_bank",
+                "name": "Other bank"
+            }
+        ],
+        "bank_account": null,
+        "signatories": [
+            {
+                "id": "sig-1",
+                "name": "Robert Mugisha",
+                "role": "CEO · Managing Director"
+            },
+            {
+                "id": "sig-2",
+                "name": "Aline Uwase",
+                "role": "Board Chair"
+            },
+            {
+                "id": "sig-3",
+                "name": "Jean Bosco",
+                "role": "Finance Director"
+            },
+            {
+                "id": "sig-4",
+                "name": "Claire Umutoni",
+                "role": "Company Attorney"
+            }
+        ],
+        "signatories_required": 2,
+        "contact_masked": "op***@ka***.rw",
+        "links": {
+            "back": {
+                "url": "/preview/business-onboarding-confirm",
+                "method": "get"
+            },
+            "next": {
+                "url": "/preview/business-onboarding-bank",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "confirm": {
+                "url": "/preview/business-onboarding-documents",
+                "method": "post"
+            },
+            "certificate": {
+                "url": "/preview/business-onboarding-documents-verified",
+                "method": "post"
+            },
+            "upload": {
+                "url": "/preview/business-onboarding-documents",
+                "method": "post"
+            },
+            "bank": {
+                "url": "/preview/business-onboarding-bank-linked",
+                "method": "post"
+            },
+            "finish": {
+                "url": "/preview/business-home",
+                "method": "post"
+            }
+        }
+    }
+}

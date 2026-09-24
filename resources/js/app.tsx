@@ -18,6 +18,10 @@ createInertiaApp({
             case name === 'welcome':
             case name === 'pulse':
                 return PublicLayout;
+            // The Suite launcher and the role apps draw their own shells.
+            case name === 'dashboard':
+            case /^(investor|business|auditor|admin)\//.test(name):
+                return undefined;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('settings/'):
