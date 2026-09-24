@@ -112,7 +112,7 @@ describe('Auditor Home', () => {
             ).toHaveAttribute('href', '/preview/auditor-portfolio');
         }
 
-        expect(screen.getAllByLabelText('1 open Flash Audits')).toHaveLength(2);
+        expect(screen.getAllByLabelText('1 open offers')).toHaveLength(2);
     });
 
     it('asks the server to pause dispatch as a command and waits for its answer', async () => {
@@ -306,7 +306,7 @@ describe('Auditor Home', () => {
         ).toBeInTheDocument();
         expect(screen.getAllByText('—')).toHaveLength(3);
         expect(screen.getByText('2')).toHaveClass('text-rz-ink');
-        expect(screen.queryAllByLabelText(/open Flash Audits/)).toHaveLength(0);
+        expect(screen.queryAllByLabelText(/open offers/)).toHaveLength(0);
     });
 
     it('greets in the afternoon and counts several nearby jobs', () => {

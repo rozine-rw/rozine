@@ -19,7 +19,7 @@ export function RadiusMap({
 }: {
     radiusKm: number;
     jobs: EligibleJob[];
-    /** Whether more pages follow: the count is then this page's, and says so, never a total. */
+    /** Whether the offers are a live page: the count is then this page's, and says so, never a total. */
     paged: boolean;
 }) {
     const { t } = useTranslation();

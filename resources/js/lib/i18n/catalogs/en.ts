@@ -1401,7 +1401,7 @@ const en = {
     'auditor.nav.jobs': 'Jobs',
     'auditor.nav.portfolio': 'Portfolio',
     'auditor.nav.profile': 'Profile',
-    'auditor.nav.jobs_badge': '{count} open Flash Audits',
+    'auditor.nav.jobs_badge': '{count} open offers',
     'auditor.clock.label': 'Time left on this job',
     'auditor.clock.time_left': 'Time left',
     'auditor.time.minutes_ago': '{count}m ago',

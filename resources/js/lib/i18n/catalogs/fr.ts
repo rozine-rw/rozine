@@ -1436,7 +1436,7 @@ const fr: Catalog = {
     'auditor.nav.jobs': 'Missions',
     'auditor.nav.portfolio': 'Portefeuille',
     'auditor.nav.profile': 'Profil',
-    'auditor.nav.jobs_badge': '{count} audits flash ouverts',
+    'auditor.nav.jobs_badge': '{count} offres ouvertes',
     'auditor.clock.label': 'Temps restant pour cette mission',
     'auditor.clock.time_left': 'Temps restant',
     'auditor.time.minutes_ago': 'il y a {count} min',

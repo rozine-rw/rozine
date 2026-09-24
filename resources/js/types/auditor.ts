@@ -550,7 +550,11 @@ export type AuditorJobsProps = AuditorPageContract & {
      * relies on no code of its own.
      */
     decline_options: ServerOption<DeclineReason>[];
-    /** The page as a whole (GET `/auditor/jobs?before=`); absent on a synthetic page with no paging. */
+    /**
+     * The page as a whole (GET `/auditor/jobs?before=`). Live pages always send it, so their counts
+     * read as this page's, never as totals, even when `next` is null; only a synthetic preview
+     * without it presents its offers as the complete list.
+     */
     pagination?: AuditorPagination;
     outcome: AuditorOutcome | null;
     links: AuditorAppLinks & OperationLookupLinks;
