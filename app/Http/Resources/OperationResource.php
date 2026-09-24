@@ -19,8 +19,9 @@ class OperationResource extends JsonResource
         return [
             'operation_id' => $data['operation_id'], 'status' => $data['status'], 'code' => $data['code'],
             'data' => (object) $data['data'], 'revision' => $data['revision'], 'policy_version' => $data['policy_version'],
-            'server_time' => $data['server_time'], 'allowed_actions' => $data['allowed_actions'],
-            'field_errors' => (object) $data['field_errors'],
+            'server_time' => now()->toIso8601String(), 'recorded_at' => $data['server_time'],
+            'allowed_actions' => $data['allowed_actions'],
+            'field_errors' => (object) $data['field_errors'], 'errors' => (object) $data['field_errors'],
         ];
     }
 

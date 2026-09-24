@@ -73,6 +73,7 @@ export type StaffAccess = {
         | 'audit.partners.verify'
         | 'audit.assignments.manage'
         | 'audit.reports.view'
+        | 'consent.documents.record'
     )[];
 };
 

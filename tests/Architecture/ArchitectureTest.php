@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BusinessMandate;
 use App\Models\BusinessProfile;
 use App\Models\CommandOperation;
+use App\Models\ConsentRelease;
 use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\VerifiedOrganizationIdentity;
@@ -148,11 +149,12 @@ it('has concrete targets for the identity persistence boundary', function (): vo
     expect(class_exists(Party::class))->toBeTrue()
         ->and(class_exists(RoleMembership::class))->toBeTrue()
         ->and(class_exists(VerifiedOrganizationIdentity::class))->toBeTrue()
+        ->and(class_exists(ConsentRelease::class))->toBeTrue()
         ->and(class_exists(RegisterIdentity::class))->toBeTrue();
 })->group('arch');
 
 arch('identity records are only accessed by their adapter and model relationships')
-    ->expect(['App\Models\Party', 'App\Models\RoleMembership', 'App\Models\VerifiedPersonIdentity', 'App\Models\VerifiedOrganizationIdentity', 'App\Models\IdentityOperator', 'App\Models\IdentityAuditEvent', 'App\Models\StaffAccount', 'App\Models\RoleBookmark'])
+    ->expect(['App\Models\Party', 'App\Models\RoleMembership', 'App\Models\VerifiedPersonIdentity', 'App\Models\VerifiedOrganizationIdentity', 'App\Models\IdentityOperator', 'App\Models\IdentityAuditEvent', 'App\Models\StaffAccount', 'App\Models\RoleBookmark', 'App\Models\ConsentRelease'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Identity', 'App\Models', 'Database\Factories']);
 
 it('has concrete targets for the command outcome boundary', function (): void {

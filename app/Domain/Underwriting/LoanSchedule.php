@@ -17,6 +17,10 @@ final readonly class LoanSchedule
         public array $instalments,
     ) {}
 
+    /**
+     * Arithmetic for requested and offered schedules. LoanCapacity enforces the
+     * 5,000-franc grid before an offered or accepted schedule may be published.
+     */
     public static function build(string $principal, int $tenor, BigRational $rate): self
     {
         FlatReturnPricing::validateTenor($tenor);

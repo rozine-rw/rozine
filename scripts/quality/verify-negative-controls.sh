@@ -209,7 +209,7 @@ fi
 # ---------------------------------------------------------------------------
 if selected identity-boundary; then
   control identity-boundary "application actions writing protected identity records directly must fail the identity rule"
-  for identity_model in Party VerifiedOrganizationIdentity; do
+  for identity_model in Party VerifiedOrganizationIdentity ConsentRelease; do
   echo "    checking ${identity_model}"
 
   plant app/Application/Identity/NegativeControlIdentityWrite.php <<VIOLATION

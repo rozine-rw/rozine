@@ -8,10 +8,12 @@ use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\ChangeMembership;
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Identity\GetRoleBookmark;
+use App\Application\Identity\RecordConsentRelease;
 use App\Application\Identity\ResolveVerifiedOrganization;
 use App\Application\Identity\ResolveVerifiedPerson;
 use App\Application\Identity\SaveRoleBookmark;
 use App\Application\Identity\SelectActiveRole;
+use App\Application\Identity\WithCurrentConsent;
 use App\Application\Identity\WithVerifiedParties;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Identity\IdentityViolation;
@@ -20,6 +22,7 @@ use App\Domain\Operations\OperationResult;
 use App\Models\BusinessMandate;
 use App\Models\BusinessProfile;
 use App\Models\CommandOperation;
+use App\Models\ConsentRelease;
 use App\Models\IdentityAuditEvent;
 use App\Models\IdentityOperator;
 use App\Models\Party;
@@ -32,6 +35,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\BusinessAuthorityFixture;
+use Tests\Support\ConsentFixture;
 
 function concurrentIdentityOperator(): User
 {
@@ -346,4 +350,43 @@ it('serializes entity mandate revocation against protected business work', funct
     BusinessAuthorityFixture::configure($fixture, 1);
     expect(fn () => app(WithBusinessAuthority::class)->handle($fixture['users'][0]->id, 1, $business->id, 'application.sign', 1, fn (): bool => true))
         ->toThrow(CommandRejection::class, 'MANDATE_REQUIRED');
+});
+
+it('admits one competing consent release from a given catalog revision', function (): void {
+    $staff = [ConsentFixture::staff(), ConsentFixture::staff()];
+    $operations = [];
+    foreach ($staff as $actor) {
+        $operations[] = function () use ($actor): void {
+            $result = ConsentFixture::record($actor);
+            if ($result['code'] === 'VERSION_CONFLICT') {
+                throw new CommandRejection('VERSION_CONFLICT');
+            }
+        };
+    }
+    expect(runIdentityContenders($operations))->toBe([0, 2])
+        ->and(ConsentRelease::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('result->code', 'VERSION_CONFLICT')->count())->toBe(1);
+});
+
+it('holds current consent documents stable until protected acceptance commits', function (): void {
+    $staff = ConsentFixture::staff();
+    ConsentFixture::record($staff);
+    config(['database.connections.consent_contender' => config('database.connections.pgsql')]);
+    DB::connection('consent_contender')->statement("SET lock_timeout = '500ms'");
+    $default = DB::getDefaultConnection();
+    $withdraw = fn (): array => app(RecordConsentRelease::class)->handle($staff->id, 1, 'withdrawn', [], [], true,
+        'fixture:withdrawal', 'Withdrawal after protected acceptance.', (string) Str::uuid());
+
+    app(WithCurrentConsent::class)->handle(function (?array $release) use ($default, $withdraw): void {
+        expect($release['revision'])->toBe(1);
+        DB::setDefaultConnection('consent_contender');
+        try {
+            expect(fn () => $withdraw())->toThrow(QueryException::class);
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('consent_contender');
+        }
+    });
+    expect($withdraw()['revision'])->toBe(2)
+        ->and(app(WithCurrentConsent::class)->handle(fn (?array $release): ?array => $release))->toBeNull();
 });

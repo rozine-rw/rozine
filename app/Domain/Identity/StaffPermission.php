@@ -11,8 +11,8 @@ final class StaffPermission
         'analyst' => ['businesses.view', 'audit.reports.view'],
         'approver' => ['businesses.view', 'businesses.verify', 'applications.review', 'audit.partners.verify', 'audit.assignments.manage', 'audit.reports.view'],
         'treasury' => ['businesses.view', 'audit.reports.view'],
-        'compliance' => ['businesses.view', 'businesses.verify', 'audit.partners.verify', 'audit.reports.view'],
-        'superadmin' => ['businesses.view', 'businesses.verify', 'applications.review', 'audit.partners.verify', 'audit.assignments.manage', 'audit.reports.view'],
+        'compliance' => ['businesses.view', 'businesses.verify', 'audit.partners.verify', 'audit.reports.view', 'consent.documents.record'],
+        'superadmin' => ['businesses.view', 'businesses.verify', 'applications.review', 'audit.partners.verify', 'audit.assignments.manage', 'audit.reports.view', 'consent.documents.record'],
     ];
 
     /**

@@ -120,7 +120,28 @@ it('rolls back rejected effects while retaining an immutable correlated denial',
     $body = $response->getData(true);
     expect($response->getStatusCode())->toBe(409)->and($body['code'])->toBe('VERSION_CONFLICT')
         ->and($body['field_errors']['expected_revision'])->toBe(['Refresh the application.'])
+        ->and($body['errors'])->toBe($body['field_errors'])
         ->and($body)->not->toHaveKey('http_status')->not->toHaveKey('request_hash')->not->toHaveKey('actor_key');
+});
+
+it('returns a fresh response clock without changing the recorded outcome or validation errors', function (): void {
+    $this->freezeTime();
+    [$user, $actor, $authorize] = operationJournalActor();
+    $journal = app(OperationJournal::class);
+    $request = (string) Str::uuid();
+    $recorded = now()->toIso8601String();
+    $operation = fn (): never => throw new CommandRejection('INVALID_ACCEPTED_PRINCIPAL', 422, 3, ['accepted_principal' => ['Choose an amount on the permitted grid.']]);
+    $outcome = $journal->execute($actor, $user->id, 'application.evaluate', $request, 'fixture', (string) $user->id, [], $authorize, $operation);
+    $this->travel(2)->hours();
+    $replay = $journal->execute($actor, $user->id, 'application.evaluate', $request, 'fixture', (string) $user->id, [], $authorize, $operation);
+    $response = (new OperationResource($replay))->response();
+    $body = $response->getData(true);
+    expect($replay)->toBe($outcome)
+        ->and($response->getStatusCode())->toBe(422)
+        ->and($body['server_time'])->toBe(now()->toIso8601String())->not->toBe($recorded)
+        ->and($body['recorded_at'])->toBe($recorded)
+        ->and($body['errors']['accepted_principal'])->toBe(['Choose an amount on the permitted grid.'])
+        ->and($body['field_errors'])->toBe($body['errors']);
 });
 
 it('never records an unknown result after an unexpected failure and permits the original safe retry', function (): void {

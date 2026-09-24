@@ -36,6 +36,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $organizationMigration = require database_path('migrations/2026_09_24_050223_create_verified_organization_identities_table.php');
     $operationsMigration = require database_path('migrations/2026_09_24_052148_create_command_operations_table.php');
     $businessMigration = require database_path('migrations/2026_09_24_053517_create_business_profiles_and_mandates.php');
+    $consentMigration = require database_path('migrations/2026_09_24_061212_create_consent_releases_table.php');
     $party = Party::factory()->verified()->create();
     $user = User::factory()->for($party)->create();
     RoleMembership::factory()->for($party)->active()->create();
@@ -44,6 +45,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
 
     expect(Schema::hasIndex('users', ['party_id']))->toBeTrue();
 
+    $consentMigration->down();
     $businessMigration->down();
     $operationsMigration->down();
     $organizationMigration->down();
@@ -65,6 +67,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $organizationMigration->up();
     $operationsMigration->up();
     $businessMigration->up();
+    $consentMigration->up();
 
     expect(Schema::hasTable('parties'))->toBeTrue()
         ->and(Schema::hasTable('role_memberships'))->toBeTrue()
@@ -74,5 +77,6 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasColumn('staff_accounts', 'roles'))->toBeTrue()
         ->and(Schema::hasTable('verified_organization_identities'))->toBeTrue()
         ->and(Schema::hasTable('command_operations'))->toBeTrue()
-        ->and(Schema::hasColumn('business_mandates', 'profile'))->toBeTrue();
+        ->and(Schema::hasColumn('business_mandates', 'profile'))->toBeTrue()
+        ->and(Schema::hasTable('consent_releases'))->toBeTrue();
 });
