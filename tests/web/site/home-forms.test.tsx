@@ -294,6 +294,12 @@ describe('a business asking to borrow', () => {
 });
 
 describe('the card a signup can keep', () => {
+    // The saved/failed note clears itself after 2.2s of real time; hold the clock so a slow run
+    // cannot let it expire before the assertion reads it.
+    beforeEach(() => {
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    });
+
     it('hands the investor the card they are looking at', async () => {
         const site = mountSite();
 

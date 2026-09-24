@@ -8,7 +8,6 @@ import AuthCardLayout from '@/layouts/auth/auth-card-layout';
 import AuthSimpleLayout from '@/layouts/auth/auth-simple-layout';
 import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
 import AuthLayout from '@/layouts/auth-layout';
-import Dashboard from '@/pages/dashboard';
 import Welcome from '@/pages/welcome';
 import type { User } from '@/types';
 
@@ -238,16 +237,6 @@ describe('authentication layouts', () => {
 });
 
 describe('starter pages', () => {
-    it('renders the dashboard placeholders and layout metadata', () => {
-        render(<Dashboard />);
-
-        expect(screen.getByTestId('page-title')).toHaveTextContent('Dashboard');
-        expect(screen.getAllByLabelText('Placeholder pattern')).toHaveLength(4);
-        expect(Dashboard.layout.breadcrumbs).toEqual([
-            { title: 'Dashboard', href: expect.anything() },
-        ]);
-    });
-
     it('switches the welcome navigation after authentication', () => {
         const { rerender } = render(<Welcome />);
 

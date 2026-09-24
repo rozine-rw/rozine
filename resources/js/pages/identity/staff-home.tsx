@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import { useAccessRefresh } from '@/hooks/use-access-refresh';
 import { useTranslation } from '@/hooks/use-translation';
 import { dashboard } from '@/routes';
 import { edit } from '@/routes/profile';
@@ -10,6 +11,7 @@ export default function StaffHome({
     staff_access: StaffAccess;
 }) {
     const { t } = useTranslation();
+    useAccessRefresh(['staff_access']);
 
     return (
         <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">

@@ -1,0 +1,117 @@
+{
+    "component": "business/wallet",
+    "props": {
+        "wallet": {
+            "available": {
+                "currency": "RWF",
+                "amount": "12383800"
+            },
+            "status": "active"
+        },
+        "methods": {
+            "deposit": [
+                {
+                    "key": "mtn",
+                    "kind": "mtn",
+                    "name": "MTN Mobile Money"
+                },
+                {
+                    "key": "airtel",
+                    "kind": "airtel",
+                    "name": "Airtel Money"
+                },
+                {
+                    "key": "bk",
+                    "kind": "bank",
+                    "name": "Bank of Kigali"
+                }
+            ],
+            "withdraw": [
+                {
+                    "key": "mtn",
+                    "kind": "mtn",
+                    "name": "MTN Mobile Money"
+                },
+                {
+                    "key": "airtel",
+                    "kind": "airtel",
+                    "name": "Airtel Money"
+                },
+                {
+                    "key": "bk",
+                    "kind": "bank",
+                    "name": "Bank of Kigali"
+                }
+            ]
+        },
+        "quick_amounts": [
+            {
+                "currency": "RWF",
+                "amount": "100000"
+            },
+            {
+                "currency": "RWF",
+                "amount": "500000"
+            },
+            {
+                "currency": "RWF",
+                "amount": "1000000"
+            },
+            {
+                "currency": "RWF",
+                "amount": "5000000"
+            }
+        ],
+        "quote": null,
+        "today": "2026-09-23",
+        "transactions": {
+            "items": [],
+            "from": "2026-09-16",
+            "to": "2026-09-23"
+        },
+        "links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "back": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/preview/business-wallet",
+                "method": "get"
+            },
+            "export_pdf": {
+                "url": "/preview/business-wallet.pdf",
+                "method": "get"
+            },
+            "export_csv": {
+                "url": "/preview/business-wallet.csv",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "deposit": {
+                "url": "/preview/business-wallet",
+                "method": "post"
+            },
+            "withdraw": {
+                "url": "/preview/business-wallet",
+                "method": "post"
+            }
+        }
+    }
+}

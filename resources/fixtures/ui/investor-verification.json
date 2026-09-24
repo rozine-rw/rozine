@@ -1,0 +1,42 @@
+{
+    "component": "investor/verification",
+    "props": {
+        "investor_type": "individual",
+        "country": "Rwanda",
+        "date_of_birth": "",
+        "id_type": "national_id",
+        "id_number": "",
+        "uploads": {
+            "front": {
+                "status": "missing"
+            },
+            "back": {
+                "status": "missing"
+            },
+            "selfie": {
+                "status": "missing"
+            }
+        },
+        "links": {
+            "back": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "save": {
+                "url": "/preview/investor-verification-document",
+                "method": "post"
+            },
+            "upload": {
+                "url": "/preview/investor-verification-document",
+                "method": "post"
+            },
+            "submit": {
+                "url": "/preview/investor-verified",
+                "method": "post"
+            }
+        },
+        "step": "personal"
+    }
+}

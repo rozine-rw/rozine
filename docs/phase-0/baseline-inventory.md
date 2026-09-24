@@ -365,6 +365,7 @@ Vendor routes excluded, matching `route:list --except-vendor`.
 | GET | `/identity/roles/{role}/resume` | `identity.roles.resume` | `RoleBookmarkController@resume` | web, auth, throttle:60,1 |
 | GET | `/investor` | `investor.home` | `RoleHomeController@__invoke` | web, auth, verified |
 | POST | `/investor` | `site.investor.store` | `SiteController@storeInvestor` | web, throttle:10,1 |
+| GET | `/preview/{fixture}` | — | `Closure` | web |
 | GET | `/pulse` | `pulse` | `PulseController@index` | web |
 | POST | `/pulse/business` | `pulse.business.store` | `PulseController@storeBusiness` | web, throttle:10,1 |
 | POST | `/pulse/business/preview` | `pulse.business.preview` | `PulseController@previewBusiness` | web, throttle:60,1 |

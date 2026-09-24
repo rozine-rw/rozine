@@ -1,0 +1,481 @@
+{
+    "component": "business/note",
+    "props": {
+        "home": {
+            "business": {
+                "name": "GreenLeaf Agro",
+                "company_code": "103847291",
+                "industry": "FMCG",
+                "district": "Gasabo"
+            },
+            "rating": {
+                "band": "strong",
+                "score": "4.8"
+            },
+            "wallet": {
+                "available": {
+                    "currency": "RWF",
+                    "amount": "12383800"
+                }
+            },
+            "unread_notifications": 2,
+            "live_raise": {
+                "title": "Cold-Chain Hub",
+                "funded_pct": 66,
+                "investors": 284,
+                "raised": {
+                    "currency": "RWF",
+                    "amount": "11900000"
+                },
+                "target": {
+                    "currency": "RWF",
+                    "amount": "18000000"
+                },
+                "link": {
+                    "url": "/preview/business-note-raising",
+                    "method": "get"
+                }
+            },
+            "today": [
+                {
+                    "kind": "application_approved",
+                    "title": "Warehouse Robotics",
+                    "fee": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                },
+                {
+                    "kind": "audit_window",
+                    "month": "2026-09-01T00:00:00+02:00",
+                    "window_open": true,
+                    "days_left": 0,
+                    "sealed_by": "2026-10-07T00:00:00+02:00",
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                },
+                {
+                    "kind": "repayment_due",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "4833334"
+                    },
+                    "note_title": "Fleet Expansion Note",
+                    "due_on": "2026-10-05T00:00:00+02:00",
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                }
+            ],
+            "capital": {
+                "raised": {
+                    "currency": "RWF",
+                    "amount": "88000000"
+                },
+                "investors": 1657,
+                "repaid": {
+                    "currency": "RWF",
+                    "amount": "82000000"
+                },
+                "on_time_pct": 100,
+                "active_notes": 1
+            },
+            "notes": [
+                {
+                    "id": "RNP-2026-0118",
+                    "title": "Cold-Chain Hub",
+                    "status": "active",
+                    "created_at": "2026-06-02T09:00:00+02:00",
+                    "funded_pct": 66,
+                    "investors": 284,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "11900000"
+                    },
+                    "target": {
+                        "currency": "RWF",
+                        "amount": "18000000"
+                    },
+                    "link": {
+                        "url": "/preview/business-note-raising",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "RNP-2024-0042",
+                    "title": "Fleet Expansion",
+                    "status": "repaying",
+                    "created_at": "2026-01-05T09:00:00+02:00",
+                    "funded_pct": 100,
+                    "investors": 647,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "25000000"
+                    },
+                    "target": {
+                        "currency": "RWF",
+                        "amount": "25000000"
+                    },
+                    "link": {
+                        "url": "/preview/business-note-repaying",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "RNP-2025-0071",
+                    "title": "Grain Storage",
+                    "status": "completed",
+                    "created_at": "2025-07-14T09:00:00+02:00",
+                    "funded_pct": 100,
+                    "investors": 412,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "20000000"
+                    },
+                    "target": {
+                        "currency": "RWF",
+                        "amount": "20000000"
+                    },
+                    "link": {
+                        "url": "/preview/business-note-completed",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "DRAFT-0007",
+                    "title": "Equipment Upgrade",
+                    "status": "draft",
+                    "created_at": null,
+                    "funded_pct": 0,
+                    "investors": 0,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "target": {
+                        "currency": "RWF",
+                        "amount": "15000000"
+                    },
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    },
+                    "resume": {
+                        "url": "/preview/business-apply-business",
+                        "method": "get"
+                    }
+                }
+            ],
+            "headroom": {
+                "currency": "RWF",
+                "amount": "33916731"
+            },
+            "links": {
+                "home": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "reports": {
+                    "url": "/preview/business-reports",
+                    "method": "get"
+                },
+                "profile": {
+                    "url": "/preview/business-profile",
+                    "method": "get"
+                },
+                "launcher": {
+                    "url": "/preview/launcher-ready",
+                    "method": "get"
+                },
+                "wallet": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "deposit": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "withdraw": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "notifications": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "rating": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "apply": {
+                    "url": "/preview/business-apply-business",
+                    "method": "get"
+                }
+            }
+        },
+        "note": {
+            "id": "RNP-2025-0071",
+            "title": "Grain Storage",
+            "status": "completed",
+            "progress": {
+                "phase": "repaying",
+                "outstanding": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "payments_made": 4,
+                "payments_total": 4,
+                "repaid_pct": 100,
+                "repaid": {
+                    "currency": "RWF",
+                    "amount": "22100000"
+                },
+                "remaining": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "remaining_months": 0,
+                "investors": 412,
+                "health": "on_time",
+                "next_payment": null
+            },
+            "photos": [
+                {
+                    "url": null,
+                    "caption": "Fleet & facility · Musanze"
+                },
+                {
+                    "url": null,
+                    "caption": "Operations"
+                },
+                {
+                    "url": null,
+                    "caption": "Team & leadership"
+                }
+            ],
+            "performance": {
+                "six_months": {
+                    "months": [
+                        {
+                            "month": "2026-03-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "178000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-04-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "190000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-05-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "205000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-06-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "184000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-07-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "196000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-08-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "212000000"
+                            },
+                            "paid_on_time": true
+                        }
+                    ],
+                    "high": {
+                        "currency": "RWF",
+                        "amount": "212000000"
+                    },
+                    "low": {
+                        "currency": "RWF",
+                        "amount": "178000000"
+                    }
+                },
+                "twelve_months": {
+                    "months": [
+                        {
+                            "month": "2025-09-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "152000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2025-10-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "168000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2025-11-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "149000000"
+                            },
+                            "paid_on_time": false
+                        },
+                        {
+                            "month": "2025-12-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "171000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-01-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "186000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-02-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "163000000"
+                            },
+                            "paid_on_time": false
+                        },
+                        {
+                            "month": "2026-03-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "178000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-04-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "190000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-05-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "205000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-06-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "184000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-07-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "196000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-08-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "212000000"
+                            },
+                            "paid_on_time": true
+                        }
+                    ],
+                    "high": {
+                        "currency": "RWF",
+                        "amount": "212000000"
+                    },
+                    "low": {
+                        "currency": "RWF",
+                        "amount": "149000000"
+                    }
+                }
+            },
+            "recent_investors": [
+                {
+                    "initials": "JK",
+                    "name": "Jean Kamanzi",
+                    "kind": "individual",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "500000"
+                    }
+                },
+                {
+                    "initials": "MN",
+                    "name": "Marie Niyonsaba",
+                    "kind": "individual",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "250000"
+                    }
+                },
+                {
+                    "initials": "PF",
+                    "name": "Pension Fund RW",
+                    "kind": "institution",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "5000000"
+                    }
+                },
+                {
+                    "initials": "DO",
+                    "name": "David Okello",
+                    "kind": "individual",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "320000"
+                    }
+                }
+            ]
+        },
+        "links": {
+            "close": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "pay": null,
+            "investors": null
+        }
+    }
+}

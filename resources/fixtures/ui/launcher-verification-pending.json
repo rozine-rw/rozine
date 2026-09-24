@@ -1,0 +1,19 @@
+{
+    "component": "dashboard",
+    "props": {
+        "identity": {
+            "contract_version": "identity-v2",
+            "policy_version": "engineering-2026-09-23.4",
+            "code": "IDENTITY_VERIFICATION_REQUIRED",
+            "party": {
+                "id": "01K5TFIXTUREPARTY000000003",
+                "kind": "person",
+                "verification_status": "unverified"
+            },
+            "available_roles": [],
+            "allowed_actions": [],
+            "active_role": null,
+            "context_revision": 0
+        }
+    }
+}

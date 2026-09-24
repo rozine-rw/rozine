@@ -49,3 +49,5 @@ Route::middleware(['auth', 'throttle:60,1'])->prefix('identity')->name('identity
 });
 
 require __DIR__.'/settings.php';
+
+require __DIR__.'/preview.php';

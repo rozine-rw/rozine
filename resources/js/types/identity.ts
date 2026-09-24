@@ -86,3 +86,8 @@ export type SaveRoleBookmarkInput = {
     expected_revision: number;
     request_id: string;
 };
+
+/** UI aliases derive from the server identity contract. */
+export type RoleApp = MarketplaceRole;
+export type IdentityCode = IdentityContext['code'];
+export type IdentityParty = NonNullable<IdentityContext['party']>;

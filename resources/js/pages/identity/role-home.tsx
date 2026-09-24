@@ -1,6 +1,7 @@
 import { Head, Link, router, useHttp } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useAccessRefresh } from '@/hooks/use-access-refresh';
 import { useTranslation } from '@/hooks/use-translation';
 import { dashboard } from '@/routes';
 import { store } from '@/routes/identity/bookmarks';
@@ -21,10 +22,11 @@ type Props = {
 export default function RoleHome({ identity, role, section }: Props) {
     const { t } = useTranslation();
     const request = useHttp<SaveRoleBookmarkInput, { data: RoleBookmark }>();
+    const refreshing = useAccessRefresh(['identity']);
     const pending = useRef<SaveRoleBookmarkInput | null>(null);
     const [failed, setFailed] = useState(false);
     async function changeSection(next: 'overview' | 'access') {
-        if (request.processing) {
+        if (request.processing || refreshing) {
             return;
         }
 
@@ -74,7 +76,7 @@ export default function RoleHome({ identity, role, section }: Props) {
                                 variant={
                                     section === tab ? 'default' : 'outline'
                                 }
-                                disabled={request.processing}
+                                disabled={request.processing || refreshing}
                                 aria-pressed={section === tab}
                                 onClick={() => void changeSection(tab)}
                             >

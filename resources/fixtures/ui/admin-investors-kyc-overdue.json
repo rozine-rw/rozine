@@ -1,0 +1,422 @@
+{
+    "component": "admin/parties",
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2026-09-23T17:40:00+02:00",
+        "kind": "investor",
+        "policy": [],
+        "stats": [
+            {
+                "key": "total_investors",
+                "value": {
+                    "kind": "count",
+                    "value": 524
+                }
+            },
+            {
+                "key": "kyc_verified",
+                "value": {
+                    "kind": "percent",
+                    "value": "91"
+                }
+            },
+            {
+                "key": "awaiting_kyc",
+                "value": {
+                    "kind": "count",
+                    "value": 46
+                }
+            },
+            {
+                "key": "total_aum",
+                "value": {
+                    "kind": "money",
+                    "value": {
+                        "currency": "RWF",
+                        "amount": "184200000"
+                    }
+                }
+            }
+        ],
+        "chips": [
+            {
+                "key": "all",
+                "count": 524,
+                "link": {
+                    "url": "/preview/admin-investors",
+                    "method": "get"
+                },
+                "active": true
+            },
+            {
+                "key": "verified",
+                "count": 478,
+                "link": {
+                    "url": "/preview/admin-investors",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "pending",
+                "count": 46,
+                "link": {
+                    "url": "/preview/admin-investors",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "kyc_overdue",
+                "count": 3,
+                "link": {
+                    "url": "/preview/admin-investors",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "frozen",
+                "count": 1,
+                "link": {
+                    "url": "/preview/admin-investors",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "restricted",
+                "count": 1,
+                "link": {
+                    "url": "/preview/admin-investors",
+                    "method": "get"
+                },
+                "active": false
+            }
+        ],
+        "filters": [
+            {
+                "key": "country",
+                "value": "all",
+                "options": [
+                    {
+                        "value": "all",
+                        "label": "All countries"
+                    },
+                    {
+                        "value": "RW",
+                        "label": "Rwanda"
+                    },
+                    {
+                        "value": "KE",
+                        "label": "Kenya"
+                    }
+                ]
+            },
+            {
+                "key": "sort",
+                "value": "portfolio",
+                "options": [
+                    {
+                        "value": "portfolio",
+                        "label": "Sort: Portfolio value"
+                    },
+                    {
+                        "value": "name",
+                        "label": "Sort: Name"
+                    }
+                ]
+            }
+        ],
+        "shown": 5,
+        "total": 524,
+        "directory": {
+            "kind": "investor",
+            "rows": [
+                {
+                    "id": "inv_robert",
+                    "name": "Robert Mugisha",
+                    "country": "Rwanda",
+                    "kyc": "verified",
+                    "portfolio": {
+                        "currency": "RWF",
+                        "amount": "4900000"
+                    },
+                    "wallet": {
+                        "currency": "RWF",
+                        "amount": "1760000"
+                    },
+                    "holdings": 8,
+                    "businesses": 7,
+                    "frozen": false,
+                    "restricted": false,
+                    "link": {
+                        "url": "/preview/admin-investors-kyc-overdue",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "inv_emmanuel",
+                    "name": "Emmanuel Uwera",
+                    "country": "Rwanda",
+                    "kyc": "verified",
+                    "portfolio": {
+                        "currency": "RWF",
+                        "amount": "2000000"
+                    },
+                    "wallet": {
+                        "currency": "RWF",
+                        "amount": "1430000"
+                    },
+                    "holdings": 8,
+                    "businesses": 7,
+                    "frozen": false,
+                    "restricted": false,
+                    "link": {
+                        "url": "/preview/admin-investors-kyc-overdue",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "inv_marie",
+                    "name": "Marie Mugisha",
+                    "country": "Rwanda",
+                    "kyc": "overdue",
+                    "portfolio": {
+                        "currency": "RWF",
+                        "amount": "1200000"
+                    },
+                    "wallet": {
+                        "currency": "RWF",
+                        "amount": "690000"
+                    },
+                    "holdings": 6,
+                    "businesses": 5,
+                    "frozen": false,
+                    "restricted": true,
+                    "link": {
+                        "url": "/preview/admin-investors-kyc-overdue",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "inv_aline",
+                    "name": "Aline Achieng",
+                    "country": "Kenya",
+                    "kyc": "pending",
+                    "portfolio": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "wallet": {
+                        "currency": "RWF",
+                        "amount": "330000"
+                    },
+                    "holdings": 0,
+                    "businesses": 0,
+                    "frozen": false,
+                    "restricted": false,
+                    "link": {
+                        "url": "/preview/admin-investors-kyc-overdue",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "inv_sandrine",
+                    "name": "Sandrine Achieng",
+                    "country": "Rwanda",
+                    "kyc": "verified",
+                    "portfolio": {
+                        "currency": "RWF",
+                        "amount": "1100000"
+                    },
+                    "wallet": {
+                        "currency": "RWF",
+                        "amount": "2130000"
+                    },
+                    "holdings": 5,
+                    "businesses": 5,
+                    "frozen": true,
+                    "restricted": false,
+                    "link": {
+                        "url": "/preview/admin-investors-kyc-overdue",
+                        "method": "get"
+                    }
+                }
+            ]
+        },
+        "party": {
+            "id": "inv_marie",
+            "kind": "investor",
+            "name": "Marie Mugisha",
+            "subtitle": "Individual · Rwanda",
+            "health": "kyc_pending",
+            "stats": [
+                {
+                    "key": "portfolio",
+                    "value": {
+                        "kind": "money",
+                        "value": {
+                            "currency": "RWF",
+                            "amount": "1200000"
+                        }
+                    }
+                },
+                {
+                    "key": "holdings",
+                    "value": {
+                        "kind": "count",
+                        "value": 6
+                    }
+                },
+                {
+                    "key": "businesses",
+                    "value": {
+                        "kind": "count",
+                        "value": 5
+                    }
+                },
+                {
+                    "key": "wallet",
+                    "value": {
+                        "kind": "money",
+                        "value": {
+                            "currency": "RWF",
+                            "amount": "690000"
+                        }
+                    }
+                },
+                {
+                    "key": "kyc_due",
+                    "value": {
+                        "kind": "date",
+                        "value": "2026-09-01"
+                    }
+                }
+            ],
+            "list": {
+                "key": "holdings",
+                "rows": [
+                    {
+                        "id": "h1",
+                        "title": "GreenLeaf Agro",
+                        "tone": "blue",
+                        "detail": {
+                            "kind": "money",
+                            "value": {
+                                "currency": "RWF",
+                                "amount": "400000"
+                            }
+                        }
+                    },
+                    {
+                        "id": "h2",
+                        "title": "Sebeya Logistics",
+                        "tone": "green",
+                        "detail": {
+                            "kind": "money",
+                            "value": {
+                                "currency": "RWF",
+                                "amount": "350000"
+                            }
+                        }
+                    }
+                ]
+            },
+            "history": [
+                {
+                    "id": "ev_9",
+                    "at": "2026-09-01T00:00:00+02:00",
+                    "actor": "System",
+                    "action": {
+                        "code": "kyc.overdue",
+                        "label": "KYC re-verification overdue",
+                        "tone": "amber"
+                    },
+                    "reason": null
+                }
+            ],
+            "kyc": {
+                "state": "overdue",
+                "due_on": "2026-09-01"
+            },
+            "licence": null,
+            "freeze": null,
+            "release_blocked": null,
+            "restrictions": [],
+            "links": {
+                "close": {
+                    "url": "/preview/admin-investors",
+                    "method": "get"
+                }
+            },
+            "actions": {
+                "freeze": {
+                    "url": "/admin/parties/inv_marie/freeze",
+                    "method": "post"
+                },
+                "verify_kyc": {
+                    "url": "/admin/parties/inv_marie/kyc/verify",
+                    "method": "post"
+                },
+                "reject_kyc": {
+                    "url": "/admin/parties/inv_marie/kyc/reject",
+                    "method": "post"
+                }
+            }
+        }
+    }
+}
