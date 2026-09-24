@@ -19,6 +19,13 @@ vi.mock('@inertiajs/react', () => ({
             {children}
         </a>
     ),
+    router: { visit: vi.fn(), reload: vi.fn() },
+    useHttp: () => ({
+        errors: {},
+        clearErrors: () => undefined,
+        transform: () => undefined,
+        submit: () => new Promise(() => undefined),
+    }),
 }));
 
 const fixture = homeFixture.props as BusinessHomeProps;
@@ -49,8 +56,8 @@ describe('Business Home', () => {
         expect(screen.getByText('284 investors ›')).toBeInTheDocument();
         expect(screen.getByText('RWF 33,916,731')).toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: 'Apply for a raise' }),
-        ).toHaveAttribute('href', '/preview/business-apply-business');
+            screen.getByRole('button', { name: 'Apply for a raise' }),
+        ).toBeEnabled();
         expect(screen.getByRole('link', { name: 'Launcher' })).toHaveAttribute(
             'href',
             '/preview/launcher-ready',

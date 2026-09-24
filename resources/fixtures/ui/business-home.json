@@ -213,10 +213,19 @@
                 "url": "/preview/business-rating",
                 "method": "get"
             },
-            "apply": {
-                "url": "/preview/business-apply-business",
+            "apply": null
+        },
+        "create_application": {
+            "action": {
+                "url": "/preview/business-applications",
+                "method": "post"
+            },
+            "operation": {
+                "url": "/preview/business-operation-{request_id}",
                 "method": "get"
-            }
+            },
+            "identity_context_revision": 4,
+            "expected_revision": 0
         }
     }
 }

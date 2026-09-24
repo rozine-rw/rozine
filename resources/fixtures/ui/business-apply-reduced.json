@@ -576,7 +576,8 @@
                     "url": "/preview/business-apply-business",
                     "method": "get"
                 }
-            }
+            },
+            "create_application": null
         },
         "shell_links": {
             "home": {

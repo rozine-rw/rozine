@@ -218,7 +218,8 @@
                     "url": "/preview/business-apply-business",
                     "method": "get"
                 }
-            }
+            },
+            "create_application": null
         },
         "rating": null,
         "refusal": null,

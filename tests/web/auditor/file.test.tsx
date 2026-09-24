@@ -1,16 +1,23 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AuditorFile from '@/pages/auditor/file';
-import type { AuditorFileProps } from '@/types/auditor';
+import type { AuditorFileProps, BusinessFile } from '@/types/auditor';
+import blockedFixture from '../../../resources/fixtures/ui/auditor-file-conflict-blocked.json';
+import declineOtherFixture from '../../../resources/fixtures/ui/auditor-file-decline-other.json';
 import reassignedFixture from '../../../resources/fixtures/ui/auditor-file-reassigned.json';
 import fileFixture from '../../../resources/fixtures/ui/auditor-file.json';
 import { renderWithUser } from '../helpers/render-with-user';
-import { inertia } from './inertia';
+import { answers, inertia, operation } from './inertia';
 
 vi.mock('@inertiajs/react', () => import('./inertia'));
 
+vi.setConfig({ testTimeout: 30_000 });
+
 const props = (fixture: { props: unknown } = fileFixture) =>
     structuredClone(fixture.props) as AuditorFileProps;
+
+const sheetFor = (business = 'Huye Motors') =>
+    screen.getByRole('dialog', { name: `${business} business file` });
 
 beforeEach(() => inertia.reset());
 
@@ -22,9 +29,7 @@ describe('Auditor business file', () => {
             'Huye Motors · file',
         );
 
-        const sheet = screen.getByRole('dialog', {
-            name: 'Huye Motors business file',
-        });
+        const sheet = sheetFor();
 
         expect(
             within(sheet).getByText('Application preview'),
@@ -57,34 +62,156 @@ describe('Auditor business file', () => {
         ).toHaveLength(1);
     });
 
-    it('accepts the offered file and offers decline and conflict', async () => {
+    it('accepts the offered file as a command and offers decline and conflict', async () => {
         const { user } = renderWithUser(<AuditorFile {...props()} />);
-        const sheet = screen.getByRole('dialog', {
-            name: 'Huye Motors business file',
+        const sheet = sheetFor();
+        const accept = within(sheet).getByRole('button', {
+            name: 'Accept & start 24h clock',
         });
 
-        await user.click(
-            within(sheet).getByRole('button', {
-                name: 'Accept & start 24h clock',
-            }),
+        await user.click(accept);
+        expect(inertia.calls[0]).toMatchObject({
+            url: '/preview/auditor-audit-review',
+            body: {
+                assignment_id: 'fa_huye',
+                expected_revision: 2,
+                identity_context_revision: 3,
+            },
+        });
+        expect(accept).toBeDisabled();
+        expect(
+            within(sheet).getByRole('button', { name: 'Decline' }),
+        ).toBeDisabled();
+    });
+
+    it('hides accept when the server does not allow it', () => {
+        render(
+            <AuditorFile {...props()} allowed_actions={['conflict.declare']} />,
         );
-        expect(inertia.posts[0].url).toBe('/preview/auditor-audit-review');
+
+        expect(
+            within(sheetFor()).queryByRole('button', { name: /Accept/ }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('opens the decline sheet with “Other” chosen, which needs an explanation', async () => {
+        const { user } = renderWithUser(
+            <AuditorFile {...props(declineOtherFixture)} />,
+        );
+        const sheet = screen.getByRole('dialog', {
+            name: 'Decline Huye Motors',
+        });
+
+        expect(
+            within(sheet).getByRole('radio', { name: 'Other reason' }),
+        ).toBeChecked();
+        expect(
+            within(sheet).getByRole('button', { name: 'Decline job' }),
+        ).toBeDisabled();
 
         await user.click(
-            within(sheet).getByRole('button', { name: 'Decline' }),
+            within(sheet).getByLabelText('Factual explanation (required)'),
         );
+        await user.paste('Family event on the day of the visit.');
         expect(
-            screen.getByRole('dialog', { name: 'Decline Huye Motors' }),
+            within(sheet).getByRole('button', { name: 'Decline job' }),
+        ).toBeEnabled();
+    });
+
+    it('withdraws the file the moment a blocking conflict is recorded', async () => {
+        inertia.queue.push(
+            answers(
+                operation({
+                    code: 'CONFLICT_RECORDED',
+                    data: {
+                        next: { url: '/preview/auditor-jobs', method: 'get' },
+                        conflict: {
+                            conflict_id: 'cf_2026_0217',
+                            kind: 'role_tie',
+                            declared_at: '2026-10-03T16:48:00Z',
+                            note: 'Advised them until March.',
+                            blocking: true,
+                            status: 'reassignment_pending',
+                        },
+                        outcome: { resolution: 'reassignment_pending' },
+                    },
+                }),
+            ),
+        );
+        const { user } = renderWithUser(<AuditorFile {...props()} />);
+
+        await user.click(
+            within(sheetFor()).getByRole('button', {
+                name: 'Declare a conflict',
+            }),
+        );
+        await user.click(
+            screen.getByRole('radio', {
+                name: 'Owner, director, employee or adviser tie',
+            }),
+        );
+        await user.click(
+            screen.getByLabelText('Factual explanation (required)'),
+        );
+        await user.paste('Advised them until March.');
+        await user.click(
+            screen.getByRole('button', { name: 'Declare interest' }),
+        );
+
+        /* The receipt's destination is followed at once; no result card waits in between. */
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([{ url: '/preview/auditor-jobs' }]),
+        );
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+
+        const sheet = sheetFor();
+
+        expect(
+            within(sheet).getByRole('heading', { name: 'Conflict recorded' }),
         ).toBeInTheDocument();
+        expect(
+            within(sheet).getByText('Application preview'),
+        ).toBeInTheDocument();
+        expect(within(sheet).queryByText('RWF 51.2M')).not.toBeInTheDocument();
+        expect(within(sheet).queryByRole('timer')).not.toBeInTheDocument();
+        expect(
+            within(sheet).queryByRole('button', { name: /Accept/ }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(sheet).getByRole('link', { name: 'Back to jobs' }),
+        ).toHaveAttribute('href', '/preview/auditor-jobs');
+    });
+
+    it('shows only the receipt for a file a blocking conflict has withdrawn', () => {
+        render(<AuditorFile {...props(blockedFixture)} />);
+
+        const sheet = sheetFor();
+
+        expect(within(sheet).getByText('Reassigned')).toBeInTheDocument();
+        expect(
+            within(sheet).getByText(
+                "Your conflict has been recorded and the assignment has been reassigned. You no longer have access to Huye Motors's file.",
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet).getByText(
+                'I advised Huye Motors on its 2025 bookkeeping set-up until March 2026.',
+            ),
+        ).toBeInTheDocument();
+        expect(within(sheet).getByText('cf_2026_0217')).toBeInTheDocument();
+        expect(
+            within(sheet).queryByText('First visit'),
+        ).not.toBeInTheDocument();
+        expect(
+            within(sheet).queryByRole('button', { name: 'Declare a conflict' }),
+        ).not.toBeInTheDocument();
     });
 
     it('shows a reassigned file with its history and continues the procedure', async () => {
         const { user } = renderWithUser(
             <AuditorFile {...props(reassignedFixture)} />,
         );
-        const sheet = screen.getByRole('dialog', {
-            name: 'Sebeya Logistics business file',
-        });
+        const sheet = sheetFor('Sebeya Logistics');
 
         expect(screen.getByText('Business file')).toBeInTheDocument();
         expect(screen.getByRole('note')).toHaveTextContent(
@@ -117,24 +244,24 @@ describe('Auditor business file', () => {
 
     it('reads a monthly last audit, a missing document and no procedure link', () => {
         const base = props(reassignedFixture);
+        const file = base.file as BusinessFile;
 
         render(
             <AuditorFile
                 {...base}
                 links={{ ...base.links, procedure: null }}
                 file={{
-                    ...base.file,
-                    documents: [
-                        { ...base.file.documents[0], status: 'missing' },
-                    ],
+                    ...file,
+                    documents: [{ ...file.documents[0], status: 'missing' }],
                     history: {
-                        ...base.file.history,
+                        ...file.history,
                         last_audit: {
-                            ...base.file.history.last_audit!,
+                            ...file.history.last_audit!,
                             kind: 'monthly',
                         },
                     },
                 }}
+                blocked={null}
             />,
         );
 

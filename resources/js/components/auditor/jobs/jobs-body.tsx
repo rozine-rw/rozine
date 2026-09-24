@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { AssignedJobCard } from '@/components/auditor/assigned-job-card';
 import { EligibleCard } from '@/components/auditor/jobs/eligible-card';
 import { MonthlySection } from '@/components/auditor/jobs/monthly-section';
@@ -11,6 +12,8 @@ import type { AuditorJobsProps } from '@/types/auditor';
 type JobsBodyProps = AuditorJobsProps & {
     overlay?: ColumnOverlay | null;
     backdrop?: boolean;
+    /** What happened to the last command, when Jobs is the page itself. */
+    notice?: ReactNode;
 };
 
 /**
@@ -21,6 +24,7 @@ type JobsBodyProps = AuditorJobsProps & {
 export function JobsBody({
     overlay = null,
     backdrop = false,
+    notice = null,
     ...props
 }: JobsBodyProps) {
     const { t } = useTranslation();
@@ -38,6 +42,7 @@ export function JobsBody({
                             hours: props.flash_hours,
                         })}
                     />
+                    {notice}
                     <RadiusMap
                         radiusKm={props.radius_km}
                         jobs={props.eligible}
@@ -66,6 +71,7 @@ export function JobsBody({
                                     job={job}
                                     serverTime={props.server_time}
                                     flashHours={props.flash_hours}
+                                    declineOptions={props.decline_options}
                                 />
                             ))}
                         </div>

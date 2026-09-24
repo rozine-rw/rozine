@@ -218,7 +218,8 @@
                     "url": "/preview/business-apply-business",
                     "method": "get"
                 }
-            }
+            },
+            "create_application": null
         },
         "note": {
             "id": "RNP-2026-0118",
