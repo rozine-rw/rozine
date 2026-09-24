@@ -24,6 +24,9 @@ interface AuditorProfileStore
     /** @return array<string, mixed> */
     public function review(int $actorId, string $partyId, int $expectedRevision, string $decision, ?string $submissionId, string $checkedAt, string $reference, string $reason, string $requestId): array;
 
+    /** @return array<string, mixed> */
+    public function accreditation(int $userId, int $contextRevision): array;
+
     /** @return Profile */
     public function get(int $userId, int $contextRevision): array;
 

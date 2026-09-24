@@ -12,6 +12,7 @@ use App\Application\Identity\WithVerifiedParties;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Auditor\AccreditationCertificate;
 use App\Domain\Auditor\AccreditationProfile;
+use App\Domain\Auditor\AccreditationView;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
@@ -37,6 +38,7 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
         private OperationJournal $journal,
         private AccreditationProfile $profiles,
         private AccreditationCertificate $certificates,
+        private AccreditationView $views,
     ) {}
 
     /** @return array<string, mixed> */
@@ -94,6 +96,24 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
                     return new OperationResult('ACCREDITATION_REVIEWED', ['profile_id' => $record->id], $record->revision);
                 });
         });
+    }
+
+    /** @return array<string, mixed> */
+    public function accreditation(int $userId, int $contextRevision): array
+    {
+        $partyId = $this->party($userId);
+
+        return $this->locked($partyId, fn (?AuditorProfile $profile): array => $this->roles->handle($userId, 'auditor', $partyId, $contextRevision,
+            function () use ($profile, $contextRevision): array {
+                $state = $profile->state ?? $this->profiles->empty();
+                $hash = $state['submission']['status'] === 'pending'
+                    ? AuditorCertificate::query()->where('auditor_profile_id', $profile?->id)->whereKey($state['submission']['id'])->value('sha256')
+                    : null;
+
+                return ['contract_version' => 'auditor-filing-v1', 'identity_context_revision' => $contextRevision,
+                    'server_time' => now()->toIso8601String(),
+                    ...$this->views->present($state, $profile->revision ?? 0, is_string($hash) ? $hash : null, now()->toDateTimeImmutable())];
+            }));
     }
 
     /** @return Profile */

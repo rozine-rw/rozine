@@ -22,7 +22,7 @@ it('keeps self submitted claims separate from independently reviewed standing', 
     expect(fn () => $policy->withdraw($renewal, 'certificate-a'))->toThrow(CommandRejection::class, 'ACCREDITATION_SUBMISSION_STALE');
     expect(fn () => $policy->submit($renewal, 'certificate-c', 'CPA-C', '2027-01-01', $now))->toThrow(CommandRejection::class, 'ACCREDITATION_SUBMISSION_PENDING');
     expect(fn () => $policy->review($pending, 'approve', 'certificate-a', '2026-09-24T08:00:00Z', 'manual-register-check', 'Reviewed', new DateTimeImmutable('2026-09-24T22:00:00Z')))
-        ->toThrow(CommandRejection::class, 'ACCREDITATION_EXPIRED');
+        ->toThrow(CommandRejection::class, 'ACCREDITATION_SUBMISSION_EXPIRED');
 });
 
 it('refuses invalid certificate claims before creating pending authority', function (string $licence, string $expiry, string $reason): void {

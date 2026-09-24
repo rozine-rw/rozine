@@ -98,6 +98,9 @@ final class AccreditationProfile
 
                 return $state;
             }
+            if ($state['submission']['expires_on'] < $now->setTimezone(new DateTimeZone('Africa/Kigali'))->format('Y-m-d')) {
+                throw new CommandRejection('ACCREDITATION_SUBMISSION_EXPIRED', 422, fieldErrors: ['submission_id' => ['Request a current certificate before approving this submission.']]);
+            }
             $state['standing'] = ['status' => 'active', 'licence' => $state['submission']['licence'], 'expires_on' => $state['submission']['expires_on'],
                 'checked_at' => $checkedAt, 'check_reference' => trim($reference)];
             $state['certificate_id'] = $state['submission']['id'];
