@@ -122,9 +122,28 @@ export type BusinessHomeProps = {
         withdraw: RouteLink;
         notifications: RouteLink;
         rating: RouteLink;
-        apply: RouteLink;
+        /** Resumes the business's open draft by GET; null when there is none. */
+        apply: RouteLink | null;
     };
+    /**
+     * Starts a raise when there is no open draft and the server allows `application.create`
+     * (option (a) on #96); null otherwise. One open draft per business is the server's rule.
+     */
+    create_application: CreateApplicationEntry | null;
 };
+
+/** The `application.create` command Home posts to start a raise (business-application-v1). */
+export type CreateApplicationEntry = {
+    action: RouteAction;
+    /** The operation lookup: its url holds the literal `{request_id}` token. */
+    operation: RouteLink;
+    identity_context_revision: number;
+    /** The revision the create expects for the business's applications (0 before the first). */
+    expected_revision: number;
+};
+
+/** What a completed `application.create` returns: at least the page to continue to. */
+export type CreateApplicationData = { next: RouteLink };
 
 /** Where the Business shell's tabs and launcher link go. */
 export type BusinessAppLinks = {

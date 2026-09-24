@@ -2940,6 +2940,7 @@ const en = {
     'auditor.home.unavailable': 'Unavailable',
     'auditor.availability.home_paused_locked':
         'Dispatch is not offering you flash audits',
+    'business.grow.starting': 'Starting…',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

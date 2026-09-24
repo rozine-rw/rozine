@@ -3009,6 +3009,8 @@ const rw: Catalog = {
     'auditor.availability.home_paused_locked':
         'Ntuhabwa imirimo yihuse muri iki gihe',
 
+    'business.grow.starting': 'Biratangira…',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

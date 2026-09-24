@@ -1,16 +1,115 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
+import type { ReactNode } from 'react';
+import { refusalRefreshes } from '@/components/business/apply/operation-outcome';
+import { OutcomeBanner } from '@/components/business/apply/outcome-banner';
 import { Icon } from '@/components/rozine/icon';
+import {
+    reloadPreservingState,
+    useOperationCommand,
+} from '@/hooks/use-operation-command';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatRwf } from '@/lib/rozine/format';
 import type { Money, RouteLink } from '@/types';
+import type {
+    CreateApplicationData,
+    CreateApplicationEntry,
+} from '@/types/business';
+import type { OperationCommand, OperationResource } from '@/types/operation';
 
 type GrowSectionProps = {
     headroom: Money | null;
-    links: { rating: RouteLink; apply: RouteLink };
+    links: { rating: RouteLink; apply: RouteLink | null };
+    createApplication: CreateApplicationEntry | null;
 };
 
+const CTA =
+    'mt-2.5 flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-rz-accent-fill text-[15px] font-bold text-white lg:h-[46px]';
+
+function ApplyLabel({ children }: { children: ReactNode }) {
+    return (
+        <>
+            <span aria-hidden className="text-[19px] leading-none">
+                +
+            </span>
+            {children}
+        </>
+    );
+}
+
+/**
+ * Starts a raise with `application.create` when no draft is open (#96, option (a)): the common
+ * command fields, an unknown outcome looked up before any resend, then the server's `next`.
+ */
+function CreateApplication({ entry }: { entry: CreateApplicationEntry }) {
+    const { t } = useTranslation();
+    const command = useOperationCommand<
+        OperationCommand<'create'>,
+        OperationResource<CreateApplicationData>
+    >({
+        actions: { create: entry.action },
+        lookup: entry.operation,
+        refresh: reloadPreservingState,
+        onCompleted: (_sent, resource) => {
+            if (resource.data === null) {
+                router.reload();
+
+                return;
+            }
+
+            router.visit(resource.data.next);
+        },
+        onRefused: (_sent, code, status) => {
+            if (refusalRefreshes(code, status)) {
+                router.reload();
+            }
+        },
+    });
+
+    return (
+        <>
+            <button
+                type="button"
+                disabled={command.busy || command.unresolved}
+                aria-busy={command.busy || undefined}
+                onClick={() =>
+                    command.send({
+                        name: 'create',
+                        payload: {
+                            identity_context_revision:
+                                entry.identity_context_revision,
+                            expected_revision: entry.expected_revision,
+                            request_id: crypto.randomUUID(),
+                        },
+                    })
+                }
+                className={`${CTA} disabled:opacity-60`}
+            >
+                <ApplyLabel>
+                    {command.busy
+                        ? t('business.grow.starting')
+                        : t('business.grow.apply')}
+                </ApplyLabel>
+            </button>
+            {command.notice && (
+                <div className="mt-3">
+                    <OutcomeBanner
+                        notice={command.notice}
+                        busy={command.busy}
+                        onCheckAgain={command.checkAgain}
+                        onRetry={command.retry}
+                    />
+                </div>
+            )}
+        </>
+    );
+}
+
 /** "Grow" — headroom and the way into a new raise (design L331–341). */
-export function GrowSection({ headroom, links }: GrowSectionProps) {
+export function GrowSection({
+    headroom,
+    links,
+    createApplication,
+}: GrowSectionProps) {
     const { t } = useTranslation();
 
     return (
@@ -57,15 +156,15 @@ export function GrowSection({ headroom, links }: GrowSectionProps) {
                 </Link>
             )}
 
-            <Link
-                href={links.apply}
-                className="mt-2.5 flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-rz-accent-fill text-[15px] font-bold text-white lg:h-[46px]"
-            >
-                <span aria-hidden className="text-[19px] leading-none">
-                    +
-                </span>
-                {t('business.grow.apply')}
-            </Link>
+            {links.apply !== null ? (
+                <Link href={links.apply} className={CTA}>
+                    <ApplyLabel>{t('business.grow.apply')}</ApplyLabel>
+                </Link>
+            ) : (
+                createApplication !== null && (
+                    <CreateApplication entry={createApplication} />
+                )
+            )}
         </section>
     );
 }

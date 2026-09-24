@@ -3018,6 +3018,8 @@ const fr: Catalog = {
     'auditor.availability.home_paused_locked':
         "L'affectation ne vous propose pas de missions flash",
 
+    'business.grow.starting': 'Démarrage…',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',
