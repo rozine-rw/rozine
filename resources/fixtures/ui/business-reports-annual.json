@@ -161,7 +161,7 @@
         },
         "policy": {
             "seal_day": 7,
-            "cosign_minutes": 60
+            "cosign_day": 7
         },
         "links": {
             "home": {

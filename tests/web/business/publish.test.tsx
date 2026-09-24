@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import BusinessPublish from '@/pages/business/publish';
 import type { BusinessPublishProps } from '@/types/business';
 import paidFixture from '../../../resources/fixtures/ui/business-publish-paid.json';
+import unavailableFixture from '../../../resources/fixtures/ui/business-publish-unavailable.json';
 import freeFixture from '../../../resources/fixtures/ui/business-publish.json';
 
 const inertia = vi.hoisted(() => ({
@@ -129,5 +130,25 @@ describe('Publish to the Investor feed', () => {
         expect(
             screen.getByText('Insufficient wallet balance — pick MoMo or card'),
         ).toBeInTheDocument();
+    });
+
+    it('says why publishing is closed instead of offering a dead button', () => {
+        render(<BusinessPublish {...props(unavailableFixture)} />);
+
+        const sheet = screen.getByRole('dialog', {
+            name: 'Publish to the Investor feed',
+        });
+
+        expect(within(sheet).getByText('RWF 0')).toBeInTheDocument();
+        expect(within(sheet).getByRole('status')).toHaveTextContent(
+            'Publishing opens once your application is approved and fully signed, and the listing flow is ready.',
+        );
+        expect(
+            within(sheet).queryByRole('button', { name: 'Publish' }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(sheet).getByRole('link', { name: 'Not yet' }),
+        ).toHaveAttribute('href', '/preview/business-home');
+        expect(inertia.posts).toHaveLength(0);
     });
 });

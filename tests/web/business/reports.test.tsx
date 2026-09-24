@@ -130,7 +130,9 @@ describe('Business Reports', () => {
         ).toBeInTheDocument();
         expect(guide.getByText('7th')).toBeInTheDocument();
         expect(
-            guide.getByText(/you get 60 minutes to add a recap and co-sign/),
+            guide.getByText(
+                /you add a recap and co-sign it by the 7th, or raise a dispute/,
+            ),
         ).toBeInTheDocument();
     });
 

@@ -5,8 +5,12 @@
         "business_id": "BUS-103847291",
         "identity_context_revision": 4,
         "server_time": "2026-09-24T09:15:00+02:00",
-        "allowed_actions": [],
-        "step": "submitted",
+        "allowed_actions": [
+            "application.save",
+            "application.evaluate",
+            "application.submit"
+        ],
+        "step": "business",
         "application": {
             "id": "APP-2026-0412",
             "revision": 3,
@@ -22,14 +26,16 @@
         "evidence": {
             "version": "ev-2026-09-21.3",
             "eligibility": {
-                "status": "eligible"
+                "status": "ineligible",
+                "code": "VERIFIED_HISTORY_INSUFFICIENT",
+                "message": "A first raise needs 36 complete, consecutive months of verified statements. Rozine has verified 29 so far; the rest will count once they are verified."
             },
             "business": {
                 "name": "GreenLeaf Agro",
                 "company_code": "103847291",
                 "industry": "FMCG",
                 "district": "Gasabo",
-                "established_year": 2018,
+                "established_year": 2023,
                 "officers": [
                     {
                         "name": "Robert Mugisha",
@@ -45,23 +51,14 @@
                 "registry": true,
                 "statements": true
             },
-            "rating": {
-                "band": "strong",
-                "score": "4.8"
-            },
+            "rating": null,
             "totals": {
                 "revenue": {
                     "currency": "RWF",
-                    "amount": "1595000000"
+                    "amount": "855000000"
                 },
-                "costs": {
-                    "currency": "RWF",
-                    "amount": "1215000000"
-                },
-                "net_profit": {
-                    "currency": "RWF",
-                    "amount": "380000000"
-                }
+                "costs": null,
+                "net_profit": null
             },
             "years": [
                 {
@@ -98,145 +95,17 @@
                     "year": 2023,
                     "revenue": {
                         "currency": "RWF",
-                        "amount": "318000000"
+                        "amount": "118000000"
                     },
-                    "costs": {
-                        "currency": "RWF",
-                        "amount": "243000000"
-                    },
-                    "net_profit": {
-                        "currency": "RWF",
-                        "amount": "75000000"
-                    }
-                },
-                {
-                    "year": 2022,
-                    "revenue": {
-                        "currency": "RWF",
-                        "amount": "286000000"
-                    },
-                    "costs": {
-                        "currency": "RWF",
-                        "amount": "220000000"
-                    },
-                    "net_profit": {
-                        "currency": "RWF",
-                        "amount": "66000000"
-                    }
-                },
-                {
-                    "year": 2021,
-                    "revenue": {
-                        "currency": "RWF",
-                        "amount": "254000000"
-                    },
-                    "costs": {
-                        "currency": "RWF",
-                        "amount": "197000000"
-                    },
-                    "net_profit": {
-                        "currency": "RWF",
-                        "amount": "57000000"
-                    }
+                    "costs": null,
+                    "net_profit": null
                 }
             ],
-            "existing_debt": {
-                "currency": "RWF",
-                "amount": "12000000"
-            },
-            "debt_verified": true,
-            "capacity": {
-                "currency": "RWF",
-                "amount": "33915000"
-            }
+            "existing_debt": null,
+            "debt_verified": false,
+            "capacity": null
         },
-        "quote": {
-            "status": "ready",
-            "quote_id": "QTE-2026-0412-02",
-            "quote_revision": 2,
-            "policy_version": "engineering-2026-09-23.4",
-            "evidence_version": "ev-2026-09-21.3",
-            "calculation_version": "calc-2026-09-23.1",
-            "mandate_version": "mandate-2026-08-14.2",
-            "requested_principal": {
-                "currency": "RWF",
-                "amount": "35000000"
-            },
-            "principal": {
-                "currency": "RWF",
-                "amount": "33915000"
-            },
-            "term_months": 6,
-            "rate_pct": "10.9",
-            "interest": {
-                "currency": "RWF",
-                "amount": "3696735"
-            },
-            "total": {
-                "currency": "RWF",
-                "amount": "37611735"
-            },
-            "units": "6783",
-            "unit_price": {
-                "currency": "RWF",
-                "amount": "5000"
-            },
-            "reserve": null,
-            "schedule": [
-                {
-                    "instalment": 1,
-                    "amount": {
-                        "currency": "RWF",
-                        "amount": "6268622"
-                    }
-                },
-                {
-                    "instalment": 2,
-                    "amount": {
-                        "currency": "RWF",
-                        "amount": "6268622"
-                    }
-                },
-                {
-                    "instalment": 3,
-                    "amount": {
-                        "currency": "RWF",
-                        "amount": "6268622"
-                    }
-                },
-                {
-                    "instalment": 4,
-                    "amount": {
-                        "currency": "RWF",
-                        "amount": "6268622"
-                    }
-                },
-                {
-                    "instalment": 5,
-                    "amount": {
-                        "currency": "RWF",
-                        "amount": "6268622"
-                    }
-                },
-                {
-                    "instalment": 6,
-                    "amount": {
-                        "currency": "RWF",
-                        "amount": "6268625"
-                    }
-                }
-            ],
-            "reason_codes": ["PRINCIPAL_CAPPED_AT_CAPACITY"],
-            "rate_basis": {
-                "band": "strong",
-                "floor_pct": "10.0",
-                "cap_pct": "15.0",
-                "term_premium": {
-                    "numerator": "9",
-                    "denominator": "1000"
-                }
-            }
-        },
+        "quote": null,
         "acceptance": {
             "documents": [
                 {
@@ -334,42 +203,21 @@
                     "party_id": "PTY-7F3A21",
                     "name": "Robert Mugisha",
                     "role": "Chief Executive Officer",
-                    "state": "signed",
-                    "signed_at": "2026-09-24T08:42:00+02:00"
+                    "state": "pending",
+                    "signed_at": null
                 },
                 {
                     "party_id": "PTY-2C9D84",
                     "name": "Aline Uwase",
                     "role": "Board Chair",
-                    "state": "signed",
-                    "signed_at": "2026-09-24T09:05:00+02:00"
+                    "state": "pending",
+                    "signed_at": null
                 }
             ],
             "required_signatures": 2,
-            "signatures_complete": true
+            "signatures_complete": false
         },
-        "submission": {
-            "application_id": "APP-2026-0412",
-            "note_id": null,
-            "timeline": [
-                {
-                    "stage": "submitted",
-                    "state": "done"
-                },
-                {
-                    "stage": "under_review",
-                    "state": "current"
-                },
-                {
-                    "stage": "approved",
-                    "state": "pending"
-                },
-                {
-                    "stage": "published",
-                    "state": "pending"
-                }
-            ]
-        },
+        "submission": null,
         "home": {
             "business": {
                 "name": "GreenLeaf Agro",

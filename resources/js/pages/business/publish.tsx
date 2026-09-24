@@ -20,18 +20,22 @@ const SOURCE_ICON: Record<PaymentSourceKey, IconName> = {
 /**
  * "Publish to the Investor feed" (listing, design L2090–2120), opened from the approved
  * application on Home. The server decides the fee; while it is zero there is nothing to pay, so
- * the sheet discloses the zero fee and publishes without asking for a payment source.
+ * the sheet discloses the zero fee and publishes without asking for a payment source. Publishing
+ * stays closed — and the sheet says why — until the server lists `application.publish`: an
+ * approved, fully signed application and the checkpoint 3 listing transaction.
  */
 export default function BusinessPublish({
     home,
     application,
     fee,
     sources,
+    allowed_actions,
     links,
     actions,
 }: BusinessPublishProps) {
     const { t } = useTranslation();
     const charged = sources.length > 0;
+    const canPublish = allowed_actions.includes('application.publish');
     const form = useForm<{ source: PaymentSourceKey | null }>({
         source: sources[0]?.key ?? null,
     });
@@ -145,21 +149,35 @@ export default function BusinessPublish({
                     </>
                 )}
 
-                <button
-                    type="submit"
-                    disabled={form.processing}
-                    aria-busy={form.processing || undefined}
-                    className="mt-4 flex h-[52px] w-full items-center justify-center gap-[9px] rounded-xl bg-rz-accent-fill text-[15px] font-semibold text-white"
-                >
-                    {form.processing && (
-                        <span className="size-[17px] animate-spin rounded-full border-[2.5px] border-white/40 border-t-white" />
-                    )}
-                    {form.processing
-                        ? t('business.publish.publishing')
-                        : charged
-                          ? t('business.publish.pay_and_publish')
-                          : t('business.publish.publish')}
-                </button>
+                {canPublish ? (
+                    <button
+                        type="submit"
+                        disabled={form.processing}
+                        aria-busy={form.processing || undefined}
+                        className="mt-4 flex h-[52px] w-full items-center justify-center gap-[9px] rounded-xl bg-rz-accent-fill text-[15px] font-semibold text-white"
+                    >
+                        {form.processing && (
+                            <span className="size-[17px] animate-spin rounded-full border-[2.5px] border-white/40 border-t-white" />
+                        )}
+                        {form.processing
+                            ? t('business.publish.publishing')
+                            : charged
+                              ? t('business.publish.pay_and_publish')
+                              : t('business.publish.publish')}
+                    </button>
+                ) : (
+                    <p
+                        role="status"
+                        className="mt-4 flex items-start gap-3 rounded-2xl border border-[#dbe7ff] bg-rz-surface p-4 text-xs leading-[1.55] text-rz-secondary dark:border-rz-border"
+                    >
+                        <span className="flex size-[34px] shrink-0 items-center justify-center rounded-xl bg-rz-accent-soft text-base">
+                            <Icon name="hourglass" />
+                        </span>
+                        <span className="flex-1 self-center">
+                            {t('business.publish.unavailable')}
+                        </span>
+                    </p>
+                )}
                 <Link
                     href={links.close}
                     className="mt-2.5 flex h-[46px] w-full items-center justify-center rounded-xl border border-rz-border text-sm font-semibold text-rz-slate"

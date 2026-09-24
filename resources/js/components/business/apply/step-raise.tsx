@@ -9,9 +9,12 @@ import { formatAmount, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     ApplicationQuote,
+    ScheduleInstalment,
     TermMonths,
     UseOfFunds,
 } from '@/types/business';
+
+type ReadyQuote = Extract<ApplicationQuote, { status: 'ready' }>;
 
 export type RaiseFields = {
     title: string;
@@ -47,6 +50,10 @@ const TITLE_LIMIT = 40;
 
 const countWords = (text: string): number =>
     text.trim() === '' ? 0 : text.trim().split(/\s+/u).length;
+
+/** Groups a decimal integer string for display ("6783" → "6,783") without reading it as a number. */
+const groupDigits = (digits: string): string =>
+    digits.replace(/\B(?=(\d{3})+(?!\d))/gu, ',');
 
 type StepRaiseProps = {
     fields: RaiseFields;
@@ -339,8 +346,7 @@ export function StepRaise({
                                                 detail={t(
                                                     'business.apply.raise.rate_term_detail',
                                                     {
-                                                        points: ready.rate_basis
-                                                            .term_premium_pct,
+                                                        ratio: `${ready.rate_basis.term_premium.numerator}/${ready.rate_basis.term_premium.denominator}`,
                                                     },
                                                 )}
                                                 value={t(
@@ -388,7 +394,7 @@ export function StepRaise({
                             />
                         </div>
                         <p className="truncate rounded-xl border border-rz-border bg-rz-surface p-3 text-[13px] font-semibold text-rz-ink">
-                            {ready ? ready.units.toLocaleString('en-US') : '—'}
+                            {ready ? groupDigits(ready.units) : '—'}
                         </p>
                         {info === 'notes' && (
                             <Popover onClose={() => setInfo(null)}>
@@ -591,12 +597,16 @@ function RateRow({
     );
 }
 
-/** The economics card (design L505–528): every line is the server quote, verbatim. */
+/**
+ * The economics card (design L505–528): every line is the server quote, verbatim. The offer is
+ * the server's resized and quantized principal, and the full instalment schedule shows the final
+ * residual rather than a single monthly figure.
+ */
 function Economics({
     quote,
     quoting,
 }: {
-    quote: Extract<ApplicationQuote, { status: 'ready' }> | null;
+    quote: ReadyQuote | null;
     quoting: boolean;
 }) {
     const { t } = useTranslation();
@@ -612,13 +622,26 @@ function Economics({
             )}
         >
             <div className="flex flex-col gap-3">
-                <div className="flex items-baseline justify-between gap-3">
-                    <span className="text-[13.5px] text-rz-slate">
-                        {t('business.apply.raise.you_receive')}
-                    </span>
-                    <span className="text-base font-bold whitespace-nowrap text-rz-ink">
-                        {quote ? formatRwf(quote.principal) : dash}
-                    </span>
+                <div>
+                    <div className="flex items-baseline justify-between gap-3">
+                        <span className="text-[13.5px] text-rz-slate">
+                            {t('business.apply.raise.you_receive')}
+                        </span>
+                        <span className="text-base font-bold whitespace-nowrap text-rz-ink">
+                            {quote ? formatRwf(quote.principal) : dash}
+                        </span>
+                    </div>
+                    {quote &&
+                        quote.principal.amount !==
+                            quote.requested_principal.amount && (
+                            <p className="mt-[3px] text-right text-[10.5px] leading-normal text-rz-secondary">
+                                {t('business.apply.raise.resized', {
+                                    requested: formatRwf(
+                                        quote.requested_principal,
+                                    ),
+                                })}
+                            </p>
+                        )}
                 </div>
                 <div className="flex items-baseline justify-between gap-3">
                     <span className="text-[13.5px] text-rz-slate">
@@ -637,28 +660,15 @@ function Economics({
                     </span>
                 </div>
                 <div className="my-0.5 h-px bg-[#dbe7ff] dark:bg-rz-divider" />
-                <div>
-                    <div className="flex items-baseline justify-between gap-2.5 whitespace-nowrap">
-                        <span className="text-sm font-bold text-rz-ink">
-                            {t('business.apply.raise.you_repay')}
-                        </span>
-                        <span className="text-lg font-extrabold tracking-[-.3px] text-rz-ink">
-                            {quote ? formatRwf(quote.total) : dash}
-                        </span>
-                    </div>
-                    {quote && (
-                        <>
-                            <p className="mt-[3px] text-right text-[13px] font-bold text-rz-accent-app-text">
-                                {t('business.apply.raise.per_month', {
-                                    amount: formatRwf(quote.monthly),
-                                })}
-                            </p>
-                            <p className="mt-[3px] text-right text-[10.5px] leading-normal text-rz-secondary">
-                                {t('business.apply.raise.first_payment')}
-                            </p>
-                        </>
-                    )}
+                <div className="flex items-baseline justify-between gap-2.5 whitespace-nowrap">
+                    <span className="text-sm font-bold text-rz-ink">
+                        {t('business.apply.raise.you_repay')}
+                    </span>
+                    <span className="text-lg font-extrabold tracking-[-.3px] text-rz-ink">
+                        {quote ? formatRwf(quote.total) : dash}
+                    </span>
                 </div>
+                {quote && <InstalmentSchedule schedule={quote.schedule} />}
                 {quote?.reserve && (
                     <div className="mt-1 flex flex-col gap-[9px] border-t border-[#dbe7ff] pt-[11px] dark:border-rz-divider">
                         <div className="flex items-baseline justify-between gap-3">
@@ -677,6 +687,50 @@ function Economics({
                     </div>
                 )}
             </div>
+        </div>
+    );
+}
+
+/** Every instalment as the server scheduled it; the last one carries any residual. */
+export function InstalmentSchedule({
+    schedule,
+}: {
+    schedule: ScheduleInstalment[];
+}) {
+    const { t } = useTranslation();
+    const last = schedule.at(-1)?.instalment;
+
+    return (
+        <div className="border-t border-[#dbe7ff] pt-[11px] dark:border-rz-divider">
+            <p className="text-[10.5px] font-bold tracking-[.04em] text-rz-slate uppercase">
+                {t('business.apply.raise.schedule')}
+            </p>
+            <p className="mt-px text-[10.5px] leading-normal text-rz-secondary">
+                {t('business.apply.raise.first_payment')}
+            </p>
+            <ol
+                aria-label={t('business.apply.raise.schedule')}
+                className="mt-2 flex flex-col gap-[7px]"
+            >
+                {schedule.map((row) => (
+                    <li
+                        key={row.instalment}
+                        className="flex items-baseline justify-between gap-3"
+                    >
+                        <span className="text-[12.5px] text-rz-slate">
+                            {t(
+                                row.instalment === last
+                                    ? 'business.apply.raise.instalment_final'
+                                    : 'business.apply.raise.instalment',
+                                { n: row.instalment },
+                            )}
+                        </span>
+                        <span className="text-[13px] font-semibold whitespace-nowrap text-rz-ink">
+                            {formatRwf(row.amount)}
+                        </span>
+                    </li>
+                ))}
+            </ol>
         </div>
     );
 }

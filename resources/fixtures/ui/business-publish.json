@@ -233,6 +233,7 @@
             "amount": "0"
         },
         "sources": [],
+        "allowed_actions": ["application.publish"],
         "links": {
             "close": {
                 "url": "/preview/business-home",

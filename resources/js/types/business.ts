@@ -130,6 +130,17 @@ export type BusinessAppLinks = {
     launcher: RouteLink;
 };
 
+/**
+ * The shell navigation a page may narrow: a destination the server does not open to the current
+ * person is null and hidden, never faked.
+ */
+export type BusinessShellLinks = {
+    home: RouteLink;
+    launcher: RouteLink;
+    reports: RouteLink | null;
+    profile: RouteLink | null;
+};
+
 /* ------------------------------------------------------------------------------------------ */
 /* Raise application (MVP-BUSINESS-SCR-02, design "RNP" wizard L349–629)                       */
 /* ------------------------------------------------------------------------------------------ */
@@ -146,9 +157,28 @@ export type UseOfFunds =
 
 export type TermMonths = 3 | 4 | 5 | 6;
 
+/**
+ * An exact fraction as the server publishes it, as integer decimal strings (e.g. 1/200). The
+ * client shows it as written and never turns it into a rounded percentage.
+ */
+export type Ratio = {
+    numerator: string;
+    denominator: string;
+};
+
+/**
+ * The commands this page may issue for the current person, scoped by the server
+ * (business-application-v1 point 1). A command that is not listed is never offered.
+ */
+export type ApplicationAllowedAction =
+    | 'application.save'
+    | 'application.evaluate'
+    | 'application.submit';
+
 /** The saved draft. It resumes from the server, so a cold reload never loses accepted input. */
 export type ApplicationDraft = {
     id: string;
+    /** The application revision every command sends back as `expected_revision`. */
     revision: number;
     title: string;
     target: Money | null;
@@ -157,75 +187,159 @@ export type ApplicationDraft = {
     story: string;
 };
 
+/** A verified year. A fact the evidence does not hold is null and shows as unavailable, never 0. */
 export type FinancialYear = {
     year: number;
-    revenue: Money;
-    costs: Money;
-    net_profit: Money;
+    revenue: Money | null;
+    costs: Money | null;
+    net_profit: Money | null;
+};
+
+/**
+ * Whether the verified record lets this business raise now (crosswalk MVP-BUSINESS-SCR-02-ST-02).
+ * The server owns the rule (first raise: 36 complete consecutive verified months; a repeat raise
+ * needs the passed original baseline, a fully settled on-time note, audited gaps and the automated
+ * collection mandate before 12 months apply) and explains a refusal in its own `message`.
+ */
+export type ApplicationEligibility =
+    | { status: 'eligible' }
+    | { status: 'ineligible'; code: string; message: string };
+
+/**
+ * An officer on the verified entity mandate. `role` is the server's label for the mandate role;
+ * no label, on its own, says the person may sign for the business.
+ */
+export type MandateOfficer = {
+    name: string;
+    role: string;
 };
 
 /** Step 1: what verified evidence says about the business. Never edited here. */
 export type ApplicationEvidence = {
+    /** The evidence version an evaluation expects (`evidence_version`). */
+    version: string;
+    eligibility: ApplicationEligibility;
     business: BusinessIdentity & {
         established_year: number | null;
-        officers: { role: 'ceo' | 'board_chair'; name: string }[];
+        officers: MandateOfficer[];
     };
     verified: { registry: boolean; statements: boolean };
     rating: BusinessRating | null;
-    totals: { revenue: Money; costs: Money; net_profit: Money };
+    totals: {
+        revenue: Money | null;
+        costs: Money | null;
+        net_profit: Money | null;
+    };
     years: FinancialYear[];
-    existing_debt: Money;
+    existing_debt: Money | null;
     debt_verified: boolean;
     capacity: Money | null;
 };
 
+/** Why an evaluation made no offer (business-application-v1 point 4). */
+export type QuoteDenialCode =
+    | 'UNDERWRITING_EVIDENCE_REQUIRED'
+    | 'DSCR_BELOW_CUTOFF'
+    | 'CAPACITY_BELOW_MINIMUM'
+    | 'EXPOSURE_LIMIT'
+    | 'POLICY_INPUT_REQUIRED'
+    | 'RESTRICTION_ACTIVE';
+
+/** One instalment of the repayment schedule; the last one carries any residual. */
+export type ScheduleInstalment = {
+    instalment: number;
+    amount: Money;
+};
+
 /**
- * The server's quote for the requested principal and term (contract AC-01). Every figure is the
- * engine's; the page shows it, never recomputes it. A refusal carries a stable code and the
- * server's own explanation.
+ * The server's immutable quote, created by `application.evaluate` and only read on a page load.
+ * Every figure is the engine's; the page shows it, never recomputes it. A refusal carries a
+ * stable code and the server's own explanation, and no numeric offer at all.
  */
 export type ApplicationQuote =
     | {
           status: 'ready';
+          quote_id: string;
+          quote_revision: number;
           policy_version: string;
+          evidence_version: string;
+          calculation_version: string;
+          mandate_version: string;
+          /** What the business asked for, as saved in the draft. */
+          requested_principal: Money;
+          /** The offer: the request resized and quantized to the RWF 5,000 note grid. */
           principal: Money;
           term_months: TermMonths;
           /** Flat total return over the whole term, one decimal: "12.1". Not an APR. */
           rate_pct: string;
           interest: Money;
           total: Money;
-          monthly: Money;
-          units: number;
+          /** Whole notes as a decimal integer string: "6783". */
+          units: string;
           unit_price: Money;
           reserve: Money | null;
+          schedule: ScheduleInstalment[];
+          /** Stable codes for how the offer was reached (e.g. resized); support and audit only. */
+          reason_codes: string[];
           rate_basis: {
               band: RatingBand | null;
               floor_pct: string;
               cap_pct: string;
-              term_premium_pct: string;
+              /** The exact term premium, never a rounded coefficient. */
+              term_premium: Ratio;
           };
       }
     | {
           status: 'refused';
-          code:
-              | 'CAPACITY_EXCEEDED'
-              | 'CAPACITY_BELOW_MINIMUM'
-              | 'DSCR_BELOW_CUTOFF'
-              | 'POLICY_INPUT_REQUIRED';
+          code: QuoteDenialCode;
           message: string;
       };
 
 export type AcceptanceDocument = {
     kind: 'terms' | 'privacy';
     version: string;
+    /** Hash of the exact text shown, echoed back on acceptance. */
+    sha256: string;
     /** The key clauses, as the legal owner summarises them for this version. */
     summary: { heading: string; body: string }[];
 };
 
-/** Step 3: what the business signs, and what falls due on approval. */
+/** A risk disclosure in the server's words, at an immutable version. */
+export type AcceptanceDisclosure = {
+    key: string;
+    version: string;
+    sha256: string;
+    text: string;
+};
+
+export type AcceptanceSigner = {
+    party_id: string;
+    name: string;
+    /** The server's label for the signer's mandate role. */
+    role: string;
+    state: 'signed' | 'pending';
+    /** When the signature was recorded, ISO 8601; null while pending. */
+    signed_at: string | null;
+};
+
+/**
+ * Step 3: what the business signs, who must sign it, and what falls due on approval. The signers
+ * come from the effective entity mandate: every one of them accepts the same financial, document
+ * and mandate versions, one signature never stands in for another, and a signature against an
+ * older version does not count on the current one. `allowed_actions` alone decides whether the
+ * current person may sign.
+ */
 export type ApplicationAcceptance = {
     documents: AcceptanceDocument[];
+    disclosures: AcceptanceDisclosure[];
     fee_on_approval: Money;
+    /** The mandate version a signature pins. */
+    mandate_version: string;
+    signers: AcceptanceSigner[];
+    /** How many signatures the mandate requires; never assumed to be two. */
+    required_signatures: number;
+    /** Server-derived: every required signature is recorded on the current versions. */
+    signatures_complete: boolean;
 };
 
 export type TimelineStage = {
@@ -233,22 +347,99 @@ export type TimelineStage = {
     state: 'done' | 'current' | 'pending';
 };
 
+/** A submitted application. Submitting does not issue a note, so `note_id` stays null until one exists. */
 export type ApplicationSubmission = {
-    note_id: string;
+    application_id: string;
+    note_id: string | null;
     timeline: TimelineStage[];
 };
 
+export type ApplicationCommandName = 'save' | 'evaluate' | 'submit';
+
+/**
+ * The authorized slice of the application a command returns in `data`, so the page can show the
+ * result at once and then refresh its remaining props. `next` is the page to continue to.
+ */
+export type ApplicationSnapshot = {
+    application: ApplicationDraft;
+    quote: ApplicationQuote | null;
+    acceptance: ApplicationAcceptance;
+    submission: ApplicationSubmission | null;
+    next: RouteLink;
+};
+
+/**
+ * The shared operation Resource every command and the operation lookup return
+ * (business-application-v1 points 2 and 7). `status` says whether the operation ran; `code` is
+ * the specific outcome — `APPLICATION_SAVED`, `APPLICATION_EVALUATED`,
+ * `APPLICATION_SIGNATURE_RECORDED`, `APPLICATION_SUBMITTED`, `OPERATION_PENDING`, or a persisted
+ * denial's own domain code. A completed evaluation may still hold a refused quote.
+ */
+export type OperationResource = {
+    operation_id: string;
+    status: 'completed' | 'pending' | 'rejected';
+    code: string;
+    data: ApplicationSnapshot | null;
+    revision: number | null;
+    policy_version: string | null;
+    server_time: string;
+    allowed_actions: string[];
+    field_errors: Record<string, string | string[]>;
+};
+
+/** A command exactly as sent, kept whole so an uncertain outcome is looked up and retried unchanged. */
+export type ApplicationCommand = {
+    name: ApplicationCommandName;
+    /** A save that moves on to the authorized `next` page once confirmed. */
+    advance: boolean;
+    payload: Record<string, unknown> & { request_id: string };
+};
+
+/**
+ * Supplied only by local/testing synthetic fixture previews: seeds the outcome the page otherwise
+ * reaches only after a live command, so it can be reviewed. The server never sends it.
+ */
+export type ApplyPreviewOutcome =
+    | { kind: 'unconfirmed'; command: ApplicationCommand }
+    | { kind: 'refused'; code: string };
+
 export type BusinessApplyProps = {
+    contract_version: 'business-application-v1';
+    business_id: string;
+    identity_context_revision: number;
+    /** When the server rendered these facts, ISO 8601. */
+    server_time: string;
+    allowed_actions: ApplicationAllowedAction[];
+    /** The server's resume pointer. */
     step: ApplyStep;
     application: ApplicationDraft;
     evidence: ApplicationEvidence;
     quote: ApplicationQuote | null;
     acceptance: ApplicationAcceptance;
     submission: ApplicationSubmission | null;
-    /** Home, drawn beneath the sheet on a wide screen. */
-    home: BusinessHomeProps;
-    links: { close: RouteLink; back: RouteLink; next: RouteLink | null };
-    actions: { save: RouteAction; submit: RouteAction };
+    /**
+     * Home, drawn beneath the sheet on a wide screen; null when the server sends no Home, in
+     * which case the sheet opens over an empty backdrop with no stand-in balances.
+     */
+    home: BusinessHomeProps | null;
+    /** The shell's navigation for this page, read instead of `home.links`. */
+    shell_links: BusinessShellLinks;
+    links: {
+        close: RouteLink;
+        back: RouteLink;
+        next: RouteLink | null;
+        /**
+         * The operation lookup. Its url holds the literal `{request_id}` token, which the page
+         * replaces; the command name goes as the `command` query.
+         */
+        operation: RouteLink;
+    };
+    actions: {
+        save: RouteAction;
+        evaluate: RouteAction;
+        submit: RouteAction;
+    };
+    preview_outcome?: ApplyPreviewOutcome;
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -264,6 +455,12 @@ export type BusinessPublishProps = {
     fee: Money;
     /** How the fee can be paid; empty when there is nothing to pay. */
     sources: { key: PaymentSourceKey; detail: string }[];
+    /**
+     * Publishing stays closed until an approved, fully signed application exists and the listing
+     * transaction lands in checkpoint 3; until the server lists `application.publish`, the sheet
+     * explains why instead of offering the command.
+     */
+    allowed_actions: 'application.publish'[];
     links: { close: RouteLink };
     actions: { publish: RouteAction };
 };
@@ -503,7 +700,7 @@ export type BusinessReportsProps = {
     /** The report open in the sheet, addressed by URL. */
     report: ReportDetail | null;
     /** Audit-cycle policy the guide quotes: the day audits seal by and the co-sign window. */
-    policy: { seal_day: number; cosign_minutes: number };
+    policy: { seal_day: number; cosign_day: number };
     links: BusinessAppLinks & { close: RouteLink };
 };
 
@@ -802,11 +999,12 @@ export type BusinessAuditPrepProps = {
         window_open: boolean;
         days_left: number;
         seal_by: string;
+        /** The day co-signing closes for this month's report, ISO date. */
+        cosign_by: string;
         /** True until the business has had its first audit. */
         first: boolean;
         /** Set when a new Audit Partner took over the file. */
         reassigned: { from: string; to: string } | null;
     };
-    policy: { cosign_minutes: number };
     links: { close: RouteLink };
 };

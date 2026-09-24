@@ -6,8 +6,9 @@ import type { RouteLink } from '@/types';
 import type { ApplicationSubmission } from '@/types/business';
 
 /**
- * "Your note has been submitted" (design L603–627), with the application's audit timeline. The
- * stages and the note ID are the server's record, so the timeline moves as review progresses.
+ * "Your application has been submitted" (design L603–627), with the application's audit timeline.
+ * The stages and IDs are the server's record, so the timeline moves as review progresses.
+ * Submitting does not issue a note: the note ID appears only once the server has one.
  */
 export function Submitted({
     submission,
@@ -48,11 +49,20 @@ export function Submitted({
             <p className="mt-2.5 text-sm leading-[1.6] text-rz-secondary">
                 {t('business.apply.submitted.body')}
             </p>
-            <p className="mt-4 inline-flex items-center gap-1.5 rounded-[10px] border border-rz-border bg-rz-surface px-[13px] py-2 text-[12.5px] font-semibold text-rz-slate">
-                {t('business.apply.submitted.note_id', {
-                    id: submission.note_id,
-                })}
-            </p>
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+                <p className="inline-flex items-center gap-1.5 rounded-[10px] border border-rz-border bg-rz-surface px-[13px] py-2 text-[12.5px] font-semibold text-rz-slate">
+                    {t('business.apply.submitted.application_id', {
+                        id: submission.application_id,
+                    })}
+                </p>
+                {submission.note_id !== null && (
+                    <p className="inline-flex items-center gap-1.5 rounded-[10px] border border-rz-border bg-rz-surface px-[13px] py-2 text-[12.5px] font-semibold text-rz-slate">
+                        {t('business.apply.submitted.note_id', {
+                            id: submission.note_id,
+                        })}
+                    </p>
+                )}
+            </div>
 
             <div className="mt-4 rounded-2xl border border-rz-border bg-rz-surface p-4 text-left">
                 <div className="flex items-start gap-[11px]">
