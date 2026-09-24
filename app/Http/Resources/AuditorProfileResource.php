@@ -55,7 +55,7 @@ class AuditorProfileResource extends JsonResource
             'open_jobs' => 0,
             'links' => [
                 'home' => self::link('auditor.home'),
-                'jobs' => null,
+                'jobs' => self::link('auditor.jobs.index'),
                 'portfolio' => null,
                 'profile' => self::link('auditor.profile'),
                 'launcher' => self::link('dashboard'),

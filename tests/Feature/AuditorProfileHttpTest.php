@@ -120,13 +120,15 @@ it('renders a first-time Auditor profile from the protected facts with the contr
             'renew' => ['url' => '/auditor/accreditation/renewal', 'method' => 'post'],
             'withdraw' => ['url' => '/auditor/accreditation/withdrawal', 'method' => 'post']],
     ])->and($props['links'])->toBe([
-        'home' => ['url' => '/auditor', 'method' => 'get'], 'jobs' => null, 'portfolio' => null,
+        'home' => ['url' => '/auditor', 'method' => 'get'], 'jobs' => ['url' => '/auditor/jobs', 'method' => 'get'], 'portfolio' => null,
         'profile' => ['url' => '/auditor/profile', 'method' => 'get'], 'launcher' => ['url' => '/dashboard', 'method' => 'get'],
         'sections' => ['accreditation' => ['url' => '/auditor/profile', 'method' => 'get'],
             'availability' => ['url' => '/auditor/profile?section=availability', 'method' => 'get']],
         'operation' => ['url' => '/auditor/operations/{request_id}', 'method' => 'get'],
         'certificate' => null, 'submitted_certificate' => null,
     ]);
+    $this->get($props['links']['jobs']['url'])->assertOk()->assertInertia(fn (Assert $page): Assert => $page
+        ->component('auditor/jobs')->where('eligible', [])->where('assigned', []));
     $this->get(route('auditor.profile', ['section' => 'availability']))->assertInertia(fn (Assert $page): Assert => $page->where('section', 'availability'));
     $this->get(route('auditor.profile', ['section' => ['availability']]))->assertInertia(fn (Assert $page): Assert => $page->where('section', 'accreditation'));
     $this->get(route('auditor.profile', ['section' => 'earnings']))->assertInertia(fn (Assert $page): Assert => $page->where('section', 'accreditation'));
@@ -403,6 +405,8 @@ it('offers the same profile commands lookup and certificate over the token API',
         ->and($api['actions']['submit']['url'])->toBe('/api/v1/auditor/accreditation')
         ->and($api['availability']['update']['url'])->toBe('/api/v1/auditor/availability')
         ->and($api['links']['operation']['url'])->toBe('/api/v1/auditor/operations/{request_id}')
+        ->and($api['links']['jobs'])->toBe($web['links']['jobs'])
+        ->and($api['links']['jobs']['url'])->toBe('/auditor/jobs')
         ->and($api['links']['profile']['url'])->toBe('/auditor/profile');
     $request = (string) Str::uuid();
     $submitted = $this->post(route('api.v1.auditor.accreditation.submit'), profileHttpSubmission(['request_id' => $request]), ['Accept' => 'application/json'])

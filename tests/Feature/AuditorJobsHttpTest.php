@@ -141,9 +141,9 @@ it('returns only the declarants private conflict receipt after access to the fil
     $this->getJson('/api/v1/auditor/assignment-operations/'.$body['request_id'].'?command=conflict.declare')->assertOk()
         ->assertJsonPath('data.conflict', $receipt['data']['conflict']);
     $this->actingAs($partner['user'])->get('/auditor/conflicts')->assertOk()->assertInertia(fn (Assert $page): Assert => $page
-        ->component('auditor/conflicts', false)->where('conflicts.0.conflict.note', $body['reason']));
+        ->component('auditor/conflicts')->where('conflicts.0.conflict.note', $body['reason']));
     $this->get('/auditor/jobs/'.$assignment->id.'/conflict')->assertOk()->assertInertia(fn (Assert $page): Assert => $page
-        ->component('auditor/conflicts', false)->where('conflicts.0.assignment_id', $assignment->id));
+        ->component('auditor/conflicts')->where('conflicts.0.assignment_id', $assignment->id));
     $next = Fixture::recipient($fixture, $assignment->refresh());
     Sanctum::actingAs($next['user'], ['auditor:read']);
     $this->getJson('/api/v1/auditor/jobs/'.$assignment->id.'/conflict')->assertNotFound();
