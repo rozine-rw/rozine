@@ -1,5 +1,12 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+} from 'vite-plus/test';
 import AuditorJobs from '@/pages/auditor/jobs';
 import type {
     AuditorJobsProps,
@@ -10,7 +17,9 @@ import conflictPendingFixture from '../../../resources/fixtures/ui/auditor-jobs-
 import conflictRecordedFixture from '../../../resources/fixtures/ui/auditor-jobs-conflict-recorded.json';
 import conflictFixture from '../../../resources/fixtures/ui/auditor-jobs-conflict.json';
 import emptyFixture from '../../../resources/fixtures/ui/auditor-jobs-empty.json';
+import liveMinimalFixture from '../../../resources/fixtures/ui/auditor-jobs-live-minimal.json';
 import overdueFixture from '../../../resources/fixtures/ui/auditor-jobs-overdue.json';
+import pagedFixture from '../../../resources/fixtures/ui/auditor-jobs-paged.json';
 import scopedFixture from '../../../resources/fixtures/ui/auditor-jobs-scoped.json';
 import jobsFixture from '../../../resources/fixtures/ui/auditor-jobs.json';
 import { renderWithUser } from '../helpers/render-with-user';
@@ -455,7 +464,7 @@ describe('Auditor Jobs', () => {
 
     it('labels every monthly report state and its statement figures', () => {
         const base = props();
-        const report = base.monthly.reports[0];
+        const report = base.monthly!.reports[0];
         const reports: MonthlyReportCard[] = [
             report,
             { ...report, id: 'b', status: 'overdue', cover: null },
@@ -499,9 +508,8 @@ describe('Auditor Jobs', () => {
         expect(
             screen.getByRole('link', { name: /Sebeya Logistics/ }),
         ).toHaveAttribute('href', '/preview/auditor-audit-ledger');
-        expect(
-            screen.getByText('Reassigned from Chantal Rwema, CPA'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('Reassigned to you')).toBeInTheDocument();
+        expect(screen.queryByText(/Chantal Rwema/)).not.toBeInTheDocument();
     });
 });
 
@@ -541,6 +549,16 @@ describe('Auditor outcomes', () => {
             },
             'Interest declared',
             'Your conflict has been recorded. Work on this assignment is stopped.',
+        ],
+        [
+            {
+                kind: 'conflict_declared',
+                business: 'Huye Motors',
+                resolution: 'closed',
+                blocking: true,
+            },
+            'Interest declared',
+            'Your conflict has been recorded. Audit Operations has closed this assignment, and your work on it has stopped.',
         ],
         [
             {
@@ -605,5 +623,310 @@ describe('Auditor outcomes', () => {
             ).not.toHaveTextContent(/Chantal|CPA/u);
             unmount();
         }
+    });
+});
+
+describe('Auditor Jobs on the live S-C projection', () => {
+    const LIVE_FLASH = '01k6m3x2v8q4r7t9w1y5z0b3c6';
+    const LIVE_MONTHLY = '01k6m2h7n4c8d2f5g9j3k6p1q4';
+
+    it('shows a figure the draft lacks as a dash or unavailable, never 0', () => {
+        render(<AuditorJobs {...props(liveMinimalFixture)} />);
+
+        const card = screen.getByRole('article', {
+            name: 'Kimisagara Hardware',
+        });
+
+        expect(
+            within(card).getByText('Sector unavailable · Nyarugenge · 40m ago'),
+        ).toBeInTheDocument();
+        /* Distance, requested, DSCR and term: four dashes, and no zero anywhere. */
+        expect(within(card).getAllByText('—')).toHaveLength(4);
+        expect(
+            within(card).queryByText(/^RWF 0|^0mo$|^0km$/u),
+        ).not.toBeInTheDocument();
+        expect(
+            within(card).queryByText('Monthly visit'),
+        ).not.toBeInTheDocument();
+        expect(
+            within(card).getByRole('link', { name: /View full application/ }),
+        ).toHaveAttribute('href', `/auditor/jobs/${LIVE_FLASH}`);
+    });
+
+    it('marks a monthly offer, whose deadline the calendar owns, and accepts it on its own route', async () => {
+        inertia.queue.push(
+            answers(
+                operation({
+                    code: 'ASSIGNMENT_ACCEPTED',
+                    data: { next: { url: '/auditor/jobs', method: 'get' } },
+                }),
+            ),
+        );
+        const { user } = renderWithUser(
+            <AuditorJobs {...props(liveMinimalFixture)} />,
+        );
+        const card = screen.getByRole('article', {
+            name: 'Nyamirambo Grocers',
+        });
+
+        expect(within(card).getByText('Monthly visit')).toBeInTheDocument();
+        expect(
+            within(card).getByText('Retail · Nyarugenge · 2h ago'),
+        ).toBeInTheDocument();
+        expect(within(card).getByText('RWF 18.5M')).toBeInTheDocument();
+        expect(within(card).getByText('9mo')).toBeInTheDocument();
+
+        await user.click(within(card).getByRole('button', { name: 'Accept' }));
+
+        expect(inertia.calls[0]).toMatchObject({
+            url: `/auditor/jobs/${LIVE_MONTHLY}/accept`,
+            method: 'post',
+            body: { assignment_id: LIVE_MONTHLY, expected_revision: 2 },
+        });
+    });
+
+    it('pins only the offers with a position and never centres a missing one', () => {
+        render(<AuditorJobs {...props(liveMinimalFixture)} />);
+
+        const map = screen.getByRole('img', {
+            name: 'Map of your 30 km dispatch radius with 2 open jobs at approximate positions',
+        });
+        const pins = within(map).getAllByTestId('radius-pin');
+
+        expect(
+            within(map).getByText('30km radius · 2 open'),
+        ).toBeInTheDocument();
+        expect(pins).toHaveLength(1);
+        expect(pins[0]).toHaveStyle({
+            left: 'calc(50% + -7.233333333333333px)',
+        });
+    });
+
+    it('leaves the Monthly section out while the server sends none', () => {
+        render(<AuditorJobs {...props(liveMinimalFixture)} />);
+
+        expect(
+            screen.queryByRole('heading', { name: 'Monthly reports' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(
+                'No monthly reports awaiting your audit right now.',
+            ),
+        ).not.toBeInTheDocument();
+    });
+
+    it('hides step progress until the procedure publishes its steps', () => {
+        const base = props(liveMinimalFixture);
+        const job = base.assigned[0];
+
+        const { unmount } = render(<AuditorJobs {...base} />);
+        const card = screen.getByRole('link', { name: /Gikondo Metal Works/ });
+
+        expect(card).toHaveAttribute('href', `/auditor/jobs/${job.id}`);
+        expect(within(card).getByText('Kicukiro · 6.4km')).toBeInTheDocument();
+        expect(within(card).queryByText(/Step/u)).not.toBeInTheDocument();
+        expect(
+            within(card).queryByText(/Review|sign off/u),
+        ).not.toBeInTheDocument();
+        unmount();
+
+        render(
+            <AuditorJobs
+                {...base}
+                assigned={[{ ...job, step: 0, steps: 0 }]}
+            />,
+        );
+
+        expect(
+            screen.getByRole('link', { name: /Gikondo Metal Works/ }),
+        ).not.toHaveTextContent('Step 0 of 0');
+    });
+
+    it('declines with the labels the server sends, relying on no code of its own', async () => {
+        const base = props(liveMinimalFixture);
+        const { user } = renderWithUser(
+            <AuditorJobs
+                {...base}
+                decline_options={[
+                    {
+                        code: 'capacity',
+                        label: 'Fully booked this week',
+                        requires_explanation: false,
+                    },
+                ]}
+            />,
+        );
+        const card = screen.getByRole('article', {
+            name: 'Kimisagara Hardware',
+        });
+
+        await user.click(within(card).getByRole('button', { name: 'Decline' }));
+
+        expect(
+            screen.getByRole('radio', { name: 'Fully booked this week' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('radio', { name: 'Other reason' }),
+        ).not.toBeInTheDocument();
+    });
+});
+
+describe('Auditor Jobs, paged', () => {
+    const NEXT = '/auditor/jobs?before=01k6kz9w3e7r1t5y8u2i6o0p3a';
+
+    it('ends the page in Show more and counts only this page', () => {
+        render(<AuditorJobs {...props(pagedFixture)} />);
+
+        expect(screen.getByRole('link', { name: 'Show more' })).toHaveAttribute(
+            'href',
+            NEXT,
+        );
+        expect(
+            screen.getByRole('img', {
+                name: 'Map of your 30 km dispatch radius with 2 jobs on this page at approximate positions',
+            }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('30km radius · 2 on this page'),
+        ).toBeInTheDocument();
+        expect(screen.queryByText(/2 open/u)).not.toBeInTheDocument();
+        /* A page count is never a total: the Jobs tab carries no badge. */
+        expect(
+            screen.queryByLabelText(/open Flash Audits/u),
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('Assigned to you')).toBeInTheDocument();
+    });
+
+    it('keeps offering Show more after an empty page, which is not the end of the history', () => {
+        render(
+            <AuditorJobs
+                {...props(pagedFixture)}
+                eligible={[]}
+                assigned={[]}
+            />,
+        );
+
+        expect(
+            screen.getByText(
+                'Nothing to show on this page. Earlier jobs may follow.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.queryByText(/No open jobs/u)).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Show more' })).toHaveAttribute(
+            'href',
+            NEXT,
+        );
+    });
+
+    it('shows the assigned work alone when a page holds no offers', () => {
+        render(<AuditorJobs {...props(pagedFixture)} eligible={[]} />);
+
+        expect(screen.getByText('Assigned to you')).toBeInTheDocument();
+        expect(
+            screen.queryByText(/Nothing to show on this page/u),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Show more' }),
+        ).toBeInTheDocument();
+    });
+
+    it('offers no Show more on the last page, and counts its offers as the total', () => {
+        render(<AuditorJobs {...props(liveMinimalFixture)} />);
+
+        expect(
+            screen.queryByRole('link', { name: 'Show more' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getAllByLabelText('2 open Flash Audits').length,
+        ).toBeGreaterThan(0);
+    });
+});
+
+describe('Auditor Jobs on a wide screen', () => {
+    /** Whether the page sees the lg breakpoint: jsdom has no matchMedia of its own. */
+    const wide = (matches: boolean) =>
+        vi.stubGlobal('matchMedia', (query: string) => ({
+            matches,
+            media: query,
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+        }));
+
+    afterEach(() => vi.unstubAllGlobals());
+
+    const columns = () => screen.getAllByTestId(/^column-/u);
+
+    const assignedHeading = () =>
+        screen.getByRole('heading', { name: 'Assigned to you' });
+
+    it('puts the assigned work in the right column while no monthly section is sent', () => {
+        wide(true);
+        render(<AuditorJobs {...props(liveMinimalFixture)} />);
+        const [left, right] = columns();
+
+        expect(columns()).toHaveLength(2);
+        expect(right).toContainElement(assignedHeading());
+        expect(right).toContainElement(
+            screen.getByRole('link', { name: /Gikondo Metal Works/u }),
+        );
+        expect(left).toContainElement(
+            screen.getByRole('article', { name: 'Kimisagara Hardware' }),
+        );
+        expect(screen.getAllByText('Assigned to you')).toHaveLength(1);
+    });
+
+    it('keeps Show more with the offers, and says so when a page holds no assigned work', () => {
+        wide(true);
+        render(
+            <AuditorJobs
+                {...props(pagedFixture)}
+                eligible={[]}
+                assigned={[]}
+            />,
+        );
+        const [left, right] = columns();
+
+        expect(left).toContainElement(
+            screen.getByRole('link', { name: 'Show more' }),
+        );
+        expect(left).toContainElement(
+            screen.getByText(
+                'Nothing to show on this page. Earlier jobs may follow.',
+            ),
+        );
+        expect(right).toContainElement(
+            screen.getByText('Nothing assigned to you on this page.'),
+        );
+    });
+
+    it('says when no accepted work is on the clock on the last page', () => {
+        wide(true);
+        render(<AuditorJobs {...props(liveMinimalFixture)} assigned={[]} />);
+
+        expect(assignedHeading()).toBeInTheDocument();
+        expect(
+            screen.getByText('No accepted work is on the clock right now.'),
+        ).toBeInTheDocument();
+    });
+
+    it('keeps the monthly section beside the offers when it is sent', () => {
+        wide(true);
+        render(<AuditorJobs {...props(overdueFixture)} />);
+        const [left, right] = columns();
+
+        expect(left).toContainElement(assignedHeading());
+        expect(right).toContainElement(
+            screen.getByRole('heading', { name: 'Monthly reports' }),
+        );
+    });
+
+    it('keeps one flow on a phone, assigned above the offers', () => {
+        wide(false);
+        render(<AuditorJobs {...props(liveMinimalFixture)} />);
+
+        expect(columns()).toHaveLength(1);
+        expect(screen.getByTestId('column-left')).toHaveTextContent(
+            /Assigned to you[\s\S]*Kimisagara Hardware/u,
+        );
     });
 });

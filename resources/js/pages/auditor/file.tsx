@@ -10,7 +10,7 @@ import { ConflictReceiptCard } from '@/components/auditor/conflict-receipt';
 import { DetailSheet, JobHeader } from '@/components/auditor/detail-sheet';
 import { FileReview } from '@/components/auditor/file/file-review';
 import { useJobCommands } from '@/components/auditor/job-commands';
-import { JobsBody } from '@/components/auditor/jobs/jobs-body';
+import { JobsBody, openOffers } from '@/components/auditor/jobs/jobs-body';
 import { OfferAccept } from '@/components/auditor/jobs/offer-accept';
 import { OutcomeModal } from '@/components/auditor/sheets/outcome-modal';
 import { useTranslation } from '@/hooks/use-translation';
@@ -131,10 +131,7 @@ function FileSheet({ receipt, ...props }: FileSheetProps) {
                     reassignedFrom={job.reassigned_from}
                 />
             ) : (
-                <ConflictReceiptCard
-                    business={job.business}
-                    receipt={blocked}
-                />
+                <ConflictReceiptCard receipt={blocked} />
             )}
         </DetailSheet>
     );
@@ -163,7 +160,7 @@ export default function AuditorFile(props: AuditorFileProps) {
                 })}
                 tab="jobs"
                 links={props.jobs.links}
-                openJobs={props.jobs.eligible.length}
+                openJobs={openOffers(props.jobs)}
                 showTabBar={false}
             >
                 <JobsBody

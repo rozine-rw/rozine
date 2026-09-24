@@ -273,6 +273,8 @@
                 {
                     "id": "fa_huye",
                     "revision": 2,
+                    "state": "offered",
+                    "kind": "flash",
                     "business": "Huye Motors",
                     "sector": "logistics",
                     "district": "Gasabo",

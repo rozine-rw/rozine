@@ -1472,7 +1472,7 @@ const fr: Catalog = {
         '{district} · {distance} km · Étape {step} sur {steps}',
     'auditor.job.status.overdue': 'En retard',
     'auditor.job.status.awaiting_cosign': 'En attente de cosignature',
-    'auditor.job.reassigned_from': 'Réattribué par {name}',
+    'auditor.job.reassigned': 'Vous a été réattribué',
     'auditor.standing.title': 'Votre situation',
     'auditor.standing.on_time': 'Clôture à temps',
     'auditor.standing.avg_variance': 'Écart moyen',
@@ -1502,9 +1502,21 @@ const fr: Catalog = {
     'auditor.jobs.map_label':
         "Carte de votre rayon d'affectation de {radius} km avec {count} missions ouvertes à des positions approximatives",
     'auditor.jobs.map_badge': 'Rayon {radius} km · {count} ouvertes',
+    'auditor.jobs.map_label_page':
+        "Carte de votre rayon d'affectation de {radius} km avec {count} missions sur cette page à des positions approximatives",
+    'auditor.jobs.map_badge_page': 'Rayon {radius} km · {count} sur cette page',
     'auditor.jobs.assigned': 'Qui vous sont attribuées',
     'auditor.jobs.distance': 'Distance',
     'auditor.jobs.km': '{distance} km',
+    'auditor.jobs.sector_unavailable': 'Secteur indisponible',
+    'auditor.jobs.kind_monthly': 'Visite mensuelle',
+    'auditor.jobs.show_more': 'Afficher plus',
+    'auditor.jobs.page_empty':
+        'Rien à afficher sur cette page. Des missions plus anciennes peuvent suivre.',
+    'auditor.jobs.assigned_empty':
+        "Aucune mission acceptée n'est en cours pour le moment.",
+    'auditor.jobs.assigned_page_empty':
+        'Rien ne vous est attribué sur cette page.',
     'auditor.jobs.requested': 'Demandé',
     'auditor.jobs.dscr': 'DSCR',
     'auditor.jobs.term': 'Durée',
@@ -1584,7 +1596,7 @@ const fr: Catalog = {
     'auditor.file.title': 'Examiner la demande',
     'auditor.file.lead':
         'Tout ce que {business} a soumis, contrôlé selon les seuils de Rozine. Votre contrôle sur site lève ce que le moteur ne peut pas confirmer à distance.',
-    'auditor.file.reassigned_title': 'Réattribué depuis {name}',
+    'auditor.file.reassigned_title': 'Ce dossier vous a été réattribué',
     'auditor.file.reassigned_body':
         "Le délai initial s'applique toujours — la réattribution ne relance pas le délai. Les preuves déjà au dossier restent consignées.",
     'auditor.file.raise': 'La levée',
@@ -1593,11 +1605,15 @@ const fr: Catalog = {
     'auditor.file.return_value': '{pct} % au total',
     'auditor.file.use_of_funds': 'Utilisation des fonds',
     'auditor.file.documents': 'Documents soumis',
+    'auditor.file.no_documents':
+        "Aucun document soumis n'est encore enregistré pour ce dossier.",
     'auditor.file.doc_status.parsed': '✓ OCR',
     'auditor.file.doc_status.verified': '✓ Vérifié',
     'auditor.file.doc_status.present': '✓ Présent',
     'auditor.file.doc_status.missing': 'Manquant',
     'auditor.file.prescreen': 'Présélection automatique',
+    'auditor.file.no_prescreen':
+        "Aucun résultat de présélection automatique n'a encore été publié pour ce dossier.",
     'auditor.file.check.met': 'Atteint',
     'auditor.file.check.flag': 'Signalé',
     'auditor.file.why': 'Pourquoi un audit sur site est requis',
@@ -1786,6 +1802,15 @@ const fr: Catalog = {
     'auditor.conflict.options_other':
         "Déclarer sur l'un de vos {count} dossiers attribués",
     'auditor.conflict.on_record': 'Consigné',
+    'auditor.conflict.business_on_record': 'Entreprise enregistrée',
+    'auditor.conflict.assignment_ref': 'Réf. {reference}',
+    'auditor.conflicts.head_title': 'Vos conflits',
+    'auditor.conflicts.title': 'Vos conflits déclarés',
+    'auditor.conflicts.lead':
+        "Chaque conflit que vous avez déclaré, tel qu'il a été enregistré. Chacun a arrêté votre travail sur la mission concernée, et seul votre reçu demeure.",
+    'auditor.conflicts.empty': "Vous n'avez déclaré aucun conflit.",
+    'auditor.conflicts.page_empty':
+        'Rien à afficher sur cette page. Des déclarations plus anciennes peuvent suivre.',
     'auditor.reports.title': 'Rapports déposés',
     'auditor.reports.count': '{count} au total',
     'auditor.reports.filters': 'Filtrer les rapports',
@@ -2887,6 +2912,8 @@ const fr: Catalog = {
         'Votre conflit a été enregistré et {business} a été réattribuée. Votre travail sur cette mission est arrêté.',
     'auditor.outcome.conflict.blocking.recorded':
         'Votre conflit a été enregistré. Le travail sur cette mission est arrêté.',
+    'auditor.outcome.conflict.blocking.closed':
+        "Votre conflit a été enregistré. Les Opérations d'audit ont clôturé cette mission et votre travail sur celle-ci est arrêté.",
     'auditor.seal.cites': 'Preuves : {ids}',
     'auditor.seal.evidence': 'Preuves scellées avec ce rapport',
     'auditor.seal.versions':
@@ -2926,16 +2953,18 @@ const fr: Catalog = {
     'auditor.receipt.body.reassignment_pending':
         "Votre conflit a été enregistré. Le travail sur cette mission est arrêté pendant que les Opérations d'audit organisent la réattribution.",
     'auditor.receipt.body.reassigned':
-        "Votre conflit a été enregistré et la mission a été réattribuée. Vous n'avez plus accès au dossier de {business}.",
+        "Votre conflit a été enregistré et la mission a été réattribuée. Vous n'avez plus accès à son dossier.",
     'auditor.receipt.body.recorded':
-        "Votre conflit a été enregistré. Le travail sur cette mission est arrêté et vous n'avez plus accès au dossier de {business}.",
+        "Votre conflit a été enregistré. Le travail sur cette mission est arrêté et vous n'avez plus accès à son dossier.",
+    'auditor.receipt.body.closed':
+        "Votre conflit a été enregistré. Les Opérations d'audit ont clôturé cette mission et vous n'avez plus accès à son dossier.",
     'auditor.receipt.status': 'Mission',
     'auditor.receipt.state.reassignment_pending': 'Réattribution en attente',
     'auditor.receipt.state.reassigned': 'Réattribuée',
     'auditor.receipt.state.recorded': 'Enregistré',
+    'auditor.receipt.state.closed': "Clôturée par les Opérations d'audit",
     'auditor.receipt.kind': "Type d'intérêt",
     'auditor.receipt.declared': 'Déclaré',
-    'auditor.receipt.reference': 'Référence',
     'auditor.receipt.note': 'Votre explication',
     'auditor.evidence.title': 'Preuves',
     'auditor.evidence.captured': 'Capturé',

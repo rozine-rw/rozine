@@ -1474,7 +1474,7 @@ const rw: Catalog = {
         '{district} · km {distance} · Intambwe {step} kuri {steps}',
     'auditor.job.status.overdue': 'Yarenze igihe',
     'auditor.job.status.awaiting_cosign': 'Bitegereje gusinyirwa',
-    'auditor.job.reassigned_from': 'Yimuwe kuri {name}',
+    'auditor.job.reassigned': 'Wahawe uyu murimo',
     'auditor.standing.title': 'Uko uhagaze',
     'auditor.standing.on_time': 'Gusoza ku gihe',
     'auditor.standing.avg_variance': 'Ikinyuranyo mpuzandengo',
@@ -1504,9 +1504,20 @@ const rw: Catalog = {
     'auditor.jobs.map_label':
         "Ikarita y'akarere ka km {radius} ufite imirimo {count} ifunguye, aho iri hagereranyijwe",
     'auditor.jobs.map_badge': 'km {radius} · {count} ifunguye',
+    'auditor.jobs.map_label_page':
+        "Ikarita y'akarere ka km {radius} ifite imirimo {count} kuri uru rupapuro, aho iri hagereranyijwe",
+    'auditor.jobs.map_badge_page': 'km {radius} · {count} kuri uru rupapuro',
     'auditor.jobs.assigned': 'Ushinzwe',
     'auditor.jobs.distance': 'Intera',
     'auditor.jobs.km': 'km {distance}',
+    'auditor.jobs.sector_unavailable': 'Urwego ntirubonetse',
+    'auditor.jobs.kind_monthly': 'Isura rya buri kwezi',
+    'auditor.jobs.show_more': 'Erekana ibindi',
+    'auditor.jobs.page_empty':
+        'Nta kigaragara kuri uru rupapuro. Imirimo ya mbere ishobora gukurikiraho.',
+    'auditor.jobs.assigned_empty': 'Nta murimo wemeye uri ku isaha ubu.',
+    'auditor.jobs.assigned_page_empty':
+        'Nta murimo ushinzwe kuri uru rupapuro.',
     'auditor.jobs.requested': 'Ayasabwe',
     'auditor.jobs.dscr': 'DSCR',
     'auditor.jobs.term': 'Igihe',
@@ -1585,7 +1596,7 @@ const rw: Catalog = {
     'auditor.file.title': 'Suzuma ubusabe',
     'auditor.file.lead':
         'Ibyo {business} yatanze byose, byagenzuwe hakurikijwe imbibi za Rozine. Igenzura ryawe ku kibanza rikemura ibyo moteri idashobora kwemeza iri kure.',
-    'auditor.file.reassigned_title': 'Wahawe iyi dosiye ivuye kuri {name}',
+    'auditor.file.reassigned_title': 'Wahawe iyi dosiye',
     'auditor.file.reassigned_body':
         'Igihe cya mbere kiracyakurikizwa — kwimurwa ntibisubiramo isaha. Ibimenyetso byari kuri dosiye bigumaho.',
     'auditor.file.raise': 'Igishoro gisabwa',
@@ -1594,11 +1605,15 @@ const rw: Catalog = {
     'auditor.file.return_value': '{pct}% yose hamwe',
     'auditor.file.use_of_funds': 'Icyo amafaranga azakoreshwa',
     'auditor.file.documents': 'Inyandiko zatanzwe',
+    'auditor.file.no_documents':
+        'Nta nyandiko zatanzwe ziranditswe kuri iyi dosiye.',
     'auditor.file.doc_status.parsed': '✓ OCR',
     'auditor.file.doc_status.verified': '✓ Byemejwe',
     'auditor.file.doc_status.present': '✓ Birahari',
     'auditor.file.doc_status.missing': 'Ntibirimo',
     'auditor.file.prescreen': "Isuzuma ry'ibanze ryikora",
+    'auditor.file.no_prescreen':
+        "Nta gisubizo cy'isuzuma ry'ibanze ryikora kiratangazwa kuri iyi dosiye.",
     'auditor.file.check.met': 'Byujujwe',
     'auditor.file.check.flag': 'Ikimenyetso',
     'auditor.file.why': 'Impamvu igenzura ryo ku kibanza rikenewe',
@@ -1787,6 +1802,15 @@ const rw: Catalog = {
     'auditor.conflict.options_other':
         'Tangaza kuri imwe muri dosiye {count} ushinzwe',
     'auditor.conflict.on_record': 'Byanditswe',
+    'auditor.conflict.business_on_record': 'Ubucuruzi bwanditswe',
+    'auditor.conflict.assignment_ref': 'Nomero {reference}',
+    'auditor.conflicts.head_title': 'Inyungu wagaragaje',
+    'auditor.conflicts.title': 'Inyungu wagaragaje',
+    'auditor.conflicts.lead':
+        'Inyungu zose wagaragaje, uko zanditswe. Buri imwe yahagaritse akazi kawe kuri uwo murimo, kandi hasigaye gusa inyemezo yawe.',
+    'auditor.conflicts.empty': 'Nta nyungu wagaragaje.',
+    'auditor.conflicts.page_empty':
+        'Nta kigaragara kuri uru rupapuro. Izo wagaragaje mbere zishobora gukurikiraho.',
     'auditor.reports.title': 'Raporo zatanzwe',
     'auditor.reports.count': '{count} zose',
     'auditor.reports.filters': 'Shungura raporo',
@@ -2880,6 +2904,8 @@ const rw: Catalog = {
         'Inyungu wagaragaje yanditswe kandi {business} yahawe undi. Akazi kawe kuri uyu murimo karahagaze.',
     'auditor.outcome.conflict.blocking.recorded':
         'Inyungu wagaragaje yanditswe. Akazi kuri uyu murimo karahagaze.',
+    'auditor.outcome.conflict.blocking.closed':
+        "Inyungu wagaragaje yanditswe. Ishami ry'Igenzura ryafunze uyu murimo, kandi akazi kawe kuri wo karahagaze.",
     'auditor.seal.cites': 'Ibimenyetso: {ids}',
     'auditor.seal.evidence': "Ibimenyetso bishyirwaho kashe hamwe n'iyi raporo",
     'auditor.seal.versions':
@@ -2919,16 +2945,18 @@ const rw: Catalog = {
     'auditor.receipt.body.reassignment_pending':
         "Inyungu wagaragaje yanditswe. Akazi kuri uyu murimo karahagaze mu gihe Ishami ry'Igenzura ritegura kuwuha undi.",
     'auditor.receipt.body.reassigned':
-        'Inyungu wagaragaje yanditswe kandi umurimo wahawe undi. Ntukibasha kugera kuri dosiye ya {business}.',
+        'Inyungu wagaragaje yanditswe kandi umurimo wahawe undi. Ntukibasha kugera kuri dosiye yawo.',
     'auditor.receipt.body.recorded':
-        'Inyungu wagaragaje yanditswe. Akazi kuri uyu murimo karahagaze, kandi ntukibasha kugera kuri dosiye ya {business}.',
+        'Inyungu wagaragaje yanditswe. Akazi kuri uyu murimo karahagaze, kandi ntukibasha kugera kuri dosiye yawo.',
+    'auditor.receipt.body.closed':
+        "Inyungu wagaragaje yanditswe. Ishami ry'Igenzura ryafunze uyu murimo, kandi ntukibasha kugera kuri dosiye yawo.",
     'auditor.receipt.status': 'Umurimo',
     'auditor.receipt.state.reassignment_pending': 'Gutegereza guhabwa undi',
     'auditor.receipt.state.reassigned': 'Wahawe undi',
     'auditor.receipt.state.recorded': 'Byanditswe',
+    'auditor.receipt.state.closed': "Byafunzwe n'Ishami ry'Igenzura",
     'auditor.receipt.kind': "Ubwoko bw'inyungu",
     'auditor.receipt.declared': 'Byatangajwe',
-    'auditor.receipt.reference': 'Nomero',
     'auditor.receipt.note': 'Ibisobanuro byawe',
     'auditor.evidence.title': 'Ibimenyetso',
     'auditor.evidence.captured': 'Byafashwe',

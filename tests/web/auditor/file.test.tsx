@@ -4,6 +4,7 @@ import AuditorFile from '@/pages/auditor/file';
 import type { AuditorFileProps, BusinessFile } from '@/types/auditor';
 import blockedFixture from '../../../resources/fixtures/ui/auditor-file-conflict-blocked.json';
 import declineOtherFixture from '../../../resources/fixtures/ui/auditor-file-decline-other.json';
+import liveMinimalFixture from '../../../resources/fixtures/ui/auditor-file-live-minimal.json';
 import reassignedFixture from '../../../resources/fixtures/ui/auditor-file-reassigned.json';
 import fileFixture from '../../../resources/fixtures/ui/auditor-file.json';
 import { renderWithUser } from '../helpers/render-with-user';
@@ -192,7 +193,7 @@ describe('Auditor business file', () => {
         expect(within(sheet).getByText('Reassigned')).toBeInTheDocument();
         expect(
             within(sheet).getByText(
-                "Your conflict has been recorded and the assignment has been reassigned. You no longer have access to Huye Motors's file.",
+                'Your conflict has been recorded and the assignment has been reassigned. You no longer have access to its file.',
             ),
         ).toBeInTheDocument();
         expect(
@@ -200,7 +201,11 @@ describe('Auditor business file', () => {
                 'I advised Huye Motors on its 2025 bookkeeping set-up until March 2026.',
             ),
         ).toBeInTheDocument();
-        expect(within(sheet).getByText('cf_2026_0217')).toBeInTheDocument();
+        /* The receipt is the declarant's own kind, note, date and status: no reference or name. */
+        expect(
+            within(sheet).queryByText('cf_2026_0217'),
+        ).not.toBeInTheDocument();
+        expect(within(sheet).queryByText('Reference')).not.toBeInTheDocument();
         expect(
             within(sheet).queryByText('First visit'),
         ).not.toBeInTheDocument();
@@ -216,9 +221,9 @@ describe('Auditor business file', () => {
         const sheet = sheetFor('Sebeya Logistics');
 
         expect(screen.getByText('Business file')).toBeInTheDocument();
-        expect(screen.getByRole('note')).toHaveTextContent(
-            'Reassigned to you from Chantal Rwema, CPA',
-        );
+        /* The note says the file was reassigned, and never names the partner it came from. */
+        expect(screen.getByRole('note')).toHaveTextContent('Reassigned to you');
+        expect(screen.getByRole('note')).not.toHaveTextContent('Chantal');
         expect(
             screen.getByText(
                 'Last audit 14 Apr 2026 · Flash Audit · Chantal Rwema, CPA',
@@ -273,6 +278,131 @@ describe('Auditor business file', () => {
         ).toBeInTheDocument();
         expect(
             screen.queryByRole('link', { name: 'Continue the audit' }),
+        ).not.toBeInTheDocument();
+    });
+});
+
+describe('Auditor business file on the live S-C projection', () => {
+    const live = () => props(liveMinimalFixture);
+    const liveSheet = () => sheetFor('Gikondo Metal Works');
+
+    it('reads a figure the draft lacks as a dash and invents nothing in an empty list', () => {
+        render(<AuditorFile {...live()} />);
+
+        const sheet = liveSheet();
+
+        expect(within(sheet).getByText('Business file')).toBeInTheDocument();
+        /* Requested, term and total return. */
+        expect(within(sheet).getAllByText('—')).toHaveLength(3);
+        expect(
+            within(sheet).getByText(/· Sector unavailable$/u),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet).getByText(
+                'No submitted documents are on record for this file yet.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet).getByText(
+                'No automated pre-screen result has been published for this file yet.',
+            ),
+        ).toBeInTheDocument();
+        expect(within(sheet).getByText('First visit')).toBeInTheDocument();
+        expect(
+            within(sheet).getByText('No flags on file.'),
+        ).toBeInTheDocument();
+    });
+
+    it('leaves out the reason and the mandate until they are published', () => {
+        render(<AuditorFile {...live()} />);
+
+        const sheet = liveSheet();
+
+        expect(
+            within(sheet).queryByText('Why a field audit is required'),
+        ).not.toBeInTheDocument();
+        expect(
+            within(sheet).queryByText('What you must clear on site'),
+        ).not.toBeInTheDocument();
+    });
+
+    it('offers no dead button while the procedure is not served, only the conflict declaration', () => {
+        render(<AuditorFile {...live()} />);
+
+        const sheet = liveSheet();
+
+        expect(
+            within(sheet).queryByRole('link', { name: 'Continue the audit' }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(sheet).queryByRole('button', { name: /Accept/u }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(sheet).queryByRole('button', { name: 'Decline' }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(sheet).getByRole('button', { name: 'Declare a conflict' }),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet).getByRole('link', { name: 'Back' }),
+        ).toHaveAttribute('href', '/auditor/jobs');
+    });
+
+    it('shows the mandate alone under its own heading when no reason is persisted', () => {
+        const base = live();
+
+        render(
+            <AuditorFile
+                {...base}
+                file={{
+                    ...(base.file as BusinessFile),
+                    mandate: ['Count the steel stock on site.'],
+                }}
+                blocked={null}
+            />,
+        );
+
+        const sheet = liveSheet();
+
+        expect(
+            within(sheet).getByRole('heading', {
+                name: 'What you must clear on site',
+            }),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet).getByText('Count the steel stock on site.'),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet).queryByText('Why a field audit is required'),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows the reason alone when no mandate is published', () => {
+        const base = live();
+
+        render(
+            <AuditorFile
+                {...base}
+                file={{
+                    ...(base.file as BusinessFile),
+                    reason: 'Stock levels need a field check.',
+                }}
+                blocked={null}
+            />,
+        );
+
+        const sheet = liveSheet();
+
+        expect(
+            within(sheet).getByRole('heading', {
+                name: 'Why a field audit is required',
+            }),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet).getByText('Stock levels need a field check.'),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet).queryByText('What you must clear on site'),
         ).not.toBeInTheDocument();
     });
 });

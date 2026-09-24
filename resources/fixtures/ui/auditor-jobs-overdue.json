@@ -15,6 +15,8 @@
             {
                 "id": "fa_huye",
                 "revision": 2,
+                "state": "offered",
+                "kind": "flash",
                 "business": "Huye Motors",
                 "sector": "logistics",
                 "district": "Gasabo",
@@ -60,6 +62,8 @@
         "assigned": [
             {
                 "id": "fa_sebeya",
+                "revision": 1,
+                "state": "assigned",
                 "kind": "flash",
                 "business": "Sebeya Logistics",
                 "district": "Musanze",
@@ -79,6 +83,8 @@
             },
             {
                 "id": "fa_murakoze",
+                "revision": 1,
+                "state": "assigned",
                 "kind": "flash",
                 "business": "Murakoze Tech",
                 "district": "Kicukiro",

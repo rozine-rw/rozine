@@ -36,6 +36,8 @@
         "in_progress": [
             {
                 "id": "fa_murakoze",
+                "revision": 1,
+                "state": "assigned",
                 "kind": "flash",
                 "business": "Murakoze Tech",
                 "district": "Kicukiro",
@@ -55,6 +57,8 @@
             },
             {
                 "id": "fa_greenleaf",
+                "revision": 1,
+                "state": "assigned",
                 "kind": "flash",
                 "business": "GreenLeaf Agro",
                 "district": "Gasabo",

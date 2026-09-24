@@ -88,15 +88,21 @@ export type EvidenceItem = {
     accuracy_m: number | null;
 };
 
-/** Where an assignment stands after a conflict: never who has it next (confirmation on #96). */
+/**
+ * Where an assignment stands after a conflict: never who has it next (confirmation on #96).
+ * `closed` means Audit Operations closed the assignment; it is never described as reassigned.
+ */
 export type ConflictAssignmentStatus =
     | 'reassignment_pending'
     | 'reassigned'
-    | 'recorded';
+    | 'recorded'
+    | 'closed';
 
 /**
  * The partner's own receipt for a declared conflict. A blocking conflict removes access to the
  * file, evidence, step saves and sealing at once; only this receipt and the minimal status remain.
+ * The receipt shows the declarant's own kind, note, date and coarse status, and nothing else: no
+ * replacement identity and no private case detail read after the conflict.
  */
 export type ConflictReceipt = {
     conflict_id: string;
@@ -285,24 +291,39 @@ export type AssignedJobStatus = 'in_progress' | 'overdue' | 'awaiting_cosign';
 
 /**
  * Accepted work still running its clock. `deadline.due_at` is the offer's `complete_by` for a flash
- * audit — 24 hours from dispatch — and the server's `visit_by` for a routine one; a reassigned job
+ * audit — 24 hours from dispatch — and the server's `visit_by` for a monthly one; a reassigned job
  * keeps its original deadline. A monthly report's seal and co-sign date (the 7th) is separate: it
  * comes from the report calendar, not from this clock.
  */
 export type AssignedJob = {
     id: string;
+    /** The assignment's revision, sent back as `expected_revision` by its commands. */
+    revision: number;
+    /** Accepted work; the server splits each Jobs page on this. */
+    state: 'assigned';
     kind: 'flash' | 'monthly';
     business: string;
     district: string;
     /** Distance from the registered office, already formatted by the server: "7.7". */
     distance_km: string;
     deadline: Deadline;
-    step: number;
-    steps: number;
+    /**
+     * Where the procedure stands. Both are null until the procedure publishes its steps (S-D);
+     * the card then shows no step progress rather than a stand-in "Step 0 of 0".
+     */
+    step: number | null;
+    steps: number | null;
+    /** Server-sent: `in_progress` or `overdue` against `deadline`, `awaiting_cosign` from S-D. */
     status: AssignedJobStatus;
-    /** Set when the job came to this partner from another; the original deadline still runs. */
+    /**
+     * Set when the job came to this partner from another; the original deadline still runs. The
+     * page only says the job was reassigned and never shows this value: no other partner is named.
+     */
     reassigned_from: string | null;
-    /** Opening the procedure is navigation; this record's commands are scoped by its own list. */
+    /**
+     * Opens the job's file summary (GET `/auditor/jobs/{assignment}`), never the procedure itself;
+     * this record's commands are scoped by its own list.
+     */
     link: RouteLink;
     allowed_actions: AuditorAllowedAction[];
 };
@@ -369,30 +390,44 @@ export type JobActions = {
     conflict: RouteAction;
 };
 
-/** A Flash Audit this partner is eligible for, offered by dispatch. */
+/**
+ * A Flash Audit or monthly visit this partner is eligible for, offered by dispatch. A persisted
+ * draft can lack any of its figures: each missing one is null and reads "—" or "Unavailable",
+ * never 0.
+ */
 export type EligibleJob = {
     /** The assignment offer's ID; its commands send `revision` as `expected_revision`. */
     id: string;
     revision: number;
+    /** An open offer; the server splits each Jobs page on this. */
+    state: 'offered';
+    /** A Flash Audit, or a monthly (routine) visit whose deadline the report calendar owns. */
+    kind: 'flash' | 'monthly';
     business: string;
-    sector: SectorCode;
+    /** Null when the Business industry matches no sector. */
+    sector: SectorCode | null;
     district: string;
     offered_at: string;
-    distance_km: string;
-    requested: Money;
-    /** The engine's DSCR for the case, formatted: "1.12". Null while unrated. */
+    /** Distance from the registered office, formatted: "11.2". Null when it cannot be stated. */
+    distance_km: string | null;
+    /** Null while the draft carries no amount. */
+    requested: Money | null;
+    /** The engine's DSCR for the case, formatted: "1.12". Null until an evaluation is published. */
     dscr: string | null;
-    term_months: number;
+    /** Null while the draft carries no term. */
+    term_months: number | null;
     /**
      * Where to draw the pin on the radius map, relative to the registered office: approximate,
-     * server-rounded to 0.1 km for presentation only. Dispatch never uses these offsets.
+     * server-rounded to 0.1 km for presentation only. Dispatch never uses these offsets. Null until
+     * a truthful relative position exists: the map then draws no pin for this job, never one at
+     * the centre.
      */
-    map: { east_km: number; north_km: number };
-    /** When this offer closes (ISO): an hour for a flash audit, four for routine, never past `complete_by`. */
+    map: { east_km: number; north_km: number } | null;
+    /** When this offer closes (ISO): an hour for a flash audit, four for monthly, never past `complete_by`. */
     accept_by: string;
     /**
      * When a flash audit is due (ISO): 24 hours from its original dispatch, whoever accepts it and
-     * however often it is reoffered. Null for a routine offer — the monthly calendar owns that
+     * however often it is reoffered. Null for a monthly offer — the monthly calendar owns that
      * deadline (inputs by the 3rd, report and co-signatures by the 7th).
      */
     complete_by: string | null;
@@ -467,14 +502,43 @@ export type AuditorOutcome =
 /** The operation lookup: its url holds the literal `{request_id}` token (point 7). */
 export type OperationLookupLinks = { operation: RouteLink };
 
+/**
+ * A bounded page, newest assignment first (default 25, at most 50). `next` asks for the page
+ * before it (`?before=`); null means there is nothing further back. A page can be empty and still
+ * carry `next` — records found for it may have lost this partner's authority while being read — so
+ * the page keeps offering "Show more" whenever `next` is set, and never treats an empty page as the
+ * end of the history. Counts on a page are that page's, never global totals.
+ */
+export type AuditorPagination = {
+    next: RouteLink | null;
+};
+
+/**
+ * Jobs (GET `/auditor/jobs`, `auditor.jobs.index`). Offers' and assigned jobs' commands POST to
+ * `/auditor/jobs/{assignment}/accept`, `/decline` and `/conflict`, and the lookup is GET
+ * `/auditor/assignment-operations/{request_id}?command=`; the page follows the links it is sent.
+ */
 export type AuditorJobsProps = AuditorPageContract & {
     radius_km: number;
     flash_hours: number;
+    /**
+     * Offers to this partner and their accepted work: the server splits one bounded page into
+     * these two lists, and `pagination` covers the page as a whole.
+     */
     eligible: EligibleJob[];
     assigned: AssignedJob[];
-    monthly: { windows: MonthlyWindow[]; reports: MonthlyReportCard[] };
-    /** The server's labelled reasons for declining an offer. */
+    /**
+     * The monthly windows and report cards (S-D and the report calendar). Null until they are
+     * served: the page then leaves the Monthly section out rather than reading "no reports".
+     */
+    monthly: { windows: MonthlyWindow[]; reports: MonthlyReportCard[] } | null;
+    /**
+     * The server's labelled reasons for declining an offer. The page shows each `label` as sent and
+     * relies on no code of its own.
+     */
     decline_options: ServerOption<DeclineReason>[];
+    /** The page as a whole (GET `/auditor/jobs?before=`); absent on a synthetic page with no paging. */
+    pagination?: AuditorPagination;
     outcome: AuditorOutcome | null;
     links: AuditorAppLinks & OperationLookupLinks;
     preview_outcome?: AuditorPreviewOutcome;
@@ -491,21 +555,30 @@ export type FileDocument = {
     kind: 'statement' | 'registry' | 'identity' | 'pitch' | 'photos';
 };
 
+/**
+ * What the file shows. Nothing is invented: a raise figure the draft lacks is null and reads "—",
+ * and a list the server cannot yet state truthfully is empty.
+ */
 export type BusinessFile = {
     raise: {
-        requested: Money;
-        term_months: number;
+        requested: Money | null;
+        term_months: number | null;
         /** Flat total return over the whole term, one decimal: "10.0". Not an APR. */
-        return_pct: string;
-        sector: SectorCode;
+        return_pct: string | null;
+        /** Null when the Business industry matches no sector. */
+        sector: SectorCode | null;
         use_of_funds: string;
     };
+    /** What the business submitted; empty when no document assertion is on record. */
     documents: FileDocument[];
-    /** The engine's automated checks, read-only: a factual met or flagged per rule. */
+    /**
+     * The engine's automated checks, read-only: a factual met or flagged per rule. Empty until a
+     * pre-screen result is published.
+     */
     prescreen: { label: string; detail: string; result: 'met' | 'flag' }[];
-    /** Why the engine sent this case to the field. */
-    reason: string;
-    /** The procedure version's agreed steps for the visit, in order. */
+    /** Why the engine sent this case to the field; null until a public reason is persisted. */
+    reason: string | null;
+    /** The procedure version's agreed steps for the visit, in order; empty until published (S-D). */
     mandate: string[];
     history: {
         last_audit: {
@@ -536,17 +609,23 @@ export type FileJob = {
     deadline: Deadline | null;
     /** While offered: when the offer closes. Null once assigned, which is what `state` also says. */
     accept_by: string | null;
-    /** The flash deadline from dispatch; null for routine. */
+    /** The flash deadline from dispatch; null for monthly. */
     complete_by: string | null;
+    /** Set when the file was reassigned to this partner; never shown, so no partner is named. */
     reassigned_from: string | null;
 };
 
+/**
+ * The file summary (GET `/auditor/jobs/{assignment}`, `auditor.jobs.show`). After a blocking
+ * conflict the full file route denies access, and the partner's own receipt is what remains.
+ */
 export type AuditorFileProps = AuditorPageContract & {
     job: FileJob;
     actions: JobActions;
     decline_options: ServerOption<DeclineReason>[];
     links: OperationLookupLinks & {
         close: RouteLink;
+        /** Null until the procedure is served (S-D): the page then offers no Continue button. */
         procedure: RouteLink | null;
     };
     /** Jobs, drawn beneath the sheet on a wide screen. */
@@ -887,6 +966,35 @@ export type AuditorPortfolioProps = AuditorPageContract & {
     open_jobs: number;
     links: AuditorAppLinks & OperationLookupLinks;
     preview_outcome?: AuditorPreviewOutcome;
+};
+
+/* ------------------------------------------------------------------------------------------ */
+/* Conflicts: the partner's own conflict receipts (AC-08, S-C)                                  */
+/* ------------------------------------------------------------------------------------------ */
+
+/**
+ * One of the partner's own declarations. The private read carries no Business display name, no
+ * note ID, no case detail and no replacement identity: only the assignment and Business it
+ * concerns, by ID, and the declarant's own receipt. The page names it "Business on record" with a
+ * short form of `assignment_id`.
+ */
+export type OwnConflict = {
+    assignment_id: string;
+    business_id: string;
+    /** Always blocking; its status is coarse, including `closed` by Audit Operations. */
+    conflict: ConflictReceipt;
+};
+
+/**
+ * The partner's own conflict receipts (GET `/auditor/conflicts`, `auditor.conflicts.index`), a
+ * bounded page with its own `pagination`. The single receipt (GET `/auditor/conflicts/{assignment}`,
+ * `auditor.conflicts.show`) is the same shape with one entry, and is where a completed
+ * declaration's `data.next` leads. It is read-only: no command is offered here.
+ */
+export type AuditorConflictsProps = AuditorPageContract & {
+    conflicts: OwnConflict[];
+    links: AuditorAppLinks;
+    pagination: AuditorPagination;
 };
 
 /* ------------------------------------------------------------------------------------------ */

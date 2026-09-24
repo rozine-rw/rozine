@@ -419,6 +419,7 @@
         "resources/js/pages/admin/parties.tsx",
         "resources/js/pages/admin/today.tsx",
         "resources/js/pages/auditor/audit.tsx",
+        "resources/js/pages/auditor/conflicts.tsx",
         "resources/js/pages/auditor/file.tsx",
         "resources/js/pages/auditor/home.tsx",
         "resources/js/pages/auditor/jobs.tsx",
@@ -468,10 +469,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 440,
+        "totalTrackedSources": 441,
         "generated": 111,
         "declarationOnly": 14,
-        "authoredExecutable": 315
+        "authoredExecutable": 316
     },
-    "coverageSetSha256": "aff0be76ba498722b646b574ee1596252cac39fe23a46c9858952625e1f845ec"
+    "coverageSetSha256": "a9da0aa4ec3ff25d80aa9408f9ff407b9c19846fdb8f78fda5540690a55d4fe3"
 }

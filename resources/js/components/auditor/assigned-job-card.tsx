@@ -6,8 +6,9 @@ import type { AssignedJob } from '@/types/auditor';
 
 /**
  * An accepted job still on its clock (design L160–171): business, district, distance and step,
- * the ticking time left, and progress through the procedure's steps. An overdue job or one
- * reassigned from another partner says so (MVP-AUDITOR-SCR-01-ST-02, SCR-02-ST-02).
+ * the ticking time left, and progress through the procedure's steps. Until the procedure publishes
+ * its steps there is no step line or bar, never "Step 0 of 0". An overdue job or one reassigned to
+ * this partner says so, without naming anyone else (MVP-AUDITOR-SCR-01-ST-02, SCR-02-ST-02).
  */
 export function AssignedJobCard({
     job,
@@ -17,6 +18,10 @@ export function AssignedJobCard({
     serverTime: string;
 }) {
     const { t } = useTranslation();
+    const progress =
+        job.step !== null && job.steps !== null && job.steps > 0
+            ? { step: job.step, steps: job.steps }
+            : null;
 
     return (
         <Link
@@ -29,12 +34,17 @@ export function AssignedJobCard({
                         {job.business}
                     </p>
                     <p className="mt-0.5 text-[11.5px] text-rz-secondary">
-                        {t('auditor.job.progress_line', {
-                            district: job.district,
-                            distance: job.distance_km,
-                            step: job.step,
-                            steps: job.steps,
-                        })}
+                        {progress === null
+                            ? t('auditor.file.place', {
+                                  district: job.district,
+                                  distance: job.distance_km,
+                              })
+                            : t('auditor.job.progress_line', {
+                                  district: job.district,
+                                  distance: job.distance_km,
+                                  step: progress.step,
+                                  steps: progress.steps,
+                              })}
                     </p>
                 </div>
                 <ClockChip
@@ -56,19 +66,21 @@ export function AssignedJobCard({
                     )}
                     {job.reassigned_from !== null && (
                         <StatusPill tone="amber">
-                            {t('auditor.job.reassigned_from', {
-                                name: job.reassigned_from,
-                            })}
+                            {t('auditor.job.reassigned')}
                         </StatusPill>
                     )}
                 </div>
             )}
-            <div className="mt-[11px] h-1.5 overflow-hidden rounded-[4px] bg-[#eef2f8] dark:bg-rz-surface-muted">
-                <div
-                    className="h-full rounded-[4px] bg-[linear-gradient(90deg,#c2661f,#2f7bff)]"
-                    style={{ width: `${(job.step / job.steps) * 100}%` }}
-                />
-            </div>
+            {progress !== null && (
+                <div className="mt-[11px] h-1.5 overflow-hidden rounded-[4px] bg-[#eef2f8] dark:bg-rz-surface-muted">
+                    <div
+                        className="h-full rounded-[4px] bg-[linear-gradient(90deg,#c2661f,#2f7bff)]"
+                        style={{
+                            width: `${(progress.step / progress.steps) * 100}%`,
+                        }}
+                    />
+                </div>
+            )}
         </Link>
     );
 }

@@ -1437,7 +1437,7 @@ const en = {
         '{district} · {distance}km · Step {step} of {steps}',
     'auditor.job.status.overdue': 'Overdue',
     'auditor.job.status.awaiting_cosign': 'Awaiting co-signature',
-    'auditor.job.reassigned_from': 'Reassigned from {name}',
+    'auditor.job.reassigned': 'Reassigned to you',
     'auditor.standing.title': 'Your standing',
     'auditor.standing.on_time': 'On-time close',
     'auditor.standing.avg_variance': 'Avg variance',
@@ -1467,9 +1467,20 @@ const en = {
     'auditor.jobs.map_label':
         'Map of your {radius} km dispatch radius with {count} open jobs at approximate positions',
     'auditor.jobs.map_badge': '{radius}km radius · {count} open',
+    'auditor.jobs.map_label_page':
+        'Map of your {radius} km dispatch radius with {count} jobs on this page at approximate positions',
+    'auditor.jobs.map_badge_page': '{radius}km radius · {count} on this page',
     'auditor.jobs.assigned': 'Assigned to you',
     'auditor.jobs.distance': 'Distance',
     'auditor.jobs.km': '{distance}km',
+    'auditor.jobs.sector_unavailable': 'Sector unavailable',
+    'auditor.jobs.kind_monthly': 'Monthly visit',
+    'auditor.jobs.show_more': 'Show more',
+    'auditor.jobs.page_empty':
+        'Nothing to show on this page. Earlier jobs may follow.',
+    'auditor.jobs.assigned_empty':
+        'No accepted work is on the clock right now.',
+    'auditor.jobs.assigned_page_empty': 'Nothing assigned to you on this page.',
     'auditor.jobs.requested': 'Requested',
     'auditor.jobs.dscr': 'DSCR',
     'auditor.jobs.term': 'Term',
@@ -1546,7 +1557,7 @@ const en = {
     'auditor.file.title': 'Review the application',
     'auditor.file.lead':
         "Everything {business} submitted, screened against Rozine's thresholds. Your field check resolves what the engine can't confirm remotely.",
-    'auditor.file.reassigned_title': 'Reassigned to you from {name}',
+    'auditor.file.reassigned_title': 'Reassigned to you',
     'auditor.file.reassigned_body':
         'The original deadline still applies — reassignment does not reset the clock. Earlier evidence on the file stays on the record.',
     'auditor.file.raise': 'The raise',
@@ -1555,11 +1566,15 @@ const en = {
     'auditor.file.return_value': '{pct}% total',
     'auditor.file.use_of_funds': 'Use of funds',
     'auditor.file.documents': 'Submitted documents',
+    'auditor.file.no_documents':
+        'No submitted documents are on record for this file yet.',
     'auditor.file.doc_status.parsed': '✓ OCR',
     'auditor.file.doc_status.verified': '✓ Verified',
     'auditor.file.doc_status.present': '✓ Present',
     'auditor.file.doc_status.missing': 'Missing',
     'auditor.file.prescreen': 'Automated pre-screen',
+    'auditor.file.no_prescreen':
+        'No automated pre-screen result has been published for this file yet.',
     'auditor.file.check.met': 'Met',
     'auditor.file.check.flag': 'Flag',
     'auditor.file.why': 'Why a field audit is required',
@@ -1748,6 +1763,15 @@ const en = {
     'auditor.conflict.options_other':
         'Declare on any of your {count} assigned files',
     'auditor.conflict.on_record': 'On the record',
+    'auditor.conflict.business_on_record': 'Business on record',
+    'auditor.conflict.assignment_ref': 'Ref. {reference}',
+    'auditor.conflicts.head_title': 'Your conflicts',
+    'auditor.conflicts.title': 'Your declared conflicts',
+    'auditor.conflicts.lead':
+        'Every conflict you have declared, as it was recorded. Each one stopped your work on that assignment, and only your own receipt remains.',
+    'auditor.conflicts.empty': 'You have not declared any conflicts.',
+    'auditor.conflicts.page_empty':
+        'Nothing to show on this page. Earlier declarations may follow.',
     'auditor.reports.title': 'Reports filed',
     'auditor.reports.count': '{count} total',
     'auditor.reports.filters': 'Filter reports',
@@ -2816,6 +2840,8 @@ const en = {
         'Your conflict has been recorded and {business} has been reassigned. Your work on this assignment has stopped.',
     'auditor.outcome.conflict.blocking.recorded':
         'Your conflict has been recorded. Work on this assignment is stopped.',
+    'auditor.outcome.conflict.blocking.closed':
+        'Your conflict has been recorded. Audit Operations has closed this assignment, and your work on it has stopped.',
     'auditor.seal.cites': 'Evidence: {ids}',
     'auditor.seal.evidence': 'Evidence sealed with this report',
     'auditor.seal.versions':
@@ -2854,16 +2880,18 @@ const en = {
     'auditor.receipt.body.reassignment_pending':
         'Your conflict has been recorded. Work on this assignment is stopped while Audit Operations arranges reassignment.',
     'auditor.receipt.body.reassigned':
-        "Your conflict has been recorded and the assignment has been reassigned. You no longer have access to {business}'s file.",
+        'Your conflict has been recorded and the assignment has been reassigned. You no longer have access to its file.',
     'auditor.receipt.body.recorded':
-        "Your conflict has been recorded. Work on this assignment is stopped, and you no longer have access to {business}'s file.",
+        'Your conflict has been recorded. Work on this assignment is stopped, and you no longer have access to its file.',
+    'auditor.receipt.body.closed':
+        'Your conflict has been recorded. Audit Operations has closed this assignment, and you no longer have access to its file.',
     'auditor.receipt.status': 'Assignment',
     'auditor.receipt.state.reassignment_pending': 'Reassignment pending',
     'auditor.receipt.state.reassigned': 'Reassigned',
     'auditor.receipt.state.recorded': 'Recorded',
+    'auditor.receipt.state.closed': 'Closed by Audit Operations',
     'auditor.receipt.kind': 'Kind of interest',
     'auditor.receipt.declared': 'Declared',
-    'auditor.receipt.reference': 'Reference',
     'auditor.receipt.note': 'Your explanation',
     'auditor.evidence.title': 'Evidence',
     'auditor.evidence.captured': 'Captured',

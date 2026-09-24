@@ -26,7 +26,7 @@ import {
 } from '@/components/auditor/detail-sheet';
 import { FileReview } from '@/components/auditor/file/file-review';
 import { useJobCommands } from '@/components/auditor/job-commands';
-import { JobsBody } from '@/components/auditor/jobs/jobs-body';
+import { JobsBody, openOffers } from '@/components/auditor/jobs/jobs-body';
 import { OutcomeModal } from '@/components/auditor/sheets/outcome-modal';
 import { useTranslation } from '@/hooks/use-translation';
 import type { MessageCode } from '@/lib/i18n/types';
@@ -139,12 +139,7 @@ function StageBody({
         case 'sealed':
             return sealed;
         case 'blocked':
-            return (
-                <ConflictReceiptCard
-                    business={audit.business}
-                    receipt={stage.conflict}
-                />
-            );
+            return <ConflictReceiptCard receipt={stage.conflict} />;
     }
 }
 
@@ -399,7 +394,7 @@ export default function AuditorAudit(props: AuditProcedureProps) {
                 })}
                 tab="jobs"
                 links={props.jobs.links}
-                openJobs={props.jobs.eligible.length}
+                openJobs={openOffers(props.jobs)}
                 showTabBar={false}
             >
                 <JobsBody

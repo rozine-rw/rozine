@@ -165,6 +165,7 @@
         "resources/js/pages/admin/parties.tsx",
         "resources/js/pages/admin/today.tsx",
         "resources/js/pages/auditor/audit.tsx",
+        "resources/js/pages/auditor/conflicts.tsx",
         "resources/js/pages/auditor/file.tsx",
         "resources/js/pages/auditor/home.tsx",
         "resources/js/pages/auditor/jobs.tsx",

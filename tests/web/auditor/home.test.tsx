@@ -433,9 +433,8 @@ describe('Auditor Home', () => {
         expect(amber).toHaveClass('bg-rz-accent-soft');
         expect(late).toHaveTextContent('00:00:00');
         expect(screen.getByText('Overdue')).toBeInTheDocument();
-        expect(
-            screen.getByText('Reassigned from Chantal Rwema, CPA'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('Reassigned to you')).toBeInTheDocument();
+        expect(screen.queryByText(/Chantal Rwema/)).not.toBeInTheDocument();
         expect(screen.getByText('Awaiting co-signature')).toBeInTheDocument();
 
         act(() => {

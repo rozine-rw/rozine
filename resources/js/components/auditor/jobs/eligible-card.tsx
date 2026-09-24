@@ -4,7 +4,7 @@ import { useAuditorCommands } from '@/components/auditor/commands';
 import { useJobCommands } from '@/components/auditor/job-commands';
 import { OfferAccept } from '@/components/auditor/jobs/offer-accept';
 import { compactRwf } from '@/components/auditor/money';
-import { SectorTile, StatTile } from '@/components/auditor/ui';
+import { SectorTile, StatTile, StatusPill } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import type { DeclineReason, EligibleJob, ServerOption } from '@/types/auditor';
 
@@ -14,11 +14,15 @@ type EligibleCardProps = {
     declineOptions: ServerOption<DeclineReason>[];
 };
 
+/** A figure the server did not state: a dash, never 0. */
+const NO_FIGURE = '—';
+
 /**
- * One open Flash Audit (design L218–239). The figures are the engine's; accepting asks the server,
- * which decides whether this partner still gets the file. Decline and conflict sit under the
- * accept button: the design has neither, and the brief requires both (SCR-01-ST-03, AC-08). Each
- * command shows only when this offer's own `allowed_actions` lists it (#96 point 3).
+ * One open offer (design L218–239): a Flash Audit, or a monthly visit marked as such. The figures
+ * are the engine's, and one the draft lacks reads as a dash or "unavailable", never 0; accepting
+ * asks the server, which decides whether this partner still gets the file. Decline and conflict
+ * sit under the accept button: the design has neither, and the brief requires both (SCR-01-ST-03,
+ * AC-08). Each command shows only when this offer's own `allowed_actions` lists it (#96 point 3).
  */
 export function EligibleCard({
     job,
@@ -58,8 +62,10 @@ export function EligibleCard({
                             {job.business}
                         </span>
                         <span className="mt-0.5 block text-[11.5px] text-rz-secondary">
-                            {t(`auditor.sector.${job.sector}`)} · {job.district}{' '}
-                            · {ago(job.offered_at)}
+                            {job.sector === null
+                                ? t('auditor.jobs.sector_unavailable')
+                                : t(`auditor.sector.${job.sector}`)}{' '}
+                            · {job.district} · {ago(job.offered_at)}
                         </span>
                     </span>
                     <span className="shrink-0 text-right">
@@ -67,26 +73,41 @@ export function EligibleCard({
                             {t('auditor.jobs.distance')}
                         </span>
                         <span className="block text-[14px] font-bold text-rz-ink">
-                            {t('auditor.jobs.km', {
-                                distance: job.distance_km,
-                            })}
+                            {job.distance_km === null
+                                ? NO_FIGURE
+                                : t('auditor.jobs.km', {
+                                      distance: job.distance_km,
+                                  })}
                         </span>
                     </span>
                 </span>
+                {job.kind === 'monthly' && (
+                    <StatusPill tone="blue" className="mt-2.5 inline-block">
+                        {t('auditor.jobs.kind_monthly')}
+                    </StatusPill>
+                )}
                 <div className="mt-3 flex gap-2">
                     <StatTile
                         label={t('auditor.jobs.requested')}
-                        value={compactRwf(job.requested)}
+                        value={
+                            job.requested === null
+                                ? NO_FIGURE
+                                : compactRwf(job.requested)
+                        }
                     />
                     <StatTile
                         label={t('auditor.jobs.dscr')}
-                        value={job.dscr === null ? '—' : `${job.dscr}×`}
+                        value={job.dscr === null ? NO_FIGURE : `${job.dscr}×`}
                     />
                     <StatTile
                         label={t('auditor.jobs.term')}
-                        value={t('auditor.jobs.term_months', {
-                            months: job.term_months,
-                        })}
+                        value={
+                            job.term_months === null
+                                ? NO_FIGURE
+                                : t('auditor.jobs.term_months', {
+                                      months: job.term_months,
+                                  })
+                        }
                     />
                 </div>
                 <span className="mt-2.5 block text-[11.5px] font-bold text-rz-ink">

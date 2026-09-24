@@ -4,7 +4,7 @@ import {
     AuditorCommandProvider,
     useAuditorCommandCenter,
 } from '@/components/auditor/commands';
-import { JobsBody } from '@/components/auditor/jobs/jobs-body';
+import { JobsBody, openOffers } from '@/components/auditor/jobs/jobs-body';
 import { OutcomeModal } from '@/components/auditor/sheets/outcome-modal';
 import { useTranslation } from '@/hooks/use-translation';
 import type { AuditorJobsProps } from '@/types/auditor';
@@ -29,7 +29,7 @@ export default function AuditorJobs(props: AuditorJobsProps) {
                 title={t('auditor.jobs.head_title')}
                 tab="jobs"
                 links={props.links}
-                openJobs={props.eligible.length}
+                openJobs={openOffers(props)}
             >
                 <JobsBody
                     {...props}
