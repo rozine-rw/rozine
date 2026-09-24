@@ -1,7 +1,10 @@
 {
     "component": "auditor/portfolio",
     "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": ["conflict.declare"],
         "reports": [
             {
                 "id": "rp_4",
@@ -73,16 +76,19 @@
             "files": [
                 {
                     "id": "fa_huye",
+                    "revision": 4,
                     "business": "Huye Motors",
                     "note_id": "RNP-2026-0133"
                 },
                 {
                     "id": "mr_greenleaf",
+                    "revision": 5,
                     "business": "GreenLeaf Agro",
                     "note_id": "RNP-2026-0118"
                 },
                 {
                     "id": "mr_intare",
+                    "revision": 6,
                     "business": "Intare Supply",
                     "note_id": "RNP-2026-0102"
                 }
@@ -122,6 +128,10 @@
             },
             "launcher": {
                 "url": "/preview/launcher-auditor",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
                 "method": "get"
             }
         }

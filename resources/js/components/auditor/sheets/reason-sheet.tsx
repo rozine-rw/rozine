@@ -1,23 +1,13 @@
-import { useForm } from '@inertiajs/react';
-import type { FormEvent } from 'react';
+import { useState } from 'react';
+import {
+    AuditorCommandNotice,
+    useAuditorCommands,
+} from '@/components/auditor/commands';
 import { BottomSheet } from '@/components/auditor/sheets/bottom-sheet';
 import { FieldError } from '@/components/rozine/form';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
-import type { RouteAction } from '@/types';
-
-type ReasonSheetProps = {
-    title: string;
-    lead: string;
-    label: string;
-    placeholder: string;
-    submitLabel: string;
-    action: RouteAction;
-    /** Extra facts the command carries, such as the aggregate revision it was read at. */
-    payload?: Record<string, string | number>;
-    destructive?: boolean;
-    onClose: () => void;
-};
+import type { ServerOption } from '@/types/auditor';
 
 /** Secondary button: `#f1f4f9` / `#46526b`, 42px (design L823). */
 export const SECONDARY_BUTTON =
@@ -31,55 +21,143 @@ export const FORM_PRIMARY =
 export const NOTE_FIELD =
     'w-full resize-none rounded-xl border border-rz-border bg-rz-surface px-[13px] py-3 text-[13.5px] leading-[1.5] text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border';
 
+/** A sheet form field's label: 10px capitals (design L1419). */
+export const SHEET_LABEL =
+    'mb-[5px] block text-[10px] font-bold tracking-[.04em] text-rz-slate uppercase';
+
+/** One choice among several, as the design's chips (L396–404). */
+export function ChoiceChips<Code extends string>({
+    legend,
+    choices,
+    value,
+    onChange,
+    error,
+    errorId,
+}: {
+    legend: string;
+    choices: { code: Code; label: string }[];
+    value: Code | null;
+    onChange: (code: Code) => void;
+    error?: string;
+    errorId: string;
+}) {
+    return (
+        <fieldset>
+            <legend className="text-[10px] font-bold tracking-[.05em] text-rz-secondary uppercase">
+                {legend}
+            </legend>
+            <div
+                role="radiogroup"
+                aria-label={legend}
+                className="mt-[7px] flex flex-wrap gap-[7px]"
+            >
+                {choices.map((choice) => {
+                    const on = value === choice.code;
+
+                    return (
+                        <button
+                            key={choice.code}
+                            type="button"
+                            role="radio"
+                            aria-checked={on}
+                            onClick={() => onChange(choice.code)}
+                            className={cn(
+                                'rounded-[10px] border px-[11px] py-[7px] text-left text-[12px] font-semibold',
+                                on
+                                    ? 'border-[#f0dcb8] bg-rz-accent-soft text-rz-ink dark:border-[rgba(240,160,96,.4)]'
+                                    : 'border-rz-border bg-[#f8fafc] text-rz-secondary dark:bg-rz-surface-sunken',
+                            )}
+                        >
+                            {choice.label}
+                        </button>
+                    );
+                })}
+            </div>
+            <FieldError id={errorId}>{error}</FieldError>
+        </fieldset>
+    );
+}
+
+type ReasonSheetProps = {
+    title: string;
+    lead: string;
+    placeholder: string;
+    submitLabel: string;
+    /** The server's labelled reasons; each says whether it needs an explanation. */
+    options: ServerOption[];
+    initialReason?: string | null;
+    destructive?: boolean;
+    onSubmit: (fields: { reason_code: string; reason: string }) => void;
+    onClose: () => void;
+};
+
 /**
- * A command that needs the partner's reason in their own words: declining a job, sending a
- * monthly report back, or rejecting it. The server records the reason with the command and
- * validates it; nothing here decides the outcome.
+ * A command that needs a coded reason from the server's list and, where that reason asks for it,
+ * a factual explanation in the partner's own words: declining a job, requesting changes to a
+ * monthly filing, or rejecting it. The server records and validates both; nothing here decides
+ * the outcome, and no reason is a verdict on the business.
  */
 export function ReasonSheet({
     title,
     lead,
-    label,
     placeholder,
     submitLabel,
-    action,
-    payload = {},
+    options,
+    initialReason = null,
     destructive = false,
+    onSubmit,
     onClose,
 }: ReasonSheetProps) {
     const { t } = useTranslation();
-    const form = useForm({ reason: '' });
+    const center = useAuditorCommands();
+    const [code, setCode] = useState<string | null>(initialReason);
+    const [reason, setReason] = useState('');
+    const chosen = options.find((option) => option.code === code);
+    const explain = chosen?.requires_explanation ?? false;
+    const ready =
+        chosen !== undefined &&
+        (!explain || reason.trim() !== '') &&
+        center.idle;
 
-    const submit = (event: FormEvent) => {
-        event.preventDefault();
-        form.transform((data) => ({ ...data, ...payload }));
-        form.post(action.url, { preserveScroll: true });
-    };
+    /* The button is enabled only once a reason is chosen, so `chosen` is set here. */
+    const submit = () =>
+        onSubmit({ reason_code: chosen!.code, reason: reason.trim() });
 
     return (
         <BottomSheet title={title} lead={lead} onClose={onClose}>
-            <form onSubmit={submit} noValidate className="mt-3.5">
+            <AuditorCommandNotice placement="sheet" className="mt-3.5" />
+            <div className="mt-3.5">
+                <ChoiceChips
+                    legend={t('auditor.reason.label')}
+                    choices={options}
+                    value={code}
+                    onChange={setCode}
+                    error={center.errors.reason_code}
+                    errorId="auditor-reason-code-error"
+                />
                 <label
                     htmlFor="auditor-reason"
-                    className="mb-[5px] block text-[10px] font-bold tracking-[.04em] text-rz-slate uppercase"
+                    className={cn(SHEET_LABEL, 'mt-3.5')}
                 >
-                    {label}
+                    {explain
+                        ? t('auditor.reason.explanation_required')
+                        : t('auditor.reason.explanation_optional')}
                 </label>
                 <textarea
                     id="auditor-reason"
-                    value={form.data.reason}
-                    onChange={(event) =>
-                        form.setData('reason', event.target.value)
-                    }
+                    value={reason}
+                    onChange={(event) => setReason(event.target.value)}
                     placeholder={placeholder}
-                    aria-invalid={form.errors.reason ? true : undefined}
+                    aria-invalid={center.errors.reason ? true : undefined}
                     aria-describedby={
-                        form.errors.reason ? 'auditor-reason-error' : undefined
+                        center.errors.reason
+                            ? 'auditor-reason-error'
+                            : undefined
                     }
                     className={cn(NOTE_FIELD, 'min-h-[84px]')}
                 />
                 <FieldError id="auditor-reason-error">
-                    {form.errors.reason}
+                    {center.errors.reason}
                 </FieldError>
                 <div className="mt-3 flex gap-[9px]">
                     <button
@@ -90,10 +168,10 @@ export function ReasonSheet({
                         {t('auditor.sheet.cancel')}
                     </button>
                     <button
-                        type="submit"
-                        disabled={
-                            form.processing || form.data.reason.trim() === ''
-                        }
+                        type="button"
+                        onClick={submit}
+                        disabled={!ready}
+                        aria-busy={center.busy || undefined}
                         className={cn(
                             FORM_PRIMARY,
                             'flex-[2]',
@@ -103,7 +181,7 @@ export function ReasonSheet({
                         {submitLabel}
                     </button>
                 </div>
-            </form>
+            </div>
         </BottomSheet>
     );
 }

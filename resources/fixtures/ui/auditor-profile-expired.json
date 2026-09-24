@@ -1,7 +1,10 @@
 {
     "component": "auditor/profile",
     "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": ["accreditation.renew"],
         "section": "accreditation",
         "auditor": {
             "name": "Diane Uwase, CPA",
@@ -14,18 +17,15 @@
         "on_time_pct": 96,
         "jobs_done": 9,
         "accreditation": {
+            "status": "expired",
+            "revision": 6,
             "licence": "ICPAR/P-2026/0481",
             "expires_on": "2026-09-21",
             "days_left": -12,
-            "status": "expired",
-            "renewal": {
+            "submission": {
                 "status": "rejected",
                 "id": "REQ-2026-0388",
-                "reason": "the certificate scan is unreadable",
-                "submit": {
-                    "url": "/preview/auditor-profile-pending",
-                    "method": "post"
-                }
+                "reason": "the certificate scan is unreadable"
             }
         },
         "availability": {
@@ -68,6 +68,20 @@
                     "url": "/preview/auditor-profile-availability",
                     "method": "get"
                 }
+            },
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "submit": {
+                "url": "/preview/auditor-profile-pending",
+                "method": "post"
+            },
+            "withdraw": {
+                "url": "/preview/auditor-profile",
+                "method": "post"
             }
         }
     }

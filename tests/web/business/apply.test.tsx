@@ -112,6 +112,7 @@ const operation = (
     data: null,
     revision: 4,
     policy_version: 'engineering-2026-09-23.4',
+    recorded_at: '2026-09-24T09:15:58+02:00',
     server_time: '2026-09-24T09:16:00+02:00',
     allowed_actions: ALL,
     field_errors: {},

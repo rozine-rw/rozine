@@ -99,6 +99,8 @@ type JobHeaderProps = {
     /** The clock's length, shown while a job is only offered. */
     hours?: number;
     steps?: ReactNode;
+    /** Whether the clock shows; work stopped by a blocking conflict has none to run. */
+    clock?: boolean;
 };
 
 /** A Flash file's header (design L1021–1035): back, eyebrow, business, clock and step bar. */
@@ -112,6 +114,7 @@ export function JobHeader({
     dueAt,
     hours,
     steps,
+    clock = true,
 }: JobHeaderProps) {
     const { t } = useTranslation();
 
@@ -135,12 +138,14 @@ export function JobHeader({
                         })}
                     </p>
                 </div>
-                <ClockChip
-                    serverTime={serverTime}
-                    dueAt={dueAt}
-                    hours={hours}
-                    size="sheet"
-                />
+                {clock && (
+                    <ClockChip
+                        serverTime={serverTime}
+                        dueAt={dueAt}
+                        hours={hours}
+                        size="sheet"
+                    />
+                )}
             </div>
             {steps}
         </>

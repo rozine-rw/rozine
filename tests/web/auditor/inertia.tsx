@@ -1,10 +1,12 @@
 import { useRef, useState } from 'react';
 import type { ComponentProps } from 'react';
 import { vi } from 'vite-plus/test';
+import type { AuditorOperationResource } from '@/types/auditor';
 
 /**
  * A recording stand-in for `@inertiajs/react` shared by the Auditor tests. Every command the pages
  * send is captured with its payload, so tests assert what reaches the server rather than how.
+ * JSON commands go through `useHttp`, answered in order by the responders a test queues.
  */
 type VisitOptions = {
     onStart?: () => void;
@@ -15,27 +17,48 @@ type VisitOptions = {
 
 type Transform = (data: Record<string, unknown>) => Record<string, unknown>;
 
+type HttpOptions = {
+    onError?: (errors: Record<string, string>) => void;
+    onHttpException?: (response: {
+        status: number;
+        data: string;
+        headers: Record<string, string>;
+    }) => void;
+};
+
+export type Responder = (options: HttpOptions) => Promise<unknown>;
+
 export const inertia = {
     posts: [] as {
         url: string;
         data: Record<string, unknown>;
         options: VisitOptions;
     }[],
-    reloads: [] as Record<string, unknown>[],
+    reloads: [] as (Record<string, unknown> | undefined)[],
+    visits: [] as { url: string }[],
     errors: {} as Record<string, string>,
     processing: false,
     /** Hold `onFinish` so a test can see the in-flight state. */
     hold: false,
     finish: [] as (() => void)[],
     poll: { start: vi.fn(), stop: vi.fn() },
+    /** Every JSON request sent through `useHttp`, with the body it carried. */
+    calls: [] as { url: string; method: string; body: unknown }[],
+    queue: [] as Responder[],
+    /** Field errors `useHttp` reports after a 422. */
+    httpErrors: {} as Record<string, string>,
     reset() {
         this.posts = [];
         this.reloads = [];
+        this.visits = [];
         this.errors = {};
         this.processing = false;
         this.hold = false;
         this.finish = [];
         this.poll = { start: vi.fn(), stop: vi.fn() };
+        this.calls = [];
+        this.queue = [];
+        this.httpErrors = {};
     },
 };
 
@@ -74,12 +97,49 @@ export const router = {
         inertia.posts.push({ url, data, options });
         run(options);
     },
-    reload: (options: Record<string, unknown>) => {
+    reload: (options?: Record<string, unknown>) => {
         inertia.reloads.push(options);
+    },
+    visit: (link: { url: string }) => {
+        inertia.visits.push({ url: link.url });
     },
 };
 
 export const usePoll = () => inertia.poll;
+
+export function useHttp() {
+    const body = useRef<() => unknown>(() => ({}));
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+    return {
+        errors,
+        clearErrors: () => setErrors({}),
+        transform: (callback: () => unknown) => {
+            body.current = callback;
+        },
+        submit: async (
+            route: { url: string; method: string },
+            options: HttpOptions,
+        ) => {
+            inertia.calls.push({
+                url: route.url,
+                method: route.method,
+                body: body.current(),
+            });
+            const respond = inertia.queue.shift();
+            const result = await (respond
+                ? respond(options)
+                : new Promise(() => undefined));
+
+            if (result === undefined) {
+                setErrors(inertia.httpErrors);
+                options.onError?.(inertia.httpErrors);
+            }
+
+            return result;
+        },
+    };
+}
 
 export function useForm<T extends Record<string, unknown>>(
     ...args: [T] | [string, T]
@@ -111,3 +171,57 @@ export function useForm<T extends Record<string, unknown>>(
         },
     };
 }
+
+/* ------------------------------------------------------------------------------------------ */
+/* Responders                                                                                   */
+/* ------------------------------------------------------------------------------------------ */
+
+/** The shared operation Resource, completed unless the test says otherwise. */
+export const operation = (
+    overrides: Partial<AuditorOperationResource> = {},
+): AuditorOperationResource => ({
+    operation_id: 'op-1',
+    status: 'completed',
+    code: 'AUDIT_STEP_SAVED',
+    data: { next: { url: '/preview/next', method: 'get' } },
+    revision: 8,
+    policy_version: 'engineering-2026-09-24.1',
+    recorded_at: '2026-10-03T17:00:02Z',
+    server_time: '2026-10-03T17:00:03Z',
+    allowed_actions: [],
+    field_errors: {},
+    ...overrides,
+});
+
+export const answers =
+    (result: unknown): Responder =>
+    () =>
+        Promise.resolve(result);
+
+/** A 422: the field errors land in `errors` and the request resolves without a body. */
+export const invalid =
+    (errors: Record<string, string>): Responder =>
+    () => {
+        inertia.httpErrors = errors;
+
+        return Promise.resolve(undefined);
+    };
+
+export const fails =
+    (
+        status: number,
+        body?: unknown,
+        headers: Record<string, string> = {},
+    ): Responder =>
+    (options) => {
+        options.onHttpException?.({
+            status,
+            data: body === undefined ? '' : JSON.stringify(body),
+            headers,
+        });
+
+        return Promise.reject(new Error(`HTTP ${status}`));
+    };
+
+export const offline = (): Responder => () =>
+    Promise.reject(new Error('Network error'));

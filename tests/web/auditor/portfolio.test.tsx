@@ -133,16 +133,37 @@ describe('Auditor Portfolio', () => {
 
         await user.click(within(sheet).getByRole('radio', { name: 'Other' }));
         await user.click(
+            within(sheet).getByLabelText('Factual explanation (required)'),
+        );
+        await user.paste('My cousin keeps their books.');
+        await user.click(
             within(sheet).getByRole('button', { name: 'Declare interest' }),
         );
 
-        expect(inertia.posts[0]).toMatchObject({
+        expect(inertia.calls[0]).toMatchObject({
             url: '/preview/auditor-portfolio-conflict',
-            data: { file_id: 'mr_greenleaf', kind: 'other', note: '' },
+            body: {
+                assignment_id: 'mr_greenleaf',
+                expected_revision: 5,
+                kind: 'other',
+                note: 'My cousin keeps their books.',
+                identity_context_revision: 3,
+            },
         });
 
         await user.click(within(sheet).getByRole('button', { name: 'Cancel' }));
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('lists assigned files without a way to declare when the server does not allow it', () => {
+        render(<AuditorPortfolio {...props()} allowed_actions={[]} />);
+
+        expect(
+            screen.queryByRole('button', { name: 'GreenLeaf Agro' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByText('Rubavu Foods · RNP-2026-0097'),
+        ).toBeInTheDocument();
     });
 
     it('uses the singular label for one assigned file and reports the outcome', () => {

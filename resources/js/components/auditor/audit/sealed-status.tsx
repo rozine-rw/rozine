@@ -21,13 +21,29 @@ type Stage = {
 };
 
 /**
- * After the seal (co-signature status, MVP-AUDITOR-SCR-06-ST-02). The design has no screen for a
- * sealed report waiting on the business, so this follows the Business app's submitted timeline:
- * sealed, co-signed, published — each from the server's record. A sealed report is immutable; a
- * correction is a linked amendment (AC-03).
+ * After the seal (co-signature status, MVP-AUDITOR-SCR-06-ST-02; auditor-filing-v1 point 6). The
+ * design has no screen for a sealed report waiting on the business, so this follows the Business
+ * app's submitted timeline: sealed, co-signed, published — each from the server's record — with
+ * the seal's opaque report, key and signature references as sent. A sealed report is immutable; a
+ * correction is a new linked amendment, and this report stays as it is (AC-03).
  */
-export function SealedStatus({ stage }: { stage: SealedStage }) {
+export function SealedStatus({
+    stage,
+    amend,
+}: {
+    stage: SealedStage;
+    /** Starts a linked amendment, when the server allows one. */
+    amend: { run: () => void; disabled: boolean } | null;
+}) {
     const { t, locale } = useTranslation();
+    const references = [
+        { label: t('auditor.sealed.report_id'), value: stage.report_id },
+        {
+            label: t('auditor.sealed.signature_ref'),
+            value: stage.signature_ref,
+        },
+        { label: t('auditor.sealed.key_id'), value: stage.key_id },
+    ];
     const { cosign } = stage;
     const stages: Stage[] = [
         { key: 'sealed', done: true, when: stage.sealed_at },
@@ -111,18 +127,49 @@ export function SealedStatus({ stage }: { stage: SealedStage }) {
                 <p className="mt-[5px] text-[12px] break-all text-rz-ink tabular-nums">
                     {stage.digest}
                 </p>
+                <dl className="mt-2">
+                    {references.map((row) => (
+                        <div
+                            key={row.label}
+                            className="flex items-baseline justify-between gap-3 py-[3px]"
+                        >
+                            <dt className="shrink-0 text-[10.5px] text-rz-secondary">
+                                {row.label}
+                            </dt>
+                            <dd className="min-w-0 text-right text-[11px] font-semibold break-all text-rz-ink tabular-nums">
+                                {row.value}
+                            </dd>
+                        </div>
+                    ))}
+                </dl>
                 <p className="mt-1.5 text-[10.5px] leading-[1.5] text-[#1e3aff] dark:text-rz-investor-text">
                     {t('auditor.sealed.licence', { licence: stage.licence })}
                 </p>
             </div>
 
-            {stage.amend !== null && (
-                <Link
-                    href={stage.amend}
-                    className="mt-3.5 flex h-11 w-full items-center justify-center rounded-xl border border-rz-border bg-rz-surface text-[13px] font-bold text-rz-slate"
+            {stage.amended_by !== null && (
+                <p className="mt-3.5 rounded-2xl border border-rz-border bg-rz-surface px-3.5 py-3 text-[12px] leading-[1.5] text-rz-slate">
+                    {t('auditor.sealed.amended_by', {
+                        report: stage.amended_by.report_id,
+                    })}{' '}
+                    <Link
+                        href={stage.amended_by.link}
+                        className="font-bold text-rz-accent-app-text"
+                    >
+                        {t('auditor.sealed.open_amendment')}
+                    </Link>
+                </p>
+            )}
+
+            {amend !== null && (
+                <button
+                    type="button"
+                    onClick={amend.run}
+                    disabled={amend.disabled}
+                    className="mt-3.5 flex h-11 w-full items-center justify-center rounded-xl border border-rz-border bg-rz-surface text-[13px] font-bold text-rz-slate disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     {t('auditor.sealed.amend')}
-                </Link>
+                </button>
             )}
         </>
     );

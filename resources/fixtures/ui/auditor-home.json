@@ -1,7 +1,10 @@
 {
     "component": "auditor/home",
     "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": [],
         "auditor": {
             "name": "Diane Uwase, CPA",
             "firm": "Uwase & Co.",
@@ -10,16 +13,25 @@
             "since_year": 2019
         },
         "quality_score": 99,
-        "earned_this_month": { "currency": "RWF", "amount": "644319" },
+        "earned_this_month": {
+            "currency": "RWF",
+            "amount": "644319"
+        },
         "active_deals": 30,
         "licence_expires_on": "2027-03-31",
         "availability": {
             "accepting": true,
             "radius_km": 30,
             "max_active": 3,
-            "toggle": { "url": "/preview/auditor-home", "method": "post" }
+            "toggle": {
+                "url": "/preview/auditor-home",
+                "method": "post"
+            }
         },
-        "nearby": { "count": 1, "closest_km": "11.2" },
+        "nearby": {
+            "count": 1,
+            "closest_km": "11.2"
+        },
         "in_progress": [
             {
                 "id": "fa_murakoze",
@@ -27,7 +39,9 @@
                 "business": "Murakoze Tech",
                 "district": "Kicukiro",
                 "distance_km": "7.7",
-                "deadline": { "due_at": "2026-10-04T13:59:55Z" },
+                "deadline": {
+                    "due_at": "2026-10-04T13:59:55Z"
+                },
                 "step": 1,
                 "steps": 5,
                 "status": "in_progress",
@@ -43,7 +57,9 @@
                 "business": "GreenLeaf Agro",
                 "district": "Gasabo",
                 "distance_km": "8.8",
-                "deadline": { "due_at": "2026-10-04T08:59:55Z" },
+                "deadline": {
+                    "due_at": "2026-10-04T08:59:55Z"
+                },
                 "step": 1,
                 "steps": 5,
                 "status": "in_progress",
@@ -65,7 +81,10 @@
             {
                 "kind": "payout",
                 "at": "2026-10-03T17:00:00Z",
-                "amount": { "currency": "RWF", "amount": "102400" }
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "102400"
+                }
             },
             {
                 "kind": "payment_deferred",
@@ -92,20 +111,46 @@
                 "cause": "A client has not paid"
             }
         ],
-        "wallet": { "available": { "currency": "RWF", "amount": "644319" } },
+        "wallet": {
+            "available": {
+                "currency": "RWF",
+                "amount": "644319"
+            }
+        },
         "unread_notifications": 2,
         "links": {
-            "home": { "url": "/preview/auditor-home", "method": "get" },
-            "jobs": { "url": "/preview/auditor-jobs", "method": "get" },
+            "home": {
+                "url": "/preview/auditor-home",
+                "method": "get"
+            },
+            "jobs": {
+                "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
             "portfolio": {
                 "url": "/preview/auditor-portfolio",
                 "method": "get"
             },
-            "profile": { "url": "/preview/auditor-profile", "method": "get" },
-            "launcher": { "url": "/preview/launcher-auditor", "method": "get" },
-            "statement": { "url": "/preview/auditor-home", "method": "get" },
-            "withdraw": { "url": "/preview/auditor-home", "method": "get" },
-            "notifications": { "url": "/preview/auditor-home", "method": "get" }
+            "profile": {
+                "url": "/preview/auditor-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-auditor",
+                "method": "get"
+            },
+            "statement": {
+                "url": "/preview/auditor-home",
+                "method": "get"
+            },
+            "withdraw": {
+                "url": "/preview/auditor-home",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/preview/auditor-home",
+                "method": "get"
+            }
         }
     }
 }

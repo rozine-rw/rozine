@@ -1,7 +1,14 @@
 {
     "component": "auditor/jobs",
     "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": [
+            "assignment.accept",
+            "assignment.decline",
+            "conflict.declare"
+        ],
         "radius_km": 30,
         "flash_hours": 24,
         "eligible": [],
@@ -122,7 +129,33 @@
             "launcher": {
                 "url": "/preview/launcher-auditor",
                 "method": "get"
+            },
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
+                "method": "get"
             }
-        }
+        },
+        "decline_options": [
+            {
+                "code": "unavailable",
+                "label": "Not available inside the clock",
+                "requires_explanation": false
+            },
+            {
+                "code": "capacity",
+                "label": "At capacity with active work",
+                "requires_explanation": false
+            },
+            {
+                "code": "location",
+                "label": "Cannot reach the site",
+                "requires_explanation": false
+            },
+            {
+                "code": "other",
+                "label": "Other reason",
+                "requires_explanation": true
+            }
+        ]
     }
 }

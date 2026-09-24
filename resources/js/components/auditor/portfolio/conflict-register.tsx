@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuditorCommands } from '@/components/auditor/commands';
 import { ConflictSheet } from '@/components/auditor/sheets/conflict-sheet';
 import { DIVIDER } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
@@ -20,8 +21,10 @@ export function ConflictRegister({
     conflicts: AuditorPortfolioProps['conflicts'];
 }) {
     const { t, locale } = useTranslation();
+    const center = useAuditorCommands();
     const [file, setFile] = useState<AssignedFile | null>(null);
     const count = conflicts.files.length;
+    const canDeclare = center.allowed('conflict.declare');
 
     return (
         <section className="mt-3 rounded-[20px] border border-rz-border bg-rz-surface p-4">
@@ -36,25 +39,30 @@ export function ConflictRegister({
                     {t('auditor.conflict.none_assigned')}
                 </p>
             ) : (
-                <>
-                    <p className="mt-[11px] text-[10px] font-bold tracking-[.05em] text-rz-secondary uppercase">
-                        {count === 1
-                            ? t('auditor.conflict.options_one')
-                            : t('auditor.conflict.options_other', { count })}
-                    </p>
-                    <div className="rz-scroll mt-[7px] flex max-h-[132px] flex-wrap gap-[7px] overflow-y-auto">
-                        {conflicts.files.map((assigned) => (
-                            <button
-                                key={assigned.id}
-                                type="button"
-                                onClick={() => setFile(assigned)}
-                                className="h-[34px] rounded-[10px] border border-rz-border bg-rz-surface px-3 text-[11.5px] font-semibold whitespace-nowrap text-rz-ink"
-                            >
-                                {assigned.business}
-                            </button>
-                        ))}
-                    </div>
-                </>
+                canDeclare && (
+                    <>
+                        <p className="mt-[11px] text-[10px] font-bold tracking-[.05em] text-rz-secondary uppercase">
+                            {count === 1
+                                ? t('auditor.conflict.options_one')
+                                : t('auditor.conflict.options_other', {
+                                      count,
+                                  })}
+                        </p>
+                        <div className="rz-scroll mt-[7px] flex max-h-[132px] flex-wrap gap-[7px] overflow-y-auto">
+                            {conflicts.files.map((assigned) => (
+                                <button
+                                    key={assigned.id}
+                                    type="button"
+                                    onClick={() => setFile(assigned)}
+                                    disabled={!center.idle}
+                                    className="h-[34px] rounded-[10px] border border-rz-border bg-rz-surface px-3 text-[11.5px] font-semibold whitespace-nowrap text-rz-ink disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    {assigned.business}
+                                </button>
+                            ))}
+                        </div>
+                    </>
+                )
             )}
             {conflicts.record.length > 0 && (
                 <div className="mt-[11px]">
@@ -101,7 +109,7 @@ export function ConflictRegister({
             {file !== null && (
                 <ConflictSheet
                     business={file.business}
-                    fileId={file.id}
+                    assignment={{ id: file.id, revision: file.revision }}
                     action={conflicts.declare}
                     onClose={() => setFile(null)}
                 />

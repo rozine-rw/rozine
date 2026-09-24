@@ -1,7 +1,10 @@
 {
     "component": "auditor/audit",
     "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": ["audit.save_step", "conflict.declare"],
         "audit": {
             "id": "fa_huye",
             "kind": "flash",
@@ -13,7 +16,8 @@
                 "due_at": "2026-10-04T13:59:55Z"
             },
             "revision": 7,
-            "reassigned_from": null
+            "reassigned_from": null,
+            "amends": null
         },
         "steps": [
             {
@@ -64,6 +68,10 @@
             "back": {
                 "url": "/preview/auditor-jobs",
                 "method": "get"
+            },
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
+                "method": "get"
             }
         },
         "actions": {
@@ -74,16 +82,44 @@
             "conflict": {
                 "url": "/preview/auditor-jobs-conflict",
                 "method": "post"
+            },
+            "step_up": {
+                "url": "/preview/auditor-audit-seal-step-up",
+                "method": "post"
+            },
+            "seal": {
+                "url": "/preview/auditor-audit-sealed",
+                "method": "post"
+            },
+            "request_changes": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "reject": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "amend": {
+                "url": "/preview/auditor-audit-amendment",
+                "method": "post"
             }
         },
         "outcome": null,
         "jobs": {
+            "contract_version": "auditor-filing-v1",
+            "identity_context_revision": 3,
             "server_time": "2026-10-03T17:00:00Z",
+            "allowed_actions": [
+                "assignment.accept",
+                "assignment.decline",
+                "conflict.declare"
+            ],
             "radius_km": 30,
             "flash_hours": 24,
             "eligible": [
                 {
                     "id": "fa_huye",
+                    "revision": 2,
                     "business": "Huye Motors",
                     "sector": "logistics",
                     "district": "Gasabo",
@@ -233,8 +269,38 @@
                 "launcher": {
                     "url": "/preview/launcher-auditor",
                     "method": "get"
+                },
+                "operation": {
+                    "url": "/preview/auditor-operation-{request_id}",
+                    "method": "get"
                 }
-            }
+            },
+            "decline_options": [
+                {
+                    "code": "unavailable",
+                    "label": "Not available inside the clock",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "capacity",
+                    "label": "At capacity with active work",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "location",
+                    "label": "Cannot reach the site",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "other",
+                    "label": "Other reason",
+                    "requires_explanation": true
+                }
+            ]
+        },
+        "assignment": {
+            "id": "asg_fa_huye",
+            "revision": 4
         }
     }
 }

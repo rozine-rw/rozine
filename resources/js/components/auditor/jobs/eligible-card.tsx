@@ -1,46 +1,56 @@
-import { Link, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { Link } from '@inertiajs/react';
 import { useAgo } from '@/components/auditor/clock';
+import { useAuditorCommands } from '@/components/auditor/commands';
 import { useJobCommands } from '@/components/auditor/job-commands';
 import { compactRwf } from '@/components/auditor/money';
 import { SectorTile, StatTile } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
-import type { EligibleJob } from '@/types/auditor';
+import type {
+    AuditorAllowedAction,
+    DeclineReason,
+    EligibleJob,
+    ServerOption,
+} from '@/types/auditor';
 
 type EligibleCardProps = {
     job: EligibleJob;
     serverTime: string;
     flashHours: number;
+    allowed: (action: AuditorAllowedAction) => boolean;
+    declineOptions: ServerOption<DeclineReason>[];
 };
 
 /**
  * One open Flash Audit (design L218–239). The figures are the engine's; accepting asks the server,
  * which decides whether this partner still gets the file. Decline and conflict sit under the
- * accept button: the design has neither, and the brief requires both (SCR-01-ST-03, AC-08).
+ * accept button: the design has neither, and the brief requires both (SCR-01-ST-03, AC-08). Each
+ * command shows only when the page's `allowed_actions` lists it.
  */
 export function EligibleCard({
     job,
     serverTime,
     flashHours,
+    allowed,
+    declineOptions,
 }: EligibleCardProps) {
     const { t } = useTranslation();
     const ago = useAgo(serverTime);
-    const [accepting, setAccepting] = useState(false);
+    const center = useAuditorCommands();
     const commands = useJobCommands({
-        fileId: job.id,
+        assignment: { id: job.id, revision: job.revision },
         business: job.business,
-        actions: job.actions,
+        allowed,
+        conflict: job.actions.conflict,
+        decline: { route: job.actions.decline, options: declineOptions },
     });
 
     const accept = () =>
-        router.post(
-            job.actions.accept.url,
-            {},
-            {
-                onStart: () => setAccepting(true),
-                onFinish: () => setAccepting(false),
-            },
-        );
+        center.send({
+            name: 'assignment.accept',
+            business: job.business,
+            route: job.actions.accept,
+            payload: { assignment_id: job.id, expected_revision: job.revision },
+        });
 
     return (
         <article
@@ -90,16 +100,20 @@ export function EligibleCard({
                     {t('auditor.jobs.view_file')}
                 </span>
             </Link>
-            <button
-                type="button"
-                onClick={accept}
-                disabled={accepting}
-                aria-busy={accepting || undefined}
-                className="mt-3 h-[46px] w-full cursor-pointer rounded-xl bg-rz-accent-fill text-[14px] font-bold text-white disabled:cursor-wait disabled:opacity-80"
-            >
-                {t('auditor.jobs.accept', { hours: flashHours })}
-            </button>
-            <div className="mt-2.5">{commands.links}</div>
+            {allowed('assignment.accept') && (
+                <button
+                    type="button"
+                    onClick={accept}
+                    disabled={!center.idle}
+                    aria-busy={center.busy || undefined}
+                    className="mt-3 h-[46px] w-full cursor-pointer rounded-xl bg-rz-accent-fill text-[14px] font-bold text-white disabled:cursor-wait disabled:opacity-80"
+                >
+                    {t('auditor.jobs.accept', { hours: flashHours })}
+                </button>
+            )}
+            {commands.links !== null && (
+                <div className="mt-2.5">{commands.links}</div>
+            )}
             {commands.sheet}
         </article>
     );

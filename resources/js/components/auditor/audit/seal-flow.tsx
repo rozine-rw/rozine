@@ -1,22 +1,35 @@
-import { useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { Link, router } from '@inertiajs/react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import type { ReactNode } from 'react';
-import { StepEyebrow, StepHeading } from '@/components/auditor/audit/parts';
+import { EvidenceList } from '@/components/auditor/audit/evidence';
+import {
+    StepEyebrow,
+    StepHeading,
+    onlyDigits,
+} from '@/components/auditor/audit/parts';
 import type { StepContext } from '@/components/auditor/audit/parts';
+import { useStepUp } from '@/components/auditor/audit/use-step-up';
+import {
+    AuditorCommandNotice,
+    refusalNeedsFreshFacts,
+    useAuditorCommands,
+    useRefusalText,
+    useSheetPresence,
+} from '@/components/auditor/commands';
 import {
     NOTE_FIELD,
     ReasonSheet,
 } from '@/components/auditor/sheets/reason-sheet';
 import { DIVIDER } from '@/components/auditor/ui';
-import { FieldError } from '@/components/rozine/form';
+import { ErrorBanner, FieldError } from '@/components/rozine/form';
 import { useTranslation } from '@/hooks/use-translation';
+import { fallbackCode } from '@/lib/rozine/operation';
 import { cn } from '@/lib/utils';
-import type { SealStage } from '@/types/auditor';
+import type { RouteAction } from '@/types';
+import type { AuditorPreviewOutcome, SealStage } from '@/types/auditor';
 
-/** The design's re-authentication PIN length (L1469–1485). */
-export const PIN_LENGTH = 4;
-
-const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'back'];
+/** A confirmed authenticator's one-time code (auditor-filing-v1 point 2). */
+export const CODE_LENGTH = 6;
 
 const SUMMARY_TONE = {
     ok: 'text-rz-positive',
@@ -24,13 +37,180 @@ const SUMMARY_TONE = {
     neutral: 'text-rz-ink',
 } as const;
 
-type Nested = 'preview' | 'pin' | 'suggest' | 'reject' | null;
+type Nested = 'preview' | 'code' | 'request_changes' | 'reject' | null;
 
 /**
- * Sign off and seal (design L1405–1496). The partner records factual findings and an assessment
- * note, previews exactly what will be sealed, re-authenticates, and seals. The server checks the
- * PIN, licence standing, procedure and digest; the business co-signs afterwards. Monthly reports
- * can instead go back to the business or be rejected, each with a recorded reason.
+ * Where the authenticator entry stands. A code is never kept after its request: every state
+ * after an attempt asks for a new one.
+ */
+type Entry =
+    | { kind: 'ready' }
+    | { kind: 'wrong_code'; message: string | null }
+    | { kind: 'expired' }
+    | { kind: 'throttled'; seconds: number | null }
+    | { kind: 'failed'; message: string };
+
+const STEP_UP_REFUSALS = new Set(['STEP_UP_INVALID', 'STEP_UP_EXPIRED']);
+
+const initialEntry = (preview: AuditorPreviewOutcome | undefined): Entry => {
+    if (preview?.kind !== 'step_up') {
+        return { kind: 'ready' };
+    }
+
+    switch (preview.state) {
+        case 'wrong_code':
+            return { kind: 'wrong_code', message: null };
+        case 'expired':
+            return { kind: 'expired' };
+        case 'throttled':
+            return { kind: 'throttled', seconds: preview.retry_after ?? null };
+        default:
+            return { kind: 'ready' };
+    }
+};
+
+const initialNested = (preview: AuditorPreviewOutcome | undefined): Nested => {
+    if (preview?.kind === 'step_up') {
+        return 'code';
+    }
+
+    return preview?.kind === 'sheet' && preview.sheet !== 'decline'
+        ? preview.sheet
+        : null;
+};
+
+const formatWait = (seconds: number): string =>
+    `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+
+/** The `Retry-After` wait, counted down from the response; it ends by handing back the entry. */
+function Throttled({
+    seconds,
+    onDone,
+}: {
+    seconds: number | null;
+    onDone: () => void;
+}) {
+    const { t } = useTranslation();
+    const [left, setLeft] = useState(seconds);
+    const done = useEffectEvent(onDone);
+
+    useEffect(() => {
+        if (left === null) {
+            return;
+        }
+
+        if (left <= 0) {
+            done();
+
+            return;
+        }
+
+        const timer = window.setTimeout(() => setLeft(left - 1), 1000);
+
+        return () => window.clearTimeout(timer);
+    }, [left]);
+
+    return (
+        <p
+            role="timer"
+            className="mt-3 text-[12px] font-semibold text-rz-danger-text"
+        >
+            {left === null
+                ? t('auditor.seal.code_throttled_later')
+                : t('auditor.seal.code_throttled', { wait: formatWait(left) })}
+        </p>
+    );
+}
+
+/** The six-digit entry: one numeric field drawn as six cells. */
+function CodeCells({
+    value,
+    disabled,
+    invalid,
+    onChange,
+}: {
+    value: string;
+    disabled: boolean;
+    invalid: boolean;
+    onChange: (value: string) => void;
+}) {
+    const { t } = useTranslation();
+
+    return (
+        <div className="relative mx-auto mt-[18px] w-fit">
+            <input
+                id="auditor-step-up-code"
+                value={value}
+                disabled={disabled}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={CODE_LENGTH}
+                aria-label={t('auditor.seal.code_label')}
+                aria-invalid={invalid || undefined}
+                aria-describedby="auditor-step-up-message"
+                onChange={(event) =>
+                    onChange(
+                        onlyDigits(event.target.value).slice(0, CODE_LENGTH),
+                    )
+                }
+                className="peer absolute inset-0 z-10 cursor-text opacity-0 disabled:cursor-not-allowed"
+            />
+            <div
+                aria-hidden
+                className="flex gap-2 rounded-2xl peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-rz-focus-border"
+            >
+                {Array.from({ length: CODE_LENGTH }, (_, index) => (
+                    <span
+                        key={index}
+                        className={cn(
+                            'flex h-[52px] w-[42px] items-center justify-center rounded-xl border-[1.5px] bg-rz-surface text-[22px] font-bold text-rz-ink tabular-nums',
+                            invalid
+                                ? 'border-[#f4c9c6] dark:border-[rgba(255,107,111,.4)]'
+                                : index === value.length
+                                  ? 'border-[#0c1830] dark:border-rz-ink'
+                                  : 'border-rz-border',
+                            disabled && 'bg-rz-page dark:bg-rz-surface-muted',
+                        )}
+                    >
+                        {value[index] ?? ''}
+                    </span>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+/** The seal's nested sheet: registered as open so the page's notice steps aside. */
+function SealSheet({ children }: { children: ReactNode }) {
+    useSheetPresence();
+
+    return <>{children}</>;
+}
+
+type SealFlowOptions = {
+    stage: SealStage;
+    context: StepContext;
+    business: string;
+    /** The audited month, or the empty string for a Flash Audit. */
+    period: string;
+    canContinue: boolean;
+    actions: {
+        step_up: RouteAction;
+        seal: RouteAction;
+        request_changes: RouteAction;
+        reject: RouteAction;
+    };
+    preview?: AuditorPreviewOutcome;
+};
+
+/**
+ * Sign off and seal (design L1405–1496; auditor-filing-v1 points 2, 4 and 6). The partner records
+ * an assessment note beside the server's factual findings, previews exactly what will be sealed —
+ * findings, evidence, versions and digest — and confirms it is them with a six-digit code from
+ * their confirmed authenticator. That code is exchanged for a single-use proof; the seal carries
+ * the proof and the pinned versions, and the server signs. A stale digest or version asks for a
+ * new preview and a new code; a monthly filing can instead go back to the business or be
+ * rejected, each with a coded reason and a factual explanation — never a credit verdict.
  */
 export function useSealFlow({
     stage,
@@ -38,44 +218,127 @@ export function useSealFlow({
     business,
     period,
     canContinue,
-}: {
-    stage: SealStage;
-    context: StepContext;
-    business: string;
-    /** The audited month, or the empty string for a Flash Audit. */
-    period: string;
-    canContinue: boolean;
-}): { body: ReactNode; footer: ReactNode; nested: ReactNode } {
+    actions,
+    preview,
+}: SealFlowOptions): { body: ReactNode; footer: ReactNode; nested: ReactNode } {
     const { t } = useTranslation();
-    const [nested, setNested] = useState<Nested>(null);
-    const form = useForm({ note: stage.note.value, pin: '' });
+    const center = useAuditorCommands();
+    const refusalText = useRefusalText();
+    const stepUp = useStepUp(actions.step_up);
+    const [nested, setNested] = useState<Nested>(() => initialNested(preview));
+    const [note, setNote] = useState(stage.note.value);
+    const [code, setCode] = useState('');
+    const [entry, setEntry] = useState<Entry>(() => initialEntry(preview));
+    const [stale, setStale] = useState<string | null>(null);
+    const initialReason = preview?.kind === 'sheet' ? preview.reason : null;
+
     const close = () => {
         setNested(null);
-        form.setData('pin', '');
+        setCode('');
     };
     const noteReady =
-        !stage.note.required || form.data.note.trim().length >= stage.note.min;
-    const ready = canContinue && noteReady;
+        !stage.note.required || note.trim().length >= stage.note.min;
+    const ready = canContinue && noteReady && center.idle;
+    const canSeal = center.allowed('audit.seal');
+    const canRequestChanges =
+        stage.reason_options !== null &&
+        center.allowed('audit.request_changes');
+    const canReject =
+        stage.reason_options !== null && center.allowed('audit.reject');
+    const throttled = entry.kind === 'throttled';
+    const busy = stepUp.checking || center.busy;
 
-    const press = (key: string) => {
-        if (key === 'back') {
-            form.setData('pin', form.data.pin.slice(0, -1));
-        } else if (form.data.pin.length < PIN_LENGTH) {
-            form.setData('pin', form.data.pin + key);
+    const seal = (proof: string) =>
+        center.send(
+            {
+                name: 'audit.seal',
+                business,
+                route: actions.seal,
+                payload: {
+                    audit_id: context.auditId,
+                    expected_revision: context.revision,
+                    digest: stage.digest,
+                    procedure_version: stage.procedure_version,
+                    findings_version: stage.findings_version,
+                    evidence_version: stage.evidence_version,
+                    evidence_ids: stage.evidence.map(
+                        (item) => item.evidence_id,
+                    ),
+                    note: note.trim(),
+                    step_up: { proof },
+                },
+            },
+            {
+                onCompleted: close,
+                onRefused: (refusal) => {
+                    if (STEP_UP_REFUSALS.has(refusal)) {
+                        setEntry({ kind: 'expired' });
+
+                        return true;
+                    }
+
+                    close();
+
+                    return false;
+                },
+            },
+        );
+
+    const confirm = async () => {
+        /* The code leaves the page in this one request and is not kept for any retry. */
+        const typed = code;
+
+        setCode('');
+
+        const result = await stepUp.verify({
+            audit_id: context.auditId,
+            expected_revision: context.revision,
+            digest: stage.digest,
+            identity_context_revision: context.identityContextRevision,
+            request_id: crypto.randomUUID(),
+            code: typed,
+        });
+
+        switch (result.kind) {
+            case 'proof':
+                setEntry({ kind: 'ready' });
+                seal(result.proof.proof);
+
+                return;
+            case 'invalid':
+                setEntry({ kind: 'wrong_code', message: result.message });
+
+                return;
+            case 'unreachable':
+                setEntry({
+                    kind: 'failed',
+                    message: t('auditor.seal.code_unreachable'),
+                });
+
+                return;
+        }
+
+        const refusal = result.code ?? fallbackCode(result.status);
+
+        if (result.status === 429) {
+            setEntry({ kind: 'throttled', seconds: result.retryAfter });
+        } else if (refusalNeedsFreshFacts(refusal, result.status)) {
+            setStale(refusal);
+            close();
+            router.reload();
+        } else {
+            setEntry({
+                kind: 'failed',
+                message: refusalText(refusal, result.status),
+            });
         }
     };
 
-    const seal = () => {
-        form.transform((data) => ({
-            ...data,
-            revision: context.revision,
-            digest: stage.digest,
-        }));
-        form.post(stage.seal.url, {
-            preserveScroll: true,
-            onError: () => form.setData('pin', ''),
-        });
-    };
+    const reasonFields = (fields: { reason_code: string; reason: string }) => ({
+        audit_id: context.auditId,
+        expected_revision: context.revision,
+        ...fields,
+    });
 
     const noteStatus = !stage.note.required
         ? t('auditor.seal.note_optional')
@@ -85,6 +348,11 @@ export function useSealFlow({
 
     const body = (
         <>
+            {stale !== null && (
+                <div className="mb-3.5">
+                    <ErrorBanner>{refusalText(stale, 409)}</ErrorBanner>
+                </div>
+            )}
             <StepHeading
                 title={t('auditor.seal.title')}
                 lead={t('auditor.seal.lead')}
@@ -136,51 +404,58 @@ export function useSealFlow({
             </p>
             <textarea
                 id="auditor-seal-note"
-                value={form.data.note}
+                value={note}
                 maxLength={stage.note.max}
-                onChange={(event) => form.setData('note', event.target.value)}
+                onChange={(event) => setNote(event.target.value)}
                 placeholder={t('auditor.seal.note_placeholder')}
-                aria-invalid={form.errors.note ? true : undefined}
+                aria-invalid={center.errors.note ? true : undefined}
                 className={cn(NOTE_FIELD, 'mt-2 min-h-[84px]')}
             />
             <p className="mt-1 text-right text-[10.5px] text-rz-secondary">
                 {t('auditor.seal.note_count', {
-                    count: form.data.note.length,
+                    count: note.length,
                     max: stage.note.max,
                 })}
             </p>
             <FieldError id="auditor-seal-note-error">
-                {form.errors.note}
+                {center.errors.note}
             </FieldError>
         </>
     );
 
     const footer = (
         <>
-            <button
-                type="button"
-                disabled={!ready}
-                onClick={() => setNested('preview')}
-                className="h-[50px] w-full rounded-2xl bg-rz-accent-fill text-[14.5px] font-bold text-white disabled:cursor-not-allowed disabled:bg-rz-disabled disabled:text-rz-secondary"
-            >
-                {t('auditor.seal.preview')}
-            </button>
-            {(stage.suggest !== null || stage.reject !== null) && (
+            {canSeal && (
+                <button
+                    type="button"
+                    disabled={!ready}
+                    onClick={() => {
+                        setStale(null);
+                        setNested('preview');
+                    }}
+                    className="h-[50px] w-full rounded-2xl bg-rz-accent-fill text-[14.5px] font-bold text-white disabled:cursor-not-allowed disabled:bg-rz-disabled disabled:text-rz-secondary"
+                >
+                    {t('auditor.seal.preview')}
+                </button>
+            )}
+            {(canRequestChanges || canReject) && (
                 <div className="flex gap-[9px]">
-                    {stage.suggest !== null && (
+                    {canRequestChanges && (
                         <button
                             type="button"
-                            onClick={() => setNested('suggest')}
-                            className="h-11 flex-1 rounded-xl border border-rz-border bg-rz-surface text-[13px] font-bold text-rz-slate"
+                            disabled={!center.idle}
+                            onClick={() => setNested('request_changes')}
+                            className="h-11 flex-1 rounded-xl border border-rz-border bg-rz-surface text-[13px] font-bold text-rz-slate disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {t('auditor.seal.suggest')}
                         </button>
                     )}
-                    {stage.reject !== null && (
+                    {canReject && (
                         <button
                             type="button"
+                            disabled={!center.idle}
                             onClick={() => setNested('reject')}
-                            className="h-11 flex-1 rounded-xl border border-[#f2c4c4] bg-rz-surface text-[13px] font-bold text-[#d0342c] dark:border-[rgba(255,107,111,.3)] dark:text-rz-danger-text"
+                            className="h-11 flex-1 rounded-xl border border-[#f2c4c4] bg-rz-surface text-[13px] font-bold text-[#d0342c] disabled:cursor-not-allowed disabled:opacity-60 dark:border-[rgba(255,107,111,.3)] dark:text-rz-danger-text"
                         >
                             {t('auditor.seal.reject')}
                         </button>
@@ -191,37 +466,71 @@ export function useSealFlow({
     );
 
     let overlay: ReactNode = null;
+    const reasons = stage.reason_options;
 
-    if (nested === 'suggest' && stage.suggest !== null) {
+    if (nested === 'request_changes' && canRequestChanges && reasons !== null) {
         overlay = (
             <ReasonSheet
                 title={t('auditor.seal.suggest')}
                 lead={t('auditor.seal.suggest_lead', { business })}
-                label={t('auditor.decline.label')}
                 placeholder={t('auditor.seal.suggest_placeholder')}
                 submitLabel={t('auditor.seal.suggest_submit')}
-                action={stage.suggest}
-                payload={{ revision: context.revision }}
+                options={reasons.request_changes}
+                initialReason={initialReason}
+                onSubmit={(fields) =>
+                    center.send(
+                        {
+                            name: 'audit.request_changes',
+                            business,
+                            route: actions.request_changes,
+                            payload: reasonFields(fields),
+                        },
+                        { onCompleted: close },
+                    )
+                }
                 onClose={close}
             />
         );
-    } else if (nested === 'reject' && stage.reject !== null) {
+    } else if (nested === 'reject' && canReject && reasons !== null) {
         overlay = (
             <ReasonSheet
                 title={t('auditor.seal.reject')}
                 lead={t('auditor.seal.reject_lead', { business })}
-                label={t('auditor.decline.label')}
                 placeholder={t('auditor.seal.reject_placeholder')}
                 submitLabel={t('auditor.seal.reject_submit')}
-                action={stage.reject}
-                payload={{ revision: context.revision }}
+                options={reasons.reject}
+                initialReason={initialReason}
                 destructive
+                onSubmit={(fields) =>
+                    center.send(
+                        {
+                            name: 'audit.reject',
+                            business,
+                            route: actions.reject,
+                            payload: reasonFields(fields),
+                        },
+                        { onCompleted: close },
+                    )
+                }
                 onClose={close}
             />
         );
-    } else if (nested === 'preview' || nested === 'pin') {
+    } else if ((nested === 'preview' || nested === 'code') && canSeal) {
+        const notice = center.notice;
+        const ownNotice =
+            notice?.kind === 'refused' && STEP_UP_REFUSALS.has(notice.code);
+        let message: string | null = null;
+
+        if (entry.kind === 'wrong_code') {
+            message = entry.message ?? t('auditor.seal.code_wrong');
+        } else if (entry.kind === 'expired') {
+            message = t('auditor.seal.code_expired');
+        } else if (entry.kind === 'failed') {
+            message = entry.message;
+        }
+
         overlay = (
-            <>
+            <SealSheet>
                 <div className="fixed inset-0 z-[52] bg-[rgba(8,14,28,.45)] lg:absolute" />
                 <div
                     role="dialog"
@@ -269,11 +578,14 @@ export function useSealFlow({
                         </button>
                     </div>
                     <div className="rz-scroll min-h-0 flex-1 overflow-y-auto px-[18px] pt-4 pb-[18px]">
+                        {!ownNotice && (
+                            <AuditorCommandNotice placement="sheet" />
+                        )}
                         {nested === 'preview' ? (
                             <div className="flex flex-col gap-3">
                                 {stage.findings.map((finding) => (
                                     <section
-                                        key={finding.no}
+                                        key={finding.code}
                                         className="rounded-2xl border border-rz-border bg-[#f8fafc] px-3.5 py-[13px] dark:bg-rz-surface-sunken"
                                     >
                                         <p className="text-[10.5px] font-bold tracking-[.06em] text-rz-ink uppercase">
@@ -285,8 +597,26 @@ export function useSealFlow({
                                         <p className="mt-1.5 text-[12px] leading-[1.55] whitespace-pre-line text-rz-slate">
                                             {finding.body}
                                         </p>
+                                        {finding.evidence_ids.length > 0 && (
+                                            <p className="mt-1.5 text-[10.5px] text-rz-secondary tabular-nums">
+                                                {t('auditor.seal.cites', {
+                                                    ids: finding.evidence_ids.join(
+                                                        ', ',
+                                                    ),
+                                                })}
+                                            </p>
+                                        )}
                                     </section>
                                 ))}
+                                <section>
+                                    <StepEyebrow>
+                                        {t('auditor.seal.evidence')}
+                                    </StepEyebrow>
+                                    <EvidenceList
+                                        items={stage.evidence}
+                                        className="mt-2"
+                                    />
+                                </section>
                                 <div className="rounded-2xl bg-rz-page px-3.5 py-[13px] dark:bg-rz-surface-muted">
                                     <p className="text-[10.5px] font-bold tracking-[.06em] text-[#1e3aff] uppercase dark:text-rz-investor-text">
                                         {t('auditor.seal.digest')}
@@ -295,69 +625,64 @@ export function useSealFlow({
                                         {stage.digest}
                                     </p>
                                     <p className="mt-1.5 text-[10.5px] leading-[1.5] text-[#1e3aff] dark:text-rz-investor-text">
+                                        {t('auditor.seal.versions', {
+                                            procedure: stage.procedure_version,
+                                            findings: stage.findings_version,
+                                            evidence: stage.evidence_version,
+                                        })}
+                                    </p>
+                                    <p className="mt-1.5 text-[10.5px] leading-[1.5] text-[#1e3aff] dark:text-rz-investor-text">
                                         {t('auditor.seal.digest_note')}
                                     </p>
                                 </div>
                             </div>
-                        ) : (
+                        ) : stage.mfa.confirmed ? (
                             <div className="pt-1.5 text-center">
                                 <h4 className="text-[16px] font-bold text-rz-ink">
-                                    {t('auditor.seal.pin_title')}
+                                    {t('auditor.seal.code_title')}
                                 </h4>
                                 <p className="mt-[5px] text-[12.5px] leading-[1.5] text-rz-secondary">
-                                    {t('auditor.seal.pin_lead', {
+                                    {t('auditor.seal.code_lead', {
                                         licence: stage.licence,
                                     })}
                                 </p>
-                                <div
-                                    role="img"
-                                    aria-label={t('auditor.seal.pin_entered', {
-                                        count: form.data.pin.length,
-                                        total: PIN_LENGTH,
-                                    })}
-                                    className="mt-[18px] flex justify-center gap-3"
-                                >
-                                    {Array.from(
-                                        { length: PIN_LENGTH },
-                                        (_, index) => (
-                                            <span
-                                                key={index}
-                                                className={cn(
-                                                    'size-3.5 rounded-full border-[1.5px]',
-                                                    index < form.data.pin.length
-                                                        ? 'border-[#0c1830] bg-[#0c1830] dark:border-rz-ink dark:bg-rz-ink'
-                                                        : 'border-[#c9d2e0] bg-rz-surface dark:border-rz-border',
-                                                )}
-                                            />
-                                        ),
-                                    )}
-                                </div>
-                                <FieldError id="auditor-seal-pin-error">
-                                    {form.errors.pin}
-                                </FieldError>
-                                <div className="mx-auto mt-5 grid max-w-[250px] grid-cols-3 gap-2.5">
-                                    {KEYS.map((key, index) =>
-                                        key === '' ? (
-                                            <span key={index} />
-                                        ) : (
-                                            <button
-                                                key={key}
-                                                type="button"
-                                                onClick={() => press(key)}
-                                                aria-label={
-                                                    key === 'back'
-                                                        ? t(
-                                                              'auditor.seal.pin_delete',
-                                                          )
-                                                        : undefined
-                                                }
-                                                className="h-[52px] rounded-2xl border border-rz-border bg-rz-surface text-[18px] font-semibold text-rz-ink"
+                                <CodeCells
+                                    value={code}
+                                    disabled={busy || throttled}
+                                    invalid={message !== null}
+                                    onChange={setCode}
+                                />
+                                <div id="auditor-step-up-message">
+                                    {throttled ? (
+                                        <Throttled
+                                            seconds={entry.seconds}
+                                            onDone={() =>
+                                                setEntry({ kind: 'ready' })
+                                            }
+                                        />
+                                    ) : (
+                                        message !== null && (
+                                            <p
+                                                role="alert"
+                                                className="mt-3 text-[12px] font-semibold text-rz-danger-text"
                                             >
-                                                {key === 'back' ? '⌫' : key}
-                                            </button>
-                                        ),
+                                                {message}
+                                            </p>
+                                        )
                                     )}
                                 </div>
+                                <p className="mt-4 text-[11px] leading-[1.5] text-rz-secondary">
+                                    {t('auditor.seal.code_scope')}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="pt-1.5 text-center">
+                                <h4 className="text-[16px] font-bold text-rz-ink">
+                                    {t('auditor.seal.mfa_title')}
+                                </h4>
+                                <p className="mt-[5px] text-[12.5px] leading-[1.5] text-rz-secondary">
+                                    {t('auditor.seal.mfa_body')}
+                                </p>
                             </div>
                         )}
                     </div>
@@ -365,27 +690,40 @@ export function useSealFlow({
                         {nested === 'preview' ? (
                             <button
                                 type="button"
-                                onClick={() => setNested('pin')}
-                                className="h-[50px] w-full rounded-2xl bg-rz-page text-[14.5px] font-bold text-rz-ink dark:bg-rz-surface-muted"
+                                onClick={() => setNested('code')}
+                                disabled={!center.idle}
+                                className="h-[50px] w-full rounded-2xl bg-rz-page text-[14.5px] font-bold text-rz-ink disabled:cursor-not-allowed disabled:opacity-60 dark:bg-rz-surface-muted"
                             >
                                 {t('auditor.seal.apply')}
                             </button>
-                        ) : (
+                        ) : stage.mfa.confirmed ? (
                             <button
                                 type="button"
-                                onClick={seal}
+                                onClick={() => void confirm()}
                                 disabled={
-                                    form.data.pin.length < PIN_LENGTH ||
-                                    form.processing
+                                    code.length < CODE_LENGTH ||
+                                    busy ||
+                                    throttled ||
+                                    !center.idle
                                 }
+                                aria-busy={busy || undefined}
                                 className="h-[50px] w-full rounded-2xl bg-[#17795a] text-[14.5px] font-bold text-white disabled:cursor-not-allowed disabled:bg-rz-disabled disabled:text-rz-secondary"
                             >
-                                {t('auditor.seal.submit')}
+                                {busy
+                                    ? t('auditor.seal.sealing')
+                                    : t('auditor.seal.submit')}
                             </button>
+                        ) : (
+                            <Link
+                                href={stage.mfa.settings}
+                                className="flex h-[50px] w-full items-center justify-center rounded-2xl bg-rz-accent-fill text-[14.5px] font-bold text-white"
+                            >
+                                {t('auditor.seal.mfa_settings')}
+                            </Link>
                         )}
                     </div>
                 </div>
-            </>
+            </SealSheet>
         );
     }
 

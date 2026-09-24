@@ -1,0 +1,100 @@
+{
+    "component": "auditor/profile",
+    "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
+        "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": ["accreditation.withdraw"],
+        "section": "accreditation",
+        "auditor": {
+            "name": "Diane Uwase, CPA",
+            "firm": "Uwase & Co.",
+            "accreditation": "ICPAR · CPA",
+            "avatar_url": null,
+            "since_year": 2019
+        },
+        "quality_score": null,
+        "on_time_pct": null,
+        "jobs_done": 0,
+        "accreditation": {
+            "status": "none",
+            "revision": 6,
+            "licence": null,
+            "expires_on": null,
+            "days_left": null,
+            "submission": {
+                "status": "pending",
+                "id": "REQ-2026-0433",
+                "licence": "ICPAR/P-2026/0512",
+                "expires_on": "2027-12-31",
+                "submitted_on": "2026-10-02",
+                "evidence": {
+                    "evidence_id": "ev_cert_2026_0433",
+                    "kind": "licence_certificate",
+                    "sha256": "ab2c159a80d63e3c53ce361247675a4f57feffff7ac5acef5b88909afb819fc4",
+                    "captured_at": null,
+                    "source": "web_upload",
+                    "device_attestation": "unavailable",
+                    "position": null,
+                    "accuracy_m": null
+                }
+            }
+        },
+        "availability": {
+            "accepting": false,
+            "radius_km": 30,
+            "max_active": 3,
+            "toggle": {
+                "url": "/preview/auditor-profile",
+                "method": "post"
+            }
+        },
+        "open_jobs": 0,
+        "links": {
+            "home": {
+                "url": "/preview/auditor-home",
+                "method": "get"
+            },
+            "jobs": {
+                "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/auditor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/auditor-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-auditor",
+                "method": "get"
+            },
+            "sections": {
+                "accreditation": {
+                    "url": "/preview/auditor-profile",
+                    "method": "get"
+                },
+                "availability": {
+                    "url": "/preview/auditor-profile-availability",
+                    "method": "get"
+                }
+            },
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "submit": {
+                "url": "/preview/auditor-profile-pending",
+                "method": "post"
+            },
+            "withdraw": {
+                "url": "/preview/auditor-profile",
+                "method": "post"
+            }
+        }
+    }
+}

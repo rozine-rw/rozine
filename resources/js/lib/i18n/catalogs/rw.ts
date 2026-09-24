@@ -1502,7 +1502,7 @@ const rw: Catalog = {
     'auditor.jobs.lead':
         "Igenzura ryo ku kibanza riri mu birometero {radius}. Uwemeye mbere afata dosiye kandi isaha y'amasaha {hours} igatangira.",
     'auditor.jobs.map_label':
-        "Ikarita y'akarere ka km {radius} ufite imirimo {count} ifunguye",
+        "Ikarita y'akarere ka km {radius} ufite imirimo {count} ifunguye, aho iri hagereranyijwe",
     'auditor.jobs.map_badge': 'km {radius} · {count} ifunguye',
     'auditor.jobs.assigned': 'Ushinzwe',
     'auditor.jobs.distance': 'Intera',
@@ -1541,14 +1541,12 @@ const rw: Catalog = {
     'auditor.sheet.cancel': 'Reka',
     'auditor.decline.title': 'Anga {business}',
     'auditor.decline.lead':
-        "Umurimo usubizwa mu kugabanywa. Vuga impamvu — izandikwa hamwe n'uko wanze.",
-    'auditor.decline.label': 'Impamvu',
-    'auditor.decline.placeholder':
-        'urugero: sinshobora kugera ku kibanza mu gihe cyagenwe',
+        "Umurimo usubizwa mu kugabanywa. Hitamo impamvu; izandikwa hamwe n'uko wanze.",
+    'auditor.decline.placeholder': 'Ikikubuza gufata uyu murimo',
     'auditor.decline.submit': 'Anga umurimo',
     'auditor.conflict.sheet_title': 'Tangaza inyungu ufite muri {business}',
     'auditor.conflict.body':
-        'Niba hari inyungu ufite mu kigo ushinzwe kugenzura, bivuge. Umurimo uhita wimurwa kandi itangazo rikandikwa. Ntuzigera usabwa kugenzura dosiye wazanye — Rozine irabibuza burundu.',
+        "Niba hari inyungu ufite mu kigo ushinzwe kugenzura, bivuge. Itangazo ryandikwa, kandi inyungu ibuza akazi ihita ihagarika akazi kawe kuri dosiye mu gihe Ishami ry'Igenzura ritegura kuyiha undi. Ntuzigera usabwa kugenzura dosiye wazanye — Rozine irabibuza burundu.",
     'auditor.conflict.kind_label': 'Ni iyihe nyungu',
     'auditor.conflict.kind.financial_interest': "Inyungu y'amafaranga",
     'auditor.conflict.kind.role_tie':
@@ -1556,17 +1554,14 @@ const rw: Catalog = {
     'auditor.conflict.kind.family_or_business':
         "Isano ry'umuryango cyangwa ubucuruzi",
     'auditor.conflict.kind.other': 'Ibindi',
-    'auditor.conflict.note_label': 'Ibisobanuro (si ngombwa)',
+    'auditor.conflict.note_label':
+        'Ibisobanuro bishingiye ku byabaye (ni ngombwa)',
     'auditor.conflict.note_placeholder': 'Iyo nyungu ni iyihe kandi kuva ryari',
     'auditor.conflict.submit': 'Tangaza inyungu',
     'auditor.outcome.done': 'Birangiye',
     'auditor.outcome.conflict.title': 'Inyungu yatangajwe',
-    'auditor.outcome.conflict.reassigned':
-        '{business} ubu ishinzwe {name}. Ntukiri kuri dosiye kandi itangazo ryanditswe.',
-    'auditor.outcome.conflict.queued':
-        '{business} yavuye ku rutonde rwawe, itegereje ko ibikorwa biyimurira undi. Ntushobora kuyigenzura muri icyo gihe.',
     'auditor.outcome.conflict.recorded':
-        'Inyungu ufite muri {business} yanditswe. Ntushobora kugenzura iyi dosiye.',
+        'Itangazo ryawe kuri {business} ryanditswe. Ntirihagarika akazi kawe kuri uyu murimo.',
     'auditor.outcome.declined.title': 'Umurimo wanzwe',
     'auditor.outcome.declined.body':
         '{business} yasubijwe mu kugabanywa kandi impamvu yawe yanditswe.',
@@ -1574,13 +1569,13 @@ const rw: Catalog = {
     'auditor.outcome.sealed.flash':
         'Raporo yo ku kibanza ya {business} yashyizweho kashe. {business} isinya bitarenze {date}; moteri itanga amanota ishingiye ku byo wabonye.',
     'auditor.outcome.sealed.monthly':
-        "Ububiko bw'ibimenyetso bwa {month} bwa {business} bwashyizweho kashe. {business} ifite kugeza {date} ngo isinye.",
-    'auditor.outcome.suggested.title': 'Byasubijwe uwashinze',
+        "Raporo ya {month} ya {business} — inyandiko z'imari zoherejwe n'ibyo wabonye — yashyizweho kashe. {business} isinya bitarenze {date}.",
+    'auditor.outcome.suggested.title': 'Impinduka zasabwe',
     'auditor.outcome.suggested.body':
-        'Uwashinze azabikosora abyohereze bundi bushya ngo ubigenzure.',
-    'auditor.outcome.rejected.title': 'Byamenyeshejwe Rozine',
+        "Ikigo cyabonye impamvu yawe n'ibisobanuro, kandi gishobora kongera kohereza inyandiko ngo uyigenzure.",
+    'auditor.outcome.rejected.title': 'Inyandiko yanzwe',
     'auditor.outcome.rejected.body':
-        'Iyi raporo yanzwe yoherezwa ubuyobozi bwa Rozine.',
+        "Iyi verisiyo y'inyandiko ntishobora kugenzurwa kandi yafunzwe impamvu yawe yanditswe. Si icyemezo ku nguzanyo, kandi ibimenyetso n'amateka ya raporo birabikwa.",
     'auditor.sheet.back': 'Subira inyuma',
     'auditor.file.head_title': '{business} · dosiye',
     'auditor.file.label': "Dosiye y'ikigo {business}",
@@ -1644,7 +1639,7 @@ const rw: Catalog = {
     'auditor.capture.title':
         'Bifatirwa muri porogaramu ya Rozine yo gufata ibimenyetso',
     'auditor.capture.body':
-        "Amafoto no kwiyandikisha ku kibanza bifatwa ako kanya muri porogaramu — kamera gusa, ahantu n'isaha bisinywa kuri telefoni yawe — ku buryo bidashobora gusubizwa inyuma cyangwa gutirwa.",
+        "Amafoto no kwiyandikisha ku kibanza bifatwa muri porogaramu yo gufata amakuru, ntibifatirwa ku rubuga. Isaha, aho byafatiwe n'igenzura rya telefoni bya buri kimwe bigaragara uko seriveri ibyanditse.",
     'auditor.capture.open': 'Fungura porogaramu yo gufata ibimenyetso',
     'auditor.capture.status.not_started':
         'Porogaramu ntirafungurwa kuri uyu murimo',
@@ -1752,25 +1747,21 @@ const rw: Catalog = {
     'auditor.seal.preview': 'Reba ibyo wabonye',
     'auditor.seal.suggest': 'Saba impinduka',
     'auditor.seal.suggest_lead':
-        'Raporo ya {business} isubizwa uwashinze ngo ayikosore. Vuga icyo gikwiye guhinduka.',
+        'Inyandiko ya {business} isubizwa ikigo ngo ikosorwe yongere yoherezwe. Hitamo impamvu kandi uvuge ibyabaye.',
     'auditor.seal.suggest_placeholder':
         'urugero: urupapuro rwo kubara rwa Nzeri ntirusinye',
-    'auditor.seal.suggest_submit': 'Subiza',
-    'auditor.seal.reject': 'Anga umenyeshe',
+    'auditor.seal.suggest_submit': 'Saba impinduka',
+    'auditor.seal.reject': 'Anga inyandiko',
     'auditor.seal.reject_lead':
-        'Raporo ya {business} yanzwe yoherezwa ubuyobozi bwa Rozine. Vuga ibyo wabonye.',
-    'auditor.seal.reject_placeholder': 'Ibyo wabonye ku kibanza',
-    'auditor.seal.reject_submit': 'Anga raporo',
+        "Iyi verisiyo y'inyandiko ya {business} ntishobora kugenzurwa. Hitamo impamvu kandi uvuge ibyabaye — bireba inyandiko, si inguzanyo y'ikigo, kandi ibimenyetso n'amateka yayo birabikwa.",
+    'auditor.seal.reject_placeholder':
+        "Ibyo wagenzuye n'ibitashoboye kugenzurwa",
+    'auditor.seal.reject_submit': 'Anga inyandiko',
     'auditor.seal.findings_eyebrow': 'Ibyabonetse · {version}',
     'auditor.seal.digest': 'Ikimenyetso gitegereje',
     'auditor.seal.digest_note':
         "Birangira iyo kashe yawe ya ICPAR ishyizweho. PDF isinywe ikorwa na Rozine igezwa ku bashoramari nyuma y'uko ikigo cyemeje.",
-    'auditor.seal.apply': "Shyiraho kashe y'uruhushya rwa ICPAR",
-    'auditor.seal.pin_title': 'Ongera wiyemeze ngo ushyireho kashe',
-    'auditor.seal.pin_lead':
-        'Andika PIN yawe ya Rozine ngo ushyireho uruhushya {licence}.',
-    'auditor.seal.pin_entered': 'Imibare {count} kuri {total} yanditswe',
-    'auditor.seal.pin_delete': 'Siba umubare',
+    'auditor.seal.apply': "Emeza ukoresheje porogaramu y'umutekano",
     'auditor.seal.submit': 'Shyiraho kashe wohereze kuri Rozine',
     'auditor.sealed.title': 'Byashyizweho kashe biratangwa',
     'auditor.sealed.body':
@@ -2874,6 +2865,142 @@ const rw: Catalog = {
     'business.apply.review.use_full': 'Fata ayo wahawe yose',
 
     'business.apply.recalculating': 'Turimo kubara…',
+    'auditor.capture.unavailable':
+        'Porogaramu yo gufata amakuru ntiraboneka kuri uyu murimo, bityo amafoto no kwiyandikisha ku kibanza ntibishobora gufatwa. Nta buryo bwo kubifatira ku rubuga.',
+    'auditor.photos.add_unavailable': 'Gufata ntibiboneka',
+    'auditor.checkin.position_unavailable': 'Aho uri ntibiboneka',
+    'auditor.ledger.ingested': 'Byakiriwe · ntibirasuzumwa',
+    'auditor.jobs.map_approximate': 'Aho biri hagereranyijwe',
+    'auditor.reason.label': 'Impamvu',
+    'auditor.reason.explanation_required':
+        'Ibisobanuro bishingiye ku byabaye (ni ngombwa)',
+    'auditor.reason.explanation_optional': 'Ibisobanuro (si ngombwa)',
+    'auditor.outcome.conflict.blocking.reassignment_pending':
+        "Inyungu wagaragaje yanditswe. Akazi kuri uyu murimo karahagaze mu gihe Ishami ry'Igenzura ritegura kuwuha undi.",
+    'auditor.outcome.conflict.blocking.reassigned':
+        'Inyungu wagaragaje yanditswe kandi {business} yahawe undi. Akazi kawe kuri uyu murimo karahagaze.',
+    'auditor.outcome.conflict.blocking.recorded':
+        'Inyungu wagaragaje yanditswe. Akazi kuri uyu murimo karahagaze.',
+    'auditor.seal.cites': 'Ibimenyetso: {ids}',
+    'auditor.seal.evidence': "Ibimenyetso bishyirwaho kashe hamwe n'iyi raporo",
+    'auditor.seal.versions':
+        'Uburyo {procedure} · ibyabonetse {findings} · ibimenyetso {evidence}',
+    'auditor.seal.code_title': 'Emeza ko ari wowe',
+    'auditor.seal.code_lead':
+        "Andika kode y'imibare itandatu iri muri porogaramu yawe y'umutekano kugira ngo ushyireho kashe ku ruhushya {licence}.",
+    'auditor.seal.code_label': "Kode y'umutekano y'imibare itandatu",
+    'auditor.seal.code_scope':
+        'Iyi kode yemeza gusa ko ari wowe ushyiraho kashe. Nta cyo ivuga kuri telefoni cyangwa ibikoresho byakoreshejwe mu gufata ibimenyetso.',
+    'auditor.seal.code_wrong':
+        "Iyo kode ntihuye. Andika kode iriho ubu muri porogaramu yawe y'umutekano.",
+    'auditor.seal.code_expired':
+        "Iyemeza ryawe ryarangiye mbere y'uko kashe ishyirwaho. Andika kode nshya.",
+    'auditor.seal.code_throttled':
+        'Wagerageje inshuro nyinshi. Uzashobora kwandika kode nshya mu {wait}.',
+    'auditor.seal.code_throttled_later':
+        'Wagerageje inshuro nyinshi. Tegereza gato, hanyuma wandike kode nshya.',
+    'auditor.seal.code_unreachable':
+        'Ntibyashobotse kugera kuri Rozine ngo igenzure kode yawe. Nta cyashyizweho kashe — andika kode nshya wongere ugerageze.',
+    'auditor.seal.sealing': 'Birashyirwaho kashe…',
+    'auditor.seal.mfa_title':
+        'Fungura uburyo bwo kwemeza kabiri kugira ngo ushyireho kashe',
+    'auditor.seal.mfa_body':
+        "Gushyiraho kashe bisaba kode ya porogaramu y'umutekano wemeje kuri konti yawe. Yishyireho mu igenamiterere ry'umutekano, hanyuma ugaruke ushyireho kashe.",
+    'auditor.seal.mfa_settings': "Fungura igenamiterere ry'umutekano",
+    'auditor.sealed.report_id': 'Raporo',
+    'auditor.sealed.signature_ref': 'Umukono',
+    'auditor.sealed.key_id': 'Urufunguzo',
+    'auditor.sealed.amended_by':
+        'Raporo {report} ikosora iyi; iyi raporo iguma uko yashyizweho kashe.',
+    'auditor.sealed.open_amendment': 'Fungura ikosora',
+    'auditor.audit.amends':
+        'Iyi ni ikosora rifitanye isano na raporo {report}. Iyo raporo iguma itangajwe, idahindutse.',
+    'auditor.audit.open_original': "Fungura iy'umwimerere",
+    'auditor.receipt.title': 'Inyungu yanditswe',
+    'auditor.receipt.body.reassignment_pending':
+        "Inyungu wagaragaje yanditswe. Akazi kuri uyu murimo karahagaze mu gihe Ishami ry'Igenzura ritegura kuwuha undi.",
+    'auditor.receipt.body.reassigned':
+        'Inyungu wagaragaje yanditswe kandi umurimo wahawe undi. Ntukibasha kugera kuri dosiye ya {business}.',
+    'auditor.receipt.body.recorded':
+        'Inyungu wagaragaje yanditswe. Akazi kuri uyu murimo karahagaze, kandi ntukibasha kugera kuri dosiye ya {business}.',
+    'auditor.receipt.status': 'Umurimo',
+    'auditor.receipt.state.reassignment_pending': 'Gutegereza guhabwa undi',
+    'auditor.receipt.state.reassigned': 'Wahawe undi',
+    'auditor.receipt.state.recorded': 'Byanditswe',
+    'auditor.receipt.kind': "Ubwoko bw'inyungu",
+    'auditor.receipt.declared': 'Byatangajwe',
+    'auditor.receipt.reference': 'Nomero',
+    'auditor.receipt.note': 'Ibisobanuro byawe',
+    'auditor.evidence.title': 'Ibimenyetso',
+    'auditor.evidence.captured': 'Byafashwe',
+    'auditor.evidence.source': 'Inkomoko',
+    'auditor.evidence.attestation': 'Icyemezo cya telefoni',
+    'auditor.evidence.position': 'Aho byafatiwe',
+    'auditor.evidence.accuracy': "Ubunyangamugayo bw'aho",
+    'auditor.evidence.metres': '±{metres} m',
+    'auditor.evidence.unavailable': 'Ntibiboneka',
+    'auditor.evidence.digest': 'SHA-256 {digest}…',
+    'auditor.evidence.source_companion_device': 'Porogaramu yo gufata',
+    'auditor.evidence.source_web_upload': 'Byoherejwe ku rubuga',
+    'auditor.evidence.attestation_verified': 'Byemejwe',
+    'auditor.evidence.attestation_unverified': 'Ntibyemejwe',
+    'auditor.evidence.attestation_unavailable': 'Ntibiboneka',
+    'auditor.evidence.kind.photo': "Ifoto y'ikibanza",
+    'auditor.evidence.kind.check_in': 'Kwiyandikisha ku kibanza',
+    'auditor.evidence.kind.ledger': "Igitabo cy'ibaruramari",
+    'auditor.evidence.kind.statement': "Inyandiko y'imari",
+    'auditor.evidence.kind.licence_certificate': "Icyemezo cy'uruhushya",
+    'auditor.command.checking.title': 'Turareba uko byagenze',
+    'auditor.command.checking.body':
+        "Igisubizo cy'igikorwa cyawe giheruka cyabuze, bityo Rozine irareba niba cyanditswe. Nta kintu cyongera koherezwa muri icyo gihe.",
+    'auditor.command.unconfirmed.title':
+        'Ntitwashoboye kwemeza igikorwa cyawe giheruka',
+    'auditor.command.unconfirmed.body':
+        'Ntibyashobotse kugera kuri Rozine ngo irebe niba cyanditswe. Ongera urebe mbere yo gukora ikindi — ntikizoherezwa kabiri.',
+    'auditor.command.pending.title': 'Byanditswe — biracyakorwa',
+    'auditor.command.pending.body':
+        'Rozine yakiriye igikorwa cyawe giheruka kandi iracyagikoraho. Ongera urebe mu kanya.',
+    'auditor.command.not_recorded.title': 'Ntibyanditswe',
+    'auditor.command.not_recorded.body':
+        "Rozine nta nyandiko ifite y'igikorwa cyawe giheruka. Ushobora kongera kohereza ubusabe bumwe; ntibushobora gukorwa kabiri.",
+    'auditor.command.check_again': 'Ongera urebe',
+    'auditor.command.try_again': 'Ongera ugerageze',
+    'auditor.command.refused.VERSION_CONFLICT':
+        'Iyi nyandiko yahindutse kuva uyifunguye. Paji yavuguruwe — yirebe wongere ugerageze.',
+    'auditor.command.refused.IDEMPOTENCY_CONFLICT':
+        'Ubu busabe bwakoreshejwe ku kindi gikorwa. Ongera utangire uhereye kuri paji yavuguruwe.',
+    'auditor.command.refused.DIGEST_STALE':
+        'Ibimenyetso byahindutse nyuma yo kureba incamake. Reba incamake nshya wemeze ukoresheje kode nshya.',
+    'auditor.command.refused.EVIDENCE_VERSION_STALE':
+        'Ibimenyetso byahindutse nyuma yo kureba incamake. Reba incamake nshya wongere wemeze.',
+    'auditor.command.refused.FINDINGS_VERSION_STALE':
+        'Ibyabonetse byahindutse nyuma yo kureba incamake. Reba incamake nshya wongere wemeze.',
+    'auditor.command.refused.PROCEDURE_VERSION_STALE':
+        "Verisiyo y'uburyo yahindutse. Reba incamake nshya wongere wemeze.",
+    'auditor.command.refused.MANDATE_STALE':
+        "Amabwiriza y'umurimo wawe yahindutse. Reba paji yavuguruwe wongere wemeze.",
+    'auditor.command.refused.ACTION_FORBIDDEN':
+        'Ntukibasha gukora ibi kuri uyu murimo. Uburenganzira bwawe bwahindutse.',
+    'auditor.command.refused.NOT_FOUND': 'Iyi nyandiko ntuyemerewe.',
+    'auditor.command.refused.STEP_UP_INVALID':
+        "Iryo yemeza ntiryakunze. Andika kode nshya yo muri porogaramu yawe y'umutekano.",
+    'auditor.command.refused.STEP_UP_EXPIRED':
+        "Iryo yemeza ryarangiye mbere yo gushyiraho kashe. Andika kode nshya yo muri porogaramu yawe y'umutekano.",
+    'auditor.command.refused.denied':
+        'Uburenganzira bwawe bwahindutse, bityo ntibyakozwe.',
+    'auditor.command.refused.failed':
+        'Ntibyashobotse. Vugurura paji wongere ugerageze.',
+    'auditor.accreditation.badge.none': 'Nta cyemezo',
+    'auditor.accreditation.badge.first_pending': 'Birasuzumwa',
+    'auditor.accreditation.none_line': 'Nta ruhushya rwanditswe',
+    'auditor.accreditation.none_body':
+        "Ohereza uruhushya rwawe rwa ICPAR ngo rusuzumwe. Kuruhereza ntibiguha uburenganzira: uzahabwa akazi ari uko umukozi wa Rozine ubifitiye uburenganzira yanditse igenzura rya ICPAR n'amatariki yaryo.",
+    'auditor.accreditation.first_pending_title':
+        'Icyemezo cya mbere kirasuzumwa',
+    'auditor.accreditation.evidence_line': 'Icyemezo {id} · SHA-256 {digest}…',
+    'auditor.accreditation.expiry_label_first':
+        'Itariki uruhushya rurangiriraho',
+    'auditor.accreditation.first_submit': 'Ohereza icyemezo cyawe',
 
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',

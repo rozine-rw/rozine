@@ -69,6 +69,11 @@ function DocumentRow({
                             detail: document.detail,
                         })}
                     </span>
+                    {document.ingestion === 'INGESTED_NOT_AUDIT_APPROVED' && (
+                        <span className="mt-1 inline-block rounded-[8px] bg-rz-page px-[7px] py-0.5 text-[10px] font-semibold text-rz-slate dark:bg-rz-surface-muted">
+                            {t('auditor.ledger.ingested')}
+                        </span>
+                    )}
                 </span>
                 {scanning && (
                     <span
@@ -127,7 +132,7 @@ export function StepLedger({
     context: StepContext;
 }) {
     const { t } = useTranslation();
-    const { form, submit } = useStepForm(context, {
+    const { form, submit, errors } = useStepForm(context, {
         observed_stock: stage.observed_stock?.amount ?? '',
         reconciled: stage.reconciled,
     });
@@ -172,7 +177,10 @@ export function StepLedger({
             {
                 document: chosen,
                 replaces: replaces.current,
-                revision: context.revision,
+                audit_id: context.auditId,
+                expected_revision: context.revision,
+                identity_context_revision: context.identityContextRevision,
+                request_id: crypto.randomUUID(),
             },
             { forceFormData: true, preserveScroll: true, only: RELOAD },
         );
@@ -212,12 +220,12 @@ export function StepLedger({
                         )
                     }
                     placeholder={t('auditor.ledger.observed_placeholder')}
-                    aria-invalid={form.errors.observed_stock ? true : undefined}
+                    aria-invalid={errors.observed_stock ? true : undefined}
                     className="mt-1.5 w-full rounded-xl border-[1.5px] border-[#dbe3f0] bg-[#f6f9fd] px-3.5 py-[13px] text-[15px] font-bold text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border dark:border-rz-border dark:bg-rz-surface-sunken"
                 />
-                {form.errors.observed_stock && (
+                {errors.observed_stock && (
                     <p className="mt-1.5 text-[11.5px] font-semibold text-rz-danger-text">
-                        {form.errors.observed_stock}
+                        {errors.observed_stock}
                     </p>
                 )}
                 <VarianceChip variance={stage.variance} />
