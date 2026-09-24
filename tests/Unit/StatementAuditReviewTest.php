@@ -14,8 +14,9 @@ it('verifies reconciled source observations without adding a credit decision or 
     $review = StatementFixture::review($hashes);
     $review['obligations'] = [['id' => 'loan-1', 'principal' => '2000', 'service_by_month' => ['2026-09' => '150', '2026-10' => '0'], 'source_ids' => ['original-a']]];
     $verified = (new StatementAuditReview)->verify($review, $hashes, $observations, new DateTimeImmutable('2026-09-24T08:00:00Z'));
-    expect($verified)->toBe([[...$observations[0], 'verified' => true]])
-        ->and($observations[0]['verified'])->toBeFalse()->and($verified[0])->not->toHaveKeys(['rating', 'capacity', 'yield', 'credit_verdict']);
+    expect($verified['observations'])->toBe([[...$observations[0], 'verified' => true]])
+        ->and($verified['review'])->toEqual($review)
+        ->and($observations[0]['verified'])->toBeFalse()->and($verified['observations'][0])->not->toHaveKeys(['rating', 'capacity', 'yield', 'credit_verdict']);
 });
 
 it('refuses incomplete unsupported or unbound factual reviews', function (string $fault, string $code): void {
@@ -97,5 +98,54 @@ it('requires the entire observation month to have ended in Kigali', function ():
     $review = StatementFixture::review($hashes);
     $verifier = new StatementAuditReview;
     expect(fn () => $verifier->verify($review, $hashes, $observations, new DateTimeImmutable('2026-08-31T21:59:59Z')))->toThrow(CommandRejection::class, 'STATEMENT_COMPLETE_MONTH_REQUIRED')
-        ->and($verifier->verify($review, $hashes, $observations, new DateTimeImmutable('2026-08-31T22:00:00Z'))[0]['verified'])->toBeTrue();
+        ->and($verifier->verify($review, $hashes, $observations, new DateTimeImmutable('2026-08-31T22:00:00Z'))['observations'][0]['verified'])->toBeTrue();
 });
+
+it('rejects malformed nested review values with stable domain validation codes', function (string $path, mixed $value, string $code): void {
+    $input = StatementFixture::reconciliation();
+    $hashes = ['original-a' => hash('sha256', 'bank'), 'original-b' => hash('sha256', 'momo')];
+    $observations = (new StatementReconciliation)->reconcile($input['rails'], $input['months'], $input['statements'], $input['sources']);
+    $review = StatementFixture::review($hashes);
+    $review['obligations'] = [['id' => 'loan-1', 'principal' => '2000', 'service_by_month' => ['2026-09' => '150'], 'source_ids' => ['original-a']]];
+    data_set($review, $path, $value);
+    try {
+        (new StatementAuditReview)->verify($review, $hashes, $observations, new DateTimeImmutable('2026-09-24T08:00:00Z'));
+        $this->fail('Malformed reviews must be rejected before granting source verification.');
+    } catch (CommandRejection $exception) {
+        expect($exception->reason)->toBe($code)->and($exception->status)->toBe(422);
+    }
+})->with([
+    ['procedure_version', null, 'STATEMENT_REVIEW_PROCEDURE_REQUIRED'],
+    ['checks', 'all', 'STATEMENT_REVIEW_INCOMPLETE'],
+    ['checks.originals_authentic', 1, 'STATEMENT_REVIEW_INCOMPLETE'],
+    ['source_checks', null, 'STATEMENT_SOURCE_REVIEW_REQUIRED'],
+    ['source_checks.original-a', false, 'STATEMENT_SOURCE_REVIEW_REQUIRED'],
+    ['source_checks.original-a', ['reference' => 'missing hash'], 'STATEMENT_SOURCE_REVIEW_REQUIRED'],
+    ['source_checks.original-a', ['sha256' => 'missing reference'], 'STATEMENT_SOURCE_REVIEW_REQUIRED'],
+    ['source_checks.original-a.sha256', ['hash'], 'STATEMENT_SOURCE_REVIEW_REQUIRED'],
+    ['source_checks.original-a.reference', null, 'STATEMENT_REVIEW_REFERENCE_REQUIRED'],
+    ['inventory_reference', [], 'STATEMENT_REVIEW_REFERENCE_REQUIRED'],
+    ['owner_draw_reference', 123, 'STATEMENT_REVIEW_REFERENCE_REQUIRED'],
+    ['findings', true, 'STATEMENT_REVIEW_REFERENCE_REQUIRED'],
+    ['recurring_owner_draw', 100, 'STATEMENT_REVIEW_AMOUNT_INVALID'],
+    ['obligations', 'none', 'STATEMENT_DEBT_EVIDENCE_REQUIRED'],
+    ['obligations', ['named' => []], 'STATEMENT_DEBT_EVIDENCE_REQUIRED'],
+    ['obligations.0', null, 'STATEMENT_DEBT_EVIDENCE_REQUIRED'],
+    ['obligations.0', ['id' => 'loan-1'], 'STATEMENT_DEBT_EVIDENCE_REQUIRED'],
+    ['obligations.0.id', [], 'STATEMENT_REVIEW_REFERENCE_REQUIRED'],
+    ['obligations.0.principal', 2000, 'STATEMENT_REVIEW_AMOUNT_INVALID'],
+    ['obligations.0.source_ids', 'original-a', 'STATEMENT_DEBT_EVIDENCE_REQUIRED'],
+    ['obligations.0.source_ids', ['named' => 'original-a'], 'STATEMENT_DEBT_EVIDENCE_REQUIRED'],
+    ['obligations.0.source_ids', [['original-a']], 'STATEMENT_DEBT_EVIDENCE_REQUIRED'],
+    ['obligations.0.source_ids', ['original-a', 'original-a'], 'STATEMENT_DEBT_EVIDENCE_REQUIRED'],
+    ['obligations.0.service_by_month', '150', 'STATEMENT_DEBT_EVIDENCE_REQUIRED'],
+    ['obligations.0.service_by_month', ['150'], 'STATEMENT_REVIEW_MONTH_INVALID'],
+    ['obligations.0.service_by_month', ['2026-09' => []], 'STATEMENT_REVIEW_AMOUNT_INVALID'],
+]);
+
+it('rejects each missing top-level factual review field before reading it', function (string $field): void {
+    $review = StatementFixture::review(['original-a' => hash('sha256', 'bank')]);
+    unset($review[$field]);
+    expect(fn () => (new StatementAuditReview)->verify($review, [], [], new DateTimeImmutable('2026-09-24T08:00:00Z')))
+        ->toThrow(CommandRejection::class, 'STATEMENT_REVIEW_PROCEDURE_REQUIRED');
+})->with(['procedure_version', 'checks', 'source_checks', 'inventory_reference', 'obligations', 'recurring_owner_draw', 'owner_draw_reference', 'findings']);

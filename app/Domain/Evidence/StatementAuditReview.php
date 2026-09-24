@@ -30,16 +30,19 @@ final class StatementAuditReview
         'duplicates_and_classification', 'debt_schedules', 'baseline_and_gaps', 'draws_returns_and_exceptions'];
 
     /**
-     * @param  Review  $review
+     * @param  array<string, mixed>  $review
      * @param  array<string, string>  $sourceHashes
      * @param  list<Observation>  $observations
-     * @return list<VerifiedObservation>
+     * @return array{review: Review, observations: list<VerifiedObservation>}
      */
     public function verify(array $review, array $sourceHashes, array $observations, DateTimeImmutable $now): array
     {
         $this->keys($review, ['procedure_version', 'checks', 'source_checks', 'inventory_reference', 'obligations', 'recurring_owner_draw', 'owner_draw_reference', 'findings'], 'STATEMENT_REVIEW_PROCEDURE_REQUIRED');
         if ($review['procedure_version'] !== self::PROCEDURE) {
             throw new CommandRejection('STATEMENT_REVIEW_PROCEDURE_REQUIRED', 422);
+        }
+        if (! is_array($review['checks'])) {
+            throw new CommandRejection('STATEMENT_REVIEW_INCOMPLETE', 422);
         }
         $checks = array_keys($review['checks']);
         sort($checks);
@@ -48,39 +51,54 @@ final class StatementAuditReview
         if ($checks !== $requiredChecks || array_filter($review['checks'], fn (mixed $checked): bool => $checked !== true) !== []) {
             throw new CommandRejection('STATEMENT_REVIEW_INCOMPLETE', 422, fieldErrors: ['checks' => ['Complete every factual source-review check.']]);
         }
-        $this->text($review['inventory_reference']);
-        $this->text($review['owner_draw_reference']);
-        $this->text($review['findings']);
-        $this->money($review['recurring_owner_draw']);
-        if ($sourceHashes === [] || count($sourceHashes) !== count($review['source_checks'])) {
+        $inventoryReference = $this->text($review['inventory_reference']);
+        $ownerDrawReference = $this->text($review['owner_draw_reference']);
+        $findings = $this->text($review['findings']);
+        $ownerDraw = $this->money($review['recurring_owner_draw']);
+        if (! is_array($review['source_checks']) || $sourceHashes === [] || count($sourceHashes) !== count($review['source_checks'])) {
             throw new CommandRejection('STATEMENT_SOURCE_REVIEW_REQUIRED', 422);
         }
+        $sourceChecks = [];
         foreach ($sourceHashes as $id => $hash) {
             $check = $review['source_checks'][$id] ?? null;
-            if ($check === null || ! hash_equals($hash, $check['sha256'])) {
+            if (! is_array($check)) {
                 throw new CommandRejection('STATEMENT_SOURCE_REVIEW_REQUIRED', 422);
             }
             $this->keys($check, ['sha256', 'reference'], 'STATEMENT_SOURCE_REVIEW_REQUIRED');
-            $this->text($check['reference']);
+            if (! is_string($check['sha256']) || ! hash_equals($hash, $check['sha256'])) {
+                throw new CommandRejection('STATEMENT_SOURCE_REVIEW_REQUIRED', 422);
+            }
+            $sourceChecks[$id] = ['sha256' => $hash, 'reference' => $this->text($check['reference'])];
+        }
+        if (! is_array($review['obligations']) || ! array_is_list($review['obligations'])) {
+            throw new CommandRejection('STATEMENT_DEBT_EVIDENCE_REQUIRED', 422);
         }
         $ids = [];
+        $obligations = [];
         foreach ($review['obligations'] as $obligation) {
-            $this->keys($obligation, ['id', 'principal', 'source_ids', 'service_by_month'], 'STATEMENT_DEBT_EVIDENCE_REQUIRED');
-            $this->text($obligation['id']);
-            if (in_array($obligation['id'], $ids, true) || $obligation['source_ids'] === [] || $obligation['service_by_month'] === []) {
+            if (! is_array($obligation)) {
                 throw new CommandRejection('STATEMENT_DEBT_EVIDENCE_REQUIRED', 422);
             }
-            $ids[] = $obligation['id'];
+            $this->keys($obligation, ['id', 'principal', 'source_ids', 'service_by_month'], 'STATEMENT_DEBT_EVIDENCE_REQUIRED');
+            $id = $this->text($obligation['id']);
+            if (in_array($id, $ids, true) || ! is_array($obligation['source_ids']) || ! array_is_list($obligation['source_ids'])
+                || $obligation['source_ids'] === [] || ! is_array($obligation['service_by_month']) || $obligation['service_by_month'] === []) {
+                throw new CommandRejection('STATEMENT_DEBT_EVIDENCE_REQUIRED', 422);
+            }
+            $ids[] = $id;
+            $sourceIds = [];
             foreach ($obligation['source_ids'] as $sourceId) {
-                if (! array_key_exists($sourceId, $sourceHashes)) {
+                if (! is_string($sourceId) || ! array_key_exists($sourceId, $sourceHashes) || in_array($sourceId, $sourceIds, true)) {
                     throw new CommandRejection('STATEMENT_DEBT_EVIDENCE_REQUIRED', 422);
                 }
+                $sourceIds[] = $sourceId;
             }
-            $this->money($obligation['principal']);
+            $principal = $this->money($obligation['principal']);
+            $schedule = [];
             foreach ($obligation['service_by_month'] as $month => $service) {
-                $this->month($month);
-                $this->money($service);
+                $schedule[$this->month($month)] = $this->money($service);
             }
+            $obligations[] = ['id' => $id, 'principal' => $principal, 'source_ids' => $sourceIds, 'service_by_month' => $schedule];
         }
         if ($observations === []) {
             throw new CommandRejection('STATEMENT_RECONCILIATION_REQUIRED', 422);
@@ -95,11 +113,14 @@ final class StatementAuditReview
             $verified[] = [...$observation, 'verified' => true];
         }
 
-        return $verified;
+        return ['review' => ['procedure_version' => self::PROCEDURE, 'checks' => array_fill_keys(self::CHECKS, true),
+            'source_checks' => $sourceChecks, 'inventory_reference' => $inventoryReference, 'obligations' => $obligations,
+            'recurring_owner_draw' => $ownerDraw, 'owner_draw_reference' => $ownerDrawReference, 'findings' => $findings],
+            'observations' => $verified];
     }
 
     /**
-     * @param  array<string, mixed>  $input
+     * @param  array<array-key, mixed>  $input
      * @param  list<string>  $required
      */
     private function keys(array $input, array $required, string $code): void
@@ -112,26 +133,35 @@ final class StatementAuditReview
         }
     }
 
-    private function text(string $text): void
+    private function text(mixed $text): string
     {
-        if (trim($text) === '' || ! mb_check_encoding($text, 'UTF-8') || mb_strlen($text) > 2000 || preg_match('/[\p{Cc}\p{Cf}]/u', $text)) {
+        if (! is_string($text) || trim($text) === '' || ! mb_check_encoding($text, 'UTF-8') || mb_strlen($text) > 2000 || preg_match('/[\p{Cc}\p{Cf}]/u', $text)) {
             throw new CommandRejection('STATEMENT_REVIEW_REFERENCE_REQUIRED', 422);
         }
+
+        return $text;
     }
 
-    private function month(string $month): void
+    private function month(mixed $month): string
     {
-        if (! preg_match('/^[1-9][0-9]{3}-(0[1-9]|1[0-2])$/D', $month)) {
+        if (! is_string($month) || ! preg_match('/^[1-9][0-9]{3}-(0[1-9]|1[0-2])$/D', $month)) {
             throw new CommandRejection('STATEMENT_REVIEW_MONTH_INVALID', 422);
         }
+
+        return $month;
     }
 
-    private function money(string $amount): void
+    private function money(mixed $amount): string
     {
+        if (! is_string($amount)) {
+            throw new CommandRejection('STATEMENT_REVIEW_AMOUNT_INVALID', 422);
+        }
         try {
             ExactFinancialValue::amount($amount);
         } catch (UnderwritingViolation) {
             throw new CommandRejection('STATEMENT_REVIEW_AMOUNT_INVALID', 422);
         }
+
+        return $amount;
     }
 }

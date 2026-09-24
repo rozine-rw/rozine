@@ -7,6 +7,7 @@ namespace App\Infrastructure\Auditor;
 use App\Application\Auditor\Contracts\AuditAssignmentStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Identity\Contracts\IdentityRepository;
+use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Auditor\AuditEngagementState;
 use App\Domain\Auditor\AuditorDispatch;
@@ -47,6 +48,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         private AuditorIndependence $independence,
         private VerifiedAuditLocation $locations,
         private Wgs84Distance $distance,
+        private CanonicalJson $json,
     ) {}
 
     /** @return array<string, mixed> */
@@ -166,10 +168,14 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                 if ($record->status !== 'accepted') {
                     throw new CommandRejection('ASSIGNMENT_NOT_ACCEPTED', 403);
                 }
+                $review = AuditorIndependenceReview::query()->where('business_id', $record->business_id)->where('party_id', $candidate['id'])->firstOrFail();
 
                 return $operation(['id' => $record->id, 'business_id' => $record->business_id, 'party_id' => $candidate['id'],
                     'revision' => $record->revision, 'kind' => $record->state['kind'], 'business_revision' => $context['business']['revision'],
-                    'mandate_version' => $context['business']['mandate_version'], 'accreditation' => [
+                    'mandate_version' => $context['business']['mandate_version'], 'mandate_sha256' => hash('sha256', $this->json->encode($context['business']['mandate'])),
+                    'independence' => ['id' => $review->id, 'revision' => $review->revision, 'checked_at' => $review->state['checked_at'],
+                        'evidence_reference' => $review->state['evidence_reference'], 'sha256' => hash('sha256', $this->json->encode($review->state))],
+                    'accreditation' => ['status' => $candidate['standing']['status'],
                         'profile_revision' => $profile->revision, 'licence' => $candidate['standing']['licence'],
                         'expires_on' => $candidate['standing']['expires_on'], 'checked_at' => $candidate['standing']['checked_at'],
                     ]]);

@@ -76,7 +76,7 @@ final class AuditAssignmentFixture
 
     /**
      * @param  Fixture  $fixture
-     * @param  Review|null  $review
+     * @param  array<string, mixed>|null  $review
      * @return array<string, mixed>
      */
     public static function verifyStatements(array $fixture, AuditAssignment $assignment, string $transcriptionId, ?array $review = null, int $evidenceRevision = 2, int $verificationRevision = 0, ?string $requestId = null): array

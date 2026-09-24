@@ -11,7 +11,7 @@ use Closure;
  *
  * @phpstan-type View array{id: string, business_id: string, revision: int, kind: string, status: string, offered_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, allowed_actions: list<string>}
  * @phpstan-type Assignment array{id: string, business_id: string, revision: int, state: State}
- * @phpstan-type AcceptedAssignment array{id: string, business_id: string, party_id: string, revision: int, kind: string, business_revision: int, mandate_version: int, accreditation: array{profile_revision: int, licence: string|null, expires_on: string|null, checked_at: string|null}}
+ * @phpstan-type AcceptedAssignment array{id: string, business_id: string, party_id: string, revision: int, kind: string, business_revision: int, mandate_version: int, mandate_sha256: string, independence: array{id: string, revision: int, checked_at: string, evidence_reference: string, sha256: string}, accreditation: array{profile_revision: int, status: string, licence: string|null, expires_on: string|null, checked_at: string|null}}
  */
 interface AuditAssignmentStore
 {

@@ -14,11 +14,13 @@ namespace App\Application\Evidence\Contracts;
  *
  * @phpstan-type TranscriptionPayload array{business_id: string, source_revision: int, classification_version: string, rails: list<Rail>, months: list<string>, statements: list<Statement>, source_hashes: array<string, string>, observations: list<Observation>}
  * @phpstan-type Transcription array{id: string, revision: int, amends_id: string|null, sha256: string, current: bool, verified: false, payload: TranscriptionPayload}
- * @phpstan-type Document array{id: string, filename: string, sha256: string, media_type: string, size_bytes: int, received_at: string, extraction: array{id: string, revision: int, parser_version: string, status: string, reason_codes: list<string>, record_count: int|null}}
+ * @phpstan-type Extraction array{id: string, revision: int, parser_version: string, status: string, reason_codes: list<string>, record_count: int|null}
+ * @phpstan-type Document array{id: string, filename: string, sha256: string, media_type: string, size_bytes: int, received_at: string, extraction: Extraction}
+ * @phpstan-type SourceProvenance array{sha256: string, extraction: Extraction}
  * @phpstan-type Manifest array{revision: int, documents: list<Document>}
  * @phpstan-type Original array{filename: string, media_type: string, sha256: string, content: string}
  * @phpstan-type AuditFile array{assignment: AcceptedAssignment, evidence: Manifest, transcription: Transcription|null}
- * @phpstan-type VerificationPayload array{business_id: string, assignment: AcceptedAssignment, source_revision: int, transcription: array{id: string, sha256: string}, source_hashes: array<string, string>, policy_version: string, procedure_version: string, classification_version: string, review: Review, verified_at: string, report_approval: 'not_cosigned', observations: list<VerifiedObservation>}
+ * @phpstan-type VerificationPayload array{business_id: string, assignment: AcceptedAssignment, source_revision: int, transcription: array{id: string, sha256: string}, source_hashes: array<string, string>, source_provenance: array<string, SourceProvenance>, policy_version: string, procedure_version: string, classification_version: string, review: Review, verified_at: string, report_approval: 'not_cosigned', observations: list<VerifiedObservation>}
  * @phpstan-type Verification array{id: string, revision: int, amends_id: string|null, sha256: string, current: bool, payload: VerificationPayload}
  */
 interface StatementStore
@@ -56,7 +58,7 @@ interface StatementStore
     public function auditTranscription(int $userId, int $contextRevision, string $assignmentId, ?string $transcriptionId): ?array;
 
     /**
-     * @param  Review  $review
+     * @param  array<string, mixed>  $review
      * @return array<string, mixed>
      */
     public function verify(int $userId, int $contextRevision, string $assignmentId, int $expectedAssignmentRevision, int $expectedEvidenceRevision, int $expectedVerificationRevision, string $transcriptionId, string $transcriptionHash, array $review, string $requestId): array;

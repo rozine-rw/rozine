@@ -11,9 +11,12 @@ use App\Application\Evidence\ReadAuditStatement;
 use App\Application\Evidence\ReadStatementOriginal;
 use App\Application\Evidence\RecordStatementTranscription;
 use App\Application\Identity\ChangeMembership;
+use App\Application\Operations\Contracts\CanonicalJson;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
+use App\Models\AuditorIndependenceReview;
 use App\Models\AuditorProfile;
+use App\Models\BusinessMandate;
 use App\Models\IdentityOperator;
 use App\Models\StatementOriginal;
 use App\Models\StatementTranscription;
@@ -26,6 +29,7 @@ use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\StatementFixture;
 
 it('requires an accepted assignment and leaves missing audit evidence explicitly unavailable', function (): void {
+    $this->freezeSecond();
     $fixture = Fixture::make(1);
     $offer = Fixture::request($fixture);
     $user = $fixture['partners'][0]['user'];
@@ -34,9 +38,14 @@ it('requires an accepted assignment and leaves missing audit evidence explicitly
         ->and(fn () => app(GetAuditTranscription::class)->handle($user->id, 1, $offer->id))->toThrow(CommandRejection::class, 'ASSIGNMENT_NOT_ACCEPTED');
     Fixture::respond($user, $offer);
     $file = app(GetAuditStatements::class)->handle($user->id, 1, $offer->id);
+    $review = AuditorIndependenceReview::query()->where('business_id', $fixture['business'])->firstOrFail();
+    $json = app(CanonicalJson::class);
     expect($file['assignment'])->toBe(['id' => $offer->id, 'business_id' => $fixture['business'], 'party_id' => $user->party_id,
         'revision' => 2, 'kind' => 'flash', 'business_revision' => 1, 'mandate_version' => 1,
-        'accreditation' => ['profile_revision' => 3, 'licence' => 'SYNTHETIC-CPA', 'expires_on' => now()->addYear()->format('Y-m-d'), 'checked_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')]])
+        'mandate_sha256' => hash('sha256', $json->encode(BusinessMandate::query()->where('business_id', $fixture['business'])->firstOrFail()->terms)),
+        'independence' => ['id' => $review->id, 'revision' => 1, 'checked_at' => $review->state['checked_at'],
+            'evidence_reference' => $review->state['evidence_reference'], 'sha256' => hash('sha256', $json->encode($review->state))],
+        'accreditation' => ['status' => 'active', 'profile_revision' => 3, 'licence' => 'SYNTHETIC-CPA', 'expires_on' => now()->addYear()->format('Y-m-d'), 'checked_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')]])
         ->and($file['evidence'])->toBe(['revision' => 0, 'documents' => []])->and($file['transcription'])->toBeNull()
         ->and(app(GetAuditTranscription::class)->handle($user->id, 1, $offer->id))->toBeNull()
         ->and(fn () => app(ReadAuditStatement::class)->handle($user->id, 1, $offer->id, 'unknown'))->toThrow(CommandRejection::class, 'STATEMENT_NOT_FOUND');

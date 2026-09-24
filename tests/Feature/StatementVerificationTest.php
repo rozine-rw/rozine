@@ -22,9 +22,11 @@ use App\Domain\Operations\OperationResult;
 use App\Domain\Underwriting\CashFlowEvidence;
 use App\Models\AuditorIndependenceReview;
 use App\Models\AuditorProfile;
+use App\Models\BusinessMandate;
 use App\Models\CommandOperation;
 use App\Models\RoleMembership;
 use App\Models\StatementEvidence;
+use App\Models\StatementExtraction;
 use App\Models\StatementTranscription;
 use App\Models\StatementVerification;
 use App\Models\User;
@@ -60,11 +62,17 @@ it('persists an encrypted immutable source-verified monthly snapshot and a minim
     $id = $receipt['data']['verification_id'];
     $owner = $fixture['authority']['users'][0];
     $view = app(GetStatementVerification::class)->handle($owner->id, 1, $fixture['business']);
+    $review = AuditorIndependenceReview::query()->where('business_id', $fixture['business'])->where('party_id', $partner['party']->id)->firstOrFail();
+    $json = app(CanonicalJson::class);
     expect(app(GetAuditStatementVerification::class)->handle($partner['user']->id, 1, $assignment->id, $id))->toBe($view)
         ->and($view['current'])->toBeTrue()->and($view['revision'])->toBe(1)->and($view['amends_id'])->toBeNull()
         ->and($view['payload']['observations'][0]['verified'])->toBeTrue()
         ->and($view['payload']['observations'][0]['operating_inflow'])->toBe('1000')
         ->and($view['payload']['assignment']['accreditation']['licence'])->toBe('SYNTHETIC-CPA')
+        ->and($view['payload']['assignment']['accreditation']['status'])->toBe('active')
+        ->and($view['payload']['assignment']['mandate_sha256'])->toBe(hash('sha256', $json->encode(BusinessMandate::query()->where('business_id', $fixture['business'])->firstOrFail()->terms)))
+        ->and($view['payload']['assignment']['independence'])->toBe(['id' => $review->id, 'revision' => $review->revision,
+            'checked_at' => $review->state['checked_at'], 'evidence_reference' => $review->state['evidence_reference'], 'sha256' => hash('sha256', $json->encode($review->state))])
         ->and($view['payload']['assignment']['revision'])->toBe(2)
         ->and($view['payload']['transcription']['id'])->toBe($sources['transcription_id'])
         ->and($view['payload']['source_revision'])->toBe(2)
@@ -76,6 +84,57 @@ it('persists an encrypted immutable source-verified monthly snapshot and a minim
         ->and(json_encode($receipt, JSON_THROW_ON_ERROR))->not->toContain('operating_inflow', 'source_checks', 'findings', 'licence');
     $this->assertDatabaseCount('statement_verifications', 1);
     expect($assignment->refresh()->status)->toBe('accepted');
+});
+
+it('retains extraction provenance as recorded while later parser work appends a new version', function (): void {
+    $fixture = Fixture::make(1);
+    $sources = Fixture::statements($fixture);
+    $assignment = Fixture::request($fixture);
+    Fixture::respond($fixture['partners'][0]['user'], $assignment);
+    $assignment->refresh();
+    Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id']);
+    $owner = $fixture['authority']['users'][0];
+    $get = app(GetStatementVerification::class);
+    $first = $get->handle($owner->id, 1, $fixture['business']);
+    $extraction = StatementExtraction::query()->where('statement_original_id', $sources['document_id'])->firstOrFail();
+    expect($first['payload']['source_provenance'])->toBe([$sources['document_id'] => ['sha256' => hash('sha256', StatementFixture::csv()),
+        'extraction' => ['id' => $extraction->id, 'revision' => 1, 'parser_version' => $extraction->parser_version, 'status' => 'pending',
+            'reason_codes' => $extraction->reason_codes, 'record_count' => null]]]);
+    $next = StatementExtraction::factory()->create(['statement_original_id' => $sources['document_id'], 'revision' => 2,
+        'status' => 'needs_review', 'reason_codes' => ['STATEMENT_FORMAT_REQUIRES_REVIEW'], 'record_count' => null]);
+    expect($get->handle($owner->id, 1, $fixture['business']))->toBe($first);
+    Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id'], verificationRevision: 1);
+    $current = $get->handle($owner->id, 1, $fixture['business']);
+    expect($current['payload']['source_provenance'][$sources['document_id']]['extraction']['id'])->toBe($next->id)
+        ->and($current['payload']['source_provenance'][$sources['document_id']]['extraction']['revision'])->toBe(2)
+        ->and($current['payload']['source_provenance'][$sources['document_id']]['extraction']['status'])->toBe('needs_review')
+        ->and($current['amends_id'])->toBe($first['id'])->and($current['current'])->toBeTrue();
+});
+
+it('allows the replacement Auditor to append their own attestation without rewriting or exposing it to the former Auditor', function (): void {
+    $fixture = Fixture::make();
+    $sources = Fixture::statements($fixture);
+    $assignment = Fixture::request($fixture);
+    $former = Fixture::recipient($fixture, $assignment);
+    Fixture::respond($former['user'], $assignment);
+    $assignment->refresh();
+    $receipt = Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id']);
+    $first = app(GetStatementVerification::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']);
+    Fixture::respond($former['user'], $assignment, 'conflict', 'New financial interest.', 'financial_interest');
+    $assignment->refresh();
+    $replacement = Fixture::recipient($fixture, $assignment);
+    expect($replacement['party']->id)->not->toBe($former['party']->id);
+    Fixture::respond($replacement['user'], $assignment);
+    $assignment->refresh();
+    expect(app(GetAuditStatementVerification::class)->handle($replacement['user']->id, 1, $assignment->id, $first['id']))->toBe([...$first, 'current' => false]);
+    Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id'], verificationRevision: 1);
+    $current = app(GetStatementVerification::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']);
+    expect($current['current'])->toBeTrue()->and($current['amends_id'])->toBe($receipt['data']['verification_id'])
+        ->and($current['payload']['assignment']['party_id'])->toBe($replacement['party']->id)
+        ->and($current['payload']['assignment']['revision'])->toBe($assignment->revision)
+        ->and(app(GetStatementVerification::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business'], $first['id']))->toBe([...$first, 'current' => false]);
+    expect(fn () => app(GetAuditStatementVerification::class)->handle($former['user']->id, 1, $assignment->id, $current['id']))
+        ->toThrow(CommandRejection::class, 'ASSIGNMENT_NOT_FOUND');
 });
 
 it('retains factual correction lineage and never lets a replay restore a superseded snapshot', function (): void {
@@ -139,6 +198,23 @@ it('records rejected factual reviews without approving sources and keeps the rej
         ->and(app(FindStatementVerificationOperation::class)->handle($partner['user']->id, 1, $request))->toBe($receipt);
     $this->assertDatabaseCount('statement_verifications', 0);
     expect(StatementEvidence::query()->firstOrFail()->revision)->toBe(2);
+});
+
+it('journals malformed source reviews as stable validation failures without partial verification', function (): void {
+    $fixture = Fixture::make(1);
+    $sources = Fixture::statements($fixture);
+    $assignment = Fixture::request($fixture);
+    $partner = $fixture['partners'][0];
+    Fixture::respond($partner['user'], $assignment);
+    $assignment->refresh();
+    $review = StatementFixture::review([$sources['document_id'] => hash('sha256', StatementFixture::csv())]);
+    $review['source_checks'][$sources['document_id']] = ['reference' => 'Missing required hash'];
+    $request = (string) Str::uuid();
+    $receipt = Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id'], $review, requestId: $request);
+    expect($receipt['code'])->toBe('STATEMENT_SOURCE_REVIEW_REQUIRED')->and($receipt['http_status'])->toBe(422)
+        ->and(Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id'], $review, requestId: $request))->toBe($receipt)
+        ->and(app(FindStatementVerificationOperation::class)->handle($partner['user']->id, 1, $request))->toBe($receipt);
+    $this->assertDatabaseCount('statement_verifications', 0);
 });
 
 it('requires current accepted-assignment authority on execution replay and lookup', function (string $fault): void {
@@ -332,6 +408,17 @@ it('reverses the verification table without losing original evidence or its exis
     expect($record->revision)->toBe(1)->and($record->toArray())->not->toHaveKey('payload');
 });
 
+it('keeps synthetic verification factories readable as history without granting current source authority', function (): void {
+    $fixture = Fixture::make(0);
+    $evidence = StatementEvidence::factory()->create(['business_id' => $fixture['business']]);
+    $record = StatementVerification::factory()->create(['statement_evidence_id' => $evidence->id]);
+    $read = app(GetStatementVerification::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']);
+    expect($read['id'])->toBe($record->id)->and($read['current'])->toBeFalse()
+        ->and($read['payload']['policy_version'])->toBe('synthetic-only')
+        ->and($read['payload']['observations'])->toBe([])
+        ->and($read['payload']['report_approval'])->toBe('not_cosigned');
+});
+
 it('preserves historical source verification while withdrawing its current status after a conflict or changed authority', function (string $fault): void {
     $fixture = Fixture::make(1);
     $sources = Fixture::statements($fixture);
@@ -343,6 +430,8 @@ it('preserves historical source verification while withdrawing its current statu
         AuditorFixture::review($partner['staff'], $partner['party']->id, 3, $fault);
     } elseif ($fault === 'membership') {
         RoleMembership::query()->where('party_id', $partner['party']->id)->update(['status' => 'suspended']);
+    } elseif ($fault === 'conflicting membership') {
+        RoleMembership::factory()->create(['party_id' => $partner['party']->id, 'role' => 'investor', 'status' => 'active']);
     } elseif ($fault === 'identity') {
         $partner['party']->forceFill(['verified_at' => null])->save();
     } elseif ($fault === 'certificate') {
@@ -364,7 +453,7 @@ it('preserves historical source verification while withdrawing its current statu
     $read = app(GetStatementVerification::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']);
     expect($read['current'])->toBeFalse()->and($read['payload']['observations'][0]['verified'])->toBeTrue();
     $this->assertDatabaseCount('statement_verifications', 1);
-})->with(['conflict', 'mandate', 'review', 'stale review', 'suspend', 'revoke', 'membership', 'identity', 'certificate']);
+})->with(['conflict', 'mandate', 'review', 'stale review', 'suspend', 'revoke', 'membership', 'conflicting membership', 'identity', 'certificate']);
 
 it('retains historical validity through ordinary expiry pause and withdrawal of a pending renewal', function (string $change): void {
     $fixture = Fixture::make(1);

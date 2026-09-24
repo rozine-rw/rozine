@@ -209,7 +209,7 @@ final class EloquentStatementStore implements StatementStore
     }
 
     /**
-     * @param  Review  $review
+     * @param  array<string, mixed>  $review
      * @return array<string, mixed>
      */
     public function verify(int $userId, int $contextRevision, string $assignmentId, int $expectedAssignmentRevision, int $expectedEvidenceRevision, int $expectedVerificationRevision, string $transcriptionId, string $transcriptionHash, array $review, string $requestId): array
@@ -242,9 +242,11 @@ final class EloquentStatementStore implements StatementStore
                             throw new CommandRejection('STATEMENT_TRANSCRIPTION_STALE', 409);
                         }
                         $sourceHashes = [];
+                        $sourceProvenance = [];
                         foreach ($this->manifest($evidence)['documents'] as $document) {
                             $original = $this->original($businessId, $document['id']);
                             $sourceHashes[$document['id']] = $original['sha256'];
+                            $sourceProvenance[$document['id']] = ['sha256' => $original['sha256'], 'extraction' => $document['extraction']];
                         }
                         $payload = $transcription['payload'];
                         foreach ($payload['source_hashes'] as $id => $hash) {
@@ -260,9 +262,10 @@ final class EloquentStatementStore implements StatementStore
                         $verifiedAt = now('UTC')->format('Y-m-d\TH:i:s\Z');
                         $snapshot = ['business_id' => $businessId, 'assignment' => $assignment, 'source_revision' => $evidence->revision,
                             'transcription' => ['id' => $transcription['id'], 'sha256' => $transcription['sha256']], 'source_hashes' => $sourceHashes,
+                            'source_provenance' => $sourceProvenance,
                             'policy_version' => StatementAuditReview::POLICY_VERSION, 'procedure_version' => StatementAuditReview::PROCEDURE,
-                            'classification_version' => StatementReconciliation::VERSION, 'review' => $review,
-                            'verified_at' => $verifiedAt, 'report_approval' => 'not_cosigned', 'observations' => $verified];
+                            'classification_version' => StatementReconciliation::VERSION, 'review' => $verified['review'],
+                            'verified_at' => $verifiedAt, 'report_approval' => 'not_cosigned', 'observations' => $verified['observations']];
                         $record = new StatementVerification;
                         $record->forceFill(['statement_evidence_id' => $evidence->id, 'transcription_id' => $transcription['id'], 'assignment_id' => $assignment['id'],
                             'revision' => ($previous->revision ?? 0) + 1, 'source_revision' => $evidence->revision, 'amends_id' => $previous?->id,
