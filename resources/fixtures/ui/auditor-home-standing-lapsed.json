@@ -30,8 +30,8 @@
             }
         },
         "nearby": {
-            "count": 1,
-            "closest_km": "11.2"
+            "count": 0,
+            "closest_km": null
         },
         "in_progress": [
             {
@@ -74,8 +74,8 @@
             }
         ],
         "standing": {
-            "current": true,
-            "reason": null,
+            "current": false,
+            "reason": "STANDING_CHECK_REQUIRED",
             "on_time_pct": 96,
             "avg_variance_pct": "2.1",
             "variance_flagged": false,

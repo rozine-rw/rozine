@@ -5,7 +5,7 @@
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
         "allowed_actions": ["accreditation.renew", "availability.update"],
-        "section": "accreditation",
+        "section": "availability",
         "auditor": {
             "name": "Diane Uwase, CPA",
             "firm": "Uwase & Co.",
@@ -17,18 +17,20 @@
         "on_time_pct": 96,
         "jobs_done": 9,
         "accreditation": {
-            "status": "active",
+            "status": "expired",
             "revision": 6,
             "licence": "ICPAR/P-2026/0481",
-            "expires_on": "2027-03-31",
-            "days_left": 179,
+            "expires_on": "2026-09-21",
+            "days_left": -12,
             "submission": {
-                "status": "none"
+                "status": "rejected",
+                "id": "REQ-2026-0388",
+                "reason": "the certificate scan is unreadable"
             }
         },
         "standing": {
-            "current": true,
-            "reason": null
+            "current": false,
+            "reason": "ACCREDITATION_EXPIRED"
         },
         "availability": {
             "accepting": true,

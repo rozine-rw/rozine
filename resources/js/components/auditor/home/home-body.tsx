@@ -176,7 +176,10 @@ export function HomeBody(props: AuditorHomeProps) {
                             licenceExpiresOn={props.licence_expires_on}
                         />
                     </div>
-                    <AvailabilityRow availability={props.availability} />
+                    <AvailabilityRow
+                        availability={props.availability}
+                        standing={props.standing}
+                    />
                     <AuditorCommandNotice placement="page" className="mt-3.5" />
                     {props.nearby.count > 0 && (
                         <NearbyAlert

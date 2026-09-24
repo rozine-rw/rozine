@@ -28,6 +28,10 @@
                 "reason": "the certificate scan is unreadable"
             }
         },
+        "standing": {
+            "current": false,
+            "reason": "ACCREDITATION_EXPIRED"
+        },
         "availability": {
             "accepting": false,
             "radius_km": 30,

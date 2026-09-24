@@ -3030,6 +3030,27 @@ const fr: Catalog = {
     'auditor.command.refused.ASSIGNMENT_ACCEPTANCE_EXPIRED':
         "Cette offre s'est close avant que votre acceptation n'arrive chez Rozine : elle n'a pas été acceptée. La page a été actualisée.",
 
+    'auditor.standing.reason.ACCREDITATION_REQUIRED':
+        "Vous n'avez pas encore d'accréditation approuvée.",
+    'auditor.command.refused.ACCREDITATION_REQUIRED':
+        "Vous n'avez pas encore d'accréditation approuvée. Aucune mission ne peut vous être proposée d'ici là : rien n'a été modifié.",
+    'auditor.standing.reason.ACCREDITATION_EXPIRED':
+        'Votre licence a expiré. Renouvelez-la pour recevoir à nouveau des missions.',
+    'auditor.command.refused.ACCREDITATION_EXPIRED':
+        "Votre licence a expiré. Renouvelez-la pour recevoir à nouveau des missions. Aucune mission ne peut vous être proposée d'ici là : rien n'a été modifié.",
+    'auditor.standing.reason.ACCREDITATION_SUSPENDED':
+        "Votre accréditation est suspendue par les Opérations d'audit.",
+    'auditor.command.refused.ACCREDITATION_SUSPENDED':
+        "Votre accréditation est suspendue par les Opérations d'audit. Aucune mission ne peut vous être proposée d'ici là : rien n'a été modifié.",
+    'auditor.standing.reason.STANDING_CHECK_REQUIRED':
+        "Un contrôle de statut par les Opérations d'audit est attendu.",
+    'auditor.command.refused.STANDING_CHECK_REQUIRED':
+        "Un contrôle de statut par les Opérations d'audit est attendu. Aucune mission ne peut vous être proposée d'ici là : rien n'a été modifié.",
+    'auditor.standing.paused_until_restored':
+        "L'affectation est suspendue jusqu'au rétablissement de votre statut. Votre choix d'accepter des audits est conservé.",
+    'auditor.standing.turning_on':
+        "L'activer n'apportera pas d'offres tant que votre statut n'est pas rétabli.",
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',
