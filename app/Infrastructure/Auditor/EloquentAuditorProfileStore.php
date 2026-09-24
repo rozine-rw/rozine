@@ -49,10 +49,10 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
 
         return $this->executeOwn($userId, $contextRevision, $expectedRevision, $renew ? 'accreditation.renew' : 'accreditation.submit', $requestId,
             ['licence' => $licence, 'expires_on' => $expiresOn, 'filename_sha256' => hash('sha256', $filename), 'sha256' => hash('sha256', $content)],
-            function (array $state) use ($certificateId, $licence, $expiresOn, $filename, $content, &$source): array {
+            function (array $state) use ($certificateId, $licence, $expiresOn, $filename, $content, $renew, &$source): array {
                 $source = $this->certificates->describe($filename, $content);
 
-                return $this->profiles->submit($state, $certificateId, $licence, $expiresOn, now()->toDateTimeImmutable());
+                return $this->profiles->submit($state, $certificateId, $licence, $expiresOn, now()->toDateTimeImmutable(), $renew);
             },
             function (AuditorProfile $record) use ($certificateId, $content, $userId, &$source): void {
                 (new AuditorCertificate)->forceFill([...$source, 'id' => $certificateId, 'auditor_profile_id' => $record->id,

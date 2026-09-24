@@ -29,10 +29,13 @@ final class AccreditationProfile
      * @param  State  $state
      * @return State
      */
-    public function submit(array $state, string $id, string $licence, string $expiresOn, DateTimeImmutable $now): array
+    public function submit(array $state, string $id, string $licence, string $expiresOn, DateTimeImmutable $now, bool $renew = false): array
     {
         if ($state['submission']['status'] === 'pending') {
             throw new CommandRejection('ACCREDITATION_SUBMISSION_PENDING');
+        }
+        if ($renew !== ($state['certificate_id'] !== null)) {
+            throw new CommandRejection('ACCREDITATION_ACTION_NOT_ALLOWED');
         }
         $licence = trim($licence);
         if ($licence === '' || mb_strlen($licence) > 32 || ! mb_check_encoding($licence, 'UTF-8') || preg_match('/[\p{Cc}\p{Cf}]/u', $licence) === 1) {

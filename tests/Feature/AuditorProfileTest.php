@@ -271,3 +271,26 @@ it('reverses and reapplies the isolated accreditation schema', function (): void
     expect(Schema::hasTable('auditor_profile_versions'))->toBeTrue();
     expect(AuditorProfileVersion::factory()->create()->snapshot['revision'])->toBe(1);
 });
+
+it('records wrong submit or renew commands without replacing approved facts and preserves historical retries', function (): void {
+    $fixture = AuditorFixture::make();
+    $action = app(SubmitAuditorAccreditation::class);
+    $renewRequest = (string) Str::uuid();
+    $firstRenew = $action->handle($fixture['user']->id, 1, 0, 'CPA', now()->addYear()->format('Y-m-d'), 'renew.pdf', '%PDF-1.7 synthetic', $renewRequest, true);
+    expect($firstRenew['code'])->toBe('ACCREDITATION_ACTION_NOT_ALLOWED')->and($firstRenew['http_status'])->toBe(409);
+    $this->assertDatabaseCount('auditor_profiles', 0);
+    $this->assertDatabaseCount('auditor_certificates', 0);
+    $submitRequest = (string) Str::uuid();
+    $submitted = AuditorFixture::submit($fixture['user'], request: $submitRequest);
+    AuditorFixture::review($fixture['staff'], $fixture['party']->id, 1, 'approve', $submitted['data']['submission_id']);
+    $approved = app(GetAuditorProfile::class)->handle($fixture['user']->id, 1);
+    expect(AuditorFixture::submit($fixture['user'], 2)['code'])->toBe('ACCREDITATION_ACTION_NOT_ALLOWED')
+        ->and(AuditorFixture::submit($fixture['user'], request: $submitRequest))->toBe($submitted)
+        ->and($action->handle($fixture['user']->id, 1, 0, 'CPA', now()->addYear()->format('Y-m-d'), 'renew.pdf', '%PDF-1.7 synthetic', $renewRequest, true))->toBe($firstRenew)
+        ->and(app(FindAuditorOperation::class)->handle($fixture['user']->id, 1, 'accreditation.renew', $renewRequest))->toBe($firstRenew);
+    $this->assertDatabaseCount('auditor_certificates', 1);
+    $this->assertDatabaseCount('auditor_profile_versions', 2);
+    $renewed = $action->handle($fixture['user']->id, 1, 2, 'CPA', now()->addYear()->format('Y-m-d'), 'renew.pdf', '%PDF-1.7 synthetic', (string) Str::uuid(), true);
+    expect($renewed['code'])->toBe('ACCREDITATION_SUBMITTED')
+        ->and(app(GetAuditorProfile::class)->handle($fixture['user']->id, 1)['state']['standing'])->toBe($approved['state']['standing']);
+});
