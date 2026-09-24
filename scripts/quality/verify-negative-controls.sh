@@ -66,7 +66,7 @@ report() {
   echo
 }
 
-ALL_CONTROLS=(strict-types domain-purity transport-boundary identity-boundary operation-boundary business-boundary evidence-boundary adapter-leak php-coverage phpstan-tests)
+ALL_CONTROLS=(strict-types domain-purity transport-boundary identity-boundary operation-boundary business-boundary evidence-boundary auditor-boundary adapter-leak php-coverage phpstan-tests)
 
 selected() {
   local wanted="$1" name
@@ -338,6 +338,39 @@ VIOLATION
     cat "${LOG_DIR}/evidence.log"
   fi
   rm -f app/Application/Evidence/NegativeControlEvidenceWrite.php
+  done
+fi
+
+if selected auditor-boundary; then
+  control auditor-boundary "bypassing the auditor adapter to write accreditation or certificate history must fail"
+  for auditor_model in AuditorProfile AuditorProfileVersion AuditorCertificate; do
+  echo "    checking ${auditor_model}"
+  plant app/Application/Auditor/NegativeControlAuditorWrite.php <<VIOLATION
+<?php
+
+declare(strict_types=1);
+
+namespace App\\Application\\Auditor;
+
+use App\\Models\\${auditor_model};
+
+final class NegativeControlAuditorWrite
+{
+    public function handle(): ${auditor_model}
+    {
+        return ${auditor_model}::query()->create([]);
+    }
+}
+VIOLATION
+  if [ "${ARCHITECTURE_GREEN}" != true ]; then
+    report auditor-boundary fail "the architecture suite must be green beforehand"
+  elif gate_fails "${LOG_DIR}/auditor.log" vendor/bin/pest --ci --no-tia tests/Architecture/ArchitectureTest.php --filter='auditor accreditation records are only accessed' --compact; then
+    report auditor-boundary pass "the auditor accreditation boundary rejected it"
+  else
+    report auditor-boundary fail "the auditor accreditation boundary accepted an external write"
+    cat "${LOG_DIR}/auditor.log"
+  fi
+  rm -f app/Application/Auditor/NegativeControlAuditorWrite.php
   done
 fi
 

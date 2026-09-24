@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\WithdrawAuditorAccreditation;
 use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\Contracts\StatementExtractionQueue;
@@ -21,6 +22,9 @@ use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
+use App\Models\AuditorCertificate;
+use App\Models\AuditorProfile;
+use App\Models\AuditorProfileVersion;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationVersion;
 use App\Models\BusinessMandate;
@@ -42,6 +46,7 @@ use App\Models\VerifiedPersonIdentity;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Tests\Support\AuditorFixture;
 use Tests\Support\BusinessApplicationFixture;
 use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\ConsentFixture;
@@ -541,4 +546,46 @@ it('appends one terminal extraction when committed workers race on the same orig
         ->and(StatementExtraction::query()->where('revision', 2)->firstOrFail()->status)->toBe('text_extracted')
         ->and(StatementOriginal::query()->count())->toBe(1)
         ->and(CommandOperation::query()->where('command', 'statement.ingest')->count())->toBe(1);
+});
+
+it('commits one accreditation original and receipt for concurrent same Party retries', function (): void {
+    $fixture = AuditorFixture::make();
+    $request = (string) Str::uuid();
+    $operation = function () use ($fixture, $request): void {
+        $result = AuditorFixture::submit($fixture['user'], request: $request);
+        if ($result['code'] !== 'ACCREDITATION_SUBMITTED') {
+            throw new RuntimeException('Accreditation retry failed.');
+        }
+    };
+    expect(runIdentityContenders([$operation, $operation]))->toBe([0, 0]);
+    expect(AuditorProfile::query()->count())->toBe(1)
+        ->and(AuditorCertificate::query()->count())->toBe(1)
+        ->and(AuditorProfileVersion::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'accreditation.submit')->count())->toBe(1);
+});
+
+it('serializes staff approval against Auditor withdrawal without reviving withdrawn claims', function (): void {
+    $fixture = AuditorFixture::make();
+    $submitted = AuditorFixture::submit($fixture['user']);
+    $approve = function () use ($fixture, $submitted): void {
+        $result = AuditorFixture::review($fixture['staff'], $fixture['party']->id, 1, 'approve', $submitted['data']['submission_id']);
+        if ($result['http_status'] !== 200) {
+            throw new CommandRejection($result['code'], $result['http_status']);
+        }
+    };
+    $withdraw = function () use ($fixture, $submitted): void {
+        $result = app(WithdrawAuditorAccreditation::class)->handle($fixture['user']->id, 1, 1,
+            $submitted['data']['submission_id'], (string) Str::uuid());
+        if ($result['http_status'] !== 200) {
+            throw new CommandRejection($result['code'], $result['http_status']);
+        }
+    };
+    expect(runIdentityContenders([$approve, $withdraw]))->toBe([0, 2]);
+    $profile = AuditorProfile::query()->firstOrFail();
+    $winner = CommandOperation::query()->whereIn('command', ['accreditation.review', 'accreditation.withdraw'])->get()
+        ->first(fn (CommandOperation $operation): bool => $operation->result['http_status'] === 200);
+    expect($profile->revision)->toBe(2)->and($profile->state['submission']['status'])->toBe('none')
+        ->and($profile->state['standing']['status'])->toBe($winner?->command === 'accreditation.review' ? 'active' : 'none')
+        ->and(AuditorCertificate::query()->count())->toBe(1)
+        ->and(AuditorProfileVersion::query()->count())->toBe(2);
 });

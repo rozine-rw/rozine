@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use App\Application\Identity\RegisterIdentity;
 use App\Http\Controllers\Controller;
+use App\Models\AuditorCertificate;
+use App\Models\AuditorProfile;
+use App\Models\AuditorProfileVersion;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationVersion;
 use App\Models\BusinessMandate;
@@ -192,3 +195,13 @@ it('has concrete targets for the immutable statement evidence boundary', functio
 arch('statement evidence records are only accessed by their adapter')
     ->expect(['App\Models\StatementEvidence', 'App\Models\StatementOriginal', 'App\Models\StatementExtraction', 'App\Models\StatementTranscription'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Evidence', 'App\Models', 'Database\Factories']);
+
+it('has concrete targets for the auditor accreditation boundary', function (): void {
+    expect(class_exists(AuditorProfile::class))->toBeTrue()
+        ->and(class_exists(AuditorProfileVersion::class))->toBeTrue()
+        ->and(class_exists(AuditorCertificate::class))->toBeTrue();
+})->group('arch');
+
+arch('auditor accreditation records are only accessed by their adapter')
+    ->expect(['App\Models\AuditorProfile', 'App\Models\AuditorProfileVersion', 'App\Models\AuditorCertificate'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Auditor', 'App\Models', 'Database\Factories']);

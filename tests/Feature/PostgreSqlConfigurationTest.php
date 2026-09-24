@@ -42,6 +42,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $openDraftMigration = require database_path('migrations/2026_09_24_075833_add_one_open_draft_constraint_to_business_applications.php');
     $transcriptionMigration = require database_path('migrations/2026_09_24_081222_create_statement_transcriptions_table.php');
     $filenameMigration = require database_path('migrations/2026_09_24_085637_encrypt_statement_original_filenames.php');
+    $auditorMigration = require database_path('migrations/2026_09_24_093501_create_auditor_profiles_and_accreditation_history.php');
     $party = Party::factory()->verified()->create();
     $user = User::factory()->for($party)->create();
     RoleMembership::factory()->for($party)->active()->create();
@@ -50,6 +51,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
 
     expect(Schema::hasIndex('users', ['party_id']))->toBeTrue();
 
+    $auditorMigration->down();
     $filenameMigration->down();
     $transcriptionMigration->down();
     $openDraftMigration->down();
@@ -84,6 +86,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $openDraftMigration->up();
     $transcriptionMigration->up();
     $filenameMigration->up();
+    $auditorMigration->up();
 
     expect(Schema::hasTable('parties'))->toBeTrue()
         ->and(Schema::hasTable('role_memberships'))->toBeTrue()
@@ -99,5 +102,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasIndex('business_applications', 'business_application_one_draft'))->toBeTrue()
         ->and(Schema::hasTable('statement_originals'))->toBeTrue()
         ->and(Schema::hasTable('statement_extractions'))->toBeTrue()
-        ->and(Schema::hasTable('statement_transcriptions'))->toBeTrue();
+        ->and(Schema::hasTable('statement_transcriptions'))->toBeTrue()
+        ->and(Schema::hasTable('auditor_profiles'))->toBeTrue()
+        ->and(Schema::hasTable('auditor_certificates'))->toBeTrue()
+        ->and(Schema::hasTable('auditor_profile_versions'))->toBeTrue();
 });
