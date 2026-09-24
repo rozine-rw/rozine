@@ -19,6 +19,36 @@ facts that would differ between machines, so they are excluded deliberately.
 
 ## Schema
 
+### `audit_location_versions`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `audit_location_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `snapshot` | `text` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `command` | `varchar` | no | — |
+| `reason` | `text` | no | — |
+| `policy_version` | `varchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `audit_location_versions_audit_location_id_revision_unique` on (audit_location_id, revision) — unique; `audit_location_versions_pkey` on (id) — unique
+
+### `audit_locations`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `office_party_id` | `bpchar` | yes | — |
+| `business_id` | `bpchar` | yes | — |
+| `revision` | `int4` | no | — |
+| `state` | `text` | no | — |
+| `created_at` | `timestamptz` | yes | — |
+| `updated_at` | `timestamptz` | yes | — |
+
+**Indexes:** `audit_locations_business_id_unique` on (business_id) — unique; `audit_locations_office_party_id_unique` on (office_party_id) — unique; `audit_locations_pkey` on (id) — unique
+
 ### `auditor_certificates`
 
 | Column | Type | Nullable | Default |
@@ -565,6 +595,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_24_081222_create_statement_transcriptions_table.php |
 | 2026_09_24_085637_encrypt_statement_original_filenames.php |
 | 2026_09_24_093501_create_auditor_profiles_and_accreditation_history.php |
+| 2026_09_24_103630_create_audit_locations_and_history.php |
 
 ## Routes
 
@@ -625,14 +656,14 @@ The ADR-0001 layering as it stands. `tests/Architecture` enforces the dependency
 
 | Layer | Path | Classes | Contents |
 |---|---|---|---|
-| Domain | `app/Domain` | 28 | `Auditor\AccreditationCertificate`, `Auditor\AccreditationProfile`, `Auditor\AccreditationView`, `Auditor\AuditAssignmentClock`, `Auditor\AuditorDispatch`, `Auditor\AuditorStanding`, `Business\ApplicationDraft`, `Business\MandateAuthority`, `Evidence\StatementReconciliation`, `Evidence\StatementSource`, `Identity\ActiveRolePolicy`, `Identity\BookmarkDestination`, `Identity\ConsentDocuments`, `Identity\IdentityViolation`, `Identity\MembershipTransitions`, `Identity\RoleAccess`, `Identity\StaffPermission`, `Operations\CommandRejection`, `Operations\OperationResult`, `Pulse\PulseSector`, `Pulse\PulseUnderwriting`, `Underwriting\CashFlowEvidence`, `Underwriting\EngineScorecard`, `Underwriting\ExactFinancialValue`, `Underwriting\FlatReturnPricing`, `Underwriting\LoanCapacity`, `Underwriting\LoanSchedule`, `Underwriting\UnderwritingViolation` |
-| Application | `app/Application` | 60 | `Auditor\Contracts\AuditorProfileStore`, `Auditor\FindAuditorOperation`, `Auditor\GetAuditorAccreditation`, `Auditor\GetAuditorProfile`, `Auditor\ReadAuditorCertificate`, `Auditor\RecordAuditorStanding`, `Auditor\SetAuditorAvailability`, `Auditor\SubmitAuditorAccreditation`, `Auditor\WithdrawAuditorAccreditation`, `Business\ConfigureBusinessAuthority`, `Business\Contracts\BusinessApplicationStore`, `Business\Contracts\BusinessAuthorityStore`, `Business\CreateBusinessApplication`, `Business\FindBusinessOperation`, `Business\GetBusinessApplication`, `Business\GetCurrentBusinessApplication`, `Business\SaveBusinessApplication`, `Business\WithBusinessAuthority`, `Environment\Contracts\DemoFixtureStore`, `Environment\EnvironmentIsolation`, `Environment\ResetDemoFixtures`, `Evidence\Contracts\StatementExtractionQueue`, `Evidence\Contracts\StatementStore`, `Evidence\Contracts\StatementTextExtractor`, `Evidence\FindStatementOperation`, `Evidence\GetStatementEvidence`, `Evidence\GetStatementTranscription`, `Evidence\IngestStatement`, `Evidence\ReadStatementOriginal`, `Evidence\RecordStatementTranscription`, `Identity\AuthorizeActiveRole`, `Identity\AuthorizeEntityRole`, `Identity\AuthorizeStaffPermission`, `Identity\ChangeMembership`, `Identity\ConfigureIdentityOperator`, `Identity\ConfigureStaffAccess`, `Identity\Contracts\ConsentCatalog`, `Identity\Contracts\IdentityAccessStore`, `Identity\Contracts\IdentityRepository`, `Identity\GetIdentityContext`, `Identity\GetRoleBookmark`, `Identity\GetStaffAccess`, `Identity\RecordConsentRelease`, `Identity\RegisterIdentity`, `Identity\ResolveVerifiedOrganization`, `Identity\ResolveVerifiedPerson`, `Identity\SaveRoleBookmark`, `Identity\SelectActiveRole`, `Identity\WithCurrentConsent`, `Identity\WithVerifiedParties`, `Operations\Contracts\CanonicalJson`, `Operations\Contracts\OperationJournal`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor` |
-| Infrastructure | `app/Infrastructure` | 14 | `Auditor\EloquentAuditorProfileStore`, `Business\EloquentBusinessApplicationStore`, `Business\EloquentBusinessAuthorityStore`, `Environment\EloquentDemoFixtureStore`, `Evidence\EloquentStatementExtractionQueue`, `Evidence\EloquentStatementStore`, `Evidence\IsolatedStatementTextExtractor`, `Evidence\PdfAndCsvTextExtractor`, `Identity\EloquentConsentCatalog`, `Identity\EloquentIdentityAccessStore`, `Identity\EloquentIdentityRepository`, `Operations\EloquentOperationJournal`, `Operations\JcsCanonicalJson`, `Pulse\EloquentPulseSignupRepository` |
+| Domain | `app/Domain` | 30 | `Auditor\AccreditationCertificate`, `Auditor\AccreditationProfile`, `Auditor\AccreditationView`, `Auditor\AuditAssignmentClock`, `Auditor\AuditorDispatch`, `Auditor\AuditorStanding`, `Auditor\VerifiedAuditLocation`, `Auditor\Wgs84Distance`, `Business\ApplicationDraft`, `Business\MandateAuthority`, `Evidence\StatementReconciliation`, `Evidence\StatementSource`, `Identity\ActiveRolePolicy`, `Identity\BookmarkDestination`, `Identity\ConsentDocuments`, `Identity\IdentityViolation`, `Identity\MembershipTransitions`, `Identity\RoleAccess`, `Identity\StaffPermission`, `Operations\CommandRejection`, `Operations\OperationResult`, `Pulse\PulseSector`, `Pulse\PulseUnderwriting`, `Underwriting\CashFlowEvidence`, `Underwriting\EngineScorecard`, `Underwriting\ExactFinancialValue`, `Underwriting\FlatReturnPricing`, `Underwriting\LoanCapacity`, `Underwriting\LoanSchedule`, `Underwriting\UnderwritingViolation` |
+| Application | `app/Application` | 65 | `Auditor\Contracts\AuditLocationStore`, `Auditor\Contracts\AuditorProfileStore`, `Auditor\FindAuditorOperation`, `Auditor\GetAuditLocation`, `Auditor\GetAuditorAccreditation`, `Auditor\GetAuditorProfile`, `Auditor\MarkAuditLocationMoved`, `Auditor\ReadAuditorCertificate`, `Auditor\RecordAuditorStanding`, `Auditor\SetAuditorAvailability`, `Auditor\SubmitAuditorAccreditation`, `Auditor\VerifyAuditLocation`, `Auditor\WithdrawAuditorAccreditation`, `Business\ConfigureBusinessAuthority`, `Business\Contracts\BusinessApplicationStore`, `Business\Contracts\BusinessAuthorityStore`, `Business\CreateBusinessApplication`, `Business\FindBusinessOperation`, `Business\GetBusinessApplication`, `Business\GetCurrentBusinessApplication`, `Business\SaveBusinessApplication`, `Business\WithBusinessAuthority`, `Business\WithBusinessReview`, `Environment\Contracts\DemoFixtureStore`, `Environment\EnvironmentIsolation`, `Environment\ResetDemoFixtures`, `Evidence\Contracts\StatementExtractionQueue`, `Evidence\Contracts\StatementStore`, `Evidence\Contracts\StatementTextExtractor`, `Evidence\FindStatementOperation`, `Evidence\GetStatementEvidence`, `Evidence\GetStatementTranscription`, `Evidence\IngestStatement`, `Evidence\ReadStatementOriginal`, `Evidence\RecordStatementTranscription`, `Identity\AuthorizeActiveRole`, `Identity\AuthorizeEntityRole`, `Identity\AuthorizeStaffPermission`, `Identity\ChangeMembership`, `Identity\ConfigureIdentityOperator`, `Identity\ConfigureStaffAccess`, `Identity\Contracts\ConsentCatalog`, `Identity\Contracts\IdentityAccessStore`, `Identity\Contracts\IdentityRepository`, `Identity\GetIdentityContext`, `Identity\GetRoleBookmark`, `Identity\GetStaffAccess`, `Identity\RecordConsentRelease`, `Identity\RegisterIdentity`, `Identity\ResolveVerifiedOrganization`, `Identity\ResolveVerifiedPerson`, `Identity\SaveRoleBookmark`, `Identity\SelectActiveRole`, `Identity\WithCurrentConsent`, `Identity\WithVerifiedParties`, `Operations\Contracts\CanonicalJson`, `Operations\Contracts\OperationJournal`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor` |
+| Infrastructure | `app/Infrastructure` | 15 | `Auditor\EloquentAuditLocationStore`, `Auditor\EloquentAuditorProfileStore`, `Business\EloquentBusinessApplicationStore`, `Business\EloquentBusinessAuthorityStore`, `Environment\EloquentDemoFixtureStore`, `Evidence\EloquentStatementExtractionQueue`, `Evidence\EloquentStatementStore`, `Evidence\IsolatedStatementTextExtractor`, `Evidence\PdfAndCsvTextExtractor`, `Identity\EloquentConsentCatalog`, `Identity\EloquentIdentityAccessStore`, `Identity\EloquentIdentityRepository`, `Operations\EloquentOperationJournal`, `Operations\JcsCanonicalJson`, `Pulse\EloquentPulseSignupRepository` |
 | HTTP — controllers | `app/Http/Controllers` | 14 | `Api\V1\IdentityController`, `Api\V1\IdentityManagementController`, `Api\V1\RoleBookmarkController`, `Api\V1\StaffAccessController`, `Controller`, `DashboardController`, `IdentityManagementController`, `PulseController`, `RoleBookmarkController`, `RoleHomeController`, `Settings\ProfileController`, `Settings\SecurityController`, `SiteController`, `StaffHomeController` |
 | HTTP — requests | `app/Http/Requests` | 14 | `Identity\ChangeMembershipRequest`, `Identity\ResolvePersonRequest`, `Identity\SaveRoleBookmarkRequest`, `Identity\SelectActiveRoleRequest`, `Pulse\PreviewBusinessRequest`, `Pulse\PreviewInvestorRequest`, `Pulse\StoreBusinessSignupRequest`, `Pulse\StoreInvestorPledgeRequest`, `Settings\PasswordUpdateRequest`, `Settings\ProfileDeleteRequest`, `Settings\ProfileUpdateRequest`, `Settings\TwoFactorAuthenticationRequest`, `Site\StoreSiteBusinessRequest`, `Site\StoreSiteInvestorRequest` |
 | HTTP — resources | `app/Http/Resources` | 13 | `AuditorAccreditationResource`, `IdentityContextResource`, `IdentityMutationResource`, `OperationResource`, `PulseBusinessPreviewResource`, `PulseBusinessSignupReceiptResource`, `PulseInvestorPreviewResource`, `PulseInvestorSignupReceiptResource`, `PulseListingResource`, `PulsePageResource`, `PulsePolicyResource`, `RoleBookmarkResource`, `StaffAccessResource` |
 | HTTP — middleware | `app/Http/Middleware` | 3 | `HandleAppearance`, `HandleInertiaRequests`, `SetLocale` |
-| Models | `app/Models` | 23 | `AuditorCertificate`, `AuditorProfile`, `AuditorProfileVersion`, `BusinessApplication`, `BusinessApplicationVersion`, `BusinessMandate`, `BusinessProfile`, `CommandOperation`, `ConsentRelease`, `IdentityAuditEvent`, `IdentityOperator`, `Party`, `PulseSignup`, `RoleBookmark`, `RoleMembership`, `StaffAccount`, `StatementEvidence`, `StatementExtraction`, `StatementOriginal`, `StatementTranscription`, `User`, `VerifiedOrganizationIdentity`, `VerifiedPersonIdentity` |
+| Models | `app/Models` | 25 | `AuditLocation`, `AuditLocationVersion`, `AuditorCertificate`, `AuditorProfile`, `AuditorProfileVersion`, `BusinessApplication`, `BusinessApplicationVersion`, `BusinessMandate`, `BusinessProfile`, `CommandOperation`, `ConsentRelease`, `IdentityAuditEvent`, `IdentityOperator`, `Party`, `PulseSignup`, `RoleBookmark`, `RoleMembership`, `StaffAccount`, `StatementEvidence`, `StatementExtraction`, `StatementOriginal`, `StatementTranscription`, `User`, `VerifiedOrganizationIdentity`, `VerifiedPersonIdentity` |
 | Console commands | `app/Console/Commands` | 6 | `CaptureBaselineInventory`, `CheckEnvironmentIsolation`, `ConfigureIdentityOperatorCommand`, `ConfigureStaffAccessCommand`, `ExtractPendingStatements`, `ResetDemo` |
 
 ## CI gates

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Application\Identity\RegisterIdentity;
 use App\Http\Controllers\Controller;
+use App\Models\AuditLocation;
+use App\Models\AuditLocationVersion;
 use App\Models\AuditorCertificate;
 use App\Models\AuditorProfile;
 use App\Models\AuditorProfileVersion;
@@ -199,9 +201,11 @@ arch('statement evidence records are only accessed by their adapter')
 it('has concrete targets for the auditor accreditation boundary', function (): void {
     expect(class_exists(AuditorProfile::class))->toBeTrue()
         ->and(class_exists(AuditorProfileVersion::class))->toBeTrue()
+        ->and(class_exists(AuditLocation::class))->toBeTrue()
+        ->and(class_exists(AuditLocationVersion::class))->toBeTrue()
         ->and(class_exists(AuditorCertificate::class))->toBeTrue();
 })->group('arch');
 
 arch('auditor accreditation records are only accessed by their adapter')
-    ->expect(['App\Models\AuditorProfile', 'App\Models\AuditorProfileVersion', 'App\Models\AuditorCertificate'])
+    ->expect(['App\Models\AuditorProfile', 'App\Models\AuditorProfileVersion', 'App\Models\AuditorCertificate', 'App\Models\AuditLocation', 'App\Models\AuditLocationVersion'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Auditor', 'App\Models', 'Database\Factories']);

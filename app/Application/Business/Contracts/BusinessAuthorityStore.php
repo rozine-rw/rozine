@@ -29,4 +29,12 @@ interface BusinessAuthorityStore
      * @return TResult
      */
     public function withAuthority(int $userId, int $contextRevision, string $businessId, string $permission, ?int $mandateVersion, Closure $operation): mixed;
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(Business): TResult  $operation
+     * @return TResult
+     */
+    public function withReview(int $actorId, string $businessId, bool $requireVerified, Closure $operation): mixed;
 }

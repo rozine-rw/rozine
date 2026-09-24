@@ -119,4 +119,37 @@ final class EloquentBusinessAuthorityStore implements BusinessAuthorityStore
                 }, $business->profile['company_code'] === null ? null : 'RDB:'.$business->profile['company_code']);
         }, 3);
     }
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(Business): TResult  $operation
+     * @return TResult
+     */
+    public function withReview(int $actorId, string $businessId, bool $requireVerified, Closure $operation): mixed
+    {
+        return DB::transaction(function () use ($actorId, $businessId, $requireVerified, $operation): mixed {
+            $business = BusinessProfile::query()->lockForUpdate()->find($businessId);
+
+            return $this->staff->handle($actorId, 'businesses.verify', function () use ($business, $requireVerified, $operation): mixed {
+                $mandate = $business === null ? null : BusinessMandate::query()->where('business_id', $business->id)->where('version', $business->mandate_version)->first();
+                if ($business === null || $mandate === null) {
+                    throw new CommandRejection('BUSINESS_NOT_FOUND', 404);
+                }
+                $terms = $mandate->terms;
+                $record = ['id' => $business->id, 'entity_kind' => $business->entity_kind, 'entity_party_id' => $business->entity_party_id,
+                    'profile' => $business->profile, 'revision' => $business->revision, 'mandate_version' => $business->mandate_version, 'mandate' => $terms];
+                if (! $requireVerified) {
+                    return $operation($record);
+                }
+                $now = now('UTC')->format('Y-m-d\TH:i:s\Z');
+                if ($terms['status'] !== 'active' || $terms['effective_at'] > $now || ($terms['expires_at'] !== null && $terms['expires_at'] <= $now)) {
+                    throw new CommandRejection('MANDATE_REQUIRED', 403);
+                }
+
+                return $this->verifiedParties->handle($business->entity_kind, $business->entity_party_id, array_column($terms['people'], 'party_id'),
+                    fn (): mixed => $operation($record), $business->profile['company_code'] === null ? null : 'RDB:'.$business->profile['company_code']);
+            });
+        }, 3);
+    }
 }

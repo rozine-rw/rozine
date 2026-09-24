@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\MarkAuditLocationMoved;
+use App\Application\Auditor\VerifyAuditLocation;
 use App\Application\Auditor\WithdrawAuditorAccreditation;
 use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\WithBusinessAuthority;
@@ -22,6 +24,8 @@ use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
+use App\Models\AuditLocation;
+use App\Models\AuditLocationVersion;
 use App\Models\AuditorCertificate;
 use App\Models\AuditorProfile;
 use App\Models\AuditorProfileVersion;
@@ -588,4 +592,48 @@ it('serializes staff approval against Auditor withdrawal without reviving withdr
         ->and($profile->state['standing']['status'])->toBe($winner?->command === 'accreditation.review' ? 'active' : 'none')
         ->and(AuditorCertificate::query()->count())->toBe(1)
         ->and(AuditorProfileVersion::query()->count())->toBe(2);
+});
+
+it('records one verified location and history for concurrent identical staff retries', function (): void {
+    $fixture = AuditorFixture::make();
+    $request = (string) Str::uuid();
+    $time = now('UTC')->format('Y-m-d\TH:i:s\Z');
+    $verify = function () use ($fixture, $request, $time): void {
+        $result = app(VerifyAuditLocation::class)->handle($fixture['staff']->id, 'office', $fixture['party']->id, 0,
+            '-1.9441', '30.0619', 20, $time, 'synthetic:office', 'Reviewed synthetic location.', $request);
+        if ($result['http_status'] !== 200) {
+            throw new CommandRejection($result['code'], $result['http_status']);
+        }
+    };
+    expect(runIdentityContenders([$verify, $verify]))->toBe([0, 0])
+        ->and(AuditLocation::query()->count())->toBe(1)
+        ->and(AuditLocationVersion::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'audit.location.verify')->count())->toBe(1);
+});
+
+it('serializes a move against re-verification so stale evidence cannot replace the winning revision', function (): void {
+    $fixture = AuditorFixture::make();
+    $time = now('UTC')->format('Y-m-d\TH:i:s\Z');
+    $verify = function (int $revision) use ($fixture, $time): void {
+        $result = app(VerifyAuditLocation::class)->handle($fixture['staff']->id, 'office', $fixture['party']->id, $revision,
+            '-1.9441', '30.0619', 20, $time, 'synthetic:office', 'Reviewed synthetic location.', (string) Str::uuid());
+        if ($result['http_status'] !== 200) {
+            throw new CommandRejection($result['code'], $result['http_status']);
+        }
+    };
+    $verify(0);
+    $moved = function () use ($fixture, $time): void {
+        $result = app(MarkAuditLocationMoved::class)->handle($fixture['staff']->id, 'office', $fixture['party']->id, 1,
+            $time, 'Office moved.', (string) Str::uuid());
+        if ($result['http_status'] !== 200) {
+            throw new CommandRejection($result['code'], $result['http_status']);
+        }
+    };
+    expect(runIdentityContenders([fn () => $verify(1), $moved]))->toBe([0, 2]);
+    $location = AuditLocation::query()->firstOrFail();
+    $history = AuditLocationVersion::query()->where('revision', 2)->firstOrFail();
+    expect($location->revision)->toBe(2)->and($location->state)->toBe($history->snapshot['state']);
+    $movedWon = $history->getAttribute('command') === 'audit.location.moved';
+    expect($location->state['point'] === null)->toBe($movedWon)
+        ->and(AuditLocationVersion::query()->count())->toBe(2);
 });
