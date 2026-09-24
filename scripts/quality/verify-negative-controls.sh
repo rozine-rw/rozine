@@ -66,7 +66,7 @@ report() {
   echo
 }
 
-ALL_CONTROLS=(strict-types domain-purity transport-boundary identity-boundary operation-boundary business-boundary adapter-leak php-coverage phpstan-tests)
+ALL_CONTROLS=(strict-types domain-purity transport-boundary identity-boundary operation-boundary business-boundary evidence-boundary adapter-leak php-coverage phpstan-tests)
 
 selected() {
   local wanted="$1" name
@@ -305,6 +305,39 @@ VIOLATION
     cat "${LOG_DIR}/business.log"
   fi
   rm -f app/Application/Business/NegativeControlBusinessWrite.php
+  done
+fi
+
+if selected evidence-boundary; then
+  control evidence-boundary "bypassing the evidence adapter to write statement originals or extractions must fail"
+  for evidence_model in StatementEvidence StatementOriginal StatementExtraction; do
+  echo "    checking ${evidence_model}"
+  plant app/Application/Evidence/NegativeControlEvidenceWrite.php <<VIOLATION
+<?php
+
+declare(strict_types=1);
+
+namespace App\\Application\\Evidence;
+
+use App\\Models\\${evidence_model};
+
+final class NegativeControlEvidenceWrite
+{
+    public function handle(): ${evidence_model}
+    {
+        return ${evidence_model}::query()->create([]);
+    }
+}
+VIOLATION
+  if [ "${ARCHITECTURE_GREEN}" != true ]; then
+    report evidence-boundary fail "the architecture suite must be green beforehand"
+  elif gate_fails "${LOG_DIR}/evidence.log" vendor/bin/pest --ci --no-tia tests/Architecture/ArchitectureTest.php --filter='statement evidence records are only accessed' --compact; then
+    report evidence-boundary pass "the immutable evidence boundary rejected it"
+  else
+    report evidence-boundary fail "the immutable evidence boundary accepted an external write"
+    cat "${LOG_DIR}/evidence.log"
+  fi
+  rm -f app/Application/Evidence/NegativeControlEvidenceWrite.php
   done
 fi
 

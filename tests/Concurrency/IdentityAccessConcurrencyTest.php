@@ -29,6 +29,9 @@ use App\Models\IdentityOperator;
 use App\Models\Party;
 use App\Models\RoleBookmark;
 use App\Models\RoleMembership;
+use App\Models\StatementEvidence;
+use App\Models\StatementExtraction;
+use App\Models\StatementOriginal;
 use App\Models\User;
 use App\Models\VerifiedOrganizationIdentity;
 use App\Models\VerifiedPersonIdentity;
@@ -38,6 +41,7 @@ use Illuminate\Support\Str;
 use Tests\Support\BusinessApplicationFixture;
 use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\ConsentFixture;
+use Tests\Support\StatementFixture;
 
 function concurrentIdentityOperator(): User
 {
@@ -426,4 +430,40 @@ it('admits one competing application edit from the same saved revision', functio
     expect(runIdentityContenders($operations))->toBe([0, 2])
         ->and($fixture['application']->refresh()->revision)->toBe(2)
         ->and(BusinessApplicationVersion::query()->count())->toBe(2);
+});
+
+it('commits one immutable statement receipt across simultaneous logins of the same Party', function (): void {
+    $fixture = BusinessApplicationFixture::make();
+    $second = User::factory()->for($fixture['authority']['people'][0])->create();
+    app(SelectActiveRole::class)->handle($second->id, 'business', 0, (string) Str::uuid());
+    $fixture['authority']['users'][] = $second;
+    $request = (string) Str::uuid();
+    expect(runIdentityContenders([
+        function () use ($fixture, $request): void {
+            StatementFixture::ingest($fixture, requestId: $request);
+        },
+        function () use ($fixture, $request): void {
+            StatementFixture::ingest($fixture, requestId: $request, actor: 1);
+        },
+    ]))->toBe([0, 0])
+        ->and(StatementEvidence::query()->firstOrFail()->revision)->toBe(1)
+        ->and(StatementOriginal::query()->count())->toBe(1)
+        ->and(StatementExtraction::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'statement.ingest')->count())->toBe(1);
+});
+
+it('admits one competing statement import against the same evidence revision', function (): void {
+    $fixture = BusinessApplicationFixture::make('organization', 2);
+    $operations = [];
+    foreach ([0, 1] as $actor) {
+        $operations[] = function () use ($fixture, $actor): void {
+            $result = StatementFixture::ingest($fixture, amount: $actor === 0 ? '100' : '200', actor: $actor);
+            if ($result['code'] === 'VERSION_CONFLICT') {
+                throw new CommandRejection('VERSION_CONFLICT');
+            }
+        };
+    }
+    expect(runIdentityContenders($operations))->toBe([0, 2])
+        ->and(StatementEvidence::query()->firstOrFail()->revision)->toBe(1)
+        ->and(StatementOriginal::query()->count())->toBe(1);
 });

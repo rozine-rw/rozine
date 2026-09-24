@@ -12,6 +12,9 @@ use App\Models\CommandOperation;
 use App\Models\ConsentRelease;
 use App\Models\Party;
 use App\Models\RoleMembership;
+use App\Models\StatementEvidence;
+use App\Models\StatementExtraction;
+use App\Models\StatementOriginal;
 use App\Models\VerifiedOrganizationIdentity;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -26,7 +29,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * these layers.
  *
  * Section 11.2's sixth boundary - the protected ledger, settlement,
- * underwriting-publication, seal and immutable-evidence seams - has no rules
+ * underwriting-publication and seal seams - has no rules
  * here yet because those namespaces do not exist. They arrive with the module
  * that introduces them; writing rules over absent namespaces would report a
  * protection that is not there.
@@ -177,3 +180,13 @@ it('has concrete targets for the business authority boundary', function (): void
 arch('business authority records are only accessed by their adapter')
     ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Models', 'Database\Factories']);
+
+it('has concrete targets for the immutable statement evidence boundary', function (): void {
+    expect(class_exists(StatementEvidence::class))->toBeTrue()
+        ->and(class_exists(StatementOriginal::class))->toBeTrue()
+        ->and(class_exists(StatementExtraction::class))->toBeTrue();
+})->group('arch');
+
+arch('statement evidence records are only accessed by their adapter')
+    ->expect(['App\Models\StatementEvidence', 'App\Models\StatementOriginal', 'App\Models\StatementExtraction'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Evidence', 'App\Models', 'Database\Factories']);
