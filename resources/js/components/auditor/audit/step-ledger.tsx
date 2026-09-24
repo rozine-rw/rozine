@@ -13,6 +13,7 @@ import {
 import type { StepContext } from '@/components/auditor/audit/parts';
 import { useAuditorCommands } from '@/components/auditor/commands';
 import { Tick } from '@/components/auditor/ui';
+import { FieldError } from '@/components/rozine/form';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatRwf } from '@/lib/rozine/format';
@@ -299,6 +300,12 @@ export function StepLedger({
                         : t('auditor.ledger.attach_another')}
                 </span>
             </button>
+            <FieldError id="auditor-ledger-document-error">
+                {errors.document}
+            </FieldError>
+            <FieldError id="auditor-ledger-replaces-error">
+                {errors.replaces}
+            </FieldError>
 
             <button
                 type="button"

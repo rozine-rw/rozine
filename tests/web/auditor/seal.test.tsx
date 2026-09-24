@@ -572,9 +572,11 @@ describe('Seal — authenticator step-up', () => {
             screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
         );
 
+        /* Beside the note, and in the open sheet, which covers the note. */
         expect(
-            await screen.findByText('Say what you saw.'),
+            await within(findings()).findByText('Say what you saw.'),
         ).toBeInTheDocument();
+        expect(screen.getAllByText('Say what you saw.')).toHaveLength(2);
         expect(screen.getByLabelText('Assessment note')).toHaveAttribute(
             'aria-invalid',
             'true',

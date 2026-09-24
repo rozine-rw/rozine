@@ -5,7 +5,7 @@ import { DIVIDER } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { AssignedFile, AuditorPortfolioProps } from '@/types/auditor';
+import type { AuditorPortfolioProps } from '@/types/auditor';
 
 /** The design lists the four most recent declarations (L2862). */
 const RECORD_SHOWN = 4;
@@ -22,7 +22,14 @@ export function ConflictRegister({
 }) {
     const { t, locale } = useTranslation();
     const center = useAuditorCommands();
-    const [file, setFile] = useState<AssignedFile | null>(null);
+    /*
+     * Only the chosen file's ID is kept: the record, its revision and its scope are read from the
+     * current props on every render, so a declaration sent again after a refresh carries the
+     * refreshed revision. A file gone from the list on refresh closes the sheet.
+     */
+    const [fileId, setFileId] = useState<string | null>(null);
+    const file =
+        conflicts.files.find((assigned) => assigned.id === fileId) ?? null;
     const count = conflicts.files.length;
     /* Each file is its own call (#96 point 3): only those it allows can be declared on. */
     const declarable = conflicts.files.filter((assigned) =>
@@ -56,7 +63,7 @@ export function ConflictRegister({
                                 <button
                                     key={assigned.id}
                                     type="button"
-                                    onClick={() => setFile(assigned)}
+                                    onClick={() => setFileId(assigned.id)}
                                     disabled={!center.conflict.idle}
                                     className="h-[34px] rounded-[10px] border border-rz-border bg-rz-surface px-3 text-[11.5px] font-semibold whitespace-nowrap text-rz-ink disabled:cursor-not-allowed disabled:opacity-60"
                                 >
@@ -115,7 +122,7 @@ export function ConflictRegister({
                     assignment={{ id: file.id, revision: file.revision }}
                     action={conflicts.declare}
                     scope={file.allowed_actions}
-                    onClose={() => setFile(null)}
+                    onClose={() => setFileId(null)}
                 />
             )}
         </section>

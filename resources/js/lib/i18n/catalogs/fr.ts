@@ -3020,6 +3020,9 @@ const fr: Catalog = {
 
     'business.grow.starting': 'Démarrage…',
 
+    'auditor.conflict.not_allowed':
+        "Vous ne pouvez plus faire de déclaration sur ce dossier : votre déclaration n'a pas été envoyée.",
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

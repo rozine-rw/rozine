@@ -2941,6 +2941,8 @@ const en = {
     'auditor.availability.home_paused_locked':
         'Dispatch is not offering you flash audits',
     'business.grow.starting': 'Starting…',
+    'auditor.conflict.not_allowed':
+        "You can no longer declare on this file, so your declaration hasn't been sent.",
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

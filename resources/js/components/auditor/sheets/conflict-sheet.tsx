@@ -59,7 +59,11 @@ export function ConflictSheet({
     const [note, setNote] = useState('');
     /* Its own lane: only an unresolved declaration holds another one back. */
     const lane = center.conflict;
-    const ready = kind !== null && note.trim() !== '' && lane.idle;
+    /* The scope is read afresh each render: a refresh can take the declaration away. */
+    const permitted =
+        scope?.includes('conflict.declare') ??
+        center.allowed('conflict.declare');
+    const ready = permitted && kind !== null && note.trim() !== '' && lane.idle;
 
     /* The button is enabled only once a kind is chosen, so `kind` is set here. */
     const submit = () =>
@@ -88,8 +92,17 @@ export function ConflictSheet({
             <AuditorCommandNotice
                 placement="sheet"
                 lane="conflict"
+                shown={['kind', 'note']}
                 className="mt-3.5"
             />
+            {!permitted && (
+                <p
+                    role="note"
+                    className="mt-3.5 rounded-xl border border-rz-border px-3.5 py-3 text-[11.5px] leading-[1.5] text-rz-secondary"
+                >
+                    {t('auditor.conflict.not_allowed')}
+                </p>
+            )}
             <div className="mt-3.5">
                 <ChoiceChips
                     legend={t('auditor.conflict.kind_label')}

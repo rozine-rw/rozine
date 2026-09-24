@@ -653,6 +653,50 @@ describe('Audit procedure — ledger reconciliation', () => {
         ).toHaveAttribute('aria-invalid', 'true');
     });
 
+    it.each([
+        [
+            {
+                document:
+                    'The ledger must be a PDF, PNG, TIFF or CSV under 20 MB.',
+            },
+        ],
+        [{ replaces: 'That document is not on this audit.' }],
+    ])(
+        'shows why an upload was refused beside the upload: %j',
+        async (errors) => {
+            inertia.queue.push(invalid(errors));
+            const { user } = renderWithUser(
+                <AuditorAudit {...props(ledger)} />,
+            );
+
+            await user.upload(
+                screen.getByLabelText('Ledger document file'),
+                new File(['x'.repeat(10)], 'huge.pdf', {
+                    type: 'application/pdf',
+                }),
+            );
+
+            const [message] = Object.values(errors);
+
+            expect(await screen.findByText(message)).toBeInTheDocument();
+            expect(screen.getAllByText(message)).toHaveLength(1);
+            expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+        },
+    );
+
+    it('banners a field error the step has no field for', async () => {
+        inertia.queue.push(invalid({ step: 'This step is not open.' }));
+        const { user } = renderWithUser(
+            <AuditorAudit {...props(photos)} can_continue />,
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            'This step is not open.',
+        );
+    });
+
     it('starts empty and blocks the reconciliation tick', () => {
         render(<AuditorAudit {...props(ledgerEmpty)} />);
         const dialog = sheet();

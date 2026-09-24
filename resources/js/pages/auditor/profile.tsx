@@ -122,6 +122,7 @@ export default function AuditorProfile(props: AuditorProfileProps) {
                         <div className="rz-scroll px-5 lg:flex-1 lg:overflow-y-auto lg:px-[18px] lg:pt-[18px]">
                             <AuditorCommandNotice
                                 placement="page"
+                                shown={['licence', 'expires_on', 'certificate']}
                                 className="mt-4 lg:mt-0 lg:mb-4"
                             />
                             {SECTIONS.map(({ key }) => (

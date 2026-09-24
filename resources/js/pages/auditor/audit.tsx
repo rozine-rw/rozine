@@ -37,6 +37,15 @@ import type {
     SealStage,
 } from '@/types/auditor';
 
+/**
+ * The fields each step shows its own errors beside; any other field error from a step's command
+ * reaches the partner as a banner above the step.
+ */
+const SHOWN_FIELDS: Partial<Record<AuditStage['step'], string[]>> = {
+    ledger: ['observed_stock', 'document', 'replaces'],
+    seal: ['note'],
+};
+
 /** The primary label per step, as the design words it (L3715, L3801). */
 const CONTINUE: Record<
     Exclude<AuditStage['step'], 'seal' | 'sealed' | 'blocked'>,
@@ -326,7 +335,10 @@ function AuditSheet(props: AuditProcedureProps) {
                     {t('auditor.audit.offline')}
                 </div>
             )}
-            <AuditorCommandNotice placement="page" />
+            <AuditorCommandNotice
+                placement="page"
+                shown={SHOWN_FIELDS[stage.step] ?? []}
+            />
             {audit.amends !== null && !blocked && (
                 <p
                     role="note"

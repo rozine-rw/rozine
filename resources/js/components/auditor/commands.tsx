@@ -8,6 +8,7 @@ import {
     useState,
 } from 'react';
 import type { ReactNode } from 'react';
+import { ErrorBanner } from '@/components/rozine/form';
 import { OperationNotice } from '@/components/rozine/operation-notice';
 import {
     reloadPreservingState,
@@ -382,16 +383,21 @@ export const refusalNeedsFreshFacts = (code: string, status: number): boolean =>
 
 /**
  * What happened to the last command, in the Auditor's words. `placement` keeps one copy on screen:
- * the page's copy steps aside while a sheet shows its own.
+ * the page's copy steps aside while a sheet shows its own. A field error the view has no field
+ * for — `shown` lists the ones it does — still reaches the partner as a banner, so no 422 is
+ * silent.
  */
 export function AuditorCommandNotice({
     placement,
     lane = 'ordinary',
+    shown = [],
     className,
 }: {
     placement: 'page' | 'sheet';
     /** A sheet shows its own lane; the page shows both. */
     lane?: CommandLane;
+    /** The fields this view shows its own errors for. */
+    shown?: string[];
     className?: string;
 }) {
     const center = useAuditorCommands();
@@ -401,11 +407,44 @@ export function AuditorCommandNotice({
             <>
                 <LaneNotice lane="ordinary" className={className} />
                 <LaneNotice lane="conflict" className={className} />
+                <UnshownError
+                    lane="ordinary"
+                    shown={shown}
+                    className={className}
+                />
             </>
         );
     }
 
-    return <LaneNotice lane={lane} className={className} />;
+    return (
+        <>
+            <LaneNotice lane={lane} className={className} />
+            <UnshownError lane={lane} shown={shown} className={className} />
+        </>
+    );
+}
+
+/** The first field error from a lane that the view has no field to show beside. */
+function UnshownError({
+    lane,
+    shown,
+    className = 'mb-4',
+}: {
+    lane: CommandLane;
+    shown: string[];
+    className?: string;
+}) {
+    const center = useAuditorCommands();
+    const errors = lane === 'conflict' ? center.conflict.errors : center.errors;
+    const message = Object.entries(errors).find(
+        ([field]) => !shown.includes(field),
+    )?.[1];
+
+    return message ? (
+        <div className={className}>
+            <ErrorBanner>{message}</ErrorBanner>
+        </div>
+    ) : null;
 }
 
 /** One lane's notice, if it has one. */

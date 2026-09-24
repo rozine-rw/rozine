@@ -3011,6 +3011,9 @@ const rw: Catalog = {
 
     'business.grow.starting': 'Biratangira…',
 
+    'auditor.conflict.not_allowed':
+        'Ntukibasha gutanga itangazo kuri iyi dosiye, bityo itangazo ryawe ntiryoherejwe.',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

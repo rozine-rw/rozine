@@ -125,7 +125,11 @@ export function ReasonSheet({
 
     return (
         <BottomSheet title={title} lead={lead} onClose={onClose}>
-            <AuditorCommandNotice placement="sheet" className="mt-3.5" />
+            <AuditorCommandNotice
+                placement="sheet"
+                shown={['reason_code', 'reason']}
+                className="mt-3.5"
+            />
             <div className="mt-3.5">
                 <ChoiceChips
                     legend={t('auditor.reason.label')}
