@@ -3051,6 +3051,11 @@ const fr: Catalog = {
     'auditor.standing.turning_on':
         "L'activer n'apportera pas d'offres tant que votre statut n'est pas rétabli.",
 
+    'auditor.accreditation.licence_title': "Licence d'exercice",
+    'auditor.accreditation.view_certificate':
+        'Télécharger le certificat enregistré',
+    'auditor.accreditation.view_submitted': 'Télécharger le certificat soumis',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

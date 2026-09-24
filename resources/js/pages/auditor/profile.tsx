@@ -40,6 +40,10 @@ export default function AuditorProfile(props: AuditorProfileProps) {
             accreditation={props.accreditation}
             allowed={center.allowed}
             actions={props.actions}
+            certificates={{
+                certificate: props.links.certificate,
+                submitted_certificate: props.links.submitted_certificate,
+            }}
         />
     );
     const availability = (

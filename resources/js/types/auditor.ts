@@ -195,11 +195,14 @@ export type AuditorPreviewOutcome =
 /* Shell                                                                                        */
 /* ------------------------------------------------------------------------------------------ */
 
-/** Where the Auditor shell's tabs and launcher link go. */
+/**
+ * Where the Auditor shell's tabs and launcher link go. A tab whose route the server has not
+ * published yet is null, and the shell leaves it out rather than linking to nothing.
+ */
 export type AuditorAppLinks = {
     home: RouteLink;
-    jobs: RouteLink;
-    portfolio: RouteLink;
+    jobs: RouteLink | null;
+    portfolio: RouteLink | null;
     profile: RouteLink;
     launcher: RouteLink;
 };
@@ -932,9 +935,34 @@ export type Accreditation =
 
 export type ProfileSection = 'accreditation' | 'availability';
 
+/**
+ * The partner as the Profile shows them. A fact Rozine holds no record of yet — the firm, the
+ * professional body and designation, the year they started — is null and is left out.
+ */
+export type AuditorProfileIdentity = Pick<
+    AuditorIdentity,
+    'name' | 'avatar_url'
+> & {
+    firm: string | null;
+    accreditation: string | null;
+    since_year: number | null;
+};
+
+/** Where the partner's own certificates are read: the one on record and the one under review. */
+export type AccreditationCertificateLinks = {
+    certificate: RouteLink | null;
+    submitted_certificate: RouteLink | null;
+};
+
+export type AccreditationActions = {
+    submit: RouteAction;
+    renew: RouteAction;
+    withdraw: RouteAction;
+};
+
 export type AuditorProfileProps = AuditorPageContract & {
     section: ProfileSection;
-    auditor: AuditorIdentity;
+    auditor: AuditorProfileIdentity;
     quality_score: number | null;
     on_time_pct: number | null;
     jobs_done: number;
@@ -942,11 +970,17 @@ export type AuditorProfileProps = AuditorPageContract & {
     /** Whether dispatch may offer work now; read with `availability.accepting`. */
     standing: DispatchStanding;
     availability: AuditorAvailability;
-    /** Where the accreditation commands go; `allowed_actions` decides which are offered. */
-    actions: { submit: RouteAction; withdraw: RouteAction };
+    /**
+     * Where the accreditation commands go: a first-time submission, a renewal and a withdrawal.
+     * `allowed_actions` decides which are offered.
+     */
+    actions: AccreditationActions;
     /** Eligible Flash Audits right now, for the Jobs tab badge. */
     open_jobs: number;
     links: AuditorAppLinks &
-        OperationLookupLinks & { sections: Record<ProfileSection, RouteLink> };
+        OperationLookupLinks &
+        AccreditationCertificateLinks & {
+            sections: Record<ProfileSection, RouteLink>;
+        };
     preview_outcome?: AuditorPreviewOutcome;
 };

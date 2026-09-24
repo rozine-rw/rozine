@@ -181,7 +181,7 @@ export function HomeBody(props: AuditorHomeProps) {
                         standing={props.standing}
                     />
                     <AuditorCommandNotice placement="page" className="mt-3.5" />
-                    {props.nearby.count > 0 && (
+                    {props.nearby.count > 0 && props.links.jobs !== null && (
                         <NearbyAlert
                             count={props.nearby.count}
                             closest={props.nearby.closest_km}

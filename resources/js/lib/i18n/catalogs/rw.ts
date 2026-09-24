@@ -3043,6 +3043,10 @@ const rw: Catalog = {
     'auditor.standing.turning_on':
         'Kubifungura ntibizakuzanira ibyifuzo kugeza uburenganzira bwawe bugaruwe.',
 
+    'auditor.accreditation.licence_title': 'Uruhushya rwo gukora umwuga',
+    'auditor.accreditation.view_certificate': 'Kuramo icyemezo cyanditswe',
+    'auditor.accreditation.view_submitted': 'Kuramo icyemezo cyoherejwe',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

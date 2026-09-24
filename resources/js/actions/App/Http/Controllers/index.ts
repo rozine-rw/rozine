@@ -4,6 +4,7 @@ import PulseController from './PulseController'
 import DashboardController from './DashboardController'
 import RoleHomeController from './RoleHomeController'
 import StaffHomeController from './StaffHomeController'
+import AuditorProfileController from './AuditorProfileController'
 import IdentityManagementController from './IdentityManagementController'
 import RoleBookmarkController from './RoleBookmarkController'
 import Settings from './Settings'
@@ -15,6 +16,7 @@ const Controllers = {
     DashboardController: Object.assign(DashboardController, DashboardController),
     RoleHomeController: Object.assign(RoleHomeController, RoleHomeController),
     StaffHomeController: Object.assign(StaffHomeController, StaffHomeController),
+    AuditorProfileController: Object.assign(AuditorProfileController, AuditorProfileController),
     IdentityManagementController: Object.assign(IdentityManagementController, IdentityManagementController),
     RoleBookmarkController: Object.assign(RoleBookmarkController, RoleBookmarkController),
     Settings: Object.assign(Settings, Settings),
