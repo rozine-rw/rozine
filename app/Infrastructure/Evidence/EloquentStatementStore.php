@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Evidence;
 
+use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\Contracts\StatementStore;
 use App\Application\Identity\Contracts\IdentityRepository;
@@ -24,6 +25,7 @@ use RuntimeException;
  * @phpstan-import-type Manifest from StatementStore
  * @phpstan-import-type Original from StatementStore
  * @phpstan-import-type Transcription from StatementStore
+ * @phpstan-import-type AuditFile from StatementStore
  * @phpstan-import-type Rail from StatementReconciliation
  * @phpstan-import-type Statement from StatementReconciliation
  */
@@ -31,6 +33,7 @@ final class EloquentStatementStore implements StatementStore
 {
     public function __construct(
         private WithBusinessAuthority $authority,
+        private WithAcceptedAuditAssignment $assignments,
         private IdentityRepository $identities,
         private OperationJournal $journal,
         private StatementSource $sources,
@@ -89,17 +92,7 @@ final class EloquentStatementStore implements StatementStore
     public function read(int $userId, int $contextRevision, string $businessId, string $documentId): array
     {
         return $this->authority->handle($userId, $contextRevision, $businessId, 'application.save', null,
-            function () use ($businessId, $documentId): array {
-                $evidence = StatementEvidence::query()->where('business_id', $businessId)->first();
-                $original = StatementOriginal::query()->where('statement_evidence_id', $evidence?->id)->whereKey($documentId)->first()
-                    ?? throw new CommandRejection('STATEMENT_NOT_FOUND', 404);
-                $content = $original->content;
-                if (! hash_equals($original->sha256, hash('sha256', $content)) || strlen($content) !== $original->size_bytes) {
-                    throw new RuntimeException('Statement original integrity check failed.');
-                }
-
-                return ['filename' => $original->filename, 'media_type' => $original->media_type, 'sha256' => $original->sha256, 'content' => $content];
-            });
+            fn (): array => $this->original($businessId, $documentId));
     }
 
     /** @return array<string, mixed> */
@@ -180,28 +173,78 @@ final class EloquentStatementStore implements StatementStore
     public function transcription(int $userId, int $contextRevision, string $businessId, ?string $transcriptionId): ?array
     {
         return $this->authority->handle($userId, $contextRevision, $businessId, 'application.save', null,
-            function () use ($businessId, $transcriptionId): ?array {
-                $evidence = StatementEvidence::query()->where('business_id', $businessId)->first();
-                $query = StatementTranscription::query()->where('statement_evidence_id', $evidence?->id)->orderByDesc('evidence_revision');
-                if ($transcriptionId !== null) {
-                    $query->whereKey($transcriptionId);
-                }
-                $record = $query->first();
-                if ($record === null) {
-                    if ($transcriptionId !== null) {
-                        throw new CommandRejection('STATEMENT_TRANSCRIPTION_NOT_FOUND', 404);
-                    }
+            fn (): ?array => $this->storedTranscription($businessId, $transcriptionId));
+    }
 
-                    return null;
-                }
-                $payload = $record->payload;
-                if (! hash_equals($record->sha256, hash('sha256', $this->json->encode($payload))) || $payload['business_id'] !== $businessId) {
-                    throw new RuntimeException('Statement transcription integrity check failed.');
-                }
+    /** @return AuditFile */
+    public function audit(int $userId, int $contextRevision, string $assignmentId): array
+    {
+        return $this->assignments->handle($userId, $contextRevision, $assignmentId, fn (array $assignment): array => [
+            'assignment' => $assignment,
+            'evidence' => $this->manifest(StatementEvidence::query()->where('business_id', $assignment['business_id'])->first()),
+            'transcription' => $this->storedTranscription($assignment['business_id'], null),
+        ]);
+    }
 
-                return ['id' => $record->id, 'revision' => $record->evidence_revision, 'amends_id' => $record->amends_id,
-                    'sha256' => $record->sha256, 'current' => $record->evidence_revision === $evidence?->revision, 'verified' => false, 'payload' => $payload];
-            });
+    /** @return Original */
+    public function auditRead(int $userId, int $contextRevision, string $assignmentId, string $documentId): array
+    {
+        return $this->assignments->handle($userId, $contextRevision, $assignmentId, function (array $assignment) use ($documentId): array {
+            $original = $this->original($assignment['business_id'], $documentId);
+
+            return [...$original, 'filename' => $this->displayName($documentId, $original['media_type'])];
+        });
+    }
+
+    /** @return Transcription|null */
+    public function auditTranscription(int $userId, int $contextRevision, string $assignmentId, ?string $transcriptionId): ?array
+    {
+        return $this->assignments->handle($userId, $contextRevision, $assignmentId,
+            fn (array $assignment): ?array => $this->storedTranscription($assignment['business_id'], $transcriptionId));
+    }
+
+    /** @return Original */
+    private function original(string $businessId, string $documentId): array
+    {
+        $evidence = StatementEvidence::query()->where('business_id', $businessId)->first();
+        $original = StatementOriginal::query()->where('statement_evidence_id', $evidence?->id)->whereKey($documentId)->first()
+            ?? throw new CommandRejection('STATEMENT_NOT_FOUND', 404);
+        $content = $original->content;
+        if (! hash_equals($original->sha256, hash('sha256', $content)) || strlen($content) !== $original->size_bytes) {
+            throw new RuntimeException('Statement original integrity check failed.');
+        }
+
+        return ['filename' => $original->filename, 'media_type' => $original->media_type, 'sha256' => $original->sha256, 'content' => $content];
+    }
+
+    /** @return Transcription|null */
+    private function storedTranscription(string $businessId, ?string $transcriptionId): ?array
+    {
+        $evidence = StatementEvidence::query()->where('business_id', $businessId)->first();
+        $query = StatementTranscription::query()->where('statement_evidence_id', $evidence?->id)->orderByDesc('evidence_revision');
+        if ($transcriptionId !== null) {
+            $query->whereKey($transcriptionId);
+        }
+        $record = $query->first();
+        if ($record === null) {
+            if ($transcriptionId !== null) {
+                throw new CommandRejection('STATEMENT_TRANSCRIPTION_NOT_FOUND', 404);
+            }
+
+            return null;
+        }
+        $payload = $record->payload;
+        if (! hash_equals($record->sha256, hash('sha256', $this->json->encode($payload))) || $payload['business_id'] !== $businessId) {
+            throw new RuntimeException('Statement transcription integrity check failed.');
+        }
+
+        return ['id' => $record->id, 'revision' => $record->evidence_revision, 'amends_id' => $record->amends_id,
+            'sha256' => $record->sha256, 'current' => $record->evidence_revision === $evidence?->revision, 'verified' => false, 'payload' => $payload];
+    }
+
+    private function displayName(string $documentId, string $mediaType): string
+    {
+        return 'statement-'.$documentId.($mediaType === 'application/pdf' ? '.pdf' : '.csv');
     }
 
     /** @return Manifest */
@@ -218,7 +261,7 @@ final class EloquentStatementStore implements StatementStore
         $documents = [];
         foreach ($originals as $original) {
             $extraction = $extractions->get($original->id) ?? throw new RuntimeException('Statement extraction is missing.');
-            $documents[] = ['id' => $original->id, 'filename' => 'statement-'.$original->id.($original->media_type === 'application/pdf' ? '.pdf' : '.csv'), 'sha256' => $original->sha256,
+            $documents[] = ['id' => $original->id, 'filename' => $this->displayName($original->id, $original->media_type), 'sha256' => $original->sha256,
                 'media_type' => $original->media_type, 'size_bytes' => $original->size_bytes, 'received_at' => $original->created_at->toIso8601String(),
                 'extraction' => ['id' => $extraction->id, 'revision' => $extraction->revision, 'parser_version' => $extraction->parser_version,
                     'status' => $extraction->status, 'reason_codes' => $extraction->reason_codes, 'record_count' => $extraction->record_count]];

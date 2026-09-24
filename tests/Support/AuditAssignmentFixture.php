@@ -9,6 +9,8 @@ use App\Application\Auditor\RequestAuditAssignment;
 use App\Application\Auditor\RespondToAuditAssignment;
 use App\Application\Auditor\SetAuditorAvailability;
 use App\Application\Auditor\VerifyAuditLocation;
+use App\Application\Evidence\IngestStatement;
+use App\Application\Evidence\RecordStatementTranscription;
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Domain\Auditor\AuditEngagementState;
 use App\Models\AuditAssignment;
@@ -51,6 +53,22 @@ final class AuditAssignmentFixture
     {
         app(VerifyAuditLocation::class)->handle($staff->id, $kind, $subjectId, 0, '-1.9441', '30.0619', 25,
             now('UTC')->format('Y-m-d\TH:i:s\Z'), 'synthetic:registered-coordinate', 'Reviewed location.', (string) Str::uuid());
+    }
+
+    /**
+     * @param  Fixture  $fixture
+     * @return array{document_id: string, transcription_id: string}
+     */
+    public static function statements(array $fixture): array
+    {
+        $owner = $fixture['authority']['users'][0];
+        $receipt = app(IngestStatement::class)->handle($owner->id, 1, $fixture['business'], 0, 'private-account-reference.csv', StatementFixture::csv(), (string) Str::uuid());
+        $documentId = $receipt['data']['document_id'];
+        $input = StatementFixture::transcription($documentId);
+        $transcription = app(RecordStatementTranscription::class)->handle($owner->id, 1, $fixture['business'], 1,
+            $input['rails'], $input['months'], $input['statements'], (string) Str::uuid());
+
+        return ['document_id' => $documentId, 'transcription_id' => $transcription['data']['transcription']['id']];
     }
 
     public static function independence(User $staff, string $businessId, string $partyId, int $revision = 0): void

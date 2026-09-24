@@ -28,6 +28,7 @@ use Closure;
 /**
  * @phpstan-import-type State from AuditEngagementState
  * @phpstan-import-type Assignment from AuditAssignmentStore
+ * @phpstan-import-type AcceptedAssignment from AuditAssignmentStore
  * @phpstan-import-type View from AuditAssignmentStore
  * @phpstan-import-type AuditContext from BusinessAuthorityStore
  * @phpstan-import-type Candidate from AuditorDispatch
@@ -123,19 +124,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     {
         return $this->scope($userId, $contextRevision, $this->businessId($assignmentId), true,
             function (array $context, array $candidates) use ($assignmentId): array {
-                $record = AuditAssignment::query()->lockForUpdate()->findOrFail($assignmentId);
-                $partyId = $context['actor_party_id'] ?? throw new IdentityViolation('IDENTITY_NOT_LINKED');
-                $this->participant($record, $partyId, true);
-                $profile = AuditorProfile::query()->where('party_id', $partyId)->firstOrFail();
-                $this->standing->requireCurrent($profile->state['standing'], now()->toDateTimeImmutable());
-                if ($record->state['status'] === 'offered' && $record->state['accept_by'] <= now('UTC')->format('Y-m-d\TH:i:s\Z')) {
-                    throw new CommandRejection('ASSIGNMENT_ACCEPTANCE_EXPIRED');
-                }
-
-                $candidate = $this->candidate($candidates, $partyId);
-                if ($candidate === null || in_array('AUDITOR_CONFLICT', $this->dispatch->reasons($candidate, now()->toDateTimeImmutable()), true)) {
-                    throw new CommandRejection('AUDITOR_INDEPENDENCE_REVIEW_REQUIRED', 403);
-                }
+                [$record, $candidate] = $this->current($context, $candidates, $assignmentId);
                 $state = $record->state;
                 $actions = ['conflict.declare'];
                 if ($state['status'] === 'offered') {
@@ -149,6 +138,50 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                     'kind' => $state['kind'], 'status' => $state['status'], 'offered_at' => $state['offered_at'],
                     'accept_by' => $state['accept_by'], 'complete_by' => $state['complete_by'], 'visit_by' => $state['visit_by'], 'allowed_actions' => $actions];
             });
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(AcceptedAssignment): TResult  $operation
+     * @return TResult
+     */
+    public function withAccepted(int $userId, int $contextRevision, string $assignmentId, Closure $operation): mixed
+    {
+        return $this->scope($userId, $contextRevision, $this->businessId($assignmentId), true,
+            function (array $context, array $candidates) use ($assignmentId, $operation): mixed {
+                [$record, $candidate] = $this->current($context, $candidates, $assignmentId);
+                if ($record->status !== 'accepted') {
+                    throw new CommandRejection('ASSIGNMENT_NOT_ACCEPTED', 403);
+                }
+
+                return $operation(['id' => $record->id, 'business_id' => $record->business_id, 'party_id' => $candidate['id'],
+                    'revision' => $record->revision, 'kind' => $record->state['kind'], 'business_revision' => $context['business']['revision'],
+                    'mandate_version' => $context['business']['mandate_version']]);
+            });
+    }
+
+    /**
+     * @param  AuditContext  $context
+     * @param  list<Candidate>  $candidates
+     * @return array{AuditAssignment, Candidate}
+     */
+    private function current(array $context, array $candidates, string $assignmentId): array
+    {
+        $record = AuditAssignment::query()->lockForUpdate()->findOrFail($assignmentId);
+        $partyId = $context['actor_party_id'] ?? throw new IdentityViolation('IDENTITY_NOT_LINKED');
+        $this->participant($record, $partyId, true);
+        $profile = AuditorProfile::query()->where('party_id', $partyId)->firstOrFail();
+        $this->standing->requireCurrent($profile->state['standing'], now()->toDateTimeImmutable());
+        if ($record->state['status'] === 'offered' && $record->state['accept_by'] <= now('UTC')->format('Y-m-d\TH:i:s\Z')) {
+            throw new CommandRejection('ASSIGNMENT_ACCEPTANCE_EXPIRED');
+        }
+        $candidate = $this->candidate($candidates, $partyId);
+        if ($candidate === null || in_array('AUDITOR_CONFLICT', $this->dispatch->reasons($candidate, now()->toDateTimeImmutable()), true)) {
+            throw new CommandRejection('AUDITOR_INDEPENDENCE_REVIEW_REQUIRED', 403);
+        }
+
+        return [$record, $candidate];
     }
 
     /** @return array<string, mixed> */

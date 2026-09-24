@@ -8,12 +8,14 @@ namespace App\Application\Evidence\Contracts;
  * @phpstan-import-type Rail from \App\Domain\Evidence\StatementReconciliation
  * @phpstan-import-type Statement from \App\Domain\Evidence\StatementReconciliation
  * @phpstan-import-type Observation from \App\Domain\Evidence\StatementReconciliation
+ * @phpstan-import-type AcceptedAssignment from \App\Application\Auditor\Contracts\AuditAssignmentStore
  *
  * @phpstan-type TranscriptionPayload array{business_id: string, source_revision: int, classification_version: string, rails: list<Rail>, months: list<string>, statements: list<Statement>, source_hashes: array<string, string>, observations: list<Observation>}
  * @phpstan-type Transcription array{id: string, revision: int, amends_id: string|null, sha256: string, current: bool, verified: false, payload: TranscriptionPayload}
  * @phpstan-type Document array{id: string, filename: string, sha256: string, media_type: string, size_bytes: int, received_at: string, extraction: array{id: string, revision: int, parser_version: string, status: string, reason_codes: list<string>, record_count: int|null}}
  * @phpstan-type Manifest array{revision: int, documents: list<Document>}
  * @phpstan-type Original array{filename: string, media_type: string, sha256: string, content: string}
+ * @phpstan-type AuditFile array{assignment: AcceptedAssignment, evidence: Manifest, transcription: Transcription|null}
  */
 interface StatementStore
 {
@@ -39,4 +41,13 @@ interface StatementStore
 
     /** @return Transcription|null */
     public function transcription(int $userId, int $contextRevision, string $businessId, ?string $transcriptionId): ?array;
+
+    /** @return AuditFile */
+    public function audit(int $userId, int $contextRevision, string $assignmentId): array;
+
+    /** @return Original */
+    public function auditRead(int $userId, int $contextRevision, string $assignmentId, string $documentId): array;
+
+    /** @return Transcription|null */
+    public function auditTranscription(int $userId, int $contextRevision, string $assignmentId, ?string $transcriptionId): ?array;
 }

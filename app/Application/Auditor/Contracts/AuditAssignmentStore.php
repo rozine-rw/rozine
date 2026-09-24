@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Application\Auditor\Contracts;
 
+use Closure;
+
 /**
  * @phpstan-import-type State from \App\Domain\Auditor\AuditEngagementState
  *
  * @phpstan-type View array{id: string, business_id: string, revision: int, kind: string, status: string, offered_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, allowed_actions: list<string>}
  * @phpstan-type Assignment array{id: string, business_id: string, revision: int, state: State}
+ * @phpstan-type AcceptedAssignment array{id: string, business_id: string, party_id: string, revision: int, kind: string, business_revision: int, mandate_version: int}
  */
 interface AuditAssignmentStore
 {
@@ -20,6 +23,16 @@ interface AuditAssignmentStore
 
     /** @return View */
     public function get(int $userId, int $contextRevision, string $assignmentId): array;
+
+    /**
+     * Hold current accepted-assignment authority through the protected operation.
+     *
+     * @template TResult
+     *
+     * @param  Closure(AcceptedAssignment): TResult  $operation
+     * @return TResult
+     */
+    public function withAccepted(int $userId, int $contextRevision, string $assignmentId, Closure $operation): mixed;
 
     /** @return array<string, mixed> */
     public function findOperation(int $userId, int $contextRevision, string $command, string $requestId): array;

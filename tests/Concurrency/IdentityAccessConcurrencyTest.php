@@ -6,10 +6,14 @@ use App\Application\Auditor\AdvanceExpiredAuditOffers;
 use App\Application\Auditor\MarkAuditLocationMoved;
 use App\Application\Auditor\SetAuditorAvailability;
 use App\Application\Auditor\VerifyAuditLocation;
+use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Auditor\WithdrawAuditorAccreditation;
 use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\Contracts\StatementExtractionQueue;
+use App\Application\Evidence\GetAuditStatements;
+use App\Application\Evidence\IngestStatement;
+use App\Application\Evidence\ReadAuditStatement;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\ChangeMembership;
@@ -776,3 +780,52 @@ it('orders assignment locks consistently against office invalidation and availab
     expect(AuditorProfile::query()->firstOrFail()->state['accepting'])->toBeFalse()
         ->and(AuditLocation::query()->where('office_party_id', $partner['party']->id)->firstOrFail()->state['point'])->toBeNull();
 });
+
+it('holds accepted-assignment and Business authority throughout a protected statement read', function (string $fault): void {
+    $fixture = AuditAssignmentFixture::make(1);
+    $sources = AuditAssignmentFixture::statements($fixture);
+    $assignment = AuditAssignmentFixture::request($fixture);
+    $partner = $fixture['partners'][0];
+    $operator = concurrentIdentityOperator();
+    AuditAssignmentFixture::respond($partner['user'], $assignment);
+    $assignment->refresh();
+    $change = match ($fault) {
+        'conflict' => fn (): array => AuditAssignmentFixture::respond($partner['user'], $assignment, 'conflict', 'New financial interest.', 'financial_interest'),
+        'evidence' => fn (): array => app(IngestStatement::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business'], 2,
+            'new.csv', StatementFixture::csv('200'), (string) Str::uuid()),
+        'standing' => fn (): array => AuditorFixture::review($partner['staff'], $partner['party']->id, 3, 'suspend'),
+        default => fn (): array => app(ChangeMembership::class)->handle($operator->id, $partner['party']->id, 'auditor', 'revoked', 1,
+            'case:revocation', 'Withdraw membership.', (string) Str::uuid()),
+    };
+    config(['database.connections.audit_statement_contender' => config('database.connections.pgsql')]);
+    DB::connection('audit_statement_contender')->statement("SET lock_timeout = '500ms'");
+    $default = DB::getDefaultConnection();
+
+    app(WithAcceptedAuditAssignment::class)->handle($partner['user']->id, 1, $assignment->id, function () use ($default, $change, $partner, $assignment, $sources): void {
+        DB::setDefaultConnection('audit_statement_contender');
+        try {
+            $change();
+            $this->fail('A competing authority change must wait for the protected read.');
+        } catch (QueryException $exception) {
+            expect($exception->getCode())->toBe('55P03');
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('audit_statement_contender');
+        }
+        expect(app(ReadAuditStatement::class)->handle($partner['user']->id, 1, $assignment->id, $sources['document_id'])['content'])->toBe(StatementFixture::csv());
+    });
+    $change();
+    if ($fault === 'evidence') {
+        $file = app(GetAuditStatements::class)->handle($partner['user']->id, 1, $assignment->id);
+        expect($file['evidence']['revision'])->toBe(3)->and($file['transcription']['current'])->toBeFalse();
+    } else {
+        try {
+            app(ReadAuditStatement::class)->handle($partner['user']->id, 1, $assignment->id, $sources['document_id']);
+            $this->fail('New reads must observe the committed authority withdrawal.');
+        } catch (IdentityViolation|CommandRejection $exception) {
+            expect($exception->getMessage())->toBe(match ($fault) {
+                'conflict' => 'ASSIGNMENT_NOT_FOUND', 'standing' => 'ACCREDITATION_SUSPENDED', default => 'ROLE_MEMBERSHIP_REQUIRED',
+            });
+        }
+    }
+})->with(['conflict', 'evidence', 'standing', 'membership']);
