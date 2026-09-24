@@ -9,6 +9,7 @@ use App\Application\Auditor\GetAuditAssignment;
 use App\Application\Auditor\MarkAuditLocationMoved;
 use App\Application\Auditor\RecordAuditorIndependence;
 use App\Application\Auditor\RequestAuditAssignment;
+use App\Application\Auditor\RespondToAuditAssignment;
 use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Auditor\AuditEngagementState;
@@ -183,6 +184,40 @@ it('routes exhausted offers to Operations with the original Flash deadline', fun
     expect($record->status)->toBe('operations')->and($record->party_id)->toBeNull()
         ->and($record->state['operations_reason'])->toBe('AUDIT_DISPATCH_EXHAUSTED')->and($record->state['complete_by'])->toBe($deadline);
 });
+
+it('records a coded decline and replays its immutable reason without requiring optional explanation', function (string $code, string $reason): void {
+    $fixture = Fixture::make(2);
+    $record = Fixture::request($fixture);
+    $partner = Fixture::recipient($fixture, $record);
+    $request = (string) Str::uuid();
+    $action = app(RespondToAuditAssignment::class);
+    $receipt = $action->handle($partner['user']->id, 1, $record->id, 1, 'decline', null, $reason, $request, $code);
+    expect($receipt['code'])->toBe('ASSIGNMENT_DECLINED')->and($receipt['data']['reason_code'])->toBe($code)
+        ->and($action->handle($partner['user']->id, 1, $record->id, 1, 'decline', null, $reason, $request, $code))->toBe($receipt)
+        ->and(app(FindAuditAssignmentOperation::class)->handle($partner['user']->id, 1, 'assignment.decline', $request))->toBe($receipt)
+        ->and($record->refresh()->revision)->toBe(2)->and($record->party_id)->not->toBe($partner['party']->id);
+    $journal = CommandOperation::query()->where('request_id', $request)->firstOrFail();
+    expect($journal->result['data']['reason_code'])->toBe($code);
+    expect(fn () => $action->handle($partner['user']->id, 1, $record->id, 1, 'decline', null, $reason, $request, 'changed'))
+        ->toThrow(CommandRejection::class, 'IDEMPOTENCY_CONFLICT');
+})->with([['unavailable', ''], ['capacity', ''], ['location', ''], ['other', 'A factual explanation.']]);
+
+it('records invalid decline reasons as stable field errors without reoffering the assignment', function (?string $code, string $reason, string $error, string $field): void {
+    $fixture = Fixture::make(1);
+    $record = Fixture::request($fixture);
+    $partner = $fixture['partners'][0];
+    $request = (string) Str::uuid();
+    $action = app(RespondToAuditAssignment::class);
+    $receipt = $action->handle($partner['user']->id, 1, $record->id, 1, 'decline', null, $reason, $request, $code);
+    expect($receipt['code'])->toBe($error)->and($receipt['http_status'])->toBe(422)->and($receipt['field_errors'])->toHaveKey($field)
+        ->and($action->handle($partner['user']->id, 1, $record->id, 1, 'decline', null, $reason, $request, $code))->toBe($receipt)
+        ->and($record->refresh()->revision)->toBe(1);
+})->with([
+    [null, 'Missing selection.', 'ASSIGNMENT_DECLINE_REASON_INVALID', 'reason_code'],
+    ['unknown', 'Unknown selection.', 'ASSIGNMENT_DECLINE_REASON_INVALID', 'reason_code'],
+    ['other', '', 'ASSIGNMENT_REASON_REQUIRED', 'reason'],
+    ['capacity', "Invalid\nexplanation.", 'ASSIGNMENT_REASON_REQUIRED', 'reason'],
+]);
 
 it('advances an expired offer and cannot accept at the acceptance boundary', function (): void {
     $fixture = Fixture::make();

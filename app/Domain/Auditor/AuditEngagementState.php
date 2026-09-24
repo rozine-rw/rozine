@@ -75,6 +75,16 @@ final class AuditEngagementState
         }
     }
 
+    public function decline(?string $reasonCode, string $reason): void
+    {
+        if (! in_array($reasonCode, ['unavailable', 'capacity', 'location', 'other'], true)) {
+            throw new CommandRejection('ASSIGNMENT_DECLINE_REASON_INVALID', 422, fieldErrors: ['reason_code' => ['Select a decline reason.']]);
+        }
+        if ($reasonCode === 'other' || $reason !== '') {
+            $this->reason($reason);
+        }
+    }
+
     private function time(DateTimeImmutable $time): string
     {
         return $time->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');

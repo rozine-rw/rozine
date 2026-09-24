@@ -114,7 +114,7 @@ final class AuditAssignmentFixture
     /** @return array<string, mixed> */
     public static function respond(User $user, AuditAssignment $assignment, string $decision = 'accept', string $reason = '', ?string $kind = null, ?string $requestId = null): array
     {
-        return app(RespondToAuditAssignment::class)->handle($user->id, 1, $assignment->id, $assignment->revision, $decision, $kind, $reason, $requestId ?? (string) Str::uuid());
+        return app(RespondToAuditAssignment::class)->handle($user->id, 1, $assignment->id, $assignment->revision, $decision, $kind, $reason, $requestId ?? (string) Str::uuid(), $decision === 'decline' ? 'other' : null);
     }
 
     public static function engagement(string $partyId, string $status = 'accepted', ?string $businessId = null): AuditAssignment

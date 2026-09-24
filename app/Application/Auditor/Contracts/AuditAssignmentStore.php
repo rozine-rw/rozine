@@ -19,7 +19,7 @@ interface AuditAssignmentStore
     public function request(int $actorId, string $businessId, string $kind, string $reason, string $requestId): array;
 
     /** @return array<string, mixed> */
-    public function respond(int $userId, int $contextRevision, string $assignmentId, int $expectedRevision, string $decision, ?string $conflictKind, string $reason, string $requestId): array;
+    public function respond(int $userId, int $contextRevision, string $assignmentId, int $expectedRevision, string $decision, ?string $conflictKind, string $reason, string $requestId, ?string $reasonCode = null): array;
 
     /** @return View */
     public function get(int $userId, int $contextRevision, string $assignmentId): array;

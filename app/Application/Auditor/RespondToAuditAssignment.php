@@ -12,8 +12,8 @@ final class RespondToAuditAssignment
     public function __construct(private AuditAssignmentStore $store) {}
 
     /** @return array<string, mixed> */
-    public function handle(int $userId, int $contextRevision, string $assignmentId, int $expectedRevision, string $decision, ?string $conflictKind, string $reason, string $requestId): array
+    public function handle(int $userId, int $contextRevision, string $assignmentId, int $expectedRevision, string $decision, ?string $conflictKind, string $reason, string $requestId, ?string $reasonCode = null): array
     {
-        return $this->store->respond($userId, $contextRevision, $assignmentId, $expectedRevision, $decision, $conflictKind, $reason, $requestId);
+        return $this->store->respond($userId, $contextRevision, $assignmentId, $expectedRevision, $decision, $conflictKind, $reason, $requestId, $reasonCode);
     }
 }

@@ -73,7 +73,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     }
 
     /** @return array<string, mixed> */
-    public function respond(int $userId, int $contextRevision, string $assignmentId, int $expectedRevision, string $decision, ?string $conflictKind, string $reason, string $requestId): array
+    public function respond(int $userId, int $contextRevision, string $assignmentId, int $expectedRevision, string $decision, ?string $conflictKind, string $reason, string $requestId, ?string $reasonCode = null): array
     {
         if (! in_array($decision, ['accept', 'decline', 'conflict'], true)) {
             throw new CommandRejection('ASSIGNMENT_DECISION_INVALID', 422);
@@ -82,14 +82,15 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         $businessId = $this->businessId($assignmentId, $partyId);
 
         return $this->scope($userId, $contextRevision, $businessId, $decision === 'accept',
-            function (array $context, array $candidates) use ($userId, $contextRevision, $assignmentId, $expectedRevision, $decision, $conflictKind, $reason, $requestId): array {
+            function (array $context, array $candidates) use ($userId, $contextRevision, $assignmentId, $expectedRevision, $decision, $conflictKind, $reason, $requestId, $reasonCode): array {
                 $record = AuditAssignment::query()->lockForUpdate()->findOrFail($assignmentId);
                 $partyId = $context['actor_party_id'] ?? throw new IdentityViolation('IDENTITY_NOT_LINKED');
                 $this->participant($record, $partyId, false);
 
                 return $this->journal->execute('party:'.$partyId, $userId, $decision === 'conflict' ? 'conflict.declare' : 'assignment.'.$decision, $requestId, 'audit.assignment', $assignmentId,
-                    ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'conflict_kind' => $conflictKind, 'reason' => $reason],
-                    function (): void {}, function () use ($record, $context, $candidates, $partyId, $userId, $expectedRevision, $decision, $conflictKind, $reason): OperationResult {
+                    ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'conflict_kind' => $conflictKind, 'reason' => $reason,
+                        ...($decision === 'decline' ? ['reason_code' => $reasonCode] : [])],
+                    function (): void {}, function () use ($record, $context, $candidates, $partyId, $userId, $expectedRevision, $decision, $conflictKind, $reason, $reasonCode): OperationResult {
                         $this->participant($record, $partyId, true);
                         $this->revision($record, $expectedRevision);
                         $state = $record->state;
@@ -107,8 +108,9 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                             if ($decision === 'decline' && $state['accept_by'] <= now('UTC')->format('Y-m-d\TH:i:s\Z')) {
                                 throw new CommandRejection('ASSIGNMENT_ACCEPTANCE_EXPIRED');
                             }
-                            $this->states->reason($reason);
-                            if ($decision === 'conflict') {
+                            if ($decision === 'decline') {
+                                $this->states->decline($reasonCode, $reason);
+                            } else {
                                 $this->states->conflict($conflictKind ?? '', $reason);
                                 (new AuditConflictDeclaration)->forceFill(['assignment_id' => $record->id, 'business_id' => $record->business_id,
                                     'party_id' => $partyId, 'kind' => $conflictKind, 'reason' => $reason, 'actor_user_id' => $userId,
@@ -120,7 +122,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
 
                         return new OperationResult(match ($decision) {
                             'accept' => 'ASSIGNMENT_ACCEPTED', 'decline' => 'ASSIGNMENT_DECLINED', default => 'CONFLICT_RECORDED',
-                        }, ['assignment_id' => $record->id], $record->revision);
+                        }, ['assignment_id' => $record->id, ...($decision === 'decline' ? ['reason_code' => $reasonCode] : [])], $record->revision);
                     });
             }, $decision === 'accept' ? [$partyId] : null);
     }
