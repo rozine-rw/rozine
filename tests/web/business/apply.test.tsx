@@ -423,7 +423,12 @@ describe('Apply — step 1, business & finances', () => {
                 through_month: '2026-09',
                 months: 1,
             },
-            years: [{ ...page.evidence.years[0], months: 1 }],
+            years: [
+                {
+                    ...page.evidence.years[page.evidence.years.length - 1],
+                    months: 1,
+                },
+            ],
         };
         render(<BusinessApply {...page} />);
 
@@ -434,7 +439,7 @@ describe('Apply — step 1, business & finances', () => {
     });
 
     it('shows an evidenced existing debt without a CRB badge until CRB proof exists', () => {
-        render(<BusinessApply {...props(minimalStep)} />);
+        render(<BusinessApply {...props(liveStep)} step="business" />);
 
         expect(screen.getByText('RWF 12M')).toBeInTheDocument();
         expect(screen.queryByText('✓ CRB verified')).not.toBeInTheDocument();
@@ -816,7 +821,8 @@ describe('Apply — step 2, the quote', () => {
         inertia.visit.mockClear();
         inertia.reload.mockClear();
         inertia.queue.push(
-            answers(operation({ data: snapshotOf(page) })),
+            /* As the server answers a save of a changed request: the old quote no longer stands. */
+            answers(operation({ data: snapshotOf(page, { quote: null }) })),
             offline(),
             answers(
                 operation({
@@ -842,6 +848,10 @@ describe('Apply — step 2, the quote', () => {
             { only: expect.arrayContaining(['allowed_actions']) },
         ]);
         expect(inertia.reload.mock.calls[1]).toEqual([]);
+        /*
+         * Neither the recovered receipt's quote nor the earlier save's snapshot stands in for the
+         * current page: the page shows its freshly read props again.
+         */
         expect(screen.queryByText('RWF 27,650,000')).not.toBeInTheDocument();
         expect(screen.getByText('RWF 37,611,735')).toBeInTheDocument();
         expect(inertia.visit).not.toHaveBeenCalled();
@@ -2081,8 +2091,7 @@ describe('Apply — the live business-application-v1 projection', () => {
         });
     });
 
-    it('saves a just-created draft from the Business step with its step, at the server’s action', async () => {
-        const user = userEvent.setup();
+    it('shows a just-created draft with no verified evidence as the server explains it, with no figure and no Continue', () => {
         const page = props(minimalStep);
 
         expect(page.quote).toBeNull();
@@ -2092,23 +2101,22 @@ describe('Apply — the live business-application-v1 projection', () => {
             'href',
             '/business',
         );
-        await user.click(screen.getByRole('button', { name: 'Continue' }));
-
-        expect(inertia.calls[0]).toEqual({
-            url: `${LIVE}/save`,
-            method: 'post',
-            body: {
-                title: '',
-                target: null,
-                term_months: null,
-                use_of_funds: [],
-                story: '',
-                step: 'raise',
-                identity_context_revision: 4,
-                expected_revision: 1,
-                request_id: expect.any(String),
-            },
-        });
+        expect(
+            screen.getByText('Not eligible to raise yet'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                /^Complete verified statements and current obligation evidence/u,
+            ),
+        ).toBeInTheDocument();
+        expect(screen.queryByText(/ months$/u)).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(/Statements verified/u),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText(/^RDB /u)).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Continue' }),
+        ).not.toBeInTheDocument();
     });
 });
 

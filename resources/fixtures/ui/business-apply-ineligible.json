@@ -67,20 +67,14 @@
             },
             "years": [
                 {
-                    "year": 2025,
+                    "year": 2023,
                     "revenue": {
                         "currency": "RWF",
-                        "amount": "385000000"
+                        "amount": "118000000"
                     },
-                    "costs": {
-                        "currency": "RWF",
-                        "amount": "289000000"
-                    },
-                    "net_profit": {
-                        "currency": "RWF",
-                        "amount": "96000000"
-                    },
-                    "months": 12
+                    "costs": null,
+                    "net_profit": null,
+                    "months": 4
                 },
                 {
                     "year": 2024,
@@ -99,14 +93,20 @@
                     "months": 12
                 },
                 {
-                    "year": 2023,
+                    "year": 2025,
                     "revenue": {
                         "currency": "RWF",
-                        "amount": "118000000"
+                        "amount": "385000000"
                     },
-                    "costs": null,
-                    "net_profit": null,
-                    "months": 4
+                    "costs": {
+                        "currency": "RWF",
+                        "amount": "289000000"
+                    },
+                    "net_profit": {
+                        "currency": "RWF",
+                        "amount": "96000000"
+                    },
+                    "months": 12
                 }
             ],
             "existing_debt": null,
