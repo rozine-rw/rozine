@@ -9,6 +9,8 @@ import { refusalRefreshes } from '@/components/business/apply/operation-outcome'
 import { CosignForm } from '@/components/business/audit-cosign/cosign-form';
 import { CosignNotice } from '@/components/business/audit-cosign/cosign-notice';
 import { CosignStatus } from '@/components/business/audit-cosign/cosign-status';
+import { DisputeSheet } from '@/components/business/audit-cosign/dispute-sheet';
+import type { DisputeDraft } from '@/components/business/audit-cosign/dispute-sheet';
 import {
     ReportSummary,
     SectionLabel,
@@ -33,8 +35,12 @@ import type {
 /** The outcome of the signature that completes the set and publishes the report. */
 const PUBLISHED = 'REPORT_PUBLISHED';
 
-/** The fields the form marks inline; a server error for any other shows as a banner. */
+/** A recorded dispute (pending the delivery 3 contract): the page is read afresh. */
+const DISPUTED = 'REPORT_DISPUTED';
+
+/** The fields each form marks inline; a server error for any other shows as a banner. */
 const SHOWN_FIELDS = ['accepted', 'note'];
+const DISPUTE_FIELDS = ['reason', 'supporting_text', 'proof_files'];
 
 function StateCard({ icon, children }: { icon: IconName; children: string }) {
     return (
@@ -63,6 +69,11 @@ function StateCard({ icon, children }: { icon: IconName; children: string }) {
  * recovered receipt, follows `data.next`. A stale revision, digest or mandate is read afresh with
  * a remount, so the acceptance starts unticked on the current facts, and its banner is carried
  * across that remount. A denial stays on the page as it is.
+ *
+ * A dispute and automatic approval are pending the delivery 3 contract and the N6 decision: a
+ * dispute is offered only when `allowed_actions` lists `report.dispute` and `actions.dispute` is
+ * sent, and `cosign.published_reason` only relabels a published report. Without them the page is
+ * exactly the current contract's.
  */
 export default function BusinessAuditCosign(
     props: BusinessAuditCosignPageProps,
@@ -72,6 +83,10 @@ export default function BusinessAuditCosign(
     const cosignAction = props.allowed_actions.includes('report.cosign')
         ? props.actions.cosign
         : null;
+    const disputeAction = props.allowed_actions.includes('report.dispute')
+        ? (props.actions.dispute ?? null)
+        : null;
+    const [disputing, setDisputing] = useState(false);
     const shellLinks = props.shell_links ?? {
         home: links.close,
         launcher: links.close,
@@ -118,6 +133,12 @@ export default function BusinessAuditCosign(
                   },
         refresh: () => reloadPreservingState(),
         onCompleted: (_sent, resource, { recovered }) => {
+            if (resource.code === DISPUTED) {
+                readAfresh();
+
+                return;
+            }
+
             if (
                 resource.data !== null &&
                 (recovered || resource.code === PUBLISHED)
@@ -130,6 +151,8 @@ export default function BusinessAuditCosign(
             router.reload();
         },
         onRefused: (_sent, code, status) => {
+            setDisputing(false);
+
             if (refusalRefreshes(code, status)) {
                 carryRefusal({
                     url: window.location.href,
@@ -159,14 +182,45 @@ export default function BusinessAuditCosign(
         });
     };
 
+    const disputeWith = (route: RouteAction, draft: DisputeDraft) => {
+        command.send({
+            name: 'report.dispute',
+            route,
+            payload: {
+                request_id: crypto.randomUUID(),
+                identity_context_revision: props.identity_context_revision,
+                expected_revision: cosign.revision,
+                report_revision: report.revision,
+                digest: report.digest,
+                reason: draft.reason,
+                ...(draft.supporting === ''
+                    ? {}
+                    : { supporting_text: draft.supporting }),
+                ...(draft.files.length === 0
+                    ? {}
+                    : { proof_files: draft.files }),
+            },
+        });
+    };
+
+    const locked = command.busy || command.unresolved || refreshing;
     const you = cosign.signers.find((signer) => signer.is_you);
     const waitingFor = cosign.signers
         .filter((signer) => signer.state === 'pending' && !signer.is_you)
         .map((signer) => signer.name);
     /* A field error the form has no field for still reaches the business. */
+    const shownFields = disputing ? DISPUTE_FIELDS : SHOWN_FIELDS;
     const unshownError = Object.entries(command.errors).find(
-        ([field]) => !SHOWN_FIELDS.includes(field),
+        ([field]) => !shownFields.includes(field),
     )?.[1];
+    const notice = command.notice && (
+        <CosignNotice
+            notice={command.notice}
+            busy={command.busy}
+            onCheckAgain={command.checkAgain}
+            onRetry={command.retry}
+        />
+    );
 
     let yours;
 
@@ -175,7 +229,7 @@ export default function BusinessAuditCosign(
             <CosignForm
                 initialNote={cosign.your_note}
                 busy={command.busy}
-                locked={command.busy || command.unresolved || refreshing}
+                locked={locked}
                 errors={command.errors}
                 onCosign={(note) => cosignWith(cosignAction, note)}
             />
@@ -189,7 +243,11 @@ export default function BusinessAuditCosign(
     } else if (report.published_at !== null) {
         yours = (
             <StateCard icon="check-badge">
-                {t('business.audit_cosign.yours.published')}
+                {t(
+                    cosign.published_reason === 'auto_approved'
+                        ? 'business.audit_cosign.yours.published_auto'
+                        : 'business.audit_cosign.yours.published',
+                )}
             </StateCard>
         );
     } else if (you?.state === 'signed') {
@@ -258,25 +316,49 @@ export default function BusinessAuditCosign(
                     aria-label={t('business.audit_cosign.yours.title')}
                     className="rz-scroll lg:min-h-0 lg:overflow-y-auto lg:rounded-2xl lg:border lg:border-rz-border lg:bg-rz-surface lg:px-4 lg:pb-5"
                 >
-                    {command.notice && (
-                        <CosignNotice
-                            notice={command.notice}
-                            busy={command.busy}
-                            onCheckAgain={command.checkAgain}
-                            onRetry={command.retry}
-                        />
-                    )}
+                    {!disputing && notice}
                     <CosignStatus report={report} cosign={cosign} />
                     <SectionLabel>
                         {t('business.audit_cosign.yours.title')}
                     </SectionLabel>
-                    {unshownError !== undefined && (
+                    {unshownError !== undefined && !disputing && (
                         <div className="mt-[11px]">
                             <ErrorBanner>{unshownError}</ErrorBanner>
                         </div>
                     )}
                     {yours}
+                    {disputeAction !== null && (
+                        <button
+                            type="button"
+                            onClick={() => setDisputing(true)}
+                            disabled={locked}
+                            className="mt-3 h-11 w-full rounded-2xl border border-rz-border bg-rz-surface text-[14px] font-semibold text-rz-ink disabled:text-rz-secondary"
+                        >
+                            {t('business.audit_cosign.dispute.open')}
+                        </button>
+                    )}
                 </section>
+                {disputing && disputeAction !== null && (
+                    <DisputeSheet
+                        busy={command.busy}
+                        locked={locked}
+                        errors={command.errors}
+                        notice={
+                            <>
+                                {notice}
+                                {unshownError !== undefined && (
+                                    <div className="mt-3">
+                                        <ErrorBanner>
+                                            {unshownError}
+                                        </ErrorBanner>
+                                    </div>
+                                )}
+                            </>
+                        }
+                        onSubmit={(draft) => disputeWith(disputeAction, draft)}
+                        onClose={() => setDisputing(false)}
+                    />
+                )}
             </div>
         </BusinessShell>
     );

@@ -4,7 +4,7 @@
     "props": {
         "contract_version": "business-audit-report-v1",
         "identity_context_revision": 4,
-        "server_time": "2026-09-09T10:00:00+02:00",
+        "server_time": "2026-09-03T10:00:00+02:00",
         "business": {
             "id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
             "name": "GreenLeaf Agro (synthetic)"
@@ -52,11 +52,11 @@
             "published_at": null
         },
         "cosign": {
-            "revision": 8,
-            "state": "partly_signed",
+            "revision": 7,
+            "state": "pending",
             "mandate_version": 2,
             "required_signatures": 2,
-            "signed_count": 1,
+            "signed_count": 0,
             "signers": [
                 {
                     "name": "Synthetic signatory Aline Uwase",
@@ -66,25 +66,29 @@
                 },
                 {
                     "name": "Synthetic signatory Eric Nshuti",
-                    "state": "signed",
-                    "signed_at": "2026-09-05T15:02:00+02:00",
+                    "state": "pending",
+                    "signed_at": null,
                     "is_you": false
                 }
             ],
             "your_note": "",
             "due_at": "2026-09-07T23:59:59+02:00",
-            "overdue": true
+            "overdue": false
         },
-        "allowed_actions": ["report.cosign"],
+        "allowed_actions": ["report.cosign", "report.dispute"],
         "actions": {
             "cosign": {
                 "url": "/preview/business-audit-cosign-signatures",
+                "method": "post"
+            },
+            "dispute": {
+                "url": "/preview/business-audit-cosign-disputes",
                 "method": "post"
             }
         },
         "links": {
             "current": {
-                "url": "/preview/business-audit-cosign-overdue",
+                "url": "/preview/business-audit-cosign-dispute-n6-pending",
                 "method": "get"
             },
             "close": {

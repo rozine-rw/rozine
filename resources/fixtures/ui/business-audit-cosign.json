@@ -20,7 +20,7 @@
                 "name": "Synthetic CPA Jean-Paul M.",
                 "licence": "SYN-ICPAR-0000"
             },
-            "auditor_note": "Synthetic fixture note. I worked from the bank and Mobile Money statements the business uploaded, counted stock on site on 31 August and recorded the findings below as facts.",
+            "auditor_note": "Synthetic fixture note. On site on 31 August I reviewed the bank statements, Mobile Money logs and receipt books, counted stock and recorded the findings below as facts.",
             "findings": [
                 {
                     "code": "SYN-F-01",

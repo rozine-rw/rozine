@@ -32,30 +32,33 @@ export function CosignStatus({
                 </p>
                 {report.published_at !== null && (
                     <span className="rounded-[10px] bg-rz-accent-soft px-[9px] py-1 text-[11px] font-semibold text-rz-accent-app-text">
-                        {t('business.audit_cosign.published', {
-                            date: formatDate(report.published_at, locale),
-                        })}
+                        {cosign.published_reason === 'auto_approved'
+                            ? t('business.audit_cosign.published_auto')
+                            : t('business.audit_cosign.published', {
+                                  date: formatDate(report.published_at, locale),
+                              })}
                     </span>
                 )}
             </div>
-            {cosign.due_at !== null && (
-                <p
-                    data-overdue={cosign.overdue || undefined}
-                    className={cn(
-                        'mt-2 rounded-xl px-3 py-2 text-xs leading-normal font-semibold',
-                        cosign.overdue
-                            ? 'border border-[#fdeaea] bg-[rgba(229,72,77,.08)] text-rz-danger-text dark:border-[rgba(255,107,111,.25)]'
-                            : 'bg-[rgba(194,102,31,.10)] text-rz-ink',
-                    )}
-                >
-                    {t(
-                        cosign.overdue
-                            ? 'business.audit_cosign.overdue'
-                            : 'business.audit_cosign.due',
-                        { date: formatDate(cosign.due_at, locale) },
-                    )}
-                </p>
-            )}
+            {cosign.due_at !== null &&
+                cosign.published_reason !== 'auto_approved' && (
+                    <p
+                        data-overdue={cosign.overdue || undefined}
+                        className={cn(
+                            'mt-2 rounded-xl px-3 py-2 text-xs leading-normal font-semibold',
+                            cosign.overdue
+                                ? 'border border-[#fdeaea] bg-[rgba(229,72,77,.08)] text-rz-danger-text dark:border-[rgba(255,107,111,.25)]'
+                                : 'bg-[rgba(194,102,31,.10)] text-rz-ink',
+                        )}
+                    >
+                        {t(
+                            cosign.overdue
+                                ? 'business.audit_cosign.overdue'
+                                : 'business.audit_cosign.due',
+                            { date: formatDate(cosign.due_at, locale) },
+                        )}
+                    </p>
+                )}
             <ul
                 aria-label={t('business.audit_cosign.status.signers')}
                 className="mt-2.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface"

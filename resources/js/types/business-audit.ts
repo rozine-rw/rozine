@@ -67,9 +67,19 @@ export type AuditCosign = {
     /** The monthly by-the-7th deadline of the original reporting cycle; null for Flash. */
     due_at: string | null;
     overdue: boolean;
+    /**
+     * Pending the delivery 3 contract and the N6 amendment decision (not sent today). Why a
+     * published report was published: every required signature, or automatic approval once the
+     * co-sign window lapsed. Absent, the page reads publication from `report.published_at` alone.
+     */
+    published_reason?: 'signed' | 'auto_approved' | null;
 };
 
-export type AuditCosignAllowedAction = 'report.cosign';
+/**
+ * `report.dispute` is pending the delivery 3 contract: it is offered only alongside
+ * `actions.dispute`, and the current contract never sends it.
+ */
+export type AuditCosignAllowedAction = 'report.cosign' | 'report.dispute';
 
 export type BusinessAuditCosignProps = {
     contract_version: 'business-audit-report-v1';
@@ -79,7 +89,11 @@ export type BusinessAuditCosignProps = {
     report: AuditReport;
     cosign: AuditCosign;
     allowed_actions: AuditCosignAllowedAction[];
-    actions: { cosign: RouteAction | null };
+    actions: {
+        cosign: RouteAction | null;
+        /** Pending the delivery 3 contract: absent or null, no dispute is offered. */
+        dispute?: RouteAction | null;
+    };
     links: { current: RouteLink; close: RouteLink; operation: RouteLink };
 };
 
@@ -92,14 +106,26 @@ export type BusinessAuditCosignPageProps = BusinessAuditCosignProps & {
     shell_links?: BusinessShellLinks;
 };
 
-/** A co-signature exactly as sent, with the route it went to, so a lookup or retry is identical. */
+/**
+ * A co-signature or dispute exactly as sent, with the route it went to, so a lookup or retry is
+ * identical.
+ *
+ * The dispute is pending the delivery 3 contract. Its body is `{request_id,
+ * identity_context_revision, expected_revision: cosign.revision, report_revision, digest, reason}`
+ * with a required factual `reason` (at most 2,000 characters). Proof is optional text, files or
+ * both (#99): `supporting_text` (at most 1,000 characters) only when written, and `proof_files`
+ * only when attached, in which case the command goes as multipart through the same transport, as
+ * the Auditor ledger upload does. The field names, the upload transport (multipart or a separate
+ * upload) and the accepted file types and sizes are pending that contract.
+ */
 export type AuditCosignCommand = OperationCommand<AuditCosignAllowedAction> & {
     route: RouteAction;
 };
 
 /**
  * `REPORT_COSIGNATURE_RECORDED` (one required signature retained) or `REPORT_PUBLISHED` (every
- * required signature in, and published). `data.next` is where the page continues.
+ * required signature in, and published); `REPORT_DISPUTED` for a dispute, pending the delivery 3
+ * contract. `data.next` is where the page continues.
  */
 export type AuditCosignOperationResource = SharedOperationResource<{
     next: RouteLink;
