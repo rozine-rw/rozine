@@ -235,6 +235,16 @@ const en = {
     'business.note.continue_application': 'Continue application',
     'business.note.empty.title': 'No notes with this status',
     'business.note.empty.body': 'Start a raise to fund your business.',
+    'business.entries.title': 'Raise applications',
+    'business.entries.continue': 'Continue your application',
+    'business.entries.view': 'View your application',
+    'business.entries.saved_at': 'Saved at {step}',
+    'business.entries.submitted': 'Submitted · under review',
+    'business.entries.view_only':
+        'You can view this business, but starting a raise is not open to you.',
+    'business.entries.empty':
+        'No business you can act for is linked to this account yet.',
+    'business.entries.more': 'Show more',
     'business.grow.title': 'Grow',
     'business.grow.subtitle': "Raise more when you're ready.",
     'business.grow.headroom': 'Headroom available',

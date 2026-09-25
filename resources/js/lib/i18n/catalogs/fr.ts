@@ -240,6 +240,16 @@ const fr: Catalog = {
     'business.note.empty.title': 'Aucune note avec ce statut',
     'business.note.empty.body':
         'Lancez une levée pour financer votre entreprise.',
+    'business.entries.title': 'Demandes de levée',
+    'business.entries.continue': 'Poursuivre votre demande',
+    'business.entries.view': 'Voir votre demande',
+    'business.entries.saved_at': 'Enregistrée à l’étape {step}',
+    'business.entries.submitted': 'Soumise · en cours d’examen',
+    'business.entries.view_only':
+        'Vous pouvez consulter cette entreprise, mais lancer une levée ne vous est pas ouvert.',
+    'business.entries.empty':
+        'Aucune entreprise pour laquelle vous pouvez agir n’est encore liée à ce compte.',
+    'business.entries.more': 'Afficher plus',
     'business.grow.title': 'Croître',
     'business.grow.subtitle': 'Levez davantage quand vous êtes prêt.',
     'business.grow.headroom': 'Marge disponible',

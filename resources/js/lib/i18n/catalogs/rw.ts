@@ -238,6 +238,16 @@ const rw: Catalog = {
     'business.note.continue_application': 'Komeza ubusabe',
     'business.note.empty.title': 'Nta rupapuro ruri muri iki cyiciro',
     'business.note.empty.body': "Tangira gushaka igishoro cy'ubucuruzi bwawe.",
+    'business.entries.title': 'Ubusabe bwo gushaka igishoro',
+    'business.entries.continue': 'Komeza ubusabe bwawe',
+    'business.entries.view': 'Reba ubusabe bwawe',
+    'business.entries.saved_at': 'Byabitswe kuri {step}',
+    'business.entries.submitted': 'Bwoherejwe · burasuzumwa',
+    'business.entries.view_only':
+        'Ushobora kureba ubu bucuruzi, ariko ntiwemerewe gutangiza ubusabe bw’igishoro.',
+    'business.entries.empty':
+        'Nta bucuruzi ushobora gukorera buhujwe n’iyi konti.',
+    'business.entries.more': 'Erekana ibindi',
     'business.grow.title': 'Kwaguka',
     'business.grow.subtitle': 'Shaka igishoro kinini igihe witeguye.',
     'business.grow.headroom': 'Ubushobozi busigaye',

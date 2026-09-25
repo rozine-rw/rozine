@@ -148,6 +148,40 @@ export type CreateApplicationEntry = {
 /** What a completed `application.create` returns: at least the page to continue to. */
 export type CreateApplicationData = { next: RouteLink };
 
+/** A business's open or submitted application, as the role landing page lists it. */
+export type BusinessApplicationSummary = {
+    /** Opaque; never parsed. */
+    id: string;
+    status: 'draft' | 'submitted';
+    /** The saved resume pointer, e.g. `raise`. */
+    step: string;
+    revision: number;
+    link: RouteLink;
+};
+
+/** One business the current person may act for on the Business role landing page (#96). */
+export type BusinessApplicationsEntry = {
+    /** Opaque; never parsed. */
+    business_id: string;
+    name: string;
+    allowed_actions: 'application.create'[];
+    application: BusinessApplicationSummary | null;
+    actions: { create: RouteAction | null };
+};
+
+/**
+ * The Business role landing page's way into Apply (`identity/role-home`, current authority only):
+ * each business the person may act for, its application, and whether a raise may be started. No
+ * financial facts are carried here.
+ */
+export type BusinessApplications = {
+    identity_context_revision: number;
+    entries: BusinessApplicationsEntry[];
+    /** The create lookup; its url holds the literal `{request_id}` token. */
+    operation: RouteLink;
+    pagination: { next: RouteLink | null };
+};
+
 /** Where the Business shell's tabs and launcher link go. */
 export type BusinessAppLinks = {
     home: RouteLink;

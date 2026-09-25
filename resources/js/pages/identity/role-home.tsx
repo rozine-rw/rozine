@@ -1,11 +1,13 @@
 import { Head, Link, router, useHttp } from '@inertiajs/react';
 import { useRef, useState } from 'react';
+import { BusinessApplicationEntries } from '@/components/business/application-entries';
 import { Button } from '@/components/ui/button';
 import { useAccessRefresh } from '@/hooks/use-access-refresh';
 import { useTranslation } from '@/hooks/use-translation';
 import { dashboard } from '@/routes';
 import { store } from '@/routes/identity/bookmarks';
 import { edit } from '@/routes/profile';
+import type { BusinessApplications } from '@/types/business';
 import type {
     IdentityContext,
     MarketplaceRole,
@@ -17,9 +19,16 @@ type Props = {
     identity: IdentityContext;
     role: MarketplaceRole;
     section: 'overview' | 'access';
+    /** The Business role's way into Apply; null (or absent) for every other role. */
+    business_applications?: BusinessApplications | null;
 };
 
-export default function RoleHome({ identity, role, section }: Props) {
+export default function RoleHome({
+    identity,
+    role,
+    section,
+    business_applications: businessApplications = null,
+}: Props) {
     const { t } = useTranslation();
     const request = useHttp<SaveRoleBookmarkInput, { data: RoleBookmark }>();
     const refreshing = useAccessRefresh(['identity']);
@@ -93,6 +102,11 @@ export default function RoleHome({ identity, role, section }: Props) {
                                       : 'identity.home.ready',
                               )}
                     </p>
+                    {businessApplications !== null && (
+                        <BusinessApplicationEntries
+                            applications={businessApplications}
+                        />
+                    )}
                     <Link href={edit()}>{t('identity.home.settings')}</Link>
                 </>
             )}
