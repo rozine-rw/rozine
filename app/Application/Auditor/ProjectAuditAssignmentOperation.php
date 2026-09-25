@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Auditor;
 
 use App\Application\Identity\AuthorizeActiveRole;
+use App\Domain\Auditor\AuditReadPolicy;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 
@@ -28,8 +29,7 @@ final class ProjectAuditAssignmentOperation
             } catch (IdentityViolation) {
                 // The final identity check distinguishes a lapsed Business from a revoked actor.
             } catch (CommandRejection $exception) {
-                if (! in_array($exception->reason, ['BUSINESS_NOT_FOUND', 'MANDATE_REQUIRED', 'ASSIGNMENT_NOT_FOUND', 'ASSIGNMENT_ACCEPTANCE_EXPIRED',
-                    'AUDITOR_INDEPENDENCE_REVIEW_REQUIRED', 'ACCREDITATION_REQUIRED', 'ACCREDITATION_EXPIRED', 'ACCREDITATION_SUSPENDED', 'STANDING_CHECK_REQUIRED'], true)) {
+                if (! in_array($exception->reason, AuditReadPolicy::DROPPED_RECORD_CODES, true)) {
                     throw $exception;
                 }
             }

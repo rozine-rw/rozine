@@ -52,6 +52,24 @@ final class ApplicationDraft
             'use_of_funds' => $fields['use_of_funds'], 'story' => trim($fields['story'])];
     }
 
+    /**
+     * @param  Fields  $fields
+     * @return array<string, list<string>>
+     */
+    public function reviewErrors(array $fields): array
+    {
+        $fields = $this->normalize($fields);
+        $errors = [];
+        if ($fields['title'] === '') {
+            $errors['title'] = ['Add an application title.'];
+        }
+        if ($fields['use_of_funds'] === []) {
+            $errors['use_of_funds'] = ['Select the intended use of funds.'];
+        }
+
+        return $errors;
+    }
+
     public function assertEditable(string $status, int $revision, int $expectedRevision): void
     {
         if ($revision !== $expectedRevision) {

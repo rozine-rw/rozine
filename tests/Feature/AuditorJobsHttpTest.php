@@ -23,6 +23,7 @@ use Tests\Support\AuditAssignmentFixture as Fixture;
 use Tests\Support\AuditorFixture;
 use Tests\Support\BusinessApplicationFixture;
 use Tests\Support\BusinessAuthorityFixture;
+use Tests\Support\BusinessQuoteFixture;
 
 beforeEach(function (): void {
     $this->freezeTime();
@@ -297,20 +298,21 @@ it('keeps bearer-only clients on authorized API routes through navigation accept
     $this->getJson($operationUrl)->assertOk()->assertJsonPath('data.next.url', '/api/v1/auditor/jobs');
 });
 
-it('keeps submitted application facts in an Auditor file when the owner starts and edits another draft', function (): void {
-    $fixture = Fixture::make(1);
+it('keeps submitted application facts in an Auditor file when a legacy draft is edited', function (): void {
+    $quoteFixture = BusinessQuoteFixture::ready();
+    BusinessQuoteFixture::submit($quoteFixture, BusinessQuoteFixture::acceptance($quoteFixture));
+    $fixture = $quoteFixture['audit'];
     $owner = $fixture['authority']['users'][0];
-    $create = app(CreateBusinessApplication::class);
     $save = app(SaveBusinessApplication::class);
-    $submitted = $create->handle($owner->id, 1, $fixture['business'], 0, (string) Str::uuid())['data']['application']['id'];
-    $save->handle($owner->id, 1, $fixture['business'], $submitted, 1, BusinessApplicationFixture::fields(), 'raise', (string) Str::uuid());
-    BusinessApplication::query()->whereKey($submitted)->firstOrFail()->forceFill(['status' => 'submitted', 'step' => 'submitted'])->save();
-    $assignment = Fixture::request($fixture);
-    $later = $create->handle($owner->id, 1, $fixture['business'], 0, (string) Str::uuid())['data']['application']['id'];
+    $assignment = $quoteFixture['assignment'];
+    expect(app(CreateBusinessApplication::class)->handle($owner->id, 1, $fixture['business'], 0, (string) Str::uuid())['code'])->toBe('APPLICATION_PENDING_REVIEW');
+    $later = BusinessApplication::factory()->create(['business_id' => $fixture['business']])->id;
     expect($save->handle($owner->id, 1, $fixture['business'], $later, 1, [...BusinessApplicationFixture::fields('15000000'), 'term_months' => 3, 'use_of_funds' => ['inventory']], 'raise', (string) Str::uuid())['code'])->toBe('APPLICATION_SAVED');
     Sanctum::actingAs($fixture['partners'][0]['user'], ['auditor:read']);
     $this->getJson('/api/v1/auditor/jobs/'.$assignment->id)->assertOk()
-        ->assertJsonPath('data.file.raise.requested.amount', '8000000')->assertJsonPath('data.file.raise.term_months', 6)->assertJsonPath('data.file.raise.use_of_funds', 'equipment');
+        ->assertJsonPath('data.file.raise.requested.amount', '12000000')->assertJsonPath('data.file.raise.term_months', 6)->assertJsonPath('data.file.raise.use_of_funds', 'equipment');
     expect($save->handle($owner->id, 1, $fixture['business'], $later, 2, BusinessApplicationFixture::fields('20000000'), 'raise', (string) Str::uuid())['code'])->toBe('APPLICATION_SAVED');
-    $this->getJson('/api/v1/auditor/jobs')->assertOk()->assertJsonPath('data.eligible.0.requested.amount', '8000000')->assertJsonPath('data.eligible.0.term_months', 6);
+    $this->getJson('/api/v1/auditor/jobs')->assertOk()->assertJsonPath('data.assigned.0.id', $assignment->id);
+    $this->getJson('/api/v1/auditor/jobs/'.$assignment->id)->assertOk()
+        ->assertJsonPath('data.file.raise.requested.amount', '12000000')->assertJsonPath('data.file.raise.term_months', 6);
 });

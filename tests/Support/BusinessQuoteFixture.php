@@ -36,7 +36,7 @@ final class BusinessQuoteFixture
         $application = BusinessApplication::query()->whereKey($created['data']['application']['id'])->firstOrFail();
         app(SaveBusinessApplication::class)->handle($owner->id, 1, $audit['business'], $application->id, 1,
             BusinessApplicationFixture::fields('12000000'), 'raise', (string) Str::uuid());
-        $first = now('UTC')->toImmutable()->startOfMonth()->subMonths($historyMonths);
+        $first = now('Africa/Kigali')->toImmutable()->startOfMonth()->subMonths($historyMonths);
         $csv = "date,reference,amount\n";
         for ($index = 0; $index < $historyMonths; $index++) {
             $day = $first->addMonths($index)->format('Y-m-d');

@@ -232,3 +232,58 @@ it('enforces that closed cases have no recipient and cannot masquerade as comple
     expect(fn () => DB::transaction(fn (): bool => $assignment->forceFill(['status' => 'closed'])->save()))->toThrow(QueryException::class);
     expect(fn () => DB::transaction(fn (): bool => $assignment->forceFill(['status' => 'closed', 'party_id' => null, 'completed_at' => now()])->save()))->toThrow(QueryException::class);
 });
+
+it('makes a closed engagement terminal in PostgreSQL even for direct record mutations', function (string $change): void {
+    $fixture = Fixture::make(0);
+    $assignment = Fixture::request($fixture);
+    $request = (string) Str::uuid();
+    $receipt = app(ResolveAuditAssignment::class)->handle($fixture['staff']->id, $assignment->id, 1, 'close', 'No eligible partner.', $request);
+    $before = $assignment->refresh()->getRawOriginal();
+    expect($assignment->status)->toBe('closed');
+    expect(fn () => DB::transaction(function () use ($assignment, $change): void {
+        $query = DB::table('audit_assignments')->where('id', $assignment->id);
+        if ($change === 'delete') {
+            $query->delete();
+
+            return;
+        }
+        $query->update(match ($change) {
+            'reopen' => ['status' => 'operations'],
+            'revision' => ['revision' => $assignment->revision + 1],
+            'deadline' => ['accept_by' => now()->addHour()],
+            'state' => ['state' => 'replacement-state'],
+            default => throw new LogicException('Unknown closed engagement mutation.'),
+        });
+    }))->toThrow(QueryException::class, 'Closed audit assignments are immutable');
+    expect($assignment->refresh()->getRawOriginal())->toBe($before)
+        ->and(app(ResolveAuditAssignment::class)->handle($fixture['staff']->id, $assignment->id, 1, 'close', 'No eligible partner.', $request))->toBe($receipt);
+})->with(['reopen', 'revision', 'deadline', 'state', 'delete']);
+
+it('refuses a protection rollback with closed records and preserves their database guard', function (): void {
+    $fixture = Fixture::make(0);
+    $assignment = Fixture::request($fixture);
+    app(ResolveAuditAssignment::class)->handle($fixture['staff']->id, $assignment->id, 1, 'close', 'No eligible partner.', (string) Str::uuid());
+    $before = $assignment->refresh()->getRawOriginal();
+    $migration = require database_path('migrations/2026_09_25_041046_protect_closed_audit_assignments.php');
+    expect(fn () => $migration->down())->toThrow(QueryException::class, 'Closed audit assignments require a forward migration; rollback is refused');
+    expect(fn () => DB::transaction(fn (): int => DB::table('audit_assignments')->where('id', $assignment->id)->update(['status' => 'operations'])))
+        ->toThrow(QueryException::class, 'Closed audit assignments are immutable');
+    expect($assignment->refresh()->getRawOriginal())->toBe($before);
+});
+
+it('reverses and reapplies unused closed-engagement protection without changing assignment data', function (): void {
+    $fixture = Fixture::make(0);
+    $assignment = Fixture::request($fixture);
+    $before = $assignment->getRawOriginal();
+    $migration = require database_path('migrations/2026_09_25_041046_protect_closed_audit_assignments.php');
+    $guard = fn (): bool => DB::table('pg_trigger')->where('tgname', 'audit_assignment_closed_immutable')
+        ->whereRaw('tgrelid = ?::regclass', ['audit_assignments'])->exists();
+    expect($guard())->toBeTrue();
+    $migration->down();
+    expect($guard())->toBeFalse()->and($assignment->refresh()->getRawOriginal())->toBe($before);
+    $migration->up();
+    expect($guard())->toBeTrue()->and($assignment->refresh()->getRawOriginal())->toBe($before);
+    app(ResolveAuditAssignment::class)->handle($fixture['staff']->id, $assignment->id, 1, 'close', 'No eligible partner.', (string) Str::uuid());
+    expect(fn () => DB::transaction(fn (): int => DB::table('audit_assignments')->where('id', $assignment->id)->delete()))
+        ->toThrow(QueryException::class, 'Closed audit assignments are immutable');
+});

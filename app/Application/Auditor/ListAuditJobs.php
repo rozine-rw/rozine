@@ -7,6 +7,7 @@ namespace App\Application\Auditor;
 use App\Application\Auditor\Contracts\AuditAssignmentStore;
 use App\Application\Business\GetAuditApplication;
 use App\Application\Identity\AuthorizeActiveRole;
+use App\Domain\Auditor\AuditReadPolicy;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 
@@ -26,8 +27,7 @@ final class ListAuditJobs
             } catch (IdentityViolation) {
                 continue;
             } catch (CommandRejection $exception) {
-                if (! in_array($exception->reason, ['BUSINESS_NOT_FOUND', 'MANDATE_REQUIRED', 'ASSIGNMENT_NOT_FOUND', 'ASSIGNMENT_ACCEPTANCE_EXPIRED',
-                    'AUDITOR_INDEPENDENCE_REVIEW_REQUIRED', 'ACCREDITATION_REQUIRED', 'ACCREDITATION_EXPIRED', 'ACCREDITATION_SUSPENDED', 'STANDING_CHECK_REQUIRED'], true)) {
+                if (! in_array($exception->reason, AuditReadPolicy::DROPPED_RECORD_CODES, true)) {
                     throw $exception;
                 }
             }

@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\BusinessApplicationFixture;
 use Tests\Support\BusinessAuthorityFixture;
+use Tests\Support\BusinessQuoteFixture;
 
 it('resumes an existing draft without creating a second application or rewriting its history', function (): void {
     $fixture = BusinessApplicationFixture::make();
@@ -73,16 +74,16 @@ it('resumes saved input at its current revision while preserving immutable earli
 });
 
 it('enforces one open draft in PostgreSQL while retaining submitted applications', function (): void {
-    $fixture = BusinessApplicationFixture::make();
-    expect(fn () => DB::transaction(fn (): BusinessApplication => BusinessApplication::factory()->create(['business_id' => $fixture['business']->id])))
+    $fixture = BusinessQuoteFixture::ready();
+    expect(fn () => DB::transaction(fn (): BusinessApplication => BusinessApplication::factory()->create(['business_id' => $fixture['audit']['business']])))
         ->toThrow(QueryException::class, 'business_application_one_draft');
-    $fixture['application']->forceFill(['status' => 'submitted', 'step' => 'submitted'])->save();
-    $user = $fixture['authority']['users'][0];
-    expect(app(GetCurrentBusinessApplication::class)->handle($user->id, 1, $fixture['business']->id))->toBeNull();
-    $created = app(CreateBusinessApplication::class)->handle($user->id, 1, $fixture['business']->id, 0, (string) Str::uuid());
-    expect($created['code'])->toBe('APPLICATION_CREATED')->and($created['data']['application']['id'])->not->toBe($fixture['application']->id);
-    $this->assertDatabaseCount('business_applications', 2);
-    $this->assertDatabaseCount('business_application_versions', 2);
+    BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
+    $user = $fixture['audit']['authority']['users'][0];
+    expect(app(GetCurrentBusinessApplication::class)->handle($user->id, 1, $fixture['audit']['business']))->toBeNull();
+    $created = app(CreateBusinessApplication::class)->handle($user->id, 1, $fixture['audit']['business'], 0, (string) Str::uuid());
+    expect($created['code'])->toBe('APPLICATION_PENDING_REVIEW');
+    $this->assertDatabaseCount('business_applications', 1);
+    $this->assertDatabaseCount('business_application_versions', 5);
 });
 
 it('preserves every draft version and does not restore old input when a save is replayed', function (): void {
@@ -160,10 +161,12 @@ it('rechecks active role and current context even for repeated commands', functi
 });
 
 it('blocks draft editing after submission while retaining the historical record', function (): void {
-    $fixture = BusinessApplicationFixture::make();
-    $fixture['application']->forceFill(['status' => 'submitted', 'step' => 'submitted'])->save();
-    expect(BusinessApplicationFixture::save($fixture)['code'])->toBe('APPLICATION_NOT_EDITABLE');
-    $this->assertDatabaseCount('business_application_versions', 1);
+    $fixture = BusinessQuoteFixture::ready();
+    BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
+    expect(app(SaveBusinessApplication::class)->handle($fixture['audit']['authority']['users'][0]->id, 1,
+        $fixture['audit']['business'], $fixture['application']->id, 5, BusinessApplicationFixture::fields('8000000'), null,
+        (string) Str::uuid())['code'])->toBe('APPLICATION_NOT_EDITABLE');
+    $this->assertDatabaseCount('business_application_versions', 5);
 });
 
 it('denies unknown operation commands and unlinked accounts', function (): void {
