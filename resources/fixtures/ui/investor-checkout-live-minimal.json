@@ -1,0 +1,143 @@
+{
+    "component": "investor/checkout",
+    "synthetic": true,
+    "props": {
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 1,
+        "server_time": "2026-09-23T09:00:00+02:00",
+        "allowed_actions": [],
+        "deal": {
+            "campaign_id": "01k6r4m2n6p8q0r2s4t6v8w0x2",
+            "revision": 3,
+            "name": "GreenLeaf Agro",
+            "accent": "green",
+            "rate_pct": "13.5",
+            "term_months": 6,
+            "lifecycle": "live",
+            "restriction": null,
+            "clock": {
+                "starts_at": "2026-09-05T09:00:00+02:00",
+                "expires_at": "2026-10-05T09:00:00+02:00"
+            },
+            "unit_price": {
+                "currency": "RWF",
+                "amount": "5000"
+            }
+        },
+        "quote": {
+            "basis": "indicative",
+            "units": "1",
+            "unit_price": {
+                "currency": "RWF",
+                "amount": "5000"
+            },
+            "amount": {
+                "currency": "RWF",
+                "amount": "5000"
+            },
+            "rate_pct": "13.5",
+            "term_months": 6,
+            "expected_return": {
+                "currency": "RWF",
+                "amount": "675"
+            },
+            "payout_fee": {
+                "currency": "RWF",
+                "amount": "54"
+            },
+            "maturity_value": {
+                "currency": "RWF",
+                "amount": "5621"
+            },
+            "maturity_date": null,
+            "rights": null,
+            "revision": 7,
+            "capacity": {
+                "max_units": "200",
+                "binding": "transaction",
+                "remaining": {
+                    "transaction": {
+                        "currency": "RWF",
+                        "amount": "1000000"
+                    },
+                    "note": {
+                        "currency": "RWF",
+                        "amount": "2500000"
+                    },
+                    "business": {
+                        "currency": "RWF",
+                        "amount": "2500000"
+                    },
+                    "aggregate": {
+                        "currency": "RWF",
+                        "amount": "9000000"
+                    }
+                }
+            }
+        },
+        "quick_picks": [],
+        "wallet": {
+            "available": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "sufficient": false,
+            "revision": 0
+        },
+        "disclosure": {
+            "version": "disclosure-2026-09.1",
+            "sha256": "5d1c0a7f3b9e2d48c6a1f07e93b25c4d8a6e1f0b7c2d93e4a5b6c7d8e9f0a1b2",
+            "points": []
+        },
+        "reservation": null,
+        "commitment": null,
+        "refusal": null,
+        "home": null,
+        "links": {
+            "deals": {
+                "url": "/investor/deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/investor/portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/investor/profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/investor/wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/investor/notifications",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/launcher",
+                "method": "get"
+            },
+            "close": {
+                "url": "/investor/deals/01k6r4m2n6p8q0r2s4t6v8w0x2",
+                "method": "get"
+            },
+            "deposit": {
+                "url": "/investor/wallet?kind=deposit",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/investor/primary-operations/{request_id}",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "reserve": {
+                "url": "/investor/deals/01k6r4m2n6p8q0r2s4t6v8w0x2/reservations",
+                "method": "post"
+            },
+            "confirm": null,
+            "release": null
+        }
+    }
+}

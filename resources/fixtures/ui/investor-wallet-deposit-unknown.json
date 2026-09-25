@@ -1,0 +1,366 @@
+{
+    "component": "investor/wallet",
+    "synthetic": true,
+    "props": {
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 5,
+        "server_time": "2026-10-02T09:00:00+02:00",
+        "allowed_actions": ["wallet.deposit"],
+        "wallet": {
+            "revision": 41,
+            "status": "active",
+            "restriction": null,
+            "total": {
+                "currency": "RWF",
+                "amount": "1733485"
+            },
+            "breakdown": {
+                "available": {
+                    "currency": "RWF",
+                    "amount": "1253485"
+                },
+                "held": {
+                    "currency": "RWF",
+                    "amount": "30000"
+                },
+                "committed": {
+                    "currency": "RWF",
+                    "amount": "450000"
+                }
+            },
+            "pending_deposits": {
+                "currency": "RWF",
+                "amount": "200000"
+            }
+        },
+        "holds": [
+            {
+                "reservation_id": "01k6q2r4s6t8v0w2x4y6z8a0b2",
+                "deal_name": "GreenLeaf Agro",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "30000"
+                },
+                "units": "6",
+                "clock": {
+                    "starts_at": "2026-10-02T08:58:00+02:00",
+                    "expires_at": "2026-10-02T09:03:00+02:00"
+                },
+                "link": {
+                    "url": "/preview/investor-checkout-reserved",
+                    "method": "get"
+                }
+            }
+        ],
+        "funding": {
+            "kind": null,
+            "policy": {
+                "version": "synthetic-deposit-policy-0",
+                "synthetic": true,
+                "fee": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "minimum": {
+                    "currency": "RWF",
+                    "amount": "1000"
+                },
+                "maximum": {
+                    "currency": "RWF",
+                    "amount": "5000000"
+                }
+            },
+            "methods": [
+                {
+                    "id": "mtn-1",
+                    "kind": "mtn",
+                    "label": "MTN MoMo",
+                    "masked": "+250 788 ···· 456"
+                },
+                {
+                    "id": "airtel-1",
+                    "kind": "airtel",
+                    "label": "Airtel",
+                    "masked": "+250 73 ···· 218"
+                },
+                {
+                    "id": "bk-1",
+                    "kind": "bank",
+                    "label": "Bank of Kigali",
+                    "masked": "Account ····2231"
+                }
+            ],
+            "picks": [
+                {
+                    "currency": "RWF",
+                    "amount": "50000"
+                },
+                {
+                    "currency": "RWF",
+                    "amount": "100000"
+                },
+                {
+                    "currency": "RWF",
+                    "amount": "500000"
+                },
+                {
+                    "currency": "RWF",
+                    "amount": "1000000"
+                }
+            ],
+            "quote": null
+        },
+        "deposits": [
+            {
+                "id": "dep-1001",
+                "request_id": "5b0f7c2e-1d4a-4c6b-9e21-0000dep-1001",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "200000"
+                },
+                "method": {
+                    "id": "airtel-1",
+                    "kind": "airtel",
+                    "label": "Airtel",
+                    "masked": "+250 73 ···· 218"
+                },
+                "created_at": "2026-10-01T19:20:00+02:00",
+                "state": "unknown",
+                "intent_receipt": {
+                    "receipt_id": "rcp_dep-1001i",
+                    "operation_id": "op_dep-1001i",
+                    "request_id": "7f1c2a90-0000-4000-8000-000dep-1001i",
+                    "code": "DEPOSIT_INTENT_RECORDED",
+                    "recorded_at": "2026-10-01T19:20:00+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "200000"
+                    },
+                    "units": null,
+                    "reference": "RZ-DEP-1001I",
+                    "revision": 1,
+                    "policy_version": "synthetic-deposit-policy-0",
+                    "disclosure_version": null,
+                    "link": {
+                        "url": "/preview/investor-wallet-deposit-unknown",
+                        "method": "get"
+                    }
+                },
+                "credit_receipt": null,
+                "link": {
+                    "url": "/preview/investor-wallet-deposit-unknown",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "dep-0930",
+                "request_id": "5b0f7c2e-1d4a-4c6b-9e21-0000dep-0930",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "500000"
+                },
+                "method": {
+                    "id": "mtn-1",
+                    "kind": "mtn",
+                    "label": "MTN MoMo",
+                    "masked": "+250 788 ···· 456"
+                },
+                "created_at": "2026-09-30T10:01:00+02:00",
+                "state": "succeeded",
+                "intent_receipt": {
+                    "receipt_id": "rcp_dep-0930i",
+                    "operation_id": "op_dep-0930i",
+                    "request_id": "7f1c2a90-0000-4000-8000-000dep-0930i",
+                    "code": "DEPOSIT_INTENT_RECORDED",
+                    "recorded_at": "2026-09-30T10:01:00+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "500000"
+                    },
+                    "units": null,
+                    "reference": "RZ-DEP-0930I",
+                    "revision": 1,
+                    "policy_version": "synthetic-deposit-policy-0",
+                    "disclosure_version": null,
+                    "link": {
+                        "url": "/preview/investor-wallet-receipt",
+                        "method": "get"
+                    }
+                },
+                "credit_receipt": {
+                    "receipt_id": "rcp_dep-0930c",
+                    "operation_id": "op_dep-0930c",
+                    "request_id": "7f1c2a90-0000-4000-8000-000dep-0930c",
+                    "code": "DEPOSIT_CREDITED",
+                    "recorded_at": "2026-09-30T10:04:00+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "500000"
+                    },
+                    "units": null,
+                    "reference": "RZ-DEP-0930C",
+                    "revision": 1,
+                    "policy_version": "synthetic-deposit-policy-0",
+                    "disclosure_version": null,
+                    "link": {
+                        "url": "/preview/investor-wallet-receipt",
+                        "method": "get"
+                    }
+                },
+                "link": {
+                    "url": "/preview/investor-wallet-receipt",
+                    "method": "get"
+                }
+            }
+        ],
+        "history": {
+            "movement": "external",
+            "filters": [
+                {
+                    "key": "external",
+                    "active": true,
+                    "link": {
+                        "url": "/preview/investor-wallet",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "internal",
+                    "active": false,
+                    "link": {
+                        "url": "/preview/investor-wallet-internal",
+                        "method": "get"
+                    }
+                }
+            ],
+            "items": [
+                {
+                    "id": "we-01",
+                    "movement": "external",
+                    "kind": "deposit",
+                    "direction": "in",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "500000"
+                    },
+                    "counterparty": "MTN MoMo",
+                    "occurred_at": "2026-09-30T10:04:00+02:00",
+                    "link": {
+                        "url": "/preview/investor-wallet-receipt",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "we-02",
+                    "movement": "external",
+                    "kind": "deposit",
+                    "direction": "in",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "1200000"
+                    },
+                    "counterparty": "Bank of Kigali",
+                    "occurred_at": "2026-09-12T16:40:00+02:00",
+                    "link": {
+                        "url": "/preview/investor-wallet-receipt",
+                        "method": "get"
+                    }
+                }
+            ],
+            "pagination": {
+                "next": null
+            }
+        },
+        "receipt": {
+            "id": "dep-1001",
+            "request_id": "5b0f7c2e-1d4a-4c6b-9e21-0000dep-1001",
+            "amount": {
+                "currency": "RWF",
+                "amount": "200000"
+            },
+            "method": {
+                "id": "airtel-1",
+                "kind": "airtel",
+                "label": "Airtel",
+                "masked": "+250 73 ···· 218"
+            },
+            "created_at": "2026-10-01T19:20:00+02:00",
+            "state": "unknown",
+            "intent_receipt": {
+                "receipt_id": "rcp_dep-1001i",
+                "operation_id": "op_dep-1001i",
+                "request_id": "7f1c2a90-0000-4000-8000-000dep-1001i",
+                "code": "DEPOSIT_INTENT_RECORDED",
+                "recorded_at": "2026-10-01T19:20:00+02:00",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "200000"
+                },
+                "units": null,
+                "reference": "RZ-DEP-1001I",
+                "revision": 1,
+                "policy_version": "synthetic-deposit-policy-0",
+                "disclosure_version": null,
+                "link": {
+                    "url": "/preview/investor-wallet-deposit-unknown",
+                    "method": "get"
+                }
+            },
+            "credit_receipt": null,
+            "link": {
+                "url": "/preview/investor-wallet-deposit-unknown",
+                "method": "get"
+            }
+        },
+        "earnings": null,
+        "exports": null,
+        "links": {
+            "deals": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "close": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "deposit": {
+                "url": "/preview/investor-wallet-deposit",
+                "method": "get"
+            },
+            "link_account": {
+                "url": "/preview/investor-profile-linked",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/investor-wallet-operation-{request_id}",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "deposit": {
+                "url": "/preview/investor-wallet-deposit-pending",
+                "method": "post"
+            }
+        }
+    }
+}

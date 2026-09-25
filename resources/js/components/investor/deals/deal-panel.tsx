@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AuditDrawer } from '@/components/investor/audit-drawer';
+import { AboutCard, EbitdaValue } from '@/components/investor/deals/deal-facts';
 import {
     FundingProgress,
     PhotosRow,
@@ -13,7 +14,7 @@ import { POSITIVE_TEXT, RATING_STYLE } from '@/components/investor/tokens';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { DealDetail, MonthlyUpdate } from '@/types/investor';
+import type { C3DealDetail, MonthlyUpdateSummary } from '@/types/investor';
 
 const MICRO =
     'text-[10.5px] font-bold tracking-[.04em] whitespace-nowrap text-rz-slate uppercase';
@@ -29,11 +30,11 @@ export function DealPanel({
     deal,
     serverTime,
 }: {
-    deal: DealDetail;
+    deal: C3DealDetail;
     serverTime: string;
 }) {
     const { t } = useTranslation();
-    const [update, setUpdate] = useState<MonthlyUpdate | null>(null);
+    const [update, setUpdate] = useState<MonthlyUpdateSummary | null>(null);
     const rating = RATING_STYLE[deal.rating.band];
 
     return (
@@ -105,27 +106,25 @@ export function DealPanel({
                         }
                     >
                         <div className="mt-2.5 grid grid-cols-2 gap-2.5">
-                            {(
-                                [
-                                    [
-                                        'avg_monthly_revenue',
-                                        'investor.deal.avg_monthly_revenue',
-                                    ],
-                                    ['ebitda', 'investor.deal.ebitda'],
-                                ] as const
-                            ).map(([key, label]) => (
-                                <div
-                                    key={key}
-                                    className="rounded-xl bg-rz-surface-sunken p-[11px]"
-                                >
-                                    <p className="text-[10.5px] font-bold tracking-[.05em] text-rz-slate uppercase">
-                                        {t(label)}
-                                    </p>
-                                    <p className="mt-[3px] text-sm font-bold text-rz-ink">
-                                        {formatRwfShort(deal.financials[key])}
-                                    </p>
-                                </div>
-                            ))}
+                            <div className="rounded-xl bg-rz-surface-sunken p-[11px]">
+                                <p className="text-[10.5px] font-bold tracking-[.05em] text-rz-slate uppercase">
+                                    {t('investor.deal.avg_monthly_revenue')}
+                                </p>
+                                <p className="mt-[3px] text-sm font-bold text-rz-ink">
+                                    {formatRwfShort(
+                                        deal.financials.avg_monthly_revenue,
+                                    )}
+                                </p>
+                            </div>
+                            <div className="rounded-xl bg-rz-surface-sunken p-[11px]">
+                                <p className="text-[10.5px] font-bold tracking-[.05em] text-rz-slate uppercase">
+                                    {t('investor.deal.ebitda')}
+                                </p>
+                                <EbitdaValue
+                                    ebitda={deal.financials.ebitda}
+                                    className="mt-[3px] text-sm font-bold text-rz-ink"
+                                />
+                            </div>
                         </div>
                     </Section>
 
@@ -200,47 +199,7 @@ export function DealPanel({
                             </SourceBadge>
                         }
                     >
-                        <dl className="mt-2.5 rounded-xl border border-rz-border bg-rz-surface px-[13px] py-0.5">
-                            {(
-                                [
-                                    [
-                                        'investor.deal.registration',
-                                        deal.about.company_code,
-                                    ],
-                                    [
-                                        'investor.deal.registered',
-                                        t('investor.deal.registered_value', {
-                                            year: deal.about.registered_year,
-                                            years: deal.about.years_operating,
-                                        }),
-                                    ],
-                                    [
-                                        'investor.deal.team_size',
-                                        String(deal.about.team_size),
-                                    ],
-                                    [
-                                        'investor.deal.industry',
-                                        `${deal.industry} · ${deal.district}`,
-                                    ],
-                                ] as const
-                            ).map(([label, value], index) => (
-                                <div
-                                    key={label}
-                                    className={cn(
-                                        'flex justify-between gap-2.5 py-2',
-                                        index < 3 &&
-                                            'border-b border-[#eef2f9] dark:border-rz-divider',
-                                    )}
-                                >
-                                    <dt className="text-xs text-rz-secondary">
-                                        {t(label)}
-                                    </dt>
-                                    <dd className="text-right text-xs font-semibold text-rz-ink">
-                                        {value}
-                                    </dd>
-                                </div>
-                            ))}
-                        </dl>
+                        <AboutCard about={deal.about} />
                     </Section>
 
                     {deal.audit !== null && (

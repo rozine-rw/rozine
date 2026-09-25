@@ -12,10 +12,10 @@ import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCount, formatRwf, formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { DealCard } from '@/types/investor';
+import type { C3DealCard } from '@/types/investor';
 
 type SwipeCardProps = {
-    deal: DealCard;
+    deal: C3DealCard;
     serverTime: string;
     /** Only the front card is interactive; the fanned cards behind are decoration. */
     front: boolean;
@@ -30,7 +30,7 @@ type SwipeCardProps = {
  */
 export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
     const { t } = useTranslation();
-    const clock = useTimeLeft(deal.closes_at, serverTime);
+    const clock = useTimeLeft(deal.clock.expires_at, serverTime);
 
     return (
         <article
@@ -160,8 +160,8 @@ export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
                             {t('investor.deals.left_to_fill')}
                         </p>
                         <p className="mt-[3px] text-xs font-bold tracking-[-.2px] whitespace-nowrap text-rz-ink">
-                            {deal.status === 'sold_out'
-                                ? t('investor.deals.fully_funded')
+                            {deal.lifecycle !== 'live'
+                                ? t(`investor.deal.lifecycle.${deal.lifecycle}`)
                                 : formatRwf(deal.left_to_fill)}
                         </p>
                     </div>
@@ -170,7 +170,7 @@ export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
                             {t('investor.deals.notes')}
                         </p>
                         <p className="mt-[3px] text-xs font-semibold whitespace-nowrap text-rz-ink">
-                            {formatCount(deal.units_sold)}{' '}
+                            {formatCount(Number(deal.units.committed))}{' '}
                             <span className="font-medium text-rz-secondary">
                                 {t('investor.deals.taken')}
                             </span>

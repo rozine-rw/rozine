@@ -1,0 +1,307 @@
+{
+    "component": "investor/holding",
+    "synthetic": true,
+    "props": {
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 1,
+        "server_time": "2026-09-23T09:00:00+02:00",
+        "allowed_actions": [],
+        "holding": {
+            "id": "h-greenleaf-c3",
+            "name": "GreenLeaf Agro",
+            "accent": "green",
+            "industry": "Agriculture",
+            "district": "Gasabo",
+            "health": "healthy",
+            "value": {
+                "currency": "RWF",
+                "amount": "30000"
+            },
+            "invested": {
+                "currency": "RWF",
+                "amount": "30000"
+            },
+            "gain": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "gain_pct": "0.0",
+            "repaid_pct": 0,
+            "matures_on": "2027-03-21T00:00:00+02:00",
+            "payments_made": 0,
+            "payments_total": 6,
+            "link": {
+                "url": "/investor/holdings/01k6r6",
+                "method": "get"
+            },
+            "rating": {
+                "band": "strong",
+                "score": "4.2"
+            },
+            "rate_pct": "13.5",
+            "expected_profit": {
+                "currency": "RWF",
+                "amount": "4050"
+            },
+            "maturity_value": {
+                "currency": "RWF",
+                "amount": "33709"
+            },
+            "received": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "next_payment": {
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "5675"
+                },
+                "due_on": "2026-10-21T00:00:00+02:00"
+            },
+            "on_time": {
+                "made": 0,
+                "on_time": 0,
+                "late": 0
+            },
+            "months_left": 6,
+            "investors": 647,
+            "rating_change": null,
+            "recovery_plan": null,
+            "arrears": null,
+            "photos": [],
+            "updates": [],
+            "issue": {
+                "id": "h-greenleaf-c3",
+                "revision": 1,
+                "note_id": "note_greenleaf_2026",
+                "campaign_id": "cmp_greenleaf",
+                "units": "6",
+                "ordinals": [
+                    {
+                        "first": "1201",
+                        "last": "1206"
+                    }
+                ],
+                "principal": {
+                    "currency": "RWF",
+                    "amount": "30000"
+                },
+                "rights": {
+                    "total_return": {
+                        "currency": "RWF",
+                        "amount": "4050"
+                    },
+                    "instalments": [
+                        {
+                            "index": 1,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "5000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "675"
+                            }
+                        },
+                        {
+                            "index": 2,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "5000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "675"
+                            }
+                        },
+                        {
+                            "index": 3,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "5000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "675"
+                            }
+                        },
+                        {
+                            "index": 4,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "5000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "675"
+                            }
+                        },
+                        {
+                            "index": 5,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "5000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "675"
+                            }
+                        },
+                        {
+                            "index": 6,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "5000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "675"
+                            }
+                        }
+                    ]
+                },
+                "issued_at": "2026-09-21T15:20:04+02:00",
+                "disbursement_effective_at": "2026-09-21T15:18:41+02:00",
+                "effective_date": "2026-09-21",
+                "terms": {
+                    "rate_pct": "13.5",
+                    "term_months": 6,
+                    "total_return": {
+                        "currency": "RWF",
+                        "amount": "4050"
+                    },
+                    "policy_version": "synthetic-primary-policy-0",
+                    "disclosure_version": "disclosure-2026-05.2"
+                },
+                "schedule": [
+                    {
+                        "index": 1,
+                        "due_on": "2026-10-21",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "5000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "675"
+                        }
+                    },
+                    {
+                        "index": 2,
+                        "due_on": "2026-11-21",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "5000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "675"
+                        }
+                    },
+                    {
+                        "index": 3,
+                        "due_on": "2026-12-21",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "5000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "675"
+                        }
+                    },
+                    {
+                        "index": 4,
+                        "due_on": "2027-01-21",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "5000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "675"
+                        }
+                    },
+                    {
+                        "index": 5,
+                        "due_on": "2027-02-21",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "5000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "675"
+                        }
+                    },
+                    {
+                        "index": 6,
+                        "due_on": "2027-03-21",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "5000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "675"
+                        }
+                    }
+                ],
+                "issue_receipt": {
+                    "receipt_id": "rcp_hld1",
+                    "operation_id": "op_hld1",
+                    "request_id": "7f1c2a90-0000-4000-8000-00000000hld1",
+                    "code": "HOLDING_ISSUED",
+                    "recorded_at": "2026-09-21T15:20:04+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "30000"
+                    },
+                    "units": "6",
+                    "reference": "RZ-HLD-2201",
+                    "revision": 1,
+                    "policy_version": "synthetic-primary-policy-0",
+                    "disclosure_version": "disclosure-2026-05.2",
+                    "link": {
+                        "url": "/preview/investor-holding-issued",
+                        "method": "get"
+                    }
+                },
+                "source": {
+                    "commitment_id": "cmt0_01k4a1",
+                    "disbursement_operation_id": "op_dsb_01k4a2"
+                }
+            }
+        },
+        "links": {
+            "deals": {
+                "url": "/investor/deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/investor/portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/investor/profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/investor/wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/investor/notifications",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/launcher",
+                "method": "get"
+            },
+            "back": {
+                "url": "/investor/portfolio",
+                "method": "get"
+            }
+        }
+    }
+}

@@ -1,6 +1,11 @@
 {
     "component": "investor/holding",
+    "synthetic": true,
     "props": {
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 5,
+        "server_time": "2026-09-23T09:00:00+02:00",
+        "allowed_actions": [],
         "holding": {
             "id": "h-greenleaf",
             "name": "GreenLeaf Agro",
@@ -105,24 +110,15 @@
                     "photos": [
                         {
                             "url": null,
-                            "caption": "Warehouse stock",
-                            "required": true,
-                            "gps": "-1.9441, 30.0619",
-                            "captured_at": "2026-09-05T10:12:00+02:00"
+                            "caption": "Warehouse stock"
                         },
                         {
                             "url": null,
-                            "caption": "POS register",
-                            "required": true,
-                            "gps": "-1.9441, 30.0619",
-                            "captured_at": "2026-09-05T10:20:00+02:00"
+                            "caption": "POS register"
                         },
                         {
                             "url": null,
-                            "caption": "Cold room",
-                            "required": false,
-                            "gps": "-1.9442, 30.0620",
-                            "captured_at": "2026-09-05T10:31:00+02:00"
+                            "caption": "Cold room"
                         }
                     ]
                 },
@@ -153,24 +149,15 @@
                     "photos": [
                         {
                             "url": null,
-                            "caption": "Warehouse stock",
-                            "required": true,
-                            "gps": "-1.9441, 30.0619",
-                            "captured_at": "2026-08-05T10:12:00+02:00"
+                            "caption": "Warehouse stock"
                         },
                         {
                             "url": null,
-                            "caption": "POS register",
-                            "required": true,
-                            "gps": "-1.9441, 30.0619",
-                            "captured_at": "2026-08-05T10:20:00+02:00"
+                            "caption": "POS register"
                         },
                         {
                             "url": null,
-                            "caption": "Cold room",
-                            "required": false,
-                            "gps": "-1.9442, 30.0620",
-                            "captured_at": "2026-08-05T10:31:00+02:00"
+                            "caption": "Cold room"
                         }
                     ]
                 },
@@ -201,24 +188,15 @@
                     "photos": [
                         {
                             "url": null,
-                            "caption": "Warehouse stock",
-                            "required": true,
-                            "gps": "-1.9441, 30.0619",
-                            "captured_at": "2026-07-05T10:12:00+02:00"
+                            "caption": "Warehouse stock"
                         },
                         {
                             "url": null,
-                            "caption": "POS register",
-                            "required": true,
-                            "gps": "-1.9441, 30.0619",
-                            "captured_at": "2026-07-05T10:20:00+02:00"
+                            "caption": "POS register"
                         },
                         {
                             "url": null,
-                            "caption": "Cold room",
-                            "required": false,
-                            "gps": "-1.9442, 30.0620",
-                            "captured_at": "2026-07-05T10:31:00+02:00"
+                            "caption": "Cold room"
                         }
                     ]
                 },
@@ -249,28 +227,221 @@
                     "photos": [
                         {
                             "url": null,
-                            "caption": "Warehouse stock",
-                            "required": true,
-                            "gps": "-1.9441, 30.0619",
-                            "captured_at": "2026-06-05T10:12:00+02:00"
+                            "caption": "Warehouse stock"
                         },
                         {
                             "url": null,
-                            "caption": "POS register",
-                            "required": true,
-                            "gps": "-1.9441, 30.0619",
-                            "captured_at": "2026-06-05T10:20:00+02:00"
+                            "caption": "POS register"
                         },
                         {
                             "url": null,
-                            "caption": "Cold room",
-                            "required": false,
-                            "gps": "-1.9442, 30.0620",
-                            "captured_at": "2026-06-05T10:31:00+02:00"
+                            "caption": "Cold room"
                         }
                     ]
                 }
-            ]
+            ],
+            "issue": {
+                "id": "h-greenleaf-c3",
+                "revision": 1,
+                "note_id": "note_greenleaf_2026",
+                "campaign_id": "cmp_greenleaf",
+                "units": "160",
+                "ordinals": [
+                    {
+                        "first": "1041",
+                        "last": "1200"
+                    }
+                ],
+                "principal": {
+                    "currency": "RWF",
+                    "amount": "800000"
+                },
+                "rights": {
+                    "total_return": {
+                        "currency": "RWF",
+                        "amount": "4050"
+                    },
+                    "instalments": [
+                        {
+                            "index": 1,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "5000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "675"
+                            }
+                        },
+                        {
+                            "index": 2,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "5000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "675"
+                            }
+                        },
+                        {
+                            "index": 3,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "5000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "675"
+                            }
+                        },
+                        {
+                            "index": 4,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "5000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "675"
+                            }
+                        },
+                        {
+                            "index": 5,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "5000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "675"
+                            }
+                        },
+                        {
+                            "index": 6,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "5000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "675"
+                            }
+                        }
+                    ]
+                },
+                "issued_at": "2026-05-29T15:20:04+02:00",
+                "disbursement_effective_at": "2026-05-29T15:18:41+02:00",
+                "effective_date": "2026-05-29",
+                "terms": {
+                    "rate_pct": "13.5",
+                    "term_months": 6,
+                    "total_return": {
+                        "currency": "RWF",
+                        "amount": "108000"
+                    },
+                    "policy_version": "synthetic-primary-policy-0",
+                    "disclosure_version": "disclosure-2026-05.2"
+                },
+                "schedule": [
+                    {
+                        "index": 1,
+                        "due_on": "2026-06-30",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "133334"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "18000"
+                        }
+                    },
+                    {
+                        "index": 2,
+                        "due_on": "2026-07-29",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "133334"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "18000"
+                        }
+                    },
+                    {
+                        "index": 3,
+                        "due_on": "2026-08-29",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "133333"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "18000"
+                        }
+                    },
+                    {
+                        "index": 4,
+                        "due_on": "2026-09-29",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "133333"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "18000"
+                        }
+                    },
+                    {
+                        "index": 5,
+                        "due_on": "2026-10-29",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "133333"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "18000"
+                        }
+                    },
+                    {
+                        "index": 6,
+                        "due_on": "2026-11-29",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "133333"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "18000"
+                        }
+                    }
+                ],
+                "issue_receipt": {
+                    "receipt_id": "rcp_hld1",
+                    "operation_id": "op_hld1",
+                    "request_id": "7f1c2a90-0000-4000-8000-00000000hld1",
+                    "code": "HOLDING_ISSUED",
+                    "recorded_at": "2026-05-29T15:20:04+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "800000"
+                    },
+                    "units": "160",
+                    "reference": "RZ-HLD-2201",
+                    "revision": 1,
+                    "policy_version": "synthetic-primary-policy-0",
+                    "disclosure_version": "disclosure-2026-05.2",
+                    "link": {
+                        "url": "/preview/investor-holding",
+                        "method": "get"
+                    }
+                },
+                "source": {
+                    "commitment_id": "cmt0_01k4a1",
+                    "disbursement_operation_id": "op_dsb_01k4a2"
+                }
+            }
         },
         "links": {
             "deals": {

@@ -1,0 +1,122 @@
+{
+    "component": "investor/wallet",
+    "synthetic": true,
+    "props": {
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 1,
+        "server_time": "2026-10-02T09:00:00+02:00",
+        "allowed_actions": [],
+        "wallet": {
+            "revision": 0,
+            "status": "active",
+            "restriction": null,
+            "total": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "breakdown": {
+                "available": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "held": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "committed": {
+                    "currency": "RWF",
+                    "amount": "0"
+                }
+            },
+            "pending_deposits": {
+                "currency": "RWF",
+                "amount": "0"
+            }
+        },
+        "holds": [],
+        "funding": {
+            "kind": null,
+            "policy": null,
+            "methods": [],
+            "picks": [],
+            "quote": null
+        },
+        "deposits": [],
+        "history": {
+            "movement": "external",
+            "filters": [
+                {
+                    "key": "external",
+                    "active": true,
+                    "link": {
+                        "url": "/investor/wallet?movement=external",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "internal",
+                    "active": false,
+                    "link": {
+                        "url": "/investor/wallet?movement=internal",
+                        "method": "get"
+                    }
+                }
+            ],
+            "items": [],
+            "pagination": {
+                "next": null
+            }
+        },
+        "receipt": null,
+        "earnings": null,
+        "exports": null,
+        "links": {
+            "deals": {
+                "url": "/investor/deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/investor/portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/investor/profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/investor/wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/investor/notifications",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/launcher",
+                "method": "get"
+            },
+            "close": {
+                "url": "/investor/wallet",
+                "method": "get"
+            },
+            "deposit": {
+                "url": "/investor/wallet?kind=deposit",
+                "method": "get"
+            },
+            "link_account": {
+                "url": "/investor/profile?section=linked",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/investor/wallet-operations/{request_id}",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "deposit": {
+                "url": "/investor/wallet/deposits",
+                "method": "post"
+            }
+        }
+    }
+}
