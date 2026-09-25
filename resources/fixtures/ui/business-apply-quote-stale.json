@@ -619,6 +619,7 @@
                 "method": "post"
             }
         },
+        "pending_application": null,
         "preview_outcome": {
             "kind": "refused",
             "code": "QUOTE_STALE"

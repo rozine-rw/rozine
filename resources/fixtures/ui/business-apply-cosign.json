@@ -614,6 +614,7 @@
                 "url": "/preview/business-apply-signatures",
                 "method": "post"
             }
-        }
+        },
+        "pending_application": null
     }
 }

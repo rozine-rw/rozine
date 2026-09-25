@@ -517,9 +517,9 @@ export type BusinessApplyProps = {
     preview_outcome?: ApplyPreviewOutcome;
     /**
      * Another submitted application of this business still under review, which blocks this
-     * draft's evaluation and submission (one at a time in C2); null or absent otherwise.
+     * draft's evaluation and submission (one at a time in C2); null otherwise.
      */
-    pending_application?: { id: string; link: RouteLink } | null;
+    pending_application: { id: string; link: RouteLink } | null;
 };
 
 /* ------------------------------------------------------------------------------------------ */

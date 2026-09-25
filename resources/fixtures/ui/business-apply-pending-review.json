@@ -5,12 +5,8 @@
         "business_id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
         "identity_context_revision": 4,
         "server_time": "2026-09-24T09:15:00+02:00",
-        "allowed_actions": [
-            "application.save",
-            "application.evaluate",
-            "application.submit"
-        ],
-        "step": "raise",
+        "allowed_actions": ["application.save"],
+        "step": "review",
         "application": {
             "id": "01k6p4c8s3d0f4g9h2j6k1m7n3",
             "revision": 3,
@@ -597,7 +593,7 @@
                 "method": "get"
             },
             "back": {
-                "url": "/preview/business-apply-business",
+                "url": "/preview/business-apply-raise",
                 "method": "get"
             },
             "operation": {
@@ -619,6 +615,12 @@
                 "method": "post"
             }
         },
-        "pending_application": null
+        "pending_application": {
+            "id": "01k6q2m3n4p5q6r7s8t9v0w1x3",
+            "link": {
+                "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications/01k6q2m3n4p5q6r7s8t9v0w1x3",
+                "method": "get"
+            }
+        }
     }
 }

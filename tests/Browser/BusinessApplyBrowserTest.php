@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Application\Business\RecordIsolatedBusinessCreditFacts;
+use App\Application\Operations\Contracts\CanonicalJson;
 use App\Models\BusinessApplication;
+use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationSignature;
 use App\Models\BusinessApplicationSubmission;
 use App\Models\User;
@@ -11,6 +13,7 @@ use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Symfony\Component\Process\Process;
+use Tests\Support\BusinessApplicationFixture;
 use Tests\Support\BusinessAuthorityFixture as AuthorityFixture;
 use Tests\Support\BusinessQuoteFixture as QuoteFixture;
 use Tests\Support\ConsentFixture;
@@ -183,6 +186,36 @@ it('runs the real-record Business Apply resume save evaluate sign and submit jou
             return {quoted:true, reloaded:true, autosaveWithoutStep:true, refused:refusal.data.quote.code, reevaluated:evaluation.data.quote.quote_id, submitted:true};
         }']);
         file_put_contents($directory.'/solo-result.txt', $result);
+
+        /*
+         * A legacy ready draft of the same business, left from before one-at-a-time review: it
+         * points to the submitted application and offers no signing or evaluation.
+         */
+        $pendingId = $solo['application']->id;
+        $legacy = BusinessApplication::factory()->create(['business_id' => $solo['audit']['business'], 'revision' => 1,
+            'step' => 'review', 'draft' => BusinessApplicationFixture::fields('12000000'), 'mandate_version' => 1]);
+        $prior = BusinessApplicationQuote::query()->where('business_application_id', $pendingId)->latest('revision')->firstOrFail();
+        $quoteId = (string) Str::ulid();
+        $payload = [...$prior->payload, 'quote_id' => $quoteId, 'quote_revision' => 1, 'application_id' => $legacy->id, 'application_revision' => 1];
+        BusinessApplicationQuote::factory()->create(['id' => $quoteId, 'business_application_id' => $legacy->id, 'revision' => 1,
+            'payload' => $payload, 'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload))]);
+        $legacy->forceFill(['current_quote_id' => $quoteId])->save();
+        $result = $run(['run-code', 'async (page) => {
+            const errors = []; page.on("pageerror", error => errors.push(error.message));
+            await page.goto('.json_encode($base.'/business/'.$solo['audit']['business'].'/applications/'.$legacy->id).');
+            const sheet = page.getByRole("dialog", {name:"Raise application"});
+            const pending = sheet.getByRole("link", {name:"View the application under review", exact:true});
+            await pending.waitFor();
+            if (await page.getByRole("button", {name:"Sign application"}).count() !== 0) throw new Error("A blocked draft offers signing");
+            await pending.scrollIntoViewIfNeeded();
+            await page.screenshot({path:"ua-live-pending-review-desktop.png", animations:"disabled"});
+            await pending.click();
+            await page.waitForURL('.json_encode('**'.$path($solo)).');
+            await page.getByText("Your application has been submitted").waitFor();
+            if (errors.length) throw new Error(JSON.stringify(errors));
+            return {pendingLink:true, followed:true};
+        }']);
+        file_put_contents($directory.'/pending-result.txt', $result);
 
         /* Two required signatories: the first signature waits for the second, who completes it on a phone. */
         $result = $run(['run-code', 'async (page) => {

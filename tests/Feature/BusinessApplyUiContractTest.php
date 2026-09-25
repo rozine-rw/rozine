@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Application\Business\RecordIsolatedBusinessCreditFacts;
+use App\Application\Operations\Contracts\CanonicalJson;
+use App\Models\BusinessApplication;
+use App\Models\BusinessApplicationQuote;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
@@ -317,4 +320,54 @@ it('recovers a receipt that later facts overtook with empty capabilities, while 
     expect($recovered['data']['quote']['status'])->toBe('ready')
         ->and($current['quote'])->toBeNull()
         ->and($current['evidence']['eligibility']['status'])->toBe('ineligible');
+});
+
+it('shows a legacy ready draft its pending application beside a submitted one, with signing and evaluation withheld', function (): void {
+    $fixture = QuoteFixture::ready();
+    $owner = $fixture['audit']['authority']['users'][0];
+    $business = $fixture['audit']['business'];
+    QuoteFixture::submit($fixture, QuoteFixture::acceptance($fixture));
+    $pendingId = $fixture['application']->id;
+    $legacy = BusinessApplication::factory()->create(['business_id' => $business, 'revision' => 1,
+        'step' => 'review', 'draft' => DraftFixture::fields('12000000'), 'mandate_version' => 1]);
+    $prior = BusinessApplicationQuote::query()->where('business_application_id', $pendingId)->firstOrFail();
+    $quoteId = (string) Str::ulid();
+    $payload = [...$prior->payload, 'quote_id' => $quoteId, 'application_id' => $legacy->id, 'application_revision' => 1];
+    BusinessApplicationQuote::factory()->create(['id' => $quoteId, 'business_application_id' => $legacy->id, 'revision' => 1,
+        'payload' => $payload, 'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload))]);
+    $legacy->forceFill(['current_quote_id' => $quoteId])->save();
+
+    $props = applyUiProps($owner, "/business/{$business}/applications/{$legacy->id}");
+    applyUiSameShape($props, [...applyUiFixture('business-apply-pending-review'), 'home' => null,
+        'shell_links' => $props['shell_links']]);
+    expect($props['step'])->toBe('review')
+        ->and($props['pending_application'])->toBe(['id' => $pendingId,
+            'link' => ['url' => "/business/{$business}/applications/{$pendingId}", 'method' => 'get']])
+        ->and($props['allowed_actions'])->toBe(['application.save'])
+        ->and(applyUiProps($owner, "/business/{$business}/applications/{$pendingId}")['pending_application'])->toBeNull();
+
+    /* A create for the same Business is refused as pending review, and the lookup replays it. */
+    $create = applyUiEnvelope(0);
+    $refused = actingAs($owner)->postJson("/business/{$business}/applications", $create)->assertConflict()
+        ->assertJsonPath('code', 'APPLICATION_PENDING_REVIEW')->json();
+    expect($refused['data'])->toBeNull();
+    $this->getJson(applyUiLookup($create['request_id'], 'create'))->assertConflict()
+        ->assertJsonPath('code', 'APPLICATION_PENDING_REVIEW')->assertJsonPath('operation_id', $refused['operation_id']);
+});
+
+it('offers signing only on Review and records a Raise submission as a step refusal the lookup replays', function (): void {
+    $fixture = QuoteFixture::make();
+    ConsentFixture::record($fixture['audit']['staff']);
+    QuoteFixture::evaluate($fixture);
+    $owner = $fixture['audit']['authority']['users'][0];
+    $path = '/business/'.$fixture['audit']['business'].'/applications/'.$fixture['application']->id;
+    $raise = applyUiProps($owner, $path);
+    expect($raise['step'])->toBe('raise')->and($raise['allowed_actions'])->not->toContain('application.submit');
+
+    $body = [...applyUiEnvelope($raise['application']['revision']), ...QuoteFixture::acceptance($fixture)];
+    $refused = actingAs($owner)->postJson("{$path}/submit", $body)->assertUnprocessable()
+        ->assertJsonPath('code', 'APPLICATION_STEP_INVALID')->json();
+    expect($refused['data'])->toBeNull()->and($refused['allowed_actions'])->toBe([]);
+    $this->getJson(applyUiLookup($body['request_id'], 'submit'))->assertUnprocessable()
+        ->assertJsonPath('code', 'APPLICATION_STEP_INVALID')->assertJsonPath('operation_id', $refused['operation_id']);
 });

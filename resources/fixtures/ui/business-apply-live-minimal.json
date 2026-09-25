@@ -125,6 +125,7 @@
                 "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications/01k6p4c8s3d0f4g9h2j6k1m7n3/submit",
                 "method": "post"
             }
-        }
+        },
+        "pending_application": null
     }
 }

@@ -25,6 +25,7 @@ import ineligibleStep from '../../../resources/fixtures/ui/business-apply-inelig
 import minimalStep from '../../../resources/fixtures/ui/business-apply-live-minimal.json';
 import liveStep from '../../../resources/fixtures/ui/business-apply-live.json';
 import noLegalStep from '../../../resources/fixtures/ui/business-apply-no-legal.json';
+import pendingReviewStep from '../../../resources/fixtures/ui/business-apply-pending-review.json';
 import staleStep from '../../../resources/fixtures/ui/business-apply-quote-stale.json';
 import raiseStep from '../../../resources/fixtures/ui/business-apply-raise.json';
 import reducedStep from '../../../resources/fixtures/ui/business-apply-reduced.json';
@@ -1825,6 +1826,24 @@ describe('Apply — step 3, review & sign', () => {
         ).not.toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: 'Sign application' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('renders the live pending-review shape: its link, and no sign or evaluate affordance', () => {
+        const page = props(pendingReviewStep);
+
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByRole('link', {
+                name: 'View the application under review',
+            }),
+        ).toHaveAttribute('href', page.pending_application?.link.url);
+        expect(
+            screen.queryByRole('button', { name: 'Sign application' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Take a smaller amount' }),
         ).not.toBeInTheDocument();
     });
 
