@@ -964,11 +964,20 @@ export type SealedStage = SealedRecord & {
     cosign: {
         party: string;
         state: CosignState;
-        /** Both the report and the co-signature are due by the 7th; the server sets the date. */
-        due_on: string;
+        /**
+         * A monthly report and its co-signature are due by the 7th; the server sets the date.
+         * Null for a Flash Audit, which has no monthly deadline: no date is shown.
+         */
+        due_on: string | null;
         signed_at: string | null;
     };
     published_at: string | null;
+    /**
+     * Whether the seal verifies now. `unavailable` (e.g. its signing key was revoked) keeps the
+     * sealed record, signature, digest and history as they are, and says the seal cannot be
+     * verified rather than implying it is currently valid.
+     */
+    seal_status: 'valid' | 'unavailable';
     /** A linked amendment of this report, if one exists; this report stays unchanged. */
     amended_by: { report_id: string; link: RouteLink } | null;
 };

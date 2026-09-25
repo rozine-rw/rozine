@@ -3222,6 +3222,11 @@ const fr: Catalog = {
         "Ce rapport ne peut pas être modifié pour le moment : aucune modification n'a été commencée. La page a été actualisée.",
     'auditor.ledger.download': "Télécharger l'original",
 
+    'auditor.sealed.body_undated':
+        'Le rapport est scellé et ne peut plus être modifié. {party} doit encore le cosigner ; il est ensuite publié aux porteurs.',
+    'auditor.sealed.unavailable':
+        "Ce sceau ne peut pas être vérifié pour le moment — sa clé de signature n'est plus en vigueur. L'enregistrement scellé et son historique restent inchangés.",
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

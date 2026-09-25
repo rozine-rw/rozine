@@ -42,6 +42,7 @@ import photosUploadFailed from '../../../resources/fixtures/ui/auditor-audit-pho
 import photos from '../../../resources/fixtures/ui/auditor-audit-photos.json';
 import review from '../../../resources/fixtures/ui/auditor-audit-review.json';
 import sealedMonthly from '../../../resources/fixtures/ui/auditor-audit-sealed-monthly.json';
+import sealedUnavailable from '../../../resources/fixtures/ui/auditor-audit-sealed-seal-unavailable.json';
 import sealed from '../../../resources/fixtures/ui/auditor-audit-sealed.json';
 import statementsNetOutflow from '../../../resources/fixtures/ui/auditor-audit-statements-net-outflow.json';
 import statementsNoCover from '../../../resources/fixtures/ui/auditor-audit-statements-no-cover.json';
@@ -1419,11 +1420,51 @@ describe('Audit procedure — after the seal', () => {
         expect(
             within(dialog).getByText('key_icpar_p2026_0481_v1'),
         ).toBeInTheDocument();
+        /* A Flash report has no monthly deadline: co-signing is due, with no invented date. */
         expect(
             within(dialog).getByText(
-                'The report is sealed and can no longer be edited. Huye Motors co-signs by 7 Oct 2026; it publishes to holders after that.',
+                'The report is sealed and can no longer be edited. Huye Motors still needs to co-sign; it publishes to holders after that.',
             ),
         ).toBeInTheDocument();
+        expect(dialog).not.toHaveTextContent(/co-signs by/u);
+        expect(within(dialog).queryByRole('note')).not.toBeInTheDocument();
+    });
+
+    it('keeps the co-sign date a monthly report is due by', () => {
+        render(<AuditorAudit {...props(sealedMonthly)} />);
+
+        expect(sheet('Kivu Coffee Roasters')).toHaveTextContent(
+            /Kivu Coffee Roasters co-signs by \d{1,2} \w{3} 2026; it publishes to holders after that\./u,
+        );
+    });
+
+    it('says a seal cannot be verified now while keeping the sealed record and its history', () => {
+        render(<AuditorAudit {...props(sealedUnavailable)} />);
+        const dialog = sheet('Kivu Coffee Roasters');
+
+        expect(within(dialog).getByRole('note')).toHaveTextContent(
+            "This seal can't be verified right now — its signing key is no longer current. The sealed record and its history are unchanged.",
+        );
+        /* The immutable seal, signature, digest and timeline stay as they were. */
+        const stage = props(sealedUnavailable).stage as SealedStage;
+
+        expect(within(dialog).getByText(stage.digest)).toBeInTheDocument();
+        expect(
+            within(dialog).getByText(stage.signature_ref),
+        ).toBeInTheDocument();
+        expect(within(dialog).getByText(stage.key_id)).toBeInTheDocument();
+        expect(
+            within(dialog).getByRole('list', { name: 'Filing progress' }),
+        ).toBeInTheDocument();
+        expect(dialog).not.toHaveTextContent(/seal (is )?valid/iu);
+    });
+
+    it('shows no verification notice for a seal that verifies', () => {
+        render(<AuditorAudit {...props(sealedMonthly)} />);
+
+        expect(
+            screen.queryByText(/can't be verified right now/u),
+        ).not.toBeInTheDocument();
     });
 
     it('starts a linked amendment of a published monthly report as a command', async () => {
