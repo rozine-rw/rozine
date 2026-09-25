@@ -23,9 +23,17 @@ class AuditorProcedureResource extends JsonResource
         $operation = AuditorJobsResource::link($prefix.'reports.operations.show', ['request_id' => $placeholder]);
         $operation['url'] = str_replace($placeholder, '{request_id}', $operation['url']);
         $allowed = $report['status'] === 'draft' ? ['audit.save_step', 'conflict.declare'] : [];
+        if ($page['decision_options'] !== null) {
+            $allowed = [...$allowed, 'audit.request_changes', 'audit.reject'];
+        }
+        if ($page['can_amend']) {
+            $allowed[] = 'audit.amend';
+        }
         if ($request->routeIs('api.*') && ! $request->user()?->tokenCan('auditor:command')) {
             $allowed = [];
         }
+
+        $reasonOptions = $page['decision_options'] === null ? null : $this->reasonOptions($page['decision_options']);
 
         return [...AuditorJobsResource::envelope($page['jobs']['identity_context_revision']), 'allowed_actions' => $allowed,
             'engagement' => $file['engagement'],
@@ -34,14 +42,18 @@ class AuditorProcedureResource extends JsonResource
                 'revision' => $report['revision'], 'reassigned_from' => null, 'amends' => $report['amends_id'] === null ? null
                     : ['report_id' => $report['amends_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amends_id']])]],
             'assignment' => ['id' => $report['assignment_id'], 'revision' => $job['revision']],
-            'steps' => $page['steps'], 'stage' => $this->stage($report, $page['sources'], $file['file'], $prefix, $page['variance'], $page['seal']),
-            'can_continue' => $page['can_continue'], 'hint' => $this->hint($page['unavailable']),
+            'steps' => $page['steps'], 'stage' => $this->stage($report, $page['sources'], $file['file'], $prefix, $page['variance'], $page['seal'], $reasonOptions),
+            'can_continue' => $page['can_continue'], 'hint' => $report['status'] === 'draft' ? $this->hint($page['unavailable']) : null,
+            'reason_options' => $reasonOptions,
             'links' => ['close' => AuditorJobsResource::link($prefix.'jobs.index'),
                 'back' => $page['previous_step'] === null
                     ? AuditorJobsResource::link($prefix.'jobs.show', ['assignment' => $report['assignment_id']])
                     : AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['id'], 'step' => $page['previous_step']]), 'operation' => $operation],
             'actions' => ['save' => ['url' => route($prefix.'reports.save', ['report' => $report['id']], false), 'method' => 'post'],
-                'conflict' => $file['actions']['conflict'], 'step_up' => null, 'seal' => null, 'request_changes' => null, 'reject' => null, 'amend' => null],
+                'conflict' => $file['actions']['conflict'], 'step_up' => null, 'seal' => null,
+                'request_changes' => in_array('audit.request_changes', $allowed, true) ? ['url' => route($prefix.'reports.request-changes', ['report' => $report['id']], false), 'method' => 'post'] : null,
+                'reject' => in_array('audit.reject', $allowed, true) ? ['url' => route($prefix.'reports.reject', ['report' => $report['id']], false), 'method' => 'post'] : null,
+                'amend' => in_array('audit.amend', $allowed, true) ? ['url' => route($prefix.'reports.amend', ['report' => $report['id']], false), 'method' => 'post'] : null],
             'outcome' => null, 'jobs' => $file['jobs']];
     }
 
@@ -51,10 +63,19 @@ class AuditorProcedureResource extends JsonResource
      * @param  array<string, mixed>  $file
      * @param  array<string, mixed>  $variance
      * @param  array<string, mixed>|null  $seal
+     * @param  array<string, mixed>|null  $reasonOptions
      * @return array<string, mixed>
      */
-    private function stage(array $report, array $sources, array $file, string $prefix, array $variance, ?array $seal): array
+    private function stage(array $report, array $sources, array $file, string $prefix, array $variance, ?array $seal, ?array $reasonOptions): array
     {
+        if (in_array($report['status'], ['changes_requested', 'rejected'], true)) {
+            $decision = $report['draft']['decision'];
+
+            return ['step' => 'returned', 'status' => $report['status'],
+                'reason' => ['code' => $decision['code'], 'label' => $this->reasonLabel($decision['code']), 'explanation' => $decision['explanation']],
+                'recorded_at' => $decision['recorded_at'], 'amended_by' => $report['amendment_id'] === null ? null
+                    : ['report_id' => $report['amendment_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amendment_id']])]];
+        }
         $package = $this->capturePackage($report, $sources);
         $fields = $report['draft']['fields'][$report['step']] ?? [];
 
@@ -77,7 +98,7 @@ class AuditorProcedureResource extends JsonResource
                 'sector' => ['label' => $sources['source_facts']['declared_sector_label'] ?? __('Unavailable'),
                     'definition' => $sources['source_facts']['declared_unit_label'] ?? __('A declared inventory unit definition is required.')],
                 'operational_status' => $fields['operational_status'] ?? null],
-            'seal' => $this->seal($report, $sources, $seal ?? throw new \LogicException('A persisted report preview is required.')),
+            'seal' => $this->seal($report, $sources, $seal ?? throw new \LogicException('A persisted report preview is required.'), $reasonOptions),
             default => ['step' => 'statements', 'statements' => $this->statements($report, $sources, $prefix)],
         };
     }
@@ -160,9 +181,10 @@ class AuditorProcedureResource extends JsonResource
      * @param  array<string, mixed>  $report
      * @param  array<string, mixed>  $sources
      * @param  array<string, mixed>  $seal
+     * @param  array<string, mixed>|null  $reasonOptions
      * @return array<string, mixed>
      */
-    private function seal(array $report, array $sources, array $seal): array
+    private function seal(array $report, array $sources, array $seal, ?array $reasonOptions): array
     {
         $findings = [];
         foreach ($seal['findings'] as $index => $finding) {
@@ -181,7 +203,33 @@ class AuditorProcedureResource extends JsonResource
             'findings' => $findings, 'evidence' => $this->evidence($sources), 'procedure_version' => $seal['payload']['procedure_version'],
             'findings_version' => $seal['findings_version'], 'evidence_version' => $seal['evidence_version'], 'digest' => $seal['digest'],
             'licence' => $sources['licence'], 'mfa' => ['confirmed' => true, 'settings' => AuditorJobsResource::link('security.edit')],
-            'reason_options' => null];
+            'reason_options' => $reasonOptions];
+    }
+
+    /**
+     * @param  array{request_changes: list<string>, reject: list<string>}  $options
+     * @return array<string, list<array<string, mixed>>>
+     */
+    private function reasonOptions(array $options): array
+    {
+        $map = fn (array $codes): array => array_values(array_map(fn (string $code): array => ['code' => $code,
+            'label' => $this->reasonLabel($code), 'requires_explanation' => true], $codes));
+
+        return ['request_changes' => $map($options['request_changes']), 'reject' => $map($options['reject'])];
+    }
+
+    private function reasonLabel(string $code): string
+    {
+        return match ($code) {
+            'missing_originals' => __('Original documents missing'),
+            'reconciliation_difference' => __('Unexplained reconciliation difference'),
+            'classification_unresolved' => __('Classification unresolved'),
+            'debt_evidence_missing' => __('Debt or draw evidence missing'),
+            'capture_unverified' => __('Capture could not be verified'),
+            'evidence_unverifiable' => __('Evidence cannot be verified'),
+            'procedure_incomplete' => __('Procedure cannot be completed'),
+            default => __('Other'),
+        };
     }
 
     /**

@@ -18,7 +18,7 @@ it('binds persisted observations, notes, licence and source revisions into the p
         'documents' => [$document, [...$document, 'id' => 'original-a']], 'monthly' => null, 'licence' => 'SYNTHETIC-CPA', 'source_facts' => null];
     $report = ['id' => 'report', 'assignment_id' => 'assignment', 'business_id' => 'business', 'application_id' => 'application',
         'application_revision' => 4, 'revision' => 8, 'kind' => $kind, 'status' => 'draft', 'step' => 'seal', 'period' => $kind === 'monthly' ? '2026-08' : null,
-        'amends_id' => null, 'binding_sha256' => str_repeat('c', 64), 'version' => ['id' => 'version', 'sha256' => str_repeat('d', 64)],
+        'amends_id' => null, 'amendment_id' => null, 'binding_sha256' => str_repeat('c', 64), 'version' => ['id' => 'version', 'sha256' => str_repeat('d', 64)],
         'draft' => ['note' => $note, 'completed_steps' => [], 'fields' => ['ledger' => ['observed_stock' => $observed],
             'count' => ['cash' => $observed, 'stock_units' => $observed, 'operational_status' => $status]]]];
     $first = $builder->handle($report, $sources);

@@ -52,6 +52,9 @@ Route::middleware(['auth', 'throttle:60,1'])->prefix('auditor')->name('auditor.'
     Route::get('reports/{report}/statements/{document}', [AuditorProcedureController::class, 'statement'])->where(['report' => '[0-9a-z]{26}', 'document' => '[0-9a-z]{26}'])->middleware('cache.headers:private;no_store')->name('reports.statements.show');
     Route::get('reports/{report}/ledgers/{document}', [AuditorProcedureController::class, 'ledger'])->where(['report' => '[0-9a-z]{26}', 'document' => '[0-9a-z]{26}'])->middleware('cache.headers:private;no_store')->name('reports.ledgers.show');
     Route::post('reports/{report}/steps', [AuditorProcedureController::class, 'save'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.save');
+    Route::post('reports/{report}/request-changes', [AuditorProcedureController::class, 'requestChanges'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.request-changes');
+    Route::post('reports/{report}/reject', [AuditorProcedureController::class, 'reject'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.reject');
+    Route::post('reports/{report}/amend', [AuditorProcedureController::class, 'amend'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.amend');
     Route::get('engagement', [AuditorEngagementController::class, 'show'])->middleware('cache.headers:private;no_store')->name('engagement.show');
     Route::post('engagement/accept', [AuditorEngagementController::class, 'accept'])->middleware('cache.headers:private;no_store')->name('engagement.accept');
     Route::get('engagement/operations/{request_id}', [AuditorEngagementController::class, 'operation'])->whereUuid('request_id')->middleware('cache.headers:private;no_store')->name('engagement.operations.show');

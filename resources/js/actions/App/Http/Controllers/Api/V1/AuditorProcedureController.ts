@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::start
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:50
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:54
 * @route '/api/v1/auditor/jobs/{assignment}/report'
 */
 export const start = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ start.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::start
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:50
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:54
 * @route '/api/v1/auditor/jobs/{assignment}/report'
 */
 start.url = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ start.url = (args: { assignment: string | number } | [assignment: string | numbe
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::start
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:50
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:54
 * @route '/api/v1/auditor/jobs/{assignment}/report'
 */
 start.post = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -53,7 +53,7 @@ start.post = (args: { assignment: string | number } | [assignment: string | numb
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::start
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:50
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:54
 * @route '/api/v1/auditor/jobs/{assignment}/report'
 */
 const startForm = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -63,7 +63,7 @@ const startForm = (args: { assignment: string | number } | [assignment: string |
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::start
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:50
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:54
 * @route '/api/v1/auditor/jobs/{assignment}/report'
 */
 startForm.post = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -75,7 +75,7 @@ start.form = startForm
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::operation
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:100
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:104
 * @route '/api/v1/auditor/report-operations/{request_id}'
 */
 export const operation = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -90,7 +90,7 @@ operation.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::operation
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:100
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:104
 * @route '/api/v1/auditor/report-operations/{request_id}'
 */
 operation.url = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -117,7 +117,7 @@ operation.url = (args: { request_id: string | number } | [request_id: string | n
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::operation
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:100
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:104
 * @route '/api/v1/auditor/report-operations/{request_id}'
 */
 operation.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -127,7 +127,7 @@ operation.get = (args: { request_id: string | number } | [request_id: string | n
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::operation
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:100
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:104
 * @route '/api/v1/auditor/report-operations/{request_id}'
 */
 operation.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -137,7 +137,7 @@ operation.head = (args: { request_id: string | number } | [request_id: string | 
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::operation
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:100
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:104
 * @route '/api/v1/auditor/report-operations/{request_id}'
 */
 const operationForm = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -147,7 +147,7 @@ const operationForm = (args: { request_id: string | number } | [request_id: stri
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::operation
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:100
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:104
 * @route '/api/v1/auditor/report-operations/{request_id}'
 */
 operationForm.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -157,7 +157,7 @@ operationForm.get = (args: { request_id: string | number } | [request_id: string
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::operation
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:100
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:104
 * @route '/api/v1/auditor/report-operations/{request_id}'
 */
 operationForm.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -174,7 +174,7 @@ operation.form = operationForm
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:37
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:41
 * @route '/api/v1/auditor/reports/{report}'
 */
 export const show = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -189,7 +189,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:37
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:41
 * @route '/api/v1/auditor/reports/{report}'
 */
 show.url = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -216,7 +216,7 @@ show.url = (args: { report: string | number } | [report: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:37
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:41
 * @route '/api/v1/auditor/reports/{report}'
 */
 show.get = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -226,7 +226,7 @@ show.get = (args: { report: string | number } | [report: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:37
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:41
 * @route '/api/v1/auditor/reports/{report}'
 */
 show.head = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -236,7 +236,7 @@ show.head = (args: { report: string | number } | [report: string | number ] | st
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:37
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:41
 * @route '/api/v1/auditor/reports/{report}'
 */
 const showForm = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -246,7 +246,7 @@ const showForm = (args: { report: string | number } | [report: string | number ]
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:37
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:41
 * @route '/api/v1/auditor/reports/{report}'
 */
 showForm.get = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -256,7 +256,7 @@ showForm.get = (args: { report: string | number } | [report: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:37
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:41
 * @route '/api/v1/auditor/reports/{report}'
 */
 showForm.head = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -273,7 +273,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::statement
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:57
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:61
 * @route '/api/v1/auditor/reports/{report}/statements/{document}'
 */
 export const statement = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -288,7 +288,7 @@ statement.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::statement
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:57
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:61
 * @route '/api/v1/auditor/reports/{report}/statements/{document}'
 */
 statement.url = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions) => {
@@ -314,7 +314,7 @@ statement.url = (args: { report: string | number, document: string | number } | 
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::statement
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:57
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:61
 * @route '/api/v1/auditor/reports/{report}/statements/{document}'
 */
 statement.get = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -324,7 +324,7 @@ statement.get = (args: { report: string | number, document: string | number } | 
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::statement
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:57
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:61
 * @route '/api/v1/auditor/reports/{report}/statements/{document}'
 */
 statement.head = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -334,7 +334,7 @@ statement.head = (args: { report: string | number, document: string | number } |
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::statement
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:57
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:61
 * @route '/api/v1/auditor/reports/{report}/statements/{document}'
 */
 const statementForm = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -344,7 +344,7 @@ const statementForm = (args: { report: string | number, document: string | numbe
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::statement
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:57
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:61
 * @route '/api/v1/auditor/reports/{report}/statements/{document}'
 */
 statementForm.get = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -354,7 +354,7 @@ statementForm.get = (args: { report: string | number, document: string | number 
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::statement
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:57
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:61
 * @route '/api/v1/auditor/reports/{report}/statements/{document}'
 */
 statementForm.head = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -371,7 +371,7 @@ statement.form = statementForm
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::ledger
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:70
 * @route '/api/v1/auditor/reports/{report}/ledgers/{document}'
 */
 export const ledger = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -386,7 +386,7 @@ ledger.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::ledger
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:70
 * @route '/api/v1/auditor/reports/{report}/ledgers/{document}'
 */
 ledger.url = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions) => {
@@ -412,7 +412,7 @@ ledger.url = (args: { report: string | number, document: string | number } | [re
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::ledger
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:70
 * @route '/api/v1/auditor/reports/{report}/ledgers/{document}'
 */
 ledger.get = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -422,7 +422,7 @@ ledger.get = (args: { report: string | number, document: string | number } | [re
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::ledger
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:70
 * @route '/api/v1/auditor/reports/{report}/ledgers/{document}'
 */
 ledger.head = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -432,7 +432,7 @@ ledger.head = (args: { report: string | number, document: string | number } | [r
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::ledger
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:70
 * @route '/api/v1/auditor/reports/{report}/ledgers/{document}'
 */
 const ledgerForm = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -442,7 +442,7 @@ const ledgerForm = (args: { report: string | number, document: string | number }
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::ledger
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:70
 * @route '/api/v1/auditor/reports/{report}/ledgers/{document}'
 */
 ledgerForm.get = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -452,7 +452,7 @@ ledgerForm.get = (args: { report: string | number, document: string | number } |
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::ledger
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:70
 * @route '/api/v1/auditor/reports/{report}/ledgers/{document}'
 */
 ledgerForm.head = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -469,7 +469,7 @@ ledger.form = ledgerForm
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::save
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:86
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:90
 * @route '/api/v1/auditor/reports/{report}/steps'
 */
 export const save = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -484,7 +484,7 @@ save.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::save
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:86
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:90
 * @route '/api/v1/auditor/reports/{report}/steps'
 */
 save.url = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -511,7 +511,7 @@ save.url = (args: { report: string | number } | [report: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::save
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:86
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:90
 * @route '/api/v1/auditor/reports/{report}/steps'
 */
 save.post = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -521,7 +521,7 @@ save.post = (args: { report: string | number } | [report: string | number ] | st
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::save
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:86
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:90
 * @route '/api/v1/auditor/reports/{report}/steps'
 */
 const saveForm = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -531,7 +531,7 @@ const saveForm = (args: { report: string | number } | [report: string | number ]
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::save
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:86
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:90
 * @route '/api/v1/auditor/reports/{report}/steps'
 */
 saveForm.post = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -541,6 +541,228 @@ saveForm.post = (args: { report: string | number } | [report: string | number ] 
 
 save.form = saveForm
 
-const AuditorProcedureController = { start, operation, show, statement, ledger, save }
+/**
+* @see \App\Http\Controllers\Api\V1\AuditorProcedureController::requestChanges
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:111
+* @route '/api/v1/auditor/reports/{report}/request-changes'
+*/
+export const requestChanges = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: requestChanges.url(args, options),
+    method: 'post',
+})
+
+requestChanges.definition = {
+    methods: ["post"],
+    url: '/api/v1/auditor/reports/{report}/request-changes',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Api\V1\AuditorProcedureController::requestChanges
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:111
+* @route '/api/v1/auditor/reports/{report}/request-changes'
+*/
+requestChanges.url = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { report: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            report: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        report: args.report,
+    }
+
+    return requestChanges.definition.url
+            .replace('{report}', parsedArgs.report.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Api\V1\AuditorProcedureController::requestChanges
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:111
+* @route '/api/v1/auditor/reports/{report}/request-changes'
+*/
+requestChanges.post = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: requestChanges.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Api\V1\AuditorProcedureController::requestChanges
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:111
+* @route '/api/v1/auditor/reports/{report}/request-changes'
+*/
+const requestChangesForm = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: requestChanges.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Api\V1\AuditorProcedureController::requestChanges
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:111
+* @route '/api/v1/auditor/reports/{report}/request-changes'
+*/
+requestChangesForm.post = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: requestChanges.url(args, options),
+    method: 'post',
+})
+
+requestChanges.form = requestChangesForm
+
+/**
+* @see \App\Http\Controllers\Api\V1\AuditorProcedureController::reject
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:116
+* @route '/api/v1/auditor/reports/{report}/reject'
+*/
+export const reject = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: reject.url(args, options),
+    method: 'post',
+})
+
+reject.definition = {
+    methods: ["post"],
+    url: '/api/v1/auditor/reports/{report}/reject',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Api\V1\AuditorProcedureController::reject
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:116
+* @route '/api/v1/auditor/reports/{report}/reject'
+*/
+reject.url = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { report: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            report: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        report: args.report,
+    }
+
+    return reject.definition.url
+            .replace('{report}', parsedArgs.report.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Api\V1\AuditorProcedureController::reject
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:116
+* @route '/api/v1/auditor/reports/{report}/reject'
+*/
+reject.post = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: reject.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Api\V1\AuditorProcedureController::reject
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:116
+* @route '/api/v1/auditor/reports/{report}/reject'
+*/
+const rejectForm = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: reject.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Api\V1\AuditorProcedureController::reject
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:116
+* @route '/api/v1/auditor/reports/{report}/reject'
+*/
+rejectForm.post = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: reject.url(args, options),
+    method: 'post',
+})
+
+reject.form = rejectForm
+
+/**
+* @see \App\Http\Controllers\Api\V1\AuditorProcedureController::amend
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:121
+* @route '/api/v1/auditor/reports/{report}/amend'
+*/
+export const amend = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: amend.url(args, options),
+    method: 'post',
+})
+
+amend.definition = {
+    methods: ["post"],
+    url: '/api/v1/auditor/reports/{report}/amend',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Api\V1\AuditorProcedureController::amend
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:121
+* @route '/api/v1/auditor/reports/{report}/amend'
+*/
+amend.url = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { report: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            report: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        report: args.report,
+    }
+
+    return amend.definition.url
+            .replace('{report}', parsedArgs.report.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Api\V1\AuditorProcedureController::amend
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:121
+* @route '/api/v1/auditor/reports/{report}/amend'
+*/
+amend.post = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: amend.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Api\V1\AuditorProcedureController::amend
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:121
+* @route '/api/v1/auditor/reports/{report}/amend'
+*/
+const amendForm = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: amend.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Api\V1\AuditorProcedureController::amend
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:121
+* @route '/api/v1/auditor/reports/{report}/amend'
+*/
+amendForm.post = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: amend.url(args, options),
+    method: 'post',
+})
+
+amend.form = amendForm
+
+const AuditorProcedureController = { start, operation, show, statement, ledger, save, requestChanges, reject, amend }
 
 export default AuditorProcedureController

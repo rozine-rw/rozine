@@ -2970,7 +2970,7 @@ const rw: Catalog = {
         'Raporo {report} ikosora iyi; iyi raporo iguma uko yashyizweho kashe.',
     'auditor.sealed.open_amendment': 'Fungura ikosora',
     'auditor.audit.amends':
-        'Iyi ni ikosora rifitanye isano na raporo {report}. Iyo raporo iguma itangajwe, idahindutse.',
+        'Iyi ni ikosora rifitanye isano na raporo {report}. Iyo raporo iguma idahindutse.',
     'auditor.audit.open_original': "Fungura iy'umwimerere",
     'auditor.receipt.title': 'Inyungu yanditswe',
     'auditor.receipt.body.reassignment_pending':

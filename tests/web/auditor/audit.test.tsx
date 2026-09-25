@@ -1412,7 +1412,7 @@ describe('Audit procedure — after the seal', () => {
         render(<AuditorAudit {...props(amendment)} />);
 
         expect(screen.getByRole('note')).toHaveTextContent(
-            'This is a linked amendment of report rpt_01J9Q3W7K9V5D1. That report stays published, unchanged.',
+            'This is a linked amendment of report rpt_01J9Q3W7K9V5D1. That report remains unchanged.',
         );
         expect(
             screen.getByRole('link', { name: 'Open the original' }),

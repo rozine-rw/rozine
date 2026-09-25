@@ -2905,7 +2905,7 @@ const en = {
         'Report {report} amends this one; this report stays as sealed.',
     'auditor.sealed.open_amendment': 'Open the amendment',
     'auditor.audit.amends':
-        'This is a linked amendment of report {report}. That report stays published, unchanged.',
+        'This is a linked amendment of report {report}. That report remains unchanged.',
     'auditor.audit.open_original': 'Open the original',
     'auditor.receipt.title': 'Conflict recorded',
     'auditor.receipt.body.reassignment_pending':

@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Application\Auditor\AdvanceExpiredAuditOffers;
+use App\Application\Auditor\AmendAuditReport;
+use App\Application\Auditor\DecideAuditReport;
 use App\Application\Auditor\GetAuditOperationsCase;
 use App\Application\Auditor\GetAuditSourceFacts;
 use App\Application\Auditor\GetOwnAuditConflict;
@@ -112,6 +114,36 @@ function concurrentIdentityOperator(): User
 
     return $user;
 }
+
+it('serializes report lifecycle decisions and creates only one amendment across canonical Party logins', function (bool $amend, bool $sameRequest): void {
+    $fixture = BusinessQuoteFixture::ready(auditKind: 'routine');
+    BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
+    $partner = $fixture['audit']['partners'][0];
+    $assignment = $fixture['assignment']->refresh();
+    $started = app(StartAuditReport::class)->handle($partner['user']->id, 1, $assignment->id, $assignment->revision,
+        $fixture['application']->id, $fixture['application']->refresh()->revision, (string) Str::uuid());
+    $id = $started['data']['audit_id'];
+    if ($amend) {
+        app(DecideAuditReport::class)->handle($partner['user']->id, 1, $id, 1, false, 'other', 'Missing original.', (string) Str::uuid());
+    }
+    $other = User::factory()->withTwoFactor()->for($partner['party'])->create();
+    app(SelectActiveRole::class)->handle($other->id, 'auditor', 0, (string) Str::uuid());
+    $uuid = (string) Str::uuid();
+    $run = fn (User $user, string $request): Closure => function () use ($user, $request, $id, $amend): void {
+        $result = $amend ? app(AmendAuditReport::class)->handle($user->id, 1, $id, 2, $request)
+            : app(DecideAuditReport::class)->handle($user->id, 1, $id, 1, false, 'other', 'Missing original.', $request);
+        expect($result['code'])->toBeIn($amend ? ['AUDIT_AMENDMENT_CREATED'] : ['AUDIT_CHANGES_REQUESTED', 'VERSION_CONFLICT']);
+    };
+    expect(runIdentityContenders([$run($partner['user'], $uuid), $run($other, $sameRequest ? $uuid : (string) Str::uuid())]))->toBe([0, 0])
+        ->and(AuditReport::query()->whereKey($id)->firstOrFail()->revision)->toBe(2)
+        ->and(AuditReportVersion::query()->where('audit_report_id', $id)->count())->toBe(2)
+        ->and(AuditReport::query()->where('amends_id', $id)->count())->toBe($amend ? 1 : 0)
+        ->and($assignment->fresh()?->revision)->toBe($assignment->revision);
+    $command = $amend ? 'audit.amend' : 'audit.request_changes';
+    $expected = $amend ? ['AUDIT_AMENDMENT_CREATED', 'AUDIT_AMENDMENT_CREATED'] : ['AUDIT_CHANGES_REQUESTED', 'VERSION_CONFLICT'];
+    expect(CommandOperation::query()->where('command', $command)->get()->map(fn (CommandOperation $operation): string => $operation->result['code'])->sort()->values()->all())
+        ->toBe($sameRequest ? [$expected[0]] : $expected);
+})->with([false, true])->with([false, true]);
 
 it('serializes competing report step saves with report-only revisions and canonical Party retries', function (bool $sameRequest): void {
     $fixture = BusinessQuoteFixture::ready();
@@ -1914,7 +1946,7 @@ it('serializes direct acceptance and source inserts against direct catalog publi
         $row = AuditEngagementAcceptance::factory()->make(['id' => (string) Str::ulid(), 'created_at' => now(), 'party_id' => $actor['party']->id,
             'actor_user_id' => $actor['user']->id, 'audit_engagement_release_id' => $release->id])->getAttributes();
     } else {
-        $fixture = BusinessQuoteFixture::ready();
+        $fixture = BusinessQuoteFixture::ready(auditKind: $target === 'report' ? 'routine' : 'flash');
         BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
         $assignment = $fixture['assignment']->refresh();
         $application = $fixture['application']->refresh();
@@ -1923,6 +1955,11 @@ it('serializes direct acceptance and source inserts against direct catalog publi
         $table = $target === 'report' ? 'audit_reports' : 'statement_verifications';
         $original = DB::table($table)->first();
         expect($original)->not->toBeNull();
+        if ($target === 'report') {
+            $decision = app(DecideAuditReport::class)->handle($fixture['audit']['partners'][0]['user']->id, 1, $original->id,
+                $original->revision, false, 'other', 'Original evidence requires clarification.', (string) Str::uuid());
+            expect($decision['code'])->toBe('AUDIT_CHANGES_REQUESTED');
+        }
         $row = [...(array) $original, 'id' => (string) Str::ulid(), 'amends_id' => $original->id,
             'revision' => $target === 'report' ? 1 : 2];
         $release = AuditEngagementRelease::query()->orderByDesc('revision')->firstOrFail();

@@ -163,6 +163,36 @@ it('starts and completes the factual procedure, saves its note and withdraws sta
             await page.screenshot({path:"withdrawn-desktop.png", fullPage:true, animations:"disabled"});
         }']);
         expect(AuditReportVersion::query()->where('audit_report_id', $report->id)->count())->toBe($versions);
+        if ($kind === 'routine') {
+            $run(['run-code', 'async (page) => {
+                await page.setViewportSize({width:390, height:844});
+                for (const decision of [
+                    {button:"Request changes", reason:"Original documents missing", heading:"Changes requested", file:"changes-requested"},
+                    {button:"Reject filing", reason:"Evidence cannot be verified", heading:"Filing rejected", file:"rejected"},
+                ]) {
+                    const parent = page.url();
+                    await page.getByRole("button", {name:decision.button, exact:true}).click();
+                    const sheet = page.getByRole("dialog", {name:decision.button, exact:true});
+                    await sheet.getByRole("radio", {name:decision.reason, exact:true}).click();
+                    await sheet.locator("#auditor-reason").fill("The retained original cannot support this monthly filing.");
+                    await sheet.getByRole("button", {name:decision.button, exact:true}).click();
+                    await page.getByRole("alertdialog").getByRole("button", {name:"Done", exact:true}).click();
+                    await page.getByRole("heading", {name:decision.heading, exact:true}).waitFor();
+                    if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw new Error("Returned page overflow");
+                    await page.screenshot({path:decision.file + "-phone.png", fullPage:true, animations:"disabled"});
+                    await page.getByRole("button", {name:"Start a linked amendment", exact:true}).click();
+                    await page.waitForFunction(previous => location.href !== previous, parent);
+                    await page.getByRole("heading", {name:"Read the month", exact:true}).waitFor();
+                    await page.waitForLoadState("networkidle");
+                    await page.getByRole("note").filter({hasText:"That report remains unchanged."}).waitFor();
+                    await page.screenshot({path:decision.file + "-amendment-phone.png", fullPage:true, animations:"disabled"});
+                }
+            }']);
+            $child = AuditReport::query()->where('amends_id', $report->id)->firstOrFail();
+            $next = AuditReport::query()->where('amends_id', $child->id)->firstOrFail();
+            expect($report->refresh()->status)->toBe('changes_requested')->and($child->status)->toBe('rejected')
+                ->and($next->status)->toBe('draft')->and($next->step)->toBe('statements')->and($next->revision)->toBe(1);
+        }
     } catch (Throwable $failure) {
         try {
             file_put_contents($directory.'/failure-snapshot.txt', $run(['snapshot']));

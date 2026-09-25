@@ -2980,7 +2980,7 @@ const fr: Catalog = {
         "Le rapport {report} modifie celui-ci ; ce rapport reste tel qu'il a été scellé.",
     'auditor.sealed.open_amendment': 'Ouvrir la modification',
     'auditor.audit.amends':
-        'Ceci est une modification liée du rapport {report}. Ce rapport reste publié, inchangé.',
+        'Ceci est une modification liée du rapport {report}. Ce rapport reste inchangé.',
     'auditor.audit.open_original': "Ouvrir l'original",
     'auditor.receipt.title': 'Conflit enregistré',
     'auditor.receipt.body.reassignment_pending':

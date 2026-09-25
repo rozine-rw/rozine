@@ -127,6 +127,9 @@ it('permits one original report and one linked successor per report within the s
     $report = $fixture['report'];
     $factory = AuditReport::factory()->forBinding($fixture['accepted'], $fixture['binding']);
     expect(fn () => DB::transaction(fn (): AuditReport => $factory->create()))->toThrow(QueryException::class);
+    expect(fn () => DB::transaction(fn (): AuditReport => $factory->create(['amends_id' => $report->id])))
+        ->toThrow(QueryException::class, 'Audit amendment requires a terminal report');
+    $report->forceFill(['revision' => 2, 'status' => 'sealed', 'step' => 'seal'])->save();
     $amendment = $factory->create(['amends_id' => $report->id]);
     expect($amendment->amends_id)->toBe($report->id);
     expect(fn () => DB::transaction(fn (): AuditReport => $factory->create(['amends_id' => $report->id])))
@@ -179,12 +182,15 @@ it('rolls the unused report schema back and reapplies it without rewriting appli
     $sourceFacts = require database_path('migrations/2026_09_25_102249_create_audit_source_snapshots_table.php');
     $ledgers = require database_path('migrations/2026_09_25_120136_create_audit_ledger_evidence_tables.php');
     $ledgers->down();
+    $lineage = require database_path('migrations/2026_09_25_114139_enforce_audit_report_amendment_lineage.php');
+    $lineage->down();
     $sourceFacts->down();
     $migration->down();
     expect(Schema::hasTable('audit_reports'))->toBeFalse()->and(Schema::hasTable('audit_report_versions'))->toBeFalse();
     $migration->up();
     $sourceFacts->up();
     $ledgers->up();
+    $lineage->up();
     expect(Schema::hasTable('audit_reports'))->toBeTrue()->and(Schema::hasTable('audit_report_versions'))->toBeTrue()
         ->and($fixture['application']->refresh()->getRawOriginal())->toBe($before);
 });

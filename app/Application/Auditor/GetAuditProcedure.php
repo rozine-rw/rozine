@@ -6,6 +6,7 @@ namespace App\Application\Auditor;
 
 use App\Application\Auditor\Contracts\AuditReportStore;
 use App\Domain\Auditor\AuditProcedure;
+use App\Domain\Auditor\AuditReportDecision;
 use App\Domain\Auditor\AuditVariance;
 
 /**
@@ -38,7 +39,10 @@ final class GetAuditProcedure
             $unavailable = 'AUDIT_NOTE_REQUIRED';
         }
 
-        return [...$page, 'report' => $report, 'previous_step' => $index > 0 ? $steps[$index - 1] : null,
+        return [...$page, 'report' => $report,
+            'can_amend' => AuditReportDecision::amendable($report['status']) && $report['amendment_id'] === null,
+            'decision_options' => $report['kind'] === 'monthly' && $report['status'] === 'draft'
+                ? ['request_changes' => AuditReportDecision::CHANGES, 'reject' => AuditReportDecision::REJECTION] : null, 'previous_step' => $index > 0 ? $steps[$index - 1] : null,
             'seal' => $seal, 'can_continue' => $report['status'] === 'draft' && $unavailable === null,
             'variance' => ['ledger' => $this->variance->compare($page['sources']['reported_stock'], $observed['observed_stock'] ?? null),
                 'cash' => $this->variance->compare($page['sources']['reported_cash'], $observed['cash'] ?? null),

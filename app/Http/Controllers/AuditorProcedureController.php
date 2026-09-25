@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Auditor\AmendAuditReport;
+use App\Application\Auditor\DecideAuditReport;
 use App\Application\Auditor\FindAuditReportOperation;
 use App\Application\Auditor\GetAuditEngagementSummary;
 use App\Application\Auditor\GetAuditProcedure;
@@ -16,6 +18,8 @@ use App\Application\Auditor\StartAuditReport;
 use App\Application\Business\GetAuditApplication;
 use App\Application\Evidence\ReadAuditStatement;
 use App\Application\Identity\AuthorizeActiveRole;
+use App\Http\Requests\Auditor\AmendAuditReportRequest;
+use App\Http\Requests\Auditor\DecideAuditReportRequest;
 use App\Http\Requests\Auditor\SaveAuditReportStepRequest;
 use App\Http\Requests\Auditor\ShowAuditReportOperationRequest;
 use App\Http\Requests\Auditor\ShowAuditReportRequest;
@@ -102,6 +106,29 @@ class AuditorProcedureController extends Controller
         [$userId, $revision] = $this->reader($request);
 
         return $this->present($request, $action->handle($userId, $revision, (string) $request->validated('command'), (string) $request->route('request_id')));
+    }
+
+    public function requestChanges(DecideAuditReportRequest $request, DecideAuditReport $action): OperationResource
+    {
+        return $this->decision($request, $action, false);
+    }
+
+    public function reject(DecideAuditReportRequest $request, DecideAuditReport $action): OperationResource
+    {
+        return $this->decision($request, $action, true);
+    }
+
+    public function amend(AmendAuditReportRequest $request, AmendAuditReport $action): OperationResource
+    {
+        return $this->present($request, $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
+            (string) $request->route('report'), (int) $request->validated('expected_revision'), (string) $request->validated('request_id')));
+    }
+
+    private function decision(DecideAuditReportRequest $request, DecideAuditReport $action, bool $reject): OperationResource
+    {
+        return $this->present($request, $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
+            (string) $request->route('report'), (int) $request->validated('expected_revision'), $reject,
+            $request->validated('reason_code'), $request->validated('reason'), (string) $request->validated('request_id')));
     }
 
     /** @return array{int, int} */

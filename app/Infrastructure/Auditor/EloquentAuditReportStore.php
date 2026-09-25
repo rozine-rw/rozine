@@ -13,6 +13,7 @@ use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Auditor\AuditProcedure;
+use App\Domain\Auditor\AuditReportDecision;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
@@ -187,6 +188,74 @@ final class EloquentAuditReportStore implements AuditReportStore
             });
     }
 
+    /** @return array<string, mixed> */
+    public function decide(int $userId, int $contextRevision, string $reportId, int $expectedRevision, bool $reject, mixed $reasonCode, mixed $reason, string $requestId): array
+    {
+        $record = $this->owned($reportId, $this->party($userId));
+        $command = $reject ? 'audit.reject' : 'audit.request_changes';
+
+        return $this->assignments->handle($userId, $contextRevision, $record->assignment_id,
+            function (array $assignment) use ($userId, $contextRevision, $reportId, $expectedRevision, $reject, $reasonCode, $reason, $requestId, $command): array {
+                $record = AuditReport::query()->lockForUpdate()->findOrFail($reportId);
+                $this->author($record, $assignment);
+                $this->view($record);
+
+                return $this->journal->execute('party:'.$assignment['party_id'], $userId, $command, $requestId, 'audit.report', $reportId,
+                    ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'reason_code' => $reasonCode, 'reason' => $reason],
+                    function (): void {}, function () use ($record, $assignment, $userId, $expectedRevision, $reject, $reasonCode, $reason, $command): OperationResult {
+                        if ($record->revision !== $expectedRevision) {
+                            throw new CommandRejection('VERSION_CONFLICT', revision: $record->revision);
+                        }
+                        $decision = AuditReportDecision::reason($record->kind, $record->status, $reject, $reasonCode, $reason);
+                        $draft = $record->draft;
+                        $draft['decision'] = [...$decision, 'recorded_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')];
+                        $record->forceFill(['revision' => $record->revision + 1, 'status' => $reject ? 'rejected' : 'changes_requested', 'draft' => $draft])->save();
+                        $this->append($record, $assignment['party_id'], $userId, $command);
+
+                        return $this->receipt($reject ? 'AUDIT_REJECTED' : 'AUDIT_CHANGES_REQUESTED', $this->view($record));
+                    });
+            });
+    }
+
+    /** @return array<string, mixed> */
+    public function amend(int $userId, int $contextRevision, string $reportId, int $expectedRevision, string $requestId): array
+    {
+        $record = $this->owned($reportId, $this->party($userId));
+
+        return $this->assignments->handle($userId, $contextRevision, $record->assignment_id,
+            function (array $assignment) use ($userId, $contextRevision, $reportId, $expectedRevision, $requestId): array {
+                $record = AuditReport::query()->lockForUpdate()->findOrFail($reportId);
+                $this->author($record, $assignment);
+                $parent = $this->view($record);
+
+                return $this->journal->execute('party:'.$assignment['party_id'], $userId, 'audit.amend', $requestId, 'audit.report', $reportId,
+                    ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision], function (): void {},
+                    function () use ($record, $parent, $assignment, $userId, $expectedRevision): OperationResult {
+                        if ($record->revision !== $expectedRevision) {
+                            throw new CommandRejection('VERSION_CONFLICT', revision: $record->revision);
+                        }
+                        if (! AuditReportDecision::amendable($record->status)) {
+                            throw new CommandRejection('AUDIT_REPORT_NOT_AMENDABLE', revision: $record->revision);
+                        }
+                        $existing = AuditReport::query()->where('amends_id', $record->id)->first();
+                        if ($existing !== null) {
+                            return $this->receipt('AUDIT_AMENDMENT_CREATED', $this->view($existing));
+                        }
+                        $binding = [...$record->binding, 'engagement' => $assignment['engagement'],
+                            'amends' => ['id' => $record->id, 'revision' => $record->revision, 'version' => $parent['version']]];
+                        $child = new AuditReport;
+                        $child->forceFill([...$record->only(['assignment_id', 'assignment_revision', 'author_party_id', 'business_id', 'application_id',
+                            'application_revision', 'application_version_id', 'submission_id', 'quote_id', 'kind']),
+                            'engagement_acceptance_id' => $assignment['engagement']['id'], 'amends_id' => $record->id,
+                            'revision' => 1, 'status' => 'draft', 'step' => $record->kind === 'flash' ? 'review' : 'statements',
+                            'binding' => $binding, 'binding_sha256' => $this->hash($binding), 'draft' => ['note' => '', 'completed_steps' => [], 'fields' => []]])->save();
+                        $this->append($child, $assignment['party_id'], $userId, 'audit.amend');
+
+                        return $this->receipt('AUDIT_AMENDMENT_CREATED', $this->view($child));
+                    });
+            });
+    }
+
     /** @return Report */
     public function get(int $userId, int $contextRevision, string $reportId): array
     {
@@ -248,7 +317,7 @@ final class EloquentAuditReportStore implements AuditReportStore
     /** @return array<string, mixed> */
     public function findOperation(int $userId, int $contextRevision, string $command, string $requestId): array
     {
-        if (! in_array($command, ['audit.start', 'audit.save_step'], true)) {
+        if (! in_array($command, ['audit.start', 'audit.save_step', 'audit.request_changes', 'audit.reject', 'audit.amend'], true)) {
             throw new CommandRejection('OPERATION_NOT_FOUND', 404);
         }
 
@@ -256,7 +325,7 @@ final class EloquentAuditReportStore implements AuditReportStore
 
         return $this->journal->find('party:'.$partyId, $command, $requestId,
             function (string $type, string $id) use ($userId, $contextRevision, $partyId, $command): void {
-                if ($command === 'audit.save_step') {
+                if ($command !== 'audit.start') {
                     if ($type !== 'audit.report') {
                         throw new CommandRejection('OPERATION_NOT_FOUND', 404);
                     }
@@ -334,7 +403,8 @@ final class EloquentAuditReportStore implements AuditReportStore
             'application_id' => $record->application_id, 'application_revision' => $record->application_revision,
             'revision' => $record->revision, 'kind' => $record->kind, 'status' => $record->status, 'step' => $record->step,
             'period' => $record->binding['period'] ?? null,
-            'amends_id' => $record->amends_id, 'binding_sha256' => $record->binding_sha256, 'draft' => $record->draft,
+            'amends_id' => $record->amends_id, 'amendment_id' => AuditReport::query()->where('amends_id', $record->id)->value('id'),
+            'binding_sha256' => $record->binding_sha256, 'draft' => $record->draft,
             'version' => ['id' => $version->id, 'sha256' => $version->sha256]];
     }
 
