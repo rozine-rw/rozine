@@ -68,25 +68,45 @@ final class EloquentStatementStore implements StatementStore
                         if ($revision !== $expectedRevision) {
                             throw new CommandRejection('VERSION_CONFLICT', 409, $revision);
                         }
-                        $source = $this->sources->describe($filename, $content);
-                        if ($evidence === null) {
-                            $evidence = new StatementEvidence;
-                            $evidence->forceFill(['business_id' => $businessId, 'revision' => 0])->save();
-                        }
-                        $original = StatementOriginal::query()->where('statement_evidence_id', $evidence->id)->where('sha256', $source['sha256'])->first(['id']);
-                        if ($original === null) {
-                            $original = new StatementOriginal;
-                            $original->forceFill([...$source, 'statement_evidence_id' => $evidence->id, 'evidence_revision' => $revision + 1,
-                                'content' => $content, 'actor_user_id' => $userId, 'actor_party_id' => $partyId])->save();
-                            (new StatementExtraction)->forceFill(['statement_original_id' => $original->id, 'revision' => 1,
-                                'parser_version' => 'pending-1', 'status' => 'pending', 'reason_codes' => [], 'text' => null, 'record_count' => null])->save();
-                            $evidence->forceFill(['revision' => $revision + 1])->save();
-                        }
 
-                        return new OperationResult('INGESTED_NOT_AUDIT_APPROVED',
-                            ['document_id' => $original->id, 'evidence' => $this->manifest($evidence)], $evidence->revision);
+                        return $this->retain($evidence, $businessId, $userId, $partyId, $filename, $content);
                     });
             });
+    }
+
+    public function ingestAudit(int $userId, int $contextRevision, string $assignmentId, string $filename, string $content, ?string $replaces): OperationResult
+    {
+        return $this->assignments->handle($userId, $contextRevision, $assignmentId,
+            function (array $assignment) use ($userId, $filename, $content, $replaces): OperationResult {
+                $evidence = StatementEvidence::query()->where('business_id', $assignment['business_id'])->lockForUpdate()->first();
+                if ($replaces !== null && ($evidence === null || ! StatementOriginal::query()->whereKey($replaces)->where('statement_evidence_id', $evidence->id)->exists())) {
+                    throw new CommandRejection('STATEMENT_NOT_FOUND', 404);
+                }
+
+                return $this->retain($evidence, $assignment['business_id'], $userId, $assignment['party_id'], $filename, $content);
+            });
+    }
+
+    private function retain(?StatementEvidence $evidence, string $businessId, int $userId, string $partyId, string $filename, string $content): OperationResult
+    {
+        $revision = $evidence->revision ?? 0;
+        $source = $this->sources->describe($filename, $content);
+        if ($evidence === null) {
+            $evidence = new StatementEvidence;
+            $evidence->forceFill(['business_id' => $businessId, 'revision' => 0])->save();
+        }
+        $original = StatementOriginal::query()->where('statement_evidence_id', $evidence->id)->where('sha256', $source['sha256'])->first(['id']);
+        if ($original === null) {
+            $original = new StatementOriginal;
+            $original->forceFill([...$source, 'statement_evidence_id' => $evidence->id, 'evidence_revision' => $revision + 1,
+                'content' => $content, 'actor_user_id' => $userId, 'actor_party_id' => $partyId])->save();
+            (new StatementExtraction)->forceFill(['statement_original_id' => $original->id, 'revision' => 1,
+                'parser_version' => 'pending-1', 'status' => 'pending', 'reason_codes' => [], 'text' => null, 'record_count' => null])->save();
+            $evidence->forceFill(['revision' => $revision + 1])->save();
+        }
+
+        return new OperationResult('INGESTED_NOT_AUDIT_APPROVED',
+            ['document_id' => $original->id, 'evidence' => $this->manifest($evidence)], $evidence->revision);
     }
 
     /** @return Manifest */

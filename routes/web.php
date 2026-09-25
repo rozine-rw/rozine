@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\AuditOperationsController;
 use App\Http\Controllers\AuditorEngagementController;
 use App\Http\Controllers\AuditorJobsController;
+use App\Http\Controllers\AuditorProcedureController;
 use App\Http\Controllers\AuditorProfileController;
 use App\Http\Controllers\BusinessApplicationController;
 use App\Http\Controllers\DashboardController;
@@ -45,6 +46,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'throttle:60,1'])->prefix('auditor')->name('auditor.')->group(function (): void {
+    Route::post('jobs/{assignment}/report', [AuditorProcedureController::class, 'start'])->where('assignment', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.start');
+    Route::get('report-operations/{request_id}', [AuditorProcedureController::class, 'operation'])->whereUuid('request_id')->middleware('cache.headers:private;no_store')->name('reports.operations.show');
+    Route::get('reports/{report}', [AuditorProcedureController::class, 'show'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.show');
+    Route::get('reports/{report}/statements/{document}', [AuditorProcedureController::class, 'statement'])->where(['report' => '[0-9a-z]{26}', 'document' => '[0-9a-z]{26}'])->middleware('cache.headers:private;no_store')->name('reports.statements.show');
+    Route::post('reports/{report}/steps', [AuditorProcedureController::class, 'save'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.save');
     Route::get('engagement', [AuditorEngagementController::class, 'show'])->middleware('cache.headers:private;no_store')->name('engagement.show');
     Route::post('engagement/accept', [AuditorEngagementController::class, 'accept'])->middleware('cache.headers:private;no_store')->name('engagement.accept');
     Route::get('engagement/operations/{request_id}', [AuditorEngagementController::class, 'operation'])->whereUuid('request_id')->middleware('cache.headers:private;no_store')->name('engagement.operations.show');

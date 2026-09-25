@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace App\Infrastructure\Auditor;
 
 use App\Application\Auditor\Contracts\AuditReportStore;
+use App\Application\Auditor\GetAuditProcedureSources;
 use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Business\WithAuditApplicationBinding;
+use App\Application\Evidence\IngestAuditStatement;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Domain\Auditor\AuditProcedure;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\AuditReport;
 use App\Models\AuditReportVersion;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as Query;
 use RuntimeException;
@@ -23,6 +27,8 @@ use RuntimeException;
  * @phpstan-import-type AcceptedAssignment from \App\Application\Auditor\Contracts\AuditAssignmentStore
  * @phpstan-import-type AuditBinding from \App\Application\Business\Contracts\BusinessApplicationStore
  * @phpstan-import-type Report from AuditReportStore
+ * @phpstan-import-type Draft from AuditProcedure
+ * @phpstan-import-type Procedure from AuditReportStore
  */
 final class EloquentAuditReportStore implements AuditReportStore
 {
@@ -32,6 +38,9 @@ final class EloquentAuditReportStore implements AuditReportStore
         private IdentityRepository $identities,
         private OperationJournal $journal,
         private CanonicalJson $json,
+        private AuditProcedure $procedure,
+        private GetAuditProcedureSources $sources,
+        private IngestAuditStatement $ingestion,
     ) {}
 
     /** @return array<string, mixed> */
@@ -62,7 +71,10 @@ final class EloquentAuditReportStore implements AuditReportStore
 
                                     return $this->receipt('AUDIT_REPORT_RESUMED', $report);
                                 }
-                                $binding = ['assignment' => ['id' => $current['id'], 'revision' => $current['revision'], 'party_id' => $current['party_id']], 'engagement' => $current['engagement'], 'application' => $application];
+                                $period = $current['kind'] === 'routine' && isset($current['original_dispatch_at'])
+                                    ? CarbonImmutable::parse($current['original_dispatch_at'])->setTimezone('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m') : null;
+                                $binding = ['assignment' => ['id' => $current['id'], 'revision' => $current['revision'], 'party_id' => $current['party_id']],
+                                    'engagement' => $current['engagement'], 'application' => $application, 'period' => $period];
                                 $report = new AuditReport;
                                 $report->forceFill(['assignment_id' => $current['id'], 'business_id' => $current['business_id'],
                                     'assignment_revision' => $current['revision'], 'author_party_id' => $current['party_id'],
@@ -82,14 +94,85 @@ final class EloquentAuditReportStore implements AuditReportStore
             });
     }
 
+    /**
+     * @param  array<string, mixed>  $fields
+     * @return array<string, mixed>
+     */
+    public function saveStep(int $userId, int $contextRevision, string $reportId, int $expectedRevision, string $step, array $fields, string $requestId): array
+    {
+        $partyId = $this->party($userId);
+        $record = $this->owned($reportId, $partyId);
+
+        return $this->assignments->handle($userId, $contextRevision, $record->assignment_id,
+            function (array $assignment) use ($userId, $contextRevision, $reportId, $expectedRevision, $step, $fields, $requestId): array {
+                $record = AuditReport::query()->lockForUpdate()->findOrFail($reportId);
+                $this->author($record, $assignment);
+                $this->view($record);
+
+                return $this->journal->execute('party:'.$assignment['party_id'], $userId, 'audit.save_step', $requestId, 'audit.report', $reportId,
+                    ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'step' => $step, 'fields' => $fields],
+                    function (): void {}, function () use ($record, $assignment, $userId, $contextRevision, $expectedRevision, $step, $fields): OperationResult {
+                        if ($record->revision !== $expectedRevision) {
+                            throw new CommandRejection('VERSION_CONFLICT', revision: $record->revision);
+                        }
+                        if ($record->status !== 'draft') {
+                            throw new CommandRejection('AUDIT_REPORT_NOT_EDITABLE', revision: $record->revision);
+                        }
+                        /** @var Draft $draft */
+                        $draft = $record->draft;
+                        $next = $this->procedure->save($record->kind, $record->step, $draft, $step, $fields,
+                            $this->sources->handle($userId, $contextRevision, $assignment, $record->kind, $record->binding['period'] ?? null));
+                        $record->forceFill(['revision' => $record->revision + 1, 'step' => $next['step'], 'draft' => $next['draft']])->save();
+                        $this->append($record, $assignment['party_id'], $userId, 'audit.save_step');
+
+                        return new OperationResult('AUDIT_STEP_SAVED', ['audit_id' => $record->id, 'assignment_id' => $assignment['id'], 'step' => $record->step], $record->revision);
+                    });
+            });
+    }
+
+    /** @return array<string, mixed> */
+    public function ingestLedger(int $userId, int $contextRevision, string $reportId, int $expectedRevision, string $filename, string $content, ?string $replaces, string $requestId): array
+    {
+        $record = $this->owned($reportId, $this->party($userId));
+
+        return $this->assignments->handle($userId, $contextRevision, $record->assignment_id,
+            function (array $assignment) use ($userId, $contextRevision, $reportId, $expectedRevision, $filename, $content, $replaces, $requestId): array {
+                $record = AuditReport::query()->lockForUpdate()->findOrFail($reportId);
+                $this->author($record, $assignment);
+                $this->view($record);
+
+                return $this->journal->execute('party:'.$assignment['party_id'], $userId, 'audit.save_step', $requestId, 'audit.report', $reportId,
+                    ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'step' => 'ledger',
+                        'upload' => ['filename' => $filename, 'sha256' => hash('sha256', $content), 'replaces' => $replaces]],
+                    function (): void {}, function () use ($record, $assignment, $userId, $contextRevision, $expectedRevision, $filename, $content, $replaces): OperationResult {
+                        if ($record->revision !== $expectedRevision) {
+                            throw new CommandRejection('VERSION_CONFLICT', revision: $record->revision);
+                        }
+                        if ($record->status !== 'draft' || $record->kind !== 'flash' || $record->step !== 'ledger') {
+                            throw new CommandRejection('AUDIT_LEDGER_NOT_AVAILABLE', revision: $record->revision);
+                        }
+                        try {
+                            $ingested = $this->ingestion->handle($userId, $contextRevision, $assignment['id'], $filename, $content, $replaces);
+                        } catch (CommandRejection $failure) {
+                            throw new CommandRejection($failure->reason, $failure->status, $record->revision,
+                                isset($failure->fieldErrors['file']) ? ['document' => $failure->fieldErrors['file']] : $failure->fieldErrors, $failure->data);
+                        }
+                        $draft = $record->draft;
+                        $draft['documents'][] = ['id' => $ingested->data['document_id'], 'replaces' => $replaces];
+                        $record->forceFill(['revision' => $record->revision + 1, 'draft' => $draft])->save();
+                        $this->append($record, $assignment['party_id'], $userId, 'audit.save_step');
+
+                        return new OperationResult('INGESTED_NOT_AUDIT_APPROVED', ['audit_id' => $record->id, 'assignment_id' => $assignment['id'],
+                            'step' => 'ledger', 'document_id' => $ingested->data['document_id'], 'evidence_revision' => $ingested->revision], $record->revision);
+                    });
+            });
+    }
+
     /** @return Report */
     public function get(int $userId, int $contextRevision, string $reportId): array
     {
         $partyId = $this->party($userId);
-        $record = AuditReport::query()->whereKey($reportId)->where('author_party_id', $partyId)
-            ->whereExists(fn (Query $query): Query => $query->selectRaw('1')->from('audit_assignments')
-                ->whereColumn('audit_assignments.id', 'audit_reports.assignment_id')->where('party_id', $partyId))->first()
-            ?? throw new CommandRejection('AUDIT_REPORT_NOT_FOUND', 404);
+        $record = $this->owned($reportId, $partyId);
 
         return $this->assignments->handle($userId, $contextRevision, $record->assignment_id, function (array $assignment) use ($reportId): array {
             $record = AuditReport::query()->lockForUpdate()->findOrFail($reportId);
@@ -97,6 +180,20 @@ final class EloquentAuditReportStore implements AuditReportStore
 
             return $this->view($record);
         });
+    }
+
+    /** @return Procedure */
+    public function procedure(int $userId, int $contextRevision, string $reportId): array
+    {
+        $record = $this->owned($reportId, $this->party($userId));
+
+        return $this->assignments->handle($userId, $contextRevision, $record->assignment_id,
+            function (array $assignment) use ($userId, $contextRevision, $reportId): array {
+                $record = AuditReport::query()->sharedLock()->findOrFail($reportId);
+                $this->author($record, $assignment);
+
+                return ['report' => $this->view($record), 'sources' => $this->sources->handle($userId, $contextRevision, $assignment, $record->kind, $record->binding['period'] ?? null)];
+            });
     }
 
     /** @return Report|null */
@@ -116,14 +213,22 @@ final class EloquentAuditReportStore implements AuditReportStore
     /** @return array<string, mixed> */
     public function findOperation(int $userId, int $contextRevision, string $command, string $requestId): array
     {
-        if ($command !== 'audit.start') {
+        if (! in_array($command, ['audit.start', 'audit.save_step'], true)) {
             throw new CommandRejection('OPERATION_NOT_FOUND', 404);
         }
 
         $partyId = $this->party($userId);
 
         return $this->journal->find('party:'.$partyId, $command, $requestId,
-            function (string $type, string $id) use ($userId, $contextRevision, $partyId): void {
+            function (string $type, string $id) use ($userId, $contextRevision, $partyId, $command): void {
+                if ($command === 'audit.save_step') {
+                    if ($type !== 'audit.report') {
+                        throw new CommandRejection('OPERATION_NOT_FOUND', 404);
+                    }
+                    $this->get($userId, $contextRevision, $id);
+
+                    return;
+                }
                 if ($type !== 'audit.assignment') {
                     throw new CommandRejection('OPERATION_NOT_FOUND', 404);
                 }
@@ -133,6 +238,14 @@ final class EloquentAuditReportStore implements AuditReportStore
                     }
                 });
             });
+    }
+
+    private function owned(string $reportId, string $partyId): AuditReport
+    {
+        return AuditReport::query()->whereKey($reportId)->where('author_party_id', $partyId)
+            ->whereExists(fn (Query $query): Query => $query->selectRaw('1')->from('audit_assignments')
+                ->whereColumn('audit_assignments.id', 'audit_reports.assignment_id')->where('party_id', $partyId))->first()
+            ?? throw new CommandRejection('AUDIT_REPORT_NOT_FOUND', 404);
     }
 
     /**
@@ -185,6 +298,7 @@ final class EloquentAuditReportStore implements AuditReportStore
         return ['id' => $record->id, 'assignment_id' => $record->assignment_id, 'business_id' => $record->business_id,
             'application_id' => $record->application_id, 'application_revision' => $record->application_revision,
             'revision' => $record->revision, 'kind' => $record->kind, 'status' => $record->status, 'step' => $record->step,
+            'period' => $record->binding['period'] ?? null,
             'amends_id' => $record->amends_id, 'binding_sha256' => $record->binding_sha256, 'draft' => $record->draft,
             'version' => ['id' => $version->id, 'sha256' => $version->sha256]];
     }

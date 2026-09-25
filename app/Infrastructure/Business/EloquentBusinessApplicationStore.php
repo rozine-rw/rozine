@@ -35,6 +35,7 @@ use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessApplicationVersion;
 use Closure;
 use DateTimeImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -755,13 +756,15 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
     }
 
     /** @return AuditApplication */
-    public function audit(int $userId, int $contextRevision, string $assignmentId): array
+    public function audit(int $userId, int $contextRevision, string $assignmentId, ?string $applicationId = null): array
     {
-        return $this->assignments->handle($userId, $contextRevision, $assignmentId, function (array $work): array {
+        return $this->assignments->handle($userId, $contextRevision, $assignmentId, function (array $work) use ($applicationId): array {
             $application = BusinessApplication::query()->where('business_id', $work['assignment']['business_id'])
+                ->when($applicationId !== null, fn (Builder $query): Builder => $query->whereKey($applicationId))
                 ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', ['submitted'])->orderByDesc('id')->first();
 
             return ['work' => $work, 'application' => $application === null ? null : ['id' => $application->id, 'revision' => $application->revision,
+                'status' => $application->status,
                 'title' => $application->draft['title'], 'target' => $application->draft['target'], 'term_months' => $application->draft['term_months'],
                 'use_of_funds' => $application->draft['use_of_funds']]];
         });

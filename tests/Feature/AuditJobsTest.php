@@ -37,7 +37,7 @@ it('lists current offers with real application inputs while keeping originals an
         BusinessApplicationFixture::fields(), 'raise', (string) Str::uuid());
     $assignment = Fixture::request($fixture);
     $case = app(GetAuditApplication::class)->handle($partner['user']->id, 1, $assignment->id);
-    expect($case['application'])->toBe(['id' => $id, 'revision' => 2, 'title' => 'Synthetic equipment purchase', 'target' => '8000000',
+    expect($case['application'])->toBe(['id' => $id, 'revision' => 2, 'status' => 'draft', 'title' => 'Synthetic equipment purchase', 'target' => '8000000',
         'term_months' => 6, 'use_of_funds' => ['equipment']])
         ->and($case['work']['business'])->toBe(['name' => 'Synthetic business', 'industry' => 'Retail', 'district' => 'Gasabo'])
         ->and($case['work']['assignment']['allowed_actions'])->toContain('assignment.accept', 'assignment.decline', 'conflict.declare')

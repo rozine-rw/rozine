@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorJobsController::show
-* @see app/Http/Controllers/Api/V1/AuditorJobsController.php:81
+* @see app/Http/Controllers/Api/V1/AuditorJobsController.php:87
 * @route '/api/v1/auditor/assignment-operations/{request_id}'
 */
 export const show = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorJobsController::show
-* @see app/Http/Controllers/Api/V1/AuditorJobsController.php:81
+* @see app/Http/Controllers/Api/V1/AuditorJobsController.php:87
 * @route '/api/v1/auditor/assignment-operations/{request_id}'
 */
 show.url = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ show.url = (args: { request_id: string | number } | [request_id: string | number
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorJobsController::show
-* @see app/Http/Controllers/Api/V1/AuditorJobsController.php:81
+* @see app/Http/Controllers/Api/V1/AuditorJobsController.php:87
 * @route '/api/v1/auditor/assignment-operations/{request_id}'
 */
 show.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ show.get = (args: { request_id: string | number } | [request_id: string | number
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorJobsController::show
-* @see app/Http/Controllers/Api/V1/AuditorJobsController.php:81
+* @see app/Http/Controllers/Api/V1/AuditorJobsController.php:87
 * @route '/api/v1/auditor/assignment-operations/{request_id}'
 */
 show.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ show.head = (args: { request_id: string | number } | [request_id: string | numbe
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorJobsController::show
-* @see app/Http/Controllers/Api/V1/AuditorJobsController.php:81
+* @see app/Http/Controllers/Api/V1/AuditorJobsController.php:87
 * @route '/api/v1/auditor/assignment-operations/{request_id}'
 */
 const showForm = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ const showForm = (args: { request_id: string | number } | [request_id: string | 
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorJobsController::show
-* @see app/Http/Controllers/Api/V1/AuditorJobsController.php:81
+* @see app/Http/Controllers/Api/V1/AuditorJobsController.php:87
 * @route '/api/v1/auditor/assignment-operations/{request_id}'
 */
 showForm.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ showForm.get = (args: { request_id: string | number } | [request_id: string | nu
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorJobsController::show
-* @see app/Http/Controllers/Api/V1/AuditorJobsController.php:81
+* @see app/Http/Controllers/Api/V1/AuditorJobsController.php:87
 * @route '/api/v1/auditor/assignment-operations/{request_id}'
 */
 showForm.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

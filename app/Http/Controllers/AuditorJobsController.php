@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Auditor\FindAuditAssignmentOperation;
+use App\Application\Auditor\GetAssignmentAuditReport;
 use App\Application\Auditor\GetAuditEngagementSummary;
 use App\Application\Auditor\GetOwnAuditConflict;
 use App\Application\Auditor\ListAuditJobs;
@@ -38,12 +39,17 @@ class AuditorJobsController extends Controller
         return $request->routeIs('api.*') ? $resource : Inertia::render('auditor/jobs', $resource->resolve($request));
     }
 
-    public function show(Request $request, GetAuditApplication $application, ListAuditJobs $jobs): Response|AuditorFileResource
+    public function show(Request $request, GetAuditApplication $application, ListAuditJobs $jobs, GetAssignmentAuditReport $reports): Response|AuditorFileResource
     {
         [$userId, $revision] = $this->reader($request);
         $background = $jobs->handle($userId, $revision);
-        $resource = new AuditorFileResource(['record' => $application->handle($userId, $revision, (string) $request->route('assignment')),
-            'jobs' => [...$background, 'identity_context_revision' => $revision, 'limit' => 25, 'engagement' => $this->engagements->handle($userId, $revision)]]);
+        $record = $application->handle($userId, $revision, (string) $request->route('assignment'));
+        $engagement = $this->engagements->handle($userId, $revision);
+        $canStart = $record['work']['assignment']['status'] === 'accepted' && $engagement['status'] === 'current'
+            && ($record['application']['status'] ?? null) === 'submitted';
+        $report = $canStart ? $reports->handle($userId, $revision, $record['work']['assignment']['id']) : null;
+        $resource = new AuditorFileResource(['record' => $record, 'report' => $report, 'can_start' => $canStart && $report === null,
+            'jobs' => [...$background, 'identity_context_revision' => $revision, 'limit' => 25, 'engagement' => $engagement]]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('auditor/file', $resource->resolve($request));
     }

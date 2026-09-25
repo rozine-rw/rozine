@@ -251,7 +251,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                 $review = AuditorIndependenceReview::query()->where('business_id', $record->business_id)->where('party_id', $candidate['id'])->firstOrFail();
 
                 return $operation(['id' => $record->id, 'business_id' => $record->business_id, 'party_id' => $candidate['id'],
-                    'revision' => $record->revision, 'kind' => $record->state['kind'], 'business_revision' => $context['business']['revision'],
+                    'revision' => $record->revision, 'kind' => $record->state['kind'], 'original_dispatch_at' => $record->state['original_dispatch_at'], 'business_revision' => $context['business']['revision'],
                     'engagement' => $candidate['engagement'],
                     'mandate_version' => $context['business']['mandate_version'], 'mandate_sha256' => hash('sha256', $this->json->encode($context['business']['mandate'])),
                     'independence' => ['id' => $review->id, 'revision' => $review->revision, 'checked_at' => $review->state['checked_at'],

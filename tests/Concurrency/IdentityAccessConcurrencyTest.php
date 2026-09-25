@@ -13,6 +13,7 @@ use App\Application\Auditor\RecordAuditorIndependence;
 use App\Application\Auditor\RecordIsolatedAuditSourceFacts;
 use App\Application\Auditor\RequestAuditAssignment;
 use App\Application\Auditor\ResolveAuditAssignment;
+use App\Application\Auditor\SaveAuditReportStep;
 use App\Application\Auditor\SetAuditorAvailability;
 use App\Application\Auditor\StartAuditReport;
 use App\Application\Auditor\VerifyAuditLocation;
@@ -108,6 +109,59 @@ function concurrentIdentityOperator(): User
 
     return $user;
 }
+
+it('serializes competing report step saves with report-only revisions and canonical Party retries', function (bool $sameRequest): void {
+    $fixture = BusinessQuoteFixture::ready();
+    BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
+    $partner = $fixture['audit']['partners'][0];
+    $assignment = $fixture['assignment']->refresh();
+    $started = app(StartAuditReport::class)->handle($partner['user']->id, 1, $assignment->id, $assignment->revision,
+        $fixture['application']->id, $fixture['application']->refresh()->revision, (string) Str::uuid());
+    $id = $started['data']['audit_id'];
+    $other = User::factory()->withTwoFactor()->for($partner['party'])->create();
+    app(SelectActiveRole::class)->handle($other->id, 'auditor', 0, (string) Str::uuid());
+    $uuid = (string) Str::uuid();
+    $save = fn (User $user, string $request): Closure => function () use ($user, $request, $id): void {
+        $result = app(SaveAuditReportStep::class)->handle($user->id, 1, $id, 1, 'review', [], $request);
+        expect($result['code'])->toBeIn(['AUDIT_STEP_SAVED', 'VERSION_CONFLICT']);
+    };
+    expect(runIdentityContenders([$save($partner['user'], $uuid), $save($other, $sameRequest ? $uuid : (string) Str::uuid())]))->toBe([0, 0])
+        ->and(AuditReport::query()->whereKey($id)->firstOrFail()->revision)->toBe(2)
+        ->and(AuditReportVersion::query()->where('audit_report_id', $id)->count())->toBe(2)
+        ->and($assignment->fresh()?->revision)->toBe($assignment->revision)
+        ->and(CommandOperation::query()->where('command', 'audit.save_step')->get()->map(fn (CommandOperation $operation): string => $operation->result['code'])->sort()->values()->all())
+        ->toBe($sameRequest ? ['AUDIT_STEP_SAVED'] : ['AUDIT_STEP_SAVED', 'VERSION_CONFLICT']);
+})->with([true, false]);
+
+it('holds current Auditor authority through the actual report step history write', function (): void {
+    $fixture = BusinessQuoteFixture::ready();
+    BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
+    $partner = $fixture['audit']['partners'][0];
+    $started = app(StartAuditReport::class)->handle($partner['user']->id, 1, $fixture['assignment']->id, $fixture['assignment']->refresh()->revision,
+        $fixture['application']->id, $fixture['application']->refresh()->revision, (string) Str::uuid());
+    $default = DB::getDefaultConnection();
+    $change = fn (): int => Party::query()->whereKey($partner['party']->id)->update(['verified_at' => null]);
+    $event = 'eloquent.creating: '.AuditReportVersion::class;
+    Event::listen($event, function () use ($default, $change): void {
+        config(['database.connections.report_step_contender' => config('database.connections.pgsql')]);
+        DB::connection('report_step_contender')->statement("SET lock_timeout = '500ms'");
+        DB::setDefaultConnection('report_step_contender');
+        try {
+            expect($change)->toThrow(QueryException::class);
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('report_step_contender');
+        }
+    });
+    $request = (string) Str::uuid();
+    try {
+        expect(app(SaveAuditReportStep::class)->handle($partner['user']->id, 1, $started['data']['audit_id'], 1, 'review', [], $request)['code'])->toBe('AUDIT_STEP_SAVED');
+    } finally {
+        Event::forget($event);
+    }
+    $change();
+    expect(fn () => app(SaveAuditReportStep::class)->handle($partner['user']->id, 1, $started['data']['audit_id'], 1, 'review', [], $request))->toThrow(IdentityViolation::class);
+});
 
 it('holds source authority through the Business calculation effect', function (string $change): void {
     $fixture = AuditAssignmentFixture::make(1);

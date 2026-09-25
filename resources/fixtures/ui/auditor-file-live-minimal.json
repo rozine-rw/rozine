@@ -51,7 +51,8 @@
             "conflict": {
                 "url": "/auditor/jobs/01k6kz9w3e7r1t5y8u2i6o0p3a/conflict",
                 "method": "post"
-            }
+            },
+            "start": null
         },
         "decline_options": [
             {
@@ -83,6 +84,10 @@
             "procedure": null,
             "operation": {
                 "url": "/auditor/assignment-operations/{request_id}",
+                "method": "get"
+            },
+            "start_operation": {
+                "url": "/auditor/report-operations/{request_id}",
                 "method": "get"
             }
         },
@@ -266,6 +271,7 @@
                 "next": null
             }
         },
-        "blocked": null
+        "blocked": null,
+        "application": null
     }
 }

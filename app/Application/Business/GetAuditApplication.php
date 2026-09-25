@@ -12,8 +12,8 @@ final class GetAuditApplication
     public function __construct(private BusinessApplicationStore $store) {}
 
     /** @return AuditApplication */
-    public function handle(int $userId, int $contextRevision, string $assignmentId): array
+    public function handle(int $userId, int $contextRevision, string $assignmentId, ?string $applicationId = null): array
     {
-        return $this->store->audit($userId, $contextRevision, $assignmentId);
+        return $this->store->audit($userId, $contextRevision, $assignmentId, $applicationId);
     }
 }
