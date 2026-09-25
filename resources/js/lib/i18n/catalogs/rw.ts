@@ -3190,6 +3190,19 @@ const rw: Catalog = {
     'auditor.capture.synthetic':
         "Igihamya cy'igerageza cy'ikigereranyo (cyitaruye) — ntabwo ari ifoto yafashwe koko.",
 
+    'auditor.returned.title.changes_requested': 'Impinduka zasabwe',
+    'auditor.returned.title.rejected': 'Inyandiko yanzwe',
+    'auditor.returned.lead.changes_requested':
+        'Iyi nyandiko yasubijwe ikigo kubera impamvu iri hepfo. Raporo ibikwa uko yasubijwe.',
+    'auditor.returned.lead.rejected':
+        "Iyi nyandiko ntiyashoboye kugenzurwa, kubera impamvu iri hepfo. Ibi bireba inyandiko, si inguzanyo y'ikigo. Raporo ibikwa uko yanzwe.",
+    'auditor.returned.reason': 'Impamvu',
+    'auditor.returned.recorded': 'Byanditswe',
+    'auditor.returned.amend': 'Tangira ivugurura rifitanye isano',
+    'auditor.returned.amended_by':
+        'Ivugurura {report} ryatangijwe kuri iyi raporo.',
+    'auditor.returned.view_amendment': 'Reba ivugurura',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

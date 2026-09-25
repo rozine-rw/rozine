@@ -3203,6 +3203,19 @@ const fr: Catalog = {
     'auditor.capture.synthetic':
         'Preuve de test synthétique (isolée) — pas une capture native.',
 
+    'auditor.returned.title.changes_requested': 'Modifications demandées',
+    'auditor.returned.title.rejected': 'Déclaration rejetée',
+    'auditor.returned.lead.changes_requested':
+        "Cette déclaration a été renvoyée à l'entreprise pour le motif ci-dessous. Le rapport est conservé tel qu'il a été renvoyé.",
+    'auditor.returned.lead.rejected':
+        "Cette version de la déclaration n'a pas pu être vérifiée, pour le motif ci-dessous. Cela concerne la déclaration, pas le crédit de l'entreprise. Le rapport est conservé tel qu'il a été rejeté.",
+    'auditor.returned.reason': 'Motif',
+    'auditor.returned.recorded': 'Enregistré',
+    'auditor.returned.amend': 'Commencer une modification liée',
+    'auditor.returned.amended_by':
+        'Une modification {report} a été commencée à partir de ce rapport.',
+    'auditor.returned.view_amendment': 'Voir la modification',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

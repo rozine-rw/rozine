@@ -3,6 +3,8 @@ import { useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
 import { STEP_FORM, useStepForm } from '@/components/auditor/audit/parts';
 import type { StepContext } from '@/components/auditor/audit/parts';
+import { useReturnControls } from '@/components/auditor/audit/return-controls';
+import { ReturnedStatus } from '@/components/auditor/audit/returned-status';
 import { useSealFlow } from '@/components/auditor/audit/seal-flow';
 import { SealedStatus } from '@/components/auditor/audit/sealed-status';
 import { StepBar } from '@/components/auditor/audit/step-bar';
@@ -48,7 +50,7 @@ const SHOWN_FIELDS: Partial<Record<AuditStage['step'], string[]>> = {
 
 /** The primary label per step, as the design words it (L3715, L3801). */
 const CONTINUE: Record<
-    Exclude<AuditStage['step'], 'seal' | 'sealed' | 'blocked'>,
+    Exclude<AuditStage['step'], 'seal' | 'sealed' | 'returned' | 'blocked'>,
     MessageCode
 > = {
     review: 'auditor.audit.continue',
@@ -102,12 +104,14 @@ function StageBody({
     context,
     seal,
     sealed,
+    returned,
 }: {
     props: AuditProcedureProps;
     stage: AuditStage;
     context: StepContext;
     seal: ReactNode;
     sealed: ReactNode;
+    returned: ReactNode;
 }) {
     const { audit } = props;
 
@@ -138,6 +142,8 @@ function StageBody({
             return seal;
         case 'sealed':
             return sealed;
+        case 'returned':
+            return returned;
         case 'blocked':
             return <ConflictReceiptCard receipt={stage.conflict} />;
     }
@@ -172,6 +178,9 @@ function AuditSheet(props: AuditProcedureProps) {
             : { step: 'blocked', conflict: center.blocked };
     const blocked = stage.step === 'blocked';
     const sealed = stage.step === 'sealed';
+    const returned = stage.step === 'returned';
+    /* A sealed, returned or blocked report is final: nothing on it can be saved or returned. */
+    const terminal = sealed || returned || blocked;
     const period =
         audit.month === null ? '' : formatMonthYearLong(audit.month, locale);
     const context: StepContext = {
@@ -199,6 +208,17 @@ function AuditSheet(props: AuditProcedureProps) {
         business: audit.business,
         period,
         canContinue: props.can_continue,
+        actions,
+        preview: props.preview_outcome,
+    });
+    const returns = useReturnControls({
+        options: terminal
+            ? null
+            : stage.step === 'seal'
+              ? stage.reason_options
+              : (props.reason_options ?? null),
+        context,
+        business: audit.business,
         actions,
         preview: props.preview_outcome,
     });
@@ -240,8 +260,13 @@ function AuditSheet(props: AuditProcedureProps) {
     let footer: ReactNode;
 
     if (stage.step === 'seal') {
-        footer = seal.footer;
-    } else if (sealed || blocked) {
+        footer = (
+            <>
+                {seal.footer}
+                {returns.buttons}
+            </>
+        );
+    } else if (terminal) {
         footer = (
             <Link
                 href={links.close}
@@ -274,6 +299,12 @@ function AuditSheet(props: AuditProcedureProps) {
                 )}
             </div>
         );
+        footer = (
+            <>
+                {footer}
+                {returns.buttons}
+            </>
+        );
     }
 
     const amendRoute = actions.amend;
@@ -302,8 +333,7 @@ function AuditSheet(props: AuditProcedureProps) {
                 stage.step === 'review' ||
                 stage.step === 'statements' ||
                 stage.step === 'check_in' ||
-                sealed ||
-                blocked
+                terminal
             }
             header={header}
             footer={
@@ -319,9 +349,9 @@ function AuditSheet(props: AuditProcedureProps) {
             nested={
                 blocked
                     ? null
-                    : stage.step === 'seal'
-                      ? (seal.nested ?? commands.sheet)
-                      : commands.sheet
+                    : ((stage.step === 'seal' ? seal.nested : null) ??
+                      returns.sheet ??
+                      commands.sheet)
             }
         >
             {!online && (
@@ -362,8 +392,13 @@ function AuditSheet(props: AuditProcedureProps) {
                         <SealedStatus stage={stage} amend={amend} />
                     )
                 }
+                returned={
+                    stage.step === 'returned' && (
+                        <ReturnedStatus stage={stage} amend={amend} />
+                    )
+                }
             />
-            {!sealed && !blocked && commands.conflictButton !== null && (
+            {!terminal && commands.conflictButton !== null && (
                 <div className="mt-5 flex justify-center">
                     {commands.conflictButton}
                 </div>

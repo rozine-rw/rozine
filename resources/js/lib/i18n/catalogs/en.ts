@@ -3070,6 +3070,18 @@ const en = {
         "Your note isn't saved yet. Save it now; sealing opens once the report is ready for it.",
     'auditor.capture.synthetic':
         'Synthetic test evidence (isolated) — not a native capture.',
+    'auditor.returned.title.changes_requested': 'Changes requested',
+    'auditor.returned.title.rejected': 'Filing rejected',
+    'auditor.returned.lead.changes_requested':
+        'This filing went back to the business with the reason below. The report is kept exactly as it was returned.',
+    'auditor.returned.lead.rejected':
+        "This filing version could not be verified, for the reason below. This concerns the filing, not the business's credit. The report is kept exactly as it was rejected.",
+    'auditor.returned.reason': 'Reason',
+    'auditor.returned.recorded': 'Recorded',
+    'auditor.returned.amend': 'Start a linked amendment',
+    'auditor.returned.amended_by':
+        'An amendment {report} was started from this report.',
+    'auditor.returned.view_amendment': 'View the amendment',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

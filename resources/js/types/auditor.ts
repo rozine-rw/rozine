@@ -918,10 +918,32 @@ export type SealStage = {
      */
     mfa: { confirmed: boolean; settings: RouteLink };
     /** Monthly filings only: the server's labelled reasons to request changes or reject. */
-    reason_options: {
-        request_changes: ServerOption<RequestChangesReason>[];
-        reject: ServerOption<RejectReason>[];
-    } | null;
+    reason_options: ReasonOptions | null;
+};
+
+/** The server's labelled reasons for returning a monthly filing. */
+export type ReasonOptions = {
+    request_changes: ServerOption<RequestChangesReason>[];
+    reject: ServerOption<RejectReason>[];
+};
+
+/**
+ * A monthly filing returned to the business or rejected (delivery 2, #96): an immutable terminal
+ * report version holding its last draft and the factual decision. Nothing can be saved, sealed or
+ * stepped up; the partner may start one linked amendment, or open the one already created.
+ */
+export type ReturnedStage = {
+    step: 'returned';
+    status: 'changes_requested' | 'rejected';
+    /** The retained reason, as the server labels it, with the partner's factual explanation. */
+    reason: {
+        code: RequestChangesReason | RejectReason;
+        label: string;
+        explanation: string;
+    };
+    recorded_at: string;
+    /** The linked amendment, once one exists; this report stays as it is. */
+    amended_by: { report_id: string; link: RouteLink } | null;
 };
 
 export type CosignState = 'pending' | 'signed' | 'declined' | 'overdue';
@@ -955,6 +977,7 @@ export type AuditStage =
     | CountStage
     | SealStage
     | SealedStage
+    | ReturnedStage
     | BlockedStage;
 
 export type AuditProcedureProps = AuditorPageContract & {
@@ -981,6 +1004,12 @@ export type AuditProcedureProps = AuditorPageContract & {
     can_continue: boolean;
     /** What still blocks the step, or what sealing will do, as the server words it. */
     hint: string | null;
+    /**
+     * Not yet in the delivery 2 contract (#96): the labelled reasons for returning the filing
+     * before its seal step, where the stage carries none. Absent or null offers no return there;
+     * the seal stage keeps its own `reason_options`.
+     */
+    reason_options?: ReasonOptions | null;
     links: OperationLookupLinks & { close: RouteLink; back: RouteLink | null };
     actions: {
         save: RouteAction;

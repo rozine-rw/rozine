@@ -16,10 +16,7 @@ import {
     useRefusalText,
     useSheetPresence,
 } from '@/components/auditor/commands';
-import {
-    NOTE_FIELD,
-    ReasonSheet,
-} from '@/components/auditor/sheets/reason-sheet';
+import { NOTE_FIELD } from '@/components/auditor/sheets/reason-sheet';
 import { DIVIDER } from '@/components/auditor/ui';
 import { ErrorBanner, FieldError } from '@/components/rozine/form';
 import { useTranslation } from '@/hooks/use-translation';
@@ -40,7 +37,7 @@ const SUMMARY_TONE = {
     neutral: 'text-rz-ink',
 } as const;
 
-type Nested = 'preview' | 'code' | 'request_changes' | 'reject' | null;
+type Nested = 'preview' | 'code' | null;
 
 /**
  * Where the authenticator entry stands. A code is never kept after its request: every state
@@ -73,15 +70,8 @@ const initialEntry = (preview: AuditorPreviewOutcome | undefined): Entry => {
     }
 };
 
-const initialNested = (preview: AuditorPreviewOutcome | undefined): Nested => {
-    if (preview?.kind === 'step_up') {
-        return 'code';
-    }
-
-    return preview?.kind === 'sheet' && preview.sheet !== 'decline'
-        ? preview.sheet
-        : null;
-};
+const initialNested = (preview: AuditorPreviewOutcome | undefined): Nested =>
+    preview?.kind === 'step_up' ? 'code' : null;
 
 const formatWait = (seconds: number): string =>
     `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
@@ -202,8 +192,6 @@ type SealFlowOptions = {
     actions: {
         step_up: RouteAction | null;
         seal: RouteAction | null;
-        request_changes: RouteAction | null;
-        reject: RouteAction | null;
     };
     preview?: AuditorPreviewOutcome;
 };
@@ -214,8 +202,7 @@ type SealFlowOptions = {
  * findings, evidence, versions and digest — and confirms it is them with a six-digit code from
  * their confirmed authenticator. That code is exchanged for a single-use proof; the seal carries
  * the proof and the pinned versions, and the server signs. A stale digest or version asks for a
- * new preview and a new code; a monthly filing can instead go back to the business or be
- * rejected, each with a coded reason and a factual explanation — never a credit verdict.
+ * new preview and a new code. Returning a monthly filing instead is `useReturnControls`.
  *
  * The note is saved before anything is previewed (#96, S-D): an edited note goes to the server
  * through `audit.save_step` at `step: seal`, and the page is read afresh with the new report
@@ -247,7 +234,6 @@ export function useSealFlow({
      */
     const [sentFrom, setSentFrom] = useState<SealStage | null>(null);
     const [savedFrom, setSavedFrom] = useState<SealStage | null>(null);
-    const initialReason = preview?.kind === 'sheet' ? preview.reason : null;
     /*
      * The current confirmation attempt. A step-up answer counts only while its attempt is still
      * current: closing the preview or code entry, editing the note, new facts (a fresh read,
@@ -291,16 +277,6 @@ export function useSealFlow({
             ? { stepUp: actions.step_up, seal: actions.seal }
             : null;
     const canSeal = sealRoutes !== null;
-    const requestChangesRoute =
-        stage.reason_options !== null && center.allowed('audit.request_changes')
-            ? actions.request_changes
-            : null;
-    const canRequestChanges = requestChangesRoute !== null;
-    const rejectRoute =
-        stage.reason_options !== null && center.allowed('audit.reject')
-            ? actions.reject
-            : null;
-    const canReject = rejectRoute !== null;
     const throttled = entry.kind === 'throttled';
     const busy = stepUp.checking || center.busy;
 
@@ -454,12 +430,6 @@ export function useSealFlow({
         }
     };
 
-    const reasonFields = (fields: { reason_code: string; reason: string }) => ({
-        audit_id: context.auditId,
-        expected_revision: context.revision,
-        ...fields,
-    });
-
     const noteStatus = !stage.note.required
         ? t('auditor.seal.note_optional')
         : noteReady
@@ -586,92 +556,12 @@ export function useSealFlow({
                     </button>
                 )
             )}
-            {(canRequestChanges || canReject) && (
-                <div className="flex gap-[9px]">
-                    {canRequestChanges && (
-                        <button
-                            type="button"
-                            disabled={!center.idle}
-                            onClick={() => setNested('request_changes')}
-                            className="h-11 flex-1 rounded-xl border border-rz-border bg-rz-surface text-[13px] font-bold text-rz-slate disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            {t('auditor.seal.suggest')}
-                        </button>
-                    )}
-                    {canReject && (
-                        <button
-                            type="button"
-                            disabled={!center.idle}
-                            onClick={() => setNested('reject')}
-                            className="h-11 flex-1 rounded-xl border border-[#f2c4c4] bg-rz-surface text-[13px] font-bold text-[#d0342c] disabled:cursor-not-allowed disabled:opacity-60 dark:border-[rgba(255,107,111,.3)] dark:text-rz-danger-text"
-                        >
-                            {t('auditor.seal.reject')}
-                        </button>
-                    )}
-                </div>
-            )}
         </>
     );
 
     let overlay: ReactNode = null;
-    const reasons = stage.reason_options;
 
     if (
-        nested === 'request_changes' &&
-        requestChangesRoute !== null &&
-        reasons !== null
-    ) {
-        overlay = (
-            <ReasonSheet
-                title={t('auditor.seal.suggest')}
-                lead={t('auditor.seal.suggest_lead', { business })}
-                placeholder={t('auditor.seal.suggest_placeholder')}
-                submitLabel={t('auditor.seal.suggest_submit')}
-                options={reasons.request_changes}
-                initialReason={initialReason}
-                onSubmit={(fields) =>
-                    center.send(
-                        {
-                            name: 'audit.request_changes',
-                            business,
-                            route: requestChangesRoute,
-                            payload: reasonFields(fields),
-                        },
-                        { onCompleted: close },
-                    )
-                }
-                onClose={close}
-            />
-        );
-    } else if (
-        nested === 'reject' &&
-        rejectRoute !== null &&
-        reasons !== null
-    ) {
-        overlay = (
-            <ReasonSheet
-                title={t('auditor.seal.reject')}
-                lead={t('auditor.seal.reject_lead', { business })}
-                placeholder={t('auditor.seal.reject_placeholder')}
-                submitLabel={t('auditor.seal.reject_submit')}
-                options={reasons.reject}
-                initialReason={initialReason}
-                destructive
-                onSubmit={(fields) =>
-                    center.send(
-                        {
-                            name: 'audit.reject',
-                            business,
-                            route: rejectRoute,
-                            payload: reasonFields(fields),
-                        },
-                        { onCompleted: close },
-                    )
-                }
-                onClose={close}
-            />
-        );
-    } else if (
         (nested === 'preview' || nested === 'code') &&
         sealRoutes !== null &&
         !unsaved
