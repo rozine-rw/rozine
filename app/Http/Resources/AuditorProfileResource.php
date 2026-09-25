@@ -15,7 +15,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * not exist yet are null, so the page hides them rather than linking to nothing.
  *
  * @phpstan-type Accreditation array{contract_version: string, identity_context_revision: int, server_time: string, standing: array<string, mixed>, accreditation: array{submission: array{status: string, id?: string}}&array<string, mixed>, availability: array<string, mixed>, allowed_actions: list<string>}
- * @phpstan-type Page array{accreditation: Accreditation, certificate_id: string|null, name: string, section: string}
+ *
+ * @phpstan-import-type Summary from \App\Application\Auditor\GetAuditEngagementSummary
+ *
+ * @phpstan-type Page array{accreditation: Accreditation, certificate_id: string|null, name: string, section: string, engagement: Summary}
  */
 class AuditorProfileResource extends JsonResource
 {
@@ -39,6 +42,7 @@ class AuditorProfileResource extends JsonResource
             'identity_context_revision' => $data['identity_context_revision'],
             'server_time' => $data['server_time'],
             'allowed_actions' => $data['allowed_actions'],
+            'engagement' => (new AuditorEngagementSummaryResource($page['engagement']))->resolve($request),
             'section' => in_array($page['section'], self::SECTIONS, true) ? $page['section'] : self::SECTIONS[0],
             'auditor' => ['name' => $page['name'], 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => null],
             'quality_score' => null,

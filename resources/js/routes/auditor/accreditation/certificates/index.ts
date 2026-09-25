@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\AuditorProfileController::show
-* @see app/Http/Controllers/AuditorProfileController.php:95
+* @see app/Http/Controllers/AuditorProfileController.php:97
 * @route '/auditor/accreditation/certificates/{certificate}'
 */
 export const show = (args: { certificate: string | number } | [certificate: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::show
-* @see app/Http/Controllers/AuditorProfileController.php:95
+* @see app/Http/Controllers/AuditorProfileController.php:97
 * @route '/auditor/accreditation/certificates/{certificate}'
 */
 show.url = (args: { certificate: string | number } | [certificate: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ show.url = (args: { certificate: string | number } | [certificate: string | numb
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::show
-* @see app/Http/Controllers/AuditorProfileController.php:95
+* @see app/Http/Controllers/AuditorProfileController.php:97
 * @route '/auditor/accreditation/certificates/{certificate}'
 */
 show.get = (args: { certificate: string | number } | [certificate: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ show.get = (args: { certificate: string | number } | [certificate: string | numb
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::show
-* @see app/Http/Controllers/AuditorProfileController.php:95
+* @see app/Http/Controllers/AuditorProfileController.php:97
 * @route '/auditor/accreditation/certificates/{certificate}'
 */
 show.head = (args: { certificate: string | number } | [certificate: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ show.head = (args: { certificate: string | number } | [certificate: string | num
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::show
-* @see app/Http/Controllers/AuditorProfileController.php:95
+* @see app/Http/Controllers/AuditorProfileController.php:97
 * @route '/auditor/accreditation/certificates/{certificate}'
 */
 const showForm = (args: { certificate: string | number } | [certificate: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ const showForm = (args: { certificate: string | number } | [certificate: string 
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::show
-* @see app/Http/Controllers/AuditorProfileController.php:95
+* @see app/Http/Controllers/AuditorProfileController.php:97
 * @route '/auditor/accreditation/certificates/{certificate}'
 */
 showForm.get = (args: { certificate: string | number } | [certificate: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ showForm.get = (args: { certificate: string | number } | [certificate: string | 
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::show
-* @see app/Http/Controllers/AuditorProfileController.php:95
+* @see app/Http/Controllers/AuditorProfileController.php:97
 * @route '/auditor/accreditation/certificates/{certificate}'
 */
 showForm.head = (args: { certificate: string | number } | [certificate: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

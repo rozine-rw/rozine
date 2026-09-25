@@ -9,8 +9,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @phpstan-import-type AuditApplication from \App\Application\Business\Contracts\BusinessApplicationStore
+ * @phpstan-import-type Summary from \App\Application\Auditor\GetAuditEngagementSummary
  *
- * @phpstan-type Page array{data: list<AuditApplication>, next_cursor: string|null, identity_context_revision: int, limit: int}
+ * @phpstan-type Page array{data: list<AuditApplication>, next_cursor: string|null, identity_context_revision: int, limit: int, engagement: Summary}
  */
 class AuditorJobsResource extends JsonResource
 {
@@ -36,6 +37,7 @@ class AuditorJobsResource extends JsonResource
         }
 
         return [...self::envelope($page['identity_context_revision']), 'radius_km' => 30, 'flash_hours' => 24,
+            'engagement' => (new AuditorEngagementSummaryResource($page['engagement']))->resolve($request),
             'eligible' => $eligible, 'assigned' => $assigned, 'monthly' => null,
             'decline_options' => self::declineOptions(), 'outcome' => null, 'links' => self::links($request),
             'pagination' => self::pagination($request, 'jobs.index', $page['next_cursor'], $page['limit'])];

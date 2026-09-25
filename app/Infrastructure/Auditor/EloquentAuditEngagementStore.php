@@ -182,9 +182,11 @@ final class EloquentAuditEngagementStore implements AuditEngagementStore
                 return $operation(null);
             }
             if (! hash_equals($record->sha256, $this->releaseHash($record)) || $record->version === null
-                || $record->procedure_version !== AuditEngagementDocuments::PROCEDURE
                 || ! isset($record->documents['master_services'], $record->documents['agreed_procedures'])) {
                 throw new RuntimeException('AUDIT_ENGAGEMENT_INTEGRITY_FAILED');
+            }
+            if ($record->procedure_version !== AuditEngagementDocuments::PROCEDURE) {
+                return $operation(null);
             }
 
             return $operation(['id' => $record->id, 'revision' => $record->revision, 'version' => $record->version,

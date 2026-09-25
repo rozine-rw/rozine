@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\AuditorJobsController::index
-* @see app/Http/Controllers/AuditorJobsController.php:30
+* @see app/Http/Controllers/AuditorJobsController.php:31
 * @route '/auditor/jobs'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::index
-* @see app/Http/Controllers/AuditorJobsController.php:30
+* @see app/Http/Controllers/AuditorJobsController.php:31
 * @route '/auditor/jobs'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::index
-* @see app/Http/Controllers/AuditorJobsController.php:30
+* @see app/Http/Controllers/AuditorJobsController.php:31
 * @route '/auditor/jobs'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::index
-* @see app/Http/Controllers/AuditorJobsController.php:30
+* @see app/Http/Controllers/AuditorJobsController.php:31
 * @route '/auditor/jobs'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::index
-* @see app/Http/Controllers/AuditorJobsController.php:30
+* @see app/Http/Controllers/AuditorJobsController.php:31
 * @route '/auditor/jobs'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::index
-* @see app/Http/Controllers/AuditorJobsController.php:30
+* @see app/Http/Controllers/AuditorJobsController.php:31
 * @route '/auditor/jobs'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::index
-* @see app/Http/Controllers/AuditorJobsController.php:30
+* @see app/Http/Controllers/AuditorJobsController.php:31
 * @route '/auditor/jobs'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::show
-* @see app/Http/Controllers/AuditorJobsController.php:40
+* @see app/Http/Controllers/AuditorJobsController.php:41
 * @route '/auditor/jobs/{assignment}'
 */
 export const show = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +97,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::show
-* @see app/Http/Controllers/AuditorJobsController.php:40
+* @see app/Http/Controllers/AuditorJobsController.php:41
 * @route '/auditor/jobs/{assignment}'
 */
 show.url = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -124,7 +124,7 @@ show.url = (args: { assignment: string | number } | [assignment: string | number
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::show
-* @see app/Http/Controllers/AuditorJobsController.php:40
+* @see app/Http/Controllers/AuditorJobsController.php:41
 * @route '/auditor/jobs/{assignment}'
 */
 show.get = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -134,7 +134,7 @@ show.get = (args: { assignment: string | number } | [assignment: string | number
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::show
-* @see app/Http/Controllers/AuditorJobsController.php:40
+* @see app/Http/Controllers/AuditorJobsController.php:41
 * @route '/auditor/jobs/{assignment}'
 */
 show.head = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -144,7 +144,7 @@ show.head = (args: { assignment: string | number } | [assignment: string | numbe
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::show
-* @see app/Http/Controllers/AuditorJobsController.php:40
+* @see app/Http/Controllers/AuditorJobsController.php:41
 * @route '/auditor/jobs/{assignment}'
 */
 const showForm = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -154,7 +154,7 @@ const showForm = (args: { assignment: string | number } | [assignment: string | 
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::show
-* @see app/Http/Controllers/AuditorJobsController.php:40
+* @see app/Http/Controllers/AuditorJobsController.php:41
 * @route '/auditor/jobs/{assignment}'
 */
 showForm.get = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -164,7 +164,7 @@ showForm.get = (args: { assignment: string | number } | [assignment: string | nu
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::show
-* @see app/Http/Controllers/AuditorJobsController.php:40
+* @see app/Http/Controllers/AuditorJobsController.php:41
 * @route '/auditor/jobs/{assignment}'
 */
 showForm.head = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -181,7 +181,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::conflicts
-* @see app/Http/Controllers/AuditorJobsController.php:50
+* @see app/Http/Controllers/AuditorJobsController.php:51
 * @route '/auditor/conflicts'
 */
 export const conflicts = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -196,7 +196,7 @@ conflicts.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::conflicts
-* @see app/Http/Controllers/AuditorJobsController.php:50
+* @see app/Http/Controllers/AuditorJobsController.php:51
 * @route '/auditor/conflicts'
 */
 conflicts.url = (options?: RouteQueryOptions) => {
@@ -205,7 +205,7 @@ conflicts.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::conflicts
-* @see app/Http/Controllers/AuditorJobsController.php:50
+* @see app/Http/Controllers/AuditorJobsController.php:51
 * @route '/auditor/conflicts'
 */
 conflicts.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -215,7 +215,7 @@ conflicts.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::conflicts
-* @see app/Http/Controllers/AuditorJobsController.php:50
+* @see app/Http/Controllers/AuditorJobsController.php:51
 * @route '/auditor/conflicts'
 */
 conflicts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -225,7 +225,7 @@ conflicts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::conflicts
-* @see app/Http/Controllers/AuditorJobsController.php:50
+* @see app/Http/Controllers/AuditorJobsController.php:51
 * @route '/auditor/conflicts'
 */
 const conflictsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -235,7 +235,7 @@ const conflictsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::conflicts
-* @see app/Http/Controllers/AuditorJobsController.php:50
+* @see app/Http/Controllers/AuditorJobsController.php:51
 * @route '/auditor/conflicts'
 */
 conflictsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -245,7 +245,7 @@ conflictsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::conflicts
-* @see app/Http/Controllers/AuditorJobsController.php:50
+* @see app/Http/Controllers/AuditorJobsController.php:51
 * @route '/auditor/conflicts'
 */
 conflictsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -262,7 +262,7 @@ conflicts.form = conflictsForm
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::conflict
-* @see app/Http/Controllers/AuditorJobsController.php:60
+* @see app/Http/Controllers/AuditorJobsController.php:61
 * @route '/auditor/jobs/{assignment}/conflict'
 */
 export const conflict = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -277,7 +277,7 @@ conflict.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::conflict
-* @see app/Http/Controllers/AuditorJobsController.php:60
+* @see app/Http/Controllers/AuditorJobsController.php:61
 * @route '/auditor/jobs/{assignment}/conflict'
 */
 conflict.url = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -304,7 +304,7 @@ conflict.url = (args: { assignment: string | number } | [assignment: string | nu
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::conflict
-* @see app/Http/Controllers/AuditorJobsController.php:60
+* @see app/Http/Controllers/AuditorJobsController.php:61
 * @route '/auditor/jobs/{assignment}/conflict'
 */
 conflict.get = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -314,7 +314,7 @@ conflict.get = (args: { assignment: string | number } | [assignment: string | nu
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::conflict
-* @see app/Http/Controllers/AuditorJobsController.php:60
+* @see app/Http/Controllers/AuditorJobsController.php:61
 * @route '/auditor/jobs/{assignment}/conflict'
 */
 conflict.head = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -324,7 +324,7 @@ conflict.head = (args: { assignment: string | number } | [assignment: string | n
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::conflict
-* @see app/Http/Controllers/AuditorJobsController.php:60
+* @see app/Http/Controllers/AuditorJobsController.php:61
 * @route '/auditor/jobs/{assignment}/conflict'
 */
 const conflictForm = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -334,7 +334,7 @@ const conflictForm = (args: { assignment: string | number } | [assignment: strin
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::conflict
-* @see app/Http/Controllers/AuditorJobsController.php:60
+* @see app/Http/Controllers/AuditorJobsController.php:61
 * @route '/auditor/jobs/{assignment}/conflict'
 */
 conflictForm.get = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -344,7 +344,7 @@ conflictForm.get = (args: { assignment: string | number } | [assignment: string 
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::conflict
-* @see app/Http/Controllers/AuditorJobsController.php:60
+* @see app/Http/Controllers/AuditorJobsController.php:61
 * @route '/auditor/jobs/{assignment}/conflict'
 */
 conflictForm.head = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -361,7 +361,7 @@ conflict.form = conflictForm
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::respond
-* @see app/Http/Controllers/AuditorJobsController.php:69
+* @see app/Http/Controllers/AuditorJobsController.php:70
 * @route '/auditor/jobs/{assignment}/accept'
 */
 const respond7687dbc284e00061a73944ccd1558acb = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -376,7 +376,7 @@ respond7687dbc284e00061a73944ccd1558acb.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::respond
-* @see app/Http/Controllers/AuditorJobsController.php:69
+* @see app/Http/Controllers/AuditorJobsController.php:70
 * @route '/auditor/jobs/{assignment}/accept'
 */
 respond7687dbc284e00061a73944ccd1558acb.url = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -403,7 +403,7 @@ respond7687dbc284e00061a73944ccd1558acb.url = (args: { assignment: string | numb
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::respond
-* @see app/Http/Controllers/AuditorJobsController.php:69
+* @see app/Http/Controllers/AuditorJobsController.php:70
 * @route '/auditor/jobs/{assignment}/accept'
 */
 respond7687dbc284e00061a73944ccd1558acb.post = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -413,7 +413,7 @@ respond7687dbc284e00061a73944ccd1558acb.post = (args: { assignment: string | num
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::respond
-* @see app/Http/Controllers/AuditorJobsController.php:69
+* @see app/Http/Controllers/AuditorJobsController.php:70
 * @route '/auditor/jobs/{assignment}/accept'
 */
 const respond7687dbc284e00061a73944ccd1558acbForm = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -423,7 +423,7 @@ const respond7687dbc284e00061a73944ccd1558acbForm = (args: { assignment: string 
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::respond
-* @see app/Http/Controllers/AuditorJobsController.php:69
+* @see app/Http/Controllers/AuditorJobsController.php:70
 * @route '/auditor/jobs/{assignment}/accept'
 */
 respond7687dbc284e00061a73944ccd1558acbForm.post = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -434,7 +434,7 @@ respond7687dbc284e00061a73944ccd1558acbForm.post = (args: { assignment: string |
 respond7687dbc284e00061a73944ccd1558acb.form = respond7687dbc284e00061a73944ccd1558acbForm
 /**
 * @see \App\Http\Controllers\AuditorJobsController::respond
-* @see app/Http/Controllers/AuditorJobsController.php:69
+* @see app/Http/Controllers/AuditorJobsController.php:70
 * @route '/auditor/jobs/{assignment}/decline'
 */
 const respond1bb5221730f020dd0e2516bea27acc70 = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -449,7 +449,7 @@ respond1bb5221730f020dd0e2516bea27acc70.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::respond
-* @see app/Http/Controllers/AuditorJobsController.php:69
+* @see app/Http/Controllers/AuditorJobsController.php:70
 * @route '/auditor/jobs/{assignment}/decline'
 */
 respond1bb5221730f020dd0e2516bea27acc70.url = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -476,7 +476,7 @@ respond1bb5221730f020dd0e2516bea27acc70.url = (args: { assignment: string | numb
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::respond
-* @see app/Http/Controllers/AuditorJobsController.php:69
+* @see app/Http/Controllers/AuditorJobsController.php:70
 * @route '/auditor/jobs/{assignment}/decline'
 */
 respond1bb5221730f020dd0e2516bea27acc70.post = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -486,7 +486,7 @@ respond1bb5221730f020dd0e2516bea27acc70.post = (args: { assignment: string | num
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::respond
-* @see app/Http/Controllers/AuditorJobsController.php:69
+* @see app/Http/Controllers/AuditorJobsController.php:70
 * @route '/auditor/jobs/{assignment}/decline'
 */
 const respond1bb5221730f020dd0e2516bea27acc70Form = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -496,7 +496,7 @@ const respond1bb5221730f020dd0e2516bea27acc70Form = (args: { assignment: string 
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::respond
-* @see app/Http/Controllers/AuditorJobsController.php:69
+* @see app/Http/Controllers/AuditorJobsController.php:70
 * @route '/auditor/jobs/{assignment}/decline'
 */
 respond1bb5221730f020dd0e2516bea27acc70Form.post = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -507,7 +507,7 @@ respond1bb5221730f020dd0e2516bea27acc70Form.post = (args: { assignment: string |
 respond1bb5221730f020dd0e2516bea27acc70.form = respond1bb5221730f020dd0e2516bea27acc70Form
 /**
 * @see \App\Http\Controllers\AuditorJobsController::respond
-* @see app/Http/Controllers/AuditorJobsController.php:69
+* @see app/Http/Controllers/AuditorJobsController.php:70
 * @route '/auditor/jobs/{assignment}/conflict'
 */
 const respondc2ac61974fb25a7e0fc1820147f27896 = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -522,7 +522,7 @@ respondc2ac61974fb25a7e0fc1820147f27896.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::respond
-* @see app/Http/Controllers/AuditorJobsController.php:69
+* @see app/Http/Controllers/AuditorJobsController.php:70
 * @route '/auditor/jobs/{assignment}/conflict'
 */
 respondc2ac61974fb25a7e0fc1820147f27896.url = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -549,7 +549,7 @@ respondc2ac61974fb25a7e0fc1820147f27896.url = (args: { assignment: string | numb
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::respond
-* @see app/Http/Controllers/AuditorJobsController.php:69
+* @see app/Http/Controllers/AuditorJobsController.php:70
 * @route '/auditor/jobs/{assignment}/conflict'
 */
 respondc2ac61974fb25a7e0fc1820147f27896.post = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -559,7 +559,7 @@ respondc2ac61974fb25a7e0fc1820147f27896.post = (args: { assignment: string | num
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::respond
-* @see app/Http/Controllers/AuditorJobsController.php:69
+* @see app/Http/Controllers/AuditorJobsController.php:70
 * @route '/auditor/jobs/{assignment}/conflict'
 */
 const respondc2ac61974fb25a7e0fc1820147f27896Form = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -569,7 +569,7 @@ const respondc2ac61974fb25a7e0fc1820147f27896Form = (args: { assignment: string 
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::respond
-* @see app/Http/Controllers/AuditorJobsController.php:69
+* @see app/Http/Controllers/AuditorJobsController.php:70
 * @route '/auditor/jobs/{assignment}/conflict'
 */
 respondc2ac61974fb25a7e0fc1820147f27896Form.post = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -592,7 +592,7 @@ export const respond = {
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::operation
-* @see app/Http/Controllers/AuditorJobsController.php:80
+* @see app/Http/Controllers/AuditorJobsController.php:81
 * @route '/auditor/assignment-operations/{request_id}'
 */
 export const operation = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -607,7 +607,7 @@ operation.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::operation
-* @see app/Http/Controllers/AuditorJobsController.php:80
+* @see app/Http/Controllers/AuditorJobsController.php:81
 * @route '/auditor/assignment-operations/{request_id}'
 */
 operation.url = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -634,7 +634,7 @@ operation.url = (args: { request_id: string | number } | [request_id: string | n
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::operation
-* @see app/Http/Controllers/AuditorJobsController.php:80
+* @see app/Http/Controllers/AuditorJobsController.php:81
 * @route '/auditor/assignment-operations/{request_id}'
 */
 operation.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -644,7 +644,7 @@ operation.get = (args: { request_id: string | number } | [request_id: string | n
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::operation
-* @see app/Http/Controllers/AuditorJobsController.php:80
+* @see app/Http/Controllers/AuditorJobsController.php:81
 * @route '/auditor/assignment-operations/{request_id}'
 */
 operation.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -654,7 +654,7 @@ operation.head = (args: { request_id: string | number } | [request_id: string | 
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::operation
-* @see app/Http/Controllers/AuditorJobsController.php:80
+* @see app/Http/Controllers/AuditorJobsController.php:81
 * @route '/auditor/assignment-operations/{request_id}'
 */
 const operationForm = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -664,7 +664,7 @@ const operationForm = (args: { request_id: string | number } | [request_id: stri
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::operation
-* @see app/Http/Controllers/AuditorJobsController.php:80
+* @see app/Http/Controllers/AuditorJobsController.php:81
 * @route '/auditor/assignment-operations/{request_id}'
 */
 operationForm.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -674,7 +674,7 @@ operationForm.get = (args: { request_id: string | number } | [request_id: string
 
 /**
 * @see \App\Http\Controllers\AuditorJobsController::operation
-* @see app/Http/Controllers/AuditorJobsController.php:80
+* @see app/Http/Controllers/AuditorJobsController.php:81
 * @route '/auditor/assignment-operations/{request_id}'
 */
 operationForm.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

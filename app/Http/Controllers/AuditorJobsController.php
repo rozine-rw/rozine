@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Auditor\FindAuditAssignmentOperation;
+use App\Application\Auditor\GetAuditEngagementSummary;
 use App\Application\Auditor\GetOwnAuditConflict;
 use App\Application\Auditor\ListAuditJobs;
 use App\Application\Auditor\ListOwnAuditConflicts;
@@ -25,14 +26,14 @@ use Inertia\Response;
 
 class AuditorJobsController extends Controller
 {
-    public function __construct(private AuthorizeActiveRole $identity, private GetOwnAuditConflict $conflicts, private ProjectAuditAssignmentOperation $outcomes) {}
+    public function __construct(private AuthorizeActiveRole $identity, private GetOwnAuditConflict $conflicts, private ProjectAuditAssignmentOperation $outcomes, private GetAuditEngagementSummary $engagements) {}
 
     public function index(ListAuditJobsRequest $request, ListAuditJobs $jobs): Response|AuditorJobsResource
     {
         [$userId, $revision] = $this->reader($request);
         $limit = (int) $request->validated('limit', 25);
         $resource = new AuditorJobsResource([...$jobs->handle($userId, $revision, $request->validated('before'), $limit),
-            'identity_context_revision' => $revision, 'limit' => $limit]);
+            'identity_context_revision' => $revision, 'limit' => $limit, 'engagement' => $this->engagements->handle($userId, $revision)]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('auditor/jobs', $resource->resolve($request));
     }
@@ -42,7 +43,7 @@ class AuditorJobsController extends Controller
         [$userId, $revision] = $this->reader($request);
         $background = $jobs->handle($userId, $revision);
         $resource = new AuditorFileResource(['record' => $application->handle($userId, $revision, (string) $request->route('assignment')),
-            'jobs' => [...$background, 'identity_context_revision' => $revision, 'limit' => 25]]);
+            'jobs' => [...$background, 'identity_context_revision' => $revision, 'limit' => 25, 'engagement' => $this->engagements->handle($userId, $revision)]]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('auditor/file', $resource->resolve($request));
     }

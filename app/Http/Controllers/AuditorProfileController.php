@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Auditor\FindAuditorOperation;
+use App\Application\Auditor\GetAuditEngagementSummary;
 use App\Application\Auditor\GetAuditorAccreditation;
 use App\Application\Auditor\GetAuditorProfile;
 use App\Application\Auditor\ReadAuditorCertificate;
@@ -33,7 +34,7 @@ use Symfony\Component\HttpFoundation\HeaderUtils;
  */
 class AuditorProfileController extends Controller
 {
-    public function __construct(private AuthorizeActiveRole $identity, private GetAuditorAccreditation $accreditation) {}
+    public function __construct(private AuthorizeActiveRole $identity, private GetAuditorAccreditation $accreditation, private GetAuditEngagementSummary $engagements) {}
 
     public function show(Request $request, GetAuditorProfile $profile): Response|AuditorProfileResource
     {
@@ -49,6 +50,7 @@ class AuditorProfileController extends Controller
             'certificate_id' => $record['revision'] === $facts['accreditation']['revision'] ? $record['state']['certificate_id'] : null,
             'name' => (string) $request->user()?->getAttribute('name'),
             'section' => is_string($section) ? $section : '',
+            'engagement' => $this->engagements->handle($userId, $revision),
         ]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('auditor/profile', $resource->resolve($request));

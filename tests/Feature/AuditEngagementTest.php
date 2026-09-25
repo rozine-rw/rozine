@@ -7,6 +7,7 @@ use App\Application\Auditor\Contracts\AuditAssignmentStore;
 use App\Application\Auditor\Contracts\AuditEngagementStore;
 use App\Application\Auditor\FindAuditEngagementOperation;
 use App\Application\Auditor\GetAuditEngagementTerms;
+use App\Application\Auditor\GetAuditOperationsCase;
 use App\Application\Auditor\RecordAuditEngagementTerms;
 use App\Application\Auditor\ResolveAuditAssignment;
 use App\Application\Auditor\WithAcceptedAuditAssignment;
@@ -21,6 +22,7 @@ use App\Models\AuditEngagementRelease;
 use App\Models\CommandOperation;
 use App\Models\RoleMembership;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -195,15 +197,35 @@ it('rejects acceptance records with mismatched release pins at the database boun
         ->toThrow(QueryException::class, 'audit_engagement_acceptance_release');
 });
 
+it('treats a retained previous procedure as unavailable without disabling offer expiry or Operations', function (): void {
+    $fixture = AuditAssignmentFixture::make(1);
+    $assignment = AuditAssignmentFixture::request($fixture);
+    $actor = $fixture['partners'][0]['user'];
+    $release = AuditEngagementRelease::factory()->create(['revision' => 2, 'procedure_version' => 'MVP-AUP-0']);
+    expect(app(GetAuditEngagementTerms::class)->handle($actor->id, 1))->toBe(['release' => null, 'acceptance' => null])
+        ->and(AuditEngagementFixture::accept($actor, $release)['code'])->toBe('AUDIT_ENGAGEMENT_TERMS_REQUIRED');
+    $this->travelTo(CarbonImmutable::parse($assignment->state['accept_by']));
+    expect(app(AuditAssignmentStore::class)->advanceDue(25))->toBe(1)
+        ->and($assignment->refresh()->status)->toBe('operations');
+    expect(app(GetAuditOperationsCase::class)->handle($fixture['staff']->id, $assignment->id))
+        ->toMatchArray(['id' => $assignment->id, 'status' => 'operations']);
+    $other = AuditAssignmentFixture::make(0);
+    expect(AuditAssignmentFixture::request($other)->status)->toBe('operations');
+});
+
 it('detects catalog and acceptance integrity failures before returning any agreement facts', function (string $record): void {
     $actor = AuditorFixture::make();
-    $release = AuditEngagementRelease::factory()->create($record === 'release' ? ['sha256' => str_repeat('a', 64)] : []);
+    $release = AuditEngagementRelease::factory()->create(match ($record) {
+        'release' => ['sha256' => str_repeat('a', 64)],
+        'superseded_release' => ['sha256' => str_repeat('a', 64), 'procedure_version' => 'MVP-AUP-0'],
+        default => [],
+    });
     if ($record === 'acceptance') {
         AuditEngagementAcceptance::factory()->create(['audit_engagement_release_id' => $release->id, 'party_id' => $actor['party']->id, 'sha256' => str_repeat('a', 64)]);
     }
     expect(fn () => app(GetAuditEngagementTerms::class)->handle($actor['user']->id, 1))
-        ->toThrow(RuntimeException::class, $record === 'release' ? 'AUDIT_ENGAGEMENT_INTEGRITY_FAILED' : 'AUDIT_ENGAGEMENT_ACCEPTANCE_INTEGRITY_FAILED');
-})->with(['release', 'acceptance']);
+        ->toThrow(RuntimeException::class, $record === 'acceptance' ? 'AUDIT_ENGAGEMENT_ACCEPTANCE_INTEGRITY_FAILED' : 'AUDIT_ENGAGEMENT_INTEGRITY_FAILED');
+})->with(['release', 'superseded_release', 'acceptance']);
 
 it('rolls back protected effects when agreement-dependent work fails', function (): void {
     $actor = AuditorFixture::make();
