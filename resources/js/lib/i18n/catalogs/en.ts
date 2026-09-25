@@ -3087,6 +3087,7 @@ const en = {
         'This report can no longer be returned or rejected, so nothing was recorded. The page has been refreshed.',
     'auditor.command.refused.AUDIT_REPORT_NOT_AMENDABLE':
         "This report can't be amended now, so no amendment was started. The page has been refreshed.",
+    'auditor.ledger.download': 'Download original',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

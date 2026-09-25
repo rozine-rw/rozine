@@ -3221,6 +3221,7 @@ const fr: Catalog = {
         "Ce rapport ne peut plus être renvoyé ni rejeté : rien n'a été enregistré. La page a été actualisée.",
     'auditor.command.refused.AUDIT_REPORT_NOT_AMENDABLE':
         "Ce rapport ne peut pas être modifié pour le moment : aucune modification n'a été commencée. La page a été actualisée.",
+    'auditor.ledger.download': "Télécharger l'original",
 
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',

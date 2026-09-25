@@ -3208,6 +3208,7 @@ const rw: Catalog = {
         'Iyi raporo ntigishobora gusubizwa cyangwa kwangwa, bityo nta kintu cyanditswe. Paji yavuguruwe.',
     'auditor.command.refused.AUDIT_REPORT_NOT_AMENDABLE':
         'Iyi raporo ntishobora kuvugururwa ubu, bityo nta vugurura ryatangiye. Paji yavuguruwe.',
+    'auditor.ledger.download': 'Kuramo umwimerere',
 
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
