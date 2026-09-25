@@ -18,6 +18,7 @@ use App\Models\AuditorProfile;
 use App\Models\AuditorProfileVersion;
 use App\Models\AuditReport;
 use App\Models\AuditReportVersion;
+use App\Models\AuditSourceSnapshot;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationSignature;
@@ -229,11 +230,12 @@ it('has concrete targets for the auditor accreditation boundary', function (): v
         ->and(class_exists(AuditConflictDeclaration::class))->toBeTrue()
         ->and(class_exists(AuditReport::class))->toBeTrue()
         ->and(class_exists(AuditReportVersion::class))->toBeTrue()
+        ->and(class_exists(AuditSourceSnapshot::class))->toBeTrue()
         ->and(class_exists(AuditEngagementRelease::class))->toBeTrue()
         ->and(class_exists(AuditEngagementAcceptance::class))->toBeTrue()
         ->and(class_exists(AuditorCertificate::class))->toBeTrue();
 })->group('arch');
 
 arch('auditor accreditation records are only accessed by their adapter')
-    ->expect(['App\Models\AuditorProfile', 'App\Models\AuditorProfileVersion', 'App\Models\AuditorCertificate', 'App\Models\AuditLocation', 'App\Models\AuditLocationVersion', 'App\Models\AuditorIndependenceReview', 'App\Models\AuditorIndependenceVersion', 'App\Models\AuditAssignment', 'App\Models\AuditAssignmentVersion', 'App\Models\AuditConflictDeclaration', 'App\Models\AuditReport', 'App\Models\AuditReportVersion', 'App\Models\AuditEngagementRelease', 'App\Models\AuditEngagementAcceptance'])
+    ->expect(['App\Models\AuditorProfile', 'App\Models\AuditorProfileVersion', 'App\Models\AuditorCertificate', 'App\Models\AuditLocation', 'App\Models\AuditLocationVersion', 'App\Models\AuditorIndependenceReview', 'App\Models\AuditorIndependenceVersion', 'App\Models\AuditAssignment', 'App\Models\AuditAssignmentVersion', 'App\Models\AuditConflictDeclaration', 'App\Models\AuditReport', 'App\Models\AuditReportVersion', 'App\Models\AuditSourceSnapshot', 'App\Models\AuditEngagementRelease', 'App\Models\AuditEngagementAcceptance'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Auditor', 'App\Models', 'Database\Factories']);

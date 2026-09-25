@@ -176,9 +176,12 @@ it('rolls the unused report schema back and reapplies it without rewriting appli
     Fixture::submit($fixture, Fixture::acceptance($fixture));
     $before = $fixture['application']->refresh()->getRawOriginal();
     $migration = require database_path('migrations/2026_09_25_053838_create_audit_reports_and_versions.php');
+    $sourceFacts = require database_path('migrations/2026_09_25_102249_create_audit_source_snapshots_table.php');
+    $sourceFacts->down();
     $migration->down();
     expect(Schema::hasTable('audit_reports'))->toBeFalse()->and(Schema::hasTable('audit_report_versions'))->toBeFalse();
     $migration->up();
+    $sourceFacts->up();
     expect(Schema::hasTable('audit_reports'))->toBeTrue()->and(Schema::hasTable('audit_report_versions'))->toBeTrue()
         ->and($fixture['application']->refresh()->getRawOriginal())->toBe($before);
 });
