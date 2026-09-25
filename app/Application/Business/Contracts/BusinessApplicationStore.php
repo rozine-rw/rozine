@@ -22,6 +22,12 @@ interface BusinessApplicationStore
      */
     public function save(int $userId, int $contextRevision, string $businessId, string $applicationId, int $expectedRevision, array $fields, string $step, string $requestId): array;
 
+    /** @return array<string, mixed> */
+    public function evaluate(int $userId, int $contextRevision, string $businessId, string $applicationId, int $expectedRevision, ?string $acceptedPrincipal, string $requestId): array;
+
+    /** @return array<string, mixed>|null */
+    public function quote(int $userId, int $contextRevision, string $businessId, string $applicationId): ?array;
+
     /** @return Application */
     public function get(int $userId, int $contextRevision, string $businessId, string $applicationId): array;
 

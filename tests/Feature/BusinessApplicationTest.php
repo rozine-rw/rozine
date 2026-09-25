@@ -113,11 +113,11 @@ it('records stale and invalid command denials without changing the saved draft',
     expect($fixture['application']->refresh()->draft['target'])->toBe('8000000');
 });
 
-it('does not allow a draft command to submit or bypass the future quote and signature workflow', function (string $step): void {
+it('does not allow a draft command to submit or bypass the quote and signature workflow', function (string $step): void {
     $fixture = BusinessApplicationFixture::make();
     $result = app(SaveBusinessApplication::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']->id, $fixture['application']->id,
         1, BusinessApplicationFixture::fields(), $step, (string) Str::uuid());
-    expect($result['code'])->toBe('APPLICATION_STEP_INVALID')->and($fixture['application']->refresh()->step)->toBe('business');
+    expect($result['code'])->toBe($step === 'review' ? 'QUOTE_STALE' : 'APPLICATION_STEP_INVALID')->and($fixture['application']->refresh()->step)->toBe('business');
 })->with(['submitted', 'review', 'unknown']);
 
 it('does not let a view-only person create or change applications', function (): void {

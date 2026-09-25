@@ -14,8 +14,10 @@ use App\Application\Auditor\SetAuditorAvailability;
 use App\Application\Auditor\VerifyAuditLocation;
 use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Auditor\WithdrawAuditorAccreditation;
+use App\Application\Business\Contracts\BusinessCreditFactsStore;
 use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\GetAuditApplication;
+use App\Application\Business\RecordIsolatedBusinessCreditFacts;
 use App\Application\Business\SaveBusinessApplication;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\Contracts\StatementExtractionQueue;
@@ -52,7 +54,9 @@ use App\Models\AuditorIndependenceVersion;
 use App\Models\AuditorProfile;
 use App\Models\AuditorProfileVersion;
 use App\Models\BusinessApplication;
+use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationVersion;
+use App\Models\BusinessCreditSnapshot;
 use App\Models\BusinessMandate;
 use App\Models\BusinessProfile;
 use App\Models\CommandOperation;
@@ -79,6 +83,8 @@ use Tests\Support\AuditorFixture;
 use Tests\Support\AuditorIndependenceFixture;
 use Tests\Support\BusinessApplicationFixture;
 use Tests\Support\BusinessAuthorityFixture;
+use Tests\Support\BusinessCreditFactsFixture;
+use Tests\Support\BusinessQuoteFixture;
 use Tests\Support\ConsentFixture;
 use Tests\Support\StatementFixture;
 
@@ -1324,4 +1330,132 @@ it('does not redispatch or restart a case while the expiry worker advances the s
     expect($assignment->refresh()->status)->toBe('operations')->and($assignment->revision)->toBe(2)
         ->and($assignment->state['tried'])->toBe($prior['tried'])->and($assignment->state['attempt'])->toBe(1)
         ->and($assignment->state['original_dispatch_at'])->toBe($prior['original_dispatch_at'])->and($assignment->state['complete_by'])->toBe($prior['complete_by']);
+});
+
+it('records credit facts once under simultaneous identical retries', function (): void {
+    $fixture = BusinessApplicationFixture::make();
+    $request = (string) Str::uuid();
+    $write = function () use ($fixture, $request): void {
+        expect(BusinessCreditFactsFixture::record($fixture['authority']['staff'], $fixture['business']->id, requestId: $request)['code'])->toBe('CREDIT_FACTS_RECORDED');
+    };
+    expect(runIdentityContenders([$write, $write]))->toBe([0, 0])
+        ->and(BusinessCreditSnapshot::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'business.credit.fixture')->count())->toBe(1);
+});
+
+it('admits one credit facts revision when independent writers compete', function (): void {
+    $fixture = BusinessApplicationFixture::make();
+    $write = function () use ($fixture): void {
+        $result = BusinessCreditFactsFixture::record($fixture['authority']['staff'], $fixture['business']->id);
+        if ($result['code'] === 'VERSION_CONFLICT') {
+            throw new CommandRejection('VERSION_CONFLICT');
+        }
+        expect($result['code'])->toBe('CREDIT_FACTS_RECORDED');
+    };
+    expect(runIdentityContenders([$write, $write]))->toBe([0, 2])
+        ->and(BusinessCreditSnapshot::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'business.credit.fixture')->where('result->code', 'VERSION_CONFLICT')->count())->toBe(1);
+});
+
+it('holds current credit facts stable through a protected effect and observes withdrawal afterward', function (): void {
+    $fixture = BusinessApplicationFixture::make();
+    BusinessCreditFactsFixture::record($fixture['authority']['staff'], $fixture['business']->id);
+    config(['database.connections.credit_contender' => config('database.connections.pgsql')]);
+    DB::connection('credit_contender')->statement("SET lock_timeout = '500ms'");
+    $default = DB::getDefaultConnection();
+    $withdraw = fn (): array => app(RecordIsolatedBusinessCreditFacts::class)->handle($fixture['authority']['staff']->id, $fixture['business']->id, 1,
+        null, 'synthetic:withdrawal', 'Withdraw fixture after protected effect.', (string) Str::uuid());
+    app(BusinessCreditFactsStore::class)->withCurrent($fixture['business']->id, function (?array $facts) use ($default, $withdraw): void {
+        expect($facts['revision'])->toBe(1);
+        DB::setDefaultConnection('credit_contender');
+        try {
+            expect(fn () => $withdraw())->toThrow(QueryException::class);
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('credit_contender');
+        }
+    });
+    expect($withdraw()['revision'])->toBe(2)
+        ->and(app(BusinessCreditFactsStore::class)->withCurrent($fixture['business']->id, fn (?array $facts): ?array => $facts))->toBeNull();
+});
+
+it('retains staff authority through credit facts publication', function (): void {
+    $fixture = BusinessApplicationFixture::make();
+    config(['database.connections.credit_staff_contender' => config('database.connections.pgsql')]);
+    DB::connection('credit_staff_contender')->statement("SET lock_timeout = '500ms'");
+    $default = DB::getDefaultConnection();
+    $revoke = fn (): array => app(ConfigureStaffAccess::class)->handle($fixture['authority']['staff']->id, false, 'Withdraw staff access.', (string) Str::uuid());
+    $event = 'eloquent.creating: '.BusinessCreditSnapshot::class;
+    Event::listen($event, function () use ($default, $revoke): void {
+        DB::setDefaultConnection('credit_staff_contender');
+        try {
+            expect(fn () => $revoke())->toThrow(QueryException::class);
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('credit_staff_contender');
+        }
+    });
+    try {
+        expect(BusinessCreditFactsFixture::record($fixture['authority']['staff'], $fixture['business']->id)['code'])->toBe('CREDIT_FACTS_RECORDED');
+    } finally {
+        Event::forget($event);
+    }
+    $revoke();
+    expect(fn () => BusinessCreditFactsFixture::record($fixture['authority']['staff'], $fixture['business']->id, 1))->toThrow(IdentityViolation::class, 'STAFF_ACCESS_REQUIRED');
+});
+
+it('publishes one application quote for simultaneous identical evaluations', function (): void {
+    $fixture = BusinessQuoteFixture::make();
+    $request = (string) Str::uuid();
+    $evaluate = function () use ($fixture, $request): void {
+        expect(BusinessQuoteFixture::evaluate($fixture, request: $request)['code'])->toBe('APPLICATION_EVALUATED');
+    };
+    expect(runIdentityContenders([$evaluate, $evaluate]))->toBe([0, 0])
+        ->and(BusinessApplicationQuote::query()->count())->toBe(1)
+        ->and($fixture['application']->refresh()->revision)->toBe(3)
+        ->and(CommandOperation::query()->where('command', 'application.evaluate')->count())->toBe(1);
+});
+
+it('serializes competing application quotes at one draft revision', function (): void {
+    $fixture = BusinessQuoteFixture::make();
+    $evaluate = function () use ($fixture): void {
+        $result = BusinessQuoteFixture::evaluate($fixture);
+        if ($result['code'] === 'VERSION_CONFLICT') {
+            throw new CommandRejection('VERSION_CONFLICT');
+        }
+        expect($result['code'])->toBe('APPLICATION_EVALUATED');
+    };
+    expect(runIdentityContenders([$evaluate, $evaluate]))->toBe([0, 2])
+        ->and(BusinessApplicationQuote::query()->count())->toBe(1)
+        ->and($fixture['application']->refresh()->revision)->toBe(3);
+});
+
+it('holds credit facts and source Auditor identity through actual application quote publication', function (): void {
+    $fixture = BusinessQuoteFixture::make();
+    $default = DB::getDefaultConnection();
+    $event = 'eloquent.creating: '.BusinessApplicationQuote::class;
+    Event::listen($event, function () use ($fixture, $default): void {
+        foreach (['credit', 'auditor'] as $source) {
+            config(['database.connections.quote_contender' => config('database.connections.pgsql')]);
+            DB::connection('quote_contender')->statement("SET lock_timeout = '500ms'");
+            DB::setDefaultConnection('quote_contender');
+            try {
+                expect(fn () => $source === 'credit'
+                    ? app(RecordIsolatedBusinessCreditFacts::class)->handle($fixture['audit']['staff']->id, $fixture['audit']['business'], 1, null,
+                        'synthetic:withdrawn', 'Withdraw during quote publication.', (string) Str::uuid())
+                    : Party::query()->whereKey($fixture['audit']['partners'][0]['party']->id)->update(['verified_at' => null]))->toThrow(QueryException::class);
+            } finally {
+                DB::setDefaultConnection($default);
+                DB::purge('quote_contender');
+            }
+        }
+    });
+    try {
+        expect(BusinessQuoteFixture::evaluate($fixture)['data']['quote']['status'])->toBe('ready');
+    } finally {
+        Event::forget($event);
+    }
+    app(RecordIsolatedBusinessCreditFacts::class)->handle($fixture['audit']['staff']->id, $fixture['audit']['business'], 1, null,
+        'synthetic:withdrawn', 'Withdraw after publication.', (string) Str::uuid());
+    expect(BusinessQuoteFixture::quote($fixture))->toBeNull();
 });
