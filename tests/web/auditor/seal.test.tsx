@@ -243,6 +243,44 @@ describe('Seal — findings and preview', () => {
         expect(screen.queryByText(/^Evidence: /u)).not.toBeInTheDocument();
     });
 
+    it('names isolated synthetic evidence as test evidence, with no attestation', async () => {
+        const { user } = renderWithUser(
+            <AuditorAudit
+                {...withStage(seal, (stage) => ({
+                    ...stage,
+                    note: { ...stage.note, required: false },
+                    evidence: [
+                        {
+                            ...stage.evidence[0],
+                            evidence_id: 'ev_synthetic_1',
+                            source: 'isolated_synthetic',
+                            device_attestation: 'unavailable',
+                        },
+                    ],
+                }))}
+            />,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        );
+
+        const item = within(
+            within(findings()).getByRole('list', { name: 'Evidence' }),
+        ).getByRole('listitem');
+        const terms = within(item).getAllByRole('term');
+        const values = within(item).getAllByRole('definition');
+        const row = (label: string) =>
+            values[terms.findIndex((term) => term.textContent === label)];
+
+        expect(row('Source')).toHaveTextContent(
+            'Synthetic test evidence (isolated)',
+        );
+        expect(row('Device attestation')).toHaveTextContent('Unavailable');
+        /* Nothing reads as a native capture or a proof of one. */
+        expect(item).not.toHaveTextContent(/Capture app|Web upload|Attested/u);
+    });
+
     it('keeps the preview closed while earlier steps are incomplete, and still offers a conflict', async () => {
         const { user } = renderWithUser(
             <AuditorAudit

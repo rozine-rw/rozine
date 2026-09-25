@@ -1,5 +1,5 @@
 import { usePoll } from '@inertiajs/react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import {
     STEP_FORM,
@@ -20,9 +20,31 @@ import { formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { LedgerDocument, LedgerStage } from '@/types/auditor';
 
-/** Documents only: PDF or a clean scan (design L1159). */
-const ACCEPT =
-    '.pdf,.png,.tif,.tiff,.csv,application/pdf,image/png,image/tiff,text/csv';
+/** The retained original only (C2): a PDF or a UTF-8 CSV export. */
+const ACCEPT = 'application/pdf,.pdf,text/csv,.csv';
+
+/** The largest original the server retains: 10 MiB. */
+const LEDGER_MAX_BYTES = 10 * 1024 * 1024;
+
+/**
+ * A courtesy check before the upload, so an image or an oversized file is not sent only to be
+ * refused; the server stays the authority on what it retains. A CSV is often typed loosely by the
+ * browser, so the name's extension counts as well as the reported type.
+ */
+const ledgerFileProblem = (chosen: File): 'type' | 'size' | null => {
+    const name = chosen.name.toLowerCase();
+    const known =
+        chosen.type === 'application/pdf' ||
+        chosen.type === 'text/csv' ||
+        name.endsWith('.pdf') ||
+        name.endsWith('.csv');
+
+    if (!known) {
+        return 'type';
+    }
+
+    return chosen.size > LEDGER_MAX_BYTES ? 'size' : null;
+};
 
 /** How often a document still being read is re-checked. */
 const SCAN_POLL_MS = 2000;
@@ -151,6 +173,7 @@ export function StepLedger({
     });
     const file = useRef<HTMLInputElement>(null);
     const replaces = useRef<string | null>(null);
+    const [problem, setProblem] = useState<'type' | 'size' | null>(null);
     const scanning = stage.documents.some(
         (document) => document.state === 'scanning',
     );
@@ -185,6 +208,15 @@ export function StepLedger({
             return;
         }
 
+        const found = ledgerFileProblem(chosen);
+
+        setProblem(found);
+        event.target.value = '';
+
+        if (found !== null) {
+            return;
+        }
+
         /*
          * `audit.save_step` for the ledger, sent as multipart because it carries the file. Its
          * receipt verifies nothing and advances nothing on its own; a lost answer is looked up
@@ -202,7 +234,6 @@ export function StepLedger({
                 replaces: replaces.current,
             },
         });
-        event.target.value = '';
     };
 
     return (
@@ -321,7 +352,9 @@ export function StepLedger({
                 </span>
             </button>
             <FieldError id="auditor-ledger-document-error">
-                {errors.document}
+                {problem === null
+                    ? errors.document
+                    : t(`auditor.ledger.file_${problem}`)}
             </FieldError>
             <FieldError id="auditor-ledger-replaces-error">
                 {errors.replaces}
