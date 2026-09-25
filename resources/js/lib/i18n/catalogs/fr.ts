@@ -3227,6 +3227,88 @@ const fr: Catalog = {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',
     },
+    'business.audit_cosign.head_title': "Cosigner le rapport d'audit",
+    'business.audit_cosign.title': "Cosigner le rapport d'audit",
+    'business.audit_cosign.back': 'Retour',
+    'business.audit_cosign.lead':
+        "Votre partenaire d'audit a scellé ce rapport à partir des relevés que vous avez téléversés. Lisez les constats factuels avant de cosigner.",
+    'business.audit_cosign.kind.monthly': "Rapport d'audit mensuel",
+    'business.audit_cosign.kind.flash': "Rapport d'audit flash",
+    'business.audit_cosign.period': 'Période',
+    'business.audit_cosign.auditor': "Partenaire d'audit",
+    'business.audit_cosign.auditor_value': '{name} · licence {licence}',
+    'business.audit_cosign.procedure': 'Procédure',
+    'business.audit_cosign.digest': 'Empreinte du rapport',
+    'business.audit_cosign.digest_short': '{digest}…',
+    'business.audit_cosign.seal.title': 'Sceau',
+    'business.audit_cosign.seal.valid': 'Sceau valide',
+    'business.audit_cosign.seal.valid_at': 'Scellé le {date}',
+    'business.audit_cosign.seal.verify': 'Vérifier le sceau',
+    'business.audit_cosign.seal.unavailable':
+        'Le sceau ne peut pas être vérifié pour le moment.',
+    'business.audit_cosign.note_title': "Note du partenaire d'audit",
+    'business.audit_cosign.findings': 'Constats factuels',
+    'business.audit_cosign.findings_empty': "Aucun constat n'a été enregistré.",
+    'business.audit_cosign.evidence': {
+        one: '{count} élément de preuve',
+        other: '{count} éléments de preuve',
+    },
+    'business.audit_cosign.sealed_note':
+        'Ce rapport est scellé. Rien sur cette page ne le modifie.',
+    'business.audit_cosign.status.title': 'Cosignatures',
+    'business.audit_cosign.status.count':
+        '{signed} signature(s) sur {required}',
+    'business.audit_cosign.status.signers': 'Signataires',
+    'business.audit_cosign.status.you': 'Vous',
+    'business.audit_cosign.status.signed_on': 'Signé · {date}',
+    'business.audit_cosign.status.signed': 'Signé',
+    'business.audit_cosign.status.pending': 'En attente',
+    'business.audit_cosign.due': 'À cosigner avant le {date}',
+    'business.audit_cosign.overdue':
+        'En retard — la cosignature était due avant le {date}',
+    'business.audit_cosign.published': 'Publié le {date}',
+    'business.audit_cosign.yours.title': 'Votre cosignature',
+    'business.audit_cosign.yours.accept':
+        'Je confirme que les relevés sur lesquels repose ce rapport sont bien au dossier et que ses constats sont factuels.',
+    'business.audit_cosign.yours.note': 'Votre résumé (facultatif)',
+    'business.audit_cosign.yours.note_count': '{count}/{limit}',
+    'business.audit_cosign.yours.note_help':
+        'Conservé avec votre signature. Il ne modifie pas le rapport scellé.',
+    'business.audit_cosign.yours.identity':
+        'Votre compte vérifié signe. Chaque signataire requis cosigne séparément.',
+    'business.audit_cosign.yours.submit': 'Cosigner le rapport',
+    'business.audit_cosign.yours.submitting': 'Cosignature…',
+    'business.audit_cosign.yours.signed': 'Vous avez cosigné ce rapport.',
+    'business.audit_cosign.yours.signed_on': 'Vous avez cosigné le {date}.',
+    'business.audit_cosign.yours.waiting':
+        'En attente de la cosignature de {names}. Le rapport est publié dès que toutes les signatures requises sont réunies.',
+    'business.audit_cosign.yours.all_in':
+        'Toutes les signatures requises sont réunies. Le rapport est publié dès que ses contrôles de publication sont validés.',
+    'business.audit_cosign.yours.published':
+        'Toutes les signatures requises sont réunies et le rapport est publié.',
+    'business.audit_cosign.yours.unavailable':
+        "La cosignature n'est pas disponible pour ce rapport.",
+    'business.audit_cosign.yours.cannot':
+        'Vous ne pouvez pas cosigner ce rapport.',
+    'business.audit_cosign.refused.with_code': '{reason} ({code})',
+    'business.audit_cosign.refused.VERSION_CONFLICT':
+        'Les signatures de ce rapport ont changé pendant votre signature. Nous avons chargé la dernière version — vérifiez-la et cosignez à nouveau.',
+    'business.audit_cosign.refused.IDEMPOTENCY_CONFLICT':
+        "Cette demande a déjà été utilisée avec d'autres informations ; elle n'a donc pas été renvoyée. Nous avons chargé la dernière version.",
+    'business.audit_cosign.refused.DIGEST_STALE':
+        "Le rapport que vous avez lu n'est plus la version en vigueur. Nous l'avons chargé — lisez-le et cosignez à nouveau.",
+    'business.audit_cosign.refused.MANDATE_STALE':
+        'Le mandat de signature de la société a changé. Vérifiez qui doit cosigner désormais, puis cosignez à nouveau.',
+    'business.audit_cosign.refused.ACTION_FORBIDDEN':
+        'Vous ne pouvez pas cosigner pour cette entreprise.',
+    'business.audit_cosign.refused.MANDATE_REQUIRED':
+        'Votre mandat vérifié ne vous permet pas de cosigner pour cette entreprise.',
+    'business.audit_cosign.refused.NOT_FOUND':
+        'Ce rapport ne vous est plus accessible.',
+    'business.audit_cosign.refused.denied':
+        'Votre accès a changé. Revenez à vos applications et réessayez.',
+    'business.audit_cosign.refused.failed':
+        "Votre cosignature n'a pas été enregistrée. Vérifiez le rapport tel qu'il est maintenant et réessayez.",
 };
 
 export default fr;

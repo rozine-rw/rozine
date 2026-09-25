@@ -3137,6 +3137,85 @@ const en = {
         one: '{count} recovery code remaining',
         other: '{count} recovery codes remaining',
     },
+    'business.audit_cosign.head_title': 'Co-sign audit report',
+    'business.audit_cosign.title': 'Co-sign the audit report',
+    'business.audit_cosign.back': 'Back',
+    'business.audit_cosign.lead':
+        'Your Audit Partner sealed this report from the statements you uploaded. Read the factual findings before you co-sign.',
+    'business.audit_cosign.kind.monthly': 'Monthly audit report',
+    'business.audit_cosign.kind.flash': 'Flash audit report',
+    'business.audit_cosign.period': 'Period',
+    'business.audit_cosign.auditor': 'Audit Partner',
+    'business.audit_cosign.auditor_value': '{name} · licence {licence}',
+    'business.audit_cosign.procedure': 'Procedure',
+    'business.audit_cosign.digest': 'Report digest',
+    'business.audit_cosign.digest_short': '{digest}…',
+    'business.audit_cosign.seal.title': 'Seal',
+    'business.audit_cosign.seal.valid': 'Seal valid',
+    'business.audit_cosign.seal.valid_at': 'Sealed {date}',
+    'business.audit_cosign.seal.verify': 'Verify seal',
+    'business.audit_cosign.seal.unavailable':
+        "The seal can't be checked right now.",
+    'business.audit_cosign.note_title': "Audit Partner's note",
+    'business.audit_cosign.findings': 'Factual findings',
+    'business.audit_cosign.findings_empty': 'No findings were recorded.',
+    'business.audit_cosign.evidence': {
+        one: '{count} evidence item',
+        other: '{count} evidence items',
+    },
+    'business.audit_cosign.sealed_note':
+        'This report is sealed. Nothing on this page changes it.',
+    'business.audit_cosign.status.title': 'Co-signatures',
+    'business.audit_cosign.status.count': '{signed} of {required} signatures',
+    'business.audit_cosign.status.signers': 'Signatories',
+    'business.audit_cosign.status.you': 'You',
+    'business.audit_cosign.status.signed_on': 'Signed · {date}',
+    'business.audit_cosign.status.signed': 'Signed',
+    'business.audit_cosign.status.pending': 'Waiting',
+    'business.audit_cosign.due': 'Co-sign by {date}',
+    'business.audit_cosign.overdue': 'Overdue — co-signing was due by {date}',
+    'business.audit_cosign.published': 'Published {date}',
+    'business.audit_cosign.yours.title': 'Your co-signature',
+    'business.audit_cosign.yours.accept':
+        'I confirm the statements behind this report are on file and its findings are factual.',
+    'business.audit_cosign.yours.note': 'Your recap (optional)',
+    'business.audit_cosign.yours.note_count': '{count}/{limit}',
+    'business.audit_cosign.yours.note_help':
+        'Kept with your signature. It does not change the sealed report.',
+    'business.audit_cosign.yours.identity':
+        'Your verified account signs. Each required signatory co-signs separately.',
+    'business.audit_cosign.yours.submit': 'Co-sign report',
+    'business.audit_cosign.yours.submitting': 'Co-signing…',
+    'business.audit_cosign.yours.signed': 'You co-signed this report.',
+    'business.audit_cosign.yours.signed_on': 'You co-signed on {date}.',
+    'business.audit_cosign.yours.waiting':
+        'Waiting for {names} to co-sign. The report publishes once every required signature is in.',
+    'business.audit_cosign.yours.all_in':
+        'Every required signature is in. The report publishes once its publication checks pass.',
+    'business.audit_cosign.yours.published':
+        'Every required signature is in and the report is published.',
+    'business.audit_cosign.yours.unavailable':
+        "Co-signing isn't available for this report.",
+    'business.audit_cosign.yours.cannot': "You can't co-sign this report.",
+    'business.audit_cosign.refused.with_code': '{reason} ({code})',
+    'business.audit_cosign.refused.VERSION_CONFLICT':
+        "The signatures on this report changed while you were signing. We've loaded the latest — check it and co-sign again.",
+    'business.audit_cosign.refused.IDEMPOTENCY_CONFLICT':
+        "This request was already used with different details, so it was not sent again. We've loaded the latest.",
+    'business.audit_cosign.refused.DIGEST_STALE':
+        "The report you read is no longer the current one. We've loaded it — read it and co-sign again.",
+    'business.audit_cosign.refused.MANDATE_STALE':
+        "The company's signing mandate changed. Check who must co-sign now, then co-sign again.",
+    'business.audit_cosign.refused.ACTION_FORBIDDEN':
+        "You can't co-sign for this business.",
+    'business.audit_cosign.refused.MANDATE_REQUIRED':
+        "Your verified mandate doesn't let you co-sign for this business.",
+    'business.audit_cosign.refused.NOT_FOUND':
+        'This report is no longer available to you.',
+    'business.audit_cosign.refused.denied':
+        'Your access has changed. Return to your apps and try again.',
+    'business.audit_cosign.refused.failed':
+        "Your co-signature wasn't recorded. Check the report as it stands now and try again.",
 } as const;
 
 export default en;
