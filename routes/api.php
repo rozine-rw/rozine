@@ -13,6 +13,9 @@ use App\Http\Controllers\AuditOperationsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+Route::get('v1/business', [BusinessApplicationController::class, 'index'])
+    ->middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->name('api.v1.business.index');
+
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');

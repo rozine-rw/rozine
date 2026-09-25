@@ -18,6 +18,7 @@ use App\Models\BusinessMandate;
 use App\Models\BusinessProfile;
 use Closure;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * @phpstan-import-type Profile from MandateAuthority
@@ -37,6 +38,33 @@ final class EloquentBusinessAuthorityStore implements BusinessAuthorityStore
         private MandateAuthority $authority,
         private OperationJournal $journal,
     ) {}
+
+    /** @return array{ids: list<string>, next_cursor: string|null} */
+    public function discover(int $userId, int $contextRevision, ?string $before = null, int $limit = 20): array
+    {
+        if ($limit < 1 || $limit > 50 || ($before !== null && ! Str::isUlid($before))) {
+            throw new CommandRejection('APPLICATION_PAGE_INVALID', 422);
+        }
+
+        return $this->auditAccess->withActiveRole($userId, 'business', null, $contextRevision, function (array $identity) use ($before, $limit): array {
+            $now = now('UTC')->format('Y-m-d\TH:i:s\Z');
+            $query = BusinessProfile::query()->join('business_mandates', 'business_mandates.business_id', '=', 'business_profiles.id')
+                ->whereColumn('business_mandates.version', 'business_profiles.mandate_version')
+                ->whereJsonContains('business_mandates.terms->people', [['party_id' => $identity['party']['id'], 'permissions' => ['business.view']]])
+                ->where('business_mandates.terms->status', 'active')->where('business_mandates.terms->effective_at', '<=', $now)
+                ->whereRaw("(business_mandates.terms->>'expires_at' IS NULL OR business_mandates.terms->>'expires_at' > ?)", [$now]);
+            if ($before !== null) {
+                $query->where('business_profiles.id', '<', strtolower($before));
+            }
+            $ids = $query->orderByDesc('business_profiles.id')->limit($limit + 1)->pluck('business_profiles.id')->all();
+            $hasMore = count($ids) > $limit;
+            if ($hasMore) {
+                array_pop($ids);
+            }
+
+            return ['ids' => array_values($ids), 'next_cursor' => $hasMore ? $ids[count($ids) - 1] : null];
+        });
+    }
 
     /**
      * @param  Profile  $profile

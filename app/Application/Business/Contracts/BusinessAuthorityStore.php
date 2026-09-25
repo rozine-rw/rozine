@@ -16,6 +16,9 @@ use Closure;
  */
 interface BusinessAuthorityStore
 {
+    /** @return array{ids: list<string>, next_cursor: string|null} */
+    public function discover(int $userId, int $contextRevision, ?string $before = null, int $limit = 20): array;
+
     /**
      * @param  Profile  $profile
      * @param  Terms  $terms

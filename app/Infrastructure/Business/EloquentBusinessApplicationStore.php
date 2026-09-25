@@ -6,9 +6,11 @@ namespace App\Infrastructure\Business;
 
 use App\Application\Auditor\WithCurrentAuditAssignment;
 use App\Application\Business\Contracts\BusinessApplicationStore;
+use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\Contracts\BusinessCreditFactsStore;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\WithBusinessStatementVerification;
+use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Identity\WithCurrentConsent;
 use App\Application\Operations\Contracts\CanonicalJson;
@@ -59,7 +61,48 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
         private ConsentDocuments $documents,
         private ApplicationAcceptance $acceptances,
         private ApplicationEvidence $applicationEvidence,
+        private BusinessAuthorityStore $businesses,
+        private IdentityAccessStore $access,
     ) {}
+
+    /** @return array<string, mixed> */
+    public function index(int $userId, int $contextRevision, ?string $before = null, int $limit = 20): array
+    {
+        $discovered = $this->businesses->discover($userId, $contextRevision, $before, $limit);
+        $entries = [];
+        foreach ($discovered['ids'] as $businessId) {
+            try {
+                $entries[] = $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null,
+                    function (array $business, array $identity): array {
+                        $canCreate = false;
+                        foreach ($business['mandate']['people'] as $person) {
+                            if ($person['party_id'] === $identity['party']['id']) {
+                                $canCreate = in_array('application.create', $person['permissions'], true);
+                            }
+                        }
+                        $application = BusinessApplication::query()->where('business_id', $business['id'])
+                            ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', ['draft'])->orderByDesc('id')->first();
+
+                        return ['business_id' => $business['id'], 'name' => $business['profile']['name'],
+                            'allowed_actions' => $canCreate ? ['application.create'] : [],
+                            'application' => $application === null ? null : ['id' => $application->id, 'status' => $application->status,
+                                'step' => $application->step, 'revision' => $application->revision]];
+                    });
+            } catch (CommandRejection $failure) {
+                if (! in_array($failure->reason, ['BUSINESS_NOT_FOUND', 'MANDATE_REQUIRED', 'ACTION_FORBIDDEN'], true)) {
+                    throw $failure;
+                }
+            } catch (IdentityViolation $failure) {
+                if (! in_array($failure->reason, ['PARTY_AUTHORITY_REQUIRED', 'ORGANIZATION_REFERENCE_MISMATCH', 'MANDATE_REQUIRED'], true)) {
+                    throw $failure;
+                }
+            }
+        }
+
+        return $this->access->withActiveRole($userId, 'business', null, $contextRevision,
+            fn (): array => ['identity_context_revision' => $contextRevision, 'entries' => $entries,
+                'next_cursor' => $discovered['next_cursor'], 'limit' => $limit]);
+    }
 
     /** @return array<string, mixed> */
     public function create(int $userId, int $contextRevision, string $businessId, int $expectedRevision, string $requestId): array

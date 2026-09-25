@@ -23,7 +23,7 @@ use Illuminate\Support\Str;
 final class BusinessAuthorityFixture
 {
     /** @return Fixture */
-    public static function make(string $kind = 'person', int $count = 1): array
+    public static function make(string $kind = 'person', int $count = 1, string $companyCode = 'COMPANY-001'): array
     {
         $staff = User::factory()->withTwoFactor()->create();
         app(ConfigureStaffAccess::class)->handle($staff->id, true, 'Verify business mandates.', (string) Str::uuid(), ['compliance']);
@@ -40,12 +40,28 @@ final class BusinessAuthorityFixture
             $members[] = ['party_id' => $party->id, 'name' => 'Verified person '.$index,
                 'roles' => ['owner', 'controller', 'signatory'], 'permissions' => MandateAuthority::PERMISSIONS];
         }
-        $entity = $kind === 'person' ? $people[0]->id : VerifiedOrganizationIdentity::factory()->create(['registry_digest' => hash('sha256', 'RDB:COMPANY-001')])->party_id;
+        $entity = $kind === 'person' ? $people[0]->id : VerifiedOrganizationIdentity::factory()->create(['registry_digest' => hash('sha256', 'RDB:'.$companyCode)])->party_id;
 
         return ['staff' => $staff, 'people' => $people, 'users' => $users, 'entity' => $entity, 'kind' => $kind,
-            'profile' => ['name' => 'Synthetic business', 'company_code' => $kind === 'person' ? null : 'COMPANY-001', 'industry' => 'retail', 'district' => 'Gasabo', 'established_year' => 2020],
+            'profile' => ['name' => 'Synthetic business', 'company_code' => $kind === 'person' ? null : $companyCode, 'industry' => 'retail', 'district' => 'Gasabo', 'established_year' => 2020],
             'terms' => ['people' => $members, 'required_signatories' => array_column($members, 'party_id'),
                 'effective_at' => now('UTC')->subMinute()->format('Y-m-d\TH:i:s\Z'), 'expires_at' => null, 'status' => 'active', 'attested_complete' => true]];
+    }
+
+    /**
+     * Creates a distinct organization whose current mandate also names the existing representative.
+     *
+     * @param  Fixture  $authority
+     * @return Fixture
+     */
+    public static function relatedOrganization(array $authority): array
+    {
+        $other = self::make('organization', companyCode: 'COMPANY-'.Str::ulid());
+        $other['terms']['people'][] = ['party_id' => $authority['people'][0]->id, 'name' => 'Current representative',
+            'roles' => ['representative'], 'permissions' => ['business.view', 'application.create']];
+        self::configure($other);
+
+        return $other;
     }
 
     /**

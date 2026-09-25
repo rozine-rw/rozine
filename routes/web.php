@@ -37,7 +37,7 @@ Route::middleware('throttle:10,1')->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::get('investor', RoleHomeController::class)->name('investor.home');
-    Route::get('business', RoleHomeController::class)->name('business.home');
+    Route::get('business', RoleHomeController::class)->middleware(['throttle:60,1', 'cache.headers:private;no_store'])->name('business.home');
     Route::get('auditor', RoleHomeController::class)->name('auditor.home');
     Route::get('admin', StaffHomeController::class)->name('admin.home');
     Route::get('auditor/profile', [AuditorProfileController::class, 'show'])->name('auditor.profile');

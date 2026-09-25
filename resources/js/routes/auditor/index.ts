@@ -6,7 +6,7 @@ import availability from './availability'
 import operations from './operations'
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:15
+* @see app/Http/Controllers/RoleHomeController.php:17
 * @route '/auditor'
 */
 export const home = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -21,7 +21,7 @@ home.definition = {
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:15
+* @see app/Http/Controllers/RoleHomeController.php:17
 * @route '/auditor'
 */
 home.url = (options?: RouteQueryOptions) => {
@@ -30,7 +30,7 @@ home.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:15
+* @see app/Http/Controllers/RoleHomeController.php:17
 * @route '/auditor'
 */
 home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -40,7 +40,7 @@ home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:15
+* @see app/Http/Controllers/RoleHomeController.php:17
 * @route '/auditor'
 */
 home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -50,7 +50,7 @@ home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:15
+* @see app/Http/Controllers/RoleHomeController.php:17
 * @route '/auditor'
 */
 const homeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -60,7 +60,7 @@ const homeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:15
+* @see app/Http/Controllers/RoleHomeController.php:17
 * @route '/auditor'
 */
 homeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -70,7 +70,7 @@ homeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:15
+* @see app/Http/Controllers/RoleHomeController.php:17
 * @route '/auditor'
 */
 homeForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
