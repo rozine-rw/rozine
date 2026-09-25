@@ -3088,6 +3088,10 @@ const en = {
     'auditor.command.refused.AUDIT_REPORT_NOT_AMENDABLE':
         "This report can't be amended now, so no amendment was started. The page has been refreshed.",
     'auditor.ledger.download': 'Download original',
+    'auditor.sealed.body_undated':
+        'The report is sealed and can no longer be edited. {party} still needs to co-sign; it publishes to holders after that.',
+    'auditor.sealed.unavailable':
+        "This seal can't be verified right now — its signing key is no longer current. The sealed record and its history are unchanged.",
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

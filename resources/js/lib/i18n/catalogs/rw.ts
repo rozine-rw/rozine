@@ -3210,6 +3210,11 @@ const rw: Catalog = {
         'Iyi raporo ntishobora kuvugururwa ubu, bityo nta vugurura ryatangiye. Paji yavuguruwe.',
     'auditor.ledger.download': 'Kuramo umwimerere',
 
+    'auditor.sealed.body_undated':
+        'Raporo yashyizweho kashe ntishobora guhindurwa. {party} iracyakeneye gusinya; nyuma igezwa ku bashoramari.',
+    'auditor.sealed.unavailable':
+        "Iyi kashe ntishobora kugenzurwa ubu — urufunguzo rwayisinyishije ntirukiri urukoreshwa. Inyandiko yashyizweho kashe n'amateka yayo ntibyahindutse.",
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

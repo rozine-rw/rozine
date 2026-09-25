@@ -52,7 +52,7 @@
                 "signed_at": "2026-10-03T09:20:00Z"
             },
             "published_at": "2026-10-03T09:21:00Z",
-            "seal_status": "valid",
+            "seal_status": "unavailable",
             "amended_by": null
         },
         "can_continue": true,

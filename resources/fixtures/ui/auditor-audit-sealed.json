@@ -52,10 +52,11 @@
             "cosign": {
                 "party": "Huye Motors",
                 "state": "pending",
-                "due_on": "2026-10-07",
+                "due_on": null,
                 "signed_at": null
             },
             "published_at": null,
+            "seal_status": "valid",
             "amended_by": null
         },
         "can_continue": true,
