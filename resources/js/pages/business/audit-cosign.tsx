@@ -72,7 +72,8 @@ function StateCard({ icon, children }: { icon: IconName; children: string }) {
  *
  * A dispute and automatic approval are pending the delivery 3 contract and the N6 decision: a
  * dispute is offered only when `allowed_actions` lists `report.dispute` and `actions.dispute` is
- * sent, and `cosign.published_reason` only relabels a published report. Without them the page is
+ * sent, `cosign.published_reason` only relabels a published report, and an open
+ * `cosign.dispute` shows the paused review in place of any action. Without them the page is
  * exactly the current contract's.
  */
 export default function BusinessAuditCosign(
@@ -80,12 +81,26 @@ export default function BusinessAuditCosign(
 ) {
     const { t, locale } = useTranslation();
     const { report, cosign, links } = props;
-    const cosignAction = props.allowed_actions.includes('report.cosign')
-        ? props.actions.cosign
-        : null;
-    const disputeAction = props.allowed_actions.includes('report.dispute')
-        ? (props.actions.dispute ?? null)
-        : null;
+    /* A dispute still being reviewed pauses the window: nothing is signed or disputed meanwhile. */
+    const openDispute: {
+        status: 'under_review' | 'escalated';
+        submitted_at: string;
+    } | null =
+        cosign.dispute?.status === 'under_review' ||
+        cosign.dispute?.status === 'escalated'
+            ? {
+                  status: cosign.dispute.status,
+                  submitted_at: cosign.dispute.submitted_at,
+              }
+            : null;
+    const cosignAction =
+        openDispute === null && props.allowed_actions.includes('report.cosign')
+            ? props.actions.cosign
+            : null;
+    const disputeAction =
+        openDispute === null && props.allowed_actions.includes('report.dispute')
+            ? (props.actions.dispute ?? null)
+            : null;
     const [disputing, setDisputing] = useState(false);
     const shellLinks = props.shell_links ?? {
         home: links.close,
@@ -224,7 +239,31 @@ export default function BusinessAuditCosign(
 
     let yours;
 
-    if (cosignAction !== null) {
+    if (openDispute !== null) {
+        yours = (
+            <div
+                role="status"
+                className="mt-[11px] rounded-2xl border border-[#fbe4cc] bg-[#fff8f1] p-4 dark:border-transparent dark:bg-[rgba(194,102,31,.12)]"
+            >
+                <p className="text-[13.5px] font-bold text-rz-ink">
+                    {t(
+                        `business.audit_cosign.disputed.${openDispute.status}.title`,
+                    )}
+                </p>
+                <p className="mt-1 text-xs leading-[1.55] text-rz-secondary">
+                    {t(
+                        `business.audit_cosign.disputed.${openDispute.status}.body`,
+                        {
+                            date: formatDayMonth(
+                                openDispute.submitted_at,
+                                locale,
+                            ),
+                        },
+                    )}
+                </p>
+            </div>
+        );
+    } else if (cosignAction !== null) {
         yours = (
             <CosignForm
                 initialNote={cosign.your_note}

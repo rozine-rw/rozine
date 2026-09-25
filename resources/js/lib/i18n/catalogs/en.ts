@@ -3238,6 +3238,13 @@ const en = {
         'Add photos or documents that back your dispute.',
     'business.audit_cosign.dispute.files_add': 'Add files',
     'business.audit_cosign.dispute.file_remove': 'Remove {name}',
+    'business.audit_cosign.disputed.under_review.title': 'Dispute Under Review',
+    'business.audit_cosign.disputed.under_review.body':
+        'You submitted a dispute on {date}. The 24-hour review timer is paused while your CPA reviews your proof and amends or upholds the report. If they uphold it or do not act, Rozine staff step in. An amended report opens a fresh 24-hour window for you to review it.',
+    'business.audit_cosign.disputed.escalated.title':
+        'Dispute with Rozine staff',
+    'business.audit_cosign.disputed.escalated.body':
+        'You submitted a dispute on {date}. Your CPA upheld the report or did not act, so Rozine staff are reviewing the case. The 24-hour review timer stays paused meanwhile.',
 } as const;
 
 export default en;

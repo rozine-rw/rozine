@@ -17,6 +17,10 @@ export function CosignStatus({
     cosign: AuditCosign;
 }) {
     const { t, locale } = useTranslation();
+    /* A dispute under review or escalated pauses the window, so no deadline is shown. */
+    const paused =
+        cosign.dispute?.status === 'under_review' ||
+        cosign.dispute?.status === 'escalated';
 
     return (
         <>
@@ -41,7 +45,8 @@ export function CosignStatus({
                 )}
             </div>
             {cosign.due_at !== null &&
-                cosign.published_reason !== 'auto_approved' && (
+                cosign.published_reason !== 'auto_approved' &&
+                !paused && (
                     <p
                         data-overdue={cosign.overdue || undefined}
                         className={cn(

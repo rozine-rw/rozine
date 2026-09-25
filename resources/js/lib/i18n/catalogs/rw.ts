@@ -3317,6 +3317,14 @@ const rw: Catalog = {
         'Ongeraho amafoto cyangwa inyandiko bishyigikira ubujurire bwawe.',
     'business.audit_cosign.dispute.files_add': 'Ongeraho amadosiye',
     'business.audit_cosign.dispute.file_remove': 'Kuramo {name}',
+    'business.audit_cosign.disputed.under_review.title':
+        'Ubujurire burimo gusuzumwa',
+    'business.audit_cosign.disputed.under_review.body':
+        "Watanze ubujurire {date}. Igihe cy'amasaha 24 cyo gusuzuma cyahagaritswe mu gihe CPA wawe asuzuma ibimenyetso byawe, agakosora raporo cyangwa akayemeza uko iri. Niba ayemeje uko iri cyangwa ntagire icyo akora, abakozi ba Rozine barabyinjiramo. Raporo ikosowe iguha andi masaha 24 yo kuyisuzuma.",
+    'business.audit_cosign.disputed.escalated.title':
+        'Ubujurire bwashyikirijwe abakozi ba Rozine',
+    'business.audit_cosign.disputed.escalated.body':
+        "Watanze ubujurire {date}. CPA wawe yemeje raporo uko iri cyangwa ntiyagira icyo akora, bityo abakozi ba Rozine barimo gusuzuma iki kibazo. Igihe cy'amasaha 24 cyo gusuzuma gikomeza guhagarikwa muri icyo gihe.",
 };
 
 export default rw;

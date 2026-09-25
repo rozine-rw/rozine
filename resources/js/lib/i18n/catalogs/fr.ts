@@ -3332,6 +3332,14 @@ const fr: Catalog = {
         'Ajoutez des photos ou des documents qui appuient votre contestation.',
     'business.audit_cosign.dispute.files_add': 'Ajouter des fichiers',
     'business.audit_cosign.dispute.file_remove': 'Retirer {name}',
+    'business.audit_cosign.disputed.under_review.title':
+        "Contestation en cours d'examen",
+    'business.audit_cosign.disputed.under_review.body':
+        "Vous avez soumis une contestation le {date}. Le délai d'examen de 24 heures est suspendu pendant que votre expert-comptable examine vos preuves et modifie ou maintient le rapport. S'il le maintient ou n'agit pas, l'équipe Rozine intervient. Un rapport modifié ouvre pour vous un nouveau délai de 24 heures pour l'examiner.",
+    'business.audit_cosign.disputed.escalated.title':
+        "Contestation transmise à l'équipe Rozine",
+    'business.audit_cosign.disputed.escalated.body':
+        "Vous avez soumis une contestation le {date}. Votre expert-comptable a maintenu le rapport ou n'a pas agi : l'équipe Rozine examine donc le dossier. Le délai d'examen de 24 heures reste suspendu en attendant.",
 };
 
 export default fr;
