@@ -14,6 +14,11 @@ use Laravel\Fortify\Features;
 /** @phpstan-import-type AccessSnapshot from \App\Domain\Identity\ActiveRolePolicy */
 final class EloquentIdentityRepository implements IdentityRepository
 {
+    public function accountName(int $userId): string
+    {
+        return User::query()->findOrFail($userId)->name;
+    }
+
     public function register(string $name, string $email, string $password): int
     {
         return DB::transaction(function () use ($name, $email, $password): int {
@@ -53,5 +58,14 @@ final class EloquentIdentityRepository implements IdentityRepository
                     'revision' => $membership->revision,
                 ])->all()),
         ];
+    }
+
+    public function auditorPartyIsActive(string $partyId): bool
+    {
+        return Party::query()->whereKey($partyId)->where('kind', 'person')->where('verified_at', '<=', now())
+            ->has('verifiedIdentity')
+            ->whereIn('id', RoleMembership::query()->select('party_id')->where('role', 'auditor')->where('status', 'active'))
+            ->whereNotIn('id', RoleMembership::query()->select('party_id')->where('role', '<>', 'auditor')->where('status', 'active'))
+            ->exists();
     }
 }

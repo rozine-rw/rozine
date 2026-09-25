@@ -1,0 +1,76 @@
+{
+    "component": "auditor/engagement",
+    "props": {
+        "contract_version": "auditor-engagement-v1",
+        "identity_context_revision": 3,
+        "server_time": "2026-10-03T17:00:00Z",
+        "release": {
+            "id": "01k6x0engagement0000000002",
+            "revision": 2,
+            "version": "synthetic-terms-2",
+            "procedure_version": "MVP-AUP-1",
+            "documents": {
+                "master_services": {
+                    "title": "Synthetic master services terms",
+                    "body": "SYNTHETIC ALPHA ONLY. These are example platform terms for review and testing. No real professional engagement is represented.\n\n1. Parties\nThis example agreement is between Rozine (the platform) and the accredited partner who accepts it (the practitioner).\n\n2. Scope\nThe practitioner performs the agreed procedures on files the platform offers and the practitioner accepts. Each file is a separate engagement under these terms.\n\n3. Independence\nThe practitioner declares any family, business or financial link to a business before starting work on its file, and stops work on a file where such a link exists.\n\n4. Records\nFindings are factual. The practitioner records what was seen, counted and reconciled, and gives no credit verdict.\n\n5. Confidentiality\nBusiness records seen during a procedure are used only for that procedure.\n\n6. Changes\nA new version of these terms needs a fresh acceptance before new work is offered.",
+                    "sha256": "41ec0eeaf5aafeffd603b6ec34fcc46f09b5fb4c9e325844bbd3ef0348293806"
+                },
+                "agreed_procedures": {
+                    "title": "Synthetic MVP-AUP-1 procedure terms",
+                    "body": "SYNTHETIC ALPHA ONLY. Minimum agreed procedures MVP-AUP-1, for review and testing.\n\nA. On site\n  - Check in at the business premises named on the file.\n  - Photograph the premises and the stock areas listed on the file.\n\nB. Records\n  - Review the original ledgers and bank statements the business provides.\n  - Reconcile the statements with the ledger totals and record every variance.\n\nC. Reporting\n  - Record factual findings only, with the evidence each finding rests on.\n  - Retain the source lineage of every document relied upon.",
+                    "sha256": "df79616afd95ac7381feccdfb5a5afed61038ba8aac363122db9a3abc91d597a"
+                }
+            },
+            "sha256": "46d106248fecbb76386f349533b4ad026dedbd27f1b3559086144d585b5d6570",
+            "synthetic": true
+        },
+        "acceptance": null,
+        "allowed_actions": ["audit.engagement.accept"],
+        "actions": {
+            "accept": {
+                "url": "/preview/auditor-engagement-accepted",
+                "method": "post"
+            }
+        },
+        "open_jobs": 0,
+        "links": {
+            "home": {
+                "url": "/preview/auditor-home",
+                "method": "get"
+            },
+            "jobs": {
+                "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/auditor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/auditor-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-auditor",
+                "method": "get"
+            },
+            "conflicts": {
+                "url": "/preview/auditor-conflicts",
+                "method": "get"
+            },
+            "current": {
+                "url": "/preview/auditor-engagement",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/auditor-engagement-operation-{request_id}",
+                "method": "get"
+            }
+        },
+        "preview_outcome": {
+            "kind": "refused",
+            "code": "AUDIT_ENGAGEMENT_VERSION_CONFLICT",
+            "status": 409
+        }
+    }
+}

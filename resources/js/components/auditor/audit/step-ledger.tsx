@@ -1,5 +1,5 @@
 import { usePoll } from '@inertiajs/react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import {
     STEP_FORM,
@@ -18,11 +18,34 @@ import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
+import type { RouteAction } from '@/types';
 import type { LedgerDocument, LedgerStage } from '@/types/auditor';
 
-/** Documents only: PDF or a clean scan (design L1159). */
-const ACCEPT =
-    '.pdf,.png,.tif,.tiff,.csv,application/pdf,image/png,image/tiff,text/csv';
+/** The retained original only (C2): a PDF or a UTF-8 CSV export. */
+const ACCEPT = 'application/pdf,.pdf,text/csv,.csv';
+
+/** The largest original the server retains: 10 MiB. */
+const LEDGER_MAX_BYTES = 10 * 1024 * 1024;
+
+/**
+ * A courtesy check before the upload, so an image or an oversized file is not sent only to be
+ * refused; the server stays the authority on what it retains. A CSV is often typed loosely by the
+ * browser, so the name's extension counts as well as the reported type.
+ */
+const ledgerFileProblem = (chosen: File): 'type' | 'size' | null => {
+    const name = chosen.name.toLowerCase();
+    const known =
+        chosen.type === 'application/pdf' ||
+        chosen.type === 'text/csv' ||
+        name.endsWith('.pdf') ||
+        name.endsWith('.csv');
+
+    if (!known) {
+        return 'type';
+    }
+
+    return chosen.size > LEDGER_MAX_BYTES ? 'size' : null;
+};
 
 /** How often a document still being read is re-checked. */
 const SCAN_POLL_MS = 2000;
@@ -35,7 +58,8 @@ function DocumentRow({
     onRescan,
 }: {
     document: LedgerDocument;
-    canUpload: boolean;
+    /** Null where the step offers no upload: the card then offers no re-scan either. */
+    canUpload: boolean | null;
     onRescan: () => void;
 }) {
     const { t } = useTranslation();
@@ -87,6 +111,14 @@ function DocumentRow({
                     />
                 )}
             </div>
+            {document.link != null && (
+                <a
+                    href={document.link.url}
+                    className="mt-[9px] inline-block text-[11.5px] font-bold text-rz-accent-app-text"
+                >
+                    {t('auditor.ledger.download')}
+                </a>
+            )}
             {parsed && (
                 <dl className="mt-[11px] rounded-[10px] border border-[#eef2f9] bg-[#f8fafc] px-3 py-[3px] dark:border-rz-divider dark:bg-rz-surface-sunken">
                     {document.fields.map((field) => (
@@ -109,14 +141,16 @@ function DocumentRow({
                     <p className="mt-[11px] rounded-[10px] border border-[#f4c9c6] bg-rz-surface px-3 py-2.5 text-[11px] leading-[1.5] text-[#c8322b] dark:border-[rgba(255,107,111,.3)] dark:text-rz-danger-text">
                         {document.failure}
                     </p>
-                    <button
-                        type="button"
-                        onClick={onRescan}
-                        disabled={!canUpload}
-                        className="mt-[9px] h-[38px] w-full rounded-[10px] border border-[#f0c9c6] bg-rz-surface text-[12px] font-bold text-[#c8322b] dark:border-[rgba(255,107,111,.3)] dark:text-rz-danger-text"
-                    >
-                        {t('auditor.ledger.rescan')}
-                    </button>
+                    {canUpload !== null && (
+                        <button
+                            type="button"
+                            onClick={onRescan}
+                            disabled={!canUpload}
+                            className="mt-[9px] h-[38px] w-full rounded-[10px] border border-[#f0c9c6] bg-rz-surface text-[12px] font-bold text-[#c8322b] dark:border-[rgba(255,107,111,.3)] dark:text-rz-danger-text"
+                        >
+                            {t('auditor.ledger.rescan')}
+                        </button>
+                    )}
                 </>
             )}
         </li>
@@ -128,6 +162,10 @@ function DocumentRow({
  * attaches the ledger books; the server reads each document, measures the variance against the
  * reported figure under the policy tolerance, and says whether anything must be explained at
  * sign-off. The "reconciles" tick is a factual attestation, not a verdict.
+ *
+ * With no stock declaration from the business there is no reported figure: it reads "Not
+ * declared" — never zero — and the reconciliation tick stays blocked, since there is nothing to
+ * reconcile the count against. The count itself can still be recorded.
  */
 export function StepLedger({
     stage,
@@ -138,13 +176,18 @@ export function StepLedger({
 }) {
     const { t } = useTranslation();
     const center = useAuditorCommands();
-    const canUpload = center.allowed('audit.save_step') && center.idle;
+    /* The server's upload route is the only gate: null offers no upload, re-scan or input. */
+    const uploadRoute = stage.upload;
+    const canUpload = uploadRoute === null ? null : center.idle;
+    const declared = stage.reported_stock !== null;
+    const canReconcile = declared && stage.ledger_ready;
     const { form, submit, errors } = useStepForm(context, {
         observed_stock: stage.observed_stock?.amount ?? '',
-        reconciled: stage.reconciled,
+        reconciled: declared && stage.reconciled,
     });
     const file = useRef<HTMLInputElement>(null);
     const replaces = useRef<string | null>(null);
+    const [problem, setProblem] = useState<'type' | 'size' | null>(null);
     const scanning = stage.documents.some(
         (document) => document.state === 'scanning',
     );
@@ -172,10 +215,22 @@ export function StepLedger({
         file.current?.click();
     };
 
-    const upload = (event: ChangeEvent<HTMLInputElement>) => {
+    const upload = (
+        event: ChangeEvent<HTMLInputElement>,
+        route: RouteAction,
+    ) => {
         const chosen = event.target.files?.[0];
 
         if (!chosen) {
+            return;
+        }
+
+        const found = ledgerFileProblem(chosen);
+
+        setProblem(found);
+        event.target.value = '';
+
+        if (found !== null) {
             return;
         }
 
@@ -187,7 +242,7 @@ export function StepLedger({
         center.send({
             name: 'audit.save_step',
             business: context.business,
-            route: context.save,
+            route,
             payload: {
                 step: 'ledger',
                 audit_id: context.auditId,
@@ -196,7 +251,6 @@ export function StepLedger({
                 replaces: replaces.current,
             },
         });
-        event.target.value = '';
     };
 
     return (
@@ -210,10 +264,24 @@ export function StepLedger({
                     <span className="text-[12.5px] text-rz-secondary">
                         {t('auditor.ledger.reported')}
                     </span>
-                    <span className="text-[15px] font-bold text-rz-ink">
-                        {formatRwf(stage.reported_stock)}
-                    </span>
+                    {stage.reported_stock === null ? (
+                        <span className="text-[13px] font-bold text-rz-secondary">
+                            {t('auditor.ledger.reported_undeclared')}
+                        </span>
+                    ) : (
+                        <span className="text-[15px] font-bold text-rz-ink">
+                            {formatRwf(stage.reported_stock)}
+                        </span>
+                    )}
                 </div>
+                {!declared && (
+                    <p
+                        role="note"
+                        className="mt-1.5 text-[11.5px] leading-[1.5] text-rz-secondary"
+                    >
+                        {t('auditor.ledger.reported_undeclared_note')}
+                    </p>
+                )}
                 <label
                     htmlFor="auditor-observed-stock"
                     className="mt-3.5 block text-[11px] font-bold tracking-[.03em] text-rz-slate uppercase"
@@ -263,9 +331,11 @@ export function StepLedger({
                           })}
                 </span>
             </div>
-            <p className="mt-1 text-[11.5px] leading-[1.5] text-rz-secondary">
-                {t('auditor.ledger.rules')}
-            </p>
+            {uploadRoute !== null && (
+                <p className="mt-1 text-[11.5px] leading-[1.5] text-rz-secondary">
+                    {t('auditor.ledger.rules')}
+                </p>
+            )}
             <ul className="mt-2.5 flex flex-col gap-[9px]">
                 {stage.documents.map((document) => (
                     <DocumentRow
@@ -276,32 +346,41 @@ export function StepLedger({
                     />
                 ))}
             </ul>
-            <input
-                ref={file}
-                type="file"
-                accept={ACCEPT}
-                aria-label={t('auditor.ledger.file_input')}
-                onChange={upload}
-                className="sr-only"
-                tabIndex={-1}
-            />
-            <button
-                type="button"
-                onClick={() => pick(null)}
-                disabled={!canUpload}
-                className="mt-[9px] flex w-full items-center justify-center gap-[9px] rounded-xl border-[1.5px] border-dashed border-rz-secondary bg-[#f8fafc] p-3.5 dark:bg-rz-surface-sunken"
-            >
-                <span aria-hidden className="text-[15px] text-rz-secondary">
-                    ＋
-                </span>
-                <span className="text-[12.5px] font-bold text-rz-slate">
-                    {stage.documents.length === 0
-                        ? t('auditor.ledger.attach')
-                        : t('auditor.ledger.attach_another')}
-                </span>
-            </button>
+            {uploadRoute !== null && (
+                <>
+                    <input
+                        ref={file}
+                        type="file"
+                        accept={ACCEPT}
+                        aria-label={t('auditor.ledger.file_input')}
+                        onChange={(event) => upload(event, uploadRoute)}
+                        className="sr-only"
+                        tabIndex={-1}
+                    />
+                    <button
+                        type="button"
+                        onClick={() => pick(null)}
+                        disabled={!canUpload}
+                        className="mt-[9px] flex w-full items-center justify-center gap-[9px] rounded-xl border-[1.5px] border-dashed border-rz-secondary bg-[#f8fafc] p-3.5 dark:bg-rz-surface-sunken"
+                    >
+                        <span
+                            aria-hidden
+                            className="text-[15px] text-rz-secondary"
+                        >
+                            ＋
+                        </span>
+                        <span className="text-[12.5px] font-bold text-rz-slate">
+                            {stage.documents.length === 0
+                                ? t('auditor.ledger.attach')
+                                : t('auditor.ledger.attach_another')}
+                        </span>
+                    </button>
+                </>
+            )}
             <FieldError id="auditor-ledger-document-error">
-                {errors.document}
+                {problem === null
+                    ? errors.document
+                    : t(`auditor.ledger.file_${problem}`)}
             </FieldError>
             <FieldError id="auditor-ledger-replaces-error">
                 {errors.replaces}
@@ -311,13 +390,13 @@ export function StepLedger({
                 type="button"
                 role="checkbox"
                 aria-checked={form.data.reconciled}
-                disabled={!stage.ledger_ready}
+                disabled={!canReconcile}
                 onClick={() =>
                     form.setData('reconciled', !form.data.reconciled)
                 }
                 className={cn(
                     'mt-3.5 flex w-full items-center gap-3 rounded-xl border border-rz-border p-3.5 text-left disabled:cursor-not-allowed',
-                    stage.ledger_ready
+                    canReconcile
                         ? 'bg-rz-surface'
                         : 'bg-[#f6f8fb] dark:bg-rz-surface-sunken',
                 )}
@@ -337,15 +416,15 @@ export function StepLedger({
                 <span
                     className={cn(
                         'min-w-0 flex-1 text-[12.5px] leading-[1.4]',
-                        stage.ledger_ready
-                            ? 'text-rz-slate'
-                            : 'text-rz-secondary',
+                        canReconcile ? 'text-rz-slate' : 'text-rz-secondary',
                     )}
                 >
                     {t('auditor.ledger.reconciles')}
-                    {!stage.ledger_ready && (
+                    {!canReconcile && (
                         <span className="mt-1 block text-[11px] font-semibold text-[#c8322b] dark:text-rz-danger-text">
-                            {t('auditor.ledger.reconciles_blocked')}
+                            {declared
+                                ? t('auditor.ledger.reconciles_blocked')
+                                : t('auditor.ledger.reconciles_undeclared')}
                         </span>
                     )}
                 </span>

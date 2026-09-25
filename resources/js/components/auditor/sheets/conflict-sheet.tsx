@@ -77,7 +77,7 @@ export function ConflictSheet({
                     assignment_id: assignment.id,
                     expected_revision: assignment.revision,
                     kind: kind!,
-                    note: note.trim(),
+                    reason: note.trim(),
                 },
             },
             { onCompleted: onClose },
@@ -92,7 +92,7 @@ export function ConflictSheet({
             <AuditorCommandNotice
                 placement="sheet"
                 lane="conflict"
-                shown={['kind', 'note']}
+                shown={['kind', 'reason']}
                 className="mt-3.5"
             />
             {!permitted && (
@@ -126,11 +126,11 @@ export function ConflictSheet({
                     value={note}
                     onChange={(event) => setNote(event.target.value)}
                     placeholder={t('auditor.conflict.note_placeholder')}
-                    aria-invalid={lane.errors.note ? true : undefined}
+                    aria-invalid={lane.errors.reason ? true : undefined}
                     className={cn(NOTE_FIELD, 'min-h-[72px]')}
                 />
                 <FieldError id="auditor-conflict-note-error">
-                    {lane.errors.note}
+                    {lane.errors.reason}
                 </FieldError>
                 <div className="mt-3 flex gap-[9px]">
                     <button

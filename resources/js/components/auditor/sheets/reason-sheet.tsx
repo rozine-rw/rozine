@@ -87,6 +87,10 @@ type ReasonSheetProps = {
     options: ServerOption[];
     initialReason?: string | null;
     destructive?: boolean;
+    /** Every reason needs an explanation, whatever the chosen option says. */
+    explanationRequired?: boolean;
+    /** The longest explanation the server records; shown as a counter. */
+    maxLength?: number;
     onSubmit: (fields: { reason_code: string; reason: string }) => void;
     onClose: () => void;
 };
@@ -105,6 +109,8 @@ export function ReasonSheet({
     options,
     initialReason = null,
     destructive = false,
+    explanationRequired = false,
+    maxLength,
     onSubmit,
     onClose,
 }: ReasonSheetProps) {
@@ -113,7 +119,8 @@ export function ReasonSheet({
     const [code, setCode] = useState<string | null>(initialReason);
     const [reason, setReason] = useState('');
     const chosen = options.find((option) => option.code === code);
-    const explain = chosen?.requires_explanation ?? false;
+    const explain =
+        explanationRequired || (chosen?.requires_explanation ?? false);
     const ready =
         chosen !== undefined &&
         (!explain || reason.trim() !== '') &&
@@ -154,6 +161,7 @@ export function ReasonSheet({
                 <textarea
                     id="auditor-reason"
                     value={reason}
+                    maxLength={maxLength}
                     onChange={(event) => setReason(event.target.value)}
                     placeholder={placeholder}
                     aria-invalid={center.errors.reason ? true : undefined}
@@ -164,6 +172,14 @@ export function ReasonSheet({
                     }
                     className={cn(NOTE_FIELD, 'min-h-[84px]')}
                 />
+                {maxLength !== undefined && (
+                    <p className="mt-1 text-right text-[10.5px] text-rz-secondary">
+                        {t('auditor.reason.count', {
+                            count: reason.length,
+                            max: maxLength,
+                        })}
+                    </p>
+                )}
                 <FieldError id="auditor-reason-error">
                     {center.errors.reason}
                 </FieldError>

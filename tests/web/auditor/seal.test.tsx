@@ -19,6 +19,7 @@ import monthlySeal from '../../../resources/fixtures/ui/auditor-audit-monthly-se
 import digestStale from '../../../resources/fixtures/ui/auditor-audit-seal-digest-stale.json';
 import mfaMissing from '../../../resources/fixtures/ui/auditor-audit-seal-mfa-missing.json';
 import notFound from '../../../resources/fixtures/ui/auditor-audit-seal-not-found.json';
+import noteSaved from '../../../resources/fixtures/ui/auditor-audit-seal-note-saved.json';
 import proofExpired from '../../../resources/fixtures/ui/auditor-audit-seal-proof-expired.json';
 import stepUp from '../../../resources/fixtures/ui/auditor-audit-seal-step-up.json';
 import throttled from '../../../resources/fixtures/ui/auditor-audit-seal-throttled.json';
@@ -76,6 +77,45 @@ const SEALED = operation({
 
 const findings = () => screen.getByRole('dialog', { name: 'Huye Motors' });
 
+const procedure = () =>
+    screen.getByRole('dialog', { name: 'Huye Motors audit' });
+
+const noteField = () => screen.getByLabelText('Assessment note');
+
+const UNSAVED =
+    'Save your note before you preview. The preview, your code and the seal all cover the saved note.';
+
+/** The note's save, completed: the page then reads the report afresh. */
+const NOTE_SAVED = operation({
+    code: 'AUDIT_STEP_SAVED',
+    data: {
+        next: { url: '/preview/auditor-audit-seal-note-saved', method: 'get' },
+    },
+    revision: 7,
+});
+
+/** A responder the test settles itself, so it can see the request in flight. */
+const deferred = () => {
+    let settle: (result: unknown) => void = () => undefined;
+    const responder = () =>
+        new Promise((resolve) => {
+            settle = resolve;
+        });
+
+    return { responder, settle: (result: unknown) => settle(result) };
+};
+
+/** Types the note into the unsaved seal fixture and saves it. */
+const saveNote = async (page: AuditProcedureProps = props(seal)) => {
+    const view = renderWithUser(<AuditorAudit {...page} />);
+
+    await view.user.click(noteField());
+    await view.user.paste(NOTE);
+    await view.user.click(screen.getByRole('button', { name: 'Save note' }));
+
+    return view;
+};
+
 const codeField = () => screen.getByLabelText('Six-digit authenticator code');
 
 /** Renders the step-up fixture and focuses its code entry. */
@@ -94,11 +134,9 @@ afterEach(() => {
 });
 
 describe('Seal — findings and preview', () => {
-    it('needs a note before the findings can be previewed, and previews exactly what is sealed', async () => {
-        const { user } = renderWithUser(<AuditorAudit {...props(seal)} />);
-        const dialog = screen.getByRole('dialog', {
-            name: 'Huye Motors audit',
-        });
+    it('previews exactly what is sealed, with the saved note the digest covers', async () => {
+        const { user } = renderWithUser(<AuditorAudit {...props(noteSaved)} />);
+        const dialog = procedure();
         const preview = within(dialog).getByRole('button', {
             name: 'Preview findings',
         });
@@ -107,18 +145,15 @@ describe('Seal — findings and preview', () => {
         expect(
             within(dialog).getByText('−4.2% · outside tolerance'),
         ).toHaveClass('text-rz-danger-text');
-        expect(within(dialog).getByText('Required')).toBeInTheDocument();
-        expect(preview).toBeDisabled();
-        expect(
-            within(dialog).queryByRole('button', { name: 'Request changes' }),
-        ).not.toBeInTheDocument();
-
-        await user.click(within(dialog).getByLabelText('Assessment note'));
-        await user.paste(NOTE);
         expect(within(dialog).getByText('Required · done')).toBeInTheDocument();
         expect(
             within(dialog).getByText(`${NOTE.length} / 100`),
         ).toBeInTheDocument();
+        expect(within(dialog).queryByText(UNSAVED)).not.toBeInTheDocument();
+        expect(preview).toBeEnabled();
+        expect(
+            within(dialog).queryByRole('button', { name: 'Request changes' }),
+        ).not.toBeInTheDocument();
 
         await user.click(preview);
 
@@ -135,6 +170,8 @@ describe('Seal — findings and preview', () => {
         expect(
             within(sheet).getByText(/^Evidence: ev_huye_storefront, /u),
         ).toBeInTheDocument();
+        /* The saved note the digest covers is part of what is previewed. */
+        expect(within(sheet).getByText(NOTE)).toBeInTheDocument();
         expect(
             within(sheet).getByText('Evidence sealed with this report'),
         ).toBeInTheDocument();
@@ -206,6 +243,44 @@ describe('Seal — findings and preview', () => {
         expect(screen.queryByText(/^Evidence: /u)).not.toBeInTheDocument();
     });
 
+    it('names isolated synthetic evidence as test evidence, with no attestation', async () => {
+        const { user } = renderWithUser(
+            <AuditorAudit
+                {...withStage(seal, (stage) => ({
+                    ...stage,
+                    note: { ...stage.note, required: false },
+                    evidence: [
+                        {
+                            ...stage.evidence[0],
+                            evidence_id: 'ev_synthetic_1',
+                            source: 'isolated_synthetic',
+                            device_attestation: 'unavailable',
+                        },
+                    ],
+                }))}
+            />,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        );
+
+        const item = within(
+            within(findings()).getByRole('list', { name: 'Evidence' }),
+        ).getByRole('listitem');
+        const terms = within(item).getAllByRole('term');
+        const values = within(item).getAllByRole('definition');
+        const row = (label: string) =>
+            values[terms.findIndex((term) => term.textContent === label)];
+
+        expect(row('Source')).toHaveTextContent(
+            'Synthetic test evidence (isolated)',
+        );
+        expect(row('Device attestation')).toHaveTextContent('Unavailable');
+        /* Nothing reads as a native capture or a proof of one. */
+        expect(item).not.toHaveTextContent(/Capture app|Web upload|Attested/u);
+    });
+
     it('keeps the preview closed while earlier steps are incomplete, and still offers a conflict', async () => {
         const { user } = renderWithUser(
             <AuditorAudit
@@ -242,6 +317,345 @@ describe('Seal — findings and preview', () => {
         expect(
             screen.queryByRole('dialog', { name: 'Huye Motors' }),
         ).not.toBeInTheDocument();
+    });
+});
+
+describe('Seal — the note is saved before the preview', () => {
+    it('saves an edited note at the seal step, and previews only from the fresh read', async () => {
+        const save = deferred();
+
+        inertia.queue.push(save.responder);
+        const { user, rerender } = renderWithUser(
+            <AuditorAudit {...props(seal)} />,
+        );
+        const dialog = procedure();
+
+        expect(within(dialog).getByText('Required')).toBeInTheDocument();
+        expect(
+            within(dialog).getByRole('button', { name: 'Preview findings' }),
+        ).toBeDisabled();
+
+        await user.click(noteField());
+        await user.paste(NOTE.slice(0, 20));
+
+        const saveButton = within(dialog).getByRole('button', {
+            name: 'Save note',
+        });
+
+        /* A required note below its minimum cannot be saved, let alone previewed. */
+        expect(saveButton).toBeDisabled();
+        expect(within(dialog).getByText(UNSAVED)).toBeInTheDocument();
+        expect(noteField()).toHaveAccessibleDescription(UNSAVED);
+
+        await user.paste(NOTE.slice(20));
+        expect(within(dialog).getByText('Required · done')).toBeInTheDocument();
+        await user.click(saveButton);
+
+        expect(inertia.calls).toEqual([
+            {
+                url: '/preview/auditor-jobs',
+                method: 'post',
+                body: {
+                    audit_id: 'fa_huye',
+                    step: 'seal',
+                    expected_revision: 6,
+                    note: NOTE,
+                    identity_context_revision: 3,
+                    request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u),
+                },
+            },
+        ]);
+
+        const saving = within(dialog).getByRole('button', {
+            name: 'Saving note…',
+        });
+
+        expect(saving).toBeDisabled();
+        expect(saving).toHaveAttribute('aria-busy', 'true');
+        expect(noteField()).toHaveAttribute('readonly');
+
+        await act(async () => {
+            save.settle(NOTE_SAVED);
+        });
+
+        /* Saved, but the preview waits for the fresh read that carries the new digest. */
+        expect(inertia.visits).toEqual([
+            { url: '/preview/auditor-audit-seal-note-saved' },
+        ]);
+        expect(
+            within(dialog).getByRole('button', { name: 'Saving note…' }),
+        ).toBeDisabled();
+        expect(
+            within(dialog).queryByRole('button', { name: 'Preview findings' }),
+        ).not.toBeInTheDocument();
+
+        rerender(<AuditorAudit {...props(noteSaved)} />);
+
+        expect(noteField()).not.toHaveAttribute('readonly');
+        expect(screen.queryByText(UNSAVED)).not.toBeInTheDocument();
+        await user.click(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        );
+        expect(within(findings()).getByText(DIGEST)).toBeInTheDocument();
+    });
+
+    it('steps up and seals with the persisted digest and revision, echoing the persisted note', async () => {
+        inertia.queue.push(answers(NOTE_SAVED));
+        const { user, rerender } = await saveNote();
+
+        await waitFor(() => expect(inertia.visits).toHaveLength(1));
+        inertia.queue.push(answers(PROOF), answers(SEALED));
+        /* A trailing space is not a change: the note matches the one the server holds. */
+        rerender(
+            <AuditorAudit
+                {...withStage(noteSaved, (stage) => ({
+                    ...stage,
+                    note: { ...stage.note, value: `${NOTE} ` },
+                }))}
+            />,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        );
+        await user.click(
+            screen.getByRole('button', {
+                name: 'Confirm with your authenticator',
+            }),
+        );
+        await user.click(codeField());
+        await user.paste('123456');
+        await user.click(
+            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+        );
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(3));
+        expect(inertia.calls[1].body).toMatchObject({
+            expected_revision: 7,
+            digest: DIGEST,
+        });
+        expect(inertia.calls[2].body).toMatchObject({
+            expected_revision: 7,
+            digest: DIGEST,
+            note: `${NOTE} `,
+        });
+    });
+
+    it('withdraws an open preview when the note changes, until it is saved again', async () => {
+        const { user } = renderWithUser(<AuditorAudit {...props(noteSaved)} />);
+
+        await user.click(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        );
+        expect(findings()).toBeInTheDocument();
+
+        await user.type(noteField(), '!');
+
+        expect(
+            screen.queryByRole('dialog', { name: 'Huye Motors' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Preview findings' }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Save note' })).toBeEnabled();
+        expect(screen.getByText(UNSAVED)).toBeInTheDocument();
+
+        /* Back to exactly what was saved: the saved digest covers it again. */
+        await user.type(noteField(), '{Backspace}');
+        expect(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        ).toBeEnabled();
+    });
+
+    it('withdraws a pending code entry and its message when the note changes', async () => {
+        const { user } = renderWithUser(<AuditorAudit {...props(wrongCode)} />);
+
+        await user.click(codeField());
+        await user.paste('123');
+        expect(within(findings()).getByRole('alert')).toBeInTheDocument();
+
+        await user.type(noteField(), '!');
+        expect(
+            screen.queryByLabelText('Six-digit authenticator code'),
+        ).not.toBeInTheDocument();
+
+        await user.type(noteField(), '{Backspace}');
+        await user.click(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        );
+        await user.click(
+            screen.getByRole('button', {
+                name: 'Confirm with your authenticator',
+            }),
+        );
+        expect(codeField()).toHaveValue('');
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it('keeps a throttle running when the note changes', async () => {
+        const { user } = renderWithUser(<AuditorAudit {...props(throttled)} />);
+
+        expect(within(findings()).getByRole('timer')).toBeInTheDocument();
+        await user.type(noteField(), '!');
+        await user.type(noteField(), '{Backspace}');
+        await user.click(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        );
+        await user.click(
+            screen.getByRole('button', {
+                name: 'Confirm with your authenticator',
+            }),
+        );
+        expect(within(findings()).getByRole('timer')).toBeInTheDocument();
+        expect(codeField()).toBeDisabled();
+    });
+
+    it('reloads on a stale save and keeps the typed note to save again', async () => {
+        inertia.queue.push(fails(409, { code: 'VERSION_CONFLICT' }));
+        await saveNote();
+
+        expect(
+            await screen.findByText(
+                'This record changed since you opened it. The page has been refreshed — check it and try again.',
+            ),
+        ).toBeInTheDocument();
+        expect(inertia.reloads).toEqual([undefined]);
+        expect(noteField()).toHaveValue(NOTE);
+        expect(noteField()).not.toHaveAttribute('readonly');
+        expect(screen.getByRole('button', { name: 'Save note' })).toBeEnabled();
+        expect(
+            screen.queryByRole('button', { name: 'Preview findings' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('says a denied save changed access, without a reload', async () => {
+        inertia.queue.push(fails(403, { code: 'ACTION_FORBIDDEN' }));
+        await saveNote();
+
+        expect(
+            await screen.findByText(
+                "You can't do this on this assignment any more. Your access changed.",
+            ),
+        ).toBeInTheDocument();
+        expect(inertia.reloads).toHaveLength(0);
+        expect(screen.getByRole('button', { name: 'Save note' })).toBeEnabled();
+    });
+
+    it('shows a note error the save returns beside the note', async () => {
+        inertia.queue.push(invalid({ note: 'Say what you saw.' }));
+        await saveNote();
+
+        expect(
+            await screen.findByText('Say what you saw.'),
+        ).toBeInTheDocument();
+        expect(screen.getAllByText('Say what you saw.')).toHaveLength(1);
+        expect(noteField()).toHaveAttribute('aria-invalid', 'true');
+        expect(screen.getByRole('button', { name: 'Save note' })).toBeEnabled();
+    });
+
+    it('looks up a save whose answer was lost, and offers nothing meanwhile', async () => {
+        inertia.queue.push(fails(503), offline());
+        await saveNote();
+
+        expect(
+            await screen.findByText("We couldn't confirm your last action"),
+        ).toBeInTheDocument();
+        expect(inertia.calls[1].body).toEqual({ command: 'audit.save_step' });
+        expect(
+            screen.getByRole('button', { name: 'Save note' }),
+        ).toBeDisabled();
+    });
+
+    it('cannot save the note when the server does not allow it', async () => {
+        const { user } = renderWithUser(
+            <AuditorAudit {...props(seal)} allowed_actions={['audit.seal']} />,
+        );
+
+        await user.click(noteField());
+        await user.paste(NOTE);
+        expect(
+            screen.getByRole('button', { name: 'Save note' }),
+        ).toBeDisabled();
+    });
+
+    it('offers no save or explanation for a note when sealing is not allowed', async () => {
+        const { user } = renderWithUser(
+            <AuditorAudit {...props(seal)} allowed_actions={[]} />,
+        );
+
+        await user.click(noteField());
+        await user.paste(NOTE);
+        expect(
+            screen.queryByRole('button', { name: 'Save note' }),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText(UNSAVED)).not.toBeInTheDocument();
+    });
+});
+
+describe('Seal — a source changed after the preview', () => {
+    const CHANGED =
+        'A source changed after your preview. Go back to review it, then preview again before sealing.';
+
+    const LEDGER = {
+        url: '/auditor/reports/fa_huye?step=ledger',
+        method: 'get',
+    } as const;
+
+    const withBack = (fixture: { props: unknown }): AuditProcedureProps => {
+        const page = props(fixture);
+
+        return { ...page, links: { ...page.links, back: LEDGER } };
+    };
+
+    /* The header's Back closes the sheet; the footer's goes to the step before. */
+    const backHrefs = () =>
+        within(procedure())
+            .getAllByRole('link', { name: 'Back' })
+            .map((link) => link.getAttribute('href'));
+
+    it('says so after a refused note save and leaves the way back to review it', async () => {
+        inertia.queue.push(
+            fails(409, { code: 'AUDIT_PROCEDURE_SOURCE_CHANGED' }),
+        );
+        await saveNote(withBack(seal));
+
+        expect(await screen.findByText(CHANGED)).toBeInTheDocument();
+        expect(inertia.reloads).toEqual([undefined]);
+        expect(backHrefs()).toContain(LEDGER.url);
+    });
+
+    it('closes the confirmation, says so and leaves the way back when the step-up finds it', async () => {
+        inertia.queue.push(
+            fails(409, { code: 'AUDIT_PROCEDURE_SOURCE_CHANGED' }),
+        );
+        const { user } = await openCode(withBack(stepUp));
+
+        await user.paste('123456');
+        await user.click(
+            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+        );
+
+        await waitFor(() =>
+            expect(
+                screen.queryByRole('dialog', { name: 'Huye Motors' }),
+            ).not.toBeInTheDocument(),
+        );
+        expect(within(procedure()).getByText(CHANGED)).toBeInTheDocument();
+        expect(inertia.reloads).toEqual([undefined]);
+        expect(backHrefs()).toContain(LEDGER.url);
+    });
+
+    it('offers no way back the server does not supply', () => {
+        const page = props(noteSaved);
+
+        render(
+            <AuditorAudit {...page} links={{ ...page.links, back: null }} />,
+        );
+
+        expect(backHrefs()).toEqual([page.links.close.url]);
+        expect(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        ).toBeEnabled();
     });
 });
 
@@ -623,6 +1037,297 @@ describe('Seal — authenticator step-up', () => {
         expect(
             screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
         ).toBeDisabled();
+    });
+});
+
+describe('Seal — a confirmation withdrawn while its code is checked', () => {
+    /** Opens the saved-note preview, types a code and submits it; the step-up stays pending. */
+    const submitCode = async (page: AuditProcedureProps = props(noteSaved)) => {
+        const confirmation = deferred();
+
+        inertia.queue.push(confirmation.responder, answers(SEALED));
+        const view = renderWithUser(<AuditorAudit {...page} />);
+
+        await view.user.click(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        );
+        await view.user.click(
+            screen.getByRole('button', {
+                name: 'Confirm with your authenticator',
+            }),
+        );
+        await view.user.click(codeField());
+        await view.user.paste('123456');
+        await view.user.click(
+            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+        );
+        await waitFor(() => expect(inertia.calls).toHaveLength(1));
+
+        return { ...view, confirmation };
+    };
+
+    it('does not seal after the preview is closed and the note edited', async () => {
+        const { user, confirmation } = await submitCode();
+
+        await user.click(
+            within(findings()).getByRole('button', { name: 'Close' }),
+        );
+        await user.type(noteField(), '!');
+        expect(
+            screen.getByRole('button', { name: 'Save note' }),
+        ).toBeInTheDocument();
+
+        await act(async () => confirmation.settle(PROOF));
+
+        expect(inertia.calls).toHaveLength(1);
+        expect(inertia.visits).toHaveLength(0);
+    });
+
+    it('does not seal after the preview is only closed', async () => {
+        const { user, confirmation } = await submitCode();
+
+        await user.click(
+            within(findings()).getByRole('button', { name: 'Close' }),
+        );
+        await act(async () => confirmation.settle(PROOF));
+
+        expect(inertia.calls).toHaveLength(1);
+        expect(
+            screen.queryByRole('dialog', { name: 'Huye Motors' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('does not seal when the note is edited during the check, without a close', async () => {
+        const { user, confirmation } = await submitCode();
+
+        await user.type(noteField(), '!');
+        expect(
+            screen.queryByRole('dialog', { name: 'Huye Motors' }),
+        ).not.toBeInTheDocument();
+
+        await act(async () => confirmation.settle(PROOF));
+
+        expect(inertia.calls).toHaveLength(1);
+    });
+
+    it('does not seal once the page has gone', async () => {
+        const { unmount, confirmation } = await submitCode();
+
+        unmount();
+        await act(async () => confirmation.settle(PROOF));
+
+        expect(inertia.calls).toHaveLength(1);
+        expect(inertia.visits).toHaveLength(0);
+    });
+
+    it('does not seal when fresh facts bind a new digest during the check', async () => {
+        const { rerender, confirmation } = await submitCode();
+
+        rerender(
+            <AuditorAudit
+                {...withStage(noteSaved, (stage) => ({
+                    ...stage,
+                    digest: 'sha256:4b1e07c',
+                }))}
+            />,
+        );
+        await act(async () => confirmation.settle(PROOF));
+
+        expect(inertia.calls).toHaveLength(1);
+        /* Nor does a withdrawn answer speak: no message for an attempt that no longer counts. */
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it('still seals exactly once when nothing withdrew the confirmation', async () => {
+        const { confirmation } = await submitCode();
+
+        await act(async () => confirmation.settle(PROOF));
+
+        await waitFor(() => expect(inertia.visits).toHaveLength(1));
+        expect(inertia.calls).toHaveLength(2);
+        expect(
+            inertia.calls.filter(
+                (call) => call.url === '/preview/auditor-audit-sealed',
+            ),
+        ).toHaveLength(1);
+        expect(inertia.calls[1].body).toMatchObject({
+            expected_revision: 7,
+            digest: DIGEST,
+            note: NOTE,
+            step_up: { proof: 'stp_new' },
+        });
+    });
+});
+
+describe('Seal — the note before sealing is enabled', () => {
+    const UNSEALABLE =
+        "Your note isn't saved yet. Save it now; sealing opens once the report is ready for it.";
+
+    const unsealable = (): AuditProcedureProps => {
+        const page = props(seal);
+
+        return {
+            ...page,
+            actions: { ...page.actions, step_up: null, seal: null },
+        };
+    };
+
+    it('saves an edited note while the seal routes are still null, with no preview or seal', async () => {
+        inertia.queue.push(answers(NOTE_SAVED));
+        const { user } = await saveNote(unsealable());
+
+        expect(inertia.calls[0]).toMatchObject({
+            url: '/preview/auditor-jobs',
+            body: {
+                audit_id: 'fa_huye',
+                step: 'seal',
+                expected_revision: 6,
+                note: NOTE,
+            },
+        });
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([
+                { url: '/preview/auditor-audit-seal-note-saved' },
+            ]),
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Preview findings' }),
+        ).not.toBeInTheDocument();
+        expect(noteField()).toBeEnabled();
+        await user.type(noteField(), '!');
+        expect(
+            screen.queryByRole('dialog', { name: 'Huye Motors' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('says why the note is unsaved without promising a preview', async () => {
+        const { user } = renderWithUser(<AuditorAudit {...unsealable()} />);
+
+        expect(
+            screen.queryByRole('button', { name: 'Save note' }),
+        ).not.toBeInTheDocument();
+        await user.click(noteField());
+        await user.paste(NOTE);
+
+        expect(screen.getByRole('button', { name: 'Save note' })).toBeEnabled();
+        expect(noteField()).toHaveAccessibleDescription(UNSEALABLE);
+        expect(screen.queryByText(UNSAVED)).not.toBeInTheDocument();
+    });
+
+    it('offers nothing to press once the saved note is clean and sealing is not enabled', () => {
+        const page = props(noteSaved);
+
+        render(
+            <AuditorAudit
+                {...page}
+                actions={{ ...page.actions, step_up: null, seal: null }}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Save note' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Preview findings' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('lets a required unsaved note be saved while the server holds the step, then previews', async () => {
+        inertia.queue.push(answers(NOTE_SAVED));
+        const hint = 'Save your assessment note to continue.';
+        const { user, rerender } = await saveNote({
+            ...props(seal),
+            can_continue: false,
+            hint,
+        });
+
+        /* The server's reason is shown; the save itself does not wait on can_continue. */
+        expect(screen.getByText(hint)).toBeInTheDocument();
+        expect(inertia.calls[0].body).toMatchObject({
+            step: 'seal',
+            note: NOTE,
+        });
+
+        rerender(<AuditorAudit {...props(noteSaved)} can_continue={false} />);
+        expect(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        ).toBeDisabled();
+
+        rerender(<AuditorAudit {...props(noteSaved)} />);
+        await user.click(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        );
+        expect(findings()).toBeInTheDocument();
+    });
+});
+
+describe('Seal — commands the stage does not enable yet', () => {
+    const without = (
+        fixture: { props: unknown },
+        nulls: (keyof AuditProcedureProps['actions'])[],
+    ): AuditProcedureProps => {
+        const page = props(fixture);
+
+        return {
+            ...page,
+            actions: {
+                ...page.actions,
+                ...Object.fromEntries(nulls.map((key) => [key, null])),
+            },
+        };
+    };
+
+    it.each([[['step_up']], [['seal']], [['step_up', 'seal']]] as const)(
+        'offers no preview or seal when %j is null, even with the step-up previewed',
+        (nulls) => {
+            render(<AuditorAudit {...without(stepUp, [...nulls])} />);
+
+            expect(
+                screen.queryByRole('button', { name: 'Preview findings' }),
+            ).not.toBeInTheDocument();
+            expect(
+                screen.queryByRole('dialog', { name: 'Huye Motors' }),
+            ).not.toBeInTheDocument();
+            expect(procedure()).toBeInTheDocument();
+        },
+    );
+
+    it('offers neither monthly reason command while both are null', () => {
+        render(
+            <AuditorAudit
+                {...without(monthlyRequestChanges, [
+                    'request_changes',
+                    'reject',
+                ])}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Request changes' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Reject filing' }),
+        ).not.toBeInTheDocument();
+        /* The previewed sheet has no command behind it, so it does not open. */
+        expect(
+            screen.queryByRole('dialog', { name: 'Request changes' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        ).toBeInTheDocument();
+    });
+
+    it('offers only the monthly reason command that is enabled', () => {
+        render(
+            <AuditorAudit {...without(monthlyReject, ['request_changes'])} />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Request changes' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('dialog', { name: 'Reject filing' }),
+        ).toBeInTheDocument();
     });
 });
 

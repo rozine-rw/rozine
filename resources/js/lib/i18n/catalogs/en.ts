@@ -235,6 +235,16 @@ const en = {
     'business.note.continue_application': 'Continue application',
     'business.note.empty.title': 'No notes with this status',
     'business.note.empty.body': 'Start a raise to fund your business.',
+    'business.entries.title': 'Raise applications',
+    'business.entries.continue': 'Continue your application',
+    'business.entries.view': 'View your application',
+    'business.entries.saved_at': 'Saved at {step}',
+    'business.entries.submitted': 'Submitted · under review',
+    'business.entries.view_only':
+        'You can view this business, but starting a raise is not open to you.',
+    'business.entries.empty':
+        'No business you can act for is linked to this account yet.',
+    'business.entries.more': 'Show more',
     'business.grow.title': 'Grow',
     'business.grow.subtitle': "Raise more when you're ready.",
     'business.grow.headroom': 'Headroom available',
@@ -255,15 +265,22 @@ const en = {
     'business.apply.business.subtitle':
         'From your RDB certificate and your verified bank & mobile-money statements. Review it — if it looks right, continue.',
     'business.apply.business.rdb_verified': '✓ RDB verified',
-    'business.apply.business.statements_verified':
-        '✓ Statements verified · OCR',
+    'business.apply.business.statements_verified': '✓ Statements verified',
     'business.apply.business.active': '● Active',
     'business.apply.business.established': 'Est. {year}',
-    'business.apply.business.standing': 'Financial standing · {years}-year',
-    'business.apply.business.ocr_verified': 'OCR · verified',
+    'business.apply.business.standing': 'Financial standing',
+    'business.apply.business.statements_badge': 'Statements verified',
+    'business.apply.business.period': {
+        one: '{from} – {through} · {count} month',
+        other: '{from} – {through} · {count} months',
+    },
+    'business.apply.business.partial_year': {
+        one: '{year} · {count} month',
+        other: '{year} · {count} months',
+    },
     'business.apply.business.revenue': 'Revenue',
     'business.apply.business.costs': 'Costs',
-    'business.apply.business.net_profit': 'Net profit',
+    'business.apply.business.net_profit': 'Net operating cash',
     'business.apply.business.existing_debt': 'Existing debt',
     'business.apply.business.crb_verified': '✓ CRB verified',
     'business.apply.business.year_by_year': 'Year by year',
@@ -541,14 +558,13 @@ const en = {
     'business.reports.subtitle':
         'Verified each month by your on-site Audit Partner.',
     'business.reports.guide.title': 'How monthly audits work',
-    'business.reports.guide.opens.title': 'Your Audit Partner opens the file',
+    'business.reports.guide.opens.title': 'Gather your records',
     'business.reports.guide.opens.body':
-        'You do not file the report. At the close of each month your assigned CPA opens the audit and works from the bank and Mobile Money statements you uploaded.',
+        'Between the 20th and month-end, gather all physical and digital financial records for your scheduled CPA in-person audit.',
     'business.reports.guide.visit.title': 'Be ready for the site visit',
     'business.reports.guide.visit.body_before':
-        'They count stock, check your ledgers and seal the audit before the',
-    'business.reports.guide.visit.body_after':
-        '. Your job is to have statements, stock and access ready — we remind you daily for the last seven days of the month.',
+        'Your assigned CPA visits your premises to review records and reconcile cash flows, then seals the report before the',
+    'business.reports.guide.visit.body_after': '.',
     'business.reports.guide.cosign.title': 'Co-sign, or dispute',
     'business.reports.guide.cosign.body':
         'When the audit is sealed you add a recap and co-sign it by the {day}, or raise a dispute with counter-proof. Because you never touch the figures, the report is independent — which is exactly what investors pay for.',
@@ -1401,7 +1417,7 @@ const en = {
     'auditor.nav.jobs': 'Jobs',
     'auditor.nav.portfolio': 'Portfolio',
     'auditor.nav.profile': 'Profile',
-    'auditor.nav.jobs_badge': '{count} open Flash Audits',
+    'auditor.nav.jobs_badge': '{count} open offers',
     'auditor.clock.label': 'Time left on this job',
     'auditor.clock.time_left': 'Time left',
     'auditor.time.minutes_ago': '{count}m ago',
@@ -1433,11 +1449,10 @@ const en = {
     'auditor.home.nearby_sub':
         'Closest {distance}km · first to accept locks the file',
     'auditor.home.in_progress': 'In progress',
-    'auditor.job.progress_line':
-        '{district} · {distance}km · Step {step} of {steps}',
+    'auditor.job.step_of': 'Step {step} of {steps}',
     'auditor.job.status.overdue': 'Overdue',
     'auditor.job.status.awaiting_cosign': 'Awaiting co-signature',
-    'auditor.job.reassigned_from': 'Reassigned from {name}',
+    'auditor.job.reassigned': 'Reassigned to you',
     'auditor.standing.title': 'Your standing',
     'auditor.standing.on_time': 'On-time close',
     'auditor.standing.avg_variance': 'Avg variance',
@@ -1467,9 +1482,21 @@ const en = {
     'auditor.jobs.map_label':
         'Map of your {radius} km dispatch radius with {count} open jobs at approximate positions',
     'auditor.jobs.map_badge': '{radius}km radius · {count} open',
+    'auditor.jobs.map_label_page':
+        'Map of your {radius} km dispatch radius with {count} jobs on this page at approximate positions',
+    'auditor.jobs.map_badge_page': '{radius}km radius · {count} on this page',
     'auditor.jobs.assigned': 'Assigned to you',
     'auditor.jobs.distance': 'Distance',
     'auditor.jobs.km': '{distance}km',
+    'auditor.jobs.sector_unavailable': 'Sector unavailable',
+    'auditor.jobs.kind_monthly': 'Monthly visit',
+    'auditor.jobs.show_more': 'Show more',
+    'auditor.jobs.conflicts_link': 'Your declared conflicts →',
+    'auditor.jobs.page_empty':
+        'Nothing to show on this page. Earlier jobs may follow.',
+    'auditor.jobs.assigned_empty':
+        'No accepted work is on the clock right now.',
+    'auditor.jobs.assigned_page_empty': 'Nothing assigned to you on this page.',
     'auditor.jobs.requested': 'Requested',
     'auditor.jobs.dscr': 'DSCR',
     'auditor.jobs.term': 'Term',
@@ -1546,7 +1573,12 @@ const en = {
     'auditor.file.title': 'Review the application',
     'auditor.file.lead':
         "Everything {business} submitted, screened against Rozine's thresholds. Your field check resolves what the engine can't confirm remotely.",
-    'auditor.file.reassigned_title': 'Reassigned to you from {name}',
+    'auditor.file.lead_provisional':
+        "{business}'s application as it currently stands.",
+    'auditor.file.lead_no_prescreen': 'No automated pre-screen is on record.',
+    'auditor.file.lead_field_check':
+        "Your field check confirms what can't be verified remotely.",
+    'auditor.file.reassigned_title': 'Reassigned to you',
     'auditor.file.reassigned_body':
         'The original deadline still applies — reassignment does not reset the clock. Earlier evidence on the file stays on the record.',
     'auditor.file.raise': 'The raise',
@@ -1555,11 +1587,15 @@ const en = {
     'auditor.file.return_value': '{pct}% total',
     'auditor.file.use_of_funds': 'Use of funds',
     'auditor.file.documents': 'Submitted documents',
+    'auditor.file.no_documents':
+        'No submitted documents are on record for this file yet.',
     'auditor.file.doc_status.parsed': '✓ OCR',
     'auditor.file.doc_status.verified': '✓ Verified',
     'auditor.file.doc_status.present': '✓ Present',
     'auditor.file.doc_status.missing': 'Missing',
     'auditor.file.prescreen': 'Automated pre-screen',
+    'auditor.file.no_prescreen':
+        'No automated pre-screen result has been published for this file yet.',
     'auditor.file.check.met': 'Met',
     'auditor.file.check.flag': 'Flag',
     'auditor.file.why': 'Why a field audit is required',
@@ -1647,14 +1683,14 @@ const en = {
     'auditor.ledger.none': 'None attached',
     'auditor.ledger.accepted': '{parsed} of {count} accepted',
     'auditor.ledger.rules':
-        'Documents only — PDF, or a light high-quality scan (PNG / TIFF / CSV). Photos of a ledger are not accepted. Each file is OCR-parsed before it is accepted.',
-    'auditor.ledger.doc.scanning': 'OCR parsing … {detail}',
+        'Upload the original ledger as a PDF or CSV (up to 10 MB). A scanned ledger can be a PDF; a scan without text is marked for manual source review.',
+    'auditor.ledger.doc.scanning': 'Checking … {detail}',
     'auditor.ledger.doc.parsed': 'Accepted · {detail}',
     'auditor.ledger.doc.failed': 'Rejected · {detail}',
     'auditor.ledger.reading': 'Reading the document',
     'auditor.ledger.rescan': 'Re-scan this document',
     'auditor.ledger.file_input': 'Ledger document file',
-    'auditor.ledger.attach': 'Attach ledger document (PDF or scan)',
+    'auditor.ledger.attach': 'Attach the ledger (PDF or CSV)',
     'auditor.ledger.attach_another': 'Add another ledger document',
     'auditor.ledger.reconciles':
         'Secondary paper ledgers and receipts reconcile with the digital statements.',
@@ -1748,6 +1784,15 @@ const en = {
     'auditor.conflict.options_other':
         'Declare on any of your {count} assigned files',
     'auditor.conflict.on_record': 'On the record',
+    'auditor.conflict.business_on_record': 'Business on record',
+    'auditor.conflict.assignment_ref': 'Ref. {reference}',
+    'auditor.conflicts.head_title': 'Your conflicts',
+    'auditor.conflicts.title': 'Your declared conflicts',
+    'auditor.conflicts.lead':
+        'Every conflict you have declared, as it was recorded. Each one stopped your work on that assignment, and only your own receipt remains.',
+    'auditor.conflicts.empty': 'You have not declared any conflicts.',
+    'auditor.conflicts.page_empty':
+        'Nothing to show on this page. Earlier declarations may follow.',
     'auditor.reports.title': 'Reports filed',
     'auditor.reports.count': '{count} total',
     'auditor.reports.filters': 'Filter reports',
@@ -1974,14 +2019,14 @@ const en = {
     'business.audit_prep.day_left': 'Day left',
     'business.audit_prep.days_left': 'Days left',
     'business.audit_prep.intro':
-        'Your Audit Partner opens the {month} file once the month closes and must seal it by {seal}. You cannot start or edit the report — what you can do is make the visit quick and clean.',
+        'Notification received: Please prepare all bank statements, Mobile Money logs, and physical receipt books for your upcoming CPA visit.',
     'business.audit_prep.reassigned':
         'Your file moved from {from} to {to}, and your history moved with it.',
     'business.audit_prep.ready': 'Have this ready',
     'business.audit_prep.item.statements.title':
-        'Bank & Mobile Money statements',
+        'Bank statements & Mobile Money logs',
     'business.audit_prep.item.statements.body':
-        'The full month, to the last day. Your CPA works from the statements you uploaded — keep printed copies for the walk-through.',
+        'The full month, to the last day, ready for your CPA to review on site.',
     'business.audit_prep.item.stock.title': 'Stock counted and ledgers current',
     'business.audit_prep.item.stock.body':
         'Your Audit Partner does a physical count. A stale ledger reads as a variance and cuts your borrowing capacity.',
@@ -1990,9 +2035,9 @@ const en = {
     'business.audit_prep.item.access.body':
         'Anything locked or unreachable on the day is counted as missing.',
     'business.audit_prep.item.papers.title':
-        'Receipts, purchase orders and waybills filed',
+        'Till receipts and transactions reconciled',
     'business.audit_prep.item.papers.body':
-        'Month-to-date, in one place. These explain any gap between your statements and the count.',
+        "Ensure all physical till receipts and digital transactions are reconciled for the CPA's on-site review.",
     'business.audit_prep.item.person.title': 'Someone with authority on site',
     'business.audit_prep.item.person.body':
         'They need a person who can open doors and answer for the numbers — not just staff on shift.',
@@ -2002,7 +2047,7 @@ const en = {
         'Your CPA opens the audit file for the period. Nothing is required from you to start it.',
     'business.audit_prep.flow.visit.title': 'On-site visit',
     'business.audit_prep.flow.visit.body':
-        'They count stock, reconcile the till against your statements and photograph the evidence on site.',
+        'Your assigned CPA will visit your premises to review records, reconcile cash flows, and generate the monthly audit report.',
     'business.audit_prep.flow.sealed.title': 'Sealed',
     'business.audit_prep.flow.sealed.body':
         'The factual findings and variances are sealed under their ICPAR licence.',
@@ -2010,7 +2055,7 @@ const en = {
     'business.audit_prep.flow.cosign.body':
         'You add a recap and co-sign by {date}, or dispute with counter-proof.',
     'business.audit_prep.closing':
-        'You never file the monthly report yourself. Your Audit Partner opens it, verifies it on site and seals it — your part is being ready, then co-signing or disputing what they found.',
+        'You never file the monthly report yourself. Your CPA visits, reviews your records on site and seals the report — your part is being ready, then co-signing or disputing what they found.',
     'investor.nav.deals': 'Deals',
     'investor.nav.portfolio': 'Portfolio',
     'investor.nav.profile': 'Profile',
@@ -2750,6 +2795,10 @@ const en = {
         'Waiting for {names} to sign. The application is submitted once every required signature is in.',
     'business.apply.review.cannot_sign':
         "Only a signatory on the company's verified mandate can sign this application.",
+    'business.apply.review.agreement_unavailable':
+        "The agreement isn't available yet.",
+    'business.apply.review.agreement_unavailable_body':
+        'Rozine has not published the approved terms and risk disclosures for this application, so there is nothing to sign yet. Your draft and your offer stay saved.',
     'business.apply.view_only':
         'You can view this application, but not change it.',
     'business.apply.submitted.application_id': 'Application ID · {id}',
@@ -2789,6 +2838,11 @@ const en = {
         'Publishing opens once your application is approved and fully signed, and the listing flow is ready.',
     'business.apply.outcome.refused.MANDATE_STALE':
         "The company's signing mandate changed before you signed. Check who must sign now, then sign again.",
+    'business.apply.outcome.refused.APPLICATION_PENDING_REVIEW':
+        "Your business already has an application under review. You can apply again once it's decided.",
+    'business.apply.outcome.refused.APPLICATION_STEP_INVALID':
+        'Go back to Review & sign to submit this application.',
+    'business.apply.pending_review.link': 'View the application under review',
     'business.apply.review.document_summary': 'Summary',
     'business.apply.review.document_full_text': 'Full text',
     'business.apply.review.reduce.open': 'Take a smaller amount',
@@ -2816,6 +2870,8 @@ const en = {
         'Your conflict has been recorded and {business} has been reassigned. Your work on this assignment has stopped.',
     'auditor.outcome.conflict.blocking.recorded':
         'Your conflict has been recorded. Work on this assignment is stopped.',
+    'auditor.outcome.conflict.blocking.closed':
+        'Your conflict has been recorded. Audit Operations has closed this assignment, and your work on it has stopped.',
     'auditor.seal.cites': 'Evidence: {ids}',
     'auditor.seal.evidence': 'Evidence sealed with this report',
     'auditor.seal.versions':
@@ -2848,22 +2904,24 @@ const en = {
         'Report {report} amends this one; this report stays as sealed.',
     'auditor.sealed.open_amendment': 'Open the amendment',
     'auditor.audit.amends':
-        'This is a linked amendment of report {report}. That report stays published, unchanged.',
+        'This is a linked amendment of report {report}. That report remains unchanged.',
     'auditor.audit.open_original': 'Open the original',
     'auditor.receipt.title': 'Conflict recorded',
     'auditor.receipt.body.reassignment_pending':
         'Your conflict has been recorded. Work on this assignment is stopped while Audit Operations arranges reassignment.',
     'auditor.receipt.body.reassigned':
-        "Your conflict has been recorded and the assignment has been reassigned. You no longer have access to {business}'s file.",
+        'Your conflict has been recorded and the assignment has been reassigned. You no longer have access to its file.',
     'auditor.receipt.body.recorded':
-        "Your conflict has been recorded. Work on this assignment is stopped, and you no longer have access to {business}'s file.",
+        'Your conflict has been recorded. Work on this assignment is stopped, and you no longer have access to its file.',
+    'auditor.receipt.body.closed':
+        'Your conflict has been recorded. Audit Operations has closed this assignment, and you no longer have access to its file.',
     'auditor.receipt.status': 'Assignment',
     'auditor.receipt.state.reassignment_pending': 'Reassignment pending',
     'auditor.receipt.state.reassigned': 'Reassigned',
     'auditor.receipt.state.recorded': 'Recorded',
+    'auditor.receipt.state.closed': 'Closed by Audit Operations',
     'auditor.receipt.kind': 'Kind of interest',
     'auditor.receipt.declared': 'Declared',
-    'auditor.receipt.reference': 'Reference',
     'auditor.receipt.note': 'Your explanation',
     'auditor.evidence.title': 'Evidence',
     'auditor.evidence.captured': 'Captured',
@@ -2969,14 +3027,256 @@ const en = {
         'Dispatch is paused until your standing is restored. Your choice to accept audits is kept.',
     'auditor.standing.turning_on':
         "Turning this on won't bring offers until your standing is restored.",
+    'auditor.accreditation.licence_title': 'Practising licence',
+    'auditor.accreditation.view_certificate':
+        'Download the certificate on record',
+    'auditor.accreditation.view_submitted':
+        'Download the submitted certificate',
+    'auditor.seal.save_note': 'Save note',
+    'auditor.seal.saving_note': 'Saving note…',
+    'auditor.seal.note_unsaved':
+        'Save your note before you preview. The preview, your code and the seal all cover the saved note.',
+    'auditor.ledger.reported_undeclared': 'Not declared',
+    'auditor.ledger.reported_undeclared_note':
+        'The business has not declared a stock value, so there is no reported figure to compare your count with. Record what you counted.',
+    'auditor.ledger.reconciles_undeclared':
+        'Reconciliation stays blocked until the business declares its stock.',
+    'auditor.statements.cover_unavailable': 'Unavailable',
+    'auditor.statements.documents': 'Source documents',
+    'auditor.statements.no_documents':
+        'No source documents are on file for this month.',
+    'auditor.count.period_unavailable': 'Unavailable',
+    'auditor.file.start': 'Start the audit',
+    'auditor.file.starting': 'Starting…',
+    'auditor.file.application_unavailable':
+        'No submitted application is available to audit yet.',
+    'auditor.command.refused.APPLICATION_VERSION_CONFLICT':
+        "The business's application changed since you opened this file. The page has been refreshed — check it and start again.",
+    'auditor.command.refused.APPLICATION_NOT_SUBMITTED':
+        "This application hasn't been submitted, so there is nothing to audit yet. The page has been refreshed.",
+    'auditor.command.refused.APPLICATION_NOT_FOUND':
+        'This application is no longer available to you, so nothing was started.',
+    'auditor.command.refused.AUDIT_APPLICATION_BOUND':
+        'A report is already bound to this application, so no new one was started. The page has been refreshed — continue from there.',
+    'auditor.command.refused.AUDIT_REPORT_REASSIGNMENT_REQUIRED':
+        'This report has to be reassigned before work on it can continue, so nothing was started. The page has been refreshed.',
+    'auditor.evidence.source_isolated_synthetic':
+        'Synthetic test evidence (isolated)',
+    'auditor.ledger.file_type': 'Choose the ledger as a PDF or CSV file.',
+    'auditor.ledger.file_size':
+        'This file is larger than 10 MB. Upload a PDF or CSV of 10 MB or less.',
+    'auditor.seal.note_unsaved_unsealable':
+        "Your note isn't saved yet. Save it now; sealing opens once the report is ready for it.",
+    'auditor.capture.synthetic':
+        'Synthetic test evidence (isolated) — not a native capture.',
+    'auditor.returned.title.changes_requested': 'Changes requested',
+    'auditor.returned.title.rejected': 'Filing rejected',
+    'auditor.returned.lead.changes_requested':
+        'This filing went back to the business with the reason below. The report is kept exactly as it was returned.',
+    'auditor.returned.lead.rejected':
+        "This filing version could not be verified, for the reason below. This concerns the filing, not the business's credit. The report is kept exactly as it was rejected.",
+    'auditor.returned.reason': 'Reason',
+    'auditor.returned.recorded': 'Recorded',
+    'auditor.returned.amend': 'Start a linked amendment',
+    'auditor.returned.amended_by':
+        'An amendment {report} was started from this report.',
+    'auditor.returned.view_amendment': 'View the amendment',
+    'auditor.reason.count': '{count} / {max}',
+    'auditor.command.refused.AUDIT_REPORT_DECISION_NOT_ALLOWED':
+        'This report can no longer be returned or rejected, so nothing was recorded. The page has been refreshed.',
+    'auditor.command.refused.AUDIT_REPORT_NOT_AMENDABLE':
+        "This report can't be amended now, so no amendment was started. The page has been refreshed.",
+    'auditor.ledger.download': 'Download original',
+    'auditor.sealed.body_undated':
+        'The report is sealed and can no longer be edited. {party} still needs to co-sign; it publishes to holders after that.',
+    'auditor.sealed.unavailable':
+        "This seal can't be verified right now — its signing key is no longer current. The sealed record and its history are unchanged.",
+    'auditor.sealed.body_published':
+        'Sealed and co-signed; published to holders on {date}.',
+    'auditor.sealed.body_signed':
+        'The report is sealed and {party} has co-signed it. It publishes to holders next.',
+    'auditor.sealed.body_declined':
+        'The report is sealed. {party} disputed it rather than co-signing, so it is not published.',
+    'auditor.sealed.body_overdue':
+        "The report is sealed, but {party}'s co-signing window has passed. It can no longer be co-signed and is not published; nothing is approved automatically.",
+    'auditor.command.refused.AUDIT_PROCEDURE_SOURCE_CHANGED':
+        'A source changed after your preview. Go back to review it, then preview again before sealing.',
+    'auditor.sealed.body_amended':
+        "You amended this report, so it won't be co-signed or published. The amendment replaces it.",
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.
      */
+    'auditor.engagement.head_title': 'Engagement terms',
+    'auditor.engagement.title': 'Engagement terms',
+    'auditor.engagement.lead':
+        'Read both documents in full before you accept. Dispatch offers you new work only under terms you have accepted.',
+    'auditor.engagement.synthetic_title': 'Synthetic test terms',
+    'auditor.engagement.synthetic_body':
+        'These are test terms, not for real engagements. Accepting them represents no real professional engagement.',
+    'auditor.engagement.original_language':
+        'The terms are shown in their original language.',
+    'auditor.engagement.document.master_services': 'Master Services Agreement',
+    'auditor.engagement.document.agreed_procedures': 'Agreed Procedures',
+    'auditor.engagement.document_meta': 'Version {version} · SHA-256 {hash}…',
+    'auditor.engagement.acceptance_title': 'Your acceptance',
+    'auditor.engagement.release_meta':
+        'Version {version} · procedure {procedure}',
+    'auditor.engagement.release_hash': 'Release SHA-256 {hash}…',
+    'auditor.engagement.accept_label':
+        'I have read and accept the Master Services Agreement and the Agreed Procedures',
+    'auditor.engagement.accept': 'Accept the terms',
+    'auditor.engagement.accepting': 'Accepting…',
+    'auditor.engagement.acceptance_required':
+        'Tick the box to confirm you have read and accept both documents.',
+    'auditor.engagement.accepted': 'You accepted version {version} on {date}',
+    'auditor.engagement.accepted_receipt': 'Receipt SHA-256 {hash}…',
+    'auditor.engagement.no_accept':
+        'Accepting these terms isn’t available to you right now.',
+    'auditor.engagement.unavailable':
+        'No engagement terms are available right now',
+    'auditor.engagement.unavailable_body':
+        'New work is paused until Rozine publishes terms. Nothing is needed from you meanwhile.',
+    'auditor.engagement.refused.AUDIT_ENGAGEMENT_VERSION_CONFLICT':
+        'The engagement terms changed before your acceptance reached Rozine, so nothing was accepted. Read the current version in full before you accept.',
+    'auditor.engagement.refused.AUDIT_ENGAGEMENT_TERMS_REQUIRED':
+        'These engagement terms were withdrawn before your acceptance reached Rozine, so nothing was accepted.',
+    'auditor.engagement.banner.required':
+        'Review and accept the engagement terms to take new work',
+    'auditor.engagement.banner.unavailable':
+        'Engagement terms aren’t available; new work is paused',
+    'auditor.command.refused.AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED':
+        'Accept the current engagement terms to continue.',
+    'auditor.command.review_terms': 'Review the terms',
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} recovery code remaining',
         other: '{count} recovery codes remaining',
     },
+    'business.audit_cosign.head_title': 'Co-sign audit report',
+    'business.audit_cosign.title': 'Co-sign the audit report',
+    'business.audit_cosign.back': 'Back',
+    'business.audit_cosign.lead':
+        'Your CPA sealed this report after the on-site audit. Read the factual findings before you co-sign.',
+    'business.audit_cosign.kind.monthly': 'Monthly audit report',
+    'business.audit_cosign.kind.flash': 'Flash audit report',
+    'business.audit_cosign.period': 'Period',
+    'business.audit_cosign.auditor': 'Audit Partner',
+    'business.audit_cosign.auditor_value': '{name} · licence {licence}',
+    'business.audit_cosign.procedure': 'Procedure',
+    'business.audit_cosign.digest': 'Report digest',
+    'business.audit_cosign.digest_short': '{digest}…',
+    'business.audit_cosign.seal.title': 'Seal',
+    'business.audit_cosign.seal.valid': 'Seal valid',
+    'business.audit_cosign.seal.valid_at': 'Sealed {date}',
+    'business.audit_cosign.seal.verify': 'Verify seal',
+    'business.audit_cosign.seal.unavailable':
+        "The seal can't be checked right now.",
+    'business.audit_cosign.note_title': "Audit Partner's note",
+    'business.audit_cosign.findings': 'Factual findings',
+    'business.audit_cosign.findings_empty': 'No findings were recorded.',
+    'business.audit_cosign.evidence': {
+        one: '{count} evidence item',
+        other: '{count} evidence items',
+    },
+    'business.audit_cosign.sealed_note':
+        'This report is sealed. Nothing on this page changes it.',
+    'business.audit_cosign.status.title': 'Co-signatures',
+    'business.audit_cosign.status.count': '{signed} of {required} signatures',
+    'business.audit_cosign.status.signers': 'Signatories',
+    'business.audit_cosign.status.you': 'You',
+    'business.audit_cosign.status.signed_on': 'Signed · {date}',
+    'business.audit_cosign.status.signed': 'Signed',
+    'business.audit_cosign.status.pending': 'Waiting',
+    'business.audit_cosign.due': 'Co-sign by {date}',
+    'business.audit_cosign.overdue': 'Overdue — co-signing was due by {date}',
+    'business.audit_cosign.published': 'Published {date}',
+    'business.audit_cosign.yours.title': 'Your co-signature',
+    'business.audit_cosign.yours.accept':
+        'I have reviewed the audit findings and co-sign this report.',
+    'business.audit_cosign.yours.note': 'Your recap (optional)',
+    'business.audit_cosign.yours.note_help':
+        'Kept with your signature. It does not change the sealed report.',
+    'business.audit_cosign.yours.identity':
+        'Your verified account signs. Each required signatory co-signs separately.',
+    'business.audit_cosign.yours.submit': 'Co-sign report',
+    'business.audit_cosign.yours.submitting': 'Co-signing…',
+    'business.audit_cosign.yours.signed': 'You co-signed this report.',
+    'business.audit_cosign.yours.signed_on': 'You co-signed on {date}.',
+    'business.audit_cosign.yours.waiting':
+        'Waiting for {names} to co-sign. The report publishes once every required signature is in.',
+    'business.audit_cosign.yours.all_in':
+        'Every required signature is in. The report publishes once its publication checks pass.',
+    'business.audit_cosign.yours.published':
+        'Every required signature is in and the report is published.',
+    'business.audit_cosign.yours.unavailable':
+        "This report isn't open for co-signing right now.",
+    'business.audit_cosign.yours.cannot': "You can't co-sign this report.",
+    'business.audit_cosign.refused.with_code': '{reason} ({code})',
+    'business.audit_cosign.refused.VERSION_CONFLICT':
+        "This report's signatures changed while you were working on it. We've loaded the latest — check it and try again.",
+    'business.audit_cosign.refused.IDEMPOTENCY_CONFLICT':
+        "This request was already used with different details, so it was not sent again. We've loaded the latest.",
+    'business.audit_cosign.refused.DIGEST_STALE':
+        "The report you read is no longer the current one. We've loaded it — read it and try again.",
+    'business.audit_cosign.refused.MANDATE_STALE':
+        "The company's signing mandate changed. Check who can sign now, then try again.",
+    'business.audit_cosign.refused.ACTION_FORBIDDEN':
+        "You can't do this for this business.",
+    'business.audit_cosign.refused.MANDATE_REQUIRED':
+        "Your verified mandate doesn't let you sign for this business.",
+    'business.audit_cosign.refused.NOT_FOUND':
+        'This report is no longer available to you.',
+    'business.audit_cosign.refused.denied':
+        'Your access has changed. Return to your apps and try again.',
+    'business.audit_cosign.refused.failed':
+        "This wasn't recorded. Check the report as it stands now and try again.",
+    'business.audit_prep.seal_by':
+        'Your CPA seals the {month} report by {seal}. You cannot start or edit it.',
+    'business.audit_cosign.count': '{count}/{limit}',
+    'business.audit_cosign.published_auto':
+        'Published automatically after the 24-hour window',
+    'business.audit_cosign.yours.published_auto':
+        'No one signed within the window, so the report was approved automatically and published.',
+    'business.audit_cosign.dispute.open': 'Submit a dispute',
+    'business.audit_cosign.dispute.intro':
+        'State which findings you dispute and why, as facts. Your dispute does not change the sealed report.',
+    'business.audit_cosign.dispute.reason': 'Your reason',
+    'business.audit_cosign.dispute.reason_help':
+        'Required: the facts you dispute.',
+    'business.audit_cosign.dispute.supporting': 'Supporting details (optional)',
+    'business.audit_cosign.dispute.supporting_help':
+        'Describe the proof you can show, if it helps.',
+    'business.audit_cosign.dispute.submit': 'Submit dispute',
+    'business.audit_cosign.dispute.submitting': 'Submitting…',
+    'business.audit_cosign.dispute.cancel': 'Cancel',
+    'business.audit_cosign.dispute.files': 'Proof files (optional)',
+    'business.audit_cosign.dispute.files_help':
+        'Add photos or documents that back your dispute.',
+    'business.audit_cosign.dispute.files_add': 'Add files',
+    'business.audit_cosign.dispute.file_remove': 'Remove {name}',
+    'business.audit_cosign.disputed.under_review.title': 'Dispute Under Review',
+    'business.audit_cosign.disputed.under_review.body':
+        'You submitted a dispute on {date}. The 24-hour review timer is paused while your CPA reviews your proof and amends or upholds the report. If they uphold it or do not act, Rozine staff step in. An amended report opens a fresh 24-hour window for you to review it.',
+    'business.audit_cosign.disputed.escalated.title':
+        'Dispute with Rozine staff',
+    'business.audit_cosign.disputed.escalated.body':
+        'You submitted a dispute on {date}. Your CPA upheld the report or did not act, so Rozine staff are reviewing the case. The 24-hour review timer stays paused meanwhile.',
+    'audit.verify_seal.head_title': 'Verify audit seal',
+    'audit.verify_seal.title': 'Audit seal check',
+    'audit.verify_seal.lead':
+        'Check whether a Rozine audit report carries a valid seal.',
+    'audit.verify_seal.valid': 'Seal verified',
+    'audit.verify_seal.valid_body': 'This digest matches the sealed report.',
+    'audit.verify_seal.unavailable': "This seal can't be verified right now",
+    'audit.verify_seal.unavailable_body': 'Try again later.',
+    'audit.verify_seal.report_id': 'Report ID',
+    'audit.verify_seal.digest': 'Report digest',
+    'audit.verify_seal.amends': 'Amends report {id}',
+    'audit.verify_seal.amended_by': 'Amended by report {id}',
+    'audit.verify_seal.scope':
+        'Only the report ID, its digest and the result of the seal check are shown here.',
+    'business.audit_cosign.refused.AUDIT_REPORT_AMENDED':
+        "The auditor has amended this report, so it can no longer be co-signed. The amended report will come to you for sign-off once it's sealed.",
 } as const;
 
 export default en;

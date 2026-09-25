@@ -196,7 +196,7 @@ describe('Auditor Portfolio', () => {
                 assignment_id: 'mr_greenleaf',
                 expected_revision: 5,
                 kind: 'other',
-                note: 'My cousin keeps their books.',
+                reason: 'My cousin keeps their books.',
                 identity_context_revision: 3,
             },
         });
@@ -256,7 +256,7 @@ describe('Auditor Portfolio', () => {
         expect(inertia.calls[1].body).toMatchObject({
             assignment_id: 'mr_greenleaf',
             expected_revision: 6,
-            note: 'My cousin keeps their books.',
+            reason: 'My cousin keeps their books.',
         });
         expect(
             (inertia.calls[1].body as { request_id: string }).request_id,

@@ -1,6 +1,7 @@
 {
     "component": "auditor/jobs",
     "props": {
+        "engagement": null,
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
@@ -15,6 +16,8 @@
             {
                 "id": "fa_huye",
                 "revision": 2,
+                "state": "offered",
+                "kind": "flash",
                 "business": "Huye Motors",
                 "sector": "logistics",
                 "district": "Gasabo",
@@ -54,12 +57,16 @@
                     "assignment.accept",
                     "assignment.decline",
                     "conflict.declare"
-                ]
+                ],
+                "deadline": null,
+                "reassigned_from": null
             }
         ],
         "assigned": [
             {
                 "id": "fa_sebeya",
+                "revision": 1,
+                "state": "assigned",
                 "kind": "flash",
                 "business": "Sebeya Logistics",
                 "district": "Musanze",
@@ -75,10 +82,14 @@
                     "url": "/preview/auditor-audit-ledger",
                     "method": "get"
                 },
-                "allowed_actions": ["conflict.declare"]
+                "allowed_actions": ["conflict.declare"],
+                "accept_by": null,
+                "complete_by": "2026-10-03T15:00:00Z"
             },
             {
                 "id": "fa_murakoze",
+                "revision": 1,
+                "state": "assigned",
                 "kind": "flash",
                 "business": "Murakoze Tech",
                 "district": "Kicukiro",
@@ -94,7 +105,9 @@
                     "url": "/preview/auditor-audit-check-in",
                     "method": "get"
                 },
-                "allowed_actions": ["conflict.declare"]
+                "allowed_actions": ["conflict.declare"],
+                "accept_by": null,
+                "complete_by": "2026-10-04T13:59:55Z"
             }
         ],
         "monthly": {

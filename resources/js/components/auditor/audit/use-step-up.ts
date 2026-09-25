@@ -33,13 +33,17 @@ export type StepUpRequest = {
  * authenticator code is exchanged for an opaque, single-use proof bound to the account, context,
  * report revision and digest. The code travels in this one request and nowhere else — not the
  * command journal, a retry, storage or the URL — and the request body is dropped as soon as the
- * answer arrives. It confirms who is sealing; it says nothing about the capture devices.
+ * answer arrives. It confirms who is sealing; it says nothing about the capture devices. The
+ * route comes with each request, from a stage that enables the step-up.
  */
-export function useStepUp(route: RouteAction) {
+export function useStepUp() {
     const http = useHttp<Record<string, never>, StepUpProof>();
     const [checking, setChecking] = useState(false);
 
-    const verify = async (request: StepUpRequest): Promise<StepUpResult> => {
+    const verify = async (
+        route: RouteAction,
+        request: StepUpRequest,
+    ): Promise<StepUpResult> => {
         let failure: StepUpResult = { kind: 'unreachable' };
         let message: string | null = null;
         /* Dropped once the answer arrives, so nothing keeps the code after its request. */

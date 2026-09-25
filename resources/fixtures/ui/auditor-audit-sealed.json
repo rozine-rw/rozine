@@ -52,14 +52,16 @@
             "cosign": {
                 "party": "Huye Motors",
                 "state": "pending",
-                "due_on": "2026-10-07",
+                "due_on": null,
                 "signed_at": null
             },
             "published_at": null,
+            "seal_status": "valid",
             "amended_by": null
         },
         "can_continue": true,
         "hint": null,
+        "reason_options": null,
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",
@@ -108,6 +110,7 @@
             "cosign_due_on": "2026-10-07"
         },
         "jobs": {
+            "engagement": null,
             "contract_version": "auditor-filing-v1",
             "identity_context_revision": 3,
             "server_time": "2026-10-03T17:00:00Z",
@@ -122,6 +125,8 @@
                 {
                     "id": "fa_huye",
                     "revision": 2,
+                    "state": "offered",
+                    "kind": "flash",
                     "business": "Huye Motors",
                     "sector": "logistics",
                     "district": "Gasabo",
@@ -161,7 +166,9 @@
                         "assignment.accept",
                         "assignment.decline",
                         "conflict.declare"
-                    ]
+                    ],
+                    "deadline": null,
+                    "reassigned_from": null
                 }
             ],
             "assigned": [],

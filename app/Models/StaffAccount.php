@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property int $user_id
  * @property bool $enabled
+ * @property list<string> $roles
  */
 class StaffAccount extends Model
 {
@@ -25,11 +26,11 @@ class StaffAccount extends Model
     protected $guarded = ['*'];
 
     /** @var array<string, mixed> */
-    protected $attributes = ['enabled' => false];
+    protected $attributes = ['enabled' => false, 'roles' => '[]'];
 
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['enabled' => 'boolean'];
+        return ['enabled' => 'boolean', 'roles' => 'array'];
     }
 }

@@ -221,7 +221,7 @@ describe('Conflict declarations in their own lane', () => {
 
         expect(inertia.calls[1].body).toMatchObject({
             expected_revision: 5,
-            note: 'I advised them until March.',
+            reason: 'I advised them until March.',
         });
         expect(
             (inertia.calls[1].body as { request_id: string }).request_id,

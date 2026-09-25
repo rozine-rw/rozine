@@ -4,7 +4,11 @@
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
-        "allowed_actions": ["audit.seal", "conflict.declare"],
+        "allowed_actions": [
+            "audit.save_step",
+            "audit.seal",
+            "conflict.declare"
+        ],
         "audit": {
             "id": "fa_huye",
             "kind": "flash",
@@ -179,6 +183,7 @@
         },
         "can_continue": true,
         "hint": "Sealing binds your ICPAR licence, location and time to this report; Huye Motors then co-signs.",
+        "reason_options": null,
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",
@@ -225,6 +230,7 @@
         },
         "outcome": null,
         "jobs": {
+            "engagement": null,
             "contract_version": "auditor-filing-v1",
             "identity_context_revision": 3,
             "server_time": "2026-10-03T17:00:00Z",
@@ -239,6 +245,8 @@
                 {
                     "id": "fa_huye",
                     "revision": 2,
+                    "state": "offered",
+                    "kind": "flash",
                     "business": "Huye Motors",
                     "sector": "logistics",
                     "district": "Gasabo",
@@ -278,7 +286,9 @@
                         "assignment.accept",
                         "assignment.decline",
                         "conflict.declare"
-                    ]
+                    ],
+                    "deadline": null,
+                    "reassigned_from": null
                 }
             ],
             "assigned": [],

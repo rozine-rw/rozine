@@ -9,15 +9,29 @@ import { Eyebrow } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { RouteAction } from '@/types';
+import type { RouteLink } from '@/types';
 import type {
     Accreditation,
+    AccreditationActions,
+    AccreditationCertificateLinks,
     AuditorAllowedAction,
-    AuditorIdentity,
+    AuditorProfileIdentity,
 } from '@/types/auditor';
 
 /** Days of standing the bar measures against (design L3245). */
 const WINDOW_DAYS = 365;
+
+const CERTIFICATE_LINK =
+    'mt-1.5 inline-block text-[11.5px] font-semibold text-rz-accent-app-text underline-offset-2 hover:underline';
+
+/** The partner's own certificate, read privately from the server as a download. */
+function CertificateLink({ link, label }: { link: RouteLink; label: string }) {
+    return (
+        <a href={link.url} download className={CERTIFICATE_LINK}>
+            {label}
+        </a>
+    );
+}
 
 const INPUT =
     'h-[42px] w-full rounded-xl border border-rz-divider bg-[#f8fafc] px-[13px] text-[13.5px] text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border dark:bg-rz-surface-sunken';
@@ -213,18 +227,22 @@ const NEUTRAL = 'bg-rz-page text-rz-slate dark:bg-rz-surface-muted';
  * left against a year. A first-time partner has no licence on record (`status: 'none'`), and the
  * page says plainly that submitting confers no standing until staff record the ICPAR check. A
  * submission or withdrawal is offered only when `allowed_actions` lists it, and a pending
- * submission shows the certificate's evidence identity.
+ * submission shows the certificate's evidence identity. A renewal goes to its own route, so the
+ * operation lookup finds it under its own command name. The certificate on record and the one
+ * under review are linked only when the server sends their routes.
  */
 export function AccreditationSection({
     auditor,
     accreditation,
     allowed,
     actions,
+    certificates,
 }: {
-    auditor: AuditorIdentity;
+    auditor: AuditorProfileIdentity;
     accreditation: Accreditation;
     allowed: (action: AuditorAllowedAction) => boolean;
-    actions: { submit: RouteAction; withdraw: RouteAction };
+    actions: AccreditationActions;
+    certificates: AccreditationCertificateLinks;
 }) {
     const { t, locale } = useTranslation();
     const center = useAuditorCommands();
@@ -268,7 +286,10 @@ export function AccreditationSection({
             {
                 name,
                 business: auditor.name,
-                route: actions.submit,
+                route:
+                    name === 'accreditation.renew'
+                        ? actions.renew
+                        : actions.submit,
                 payload: {
                     ...fields,
                     expected_revision: accreditation.revision,
@@ -296,7 +317,8 @@ export function AccreditationSection({
                     <Shield tone={firstTime ? NEUTRAL : lapsed ? RED : GREEN} />
                     <div className="min-w-0 flex-1">
                         <p className="text-[14px] font-bold text-rz-ink">
-                            {auditor.accreditation}
+                            {auditor.accreditation ??
+                                t('auditor.accreditation.licence_title')}
                         </p>
                         <p className="mt-0.5 text-[11.5px] text-rz-secondary">
                             {accreditation.status === 'none'
@@ -309,6 +331,14 @@ export function AccreditationSection({
                                       ),
                                   })}
                         </p>
+                        {certificates.certificate !== null && (
+                            <CertificateLink
+                                link={certificates.certificate}
+                                label={t(
+                                    'auditor.accreditation.view_certificate',
+                                )}
+                            />
+                        )}
                     </div>
                     <span
                         className={cn(
@@ -353,6 +383,14 @@ export function AccreditationSection({
                                 digest: submission.evidence.sha256.slice(0, 12),
                             })}
                         </p>
+                        {certificates.submitted_certificate !== null && (
+                            <CertificateLink
+                                link={certificates.submitted_certificate}
+                                label={t(
+                                    'auditor.accreditation.view_submitted',
+                                )}
+                            />
+                        )}
                     </div>
                     {allowed('accreditation.withdraw') && (
                         <button

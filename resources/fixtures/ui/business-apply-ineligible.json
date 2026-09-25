@@ -2,7 +2,7 @@
     "component": "business/apply",
     "props": {
         "contract_version": "business-application-v1",
-        "business_id": "BUS-103847291",
+        "business_id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
         "identity_context_revision": 4,
         "server_time": "2026-09-24T09:15:00+02:00",
         "allowed_actions": [
@@ -12,7 +12,7 @@
         ],
         "step": "business",
         "application": {
-            "id": "APP-2026-0412",
+            "id": "01k6p4c8s3d0f4g9h2j6k1m7n3",
             "revision": 3,
             "title": "Cold-Chain Hub",
             "target": {
@@ -60,21 +60,21 @@
                 "costs": null,
                 "net_profit": null
             },
+            "period": {
+                "from_month": "2023-09",
+                "through_month": "2025-12",
+                "months": 28
+            },
             "years": [
                 {
-                    "year": 2025,
+                    "year": 2023,
                     "revenue": {
                         "currency": "RWF",
-                        "amount": "385000000"
+                        "amount": "118000000"
                     },
-                    "costs": {
-                        "currency": "RWF",
-                        "amount": "289000000"
-                    },
-                    "net_profit": {
-                        "currency": "RWF",
-                        "amount": "96000000"
-                    }
+                    "costs": null,
+                    "net_profit": null,
+                    "months": 4
                 },
                 {
                     "year": 2024,
@@ -89,16 +89,24 @@
                     "net_profit": {
                         "currency": "RWF",
                         "amount": "86000000"
-                    }
+                    },
+                    "months": 12
                 },
                 {
-                    "year": 2023,
+                    "year": 2025,
                     "revenue": {
                         "currency": "RWF",
-                        "amount": "118000000"
+                        "amount": "385000000"
                     },
-                    "costs": null,
-                    "net_profit": null
+                    "costs": {
+                        "currency": "RWF",
+                        "amount": "289000000"
+                    },
+                    "net_profit": {
+                        "currency": "RWF",
+                        "amount": "96000000"
+                    },
+                    "months": 12
                 }
             ],
             "existing_debt": null,
@@ -485,6 +493,7 @@
                 "url": "/preview/business-apply-signatures",
                 "method": "post"
             }
-        }
+        },
+        "pending_application": null
     }
 }

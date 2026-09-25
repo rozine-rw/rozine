@@ -1,6 +1,7 @@
 {
     "component": "auditor/jobs",
     "props": {
+        "engagement": null,
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
@@ -15,6 +16,8 @@
             {
                 "id": "fa_huye",
                 "revision": 2,
+                "state": "offered",
+                "kind": "flash",
                 "business": "Huye Motors",
                 "sector": "logistics",
                 "district": "Gasabo",
@@ -54,11 +57,15 @@
                     "assignment.accept",
                     "assignment.decline",
                     "conflict.declare"
-                ]
+                ],
+                "deadline": null,
+                "reassigned_from": null
             },
             {
                 "id": "fa_isoko",
                 "revision": 3,
+                "state": "offered",
+                "kind": "flash",
                 "business": "Isoko Energy",
                 "sector": "energy",
                 "district": "Kicukiro",
@@ -94,7 +101,9 @@
                         "method": "post"
                     }
                 },
-                "allowed_actions": ["assignment.decline", "conflict.declare"]
+                "allowed_actions": ["assignment.decline", "conflict.declare"],
+                "deadline": null,
+                "reassigned_from": null
             }
         ],
         "assigned": [],

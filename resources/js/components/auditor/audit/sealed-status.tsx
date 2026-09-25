@@ -25,7 +25,9 @@ type Stage = {
  * design has no screen for a sealed report waiting on the business, so this follows the Business
  * app's submitted timeline: sealed, co-signed, published — each from the server's record — with
  * the seal's opaque report, key and signature references as sent. A sealed report is immutable; a
- * correction is a new linked amendment, and this report stays as it is (AC-03).
+ * correction is a new linked amendment, and this report stays as it is (AC-03). A seal that can no
+ * longer be verified (a revoked signing key) keeps all of this visible and says so, never implying
+ * the seal verifies now; a Flash report has no co-sign date, so none is shown.
  */
 export function SealedStatus({
     stage,
@@ -45,6 +47,44 @@ export function SealedStatus({
         { label: t('auditor.sealed.key_id'), value: stage.key_id },
     ];
     const { cosign } = stage;
+
+    /*
+     * Where the filing stands, from the server's publication and co-sign facts — never from the
+     * due date alone. An overdue co-signature is closed to signing and is never approved for the
+     * business; nothing publishes without it.
+     */
+    const intro = (): string => {
+        if (stage.published_at !== null) {
+            return t('auditor.sealed.body_published', {
+                date: formatDate(stage.published_at, locale),
+            });
+        }
+
+        /* An unpublished report you amended is replaced by its amendment: nobody co-signs it. */
+        if (stage.amended_by !== null) {
+            return t('auditor.sealed.body_amended');
+        }
+
+        switch (cosign.state) {
+            case 'signed':
+                return t('auditor.sealed.body_signed', { party: cosign.party });
+            case 'declined':
+                return t('auditor.sealed.body_declined', {
+                    party: cosign.party,
+                });
+            case 'overdue':
+                return t('auditor.sealed.body_overdue', {
+                    party: cosign.party,
+                });
+            case 'pending':
+                return cosign.due_on === null
+                    ? t('auditor.sealed.body_undated', { party: cosign.party })
+                    : t('auditor.sealed.body', {
+                          party: cosign.party,
+                          date: formatDate(cosign.due_on, locale),
+                      });
+        }
+    };
     const stages: Stage[] = [
         { key: 'sealed', done: true, when: stage.sealed_at },
         {
@@ -71,12 +111,18 @@ export function SealedStatus({
                     {t('auditor.sealed.title')}
                 </h3>
                 <p className="mt-2 text-[13.5px] leading-[1.55] text-rz-secondary">
-                    {t('auditor.sealed.body', {
-                        party: cosign.party,
-                        date: formatDate(cosign.due_on, locale),
-                    })}
+                    {intro()}
                 </p>
             </div>
+
+            {stage.seal_status === 'unavailable' && (
+                <p
+                    role="note"
+                    className="mt-5 rounded-2xl border border-[#f2d69a] bg-rz-surface px-3.5 py-3 text-[12px] leading-[1.5] font-semibold text-[#8a6d2b] dark:border-[rgba(240,160,96,.3)] dark:text-[#e3b56a]"
+                >
+                    {t('auditor.sealed.unavailable')}
+                </p>
+            )}
 
             <ol
                 aria-label={t('auditor.sealed.timeline')}

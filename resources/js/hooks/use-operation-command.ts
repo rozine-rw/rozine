@@ -1,3 +1,4 @@
+import { http as transport } from '@inertiajs/core';
 import { router, useHttp } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import {
@@ -26,9 +27,16 @@ export type CommandNotice =
     | { kind: 'not_recorded' }
     | { kind: 'refused'; code: string; status: number };
 
+/**
+ * How a completion became known. `recovered` is true when the operation lookup reported it after an
+ * unknown outcome: its recorded snapshot is a historical receipt, which a later revision may have
+ * overtaken, so a page reads its facts afresh rather than showing that snapshot as current.
+ */
+export type Completion = { recovered: boolean };
+
 type Attempt<R> =
     | { kind: 'resource'; resource: R }
-    | { kind: 'invalid'; errors: Record<string, unknown> }
+    | { kind: 'invalid'; errors: Record<string, unknown>; code: string | null }
     | { kind: 'failed'; status: number; code: string | null }
     | { kind: 'unreachable' };
 
@@ -40,9 +48,26 @@ type Options<C extends OperationCommand, R> = {
     actions: Record<C['name'], RouteAction> | ((command: C) => RouteAction);
     /**
      * The operation lookup. Its url holds the literal `{request_id}` token, which is replaced; the
-     * command name goes as the `command` query.
+     * command name goes as the `command` query unless `lookupNamesCommand` is false. It can be read
+     * from the command itself when a command recovers through a lookup of its own.
      */
-    lookup: RouteLink;
+    lookup: RouteLink | ((command: C) => RouteLink);
+    /**
+     * Whether the lookup names the command in its `command` query (the default). A contract whose
+     * lookup serves a single command, such as auditor-engagement-v1, takes no `command` query.
+     */
+    lookupNamesCommand?: boolean;
+    /**
+     * Further query parameters the lookup needs beside `command`, e.g. the Business contract's
+     * `identity_context_revision`. Read when the lookup is sent.
+     */
+    lookupQuery?: Record<string, string | number>;
+    /**
+     * Recorded 422 codes that mean a refusal of the whole command rather than a field to correct
+     * (e.g. `APPLICATION_STEP_INVALID`): the page is told, as for any refusal, instead of only
+     * showing field errors. Direct answers and lookup replays alike.
+     */
+    refusals422?: ReadonlySet<string>;
     /** A command a synthetic preview seeds as already sent, with what is known about it. */
     initial?: { held: C | null; notice: CommandNotice | null };
     /**
@@ -50,7 +75,7 @@ type Options<C extends OperationCommand, R> = {
      * lookup found no recorded result. It must not touch the held command.
      */
     refresh: () => Promise<void>;
-    onCompleted: (command: C, resource: R) => void;
+    onCompleted: (command: C, resource: R, completion: Completion) => void;
     onRefused: (command: C, code: string, status: number) => void;
 };
 
@@ -69,6 +94,9 @@ export function useOperationCommand<
 >({
     actions,
     lookup,
+    lookupNamesCommand = true,
+    lookupQuery,
+    refusals422,
     initial,
     refresh,
     onCompleted,
@@ -88,6 +116,21 @@ export function useOperationCommand<
     ): Promise<Attempt<R>> => {
         let failure: Attempt<R> = { kind: 'unreachable' };
         let fieldErrors: Record<string, unknown> = {};
+        let validationCode: string | null = null;
+        /*
+         * useHttp hands a 422 over as field errors only, so the recorded code is read from the
+         * response itself while this command's request is out.
+         */
+        const stopReading =
+            refusals422 === undefined
+                ? null
+                : transport.onResponse((response) => {
+                      if (response.status === 422) {
+                          validationCode = readErrorCode(response.data);
+                      }
+
+                      return response;
+                  });
 
         http.transform(() => body);
 
@@ -107,10 +150,12 @@ export function useOperationCommand<
 
             /* A 422 resolves without a body: useHttp has put the field errors in `errors`. */
             return resource === undefined
-                ? { kind: 'invalid', errors: fieldErrors }
+                ? { kind: 'invalid', errors: fieldErrors, code: validationCode }
                 : { kind: 'resource', resource };
         } catch {
             return failure;
+        } finally {
+            stopReading?.();
         }
     };
 
@@ -120,11 +165,11 @@ export function useOperationCommand<
         onRefused(command, code, status);
     };
 
-    const conclude = (command: C, resource: R) => {
+    const conclude = (command: C, resource: R, recovered: boolean) => {
         if (resource.status === 'completed') {
             held.current = null;
             setNotice(null);
-            onCompleted(command, resource);
+            onCompleted(command, resource, { recovered });
 
             return;
         }
@@ -141,9 +186,20 @@ export function useOperationCommand<
     /**
      * A validation refusal (HTTP 422) is definitive: useHttp has put its field errors on the page
      * for a correction, which goes as a new command with a new `request_id` — never the same one
-     * again. A 422 with no field errors to show still says the command was refused.
+     * again. A 422 with no field errors to show still says the command was refused, and a 422
+     * whose code the page names in `refusals422` is a refusal of the command as a whole.
      */
-    const invalid = (errors: Record<string, unknown>) => {
+    const invalid = (
+        command: C,
+        errors: Record<string, unknown>,
+        code: string | null,
+    ) => {
+        if (code !== null && refusals422?.has(code)) {
+            refuse(command, code, 422);
+
+            return;
+        }
+
         held.current = null;
         setNotice(
             Object.keys(errors).length === 0
@@ -155,26 +211,29 @@ export function useOperationCommand<
     const lookUp = async (command: C) => {
         setNotice({ kind: 'checking' });
 
+        const found = typeof lookup === 'function' ? lookup(command) : lookup;
         const attempt = await request(
             {
-                url: lookup.url.replace(
+                url: found.url.replace(
                     '{request_id}',
                     encodeURIComponent(command.payload.request_id),
                 ),
                 method: 'get',
             },
-            { command: command.name },
+            lookupNamesCommand
+                ? { ...lookupQuery, command: command.name }
+                : { ...lookupQuery },
         );
 
         if (attempt.kind === 'resource') {
-            conclude(command, attempt.resource);
+            conclude(command, attempt.resource, true);
 
             return;
         }
 
         /* The lookup replayed a recorded 422: the command was refused, not lost. */
         if (attempt.kind === 'invalid') {
-            invalid(attempt.errors);
+            invalid(command, attempt.errors, attempt.code);
 
             return;
         }
@@ -219,13 +278,13 @@ export function useOperationCommand<
         const attempt = await request(route, command.payload);
 
         if (attempt.kind === 'resource') {
-            conclude(command, attempt.resource);
+            conclude(command, attempt.resource, false);
 
             return;
         }
 
         if (attempt.kind === 'invalid') {
-            invalid(attempt.errors);
+            invalid(command, attempt.errors, attempt.code);
 
             return;
         }
@@ -306,9 +365,12 @@ export function useOperationCommand<
 
 /**
  * The page's own reload — Inertia keeps component state and scroll on a reload — resolved once it
- * has finished: the `refresh` both apps pass to `useOperationCommand`.
+ * has finished: the `refresh` both apps pass to `useOperationCommand`. `scope` limits it to the
+ * props the page asks for (a partial reload).
  */
-export const reloadPreservingState = (): Promise<void> =>
+export const reloadPreservingState = (
+    scope: { only?: string[]; except?: string[] } = {},
+): Promise<void> =>
     new Promise((resolve) => {
-        router.reload({ onFinish: () => resolve() });
+        router.reload({ ...scope, onFinish: () => resolve() });
     });

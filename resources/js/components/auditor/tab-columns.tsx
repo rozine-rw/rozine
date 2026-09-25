@@ -19,7 +19,11 @@ type TabColumnsProps = {
     /** Home's wallet-and-bell row, drawn above the columns. */
     header?: ReactNode;
     left: ReactNode;
-    right: ReactNode;
+    /**
+     * Null leaves the right column out altogether, rather than drawing an empty card, unless an
+     * overlay opens in it: the overlay then keeps its column, with nothing beneath it.
+     */
+    right: ReactNode | null;
     overlay?: ColumnOverlay | null;
     /** Under a detail screen: a phone shows only the detail; a wide screen keeps the tab beneath. */
     backdrop?: boolean;
@@ -33,7 +37,11 @@ export function TabColumns({
     backdrop = false,
 }: TabColumnsProps) {
     const column = (side: ColumnOverlay['column'], content: ReactNode) => (
-        <div data-rzcol={side} className={COLUMN}>
+        <div
+            data-rzcol={side}
+            data-testid={`column-${side}`}
+            className={COLUMN}
+        >
             <div
                 className={cn(
                     'rz-scroll lg:flex-1 lg:overflow-y-auto',
@@ -61,7 +69,8 @@ export function TabColumns({
             )}
             <div className="lg:flex lg:min-h-0 lg:flex-1 lg:gap-4">
                 {column('left', left)}
-                {column('right', right)}
+                {(right !== null || overlay?.column === 'right') &&
+                    column('right', right)}
             </div>
         </div>
     );

@@ -60,3 +60,40 @@ it('does not reconcile fixture previews against a real session', () => {
     });
     expect(reload).not.toHaveBeenCalled();
 });
+it('reloads the full page facts when no properties are named', () => {
+    renderHook(() => useAccessRefresh(null));
+    act(() => {
+        window.dispatchEvent(new Event('focus'));
+    });
+    expect(reload).toHaveBeenCalledOnce();
+    expect(reload.mock.calls[0][0]).not.toHaveProperty('only');
+});
+it('holds a signal while a command is unsettled and refreshes once it settles', () => {
+    const { rerender } = renderHook(
+        ({ settled }) => useAccessRefresh(null, true, settled),
+        { initialProps: { settled: false } },
+    );
+    act(() => {
+        window.dispatchEvent(new Event('focus'));
+        window.dispatchEvent(new Event('online'));
+    });
+    expect(reload).not.toHaveBeenCalled();
+    rerender({ settled: true });
+    expect(reload).toHaveBeenCalledOnce();
+    rerender({ settled: false });
+    rerender({ settled: true });
+    expect(reload).toHaveBeenCalledOnce();
+});
+it('keeps a held refresh to the named properties', () => {
+    const { rerender } = renderHook(
+        ({ settled }) => useAccessRefresh(['identity'], true, settled),
+        { initialProps: { settled: false } },
+    );
+    act(() => {
+        window.dispatchEvent(new Event('focus'));
+    });
+    rerender({ settled: true });
+    expect(reload).toHaveBeenCalledWith(
+        expect.objectContaining({ only: ['identity'] }),
+    );
+});

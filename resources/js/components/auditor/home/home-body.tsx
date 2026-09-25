@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import { AssignedJobCard } from '@/components/auditor/assigned-job-card';
 import { AvailabilityRow } from '@/components/auditor/availability';
 import { AuditorCommandNotice } from '@/components/auditor/commands';
+import { EngagementBanner } from '@/components/auditor/engagement/engagement-banner';
 import { ActivityList } from '@/components/auditor/home/activity-list';
 import { Hero } from '@/components/auditor/home/hero';
 import { TopRow } from '@/components/auditor/home/top-row';
@@ -181,7 +182,11 @@ export function HomeBody(props: AuditorHomeProps) {
                         standing={props.standing}
                     />
                     <AuditorCommandNotice placement="page" className="mt-3.5" />
-                    {props.nearby.count > 0 && (
+                    <EngagementBanner
+                        engagement={props.engagement}
+                        className="mt-4"
+                    />
+                    {props.nearby.count > 0 && props.links.jobs !== null && (
                         <NearbyAlert
                             count={props.nearby.count}
                             closest={props.nearby.closest_km}
