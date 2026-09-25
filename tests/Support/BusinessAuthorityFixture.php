@@ -43,7 +43,7 @@ final class BusinessAuthorityFixture
         $entity = $kind === 'person' ? $people[0]->id : VerifiedOrganizationIdentity::factory()->create(['registry_digest' => hash('sha256', 'RDB:'.$companyCode)])->party_id;
 
         return ['staff' => $staff, 'people' => $people, 'users' => $users, 'entity' => $entity, 'kind' => $kind,
-            'profile' => ['name' => 'Synthetic business', 'company_code' => $kind === 'person' ? null : $companyCode, 'industry' => 'retail', 'district' => 'Gasabo', 'established_year' => 2020],
+            'profile' => ['name' => 'Synthetic business', 'company_code' => $kind === 'person' ? null : $companyCode, 'industry' => 'Retail', 'district' => 'Gasabo', 'established_year' => 2020],
             'terms' => ['people' => $members, 'required_signatories' => array_column($members, 'party_id'),
                 'effective_at' => now('UTC')->subMinute()->format('Y-m-d\TH:i:s\Z'), 'expires_at' => null, 'status' => 'active', 'attested_complete' => true]];
     }

@@ -18,13 +18,17 @@ use Illuminate\Support\Str;
 
 /**
  * @phpstan-import-type Fixture from AuditAssignmentFixture as AuditFixture
+ * @phpstan-import-type ObligationInput from \App\Domain\Underwriting\CashFlowEvidence
  *
  * @phpstan-type Fixture array{audit: AuditFixture, application: BusinessApplication, assignment: AuditAssignment}
  */
 final class BusinessQuoteFixture
 {
-    /** @return Fixture */
-    public static function make(bool $credit = true, string $kind = 'person', int $signatories = 1): array
+    /**
+     * @param  list<ObligationInput>  $auditedObligations
+     * @return Fixture
+     */
+    public static function make(bool $credit = true, string $kind = 'person', int $signatories = 1, int $historyMonths = 36, array $auditedObligations = []): array
     {
         $audit = AuditAssignmentFixture::make(1, $kind, $signatories);
         $owner = $audit['authority']['users'][0];
@@ -32,16 +36,16 @@ final class BusinessQuoteFixture
         $application = BusinessApplication::query()->whereKey($created['data']['application']['id'])->firstOrFail();
         app(SaveBusinessApplication::class)->handle($owner->id, 1, $audit['business'], $application->id, 1,
             BusinessApplicationFixture::fields('12000000'), 'raise', (string) Str::uuid());
-        $first = now('UTC')->toImmutable()->startOfMonth()->subMonths(36);
+        $first = now('UTC')->toImmutable()->startOfMonth()->subMonths($historyMonths);
         $csv = "date,reference,amount\n";
-        for ($index = 0; $index < 36; $index++) {
+        for ($index = 0; $index < $historyMonths; $index++) {
             $day = $first->addMonths($index)->format('Y-m-d');
             $csv .= "{$day},sales,4000000\n{$day},costs,-1000000\n";
         }
         $original = app(IngestStatement::class)->handle($owner->id, 1, $audit['business'], 0, 'synthetic-quote-history.csv', $csv, (string) Str::uuid());
         $source = $original['data']['document_id'];
         $months = $statements = [];
-        for ($index = 0; $index < 36; $index++) {
+        for ($index = 0; $index < $historyMonths; $index++) {
             $date = $first->addMonths($index);
             $month = $date->format('Y-m');
             $months[] = $month;
@@ -57,6 +61,8 @@ final class BusinessQuoteFixture
         AuditAssignmentFixture::respond($audit['partners'][0]['user'], $assignment);
         $review = StatementFixture::review([$source => hash('sha256', $csv)]);
         $review['recurring_owner_draw'] = '0';
+        $review['obligations'] = array_map(fn (array $obligation): array => [...$obligation, 'source_ids' => [$source]], $auditedObligations);
+        $review['findings'] = 'Synthetic factual review with the supplied complete obligation calendar.';
         AuditAssignmentFixture::verifyStatements($audit, $assignment->refresh(), $transcribed['data']['transcription']['id'], $review);
         if ($credit) {
             BusinessCreditFactsFixture::record($audit['staff'], $audit['business']);

@@ -221,7 +221,7 @@ it('refuses a stale revision with 409 and records the domain 422 with its errors
     $refused = profileHttpPost('auditor.accreditation.submit', profileHttpSubmission([
         'request_id' => $request, 'certificate' => UploadedFile::fake()->createWithContent('licence.exe', 'MZ executable'),
     ]))->assertUnprocessable()->assertJsonPath('code', 'ACCREDITATION_TYPE_UNSUPPORTED')
-        ->assertJsonPath('errors.certificate', ['Upload a PDF, PNG or JPEG certificate.'])->assertJsonPath('data', []);
+        ->assertJsonPath('errors.certificate', ['Upload a PDF, PNG or JPEG certificate.'])->assertJsonPath('data', null);
     $this->travel(1)->minutes();
     $this->getJson(route('auditor.operations.show', ['request_id' => $request, 'command' => 'accreditation.submit']))
         ->assertUnprocessable()->assertJsonPath('code', 'ACCREDITATION_TYPE_UNSUPPORTED')

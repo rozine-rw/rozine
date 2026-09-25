@@ -185,6 +185,31 @@ it('returns recoverable field errors for domain refusals and keeps malformed env
     $this->getJson('/api/v1/business/application-operations/'.Str::uuid().'?command=save')->assertUnprocessable();
 });
 
+it('serializes empty error maps as JSON objects and absent operation data as null on each transport', function (string $prefix): void {
+    $fixture = DraftFixture::make();
+    $user = $fixture['authority']['users'][0];
+    if ($prefix === '/api/v1') {
+        Sanctum::actingAs($user, ['business:read', 'business:command']);
+    } else {
+        $this->actingAs($user);
+    }
+    $path = $prefix.'/business/'.$fixture['business']->id.'/applications/'.$fixture['application']->id;
+    $success = $this->postJson($path.'/save', [...applicationHttpEnvelope(1), ...DraftFixture::fields('12000000')])->assertOk();
+    $completed = json_decode((string) $success->getContent(), flags: JSON_THROW_ON_ERROR);
+    expect($completed->data)->toBeInstanceOf(stdClass::class)
+        ->and($completed->field_errors)->toBeInstanceOf(stdClass::class)
+        ->and($completed->errors)->toBeInstanceOf(stdClass::class)
+        ->and(get_object_vars($completed->field_errors))->toBe([])->and(get_object_vars($completed->errors))->toBe([]);
+    $body = [...applicationHttpEnvelope(1), ...DraftFixture::fields('12000000')];
+    $denied = $this->postJson($path.'/save', $body)->assertConflict()->assertJsonPath('code', 'VERSION_CONFLICT');
+    $lookup = $this->getJson($prefix.'/business/application-operations/'.$body['request_id'].'?command=save&identity_context_revision=1')->assertConflict();
+    foreach ([$denied, $lookup] as $response) {
+        $rejected = json_decode((string) $response->getContent(), flags: JSON_THROW_ON_ERROR);
+        expect($rejected->data)->toBeNull()->and($rejected->field_errors)->toBeInstanceOf(stdClass::class)
+            ->and($rejected->errors)->toBeInstanceOf(stdClass::class)->and($rejected->allowed_actions)->toBe([]);
+    }
+})->with(['', '/api/v1']);
+
 it('requires each real signatory and records unaccepted consent as a refusal', function (): void {
     $fixture = QuoteFixture::ready(2);
     $path = '/business/'.$fixture['audit']['business'].'/applications/'.$fixture['application']->id;
