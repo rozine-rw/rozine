@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\AuditorJobsController;
 use App\Http\Controllers\Api\V1\AuditorProfileController;
+use App\Http\Controllers\Api\V1\BusinessApplicationController;
 use App\Http\Controllers\Api\V1\IdentityController;
 use App\Http\Controllers\Api\V1\IdentityManagementController;
 use App\Http\Controllers\Api\V1\RoleBookmarkController;
@@ -19,6 +20,15 @@ Route::get('/user', function (Request $request) {
 Route::get('v1/identity', IdentityController::class)
     ->middleware(['auth:sanctum', 'throttle:60,1'])
     ->name('api.v1.identity.show');
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/business')->name('api.v1.business.applications.')->group(function (): void {
+    Route::get('application-operations/{request_id}', [BusinessApplicationController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
+    Route::post('{business}/applications', [BusinessApplicationController::class, 'create'])->whereUlid('business')->name('create');
+    Route::get('{business}/applications/{application}', [BusinessApplicationController::class, 'show'])->whereUlid(['business', 'application'])->name('show');
+    foreach (['save', 'evaluate', 'submit'] as $command) {
+        Route::post('{business}/applications/{application}/'.$command, [BusinessApplicationController::class, $command])->whereUlid(['business', 'application'])->name($command);
+    }
+});
 
 Route::get('v1/staff-access', StaffAccessController::class)
     ->middleware(['auth:sanctum', 'throttle:60,1'])

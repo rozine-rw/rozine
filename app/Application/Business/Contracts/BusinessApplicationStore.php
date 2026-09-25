@@ -10,6 +10,7 @@ namespace App\Application\Business\Contracts;
  *
  * @phpstan-type Application array{id: string, business_id: string, revision: int, status: string, step: string, draft: Fields, mandate_version: int}
  * @phpstan-type AuditApplication array{work: Work, application: array{id: string, revision: int, title: string, target: string|null, term_months: int|null, use_of_funds: list<string>}|null}
+ * @phpstan-type EvaluationExpectation array{target: string, term_months: int, evidence_version: string}
  */
 interface BusinessApplicationStore
 {
@@ -22,8 +23,20 @@ interface BusinessApplicationStore
      */
     public function save(int $userId, int $contextRevision, string $businessId, string $applicationId, int $expectedRevision, array $fields, ?string $step, string $requestId): array;
 
+    /**
+     * @param  EvaluationExpectation|null  $expectation
+     * @return array<string, mixed>
+     */
+    public function evaluate(int $userId, int $contextRevision, string $businessId, string $applicationId, int $expectedRevision, ?string $acceptedPrincipal, string $requestId, ?array $expectation = null): array;
+
     /** @return array<string, mixed> */
-    public function evaluate(int $userId, int $contextRevision, string $businessId, string $applicationId, int $expectedRevision, ?string $acceptedPrincipal, string $requestId): array;
+    public function page(int $userId, int $contextRevision, string $businessId, string $applicationId): array;
+
+    /**
+     * @param  array<string, mixed>  $result
+     * @return array<string, mixed>
+     */
+    public function projectOperation(int $userId, int $contextRevision, array $result): array;
 
     /** @return array<string, mixed>|null */
     public function quote(int $userId, int $contextRevision, string $businessId, string $applicationId): ?array;

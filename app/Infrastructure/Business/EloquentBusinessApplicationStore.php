@@ -15,6 +15,7 @@ use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Business\ApplicationAcceptance;
 use App\Domain\Business\ApplicationDraft;
+use App\Domain\Business\ApplicationEvidence;
 use App\Domain\Identity\ConsentDocuments;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
@@ -40,6 +41,7 @@ use RuntimeException;
  * @phpstan-import-type Snapshot from BusinessCreditFactsStore as CreditSnapshot
  * @phpstan-import-type Release from \App\Application\Identity\Contracts\ConsentCatalog
  * @phpstan-import-type Terms from \App\Domain\Business\MandateAuthority
+ * @phpstan-import-type EvaluationExpectation from BusinessApplicationStore
  */
 final class EloquentBusinessApplicationStore implements BusinessApplicationStore
 {
@@ -56,6 +58,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
         private WithCurrentConsent $consents,
         private ConsentDocuments $documents,
         private ApplicationAcceptance $acceptances,
+        private ApplicationEvidence $applicationEvidence,
     ) {}
 
     /** @return array<string, mixed> */
@@ -119,7 +122,8 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                             'mandate_version' => $business['mandate_version']])->save();
                         $this->recordVersion($application, $userId, $partyId, $business['mandate_version']);
 
-                        return new OperationResult('APPLICATION_SAVED', ['application' => $this->snapshot($application)], $application->revision);
+                        return new OperationResult('APPLICATION_SAVED', $this->consents->handle(
+                            fn (?array $release): array => $this->reviewForQuote($application, $business, null, $release)), $application->revision);
                     });
             });
     }
@@ -159,26 +163,35 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                             $application->forceFill(['step' => 'review', 'revision' => $application->revision + 1])->save();
                             $this->recordVersion($application, $userId, $partyId, $business['mandate_version']);
 
-                            return new OperationResult('APPLICATION_SAVED', ['application' => $this->snapshot($application), 'quote' => $this->projectQuote($quote)], $application->revision);
+                            return new OperationResult('APPLICATION_SAVED', $this->consents->handle(
+                                fn (?array $release): array => $this->reviewForQuote($application, $business, $quote, $release)), $application->revision);
                         });
                 });
             });
     }
 
-    /** @return array<string, mixed> */
-    public function evaluate(int $userId, int $contextRevision, string $businessId, string $applicationId, int $expectedRevision, ?string $acceptedPrincipal, string $requestId): array
+    /**
+     * @param  EvaluationExpectation|null  $expectation
+     * @return array<string, mixed>
+     */
+    public function evaluate(int $userId, int $contextRevision, string $businessId, string $applicationId, int $expectedRevision, ?string $acceptedPrincipal, string $requestId, ?array $expectation = null): array
     {
         return $this->verifications->handle($userId, $contextRevision, $businessId, 'application.evaluate', null,
-            function (array $business, array $identity, ?array $verification) use ($userId, $contextRevision, $businessId, $applicationId, $expectedRevision, $acceptedPrincipal, $requestId): array {
-                return $this->creditFacts->withCurrent($businessId, function (?array $credit) use ($business, $identity, $verification, $userId, $contextRevision, $applicationId, $businessId, $expectedRevision, $acceptedPrincipal, $requestId): array {
+            function (array $business, array $identity, ?array $verification) use ($userId, $contextRevision, $businessId, $applicationId, $expectedRevision, $acceptedPrincipal, $requestId, $expectation): array {
+                return $this->creditFacts->withCurrent($businessId, function (?array $credit) use ($business, $identity, $verification, $userId, $contextRevision, $applicationId, $businessId, $expectedRevision, $acceptedPrincipal, $requestId, $expectation): array {
                     $partyId = $identity['party']['id'] ?? throw new IdentityViolation('IDENTITY_NOT_LINKED');
                     $application = $this->application($businessId, $applicationId);
 
                     return $this->journal->execute('party:'.$partyId, $userId, 'application.evaluate', $requestId, 'application', $applicationId,
-                        ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'accepted_principal' => $acceptedPrincipal],
-                        function (): void {}, function () use ($application, $business, $verification, $credit, $userId, $partyId, $expectedRevision, $acceptedPrincipal): OperationResult {
+                        ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'accepted_principal' => $acceptedPrincipal,
+                            ...($expectation === null ? [] : ['expectation' => $expectation])],
+                        function (): void {}, function () use ($application, $business, $verification, $credit, $userId, $partyId, $expectedRevision, $acceptedPrincipal, $expectation): OperationResult {
                             $this->drafts->assertEditable($application->status, $application->revision, $expectedRevision);
                             $draft = $this->drafts->normalize($application->draft);
+                            if ($expectation !== null && ($expectation['target'] !== $draft['target'] || $expectation['term_months'] !== $draft['term_months']
+                                || $expectation['evidence_version'] !== $this->evidenceVersion($verification))) {
+                                throw new CommandRejection('QUOTE_STALE', 409, $application->revision);
+                            }
                             if ($draft['target'] === null || $draft['term_months'] === null || ExactFinancialValue::amount($draft['target'])->isLessThan(3000000)) {
                                 throw new CommandRejection('APPLICATION_INPUT_INVALID', 422, $application->revision,
                                     ['target' => ['Request at least RWF 3,000,000 and select a supported term.']]);
@@ -206,7 +219,8 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                                 'mandate_version' => $business['mandate_version']])->save();
                             $this->recordVersion($application, $userId, $partyId, $business['mandate_version']);
 
-                            return new OperationResult('APPLICATION_EVALUATED', ['application' => $this->snapshot($application), 'quote' => $this->projectQuote($quote)], $application->revision);
+                            return new OperationResult('APPLICATION_EVALUATED', $this->consents->handle(
+                                fn (?array $release): array => $this->reviewForQuote($application, $business, $quote, $release)), $application->revision);
                         });
                 });
             });
@@ -296,7 +310,8 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                                         'application_revision' => $application->revision, 'quote_id' => $quote->id,
                                         'binding_sha256' => $bindingHash, 'agreement' => $agreement,
                                         'signatures' => array_map(fn (BusinessApplicationSignature $item): array => ['id' => $item->id, 'sha256' => $item->sha256], $signatures),
-                                        'submitted_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'), 'review' => $review];
+                                        'submitted_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'), 'review' => $review,
+                                        'public_evidence' => $this->projectEvidence($business, $verification, $credit, $application, $quote)];
                                     $submission->forceFill(['business_application_id' => $application->id, 'business_application_quote_id' => $quote->id,
                                         'revision' => $application->revision, 'binding_sha256' => $bindingHash,
                                         'payload' => $payload, 'sha256' => hash('sha256', $this->json->encode($payload))])->save();
@@ -325,17 +340,124 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                 return $this->creditFacts->withCurrent($businessId, function (?array $credit) use ($application, $business, $verification): array {
                     return $this->consents->handle(function (?array $release) use ($application, $business, $verification, $credit): array {
                         $quote = $this->currentQuote($application, $business, $verification, $credit);
-                        if ($quote === null || ! $quote->payload['result']['eligible'] || $release === null) {
-                            return ['application' => $this->snapshot($application), 'quote' => $quote === null ? null : $this->projectQuote($quote),
-                                'acceptance' => $this->projectAcceptance($business['mandate'], $business['mandate_version'], $release, []), 'submission' => null];
-                        }
-                        $agreement = $this->agreement($application, $business, $quote, $release);
-                        $signatures = $this->signatures($application, $quote, hash('sha256', $this->json->encode($agreement)));
 
-                        return $this->reviewData($application, $quote, $agreement, $signatures);
+                        return $this->reviewForQuote($application, $business, $quote, $release);
                     });
                 });
             });
+    }
+
+    /**
+     * @param  Business  $business
+     * @param  Release|null  $release
+     * @return array<string, mixed>
+     */
+    private function reviewForQuote(BusinessApplication $application, array $business, ?BusinessApplicationQuote $quote, ?array $release): array
+    {
+        if ($quote === null || ! $quote->payload['result']['eligible'] || $release === null) {
+            return ['application' => $this->snapshot($application), 'quote' => $quote === null ? null : $this->projectQuote($quote),
+                'acceptance' => $this->projectAcceptance($business['mandate'], $business['mandate_version'], $release, []), 'submission' => null];
+        }
+        $agreement = $this->agreement($application, $business, $quote, $release);
+        $signatures = $this->signatures($application, $quote, hash('sha256', $this->json->encode($agreement)));
+
+        return $this->reviewData($application, $quote, $agreement, $signatures);
+    }
+
+    /** @return array<string, mixed> */
+    public function page(int $userId, int $contextRevision, string $businessId, string $applicationId): array
+    {
+        return $this->verifications->handle($userId, $contextRevision, $businessId, 'business.view', null,
+            function (array $business, array $identity, ?array $verification) use ($businessId, $applicationId, $contextRevision): array {
+                return $this->creditFacts->withCurrent($businessId, function (?array $credit) use ($business, $identity, $verification, $businessId, $applicationId, $contextRevision): array {
+                    return $this->consents->handle(function (?array $release) use ($business, $identity, $verification, $credit, $businessId, $applicationId, $contextRevision): array {
+                        $application = $this->application($businessId, $applicationId);
+                        $submitted = $application->status === 'submitted' ? $this->submittedSnapshot($application) : null;
+                        $quote = $application->status === 'submitted' ? null : $this->currentQuote($application, $business, $verification, $credit);
+                        $review = $submitted === null ? $this->reviewForQuote($application, $business, $quote, $release) : $submitted['review'];
+
+                        return ['review' => $review, 'business_id' => $businessId, 'identity_context_revision' => $contextRevision,
+                            'evidence' => $submitted === null ? $this->projectEvidence($business, $verification, $credit, $application, $quote) : $submitted['public_evidence'],
+                            'allowed_actions' => $this->allowedActions($application, $business, $identity['party']['id'] ?? '', $review)];
+                    });
+                });
+            });
+    }
+
+    /**
+     * @param  array<string, mixed>  $result
+     * @return array<string, mixed>
+     */
+    public function projectOperation(int $userId, int $contextRevision, array $result): array
+    {
+        if ($result['status'] !== 'completed') {
+            return $result;
+        }
+        $recorded = $result['data']['application'];
+        $page = $this->page($userId, $contextRevision, $recorded['business_id'], $recorded['id']);
+        $sameRevision = $recorded['revision'] === $page['review']['application']['revision'];
+        $sameReview = ! isset($result['data']['acceptance']) || $this->json->encode($result['data']) === $this->json->encode($page['review']);
+
+        return [...$result, 'allowed_actions' => $sameRevision && $sameReview ? $page['allowed_actions'] : []];
+    }
+
+    /**
+     * @param  Business  $business
+     * @param  array<string, mixed>  $review
+     * @return list<string>
+     */
+    private function allowedActions(BusinessApplication $application, array $business, string $partyId, array $review): array
+    {
+        if ($application->status !== 'draft') {
+            return [];
+        }
+        $permissions = [];
+        foreach ($business['mandate']['people'] as $person) {
+            if ($person['party_id'] === $partyId) {
+                $permissions = $person['permissions'];
+            }
+        }
+        $actions = array_values(array_intersect(['application.save', 'application.evaluate'], $permissions));
+        if (in_array('application.sign', $permissions, true) && ($review['quote']['status'] ?? null) === 'ready'
+            && $review['acceptance']['documents'] !== [] && $review['acceptance']['disclosures'] !== []) {
+            foreach ($review['acceptance']['signers'] as $signer) {
+                if ($signer['party_id'] === $partyId && $signer['state'] === 'pending') {
+                    $actions[] = 'application.submit';
+                }
+            }
+        }
+
+        return $actions;
+    }
+
+    /**
+     * @param  Business  $business
+     * @param  Verification|null  $verification
+     * @param  CreditSnapshot|null  $credit
+     * @return array<string, mixed>
+     */
+    private function projectEvidence(array $business, ?array $verification, ?array $credit, BusinessApplication $application, ?BusinessApplicationQuote $quote): array
+    {
+        $current = $verification !== null && $verification['current'];
+        $now = now('UTC')->toImmutable();
+        $facts = $this->applicationEvidence->project($current, $verification['payload']['observations'] ?? [],
+            [...($verification['payload']['review']['obligations'] ?? []), ...($credit['facts']['obligations'] ?? [])],
+            $credit['facts']['history'] ?? null, $credit['facts']['restriction_active'] ?? false,
+            $now->startOfMonth()->subMonth()->format('Y-m'), $now->format('Y-m'), $application->draft['term_months'] ?? 6,
+            $verification['payload']['review']['recurring_owner_draw'] ?? '0');
+        $scorecard = $quote?->payload['result']['scorecard'] ?? null;
+
+        return ['version' => $this->evidenceVersion($verification), ...$facts,
+            'business' => [...$business['profile'], 'officers' => array_map(fn (array $person): array => ['name' => $person['name'], 'role' => implode(', ', $person['roles'])], $business['mandate']['people'])],
+            'verified' => ['registry' => $business['entity_kind'] === 'organization', 'statements' => $current],
+            'rating' => ($scorecard['rating'] ?? null) === null ? null : ['score' => $scorecard['rating'], 'band' => strtolower($scorecard['band'])],
+            'capacity' => $quote?->payload['result']['maximum_capacity']['offer']['principal'] ?? null];
+    }
+
+    /** @param Verification|null $verification */
+    private function evidenceVersion(?array $verification): string
+    {
+        return $verification !== null && $verification['current'] ? $verification['sha256'] : 'unavailable';
     }
 
     /**
@@ -424,6 +546,12 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
     /** @return array<string, mixed> */
     private function submittedReview(BusinessApplication $application): array
     {
+        return $this->submittedSnapshot($application)['review'];
+    }
+
+    /** @return array<string, mixed> */
+    private function submittedSnapshot(BusinessApplication $application): array
+    {
         $submission = BusinessApplicationSubmission::query()->where('business_application_id', $application->id)->whereKey($application->current_submission_id)->first();
         if ($submission === null || ! hash_equals($submission->sha256, hash('sha256', $this->json->encode($submission->payload)))) {
             throw new RuntimeException('APPLICATION_SUBMISSION_INTEGRITY_FAILED');
@@ -436,7 +564,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
             throw new RuntimeException('APPLICATION_SUBMISSION_INTEGRITY_FAILED');
         }
 
-        return $payload['review'];
+        return $payload;
     }
 
     /**
@@ -599,7 +727,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
             'schedule' => array_map(fn (int $index, array $amount): array => ['instalment' => $index + 1, 'amount' => $amount],
                 array_keys($instalments), $instalments),
             'reason_codes' => $result['capacity']['reason_codes'],
-            'rate_basis' => ['band' => $result['scorecard']['band'], 'floor_pct' => '10.0', 'cap_pct' => '15.0',
+            'rate_basis' => ['band' => strtolower($result['scorecard']['band']), 'floor_pct' => '10.0', 'cap_pct' => '15.0',
                 'term_premium' => $result['pricing']['premium_percentage_points']]];
     }
 
