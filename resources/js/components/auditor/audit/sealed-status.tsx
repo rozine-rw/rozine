@@ -60,6 +60,11 @@ export function SealedStatus({
             });
         }
 
+        /* An unpublished report you amended is replaced by its amendment: nobody co-signs it. */
+        if (stage.amended_by !== null) {
+            return t('auditor.sealed.body_amended');
+        }
+
         switch (cosign.state) {
             case 'signed':
                 return t('auditor.sealed.body_signed', { party: cosign.party });
