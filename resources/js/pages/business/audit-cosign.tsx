@@ -135,6 +135,10 @@ export default function BusinessAuditCosign(
     >({
         actions: (sent) => sent.route,
         lookup: links.operation,
+        /* The lookup names the command and the identity context the page was read under. */
+        lookupQuery: {
+            identity_context_revision: props.identity_context_revision,
+        },
         initial:
             carried === null
                 ? undefined
