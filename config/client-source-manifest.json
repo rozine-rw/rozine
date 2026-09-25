@@ -219,6 +219,8 @@
         "resources/js/components/auditor/assigned-job-card.tsx",
         "resources/js/components/auditor/audit/evidence.tsx",
         "resources/js/components/auditor/audit/parts.tsx",
+        "resources/js/components/auditor/audit/return-controls.tsx",
+        "resources/js/components/auditor/audit/returned-status.tsx",
         "resources/js/components/auditor/audit/seal-flow.tsx",
         "resources/js/components/auditor/audit/sealed-status.tsx",
         "resources/js/components/auditor/audit/step-bar.tsx",
@@ -516,10 +518,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 488,
+        "totalTrackedSources": 490,
         "generated": 149,
         "declarationOnly": 14,
-        "authoredExecutable": 325
+        "authoredExecutable": 327
     },
-    "coverageSetSha256": "eaee202ca330a505683a90ba0c425fc775376ca5ca09761a1b87dded210fb1ba"
+    "coverageSetSha256": "fdceb335d87b87778c1c48c782ca48ac56a5139ff7723cb6047dc53513df8ce9"
 }

@@ -4,12 +4,7 @@
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
-        "allowed_actions": [
-            "audit.save_step",
-            "conflict.declare",
-            "audit.request_changes",
-            "audit.reject"
-        ],
+        "allowed_actions": [],
         "audit": {
             "id": "mr_greenleaf",
             "kind": "monthly",
@@ -20,18 +15,18 @@
             "deadline": {
                 "due_at": "2026-10-07T21:59:59Z"
             },
-            "revision": 3,
+            "revision": 4,
             "reassigned_from": null,
             "amends": null
         },
         "steps": [
             {
                 "key": "statements",
-                "state": "done"
+                "state": "current"
             },
             {
                 "key": "count",
-                "state": "current"
+                "state": "todo"
             },
             {
                 "key": "photos",
@@ -43,134 +38,19 @@
             }
         ],
         "stage": {
-            "step": "count",
-            "financial_proofs": [
-                {
-                    "key": "bank",
-                    "label": "Bank statement",
-                    "hint": "PDF attachment or high-res scan",
-                    "seen": true
-                },
-                {
-                    "key": "momo",
-                    "label": "Mobile-money log",
-                    "hint": "MoMo transaction export",
-                    "seen": true
-                },
-                {
-                    "key": "cash",
-                    "label": "Cash count sheet",
-                    "hint": "Signed physical count",
-                    "seen": false
-                },
-                {
-                    "key": "po",
-                    "label": "POs & delivery receipts",
-                    "hint": "Verified purchase orders",
-                    "seen": false
-                }
-            ],
-            "cash": {
-                "observed": {
-                    "currency": "RWF",
-                    "amount": "1184000"
-                },
-                "statement": {
-                    "currency": "RWF",
-                    "amount": "1210000"
-                },
-                "variance": {
-                    "pct": "-2.1",
-                    "within": false
-                }
+            "step": "returned",
+            "status": "rejected",
+            "reason": {
+                "code": "evidence_unverifiable",
+                "label": "Evidence cannot be verified",
+                "explanation": "The bank statement totals do not match the uploaded ledger, and no original was supplied to reconcile them."
             },
-            "tolerance": "RWF 0",
-            "period": {
-                "from": "2026-09-01",
-                "to": "2026-09-30"
-            },
-            "account_ref": "BK ····4417 · MoMo 078···212",
-            "sector": {
-                "label": "FMCG / Perishables",
-                "definition": "Stock counted in saleable units: sealed crates in the cold room and on the shop floor."
-            },
-            "inventory_proofs": [
-                {
-                    "key": "photo",
-                    "label": "Cold-room count photo",
-                    "hint": "Taken in the capture app",
-                    "seen": true
-                },
-                {
-                    "key": "delivery",
-                    "label": "Supplier delivery notes",
-                    "hint": "Notes for the month",
-                    "seen": false
-                }
-            ],
-            "stock": {
-                "observed_units": "184",
-                "reported_units": "190",
-                "variance": {
-                    "pct": "-3.2",
-                    "within": false
-                }
-            },
-            "operational_status": "active"
+            "recorded_at": "2026-10-05T09:12:00Z",
+            "amended_by": null
         },
         "can_continue": false,
-        "hint": "Tick every proof artefact you inspected.",
-        "reason_options": {
-            "request_changes": [
-                {
-                    "code": "missing_originals",
-                    "label": "Original documents missing",
-                    "requires_explanation": true
-                },
-                {
-                    "code": "reconciliation_difference",
-                    "label": "Unexplained reconciliation difference",
-                    "requires_explanation": true
-                },
-                {
-                    "code": "classification_unresolved",
-                    "label": "Classification unresolved",
-                    "requires_explanation": true
-                },
-                {
-                    "code": "debt_evidence_missing",
-                    "label": "Debt or draw evidence missing",
-                    "requires_explanation": true
-                },
-                {
-                    "code": "capture_unverified",
-                    "label": "Capture could not be verified",
-                    "requires_explanation": true
-                },
-                {
-                    "code": "other",
-                    "label": "Other",
-                    "requires_explanation": true
-                }
-            ],
-            "reject": [
-                {
-                    "code": "evidence_unverifiable",
-                    "label": "Evidence cannot be verified",
-                    "requires_explanation": true
-                },
-                {
-                    "code": "procedure_incomplete",
-                    "label": "Procedure cannot be completed",
-                    "requires_explanation": true
-                },
-                {
-                    "code": "other",
-                    "label": "Other",
-                    "requires_explanation": true
-                }
-            ]
-        },
+        "hint": null,
+        "reason_options": null,
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",
@@ -194,26 +74,11 @@
                 "url": "/preview/auditor-jobs-conflict",
                 "method": "post"
             },
-            "step_up": {
-                "url": "/preview/auditor-audit-seal-step-up",
-                "method": "post"
-            },
-            "seal": {
-                "url": "/preview/auditor-audit-sealed-monthly",
-                "method": "post"
-            },
-            "request_changes": {
-                "url": "/preview/auditor-jobs",
-                "method": "post"
-            },
-            "reject": {
-                "url": "/preview/auditor-jobs",
-                "method": "post"
-            },
-            "amend": {
-                "url": "/preview/auditor-audit-amendment",
-                "method": "post"
-            }
+            "step_up": null,
+            "seal": null,
+            "request_changes": null,
+            "reject": null,
+            "amend": null
         },
         "outcome": null,
         "jobs": {

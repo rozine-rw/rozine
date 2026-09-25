@@ -98,6 +98,7 @@
         },
         "can_continue": false,
         "hint": "Capture all three required shots to continue.",
+        "reason_options": null,
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",

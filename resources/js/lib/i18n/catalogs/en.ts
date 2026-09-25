@@ -3070,6 +3070,23 @@ const en = {
         "Your note isn't saved yet. Save it now; sealing opens once the report is ready for it.",
     'auditor.capture.synthetic':
         'Synthetic test evidence (isolated) — not a native capture.',
+    'auditor.returned.title.changes_requested': 'Changes requested',
+    'auditor.returned.title.rejected': 'Filing rejected',
+    'auditor.returned.lead.changes_requested':
+        'This filing went back to the business with the reason below. The report is kept exactly as it was returned.',
+    'auditor.returned.lead.rejected':
+        "This filing version could not be verified, for the reason below. This concerns the filing, not the business's credit. The report is kept exactly as it was rejected.",
+    'auditor.returned.reason': 'Reason',
+    'auditor.returned.recorded': 'Recorded',
+    'auditor.returned.amend': 'Start a linked amendment',
+    'auditor.returned.amended_by':
+        'An amendment {report} was started from this report.',
+    'auditor.returned.view_amendment': 'View the amendment',
+    'auditor.reason.count': '{count} / {max}',
+    'auditor.command.refused.AUDIT_REPORT_DECISION_NOT_ALLOWED':
+        'This report can no longer be returned or rejected, so nothing was recorded. The page has been refreshed.',
+    'auditor.command.refused.AUDIT_REPORT_NOT_AMENDABLE':
+        "This report can't be amended now, so no amendment was started. The page has been refreshed.",
     'auditor.ledger.download': 'Download original',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing

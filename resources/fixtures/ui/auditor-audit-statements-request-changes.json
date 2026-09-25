@@ -27,11 +27,11 @@
         "steps": [
             {
                 "key": "statements",
-                "state": "done"
+                "state": "current"
             },
             {
                 "key": "count",
-                "state": "current"
+                "state": "todo"
             },
             {
                 "key": "photos",
@@ -43,83 +43,52 @@
             }
         ],
         "stage": {
-            "step": "count",
-            "financial_proofs": [
-                {
-                    "key": "bank",
-                    "label": "Bank statement",
-                    "hint": "PDF attachment or high-res scan",
-                    "seen": true
-                },
-                {
-                    "key": "momo",
-                    "label": "Mobile-money log",
-                    "hint": "MoMo transaction export",
-                    "seen": true
-                },
-                {
-                    "key": "cash",
-                    "label": "Cash count sheet",
-                    "hint": "Signed physical count",
-                    "seen": false
-                },
-                {
-                    "key": "po",
-                    "label": "POs & delivery receipts",
-                    "hint": "Verified purchase orders",
-                    "seen": false
-                }
-            ],
-            "cash": {
-                "observed": {
+            "step": "statements",
+            "statements": {
+                "status": "available",
+                "inflow": {
                     "currency": "RWF",
-                    "amount": "1184000"
+                    "amount": "162000000"
                 },
-                "statement": {
+                "outflow": {
                     "currency": "RWF",
-                    "amount": "1210000"
+                    "amount": "128400000"
                 },
-                "variance": {
-                    "pct": "-2.1",
-                    "within": false
-                }
-            },
-            "tolerance": "RWF 0",
-            "period": {
-                "from": "2026-09-01",
-                "to": "2026-09-30"
-            },
-            "account_ref": "BK ····4417 · MoMo 078···212",
-            "sector": {
-                "label": "FMCG / Perishables",
-                "definition": "Stock counted in saleable units: sealed crates in the cold room and on the shop floor."
-            },
-            "inventory_proofs": [
-                {
-                    "key": "photo",
-                    "label": "Cold-room count photo",
-                    "hint": "Taken in the capture app",
-                    "seen": true
+                "net": {
+                    "currency": "RWF",
+                    "amount": "33600000"
                 },
-                {
-                    "key": "delivery",
-                    "label": "Supplier delivery notes",
-                    "hint": "Notes for the month",
-                    "seen": false
-                }
-            ],
-            "stock": {
-                "observed_units": "184",
-                "reported_units": "190",
-                "variance": {
-                    "pct": "-3.2",
-                    "within": false
-                }
-            },
-            "operational_status": "active"
+                "cover": {
+                    "value": "1.31",
+                    "band": null
+                },
+                "documents": [
+                    {
+                        "name": "GreenLeaf-Agro-BK-current-2026-09.pdf",
+                        "link": {
+                            "url": "/preview/auditor-audit-statements?document=sd_bk_current",
+                            "method": "get"
+                        }
+                    },
+                    {
+                        "name": "GreenLeaf-Agro-BK-savings-2026-09.pdf",
+                        "link": {
+                            "url": "/preview/auditor-audit-statements?document=sd_bk_savings",
+                            "method": "get"
+                        }
+                    },
+                    {
+                        "name": "GreenLeaf-Agro-MoMo-2026-09.csv",
+                        "link": {
+                            "url": "/preview/auditor-audit-statements?document=sd_momo",
+                            "method": "get"
+                        }
+                    }
+                ]
+            }
         },
-        "can_continue": false,
-        "hint": "Tick every proof artefact you inspected.",
+        "can_continue": true,
+        "hint": null,
         "reason_options": {
             "request_changes": [
                 {
@@ -176,10 +145,7 @@
                 "url": "/preview/auditor-jobs",
                 "method": "get"
             },
-            "back": {
-                "url": "/preview/auditor-jobs",
-                "method": "get"
-            },
+            "back": null,
             "operation": {
                 "url": "/preview/auditor-operation-{request_id}",
                 "method": "get"
@@ -424,6 +390,11 @@
         "assignment": {
             "id": "asg_mr_greenleaf",
             "revision": 4
+        },
+        "preview_outcome": {
+            "kind": "sheet",
+            "sheet": "request_changes",
+            "reason": "missing_originals"
         }
     }
 }

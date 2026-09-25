@@ -129,6 +129,7 @@
         },
         "can_continue": true,
         "hint": null,
+        "reason_options": null,
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",

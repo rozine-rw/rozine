@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "d01d80709f9db959f6d20b5738f3e852b53962c01112bf6610d26dcf01ceb8fb",
-    "coverageSetSha256": "eaee202ca330a505683a90ba0c425fc775376ca5ca09761a1b87dded210fb1ba",
+    "sourceManifestSha256": "17bb862f42cdb76e1ffa702308e39c45664e82a25dc40115704104cbb0f9a42a",
+    "coverageSetSha256": "fdceb335d87b87778c1c48c782ca48ac56a5139ff7723cb6047dc53513df8ce9",
     "thresholds": {
         "critical": {
             "global": {
@@ -78,6 +78,8 @@
         "resources/js/components/auditor/assigned-job-card.tsx",
         "resources/js/components/auditor/audit/evidence.tsx",
         "resources/js/components/auditor/audit/parts.tsx",
+        "resources/js/components/auditor/audit/return-controls.tsx",
+        "resources/js/components/auditor/audit/returned-status.tsx",
         "resources/js/components/auditor/audit/seal-flow.tsx",
         "resources/js/components/auditor/audit/sealed-status.tsx",
         "resources/js/components/auditor/audit/step-bar.tsx",

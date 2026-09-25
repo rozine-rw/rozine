@@ -57,6 +57,7 @@
         },
         "can_continue": false,
         "hint": "Check in on site in the capture app to continue.",
+        "reason_options": null,
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",

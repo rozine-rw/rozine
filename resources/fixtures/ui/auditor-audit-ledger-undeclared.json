@@ -112,6 +112,7 @@
         },
         "can_continue": false,
         "hint": "The business has not declared its stock, so the count cannot be reconciled yet.",
+        "reason_options": null,
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",

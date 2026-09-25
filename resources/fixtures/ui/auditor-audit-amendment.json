@@ -220,6 +220,57 @@
         },
         "can_continue": true,
         "hint": "Sealing binds your ICPAR licence, location and time; GreenLeaf Agro then co-signs by 7 Oct.",
+        "reason_options": {
+            "request_changes": [
+                {
+                    "code": "missing_originals",
+                    "label": "Original documents missing",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "reconciliation_difference",
+                    "label": "Unexplained reconciliation difference",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "classification_unresolved",
+                    "label": "Classification unresolved",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "debt_evidence_missing",
+                    "label": "Debt or draw evidence missing",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "capture_unverified",
+                    "label": "Capture could not be verified",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "other",
+                    "label": "Other",
+                    "requires_explanation": true
+                }
+            ],
+            "reject": [
+                {
+                    "code": "evidence_unverifiable",
+                    "label": "Evidence cannot be verified",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "procedure_incomplete",
+                    "label": "Procedure cannot be completed",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "other",
+                    "label": "Other",
+                    "requires_explanation": true
+                }
+            ]
+        },
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",
