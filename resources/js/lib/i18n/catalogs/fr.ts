@@ -3118,6 +3118,48 @@ const fr: Catalog = {
         'Télécharger le certificat enregistré',
     'auditor.accreditation.view_submitted': 'Télécharger le certificat soumis',
 
+    'auditor.engagement.head_title': 'Conditions de mission',
+    'auditor.engagement.title': 'Conditions de mission',
+    'auditor.engagement.lead':
+        'Lisez les deux documents en entier avant d’accepter. De nouvelles missions ne vous sont proposées que selon des conditions que vous avez acceptées.',
+    'auditor.engagement.synthetic_title': 'Conditions de test synthétiques',
+    'auditor.engagement.synthetic_body':
+        'Ce sont des conditions de test, pas pour de vraies missions. Les accepter ne représente aucune mission professionnelle réelle.',
+    'auditor.engagement.original_language':
+        'Les conditions sont affichées dans leur langue d’origine.',
+    'auditor.engagement.document.master_services': 'Contrat-cadre de services',
+    'auditor.engagement.document.agreed_procedures': 'Procédures convenues',
+    'auditor.engagement.document_meta': 'Version {version} · SHA-256 {hash}…',
+    'auditor.engagement.acceptance_title': 'Votre acceptation',
+    'auditor.engagement.release_meta':
+        'Version {version} · procédure {procedure}',
+    'auditor.engagement.release_hash': 'SHA-256 de la publication {hash}…',
+    'auditor.engagement.accept_label':
+        'J’ai lu et j’accepte le Contrat-cadre de services et les Procédures convenues',
+    'auditor.engagement.accept': 'Accepter les conditions',
+    'auditor.engagement.accepting': 'Acceptation…',
+    'auditor.engagement.acceptance_required':
+        'Cochez la case pour confirmer que vous avez lu et acceptez les deux documents.',
+    'auditor.engagement.accepted':
+        'Vous avez accepté la version {version} le {date}',
+    'auditor.engagement.accepted_receipt': 'SHA-256 du reçu {hash}…',
+    'auditor.engagement.no_accept':
+        'L’acceptation de ces conditions ne vous est pas proposée pour le moment.',
+    'auditor.engagement.unavailable':
+        'Aucune condition de mission n’est disponible pour le moment',
+    'auditor.engagement.unavailable_body':
+        'Les nouvelles missions sont suspendues jusqu’à ce que Rozine publie des conditions. Rien ne vous est demandé d’ici là.',
+    'auditor.engagement.refused.AUDIT_ENGAGEMENT_VERSION_CONFLICT':
+        'Les conditions ont changé avant que votre acceptation n’atteigne Rozine ; rien n’a été accepté. Lisez la version actuelle en entier avant d’accepter.',
+    'auditor.engagement.refused.AUDIT_ENGAGEMENT_TERMS_REQUIRED':
+        'Ces conditions ont été retirées avant que votre acceptation n’atteigne Rozine ; rien n’a été accepté.',
+    'auditor.engagement.banner.required':
+        'Lisez et acceptez les conditions de mission pour recevoir de nouvelles missions',
+    'auditor.engagement.banner.unavailable':
+        'Les conditions de mission ne sont pas disponibles ; les nouvelles missions sont suspendues',
+    'auditor.command.refused.AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED':
+        'Acceptez les conditions de mission actuelles pour continuer.',
+    'auditor.command.review_terms': 'Lire les conditions',
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

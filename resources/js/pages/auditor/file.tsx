@@ -8,6 +8,7 @@ import {
 } from '@/components/auditor/commands';
 import { ConflictReceiptCard } from '@/components/auditor/conflict-receipt';
 import { DetailSheet, JobHeader } from '@/components/auditor/detail-sheet';
+import { EngagementBanner } from '@/components/auditor/engagement/engagement-banner';
 import { FileReview } from '@/components/auditor/file/file-review';
 import { useJobCommands } from '@/components/auditor/job-commands';
 import { JobsBody, openOffers } from '@/components/auditor/jobs/jobs-body';
@@ -131,6 +132,12 @@ function FileSheet({ receipt, ...props }: FileSheetProps) {
             }
             nested={blocked === null ? commands.sheet : null}
         >
+            {blocked === null && (
+                <EngagementBanner
+                    engagement={props.engagement}
+                    className="mb-4"
+                />
+            )}
             <AuditorCommandNotice placement="page" />
             {blocked === null ? (
                 <FileReview
@@ -163,6 +170,7 @@ export default function AuditorFile(props: AuditorFileProps) {
         lookup: props.links.operation,
         preview: props.preview_outcome,
         reload: scope,
+        terms: props.engagement?.link ?? null,
     });
 
     return (
@@ -183,8 +191,10 @@ export default function AuditorFile(props: AuditorFileProps) {
                     },
                 }}
             >
+                {/* The sheet carries the engagement summary; the Jobs beneath it repeat none. */}
                 <JobsBody
                     {...props.jobs}
+                    engagement={null}
                     backdrop
                     overlay={{
                         column: 'left',

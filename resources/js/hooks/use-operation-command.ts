@@ -48,9 +48,14 @@ type Options<C extends OperationCommand, R> = {
     actions: Record<C['name'], RouteAction> | ((command: C) => RouteAction);
     /**
      * The operation lookup. Its url holds the literal `{request_id}` token, which is replaced; the
-     * command name goes as the `command` query.
+     * command name goes as the `command` query unless `lookupNamesCommand` is false.
      */
     lookup: RouteLink;
+    /**
+     * Whether the lookup names the command in its `command` query (the default). A contract whose
+     * lookup serves a single command, such as auditor-engagement-v1, takes no `command` query.
+     */
+    lookupNamesCommand?: boolean;
     /**
      * Further query parameters the lookup needs beside `command`, e.g. the Business contract's
      * `identity_context_revision`. Read when the lookup is sent.
@@ -88,6 +93,7 @@ export function useOperationCommand<
 >({
     actions,
     lookup,
+    lookupNamesCommand = true,
     lookupQuery,
     refusals422,
     initial,
@@ -212,7 +218,9 @@ export function useOperationCommand<
                 ),
                 method: 'get',
             },
-            { ...lookupQuery, command: command.name },
+            lookupNamesCommand
+                ? { ...lookupQuery, command: command.name }
+                : { ...lookupQuery },
         );
 
         if (attempt.kind === 'resource') {

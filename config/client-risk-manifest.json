@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "cd6762de6ac90c74e429b52b5028411bdde5b07c78a412602b95caf5c3de44cd",
-    "coverageSetSha256": "8cd0622baf7ca9161360b5d3c21e6e722b08b16a6b337aa575f8e3133523c38d",
+    "sourceManifestSha256": "321d3a24e0def70f9cfb66d266ed3a844bee354adcfabf5fa8ec970799a34d58",
+    "coverageSetSha256": "eaee202ca330a505683a90ba0c425fc775376ca5ca09761a1b87dded210fb1ba",
     "thresholds": {
         "critical": {
             "global": {
@@ -93,6 +93,9 @@
         "resources/js/components/auditor/commands.tsx",
         "resources/js/components/auditor/conflict-receipt.tsx",
         "resources/js/components/auditor/detail-sheet.tsx",
+        "resources/js/components/auditor/engagement/acceptance.tsx",
+        "resources/js/components/auditor/engagement/engagement-banner.tsx",
+        "resources/js/components/auditor/engagement/terms-document.tsx",
         "resources/js/components/auditor/file/file-review.tsx",
         "resources/js/components/auditor/home/activity-list.tsx",
         "resources/js/components/auditor/home/hero.tsx",
@@ -322,6 +325,7 @@
         "resources/js/pages/admin/today.tsx",
         "resources/js/pages/auditor/audit.tsx",
         "resources/js/pages/auditor/conflicts.tsx",
+        "resources/js/pages/auditor/engagement.tsx",
         "resources/js/pages/auditor/file.tsx",
         "resources/js/pages/auditor/home.tsx",
         "resources/js/pages/auditor/jobs.tsx",

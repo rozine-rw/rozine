@@ -5,9 +5,38 @@ declare(strict_types=1);
 use App\Models\AuditEngagementAcceptance;
 use App\Models\RoleMembership;
 use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditEngagementFixture;
 use Tests\Support\AuditorFixture;
+use Tests\TestCase;
+
+beforeEach(function (): void {
+    $this->withoutVite();
+});
+
+/**
+ * The agreement page as each transport serves it: the web page's flat Inertia props for the
+ * `auditor/engagement` component, or the API's JSON `data` envelope. Both are private and unstored.
+ *
+ * @return array<string, mixed>
+ */
+function engagementHttpPage(TestCase $test, bool $api): array
+{
+    if ($api) {
+        return $test->getJson(route('api.v1.auditor.engagement.show'))->assertOk()->assertHeaderContains('Cache-Control', 'private')
+            ->assertHeaderContains('Cache-Control', 'no-store')->json('data');
+    }
+    $props = [];
+    $test->get(route('auditor.engagement.show'))->assertOk()->assertHeaderContains('Cache-Control', 'private')
+        ->assertHeaderContains('Cache-Control', 'no-store')->assertInertia(function (Assert $page) use (&$props): Assert {
+            $props = $page->toArray()['props'];
+
+            return $page->component('auditor/engagement');
+        });
+
+    return $props;
+}
 
 it('serves exact private terms and records explicit acceptance through both transports', function (bool $api): void {
     $actor = AuditorFixture::make();
@@ -18,32 +47,68 @@ it('serves exact private terms and records explicit acceptance through both tran
     } else {
         $this->actingAs($actor['user']);
     }
-    $page = $this->getJson(route($prefix.'show'))->assertOk()->assertHeaderContains('Cache-Control', 'private')
-        ->assertHeaderContains('Cache-Control', 'no-store')->assertJsonPath('data.contract_version', 'auditor-engagement-v1')
-        ->assertJsonPath('data.identity_context_revision', 1)->assertJsonPath('data.release.sha256', $release->sha256)
-        ->assertJsonPath('data.release.documents.master_services.body', AuditEngagementFixture::documents()['master_services']['body'])
-        ->assertJsonPath('data.acceptance', null)->assertJsonPath('data.allowed_actions', ['audit.engagement.accept'])
-        ->assertJsonMissingPath('data.release.actor_user_id')->assertJsonMissingPath('data.release.approval_reference');
+    $page = engagementHttpPage($this, $api);
+    expect($page['contract_version'])->toBe('auditor-engagement-v1')
+        ->and($page['identity_context_revision'])->toBe(1)
+        ->and($page['release']['sha256'])->toBe($release->sha256)
+        ->and($page['release']['documents']['master_services']['body'])->toBe(AuditEngagementFixture::documents()['master_services']['body'])
+        ->and($page['acceptance'])->toBeNull()
+        ->and($page['allowed_actions'])->toBe(['audit.engagement.accept'])
+        ->and($page['actions']['accept'])->toBe(['url' => route($prefix.'accept', [], false), 'method' => 'post'])
+        ->and($page['links']['current'])->toBe(['url' => route($prefix.'show', [], false), 'method' => 'get'])
+        ->and($page['release'])->not->toHaveKeys(['actor_user_id', 'approval_reference']);
+    if ($api) {
+        expect($page)->not->toHaveKey('open_jobs')
+            ->and(array_keys($page['links']))->toBe(['current', 'operation']);
+    } else {
+        expect($page['open_jobs'])->toBe(0)
+            ->and($page['links'])->toMatchArray(['home' => ['url' => '/auditor', 'method' => 'get'],
+                'profile' => ['url' => '/auditor/profile', 'method' => 'get'], 'launcher' => ['url' => '/dashboard', 'method' => 'get'],
+                'operation' => ['url' => '/auditor/engagement/operations/{request_id}', 'method' => 'get']]);
+    }
     $this->assertDatabaseCount('audit_engagement_acceptances', 0);
     $request = (string) Str::uuid();
     $payload = ['identity_context_revision' => 1, 'expected_revision' => 1, 'release_id' => $release->id,
         'sha256' => $release->sha256, 'accepted' => true, 'request_id' => $request];
-    $receipt = $this->postJson($page->json('data.actions.accept.url'), $payload)->assertOk()->assertJsonPath('code', 'AUDIT_ENGAGEMENT_ACCEPTED');
+    $receipt = $this->postJson($page['actions']['accept']['url'], $payload)->assertOk()->assertJsonPath('code', 'AUDIT_ENGAGEMENT_ACCEPTED');
     $this->postJson(route($prefix.'accept'), $payload)->assertOk()->assertJsonPath('operation_id', $receipt->json('operation_id'));
-    $this->getJson(str_replace('{request_id}', $request, $page->json('data.links.operation.url')))->assertOk()
+    $this->getJson(str_replace('{request_id}', $request, $page['links']['operation']['url']))->assertOk()
         ->assertJsonPath('data.acceptance', $receipt->json('data.acceptance'))->assertJsonMissingPath('data.documents');
-    $this->getJson(route($prefix.'show'))->assertOk()->assertJsonPath('data.actions.accept', null)->assertJsonPath('data.allowed_actions', [])
-        ->assertJsonPath('data.acceptance.id', $receipt->json('data.acceptance.id'));
+    $after = engagementHttpPage($this, $api);
+    expect($after['actions']['accept'])->toBeNull()
+        ->and($after['allowed_actions'])->toBe([])
+        ->and($after['acceptance']['id'])->toBe($receipt->json('data.acceptance.id'));
     $this->assertDatabaseCount('audit_engagement_acceptances', 1);
 })->with([false, true]);
 
-it('exposes no acceptance action while terms are unavailable or withdrawn', function (): void {
+it('exposes no acceptance action while terms are unavailable or withdrawn', function (bool $api): void {
     $actor = AuditorFixture::make();
-    $this->actingAs($actor['user'])->getJson(route('auditor.engagement.show'))->assertOk()
-        ->assertJsonStructure(['data' => ['release', 'acceptance', 'allowed_actions', 'actions']])->assertJsonPath('data.release', null)->assertJsonPath('data.actions.accept', null);
+    if ($api) {
+        Sanctum::actingAs($actor['user'], ['auditor:read']);
+    } else {
+        $this->actingAs($actor['user']);
+    }
+    $empty = engagementHttpPage($this, $api);
+    expect($empty)->toHaveKeys(['release', 'acceptance', 'allowed_actions', 'actions'])
+        ->and($empty['release'])->toBeNull()->and($empty['actions']['accept'])->toBeNull()->and($empty['allowed_actions'])->toBe([]);
     AuditEngagementFixture::release($actor['staff']);
     AuditEngagementFixture::release($actor['staff'], 1, 'withdrawn');
-    $this->getJson(route('auditor.engagement.show'))->assertOk()->assertJsonStructure(['data' => ['release', 'acceptance', 'allowed_actions', 'actions']])->assertJsonPath('data.release', null)->assertJsonPath('data.acceptance', null);
+    $withdrawn = engagementHttpPage($this, $api);
+    expect($withdrawn)->toHaveKeys(['release', 'acceptance', 'allowed_actions', 'actions'])
+        ->and($withdrawn['release'])->toBeNull()->and($withdrawn['acceptance'])->toBeNull()->and($withdrawn['actions']['accept'])->toBeNull();
+})->with([false, true]);
+
+it('renders the web agreement page for an Inertia visit and keeps the API a JSON envelope', function (): void {
+    $actor = AuditorFixture::make();
+    AuditEngagementFixture::release($actor['staff']);
+    $this->actingAs($actor['user']);
+    $version = (string) $this->get(route('auditor.engagement.show'))->assertOk()->viewData('page')['version'];
+    $this->get(route('auditor.engagement.show'), ['X-Inertia' => 'true', 'X-Inertia-Version' => $version])->assertOk()
+        ->assertHeader('X-Inertia', 'true')->assertJsonPath('component', 'auditor/engagement')
+        ->assertJsonPath('props.contract_version', 'auditor-engagement-v1')->assertJsonMissingPath('props.data');
+    Sanctum::actingAs($actor['user'], ['auditor:read']);
+    $this->getJson(route('api.v1.auditor.engagement.show'))->assertOk()->assertHeaderMissing('X-Inertia')
+        ->assertJsonPath('data.contract_version', 'auditor-engagement-v1')->assertJsonMissingPath('component');
 });
 
 it('rejects malformed acceptance envelopes and never treats a string as explicit consent', function (string $field, mixed $value): void {

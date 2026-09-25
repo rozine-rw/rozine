@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { AssignedJobCard } from '@/components/auditor/assigned-job-card';
+import { EngagementBanner } from '@/components/auditor/engagement/engagement-banner';
 import { EligibleCard } from '@/components/auditor/jobs/eligible-card';
 import { MonthlySection } from '@/components/auditor/jobs/monthly-section';
 import { RadiusMap } from '@/components/auditor/jobs/radius-map';
@@ -106,6 +107,10 @@ export function JobsBody({
                             radius: props.radius_km,
                             hours: props.flash_hours,
                         })}
+                    />
+                    <EngagementBanner
+                        engagement={props.engagement}
+                        className="mt-3.5"
                     />
                     {notice}
                     <RadiusMap

@@ -215,6 +215,26 @@ export type AuditorAppLinks = {
     conflicts?: RouteLink | null;
 };
 
+/**
+ * Whether this partner may take new work under the engagement terms, as Jobs, the file page (and
+ * the Jobs beneath it), Profile and the Auditor role home carry it (#96): `current` — the current terms are
+ * accepted; `required` — current terms are available but not yet accepted; `unavailable` — no
+ * usable terms are published. `link` is the agreement page. It is informational only: every
+ * control still comes from its record's own `allowed_actions`, never from this status.
+ */
+export type EngagementSummary = {
+    status: 'current' | 'required' | 'unavailable';
+    link: RouteLink;
+};
+
+/**
+ * The engagement summary on a page that carries it. The live Auditor pages always send
+ * `{status, link}`; null is the synthetic fixtures' placeholder, and the page then shows nothing.
+ */
+export type EngagementSummaryProp = {
+    engagement: EngagementSummary | null;
+};
+
 /** Business sector, as a code so the file tile takes the design's sector colour. */
 export type SectorCode =
     | 'agriculture'
@@ -357,33 +377,38 @@ export type AuditorActivity =
     | { kind: 'payment_deferred'; at: string; business: string; cause: string }
     | { kind: 'payout'; at: string; amount: Money };
 
-export type AuditorHomeProps = AuditorPageContract & {
-    auditor: AuditorIdentity;
-    /** The published partner-quality score out of 100; null until the quality policy is live. */
-    quality_score: number | null;
-    /** Accrued service-fee share this month (C-23), or null before anything accrues. */
-    earned_this_month: Money | null;
-    active_deals: number;
-    /** Null when no licence is on record or the fact is unavailable; never a stand-in date. */
-    licence_expires_on: string | null;
-    availability: AuditorAvailability;
-    /** Eligible Flash Audits right now and the closest one's distance. */
-    nearby: { count: number; closest_km: string | null };
-    in_progress: AssignedJob[];
-    standing: AuditorStanding;
-    activity: AuditorActivity[];
-    /** The wallet balance, or null when the server cannot state it; never a stand-in amount. */
-    wallet: { available: Money | null };
-    unread_notifications: number;
-    /** Each destination is null until it exists for this partner; its control is then hidden. */
-    links: AuditorAppLinks &
-        OperationLookupLinks & {
-            statement: RouteLink | null;
-            withdraw: RouteLink | null;
-            notifications: RouteLink | null;
-        };
-    preview_outcome?: AuditorPreviewOutcome;
-};
+/**
+ * Auditor Home as designed. The live Auditor landing page is still `identity/role-home`, which
+ * carries the engagement summary; this synthetic page may carry one too.
+ */
+export type AuditorHomeProps = AuditorPageContract &
+    Partial<EngagementSummaryProp> & {
+        auditor: AuditorIdentity;
+        /** The published partner-quality score out of 100; null until the quality policy is live. */
+        quality_score: number | null;
+        /** Accrued service-fee share this month (C-23), or null before anything accrues. */
+        earned_this_month: Money | null;
+        active_deals: number;
+        /** Null when no licence is on record or the fact is unavailable; never a stand-in date. */
+        licence_expires_on: string | null;
+        availability: AuditorAvailability;
+        /** Eligible Flash Audits right now and the closest one's distance. */
+        nearby: { count: number; closest_km: string | null };
+        in_progress: AssignedJob[];
+        standing: AuditorStanding;
+        activity: AuditorActivity[];
+        /** The wallet balance, or null when the server cannot state it; never a stand-in amount. */
+        wallet: { available: Money | null };
+        unread_notifications: number;
+        /** Each destination is null until it exists for this partner; its control is then hidden. */
+        links: AuditorAppLinks &
+            OperationLookupLinks & {
+                statement: RouteLink | null;
+                withdraw: RouteLink | null;
+                notifications: RouteLink | null;
+            };
+        preview_outcome?: AuditorPreviewOutcome;
+    };
 
 /* ------------------------------------------------------------------------------------------ */
 /* Jobs (MVP-AUDITOR-SCR-01, design L205–323)                                                   */
@@ -531,35 +556,39 @@ export type AuditorPagination = {
  * `/auditor/jobs/{assignment}/accept`, `/decline` and `/conflict`, and the lookup is GET
  * `/auditor/assignment-operations/{request_id}?command=`; the page follows the links it is sent.
  */
-export type AuditorJobsProps = AuditorPageContract & {
-    radius_km: number;
-    flash_hours: number;
-    /**
-     * Offers to this partner and their accepted work: the server splits one bounded page into
-     * these two lists, and `pagination` covers the page as a whole.
-     */
-    eligible: EligibleJob[];
-    assigned: AssignedJob[];
-    /**
-     * The monthly windows and report cards (S-D and the report calendar). Null until they are
-     * served: the page then leaves the Monthly section out rather than reading "no reports".
-     */
-    monthly: { windows: MonthlyWindow[]; reports: MonthlyReportCard[] } | null;
-    /**
-     * The server's labelled reasons for declining an offer. The page shows each `label` as sent and
-     * relies on no code of its own.
-     */
-    decline_options: ServerOption<DeclineReason>[];
-    /**
-     * The page as a whole (GET `/auditor/jobs?before=`). Live pages always send it, so their counts
-     * read as this page's, never as totals, even when `next` is null; only a synthetic preview
-     * without it presents its offers as the complete list.
-     */
-    pagination?: AuditorPagination;
-    outcome: AuditorOutcome | null;
-    links: AuditorAppLinks & OperationLookupLinks;
-    preview_outcome?: AuditorPreviewOutcome;
-};
+export type AuditorJobsProps = AuditorPageContract &
+    EngagementSummaryProp & {
+        radius_km: number;
+        flash_hours: number;
+        /**
+         * Offers to this partner and their accepted work: the server splits one bounded page into
+         * these two lists, and `pagination` covers the page as a whole.
+         */
+        eligible: EligibleJob[];
+        assigned: AssignedJob[];
+        /**
+         * The monthly windows and report cards (S-D and the report calendar). Null until they are
+         * served: the page then leaves the Monthly section out rather than reading "no reports".
+         */
+        monthly: {
+            windows: MonthlyWindow[];
+            reports: MonthlyReportCard[];
+        } | null;
+        /**
+         * The server's labelled reasons for declining an offer. The page shows each `label` as sent and
+         * relies on no code of its own.
+         */
+        decline_options: ServerOption<DeclineReason>[];
+        /**
+         * The page as a whole (GET `/auditor/jobs?before=`). Live pages always send it, so their counts
+         * read as this page's, never as totals, even when `next` is null; only a synthetic preview
+         * without it presents its offers as the complete list.
+         */
+        pagination?: AuditorPagination;
+        outcome: AuditorOutcome | null;
+        links: AuditorAppLinks & OperationLookupLinks;
+        preview_outcome?: AuditorPreviewOutcome;
+    };
 
 /* ------------------------------------------------------------------------------------------ */
 /* Business file (MVP-AUDITOR-SCR-02, design step 0 L1038–1093)                                 */
@@ -641,19 +670,20 @@ export type FileJob = {
  * The file summary (GET `/auditor/jobs/{assignment}`, `auditor.jobs.show`). After a blocking
  * conflict the full file route denies access, and the partner's own receipt is what remains.
  */
-export type AuditorFileProps = AuditorPageContract & {
-    job: FileJob;
-    actions: JobActions;
-    decline_options: ServerOption<DeclineReason>[];
-    links: OperationLookupLinks & {
-        close: RouteLink;
-        /** Null until the procedure is served (S-D): the page then offers no Continue button. */
-        procedure: RouteLink | null;
-    };
-    /** Jobs, drawn beneath the sheet on a wide screen. */
-    jobs: AuditorJobsProps;
-    preview_outcome?: AuditorPreviewOutcome;
-} & (
+export type AuditorFileProps = AuditorPageContract &
+    EngagementSummaryProp & {
+        job: FileJob;
+        actions: JobActions;
+        decline_options: ServerOption<DeclineReason>[];
+        links: OperationLookupLinks & {
+            close: RouteLink;
+            /** Null until the procedure is served (S-D): the page then offers no Continue button. */
+            procedure: RouteLink | null;
+        };
+        /** Jobs, drawn beneath the sheet on a wide screen. */
+        jobs: AuditorJobsProps;
+        preview_outcome?: AuditorPreviewOutcome;
+    } & (
         | { file: BusinessFile; blocked: null }
         /** A blocking conflict: the file is withheld and only the partner's receipt remains. */
         | { file: null; blocked: ConflictReceipt }
@@ -1090,27 +1120,120 @@ export type AccreditationActions = {
     withdraw: RouteAction;
 };
 
-export type AuditorProfileProps = AuditorPageContract & {
-    section: ProfileSection;
-    auditor: AuditorProfileIdentity;
-    quality_score: number | null;
-    on_time_pct: number | null;
-    jobs_done: number;
-    accreditation: Accreditation;
-    /** Whether dispatch may offer work now; read with `availability.accepting`. */
-    standing: DispatchStanding;
-    availability: AuditorAvailability;
-    /**
-     * Where the accreditation commands go: a first-time submission, a renewal and a withdrawal.
-     * `allowed_actions` decides which are offered.
-     */
-    actions: AccreditationActions;
-    /** Eligible Flash Audits right now, for the Jobs tab badge. */
+export type AuditorProfileProps = AuditorPageContract &
+    EngagementSummaryProp & {
+        section: ProfileSection;
+        auditor: AuditorProfileIdentity;
+        quality_score: number | null;
+        on_time_pct: number | null;
+        jobs_done: number;
+        accreditation: Accreditation;
+        /** Whether dispatch may offer work now; read with `availability.accepting`. */
+        standing: DispatchStanding;
+        availability: AuditorAvailability;
+        /**
+         * Where the accreditation commands go: a first-time submission, a renewal and a withdrawal.
+         * `allowed_actions` decides which are offered.
+         */
+        actions: AccreditationActions;
+        /** Eligible Flash Audits right now, for the Jobs tab badge. */
+        open_jobs: number;
+        links: AuditorAppLinks &
+            OperationLookupLinks &
+            AccreditationCertificateLinks & {
+                sections: Record<ProfileSection, RouteLink>;
+            };
+        preview_outcome?: AuditorPreviewOutcome;
+    };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Engagement terms: the platform MSA and agreed procedures (auditor-engagement-v1, #96)        */
+/* ------------------------------------------------------------------------------------------ */
+
+/** One retained document: its title and complete original text, with the body's SHA-256. */
+export type EngagementDocument = {
+    title: string;
+    body: string;
+    sha256: string;
+};
+
+/**
+ * The current release of the terms. `revision` is what an acceptance sends back as
+ * `expected_revision`; `sha256` covers the release as a whole. `synthetic` marks isolated test
+ * terms that stand for no real engagement.
+ */
+export type EngagementRelease = {
+    id: string;
+    revision: number;
+    version: string;
+    procedure_version: string;
+    documents: {
+        master_services: EngagementDocument;
+        agreed_procedures: EngagementDocument;
+    };
+    sha256: string;
+    synthetic: boolean;
+};
+
+/** This partner's retained acceptance of the current release, as its receipt records it. */
+export type EngagementAcceptance = {
+    id: string;
+    release_id: string;
+    release_revision: number;
+    release_sha256: string;
+    accepted_at: string;
+    sha256: string;
+};
+
+export type EngagementAllowedAction = 'audit.engagement.accept';
+
+/** Accept's body: every field is the release as read, and `accepted` is a strict boolean. */
+export type EngagementAcceptPayload = {
+    identity_context_revision: number;
+    expected_revision: number;
+    release_id: string;
+    sha256: string;
+    accepted: true;
+    request_id: string;
+};
+
+/** An acceptance exactly as sent, with the route it goes to. */
+export type EngagementCommand = OperationCommand<EngagementAllowedAction> & {
+    payload: EngagementAcceptPayload;
+    route: RouteAction;
+};
+
+export type EngagementOperationResource = OperationResource<{
+    acceptance: EngagementAcceptance;
+}>;
+
+/**
+ * Supplied only by synthetic fixture previews: a refusal the page otherwise reaches only after a
+ * live acceptance, such as a version conflict. The server never sends it.
+ */
+export type EngagementPreviewOutcome = {
+    kind: 'refused';
+    code: string;
+    status: number;
+};
+
+/**
+ * The agreement page (GET `/auditor/engagement`, `auditor.engagement.show`): the current terms in
+ * full, the partner's own acceptance, and Accept where `allowed_actions` offers it. Accept POSTs to
+ * `actions.accept`; its lookup is `links.operation` with the same `request_id` and no `command`
+ * query. After an acceptance the page reads `links.current` afresh.
+ */
+export type AuditorEngagementProps = {
+    contract_version: 'auditor-engagement-v1';
+    identity_context_revision: number;
+    server_time: string;
+    /** Null while no usable terms are published. */
+    release: EngagementRelease | null;
+    acceptance: EngagementAcceptance | null;
+    allowed_actions: EngagementAllowedAction[];
+    actions: { accept: RouteAction | null };
+    /** Eligible Flash Audits right now, for the Jobs tab badge; the web page sends none. */
     open_jobs: number;
-    links: AuditorAppLinks &
-        OperationLookupLinks &
-        AccreditationCertificateLinks & {
-            sections: Record<ProfileSection, RouteLink>;
-        };
-    preview_outcome?: AuditorPreviewOutcome;
+    links: AuditorAppLinks & OperationLookupLinks & { current: RouteLink };
+    preview_outcome?: EngagementPreviewOutcome;
 };
