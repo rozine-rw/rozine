@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\SaveBusinessApplication;
+use App\Domain\Auditor\AuditEngagementState;
 use App\Models\AuditAssignment;
 use App\Models\RoleMembership;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
@@ -56,18 +57,23 @@ it('runs the real-record Auditor Jobs accept decline conflict and receipt journe
 
     $base = 'http://127.0.0.1:8014';
     $connection = config('database.connections.pgsql');
-    $server = new Process([PHP_BINARY, 'artisan', 'serve', '--host=127.0.0.1', '--port=8014', '--no-reload'], base_path(), [
+    $server = new Process([PHP_BINARY, '-S', '127.0.0.1:8014', base_path('vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php')], public_path(), [
         'APP_ENV' => 'testing', 'APP_NAME' => 'Rozine', 'APP_URL' => $base, 'DB_CONNECTION' => 'pgsql', 'DB_URL' => '',
         'DB_HOST' => (string) $connection['host'], 'DB_PORT' => (string) $connection['port'],
         'DB_DATABASE' => 'rozine_test', 'DB_USERNAME' => (string) $connection['username'], 'DB_PASSWORD' => (string) $connection['password'],
         'SESSION_DRIVER' => 'file', 'SESSION_COOKIE' => 'rozine_auditor_jobs_browser', 'CACHE_STORE' => 'array',
-        'MAIL_MAILER' => 'array', 'QUEUE_CONNECTION' => 'sync',
+        'MAIL_MAILER' => 'array', 'QUEUE_CONNECTION' => 'sync', 'PHP_CLI_SERVER_WORKERS' => false,
     ]);
     $server->setTimeout(null)->start();
     $session = 'rozine-auditor-jobs-test';
-    $run = function (array $arguments) use ($cli, $session, $directory): string {
+    $run = function (array $arguments) use ($cli, $session, $directory, $server): string {
         $process = new Process([$cli, '--session', $session, ...$arguments], $directory);
-        $process->setTimeout(90)->run();
+        $process->setTimeout(90)->start();
+        while ($process->isRunning()) {
+            $server->getIncrementalErrorOutput();
+            $process->checkTimeout();
+            usleep(10_000);
+        }
         $output = $process->getOutput();
         if (! $process->isSuccessful() || str_contains($output, '### Error')) {
             throw new RuntimeException(trim($output."\n".$process->getErrorOutput()));
@@ -79,7 +85,9 @@ it('runs the real-record Auditor Jobs accept decline conflict and receipt journe
         .json_encode('a[href="/auditor/jobs/'.$assignment->id.'"]').')})';
     $noOverflow = 'if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw new Error("Mobile overflow");';
     try {
-        $server->waitUntil(fn (string $type, string $output): bool => str_contains($output, 'Server running'));
+        if (! $server->waitUntil(fn (string $type, string $output): bool => str_contains($output, 'Development Server (http://127.0.0.1:8014) started'))) {
+            throw new RuntimeException('The isolated Auditor browser server did not start.');
+        }
         $run(['open', $base.'/login']);
         $run(['run-code', 'async (page) => {
             await page.getByRole("textbox", {name:"Email address"}).fill("jobs-auditor@example.test");
@@ -112,12 +120,18 @@ it('runs the real-record Auditor Jobs accept decline conflict and receipt journe
         file_put_contents($directory.'/jobs-result.txt', $result);
 
         /* The third offer's window closes on the server while the page still shows it open. */
-        $past = now('UTC')->subMinute()->format('Y-m-d\TH:i:s\Z');
-        $expiring->refresh()->forceFill(['state' => [...$expiring->state, 'accept_by' => $past], 'accept_by' => $past])->save();
+        $dispatchedAt = now('UTC')->subMinutes(61)->toDateTimeImmutable();
+        $engagement = app(AuditEngagementState::class);
+        $expiredState = $engagement->offer($engagement->start('flash', $dispatchedAt), $partner['party']->id, $dispatchedAt);
+        $expiring->forceFill(['state' => $expiredState, 'accept_by' => $expiredState['accept_by']])->save();
 
         $result = $run(['run-code', 'async (page) => {
             const errors = []; page.on("pageerror", error => errors.push(error.message));
+            const lateAcceptance = page.waitForResponse(response => response.url().endsWith('.json_encode('/auditor/jobs/'.$expiring->id.'/accept').') && response.request().method() === "POST");
             await '.$card($expiring).'.getByRole("button", {name:/^Accept · due /}).click();
+            const lateResponse = await lateAcceptance;
+            const lateBody = await lateResponse.json();
+            if (lateResponse.status() !== 409 || lateBody.code !== "ASSIGNMENT_ACCEPTANCE_EXPIRED") throw new Error("Unexpected late acceptance: " + JSON.stringify({status:lateResponse.status(), body:lateBody}));
             await page.getByText(/This offer closed before your acceptance reached Rozine/).waitFor();
             await '.$card($expiring).'.waitFor({state:"detached"});
             await page.screenshot({path:"offer-closed-desktop.png", fullPage:true, animations:"disabled"});
@@ -204,11 +218,21 @@ it('runs the real-record Auditor Jobs accept decline conflict and receipt journe
         expect($accepted->refresh()->party_id)->not->toBe($partner['party']->id)
             ->and($declined->refresh()->party_id)->not->toBe($partner['party']->id)
             ->and(DB::table('audit_assignment_versions')->where('assignment_id', $expiring->id)->count())->toBe(1);
+    } catch (Throwable $failure) {
+        try {
+            file_put_contents($directory.'/failure-snapshot.txt', $run(['snapshot']));
+            $run(['run-code', 'async (page) => { await page.screenshot({path:"failure.png", fullPage:true, animations:"disabled"}); }']);
+        } catch (Throwable $captureFailure) {
+            file_put_contents($directory.'/failure-capture.txt', $captureFailure->getMessage());
+        }
+
+        throw $failure;
     } finally {
         try {
             $run(['close']);
         } finally {
             $server->stop();
+            file_put_contents($directory.'/server.log', $server->getErrorOutput());
         }
     }
 })->group('browser');
