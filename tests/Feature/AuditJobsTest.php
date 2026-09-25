@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\Contracts\AuditAssignmentStore;
 use App\Application\Auditor\ListAuditJobs;
+use App\Application\Auditor\ProjectAuditAssignmentOperation;
 use App\Application\Auditor\SetAuditorAvailability;
+use App\Application\Business\Contracts\BusinessApplicationStore;
 use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\GetAuditApplication;
 use App\Application\Business\SaveBusinessApplication;
@@ -110,6 +113,49 @@ it('does not convert an unexpected case failure into an apparently empty jobs li
     } finally {
         Event::forget($event);
     }
+});
+
+it('drops the same withdrawn record on Jobs and recovery without hiding actor revocation', function (string $code): void {
+    $fixture = Fixture::make(1);
+    $partner = $fixture['partners'][0];
+    $assignment = Fixture::request($fixture);
+    $receipt = Fixture::respond($partner['user'], $assignment);
+    $next = (string) Str::ulid();
+    $assignments = $this->createMock(AuditAssignmentStore::class);
+    $assignments->expects($this->exactly(2))->method('workIdentifiers')->with($partner['user']->id, 1, null, 25)
+        ->willReturn(['party_id' => $partner['party']->id, 'ids' => [$assignment->id], 'next_cursor' => $next]);
+    $assignments->expects($this->exactly(2))->method('get')->with($partner['user']->id, 1, $assignment->id)
+        ->willThrowException(new CommandRejection($code));
+    $applications = $this->createMock(BusinessApplicationStore::class);
+    $applications->expects($this->exactly(2))->method('audit')->with($partner['user']->id, 1, $assignment->id)
+        ->willThrowException(new CommandRejection($code));
+    $this->app->instance(AuditAssignmentStore::class, $assignments);
+    $this->app->instance(BusinessApplicationStore::class, $applications);
+    $jobs = app(ListAuditJobs::class);
+    $outcomes = app(ProjectAuditAssignmentOperation::class);
+    expect($jobs->handle($partner['user']->id, 1))->toBe(['data' => [], 'next_cursor' => $next])
+        ->and($outcomes->handle($partner['user']->id, 1, $receipt))->toBe([...$receipt, 'allowed_actions' => []]);
+    RoleMembership::query()->where('party_id', $partner['party']->id)->where('role', 'auditor')->update(['status' => 'revoked']);
+    expect(fn () => $jobs->handle($partner['user']->id, 1))->toThrow(IdentityViolation::class, 'ROLE_MEMBERSHIP_REQUIRED')
+        ->and(fn () => $outcomes->handle($partner['user']->id, 1, $receipt))->toThrow(IdentityViolation::class, 'ROLE_MEMBERSHIP_REQUIRED');
+})->with(['BUSINESS_NOT_FOUND', 'MANDATE_REQUIRED', 'ASSIGNMENT_NOT_FOUND', 'ASSIGNMENT_ACCEPTANCE_EXPIRED',
+    'AUDITOR_INDEPENDENCE_REVIEW_REQUIRED', 'ACCREDITATION_REQUIRED', 'ACCREDITATION_EXPIRED', 'ACCREDITATION_SUSPENDED', 'STANDING_CHECK_REQUIRED']);
+
+it('propagates an unexpected failure consistently from Jobs and a recovered operation', function (): void {
+    $fixture = Fixture::make(1);
+    $partner = $fixture['partners'][0];
+    $assignment = Fixture::request($fixture);
+    $receipt = Fixture::respond($partner['user'], $assignment);
+    $assignments = $this->createMock(AuditAssignmentStore::class);
+    $assignments->expects($this->once())->method('workIdentifiers')
+        ->willReturn(['party_id' => $partner['party']->id, 'ids' => [$assignment->id], 'next_cursor' => null]);
+    $assignments->expects($this->once())->method('get')->willThrowException(new CommandRejection('SYNTHETIC_STORAGE_FAILURE', 503));
+    $applications = $this->createMock(BusinessApplicationStore::class);
+    $applications->expects($this->once())->method('audit')->willThrowException(new CommandRejection('SYNTHETIC_STORAGE_FAILURE', 503));
+    $this->app->instance(AuditAssignmentStore::class, $assignments);
+    $this->app->instance(BusinessApplicationStore::class, $applications);
+    expect(fn () => app(ListAuditJobs::class)->handle($partner['user']->id, 1))->toThrow(CommandRejection::class, 'SYNTHETIC_STORAGE_FAILURE')
+        ->and(fn () => app(ProjectAuditAssignmentOperation::class)->handle($partner['user']->id, 1, $receipt))->toThrow(CommandRejection::class, 'SYNTHETIC_STORAGE_FAILURE');
 });
 
 it('rechecks assignment ownership after discovery and omits an offer reassigned during the list read', function (): void {

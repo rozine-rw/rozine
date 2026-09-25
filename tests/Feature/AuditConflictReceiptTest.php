@@ -14,6 +14,7 @@ use App\Models\RoleMembership;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditAssignmentFixture as Fixture;
 use Tests\Support\AuditorFixture;
 use Tests\Support\BusinessAuthorityFixture;
@@ -79,7 +80,7 @@ it('paginates only the actors conflict history without duplicates or private unb
     expect($list->handle($partner['user']->id, 1, $ordered[2]->id, 2))->toBe(['data' => [], 'next_cursor' => null]);
     DB::flushQueryLog();
     DB::enableQueryLog();
-    $list->handle($partner['user']->id, 1, limit: 100);
+    $list->handle($partner['user']->id, 1, limit: 50);
     $queries = DB::getQueryLog();
     DB::disableQueryLog();
     expect(count(array_filter($queries, fn (array $query): bool => str_contains($query['query'], '"audit_conflict_declarations"'))))->toBe(1);
@@ -89,7 +90,23 @@ it('rejects invalid conflict pagination bounds', function (?string $before, int 
     $partner = AuditorFixture::make();
     expect(fn () => app(ListOwnAuditConflicts::class)->handle($partner['user']->id, 1, $before, $limit))
         ->toThrow(CommandRejection::class, 'AUDIT_CONFLICT_PAGE_INVALID');
-})->with([[null, 0], [null, 101], ['', 25], ['unknown', 25]]);
+})->with([[null, 0], [null, 51], [null, 100], [null, 101], ['', 25], ['unknown', 25]]);
+
+it('uses the same bounded conflict page through the port and HTTP transport', function (): void {
+    $partner = AuditorFixture::make();
+    AuditConflictDeclaration::factory()->count(51)->create(['party_id' => $partner['party']->id]);
+    $page = app(ListOwnAuditConflicts::class)->handle($partner['user']->id, 1, limit: 50);
+    expect($page['data'])->toHaveCount(50)->and($page['next_cursor'])->not->toBeNull();
+    Sanctum::actingAs($partner['user'], ['auditor:read']);
+    $wire = $this->getJson('/api/v1/auditor/conflicts?limit=50')->assertOk()->assertJsonCount(50, 'data.conflicts')->json('data');
+    $last = $this->getJson($wire['pagination']['next']['url'])->assertOk()->assertJsonCount(1, 'data.conflicts')
+        ->assertJsonPath('data.pagination.next', null)->json('data.conflicts');
+    $all = [...array_column($wire['conflicts'], 'assignment_id'), ...array_column($last, 'assignment_id')];
+    expect(array_unique($all))->toHaveCount(51);
+    foreach ([0, 51, 100] as $limit) {
+        $this->getJson('/api/v1/auditor/conflicts?limit='.$limit)->assertUnprocessable()->assertJsonValidationErrors('limit');
+    }
+});
 
 it('requires current Auditor identity role and MFA for receipt and register access', function (string $fault, string $code): void {
     $partner = AuditorFixture::make();

@@ -1476,6 +1476,79 @@ it('records one signature and submission for simultaneous identical acceptance c
         ->and(CommandOperation::query()->where('command', 'application.submit')->count())->toBe(1);
 });
 
+it('serializes creation against final submission without opening another application for the Business', function (): void {
+    $fixture = BusinessQuoteFixture::ready();
+    $accepted = BusinessQuoteFixture::acceptance($fixture);
+    $create = function () use ($fixture): void {
+        $result = app(CreateBusinessApplication::class)->handle($fixture['audit']['authority']['users'][0]->id, 1,
+            $fixture['audit']['business'], 0, (string) Str::uuid());
+        expect($result['code'])->toBeIn(['APPLICATION_RESUMED', 'APPLICATION_PENDING_REVIEW']);
+    };
+    $submit = function () use ($fixture, $accepted): void {
+        expect(BusinessQuoteFixture::submit($fixture, $accepted, revision: 4)['code'])->toBe('APPLICATION_SUBMITTED');
+    };
+    expect(runIdentityContenders([$create, $submit]))->toBe([0, 0])
+        ->and(BusinessApplication::query()->count())->toBe(1)
+        ->and(BusinessApplicationSubmission::query()->count())->toBe(1)
+        ->and($fixture['application']->refresh()->status)->toBe('submitted');
+    expect(app(CreateBusinessApplication::class)->handle($fixture['audit']['authority']['users'][0]->id, 1,
+        $fixture['audit']['business'], 0, (string) Str::uuid())['code'])->toBe('APPLICATION_PENDING_REVIEW');
+});
+
+it('serializes draft autosave against final submission and requires fresh intent from the losing command', function (): void {
+    $fixture = BusinessQuoteFixture::ready();
+    $accepted = BusinessQuoteFixture::acceptance($fixture);
+    $save = function () use ($fixture): void {
+        $result = app(SaveBusinessApplication::class)->handle($fixture['audit']['authority']['users'][0]->id, 1,
+            $fixture['audit']['business'], $fixture['application']->id, 4,
+            [...BusinessApplicationFixture::fields('12000000'), 'title' => 'Changed during signing'], null, (string) Str::uuid());
+        if ($result['code'] === 'VERSION_CONFLICT') {
+            throw new CommandRejection('VERSION_CONFLICT');
+        }
+        expect($result['code'])->toBe('APPLICATION_SAVED');
+    };
+    $submit = function () use ($fixture, $accepted): void {
+        $result = BusinessQuoteFixture::submit($fixture, $accepted, revision: 4);
+        if ($result['code'] === 'VERSION_CONFLICT') {
+            throw new CommandRejection('VERSION_CONFLICT');
+        }
+        expect($result['code'])->toBe('APPLICATION_SUBMITTED');
+    };
+    expect(runIdentityContenders([$save, $submit]))->toBe([0, 2]);
+    $application = $fixture['application']->refresh();
+    $submitted = $application->status === 'submitted';
+    expect($application->revision)->toBe(5)
+        ->and(BusinessApplicationSubmission::query()->count())->toBe($submitted ? 1 : 0)
+        ->and(BusinessApplicationSignature::query()->count())->toBe($submitted ? 1 : 0)
+        ->and($application->draft['title'])->toBe($submitted ? BusinessApplicationFixture::fields('12000000')['title'] : 'Changed during signing')
+        ->and($application->current_quote_id === null)->toBe(! $submitted);
+});
+
+it('serializes requoting against a pending company signature at the same revision', function (): void {
+    $fixture = BusinessQuoteFixture::ready(2);
+    $accepted = BusinessQuoteFixture::acceptance($fixture);
+    $evaluate = function () use ($fixture): void {
+        $result = BusinessQuoteFixture::evaluate($fixture, 4);
+        if ($result['code'] === 'VERSION_CONFLICT') {
+            throw new CommandRejection('VERSION_CONFLICT');
+        }
+        expect($result['code'])->toBe('APPLICATION_EVALUATED');
+    };
+    $sign = function () use ($fixture, $accepted): void {
+        $result = BusinessQuoteFixture::submit($fixture, $accepted, revision: 4);
+        if ($result['code'] === 'VERSION_CONFLICT') {
+            throw new CommandRejection('VERSION_CONFLICT');
+        }
+        expect($result['code'])->toBe('APPLICATION_SIGNATURE_RECORDED');
+    };
+    expect(runIdentityContenders([$evaluate, $sign]))->toBe([0, 2]);
+    $signed = BusinessApplicationSignature::query()->exists();
+    expect($fixture['application']->refresh()->revision)->toBe(5)->and($fixture['application']->status)->toBe('draft')
+        ->and(BusinessApplicationQuote::query()->count())->toBe($signed ? 1 : 2)
+        ->and(array_column(BusinessQuoteFixture::review($fixture)['acceptance']['signers'], 'state'))->toBe($signed ? ['signed', 'pending'] : ['pending', 'pending'])
+        ->and(BusinessApplicationSubmission::query()->count())->toBe(0);
+});
+
 it('serializes two required company signatures and requires fresh intent after revision conflict', function (): void {
     $fixture = BusinessQuoteFixture::ready(2);
     $accepted = BusinessQuoteFixture::acceptance($fixture);

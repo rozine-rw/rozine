@@ -12,6 +12,8 @@ use App\Application\Identity\SelectActiveRole;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
+use App\Models\BusinessApplication;
+use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationSignature;
 use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessApplicationVersion;
@@ -63,7 +65,8 @@ it('submits a sole-trader application with immutable pinned terms and an exact r
         ->toThrow(CommandRejection::class, 'IDEMPOTENCY_CONFLICT');
     expect(BusinessQuoteFixture::submit($fixture, $accepted)['code'])->toBe('APPLICATION_NOT_EDITABLE');
     $new = app(CreateBusinessApplication::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'], 0, (string) Str::uuid());
-    expect($new['data']['application']['id'])->not->toBe($fixture['application']->id);
+    expect($new['code'])->toBe('APPLICATION_PENDING_REVIEW');
+    $this->assertDatabaseCount('business_applications', 1);
     $this->assertDatabaseCount('business_application_signatures', 1);
     $this->assertDatabaseCount('business_application_submissions', 1);
 });
@@ -176,7 +179,7 @@ it('invalidates unsigned or partially signed agreements when their quote or evid
     } else {
         BusinessQuoteFixture::evaluate($fixture, 5, '5000000');
     }
-    expect(BusinessQuoteFixture::submit($fixture, $accepted, 1)['code'])->toBe('QUOTE_STALE');
+    expect(BusinessQuoteFixture::submit($fixture, $accepted, 1)['code'])->toBe($change === 'draft' ? 'APPLICATION_STEP_INVALID' : 'QUOTE_STALE');
     $review = BusinessQuoteFixture::review($fixture);
     if ($change === 'quote') {
         expect(array_column($review['acceptance']['signers'], 'state'))->toBe(['pending', 'pending']);
@@ -213,7 +216,9 @@ it('protects signatures submissions and their application ownership in PostgreSQ
         }
     }
     $other = BusinessApplicationFixture::make();
-    expect(fn () => DB::transaction(fn () => $other['application']->forceFill(['current_submission_id' => $fixture['application']->refresh()->current_submission_id])->save()))
+    $quote = BusinessApplicationQuote::factory()->create(['business_application_id' => $other['application']->id]);
+    expect(fn () => DB::transaction(fn () => $other['application']->forceFill(['status' => 'submitted', 'step' => 'submitted',
+        'current_quote_id' => $quote->id, 'current_submission_id' => $fixture['application']->refresh()->current_submission_id])->save()))
         ->toThrow(QueryException::class, 'application_current_submission_owner');
     expect(BusinessApplicationSignature::factory()->create(['consent_release_id' => BusinessApplicationSignature::query()->firstOrFail()->consent_release_id])->payload['source'])->toBe('unsupported-fixture')
         ->and(BusinessApplicationSubmission::factory()->create()->payload['source'])->toBe('unsupported-fixture');
@@ -245,9 +250,11 @@ it('refuses corrupted signature history instead of counting it toward submission
 it('refuses missing or corrupted immutable submission records', function (string $fault): void {
     $fixture = BusinessQuoteFixture::ready();
     BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
-    $event = 'eloquent.retrieved: '.BusinessApplicationSubmission::class;
+    $event = 'eloquent.retrieved: '.($fault === 'missing' ? BusinessApplication::class : BusinessApplicationSubmission::class);
     if ($fault === 'missing') {
-        $fixture['application']->refresh()->forceFill(['current_submission_id' => null])->save();
+        Event::listen($event, function (BusinessApplication $record): void {
+            $record->current_submission_id = null;
+        });
     } else {
         Event::listen($event, function (BusinessApplicationSubmission $record) use ($fault): void {
             $payload = $record->payload;
@@ -315,6 +322,6 @@ it('requires a ready quote and Review transition before signature capture', func
     expect(BusinessQuoteFixture::review($fixture)['quote']['status'])->toBe('refused');
     BusinessCreditFactsFixture::record($fixture['audit']['staff'], $fixture['audit']['business']);
     BusinessQuoteFixture::evaluate($fixture, 3);
-    expect(BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture))['code'])->toBe('QUOTE_STALE');
+    expect(BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture))['code'])->toBe('APPLICATION_STEP_INVALID');
     $this->assertDatabaseCount('business_application_signatures', 0);
 });

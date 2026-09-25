@@ -35,7 +35,8 @@ it('links the actual Business role home to create resume and submitted applicati
     $ready = BusinessQuoteFixture::ready();
     BusinessQuoteFixture::submit($ready, BusinessQuoteFixture::acceptance($ready));
     $this->actingAs($ready['audit']['authority']['users'][0])->get('/business')->assertOk()->assertInertia(fn (Assert $page): Assert => $page
-        ->where('business_applications.entries.0.application.status', 'submitted')->where('business_applications.entries.0.application.step', 'submitted'));
+        ->where('business_applications.entries.0.application.status', 'submitted')->where('business_applications.entries.0.application.step', 'submitted')
+        ->where('business_applications.entries.0.allowed_actions', [])->where('business_applications.entries.0.actions.create', null));
 });
 
 it('provides API links and strips mutation capabilities from read-only tokens', function (): void {

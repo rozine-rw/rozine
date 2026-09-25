@@ -94,7 +94,7 @@ it('executes save evaluate lower selection review submit and immutable lookup wi
     $quote = $this->postJson($path.'/evaluate', $evaluate)->assertOk()->assertJsonPath('code', 'APPLICATION_EVALUATED')
         ->assertJsonPath('data.quote.principal.amount', '10800000')->assertJsonPath('data.quote.rate_pct', '11.1')
         ->assertJsonPath('data.quote.rate_basis.band', 'strong')->assertJsonPath('data.quote.reserve', null)
-        ->assertJsonPath('allowed_actions', ['application.save', 'application.evaluate', 'application.submit'])->json();
+        ->assertJsonPath('allowed_actions', ['application.save', 'application.evaluate'])->json();
     $lower = $this->postJson($path.'/evaluate', [...$evaluate, ...applicationHttpEnvelope($quote['revision']), 'accepted_principal' => '5000000'])
         ->assertOk()->assertJsonPath('data.quote.principal.amount', '5000000')->assertJsonPath('data.quote.offered_principal.amount', '10800000')
         ->assertJsonPath('data.quote.total.amount', '5555000')->json();

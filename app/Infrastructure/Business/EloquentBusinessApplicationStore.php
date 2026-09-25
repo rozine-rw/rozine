@@ -80,7 +80,9 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                                 $canCreate = in_array('application.create', $person['permissions'], true);
                             }
                         }
-                        $application = BusinessApplication::query()->where('business_id', $business['id'])
+                        $pending = $this->pendingApplication($business['id']);
+                        $canCreate = $canCreate && $pending === null;
+                        $application = $pending ?? BusinessApplication::query()->where('business_id', $business['id'])
                             ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', ['draft'])->orderByDesc('id')->first();
 
                         return ['business_id' => $business['id'], 'name' => $business['profile']['name'],
@@ -120,6 +122,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                         if ($expectedRevision !== 0) {
                             throw new CommandRejection('VERSION_CONFLICT', 409, 0);
                         }
+                        $this->assertNoPendingApplication($business['id'], null, 0);
                         $existing = BusinessApplication::query()->where('business_id', $business['id'])->where('status', 'draft')->lockForUpdate()->first();
                         if ($existing !== null) {
                             return new OperationResult('APPLICATION_RESUMED', ['application' => $this->snapshot($existing)], $existing->revision);
@@ -193,13 +196,8 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                                 throw new CommandRejection('QUOTE_STALE', 409, $application->revision,
                                     ['step' => ['Save and evaluate the current request before continuing to Review.']]);
                             }
-                            $errors = [];
-                            if ($normalized['title'] === '') {
-                                $errors['title'] = ['Add an application title.'];
-                            }
-                            if ($normalized['use_of_funds'] === []) {
-                                $errors['use_of_funds'] = ['Select the intended use of funds.'];
-                            }
+                            $this->assertNoPendingApplication($business['id'], $application->id, $application->revision);
+                            $errors = $this->drafts->reviewErrors($normalized);
                             if ($errors !== []) {
                                 throw new CommandRejection('APPLICATION_INPUT_INVALID', 422, $application->revision, $errors);
                             }
@@ -230,6 +228,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                             ...($expectation === null ? [] : ['expectation' => $expectation])],
                         function (): void {}, function () use ($application, $business, $verification, $credit, $userId, $partyId, $expectedRevision, $acceptedPrincipal, $expectation): OperationResult {
                             $this->drafts->assertEditable($application->status, $application->revision, $expectedRevision);
+                            $this->assertNoPendingApplication($business['id'], $application->id, $application->revision);
                             $draft = $this->drafts->normalize($application->draft);
                             if ($expectation !== null && ($expectation['target'] !== $draft['target'] || $expectation['term_months'] !== $draft['term_months']
                                 || $expectation['evidence_version'] !== $this->evidenceVersion($verification))) {
@@ -240,8 +239,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                                     ['target' => ['Request at least RWF 3,000,000 and select a supported term.']]);
                             }
                             $now = now('UTC')->toImmutable();
-                            $calendar = ['last_complete_month' => $now->startOfMonth()->subMonth()->format('Y-m'),
-                                'first_repayment_month' => $now->startOfMonth()->format('Y-m')];
+                            $calendar = $this->underwritingCalendar();
                             $result = $this->calculate($draft['target'], $draft['term_months'], $verification, $credit, $acceptedPrincipal, $calendar);
                             $prior = BusinessApplicationQuote::query()->where('business_application_id', $application->id)->orderByDesc('revision')->first();
                             $quote = new BusinessApplicationQuote;
@@ -306,9 +304,18 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                             ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'acceptance' => $acceptance],
                             function (): void {}, function () use ($application, $business, $verification, $credit, $release, $partyId, $userId, $expectedRevision, $acceptance): OperationResult {
                                 $this->drafts->assertEditable($application->status, $application->revision, $expectedRevision);
+                                $this->assertNoPendingApplication($business['id'], $application->id, $application->revision);
+                                if ($application->step !== 'review') {
+                                    throw new CommandRejection('APPLICATION_STEP_INVALID', 422, $application->revision,
+                                        ['step' => ['Continue to Review before signing.']]);
+                                }
+                                $errors = $this->drafts->reviewErrors($application->draft);
+                                if ($errors !== []) {
+                                    throw new CommandRejection('APPLICATION_INPUT_INVALID', 422, $application->revision, $errors);
+                                }
                                 $accepted = $this->acceptances->normalize($acceptance);
                                 $quote = $this->currentQuote($application, $business, $verification, $credit);
-                                if ($application->step !== 'review' || $quote === null || ! $quote->payload['result']['eligible']
+                                if ($quote === null || ! $quote->payload['result']['eligible']
                                     || $accepted['quote_id'] !== $quote->id || $accepted['quote_revision'] !== $quote->revision
                                     || $accepted['mandate_version'] !== (string) $business['mandate_version']
                                     || $accepted['evidence_version'] !== $quote->payload['evidence']['sha256']
@@ -418,10 +425,12 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                         $submitted = $application->status === 'submitted' ? $this->submittedSnapshot($application) : null;
                         $quote = $application->status === 'submitted' ? null : $this->currentQuote($application, $business, $verification, $credit);
                         $review = $submitted === null ? $this->reviewForQuote($application, $business, $quote, $release) : $submitted['review'];
+                        $pending = $this->pendingApplication($businessId, $applicationId);
 
                         return ['review' => $review, 'business_id' => $businessId, 'identity_context_revision' => $contextRevision,
+                            'pending_application' => $pending === null ? null : ['id' => $pending->id],
                             'evidence' => $submitted === null ? $this->projectEvidence($business, $verification, $credit, $application, $quote) : $submitted['public_evidence'],
-                            'allowed_actions' => $this->allowedActions($application, $business, $identity['party']['id'] ?? '', $review)];
+                            'allowed_actions' => $this->allowedActions($application, $business, $identity['party']['id'] ?? '', $review, $pending)];
                     });
                 });
             });
@@ -449,7 +458,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
      * @param  array<string, mixed>  $review
      * @return list<string>
      */
-    private function allowedActions(BusinessApplication $application, array $business, string $partyId, array $review): array
+    private function allowedActions(BusinessApplication $application, array $business, string $partyId, array $review, ?BusinessApplication $pending): array
     {
         if ($application->status !== 'draft') {
             return [];
@@ -461,7 +470,11 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
             }
         }
         $actions = array_values(array_intersect(['application.save', 'application.evaluate'], $permissions));
-        if (in_array('application.sign', $permissions, true) && ($review['quote']['status'] ?? null) === 'ready'
+        if ($pending !== null) {
+            return array_values(array_intersect(['application.save'], $actions));
+        }
+        if ($application->step === 'review' && $this->drafts->reviewErrors($application->draft) === []
+            && in_array('application.sign', $permissions, true) && ($review['quote']['status'] ?? null) === 'ready'
             && $review['acceptance']['documents'] !== [] && $review['acceptance']['disclosures'] !== []) {
             foreach ($review['acceptance']['signers'] as $signer) {
                 if ($signer['party_id'] === $partyId && $signer['state'] === 'pending') {
@@ -482,11 +495,11 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
     private function projectEvidence(array $business, ?array $verification, ?array $credit, BusinessApplication $application, ?BusinessApplicationQuote $quote): array
     {
         $current = $verification !== null && $verification['current'];
-        $now = now('UTC')->toImmutable();
+        $calendar = $this->underwritingCalendar();
         $facts = $this->applicationEvidence->project($current, $verification['payload']['observations'] ?? [],
             [...($verification['payload']['review']['obligations'] ?? []), ...($credit['facts']['obligations'] ?? [])],
             $credit['facts']['history'] ?? null, $credit['facts']['restriction_active'] ?? false,
-            $now->startOfMonth()->subMonth()->format('Y-m'), $now->format('Y-m'), $application->draft['term_months'] ?? 6,
+            $calendar['last_complete_month'], $calendar['first_repayment_month'], $application->draft['term_months'] ?? 6,
             $verification['payload']['review']['recurring_owner_draw'] ?? '0');
         $scorecard = $quote?->payload['result']['scorecard'] ?? null;
 
@@ -656,7 +669,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
         if ($payload['draft'] !== $this->drafts->normalize($application->draft) || $payload['mandate_version'] !== $business['mandate_version']
             || $payload['evidence'] !== $this->evidenceBinding($verification) || $payload['credit'] !== $this->creditBinding($credit)
             || $payload['policy_version'] !== FlatReturnPricing::POLICY_VERSION || $payload['calculation_version'] !== ApplicationUnderwriting::VERSION
-            || $payload['calendar']['first_repayment_month'] !== now('UTC')->format('Y-m')) {
+            || $payload['calendar'] !== $this->underwritingCalendar()) {
             return null;
         }
 
@@ -774,6 +787,31 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                 'term_premium' => $result['pricing']['premium_percentage_points']]];
     }
 
+    /** @return array{last_complete_month: string, first_repayment_month: string} */
+    private function underwritingCalendar(): array
+    {
+        $month = now('Africa/Kigali')->toImmutable()->startOfMonth();
+
+        return ['last_complete_month' => $month->subMonth()->format('Y-m'), 'first_repayment_month' => $month->format('Y-m')];
+    }
+
+    private function pendingApplication(string $businessId, ?string $exceptApplicationId = null): ?BusinessApplication
+    {
+        $query = BusinessApplication::query()->where('business_id', $businessId)->where('status', 'submitted');
+        if ($exceptApplicationId !== null) {
+            $query->where('id', '!=', $exceptApplicationId);
+        }
+
+        return $query->first();
+    }
+
+    private function assertNoPendingApplication(string $businessId, ?string $exceptApplicationId, int $revision): void
+    {
+        if ($this->pendingApplication($businessId, $exceptApplicationId) !== null) {
+            throw new CommandRejection('APPLICATION_PENDING_REVIEW', 409, $revision);
+        }
+    }
+
     private function application(string $businessId, string $applicationId): BusinessApplication
     {
         return BusinessApplication::query()->where('business_id', $businessId)->whereKey($applicationId)->lockForUpdate()->first()
@@ -785,7 +823,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
         (new BusinessApplicationVersion)->forceFill(['business_application_id' => $application->id, 'revision' => $application->revision,
             'snapshot' => [...$this->snapshot($application), ...($application->current_quote_id === null ? [] : ['quote_id' => $application->current_quote_id]),
                 ...($application->current_submission_id === null ? [] : ['submission_id' => $application->current_submission_id])], 'actor_user_id' => $userId, 'actor_party_id' => $partyId,
-            'mandate_version' => $mandateVersion, 'policy_version' => 'engineering-2026-09-23.4'])->save();
+            'mandate_version' => $mandateVersion, 'policy_version' => ApplicationAcceptance::POLICY_VERSION])->save();
     }
 
     /** @return Application */

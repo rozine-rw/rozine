@@ -35,6 +35,8 @@ class BusinessApplicationResource extends JsonResource
             'identity_context_revision' => $page['identity_context_revision'], 'server_time' => now()->toIso8601String(),
             'allowed_actions' => $request->routeIs('api.*') && ! $request->user()?->tokenCan('business:command') ? [] : $page['allowed_actions'],
             'step' => $step, 'application' => self::draft($record), 'evidence' => $page['evidence'],
+            'pending_application' => $page['pending_application'] === null ? null : ['id' => $page['pending_application']['id'],
+                'link' => self::link(self::prefix($request).'show', ['business' => $record['business_id'], 'application' => $page['pending_application']['id']])],
             'quote' => $review['quote'], 'acceptance' => $review['acceptance'], 'submission' => $review['submission'], 'home' => null,
             'shell_links' => ['home' => $home, 'launcher' => self::link($request->routeIs('api.*') ? 'api.v1.identity.show' : 'dashboard'), 'reports' => null, 'profile' => null],
             'links' => ['close' => $home, 'back' => $back, 'operation' => $lookup], 'actions' => $actions];
