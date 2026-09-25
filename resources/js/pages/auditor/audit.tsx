@@ -259,10 +259,26 @@ function AuditSheet(props: AuditProcedureProps) {
 
     let footer: ReactNode;
 
+    /*
+     * The server's link to the step before this one, never a path built here. At the seal it is
+     * the way back when a source changed after a preview and must be reviewed again.
+     */
+    const back = links.back !== null && (
+        <Link
+            href={links.back}
+            className="flex h-12 w-16 shrink-0 items-center justify-center rounded-xl bg-[#eef2f8] text-[13px] font-bold text-rz-slate dark:bg-rz-surface-muted"
+        >
+            {t('auditor.audit.back')}
+        </Link>
+    );
+
     if (stage.step === 'seal') {
         footer = (
             <>
-                {seal.footer}
+                <div className="flex gap-2.5">
+                    {back}
+                    <div className="min-w-0 flex-1">{seal.footer}</div>
+                </div>
                 {returns.buttons}
             </>
         );
@@ -278,14 +294,7 @@ function AuditSheet(props: AuditProcedureProps) {
     } else {
         footer = (
             <div className="flex gap-2.5">
-                {links.back !== null && (
-                    <Link
-                        href={links.back}
-                        className="flex h-12 w-16 shrink-0 items-center justify-center rounded-xl bg-[#eef2f8] text-[13px] font-bold text-rz-slate dark:bg-rz-surface-muted"
-                    >
-                        {t('auditor.audit.back')}
-                    </Link>
-                )}
+                {back}
                 {center.allowed('audit.save_step') && (
                     <button
                         type="submit"

@@ -3236,6 +3236,9 @@ const fr: Catalog = {
     'auditor.sealed.body_overdue':
         "Le rapport est scellé, mais le délai de cosignature de {party} est passé. Il ne peut plus être cosigné et n'est pas publié ; rien n'est approuvé automatiquement.",
 
+    'auditor.command.refused.AUDIT_PROCEDURE_SOURCE_CHANGED':
+        'Une source a changé après votre aperçu. Revenez en arrière pour la vérifier, puis prévisualisez à nouveau avant de sceller.',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',
