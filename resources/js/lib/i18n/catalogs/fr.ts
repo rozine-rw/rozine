@@ -3198,6 +3198,11 @@ const fr: Catalog = {
     'auditor.ledger.file_size':
         'Ce fichier dépasse 10 Mo. Téléversez un PDF ou un CSV de 10 Mo au plus.',
 
+    'auditor.seal.note_unsaved_unsealable':
+        "Votre note n'est pas encore enregistrée. Enregistrez-la maintenant ; le scellement s'ouvrira quand le rapport sera prêt.",
+    'auditor.capture.synthetic':
+        'Preuve de test synthétique (isolée) — pas une capture native.',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

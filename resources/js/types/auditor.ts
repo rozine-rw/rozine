@@ -741,6 +741,11 @@ export type CapturePackage = {
      * companion handoff exists: the page says capture is unavailable and offers no web capture.
      */
     handoff: { url: string } | null;
+    /**
+     * Where the package comes from. `isolated_synthetic` is synthetic test capture from an isolated
+     * environment and is labelled so, never as native proof; absent reads as the companion.
+     */
+    source?: 'isolated_synthetic' | 'companion_device';
 };
 
 export type CheckInStage = {

@@ -3185,6 +3185,11 @@ const rw: Catalog = {
     'auditor.ledger.file_size':
         'Iyi dosiye irengeje MB 10. Ohereza PDF cyangwa CSV itarenze MB 10.',
 
+    'auditor.seal.note_unsaved_unsealable':
+        'Inyandiko yawe ntirabikwa. Yibike ubu; gushyiraho kashe bizafunguka raporo imaze kwitegura.',
+    'auditor.capture.synthetic':
+        "Igihamya cy'igerageza cy'ikigereranyo (cyitaruye) — ntabwo ari ifoto yafashwe koko.",
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

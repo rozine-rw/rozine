@@ -1092,6 +1092,108 @@ describe('Seal — a confirmation withdrawn while its code is checked', () => {
     });
 });
 
+describe('Seal — the note before sealing is enabled', () => {
+    const UNSEALABLE =
+        "Your note isn't saved yet. Save it now; sealing opens once the report is ready for it.";
+
+    const unsealable = (): AuditProcedureProps => {
+        const page = props(seal);
+
+        return {
+            ...page,
+            actions: { ...page.actions, step_up: null, seal: null },
+        };
+    };
+
+    it('saves an edited note while the seal routes are still null, with no preview or seal', async () => {
+        inertia.queue.push(answers(NOTE_SAVED));
+        const { user } = await saveNote(unsealable());
+
+        expect(inertia.calls[0]).toMatchObject({
+            url: '/preview/auditor-jobs',
+            body: {
+                audit_id: 'fa_huye',
+                step: 'seal',
+                expected_revision: 6,
+                note: NOTE,
+            },
+        });
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([
+                { url: '/preview/auditor-audit-seal-note-saved' },
+            ]),
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Preview findings' }),
+        ).not.toBeInTheDocument();
+        expect(noteField()).toBeEnabled();
+        await user.type(noteField(), '!');
+        expect(
+            screen.queryByRole('dialog', { name: 'Huye Motors' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('says why the note is unsaved without promising a preview', async () => {
+        const { user } = renderWithUser(<AuditorAudit {...unsealable()} />);
+
+        expect(
+            screen.queryByRole('button', { name: 'Save note' }),
+        ).not.toBeInTheDocument();
+        await user.click(noteField());
+        await user.paste(NOTE);
+
+        expect(screen.getByRole('button', { name: 'Save note' })).toBeEnabled();
+        expect(noteField()).toHaveAccessibleDescription(UNSEALABLE);
+        expect(screen.queryByText(UNSAVED)).not.toBeInTheDocument();
+    });
+
+    it('offers nothing to press once the saved note is clean and sealing is not enabled', () => {
+        const page = props(noteSaved);
+
+        render(
+            <AuditorAudit
+                {...page}
+                actions={{ ...page.actions, step_up: null, seal: null }}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Save note' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Preview findings' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('lets a required unsaved note be saved while the server holds the step, then previews', async () => {
+        inertia.queue.push(answers(NOTE_SAVED));
+        const hint = 'Save your assessment note to continue.';
+        const { user, rerender } = await saveNote({
+            ...props(seal),
+            can_continue: false,
+            hint,
+        });
+
+        /* The server's reason is shown; the save itself does not wait on can_continue. */
+        expect(screen.getByText(hint)).toBeInTheDocument();
+        expect(inertia.calls[0].body).toMatchObject({
+            step: 'seal',
+            note: NOTE,
+        });
+
+        rerender(<AuditorAudit {...props(noteSaved)} can_continue={false} />);
+        expect(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        ).toBeDisabled();
+
+        rerender(<AuditorAudit {...props(noteSaved)} />);
+        await user.click(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        );
+        expect(findings()).toBeInTheDocument();
+    });
+});
+
 describe('Seal — commands the stage does not enable yet', () => {
     const without = (
         fixture: { props: unknown },
