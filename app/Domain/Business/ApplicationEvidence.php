@@ -27,7 +27,7 @@ final class ApplicationEvidence
      * @return array<string, mixed>
      */
     public function project(bool $current, array $months, array $obligations, ?array $history, bool $restricted,
-        string $lastCompleteMonth, string $firstRepaymentMonth, int $tenor, string $recurringOwnerDraw): array
+        string $lastCompleteMonth, string $firstRepaymentMonth, int $tenor, string $recurringOwnerDraw, bool $fresh = true): array
     {
         $result = ['period' => null, 'totals' => ['revenue' => null, 'costs' => null, 'net_profit' => null], 'years' => [], 'existing_debt' => null,
             'debt_verified' => false, 'eligibility' => $this->refusal('UNDERWRITING_EVIDENCE_REQUIRED')];
@@ -36,6 +36,9 @@ final class ApplicationEvidence
         }
         try {
             $result = [...$result, ...$this->aggregate($months)];
+            if (! $fresh) {
+                return $result;
+            }
             if ($history === null) {
                 return [...$result, 'eligibility' => $this->refusal('POLICY_INPUT_REQUIRED')];
             }

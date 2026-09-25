@@ -25,12 +25,14 @@ use App\Domain\Operations\OperationResult;
 use App\Domain\Underwriting\ApplicationUnderwriting;
 use App\Domain\Underwriting\ExactFinancialValue;
 use App\Domain\Underwriting\FlatReturnPricing;
+use App\Domain\Underwriting\UnderwritingObservationWindow;
 use App\Domain\Underwriting\UnderwritingViolation;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationSignature;
 use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessApplicationVersion;
+use DateTimeImmutable;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -44,6 +46,7 @@ use RuntimeException;
  * @phpstan-import-type Release from \App\Application\Identity\Contracts\ConsentCatalog
  * @phpstan-import-type Terms from \App\Domain\Business\MandateAuthority
  * @phpstan-import-type EvaluationExpectation from BusinessApplicationStore
+ * @phpstan-import-type Selection from UnderwritingObservationWindow
  */
 final class EloquentBusinessApplicationStore implements BusinessApplicationStore
 {
@@ -63,6 +66,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
         private ApplicationEvidence $applicationEvidence,
         private BusinessAuthorityStore $businesses,
         private IdentityAccessStore $access,
+        private UnderwritingObservationWindow $windows,
     ) {}
 
     /** @return array<string, mixed> */
@@ -239,8 +243,9 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                                     ['target' => ['Request at least RWF 3,000,000 and select a supported term.']]);
                             }
                             $now = now('UTC')->toImmutable();
-                            $calendar = $this->underwritingCalendar();
-                            $result = $this->calculate($draft['target'], $draft['term_months'], $verification, $credit, $acceptedPrincipal, $calendar);
+                            $window = $this->observationWindow($verification, $credit, $now);
+                            $calendar = $window['calendar'];
+                            $result = $this->calculate($draft['target'], $draft['term_months'], $verification, $credit, $acceptedPrincipal, $window);
                             $prior = BusinessApplicationQuote::query()->where('business_application_id', $application->id)->orderByDesc('revision')->first();
                             $quote = new BusinessApplicationQuote;
                             $quote->id = (string) Str::ulid();
@@ -252,7 +257,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                                 'evidence' => $this->evidenceBinding($verification), 'credit' => $this->creditBinding($credit),
                                 'credit_source_reference' => $credit['source_reference'] ?? null,
                                 'policy_version' => FlatReturnPricing::POLICY_VERSION, 'calculation_version' => ApplicationUnderwriting::VERSION,
-                                'calendar' => $calendar, 'evaluated_at' => $now->format('Y-m-d\TH:i:s\Z'),
+                                'calendar' => $calendar, 'evidence_window' => $this->windowBinding($window), 'evaluated_at' => $now->format('Y-m-d\TH:i:s\Z'),
                                 'actor_user_id' => $userId, 'actor_party_id' => $partyId, 'result' => $result];
                             $quote->forceFill(['business_application_id' => $application->id, 'revision' => $revision,
                                 'payload' => $payload, 'sha256' => hash('sha256', $this->json->encode($payload))])->save();
@@ -495,12 +500,13 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
     private function projectEvidence(array $business, ?array $verification, ?array $credit, BusinessApplication $application, ?BusinessApplicationQuote $quote): array
     {
         $current = $verification !== null && $verification['current'];
-        $calendar = $this->underwritingCalendar();
-        $facts = $this->applicationEvidence->project($current, $verification['payload']['observations'] ?? [],
+        $window = $this->observationWindow($verification, $credit, now('UTC')->toImmutable());
+        $calendar = $window['calendar'];
+        $facts = $this->applicationEvidence->project($current, $window['months'],
             [...($verification['payload']['review']['obligations'] ?? []), ...($credit['facts']['obligations'] ?? [])],
             $credit['facts']['history'] ?? null, $credit['facts']['restriction_active'] ?? false,
             $calendar['last_complete_month'], $calendar['first_repayment_month'], $application->draft['term_months'] ?? 6,
-            $verification['payload']['review']['recurring_owner_draw'] ?? '0');
+            $verification['payload']['review']['recurring_owner_draw'] ?? '0', $window['fresh']);
         $scorecard = $quote?->payload['result']['scorecard'] ?? null;
 
         return ['version' => $this->evidenceVersion($verification), ...$facts,
@@ -626,18 +632,18 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
     /**
      * @param  Verification|null  $verification
      * @param  CreditSnapshot|null  $credit
-     * @param  array{last_complete_month: string, first_repayment_month: string}  $calendar
+     * @param  Selection  $window
      * @return array<string, mixed>
      */
-    private function calculate(string $requestedPrincipal, int $tenorMonths, ?array $verification, ?array $credit, ?string $acceptedPrincipal, array $calendar): array
+    private function calculate(string $requestedPrincipal, int $tenorMonths, ?array $verification, ?array $credit, ?string $acceptedPrincipal, array $window): array
     {
-        if ($verification === null || ! $verification['current']) {
+        if ($verification === null || ! $verification['current'] || ! $window['fresh']) {
             return ['eligible' => false, 'code' => 'UNDERWRITING_EVIDENCE_REQUIRED'];
         }
         $verified = $verification['payload'];
         try {
             return $this->underwriting->evaluate(['requested_principal' => $requestedPrincipal, 'tenor_months' => $tenorMonths,
-                'accepted_principal' => $acceptedPrincipal, 'months' => $verified['observations'], ...$calendar,
+                'accepted_principal' => $acceptedPrincipal, 'months' => $window['months'], ...$window['calendar'],
                 'recurring_owner_draw' => $verified['review']['recurring_owner_draw'],
                 'obligations' => [...$verified['review']['obligations'], ...($credit['facts']['obligations'] ?? [])],
                 'history' => $credit['facts']['history'] ?? null, 'restriction_active' => $credit['facts']['restriction_active'] ?? false]);
@@ -666,10 +672,11 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
         if ($payload['quote_id'] !== $quote->id || $payload['quote_revision'] !== $quote->revision || $payload['application_id'] !== $application->id || $payload['business_id'] !== $business['id']) {
             throw new RuntimeException('APPLICATION_QUOTE_INTEGRITY_FAILED');
         }
+        $window = $this->observationWindow($verification, $credit, now('UTC')->toImmutable());
         if ($payload['draft'] !== $this->drafts->normalize($application->draft) || $payload['mandate_version'] !== $business['mandate_version']
             || $payload['evidence'] !== $this->evidenceBinding($verification) || $payload['credit'] !== $this->creditBinding($credit)
             || $payload['policy_version'] !== FlatReturnPricing::POLICY_VERSION || $payload['calculation_version'] !== ApplicationUnderwriting::VERSION
-            || $payload['calendar'] !== $this->underwritingCalendar()) {
+            || $payload['calendar'] !== $window['calendar'] || ($payload['evidence_window'] ?? null) !== $this->windowBinding($window)) {
             return null;
         }
 
@@ -787,12 +794,23 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                 'term_premium' => $result['pricing']['premium_percentage_points']]];
     }
 
-    /** @return array{last_complete_month: string, first_repayment_month: string} */
-    private function underwritingCalendar(): array
+    /**
+     * @param  Verification|null  $verification
+     * @param  CreditSnapshot|null  $credit
+     * @return Selection
+     */
+    private function observationWindow(?array $verification, ?array $credit, DateTimeImmutable $instant): array
     {
-        $month = now('Africa/Kigali')->toImmutable()->startOfMonth();
+        return $this->windows->select($verification['payload']['observations'] ?? [], $instant, ($credit['facts']['history']['repeat_eligibility'] ?? null) !== null);
+    }
 
-        return ['last_complete_month' => $month->subMonth()->format('Y-m'), 'first_repayment_month' => $month->format('Y-m')];
+    /**
+     * @param  Selection  $window
+     * @return array{version: string, valid_through: string|null, fresh: bool}
+     */
+    private function windowBinding(array $window): array
+    {
+        return ['version' => UnderwritingObservationWindow::VERSION, 'valid_through' => $window['valid_through'], 'fresh' => $window['fresh']];
     }
 
     private function pendingApplication(string $businessId, ?string $exceptApplicationId = null): ?BusinessApplication
