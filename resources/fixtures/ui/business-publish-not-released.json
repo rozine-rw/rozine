@@ -1,6 +1,68 @@
 {
-    "component": "business/repayments",
+    "component": "business/publish",
+    "synthetic": true,
     "props": {
+        "contract_version": "business-campaign-v1",
+        "identity_context_revision": 4,
+        "server_time": "2026-09-25T09:00:00+02:00",
+        "application": {
+            "id": "APP-2026-0398",
+            "title": "Warehouse Robotics",
+            "target": {
+                "currency": "RWF",
+                "amount": "30000000"
+            },
+            "revision": 7
+        },
+        "release": {
+            "state": "awaiting_staff_review",
+            "causes": []
+        },
+        "prerequisites": [
+            {
+                "key": "staff_release",
+                "met": false
+            },
+            {
+                "key": "signatures_retained",
+                "met": true
+            },
+            {
+                "key": "quote_current",
+                "met": true
+            },
+            {
+                "key": "terms_current",
+                "met": true
+            }
+        ],
+        "listing_fee": {
+            "currency": "RWF",
+            "amount": "0"
+        },
+        "fee_disclosure": {
+            "version": "synthetic-listing-fee-disclosure-0",
+            "text": "Rozine waives the listing fee for the MVP, so publishing this application costs RWF 0. Any future listing fee will be disclosed here, with its own version, before you publish."
+        },
+        "listing": null,
+        "allowed_actions": [],
+        "actions": {
+            "publish": {
+                "url": "/preview/business-publish-listing",
+                "method": "post"
+            }
+        },
+        "links": {
+            "close": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/business-campaign-operation-{request_id}",
+                "method": "get"
+            },
+            "review": null
+        },
         "home": {
             "business": {
                 "name": "GreenLeaf Agro",
@@ -69,7 +131,7 @@
                     "note_title": "Fleet Expansion Note",
                     "due_on": "2026-10-05T00:00:00+02:00",
                     "link": {
-                        "url": "/preview/business-repayments",
+                        "url": "/preview/business-home",
                         "method": "get"
                     }
                 }
@@ -195,15 +257,15 @@
                     "method": "get"
                 },
                 "wallet": {
-                    "url": "/preview/business-wallet",
+                    "url": "/preview/business-home",
                     "method": "get"
                 },
                 "deposit": {
-                    "url": "/preview/business-wallet",
+                    "url": "/preview/business-home",
                     "method": "get"
                 },
                 "withdraw": {
-                    "url": "/preview/business-wallet",
+                    "url": "/preview/business-home",
                     "method": "get"
                 },
                 "notifications": {
@@ -211,7 +273,7 @@
                     "method": "get"
                 },
                 "rating": {
-                    "url": "/preview/business-rating",
+                    "url": "/preview/business-home",
                     "method": "get"
                 },
                 "apply": {
@@ -221,180 +283,28 @@
             },
             "create_application": null
         },
-        "note": {
-            "id": "RNP-2024-0042",
-            "title": "Fleet Expansion"
-        },
-        "progress": {
-            "repaid_pct": 60,
-            "repaid": {
-                "currency": "RWF",
-                "amount": "16650000"
-            },
-            "payments_made": 3,
-            "payments_total": 5,
-            "remaining": {
-                "currency": "RWF",
-                "amount": "11100000"
-            },
-            "remaining_months": 2,
-            "total": {
-                "currency": "RWF",
-                "amount": "27750000"
-            }
-        },
-        "this_month": {
-            "state": "due",
-            "amount": {
-                "currency": "RWF",
-                "amount": "5550000"
-            },
-            "due_on": "2026-10-05",
-            "days": 12,
-            "due_day": 5
-        },
-        "sources": [
-            {
-                "key": "wallet",
-                "kind": "wallet",
-                "name": "Rozine Wallet",
-                "detail": "Balance RWF 12,383,800"
-            },
-            {
-                "key": "bank",
-                "kind": "bank",
-                "name": "Bank transfer",
-                "detail": "Bank of Kigali ····2231"
-            },
-            {
-                "key": "mtn",
-                "kind": "mobile_money",
-                "name": "MTN Mobile Money",
-                "detail": "+250 788 ···· 211"
-            }
-        ],
-        "pay_ahead": {
-            "options": [
-                {
-                    "key": "next",
-                    "months": 1,
-                    "amount": {
-                        "currency": "RWF",
-                        "amount": "5550000"
-                    }
-                },
-                {
-                    "key": "full",
-                    "amount": {
-                        "currency": "RWF",
-                        "amount": "11100000"
-                    },
-                    "last": false
-                }
-            ],
-            "max": {
-                "currency": "RWF",
-                "amount": "11100000"
-            }
-        },
-        "schedule": [
-            {
-                "due_on": "2026-07-05",
-                "amount": {
-                    "currency": "RWF",
-                    "amount": "5550000"
-                },
-                "status": "paid"
-            },
-            {
-                "due_on": "2026-08-05",
-                "amount": {
-                    "currency": "RWF",
-                    "amount": "5550000"
-                },
-                "status": "paid"
-            },
-            {
-                "due_on": "2026-09-05",
-                "amount": {
-                    "currency": "RWF",
-                    "amount": "5550000"
-                },
-                "status": "paid"
-            },
-            {
-                "due_on": "2026-10-05",
-                "amount": {
-                    "currency": "RWF",
-                    "amount": "5550000"
-                },
-                "status": "due"
-            },
-            {
-                "due_on": "2026-11-05",
-                "amount": {
-                    "currency": "RWF",
-                    "amount": "5550000"
-                },
-                "status": "upcoming"
-            }
-        ],
-        "late_ladder": [
-            {
-                "step": "due_day",
-                "fee_percent": "10",
-                "total": {
-                    "currency": "RWF",
-                    "amount": "6105000"
-                }
-            },
-            {
-                "step": "day_7",
-                "fee_percent": "10",
-                "total": {
-                    "currency": "RWF",
-                    "amount": "6660000"
-                }
-            },
-            {
-                "step": "day_30",
-                "fee_percent": "5",
-                "total": {
-                    "currency": "RWF",
-                    "amount": "6937500"
-                }
-            }
-        ],
-        "receipt": {
-            "amount": {
-                "currency": "RWF",
-                "amount": "5550000"
-            },
-            "investors": 647,
-            "outstanding": {
-                "currency": "RWF",
-                "amount": "5550000"
-            },
-            "payments_made": 4,
-            "payments_total": 5
-        },
-        "links": {
-            "close": {
+        "shell_links": {
+            "home": {
                 "url": "/preview/business-home",
                 "method": "get"
             },
-            "defer": null,
-            "review": null
-        },
-        "actions": {
-            "pay": {
-                "url": "/preview/business-repayments-paid",
-                "method": "post"
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
             },
-            "pay_ahead": {
-                "url": "/preview/business-repayments-paid",
-                "method": "post"
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
             }
+        },
+        "preview_outcome": {
+            "kind": "refused",
+            "code": "APPLICATION_NOT_RELEASED",
+            "status": 409
         }
     }
 }

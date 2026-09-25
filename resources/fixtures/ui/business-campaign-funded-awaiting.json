@@ -1,6 +1,15 @@
 {
-    "component": "business/note",
+    "component": "business/campaign",
+    "synthetic": true,
     "props": {
+        "contract_version": "business-campaign-v1",
+        "identity_context_revision": 4,
+        "server_time": "2026-09-25T09:00:00+02:00",
+        "allowed_actions": [],
+        "campaign": {
+            "id": "CMP-2026-0118",
+            "revision": 12
+        },
         "home": {
             "business": {
                 "name": "GreenLeaf Agro",
@@ -69,7 +78,7 @@
                     "note_title": "Fleet Expansion Note",
                     "due_on": "2026-10-05T00:00:00+02:00",
                     "link": {
-                        "url": "/preview/business-repayments",
+                        "url": "/preview/business-home",
                         "method": "get"
                     }
                 }
@@ -195,15 +204,15 @@
                     "method": "get"
                 },
                 "wallet": {
-                    "url": "/preview/business-wallet",
+                    "url": "/preview/business-home",
                     "method": "get"
                 },
                 "deposit": {
-                    "url": "/preview/business-wallet",
+                    "url": "/preview/business-home",
                     "method": "get"
                 },
                 "withdraw": {
-                    "url": "/preview/business-wallet",
+                    "url": "/preview/business-home",
                     "method": "get"
                 },
                 "notifications": {
@@ -211,7 +220,7 @@
                     "method": "get"
                 },
                 "rating": {
-                    "url": "/preview/business-rating",
+                    "url": "/preview/business-home",
                     "method": "get"
                 },
                 "apply": {
@@ -222,36 +231,20 @@
             "create_application": null
         },
         "note": {
-            "id": "RNP-2024-0042",
-            "title": "Fleet Expansion",
-            "status": "repaying",
+            "id": "RNP-2026-0118",
+            "title": "Cold-Chain Hub",
+            "status": "funded",
             "progress": {
-                "phase": "repaying",
-                "outstanding": {
+                "phase": "funded",
+                "restriction": null,
+                "committed": {
                     "currency": "RWF",
-                    "amount": "11100000"
+                    "amount": "18000000"
                 },
-                "payments_made": 3,
-                "payments_total": 5,
-                "repaid_pct": 60,
-                "repaid": {
-                    "currency": "RWF",
-                    "amount": "16650000"
-                },
-                "remaining": {
-                    "currency": "RWF",
-                    "amount": "11100000"
-                },
-                "remaining_months": 2,
-                "investors": 647,
-                "health": "on_time",
-                "next_payment": {
-                    "amount": {
-                        "currency": "RWF",
-                        "amount": "5550000"
-                    },
-                    "due_on": "2026-10-05",
-                    "days_until": 12
+                "investors": 402,
+                "funded_at": "2026-09-20T15:42:00+02:00",
+                "closing": {
+                    "stage": "awaiting_disbursement"
                 }
             },
             "photos": [
@@ -437,19 +430,20 @@
                         "amount": "149000000"
                     }
                 }
-            },
-            "recent_investors": []
+            }
         },
         "links": {
             "close": {
                 "url": "/preview/business-home",
                 "method": "get"
             },
-            "pay": {
-                "url": "/preview/business-repayments",
+            "operation": {
+                "url": "/preview/business-campaign-operation-{request_id}",
                 "method": "get"
-            },
-            "investors": null
+            }
+        },
+        "actions": {
+            "cancel": null
         }
     }
 }

@@ -1,6 +1,15 @@
 {
-    "component": "business/repayments",
+    "component": "business/campaign",
+    "synthetic": true,
     "props": {
+        "contract_version": "business-campaign-v1",
+        "identity_context_revision": 4,
+        "server_time": "2026-09-25T09:00:00+02:00",
+        "allowed_actions": [],
+        "campaign": {
+            "id": "01k6r3d9t4e1g5h0j3k7m2n8p4",
+            "revision": 1
+        },
         "home": {
             "business": {
                 "name": "GreenLeaf Agro",
@@ -56,7 +65,7 @@
                     "days_left": 0,
                     "sealed_by": "2026-10-07T00:00:00+02:00",
                     "link": {
-                        "url": "/preview/business-home",
+                        "url": "/preview/business-audit-prep",
                         "method": "get"
                     }
                 },
@@ -214,187 +223,69 @@
                     "url": "/preview/business-rating",
                     "method": "get"
                 },
-                "apply": {
-                    "url": "/preview/business-apply-business",
-                    "method": "get"
-                }
+                "apply": null
             },
-            "create_application": null
+            "create_application": {
+                "action": {
+                    "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications",
+                    "method": "post"
+                },
+                "operation": {
+                    "url": "/business/application-operations/{request_id}",
+                    "method": "get"
+                },
+                "identity_context_revision": 4,
+                "expected_revision": 0
+            }
         },
         "note": {
-            "id": "RNP-2024-0042",
-            "title": "Fleet Expansion"
-        },
-        "progress": {
-            "repaid_pct": 60,
-            "repaid": {
-                "currency": "RWF",
-                "amount": "16650000"
-            },
-            "payments_made": 3,
-            "payments_total": 5,
-            "remaining": {
-                "currency": "RWF",
-                "amount": "11100000"
-            },
-            "remaining_months": 2,
-            "total": {
-                "currency": "RWF",
-                "amount": "27750000"
-            }
-        },
-        "this_month": {
-            "state": "due",
-            "amount": {
-                "currency": "RWF",
-                "amount": "5550000"
-            },
-            "due_on": "2026-10-05",
-            "days": 12,
-            "due_day": 5
-        },
-        "sources": [
-            {
-                "key": "wallet",
-                "kind": "wallet",
-                "name": "Rozine Wallet",
-                "detail": "Balance RWF 12,383,800"
-            },
-            {
-                "key": "bank",
-                "kind": "bank",
-                "name": "Bank transfer",
-                "detail": "Bank of Kigali ····2231"
-            },
-            {
-                "key": "mtn",
-                "kind": "mobile_money",
-                "name": "MTN Mobile Money",
-                "detail": "+250 788 ···· 211"
-            }
-        ],
-        "pay_ahead": {
-            "options": [
-                {
-                    "key": "next",
-                    "months": 1,
-                    "amount": {
-                        "currency": "RWF",
-                        "amount": "5550000"
-                    }
-                },
-                {
-                    "key": "full",
-                    "amount": {
-                        "currency": "RWF",
-                        "amount": "11100000"
-                    },
-                    "last": false
-                }
-            ],
-            "max": {
-                "currency": "RWF",
-                "amount": "11100000"
-            }
-        },
-        "schedule": [
-            {
-                "due_on": "2026-07-05",
-                "amount": {
+            "id": "01k6r3d9t4e1g5h0j3k7m2n8p4",
+            "title": "Cold-Chain Hub",
+            "status": "active",
+            "progress": {
+                "phase": "raising",
+                "lifecycle": "live",
+                "restriction": null,
+                "committed": {
                     "currency": "RWF",
-                    "amount": "5550000"
+                    "amount": "14058000"
                 },
-                "status": "paid"
-            },
-            {
-                "due_on": "2026-08-05",
-                "amount": {
+                "reserved": {
                     "currency": "RWF",
-                    "amount": "5550000"
+                    "amount": "900000"
                 },
-                "status": "paid"
-            },
-            {
-                "due_on": "2026-09-05",
-                "amount": {
+                "remaining": {
                     "currency": "RWF",
-                    "amount": "5550000"
+                    "amount": "3042000"
                 },
-                "status": "paid"
-            },
-            {
-                "due_on": "2026-10-05",
-                "amount": {
-                    "currency": "RWF",
-                    "amount": "5550000"
+                "units": {
+                    "total": "18000",
+                    "available": "3042",
+                    "reserved": "900",
+                    "committed": "14058"
                 },
-                "status": "due"
-            },
-            {
-                "due_on": "2026-11-05",
-                "amount": {
-                    "currency": "RWF",
-                    "amount": "5550000"
-                },
-                "status": "upcoming"
-            }
-        ],
-        "late_ladder": [
-            {
-                "step": "due_day",
-                "fee_percent": "10",
-                "total": {
-                    "currency": "RWF",
-                    "amount": "6105000"
+                "investors": 318,
+                "funded_pct": "78.1",
+                "clock": {
+                    "starts_at": "2026-09-02T09:00:00+02:00",
+                    "expires_at": "2026-10-02T09:00:00+02:00"
                 }
             },
-            {
-                "step": "day_7",
-                "fee_percent": "10",
-                "total": {
-                    "currency": "RWF",
-                    "amount": "6660000"
-                }
-            },
-            {
-                "step": "day_30",
-                "fee_percent": "5",
-                "total": {
-                    "currency": "RWF",
-                    "amount": "6937500"
-                }
-            }
-        ],
-        "receipt": {
-            "amount": {
-                "currency": "RWF",
-                "amount": "5550000"
-            },
-            "investors": 647,
-            "outstanding": {
-                "currency": "RWF",
-                "amount": "5550000"
-            },
-            "payments_made": 4,
-            "payments_total": 5
+            "photos": [],
+            "performance": null
         },
         "links": {
             "close": {
-                "url": "/preview/business-home",
+                "url": "/business",
                 "method": "get"
             },
-            "defer": null,
-            "review": null
+            "operation": {
+                "url": "/business/campaign-operations/{request_id}",
+                "method": "get"
+            }
         },
         "actions": {
-            "pay": {
-                "url": "/preview/business-repayments-paid",
-                "method": "post"
-            },
-            "pay_ahead": {
-                "url": "/preview/business-repayments-paid",
-                "method": "post"
-            }
+            "cancel": null
         }
     }
 }

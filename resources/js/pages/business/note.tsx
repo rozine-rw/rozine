@@ -5,14 +5,15 @@ import { HomeBody } from '@/components/business/home/home-body';
 import { PerformanceTrend } from '@/components/business/note/performance-trend';
 import { PhotoStrip } from '@/components/business/note/photo-strip';
 import { ProgressSummary } from '@/components/business/note/progress-summary';
-import { RecentInvestors } from '@/components/business/note/recent-investors';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import type { BusinessNoteProps } from '@/types/business';
 
 /**
- * A published note's dashboard (MVP-BUSINESS-SCR-04 raise progress, design L632–709), opened from
- * the live raise or Your notes. On a wide screen it is the design's detail sheet over Home.
+ * A published note's dashboard (MVP-BUSINESS-SCR-04, design L632–709), opened from Your notes. On a
+ * wide screen it is the design's detail sheet over Home. A raising campaign has its own page
+ * (`business/campaign`); this one previews the servicing (C4) phases. No Investor is named, typed or
+ * given an amount here (H16): `recent_investors` is not rendered and there is no investor list.
  */
 export default function BusinessNote({ home, note, links }: BusinessNoteProps) {
     const { t } = useTranslation();
@@ -60,11 +61,6 @@ export default function BusinessNote({ home, note, links }: BusinessNoteProps) {
                         }}
                     />
                 )}
-                <RecentInvestors
-                    investors={note.recent_investors}
-                    total={note.progress.investors}
-                    viewAll={links.investors}
-                />
             </div>
         </DetailSheet>
     );

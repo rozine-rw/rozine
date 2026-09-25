@@ -1,6 +1,68 @@
 {
     "component": "business/publish",
+    "synthetic": true,
     "props": {
+        "contract_version": "business-campaign-v1",
+        "identity_context_revision": 4,
+        "server_time": "2026-09-25T09:00:00+02:00",
+        "application": {
+            "id": "APP-2026-0398",
+            "title": "Warehouse Robotics",
+            "target": {
+                "currency": "RWF",
+                "amount": "30000000"
+            },
+            "revision": 7
+        },
+        "release": {
+            "state": "released",
+            "causes": []
+        },
+        "prerequisites": [
+            {
+                "key": "staff_release",
+                "met": true
+            },
+            {
+                "key": "signatures_retained",
+                "met": true
+            },
+            {
+                "key": "quote_current",
+                "met": true
+            },
+            {
+                "key": "terms_current",
+                "met": true
+            }
+        ],
+        "listing_fee": {
+            "currency": "RWF",
+            "amount": "0"
+        },
+        "fee_disclosure": {
+            "version": "synthetic-listing-fee-disclosure-0",
+            "text": "Rozine waives the listing fee for the MVP, so publishing this application costs RWF 0. Any future listing fee will be disclosed here, with its own version, before you publish."
+        },
+        "listing": null,
+        "allowed_actions": ["application.publish"],
+        "actions": {
+            "publish": {
+                "url": "/preview/business-publish-listing",
+                "method": "post"
+            }
+        },
+        "links": {
+            "close": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/business-campaign-operation-{request_id}",
+                "method": "get"
+            },
+            "review": null
+        },
         "home": {
             "business": {
                 "name": "GreenLeaf Agro",
@@ -32,7 +94,7 @@
                     "amount": "18000000"
                 },
                 "link": {
-                    "url": "/preview/business-home",
+                    "url": "/preview/business-campaign-raising-live",
                     "method": "get"
                 }
             },
@@ -104,7 +166,7 @@
                         "amount": "18000000"
                     },
                     "link": {
-                        "url": "/preview/business-home",
+                        "url": "/preview/business-campaign-raising-live",
                         "method": "get"
                     }
                 },
@@ -124,7 +186,7 @@
                         "amount": "25000000"
                     },
                     "link": {
-                        "url": "/preview/business-home",
+                        "url": "/preview/business-note-repaying",
                         "method": "get"
                     }
                 },
@@ -144,7 +206,7 @@
                         "amount": "20000000"
                     },
                     "link": {
-                        "url": "/preview/business-home",
+                        "url": "/preview/business-note-completed",
                         "method": "get"
                     }
                 },
@@ -221,30 +283,22 @@
             },
             "create_application": null
         },
-        "application": {
-            "id": "APP-2026-0398",
-            "title": "Warehouse Robotics",
-            "target": {
-                "currency": "RWF",
-                "amount": "30000000"
-            }
-        },
-        "fee": {
-            "currency": "RWF",
-            "amount": "0"
-        },
-        "sources": [],
-        "allowed_actions": [],
-        "links": {
-            "close": {
+        "shell_links": {
+            "home": {
                 "url": "/preview/business-home",
                 "method": "get"
-            }
-        },
-        "actions": {
-            "publish": {
-                "url": "/preview/business-home",
-                "method": "post"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
             }
         }
     }

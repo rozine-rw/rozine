@@ -1,6 +1,15 @@
 {
-    "component": "business/note",
+    "component": "business/campaign",
+    "synthetic": true,
     "props": {
+        "contract_version": "business-campaign-v1",
+        "identity_context_revision": 4,
+        "server_time": "2026-09-25T09:00:00+02:00",
+        "allowed_actions": [],
+        "campaign": {
+            "id": "CMP-2026-0118",
+            "revision": 12
+        },
         "home": {
             "business": {
                 "name": "GreenLeaf Agro",
@@ -32,7 +41,7 @@
                     "amount": "18000000"
                 },
                 "link": {
-                    "url": "/preview/business-note-raising",
+                    "url": "/preview/business-campaign-raising-live",
                     "method": "get"
                 }
             },
@@ -104,7 +113,7 @@
                         "amount": "18000000"
                     },
                     "link": {
-                        "url": "/preview/business-note-raising",
+                        "url": "/preview/business-campaign-raising-live",
                         "method": "get"
                     }
                 },
@@ -226,13 +235,34 @@
             "title": "Cold-Chain Hub",
             "status": "funded",
             "progress": {
-                "phase": "funded",
-                "raised": {
+                "phase": "disbursed",
+                "amount": {
                     "currency": "RWF",
                     "amount": "18000000"
                 },
-                "investors": 402,
-                "funded_on": "2026-09-20"
+                "receipt": {
+                    "receipt_id": "RCP-2026-0923-0044",
+                    "operation_id": "OP-2026-0923-0044",
+                    "request_id": "9d2c4b6a-1e3f-4a5b-8c7d-0e1f2a3b4c5d",
+                    "code": "DISBURSEMENT_SUCCEEDED",
+                    "recorded_at": "2026-09-23T10:14:05+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "18000000"
+                    },
+                    "units": "18000",
+                    "reference": "DSB-2026-0118",
+                    "revision": 19,
+                    "policy_version": "synthetic-settlement-policy-0",
+                    "disclosure_version": null,
+                    "link": {
+                        "url": "/preview/business-campaign-disbursed",
+                        "method": "get"
+                    }
+                },
+                "disbursement_effective_at": "2026-09-23T10:12:48+02:00",
+                "effective_date": "2026-09-23",
+                "destination": "Bank of Kigali ···· 4471"
             },
             "photos": [
                 {
@@ -248,53 +278,189 @@
                     "caption": "Team & leadership"
                 }
             ],
-            "performance": null,
-            "recent_investors": [
-                {
-                    "initials": "JK",
-                    "name": "Jean Kamanzi",
-                    "kind": "individual",
-                    "amount": {
+            "performance": {
+                "six_months": {
+                    "months": [
+                        {
+                            "month": "2026-03-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "178000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-04-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "190000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-05-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "205000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-06-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "184000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-07-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "196000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-08-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "212000000"
+                            },
+                            "paid_on_time": true
+                        }
+                    ],
+                    "high": {
                         "currency": "RWF",
-                        "amount": "500000"
+                        "amount": "212000000"
+                    },
+                    "low": {
+                        "currency": "RWF",
+                        "amount": "178000000"
                     }
                 },
-                {
-                    "initials": "MN",
-                    "name": "Marie Niyonsaba",
-                    "kind": "individual",
-                    "amount": {
+                "twelve_months": {
+                    "months": [
+                        {
+                            "month": "2025-09-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "152000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2025-10-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "168000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2025-11-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "149000000"
+                            },
+                            "paid_on_time": false
+                        },
+                        {
+                            "month": "2025-12-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "171000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-01-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "186000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-02-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "163000000"
+                            },
+                            "paid_on_time": false
+                        },
+                        {
+                            "month": "2026-03-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "178000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-04-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "190000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-05-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "205000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-06-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "184000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-07-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "196000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-08-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "212000000"
+                            },
+                            "paid_on_time": true
+                        }
+                    ],
+                    "high": {
                         "currency": "RWF",
-                        "amount": "250000"
-                    }
-                },
-                {
-                    "initials": "PF",
-                    "name": "Pension Fund RW",
-                    "kind": "institution",
-                    "amount": {
+                        "amount": "212000000"
+                    },
+                    "low": {
                         "currency": "RWF",
-                        "amount": "5000000"
-                    }
-                },
-                {
-                    "initials": "DO",
-                    "name": "David Okello",
-                    "kind": "individual",
-                    "amount": {
-                        "currency": "RWF",
-                        "amount": "320000"
+                        "amount": "149000000"
                     }
                 }
-            ]
+            }
         },
         "links": {
             "close": {
                 "url": "/preview/business-home",
                 "method": "get"
             },
-            "pay": null,
-            "investors": null
+            "operation": {
+                "url": "/preview/business-campaign-operation-{request_id}",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "cancel": null
         }
     }
 }

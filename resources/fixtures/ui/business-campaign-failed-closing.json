@@ -1,67 +1,14 @@
 {
-    "component": "business/publish",
+    "component": "business/campaign",
     "synthetic": true,
     "props": {
         "contract_version": "business-campaign-v1",
         "identity_context_revision": 4,
         "server_time": "2026-09-25T09:00:00+02:00",
-        "application": {
-            "id": "APP-2026-0398",
-            "title": "Warehouse Robotics",
-            "target": {
-                "currency": "RWF",
-                "amount": "30000000"
-            },
-            "revision": 7
-        },
-        "release": {
-            "state": "awaiting_staff_review",
-            "causes": []
-        },
-        "prerequisites": [
-            {
-                "key": "staff_release",
-                "met": false
-            },
-            {
-                "key": "signatures_retained",
-                "met": true
-            },
-            {
-                "key": "quote_current",
-                "met": true
-            },
-            {
-                "key": "terms_current",
-                "met": true
-            }
-        ],
-        "listing_fee": {
-            "currency": "RWF",
-            "amount": "0"
-        },
-        "fee_disclosure": {
-            "version": "synthetic-listing-fee-disclosure-0",
-            "text": "Rozine waives the listing fee for the MVP, so publishing this application costs RWF 0. Any future listing fee will be disclosed here, with its own version, before you publish."
-        },
-        "listing": null,
         "allowed_actions": [],
-        "actions": {
-            "publish": {
-                "url": "/preview/business-publish-listing",
-                "method": "post"
-            }
-        },
-        "links": {
-            "close": {
-                "url": "/preview/business-home",
-                "method": "get"
-            },
-            "operation": {
-                "url": "/preview/business-campaign-operation-{request_id}",
-                "method": "get"
-            },
-            "review": null
+        "campaign": {
+            "id": "CMP-2026-0118",
+            "revision": 12
         },
         "home": {
             "business": {
@@ -283,23 +230,216 @@
             },
             "create_application": null
         },
-        "shell_links": {
-            "home": {
+        "note": {
+            "id": "RNP-2026-0118",
+            "title": "Cold-Chain Hub",
+            "status": "failed",
+            "progress": {
+                "phase": "failed_closing",
+                "committed_refunded": {
+                    "currency": "RWF",
+                    "amount": "18000000"
+                },
+                "investors": 402,
+                "closed_at": "2026-09-22T12:20:00+02:00"
+            },
+            "photos": [
+                {
+                    "url": null,
+                    "caption": "Fleet & facility · Musanze"
+                },
+                {
+                    "url": null,
+                    "caption": "Operations"
+                },
+                {
+                    "url": null,
+                    "caption": "Team & leadership"
+                }
+            ],
+            "performance": {
+                "six_months": {
+                    "months": [
+                        {
+                            "month": "2026-03-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "178000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-04-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "190000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-05-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "205000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-06-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "184000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-07-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "196000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-08-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "212000000"
+                            },
+                            "paid_on_time": true
+                        }
+                    ],
+                    "high": {
+                        "currency": "RWF",
+                        "amount": "212000000"
+                    },
+                    "low": {
+                        "currency": "RWF",
+                        "amount": "178000000"
+                    }
+                },
+                "twelve_months": {
+                    "months": [
+                        {
+                            "month": "2025-09-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "152000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2025-10-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "168000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2025-11-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "149000000"
+                            },
+                            "paid_on_time": false
+                        },
+                        {
+                            "month": "2025-12-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "171000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-01-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "186000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-02-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "163000000"
+                            },
+                            "paid_on_time": false
+                        },
+                        {
+                            "month": "2026-03-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "178000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-04-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "190000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-05-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "205000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-06-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "184000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-07-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "196000000"
+                            },
+                            "paid_on_time": true
+                        },
+                        {
+                            "month": "2026-08-01",
+                            "revenue": {
+                                "currency": "RWF",
+                                "amount": "212000000"
+                            },
+                            "paid_on_time": true
+                        }
+                    ],
+                    "high": {
+                        "currency": "RWF",
+                        "amount": "212000000"
+                    },
+                    "low": {
+                        "currency": "RWF",
+                        "amount": "149000000"
+                    }
+                }
+            }
+        },
+        "links": {
+            "close": {
                 "url": "/preview/business-home",
                 "method": "get"
             },
-            "launcher": {
-                "url": "/preview/launcher-ready",
-                "method": "get"
-            },
-            "reports": {
-                "url": "/preview/business-reports",
-                "method": "get"
-            },
-            "profile": {
-                "url": "/preview/business-profile",
+            "operation": {
+                "url": "/preview/business-campaign-operation-{request_id}",
                 "method": "get"
             }
+        },
+        "actions": {
+            "cancel": null
         }
     }
 }

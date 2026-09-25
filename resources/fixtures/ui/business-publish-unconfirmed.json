@@ -1,6 +1,68 @@
 {
-    "component": "business/note",
+    "component": "business/publish",
+    "synthetic": true,
     "props": {
+        "contract_version": "business-campaign-v1",
+        "identity_context_revision": 4,
+        "server_time": "2026-09-25T09:00:00+02:00",
+        "application": {
+            "id": "APP-2026-0398",
+            "title": "Warehouse Robotics",
+            "target": {
+                "currency": "RWF",
+                "amount": "30000000"
+            },
+            "revision": 7
+        },
+        "release": {
+            "state": "released",
+            "causes": []
+        },
+        "prerequisites": [
+            {
+                "key": "staff_release",
+                "met": true
+            },
+            {
+                "key": "signatures_retained",
+                "met": true
+            },
+            {
+                "key": "quote_current",
+                "met": true
+            },
+            {
+                "key": "terms_current",
+                "met": true
+            }
+        ],
+        "listing_fee": {
+            "currency": "RWF",
+            "amount": "0"
+        },
+        "fee_disclosure": {
+            "version": "synthetic-listing-fee-disclosure-0",
+            "text": "Rozine waives the listing fee for the MVP, so publishing this application costs RWF 0. Any future listing fee will be disclosed here, with its own version, before you publish."
+        },
+        "listing": null,
+        "allowed_actions": ["application.publish"],
+        "actions": {
+            "publish": {
+                "url": "/preview/business-publish-listing",
+                "method": "post"
+            }
+        },
+        "links": {
+            "close": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/business-campaign-operation-{request_id}",
+                "method": "get"
+            },
+            "review": null
+        },
         "home": {
             "business": {
                 "name": "GreenLeaf Agro",
@@ -32,7 +94,7 @@
                     "amount": "18000000"
                 },
                 "link": {
-                    "url": "/preview/business-note-raising",
+                    "url": "/preview/business-campaign-raising-live",
                     "method": "get"
                 }
             },
@@ -104,7 +166,7 @@
                         "amount": "18000000"
                     },
                     "link": {
-                        "url": "/preview/business-note-raising",
+                        "url": "/preview/business-campaign-raising-live",
                         "method": "get"
                     }
                 },
@@ -221,34 +283,36 @@
             },
             "create_application": null
         },
-        "note": {
-            "id": "RNP-2026-0118",
-            "title": "Cold-Chain Hub",
-            "status": "failed",
-            "progress": {
-                "phase": "expired",
-                "raised": {
-                    "currency": "RWF",
-                    "amount": "11900000"
-                },
-                "target": {
-                    "currency": "RWF",
-                    "amount": "18000000"
-                },
-                "investors": 284,
-                "closed_on": "2026-09-20"
-            },
-            "photos": [],
-            "performance": null,
-            "recent_investors": []
-        },
-        "links": {
-            "close": {
+        "shell_links": {
+            "home": {
                 "url": "/preview/business-home",
                 "method": "get"
             },
-            "pay": null,
-            "investors": null
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            }
+        },
+        "preview_outcome": {
+            "kind": "unconfirmed",
+            "command": {
+                "name": "application.publish",
+                "payload": {
+                    "request_id": "3b8e2f4a-6c1d-4e7f-9a2b-5c8d1e0f3a6b",
+                    "identity_context_revision": 4,
+                    "application_id": "APP-2026-0398",
+                    "expected_application_revision": 7,
+                    "fee_disclosure_version": "synthetic-listing-fee-disclosure-0"
+                }
+            }
         }
     }
 }
