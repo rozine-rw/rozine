@@ -3091,6 +3091,14 @@ const en = {
         'The report is sealed and can no longer be edited. {party} still needs to co-sign; it publishes to holders after that.',
     'auditor.sealed.unavailable':
         "This seal can't be verified right now — its signing key is no longer current. The sealed record and its history are unchanged.",
+    'auditor.sealed.body_published':
+        'Sealed and co-signed; published to holders on {date}.',
+    'auditor.sealed.body_signed':
+        'The report is sealed and {party} has co-signed it. It publishes to holders next.',
+    'auditor.sealed.body_declined':
+        'The report is sealed. {party} disputed it rather than co-signing, so it is not published.',
+    'auditor.sealed.body_overdue':
+        "The report is sealed, but {party}'s co-signing window has passed. It can no longer be co-signed and is not published; nothing is approved automatically.",
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

@@ -3227,6 +3227,15 @@ const fr: Catalog = {
     'auditor.sealed.unavailable':
         "Ce sceau ne peut pas être vérifié pour le moment — sa clé de signature n'est plus en vigueur. L'enregistrement scellé et son historique restent inchangés.",
 
+    'auditor.sealed.body_published':
+        'Scellé et cosigné ; publié aux porteurs le {date}.',
+    'auditor.sealed.body_signed':
+        "Le rapport est scellé et {party} l'a cosigné. Il sera ensuite publié aux porteurs.",
+    'auditor.sealed.body_declined':
+        "Le rapport est scellé. {party} l'a contesté au lieu de le cosigner : il n'est donc pas publié.",
+    'auditor.sealed.body_overdue':
+        "Le rapport est scellé, mais le délai de cosignature de {party} est passé. Il ne peut plus être cosigné et n'est pas publié ; rien n'est approuvé automatiquement.",
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',
