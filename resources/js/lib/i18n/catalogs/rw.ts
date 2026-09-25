@@ -3215,6 +3215,15 @@ const rw: Catalog = {
     'auditor.sealed.unavailable':
         "Iyi kashe ntishobora kugenzurwa ubu — urufunguzo rwayisinyishije ntirukiri urukoreshwa. Inyandiko yashyizweho kashe n'amateka yayo ntibyahindutse.",
 
+    'auditor.sealed.body_published':
+        'Byashyizweho kashe biranasinywa; byagejejwe ku bashoramari ku wa {date}.',
+    'auditor.sealed.body_signed':
+        'Raporo yashyizweho kashe kandi {party} yarayisinye. Ikurikiraho ni ukugezwa ku bashoramari.',
+    'auditor.sealed.body_declined':
+        'Raporo yashyizweho kashe. {party} yayihakanye aho kuyisinya, bityo ntiyagejejwe ku bashoramari.',
+    'auditor.sealed.body_overdue':
+        'Raporo yashyizweho kashe, ariko igihe {party} yari ifite cyo kuyisinya cyarangiye. Ntishobora gusinywa ukundi kandi ntiyagejejwe ku bashoramari; nta kintu cyemezwa ubwacyo.',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

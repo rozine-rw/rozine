@@ -47,6 +47,39 @@ export function SealedStatus({
         { label: t('auditor.sealed.key_id'), value: stage.key_id },
     ];
     const { cosign } = stage;
+
+    /*
+     * Where the filing stands, from the server's publication and co-sign facts — never from the
+     * due date alone. An overdue co-signature is closed to signing and is never approved for the
+     * business; nothing publishes without it.
+     */
+    const intro = (): string => {
+        if (stage.published_at !== null) {
+            return t('auditor.sealed.body_published', {
+                date: formatDate(stage.published_at, locale),
+            });
+        }
+
+        switch (cosign.state) {
+            case 'signed':
+                return t('auditor.sealed.body_signed', { party: cosign.party });
+            case 'declined':
+                return t('auditor.sealed.body_declined', {
+                    party: cosign.party,
+                });
+            case 'overdue':
+                return t('auditor.sealed.body_overdue', {
+                    party: cosign.party,
+                });
+            case 'pending':
+                return cosign.due_on === null
+                    ? t('auditor.sealed.body_undated', { party: cosign.party })
+                    : t('auditor.sealed.body', {
+                          party: cosign.party,
+                          date: formatDate(cosign.due_on, locale),
+                      });
+        }
+    };
     const stages: Stage[] = [
         { key: 'sealed', done: true, when: stage.sealed_at },
         {
@@ -73,14 +106,7 @@ export function SealedStatus({
                     {t('auditor.sealed.title')}
                 </h3>
                 <p className="mt-2 text-[13.5px] leading-[1.55] text-rz-secondary">
-                    {cosign.due_on === null
-                        ? t('auditor.sealed.body_undated', {
-                              party: cosign.party,
-                          })
-                        : t('auditor.sealed.body', {
-                              party: cosign.party,
-                              date: formatDate(cosign.due_on, locale),
-                          })}
+                    {intro()}
                 </p>
             </div>
 

@@ -41,7 +41,9 @@ import photosStorageFull from '../../../resources/fixtures/ui/auditor-audit-phot
 import photosUploadFailed from '../../../resources/fixtures/ui/auditor-audit-photos-upload-failed.json';
 import photos from '../../../resources/fixtures/ui/auditor-audit-photos.json';
 import review from '../../../resources/fixtures/ui/auditor-audit-review.json';
+import sealedMonthlyOverdue from '../../../resources/fixtures/ui/auditor-audit-sealed-monthly-overdue.json';
 import sealedMonthly from '../../../resources/fixtures/ui/auditor-audit-sealed-monthly.json';
+import sealedPublished from '../../../resources/fixtures/ui/auditor-audit-sealed-published.json';
 import sealedUnavailable from '../../../resources/fixtures/ui/auditor-audit-sealed-seal-unavailable.json';
 import sealed from '../../../resources/fixtures/ui/auditor-audit-sealed.json';
 import statementsNetOutflow from '../../../resources/fixtures/ui/auditor-audit-statements-net-outflow.json';
@@ -1430,12 +1432,86 @@ describe('Audit procedure — after the seal', () => {
         expect(within(dialog).queryByRole('note')).not.toBeInTheDocument();
     });
 
-    it('keeps the co-sign date a monthly report is due by', () => {
-        render(<AuditorAudit {...props(sealedMonthly)} />);
+    /** The sealed report's sheet, whose introduction says where the filing stands. */
+    const intro = (business: string) => sheet(business);
 
-        expect(sheet('Kivu Coffee Roasters')).toHaveTextContent(
-            /Kivu Coffee Roasters co-signs by \d{1,2} \w{3} 2026; it publishes to holders after that\./u,
+    it('keeps the co-sign date a monthly report awaiting its co-signature is due by', () => {
+        render(
+            <AuditorAudit
+                {...withStage<SealedStage>(sealedMonthly, (stage) => ({
+                    ...stage,
+                    cosign: {
+                        ...stage.cosign,
+                        state: 'pending',
+                        signed_at: null,
+                    },
+                    published_at: null,
+                }))}
+            />,
         );
+
+        expect(
+            within(intro('Kivu Coffee Roasters')).getByText(
+                'The report is sealed and can no longer be edited. Kivu Coffee Roasters co-signs by 7 Oct 2026; it publishes to holders after that.',
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it.each([
+        [sealedPublished, 'Huye Motors', '4 Oct 2026'],
+        [sealedMonthly, 'Kivu Coffee Roasters', '3 Oct 2026'],
+    ])(
+        'says a published report was co-signed and published, never that it awaits either: %#',
+        (fixture, business, date) => {
+            render(<AuditorAudit {...props(fixture)} />);
+            const text = intro(business);
+
+            expect(text).toHaveTextContent(
+                `Sealed and co-signed; published to holders on ${date}.`,
+            );
+            expect(text).not.toHaveTextContent(
+                /needs to co-sign|co-signs by|publishes to holders after/u,
+            );
+        },
+    );
+
+    it('says an overdue co-signature closed without publishing or approving anything', () => {
+        render(<AuditorAudit {...props(sealedMonthlyOverdue)} />);
+        const text = intro('Kivu Coffee Roasters');
+
+        expect(text).toHaveTextContent(
+            "The report is sealed, but Kivu Coffee Roasters's co-signing window has passed. It can no longer be co-signed and is not published; nothing is approved automatically.",
+        );
+        expect(
+            within(
+                within(sheet('Kivu Coffee Roasters')).getByRole('list', {
+                    name: 'Filing progress',
+                }),
+            ).getByText('Overdue'),
+        ).toBeInTheDocument();
+    });
+
+    it.each([
+        [
+            'signed',
+            'The report is sealed and Kivu Coffee Roasters has co-signed it. It publishes to holders next.',
+        ],
+        [
+            'declined',
+            'The report is sealed. Kivu Coffee Roasters disputed it rather than co-signing, so it is not published.',
+        ],
+    ] as const)('says where a %s, unpublished report stands', (state, text) => {
+        render(
+            <AuditorAudit
+                {...withStage<SealedStage>(sealedMonthly, (stage) => ({
+                    ...stage,
+                    cosign: { ...stage.cosign, state },
+                    published_at: null,
+                }))}
+            />,
+        );
+
+        expect(intro('Kivu Coffee Roasters')).toHaveTextContent(text);
     });
 
     it('says a seal cannot be verified now while keeping the sealed record and its history', () => {
