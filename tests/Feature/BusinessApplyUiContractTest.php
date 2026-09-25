@@ -141,6 +141,7 @@ it('renders a just-created draft with the shape of the live-minimal fixture and 
         ->and($props['application'])->toBe(['id' => $application, 'revision' => 1, 'title' => '', 'target' => null,
             'term_months' => null, 'use_of_funds' => [], 'story' => ''])
         ->and($props['evidence']['business']['company_code'])->toBeNull()
+        ->and($props['evidence']['business']['industry'])->toBe('Retail')
         ->and($props['evidence']['verified'])->toBe(['registry' => false, 'statements' => false])
         ->and($props['evidence']['period'])->toBeNull()
         ->and($props['evidence']['years'])->toBe([])
@@ -244,6 +245,7 @@ it('answers the create, save and evaluate the pages send with the operation and 
     $save = actingAs($user)->postJson("{$path}/save", [...applyUiEnvelope($page['application']['revision']), ...applyUiDraft()])
         ->assertOk()->assertJsonPath('code', 'APPLICATION_SAVED')->json();
     expect(array_keys($save))->toContain(...APPLY_UI_OPERATION_KEYS)
+        ->and($save['field_errors'])->toBe([])
         ->and(array_keys($save['data']))->toEqualCanonicalizing(APPLY_UI_SNAPSHOT_KEYS)
         ->and($save['data']['next'])->toBe(['url' => $path, 'method' => 'get']);
     applyUiSameShape($save['data']['application'], $page['application'], 'save.data.application');
@@ -279,7 +281,8 @@ it('records one signature of two, replays a recorded refusal by lookup, then sub
     $refused = [...applyUiEnvelope($signed['revision']), ...$acceptance, 'terms' => false];
     $receipt = actingAs($second)->postJson("{$path}/submit", $refused)->assertUnprocessable()
         ->assertJsonPath('code', 'APPLICATION_ACCEPTANCE_REQUIRED')->json();
-    expect($receipt['errors'])->toHaveKey('terms')->and($receipt['field_errors'])->toBe($receipt['errors']);
+    expect($receipt['errors'])->toHaveKey('terms')->and($receipt['field_errors'])->toBe($receipt['errors'])
+        ->and($receipt['data'])->toBeNull();
     $this->getJson(applyUiLookup($refused['request_id'], 'submit'))->assertUnprocessable()
         ->assertJsonPath('operation_id', $receipt['operation_id'])->assertJsonPath('errors', $receipt['errors']);
 

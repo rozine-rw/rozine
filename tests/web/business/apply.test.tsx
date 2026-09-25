@@ -1356,7 +1356,11 @@ describe('Apply — step 3, review & sign', () => {
         freshRead({
             ...page,
             application: { ...page.application, revision: 9 },
-            quote: { ...quote, quote_id: 'QTE-2026-0412-09', quote_revision: 9 },
+            quote: {
+                ...quote,
+                quote_id: 'QTE-2026-0412-09',
+                quote_revision: 9,
+            },
         });
         render(<InertiaPage initial={page} />);
 
@@ -1371,9 +1375,11 @@ describe('Apply — step 3, review & sign', () => {
         await waitFor(() =>
             expect(screen.getByLabelText('Your full name')).toHaveValue(''),
         );
+
         for (const box of screen.getAllByRole('checkbox')) {
             expect(box).toHaveAttribute('aria-checked', 'false');
         }
+
         expect(inertia.calls).toHaveLength(2);
     });
 
