@@ -1067,19 +1067,19 @@ const en = {
     'admin.disbursements.command.retry': 'Retry payout',
     'admin.disbursements.stage.authorize.title': 'Authorize this release',
     'admin.disbursements.stage.authorize.body':
-        'You authorize paying {amount} to {business}. If the amount needs two people, it then waits for a different approver.',
+        'You authorize paying {amount} to {business}. This runs the precheck; a different staff member must then approve it.',
     'admin.disbursements.stage.authorize.cta': 'Authorize',
     'admin.disbursements.stage.authorize.placeholder':
         'e.g. Raise fully funded; destination verified against the RDB mandate.',
     'admin.disbursements.stage.approve.title': 'Approve this release',
     'admin.disbursements.stage.approve.body':
-        'As the second approver you release {amount} to {business}. The payment goes to the provider once you confirm.',
-    'admin.disbursements.stage.approve.cta': 'Approve & release',
+        "As the second staff member you approve paying {amount} to {business}. This records the payment intent; it isn't a payment. The worker sends it only after its own recheck.",
+    'admin.disbursements.stage.approve.cta': 'Approve and record intent',
     'admin.disbursements.stage.approve.placeholder':
         'e.g. Checked the funded total and the destination match the offer.',
     'admin.disbursements.stage.reject.title': 'Reject this release',
     'admin.disbursements.stage.reject.body':
-        'The release goes back to be authorized again. Say what must change first.',
+        "This voids the authorization only and records your reason. The raise isn't cancelled; the disbursement goes back to be authorized.",
     'admin.disbursements.stage.reject.cta': 'Reject release',
     'admin.disbursements.stage.reject.placeholder':
         'e.g. Destination account name does not match the business.',
@@ -3125,6 +3125,507 @@ const en = {
         'A source changed after your preview. Go back to review it, then preview again before sealing.',
     'auditor.sealed.body_amended':
         "You amended this report, so it won't be co-signed or published. The amendment replaces it.",
+    'settlement.notice.checking.title': 'Checking what happened',
+    'settlement.notice.checking.body':
+        "The answer didn't reach us, so we're looking up whether this was recorded. Nothing is sent again meanwhile.",
+    'settlement.notice.unconfirmed.title': 'Not yet confirmed',
+    'settlement.notice.unconfirmed.body':
+        "We couldn't reach the server to confirm this. Nothing has been sent again. Check again once you're connected.",
+    'settlement.notice.pending.title': 'Recorded, not yet confirmed',
+    'settlement.notice.pending.body':
+        "The server recorded this request and is still working on it. This page shows the result once it's confirmed.",
+    'settlement.notice.not_recorded.title': 'Nothing was recorded',
+    'settlement.notice.not_recorded.body':
+        'The server has no record of this request. We refreshed the details, and you can send the same request again.',
+    'settlement.notice.check_again': 'Check again',
+    'settlement.notice.try_again': 'Send the same request again',
+    'settlement.notice.no_longer_allowed':
+        'Nothing was recorded, and this action is no longer available with the current details.',
+    'settlement.poll.stopped':
+        "Not yet confirmed. We've stopped checking automatically — refresh to see the latest.",
+    'settlement.poll.refresh': 'Refresh',
+    'settlement.refusal.other':
+        'This request was refused. Refresh and try again.',
+    'settlement.refusal.VALIDATION_FAILED':
+        'Some details need correcting before this can go ahead.',
+    'settlement.refusal.EXPOSURE_LIMIT':
+        'This would take you over one of your investment limits.',
+    'settlement.refusal.INSUFFICIENT_AVAILABLE_FUNDS':
+        "Your available balance doesn't cover this amount.",
+    'settlement.refusal.VERSION_CONFLICT':
+        'Something changed since this page loaded. We refreshed the details — check them and try again.',
+    'settlement.refusal.IDEMPOTENCY_CONFLICT':
+        'This request was already used for something else. Start again from the current details.',
+    'settlement.refusal.RESERVATION_EXPIRED':
+        'Your 5-minute hold ended and its notes were released. Reserve again to continue.',
+    'settlement.refusal.CAMPAIGN_CLOSED': 'This raise is no longer open.',
+    'settlement.refusal.UNITS_UNAVAILABLE':
+        'Those notes are no longer available. Choose fewer notes or try again later.',
+    'settlement.refusal.COMMITMENT_LOCKED':
+        'The raise is fully funded, so this can no longer be cancelled.',
+    'settlement.refusal.NOTE_INELIGIBLE': "This note isn't eligible right now.",
+    'settlement.refusal.DISCLOSURE_STALE':
+        'The disclosure changed. Read the current version and acknowledge it again.',
+    'settlement.refusal.POLICY_INPUT_REQUIRED':
+        "This isn't available yet: a required policy hasn't been set.",
+    'settlement.refusal.DEPOSIT_METHOD_UNVERIFIED':
+        "That account isn't verified for deposits yet.",
+    'settlement.refusal.APPLICATION_NOT_RELEASED':
+        "This application hasn't been released for listing yet.",
+    'settlement.refusal.DISBURSEMENT_IN_FLIGHT':
+        'The payment intent is already recorded, so this can no longer change it.',
+    'settlement.refusal.PROVIDER_OUTCOME_UNRESOLVED':
+        "The provider's outcome isn't resolved yet, so this is blocked.",
+    'settlement.refusal.ACTION_FORBIDDEN':
+        "You can't do this with your current access.",
+    'settlement.refusal.IDENTITY_VERIFICATION_REQUIRED':
+        'Verify your identity to invest.',
+    'settlement.refusal.RESTRICTION_ACTIVE':
+        "A restriction is in place, so this isn't available right now.",
+    'settlement.refusal.CONNECTED_PARTY':
+        "You're connected to this business, so you can't take part.",
+    'settlement.refusal.SELF_APPROVAL_FORBIDDEN':
+        "A different staff member must do this: you can't check your own action.",
+    'settlement.refusal.STEP_UP_REQUIRED':
+        'A fresh step-up confirmation is required first.',
+    'settlement.refusal.MANDATE_REQUIRED':
+        "This needs someone authorised under the business's mandate.",
+    'settlement.refusal.STAFF_ACCESS_REQUIRED': 'Staff access is required.',
+    'settlement.refusal.STAFF_PERMISSION_REQUIRED':
+        "Your staff permissions don't include this action.",
+    'settlement.refusal.STAFF_VERIFIED_EMAIL_AND_MFA_REQUIRED':
+        'Verify your email and turn on two-factor authentication to continue.',
+    'settlement.refusal.MFA_REQUIRED': 'Two-factor authentication is required.',
+    'settlement.refusal.NOT_FOUND': 'You can no longer view this record.',
+    'investor.wallet.c3.total': 'Wallet total',
+    'investor.wallet.c3.bucket.available': 'Available',
+    'investor.wallet.c3.bucket.held': 'Held',
+    'investor.wallet.c3.bucket.committed': 'Committed',
+    'investor.wallet.c3.spendable':
+        'Only Available can be spent. Held is in a live checkout; Committed awaits issue.',
+    'investor.wallet.c3.restricted':
+        'A restriction has applied since {date}. Deposits still work.',
+    'investor.wallet.c3.no_pending': 'No deposits waiting',
+    'investor.wallet.c3.pending_deposits':
+        '{amount} not yet confirmed — not in the total',
+    'investor.wallet.c3.no_policy':
+        "Deposits aren't available yet: no deposit policy has been set.",
+    'investor.wallet.c3.credited_on_success': 'Credited once confirmed',
+    'investor.wallet.c3.policy_synthetic':
+        'Synthetic deposit policy {version} — preview figures, not live policy.',
+    'investor.wallet.c3.policy': 'Deposit policy {version}.',
+    'investor.wallet.c3.policy_minimum': 'Minimum {amount}.',
+    'investor.wallet.c3.policy_maximum': 'Maximum {amount}.',
+    'investor.wallet.c3.deposit_unavailable':
+        "Deposit isn't available to you right now.",
+    'investor.wallet.c3.intent_only':
+        'This records your deposit request. Nothing is credited until the payment is confirmed.',
+    'investor.wallet.c3.holds': 'Held for checkout',
+    'investor.wallet.c3.hold_line': {
+        one: '{name} · {count} note',
+        other: '{name} · {count} notes',
+    },
+    'investor.wallet.c3.hold_expires': 'Released in {time} unless you confirm',
+    'investor.wallet.c3.deposits': 'Deposits',
+    'investor.wallet.c3.deposit_from': 'Deposit from {method}',
+    'investor.wallet.c3.intent.pending': 'Not yet confirmed',
+    'investor.wallet.c3.intent.unknown':
+        "Not yet confirmed — we're checking with the provider",
+    'investor.wallet.c3.intent.succeeded': 'Credited',
+    'investor.wallet.c3.intent.failed': "Didn't go through — nothing credited",
+    'investor.wallet.c3.entry.deposit_in': 'Deposit from {counterparty}',
+    'investor.wallet.c3.entry.deposit_out': 'Transfer to {counterparty}',
+    'investor.wallet.c3.entry.hold': 'Held for {name}',
+    'investor.wallet.c3.entry.hold_release': 'Hold released · {name}',
+    'investor.wallet.c3.entry.commitment': 'Committed to {name}',
+    'investor.wallet.c3.entry.commitment_refund': 'Refund · {name}',
+    'investor.wallet.c3.movement': 'Movement type',
+    'investor.wallet.c3.filter.external': 'Cash in and out',
+    'investor.wallet.c3.filter.internal': 'Holds and commitments',
+    'investor.wallet.c3.transfer': '{from} → {to}',
+    'investor.wallet.c3.older': 'Show older',
+    'investor.wallet.c3.receipt_policy': 'Policy version',
+    'investor.wallet.c3.not_credited':
+        'Recorded, not yet confirmed. Nothing has been credited; it will be only once the payment is confirmed.',
+    'investor.wallet.c3.not_credited_failed':
+        'The payment was confirmed as not completed. Nothing was credited.',
+    'investor.wallet.c3.credit_receipt': 'Credit receipt',
+    'business.publish.intro':
+        "{title} goes live for investors once every step below is met. Publishing uses the signatures you gave at Review, so there's nothing more to sign here.",
+    'business.publish.release.awaiting':
+        'Awaiting Rozine staff review. Staff release an application only when the rating engine, the signing authority and the audit report all pass.',
+    'business.publish.release.released':
+        'Released for listing by Rozine staff.',
+    'business.publish.release.refused': 'Not released for listing',
+    'business.publish.cause.ENGINE_GATE_FAILED':
+        "The rating engine's credit gates don't pass.",
+    'business.publish.cause.AUTHORITY_CHANGED':
+        "The company's signing authority changed since you signed.",
+    'business.publish.cause.REPORT_NOT_CURRENT':
+        'The audit report is no longer current.',
+    'business.publish.cause.other': "A release check didn't pass.",
+    'business.publish.prerequisites': 'Before you publish',
+    'business.publish.prerequisite.staff_release':
+        'Released by Rozine staff after review',
+    'business.publish.prerequisite.signatures_retained':
+        'Your Review signatures are on record',
+    'business.publish.prerequisite.quote_current':
+        'Quote unchanged since you signed',
+    'business.publish.prerequisite.terms_current':
+        'Terms unchanged since you signed',
+    'business.publish.met': 'Done',
+    'business.publish.not_met': 'Not yet',
+    'business.publish.fee_label': 'Listing fee',
+    'business.publish.fee_waived': 'Waived for the MVP',
+    'business.publish.disclosure_title': 'Fee disclosure',
+    'business.publish.disclosure_version': 'Disclosure {version}',
+    'business.publish.changed':
+        'The quote or terms changed since you signed. Review them and sign again before publishing.',
+    'business.publish.review_again': 'Review and sign again',
+    'business.publish.blocked':
+        'Publishing opens once every step above is met.',
+    'business.publish.published.title': 'Listed for investors',
+    'business.publish.published.body':
+        '{title} is live on the Investor feed. Nothing was charged.',
+    'business.publish.published.receipt': 'Listing receipt',
+    'business.publish.published.reference': 'Reference',
+    'business.publish.published.recorded': 'Recorded',
+    'business.publish.published.disclosure': 'Fee disclosure',
+    'business.publish.published.campaign': 'View campaign',
+    'business.publish.published.home': 'Back to Home',
+    'business.campaign.lifecycle.live': 'Raising · live',
+    'business.campaign.lifecycle.fully_reserved': 'Raising · fully reserved',
+    'business.campaign.restriction.RESTRICTION_ACTIVE':
+        "Restricted since {date}. New commitments are paused while the restriction lasts; what's already committed stays.",
+    'business.campaign.restriction.NOTE_INELIGIBLE':
+        "Not eligible for new commitments since {date}; what's already committed stays.",
+    'business.campaign.tile.committed': 'Committed',
+    'business.campaign.tile.refunded': 'Refunded',
+    'business.campaign.closing_now': 'Closing',
+    'business.campaign.committed': 'Committed',
+    'business.campaign.reserved': 'Reserved',
+    'business.campaign.reserved_note':
+        "Reserved notes are held in investors' live checkouts and aren't committed yet; an unconfirmed hold is released after 5 minutes.",
+    'business.campaign.units':
+        '{committed} of {total} notes committed · {reserved} reserved · {available} available',
+    'business.campaign.closes': 'Closes {date}',
+    'business.campaign.fully_reserved':
+        "Every note is reserved in a live checkout. Holds that aren't confirmed within 5 minutes go back on sale.",
+    'business.campaign.funded':
+        'Fully funded on {date}. The raise can no longer be cancelled.',
+    'business.campaign.closing_title': 'Disbursement',
+    'business.campaign.closing.awaiting.title': 'Awaiting disbursement',
+    'business.campaign.closing.awaiting.body':
+        "Rozine is preparing the payment to your account. We'll show it here once it's sent and confirmed.",
+    'business.campaign.closing.in_flight.title': 'Not yet confirmed',
+    'business.campaign.closing.in_flight.pending':
+        "The payment to your account is in progress. We'll show the disbursement here once it's confirmed.",
+    'business.campaign.closing.in_flight.unknown':
+        "The payment's outcome hasn't been confirmed yet. Nothing is final until it is; we'll show it here once it's confirmed.",
+    'business.campaign.disbursed': '{amount} was disbursed to {destination}.',
+    'business.campaign.disbursed_amount': 'Disbursed',
+    'business.campaign.destination': 'To',
+    'business.campaign.effective_at': 'Effective',
+    'business.campaign.effective_date': 'Schedule date (Kigali)',
+    'business.campaign.receipt.title': 'Disbursement receipt',
+    'business.campaign.receipt.amount': 'Amount',
+    'business.campaign.receipt.reference': 'Reference',
+    'business.campaign.receipt.recorded': 'Recorded',
+    'business.campaign.receipt.view': 'View receipt',
+    'business.campaign.closed.expired':
+        'This raise closed on {date} before it was fully funded. {amount} went back to investors in full, without fee.',
+    'business.campaign.closed.cancelled':
+        'This raise was cancelled on {date}. {amount} went back to investors in full, without fee.',
+    'business.campaign.closed.failed_closing':
+        "This raise couldn't close: a check before disbursement failed on {date}. {amount} went back to investors in full, without fee.",
+    'business.campaign.cancel.open': 'Cancel this raise',
+    'business.campaign.cancel.cancelling': 'Cancelling…',
+    'business.campaign.cancel.title': 'Cancel this raise?',
+    'business.campaign.cancel.body':
+        "Every investor's commitment goes back to them in full, without fee, and the raise closes for good. This can't be undone.",
+    'business.campaign.cancel.reason': 'Reason (optional)',
+    'business.campaign.cancel.confirm': 'Cancel raise',
+    'business.campaign.cancel.keep': 'Keep raising',
+    'admin.disbursements.col.provider': 'Provider',
+    'admin.disbursements.state.queued': 'Intent recorded · queued',
+    'admin.disbursements.state.succeeded': 'Paid · reconciled',
+    'admin.disbursements.state.failed_closing': 'Failed closing · refunded',
+    'admin.disbursements.provider.none': 'Not sent',
+    'admin.disbursements.provider.pending': 'Pending · not yet confirmed',
+    'admin.disbursements.provider.unknown': 'Unknown · not yet confirmed',
+    'admin.disbursements.provider.succeeded': 'Succeeded · verified',
+    'admin.disbursements.provider.failed': 'Failed · verified',
+    'admin.disbursements.action.authorize': 'Authorize',
+    'admin.disbursements.older': 'Older disbursements',
+    'admin.disbursements.deadline': 'Deadline',
+    'admin.disbursements.deadline_unavailable': 'No deadline sourced',
+    'admin.disbursements.rule_two_staff':
+        "Two different staff members are needed: one authorizes, another approves. There's no amount threshold and no override. Roles are labels only: what you can do comes from your permissions.",
+    'admin.disbursements.causes': 'Causes',
+    'admin.disbursements.receipt.code': 'Receipt',
+    'admin.disbursements.receipt.reference': 'Reference',
+    'admin.disbursements.receipt.amount': 'Amount',
+    'admin.disbursements.receipt.recorded_at': 'Recorded at',
+    'admin.disbursements.receipt.revision': 'Revision',
+    'admin.disbursements.check.not_run': 'Not run yet',
+    'admin.disbursements.check.passed': 'Passed',
+    'admin.disbursements.check.failed': 'Failed',
+    'admin.disbursements.precheck.title': 'Precheck',
+    'admin.disbursements.checked_at': 'Checked at',
+    'admin.disbursements.policy_version': 'Policy version',
+    'admin.disbursements.binding.title': 'What approval binds',
+    'admin.disbursements.binding.none': 'Set when the release is authorized.',
+    'admin.disbursements.binding.revision': 'Revision',
+    'admin.disbursements.binding.amount': 'Exact amount',
+    'admin.disbursements.binding.digest': 'Intent digest',
+    'admin.disbursements.step_up.unavailable':
+        "Approval needs a fresh step-up confirmation bound to these details. That confirmation isn't available yet, so approval can't be given here.",
+    'admin.disbursements.step_up.required':
+        'Approval asks for a fresh step-up confirmation bound to these details.',
+    'admin.disbursements.intent.title': 'Payment intent',
+    'admin.disbursements.intent.not_payment':
+        'Intent recorded — not a payment. The payment worker sends it only after its own recheck.',
+    'admin.disbursements.intent.not_sent':
+        "Not sent yet: the worker hasn't sent this payment.",
+    'admin.disbursements.operation': 'Operation',
+    'admin.disbursements.dispatch.title': 'Dispatch',
+    'admin.disbursements.dispatch.sent_at': 'Sent at',
+    'admin.disbursements.dispatch.recheck': 'Worker recheck',
+    'admin.disbursements.outcome.title': 'Provider outcome',
+    'admin.disbursements.outcome.pending':
+        "Pending: the provider hasn't confirmed an outcome. This is not paid and not failed.",
+    'admin.disbursements.outcome.unknown':
+        "Unknown: the provider's outcome isn't confirmed. This is not paid and not failed.",
+    'admin.disbursements.outcome.succeeded':
+        'Succeeded: the provider verified the payment.',
+    'admin.disbursements.outcome.failed':
+        'Failed: the provider verified a final failure.',
+    'admin.disbursements.outcome.failed_unreconciled':
+        'Not reconciled yet: nothing is closed or refunded until the failure is reconciled.',
+    'admin.disbursements.outcome.exception':
+        "Reconciliation exception: the provider's answer conflicts or can't be resolved. This disbursement stays blocked and is not reconciled.",
+    'admin.disbursements.outcome.reference': 'Provider reference',
+    'admin.disbursements.outcome.error_code': 'Error code',
+    'admin.disbursements.outcome.observed_at': 'Observed at',
+    'admin.disbursements.outcome.effective_at': 'Effective at',
+    'admin.disbursements.outcome.reconciliation': 'Reconciliation',
+    'admin.disbursements.outcome.reconciled_at': 'Reconciled at',
+    'admin.disbursements.outcome.requery_note':
+        'Asking the provider again queries this same operation. It never sends the payment again. A scheduled reconciler asks too.',
+    'admin.disbursements.reconciliation.unreconciled': 'Not reconciled yet',
+    'admin.disbursements.reconciliation.matched': 'Reconciled',
+    'admin.disbursements.reconciliation.exception':
+        'Exception · blocked, not reconciled',
+    'admin.disbursements.hold.title': 'Hold',
+    'admin.disbursements.hold.release_note':
+        "Releasing the hold doesn't approve this disbursement or send any payment. It needs a staff member other than the one who placed it.",
+    'admin.disbursements.hold.self':
+        'You placed this hold, so a different staff member must release it.',
+    'admin.disbursements.issue.title': 'Issue',
+    'admin.disbursements.issue.holdings': 'Holdings issued',
+    'admin.disbursements.issue.issued_at': 'Issued at',
+    'admin.disbursements.issue.effective_date': 'Effective date (Kigali)',
+    'admin.disbursements.refund.title': 'Refunds',
+    'admin.disbursements.refund.commitments': 'Commitments refunded',
+    'admin.disbursements.refund.total': 'Total refunded',
+    'admin.disbursements.ledger': 'Open in the ledger',
+    'admin.disbursements.command.release_hold': 'Release hold',
+    'admin.disbursements.command.requery': 'Ask the provider again',
+    'admin.disbursements.stage.release_hold.title': 'Release this hold',
+    'admin.disbursements.stage.release_hold.body':
+        "Releasing the hold doesn't approve this disbursement or send any payment. It goes back to where it was before the hold.",
+    'admin.disbursements.stage.release_hold.cta': 'Release hold',
+    'admin.disbursements.stage.release_hold.placeholder':
+        'e.g. The business confirmed its new MoMo number.',
+    'admin.disbursements.stage.requery.title': 'Ask the provider again',
+    'admin.disbursements.stage.requery.body':
+        'This asks the provider about the same operation. It never sends the payment again.',
+    'admin.disbursements.stage.requery.cta': 'Ask the provider',
+    'admin.disbursements.stage.requery.placeholder':
+        "e.g. The provider's status page shows the outage is over.",
+    'admin.applications.release.title': 'Release for listing',
+    'admin.applications.release.state.awaiting_staff_review':
+        'Awaiting staff review',
+    'admin.applications.release.state.released': 'Released',
+    'admin.applications.release.state.refused': 'Refused',
+    'admin.applications.release.explain':
+        "Releasing lets the business publish this raise. It needs the engine, authority and report checks to pass, and it can't override a failed check.",
+    'admin.applications.release.gates': 'Release checks',
+    'admin.applications.release.gate.engine': 'Underwriting engine',
+    'admin.applications.release.gate.authority': 'Business authority',
+    'admin.applications.release.gate.report': 'Listing audit report',
+    'admin.applications.release.gate_state.passed': 'Passed',
+    'admin.applications.release.gate_state.failed': 'Blocked',
+    'admin.applications.release.blocked':
+        "A check failed, so this application can't be released. Release never overrides a failed check.",
+    'admin.applications.release.receipt': 'Release receipt',
+    'admin.applications.release.command': 'Release for listing',
+    'admin.applications.release.stage.title': 'Release this application',
+    'admin.applications.release.stage.body':
+        'The business can then publish its raise. Nothing is listed or funded until it does.',
+    'admin.applications.release.stage.cta': 'Release',
+    'admin.applications.release.stage.placeholder':
+        'e.g. Engine, authority and sealed report all confirmed.',
+    'investor.audit.tolerance': 'Governed tolerance',
+    'investor.audit.reconciliation': 'RECONCILIATION STATEMENT',
+    'investor.deal.ebitda_unavailable': 'Unavailable',
+    'investor.deal.ebitda_not_sourced': 'Not sourced as EBITDA',
+    'investor.deal.photos_none': "The business hasn't published any photos.",
+    'investor.deal.photo_unavailable': 'Image unavailable',
+    'investor.deal.restriction.NOTE_INELIGIBLE':
+        "Investing is paused: this note isn't eligible right now",
+    'investor.deal.restriction.RESTRICTION_ACTIVE':
+        'Investing is paused: a restriction applies',
+    'investor.deal.restriction.body':
+        'Since {date}. The raise itself carries on as it stands; new reservations wait until the restriction lifts.',
+    'investor.deal.lifecycle.live': 'Live',
+    'investor.deal.lifecycle.fully_reserved': 'Fully reserved',
+    'investor.deal.lifecycle.funded': 'Fully funded',
+    'investor.deal.lifecycle.disbursing': 'Paying out',
+    'investor.deal.lifecycle.issued': 'Notes issued',
+    'investor.deal.lifecycle.expired': "Didn't fill",
+    'investor.deal.lifecycle.cancelled': 'Cancelled',
+    'investor.deal.lifecycle.failed_closing': 'Closed and refunded',
+    'investor.deal.notice.fully_reserved.title':
+        'Every note is reserved right now',
+    'investor.deal.notice.fully_reserved.body':
+        'Checkouts hold notes for up to 5 minutes. Any that lapse come back to this raise.',
+    'investor.deal.notice.funded.title': 'Fully funded',
+    'investor.deal.notice.funded.body':
+        'Commitments are locked while the funds are paid to the business. Notes are issued once that payment is confirmed.',
+    'investor.deal.notice.disbursing.title': 'Paying out to the business',
+    'investor.deal.notice.disbursing.body':
+        "The payment to the business isn't confirmed yet. Notes are issued only once it is.",
+    'investor.deal.notice.issued.title': 'This raise has closed',
+    'investor.deal.notice.issued.body':
+        'The business was paid and notes were issued to its investors.',
+    'investor.deal.notice.expired.title': "This raise didn't fill in time",
+    'investor.deal.notice.expired.body':
+        'Every commitment was refunded in full, with no fee.',
+    'investor.deal.notice.cancelled.title': 'The business cancelled this raise',
+    'investor.deal.notice.cancelled.body':
+        'Every commitment was refunded in full, with no fee.',
+    'investor.deal.notice.failed_closing.title':
+        'This raise closed without paying out',
+    'investor.deal.notice.failed_closing.body':
+        "A final check before payment didn't pass, so every commitment was refunded in full.",
+    'investor.deals.gated_title': 'Verify to see open deals',
+    'investor.deals.gated_body':
+        'Deals and their businesses are shown to verified investors only.',
+    'investor.deals.paused': 'Paused',
+    'investor.deal.cap.max': {
+        one: 'Up to {count} note: {reason}.',
+        other: 'Up to {count} notes: {reason}.',
+    },
+    'investor.deal.cap.none': "You can't take any more notes here: {reason}.",
+    'investor.deal.cap.reason.transaction': 'your per-transaction limit',
+    'investor.deal.cap.reason.note': 'your limit for this note',
+    'investor.deal.cap.reason.business': 'your limit for this business',
+    'investor.deal.cap.reason.aggregate': 'your overall investment limit',
+    'investor.deal.cap.reason.availability':
+        "that's every note still available",
+    'investor.deal.cap.reason.restriction': 'a restriction applies',
+    'investor.deal.cap.reason.connected_party':
+        "you're connected to this business",
+    'investor.updates.published_photos': 'PUBLISHED PHOTOS',
+    'investor.checkout.c3.processing': 'Sending…',
+    'investor.checkout.c3.hold_ended':
+        'Your hold has ended — these notes may have been released',
+    'investor.checkout.c3.hold_left': 'Held for you · {time} left to confirm',
+    'investor.checkout.c3.committed': 'Committed',
+    'investor.checkout.c3.committed_body':
+        'Committed — your notes are issued after the business is paid. Until then this is a commitment, not a holding.',
+    'investor.checkout.c3.view_awaiting': 'See it in Awaiting issue',
+    'investor.checkout.c3.reserved_title': 'Confirm your notes',
+    'investor.checkout.c3.held_amount': 'Held from Available',
+    'investor.checkout.c3.release': 'Release these notes',
+    'investor.checkout.c3.confirm_fine_print':
+        'Confirming commits your held amount. You can cancel, fee-free, until the raise is fully funded.',
+    'investor.checkout.c3.at_maturity': {
+        one: 'Back over {count} month',
+        other: 'Back over {count} months',
+    },
+    'investor.checkout.c3.indicative':
+        'Indicative until you reserve: the exact rights of your notes are fixed when they are reserved.',
+    'investor.checkout.c3.reserve': 'Reserve · {amount}',
+    'investor.checkout.c3.reserve_unavailable':
+        "Reserving isn't available right now.",
+    'investor.checkout.c3.reserve_fine_print':
+        'Reserving holds the notes and the amount for 5 minutes while you confirm.',
+    'investor.primary.status.confirmed':
+        'Committed — issued after disbursement',
+    'investor.primary.status.awaiting_disbursement':
+        'Fully funded — awaiting payout',
+    'investor.primary.status.in_flight_pending': 'Payout not yet confirmed',
+    'investor.primary.status.in_flight_unknown':
+        'Payout not yet confirmed — checking',
+    'investor.primary.status.issued': 'Issued',
+    'investor.primary.status.cancelled': 'Cancelled — refunded',
+    'investor.primary.status.expired': "Didn't fill — refunded",
+    'investor.primary.status.failed_closing': 'Closed — refunded',
+    'investor.primary.status_body.confirmed':
+        "The raise is still open. You can cancel, fee-free, until it's fully funded.",
+    'investor.primary.status_body.awaiting_disbursement':
+        'The raise is fully funded, so cancelling is locked. Notes are issued once the payout to the business is confirmed.',
+    'investor.primary.status_body.in_flight_pending':
+        "The payout to the business has been sent and isn't confirmed yet. Nothing is issued until it is.",
+    'investor.primary.status_body.in_flight_unknown':
+        "We don't yet know whether the payout to the business went through, and we're checking. It isn't paid, failed or refunded; nothing is issued until it's confirmed.",
+    'investor.primary.status_body.issued':
+        'The business was paid and your notes were issued.',
+    'investor.primary.status_body.cancelled':
+        'Cancelled by {by}. Your principal was refunded in full, with no fee.',
+    'investor.primary.status_body.expired':
+        "The raise didn't fill in time. Your principal was refunded in full, with no fee.",
+    'investor.primary.status_body.failed_closing':
+        "A final check before payout didn't pass. Your principal was refunded in full, with no fee.",
+    'investor.primary.cancelled_by.investor': 'you',
+    'investor.primary.cancelled_by.business': 'the business',
+    'investor.primary.cancelled_by.none': 'Rozine',
+    'investor.primary.receipt.amount': 'Amount',
+    'investor.primary.receipt.recorded': 'Recorded',
+    'investor.primary.receipt.reference': 'Reference',
+    'investor.primary.receipt.confirmation': 'CONFIRMATION RECEIPT',
+    'investor.primary.receipt.refund': 'REFUND RECEIPT',
+    'investor.primary.units': 'Units',
+    'investor.primary.units_value': {
+        one: '{count} note · {ordinals}',
+        other: '{count} notes · {ordinals}',
+    },
+    'investor.primary.units_short': {
+        one: '{count} note',
+        other: '{count} notes',
+    },
+    'investor.primary.principal': 'Principal',
+    'investor.primary.terms': 'Terms',
+    'investor.primary.maturity': 'Maturity date',
+    'investor.primary.maturity_at_issue': 'Set when notes are issued',
+    'investor.primary.versions': 'Policy · disclosure',
+    'investor.primary.view_holding': 'View holding',
+    'investor.primary.awaiting_issue': 'Awaiting issue',
+    'investor.primary.awaiting_issue_note': 'Commitments, not yet holdings',
+    'investor.primary.rights.title': "Your notes' rights",
+    'investor.primary.rights.instalment': 'Instalment',
+    'investor.primary.rights.principal': 'Principal',
+    'investor.primary.rights.return': 'Return',
+    'investor.primary.rights.nth': 'No. {n}',
+    'investor.primary.rights.total_return': 'Total return',
+    'investor.primary.rights.undated':
+        "Due dates are set when the notes are issued: the first falls one month after the payout's effective date.",
+    'investor.primary.commitment_title': 'Commitment',
+    'investor.primary.back_to_portfolio': 'Back to portfolio',
+    'investor.primary.cancel': 'Cancel commitment',
+    'investor.primary.cancel_title': 'Cancel this commitment?',
+    'investor.primary.cancel_body':
+        'Your principal goes back to Available in full, with no fee, and these notes are released.',
+    'investor.primary.cancel_confirm': 'Yes, cancel and refund',
+    'investor.primary.cancel_keep': 'Keep it',
+    'investor.holding.issue.title': 'Issue record',
+    'investor.holding.issue.issued_at': 'Issued',
+    'investor.holding.issue.effective_at': 'Payout effective',
+    'investor.holding.issue.effective_date': 'Effective date (Kigali)',
+    'investor.holding.issue.schedule': 'Schedule',
+    'investor.holding.issue.due': 'Due',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

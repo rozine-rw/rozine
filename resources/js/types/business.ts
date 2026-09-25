@@ -4,6 +4,14 @@ import type {
     OperationResource as SharedOperationResource,
 } from './operation';
 import type { RouteAction, RouteLink } from './routing';
+import type {
+    C3PreviewOutcome,
+    CampaignRestriction,
+    Clock,
+    CoarseInFlight,
+    Receipt,
+    Units,
+} from './settlement';
 
 /**
  * Business app page contracts (Phase 1B). Every figure is a server fact; the client only formats
@@ -1112,4 +1120,138 @@ export type BusinessAuditPrepProps = {
         reassigned: { from: string; to: string } | null;
     };
     links: { close: RouteLink };
+};
+
+/* ------------------------------------------------------------------------------------------ */
+/* Checkpoint 3: business-campaign-v1 (C3 contract proposal v2 §2f)                            */
+/* ------------------------------------------------------------------------------------------ */
+
+/*
+ * Additive and non-activatable. The Phase 1B listing and note shapes above stay untouched; the
+ * Publish and campaign pages read these, reviewed only through synthetic fixtures. The Business
+ * sees aggregate funding progress only: no Investor names, identity kinds or per-Investor amounts
+ * (H16).
+ */
+
+export type BusinessCampaignAllowedAction =
+    | 'application.publish'
+    | 'campaign.cancel';
+
+/**
+ * What Publish needs, stated explicitly. Publish reuses the retained Review signatures rather than
+ * asking for a second acceptance; if the quote or terms changed since signing it routes back to
+ * Review to sign again. Every prerequisite is a server fact.
+ */
+export type PublishPrerequisite = {
+    key:
+        | 'staff_release'
+        | 'signatures_retained'
+        | 'quote_current'
+        | 'terms_current';
+    met: boolean;
+};
+
+export type C3BusinessPublishProps = {
+    contract_version: 'business-campaign-v1';
+    identity_context_revision: number;
+    server_time: string;
+    application: {
+        id: string;
+        title: string;
+        target: Money;
+        revision: number;
+    };
+    /** Gates stay server facts; causes are stable codes. */
+    release: {
+        state: 'awaiting_staff_review' | 'released' | 'refused';
+        causes: string[];
+    };
+    prerequisites: PublishPrerequisite[];
+    /** "0": an explicit MVP waiver, with a zero-fee receipt (§11.1). */
+    listing_fee: Money;
+    fee_disclosure: { version: string; text: string };
+    /** The published listing: its zero-fee receipt and the campaign it opened. */
+    listing: { receipt: Receipt; campaign: RouteLink } | null;
+    allowed_actions: 'application.publish'[];
+    actions: { publish: RouteAction };
+    links: {
+        close: RouteLink;
+        operation: RouteLink;
+        /** Back to Review to sign again, when the quote or terms changed since signing. */
+        review: RouteLink | null;
+    };
+    /**
+     * Home, drawn beneath the sheet on a wide screen; null when the server sends no Home, in
+     * which case the sheet opens over an empty backdrop with no stand-in balances.
+     */
+    home: BusinessHomeProps | null;
+    /** The shell's navigation for this page, read instead of `home.links`. */
+    shell_links: BusinessShellLinks;
+    preview_outcome?: C3PreviewOutcome<'application.publish'>;
+};
+
+/** The coarse closing view (H15): no provider or evidence reference. */
+export type BusinessClosing =
+    | { stage: 'awaiting_disbursement' }
+    | { stage: 'in_flight'; provider: CoarseInFlight };
+
+/** A campaign's aggregate funding progress. Every figure is the server's; the client never subtracts. */
+export type CampaignProgress =
+    | {
+          phase: 'raising';
+          lifecycle: 'live' | 'fully_reserved';
+          restriction: CampaignRestriction;
+          committed: Money;
+          reserved: Money;
+          remaining: Money;
+          units: {
+              total: Units;
+              available: Units;
+              reserved: Units;
+              committed: Units;
+          };
+          investors: number;
+          /** One decimal: "78.1". */
+          funded_pct: string;
+          clock: Clock;
+      }
+    | {
+          phase: 'funded';
+          restriction: CampaignRestriction;
+          committed: Money;
+          investors: number;
+          funded_at: string;
+          closing: BusinessClosing;
+      }
+    | {
+          phase: 'disbursed';
+          amount: Money;
+          receipt: Receipt;
+          disbursement_effective_at: string;
+          effective_date: string;
+          /** Masked. */
+          destination: string;
+      }
+    | {
+          phase: 'expired' | 'cancelled' | 'failed_closing';
+          committed_refunded: Money;
+          investors: number;
+          closed_at: string;
+      };
+
+export type BusinessCampaignProps = Omit<
+    BusinessNoteProps,
+    'note' | 'links'
+> & {
+    contract_version: 'business-campaign-v1';
+    identity_context_revision: number;
+    server_time: string;
+    allowed_actions: 'campaign.cancel'[];
+    campaign: { id: string; revision: number };
+    note: Omit<BusinessNoteProps['note'], 'recent_investors' | 'progress'> & {
+        progress: CampaignProgress;
+    };
+    links: { close: RouteLink; operation: RouteLink };
+    actions: { cancel: RouteAction | null };
+    preview_outcome?: C3PreviewOutcome<'campaign.cancel'>;
 };

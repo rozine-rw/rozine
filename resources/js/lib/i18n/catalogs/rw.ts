@@ -1097,19 +1097,19 @@ const rw: Catalog = {
     'admin.disbursements.command.retry': 'Ongera ugerageze kwishyura',
     'admin.disbursements.stage.authorize.title': 'Emerera uku kwishyura',
     'admin.disbursements.stage.authorize.body':
-        'Uremera kwishyura {amount} kuri {business}. Niba amafaranga akenera abantu babiri, bitegereza undi wemeza.',
+        'Uremerera kwishyura {amount} kuri {business}. Ibi bikora igenzura ribanza; undi mukozi agomba kubyemeza nyuma.',
     'admin.disbursements.stage.authorize.cta': 'Emerera',
     'admin.disbursements.stage.authorize.placeholder':
         'urugero: Amafaranga yose yakusanyijwe; aho yoherezwa hemejwe hakurikijwe manda ya RDB.',
     'admin.disbursements.stage.approve.title': 'Emeza uku kwishyura',
     'admin.disbursements.stage.approve.body':
-        "Nk'uwemeza wa kabiri, urishyura {amount} kuri {business}. Kwishyura bijya ku utanga serivisi umaze kwemeza.",
-    'admin.disbursements.stage.approve.cta': 'Emeza wishyure',
+        "Nk'umukozi wa kabiri, wemeje kwishyura {amount} kuri {business}. Ibi byandika icyifuzo cyo kwishyura; si ukwishyura. Serivisi iracyohereza gusa nyuma yo kongera kugenzura.",
+    'admin.disbursements.stage.approve.cta': 'Emeza wandike icyifuzo',
     'admin.disbursements.stage.approve.placeholder':
         "urugero: Nagenzuye ko amafaranga yakusanyijwe n'aho yoherezwa bihuye n'itangwa.",
     'admin.disbursements.stage.reject.title': 'Anga uku kwishyura',
     'admin.disbursements.stage.reject.body':
-        'Kwishyura gusubira kwemererwa. Vuga icyo kigomba guhinduka mbere.',
+        'Ibi bikuraho kwemerera gusa kandi byandika impamvu yawe. Ubukusanye ntibuhagarikwa; kwishyura gusubira gutegereza kwemererwa.',
     'admin.disbursements.stage.reject.cta': 'Anga kwishyura',
     'admin.disbursements.stage.reject.placeholder':
         "urugero: Izina rya konti ntirihura n'ikigo.",
@@ -3251,6 +3251,514 @@ const rw: Catalog = {
     'auditor.sealed.body_amended':
         'Wavuguruye iyi raporo, bityo ntizasinywa kandi ntizagezwa ku bashoramari. Ivugurura ni ryo riyisimbura.',
 
+    'settlement.notice.checking.title': 'Turagenzura ibyabaye',
+    'settlement.notice.checking.body':
+        'Igisubizo nticyatugezeho, turareba niba byanditswe. Nta kintu cyongera koherezwa muri icyo gihe.',
+    'settlement.notice.unconfirmed.title': 'Ntibiremezwa',
+    'settlement.notice.unconfirmed.body':
+        'Ntitwabashije kugera kuri seriveri ngo tubyemeze. Nta kintu cyongeye koherezwa. Ongera urebe umaze kubona interineti.',
+    'settlement.notice.pending.title': 'Byanditswe, ntibiremezwa',
+    'settlement.notice.pending.body':
+        'Seriveri yanditse iki cyifuzo kandi iracyagikoraho. Uru rupapuro ruzerekana igisubizo nikimara kwemezwa.',
+    'settlement.notice.not_recorded.title': 'Nta cyanditswe',
+    'settlement.notice.not_recorded.body':
+        "Seriveri nta nyandiko ifite y'iki cyifuzo. Twavuguruye amakuru, ushobora kongera kohereza icyo cyifuzo nyine.",
+    'settlement.notice.check_again': 'Ongera urebe',
+    'settlement.notice.try_again': 'Ongera wohereze icyo cyifuzo',
+    'settlement.notice.no_longer_allowed':
+        'Nta cyanditswe, kandi iki gikorwa ntikigishobotse hakurikijwe amakuru ariho ubu.',
+    'settlement.poll.stopped':
+        'Ntibiremezwa. Twahagaritse kugenzura twikoresheje — vugurura urebe amakuru mashya.',
+    'settlement.poll.refresh': 'Vugurura',
+    'settlement.refusal.other':
+        'Iki cyifuzo cyanzwe. Vugurura wongere ugerageze.',
+    'settlement.refusal.VALIDATION_FAILED':
+        'Hari amakuru agomba gukosorwa mbere yo gukomeza.',
+    'settlement.refusal.EXPOSURE_LIMIT':
+        "Ibi byarenza kimwe mu mipaka yawe y'ishoramari.",
+    'settlement.refusal.INSUFFICIENT_AVAILABLE_FUNDS':
+        'Amafaranga ufite aboneka ntahagije kuri aya mafaranga.',
+    'settlement.refusal.VERSION_CONFLICT':
+        'Hari ibyahindutse kuva uru rupapuro rufunguka. Twavuguruye amakuru — yasuzume wongere ugerageze.',
+    'settlement.refusal.IDEMPOTENCY_CONFLICT':
+        'Iki cyifuzo cyakoreshejwe ku kindi kintu. Ongera utangire uhereye ku makuru ariho ubu.',
+    'settlement.refusal.RESERVATION_EXPIRED':
+        "Igihe cy'iminota 5 wari wafatiwe cyarangiye, impapuro zirarekurwa. Ongera ufate kugira ngo ukomeze.",
+    'settlement.refusal.CAMPAIGN_CLOSED':
+        'Iki gikorwa cyo gushaka imari ntikigifunguye.',
+    'settlement.refusal.UNITS_UNAVAILABLE':
+        'Izo mpapuro ntizikiboneka. Hitamo nke cyangwa wongere ugerageze nyuma.',
+    'settlement.refusal.COMMITMENT_LOCKED':
+        'Imari yose yabonetse, ibi ntibigishobora guhagarikwa.',
+    'settlement.refusal.NOTE_INELIGIBLE': 'Uru rupapuro ntirwemerewe ubu.',
+    'settlement.refusal.DISCLOSURE_STALE':
+        'Amakuru yo kumenyesha yahindutse. Soma ayariho ubu wongere uyemeze.',
+    'settlement.refusal.POLICY_INPUT_REQUIRED':
+        'Ibi ntibiraboneka: hari amabwiriza akenewe atarashyirwaho.',
+    'settlement.refusal.DEPOSIT_METHOD_UNVERIFIED':
+        'Iyo konti ntiragenzurwa ngo ikoreshwe mu kubitsa.',
+    'settlement.refusal.APPLICATION_NOT_RELEASED':
+        'Iyi dosiye ntiremererwa gushyirwa ku rutonde.',
+    'settlement.refusal.DISBURSEMENT_IN_FLIGHT':
+        'Icyemezo cyo kwishyura cyamaze kwandikwa, ntigishobora guhindurwa gutya.',
+    'settlement.refusal.PROVIDER_OUTCOME_UNRESOLVED':
+        "Igisubizo cy'utanga serivisi ntikirasobanuka, iki gikorwa kirahagaritswe.",
+    'settlement.refusal.ACTION_FORBIDDEN':
+        'Ntushobora gukora ibi ukurikije uburenganzira ufite ubu.',
+    'settlement.refusal.IDENTITY_VERIFICATION_REQUIRED':
+        'Genzura umwirondoro wawe kugira ngo ushore imari.',
+    'settlement.refusal.RESTRICTION_ACTIVE':
+        'Hari ikumira riri gukurikizwa, ibi ntibiboneka ubu.',
+    'settlement.refusal.CONNECTED_PARTY':
+        "Ufitanye isano n'iki kigo, ntushobora kubigiramo uruhare.",
+    'settlement.refusal.SELF_APPROVAL_FORBIDDEN':
+        'Undi mukozi agomba kubikora: ntushobora kwemeza igikorwa cyawe bwite.',
+    'settlement.refusal.STEP_UP_REQUIRED':
+        'Hakenewe kubanza kwemeza bundi bushya mu buryo bukomeye.',
+    'settlement.refusal.MANDATE_REQUIRED':
+        "Ibi bikeneye umuntu wemerewe n'ububasha bw'ikigo.",
+    'settlement.refusal.STAFF_ACCESS_REQUIRED':
+        "Hakenewe uburenganzira bw'abakozi.",
+    'settlement.refusal.STAFF_PERMISSION_REQUIRED':
+        "Uburenganzira bwawe nk'umukozi ntibukubiyemo iki gikorwa.",
+    'settlement.refusal.STAFF_VERIFIED_EMAIL_AND_MFA_REQUIRED':
+        'Emeza imeyili yawe kandi ukoreshe kwemeza mu ntambwe ebyiri kugira ngo ukomeze.',
+    'settlement.refusal.MFA_REQUIRED': 'Kwemeza mu ntambwe ebyiri birakenewe.',
+    'settlement.refusal.NOT_FOUND': 'Ntushobora kongera kureba iyi nyandiko.',
+    'investor.wallet.c3.total': "Igiteranyo cy'ikofi",
+    'investor.wallet.c3.bucket.available': 'Aboneka',
+    'investor.wallet.c3.bucket.held': 'Afashwe',
+    'investor.wallet.c3.bucket.committed': 'Yiyemejwe',
+    'investor.wallet.c3.spendable':
+        'Aboneka ni yo yonyine ishobora gukoreshwa. Afashwe ari mu kwishyura gukomeje; ayiyemejwe ategereje gutangwa.',
+    'investor.wallet.c3.restricted':
+        'Hari ikumira rikurikizwa kuva ku wa {date}. Kubitsa biracyashoboka.',
+    'investor.wallet.c3.no_pending': 'Nta kubitsa gutegereje',
+    'investor.wallet.c3.pending_deposits':
+        '{amount} ntibiremezwa — ntibiri mu giteranyo',
+    'investor.wallet.c3.no_policy':
+        'Kubitsa ntibiraboneka: nta mabwiriza yo kubitsa arashyirwaho.',
+    'investor.wallet.c3.credited_on_success':
+        'Azashyirwa kuri konti nibimara kwemezwa',
+    'investor.wallet.c3.policy_synthetic':
+        "Amabwiriza y'igerageza yo kubitsa {version} — imibare y'igerageza, si amabwiriza akurikizwa.",
+    'investor.wallet.c3.policy': 'Amabwiriza yo kubitsa {version}.',
+    'investor.wallet.c3.policy_minimum': 'Nibura {amount}.',
+    'investor.wallet.c3.policy_maximum': 'Ntarengwa {amount}.',
+    'investor.wallet.c3.deposit_unavailable': 'Kubitsa ntibikunda ubu.',
+    'investor.wallet.c3.intent_only':
+        "Ibi byandika icyifuzo cyawe cyo kubitsa. Nta mafaranga ashyirwa kuri konti mbere y'uko ubwishyu bwemezwa.",
+    'investor.wallet.c3.holds': 'Afashwe mu kwishyura',
+    'investor.wallet.c3.hold_line': {
+        one: '{name} · urupapuro {count}',
+        other: '{name} · impapuro {count}',
+    },
+    'investor.wallet.c3.hold_expires': 'Birekurwa mu {time} keretse wemeje',
+    'investor.wallet.c3.deposits': 'Ibyabikijwe',
+    'investor.wallet.c3.deposit_from': 'Kubitsa uvuye kuri {method}',
+    'investor.wallet.c3.intent.pending': 'Ntibiremezwa',
+    'investor.wallet.c3.intent.unknown':
+        "Ntibiremezwa — turi kugenzura n'utanga serivisi",
+    'investor.wallet.c3.intent.succeeded': 'Byashyizwe kuri konti',
+    'investor.wallet.c3.intent.failed':
+        'Ntibyakunze — nta cyashyizwe kuri konti',
+    'investor.wallet.c3.entry.deposit_in': 'Kubitsa uvuye kuri {counterparty}',
+    'investor.wallet.c3.entry.deposit_out': 'Kohereza kuri {counterparty}',
+    'investor.wallet.c3.entry.hold': 'Afashwe kuri {name}',
+    'investor.wallet.c3.entry.hold_release': 'Ifatwa ryarekuwe · {name}',
+    'investor.wallet.c3.entry.commitment': 'Yiyemejwe muri {name}',
+    'investor.wallet.c3.entry.commitment_refund': 'Gusubizwa · {name}',
+    'investor.wallet.c3.movement': "Ubwoko bw'imyimukire",
+    'investor.wallet.c3.filter.external': "Ayinjiye n'ayasohotse",
+    'investor.wallet.c3.filter.internal': "Ayafashwe n'ayiyemejwe",
+    'investor.wallet.c3.transfer': '{from} → {to}',
+    'investor.wallet.c3.older': 'Erekana ibya kera',
+    'investor.wallet.c3.receipt_policy': "Verisiyo y'amabwiriza",
+    'investor.wallet.c3.not_credited':
+        'Byanditswe, ntibiremezwa. Nta cyashyizwe kuri konti; bizakorwa ari uko ubwishyu bwemejwe.',
+    'investor.wallet.c3.not_credited_failed':
+        'Byemejwe ko ubwishyu butarangiye. Nta cyashyizwe kuri konti.',
+    'investor.wallet.c3.credit_receipt':
+        'Inyemezabwishyu yo gushyira kuri konti',
+    'business.publish.intro':
+        '{title} izagaragara ku bashoramari buri ntambwe iri hepfo imaze kuzuzwa. Gutangaza bikoresha imikono watanze mu isuzuma, nta kindi cyo gusinya hano.',
+    'business.publish.release.awaiting':
+        "Hategerejwe isuzuma ry'abakozi ba Rozine. Abakozi barekura ubusabe ari uko gusa moteri y'amanota, ububasha bwo gusinya na raporo y'igenzura byose byujuje ibisabwa.",
+    'business.publish.release.released':
+        'Abakozi ba Rozine bayirekuye ngo ishyirwe ku isoko.',
+    'business.publish.release.refused': 'Ntiyarekuwe ngo ishyirwe ku isoko',
+    'business.publish.cause.ENGINE_GATE_FAILED':
+        "Ibisabwa by'inguzanyo bya moteri y'amanota ntibyujujwe.",
+    'business.publish.cause.AUTHORITY_CHANGED':
+        "Ububasha bwo gusinya bw'ikigo bwahindutse kuva wasinya.",
+    'business.publish.cause.REPORT_NOT_CURRENT':
+        "Raporo y'igenzura ntikiri iy'igihe.",
+    'business.publish.cause.other': 'Igenzura rimwe ryo kurekura ntiryatsinze.',
+    'business.publish.prerequisites': 'Mbere yo gutangaza',
+    'business.publish.prerequisite.staff_release':
+        "Yarekuwe n'abakozi ba Rozine nyuma y'isuzuma",
+    'business.publish.prerequisite.signatures_retained':
+        'Imikono yawe yo mu isuzuma irabitswe',
+    'business.publish.prerequisite.quote_current':
+        'Igiciro ntikyahindutse kuva wasinya',
+    'business.publish.prerequisite.terms_current':
+        'Amabwiriza ntiyahindutse kuva wasinya',
+    'business.publish.met': 'Byakozwe',
+    'business.publish.not_met': 'Ntibirakorwa',
+    'business.publish.fee_label': 'Amafaranga yo gushyira ku isoko',
+    'business.publish.fee_waived': 'Yakuweho muri MVP',
+    'business.publish.disclosure_title': 'Itangazo ku mafaranga',
+    'business.publish.disclosure_version': 'Itangazo {version}',
+    'business.publish.changed':
+        'Igiciro cyangwa amabwiriza byahindutse kuva wasinya. Bisuzume wongere usinye mbere yo gutangaza.',
+    'business.publish.review_again': 'Suzuma wongere usinye',
+    'business.publish.blocked':
+        'Gutangaza bizafunguka buri ntambwe iri hejuru imaze kuzuzwa.',
+    'business.publish.published.title': 'Yashyizwe ku bashoramari',
+    'business.publish.published.body':
+        "{title} iragaragara ku rubuga rw'abashoramari. Nta mafaranga yakuweho.",
+    'business.publish.published.receipt':
+        'Inyemezabwishyu yo gushyira ku isoko',
+    'business.publish.published.reference': "Nomero y'ikiranga",
+    'business.publish.published.recorded': 'Byanditswe',
+    'business.publish.published.disclosure': 'Itangazo ku mafaranga',
+    'business.publish.published.campaign': 'Reba igikorwa cyo gukusanya',
+    'business.publish.published.home': 'Subira ku Ahabanza',
+    'business.campaign.lifecycle.live': 'Irakusanya · irakora',
+    'business.campaign.lifecycle.fully_reserved': 'Irakusanya · yose yafashwe',
+    'business.campaign.restriction.RESTRICTION_ACTIVE':
+        'Yashyizweho imbogamizi kuva ku wa {date}. Ibyiyemezo bishya birahagaritswe igihe imbogamizi imara; ibyamaze kwiyemezwa birahaguma.',
+    'business.campaign.restriction.NOTE_INELIGIBLE':
+        'Ntiyemerewe ibyiyemezo bishya kuva ku wa {date}; ibyamaze kwiyemezwa birahaguma.',
+    'business.campaign.tile.committed': 'Byiyemejwe',
+    'business.campaign.tile.refunded': 'Byasubijwe',
+    'business.campaign.closing_now': 'Birarangira',
+    'business.campaign.committed': 'Byiyemejwe',
+    'business.campaign.reserved': 'Byafashwe',
+    'business.campaign.reserved_note':
+        "Inyandiko zafashwe ziri mu kwishyura kw'abashoramari kutararangira kandi ntiziriyemezwa; ifatwa ritemejwe rirekurwa nyuma y'iminota 5.",
+    'business.campaign.units':
+        'Inyandiko {committed} kuri {total} ziyemejwe · {reserved} zafashwe · {available} ziraboneka',
+    'business.campaign.closes': 'Birangira ku wa {date}',
+    'business.campaign.fully_reserved':
+        'Inyandiko zose zafashwe mu kwishyura kutararangira. Amafatwa atemejwe mu minota 5 asubizwa ku isoko.',
+    'business.campaign.funded':
+        'Byatewe inkunga yose ku wa {date}. Iki gikorwa ntikigishobora guhagarikwa.',
+    'business.campaign.closing_title': 'Kohereza amafaranga',
+    'business.campaign.closing.awaiting.title':
+        'Hategerejwe kohereza amafaranga',
+    'business.campaign.closing.awaiting.body':
+        'Rozine irimo gutegura kohereza amafaranga kuri konti yawe. Tuzabigaragaza hano nibimara koherezwa no kwemezwa.',
+    'business.campaign.closing.in_flight.title': 'Ntibiremezwa',
+    'business.campaign.closing.in_flight.pending':
+        'Kohereza amafaranga kuri konti yawe biracyakorwa. Tuzabigaragaza hano nibimara kwemezwa.',
+    'business.campaign.closing.in_flight.unknown':
+        "Uko kohereza amafaranga byagenze ntibiremezwa. Nta kirarangira mbere y'uko byemezwa; tuzabigaragaza hano nibimara kwemezwa.",
+    'business.campaign.disbursed': '{amount} byoherejwe kuri {destination}.',
+    'business.campaign.disbursed_amount': 'Byoherejwe',
+    'business.campaign.destination': 'Kuri',
+    'business.campaign.effective_at': 'Byakurikijwe',
+    'business.campaign.effective_date': "Itariki y'ingengabihe (Kigali)",
+    'business.campaign.receipt.title': 'Inyemezabwishyu yo kohereza amafaranga',
+    'business.campaign.receipt.amount': 'Amafaranga',
+    'business.campaign.receipt.reference': "Nomero y'ikiranga",
+    'business.campaign.receipt.recorded': 'Byanditswe',
+    'business.campaign.receipt.view': 'Reba inyemezabwishyu',
+    'business.campaign.closed.expired':
+        'Iki gikorwa cyo gukusanya cyarangiye ku wa {date} kitaratewe inkunga yose. {amount} byasubijwe abashoramari byose, nta kiguzi.',
+    'business.campaign.closed.cancelled':
+        'Iki gikorwa cyo gukusanya cyahagaritswe ku wa {date}. {amount} byasubijwe abashoramari byose, nta kiguzi.',
+    'business.campaign.closed.failed_closing':
+        'Iki gikorwa cyo gukusanya ntikyashoboye kurangira: igenzura ryo mbere yo kohereza amafaranga ryananiranye ku wa {date}. {amount} byasubijwe abashoramari byose, nta kiguzi.',
+    'business.campaign.cancel.open': 'Hagarika iki gikorwa cyo gukusanya',
+    'business.campaign.cancel.cancelling': 'Birahagarikwa…',
+    'business.campaign.cancel.title': 'Uhagarike iki gikorwa cyo gukusanya?',
+    'business.campaign.cancel.body':
+        'Buri mushoramari asubizwa ibyo yiyemeje byose, nta kiguzi, kandi igikorwa cyo gukusanya kirafungwa burundu. Ntibishobora gusubizwa inyuma.',
+    'business.campaign.cancel.reason': 'Impamvu (si ngombwa)',
+    'business.campaign.cancel.confirm': 'Hagarika gukusanya',
+    'business.campaign.cancel.keep': 'Komeza gukusanya',
+    'admin.disbursements.col.provider': 'Utanga serivisi',
+    'admin.disbursements.state.queued': 'Icyifuzo cyanditswe · gitegereje',
+    'admin.disbursements.state.succeeded': 'Byishyuwe · byahujwe',
+    'admin.disbursements.state.failed_closing':
+        'Byafunzwe binaniranye · byasubijwe',
+    'admin.disbursements.provider.none': 'Ntibyoherejwe',
+    'admin.disbursements.provider.pending': 'Bitegereje · ntibiremezwa',
+    'admin.disbursements.provider.unknown': 'Ntibizwi · ntibiremezwa',
+    'admin.disbursements.provider.succeeded': 'Byagenze neza · byagenzuwe',
+    'admin.disbursements.provider.failed': 'Byananiranye · byagenzuwe',
+    'admin.disbursements.action.authorize': 'Emerera',
+    'admin.disbursements.older': 'Kwishyura kwa kera',
+    'admin.disbursements.deadline': 'Itariki ntarengwa',
+    'admin.disbursements.deadline_unavailable': 'Nta tariki ntarengwa yemejwe',
+    'admin.disbursements.rule_two_staff':
+        "Hakenewe abakozi babiri batandukanye: umwe aremerera, undi akemeza. Nta rugero rw'amafaranga cyangwa uburenganzira bwo kubirengaho. Inshingano ni amazina gusa: ibyo ushobora gukora biva ku burenganzira bwawe.",
+    'admin.disbursements.causes': 'Impamvu',
+    'admin.disbursements.receipt.code': 'Inyemezabwishyu',
+    'admin.disbursements.receipt.reference': 'Indango',
+    'admin.disbursements.receipt.amount': 'Amafaranga',
+    'admin.disbursements.receipt.recorded_at': 'Byanditswe ku',
+    'admin.disbursements.receipt.revision': 'Ivugurura',
+    'admin.disbursements.check.not_run': 'Ntibirakorwa',
+    'admin.disbursements.check.passed': 'Byatsinze',
+    'admin.disbursements.check.failed': 'Byananiranye',
+    'admin.disbursements.precheck.title': 'Igenzura ribanza',
+    'admin.disbursements.checked_at': 'Byagenzuwe ku',
+    'admin.disbursements.policy_version': "Verisiyo y'amabwiriza",
+    'admin.disbursements.binding.title': 'Ibyo kwemeza bihuza',
+    'admin.disbursements.binding.none': 'Bishyirwaho iyo kwishyura byemerewe.',
+    'admin.disbursements.binding.revision': 'Ivugurura',
+    'admin.disbursements.binding.amount': 'Amafaranga nyayo',
+    'admin.disbursements.binding.digest': "Igikumwe cy'icyifuzo",
+    'admin.disbursements.step_up.unavailable':
+        "Kwemeza bisaba kwemeza kongerewe umutekano gushya guhujwe n'aya makuru. Uko kwemeza ntikuraboneka, bityo ntushobora kwemeza hano.",
+    'admin.disbursements.step_up.required':
+        "Kwemeza bisaba kwemeza kongerewe umutekano gushya guhujwe n'aya makuru.",
+    'admin.disbursements.intent.title': 'Icyifuzo cyo kwishyura',
+    'admin.disbursements.intent.not_payment':
+        'Icyifuzo cyanditswe — si ukwishyura. Serivisi yishyura iracyohereza gusa nyuma yo kongera kugenzura.',
+    'admin.disbursements.intent.not_sent':
+        'Ntibiroherezwa: serivisi ntiraryohereza uku kwishyura.',
+    'admin.disbursements.operation': 'Igikorwa',
+    'admin.disbursements.dispatch.title': 'Kohereza',
+    'admin.disbursements.dispatch.sent_at': 'Byoherejwe ku',
+    'admin.disbursements.dispatch.recheck': 'Kongera kugenzura kwa serivisi',
+    'admin.disbursements.outcome.title': "Igisubizo cy'utanga serivisi",
+    'admin.disbursements.outcome.pending':
+        'Bitegereje: utanga serivisi ntaremeza igisubizo. Ntibyishyuwe kandi ntibyananiranye.',
+    'admin.disbursements.outcome.unknown':
+        "Ntibizwi: igisubizo cy'utanga serivisi ntikiremezwa. Ntibyishyuwe kandi ntibyananiranye.",
+    'admin.disbursements.outcome.succeeded':
+        'Byagenze neza: utanga serivisi yagenzuye ukwishyura.',
+    'admin.disbursements.outcome.failed':
+        'Byananiranye: utanga serivisi yagenzuye ko byananiranye burundu.',
+    'admin.disbursements.outcome.failed_unreconciled':
+        'Ntibirahuzwa: nta kintu gifungwa cyangwa gisubizwa kugeza kunanirwa guhujwe.',
+    'admin.disbursements.outcome.exception':
+        "Ikibazo mu guhuza: igisubizo cy'utanga serivisi kivuguruzanya cyangwa ntigishobora gukemurwa. Uku kwishyura gukomeza guhagarikwa kandi ntiguhujwe.",
+    'admin.disbursements.outcome.reference': "Indango y'utanga serivisi",
+    'admin.disbursements.outcome.error_code': "Kode y'ikosa",
+    'admin.disbursements.outcome.observed_at': 'Byabonetse ku',
+    'admin.disbursements.outcome.effective_at': 'Byagize agaciro ku',
+    'admin.disbursements.outcome.reconciliation': 'Guhuza',
+    'admin.disbursements.outcome.reconciled_at': 'Byahujwe ku',
+    'admin.disbursements.outcome.requery_note':
+        'Kongera kubaza utanga serivisi bibaza kuri iki gikorwa kimwe. Ntibyongera kohereza ukwishyura. Igenzura riteganyijwe na ryo rirabaza.',
+    'admin.disbursements.reconciliation.unreconciled': 'Ntibirahuzwa',
+    'admin.disbursements.reconciliation.matched': 'Byahujwe',
+    'admin.disbursements.reconciliation.exception':
+        'Ikibazo · byahagaritswe, ntibyahujwe',
+    'admin.disbursements.hold.title': 'Ihagarikwa',
+    'admin.disbursements.hold.release_note':
+        'Gukuraho ihagarikwa ntibyemeza uku kwishyura kandi ntibyohereza amafaranga. Bisaba umukozi utari uwarishyizeho.',
+    'admin.disbursements.hold.self':
+        'Ni wowe washyizeho iri hagarikwa, bityo undi mukozi ni we ugomba kurikuraho.',
+    'admin.disbursements.issue.title': 'Isohora',
+    'admin.disbursements.issue.holdings': 'Imigabane yasohowe',
+    'admin.disbursements.issue.issued_at': 'Byasohowe ku',
+    'admin.disbursements.issue.effective_date': 'Itariki bitangira (Kigali)',
+    'admin.disbursements.refund.title': 'Gusubiza amafaranga',
+    'admin.disbursements.refund.commitments': 'Ibyiyemejwe byasubijwe',
+    'admin.disbursements.refund.total': 'Igiteranyo cyasubijwe',
+    'admin.disbursements.ledger': "Fungura mu gitabo cy'ibaruramari",
+    'admin.disbursements.command.release_hold': 'Kuraho ihagarikwa',
+    'admin.disbursements.command.requery': 'Ongera ubaze utanga serivisi',
+    'admin.disbursements.stage.release_hold.title': 'Kuraho iri hagarikwa',
+    'admin.disbursements.stage.release_hold.body':
+        "Gukuraho ihagarikwa ntibyemeza uku kwishyura kandi ntibyohereza amafaranga. Bisubira aho byari biri mbere y'ihagarikwa.",
+    'admin.disbursements.stage.release_hold.cta': 'Kuraho ihagarikwa',
+    'admin.disbursements.stage.release_hold.placeholder':
+        'urugero: Ikigo cyemeje nimero yacyo nshya ya MoMo.',
+    'admin.disbursements.stage.requery.title': 'Ongera ubaze utanga serivisi',
+    'admin.disbursements.stage.requery.body':
+        'Ibi bibaza utanga serivisi ku gikorwa kimwe. Ntibyongera kohereza ukwishyura.',
+    'admin.disbursements.stage.requery.cta': 'Baza utanga serivisi',
+    'admin.disbursements.stage.requery.placeholder':
+        "urugero: Urupapuro rw'utanga serivisi rugaragaza ko ikibazo cyarangiye.",
+    'admin.applications.release.title': 'Kurekurira gushyirwa ku isoko',
+    'admin.applications.release.state.awaiting_staff_review':
+        "Bitegereje isuzuma ry'abakozi",
+    'admin.applications.release.state.released': 'Byarekuwe',
+    'admin.applications.release.state.refused': 'Byanzwe',
+    'admin.applications.release.explain':
+        "Kurekura bituma ikigo gishyira ahagaragara ubu bukusanye. Bisaba ko igenzura rya moteri, iry'ububasha n'irya raporo byatsinze, kandi ntibishobora kurenga igenzura ryananiranye.",
+    'admin.applications.release.gates': 'Igenzura ryo kurekura',
+    'admin.applications.release.gate.engine': 'Moteri isuzuma inguzanyo',
+    'admin.applications.release.gate.authority': "Ububasha bw'ikigo",
+    'admin.applications.release.gate.report':
+        "Raporo y'igenzura ryo gushyira ku isoko",
+    'admin.applications.release.gate_state.passed': 'Byatsinze',
+    'admin.applications.release.gate_state.failed': 'Byahagaritswe',
+    'admin.applications.release.blocked':
+        'Igenzura rimwe ryananiranye, bityo iyi dosiye ntishobora kurekurwa. Kurekura ntibirenga igenzura ryananiranye.',
+    'admin.applications.release.receipt': 'Inyemezabwishyu yo kurekura',
+    'admin.applications.release.command': 'Rekurira gushyirwa ku isoko',
+    'admin.applications.release.stage.title': 'Rekura iyi dosiye',
+    'admin.applications.release.stage.body':
+        'Ikigo kizashobora gushyira ahagaragara ubukusanye bwacyo. Nta kintu gishyirwa ku isoko cyangwa ngo giterwe inkunga kitarabikora.',
+    'admin.applications.release.stage.cta': 'Rekura',
+    'admin.applications.release.stage.placeholder':
+        'urugero: Moteri, ububasha na raporo yashyizweho kashe byose byemejwe.',
+    'investor.audit.tolerance': "Ikinyuranyo cyemewe n'amabwiriza",
+    'investor.audit.reconciliation': "ITANGAZO RY'IGENZURA RY'IMIBARE",
+    'investor.deal.ebitda_unavailable': 'Ntiboneka',
+    'investor.deal.ebitda_not_sourced': 'Ntiyakuwe nka EBITDA',
+    'investor.deal.photos_none': 'Ikigo nta mafoto cyashyize ahagaragara.',
+    'investor.deal.photo_unavailable': 'Ifoto ntiboneka',
+    'investor.deal.restriction.NOTE_INELIGIBLE':
+        'Gushora byahagaritswe: uru rupapuro ntirwemerewe ubu',
+    'investor.deal.restriction.RESTRICTION_ACTIVE':
+        'Gushora byahagaritswe: hari ikumira rikurikizwa',
+    'investor.deal.restriction.body':
+        'Kuva ku wa {date}. Igikorwa cyo gushaka imari gikomeza uko kiri; gufata bishya bitegereza ko ikumira rivanwaho.',
+    'investor.deal.lifecycle.live': 'Birakomeje',
+    'investor.deal.lifecycle.fully_reserved': 'Byafashwe byose',
+    'investor.deal.lifecycle.funded': 'Imari yose yabonetse',
+    'investor.deal.lifecycle.disbursing': 'Birimo kwishyurwa',
+    'investor.deal.lifecycle.issued': 'Impapuro zatanzwe',
+    'investor.deal.lifecycle.expired': 'Ntibyuzuye',
+    'investor.deal.lifecycle.cancelled': 'Byahagaritswe',
+    'investor.deal.lifecycle.failed_closing': 'Byafunzwe, amafaranga asubizwa',
+    'investor.deal.notice.fully_reserved.title': 'Impapuro zose zafashwe ubu',
+    'investor.deal.notice.fully_reserved.body':
+        'Kwishyura bifata impapuro kugeza ku minota 5. Izo igihe cyazo kirangiye zigaruka muri iki gikorwa.',
+    'investor.deal.notice.funded.title': 'Imari yose yabonetse',
+    'investor.deal.notice.funded.body':
+        'Ibyiyemejwe birafunze mu gihe amafaranga yoherezwa ku kigo. Impapuro zitangwa ubwo bwishyu bumaze kwemezwa.',
+    'investor.deal.notice.disbursing.title': 'Kwishyura ikigo birakomeje',
+    'investor.deal.notice.disbursing.body':
+        'Ubwishyu ku kigo ntiburemezwa. Impapuro zitangwa ari uko bwemejwe.',
+    'investor.deal.notice.issued.title':
+        'Iki gikorwa cyo gushaka imari cyarangiye',
+    'investor.deal.notice.issued.body':
+        'Ikigo cyarishyuwe kandi impapuro zahawe abashoramari bacyo.',
+    'investor.deal.notice.expired.title': 'Iki gikorwa ntikyuzuye mu gihe',
+    'investor.deal.notice.expired.body':
+        'Buri cyiyemezo cyasubijwe cyose, nta kiguzi.',
+    'investor.deal.notice.cancelled.title': 'Ikigo cyahagaritse iki gikorwa',
+    'investor.deal.notice.cancelled.body':
+        'Buri cyiyemezo cyasubijwe cyose, nta kiguzi.',
+    'investor.deal.notice.failed_closing.title':
+        'Iki gikorwa cyarangiye nta bwishyu bubaye',
+    'investor.deal.notice.failed_closing.body':
+        'Igenzura rya nyuma mbere yo kwishyura ntiryatsinze, buri cyiyemezo cyasubijwe cyose.',
+    'investor.deals.gated_title':
+        'Genzura umwirondoro kugira ngo ubone amahirwe afunguye',
+    'investor.deals.gated_body':
+        "Amahirwe n'ibigo byayo yerekwa gusa abashoramari bagenzuwe.",
+    'investor.deals.paused': 'Byahagaritswe',
+    'investor.deal.cap.max': {
+        one: 'Kugeza ku rupapuro {count}: {reason}.',
+        other: 'Kugeza ku mpapuro {count}: {reason}.',
+    },
+    'investor.deal.cap.none':
+        'Ntushobora gufata izindi mpapuro hano: {reason}.',
+    'investor.deal.cap.reason.transaction': 'umupaka wawe kuri buri gikorwa',
+    'investor.deal.cap.reason.note': 'umupaka wawe kuri uru rupapuro',
+    'investor.deal.cap.reason.business': 'umupaka wawe kuri iki kigo',
+    'investor.deal.cap.reason.aggregate': "umupaka wawe rusange w'ishoramari",
+    'investor.deal.cap.reason.availability': 'izo ni zo mpapuro zose zisigaye',
+    'investor.deal.cap.reason.restriction': 'hari ikumira rikurikizwa',
+    'investor.deal.cap.reason.connected_party': "ufitanye isano n'iki kigo",
+    'investor.updates.published_photos': 'AMAFOTO YASHYIZWE AHAGARAGARA',
+    'investor.checkout.c3.processing': 'Birimo koherezwa…',
+    'investor.checkout.c3.hold_ended':
+        'Igihe wafatiwe cyarangiye — izi mpapuro zishobora kuba zarekuwe',
+    'investor.checkout.c3.hold_left': 'Wafatiwe · hasigaye {time} ngo wemeze',
+    'investor.checkout.c3.committed': 'Wiyemeje',
+    'investor.checkout.c3.committed_body':
+        'Wiyemeje — impapuro zawe zitangwa ikigo kimaze kwishyurwa. Kugeza icyo gihe ni icyiyemezo, si umutungo ufite.',
+    'investor.checkout.c3.view_awaiting': 'Reba mu « Bitegereje gutangwa »',
+    'investor.checkout.c3.reserved_title': 'Emeza impapuro zawe',
+    'investor.checkout.c3.held_amount': 'Afashwe ku aboneka',
+    'investor.checkout.c3.release': 'Rekura izi mpapuro',
+    'investor.checkout.c3.confirm_fine_print':
+        'Kwemeza bishyira amafaranga yafashwe mu cyiyemezo. Ushobora guhagarika nta kiguzi kugeza imari yose ibonetse.',
+    'investor.checkout.c3.at_maturity': {
+        one: 'Bigaruka mu kwezi {count}',
+        other: 'Bigaruka mu mezi {count}',
+    },
+    'investor.checkout.c3.indicative':
+        "Ni ikigereranyo kugeza ufashe: uburenganzira nyabwo bw'impapuro zawe bushyirwaho igihe zifashwe.",
+    'investor.checkout.c3.reserve': 'Fata · {amount}',
+    'investor.checkout.c3.reserve_unavailable': 'Gufata ntibishoboka ubu.',
+    'investor.checkout.c3.reserve_fine_print':
+        "Gufata bibika impapuro n'amafaranga iminota 5 mu gihe wemeza.",
+    'investor.primary.status.confirmed':
+        'Wiyemeje — bitangwa nyuma yo kwishyura',
+    'investor.primary.status.awaiting_disbursement':
+        'Imari yose yabonetse — gutegereza kwishyura',
+    'investor.primary.status.in_flight_pending': 'Kwishyura ntikuremezwa',
+    'investor.primary.status.in_flight_unknown':
+        'Kwishyura ntikuremezwa — turagenzura',
+    'investor.primary.status.issued': 'Byatanzwe',
+    'investor.primary.status.cancelled': 'Byahagaritswe — byasubijwe',
+    'investor.primary.status.expired': 'Ntibyuzuye — byasubijwe',
+    'investor.primary.status.failed_closing': 'Byafunzwe — byasubijwe',
+    'investor.primary.status_body.confirmed':
+        'Igikorwa kiracyafunguye. Ushobora guhagarika nta kiguzi kugeza imari yose ibonetse.',
+    'investor.primary.status_body.awaiting_disbursement':
+        'Imari yose yabonetse, guhagarika byafunzwe. Impapuro zitangwa kwishyura ikigo bimaze kwemezwa.',
+    'investor.primary.status_body.in_flight_pending':
+        "Ubwishyu bw'ikigo bwoherejwe ariko ntiburemezwa. Nta kintu gitangwa mbere y'uko bwemezwa.",
+    'investor.primary.status_body.in_flight_unknown':
+        "Ntiturabasha kumenya niba ubwishyu bw'ikigo bwageze, turagenzura. Ntibwishyuwe, ntibwanze kandi ntibwasubijwe; nta kintu gitangwa mbere yo kwemezwa.",
+    'investor.primary.status_body.issued':
+        'Ikigo cyarishyuwe kandi impapuro zawe zaratanzwe.',
+    'investor.primary.status_body.cancelled':
+        'Byahagaritswe na {by}. Igishoro cyawe cyasubijwe cyose, nta kiguzi.',
+    'investor.primary.status_body.expired':
+        'Igikorwa ntikyuzuye mu gihe. Igishoro cyawe cyasubijwe cyose, nta kiguzi.',
+    'investor.primary.status_body.failed_closing':
+        'Igenzura rya nyuma mbere yo kwishyura ntiryatsinze. Igishoro cyawe cyasubijwe cyose, nta kiguzi.',
+    'investor.primary.cancelled_by.investor': 'wowe',
+    'investor.primary.cancelled_by.business': 'ikigo',
+    'investor.primary.cancelled_by.none': 'Rozine',
+    'investor.primary.receipt.amount': 'Amafaranga',
+    'investor.primary.receipt.recorded': 'Byanditswe',
+    'investor.primary.receipt.reference': 'Indango',
+    'investor.primary.receipt.confirmation': 'INYEMEZABWISHYU YO KWEMEZA',
+    'investor.primary.receipt.refund': 'INYEMEZABWISHYU YO GUSUBIZWA',
+    'investor.primary.units': 'Impapuro',
+    'investor.primary.units_value': {
+        one: 'Urupapuro {count} · {ordinals}',
+        other: 'Impapuro {count} · {ordinals}',
+    },
+    'investor.primary.units_short': {
+        one: 'Urupapuro {count}',
+        other: 'Impapuro {count}',
+    },
+    'investor.primary.principal': 'Igishoro',
+    'investor.primary.terms': 'Amasezerano',
+    'investor.primary.maturity': 'Itariki yo kurangiza',
+    'investor.primary.maturity_at_issue': 'Ishyirwaho impapuro zitangwa',
+    'investor.primary.versions': 'Amabwiriza · itangazo',
+    'investor.primary.view_holding': 'Reba umutungo',
+    'investor.primary.awaiting_issue': 'Bitegereje gutangwa',
+    'investor.primary.awaiting_issue_note': 'Ibyiyemejwe, si imitungo ubu',
+    'investor.primary.rights.title': "Uburenganzira bw'impapuro zawe",
+    'investor.primary.rights.instalment': 'Igice',
+    'investor.primary.rights.principal': 'Igishoro',
+    'investor.primary.rights.return': 'Inyungu',
+    'investor.primary.rights.nth': 'Nomero {n}',
+    'investor.primary.rights.total_return': 'Inyungu yose',
+    'investor.primary.rights.undated':
+        "Amatariki yo kwishyura ashyirwaho impapuro zitangwa: irya mbere riba ukwezi kumwe nyuma y'itariki ubwishyu bwakoreweho.",
+    'investor.primary.commitment_title': 'Icyiyemezo',
+    'investor.primary.back_to_portfolio': 'Garuka ku mutungo',
+    'investor.primary.cancel': 'Hagarika icyiyemezo',
+    'investor.primary.cancel_title': 'Uhagarika iki cyiyemezo?',
+    'investor.primary.cancel_body':
+        'Igishoro cyawe gisubira muri aboneka cyose, nta kiguzi, kandi izi mpapuro zirarekurwa.',
+    'investor.primary.cancel_confirm': 'Yego, hagarika usubize',
+    'investor.primary.cancel_keep': 'Bigumeho',
+    'investor.holding.issue.title': 'Inyandiko yo gutanga',
+    'investor.holding.issue.issued_at': 'Byatanzwe',
+    'investor.holding.issue.effective_at': 'Ubwishyu bwakozwe',
+    'investor.holding.issue.effective_date': 'Itariki ikurikizwa (Kigali)',
+    'investor.holding.issue.schedule': 'Ingengabihe',
+    'investor.holding.issue.due': 'Itariki',
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',
