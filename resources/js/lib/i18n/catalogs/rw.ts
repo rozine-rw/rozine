@@ -3147,6 +3147,37 @@ const rw: Catalog = {
     'auditor.command.refused.AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED':
         'Emera amasezerano y’akazi ariho kugira ngo ukomeze.',
     'auditor.command.review_terms': 'Soma amasezerano',
+    'auditor.seal.save_note': 'Bika inyandiko',
+    'auditor.seal.saving_note': 'Inyandiko irabikwa…',
+    'auditor.seal.note_unsaved':
+        'Bika inyandiko yawe mbere yo kureba ibizashyirwaho kashe. Igenzura, kode yawe na kashe byose bishingira ku nyandiko yabitswe.',
+    'auditor.ledger.reported_undeclared': 'Ntibyatangajwe',
+    'auditor.ledger.reported_undeclared_note':
+        "Ikigo nticyatangaje agaciro k'ububiko, bityo nta mubare watangajwe wo kugereranya n'ibyo wabaze. Andika ibyo wabaze.",
+    'auditor.ledger.reconciles_undeclared':
+        'Guhuza bizakomeza guhagarara kugeza ikigo gitangaje ububiko bwacyo.',
+
+    'auditor.statements.cover_unavailable': 'Ntibiboneka',
+    'auditor.statements.documents': "Inyandiko z'umwimerere",
+    'auditor.statements.no_documents':
+        "Nta nyandiko z'umwimerere zibitswe z'uku kwezi.",
+    'auditor.count.period_unavailable': 'Ntibiboneka',
+
+    'auditor.file.start': 'Tangira igenzura',
+    'auditor.file.starting': 'Biratangira…',
+    'auditor.file.application_unavailable':
+        'Nta busabe bwoherejwe buraboneka bwo kugenzura.',
+    'auditor.command.refused.APPLICATION_VERSION_CONFLICT':
+        "Ubusabe bw'ikigo bwahindutse kuva ufunguye iyi dosiye. Paji yavuguruwe — yirebe wongere utangire.",
+    'auditor.command.refused.APPLICATION_NOT_SUBMITTED':
+        'Ubu busabe ntiburoherezwa, bityo nta kintu kiragenzurwa. Paji yavuguruwe.',
+    'auditor.command.refused.APPLICATION_NOT_FOUND':
+        'Ubu busabe ntibukikugeraho, bityo nta kintu cyatangiye.',
+    'auditor.command.refused.AUDIT_APPLICATION_BOUND':
+        "Hari raporo isanzwe ihujwe n'ubu busabe, bityo nta nshya yatangiye. Paji yavuguruwe — komereza aho.",
+    'auditor.command.refused.AUDIT_REPORT_REASSIGNMENT_REQUIRED':
+        "Iyi raporo igomba guhabwa undi mbere y'uko akazi gakomeza, bityo nta kintu cyatangiye. Paji yavuguruwe.",
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

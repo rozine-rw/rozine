@@ -1,27 +1,26 @@
 {
     "component": "auditor/file",
     "props": {
+        "engagement": null,
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
-        "allowed_actions": ["assignment.decline", "conflict.declare"],
+        "allowed_actions": ["audit.start", "conflict.declare"],
         "job": {
             "id": "fa_huye",
             "revision": 2,
             "business": "Huye Motors",
             "district": "Gasabo",
             "distance_km": "11.2",
-            "state": "offered",
-            "deadline": null,
-            "accept_by": "2026-10-03T17:40:00Z",
+            "state": "assigned",
+            "deadline": {
+                "due_at": "2026-10-04T14:00:00Z"
+            },
+            "accept_by": null,
             "complete_by": "2026-10-04T14:00:00Z",
             "reassigned_from": null,
             "kind": "flash",
-            "allowed_actions": [
-                "assignment.accept",
-                "assignment.decline",
-                "conflict.declare"
-            ]
+            "allowed_actions": ["audit.start", "conflict.declare"]
         },
         "file": {
             "raise": {
@@ -119,7 +118,10 @@
                 "url": "/preview/auditor-jobs-conflict",
                 "method": "post"
             },
-            "start": null
+            "start": {
+                "url": "/preview/auditor-audit-review",
+                "method": "post"
+            }
         },
         "application": {
             "id": "app_huye_motors",
@@ -141,10 +143,15 @@
             }
         },
         "jobs": {
+            "engagement": null,
             "contract_version": "auditor-filing-v1",
             "identity_context_revision": 3,
             "server_time": "2026-10-03T17:00:00Z",
-            "allowed_actions": ["assignment.decline", "conflict.declare"],
+            "allowed_actions": [
+                "assignment.accept",
+                "assignment.decline",
+                "conflict.declare"
+            ],
             "radius_km": 30,
             "flash_hours": 24,
             "eligible": [
@@ -189,6 +196,7 @@
                         }
                     },
                     "allowed_actions": [
+                        "assignment.accept",
                         "assignment.decline",
                         "conflict.declare"
                     ],
@@ -337,14 +345,7 @@
                     "label": "Other reason",
                     "requires_explanation": true
                 }
-            ],
-            "engagement": {
-                "status": "required",
-                "link": {
-                    "url": "/preview/auditor-engagement",
-                    "method": "get"
-                }
-            }
+            ]
         },
         "decline_options": [
             {
@@ -368,13 +369,6 @@
                 "requires_explanation": true
             }
         ],
-        "blocked": null,
-        "engagement": {
-            "status": "required",
-            "link": {
-                "url": "/preview/auditor-engagement",
-                "method": "get"
-            }
-        }
+        "blocked": null
     }
 }

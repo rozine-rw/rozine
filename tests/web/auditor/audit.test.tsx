@@ -32,6 +32,7 @@ import blocked from '../../../resources/fixtures/ui/auditor-audit-conflict-block
 import count from '../../../resources/fixtures/ui/auditor-audit-count.json';
 import ledgerEmpty from '../../../resources/fixtures/ui/auditor-audit-ledger-empty.json';
 import ledgerIngested from '../../../resources/fixtures/ui/auditor-audit-ledger-ingested.json';
+import ledgerUndeclared from '../../../resources/fixtures/ui/auditor-audit-ledger-undeclared.json';
 import ledger from '../../../resources/fixtures/ui/auditor-audit-ledger.json';
 import monthlySeal from '../../../resources/fixtures/ui/auditor-audit-monthly-seal.json';
 import photosOffline from '../../../resources/fixtures/ui/auditor-audit-photos-offline.json';
@@ -41,6 +42,8 @@ import photos from '../../../resources/fixtures/ui/auditor-audit-photos.json';
 import review from '../../../resources/fixtures/ui/auditor-audit-review.json';
 import sealedMonthly from '../../../resources/fixtures/ui/auditor-audit-sealed-monthly.json';
 import sealed from '../../../resources/fixtures/ui/auditor-audit-sealed.json';
+import statementsNetOutflow from '../../../resources/fixtures/ui/auditor-audit-statements-net-outflow.json';
+import statementsNoCover from '../../../resources/fixtures/ui/auditor-audit-statements-no-cover.json';
 import statementsUnavailable from '../../../resources/fixtures/ui/auditor-audit-statements-unavailable.json';
 import statements from '../../../resources/fixtures/ui/auditor-audit-statements.json';
 import { renderWithUser } from '../helpers/render-with-user';
@@ -718,6 +721,67 @@ describe('Audit procedure — ledger reconciliation', () => {
         expect(within(dialog).queryByText(/tolerance/)).not.toBeInTheDocument();
     });
 
+    it('reads an undeclared stock as not declared, never zero, and keeps reconciliation blocked', async () => {
+        const { user } = renderWithUser(
+            <AuditorAudit {...props(ledgerUndeclared)} />,
+        );
+        const dialog = sheet();
+        const tick = within(dialog).getByRole('checkbox', {
+            name: /reconcile with the digital statements/,
+        });
+
+        expect(within(dialog).getByText('Not declared')).toBeInTheDocument();
+        expect(
+            within(dialog).getByText(
+                'The business has not declared a stock value, so there is no reported figure to compare your count with. Record what you counted.',
+            ),
+        ).toBeInTheDocument();
+        expect(within(dialog).queryByText('RWF 0')).not.toBeInTheDocument();
+        expect(within(dialog).queryByText(/tolerance/)).not.toBeInTheDocument();
+        /* A parsed ledger alone does not open the reconciliation tick. */
+        expect(tick).toBeDisabled();
+        expect(tick).not.toBeChecked();
+        expect(
+            within(dialog).getByText(
+                'Reconciliation stays blocked until the business declares its stock.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(dialog).queryByText(
+                'Attach and pass at least one ledger document first.',
+            ),
+        ).not.toBeInTheDocument();
+        expect(
+            within(dialog).getByRole('button', { name: 'Review & seal' }),
+        ).toBeDisabled();
+
+        await user.click(tick);
+        expect(tick).not.toBeChecked();
+    });
+
+    it('never records a reconciliation against an undeclared stock', async () => {
+        const { user } = renderWithUser(
+            <AuditorAudit
+                {...withStage<LedgerStage>(ledgerUndeclared, (stage) => ({
+                    ...stage,
+                    reconciled: true,
+                }))}
+                can_continue
+            />,
+        );
+
+        expect(
+            screen.getByRole('checkbox', { name: /reconcile/ }),
+        ).not.toBeChecked();
+        await user.click(screen.getByRole('button', { name: 'Review & seal' }));
+        expect(inertia.calls[0].body).toEqual({
+            ...COMMAND,
+            observed_stock: '36400000',
+            reconciled: false,
+            step: 'ledger',
+        });
+    });
+
     it('shows a variance inside tolerance', () => {
         render(
             <AuditorAudit
@@ -750,23 +814,43 @@ describe('Audit procedure — monthly statements and count', () => {
         expect(within(dialog).getByText('RWF 33.6M')).toHaveClass(
             'text-rz-positive',
         );
-        expect(within(dialog).getByText('1.31×')).toHaveClass(
+        /* A factual cover with no approved thresholds: shown neutrally, never as a band. */
+        expect(within(dialog).getByText('1.31×')).toHaveClass('text-rz-ink');
+        expect(within(dialog).getByText('1.31×')).not.toHaveClass(
             'text-rz-positive',
         );
-        expect(
-            within(dialog).getByRole('link', {
-                name: /GreenLeaf-Agro-2026-09.pdf/,
-            }),
-        ).toBeInTheDocument();
         expect(
             within(dialog).getByRole('button', { name: 'Start the count' }),
         ).toBeEnabled();
     });
 
-    it.each([
-        ['watch', 'text-rz-ink'],
-        ['below', 'text-[#d0342c]'],
-    ] as const)('colours a %s liquidity cover', (band, tone) => {
+    it('lists every source document of the month as an ordinary download link', async () => {
+        const { user } = renderWithUser(
+            <AuditorAudit {...props(statements)} />,
+        );
+        const documents = within(sheet('GreenLeaf Agro')).getByRole('list', {
+            name: 'Source documents',
+        });
+        const links = within(documents).getAllByRole('link');
+
+        expect(links.map((link) => link.textContent)).toEqual([
+            'GreenLeaf-Agro-BK-current-2026-09.pdfView',
+            'GreenLeaf-Agro-BK-savings-2026-09.pdfView',
+            'GreenLeaf-Agro-MoMo-2026-09.csvView',
+        ]);
+        expect(links.map((link) => link.getAttribute('href'))).toEqual([
+            '/preview/auditor-audit-statements?document=sd_bk_current',
+            '/preview/auditor-audit-statements?document=sd_bk_savings',
+            '/preview/auditor-audit-statements?document=sd_momo',
+        ]);
+
+        /* A plain anchor: the browser downloads it, and Inertia never visits it. */
+        links[1].addEventListener('click', (event) => event.preventDefault());
+        await user.click(links[1]);
+        expect(inertia.visits).toHaveLength(0);
+    });
+
+    it('says when a month has no source documents on file', () => {
         render(
             <AuditorAudit
                 {...withStage<StatementsStage>(statements, (stage) => ({
@@ -776,13 +860,42 @@ describe('Audit procedure — monthly statements and count', () => {
                             StatementsStage['statements'],
                             { status: 'available' }
                         >),
-                        cover: { value: '0.9', band },
+                        documents: [],
                     },
                 }))}
             />,
         );
 
-        expect(screen.getByText('0.9×')).toHaveClass(tone);
+        expect(
+            screen.getByText('No source documents are on file for this month.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('list', { name: 'Source documents' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('reads a cover that cannot be computed as unavailable, never zero', () => {
+        render(<AuditorAudit {...props(statementsNoCover)} />);
+        const dialog = sheet('GreenLeaf Agro');
+
+        expect(within(dialog).getByText('Unavailable')).toHaveClass(
+            'text-rz-secondary',
+        );
+        expect(within(dialog).queryByText(/×/u)).not.toBeInTheDocument();
+        expect(
+            within(
+                within(dialog).getByRole('list', { name: 'Source documents' }),
+            ).getAllByRole('link'),
+        ).toHaveLength(1);
+    });
+
+    it('never tones a net outflow green', () => {
+        render(<AuditorAudit {...props(statementsNetOutflow)} />);
+        const net = screen.getByText('RWF −10.4M');
+
+        expect(net).toHaveClass('text-rz-ink');
+        expect(net).not.toHaveClass('text-rz-positive');
+        expect(screen.getByText('0.92×')).toHaveClass('text-rz-ink');
     });
 
     it('says when the statements are not on file yet', () => {
@@ -901,12 +1014,68 @@ describe('Audit procedure — monthly statements and count', () => {
             screen.getByText('No reported stock baseline for this period.'),
         ).toBeInTheDocument();
         expect(screen.getAllByText('—')).toHaveLength(2);
+        expect(screen.queryByText('Unavailable')).not.toBeInTheDocument();
         expect(
             screen.getByLabelText('Observed on site · cash (RWF)'),
         ).toHaveValue('');
         expect(screen.queryAllByRole('radio', { checked: true })).toHaveLength(
             0,
         );
+    });
+});
+
+describe('Audit procedure — retained records', () => {
+    it('reads a count period that was never pinned as unavailable', () => {
+        render(
+            <AuditorAudit
+                {...withStage<CountStage>(count, (stage) => ({
+                    ...stage,
+                    period: null,
+                    cash: { ...stage.cash, statement: null, variance: null },
+                    stock: {
+                        ...stage.stock,
+                        reported_units: null,
+                        variance: null,
+                    },
+                }))}
+            />,
+        );
+        const dialog = sheet('GreenLeaf Agro');
+
+        expect(within(dialog).getByText('Unavailable')).toHaveClass(
+            'text-rz-secondary',
+        );
+        expect(within(dialog).queryByText(/ – /u)).not.toBeInTheDocument();
+        /* Missing declarations say so; none reads as a zero. */
+        expect(
+            within(dialog).getByText(
+                'No statement balance on file for this period.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(dialog).getByText(
+                'No reported stock baseline for this period.',
+            ),
+        ).toBeInTheDocument();
+        expect(within(dialog).queryByText(/RWF 0\b/u)).not.toBeInTheDocument();
+        expect(
+            within(dialog).queryByText(/\b0 units/u),
+        ).not.toBeInTheDocument();
+    });
+
+    it('offers no amendment while the stage does not enable it', () => {
+        const page = props(sealedMonthly);
+
+        render(
+            <AuditorAudit
+                {...page}
+                actions={{ ...page.actions, amend: null }}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Start a linked amendment' }),
+        ).not.toBeInTheDocument();
     });
 });
 

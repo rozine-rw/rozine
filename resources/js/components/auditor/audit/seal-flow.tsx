@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { useEffect, useEffectEvent, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { EvidenceList } from '@/components/auditor/audit/evidence';
 import {
@@ -30,6 +30,9 @@ import type { AuditorPreviewOutcome, SealStage } from '@/types/auditor';
 
 /** A confirmed authenticator's one-time code (auditor-filing-v1 point 2). */
 export const CODE_LENGTH = 6;
+
+const PRIMARY =
+    'h-[50px] w-full rounded-2xl bg-rz-accent-fill text-[14.5px] font-bold text-white disabled:cursor-not-allowed disabled:bg-rz-disabled disabled:text-rz-secondary';
 
 const SUMMARY_TONE = {
     ok: 'text-rz-positive',
@@ -195,11 +198,12 @@ type SealFlowOptions = {
     /** The audited month, or the empty string for a Flash Audit. */
     period: string;
     canContinue: boolean;
+    /** Null while the delivered stage does not enable that command: it then has no button. */
     actions: {
-        step_up: RouteAction;
-        seal: RouteAction;
-        request_changes: RouteAction;
-        reject: RouteAction;
+        step_up: RouteAction | null;
+        seal: RouteAction | null;
+        request_changes: RouteAction | null;
+        reject: RouteAction | null;
     };
     preview?: AuditorPreviewOutcome;
 };
@@ -212,6 +216,12 @@ type SealFlowOptions = {
  * the proof and the pinned versions, and the server signs. A stale digest or version asks for a
  * new preview and a new code; a monthly filing can instead go back to the business or be
  * rejected, each with a coded reason and a factual explanation — never a credit verdict.
+ *
+ * The note is saved before anything is previewed (#96, S-D): an edited note goes to the server
+ * through `audit.save_step` at `step: seal`, and the page is read afresh with the new report
+ * revision and a digest that covers it. Only a note that matches the persisted one can be
+ * previewed, confirmed and sealed, so no note ever travels beside an older digest; editing it
+ * again withdraws any open preview and code entry until it is saved again.
  */
 export function useSealFlow({
     stage,
@@ -225,36 +235,121 @@ export function useSealFlow({
     const { t } = useTranslation();
     const center = useAuditorCommands();
     const refusalText = useRefusalText();
-    const stepUp = useStepUp(actions.step_up);
+    const stepUp = useStepUp();
     const [nested, setNested] = useState<Nested>(() => initialNested(preview));
     const [note, setNote] = useState(stage.note.value);
     const [code, setCode] = useState('');
     const [entry, setEntry] = useState<Entry>(() => initialEntry(preview));
     const [stale, setStale] = useState<string | null>(null);
+    /*
+     * The stage a note save was sent from, and the one it completed on. Either stays current only
+     * until fresh props arrive, so "Saving note…" lasts from the request to the fresh read.
+     */
+    const [sentFrom, setSentFrom] = useState<SealStage | null>(null);
+    const [savedFrom, setSavedFrom] = useState<SealStage | null>(null);
     const initialReason = preview?.kind === 'sheet' ? preview.reason : null;
+    /*
+     * The current confirmation attempt. A step-up answer counts only while its attempt is still
+     * current: closing the preview or code entry, editing the note, new facts (a fresh read,
+     * revision or digest) or leaving the page withdraws it, and a late proof is then dropped
+     * without sealing. Once the seal itself is sent, the command's own lookup takes over.
+     */
+    const attempt = useRef(0);
+    const withdraw = () => {
+        attempt.current += 1;
+    };
+
+    useEffect(
+        () => () => {
+            attempt.current += 1;
+        },
+        [stage, stage.digest, context.revision],
+    );
 
     const close = () => {
+        withdraw();
         setNested(null);
         setCode('');
     };
+    /* The note the server holds, and which the digest covers; only it is ever sealed. */
+    const persisted = stage.note.value;
+    const unsaved = note.trim() !== persisted.trim();
+    const savingNote =
+        savedFrom === stage || (center.busy && sentFrom === stage);
     const noteReady =
         !stage.note.required || note.trim().length >= stage.note.min;
+    const canSaveNote =
+        unsaved &&
+        noteReady &&
+        !savingNote &&
+        center.idle &&
+        center.allowed('audit.save_step');
     const ready = canContinue && noteReady && center.idle;
-    const canSeal = center.allowed('audit.seal');
-    const canRequestChanges =
-        stage.reason_options !== null &&
-        center.allowed('audit.request_changes');
-    const canReject =
-        stage.reason_options !== null && center.allowed('audit.reject');
+    /* Sealing needs both its routes: the step-up and the seal itself. */
+    const sealRoutes =
+        actions.step_up !== null &&
+        actions.seal !== null &&
+        center.allowed('audit.seal')
+            ? { stepUp: actions.step_up, seal: actions.seal }
+            : null;
+    const canSeal = sealRoutes !== null;
+    const requestChangesRoute =
+        stage.reason_options !== null && center.allowed('audit.request_changes')
+            ? actions.request_changes
+            : null;
+    const canRequestChanges = requestChangesRoute !== null;
+    const rejectRoute =
+        stage.reason_options !== null && center.allowed('audit.reject')
+            ? actions.reject
+            : null;
+    const canReject = rejectRoute !== null;
     const throttled = entry.kind === 'throttled';
     const busy = stepUp.checking || center.busy;
 
-    const seal = (proof: string) =>
+    const editNote = (value: string) => {
+        withdraw();
+        setNote(value);
+
+        /*
+         * A preview, and any code typed against it, covered the note as it was saved: both are
+         * withdrawn, and an earlier attempt's message with them. A throttle still runs its course.
+         */
+        if (nested === 'preview' || nested === 'code') {
+            close();
+        }
+
+        setEntry((current) =>
+            current.kind === 'throttled' ? current : { kind: 'ready' },
+        );
+    };
+
+    const saveNote = () => {
+        const from = stage;
+
+        setStale(null);
+        setSentFrom(from);
+        center.send(
+            {
+                name: 'audit.save_step',
+                business,
+                route: context.save,
+                payload: {
+                    audit_id: context.auditId,
+                    step: 'seal',
+                    expected_revision: context.revision,
+                    note: note.trim(),
+                },
+            },
+            { onCompleted: () => setSavedFrom(from) },
+        );
+    };
+
+    const seal = (route: RouteAction, proof: string) =>
         center.send(
             {
                 name: 'audit.seal',
                 business,
-                route: actions.seal,
+                route,
                 payload: {
                     audit_id: context.auditId,
                     expected_revision: context.revision,
@@ -265,7 +360,8 @@ export function useSealFlow({
                     evidence_ids: stage.evidence.map(
                         (item) => item.evidence_id,
                     ),
-                    note: note.trim(),
+                    /* An exact echo of the persisted note the digest covers. */
+                    note: persisted,
                     step_up: { proof },
                 },
             },
@@ -292,13 +388,18 @@ export function useSealFlow({
             },
         );
 
-    const confirm = async () => {
+    const confirm = async (routes: {
+        stepUp: RouteAction;
+        seal: RouteAction;
+    }) => {
         /* The code leaves the page in this one request and is not kept for any retry. */
         const typed = code;
 
         setCode('');
+        withdraw();
 
-        const result = await stepUp.verify({
+        const current = attempt.current;
+        const result = await stepUp.verify(routes.stepUp, {
             audit_id: context.auditId,
             expected_revision: context.revision,
             digest: stage.digest,
@@ -307,10 +408,15 @@ export function useSealFlow({
             code: typed,
         });
 
+        /* Withdrawn while the code was checked: nothing more happens, least of all a seal. */
+        if (current !== attempt.current) {
+            return;
+        }
+
         switch (result.kind) {
             case 'proof':
                 setEntry({ kind: 'ready' });
-                seal(result.proof.proof);
+                seal(routes.seal, result.proof.proof);
 
                 return;
             case 'invalid':
@@ -422,9 +528,13 @@ export function useSealFlow({
                 id="auditor-seal-note"
                 value={note}
                 maxLength={stage.note.max}
-                onChange={(event) => setNote(event.target.value)}
+                readOnly={savingNote}
+                onChange={(event) => editNote(event.target.value)}
                 placeholder={t('auditor.seal.note_placeholder')}
                 aria-invalid={center.errors.note ? true : undefined}
+                aria-describedby={
+                    unsaved ? 'auditor-seal-note-unsaved' : undefined
+                }
                 className={cn(NOTE_FIELD, 'mt-2 min-h-[84px]')}
             />
             <p className="mt-1 text-right text-[10.5px] text-rz-secondary">
@@ -436,24 +546,45 @@ export function useSealFlow({
             <FieldError id="auditor-seal-note-error">
                 {center.errors.note}
             </FieldError>
+            {unsaved && canSeal && (
+                <p
+                    id="auditor-seal-note-unsaved"
+                    className="mt-1.5 text-[11.5px] leading-[1.5] text-rz-secondary"
+                >
+                    {t('auditor.seal.note_unsaved')}
+                </p>
+            )}
         </>
     );
 
     const footer = (
         <>
-            {canSeal && (
-                <button
-                    type="button"
-                    disabled={!ready}
-                    onClick={() => {
-                        setStale(null);
-                        setNested('preview');
-                    }}
-                    className="h-[50px] w-full rounded-2xl bg-rz-accent-fill text-[14.5px] font-bold text-white disabled:cursor-not-allowed disabled:bg-rz-disabled disabled:text-rz-secondary"
-                >
-                    {t('auditor.seal.preview')}
-                </button>
-            )}
+            {canSeal &&
+                (unsaved ? (
+                    <button
+                        type="button"
+                        disabled={!canSaveNote}
+                        onClick={saveNote}
+                        aria-busy={savingNote || undefined}
+                        className={PRIMARY}
+                    >
+                        {savingNote
+                            ? t('auditor.seal.saving_note')
+                            : t('auditor.seal.save_note')}
+                    </button>
+                ) : (
+                    <button
+                        type="button"
+                        disabled={!ready}
+                        onClick={() => {
+                            setStale(null);
+                            setNested('preview');
+                        }}
+                        className={PRIMARY}
+                    >
+                        {t('auditor.seal.preview')}
+                    </button>
+                ))}
             {(canRequestChanges || canReject) && (
                 <div className="flex gap-[9px]">
                     {canRequestChanges && (
@@ -484,7 +615,11 @@ export function useSealFlow({
     let overlay: ReactNode = null;
     const reasons = stage.reason_options;
 
-    if (nested === 'request_changes' && canRequestChanges && reasons !== null) {
+    if (
+        nested === 'request_changes' &&
+        requestChangesRoute !== null &&
+        reasons !== null
+    ) {
         overlay = (
             <ReasonSheet
                 title={t('auditor.seal.suggest')}
@@ -498,7 +633,7 @@ export function useSealFlow({
                         {
                             name: 'audit.request_changes',
                             business,
-                            route: actions.request_changes,
+                            route: requestChangesRoute,
                             payload: reasonFields(fields),
                         },
                         { onCompleted: close },
@@ -507,7 +642,11 @@ export function useSealFlow({
                 onClose={close}
             />
         );
-    } else if (nested === 'reject' && canReject && reasons !== null) {
+    } else if (
+        nested === 'reject' &&
+        rejectRoute !== null &&
+        reasons !== null
+    ) {
         overlay = (
             <ReasonSheet
                 title={t('auditor.seal.reject')}
@@ -522,7 +661,7 @@ export function useSealFlow({
                         {
                             name: 'audit.reject',
                             business,
-                            route: actions.reject,
+                            route: rejectRoute,
                             payload: reasonFields(fields),
                         },
                         { onCompleted: close },
@@ -531,7 +670,11 @@ export function useSealFlow({
                 onClose={close}
             />
         );
-    } else if ((nested === 'preview' || nested === 'code') && canSeal) {
+    } else if (
+        (nested === 'preview' || nested === 'code') &&
+        sealRoutes !== null &&
+        !unsaved
+    ) {
         const notice = center.notice;
         const ownNotice =
             notice?.kind === 'refused' && STEP_UP_REFUSALS.has(notice.code);
@@ -624,6 +767,16 @@ export function useSealFlow({
                                         )}
                                     </section>
                                 ))}
+                                {persisted !== '' && (
+                                    <section>
+                                        <StepEyebrow>
+                                            {t('auditor.seal.note')}
+                                        </StepEyebrow>
+                                        <p className="mt-2 text-[12px] leading-[1.55] whitespace-pre-line text-rz-slate">
+                                            {persisted}
+                                        </p>
+                                    </section>
+                                )}
                                 <section>
                                     <StepEyebrow>
                                         {t('auditor.seal.evidence')}
@@ -715,7 +868,7 @@ export function useSealFlow({
                         ) : stage.mfa.confirmed ? (
                             <button
                                 type="button"
-                                onClick={() => void confirm()}
+                                onClick={() => void confirm(sealRoutes)}
                                 disabled={
                                     code.length < CODE_LENGTH ||
                                     busy ||

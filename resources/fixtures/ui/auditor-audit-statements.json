@@ -55,15 +55,31 @@
                 },
                 "cover": {
                     "value": "1.31",
-                    "band": "healthy"
+                    "band": null
                 },
-                "document": {
-                    "name": "GreenLeaf-Agro-2026-09.pdf",
-                    "link": {
-                        "url": "/preview/auditor-audit-statements",
-                        "method": "get"
+                "documents": [
+                    {
+                        "name": "GreenLeaf-Agro-BK-current-2026-09.pdf",
+                        "link": {
+                            "url": "/preview/auditor-audit-statements?document=sd_bk_current",
+                            "method": "get"
+                        }
+                    },
+                    {
+                        "name": "GreenLeaf-Agro-BK-savings-2026-09.pdf",
+                        "link": {
+                            "url": "/preview/auditor-audit-statements?document=sd_bk_savings",
+                            "method": "get"
+                        }
+                    },
+                    {
+                        "name": "GreenLeaf-Agro-MoMo-2026-09.csv",
+                        "link": {
+                            "url": "/preview/auditor-audit-statements?document=sd_momo",
+                            "method": "get"
+                        }
                     }
-                }
+                ]
             }
         },
         "can_continue": true,

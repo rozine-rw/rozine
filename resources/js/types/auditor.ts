@@ -23,6 +23,7 @@ export type AuditorAllowedAction =
     | 'assignment.accept'
     | 'assignment.decline'
     | 'conflict.declare'
+    | 'audit.start'
     | 'audit.save_step'
     | 'audit.seal'
     | 'audit.request_changes'
@@ -133,6 +134,11 @@ export type AuditorCommand = OperationCommand<AuditorCommandName> & {
     route: RouteAction;
     /** The business the command concerns, for the result card. */
     business: string;
+    /**
+     * The operation lookup this command recovers through, when it is not the page's own: a report
+     * start is looked up at `links.start_operation`, never the assignment's lookup.
+     */
+    lookup?: RouteLink;
 };
 
 /** The record a sealed report returns (point 6). Algorithm and key custody are the server's. */
@@ -673,12 +679,28 @@ export type FileJob = {
 export type AuditorFileProps = AuditorPageContract &
     EngagementSummaryProp & {
         job: FileJob;
-        actions: JobActions;
+        actions: JobActions & {
+            /**
+             * `audit.start` (#96): present once assigned and while no report exists, null
+             * otherwise. Starting sends the assignment revision with the `application` pins and
+             * follows `data.next`; the file GET creates nothing, and once a report exists
+             * `links.procedure` resumes it instead.
+             */
+            start: RouteAction | null;
+        };
+        /**
+         * The exact application ID and revision a started report binds, sent with `actions.start`.
+         * Null when no application exists: the file then says there is nothing to start.
+         */
+        application: RecordRef | null;
         decline_options: ServerOption<DeclineReason>[];
+        /** `operation` recovers assignment and conflict commands; a start has its own lookup. */
         links: OperationLookupLinks & {
             close: RouteLink;
-            /** Null until the procedure is served (S-D): the page then offers no Continue button. */
+            /** The started report's procedure; null until a report exists. */
             procedure: RouteLink | null;
+            /** The report start's operation lookup, with the literal `{request_id}` token. */
+            start_operation: RouteLink;
         };
         /** Jobs, drawn beneath the sheet on a wide screen. */
         jobs: AuditorJobsProps;
@@ -778,7 +800,12 @@ export type LedgerDocument = {
 
 export type LedgerStage = {
     step: 'ledger';
-    reported_stock: Money;
+    /**
+     * The stock value the business declared. Null when no Business stock declaration exists (the
+     * application and statement facts do not supply one, #96 S-D): it reads "Not declared", never
+     * zero, and reconciliation stays blocked.
+     */
+    reported_stock: Money | null;
     observed_stock: Money | null;
     /** The policy tolerance, as the server words it: "RWF 0". */
     tolerance: string;
@@ -802,8 +829,17 @@ export type StatementsStage = {
               inflow: Money;
               outflow: Money;
               net: Money;
-              cover: { value: string; band: 'healthy' | 'watch' | 'below' };
-              document: { name: string; link: RouteLink };
+              /**
+               * The factual cover, `inflow / (outflow + debt_service)` to two decimals: "1.84".
+               * Null when the denominator is zero, and it reads "Unavailable". No monitoring
+               * thresholds are approved, so there is no band and the figure is shown neutrally.
+               */
+              cover: { value: string; band: null } | null;
+              /**
+               * Every original document behind the month, each a protected download (web or API)
+               * opened as an ordinary link. None stands in for the others.
+               */
+              documents: { name: string; link: RouteLink }[];
           }
         | { status: 'unavailable'; reason: string };
 };
@@ -824,7 +860,8 @@ export type CountStage = {
         variance: Variance | null;
     };
     tolerance: string;
-    period: { from: string; to: string };
+    /** The statement period; null for a retained record with no pinned period. */
+    period: { from: string; to: string } | null;
     account_ref: string;
     sector: { label: string; definition: string };
     inventory_proofs: ProofItem[];
@@ -941,12 +978,16 @@ export type AuditProcedureProps = AuditorPageContract & {
     actions: {
         save: RouteAction;
         conflict: RouteAction;
+        /**
+         * The commands below are null while the delivered stage does not enable them (they are
+         * then also absent from `allowed_actions`): the page offers no button for a null one.
+         */
         /** Returns a `StepUpProof` for the authenticator code; not an operation. */
-        step_up: RouteAction;
-        seal: RouteAction;
-        request_changes: RouteAction;
-        reject: RouteAction;
-        amend: RouteAction;
+        step_up: RouteAction | null;
+        seal: RouteAction | null;
+        request_changes: RouteAction | null;
+        reject: RouteAction | null;
+        amend: RouteAction | null;
     };
     outcome: AuditorOutcome | null;
     /** Jobs, drawn beneath the sheet on a wide screen. */

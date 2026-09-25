@@ -3033,6 +3033,34 @@ const en = {
         'Download the certificate on record',
     'auditor.accreditation.view_submitted':
         'Download the submitted certificate',
+    'auditor.seal.save_note': 'Save note',
+    'auditor.seal.saving_note': 'Saving note…',
+    'auditor.seal.note_unsaved':
+        'Save your note before you preview. The preview, your code and the seal all cover the saved note.',
+    'auditor.ledger.reported_undeclared': 'Not declared',
+    'auditor.ledger.reported_undeclared_note':
+        'The business has not declared a stock value, so there is no reported figure to compare your count with. Record what you counted.',
+    'auditor.ledger.reconciles_undeclared':
+        'Reconciliation stays blocked until the business declares its stock.',
+    'auditor.statements.cover_unavailable': 'Unavailable',
+    'auditor.statements.documents': 'Source documents',
+    'auditor.statements.no_documents':
+        'No source documents are on file for this month.',
+    'auditor.count.period_unavailable': 'Unavailable',
+    'auditor.file.start': 'Start the audit',
+    'auditor.file.starting': 'Starting…',
+    'auditor.file.application_unavailable':
+        'No submitted application is available to audit yet.',
+    'auditor.command.refused.APPLICATION_VERSION_CONFLICT':
+        "The business's application changed since you opened this file. The page has been refreshed — check it and start again.",
+    'auditor.command.refused.APPLICATION_NOT_SUBMITTED':
+        "This application hasn't been submitted, so there is nothing to audit yet. The page has been refreshed.",
+    'auditor.command.refused.APPLICATION_NOT_FOUND':
+        'This application is no longer available to you, so nothing was started.',
+    'auditor.command.refused.AUDIT_APPLICATION_BOUND':
+        'A report is already bound to this application, so no new one was started. The page has been refreshed — continue from there.',
+    'auditor.command.refused.AUDIT_REPORT_REASSIGNMENT_REQUIRED':
+        'This report has to be reassigned before work on it can continue, so nothing was started. The page has been refreshed.',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

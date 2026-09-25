@@ -72,6 +72,26 @@ function FileSheet({ receipt, ...props }: FileSheetProps) {
             payload: { assignment_id: job.id, expected_revision: job.revision },
         });
 
+    /* A start needs its route, the application it binds and the server's permission. */
+    const startRoute = props.actions.start;
+    const application = props.application;
+    const start =
+        startRoute !== null && application !== null && allowed('audit.start')
+            ? () =>
+                  center.send({
+                      name: 'audit.start',
+                      business: job.business,
+                      route: startRoute,
+                      lookup: links.start_operation,
+                      payload: {
+                          assignment_id: job.id,
+                          expected_revision: job.revision,
+                          application_id: application.id,
+                          application_revision: application.revision,
+                      },
+                  })
+            : null;
+
     let primary = null;
 
     if (blocked === null) {
@@ -93,6 +113,29 @@ function FileSheet({ receipt, ...props }: FileSheetProps) {
                 <Link href={links.procedure} className={SHEET_PRIMARY}>
                     {t('auditor.file.continue')}
                 </Link>
+            );
+        } else if (start !== null) {
+            primary = (
+                <button
+                    type="button"
+                    onClick={start}
+                    disabled={!center.idle}
+                    aria-busy={center.busy || undefined}
+                    className={SHEET_PRIMARY}
+                >
+                    {center.busy
+                        ? t('auditor.file.starting')
+                        : t('auditor.file.start')}
+                </button>
+            );
+        } else if (application === null) {
+            primary = (
+                <p
+                    role="note"
+                    className="rounded-xl border border-dashed border-rz-border px-3.5 py-3 text-center text-[12px] leading-[1.5] text-rz-secondary"
+                >
+                    {t('auditor.file.application_unavailable')}
+                </p>
             );
         }
     } else {
@@ -155,7 +198,9 @@ function FileSheet({ receipt, ...props }: FileSheetProps) {
 /**
  * The business file (MVP-AUDITOR-SCR-02; the design's "Application preview", L1017–1093). An
  * offered file can be accepted or declined; any file can carry a conflict declaration — each only
- * when the server's `allowed_actions` lists it. A blocking conflict withdraws the file the moment
+ * when the server's `allowed_actions` lists it. An assigned file starts its report explicitly
+ * (`audit.start`, pinned to the exact application revision, recovered through its own lookup) or,
+ * once a report exists, continues it; opening the file creates nothing. A blocking conflict withdraws the file the moment
  * it is recorded, leaving the partner's receipt. A phone gets a full page; a wide screen gets the
  * sheet over the Jobs column it came from.
  *

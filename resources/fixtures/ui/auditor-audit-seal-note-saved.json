@@ -7,35 +7,37 @@
         "allowed_actions": [
             "audit.save_step",
             "audit.seal",
-            "conflict.declare",
-            "audit.request_changes",
-            "audit.reject"
+            "conflict.declare"
         ],
         "audit": {
-            "id": "mr_greenleaf",
-            "kind": "monthly",
-            "business": "GreenLeaf Agro",
+            "id": "fa_huye",
+            "kind": "flash",
+            "business": "Huye Motors",
             "district": "Gasabo",
-            "distance_km": "8.8",
-            "month": "2026-09-01",
+            "distance_km": "11.2",
+            "month": null,
             "deadline": {
-                "due_at": "2026-10-07T21:59:59Z"
+                "due_at": "2026-10-04T13:59:55Z"
             },
-            "revision": 3,
+            "revision": 7,
             "reassigned_from": null,
             "amends": null
         },
         "steps": [
             {
-                "key": "statements",
+                "key": "review",
                 "state": "done"
             },
             {
-                "key": "count",
+                "key": "check_in",
                 "state": "done"
             },
             {
                 "key": "photos",
+                "state": "done"
+            },
+            {
+                "key": "ledger",
                 "state": "done"
             },
             {
@@ -47,35 +49,30 @@
             "step": "seal",
             "summary": [
                 {
-                    "label": "Proof artefacts",
-                    "value": "5 of 6 seen",
-                    "tone": "neutral"
-                },
-                {
-                    "label": "Cash variance",
-                    "value": "−2.1% · outside tolerance",
-                    "tone": "flag"
-                },
-                {
-                    "label": "Stock variance",
-                    "value": "−3.2% · outside tolerance",
-                    "tone": "flag"
-                },
-                {
-                    "label": "Operational status",
-                    "value": "Active",
+                    "label": "Site photos captured",
+                    "value": "3 of 3 · 1 extra",
                     "tone": "ok"
                 },
                 {
-                    "label": "Photos captured",
-                    "value": "3 of 3",
+                    "label": "On-site check-in",
+                    "value": "Logged 18:02",
+                    "tone": "ok"
+                },
+                {
+                    "label": "Stock variance",
+                    "value": "−4.2% · outside tolerance",
+                    "tone": "flag"
+                },
+                {
+                    "label": "Paper ledgers reconcile",
+                    "value": "Yes · 1 document",
                     "tone": "ok"
                 }
             ],
             "note": {
                 "required": true,
-                "why": "A note is required because cash and stock differ from the statements on file. Say what you saw and why.",
-                "value": "Cold room restocked 30 Sep; six crates were in transit on the delivery note.",
+                "why": "A note is required because stock differs from the reported figure by 4.2%. Say what you saw and why.",
+                "value": "Six crates of stock were in the delivery van when I counted the store.",
                 "min": 40,
                 "max": 100
             },
@@ -84,73 +81,95 @@
                     "code": "scope",
                     "no": "Section 1",
                     "title": "Scope of engagement & agreed-upon procedures",
-                    "body": "Procedure MVP-AUP-1, monthly report for September 2026.\nStatements, cash, stock and site capture at GreenLeaf Agro, Gasabo.",
+                    "body": "Procedure MVP-AUP-1, Flash Audit.\nPremises, stock count, ledger reconciliation and site capture at Huye Motors, Gasabo.",
                     "evidence_ids": []
                 },
                 {
                     "code": "factual_findings",
                     "no": "Section 2",
                     "title": "Factual findings",
-                    "body": "Cash counted: RWF 1,184,000 against RWF 1,210,000 in the statements (−2.1%).\nStock counted: 184 units against 190 reported (−3.2%).\nOperations active; 3 required photos captured in the capture app.",
+                    "body": "Stock counted: RWF 36,400,000 against RWF 38,000,000 reported (−4.2%).\nLedgers: 1 of 2 documents accepted; paper ledgers reconcile with the statements on file.\nPhotos: 3 required and 1 extra, captured in the capture app.",
                     "evidence_ids": [
-                        "ev_green_statement",
-                        "ev_green_cold_room",
-                        "ev_green_stock"
+                        "ev_huye_storefront",
+                        "ev_huye_stock",
+                        "ev_huye_till",
+                        "ev_huye_extra_1",
+                        "ev_huye_ledger_1"
                     ]
                 },
                 {
                     "code": "attestation",
                     "no": "Section 3",
                     "title": "Licence attestation, location & digest",
-                    "body": "Licence ICPAR/P-2026/0481 in good standing, checked 28 Sep 2026.\nOn-site check-in -1.9502, 30.0588 (±9 m) at 10:14 on 3 Oct.",
-                    "evidence_ids": ["ev_green_checkin"]
+                    "body": "Licence ICPAR/P-2026/0481 in good standing, checked 28 Sep 2026.\nOn-site check-in -1.9441, 30.0619 (±12 m) at 18:02.",
+                    "evidence_ids": ["ev_huye_checkin"]
                 }
             ],
             "evidence": [
                 {
-                    "evidence_id": "ev_green_statement",
-                    "kind": "statement",
-                    "sha256": "24d7971524d1d7bfb5dcd32c1b5052aeca9376b4cd2fbfcf9f3258d4014d6094",
-                    "captured_at": null,
-                    "source": "web_upload",
+                    "evidence_id": "ev_huye_checkin",
+                    "kind": "check_in",
+                    "sha256": "3e6ee4ec03b129d581c452946430646b0aa3859587e296954bb290bd1c395c95",
+                    "captured_at": "2026-10-03T16:02:00Z",
+                    "source": "companion_device",
+                    "device_attestation": "unavailable",
+                    "position": "-1.9441, 30.0619",
+                    "accuracy_m": 12
+                },
+                {
+                    "evidence_id": "ev_huye_storefront",
+                    "kind": "photo",
+                    "sha256": "e30331ede4472c8ca909df62119a271111ed95ac460ba272fda42b9bcc6eb952",
+                    "captured_at": "2026-10-03T16:05:00Z",
+                    "source": "companion_device",
+                    "device_attestation": "unavailable",
+                    "position": "-1.9441, 30.0619",
+                    "accuracy_m": 12
+                },
+                {
+                    "evidence_id": "ev_huye_stock",
+                    "kind": "photo",
+                    "sha256": "3f784f875218503d5c8cfe1fd4bde3b9b05565efdf155f678965d04d13093837",
+                    "captured_at": "2026-10-03T16:09:00Z",
+                    "source": "companion_device",
+                    "device_attestation": "unavailable",
+                    "position": "-1.9441, 30.0620",
+                    "accuracy_m": 14
+                },
+                {
+                    "evidence_id": "ev_huye_till",
+                    "kind": "photo",
+                    "sha256": "e95aa3caa5cacd9b51f2a1b8442d1f0c75826740626bf75d17d0101ad6b7decd",
+                    "captured_at": "2026-10-03T16:12:00Z",
+                    "source": "companion_device",
                     "device_attestation": "unavailable",
                     "position": null,
                     "accuracy_m": null
                 },
                 {
-                    "evidence_id": "ev_green_checkin",
-                    "kind": "check_in",
-                    "sha256": "50b1438010d5436bec16177e42055195efde8629060d70ca94adc81913ff9d69",
-                    "captured_at": "2026-10-03T10:14:00Z",
-                    "source": "companion_device",
-                    "device_attestation": "unavailable",
-                    "position": "-1.9502, 30.0588",
-                    "accuracy_m": 9
-                },
-                {
-                    "evidence_id": "ev_green_cold_room",
+                    "evidence_id": "ev_huye_extra_1",
                     "kind": "photo",
-                    "sha256": "dc7f1aa92ff67570fe2dc4675ac9faf58cd7d0f20f03047157d76cc1a773110a",
-                    "captured_at": "2026-10-03T10:20:00Z",
-                    "source": "companion_device",
-                    "device_attestation": "unavailable",
-                    "position": "-1.9502, 30.0588",
-                    "accuracy_m": 9
-                },
-                {
-                    "evidence_id": "ev_green_stock",
-                    "kind": "photo",
-                    "sha256": "4f5c7b1a77c87b67c15259dd2b60e5f3b332f20919fc42b56ac8e80cf72aaa1d",
+                    "sha256": "d95fd7360c19570e962786fc71c1931d3a144425c6c439996d67c0258d4ad649",
                     "captured_at": null,
                     "source": "companion_device",
+                    "device_attestation": "unavailable",
+                    "position": null,
+                    "accuracy_m": null
+                },
+                {
+                    "evidence_id": "ev_huye_ledger_1",
+                    "kind": "ledger",
+                    "sha256": "34a34c79aa5c8098533424a15ded63e27396e9ba7fce1a6815f0d5169be303d6",
+                    "captured_at": null,
+                    "source": "web_upload",
                     "device_attestation": "unavailable",
                     "position": null,
                     "accuracy_m": null
                 }
             ],
             "procedure_version": "MVP-AUP-1",
-            "findings_version": "fnd-2026-10-03.4",
-            "evidence_version": "ev-2026-10-03.3",
+            "findings_version": "fnd-2026-10-03.2",
+            "evidence_version": "ev-2026-10-03.5",
             "digest": "sha256:9f2c4e71b0a85d3e6c1f47a2d9b83e05c6a1f24d7e98b3c05a6d1e2f47b8c9d0",
             "licence": "ICPAR/P-2026/0481",
             "mfa": {
@@ -160,60 +179,10 @@
                     "method": "get"
                 }
             },
-            "reason_options": {
-                "request_changes": [
-                    {
-                        "code": "missing_originals",
-                        "label": "Original documents missing",
-                        "requires_explanation": true
-                    },
-                    {
-                        "code": "reconciliation_difference",
-                        "label": "Unexplained reconciliation difference",
-                        "requires_explanation": true
-                    },
-                    {
-                        "code": "classification_unresolved",
-                        "label": "Classification unresolved",
-                        "requires_explanation": true
-                    },
-                    {
-                        "code": "debt_evidence_missing",
-                        "label": "Debt or draw evidence missing",
-                        "requires_explanation": true
-                    },
-                    {
-                        "code": "capture_unverified",
-                        "label": "Capture could not be verified",
-                        "requires_explanation": true
-                    },
-                    {
-                        "code": "other",
-                        "label": "Other",
-                        "requires_explanation": true
-                    }
-                ],
-                "reject": [
-                    {
-                        "code": "evidence_unverifiable",
-                        "label": "Evidence cannot be verified",
-                        "requires_explanation": true
-                    },
-                    {
-                        "code": "procedure_incomplete",
-                        "label": "Procedure cannot be completed",
-                        "requires_explanation": true
-                    },
-                    {
-                        "code": "other",
-                        "label": "Other",
-                        "requires_explanation": true
-                    }
-                ]
-            }
+            "reason_options": null
         },
         "can_continue": true,
-        "hint": "Sealing binds your ICPAR licence, location and time; GreenLeaf Agro then co-signs by 7 Oct.",
+        "hint": "Sealing binds your ICPAR licence, location and time to this report; Huye Motors then co-signs.",
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",
@@ -242,7 +211,7 @@
                 "method": "post"
             },
             "seal": {
-                "url": "/preview/auditor-audit-sealed-monthly",
+                "url": "/preview/auditor-audit-sealed",
                 "method": "post"
             },
             "request_changes": {
@@ -465,7 +434,7 @@
             ]
         },
         "assignment": {
-            "id": "asg_mr_greenleaf",
+            "id": "asg_fa_huye",
             "revision": 4
         }
     }

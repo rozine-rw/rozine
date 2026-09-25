@@ -128,6 +128,10 @@ function DocumentRow({
  * attaches the ledger books; the server reads each document, measures the variance against the
  * reported figure under the policy tolerance, and says whether anything must be explained at
  * sign-off. The "reconciles" tick is a factual attestation, not a verdict.
+ *
+ * With no stock declaration from the business there is no reported figure: it reads "Not
+ * declared" — never zero — and the reconciliation tick stays blocked, since there is nothing to
+ * reconcile the count against. The count itself can still be recorded.
  */
 export function StepLedger({
     stage,
@@ -139,9 +143,11 @@ export function StepLedger({
     const { t } = useTranslation();
     const center = useAuditorCommands();
     const canUpload = center.allowed('audit.save_step') && center.idle;
+    const declared = stage.reported_stock !== null;
+    const canReconcile = declared && stage.ledger_ready;
     const { form, submit, errors } = useStepForm(context, {
         observed_stock: stage.observed_stock?.amount ?? '',
-        reconciled: stage.reconciled,
+        reconciled: declared && stage.reconciled,
     });
     const file = useRef<HTMLInputElement>(null);
     const replaces = useRef<string | null>(null);
@@ -210,10 +216,24 @@ export function StepLedger({
                     <span className="text-[12.5px] text-rz-secondary">
                         {t('auditor.ledger.reported')}
                     </span>
-                    <span className="text-[15px] font-bold text-rz-ink">
-                        {formatRwf(stage.reported_stock)}
-                    </span>
+                    {stage.reported_stock === null ? (
+                        <span className="text-[13px] font-bold text-rz-secondary">
+                            {t('auditor.ledger.reported_undeclared')}
+                        </span>
+                    ) : (
+                        <span className="text-[15px] font-bold text-rz-ink">
+                            {formatRwf(stage.reported_stock)}
+                        </span>
+                    )}
                 </div>
+                {!declared && (
+                    <p
+                        role="note"
+                        className="mt-1.5 text-[11.5px] leading-[1.5] text-rz-secondary"
+                    >
+                        {t('auditor.ledger.reported_undeclared_note')}
+                    </p>
+                )}
                 <label
                     htmlFor="auditor-observed-stock"
                     className="mt-3.5 block text-[11px] font-bold tracking-[.03em] text-rz-slate uppercase"
@@ -311,13 +331,13 @@ export function StepLedger({
                 type="button"
                 role="checkbox"
                 aria-checked={form.data.reconciled}
-                disabled={!stage.ledger_ready}
+                disabled={!canReconcile}
                 onClick={() =>
                     form.setData('reconciled', !form.data.reconciled)
                 }
                 className={cn(
                     'mt-3.5 flex w-full items-center gap-3 rounded-xl border border-rz-border p-3.5 text-left disabled:cursor-not-allowed',
-                    stage.ledger_ready
+                    canReconcile
                         ? 'bg-rz-surface'
                         : 'bg-[#f6f8fb] dark:bg-rz-surface-sunken',
                 )}
@@ -337,15 +357,15 @@ export function StepLedger({
                 <span
                     className={cn(
                         'min-w-0 flex-1 text-[12.5px] leading-[1.4]',
-                        stage.ledger_ready
-                            ? 'text-rz-slate'
-                            : 'text-rz-secondary',
+                        canReconcile ? 'text-rz-slate' : 'text-rz-secondary',
                     )}
                 >
                     {t('auditor.ledger.reconciles')}
-                    {!stage.ledger_ready && (
+                    {!canReconcile && (
                         <span className="mt-1 block text-[11px] font-semibold text-[#c8322b] dark:text-rz-danger-text">
-                            {t('auditor.ledger.reconciles_blocked')}
+                            {declared
+                                ? t('auditor.ledger.reconciles_blocked')
+                                : t('auditor.ledger.reconciles_undeclared')}
                         </span>
                     )}
                 </span>
