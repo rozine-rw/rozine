@@ -592,6 +592,73 @@ describe('Seal — the note is saved before the preview', () => {
     });
 });
 
+describe('Seal — a source changed after the preview', () => {
+    const CHANGED =
+        'A source changed after your preview. Go back to review it, then preview again before sealing.';
+
+    const LEDGER = {
+        url: '/auditor/reports/fa_huye?step=ledger',
+        method: 'get',
+    } as const;
+
+    const withBack = (fixture: { props: unknown }): AuditProcedureProps => {
+        const page = props(fixture);
+
+        return { ...page, links: { ...page.links, back: LEDGER } };
+    };
+
+    /* The header's Back closes the sheet; the footer's goes to the step before. */
+    const backHrefs = () =>
+        within(procedure())
+            .getAllByRole('link', { name: 'Back' })
+            .map((link) => link.getAttribute('href'));
+
+    it('says so after a refused note save and leaves the way back to review it', async () => {
+        inertia.queue.push(
+            fails(409, { code: 'AUDIT_PROCEDURE_SOURCE_CHANGED' }),
+        );
+        await saveNote(withBack(seal));
+
+        expect(await screen.findByText(CHANGED)).toBeInTheDocument();
+        expect(inertia.reloads).toEqual([undefined]);
+        expect(backHrefs()).toContain(LEDGER.url);
+    });
+
+    it('closes the confirmation, says so and leaves the way back when the step-up finds it', async () => {
+        inertia.queue.push(
+            fails(409, { code: 'AUDIT_PROCEDURE_SOURCE_CHANGED' }),
+        );
+        const { user } = await openCode(withBack(stepUp));
+
+        await user.paste('123456');
+        await user.click(
+            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+        );
+
+        await waitFor(() =>
+            expect(
+                screen.queryByRole('dialog', { name: 'Huye Motors' }),
+            ).not.toBeInTheDocument(),
+        );
+        expect(within(procedure()).getByText(CHANGED)).toBeInTheDocument();
+        expect(inertia.reloads).toEqual([undefined]);
+        expect(backHrefs()).toContain(LEDGER.url);
+    });
+
+    it('offers no way back the server does not supply', () => {
+        const page = props(noteSaved);
+
+        render(
+            <AuditorAudit {...page} links={{ ...page.links, back: null }} />,
+        );
+
+        expect(backHrefs()).toEqual([page.links.close.url]);
+        expect(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        ).toBeEnabled();
+    });
+});
+
 describe('Seal — authenticator step-up', () => {
     it('trades a six-digit code for a proof, then seals with the proof alone', async () => {
         inertia.queue.push(answers(PROOF), answers(SEALED));
