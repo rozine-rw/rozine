@@ -3299,7 +3299,7 @@ const fr: Catalog = {
     'business.audit_cosign.yours.published':
         'Toutes les signatures requises sont réunies et le rapport est publié.',
     'business.audit_cosign.yours.unavailable':
-        "La cosignature n'est pas disponible pour ce rapport.",
+        "Ce rapport n'est pas ouvert à la cosignature pour le moment.",
     'business.audit_cosign.yours.cannot':
         'Vous ne pouvez pas cosigner ce rapport.',
     'business.audit_cosign.refused.with_code': '{reason} ({code})',
@@ -3370,6 +3370,8 @@ const fr: Catalog = {
     'audit.verify_seal.amended_by': 'Modifié par le rapport {id}',
     'audit.verify_seal.scope':
         "Seuls l'identifiant du rapport, son empreinte et le résultat de la vérification du sceau sont affichés ici.",
+    'business.audit_cosign.refused.AUDIT_REPORT_AMENDED':
+        "L'auditeur a modifié ce rapport ; il ne peut donc plus être cosigné. Le rapport modifié vous sera soumis pour approbation une fois scellé.",
 };
 
 export default fr;

@@ -8,6 +8,8 @@ const REFUSALS = [
     'IDEMPOTENCY_CONFLICT',
     'DIGEST_STALE',
     'MANDATE_STALE',
+    /* An Auditor amendment withdrew this report from co-signing (delivery 3). */
+    'AUDIT_REPORT_AMENDED',
     'ACTION_FORBIDDEN',
     'MANDATE_REQUIRED',
     'NOT_FOUND',

@@ -3285,7 +3285,7 @@ const rw: Catalog = {
     'business.audit_cosign.yours.published':
         'Imikono yose isabwa yabonetse kandi raporo yatangajwe.',
     'business.audit_cosign.yours.unavailable':
-        'Gushyira umukono kuri iyi raporo ntibishoboka ubu.',
+        'Iyi raporo ntishobora gushyirwaho umukono muri iki gihe.',
     'business.audit_cosign.yours.cannot':
         'Ntushobora gushyira umukono kuri iyi raporo.',
     'business.audit_cosign.refused.with_code': '{reason} ({code})',
@@ -3353,6 +3353,8 @@ const rw: Catalog = {
     'audit.verify_seal.amended_by': 'Yakosowe na raporo {id}',
     'audit.verify_seal.scope':
         "Hano herekanwa gusa nimero ya raporo, ikimenyetso cyayo n'igisubizo cy'igenzura rya kashe.",
+    'business.audit_cosign.refused.AUDIT_REPORT_AMENDED':
+        'Umugenzuzi yakosoye iyi raporo, bityo ntishobora gushyirwaho umukono. Raporo ikosowe izakugezwaho ngo uyishyireho umukono imaze gufungwa.',
 };
 
 export default rw;

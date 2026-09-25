@@ -3205,7 +3205,7 @@ const en = {
     'business.audit_cosign.yours.published':
         'Every required signature is in and the report is published.',
     'business.audit_cosign.yours.unavailable':
-        "Co-signing isn't available for this report.",
+        "This report isn't open for co-signing right now.",
     'business.audit_cosign.yours.cannot': "You can't co-sign this report.",
     'business.audit_cosign.refused.with_code': '{reason} ({code})',
     'business.audit_cosign.refused.VERSION_CONFLICT':
@@ -3271,6 +3271,8 @@ const en = {
     'audit.verify_seal.amended_by': 'Amended by report {id}',
     'audit.verify_seal.scope':
         'Only the report ID, its digest and the result of the seal check are shown here.',
+    'business.audit_cosign.refused.AUDIT_REPORT_AMENDED':
+        "The auditor has amended this report, so it can no longer be co-signed. The amended report will come to you for sign-off once it's sealed.",
 } as const;
 
 export default en;

@@ -458,7 +458,9 @@ describe('Business audit co-sign — states after signing', () => {
         setup(props(unavailableFixture));
 
         expect(
-            screen.getByText("Co-signing isn't available for this report."),
+            screen.getByText(
+                "This report isn't open for co-signing right now.",
+            ),
         ).toBeInTheDocument();
         expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
         expect(screen.queryByRole('button')).not.toBeInTheDocument();
@@ -768,6 +770,41 @@ describe('Business audit co-sign — the co-signature', () => {
             expect(inertia.visit).toHaveBeenCalledTimes(1);
         },
     );
+
+    it('reads an amended report afresh as unavailable, carrying the amendment banner', async () => {
+        inertia.visit.mockImplementationOnce(
+            (_url: unknown, options?: VisitOptions) => {
+                if (options?.preserveState === false) {
+                    inertiaPage.swap?.(props(unavailableFixture));
+                }
+
+                options?.onFinish?.();
+            },
+        );
+        inertia.queue.push(fails(409, { code: 'AUDIT_REPORT_AMENDED' }));
+        const { user } = setup();
+
+        await signAs(user);
+
+        await waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith(
+                window.location.href,
+                expect.objectContaining({ preserveState: false }),
+            ),
+        );
+        expect(
+            await screen.findByText(
+                "The auditor has amended this report, so it can no longer be co-signed. The amended report will come to you for sign-off once it's sealed. (AUDIT_REPORT_AMENDED)",
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                "This report isn't open for co-signing right now.",
+            ),
+        ).toBeInTheDocument();
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+        expect(inertia.reload).not.toHaveBeenCalled();
+    });
 
     it('sends nothing more while a fresh read is still pending', async () => {
         inertia.visit.mockImplementationOnce(() => undefined);
