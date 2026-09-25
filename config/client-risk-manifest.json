@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "583688068020a967ffa946c5f78b90ba9d91f281fae19a1f1eee225698f949a0",
-    "coverageSetSha256": "945dfdc65639e0888b7dc492c4efabc43ddd01d15e2966107db0456ffb9c5959",
+    "sourceManifestSha256": "0bd897063cdef64ebe0e29d47712d342b5825b38e4c62a812b14fccdde73bbc3",
+    "coverageSetSha256": "39365b3de673ae1e72d5a5e54e90fbdd677c0e754061dca62488646d005be2f3",
     "thresholds": {
         "critical": {
             "global": {
@@ -330,6 +330,7 @@
         "resources/js/pages/admin/ledger.tsx",
         "resources/js/pages/admin/parties.tsx",
         "resources/js/pages/admin/today.tsx",
+        "resources/js/pages/audit/verify-seal.tsx",
         "resources/js/pages/auditor/audit.tsx",
         "resources/js/pages/auditor/conflicts.tsx",
         "resources/js/pages/auditor/engagement.tsx",

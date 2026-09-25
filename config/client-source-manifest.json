@@ -174,6 +174,7 @@
     ],
     "declarationOnlyPaths": [
         "resources/js/types/admin.ts",
+        "resources/js/types/audit-seal.ts",
         "resources/js/types/auditor.ts",
         "resources/js/types/auth.ts",
         "resources/js/types/business-audit.ts",
@@ -472,6 +473,7 @@
         "resources/js/pages/admin/ledger.tsx",
         "resources/js/pages/admin/parties.tsx",
         "resources/js/pages/admin/today.tsx",
+        "resources/js/pages/audit/verify-seal.tsx",
         "resources/js/pages/auditor/audit.tsx",
         "resources/js/pages/auditor/conflicts.tsx",
         "resources/js/pages/auditor/engagement.tsx",
@@ -525,10 +527,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 497,
+        "totalTrackedSources": 499,
         "generated": 149,
-        "declarationOnly": 15,
-        "authoredExecutable": 333
+        "declarationOnly": 16,
+        "authoredExecutable": 334
     },
-    "coverageSetSha256": "945dfdc65639e0888b7dc492c4efabc43ddd01d15e2966107db0456ffb9c5959"
+    "coverageSetSha256": "39365b3de673ae1e72d5a5e54e90fbdd677c0e754061dca62488646d005be2f3"
 }

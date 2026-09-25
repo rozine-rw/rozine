@@ -3245,6 +3245,20 @@ const en = {
         'Dispute with Rozine staff',
     'business.audit_cosign.disputed.escalated.body':
         'You submitted a dispute on {date}. Your CPA upheld the report or did not act, so Rozine staff are reviewing the case. The 24-hour review timer stays paused meanwhile.',
+    'audit.verify_seal.head_title': 'Verify audit seal',
+    'audit.verify_seal.title': 'Audit seal check',
+    'audit.verify_seal.lead':
+        'Check whether a Rozine audit report carries a valid seal.',
+    'audit.verify_seal.valid': 'Seal verified',
+    'audit.verify_seal.valid_body': 'This digest matches the sealed report.',
+    'audit.verify_seal.unavailable': "This seal can't be verified right now",
+    'audit.verify_seal.unavailable_body': 'Try again later.',
+    'audit.verify_seal.report_id': 'Report ID',
+    'audit.verify_seal.digest': 'Report digest',
+    'audit.verify_seal.amends': 'Amends report {id}',
+    'audit.verify_seal.amended_by': 'Amended by report {id}',
+    'audit.verify_seal.scope':
+        'Only the report ID, its digest and the result of the seal check are shown here.',
 } as const;
 
 export default en;
