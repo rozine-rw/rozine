@@ -262,14 +262,22 @@ const fr: Catalog = {
     'business.apply.business.subtitle':
         'À partir de votre certificat RDB et de vos relevés bancaires et mobile money vérifiés. Vérifiez — si tout est correct, continuez.',
     'business.apply.business.rdb_verified': '✓ Vérifié par le RDB',
-    'business.apply.business.statements_verified': '✓ Relevés vérifiés · OCR',
+    'business.apply.business.statements_verified': '✓ Relevés vérifiés',
     'business.apply.business.active': '● Active',
     'business.apply.business.established': 'Fondée en {year}',
-    'business.apply.business.standing': 'Situation financière · {years} ans',
-    'business.apply.business.ocr_verified': 'OCR · vérifié',
+    'business.apply.business.standing': 'Situation financière',
+    'business.apply.business.statements_badge': 'Relevés vérifiés',
+    'business.apply.business.period': {
+        one: '{from} – {through} · {count} mois',
+        other: '{from} – {through} · {count} mois',
+    },
+    'business.apply.business.partial_year': {
+        one: '{year} · {count} mois',
+        other: '{year} · {count} mois',
+    },
     'business.apply.business.revenue': "Chiffre d'affaires",
     'business.apply.business.costs': 'Coûts',
-    'business.apply.business.net_profit': 'Bénéfice net',
+    'business.apply.business.net_profit': 'Trésorerie d’exploitation nette',
     'business.apply.business.existing_debt': 'Dette existante',
     'business.apply.business.crb_verified': '✓ Vérifié par le CRB',
     'business.apply.business.year_by_year': 'Année par année',
@@ -1596,6 +1604,12 @@ const fr: Catalog = {
     'auditor.file.title': 'Examiner la demande',
     'auditor.file.lead':
         'Tout ce que {business} a soumis, contrôlé selon les seuils de Rozine. Votre contrôle sur site lève ce que le moteur ne peut pas confirmer à distance.',
+    'auditor.file.lead_provisional':
+        'La demande de {business} telle qu’elle se présente actuellement.',
+    'auditor.file.lead_no_prescreen':
+        'Aucune présélection automatique n’est enregistrée.',
+    'auditor.file.lead_field_check':
+        'Votre contrôle sur site confirme ce qui ne peut pas être vérifié à distance.',
     'auditor.file.reassigned_title': 'Ce dossier vous a été réattribué',
     'auditor.file.reassigned_body':
         "Le délai initial s'applique toujours — la réattribution ne relance pas le délai. Les preuves déjà au dossier restent consignées.",
@@ -2841,6 +2855,10 @@ const fr: Catalog = {
         'En attente de la signature de {names}. La demande est soumise dès que toutes les signatures requises sont réunies.',
     'business.apply.review.cannot_sign':
         'Seul un signataire du mandat vérifié de la société peut signer cette demande.',
+    'business.apply.review.agreement_unavailable':
+        "Le contrat n'est pas encore disponible.",
+    'business.apply.review.agreement_unavailable_body':
+        "Rozine n'a pas encore publié les conditions et les avertissements sur les risques approuvés pour cette demande : il n'y a donc rien à signer pour l'instant. Votre brouillon et votre offre restent enregistrés.",
     'business.apply.view_only':
         'Vous pouvez consulter cette demande, mais pas la modifier.',
     'business.apply.submitted.application_id': 'ID de la demande · {id}',

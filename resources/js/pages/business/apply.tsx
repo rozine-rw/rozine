@@ -39,6 +39,9 @@ const SHOWN_FIELDS: Record<ApplyStep, string[]> = {
     submitted: [],
 };
 
+/** The documents every signature accepts, each by its own version and hash. */
+const AGREEMENTS = ['terms', 'privacy'] as const;
+
 /** How long typing settles before the draft is saved and evaluated. */
 const QUOTE_DEBOUNCE_MS = 450;
 
@@ -90,7 +93,18 @@ export default function BusinessApply(props: BusinessApplyProps) {
     const canSave = allowedActions.includes('application.save');
     const canEvaluate =
         canSave && allowedActions.includes('application.evaluate');
-    const canSign = allowedActions.includes('application.submit');
+    /*
+     * Missing legal text is an empty document or disclosure list (no submit capability either):
+     * nothing to sign, so no Sign button even if a submit were allowed, and no stand-in text. A
+     * business signs the Terms and the Privacy Note, so both must be there to read.
+     */
+    const agreementAvailable =
+        acceptance.disclosures.length > 0 &&
+        AGREEMENTS.every((kind) =>
+            acceptance.documents.some((document) => document.kind === kind),
+        );
+    const canSign =
+        agreementAvailable && allowedActions.includes('application.submit');
 
     const revision = useRef(props.application.revision);
     const savedKey = useRef(
@@ -146,6 +160,7 @@ export default function BusinessApply(props: BusinessApplyProps) {
     const command = useApplicationCommand({
         actions,
         lookup: links.operation,
+        identityContextRevision: props.identity_context_revision,
         preview: props.preview_outcome,
         onCompleted: (sent, resource) => {
             const { data } = resource;
@@ -227,17 +242,18 @@ export default function BusinessApply(props: BusinessApplyProps) {
     };
 
     /**
-     * The draft as typed. `step` is the resume pointer the save asks for: autosaves keep `raise`,
-     * and each Continue asks to advance; the server validates the move and answers with `next`.
+     * The draft as typed. Only a Continue names a resume pointer (`step`), asking to advance; the
+     * server validates the move and answers with `next`. An autosave (`pointer` null) sends no
+     * `step`, so the server keeps the stored pointer — a Raise reached by Back never moves it.
      */
-    const draftPayload = (pointer: 'raise' | 'review') => ({
+    const draftPayload = (pointer: 'raise' | 'review' | null) => ({
         title: raise.title,
         /* An empty target is no request yet: the draft holds null, never an empty amount. */
         target: raise.target === '' ? null : raise.target,
         term_months: raise.term_months,
         use_of_funds: raise.use_of_funds,
         story: raise.story,
-        step: pointer,
+        ...(pointer === null ? {} : { step: pointer }),
         ...context(),
     });
 
@@ -261,7 +277,7 @@ export default function BusinessApply(props: BusinessApplyProps) {
         send({
             name: 'save',
             advance: false,
-            payload: draftPayload('raise'),
+            payload: draftPayload(null),
         });
     });
 
@@ -500,6 +516,7 @@ export default function BusinessApply(props: BusinessApplyProps) {
                         acceptance={acceptance}
                         quote={readyQuote}
                         canSign={canSign}
+                        agreementAvailable={agreementAvailable}
                         reduce={reduce}
                         fields={review}
                         errors={errors}

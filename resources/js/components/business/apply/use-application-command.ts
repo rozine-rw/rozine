@@ -28,6 +28,8 @@ const initialNotice = (
 type Options = {
     actions: BusinessApplyProps['actions'];
     lookup: RouteLink;
+    /** Sent with every lookup as `identity_context_revision`, beside `command`. */
+    identityContextRevision: number;
     preview?: ApplyPreviewOutcome;
     onCompleted: (
         command: ApplicationCommand,
@@ -42,12 +44,14 @@ type Options = {
 
 /**
  * The application's JSON commands (business-application-v1 points 2 and 7), through the shared
- * operation command: one in flight at a time, an unknown outcome looked up before any resend, and
- * a new `request_id` after every definitive answer. A synthetic preview may seed a held command.
+ * operation command: one in flight at a time, an unknown outcome looked up (by `command` and
+ * `identity_context_revision`) before any resend, and a new `request_id` after every definitive
+ * answer. A synthetic preview may seed a held command.
  */
 export function useApplicationCommand({
     actions,
     lookup,
+    identityContextRevision,
     preview,
     onCompleted,
     onRefused,
@@ -55,6 +59,7 @@ export function useApplicationCommand({
     return useOperationCommand<ApplicationCommand, OperationResource>({
         actions,
         lookup,
+        lookupQuery: { identity_context_revision: identityContextRevision },
         initial: {
             held: preview?.kind === 'unconfirmed' ? preview.command : null,
             notice: initialNotice(preview),

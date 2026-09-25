@@ -255,15 +255,22 @@ const en = {
     'business.apply.business.subtitle':
         'From your RDB certificate and your verified bank & mobile-money statements. Review it — if it looks right, continue.',
     'business.apply.business.rdb_verified': '✓ RDB verified',
-    'business.apply.business.statements_verified':
-        '✓ Statements verified · OCR',
+    'business.apply.business.statements_verified': '✓ Statements verified',
     'business.apply.business.active': '● Active',
     'business.apply.business.established': 'Est. {year}',
-    'business.apply.business.standing': 'Financial standing · {years}-year',
-    'business.apply.business.ocr_verified': 'OCR · verified',
+    'business.apply.business.standing': 'Financial standing',
+    'business.apply.business.statements_badge': 'Statements verified',
+    'business.apply.business.period': {
+        one: '{from} – {through} · {count} month',
+        other: '{from} – {through} · {count} months',
+    },
+    'business.apply.business.partial_year': {
+        one: '{year} · {count} month',
+        other: '{year} · {count} months',
+    },
     'business.apply.business.revenue': 'Revenue',
     'business.apply.business.costs': 'Costs',
-    'business.apply.business.net_profit': 'Net profit',
+    'business.apply.business.net_profit': 'Net operating cash',
     'business.apply.business.existing_debt': 'Existing debt',
     'business.apply.business.crb_verified': '✓ CRB verified',
     'business.apply.business.year_by_year': 'Year by year',
@@ -1557,6 +1564,11 @@ const en = {
     'auditor.file.title': 'Review the application',
     'auditor.file.lead':
         "Everything {business} submitted, screened against Rozine's thresholds. Your field check resolves what the engine can't confirm remotely.",
+    'auditor.file.lead_provisional':
+        "{business}'s application as it currently stands.",
+    'auditor.file.lead_no_prescreen': 'No automated pre-screen is on record.',
+    'auditor.file.lead_field_check':
+        "Your field check confirms what can't be verified remotely.",
     'auditor.file.reassigned_title': 'Reassigned to you',
     'auditor.file.reassigned_body':
         'The original deadline still applies — reassignment does not reset the clock. Earlier evidence on the file stays on the record.',
@@ -2774,6 +2786,10 @@ const en = {
         'Waiting for {names} to sign. The application is submitted once every required signature is in.',
     'business.apply.review.cannot_sign':
         "Only a signatory on the company's verified mandate can sign this application.",
+    'business.apply.review.agreement_unavailable':
+        "The agreement isn't available yet.",
+    'business.apply.review.agreement_unavailable_body':
+        'Rozine has not published the approved terms and risk disclosures for this application, so there is nothing to sign yet. Your draft and your offer stay saved.',
     'business.apply.view_only':
         'You can view this application, but not change it.',
     'business.apply.submitted.application_id': 'Application ID · {id}',

@@ -20,11 +20,14 @@ import businessStep from '../../../resources/fixtures/ui/business-apply-business
 import cosignStep from '../../../resources/fixtures/ui/business-apply-cosign.json';
 import ineligibleStep from '../../../resources/fixtures/ui/business-apply-ineligible.json';
 import minimalStep from '../../../resources/fixtures/ui/business-apply-live-minimal.json';
+import liveStep from '../../../resources/fixtures/ui/business-apply-live.json';
+import noLegalStep from '../../../resources/fixtures/ui/business-apply-no-legal.json';
 import staleStep from '../../../resources/fixtures/ui/business-apply-quote-stale.json';
 import raiseStep from '../../../resources/fixtures/ui/business-apply-raise.json';
 import reducedStep from '../../../resources/fixtures/ui/business-apply-reduced.json';
 import refusedStep from '../../../resources/fixtures/ui/business-apply-refused.json';
 import reviewStep from '../../../resources/fixtures/ui/business-apply-review.json';
+import soleTraderStep from '../../../resources/fixtures/ui/business-apply-sole-trader.json';
 import submittedStep from '../../../resources/fixtures/ui/business-apply-submitted.json';
 import unknownStep from '../../../resources/fixtures/ui/business-apply-unknown.json';
 
@@ -232,20 +235,28 @@ describe('Apply — step 1, business & finances', () => {
         ).toHaveValue(1);
         expect(screen.getByText('Step 1 of 3')).toBeInTheDocument();
         expect(screen.getByText('✓ RDB verified')).toBeInTheDocument();
-        expect(
-            screen.getByText('✓ Statements verified · OCR'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('✓ Statements verified')).toBeInTheDocument();
+        expect(screen.getAllByText('RDB 103847291').length).toBeGreaterThan(0);
         expect(screen.getByText('Est. 2018')).toBeInTheDocument();
         expect(screen.getByText('Chief Executive Officer')).toBeInTheDocument();
         expect(screen.getByText('Board Chair')).toBeInTheDocument();
         expect(
             screen.queryByText('Not eligible to raise yet'),
         ).not.toBeInTheDocument();
+        expect(screen.getByText('Financial standing')).toBeInTheDocument();
+        expect(screen.getByText('Statements verified')).toBeInTheDocument();
+        /* The window is the server's period, never counted from the year rows. */
         expect(
-            screen.getByText('Financial standing · 5-year'),
+            screen.getByText(/^Oct 2023 – Sept? 2026 · 36 months$/u),
         ).toBeInTheDocument();
-        expect(screen.getByText('2021–2025')).toBeInTheDocument();
-        expect(screen.getByText('RWF 1.6B')).toBeInTheDocument();
+        expect(screen.getByText('2023 · 3 months')).toBeInTheDocument();
+        expect(screen.getByText('2026 · 9 months')).toBeInTheDocument();
+        expect(screen.getByText('2025')).toBeInTheDocument();
+        expect(screen.getByText('2024')).toBeInTheDocument();
+        /* The totals are the server's: RWF 1,119,000,000, shown as given. */
+        expect(screen.getByText('RWF 1.1B')).toBeInTheDocument();
+        expect(screen.getAllByText('Net operating cash')).toHaveLength(5);
+        expect(screen.queryByText('Net profit')).not.toBeInTheDocument();
         expect(screen.getByText('✓ CRB verified')).toBeInTheDocument();
         expect(screen.getByText('RWF 33,915,000')).toBeInTheDocument();
         expect(screen.queryByText('Unavailable')).not.toBeInTheDocument();
@@ -313,6 +324,26 @@ describe('Apply — step 1, business & finances', () => {
         );
     });
 
+    it('shows an eligible sole trader with no company line and no registry badge', async () => {
+        const user = userEvent.setup();
+
+        render(<BusinessApply {...props(soleTraderStep)} />);
+
+        expect(screen.getAllByText('Uwimana Tailoring').length).toBeGreaterThan(
+            0,
+        );
+        expect(screen.getByText('Owner')).toBeInTheDocument();
+        expect(screen.queryByText(/^RDB /u)).not.toBeInTheDocument();
+        expect(screen.queryByText('✓ RDB verified')).not.toBeInTheDocument();
+        expect(screen.getByText('✓ Statements verified')).toBeInTheDocument();
+        expect(
+            screen.queryByText('Not eligible to raise yet'),
+        ).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(inertia.calls[0].body).toMatchObject({ step: 'raise' });
+    });
+
     it('explains ineligibility in the server’s words and shows missing facts as unavailable', () => {
         render(<BusinessApply {...props(ineligibleStep)} />);
 
@@ -325,12 +356,50 @@ describe('Apply — step 1, business & finances', () => {
             ),
         ).toBeInTheDocument();
         expect(screen.getAllByText('Unavailable')).toHaveLength(5);
+        expect(
+            screen.getByText(/^Sept? 2023 – Dec 2025 · 28 months$/u),
+        ).toBeInTheDocument();
+        expect(screen.getByText('2023 · 4 months')).toBeInTheDocument();
         expect(screen.getAllByText('Pending audit')).toHaveLength(2);
         expect(screen.getByText('Est. 2023')).toBeInTheDocument();
         expect(screen.queryByText('✓ CRB verified')).not.toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: 'Continue' }),
         ).not.toBeInTheDocument();
+    });
+
+    it('hides the window when the server states none, and names a one-month window and year', () => {
+        const page = props(businessStep);
+
+        page.evidence = { ...page.evidence, period: null };
+        const { unmount } = render(<BusinessApply {...page} />);
+
+        expect(screen.queryByText(/ · 36 months$/u)).not.toBeInTheDocument();
+        expect(screen.getByText('Financial standing')).toBeInTheDocument();
+        unmount();
+
+        page.evidence = {
+            ...page.evidence,
+            period: {
+                from_month: '2026-09',
+                through_month: '2026-09',
+                months: 1,
+            },
+            years: [{ ...page.evidence.years[0], months: 1 }],
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByText(/^Sept? 2026 – Sept? 2026 · 1 month$/u),
+        ).toBeInTheDocument();
+        expect(screen.getByText('2026 · 1 month')).toBeInTheDocument();
+    });
+
+    it('shows an evidenced existing debt without a CRB badge until CRB proof exists', () => {
+        render(<BusinessApply {...props(minimalStep)} />);
+
+        expect(screen.getByText('RWF 12M')).toBeInTheDocument();
+        expect(screen.queryByText('✓ CRB verified')).not.toBeInTheDocument();
     });
 
     it('reads a business with no officers, founding year or verifications, and offers no dead Continue', () => {
@@ -350,6 +419,9 @@ describe('Apply — step 1, business & finances', () => {
         render(<BusinessApply {...bare} />);
 
         expect(screen.queryByText('✓ RDB verified')).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(/Statements verified/u),
+        ).not.toBeInTheDocument();
         expect(screen.queryByText('Board Chair')).not.toBeInTheDocument();
         expect(screen.queryByText(/^Est\./u)).not.toBeInTheDocument();
         expect(
@@ -470,12 +542,12 @@ describe('Apply — step 2, the quote', () => {
                 term_months: 4,
                 use_of_funds: ['equipment', 'expansion'],
                 story: page.application.story,
-                step: 'raise',
                 identity_context_revision: 4,
                 expected_revision: 3,
                 request_id: expect.any(String),
             },
         });
+        expect(save.body).not.toHaveProperty('step');
         expect(evaluate).toEqual({
             url: '/preview/business-apply-evaluations',
             method: 'post',
@@ -673,6 +745,7 @@ describe('Apply — step 2, the quote', () => {
         const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
         const page = props(raiseStep);
 
+        page.identity_context_revision = 7;
         inertia.queue.push(
             offline(),
             answers(operation({ data: snapshotOf(page) })),
@@ -691,7 +764,7 @@ describe('Apply — step 2, the quote', () => {
         expect(lookup).toEqual({
             url: `/preview/business-operation-${String(save.body.request_id)}`,
             method: 'get',
-            body: { command: 'save' },
+            body: { command: 'save', identity_context_revision: 7 },
         });
         expect(evaluate.url).toBe('/preview/business-apply-evaluations');
     });
@@ -1262,7 +1335,7 @@ describe('Apply — step 3, review & sign', () => {
         expect(inertia.calls[1]).toEqual({
             url: `/preview/business-operation-${String(inertia.calls[0].body.request_id)}`,
             method: 'get',
-            body: { command: 'submit' },
+            body: { command: 'submit', identity_context_revision: 4 },
         });
 
         await user.click(
@@ -1440,7 +1513,7 @@ describe('Apply — step 3, review & sign', () => {
         expect(inertia.calls[0]).toEqual({
             url: '/preview/business-operation-6f1c2d3e-4b5a-4c6d-8e7f-90a1b2c3d4e5',
             method: 'get',
-            body: { command: 'submit' },
+            body: { command: 'submit', identity_context_revision: 4 },
         });
     });
 
@@ -1739,19 +1812,13 @@ describe('Apply — step 3, review & sign', () => {
         expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
 
-    it('marks server field errors and a missing document link', () => {
+    it('marks server field errors inline', () => {
         inertia.errors = {
             signature_name: 'Sign with your full name',
             disclosures: 'Tick every disclosure',
         };
-        const page = props(reviewStep);
+        render(<BusinessApply {...props(reviewStep)} />);
 
-        page.acceptance.documents = [];
-        render(<BusinessApply {...page} />);
-
-        expect(
-            screen.queryByRole('button', { name: 'Read' }),
-        ).not.toBeInTheDocument();
         expect(screen.getByLabelText('Your full name')).toHaveAttribute(
             'aria-invalid',
             'true',
@@ -1824,7 +1891,7 @@ describe('Apply — submitted', () => {
 
 describe('Apply — without Home', () => {
     it('opens the sheet over an empty backdrop and hides the destinations the server left out', () => {
-        render(<BusinessApply {...props(minimalStep)} />);
+        render(<BusinessApply {...props(liveStep)} />);
 
         expect(
             screen.getByRole('dialog', { name: 'Raise application' }),
@@ -1835,7 +1902,7 @@ describe('Apply — without Home', () => {
 
         expect(within(nav).getByRole('link', { name: 'Home' })).toHaveAttribute(
             'href',
-            '/preview/business-home',
+            '/business',
         );
         expect(
             within(nav).queryByRole('link', { name: 'Reports' }),
@@ -1845,7 +1912,7 @@ describe('Apply — without Home', () => {
         ).not.toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Launcher' })).toHaveAttribute(
             'href',
-            '/preview/launcher-ready',
+            '/dashboard',
         );
     });
 
@@ -1864,6 +1931,179 @@ describe('Apply — without Home', () => {
         ).toHaveAttribute('href', '/preview/business-reports');
         expect(
             within(nav).queryByRole('link', { name: 'Profile' }),
+        ).not.toBeInTheDocument();
+    });
+});
+
+describe('Apply — the live business-application-v1 projection', () => {
+    const LIVE = '/business/BUS-103847291/applications/APP-2026-0412' as const;
+
+    it('reads the flat draft and the quote with its offered principal, with no preview outcome', () => {
+        const page = props(liveStep);
+
+        expect(page.preview_outcome).toBeUndefined();
+        expect(page.home).toBeNull();
+        render(<BusinessApply {...page} />);
+
+        expect(screen.getByLabelText('Fundraising target (RWF)')).toHaveValue(
+            '35,000,000',
+        );
+        expect(screen.getAllByText('RWF 33,915,000').length).toBeGreaterThan(0);
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it('sends the autosave and evaluation to the server’s own actions, the autosave without a step', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+        const page = props(liveStep);
+
+        inertia.queue.push(answers(operation({ data: snapshotOf(page) })));
+        render(<BusinessApply {...page} />);
+
+        await typeRequest(user);
+        act(() => {
+            vi.advanceTimersByTime(450);
+        });
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(2));
+        expect(inertia.calls.map(({ url, method }) => [url, method])).toEqual([
+            [`${LIVE}/save`, 'post'],
+            [`${LIVE}/evaluate`, 'post'],
+        ]);
+        expect(inertia.calls[0].body).not.toHaveProperty('step');
+        expect(Object.keys(inertia.calls[1].body).sort()).toEqual([
+            'evidence_version',
+            'expected_revision',
+            'identity_context_revision',
+            'request_id',
+            'target',
+            'term_months',
+        ]);
+    });
+
+    it('looks a lost answer up at the server’s lookup with the command and identity context', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+        const page = props(liveStep);
+
+        inertia.queue.push(offline());
+        render(<BusinessApply {...page} />);
+
+        await typeRequest(user);
+        act(() => {
+            vi.advanceTimersByTime(450);
+        });
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(2));
+        expect(inertia.calls[1]).toEqual({
+            url: `/business/application-operations/${String(inertia.calls[0].body.request_id)}`,
+            method: 'get',
+            body: { command: 'save', identity_context_revision: 4 },
+        });
+    });
+
+    it('saves a just-created draft from the Business step with its step, at the server’s action', async () => {
+        const user = userEvent.setup();
+        const page = props(minimalStep);
+
+        expect(page.quote).toBeNull();
+        render(<BusinessApply {...page} />);
+
+        expect(screen.getByRole('link', { name: 'Close' })).toHaveAttribute(
+            'href',
+            '/business',
+        );
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+        expect(inertia.calls[0]).toEqual({
+            url: `${LIVE}/save`,
+            method: 'post',
+            body: {
+                title: '',
+                target: null,
+                term_months: null,
+                use_of_funds: [],
+                story: '',
+                step: 'raise',
+                identity_context_revision: 4,
+                expected_revision: 1,
+                request_id: expect.any(String),
+            },
+        });
+    });
+});
+
+describe('Apply — no approved legal text yet', () => {
+    it('says the agreement is not available, with nothing to sign and no stand-in text', () => {
+        render(<BusinessApply {...props(noLegalStep)} />);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            "The agreement isn't available yet.",
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Sign application' }),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+        expect(screen.queryByText('Risk disclosures')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Read' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByLabelText('Your full name'),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(/^Your signature legally binds/u),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Take a smaller amount' }),
+        ).not.toBeInTheDocument();
+        expect(screen.getAllByText('RWF 33,915,000').length).toBeGreaterThan(0);
+        expect(screen.getByText('RWF 0')).toBeInTheDocument();
+    });
+
+    it.each([
+        ['the Privacy Note', 'privacy', false],
+        ['the risk disclosures', null, true],
+    ] as const)(
+        'offers no signature when %s alone is missing',
+        (_missing, document, withoutDisclosures) => {
+            const page = props(reviewStep);
+
+            page.acceptance.documents = page.acceptance.documents.filter(
+                (candidate) => candidate.kind !== document,
+            );
+
+            if (withoutDisclosures) {
+                page.acceptance.disclosures = [];
+            }
+
+            render(<BusinessApply {...page} />);
+
+            expect(screen.getByRole('status')).toHaveTextContent(
+                "The agreement isn't available yet.",
+            );
+            expect(
+                screen.queryByRole('button', { name: 'Sign application' }),
+            ).not.toBeInTheDocument();
+        },
+    );
+
+    it('offers no signature even if a submit were allowed without the legal text', () => {
+        const page = props(noLegalStep);
+
+        page.allowed_actions = [
+            'application.save',
+            'application.evaluate',
+            'application.submit',
+        ];
+        page.acceptance.documents = props(reviewStep).acceptance.documents;
+        render(<BusinessApply {...page} />);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            "The agreement isn't available yet.",
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Sign application' }),
         ).not.toBeInTheDocument();
     });
 });

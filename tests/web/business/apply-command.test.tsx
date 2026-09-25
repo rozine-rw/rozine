@@ -43,6 +43,7 @@ const options = {
         submit: route('/submit'),
     },
     lookup: { url: '/operations/{request_id}', method: 'get' as const },
+    identityContextRevision: 4,
     onCompleted: vi.fn(),
     onRefused: vi.fn(),
 };
@@ -110,7 +111,7 @@ describe('Application commands', () => {
         expect(http.calls).toHaveLength(3);
         expect(http.calls[2]).toEqual({
             url: '/operations/c',
-            body: { command: 'save' },
+            body: { command: 'save', identity_context_revision: 4 },
         });
     });
 });

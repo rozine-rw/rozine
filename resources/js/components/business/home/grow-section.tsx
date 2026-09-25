@@ -50,6 +50,9 @@ function CreateApplication({ entry }: { entry: CreateApplicationEntry }) {
     >({
         actions: { create: entry.action },
         lookup: entry.operation,
+        lookupQuery: {
+            identity_context_revision: entry.identity_context_revision,
+        },
         refresh: reloadPreservingState,
         onCompleted: (_sent, resource) => {
             if (resource.data === null) {

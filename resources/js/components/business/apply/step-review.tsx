@@ -28,8 +28,13 @@ export type ReviewFields = {
 type StepReviewProps = {
     acceptance: ApplicationAcceptance;
     quote: Extract<ApplicationQuote, { status: 'ready' }> | null;
-    /** Whether `allowed_actions` lets the current person sign now. */
+    /** Whether `allowed_actions` lets the current person sign now, with the legal text to sign. */
     canSign: boolean;
+    /**
+     * Whether the server published the legal text to sign: the documents and the disclosures.
+     * Without it there is nothing to sign, and nothing is put in its place.
+     */
+    agreementAvailable: boolean;
     /** Present when the current person may evaluate a lower amount for this ready offer. */
     reduce: ReduceControl | null;
     fields: ReviewFields;
@@ -439,6 +444,7 @@ export function StepReview({
     acceptance,
     quote,
     canSign,
+    agreementAvailable,
     reduce,
     fields,
     errors,
@@ -589,7 +595,22 @@ export function StepReview({
                 required={acceptance.required_signatures}
             />
 
-            {canSign ? (
+            {!agreementAvailable ? (
+                <div
+                    role="status"
+                    className="mt-3 flex items-start gap-3 rounded-2xl border border-[#dbe7ff] bg-rz-surface p-4 dark:border-rz-border"
+                >
+                    <span className="flex size-[34px] shrink-0 items-center justify-center rounded-xl bg-rz-accent-soft text-base">
+                        <Icon name="lock" />
+                    </span>
+                    <p className="flex-1 text-xs leading-[1.55] text-rz-secondary">
+                        <b className="block text-[13px] text-rz-ink">
+                            {t('business.apply.review.agreement_unavailable')}
+                        </b>
+                        {t('business.apply.review.agreement_unavailable_body')}
+                    </p>
+                </div>
+            ) : canSign ? (
                 <>
                     <SectionLabel>
                         {t('business.apply.review.sign_submit')}
@@ -688,9 +709,11 @@ export function StepReview({
                     {t('business.apply.review.fee_note')}
                 </p>
             </div>
-            <p className="mt-3 text-[11.5px] text-rz-secondary">
-                {t('business.apply.review.binding')}
-            </p>
+            {agreementAvailable && (
+                <p className="mt-3 text-[11.5px] text-rz-secondary">
+                    {t('business.apply.review.binding')}
+                </p>
+            )}
             <div className="h-24 lg:hidden" />
 
             {reading && (

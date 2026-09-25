@@ -43,6 +43,11 @@ type Options<C extends OperationCommand, R> = {
      * command name goes as the `command` query.
      */
     lookup: RouteLink;
+    /**
+     * Further query parameters the lookup needs beside `command`, e.g. the Business contract's
+     * `identity_context_revision`. Read when the lookup is sent.
+     */
+    lookupQuery?: Record<string, string | number>;
     /** A command a synthetic preview seeds as already sent, with what is known about it. */
     initial?: { held: C | null; notice: CommandNotice | null };
     /**
@@ -69,6 +74,7 @@ export function useOperationCommand<
 >({
     actions,
     lookup,
+    lookupQuery,
     initial,
     refresh,
     onCompleted,
@@ -163,7 +169,7 @@ export function useOperationCommand<
                 ),
                 method: 'get',
             },
-            { command: command.name },
+            { ...lookupQuery, command: command.name },
         );
 
         if (attempt.kind === 'resource') {

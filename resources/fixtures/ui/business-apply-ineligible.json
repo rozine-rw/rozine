@@ -60,6 +60,11 @@
                 "costs": null,
                 "net_profit": null
             },
+            "period": {
+                "from_month": "2023-09",
+                "through_month": "2025-12",
+                "months": 28
+            },
             "years": [
                 {
                     "year": 2025,
@@ -74,7 +79,8 @@
                     "net_profit": {
                         "currency": "RWF",
                         "amount": "96000000"
-                    }
+                    },
+                    "months": 12
                 },
                 {
                     "year": 2024,
@@ -89,7 +95,8 @@
                     "net_profit": {
                         "currency": "RWF",
                         "amount": "86000000"
-                    }
+                    },
+                    "months": 12
                 },
                 {
                     "year": 2023,
@@ -98,7 +105,8 @@
                         "amount": "118000000"
                     },
                     "costs": null,
-                    "net_profit": null
+                    "net_profit": null,
+                    "months": 4
                 }
             ],
             "existing_debt": null,
