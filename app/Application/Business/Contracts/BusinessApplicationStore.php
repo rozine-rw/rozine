@@ -15,6 +15,9 @@ namespace App\Application\Business\Contracts;
 interface BusinessApplicationStore
 {
     /** @return array<string, mixed> */
+    public function index(int $userId, int $contextRevision, ?string $before = null, int $limit = 20): array;
+
+    /** @return array<string, mixed> */
     public function create(int $userId, int $contextRevision, string $businessId, int $expectedRevision, string $requestId): array;
 
     /**

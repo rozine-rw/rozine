@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 import operations from './operations'
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::create
-* @see app/Http/Controllers/BusinessApplicationController.php:40
+* @see app/Http/Controllers/BusinessApplicationController.php:53
 * @route '/business/{business}/applications'
 */
 export const create = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -17,7 +17,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::create
-* @see app/Http/Controllers/BusinessApplicationController.php:40
+* @see app/Http/Controllers/BusinessApplicationController.php:53
 * @route '/business/{business}/applications'
 */
 create.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ create.url = (args: { business: string | number } | [business: string | number ]
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::create
-* @see app/Http/Controllers/BusinessApplicationController.php:40
+* @see app/Http/Controllers/BusinessApplicationController.php:53
 * @route '/business/{business}/applications'
 */
 create.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -54,7 +54,7 @@ create.post = (args: { business: string | number } | [business: string | number 
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::create
-* @see app/Http/Controllers/BusinessApplicationController.php:40
+* @see app/Http/Controllers/BusinessApplicationController.php:53
 * @route '/business/{business}/applications'
 */
 const createForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -64,7 +64,7 @@ const createForm = (args: { business: string | number } | [business: string | nu
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::create
-* @see app/Http/Controllers/BusinessApplicationController.php:40
+* @see app/Http/Controllers/BusinessApplicationController.php:53
 * @route '/business/{business}/applications'
 */
 createForm.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -76,7 +76,7 @@ create.form = createForm
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::show
-* @see app/Http/Controllers/BusinessApplicationController.php:31
+* @see app/Http/Controllers/BusinessApplicationController.php:44
 * @route '/business/{business}/applications/{application}'
 */
 export const show = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -91,7 +91,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::show
-* @see app/Http/Controllers/BusinessApplicationController.php:31
+* @see app/Http/Controllers/BusinessApplicationController.php:44
 * @route '/business/{business}/applications/{application}'
 */
 show.url = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions) => {
@@ -117,7 +117,7 @@ show.url = (args: { business: string | number, application: string | number } | 
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::show
-* @see app/Http/Controllers/BusinessApplicationController.php:31
+* @see app/Http/Controllers/BusinessApplicationController.php:44
 * @route '/business/{business}/applications/{application}'
 */
 show.get = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -127,7 +127,7 @@ show.get = (args: { business: string | number, application: string | number } | 
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::show
-* @see app/Http/Controllers/BusinessApplicationController.php:31
+* @see app/Http/Controllers/BusinessApplicationController.php:44
 * @route '/business/{business}/applications/{application}'
 */
 show.head = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -137,7 +137,7 @@ show.head = (args: { business: string | number, application: string | number } |
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::show
-* @see app/Http/Controllers/BusinessApplicationController.php:31
+* @see app/Http/Controllers/BusinessApplicationController.php:44
 * @route '/business/{business}/applications/{application}'
 */
 const showForm = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -147,7 +147,7 @@ const showForm = (args: { business: string | number, application: string | numbe
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::show
-* @see app/Http/Controllers/BusinessApplicationController.php:31
+* @see app/Http/Controllers/BusinessApplicationController.php:44
 * @route '/business/{business}/applications/{application}'
 */
 showForm.get = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -157,7 +157,7 @@ showForm.get = (args: { business: string | number, application: string | number 
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::show
-* @see app/Http/Controllers/BusinessApplicationController.php:31
+* @see app/Http/Controllers/BusinessApplicationController.php:44
 * @route '/business/{business}/applications/{application}'
 */
 showForm.head = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -174,7 +174,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::save
-* @see app/Http/Controllers/BusinessApplicationController.php:48
+* @see app/Http/Controllers/BusinessApplicationController.php:61
 * @route '/business/{business}/applications/{application}/save'
 */
 export const save = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -189,7 +189,7 @@ save.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::save
-* @see app/Http/Controllers/BusinessApplicationController.php:48
+* @see app/Http/Controllers/BusinessApplicationController.php:61
 * @route '/business/{business}/applications/{application}/save'
 */
 save.url = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions) => {
@@ -215,7 +215,7 @@ save.url = (args: { business: string | number, application: string | number } | 
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::save
-* @see app/Http/Controllers/BusinessApplicationController.php:48
+* @see app/Http/Controllers/BusinessApplicationController.php:61
 * @route '/business/{business}/applications/{application}/save'
 */
 save.post = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -225,7 +225,7 @@ save.post = (args: { business: string | number, application: string | number } |
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::save
-* @see app/Http/Controllers/BusinessApplicationController.php:48
+* @see app/Http/Controllers/BusinessApplicationController.php:61
 * @route '/business/{business}/applications/{application}/save'
 */
 const saveForm = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -235,7 +235,7 @@ const saveForm = (args: { business: string | number, application: string | numbe
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::save
-* @see app/Http/Controllers/BusinessApplicationController.php:48
+* @see app/Http/Controllers/BusinessApplicationController.php:61
 * @route '/business/{business}/applications/{application}/save'
 */
 saveForm.post = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -247,7 +247,7 @@ save.form = saveForm
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::evaluate
-* @see app/Http/Controllers/BusinessApplicationController.php:60
+* @see app/Http/Controllers/BusinessApplicationController.php:73
 * @route '/business/{business}/applications/{application}/evaluate'
 */
 export const evaluate = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -262,7 +262,7 @@ evaluate.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::evaluate
-* @see app/Http/Controllers/BusinessApplicationController.php:60
+* @see app/Http/Controllers/BusinessApplicationController.php:73
 * @route '/business/{business}/applications/{application}/evaluate'
 */
 evaluate.url = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions) => {
@@ -288,7 +288,7 @@ evaluate.url = (args: { business: string | number, application: string | number 
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::evaluate
-* @see app/Http/Controllers/BusinessApplicationController.php:60
+* @see app/Http/Controllers/BusinessApplicationController.php:73
 * @route '/business/{business}/applications/{application}/evaluate'
 */
 evaluate.post = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -298,7 +298,7 @@ evaluate.post = (args: { business: string | number, application: string | number
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::evaluate
-* @see app/Http/Controllers/BusinessApplicationController.php:60
+* @see app/Http/Controllers/BusinessApplicationController.php:73
 * @route '/business/{business}/applications/{application}/evaluate'
 */
 const evaluateForm = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -308,7 +308,7 @@ const evaluateForm = (args: { business: string | number, application: string | n
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::evaluate
-* @see app/Http/Controllers/BusinessApplicationController.php:60
+* @see app/Http/Controllers/BusinessApplicationController.php:73
 * @route '/business/{business}/applications/{application}/evaluate'
 */
 evaluateForm.post = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -320,7 +320,7 @@ evaluate.form = evaluateForm
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::submit
-* @see app/Http/Controllers/BusinessApplicationController.php:71
+* @see app/Http/Controllers/BusinessApplicationController.php:84
 * @route '/business/{business}/applications/{application}/submit'
 */
 export const submit = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -335,7 +335,7 @@ submit.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::submit
-* @see app/Http/Controllers/BusinessApplicationController.php:71
+* @see app/Http/Controllers/BusinessApplicationController.php:84
 * @route '/business/{business}/applications/{application}/submit'
 */
 submit.url = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions) => {
@@ -361,7 +361,7 @@ submit.url = (args: { business: string | number, application: string | number } 
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::submit
-* @see app/Http/Controllers/BusinessApplicationController.php:71
+* @see app/Http/Controllers/BusinessApplicationController.php:84
 * @route '/business/{business}/applications/{application}/submit'
 */
 submit.post = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -371,7 +371,7 @@ submit.post = (args: { business: string | number, application: string | number }
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::submit
-* @see app/Http/Controllers/BusinessApplicationController.php:71
+* @see app/Http/Controllers/BusinessApplicationController.php:84
 * @route '/business/{business}/applications/{application}/submit'
 */
 const submitForm = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -381,7 +381,7 @@ const submitForm = (args: { business: string | number, application: string | num
 
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::submit
-* @see app/Http/Controllers/BusinessApplicationController.php:71
+* @see app/Http/Controllers/BusinessApplicationController.php:84
 * @route '/business/{business}/applications/{application}/submit'
 */
 submitForm.post = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

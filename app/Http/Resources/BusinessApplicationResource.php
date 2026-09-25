@@ -20,7 +20,7 @@ class BusinessApplicationResource extends JsonResource
         $view = $request->query('view_step');
         $step = is_string($view) && isset($steps[$view]) && $steps[$view] <= $steps[$record['step']] ? $view : $record['step'];
         $parameters = ['business' => $record['business_id'], 'application' => $record['id']];
-        $home = self::link($request->routeIs('api.*') ? 'api.v1.identity.show' : 'business.home');
+        $home = self::link($request->routeIs('api.*') ? 'api.v1.business.index' : 'business.home');
         $back = $step === 'business' || $step === 'submitted' ? $home
             : self::link(self::prefix($request).'show', [...$parameters, 'view_step' => $step === 'raise' ? 'business' : 'raise']);
         $placeholder = '00000000-0000-0000-0000-000000000000';

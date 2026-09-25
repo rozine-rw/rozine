@@ -8,17 +8,20 @@ use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\EvaluateBusinessApplication;
 use App\Application\Business\FindBusinessOperation;
 use App\Application\Business\GetBusinessApplicationPage;
+use App\Application\Business\ListBusinessApplications;
 use App\Application\Business\ProjectBusinessApplicationOperation;
 use App\Application\Business\SaveBusinessApplication;
 use App\Application\Business\SubmitBusinessApplication;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Http\Requests\Business\CreateApplicationRequest;
 use App\Http\Requests\Business\EvaluateApplicationRequest;
+use App\Http\Requests\Business\ListApplicationsRequest;
 use App\Http\Requests\Business\SaveApplicationRequest;
 use App\Http\Requests\Business\ShowApplicationOperationRequest;
 use App\Http\Requests\Business\ShowApplicationRequest;
 use App\Http\Requests\Business\SubmitApplicationRequest;
 use App\Http\Resources\BusinessApplicationResource;
+use App\Http\Resources\BusinessApplicationsResource;
 use App\Http\Resources\OperationResource;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,6 +30,16 @@ use Inertia\Response;
 class BusinessApplicationController extends Controller
 {
     public function __construct(private AuthorizeActiveRole $identity, private ProjectBusinessApplicationOperation $outcomes) {}
+
+    public function index(ListApplicationsRequest $request, ListBusinessApplications $action): BusinessApplicationsResource
+    {
+        $userId = (int) $request->user()?->getAuthIdentifier();
+        $expected = $request->validated('identity_context_revision');
+        $context = $this->identity->context($userId, 'business', $expected === null ? null : (int) $expected);
+
+        return new BusinessApplicationsResource($action->handle($userId, $context['context_revision'],
+            $request->validated('before'), (int) ($request->validated('limit') ?? 20)));
+    }
 
     public function show(ShowApplicationRequest $request, GetBusinessApplicationPage $page): Response|BusinessApplicationResource
     {
