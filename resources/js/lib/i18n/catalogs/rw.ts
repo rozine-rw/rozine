@@ -3190,6 +3190,8 @@ const rw: Catalog = {
     'auditor.capture.synthetic':
         "Igihamya cy'igerageza cy'ikigereranyo (cyitaruye) — ntabwo ari ifoto yafashwe koko.",
 
+    'auditor.ledger.download': 'Kuramo umwimerere',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

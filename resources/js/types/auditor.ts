@@ -803,6 +803,11 @@ export type LedgerDocument = {
      */
     ingestion: 'INGESTED_NOT_AUDIT_APPROVED' | null;
     evidence: EvidenceItem | null;
+    /**
+     * The retained original's protected download, opened as an ordinary link. Null or absent
+     * while the server offers none: the card then shows no download.
+     */
+    link?: RouteLink | null;
 };
 
 export type LedgerStage = {
