@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { useEffect, useEffectEvent, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { EvidenceList } from '@/components/auditor/audit/evidence';
 import {
@@ -247,8 +247,26 @@ export function useSealFlow({
     const [sentFrom, setSentFrom] = useState<SealStage | null>(null);
     const [savedFrom, setSavedFrom] = useState<SealStage | null>(null);
     const initialReason = preview?.kind === 'sheet' ? preview.reason : null;
+    /*
+     * The current confirmation attempt. A step-up answer counts only while its attempt is still
+     * current: closing the preview or code entry, editing the note, new facts (a fresh read,
+     * revision or digest) or leaving the page withdraws it, and a late proof is then dropped
+     * without sealing. Once the seal itself is sent, the command's own lookup takes over.
+     */
+    const attempt = useRef(0);
+    const withdraw = () => {
+        attempt.current += 1;
+    };
+
+    useEffect(
+        () => () => {
+            attempt.current += 1;
+        },
+        [stage, stage.digest, context.revision],
+    );
 
     const close = () => {
+        withdraw();
         setNested(null);
         setCode('');
     };
@@ -276,6 +294,7 @@ export function useSealFlow({
     const busy = stepUp.checking || center.busy;
 
     const editNote = (value: string) => {
+        withdraw();
         setNote(value);
 
         /*
@@ -361,7 +380,9 @@ export function useSealFlow({
         const typed = code;
 
         setCode('');
+        withdraw();
 
+        const current = attempt.current;
         const result = await stepUp.verify({
             audit_id: context.auditId,
             expected_revision: context.revision,
@@ -370,6 +391,11 @@ export function useSealFlow({
             request_id: crypto.randomUUID(),
             code: typed,
         });
+
+        /* Withdrawn while the code was checked: nothing more happens, least of all a seal. */
+        if (current !== attempt.current) {
+            return;
+        }
 
         switch (result.kind) {
             case 'proof':

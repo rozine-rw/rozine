@@ -935,6 +935,125 @@ describe('Seal — authenticator step-up', () => {
     });
 });
 
+describe('Seal — a confirmation withdrawn while its code is checked', () => {
+    /** Opens the saved-note preview, types a code and submits it; the step-up stays pending. */
+    const submitCode = async (page: AuditProcedureProps = props(noteSaved)) => {
+        const confirmation = deferred();
+
+        inertia.queue.push(confirmation.responder, answers(SEALED));
+        const view = renderWithUser(<AuditorAudit {...page} />);
+
+        await view.user.click(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        );
+        await view.user.click(
+            screen.getByRole('button', {
+                name: 'Confirm with your authenticator',
+            }),
+        );
+        await view.user.click(codeField());
+        await view.user.paste('123456');
+        await view.user.click(
+            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+        );
+        await waitFor(() => expect(inertia.calls).toHaveLength(1));
+
+        return { ...view, confirmation };
+    };
+
+    it('does not seal after the preview is closed and the note edited', async () => {
+        const { user, confirmation } = await submitCode();
+
+        await user.click(
+            within(findings()).getByRole('button', { name: 'Close' }),
+        );
+        await user.type(noteField(), '!');
+        expect(
+            screen.getByRole('button', { name: 'Save note' }),
+        ).toBeInTheDocument();
+
+        await act(async () => confirmation.settle(PROOF));
+
+        expect(inertia.calls).toHaveLength(1);
+        expect(inertia.visits).toHaveLength(0);
+    });
+
+    it('does not seal after the preview is only closed', async () => {
+        const { user, confirmation } = await submitCode();
+
+        await user.click(
+            within(findings()).getByRole('button', { name: 'Close' }),
+        );
+        await act(async () => confirmation.settle(PROOF));
+
+        expect(inertia.calls).toHaveLength(1);
+        expect(
+            screen.queryByRole('dialog', { name: 'Huye Motors' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('does not seal when the note is edited during the check, without a close', async () => {
+        const { user, confirmation } = await submitCode();
+
+        await user.type(noteField(), '!');
+        expect(
+            screen.queryByRole('dialog', { name: 'Huye Motors' }),
+        ).not.toBeInTheDocument();
+
+        await act(async () => confirmation.settle(PROOF));
+
+        expect(inertia.calls).toHaveLength(1);
+    });
+
+    it('does not seal once the page has gone', async () => {
+        const { unmount, confirmation } = await submitCode();
+
+        unmount();
+        await act(async () => confirmation.settle(PROOF));
+
+        expect(inertia.calls).toHaveLength(1);
+        expect(inertia.visits).toHaveLength(0);
+    });
+
+    it('does not seal when fresh facts bind a new digest during the check', async () => {
+        const { rerender, confirmation } = await submitCode();
+
+        rerender(
+            <AuditorAudit
+                {...withStage(noteSaved, (stage) => ({
+                    ...stage,
+                    digest: 'sha256:4b1e07c',
+                }))}
+            />,
+        );
+        await act(async () => confirmation.settle(PROOF));
+
+        expect(inertia.calls).toHaveLength(1);
+        /* Nor does a withdrawn answer speak: no message for an attempt that no longer counts. */
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it('still seals exactly once when nothing withdrew the confirmation', async () => {
+        const { confirmation } = await submitCode();
+
+        await act(async () => confirmation.settle(PROOF));
+
+        await waitFor(() => expect(inertia.visits).toHaveLength(1));
+        expect(inertia.calls).toHaveLength(2);
+        expect(
+            inertia.calls.filter(
+                (call) => call.url === '/preview/auditor-audit-sealed',
+            ),
+        ).toHaveLength(1);
+        expect(inertia.calls[1].body).toMatchObject({
+            expected_revision: 7,
+            digest: DIGEST,
+            note: NOTE,
+            step_up: { proof: 'stp_new' },
+        });
+    });
+});
+
 describe('Seal — previewed states', () => {
     it('opens on the code entry for a step-up', () => {
         render(<AuditorAudit {...props(stepUp)} />);
