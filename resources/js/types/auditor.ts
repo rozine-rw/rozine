@@ -76,13 +76,15 @@ export type RejectReason =
  * One piece of evidence as the server identifies it (point 4). A fact the capture could not supply
  * is null and reads "Unavailable". The server alone sets `source` and `device_attestation`; online
  * Alpha fixtures carry `unavailable` and do not pass the D-04 physical-device gate.
+ * `isolated_synthetic` is synthetic test evidence from an isolated environment: never a native
+ * capture or proof, and its attestation is always `unavailable`.
  */
 export type EvidenceItem = {
     evidence_id: string;
     kind: 'photo' | 'check_in' | 'ledger' | 'statement' | 'licence_certificate';
     sha256: string;
     captured_at: string | null;
-    source: 'companion_device' | 'web_upload';
+    source: 'companion_device' | 'web_upload' | 'isolated_synthetic';
     device_attestation: 'verified' | 'unverified' | 'unavailable';
     /** Formatted coordinates: "-1.9441, 30.0619". */
     position: string | null;

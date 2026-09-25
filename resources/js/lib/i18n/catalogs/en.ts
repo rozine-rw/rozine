@@ -3061,6 +3061,8 @@ const en = {
         'A report is already bound to this application, so no new one was started. The page has been refreshed — continue from there.',
     'auditor.command.refused.AUDIT_REPORT_REASSIGNMENT_REQUIRED':
         'This report has to be reassigned before work on it can continue, so nothing was started. The page has been refreshed.',
+    'auditor.evidence.source_isolated_synthetic':
+        'Synthetic test evidence (isolated)',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

@@ -3191,6 +3191,9 @@ const fr: Catalog = {
     'auditor.command.refused.AUDIT_REPORT_REASSIGNMENT_REQUIRED':
         "Ce rapport doit être réattribué avant que le travail puisse reprendre : rien n'a été commencé. La page a été actualisée.",
 
+    'auditor.evidence.source_isolated_synthetic':
+        'Preuve de test synthétique (isolée)',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

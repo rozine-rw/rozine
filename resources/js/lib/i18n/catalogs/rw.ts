@@ -3178,6 +3178,9 @@ const rw: Catalog = {
     'auditor.command.refused.AUDIT_REPORT_REASSIGNMENT_REQUIRED':
         "Iyi raporo igomba guhabwa undi mbere y'uko akazi gakomeza, bityo nta kintu cyatangiye. Paji yavuguruwe.",
 
+    'auditor.evidence.source_isolated_synthetic':
+        "Igihamya cy'igerageza cy'ikigereranyo (cyitaruye)",
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',
