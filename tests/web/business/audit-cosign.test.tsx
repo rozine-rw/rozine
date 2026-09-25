@@ -639,9 +639,50 @@ describe('Business audit co-sign — the co-signature', () => {
         expect(inertia.calls[1]).toEqual({
             url: `/preview/business-audit-cosign-operation-${sent}`,
             method: 'get',
-            body: { command: 'report.cosign' },
+            body: { identity_context_revision: 4, command: 'report.cosign' },
         });
         expect(inertia.reload).not.toHaveBeenCalled();
+    });
+
+    it('recovers a lost signature that published the report, without a refusal or a second Co-sign', async () => {
+        const published = props(publishedFixture);
+
+        inertia.visit.mockImplementationOnce(() =>
+            inertiaPage.swap?.(published),
+        );
+        inertia.queue.push(
+            offline(),
+            answers(operation({ code: 'REPORT_PUBLISHED' })),
+        );
+        const { user } = setup();
+
+        await signAs(user);
+
+        await waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith({
+                url: '/preview/business-audit-cosign-next',
+                method: 'get',
+            }),
+        );
+
+        const lookup = inertia.calls[1];
+
+        expect(lookup.method).toBe('get');
+        expect(lookup.body).toEqual({
+            identity_context_revision: 4,
+            command: 'report.cosign',
+        });
+        expect(inertia.calls).toHaveLength(2);
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+        expect(
+            await screen.findByText(
+                'Every required signature is in and the report is published.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: /Co-sign/u }),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
     });
 
     it('holds an unconfirmed co-signature until the lookup answers', async () => {
@@ -1155,7 +1196,10 @@ describe('Business audit co-sign — pending N6 and dispute (additive, optional)
         expect(
             sheet.getByRole('button', { name: 'Submit dispute' }),
         ).toBeDisabled();
-        expect(inertia.calls[1].body).toEqual({ command: 'report.dispute' });
+        expect(inertia.calls[1].body).toEqual({
+            identity_context_revision: 4,
+            command: 'report.dispute',
+        });
 
         await user.click(sheet.getByRole('button', { name: 'Cancel' }));
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
