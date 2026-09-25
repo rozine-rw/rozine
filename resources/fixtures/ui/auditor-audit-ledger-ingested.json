@@ -43,6 +43,7 @@
         ],
         "stage": {
             "step": "ledger",
+            "upload": null,
             "reported_stock": {
                 "currency": "RWF",
                 "amount": "38000000"
