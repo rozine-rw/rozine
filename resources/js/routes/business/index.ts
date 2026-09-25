@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
+import applications from './applications'
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
 * @see app/Http/Controllers/RoleHomeController.php:15
@@ -82,6 +83,7 @@ home.form = homeForm
 
 const business = {
     home: Object.assign(home, home),
+    applications: Object.assign(applications, applications),
 }
 
 export default business

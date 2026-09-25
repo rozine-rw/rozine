@@ -7,6 +7,7 @@ import RoleHomeController from './RoleHomeController'
 import StaffHomeController from './StaffHomeController'
 import AuditorProfileController from './AuditorProfileController'
 import AuditorJobsController from './AuditorJobsController'
+import BusinessApplicationController from './BusinessApplicationController'
 import IdentityManagementController from './IdentityManagementController'
 import RoleBookmarkController from './RoleBookmarkController'
 import Settings from './Settings'
@@ -21,6 +22,7 @@ const Controllers = {
     StaffHomeController: Object.assign(StaffHomeController, StaffHomeController),
     AuditorProfileController: Object.assign(AuditorProfileController, AuditorProfileController),
     AuditorJobsController: Object.assign(AuditorJobsController, AuditorJobsController),
+    BusinessApplicationController: Object.assign(BusinessApplicationController, BusinessApplicationController),
     IdentityManagementController: Object.assign(IdentityManagementController, IdentityManagementController),
     RoleBookmarkController: Object.assign(RoleBookmarkController, RoleBookmarkController),
     Settings: Object.assign(Settings, Settings),
