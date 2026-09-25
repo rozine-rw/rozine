@@ -21,6 +21,8 @@ test('database tests use PostgreSQL with a dedicated nonprivileged owner', funct
         ->and(config('queue.failed.database'))->toBe('pgsql');
     expect(config('database.connections.pgsql.timezone'))->toBe('UTC')
         ->and(DB::selectOne('SHOW TIME ZONE')->TimeZone)->toBe('UTC');
+    expect(DB::selectOne('SHOW transaction_isolation')->transaction_isolation)->toBe('read committed')
+        ->and(DB::selectOne('SHOW default_transaction_isolation')->default_transaction_isolation)->toBe('read committed');
 });
 
 test('the test owner cannot connect to the application or demo database', function (): void {

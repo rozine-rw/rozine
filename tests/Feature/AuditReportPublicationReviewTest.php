@@ -254,3 +254,9 @@ it('withdraws outstanding seal proofs and pending publication when the Auditor d
             ->and(AuditStepUpProof::query()->firstOrFail()->consumed_at)->toBeNull();
     }
 })->with([false, true]);
+
+it('does not expose an Auditor draft as a Business publication', function (): void {
+    $fixture = Fixture::ready();
+    expect(fn () => app(GetBusinessAuditReport::class)->handle($fixture['audit']['authority']['users'][0]->id, 1,
+        $fixture['audit']['business'], $fixture['report']->id))->toThrow(CommandRejection::class, 'AUDIT_REPORT_NOT_FOUND');
+});
