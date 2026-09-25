@@ -1,0 +1,100 @@
+{
+    "component": "business/audit-cosign",
+    "synthetic": true,
+    "props": {
+        "contract_version": "business-audit-report-v1",
+        "identity_context_revision": 4,
+        "server_time": "2026-09-03T10:00:00+02:00",
+        "business": {
+            "id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
+            "name": "GreenLeaf Agro (synthetic)"
+        },
+        "report": {
+            "id": "SYN-RPT-FLASH-0001",
+            "revision": 1,
+            "kind": "flash",
+            "period": null,
+            "digest": "26363eaa837a4d639b659300b106d24992347b60dad48ca45236b9789541c7cd",
+            "procedure_version": "MVP-AUP-1",
+            "auditor": {
+                "name": "Synthetic CPA Jean-Paul M.",
+                "licence": "SYN-ICPAR-0000"
+            },
+            "auditor_note": "Synthetic fixture note. A Flash field check of the stock held at the Gasabo store, from the statements on file and a count on site.",
+            "findings": [
+                {
+                    "code": "SYN-F-03",
+                    "title": "Synthetic finding: stock count recorded",
+                    "body": "Synthetic fixture text. The physical stock count on 31 August was recorded against the stock ledger with no unexplained difference.",
+                    "evidence_ids": ["SYN-EV-004", "SYN-EV-005", "SYN-EV-006"]
+                }
+            ],
+            "seal": {
+                "status": "valid",
+                "signed_at": "2026-09-02T16:40:00+02:00",
+                "verification": {
+                    "url": "/preview/business-audit-cosign",
+                    "method": "get"
+                }
+            },
+            "published_at": null
+        },
+        "cosign": {
+            "revision": 2,
+            "state": "pending",
+            "mandate_version": 2,
+            "required_signatures": 1,
+            "signed_count": 0,
+            "signers": [
+                {
+                    "name": "Synthetic signatory Aline Uwase",
+                    "state": "pending",
+                    "signed_at": null,
+                    "is_you": true
+                }
+            ],
+            "your_note": "",
+            "due_at": null,
+            "overdue": false
+        },
+        "allowed_actions": ["report.cosign"],
+        "actions": {
+            "cosign": {
+                "url": "/preview/business-audit-cosign-signatures",
+                "method": "post"
+            }
+        },
+        "links": {
+            "current": {
+                "url": "/preview/business-audit-cosign-flash",
+                "method": "get"
+            },
+            "close": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/business-audit-cosign-operation-{request_id}",
+                "method": "get"
+            }
+        },
+        "shell_links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            }
+        }
+    }
+}

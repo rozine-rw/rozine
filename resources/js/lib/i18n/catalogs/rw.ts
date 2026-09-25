@@ -3214,6 +3214,86 @@ const rw: Catalog = {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',
     },
+    'business.audit_cosign.head_title': "Shyira umukono kuri raporo y'igenzura",
+    'business.audit_cosign.title': "Shyira umukono kuri raporo y'igenzura",
+    'business.audit_cosign.back': 'Subira inyuma',
+    'business.audit_cosign.lead':
+        'Umugenzuzi wawe yafunze iyi raporo ashingiye kuri raporo za konti washyizeho. Soma ibyabonetse mbere yo gushyiraho umukono.',
+    'business.audit_cosign.kind.monthly': "Raporo y'igenzura ya buri kwezi",
+    'business.audit_cosign.kind.flash': "Raporo y'igenzura yihuse",
+    'business.audit_cosign.period': 'Igihe',
+    'business.audit_cosign.auditor': 'Umugenzuzi',
+    'business.audit_cosign.auditor_value': '{name} · uruhushya {licence}',
+    'business.audit_cosign.procedure': 'Uburyo bukurikizwa',
+    'business.audit_cosign.digest': 'Ikimenyetso cya raporo',
+    'business.audit_cosign.digest_short': '{digest}…',
+    'business.audit_cosign.seal.title': 'Kashe',
+    'business.audit_cosign.seal.valid': 'Kashe ifite agaciro',
+    'business.audit_cosign.seal.valid_at': 'Yafunzwe {date}',
+    'business.audit_cosign.seal.verify': 'Genzura kashe',
+    'business.audit_cosign.seal.unavailable':
+        'Kashe ntishobora kugenzurwa ubu.',
+    'business.audit_cosign.note_title': 'Icyo umugenzuzi yanditse',
+    'business.audit_cosign.findings': 'Ibyabonetse',
+    'business.audit_cosign.findings_empty': 'Nta byabonetse byanditswe.',
+    'business.audit_cosign.evidence': {
+        one: 'Ikimenyetso {count}',
+        other: 'Ibimenyetso {count}',
+    },
+    'business.audit_cosign.sealed_note':
+        'Iyi raporo irafunzwe. Nta kintu kuri uru rupapuro kiyihindura.',
+    'business.audit_cosign.status.title': 'Imikono',
+    'business.audit_cosign.status.count': 'Imikono {signed} kuri {required}',
+    'business.audit_cosign.status.signers': 'Abasinya',
+    'business.audit_cosign.status.you': 'Wowe',
+    'business.audit_cosign.status.signed_on': 'Yasinye · {date}',
+    'business.audit_cosign.status.signed': 'Yasinye',
+    'business.audit_cosign.status.pending': 'Birategerejwe',
+    'business.audit_cosign.due': 'Shyiraho umukono bitarenze {date}',
+    'business.audit_cosign.overdue':
+        'Byarenze igihe — umukono wagombaga gushyirwaho bitarenze {date}',
+    'business.audit_cosign.published': 'Yatangajwe {date}',
+    'business.audit_cosign.yours.title': 'Umukono wawe',
+    'business.audit_cosign.yours.accept':
+        'Ndemeza ko raporo za konti iyi raporo ishingiyeho zabitswe kandi ko ibyabonetse ari ukuri.',
+    'business.audit_cosign.yours.note': 'Incamake yawe (si ngombwa)',
+    'business.audit_cosign.yours.note_count': '{count}/{limit}',
+    'business.audit_cosign.yours.note_help':
+        "Ibikwa hamwe n'umukono wawe. Ntihindura raporo yafunzwe.",
+    'business.audit_cosign.yours.identity':
+        'Konti yawe yagenzuwe ni yo isinya. Buri musinyi usabwa ashyiraho umukono we ukwe.',
+    'business.audit_cosign.yours.submit': 'Shyiraho umukono',
+    'business.audit_cosign.yours.submitting': 'Birimo gusinywa…',
+    'business.audit_cosign.yours.signed': 'Washyize umukono kuri iyi raporo.',
+    'business.audit_cosign.yours.signed_on': 'Washyizeho umukono {date}.',
+    'business.audit_cosign.yours.waiting':
+        'Hategerejwe ko {names} ashyiraho umukono. Raporo itangazwa iyo imikono yose isabwa yabonetse.',
+    'business.audit_cosign.yours.all_in':
+        'Imikono yose isabwa yabonetse. Raporo itangazwa iyo igenzura ryo kuyitangaza rirangiye.',
+    'business.audit_cosign.yours.published':
+        'Imikono yose isabwa yabonetse kandi raporo yatangajwe.',
+    'business.audit_cosign.yours.unavailable':
+        'Gushyira umukono kuri iyi raporo ntibishoboka ubu.',
+    'business.audit_cosign.yours.cannot':
+        'Ntushobora gushyira umukono kuri iyi raporo.',
+    'business.audit_cosign.refused.with_code': '{reason} ({code})',
+    'business.audit_cosign.refused.VERSION_CONFLICT':
+        'Imikono kuri iyi raporo yahindutse igihe wasinyaga. Twazanye verisiyo iheruka — yisuzume wongere ushyireho umukono.',
+    'business.audit_cosign.refused.IDEMPOTENCY_CONFLICT':
+        "Iki cyifuzo cyakoreshejwe mbere n'andi makuru, bityo ntikongeye koherezwa. Twazanye verisiyo iheruka.",
+    'business.audit_cosign.refused.DIGEST_STALE':
+        'Raporo wasomye si yo ikiriho ubu. Twayizanye — yisome wongere ushyireho umukono.',
+    'business.audit_cosign.refused.MANDATE_STALE':
+        "Ububasha bwo gusinya bw'ikigo bwahindutse. Reba abagomba gushyiraho umukono ubu, hanyuma wongere ushyireho umukono.",
+    'business.audit_cosign.refused.ACTION_FORBIDDEN':
+        'Ntushobora gushyiraho umukono kuri ubu bucuruzi.',
+    'business.audit_cosign.refused.MANDATE_REQUIRED':
+        'Ububasha bwawe bwagenzuwe ntibukwemerera gushyiraho umukono kuri ubu bucuruzi.',
+    'business.audit_cosign.refused.NOT_FOUND': 'Iyi raporo ntikikugeraho.',
+    'business.audit_cosign.refused.denied':
+        'Uburenganzira bwawe bwahindutse. Subira kuri porogaramu zawe wongere ugerageze.',
+    'business.audit_cosign.refused.failed':
+        'Umukono wawe ntiwanditswe. Reba raporo uko imeze ubu wongere ugerageze.',
 };
 
 export default rw;
