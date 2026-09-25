@@ -1,5 +1,6 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useEffect, useState } from 'react';
 import type { ComponentProps } from 'react';
 import {
     afterEach,
@@ -141,6 +142,44 @@ const fails =
 
         return Promise.reject(new Error(`HTTP ${status}`));
     };
+
+/**
+ * Stands in for Inertia's page swap: a visit that does not preserve state hands the page new
+ * props under a new key, which remounts it, as the React adapter does.
+ */
+const inertiaPage = {
+    swap: null as null | ((next: BusinessApplyProps) => void),
+};
+
+function InertiaPage({ initial }: { initial: BusinessApplyProps }) {
+    const [page, setPage] = useState({ props: initial, key: 0 });
+
+    useEffect(() => {
+        inertiaPage.swap = (next) =>
+            setPage((current) => ({ props: next, key: current.key + 1 }));
+    }, []);
+
+    return <BusinessApply key={page.key} {...page.props} />;
+}
+
+type VisitOptions = { preserveState?: boolean; onFinish?: () => void };
+
+/** The next visit is the server's fresh read: without preserved state, it delivers `next`. */
+const freshRead = (next: BusinessApplyProps) =>
+    inertia.visit.mockImplementationOnce(
+        (_url: unknown, options?: VisitOptions) => {
+            if (options?.preserveState === false) {
+                inertiaPage.swap?.(next);
+            }
+
+            options?.onFinish?.();
+        },
+    );
+
+const FRESH_VISIT = [
+    window.location.href,
+    expect.objectContaining({ preserveState: false, replace: true }),
+];
 
 const offline = (): Responder => () =>
     Promise.reject(new Error('Network error'));
@@ -783,17 +822,27 @@ describe('Apply — step 2, the quote', () => {
         expect(inertia.calls[1].body).toMatchObject({ term_months: 5 });
     });
 
-    it('looks up an autosave whose answer was lost, then carries on', async () => {
+    it('looks up an autosave whose answer was lost, reads the page afresh, then carries on', async () => {
         vi.useFakeTimers({ shouldAdvanceTime: true });
         const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
         const page = props(raiseStep);
 
         page.identity_context_revision = 7;
+        inertia.visit.mockClear();
         inertia.queue.push(
             offline(),
             answers(operation({ data: snapshotOf(page) })),
         );
-        render(<BusinessApply {...page} />);
+        freshRead({
+            ...page,
+            application: {
+                ...page.application,
+                revision: 4,
+                target: { currency: 'RWF', amount: '25000000' },
+                term_months: 4,
+            },
+        });
+        render(<InertiaPage initial={page} />);
 
         await typeRequest(user);
         act(() => {
@@ -809,14 +858,44 @@ describe('Apply — step 2, the quote', () => {
             method: 'get',
             body: { command: 'save', identity_context_revision: 7 },
         });
+        expect(inertia.visit).toHaveBeenCalledWith(...FRESH_VISIT);
+        /* The remounted page evaluates the saved request at the revision it read afresh. */
         expect(evaluate.url).toBe('/preview/business-apply-evaluations');
+        expect(evaluate.body).toMatchObject({
+            target: '25000000',
+            term_months: 4,
+            expected_revision: 4,
+        });
     });
 
-    it('reads every fact afresh after a recovered evaluation, never showing its recorded quote as current', async () => {
+    it('shows another login’s newer request after a recovered evaluation, never the old inputs or receipt', async () => {
         vi.useFakeTimers({ shouldAdvanceTime: true });
         const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
         const page = props(raiseStep);
-        const quote = quoteFor25m(page.quote as ReadyQuote);
+        const base = page.quote as ReadyQuote;
+        const newer: BusinessApplyProps = {
+            ...page,
+            application: {
+                ...page.application,
+                revision: 9,
+                target: { currency: 'RWF', amount: '30000000' },
+                term_months: 5,
+            },
+            quote: {
+                ...base,
+                quote_id: 'QTE-2026-0412-09',
+                quote_revision: 9,
+                requested_principal: { currency: 'RWF', amount: '30000000' },
+                principal: { currency: 'RWF', amount: '30000000' },
+                offered_principal: { currency: 'RWF', amount: '30000000' },
+                term_months: 5,
+                total: { currency: 'RWF', amount: '33300000' },
+                schedule: [1, 2, 3, 4, 5].map((instalment) => ({
+                    instalment,
+                    amount: { currency: 'RWF' as const, amount: '6660000' },
+                })),
+            },
+        };
 
         inertia.visit.mockClear();
         inertia.reload.mockClear();
@@ -827,11 +906,14 @@ describe('Apply — step 2, the quote', () => {
             answers(
                 operation({
                     code: 'APPLICATION_EVALUATED',
-                    data: snapshotOf(page, { quote }),
+                    data: snapshotOf(page, {
+                        quote: quoteFor25m(base),
+                    }),
                 }),
             ),
         );
-        render(<BusinessApply {...page} />);
+        freshRead(newer);
+        render(<InertiaPage initial={page} />);
 
         await typeRequest(user);
         act(() => {
@@ -842,19 +924,47 @@ describe('Apply — step 2, the quote', () => {
         expect(inertia.calls[2].url).toMatch(
             /^\/preview\/business-operation-/u,
         );
-        /* The direct save refreshes the remaining props; the recovered evaluation reloads all. */
-        await waitFor(() => expect(inertia.reload).toHaveBeenCalledTimes(2));
-        expect(inertia.reload.mock.calls[0]).toEqual([
-            { only: expect.arrayContaining(['allowed_actions']) },
+        expect(inertia.visit).toHaveBeenCalledWith(...FRESH_VISIT);
+        /* The direct save refreshed only the remaining props; nothing reloaded with preserved state. */
+        expect(inertia.reload.mock.calls).toEqual([
+            [{ only: expect.arrayContaining(['allowed_actions']) }],
         ]);
-        expect(inertia.reload.mock.calls[1]).toEqual([]);
-        /*
-         * Neither the recovered receipt's quote nor the earlier save's snapshot stands in for the
-         * current page: the page shows its freshly read props again.
-         */
+
+        await waitFor(() =>
+            expect(
+                screen.getByLabelText('Fundraising target (RWF)'),
+            ).toHaveValue('30,000,000'),
+        );
+        expect(screen.getByRole('button', { name: '5' })).toHaveAttribute(
+            'aria-pressed',
+            'true',
+        );
+        expect(screen.getByText('RWF 33,300,000')).toBeInTheDocument();
         expect(screen.queryByText('RWF 27,650,000')).not.toBeInTheDocument();
-        expect(screen.getByText('RWF 37,611,735')).toBeInTheDocument();
-        expect(inertia.visit).not.toHaveBeenCalled();
+
+        /* The old typed request never goes back over the newer one. */
+        act(() => {
+            vi.advanceTimersByTime(2000);
+        });
+        expect(inertia.calls).toHaveLength(3);
+    });
+
+    it('sends nothing while a fresh read is still pending', async () => {
+        const user = userEvent.setup();
+        const page = props(businessStep);
+
+        inertia.visit.mockClear();
+        inertia.visit.mockImplementationOnce(() => undefined);
+        inertia.queue.push(answers(operation({ data: null })));
+        render(<InertiaPage initial={page} />);
+
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        await waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith(...FRESH_VISIT),
+        );
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+        expect(inertia.calls).toHaveLength(1);
     });
 
     it('offers no command when the server allows none', async () => {
@@ -1209,10 +1319,11 @@ describe('Apply — step 3, review & sign', () => {
         );
     });
 
-    it('reloads when a completed command carries no snapshot', async () => {
+    it('reads the page afresh when a completed command carries no snapshot', async () => {
         const user = userEvent.setup();
         const page = props(reviewStep);
 
+        inertia.visit.mockClear();
         inertia.queue.push(answers(operation({ data: null })));
         render(<BusinessApply {...page} />);
 
@@ -1221,7 +1332,49 @@ describe('Apply — step 3, review & sign', () => {
             screen.getByRole('button', { name: 'Sign application' }),
         );
 
-        await waitFor(() => expect(inertia.reload).toHaveBeenCalledWith());
+        await waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith(...FRESH_VISIT),
+        );
+        expect(inertia.reload).not.toHaveBeenCalledWith();
+    });
+
+    it('clears every acceptance after a recovered signature, whose fresh read binds a newer quote', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+        const quote = page.quote as ReadyQuote;
+
+        inertia.visit.mockClear();
+        inertia.queue.push(
+            offline(),
+            answers(
+                operation({
+                    code: 'APPLICATION_SIGNATURE_RECORDED',
+                    data: snapshotOf(page),
+                }),
+            ),
+        );
+        freshRead({
+            ...page,
+            application: { ...page.application, revision: 9 },
+            quote: { ...quote, quote_id: 'QTE-2026-0412-09', quote_revision: 9 },
+        });
+        render(<InertiaPage initial={page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        await waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith(...FRESH_VISIT),
+        );
+        await waitFor(() =>
+            expect(screen.getByLabelText('Your full name')).toHaveValue(''),
+        );
+        for (const box of screen.getAllByRole('checkbox')) {
+            expect(box).toHaveAttribute('aria-checked', 'false');
+        }
+        expect(inertia.calls).toHaveLength(2);
     });
 
     it('asks for a fresh acceptance when the quote went stale, without resending', async () => {

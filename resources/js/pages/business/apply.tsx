@@ -151,6 +151,25 @@ export default function BusinessApply(props: BusinessApplyProps) {
     });
     const [haltedKey, setHaltedKey] = useState<string | null>(null);
 
+    /** Set while a fresh read is pending: nothing is saved, evaluated or signed meanwhile. */
+    const [refreshing, setRefreshing] = useState(false);
+
+    /**
+     * A fresh, non-preserving visit to this same page. Inertia's `reload` always preserves
+     * component state, which would keep the typed request, the evaluated and saved keys and the
+     * review's acceptances beside newer props; a visit without preserved state remounts the page,
+     * so every one of them starts again from the server's current facts.
+     */
+    const readAfresh = () => {
+        setRefreshing(true);
+        router.visit(window.location.href, {
+            preserveState: false,
+            preserveScroll: true,
+            replace: true,
+            onFinish: () => setRefreshing(false),
+        });
+    };
+
     const context = () => ({
         identity_context_revision: props.identity_context_revision,
         expected_revision: revision.current,
@@ -165,29 +184,36 @@ export default function BusinessApply(props: BusinessApplyProps) {
         onCompleted: (sent, resource, { recovered }) => {
             const { data } = resource;
 
-            if (data === null) {
-                router.reload();
+            /*
+             * A completion the lookup recovered is a historical receipt: a later revision, by
+             * another login, may have overtaken it. Neither its snapshot nor this page's local
+             * inputs, keys and acceptances may stand in for the current facts, so the page follows
+             * `next` when the command advances, and otherwise reads itself afresh and remounts.
+             */
+            if (data === null || recovered) {
+                if (
+                    data !== null &&
+                    (sent.advance ||
+                        resource.code === OPERATION_CODES.submitted)
+                ) {
+                    router.visit(data.next);
+
+                    return;
+                }
+
+                readAfresh();
 
                 return;
             }
 
-            /*
-             * A completion the lookup recovered is a historical receipt: a later revision may have
-             * overtaken it, so its snapshot is never shown as current. The page follows `next` (a
-             * fresh read) or reloads all of its facts instead.
-             */
-            if (recovered) {
-                setSnapshot(null);
-            } else {
-                revision.current = data.application.revision;
-                setSnapshot({
-                    application: data.application,
-                    quote: data.quote,
-                    acceptance: data.acceptance,
-                    submission: data.submission,
-                    allowed_actions: resource.allowed_actions,
-                });
-            }
+            revision.current = data.application.revision;
+            setSnapshot({
+                application: data.application,
+                quote: data.quote,
+                acceptance: data.acceptance,
+                submission: data.submission,
+                allowed_actions: resource.allowed_actions,
+            });
 
             if (sent.name === 'evaluate') {
                 /* A new quote is a new decision: its offer is accepted afresh. */
@@ -206,12 +232,6 @@ export default function BusinessApply(props: BusinessApplyProps) {
 
             if (sent.advance || resource.code === OPERATION_CODES.submitted) {
                 router.visit(data.next);
-
-                return;
-            }
-
-            if (recovered) {
-                router.reload();
 
                 return;
             }
@@ -251,7 +271,8 @@ export default function BusinessApply(props: BusinessApplyProps) {
     const [sending, setSending] = useState<ApplicationCommandName | null>(null);
 
     const send = (next: ApplicationCommand) => {
-        if (command.send(next)) {
+        /* Nothing new is sent on facts a pending fresh read is about to replace. */
+        if (!refreshing && command.send(next)) {
             setSending(next.name);
         }
     };
@@ -301,6 +322,7 @@ export default function BusinessApply(props: BusinessApplyProps) {
         canEvaluate &&
         !command.busy &&
         !command.unresolved &&
+        !refreshing &&
         raise.target !== '' &&
         raise.term_months !== null &&
         key !== evaluatedKey &&
@@ -321,7 +343,7 @@ export default function BusinessApply(props: BusinessApplyProps) {
     }, [armed, key]);
 
     const remind = () => show(t('business.apply.incomplete'));
-    const idle = !command.busy && !command.unresolved;
+    const idle = !command.busy && !command.unresolved && !refreshing;
 
     const raiseReady =
         raise.title.trim() !== '' &&
