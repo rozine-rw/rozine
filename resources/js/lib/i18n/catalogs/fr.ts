@@ -240,6 +240,16 @@ const fr: Catalog = {
     'business.note.empty.title': 'Aucune note avec ce statut',
     'business.note.empty.body':
         'Lancez une levée pour financer votre entreprise.',
+    'business.entries.title': 'Demandes de levée',
+    'business.entries.continue': 'Poursuivre votre demande',
+    'business.entries.view': 'Voir votre demande',
+    'business.entries.saved_at': 'Enregistrée à l’étape {step}',
+    'business.entries.submitted': 'Soumise · en cours d’examen',
+    'business.entries.view_only':
+        'Vous pouvez consulter cette entreprise, mais lancer une levée ne vous est pas ouvert.',
+    'business.entries.empty':
+        'Aucune entreprise pour laquelle vous pouvez agir n’est encore liée à ce compte.',
+    'business.entries.more': 'Afficher plus',
     'business.grow.title': 'Croître',
     'business.grow.subtitle': 'Levez davantage quand vous êtes prêt.',
     'business.grow.headroom': 'Marge disponible',
@@ -262,14 +272,22 @@ const fr: Catalog = {
     'business.apply.business.subtitle':
         'À partir de votre certificat RDB et de vos relevés bancaires et mobile money vérifiés. Vérifiez — si tout est correct, continuez.',
     'business.apply.business.rdb_verified': '✓ Vérifié par le RDB',
-    'business.apply.business.statements_verified': '✓ Relevés vérifiés · OCR',
+    'business.apply.business.statements_verified': '✓ Relevés vérifiés',
     'business.apply.business.active': '● Active',
     'business.apply.business.established': 'Fondée en {year}',
-    'business.apply.business.standing': 'Situation financière · {years} ans',
-    'business.apply.business.ocr_verified': 'OCR · vérifié',
+    'business.apply.business.standing': 'Situation financière',
+    'business.apply.business.statements_badge': 'Relevés vérifiés',
+    'business.apply.business.period': {
+        one: '{from} – {through} · {count} mois',
+        other: '{from} – {through} · {count} mois',
+    },
+    'business.apply.business.partial_year': {
+        one: '{year} · {count} mois',
+        other: '{year} · {count} mois',
+    },
     'business.apply.business.revenue': "Chiffre d'affaires",
     'business.apply.business.costs': 'Coûts',
-    'business.apply.business.net_profit': 'Bénéfice net',
+    'business.apply.business.net_profit': 'Trésorerie d’exploitation nette',
     'business.apply.business.existing_debt': 'Dette existante',
     'business.apply.business.crb_verified': '✓ Vérifié par le CRB',
     'business.apply.business.year_by_year': 'Année par année',
@@ -1596,6 +1614,12 @@ const fr: Catalog = {
     'auditor.file.title': 'Examiner la demande',
     'auditor.file.lead':
         'Tout ce que {business} a soumis, contrôlé selon les seuils de Rozine. Votre contrôle sur site lève ce que le moteur ne peut pas confirmer à distance.',
+    'auditor.file.lead_provisional':
+        'La demande de {business} telle qu’elle se présente actuellement.',
+    'auditor.file.lead_no_prescreen':
+        'Aucune présélection automatique n’est enregistrée.',
+    'auditor.file.lead_field_check':
+        'Votre contrôle sur site confirme ce qui ne peut pas être vérifié à distance.',
     'auditor.file.reassigned_title': 'Ce dossier vous a été réattribué',
     'auditor.file.reassigned_body':
         "Le délai initial s'applique toujours — la réattribution ne relance pas le délai. Les preuves déjà au dossier restent consignées.",
@@ -2841,6 +2865,10 @@ const fr: Catalog = {
         'En attente de la signature de {names}. La demande est soumise dès que toutes les signatures requises sont réunies.',
     'business.apply.review.cannot_sign':
         'Seul un signataire du mandat vérifié de la société peut signer cette demande.',
+    'business.apply.review.agreement_unavailable':
+        "Le contrat n'est pas encore disponible.",
+    'business.apply.review.agreement_unavailable_body':
+        "Rozine n'a pas encore publié les conditions et les avertissements sur les risques approuvés pour cette demande : il n'y a donc rien à signer pour l'instant. Votre brouillon et votre offre restent enregistrés.",
     'business.apply.view_only':
         'Vous pouvez consulter cette demande, mais pas la modifier.',
     'business.apply.submitted.application_id': 'ID de la demande · {id}',
@@ -2884,6 +2912,11 @@ const fr: Catalog = {
         'Le mandat de signature de la société a changé avant votre signature. Vérifiez qui doit signer désormais, puis signez à nouveau.',
 
     'business.apply.review.document_summary': 'Résumé',
+    'business.apply.outcome.refused.APPLICATION_PENDING_REVIEW':
+        'Votre entreprise a déjà une demande en cours d’examen. Vous pourrez en déposer une nouvelle une fois la décision rendue.',
+    'business.apply.outcome.refused.APPLICATION_STEP_INVALID':
+        'Revenez à « Vérifier et signer » pour soumettre cette demande.',
+    'business.apply.pending_review.link': 'Voir la demande en cours d’examen',
     'business.apply.review.document_full_text': 'Texte intégral',
     'business.apply.review.reduce.open': 'Prendre un montant inférieur',
     'business.apply.review.reduce.label': 'Montant souhaité (RWF)',

@@ -2,13 +2,13 @@
     "component": "business/apply",
     "props": {
         "contract_version": "business-application-v1",
-        "business_id": "BUS-103847291",
+        "business_id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
         "identity_context_revision": 4,
         "server_time": "2026-09-24T09:15:00+02:00",
         "allowed_actions": [],
         "step": "review",
         "application": {
-            "id": "APP-2026-0412",
+            "id": "01k6p4c8s3d0f4g9h2j6k1m7n3",
             "revision": 3,
             "title": "Cold-Chain Hub",
             "target": {
@@ -52,35 +52,42 @@
             "totals": {
                 "revenue": {
                     "currency": "RWF",
-                    "amount": "1595000000"
+                    "amount": "1119000000"
                 },
                 "costs": {
                     "currency": "RWF",
-                    "amount": "1215000000"
+                    "amount": "842000000"
                 },
                 "net_profit": {
                     "currency": "RWF",
-                    "amount": "380000000"
+                    "amount": "277000000"
                 }
+            },
+            "period": {
+                "from_month": "2023-10",
+                "through_month": "2026-09",
+                "months": 36
             },
             "years": [
                 {
-                    "year": 2025,
+                    "year": 2023,
+                    "months": 3,
                     "revenue": {
                         "currency": "RWF",
-                        "amount": "385000000"
+                        "amount": "82000000"
                     },
                     "costs": {
                         "currency": "RWF",
-                        "amount": "289000000"
+                        "amount": "62000000"
                     },
                     "net_profit": {
                         "currency": "RWF",
-                        "amount": "96000000"
+                        "amount": "20000000"
                     }
                 },
                 {
                     "year": 2024,
+                    "months": 12,
                     "revenue": {
                         "currency": "RWF",
                         "amount": "352000000"
@@ -95,48 +102,35 @@
                     }
                 },
                 {
-                    "year": 2023,
+                    "year": 2025,
+                    "months": 12,
                     "revenue": {
                         "currency": "RWF",
-                        "amount": "318000000"
+                        "amount": "385000000"
                     },
                     "costs": {
                         "currency": "RWF",
-                        "amount": "243000000"
+                        "amount": "289000000"
+                    },
+                    "net_profit": {
+                        "currency": "RWF",
+                        "amount": "96000000"
+                    }
+                },
+                {
+                    "year": 2026,
+                    "months": 9,
+                    "revenue": {
+                        "currency": "RWF",
+                        "amount": "300000000"
+                    },
+                    "costs": {
+                        "currency": "RWF",
+                        "amount": "225000000"
                     },
                     "net_profit": {
                         "currency": "RWF",
                         "amount": "75000000"
-                    }
-                },
-                {
-                    "year": 2022,
-                    "revenue": {
-                        "currency": "RWF",
-                        "amount": "286000000"
-                    },
-                    "costs": {
-                        "currency": "RWF",
-                        "amount": "220000000"
-                    },
-                    "net_profit": {
-                        "currency": "RWF",
-                        "amount": "66000000"
-                    }
-                },
-                {
-                    "year": 2021,
-                    "revenue": {
-                        "currency": "RWF",
-                        "amount": "254000000"
-                    },
-                    "costs": {
-                        "currency": "RWF",
-                        "amount": "197000000"
-                    },
-                    "net_profit": {
-                        "currency": "RWF",
-                        "amount": "57000000"
                     }
                 }
             ],
@@ -620,6 +614,7 @@
                 "url": "/preview/business-apply-signatures",
                 "method": "post"
             }
-        }
+        },
+        "pending_application": null
     }
 }

@@ -23,6 +23,16 @@ const sheetFor = (business = 'Huye Motors') =>
 beforeEach(() => inertia.reset());
 
 describe('Auditor business file', () => {
+    it('introduces a submitted, screened file as everything submitted and screened', () => {
+        render(<AuditorFile {...props()} />);
+
+        expect(
+            within(sheetFor()).getByText(
+                "Everything Huye Motors submitted, screened against Rozine's thresholds. Your field check resolves what the engine can't confirm remotely.",
+            ),
+        ).toBeInTheDocument();
+    });
+
     it('previews an offered file read-only, over Jobs, its flash clock already running from dispatch', () => {
         render(<AuditorFile {...props()} />);
 
@@ -285,6 +295,50 @@ describe('Auditor business file', () => {
 describe('Auditor business file on the live S-C projection', () => {
     const live = () => props(liveMinimalFixture);
     const liveSheet = () => sheetFor('Gikondo Metal Works');
+
+    it('introduces the draft fallback as the application as it stands, with no pre-screen on record', () => {
+        render(<AuditorFile {...live()} />);
+
+        const sheet = liveSheet();
+
+        expect(
+            within(sheet).getByText(
+                "Gikondo Metal Works's application as it currently stands. No automated pre-screen is on record. Your field check confirms what can't be verified remotely.",
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet).queryByText(/^Everything .* submitted/u),
+        ).not.toBeInTheDocument();
+    });
+
+    it('does not claim a pre-screen is missing when one is on record for a draft', () => {
+        const page = live();
+
+        page.file = {
+            ...(page.file as BusinessFile),
+            prescreen: (props().file as BusinessFile).prescreen,
+        };
+        render(<AuditorFile {...page} />);
+
+        expect(
+            within(liveSheet()).getByText(
+                "Gikondo Metal Works's application as it currently stands. Your field check confirms what can't be verified remotely.",
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it('does not claim everything was screened for a submitted application without a pre-screen', () => {
+        const page = props();
+
+        page.file = { ...(page.file as BusinessFile), prescreen: [] };
+        render(<AuditorFile {...page} />);
+
+        expect(
+            within(sheetFor()).getByText(
+                "Huye Motors's application as it currently stands. No automated pre-screen is on record. Your field check confirms what can't be verified remotely.",
+            ),
+        ).toBeInTheDocument();
+    });
 
     it('reads a figure the draft lacks as a dash and invents nothing in an empty list', () => {
         render(<AuditorFile {...live()} />);

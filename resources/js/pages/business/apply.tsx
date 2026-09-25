@@ -2,10 +2,16 @@ import { router } from '@inertiajs/react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
+    carriedRefusal,
+    carryRefusal,
+    clearCarriedRefusal,
+} from '@/components/business/apply/carried-refusal';
+import {
     OPERATION_CODES,
     refusalRefreshes,
 } from '@/components/business/apply/operation-outcome';
 import { OutcomeBanner } from '@/components/business/apply/outcome-banner';
+import { PendingReview } from '@/components/business/apply/pending-review';
 import { StepBusiness } from '@/components/business/apply/step-business';
 import { StepRaise } from '@/components/business/apply/step-raise';
 import type { RaiseFields } from '@/components/business/apply/step-raise';
@@ -38,6 +44,9 @@ const SHOWN_FIELDS: Record<ApplyStep, string[]> = {
     review: ['disclosures', 'signature_name'],
     submitted: [],
 };
+
+/** The documents every signature accepts, each by its own version and hash. */
+const AGREEMENTS = ['terms', 'privacy'] as const;
 
 /** How long typing settles before the draft is saved and evaluated. */
 const QUOTE_DEBOUNCE_MS = 450;
@@ -78,6 +87,8 @@ export default function BusinessApply(props: BusinessApplyProps) {
     const { t } = useTranslation();
     const { toast, show } = useToast();
     const { step, links, actions } = props;
+    /** Another application of this business under review, when one blocks this draft. */
+    const pendingReview = props.pending_application?.link ?? null;
     const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
     const application = snapshot?.application ?? props.application;
     const quote = snapshot === null ? props.quote : snapshot.quote;
@@ -90,7 +101,18 @@ export default function BusinessApply(props: BusinessApplyProps) {
     const canSave = allowedActions.includes('application.save');
     const canEvaluate =
         canSave && allowedActions.includes('application.evaluate');
-    const canSign = allowedActions.includes('application.submit');
+    /*
+     * Missing legal text is an empty document or disclosure list (no submit capability either):
+     * nothing to sign, so no Sign button even if a submit were allowed, and no stand-in text. A
+     * business signs the Terms and the Privacy Note, so both must be there to read.
+     */
+    const agreementAvailable =
+        acceptance.disclosures.length > 0 &&
+        AGREEMENTS.every((kind) =>
+            acceptance.documents.some((document) => document.kind === kind),
+        );
+    const canSign =
+        agreementAvailable && allowedActions.includes('application.submit');
 
     const revision = useRef(props.application.revision);
     const savedKey = useRef(
@@ -135,7 +157,38 @@ export default function BusinessApply(props: BusinessApplyProps) {
                   props.application.term_months,
               );
     });
-    const [haltedKey, setHaltedKey] = useState<string | null>(null);
+    /*
+     * A refusal that read the page afresh is carried across the remount once: its banner shows
+     * again, and the refused request is still not resent unchanged.
+     */
+    const [carried] = useState(() => carriedRefusal(window.location.href));
+
+    useEffect(() => {
+        clearCarriedRefusal();
+    }, []);
+
+    const [haltedKey, setHaltedKey] = useState<string | null>(
+        carried?.haltedKey ?? null,
+    );
+
+    /** Set while a fresh read is pending: nothing is saved, evaluated or signed meanwhile. */
+    const [refreshing, setRefreshing] = useState(false);
+
+    /**
+     * A fresh, non-preserving visit to this same page. Inertia's `reload` always preserves
+     * component state, which would keep the typed request, the evaluated and saved keys and the
+     * review's acceptances beside newer props; a visit without preserved state remounts the page,
+     * so every one of them starts again from the server's current facts.
+     */
+    const readAfresh = () => {
+        setRefreshing(true);
+        router.visit(window.location.href, {
+            preserveState: false,
+            preserveScroll: true,
+            replace: true,
+            onFinish: () => setRefreshing(false),
+        });
+    };
 
     const context = () => ({
         identity_context_revision: props.identity_context_revision,
@@ -146,12 +199,33 @@ export default function BusinessApply(props: BusinessApplyProps) {
     const command = useApplicationCommand({
         actions,
         lookup: links.operation,
+        identityContextRevision: props.identity_context_revision,
         preview: props.preview_outcome,
-        onCompleted: (sent, resource) => {
+        refusal:
+            carried === null
+                ? null
+                : { code: carried.code, status: carried.status },
+        onCompleted: (sent, resource, { recovered }) => {
             const { data } = resource;
 
-            if (data === null) {
-                router.reload();
+            /*
+             * A completion the lookup recovered is a historical receipt: a later revision, by
+             * another login, may have overtaken it. Neither its snapshot nor this page's local
+             * inputs, keys and acceptances may stand in for the current facts, so the page follows
+             * `next` when the command advances, and otherwise reads itself afresh and remounts.
+             */
+            if (data === null || recovered) {
+                if (
+                    data !== null &&
+                    (sent.advance ||
+                        resource.code === OPERATION_CODES.submitted)
+                ) {
+                    router.visit(data.next);
+
+                    return;
+                }
+
+                readAfresh();
 
                 return;
             }
@@ -189,30 +263,29 @@ export default function BusinessApply(props: BusinessApplyProps) {
             router.reload({ only: REMAINING_PROPS });
         },
         onRefused: (sent, code, status) => {
-            if (sent.name !== 'submit') {
-                setHaltedKey(payloadKey(sent.payload));
-            }
+            const halted =
+                sent.name === 'submit' ? null : payloadKey(sent.payload);
 
-            if (code === 'QUOTE_STALE') {
-                setReview((fields) => ({ ...fields, accept_offer: false }));
-            }
-
-            if (code === 'MANDATE_STALE') {
-                setReview((fields) => ({ ...fields, signature_name: '' }));
-            }
-
-            if (code === 'DOCUMENT_VERSION_STALE') {
-                setReview((fields) => ({
-                    ...fields,
-                    disclosures: [],
-                    terms: false,
-                    privacy: false,
-                }));
-            }
-
+            /*
+             * Stale facts (a newer revision, quote, document or mandate) are read afresh with a
+             * remount, like a recovered receipt: the typed request, keys and acceptances start
+             * again from the current facts, so a later edit never writes old fields over another
+             * login's newer save. The refusal's banner is carried across that remount.
+             */
             if (refusalRefreshes(code, status)) {
-                setSnapshot(null);
-                router.reload();
+                carryRefusal({
+                    url: window.location.href,
+                    code,
+                    status,
+                    haltedKey: halted,
+                });
+                readAfresh();
+
+                return;
+            }
+
+            if (halted !== null) {
+                setHaltedKey(halted);
             }
         },
     });
@@ -221,23 +294,25 @@ export default function BusinessApply(props: BusinessApplyProps) {
     const [sending, setSending] = useState<ApplicationCommandName | null>(null);
 
     const send = (next: ApplicationCommand) => {
-        if (command.send(next)) {
+        /* Nothing new is sent on facts a pending fresh read is about to replace. */
+        if (!refreshing && command.send(next)) {
             setSending(next.name);
         }
     };
 
     /**
-     * The draft as typed. `step` is the resume pointer the save asks for: autosaves keep `raise`,
-     * and each Continue asks to advance; the server validates the move and answers with `next`.
+     * The draft as typed. Only a Continue names a resume pointer (`step`), asking to advance; the
+     * server validates the move and answers with `next`. An autosave (`pointer` null) sends no
+     * `step`, so the server keeps the stored pointer — a Raise reached by Back never moves it.
      */
-    const draftPayload = (pointer: 'raise' | 'review') => ({
+    const draftPayload = (pointer: 'raise' | 'review' | null) => ({
         title: raise.title,
         /* An empty target is no request yet: the draft holds null, never an empty amount. */
         target: raise.target === '' ? null : raise.target,
         term_months: raise.term_months,
         use_of_funds: raise.use_of_funds,
         story: raise.story,
-        step: pointer,
+        ...(pointer === null ? {} : { step: pointer }),
         ...context(),
     });
 
@@ -261,7 +336,7 @@ export default function BusinessApply(props: BusinessApplyProps) {
         send({
             name: 'save',
             advance: false,
-            payload: draftPayload('raise'),
+            payload: draftPayload(null),
         });
     });
 
@@ -270,6 +345,7 @@ export default function BusinessApply(props: BusinessApplyProps) {
         canEvaluate &&
         !command.busy &&
         !command.unresolved &&
+        !refreshing &&
         raise.target !== '' &&
         raise.term_months !== null &&
         key !== evaluatedKey &&
@@ -290,7 +366,7 @@ export default function BusinessApply(props: BusinessApplyProps) {
     }, [armed, key]);
 
     const remind = () => show(t('business.apply.incomplete'));
-    const idle = !command.busy && !command.unresolved;
+    const idle = !command.busy && !command.unresolved && !refreshing;
 
     const raiseReady =
         raise.title.trim() !== '' &&
@@ -464,7 +540,10 @@ export default function BusinessApply(props: BusinessApplyProps) {
                     onRetry={command.retry}
                 />
             )}
-            {step === 'raise' && !canSave && (
+            {step === 'raise' && pendingReview !== null && (
+                <PendingReview link={pendingReview} className="mb-4" />
+            )}
+            {step === 'raise' && pendingReview === null && !canSave && (
                 <p
                     role="status"
                     className="mb-4 rounded-2xl border border-[#dbe7ff] bg-rz-surface p-4 text-xs leading-[1.55] text-rz-secondary dark:border-rz-border"
@@ -500,6 +579,8 @@ export default function BusinessApply(props: BusinessApplyProps) {
                         acceptance={acceptance}
                         quote={readyQuote}
                         canSign={canSign}
+                        agreementAvailable={agreementAvailable}
+                        pendingReview={pendingReview}
                         reduce={reduce}
                         fields={review}
                         errors={errors}

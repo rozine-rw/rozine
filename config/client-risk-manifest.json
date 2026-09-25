@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "5e660d08764d946dbb942ebc3fcbc48d7188f05c8963adc3322a0b9bdf8ed369",
-    "coverageSetSha256": "a9da0aa4ec3ff25d80aa9408f9ff407b9c19846fdb8f78fda5540690a55d4fe3",
+    "sourceManifestSha256": "82e4b28fee50643ffb96484f2457f74ec5073d616e5706b69573921909ff5f57",
+    "coverageSetSha256": "f156a934096e8b44eb54737d11596f8f9a5680592f5fd665e4a79ce8e6352851",
     "thresholds": {
         "critical": {
             "global": {
@@ -118,8 +118,11 @@
         "resources/js/components/auditor/tab-columns.tsx",
         "resources/js/components/auditor/ui.tsx",
         "resources/js/components/breadcrumbs.tsx",
+        "resources/js/components/business/application-entries.tsx",
+        "resources/js/components/business/apply/carried-refusal.ts",
         "resources/js/components/business/apply/operation-outcome.ts",
         "resources/js/components/business/apply/outcome-banner.tsx",
+        "resources/js/components/business/apply/pending-review.tsx",
         "resources/js/components/business/apply/step-business.tsx",
         "resources/js/components/business/apply/step-heading.tsx",
         "resources/js/components/business/apply/step-raise.tsx",
@@ -166,6 +169,7 @@
         "resources/js/components/business/reports/audit-guide.tsx",
         "resources/js/components/business/reports/period-label.ts",
         "resources/js/components/business/reports/report-sheet.tsx",
+        "resources/js/components/business/use-create-application.ts",
         "resources/js/components/business/wallet/balance-card.tsx",
         "resources/js/components/business/wallet/flow-panel.tsx",
         "resources/js/components/business/wallet/method-tile.tsx",

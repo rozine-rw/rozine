@@ -1,9 +1,35 @@
 import { StepHeading } from '@/components/business/apply/step-heading';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatRwf, formatRwfShort } from '@/lib/rozine/format';
+import {
+    formatMonthYear,
+    formatRwf,
+    formatRwfShort,
+} from '@/lib/rozine/format';
 import type { Money } from '@/types';
-import type { ApplicationEvidence } from '@/types/business';
+import type { ApplicationEvidence, EvidencePeriod } from '@/types/business';
+
+/** A full calendar year of evidence; any fewer months is labelled with its count. */
+const FULL_YEAR = 12;
+
+/** "Oct 2023" from the server's `YYYY-MM` month. */
+const monthLabel = (month: string, locale: string): string =>
+    formatMonthYear(`${month}-01T12:00:00Z`, locale);
+
+/** The evidence window exactly as the server states it: "Oct 2023 – Sep 2026 · 36 months". */
+function PeriodLabel({ period }: { period: EvidencePeriod }) {
+    const { t, locale } = useTranslation();
+
+    return (
+        <p className="text-[10.5px] font-bold tracking-[.05em] text-white/70">
+            {t('business.apply.business.period', {
+                from: monthLabel(period.from_month, locale),
+                through: monthLabel(period.through_month, locale),
+                count: period.months,
+            })}
+        </p>
+    );
+}
 
 function VerifiedChip({ children }: { children: string }) {
     return (
@@ -82,8 +108,6 @@ export function StepBusiness({ evidence }: { evidence: ApplicationEvidence }) {
     const { t } = useTranslation();
     const figure = useFigure();
     const { business, eligibility } = evidence;
-    const first = evidence.years.at(-1)?.year;
-    const last = evidence.years.at(0)?.year;
     const degrees =
         evidence.rating === null
             ? 0
@@ -123,11 +147,13 @@ export function StepBusiness({ evidence }: { evidence: ApplicationEvidence }) {
                             <p className="text-base font-bold text-rz-ink">
                                 {business.name}
                             </p>
-                            <p className="mt-1 inline-flex items-center gap-[5px] rounded-[10px] border border-rz-border bg-rz-surface px-2 py-0.5 text-[11px] font-bold tracking-[.02em] text-rz-accent-app-text">
-                                {t('business.home.company_code', {
-                                    code: business.company_code,
-                                })}
-                            </p>
+                            {business.company_code !== null && (
+                                <p className="mt-1 inline-flex items-center gap-[5px] rounded-[10px] border border-rz-border bg-rz-surface px-2 py-0.5 text-[11px] font-bold tracking-[.02em] text-rz-accent-app-text">
+                                    {t('business.home.company_code', {
+                                        code: business.company_code,
+                                    })}
+                                </p>
+                            )}
                             <p className="mt-[5px] text-xs text-rz-secondary">
                                 {business.industry} · {business.district}
                             </p>
@@ -164,21 +190,21 @@ export function StepBusiness({ evidence }: { evidence: ApplicationEvidence }) {
                 <div className="mt-3 rounded-2xl border border-rz-border bg-rz-surface p-4">
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] font-bold tracking-[.04em] text-rz-slate uppercase">
-                            {t('business.apply.business.standing', {
-                                years: evidence.years.length,
-                            })}
+                            {t('business.apply.business.standing')}
                         </span>
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rz-accent-app-text uppercase">
-                            <span className="size-1.5 rounded-full bg-rz-accent-app-text shadow-[0_0_0_3px_rgba(29,158,117,.10)]" />
-                            {t('business.apply.business.ocr_verified')}
-                        </span>
+                        {evidence.verified.statements && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rz-accent-app-text uppercase">
+                                <span className="size-1.5 rounded-full bg-rz-accent-app-text shadow-[0_0_0_3px_rgba(29,158,117,.10)]" />
+                                {t('business.apply.business.statements_badge')}
+                            </span>
+                        )}
                     </div>
 
                     <div className="mt-[11px] rounded-2xl bg-rz-accent-fill p-4 text-white">
-                        <p className="text-[10.5px] font-bold tracking-[.05em] text-white/70">
-                            {first}–{last}
-                        </p>
-                        <div className="mt-2.5 flex items-center gap-[11px]">
+                        {evidence.period !== null && (
+                            <PeriodLabel period={evidence.period} />
+                        )}
+                        <div className="mt-2.5 flex items-center gap-[11px] first:mt-0">
                             <div
                                 className="flex size-11 shrink-0 items-center justify-center rounded-full"
                                 style={{
@@ -263,7 +289,15 @@ export function StepBusiness({ evidence }: { evidence: ApplicationEvidence }) {
                             >
                                 <div className="border-b border-rz-border bg-[#f2f6ff] px-3.5 py-2 dark:bg-rz-surface-sunken">
                                     <span className="text-[13px] font-extrabold tracking-[.02em] text-rz-accent-app-text">
-                                        {year.year}
+                                        {year.months < FULL_YEAR
+                                            ? t(
+                                                  'business.apply.business.partial_year',
+                                                  {
+                                                      year: year.year,
+                                                      count: year.months,
+                                                  },
+                                              )
+                                            : year.year}
                                     </span>
                                 </div>
                                 <div className="flex gap-2 px-3.5 py-[11px]">

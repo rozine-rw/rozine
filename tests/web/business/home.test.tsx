@@ -64,6 +64,26 @@ describe('Business Home', () => {
         );
     });
 
+    it('shows a verified sole trader with no company line, never a stand-in number', () => {
+        render(
+            <BusinessHome
+                {...fixture}
+                business={{
+                    name: 'Uwimana Tailoring',
+                    company_code: null,
+                    industry: 'Textiles & Apparel',
+                    district: 'Nyarugenge',
+                }}
+            />,
+        );
+
+        expect(screen.getByText('Uwimana Tailoring')).toBeInTheDocument();
+        expect(
+            screen.getByText('Textiles & Apparel · Nyarugenge'),
+        ).toBeInTheDocument();
+        expect(screen.queryByText(/^RDB/u)).not.toBeInTheDocument();
+    });
+
     it('marks the Home tab current in both the sidebar and the tab bar, without Market', () => {
         render(<BusinessHome {...fixture} />);
 

@@ -235,6 +235,16 @@ const en = {
     'business.note.continue_application': 'Continue application',
     'business.note.empty.title': 'No notes with this status',
     'business.note.empty.body': 'Start a raise to fund your business.',
+    'business.entries.title': 'Raise applications',
+    'business.entries.continue': 'Continue your application',
+    'business.entries.view': 'View your application',
+    'business.entries.saved_at': 'Saved at {step}',
+    'business.entries.submitted': 'Submitted · under review',
+    'business.entries.view_only':
+        'You can view this business, but starting a raise is not open to you.',
+    'business.entries.empty':
+        'No business you can act for is linked to this account yet.',
+    'business.entries.more': 'Show more',
     'business.grow.title': 'Grow',
     'business.grow.subtitle': "Raise more when you're ready.",
     'business.grow.headroom': 'Headroom available',
@@ -255,15 +265,22 @@ const en = {
     'business.apply.business.subtitle':
         'From your RDB certificate and your verified bank & mobile-money statements. Review it — if it looks right, continue.',
     'business.apply.business.rdb_verified': '✓ RDB verified',
-    'business.apply.business.statements_verified':
-        '✓ Statements verified · OCR',
+    'business.apply.business.statements_verified': '✓ Statements verified',
     'business.apply.business.active': '● Active',
     'business.apply.business.established': 'Est. {year}',
-    'business.apply.business.standing': 'Financial standing · {years}-year',
-    'business.apply.business.ocr_verified': 'OCR · verified',
+    'business.apply.business.standing': 'Financial standing',
+    'business.apply.business.statements_badge': 'Statements verified',
+    'business.apply.business.period': {
+        one: '{from} – {through} · {count} month',
+        other: '{from} – {through} · {count} months',
+    },
+    'business.apply.business.partial_year': {
+        one: '{year} · {count} month',
+        other: '{year} · {count} months',
+    },
     'business.apply.business.revenue': 'Revenue',
     'business.apply.business.costs': 'Costs',
-    'business.apply.business.net_profit': 'Net profit',
+    'business.apply.business.net_profit': 'Net operating cash',
     'business.apply.business.existing_debt': 'Existing debt',
     'business.apply.business.crb_verified': '✓ CRB verified',
     'business.apply.business.year_by_year': 'Year by year',
@@ -1557,6 +1574,11 @@ const en = {
     'auditor.file.title': 'Review the application',
     'auditor.file.lead':
         "Everything {business} submitted, screened against Rozine's thresholds. Your field check resolves what the engine can't confirm remotely.",
+    'auditor.file.lead_provisional':
+        "{business}'s application as it currently stands.",
+    'auditor.file.lead_no_prescreen': 'No automated pre-screen is on record.',
+    'auditor.file.lead_field_check':
+        "Your field check confirms what can't be verified remotely.",
     'auditor.file.reassigned_title': 'Reassigned to you',
     'auditor.file.reassigned_body':
         'The original deadline still applies — reassignment does not reset the clock. Earlier evidence on the file stays on the record.',
@@ -2774,6 +2796,10 @@ const en = {
         'Waiting for {names} to sign. The application is submitted once every required signature is in.',
     'business.apply.review.cannot_sign':
         "Only a signatory on the company's verified mandate can sign this application.",
+    'business.apply.review.agreement_unavailable':
+        "The agreement isn't available yet.",
+    'business.apply.review.agreement_unavailable_body':
+        'Rozine has not published the approved terms and risk disclosures for this application, so there is nothing to sign yet. Your draft and your offer stay saved.',
     'business.apply.view_only':
         'You can view this application, but not change it.',
     'business.apply.submitted.application_id': 'Application ID · {id}',
@@ -2813,6 +2839,11 @@ const en = {
         'Publishing opens once your application is approved and fully signed, and the listing flow is ready.',
     'business.apply.outcome.refused.MANDATE_STALE':
         "The company's signing mandate changed before you signed. Check who must sign now, then sign again.",
+    'business.apply.outcome.refused.APPLICATION_PENDING_REVIEW':
+        "Your business already has an application under review. You can apply again once it's decided.",
+    'business.apply.outcome.refused.APPLICATION_STEP_INVALID':
+        'Go back to Review & sign to submit this application.',
+    'business.apply.pending_review.link': 'View the application under review',
     'business.apply.review.document_summary': 'Summary',
     'business.apply.review.document_full_text': 'Full text',
     'business.apply.review.reduce.open': 'Take a smaller amount',

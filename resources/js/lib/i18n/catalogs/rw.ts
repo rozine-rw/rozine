@@ -238,6 +238,16 @@ const rw: Catalog = {
     'business.note.continue_application': 'Komeza ubusabe',
     'business.note.empty.title': 'Nta rupapuro ruri muri iki cyiciro',
     'business.note.empty.body': "Tangira gushaka igishoro cy'ubucuruzi bwawe.",
+    'business.entries.title': 'Ubusabe bwo gushaka igishoro',
+    'business.entries.continue': 'Komeza ubusabe bwawe',
+    'business.entries.view': 'Reba ubusabe bwawe',
+    'business.entries.saved_at': 'Byabitswe kuri {step}',
+    'business.entries.submitted': 'Bwoherejwe · burasuzumwa',
+    'business.entries.view_only':
+        'Ushobora kureba ubu bucuruzi, ariko ntiwemerewe gutangiza ubusabe bw’igishoro.',
+    'business.entries.empty':
+        'Nta bucuruzi ushobora gukorera buhujwe n’iyi konti.',
+    'business.entries.more': 'Erekana ibindi',
     'business.grow.title': 'Kwaguka',
     'business.grow.subtitle': 'Shaka igishoro kinini igihe witeguye.',
     'business.grow.headroom': 'Ubushobozi busigaye',
@@ -260,14 +270,22 @@ const rw: Catalog = {
     'business.apply.business.subtitle':
         "Bivuye ku cyemezo cyawe cya RDB n'inyandiko za banki na mobile money zagenzuwe. Bisuzume — niba ari byo, komeza.",
     'business.apply.business.rdb_verified': '✓ Byemejwe na RDB',
-    'business.apply.business.statements_verified': '✓ Inyandiko zemejwe · OCR',
+    'business.apply.business.statements_verified': '✓ Inyandiko zemejwe',
     'business.apply.business.active': '● Irakora',
     'business.apply.business.established': 'Yashinzwe {year}',
-    'business.apply.business.standing': 'Uko imari ihagaze · imyaka {years}',
-    'business.apply.business.ocr_verified': 'OCR · byemejwe',
+    'business.apply.business.standing': 'Uko imari ihagaze',
+    'business.apply.business.statements_badge': 'Inyandiko zemejwe',
+    'business.apply.business.period': {
+        one: '{from} – {through} · ukwezi {count}',
+        other: '{from} – {through} · amezi {count}',
+    },
+    'business.apply.business.partial_year': {
+        one: '{year} · ukwezi {count}',
+        other: '{year} · amezi {count}',
+    },
     'business.apply.business.revenue': 'Amafaranga yinjiye',
     'business.apply.business.costs': 'Ibyakoreshejwe',
-    'business.apply.business.net_profit': 'Inyungu nyayo',
+    'business.apply.business.net_profit': 'Amafaranga asigara mu bikorwa',
     'business.apply.business.existing_debt': 'Umwenda usanzwe',
     'business.apply.business.crb_verified': '✓ Byemejwe na CRB',
     'business.apply.business.year_by_year': 'Umwaka ku wundi',
@@ -1596,6 +1614,11 @@ const rw: Catalog = {
     'auditor.file.title': 'Suzuma ubusabe',
     'auditor.file.lead':
         'Ibyo {business} yatanze byose, byagenzuwe hakurikijwe imbibi za Rozine. Igenzura ryawe ku kibanza rikemura ibyo moteri idashobora kwemeza iri kure.',
+    'auditor.file.lead_provisional': 'Ubusabe bwa {business} uko buhagaze ubu.',
+    'auditor.file.lead_no_prescreen':
+        'Nta isuzuma ryikora ry’ibanze ryanditswe.',
+    'auditor.file.lead_field_check':
+        'Igenzura ryawe ku kibanza ryemeza ibidashobora kugenzurwa uri kure.',
     'auditor.file.reassigned_title': 'Wahawe iyi dosiye',
     'auditor.file.reassigned_body':
         'Igihe cya mbere kiracyakurikizwa — kwimurwa ntibisubiramo isaha. Ibimenyetso byari kuri dosiye bigumaho.',
@@ -2835,6 +2858,9 @@ const rw: Catalog = {
         'Hategerejwe ko {names} asinya. Ubusabe bwoherezwa iyo imikono yose isabwa yabonetse.',
     'business.apply.review.cannot_sign':
         "Umusinyi uri ku bubasha bw'ikigo bwagenzuwe ni we wenyine ushobora gusinya ubu busabe.",
+    'business.apply.review.agreement_unavailable': 'Amasezerano ntararaboneka.',
+    'business.apply.review.agreement_unavailable_body':
+        "Rozine ntiratangaza amategeko n'imenyesha ry'ingaruka byemejwe kuri ubu busabe, bityo nta kintu cyo gusinya kiraboneka. Umushinga wawe n'icyifuzo cyawe biguma bibitswe.",
     'business.apply.view_only':
         'Ushobora kureba ubu busabe, ariko ntushobora kubuhindura.',
     'business.apply.submitted.application_id': "Nimero y'ubusabe · {id}",
@@ -2876,6 +2902,11 @@ const rw: Catalog = {
         "Ububasha bwo gusinya bw'ikigo bwahindutse mbere y'uko usinya. Reba abagomba gusinya ubu, hanyuma wongere usinye.",
 
     'business.apply.review.document_summary': 'Incamake',
+    'business.apply.outcome.refused.APPLICATION_PENDING_REVIEW':
+        'Ubucuruzi bwawe bufite ubundi busabe burimo gusuzumwa. Uzashobora kongera gusaba bumaze gufatirwa icyemezo.',
+    'business.apply.outcome.refused.APPLICATION_STEP_INVALID':
+        'Subira kuri «Suzuma usinye» kugira ngo wohereze ubu busabe.',
+    'business.apply.pending_review.link': 'Reba ubusabe burimo gusuzumwa',
     'business.apply.review.document_full_text': 'Inyandiko yuzuye',
     'business.apply.review.reduce.open': 'Fata amafaranga make',
     'business.apply.review.reduce.label': 'Amafaranga ushaka (RWF)',

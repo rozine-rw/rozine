@@ -143,6 +143,16 @@ export function FileReview({
     const { raise, history } = file;
     const hasReason = file.reason !== null;
     const hasMandate = file.mandate.length > 0;
+    /*
+     * The introduction claims only what is on record: "everything submitted, screened" needs a
+     * submitted raise (its figures, not the draft fallback's nulls) and a published pre-screen.
+     */
+    const submitted =
+        raise.requested !== null &&
+        raise.term_months !== null &&
+        raise.return_pct !== null;
+    const screened = file.prescreen.length > 0;
+    const submittedAndScreened = submitted && screened;
 
     return (
         <>
@@ -150,7 +160,15 @@ export function FileReview({
                 {t('auditor.file.title')}
             </h3>
             <p className="mt-1 text-[12.5px] leading-[1.5] text-rz-secondary">
-                {t('auditor.file.lead', { business })}
+                {submittedAndScreened
+                    ? t('auditor.file.lead', { business })
+                    : [
+                          t('auditor.file.lead_provisional', { business }),
+                          ...(screened
+                              ? []
+                              : [t('auditor.file.lead_no_prescreen')]),
+                          t('auditor.file.lead_field_check'),
+                      ].join(' ')}
             </p>
 
             {reassignedFrom !== null && (

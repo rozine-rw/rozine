@@ -9,6 +9,10 @@ const REFUSALS = [
     'QUOTE_STALE',
     'DOCUMENT_VERSION_STALE',
     'MANDATE_STALE',
+    /* Another application of this business is still under review (one at a time in C2). */
+    'APPLICATION_PENDING_REVIEW',
+    /* A submit that reached the server outside Review: a fresh read shows where it stands. */
+    'APPLICATION_STEP_INVALID',
     'ACTION_FORBIDDEN',
     'MANDATE_REQUIRED',
     'NOT_FOUND',

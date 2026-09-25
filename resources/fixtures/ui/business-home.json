@@ -217,11 +217,11 @@
         },
         "create_application": {
             "action": {
-                "url": "/preview/business-applications",
+                "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications",
                 "method": "post"
             },
             "operation": {
-                "url": "/preview/business-operation-{request_id}",
+                "url": "/business/application-operations/{request_id}",
                 "method": "get"
             },
             "identity_context_revision": 4,
