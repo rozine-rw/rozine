@@ -2902,6 +2902,10 @@ const rw: Catalog = {
         "Ububasha bwo gusinya bw'ikigo bwahindutse mbere y'uko usinya. Reba abagomba gusinya ubu, hanyuma wongere usinye.",
 
     'business.apply.review.document_summary': 'Incamake',
+    'business.apply.outcome.refused.APPLICATION_PENDING_REVIEW':
+        'Ubucuruzi bwawe bufite ubundi busabe burimo gusuzumwa. Uzashobora kongera gusaba bumaze gufatirwa icyemezo.',
+    'business.apply.outcome.refused.APPLICATION_STEP_INVALID':
+        'Subira kuri «Suzuma usinye» kugira ngo wohereze ubu busabe.',
     'business.apply.review.document_full_text': 'Inyandiko yuzuye',
     'business.apply.review.reduce.open': 'Fata amafaranga make',
     'business.apply.review.reduce.label': 'Amafaranga ushaka (RWF)',

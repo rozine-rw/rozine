@@ -2912,6 +2912,10 @@ const fr: Catalog = {
         'Le mandat de signature de la société a changé avant votre signature. Vérifiez qui doit signer désormais, puis signez à nouveau.',
 
     'business.apply.review.document_summary': 'Résumé',
+    'business.apply.outcome.refused.APPLICATION_PENDING_REVIEW':
+        'Votre entreprise a déjà une demande en cours d’examen. Vous pourrez en déposer une nouvelle une fois la décision rendue.',
+    'business.apply.outcome.refused.APPLICATION_STEP_INVALID':
+        'Revenez à « Vérifier et signer » pour soumettre cette demande.',
     'business.apply.review.document_full_text': 'Texte intégral',
     'business.apply.review.reduce.open': 'Prendre un montant inférieur',
     'business.apply.review.reduce.label': 'Montant souhaité (RWF)',

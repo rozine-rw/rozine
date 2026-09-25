@@ -2839,6 +2839,10 @@ const en = {
         'Publishing opens once your application is approved and fully signed, and the listing flow is ready.',
     'business.apply.outcome.refused.MANDATE_STALE':
         "The company's signing mandate changed before you signed. Check who must sign now, then sign again.",
+    'business.apply.outcome.refused.APPLICATION_PENDING_REVIEW':
+        "Your business already has an application under review. You can apply again once it's decided.",
+    'business.apply.outcome.refused.APPLICATION_STEP_INVALID':
+        'Go back to Review & sign to submit this application.',
     'business.apply.review.document_summary': 'Summary',
     'business.apply.review.document_full_text': 'Full text',
     'business.apply.review.reduce.open': 'Take a smaller amount',

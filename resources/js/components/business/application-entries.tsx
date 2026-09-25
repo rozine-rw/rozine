@@ -1,8 +1,11 @@
-import { Link } from '@inertiajs/react';
+import type { HttpExceptionResponse } from '@inertiajs/core';
+import { Link, router } from '@inertiajs/react';
+import type { MouseEvent } from 'react';
 import { OutcomeBanner } from '@/components/business/apply/outcome-banner';
 import { useCreateApplication } from '@/components/business/use-create-application';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/use-translation';
+import { home } from '@/routes/business';
 import type { RouteAction, RouteLink } from '@/types';
 import type {
     BusinessApplications,
@@ -14,6 +17,49 @@ const NAMED_STEPS = ['business', 'raise', 'review'] as const;
 
 const isNamedStep = (step: string): step is (typeof NAMED_STEPS)[number] =>
     (NAMED_STEPS as readonly string[]).includes(step);
+
+/** The refusal a next-page link gets once the identity context it carries has moved on. */
+const STALE_CONTEXT = 'ACTIVE_ROLE_REVISION_CONFLICT';
+
+/** The code on the page an Inertia refusal renders (`identity/access-denied`). */
+const refusedPageCode = (response: HttpExceptionResponse): unknown =>
+    (response.data as { props?: { code?: unknown } }).props?.code;
+
+/**
+ * Follows the server's next-page link. A link minted under an identity context that has since
+ * changed is refused as stale, and the list then starts again from a fresh first page instead of
+ * leaving the person on the access-denied page. Any other refusal is shown as the server renders it.
+ */
+function ShowMore({ next }: { next: RouteLink }) {
+    const { t } = useTranslation();
+    const follow = (event: MouseEvent<HTMLAnchorElement>) => {
+        if (event.metaKey || event.ctrlKey || event.shiftKey) {
+            return;
+        }
+
+        event.preventDefault();
+        router.visit(next, {
+            onHttpException: (response) => {
+                if (
+                    response.status !== 409 ||
+                    refusedPageCode(response) !== STALE_CONTEXT
+                ) {
+                    return;
+                }
+
+                router.visit(home(), { replace: true });
+
+                return false;
+            },
+        });
+    };
+
+    return (
+        <a href={next.url} onClick={follow} className="self-start font-medium">
+            {t('business.entries.more')}
+        </a>
+    );
+}
 
 /** "Apply for a raise": `application.create` for this business, then the server's `next`. */
 function StartApplication({
@@ -164,12 +210,7 @@ export function BusinessApplicationEntries({
                 </ul>
             )}
             {applications.pagination.next !== null && (
-                <Link
-                    href={applications.pagination.next}
-                    className="self-start font-medium"
-                >
-                    {t('business.entries.more')}
-                </Link>
+                <ShowMore next={applications.pagination.next} />
             )}
         </section>
     );

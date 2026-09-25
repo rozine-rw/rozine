@@ -1530,6 +1530,16 @@ describe('Apply — step 3, review & sign', () => {
             'This request was already used with different details',
         ],
         [
+            409,
+            { code: 'APPLICATION_PENDING_REVIEW' },
+            "Your business already has an application under review. You can apply again once it's decided.",
+        ],
+        [
+            409,
+            { code: 'APPLICATION_STEP_INVALID' },
+            'Go back to Review & sign to submit this application.',
+        ],
+        [
             400,
             '<html>',
             "The server couldn't complete this. We've loaded the latest version.",

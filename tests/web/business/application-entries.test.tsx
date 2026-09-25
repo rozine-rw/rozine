@@ -212,6 +212,107 @@ describe('Business role landing — raise applications', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('follows the next page, and restarts at a fresh first page when its identity context went stale', async () => {
+        const user = userEvent.setup();
+        const answers: unknown[] = [];
+
+        inertia.visit.mockImplementationOnce(
+            (
+                _next: unknown,
+                options: {
+                    onHttpException: (response: {
+                        status: number;
+                        data: unknown;
+                        headers: Record<string, string>;
+                    }) => unknown;
+                },
+            ) => {
+                answers.push(
+                    options.onHttpException({
+                        status: 409,
+                        data: {
+                            component: 'identity/access-denied',
+                            props: { code: 'ACTIVE_ROLE_REVISION_CONFLICT' },
+                        },
+                        headers: {},
+                    }),
+                );
+            },
+        );
+        render(<RoleHome {...props()} />);
+
+        await user.click(screen.getByRole('link', { name: 'Show more' }));
+
+        expect(inertia.visit).toHaveBeenNthCalledWith(
+            1,
+            link('/business?cursor=01k6q4j5k6m7n8p9q0r1s2t3v4'),
+            expect.any(Object),
+        );
+        expect(inertia.visit).toHaveBeenNthCalledWith(
+            2,
+            { url: '/business', method: 'get' },
+            { replace: true },
+        );
+        expect(answers).toEqual([false]);
+    });
+
+    it.each([
+        [
+            'a withdrawn access',
+            403,
+            { props: { code: 'ROLE_MEMBERSHIP_REQUIRED' } },
+        ],
+        ['another conflict', 409, { props: { code: 'OTHER_CONFLICT' } }],
+        ['a conflict without a page', 409, {}],
+    ])(
+        'leaves %s on the next page to the server’s own rendering',
+        async (_case, status, data) => {
+            const user = userEvent.setup();
+            const answers: unknown[] = [];
+
+            inertia.visit.mockImplementationOnce(
+                (
+                    _next: unknown,
+                    options: {
+                        onHttpException: (response: {
+                            status: number;
+                            data: unknown;
+                            headers: Record<string, string>;
+                        }) => unknown;
+                    },
+                ) => {
+                    answers.push(
+                        options.onHttpException({ status, data, headers: {} }),
+                    );
+                },
+            );
+            render(<RoleHome {...props()} />);
+
+            await user.click(screen.getByRole('link', { name: 'Show more' }));
+
+            expect(inertia.visit).toHaveBeenCalledTimes(1);
+            expect(answers).toEqual([undefined]);
+        },
+    );
+
+    it.each(['{Control>}', '{Meta>}', '{Shift>}'])(
+        'leaves a %s click on Show more to the browser',
+        async (modifier) => {
+            const user = userEvent.setup();
+            const show = vi.fn((event: Event) => event.preventDefault());
+
+            render(<RoleHome {...props()} />);
+            const more = screen.getByRole('link', { name: 'Show more' });
+
+            more.addEventListener('click', show);
+            await user.keyboard(modifier);
+            await user.click(more);
+
+            expect(show).toHaveBeenCalled();
+            expect(inertia.visit).not.toHaveBeenCalled();
+        },
+    );
+
     it('says so honestly when no business is listed', () => {
         const page = props();
 
@@ -339,6 +440,21 @@ describe('Business role landing — raise applications', () => {
             method: 'get',
             body: { command: 'create', identity_context_revision: 4 },
         });
+    });
+
+    it('explains that another application is still under review, and reads the list afresh', async () => {
+        const user = userEvent.setup();
+
+        inertia.queue.push(fails(409, 'APPLICATION_PENDING_REVIEW'));
+        render(<RoleHome {...props()} />);
+        await user.click(
+            screen.getByRole('button', { name: 'Apply for a raise' }),
+        );
+
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            "Your business already has an application under review. You can apply again once it's decided.",
+        );
+        expect(inertia.reload).toHaveBeenCalled();
     });
 
     it('shows a refusal in the Business outcome copy and refreshes stale facts', async () => {
