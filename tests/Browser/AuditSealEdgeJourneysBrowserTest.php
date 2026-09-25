@@ -69,7 +69,7 @@ function udDropAnswer(string $pattern): string
         await page.route('.json_encode($pattern).', async (route) => {
             const response = await route.fetch();
             dropped.push({request_id: route.request().postDataJSON().request_id, status: response.status(), code: (await response.json()).code});
-            await route.abort("connectionreset");
+            await route.abort("failed");
         }, {times: 1});';
 }
 
@@ -248,7 +248,7 @@ it('refuses a lost seal retried after another session moved the report on, and s
             let held = null;
             await page.route("**/auditor/reports/*/seal", (route) => {
                 held = route.request().postDataJSON().request_id;
-                return route.abort("connectionreset");
+                return route.abort("failed");
             }, {times: 1});
             await page.getByRole("button", {name:"Confirm with your authenticator", exact:true}).click();
             await page.getByLabel("Six-digit authenticator code", {exact:true}).fill('.json_encode($journey->otp(UD_SECRET)).');
