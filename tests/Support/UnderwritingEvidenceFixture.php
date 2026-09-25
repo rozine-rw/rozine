@@ -4,15 +4,28 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Domain\Underwriting\ApplicationUnderwriting;
 use App\Domain\Underwriting\CashFlowEvidence;
 use DateTimeImmutable;
 
 /**
  * @phpstan-import-type MonthInput from CashFlowEvidence
+ * @phpstan-import-type ObligationInput from CashFlowEvidence
  * @phpstan-import-type RepeatEligibility from CashFlowEvidence
+ * @phpstan-import-type History from ApplicationUnderwriting
  */
 final class UnderwritingEvidenceFixture
 {
+    /** @return array{requested_principal: string, tenor_months: int, accepted_principal: string|null, months: list<MonthInput>, last_complete_month: string, first_repayment_month: string, recurring_owner_draw: string, obligations: list<ObligationInput>, history: History, restriction_active: bool} */
+    public static function application(): array
+    {
+        return ['requested_principal' => '12000000', 'tenor_months' => 6, 'accepted_principal' => null,
+            'months' => self::months(), 'last_complete_month' => '2026-08', 'first_repayment_month' => '2026-09',
+            'recurring_owner_draw' => '0', 'obligations' => [], 'restriction_active' => false,
+            'history' => ['has_rozine_history' => false, 'repeat_eligibility' => null, 'instalment_conduct' => null, 'report_conduct' => null,
+                'post_grace_arrears' => false, 'reporting_breach' => false, 'defaulted' => false, 'days_past_due' => 0]];
+    }
+
     /** @return non-empty-list<MonthInput> */
     public static function months(int $count = 36, string $inflow = '4000000', string $outflow = '1000000'): array
     {
