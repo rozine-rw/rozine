@@ -15,6 +15,7 @@ import {
     it,
     vi,
 } from 'vite-plus/test';
+import { TabColumns } from '@/components/auditor/tab-columns';
 import AuditorAudit from '@/pages/auditor/audit';
 import type {
     AuditProcedureProps,
@@ -1475,5 +1476,127 @@ describe('Audit procedure — a blocking conflict', () => {
             within(sheet()).queryByText('Checked in on site · 18:02'),
         ).not.toBeInTheDocument();
         expect(within(sheet()).getByText('Recorded')).toBeInTheDocument();
+    });
+});
+
+describe('Audit procedure — the monthly sheet on a phone', () => {
+    /** The lg breakpoint, switchable at run time as a window resize would. */
+    const viewport = (initial: boolean) => {
+        let matches = initial;
+        const listeners = new Set<() => void>();
+
+        vi.stubGlobal('matchMedia', (query: string) => ({
+            get matches() {
+                return matches;
+            },
+            media: query,
+            addEventListener: (_: string, listener: () => void) =>
+                listeners.add(listener),
+            removeEventListener: (_: string, listener: () => void) =>
+                listeners.delete(listener),
+        }));
+
+        return (next: boolean) => {
+            matches = next;
+            act(() => listeners.forEach((listener) => listener()));
+        };
+    };
+
+    /** Live Jobs send no monthly section, so a phone has no right backdrop at all. */
+    const liveMonthly = (): AuditProcedureProps => {
+        const page = props(statements);
+
+        return { ...page, jobs: { ...page.jobs, monthly: null } };
+    };
+
+    const startCount = () =>
+        screen.getByRole('button', { name: 'Start the count' });
+
+    afterEach(() => vi.unstubAllGlobals());
+
+    it('keeps the monthly procedure on a phone when Jobs send no monthly section', () => {
+        viewport(false);
+        render(<AuditorAudit {...liveMonthly()} />);
+
+        expect(screen.getByTestId('column-right')).toContainElement(
+            sheet('GreenLeaf Agro'),
+        );
+        expect(startCount()).toBeEnabled();
+    });
+
+    it('keeps the same procedure attached when a wide window narrows to a phone', () => {
+        const resize = viewport(true);
+
+        render(<AuditorAudit {...liveMonthly()} />);
+        const before = startCount();
+
+        resize(false);
+
+        expect(startCount()).toBe(before);
+        expect(before).toBeInTheDocument();
+        expect(screen.getByTestId('column-right')).toContainElement(before);
+    });
+
+    it('keeps the monthly section beneath the sheet on a wide screen', () => {
+        viewport(true);
+        render(<AuditorAudit {...props(statements)} />);
+        const right = screen.getByTestId('column-right');
+
+        expect(right).toContainElement(sheet('GreenLeaf Agro'));
+        expect(right).toContainElement(
+            screen.getByRole('heading', { name: 'Monthly reports' }),
+        );
+    });
+});
+
+describe('Tab columns', () => {
+    const overlay = (column: 'left' | 'right') => ({
+        column,
+        content: <div role="dialog" aria-label="Overlay" />,
+    });
+
+    it('opens a right overlay in its own column even with nothing beneath it', () => {
+        render(
+            <TabColumns
+                left={<p>Left</p>}
+                right={null}
+                overlay={overlay('right')}
+            />,
+        );
+
+        expect(screen.getByTestId('column-right')).toContainElement(
+            screen.getByRole('dialog', { name: 'Overlay' }),
+        );
+    });
+
+    it('leaves out a right column with neither content nor an overlay', () => {
+        render(
+            <TabColumns
+                left={<p>Left</p>}
+                right={null}
+                overlay={overlay('left')}
+            />,
+        );
+
+        expect(screen.queryByTestId('column-right')).not.toBeInTheDocument();
+        expect(screen.getByTestId('column-left')).toContainElement(
+            screen.getByRole('dialog', { name: 'Overlay' }),
+        );
+    });
+
+    it('draws both columns with the overlay over its own, as before', () => {
+        render(
+            <TabColumns
+                left={<p>Left</p>}
+                right={<p>Right</p>}
+                overlay={overlay('right')}
+            />,
+        );
+        const right = screen.getByTestId('column-right');
+
+        expect(right).toContainElement(screen.getByText('Right'));
+        expect(right).toContainElement(
+            screen.getByRole('dialog', { name: 'Overlay' }),
+        );
     });
 });
