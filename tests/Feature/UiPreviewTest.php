@@ -144,17 +144,24 @@ test('C3 fixtures cover every surface in the scaffold, each with a live-minimal 
 test('no C3 fixture posts anywhere real', function (string $name) {
     $fixture = c3PreviewFixtures()[$name];
 
-    foreach (c3PreviewCommandUrls($fixture['props']) as $url) {
-        $registered = true;
+    /*
+     * Every command target in the fixture that would reach a registered POST route. It must be
+     * empty for every fixture, including a read-only one that carries no command target at all.
+     */
+    $registered = array_values(array_filter(
+        c3PreviewCommandUrls($fixture['props']),
+        static function (string $url): bool {
+            try {
+                Route::getRoutes()->match(Request::create($url, 'POST'));
+            } catch (NotFoundHttpException|MethodNotAllowedHttpException) {
+                return false;
+            }
 
-        try {
-            Route::getRoutes()->match(Request::create($url, 'POST'));
-        } catch (NotFoundHttpException|MethodNotAllowedHttpException) {
-            $registered = false;
-        }
+            return true;
+        },
+    ));
 
-        expect($registered)->toBeFalse("{$name} posts to a registered route: {$url}");
-    }
+    expect($registered)->toBe([], "{$name} posts to a registered route: ".implode(', ', $registered));
 
     if (str_ends_with($name, '-live-minimal')) {
         expect($fixture['props']['allowed_actions'] ?? [])->toBe([]);
