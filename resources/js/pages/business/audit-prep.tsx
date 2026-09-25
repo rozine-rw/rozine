@@ -74,8 +74,11 @@ export default function BusinessAuditPrep({
                             </p>
                         </div>
                     </div>
-                    <p className="mt-3 text-[12.5px] leading-[1.55] text-rz-secondary">
-                        {t('business.audit_prep.intro', { month, seal })}
+                    <p className="mt-3 text-[12.5px] leading-[1.55] text-rz-ink">
+                        {t('business.audit_prep.intro')}
+                    </p>
+                    <p className="mt-2 text-[12.5px] leading-[1.55] text-rz-secondary">
+                        {t('business.audit_prep.seal_by', { month, seal })}
                     </p>
                     {audit.reassigned !== null && (
                         <p

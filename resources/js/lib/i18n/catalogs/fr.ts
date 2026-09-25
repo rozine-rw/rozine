@@ -576,14 +576,13 @@ const fr: Catalog = {
     'business.reports.subtitle':
         'Vérifiés chaque mois par votre auditeur sur site.',
     'business.reports.guide.title': 'Comment fonctionnent les audits mensuels',
-    'business.reports.guide.opens.title': 'Votre auditeur ouvre le dossier',
+    'business.reports.guide.opens.title': 'Rassemblez vos documents',
     'business.reports.guide.opens.body':
-        "Vous ne déposez pas le rapport. À la clôture de chaque mois, l'expert-comptable qui vous est attribué ouvre l'audit et travaille à partir des relevés bancaires et Mobile Money que vous avez téléversés.",
+        "Entre le 20 et la fin du mois, rassemblez tous vos documents financiers papier et numériques pour l'audit sur place prévu avec votre expert-comptable.",
     'business.reports.guide.visit.title': 'Préparez la visite sur site',
     'business.reports.guide.visit.body_before':
-        "Il compte le stock, vérifie vos registres et scelle l'audit avant le",
-    'business.reports.guide.visit.body_after':
-        '. Votre rôle : avoir relevés, stock et accès prêts — nous vous le rappelons chaque jour pendant les sept derniers jours du mois.',
+        "L'expert-comptable qui vous est attribué se rend dans vos locaux pour examiner vos documents et rapprocher vos flux de trésorerie, puis scelle le rapport avant le",
+    'business.reports.guide.visit.body_after': '.',
     'business.reports.guide.cosign.title': 'Cosignez ou contestez',
     'business.reports.guide.cosign.body':
         "Une fois l'audit scellé, vous ajoutez un résumé et le cosignez avant le {day}, ou vous le contestez avec une contre-preuve. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
@@ -2077,14 +2076,14 @@ const fr: Catalog = {
     'business.audit_prep.day_left': 'Jour restant',
     'business.audit_prep.days_left': 'Jours restants',
     'business.audit_prep.intro':
-        'Votre auditeur ouvre le dossier de {month} à la clôture du mois et doit le sceller avant le {seal}. Vous ne pouvez ni lancer ni modifier le rapport — vous pouvez rendre la visite rapide et sans accroc.',
+        'Notification reçue : veuillez préparer tous vos relevés bancaires, historiques Mobile Money et carnets de reçus papier pour la prochaine visite de votre expert-comptable.',
     'business.audit_prep.reassigned':
         'Votre dossier est passé de {from} à {to}, avec tout votre historique.',
     'business.audit_prep.ready': 'Préparez ceci',
     'business.audit_prep.item.statements.title':
-        'Relevés bancaires et Mobile Money',
+        'Relevés bancaires et historiques Mobile Money',
     'business.audit_prep.item.statements.body':
-        "Le mois complet, jusqu'au dernier jour. Votre expert-comptable travaille à partir des relevés que vous avez téléversés — gardez des copies imprimées pour la visite.",
+        "Le mois complet, jusqu'au dernier jour, prêt à être examiné sur place par votre expert-comptable.",
     'business.audit_prep.item.stock.title': 'Stock compté et registres à jour',
     'business.audit_prep.item.stock.body':
         "Votre auditeur fait un comptage physique. Un registre pas à jour apparaît comme un écart et réduit votre capacité d'emprunt.",
@@ -2093,9 +2092,9 @@ const fr: Catalog = {
     'business.audit_prep.item.access.body':
         'Tout ce qui est fermé ou inaccessible le jour J est compté comme manquant.',
     'business.audit_prep.item.papers.title':
-        'Reçus, bons de commande et lettres de voiture classés',
+        'Tickets de caisse et transactions rapprochés',
     'business.audit_prep.item.papers.body':
-        'Depuis le début du mois, au même endroit. Ils expliquent tout écart entre vos relevés et le comptage.',
+        "Assurez-vous que tous les tickets de caisse papier et toutes les transactions numériques sont rapprochés pour l'examen sur place de l'expert-comptable.",
     'business.audit_prep.item.person.title': 'Une personne habilitée sur place',
     'business.audit_prep.item.person.body':
         'Il faut une personne qui peut ouvrir les portes et répondre des chiffres — pas seulement le personnel de service.',
@@ -2105,7 +2104,7 @@ const fr: Catalog = {
         "Votre expert-comptable ouvre le dossier d'audit de la période. Rien n'est requis de votre part pour le lancer.",
     'business.audit_prep.flow.visit.title': 'Visite sur site',
     'business.audit_prep.flow.visit.body':
-        'Il compte le stock, rapproche la caisse de vos relevés et photographie les preuves sur place.',
+        "L'expert-comptable qui vous est attribué se rendra dans vos locaux pour examiner vos documents, rapprocher vos flux de trésorerie et établir le rapport d'audit mensuel.",
     'business.audit_prep.flow.sealed.title': 'Scellé',
     'business.audit_prep.flow.sealed.body':
         'Les constats factuels et les écarts sont scellés sous sa licence ICPAR.',
@@ -2113,7 +2112,7 @@ const fr: Catalog = {
     'business.audit_prep.flow.cosign.body':
         'Vous ajoutez un résumé et cosignez avant le {date}, ou vous contestez avec une contre-preuve.',
     'business.audit_prep.closing':
-        "Vous ne déposez jamais le rapport mensuel vous-même. Votre auditeur l'ouvre, le vérifie sur site et le scelle — votre rôle est d'être prêt, puis de cosigner ou contester ses constats.",
+        "Vous ne déposez jamais le rapport mensuel vous-même. Votre expert-comptable se déplace, examine vos documents sur place et scelle le rapport — votre rôle est d'être prêt, puis de cosigner ou contester ses constats.",
 
     'investor.nav.deals': 'Offres',
     'investor.nav.portfolio': 'Portefeuille',
@@ -3227,6 +3226,120 @@ const fr: Catalog = {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',
     },
+    'business.audit_cosign.head_title': "Cosigner le rapport d'audit",
+    'business.audit_cosign.title': "Cosigner le rapport d'audit",
+    'business.audit_cosign.back': 'Retour',
+    'business.audit_cosign.lead':
+        "Votre expert-comptable a scellé ce rapport après l'audit sur place. Lisez les constats factuels avant de cosigner.",
+    'business.audit_cosign.kind.monthly': "Rapport d'audit mensuel",
+    'business.audit_cosign.kind.flash': "Rapport d'audit flash",
+    'business.audit_cosign.period': 'Période',
+    'business.audit_cosign.auditor': "Partenaire d'audit",
+    'business.audit_cosign.auditor_value': '{name} · licence {licence}',
+    'business.audit_cosign.procedure': 'Procédure',
+    'business.audit_cosign.digest': 'Empreinte du rapport',
+    'business.audit_cosign.digest_short': '{digest}…',
+    'business.audit_cosign.seal.title': 'Sceau',
+    'business.audit_cosign.seal.valid': 'Sceau valide',
+    'business.audit_cosign.seal.valid_at': 'Scellé le {date}',
+    'business.audit_cosign.seal.verify': 'Vérifier le sceau',
+    'business.audit_cosign.seal.unavailable':
+        'Le sceau ne peut pas être vérifié pour le moment.',
+    'business.audit_cosign.note_title': "Note du partenaire d'audit",
+    'business.audit_cosign.findings': 'Constats factuels',
+    'business.audit_cosign.findings_empty': "Aucun constat n'a été enregistré.",
+    'business.audit_cosign.evidence': {
+        one: '{count} élément de preuve',
+        other: '{count} éléments de preuve',
+    },
+    'business.audit_cosign.sealed_note':
+        'Ce rapport est scellé. Rien sur cette page ne le modifie.',
+    'business.audit_cosign.status.title': 'Cosignatures',
+    'business.audit_cosign.status.count':
+        '{signed} signature(s) sur {required}',
+    'business.audit_cosign.status.signers': 'Signataires',
+    'business.audit_cosign.status.you': 'Vous',
+    'business.audit_cosign.status.signed_on': 'Signé · {date}',
+    'business.audit_cosign.status.signed': 'Signé',
+    'business.audit_cosign.status.pending': 'En attente',
+    'business.audit_cosign.due': 'À cosigner avant le {date}',
+    'business.audit_cosign.overdue':
+        'En retard — la cosignature était due avant le {date}',
+    'business.audit_cosign.published': 'Publié le {date}',
+    'business.audit_cosign.yours.title': 'Votre cosignature',
+    'business.audit_cosign.yours.accept':
+        "J'ai examiné les constats d'audit et je cosigne ce rapport.",
+    'business.audit_cosign.yours.note': 'Votre résumé (facultatif)',
+    'business.audit_cosign.yours.note_help':
+        'Conservé avec votre signature. Il ne modifie pas le rapport scellé.',
+    'business.audit_cosign.yours.identity':
+        'Votre compte vérifié signe. Chaque signataire requis cosigne séparément.',
+    'business.audit_cosign.yours.submit': 'Cosigner le rapport',
+    'business.audit_cosign.yours.submitting': 'Cosignature…',
+    'business.audit_cosign.yours.signed': 'Vous avez cosigné ce rapport.',
+    'business.audit_cosign.yours.signed_on': 'Vous avez cosigné le {date}.',
+    'business.audit_cosign.yours.waiting':
+        'En attente de la cosignature de {names}. Le rapport est publié dès que toutes les signatures requises sont réunies.',
+    'business.audit_cosign.yours.all_in':
+        'Toutes les signatures requises sont réunies. Le rapport est publié dès que ses contrôles de publication sont validés.',
+    'business.audit_cosign.yours.published':
+        'Toutes les signatures requises sont réunies et le rapport est publié.',
+    'business.audit_cosign.yours.unavailable':
+        "La cosignature n'est pas disponible pour ce rapport.",
+    'business.audit_cosign.yours.cannot':
+        'Vous ne pouvez pas cosigner ce rapport.',
+    'business.audit_cosign.refused.with_code': '{reason} ({code})',
+    'business.audit_cosign.refused.VERSION_CONFLICT':
+        'Les signatures de ce rapport ont changé pendant que vous y travailliez. Nous avons chargé la dernière version — vérifiez-la et réessayez.',
+    'business.audit_cosign.refused.IDEMPOTENCY_CONFLICT':
+        "Cette demande a déjà été utilisée avec d'autres informations ; elle n'a donc pas été renvoyée. Nous avons chargé la dernière version.",
+    'business.audit_cosign.refused.DIGEST_STALE':
+        "Le rapport que vous avez lu n'est plus la version en vigueur. Nous l'avons chargé — lisez-le et réessayez.",
+    'business.audit_cosign.refused.MANDATE_STALE':
+        'Le mandat de signature de la société a changé. Vérifiez qui peut signer désormais, puis réessayez.',
+    'business.audit_cosign.refused.ACTION_FORBIDDEN':
+        'Vous ne pouvez pas effectuer cette action pour cette entreprise.',
+    'business.audit_cosign.refused.MANDATE_REQUIRED':
+        'Votre mandat vérifié ne vous permet pas de signer pour cette entreprise.',
+    'business.audit_cosign.refused.NOT_FOUND':
+        'Ce rapport ne vous est plus accessible.',
+    'business.audit_cosign.refused.denied':
+        'Votre accès a changé. Revenez à vos applications et réessayez.',
+    'business.audit_cosign.refused.failed':
+        "Cette action n'a pas été enregistrée. Vérifiez le rapport tel qu'il est maintenant et réessayez.",
+    'business.audit_prep.seal_by':
+        'Votre expert-comptable scelle le rapport de {month} au plus tard le {seal}. Vous ne pouvez ni le lancer ni le modifier.',
+    'business.audit_cosign.count': '{count}/{limit}',
+    'business.audit_cosign.published_auto':
+        'Publié automatiquement après le délai de 24 heures',
+    'business.audit_cosign.yours.published_auto':
+        "Personne n'a signé dans le délai : le rapport a été approuvé automatiquement et publié.",
+    'business.audit_cosign.dispute.open': 'Soumettre une contestation',
+    'business.audit_cosign.dispute.intro':
+        'Indiquez quels constats vous contestez et pourquoi, en vous en tenant aux faits. Votre contestation ne modifie pas le rapport scellé.',
+    'business.audit_cosign.dispute.reason': 'Votre motif',
+    'business.audit_cosign.dispute.reason_help':
+        'Obligatoire : les faits que vous contestez.',
+    'business.audit_cosign.dispute.supporting':
+        "Précisions à l'appui (facultatif)",
+    'business.audit_cosign.dispute.supporting_help':
+        'Décrivez les preuves dont vous disposez, si cela aide.',
+    'business.audit_cosign.dispute.submit': 'Soumettre la contestation',
+    'business.audit_cosign.dispute.submitting': 'Envoi…',
+    'business.audit_cosign.dispute.cancel': 'Annuler',
+    'business.audit_cosign.dispute.files': 'Justificatifs (facultatif)',
+    'business.audit_cosign.dispute.files_help':
+        'Ajoutez des photos ou des documents qui appuient votre contestation.',
+    'business.audit_cosign.dispute.files_add': 'Ajouter des fichiers',
+    'business.audit_cosign.dispute.file_remove': 'Retirer {name}',
+    'business.audit_cosign.disputed.under_review.title':
+        "Contestation en cours d'examen",
+    'business.audit_cosign.disputed.under_review.body':
+        "Vous avez soumis une contestation le {date}. Le délai d'examen de 24 heures est suspendu pendant que votre expert-comptable examine vos preuves et modifie ou maintient le rapport. S'il le maintient ou n'agit pas, l'équipe Rozine intervient. Un rapport modifié ouvre pour vous un nouveau délai de 24 heures pour l'examiner.",
+    'business.audit_cosign.disputed.escalated.title':
+        "Contestation transmise à l'équipe Rozine",
+    'business.audit_cosign.disputed.escalated.body':
+        "Vous avez soumis une contestation le {date}. Votre expert-comptable a maintenu le rapport ou n'a pas agi : l'équipe Rozine examine donc le dossier. Le délai d'examen de 24 heures reste suspendu en attendant.",
 };
 
 export default fr;

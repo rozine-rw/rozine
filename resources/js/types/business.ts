@@ -1075,7 +1075,7 @@ export type BusinessAuditPrepProps = {
     audit: {
         /** First day of the month being audited, ISO date. */
         period: string;
-        /** The window opens in the last days of the month; before that it is the next audit. */
+        /** The prep window runs from the 20th to month-end; before that it is the next audit. */
         window_open: boolean;
         days_left: number;
         seal_by: string;

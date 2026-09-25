@@ -1,0 +1,115 @@
+{
+    "component": "business/audit-cosign",
+    "synthetic": true,
+    "props": {
+        "contract_version": "business-audit-report-v1",
+        "identity_context_revision": 4,
+        "server_time": "2026-09-03T10:00:00+02:00",
+        "business": {
+            "id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
+            "name": "GreenLeaf Agro (synthetic)"
+        },
+        "report": {
+            "id": "SYN-RPT-2026-08",
+            "revision": 3,
+            "kind": "monthly",
+            "period": "2026-08",
+            "digest": "93ee088c9273fad00ec60eba1c3dcddd9b10bef2cf90f3811fab159e33e039e7",
+            "procedure_version": "MVP-AUP-1",
+            "auditor": {
+                "name": "Synthetic CPA Jean-Paul M.",
+                "licence": "SYN-ICPAR-0000"
+            },
+            "auditor_note": "Synthetic fixture note. On site on 31 August I reviewed the bank statements, Mobile Money logs and receipt books, counted stock and recorded the findings below as facts.",
+            "findings": [
+                {
+                    "code": "SYN-F-01",
+                    "title": "Synthetic finding: bank statement matches the ledger",
+                    "body": "Synthetic fixture text. The August bank statement closing balance agrees with the cash ledger on 31 August.",
+                    "evidence_ids": ["SYN-EV-001", "SYN-EV-002"]
+                },
+                {
+                    "code": "SYN-F-02",
+                    "title": "Synthetic finding: Mobile Money variance",
+                    "body": "Synthetic fixture text. Mobile Money receipts are 3 transactions short of the till roll for 14 August; the business supplied waybills for two of them.",
+                    "evidence_ids": ["SYN-EV-003"]
+                },
+                {
+                    "code": "SYN-F-03",
+                    "title": "Synthetic finding: stock count recorded",
+                    "body": "Synthetic fixture text. The physical stock count on 31 August was recorded against the stock ledger with no unexplained difference.",
+                    "evidence_ids": ["SYN-EV-004", "SYN-EV-005", "SYN-EV-006"]
+                }
+            ],
+            "seal": {
+                "status": "valid",
+                "signed_at": "2026-09-02T16:40:00+02:00",
+                "verification": {
+                    "url": "/preview/business-audit-cosign",
+                    "method": "get"
+                }
+            },
+            "published_at": null
+        },
+        "cosign": {
+            "revision": 8,
+            "state": "partly_signed",
+            "mandate_version": 2,
+            "required_signatures": 2,
+            "signed_count": 1,
+            "signers": [
+                {
+                    "name": "Synthetic signatory Aline Uwase",
+                    "state": "signed",
+                    "signed_at": "2026-09-04T09:12:00+02:00",
+                    "is_you": true
+                },
+                {
+                    "name": "Synthetic signatory Eric Nshuti",
+                    "state": "pending",
+                    "signed_at": null,
+                    "is_you": false
+                }
+            ],
+            "your_note": "Synthetic recap: the Mobile Money gap is the 14 August outage.",
+            "due_at": "2026-09-07T23:59:59+02:00",
+            "overdue": false
+        },
+        "allowed_actions": [],
+        "actions": {
+            "cosign": null
+        },
+        "links": {
+            "current": {
+                "url": "/preview/business-audit-cosign-partly-signed",
+                "method": "get"
+            },
+            "close": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/business-audit-cosign-operation-{request_id}",
+                "method": "get"
+            }
+        },
+        "shell_links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            }
+        }
+    }
+}

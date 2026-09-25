@@ -176,6 +176,7 @@
         "resources/js/types/admin.ts",
         "resources/js/types/auditor.ts",
         "resources/js/types/auth.ts",
+        "resources/js/types/business-audit.ts",
         "resources/js/types/business.ts",
         "resources/js/types/global.d.ts",
         "resources/js/types/identity.ts",
@@ -278,6 +279,11 @@
         "resources/js/components/business/apply/use-application-command.ts",
         "resources/js/components/business/apply/wizard-cta.tsx",
         "resources/js/components/business/apply/wizard-frame.tsx",
+        "resources/js/components/business/audit-cosign/cosign-form.tsx",
+        "resources/js/components/business/audit-cosign/cosign-notice.tsx",
+        "resources/js/components/business/audit-cosign/cosign-status.tsx",
+        "resources/js/components/business/audit-cosign/dispute-sheet.tsx",
+        "resources/js/components/business/audit-cosign/report-summary.tsx",
         "resources/js/components/business/business-auth-frame.tsx",
         "resources/js/components/business/business-shell.tsx",
         "resources/js/components/business/detail-sheet.tsx",
@@ -482,6 +488,7 @@
         "resources/js/pages/auth/two-factor-challenge.tsx",
         "resources/js/pages/auth/verify-email.tsx",
         "resources/js/pages/business/apply.tsx",
+        "resources/js/pages/business/audit-cosign.tsx",
         "resources/js/pages/business/audit-prep.tsx",
         "resources/js/pages/business/auth/login.tsx",
         "resources/js/pages/business/auth/register.tsx",
@@ -518,10 +525,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 490,
+        "totalTrackedSources": 497,
         "generated": 149,
-        "declarationOnly": 14,
-        "authoredExecutable": 327
+        "declarationOnly": 15,
+        "authoredExecutable": 333
     },
-    "coverageSetSha256": "fdceb335d87b87778c1c48c782ca48ac56a5139ff7723cb6047dc53513df8ce9"
+    "coverageSetSha256": "945dfdc65639e0888b7dc492c4efabc43ddd01d15e2966107db0456ffb9c5959"
 }

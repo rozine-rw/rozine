@@ -125,9 +125,22 @@ describe('Business Reports', () => {
             screen.getByRole('region', { name: 'How monthly audits work' }),
         );
 
+        expect(guide.getByText('Gather your records')).toBeInTheDocument();
         expect(
-            guide.getByText('Your Audit Partner opens the file'),
+            guide.getByText(
+                'Between the 20th and month-end, gather all physical and digital financial records for your scheduled CPA in-person audit.',
+            ),
         ).toBeInTheDocument();
+        expect(
+            guide.getByText(
+                /^Your assigned CPA visits your premises to review records and reconcile cash flows, then seals the report before the/u,
+            ),
+        ).toHaveTextContent(
+            'Your assigned CPA visits your premises to review records and reconcile cash flows, then seals the report before the 7th.',
+        );
+        expect(
+            guide.queryByText(/uploaded|last seven days/u),
+        ).not.toBeInTheDocument();
         expect(guide.getByText('7th')).toBeInTheDocument();
         expect(
             guide.getByText(
