@@ -12,14 +12,22 @@ import { FileReview } from '@/components/auditor/file/file-review';
 import { useJobCommands } from '@/components/auditor/job-commands';
 import { JobsBody, openOffers } from '@/components/auditor/jobs/jobs-body';
 import { OfferAccept } from '@/components/auditor/jobs/offer-accept';
+import type { ReloadScope } from '@/components/auditor/refresh';
 import { OutcomeModal } from '@/components/auditor/sheets/outcome-modal';
 import { useTranslation } from '@/hooks/use-translation';
+import { useWide } from '@/lib/investor/use-wide';
 import type {
     AuditorAllowedAction,
     AuditorFileProps,
     BusinessFile,
     ConflictReceipt,
 } from '@/types/auditor';
+
+/**
+ * A phone shows the file alone, so its reads leave out the Jobs list drawn beneath the sheet on a
+ * wide screen: a partial reload of the file's own props.
+ */
+const FILE_ONLY: ReloadScope = { except: ['jobs'] };
 
 /** The sheet's primary action: 50px, 16px radius (design L1225). */
 const SHEET_PRIMARY =
@@ -143,13 +151,18 @@ function FileSheet({ receipt, ...props }: FileSheetProps) {
  * when the server's `allowed_actions` lists it. A blocking conflict withdraws the file the moment
  * it is recorded, leaving the partner's receipt. A phone gets a full page; a wide screen gets the
  * sheet over the Jobs column it came from.
+ *
+ * Besides focus and reconnect, the page reads again only once an open offer's `accept_by` passes.
+ * No read, background or after a command, asks for the Jobs list unless the screen shows it.
  */
 export default function AuditorFile(props: AuditorFileProps) {
     const { t } = useTranslation();
+    const scope = useWide() ? undefined : FILE_ONLY;
     const center = useAuditorCommandCenter({
         page: props,
         lookup: props.links.operation,
         preview: props.preview_outcome,
+        reload: scope,
     });
 
     return (
@@ -162,6 +175,13 @@ export default function AuditorFile(props: AuditorFileProps) {
                 links={props.jobs.links}
                 openJobs={openOffers(props.jobs)}
                 showTabBar={false}
+                refresh={{
+                    scope,
+                    deadlines: {
+                        serverTime: props.server_time,
+                        at: props.blocked === null ? [props.job.accept_by] : [],
+                    },
+                }}
             >
                 <JobsBody
                     {...props.jobs}

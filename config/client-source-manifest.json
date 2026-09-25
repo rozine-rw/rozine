@@ -236,6 +236,7 @@
         "resources/js/components/auditor/profile/accreditation-section.tsx",
         "resources/js/components/auditor/profile/availability-section.tsx",
         "resources/js/components/auditor/profile/identity-card.tsx",
+        "resources/js/components/auditor/refresh.ts",
         "resources/js/components/auditor/sheets/bottom-sheet.tsx",
         "resources/js/components/auditor/sheets/conflict-sheet.tsx",
         "resources/js/components/auditor/sheets/outcome-modal.tsx",
@@ -495,10 +496,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 467,
+        "totalTrackedSources": 468,
         "generated": 133,
         "declarationOnly": 14,
-        "authoredExecutable": 320
+        "authoredExecutable": 321
     },
-    "coverageSetSha256": "f156a934096e8b44eb54737d11596f8f9a5680592f5fd665e4a79ce8e6352851"
+    "coverageSetSha256": "8cd0622baf7ca9161360b5d3c21e6e722b08b16a6b337aa575f8e3133523c38d"
 }

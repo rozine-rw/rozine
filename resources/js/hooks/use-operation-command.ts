@@ -355,9 +355,12 @@ export function useOperationCommand<
 
 /**
  * The page's own reload — Inertia keeps component state and scroll on a reload — resolved once it
- * has finished: the `refresh` both apps pass to `useOperationCommand`.
+ * has finished: the `refresh` both apps pass to `useOperationCommand`. `scope` limits it to the
+ * props the page asks for (a partial reload).
  */
-export const reloadPreservingState = (): Promise<void> =>
+export const reloadPreservingState = (
+    scope: { only?: string[]; except?: string[] } = {},
+): Promise<void> =>
     new Promise((resolve) => {
-        router.reload({ onFinish: () => resolve() });
+        router.reload({ ...scope, onFinish: () => resolve() });
     });
