@@ -1475,6 +1475,55 @@ describe('Audit procedure — after the seal', () => {
         },
     );
 
+    const AMENDMENT = {
+        report_id: 'rpt_01J9Q3W7K9V5D1_a1',
+        link: { url: '/auditor/reports/rpt_01J9Q3W7K9V5D1_a1', method: 'get' },
+    } as const;
+
+    it('says an unpublished report you amended is replaced, never that it awaits co-signing', () => {
+        render(
+            <AuditorAudit
+                {...withStage<SealedStage>(sealed, (stage) => ({
+                    ...stage,
+                    amended_by: AMENDMENT,
+                }))}
+            />,
+        );
+        const dialog = intro('Huye Motors');
+
+        expect(
+            within(dialog).getByText(
+                "You amended this report, so it won't be co-signed or published. The amendment replaces it.",
+            ),
+        ).toBeInTheDocument();
+        expect(dialog).not.toHaveTextContent(
+            /needs to co-sign|co-signs by|publishes to holders/u,
+        );
+        expect(
+            within(dialog).getByRole('link', { name: 'Open the amendment' }),
+        ).toHaveAttribute('href', AMENDMENT.link.url);
+    });
+
+    it('keeps the published wording for a report amended after publication', () => {
+        render(
+            <AuditorAudit
+                {...withStage<SealedStage>(sealedPublished, (stage) => ({
+                    ...stage,
+                    amended_by: AMENDMENT,
+                }))}
+            />,
+        );
+        const dialog = intro('Huye Motors');
+
+        expect(dialog).toHaveTextContent(
+            'Sealed and co-signed; published to holders on 4 Oct 2026.',
+        );
+        expect(dialog).not.toHaveTextContent(/won't be co-signed/u);
+        expect(
+            within(dialog).getByRole('link', { name: 'Open the amendment' }),
+        ).toHaveAttribute('href', AMENDMENT.link.url);
+    });
+
     it('says an overdue co-signature closed without publishing or approving anything', () => {
         render(<AuditorAudit {...props(sealedMonthlyOverdue)} />);
         const text = intro('Kivu Coffee Roasters');

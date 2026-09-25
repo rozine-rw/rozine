@@ -3101,6 +3101,8 @@ const en = {
         "The report is sealed, but {party}'s co-signing window has passed. It can no longer be co-signed and is not published; nothing is approved automatically.",
     'auditor.command.refused.AUDIT_PROCEDURE_SOURCE_CHANGED':
         'A source changed after your preview. Go back to review it, then preview again before sealing.',
+    'auditor.sealed.body_amended':
+        "You amended this report, so it won't be co-signed or published. The amendment replaces it.",
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

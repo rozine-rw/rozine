@@ -3226,6 +3226,9 @@ const rw: Catalog = {
     'auditor.command.refused.AUDIT_PROCEDURE_SOURCE_CHANGED':
         'Isoko ryahindutse nyuma yo kureba ibizashyirwaho kashe. Subira inyuma urisuzume, hanyuma wongere urebe mbere yo gushyiraho kashe.',
 
+    'auditor.sealed.body_amended':
+        'Wavuguruye iyi raporo, bityo ntizasinywa kandi ntizagezwa ku bashoramari. Ivugurura ni ryo riyisimbura.',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',
