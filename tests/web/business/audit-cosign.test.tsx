@@ -32,6 +32,7 @@ import type {
 } from '@/types/business-audit';
 import autoApprovedFixture from '../../../resources/fixtures/ui/business-audit-cosign-auto-approved-n6-pending.json';
 import disputeFixture from '../../../resources/fixtures/ui/business-audit-cosign-dispute-n6-pending.json';
+import disputedFixture from '../../../resources/fixtures/ui/business-audit-cosign-disputed-n6-pending.json';
 import flashFixture from '../../../resources/fixtures/ui/business-audit-cosign-flash.json';
 import overdueFixture from '../../../resources/fixtures/ui/business-audit-cosign-overdue.json';
 import partlyFixture from '../../../resources/fixtures/ui/business-audit-cosign-partly-signed.json';
@@ -1156,6 +1157,64 @@ describe('Business audit co-sign — pending N6 and dispute (additive, optional)
 
         await user.click(screen.getAllByRole('button', { name: 'Cancel' })[0]);
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('shows a dispute under review, pauses the deadline and offers no action', () => {
+        const page = props(disputedFixture);
+
+        setup(page);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Dispute Under Review' +
+                `You submitted a dispute on ${formatDayMonth(page.cosign.dispute!.submitted_at, 'en')}. ` +
+                'The 24-hour review timer is paused while your CPA reviews your proof and amends or upholds the report. ' +
+                'If they uphold it or do not act, Rozine staff step in. ' +
+                'An amended report opens a fresh 24-hour window for you to review it.',
+        );
+        expect(
+            screen.queryByText(/Co-sign by|Overdue/u),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+        expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    });
+
+    it('offers no co-sign or dispute while disputed, even when both are sent', () => {
+        const page = props(disputeFixture);
+
+        page.cosign.dispute = {
+            status: 'escalated',
+            submitted_at: '2026-09-03T11:20:00+02:00',
+        };
+        setup(page);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Dispute with Rozine staff' +
+                'You submitted a dispute on 3 Sept. Your CPA upheld the report or did not act, so Rozine staff are reviewing the case. ' +
+                'The 24-hour review timer stays paused meanwhile.',
+        );
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+        expect(disputeButton()).not.toBeInTheDocument();
+    });
+
+    it('reads a resolved dispute as the current contract does, with its fresh deadline', () => {
+        const page = props(disputeFixture);
+
+        page.cosign.dispute = {
+            status: 'resolved',
+            submitted_at: '2026-09-03T11:20:00+02:00',
+        };
+        setup(page);
+
+        expect(
+            screen.getByText(
+                `Co-sign by ${formatDate(page.cosign.due_at!, 'en')}`,
+            ),
+        ).toBeInTheDocument();
+        expect(acceptBox()).toBeInTheDocument();
+        expect(disputeButton()).toBeEnabled();
+        expect(
+            screen.queryByText(/Dispute Under Review/u),
+        ).not.toBeInTheDocument();
     });
 
     it('reads the dispute and automatic approval in French and Kinyarwanda', async () => {

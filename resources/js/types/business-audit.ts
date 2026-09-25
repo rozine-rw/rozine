@@ -73,6 +73,20 @@ export type AuditCosign = {
      * co-sign window lapsed. Absent, the page reads publication from `report.published_at` alone.
      */
     published_reason?: 'signed' | 'auto_approved' | null;
+    /**
+     * Pending the delivery 3 contract and the N6 amendment decision (not sent today). A dispute
+     * this business submitted: while it is `under_review` (the CPA reviews the proof, then amends
+     * or upholds the report) or `escalated` (upheld or not acted on, so Rozine staff review it),
+     * the 24-hour review timer is paused and nothing is signed or disputed. An amended report
+     * comes back `resolved` with a fresh `due_at`, and the page reads as usual.
+     */
+    dispute?: AuditCosignDispute | null;
+};
+
+/** Pending the delivery 3 contract: where a submitted dispute stands. */
+export type AuditCosignDispute = {
+    status: 'under_review' | 'escalated' | 'resolved';
+    submitted_at: string;
 };
 
 /**
