@@ -36,6 +36,8 @@
         "in_progress": [
             {
                 "id": "fa_murakoze",
+                "revision": 1,
+                "state": "assigned",
                 "kind": "flash",
                 "business": "Murakoze Tech",
                 "district": "Kicukiro",
@@ -51,10 +53,14 @@
                     "url": "/preview/auditor-audit-review",
                     "method": "get"
                 },
-                "allowed_actions": ["conflict.declare"]
+                "allowed_actions": ["conflict.declare"],
+                "accept_by": null,
+                "complete_by": "2026-10-04T13:59:55Z"
             },
             {
                 "id": "fa_greenleaf",
+                "revision": 1,
+                "state": "assigned",
                 "kind": "flash",
                 "business": "GreenLeaf Agro",
                 "district": "Gasabo",
@@ -70,7 +76,9 @@
                     "url": "/preview/auditor-audit-check-in",
                     "method": "get"
                 },
-                "allowed_actions": ["conflict.declare"]
+                "allowed_actions": ["conflict.declare"],
+                "accept_by": null,
+                "complete_by": "2026-10-04T08:59:55Z"
             }
         ],
         "standing": {

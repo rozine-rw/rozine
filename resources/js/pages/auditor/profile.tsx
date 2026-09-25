@@ -5,6 +5,7 @@ import {
     AuditorCommandProvider,
     useAuditorCommandCenter,
 } from '@/components/auditor/commands';
+import { EngagementBanner } from '@/components/auditor/engagement/engagement-banner';
 import { AccreditationSection } from '@/components/auditor/profile/accreditation-section';
 import { AvailabilitySection } from '@/components/auditor/profile/availability-section';
 import { IdentityCard } from '@/components/auditor/profile/identity-card';
@@ -33,6 +34,7 @@ export default function AuditorProfile(props: AuditorProfileProps) {
         page: props,
         lookup: props.links.operation,
         preview: props.preview_outcome,
+        terms: props.engagement?.link ?? null,
     });
     const accreditation = (
         <AccreditationSection
@@ -40,6 +42,10 @@ export default function AuditorProfile(props: AuditorProfileProps) {
             accreditation={props.accreditation}
             allowed={center.allowed}
             actions={props.actions}
+            certificates={{
+                certificate: props.links.certificate,
+                submitted_certificate: props.links.submitted_certificate,
+            }}
         />
     );
     const availability = (
@@ -62,6 +68,10 @@ export default function AuditorProfile(props: AuditorProfileProps) {
                         <h1 className="text-[24px] font-bold text-rz-ink lg:hidden">
                             {t('auditor.profile.title')}
                         </h1>
+                        <EngagementBanner
+                            engagement={props.engagement}
+                            className="mt-3.5 lg:mt-0 lg:shrink-0"
+                        />
                         <div className="mt-3.5 lg:mt-0 lg:shrink-0">
                             <IdentityCard
                                 auditor={props.auditor}

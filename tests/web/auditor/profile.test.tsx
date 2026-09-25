@@ -121,6 +121,117 @@ describe('Auditor Profile', () => {
         ).toBeInTheDocument();
     });
 
+    it('sends a renewal to its own route, so its lookup names the renewal', async () => {
+        const base = props();
+        const { user } = renderWithUser(
+            <AuditorProfile
+                {...base}
+                actions={{
+                    ...base.actions,
+                    renew: {
+                        url: '/auditor/accreditation/renewal',
+                        method: 'post',
+                    },
+                }}
+            />,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'Renew accreditation' }),
+        );
+        await user.click(
+            screen.getByRole('button', { name: 'Submit for review' }),
+        );
+
+        expect(inertia.calls[0]).toMatchObject({
+            url: '/auditor/accreditation/renewal',
+            body: { licence: 'ICPAR/P-2026/0481', expected_revision: 6 },
+        });
+    });
+
+    it('shows a live partner without inventing facts, hides unpublished tabs and links their own certificates', () => {
+        const base = props(pendingFixture);
+
+        render(
+            <AuditorProfile
+                {...base}
+                auditor={{
+                    name: 'Synthetic Partner',
+                    firm: null,
+                    accreditation: null,
+                    avatar_url: null,
+                    since_year: null,
+                }}
+                quality_score={null}
+                on_time_pct={null}
+                links={{
+                    ...base.links,
+                    jobs: null,
+                    portfolio: null,
+                    certificate: {
+                        url: '/auditor/accreditation/certificates/on-record',
+                        method: 'get',
+                    },
+                    submitted_certificate: {
+                        url: '/auditor/accreditation/certificates/under-review',
+                        method: 'get',
+                    },
+                }}
+            />,
+        );
+
+        expect(screen.getByText('Synthetic Partner')).toBeInTheDocument();
+        expect(screen.queryByText(/ · $/)).not.toBeInTheDocument();
+        expect(screen.getAllByText('—')).toHaveLength(2);
+        expect(screen.getByText('Practising licence')).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', {
+                name: 'Download the certificate on record',
+            }),
+        ).toHaveAttribute(
+            'href',
+            '/auditor/accreditation/certificates/on-record',
+        );
+        expect(
+            screen.getByRole('link', {
+                name: 'Download the submitted certificate',
+            }),
+        ).toHaveAttribute(
+            'href',
+            '/auditor/accreditation/certificates/under-review',
+        );
+
+        for (const nav of screen.getAllByRole('navigation', {
+            name: 'App navigation',
+        })) {
+            expect(
+                within(nav).getByRole('link', { name: /Profile/ }),
+            ).toHaveAttribute('aria-current', 'page');
+            expect(
+                within(nav).queryByRole('link', { name: /Jobs/ }),
+            ).not.toBeInTheDocument();
+            expect(
+                within(nav).queryByRole('link', { name: /Portfolio/ }),
+            ).not.toBeInTheDocument();
+        }
+    });
+
+    it('shows only the affiliation facts on record', () => {
+        const base = props();
+
+        render(
+            <AuditorProfile
+                {...base}
+                auditor={{ ...base.auditor, firm: null }}
+            />,
+        );
+
+        expect(screen.getAllByText('ICPAR · CPA')).toHaveLength(2);
+        expect(
+            screen.queryByRole('link', { name: /Download the/ }),
+        ).not.toBeInTheDocument();
+    });
+
     it('closes the form with Cancel', async () => {
         const { user } = renderWithUser(<AuditorProfile {...props()} />);
 

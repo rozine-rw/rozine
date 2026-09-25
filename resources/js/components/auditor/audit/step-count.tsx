@@ -199,10 +199,16 @@ export function StepCount({
                         <p className="text-[10.5px] font-bold tracking-[.05em] text-rz-slate uppercase">
                             {t('auditor.count.period')}
                         </p>
-                        <p className="mt-[3px] text-[12px] font-bold text-rz-ink">
-                            {formatDayMonth(stage.period.from, locale)} –{' '}
-                            {formatDayMonth(stage.period.to, locale)}
-                        </p>
+                        {stage.period === null ? (
+                            <p className="mt-[3px] text-[12px] font-bold text-rz-secondary">
+                                {t('auditor.count.period_unavailable')}
+                            </p>
+                        ) : (
+                            <p className="mt-[3px] text-[12px] font-bold text-rz-ink">
+                                {formatDayMonth(stage.period.from, locale)} –{' '}
+                                {formatDayMonth(stage.period.to, locale)}
+                            </p>
+                        )}
                     </div>
                     <div
                         className={cn(

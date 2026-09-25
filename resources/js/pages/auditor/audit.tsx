@@ -3,6 +3,8 @@ import { useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
 import { STEP_FORM, useStepForm } from '@/components/auditor/audit/parts';
 import type { StepContext } from '@/components/auditor/audit/parts';
+import { useReturnControls } from '@/components/auditor/audit/return-controls';
+import { ReturnedStatus } from '@/components/auditor/audit/returned-status';
 import { useSealFlow } from '@/components/auditor/audit/seal-flow';
 import { SealedStatus } from '@/components/auditor/audit/sealed-status';
 import { StepBar } from '@/components/auditor/audit/step-bar';
@@ -26,7 +28,7 @@ import {
 } from '@/components/auditor/detail-sheet';
 import { FileReview } from '@/components/auditor/file/file-review';
 import { useJobCommands } from '@/components/auditor/job-commands';
-import { JobsBody } from '@/components/auditor/jobs/jobs-body';
+import { JobsBody, openOffers } from '@/components/auditor/jobs/jobs-body';
 import { OutcomeModal } from '@/components/auditor/sheets/outcome-modal';
 import { useTranslation } from '@/hooks/use-translation';
 import type { MessageCode } from '@/lib/i18n/types';
@@ -48,7 +50,7 @@ const SHOWN_FIELDS: Partial<Record<AuditStage['step'], string[]>> = {
 
 /** The primary label per step, as the design words it (L3715, L3801). */
 const CONTINUE: Record<
-    Exclude<AuditStage['step'], 'seal' | 'sealed' | 'blocked'>,
+    Exclude<AuditStage['step'], 'seal' | 'sealed' | 'returned' | 'blocked'>,
     MessageCode
 > = {
     review: 'auditor.audit.continue',
@@ -102,12 +104,14 @@ function StageBody({
     context,
     seal,
     sealed,
+    returned,
 }: {
     props: AuditProcedureProps;
     stage: AuditStage;
     context: StepContext;
     seal: ReactNode;
     sealed: ReactNode;
+    returned: ReactNode;
 }) {
     const { audit } = props;
 
@@ -138,13 +142,10 @@ function StageBody({
             return seal;
         case 'sealed':
             return sealed;
+        case 'returned':
+            return returned;
         case 'blocked':
-            return (
-                <ConflictReceiptCard
-                    business={audit.business}
-                    receipt={stage.conflict}
-                />
-            );
+            return <ConflictReceiptCard receipt={stage.conflict} />;
     }
 }
 
@@ -177,6 +178,9 @@ function AuditSheet(props: AuditProcedureProps) {
             : { step: 'blocked', conflict: center.blocked };
     const blocked = stage.step === 'blocked';
     const sealed = stage.step === 'sealed';
+    const returned = stage.step === 'returned';
+    /* A sealed, returned or blocked report is final: nothing on it can be saved or returned. */
+    const terminal = sealed || returned || blocked;
     const period =
         audit.month === null ? '' : formatMonthYearLong(audit.month, locale);
     const context: StepContext = {
@@ -204,6 +208,17 @@ function AuditSheet(props: AuditProcedureProps) {
         business: audit.business,
         period,
         canContinue: props.can_continue,
+        actions,
+        preview: props.preview_outcome,
+    });
+    const returns = useReturnControls({
+        options: terminal
+            ? null
+            : stage.step === 'seal'
+              ? stage.reason_options
+              : props.reason_options,
+        context,
+        business: audit.business,
         actions,
         preview: props.preview_outcome,
     });
@@ -244,9 +259,30 @@ function AuditSheet(props: AuditProcedureProps) {
 
     let footer: ReactNode;
 
+    /*
+     * The server's link to the step before this one, never a path built here. At the seal it is
+     * the way back when a source changed after a preview and must be reviewed again.
+     */
+    const back = links.back !== null && (
+        <Link
+            href={links.back}
+            className="flex h-12 w-16 shrink-0 items-center justify-center rounded-xl bg-[#eef2f8] text-[13px] font-bold text-rz-slate dark:bg-rz-surface-muted"
+        >
+            {t('auditor.audit.back')}
+        </Link>
+    );
+
     if (stage.step === 'seal') {
-        footer = seal.footer;
-    } else if (sealed || blocked) {
+        footer = (
+            <>
+                <div className="flex gap-2.5">
+                    {back}
+                    <div className="min-w-0 flex-1">{seal.footer}</div>
+                </div>
+                {returns.buttons}
+            </>
+        );
+    } else if (terminal) {
         footer = (
             <Link
                 href={links.close}
@@ -258,14 +294,7 @@ function AuditSheet(props: AuditProcedureProps) {
     } else {
         footer = (
             <div className="flex gap-2.5">
-                {links.back !== null && (
-                    <Link
-                        href={links.back}
-                        className="flex h-12 w-16 shrink-0 items-center justify-center rounded-xl bg-[#eef2f8] text-[13px] font-bold text-rz-slate dark:bg-rz-surface-muted"
-                    >
-                        {t('auditor.audit.back')}
-                    </Link>
-                )}
+                {back}
                 {center.allowed('audit.save_step') && (
                     <button
                         type="submit"
@@ -279,23 +308,31 @@ function AuditSheet(props: AuditProcedureProps) {
                 )}
             </div>
         );
+        footer = (
+            <>
+                {footer}
+                {returns.buttons}
+            </>
+        );
     }
 
-    const amend = center.allowed('audit.amend')
-        ? {
-              run: () =>
-                  center.send({
-                      name: 'audit.amend',
-                      business: audit.business,
-                      route: actions.amend,
-                      payload: {
-                          audit_id: audit.id,
-                          expected_revision: audit.revision,
-                      },
-                  }),
-              disabled: !center.idle,
-          }
-        : null;
+    const amendRoute = actions.amend;
+    const amend =
+        amendRoute !== null && center.allowed('audit.amend')
+            ? {
+                  run: () =>
+                      center.send({
+                          name: 'audit.amend',
+                          business: audit.business,
+                          route: amendRoute,
+                          payload: {
+                              audit_id: audit.id,
+                              expected_revision: audit.revision,
+                          },
+                      }),
+                  disabled: !center.idle,
+              }
+            : null;
 
     return (
         <DetailSheet
@@ -305,8 +342,7 @@ function AuditSheet(props: AuditProcedureProps) {
                 stage.step === 'review' ||
                 stage.step === 'statements' ||
                 stage.step === 'check_in' ||
-                sealed ||
-                blocked
+                terminal
             }
             header={header}
             footer={
@@ -322,9 +358,9 @@ function AuditSheet(props: AuditProcedureProps) {
             nested={
                 blocked
                     ? null
-                    : stage.step === 'seal'
-                      ? (seal.nested ?? commands.sheet)
-                      : commands.sheet
+                    : ((stage.step === 'seal' ? seal.nested : null) ??
+                      returns.sheet ??
+                      commands.sheet)
             }
         >
             {!online && (
@@ -365,8 +401,13 @@ function AuditSheet(props: AuditProcedureProps) {
                         <SealedStatus stage={stage} amend={amend} />
                     )
                 }
+                returned={
+                    stage.step === 'returned' && (
+                        <ReturnedStatus stage={stage} amend={amend} />
+                    )
+                }
             />
-            {!sealed && !blocked && commands.conflictButton !== null && (
+            {!terminal && commands.conflictButton !== null && (
                 <div className="mt-5 flex justify-center">
                     {commands.conflictButton}
                 </div>
@@ -399,7 +440,7 @@ export default function AuditorAudit(props: AuditProcedureProps) {
                 })}
                 tab="jobs"
                 links={props.jobs.links}
-                openJobs={props.jobs.eligible.length}
+                openJobs={openOffers(props.jobs)}
                 showTabBar={false}
             >
                 <JobsBody

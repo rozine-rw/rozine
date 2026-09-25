@@ -7,6 +7,11 @@ import type { Money } from '@/types';
 export const compactAmount = (money: Money): string => {
     const value = Math.round(Number(money.amount));
 
+    /* A net outflow keeps its sign: "−1.2M", never a bare negative integer. */
+    if (value < 0) {
+        return `−${compactAmount({ ...money, amount: String(-value) })}`;
+    }
+
     if (value >= 1e9) {
         return `${Math.round(value / 1e8) / 10}B`;
     }

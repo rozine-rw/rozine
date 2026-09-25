@@ -11,14 +11,16 @@ use Illuminate\Support\Str;
 
 class ConfigureStaffAccessCommand extends Command
 {
-    protected $signature = 'identity:staff {user : Dedicated staff account ID} {--revoke} {--reason= : Required audit reason}';
+    protected $signature = 'identity:staff {user : Dedicated staff account ID} {--revoke} {--role=* : Explicit staff role, repeatable} {--reason= : Required audit reason}';
 
-    protected $description = 'Grant or revoke Admin entry for a dedicated verified staff account with MFA';
+    protected $description = 'Grant or revoke scoped staff access for a dedicated verified account with MFA';
 
     public function handle(ConfigureStaffAccess $action): int
     {
         try {
-            $result = $action->handle((int) $this->argument('user'), ! $this->option('revoke'), (string) $this->option('reason'), (string) Str::uuid());
+            /** @var list<string> $roles */
+            $roles = $this->option('role');
+            $result = $action->handle((int) $this->argument('user'), ! $this->option('revoke'), (string) $this->option('reason'), (string) Str::uuid(), $roles);
         } catch (IdentityViolation $exception) {
             $this->components->error($exception->reason);
 

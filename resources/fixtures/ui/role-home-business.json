@@ -1,0 +1,112 @@
+{
+    "component": "identity/role-home",
+    "props": {
+        "engagement": null,
+        "identity": {
+            "contract_version": "identity-v2",
+            "policy_version": "engineering-2026-09-23.4",
+            "code": "IDENTITY_READY",
+            "party": {
+                "id": "01k5tfp4r7y0000000000000a1",
+                "kind": "person",
+                "verification_status": "verified"
+            },
+            "available_roles": ["business"],
+            "active_role": "business",
+            "context_revision": 4,
+            "allowed_actions": ["identity.select_role", "identity.view_role"]
+        },
+        "role": "business",
+        "section": "overview",
+        "business_applications": {
+            "identity_context_revision": 4,
+            "entries": [
+                {
+                    "business_id": "01k6q1a2b3c4d5e6f7g8h9j0k1",
+                    "name": "Kigali Fresh Foods",
+                    "allowed_actions": ["application.create"],
+                    "application": null,
+                    "actions": {
+                        "create": {
+                            "url": "/business/01k6q1a2b3c4d5e6f7g8h9j0k1/applications",
+                            "method": "post"
+                        }
+                    }
+                },
+                {
+                    "business_id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
+                    "name": "GreenLeaf Agro",
+                    "allowed_actions": [],
+                    "application": {
+                        "id": "01k6p4c8s3d0f4g9h2j6k1m7n3",
+                        "status": "draft",
+                        "step": "raise",
+                        "revision": 3,
+                        "link": {
+                            "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications/01k6p4c8s3d0f4g9h2j6k1m7n3",
+                            "method": "get"
+                        }
+                    },
+                    "actions": {
+                        "create": null
+                    }
+                },
+                {
+                    "business_id": "01k6q2m3n4p5q6r7s8t9v0w1x2",
+                    "name": "Huye Motors",
+                    "allowed_actions": [],
+                    "application": {
+                        "id": "01k6q2m3n4p5q6r7s8t9v0w1x3",
+                        "status": "submitted",
+                        "step": "submitted",
+                        "revision": 9,
+                        "link": {
+                            "url": "/business/01k6q2m3n4p5q6r7s8t9v0w1x2/applications/01k6q2m3n4p5q6r7s8t9v0w1x3",
+                            "method": "get"
+                        }
+                    },
+                    "actions": {
+                        "create": null
+                    }
+                },
+                {
+                    "business_id": "01k6q3y4z5a6b7c8d9e0f1g2h3",
+                    "name": "Nyamirambo Crafts",
+                    "allowed_actions": [],
+                    "application": null,
+                    "actions": {
+                        "create": null
+                    }
+                },
+                {
+                    "business_id": "01k6q4j5k6m7n8p9q0r1s2t3v4",
+                    "name": "Musanze Dairy",
+                    "allowed_actions": [],
+                    "application": {
+                        "id": "01k6q4j5k6m7n8p9q0r1s2t3v5",
+                        "status": "draft",
+                        "step": "review",
+                        "revision": 6,
+                        "link": {
+                            "url": "/business/01k6q4j5k6m7n8p9q0r1s2t3v4/applications/01k6q4j5k6m7n8p9q0r1s2t3v5",
+                            "method": "get"
+                        }
+                    },
+                    "actions": {
+                        "create": null
+                    }
+                }
+            ],
+            "operation": {
+                "url": "/business/application-operations/{request_id}",
+                "method": "get"
+            },
+            "pagination": {
+                "next": {
+                    "url": "/business?cursor=01k6q4j5k6m7n8p9q0r1s2t3v4",
+                    "method": "get"
+                }
+            }
+        }
+    }
+}

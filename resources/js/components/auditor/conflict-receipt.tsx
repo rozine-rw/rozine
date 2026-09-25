@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { formatKigaliTime } from '@/components/auditor/clock';
 import { DIVIDER, StatusPill } from '@/components/auditor/ui';
 import type { PillTone } from '@/components/auditor/ui';
@@ -13,22 +14,18 @@ const STATUS_TONE: Record<ConflictAssignmentStatus, PillTone> = {
     reassignment_pending: 'amber',
     reassigned: 'neutral',
     recorded: 'neutral',
+    closed: 'neutral',
 };
 
 /**
  * The partner's own receipt for a blocking conflict (auditor-filing-v1, confirmation on #96). Work
  * on the assignment has stopped: the file, evidence, step saves and sealing are gone, and this is
- * all that remains — the declaration as recorded and where the assignment stands, never who takes
- * it next.
+ * all that remains — the declarant's own kind, note and date, and where the assignment stands in
+ * coarse terms, never who takes it next. It names no Business: the private read carries none.
  */
-export function ConflictReceiptCard({
-    business,
-    receipt,
-}: {
-    business: string;
-    receipt: ConflictReceipt;
-}) {
+export function ConflictReceiptCard({ receipt }: { receipt: ConflictReceipt }) {
     const { t, locale } = useTranslation();
+    const titleId = useId();
     const rows = [
         {
             label: t('auditor.receipt.kind'),
@@ -38,11 +35,10 @@ export function ConflictReceiptCard({
             label: t('auditor.receipt.declared'),
             value: `${formatDate(receipt.declared_at, locale)} · ${formatKigaliTime(receipt.declared_at)}`,
         },
-        { label: t('auditor.receipt.reference'), value: receipt.conflict_id },
     ];
 
     return (
-        <section aria-labelledby="auditor-receipt-title">
+        <section aria-labelledby={titleId}>
             <div className="rounded-2xl border border-[#f2d69a] bg-rz-surface p-[15px] dark:border-[rgba(240,160,96,.3)]">
                 <div className="flex items-start gap-[11px]">
                     <span
@@ -53,15 +49,13 @@ export function ConflictReceiptCard({
                     </span>
                     <div className="min-w-0 flex-1">
                         <h3
-                            id="auditor-receipt-title"
+                            id={titleId}
                             className="text-[15px] font-bold text-rz-ink"
                         >
                             {t('auditor.receipt.title')}
                         </h3>
                         <p className="mt-1 text-[12.5px] leading-[1.55] text-rz-secondary">
-                            {t(`auditor.receipt.body.${receipt.status}`, {
-                                business,
-                            })}
+                            {t(`auditor.receipt.body.${receipt.status}`)}
                         </p>
                     </div>
                 </div>

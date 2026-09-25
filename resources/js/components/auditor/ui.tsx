@@ -1,6 +1,9 @@
+import { Link } from '@inertiajs/react';
 import type { ComponentProps, ReactNode } from 'react';
+import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import type { SectorCode } from '@/types/auditor';
+import type { RouteLink } from '@/types/routing';
 
 /**
  * The Auditor design's repeated pieces (inventory §4), with dark-mode pairs for every literal the
@@ -81,6 +84,23 @@ export function EmptyState({
         >
             {children}
         </div>
+    );
+}
+
+/**
+ * The trailing "Show more" of a paged list: the server's `next` link, followed as sent. Shown
+ * whenever `next` is set, even under an empty page.
+ */
+export function ShowMore({ next }: { next: RouteLink }) {
+    const { t } = useTranslation();
+
+    return (
+        <Link
+            href={next}
+            className="mt-3.5 flex h-11 w-full items-center justify-center rounded-xl border border-rz-border bg-rz-surface text-[13px] font-bold text-rz-ink"
+        >
+            {t('auditor.jobs.show_more')}
+        </Link>
     );
 }
 
@@ -210,14 +230,18 @@ export const initials = (name: string): string =>
         .map((word) => word.charAt(0).toUpperCase())
         .join('');
 
-/** The business initials tile, tinted by sector (design L224). */
+/** An unmatched sector's tile: neutral, so no sector is implied. */
+const NO_SECTOR_TONE =
+    'bg-[#eef2f8] text-rz-slate dark:bg-rz-surface-muted dark:text-rz-secondary';
+
+/** The business initials tile, tinted by sector (design L224); neutral when none is matched. */
 export function SectorTile({
     name,
     sector,
     className,
 }: {
     name: string;
-    sector: SectorCode;
+    sector: SectorCode | null;
     className?: string;
 }) {
     return (
@@ -225,7 +249,7 @@ export function SectorTile({
             aria-hidden
             className={cn(
                 'flex size-[46px] shrink-0 items-center justify-center rounded-xl text-[17px] font-bold',
-                SECTOR_TONE[sector],
+                sector === null ? NO_SECTOR_TONE : SECTOR_TONE[sector],
                 className,
             )}
         >

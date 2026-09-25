@@ -272,6 +272,14 @@ export function CaptureHandoff({
                     )}
                 </span>
             </div>
+            {capture.source === 'isolated_synthetic' && (
+                <p
+                    role="note"
+                    className="mt-3 rounded-[10px] border border-[#f2d69a] px-3 py-2.5 text-[11.5px] leading-[1.5] font-semibold text-[#8a6d2b] dark:border-[rgba(240,160,96,.3)] dark:text-[#e3b56a]"
+                >
+                    {t('auditor.capture.synthetic')}
+                </p>
+            )}
             {capture.handoff === null ? (
                 <p
                     role="note"

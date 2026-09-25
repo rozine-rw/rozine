@@ -1,6 +1,7 @@
 {
     "component": "auditor/file",
     "props": {
+        "engagement": null,
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
@@ -17,7 +18,9 @@
             },
             "accept_by": null,
             "complete_by": "2026-10-04T13:59:55Z",
-            "reassigned_from": null
+            "reassigned_from": null,
+            "kind": "flash",
+            "allowed_actions": []
         },
         "file": null,
         "actions": {
@@ -32,7 +35,12 @@
             "conflict": {
                 "url": "/preview/auditor-jobs-conflict",
                 "method": "post"
-            }
+            },
+            "start": null
+        },
+        "application": {
+            "id": "app_huye_motors",
+            "revision": 4
         },
         "links": {
             "close": {
@@ -43,9 +51,14 @@
             "operation": {
                 "url": "/preview/auditor-operation-{request_id}",
                 "method": "get"
+            },
+            "start_operation": {
+                "url": "/preview/auditor-report-operation-{request_id}",
+                "method": "get"
             }
         },
         "jobs": {
+            "engagement": null,
             "contract_version": "auditor-filing-v1",
             "identity_context_revision": 3,
             "server_time": "2026-10-03T17:00:00Z",
@@ -60,6 +73,8 @@
                 {
                     "id": "fa_huye",
                     "revision": 2,
+                    "state": "offered",
+                    "kind": "flash",
                     "business": "Huye Motors",
                     "sector": "logistics",
                     "district": "Gasabo",
@@ -99,7 +114,9 @@
                         "assignment.accept",
                         "assignment.decline",
                         "conflict.declare"
-                    ]
+                    ],
+                    "deadline": null,
+                    "reassigned_from": null
                 }
             ],
             "assigned": [],

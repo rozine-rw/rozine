@@ -4,7 +4,12 @@
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
-        "allowed_actions": ["audit.save_step", "conflict.declare"],
+        "allowed_actions": [
+            "audit.save_step",
+            "conflict.declare",
+            "audit.request_changes",
+            "audit.reject"
+        ],
         "audit": {
             "id": "mr_greenleaf",
             "kind": "monthly",
@@ -55,19 +60,86 @@
                 },
                 "cover": {
                     "value": "1.31",
-                    "band": "healthy"
+                    "band": null
                 },
-                "document": {
-                    "name": "GreenLeaf-Agro-2026-09.pdf",
-                    "link": {
-                        "url": "/preview/auditor-audit-statements",
-                        "method": "get"
+                "documents": [
+                    {
+                        "name": "GreenLeaf-Agro-BK-current-2026-09.pdf",
+                        "link": {
+                            "url": "/preview/auditor-audit-statements?document=sd_bk_current",
+                            "method": "get"
+                        }
+                    },
+                    {
+                        "name": "GreenLeaf-Agro-BK-savings-2026-09.pdf",
+                        "link": {
+                            "url": "/preview/auditor-audit-statements?document=sd_bk_savings",
+                            "method": "get"
+                        }
+                    },
+                    {
+                        "name": "GreenLeaf-Agro-MoMo-2026-09.csv",
+                        "link": {
+                            "url": "/preview/auditor-audit-statements?document=sd_momo",
+                            "method": "get"
+                        }
                     }
-                }
+                ]
             }
         },
         "can_continue": true,
         "hint": null,
+        "reason_options": {
+            "request_changes": [
+                {
+                    "code": "missing_originals",
+                    "label": "Original documents missing",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "reconciliation_difference",
+                    "label": "Unexplained reconciliation difference",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "classification_unresolved",
+                    "label": "Classification unresolved",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "debt_evidence_missing",
+                    "label": "Debt or draw evidence missing",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "capture_unverified",
+                    "label": "Capture could not be verified",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "other",
+                    "label": "Other",
+                    "requires_explanation": true
+                }
+            ],
+            "reject": [
+                {
+                    "code": "evidence_unverifiable",
+                    "label": "Evidence cannot be verified",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "procedure_incomplete",
+                    "label": "Procedure cannot be completed",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "other",
+                    "label": "Other",
+                    "requires_explanation": true
+                }
+            ]
+        },
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",
@@ -111,6 +183,7 @@
         },
         "outcome": null,
         "jobs": {
+            "engagement": null,
             "contract_version": "auditor-filing-v1",
             "identity_context_revision": 3,
             "server_time": "2026-10-03T17:00:00Z",
@@ -125,6 +198,8 @@
                 {
                     "id": "fa_huye",
                     "revision": 2,
+                    "state": "offered",
+                    "kind": "flash",
                     "business": "Huye Motors",
                     "sector": "logistics",
                     "district": "Gasabo",
@@ -164,7 +239,9 @@
                         "assignment.accept",
                         "assignment.decline",
                         "conflict.declare"
-                    ]
+                    ],
+                    "deadline": null,
+                    "reassigned_from": null
                 }
             ],
             "assigned": [],

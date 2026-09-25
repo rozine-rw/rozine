@@ -66,7 +66,7 @@ report() {
   echo
 }
 
-ALL_CONTROLS=(strict-types domain-purity transport-boundary identity-boundary adapter-leak php-coverage phpstan-tests)
+ALL_CONTROLS=(strict-types domain-purity transport-boundary identity-boundary operation-boundary business-boundary evidence-boundary auditor-boundary audit-signing-boundary adapter-leak php-coverage phpstan-tests)
 
 selected() {
   local wanted="$1" name
@@ -208,22 +208,24 @@ fi
 # Architecture: only the identity adapter may access protected Party records.
 # ---------------------------------------------------------------------------
 if selected identity-boundary; then
-  control identity-boundary "an application action writing Party records directly must fail the identity rule"
+  control identity-boundary "application actions writing protected identity records directly must fail the identity rule"
+  for identity_model in Party VerifiedOrganizationIdentity ConsentRelease; do
+  echo "    checking ${identity_model}"
 
-  plant app/Application/Identity/NegativeControlIdentityWrite.php <<'VIOLATION'
+  plant app/Application/Identity/NegativeControlIdentityWrite.php <<VIOLATION
 <?php
 
 declare(strict_types=1);
 
 namespace App\Application\Identity;
 
-use App\Models\Party;
+use App\\Models\\${identity_model};
 
 final class NegativeControlIdentityWrite
 {
-    public function handle(): Party
+    public function handle(): ${identity_model}
     {
-        return Party::query()->create(['kind' => 'person']);
+        return ${identity_model}::query()->create([]);
     }
 }
 VIOLATION
@@ -233,15 +235,173 @@ VIOLATION
   elif gate_fails "${LOG_DIR}/identity.log" vendor/bin/pest --ci --no-tia tests/Architecture/ArchitectureTest.php --filter='identity records are only accessed' --compact; then
     report identity-boundary pass "the identity persistence rule rejected it"
   else
-    report identity-boundary fail "the identity persistence rule accepted a direct Party write"
+    report identity-boundary fail "the identity persistence rule accepted a direct ${identity_model} write"
     cat "${LOG_DIR}/identity.log"
   fi
   rm -f app/Application/Identity/NegativeControlIdentityWrite.php
+  done
 fi
 
 # ---------------------------------------------------------------------------
 # Architecture: a controller that queries the database itself.
 # ---------------------------------------------------------------------------
+if selected operation-boundary; then
+  control operation-boundary "bypassing the journal to write an operation outcome must fail the protected rule"
+  plant app/Application/Operations/NegativeControlOperationWrite.php <<'VIOLATION'
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Operations;
+
+use App\Models\CommandOperation;
+
+final class NegativeControlOperationWrite
+{
+    public function handle(): CommandOperation
+    {
+        return CommandOperation::query()->create([]);
+    }
+}
+VIOLATION
+  if [ "${ARCHITECTURE_GREEN}" != true ]; then
+    report operation-boundary fail "the architecture suite must be green beforehand"
+  elif gate_fails "${LOG_DIR}/operation.log" vendor/bin/pest --ci --no-tia tests/Architecture/ArchitectureTest.php --filter='command outcomes are only accessed' --compact; then
+    report operation-boundary pass "the command journal boundary rejected it"
+  else
+    report operation-boundary fail "the command journal boundary accepted an external write"
+    cat "${LOG_DIR}/operation.log"
+  fi
+  rm -f app/Application/Operations/NegativeControlOperationWrite.php
+fi
+
+if selected business-boundary; then
+  control business-boundary "bypassing the business adapter to write authority or application records must fail the protected rule"
+  for business_model in BusinessMandate BusinessApplication BusinessApplicationVersion BusinessCreditSnapshot BusinessApplicationQuote BusinessApplicationSignature BusinessApplicationSubmission; do
+  echo "    checking ${business_model}"
+  plant app/Application/Business/NegativeControlBusinessWrite.php <<VIOLATION
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Business;
+
+use App\\Models\\${business_model};
+
+final class NegativeControlBusinessWrite
+{
+    public function handle(): ${business_model}
+    {
+        return ${business_model}::query()->create([]);
+    }
+}
+VIOLATION
+  if [ "${ARCHITECTURE_GREEN}" != true ]; then
+    report business-boundary fail "the architecture suite must be green beforehand"
+  elif gate_fails "${LOG_DIR}/business.log" vendor/bin/pest --ci --no-tia tests/Architecture/ArchitectureTest.php --filter='business authority records are only accessed' --compact; then
+    report business-boundary pass "the business authority boundary rejected it"
+  else
+    report business-boundary fail "the business authority boundary accepted an external write"
+    cat "${LOG_DIR}/business.log"
+  fi
+  rm -f app/Application/Business/NegativeControlBusinessWrite.php
+  done
+fi
+
+if selected evidence-boundary; then
+  control evidence-boundary "bypassing the evidence adapter to write statement sources or reconciliations must fail"
+  for evidence_model in StatementEvidence StatementOriginal StatementExtraction StatementTranscription StatementVerification; do
+  echo "    checking ${evidence_model}"
+  plant app/Application/Evidence/NegativeControlEvidenceWrite.php <<VIOLATION
+<?php
+
+declare(strict_types=1);
+
+namespace App\\Application\\Evidence;
+
+use App\\Models\\${evidence_model};
+
+final class NegativeControlEvidenceWrite
+{
+    public function handle(): ${evidence_model}
+    {
+        return ${evidence_model}::query()->create([]);
+    }
+}
+VIOLATION
+  if [ "${ARCHITECTURE_GREEN}" != true ]; then
+    report evidence-boundary fail "the architecture suite must be green beforehand"
+  elif gate_fails "${LOG_DIR}/evidence.log" vendor/bin/pest --ci --no-tia tests/Architecture/ArchitectureTest.php --filter='statement evidence records are only accessed' --compact; then
+    report evidence-boundary pass "the immutable evidence boundary rejected it"
+  else
+    report evidence-boundary fail "the immutable evidence boundary accepted an external write"
+    cat "${LOG_DIR}/evidence.log"
+  fi
+  rm -f app/Application/Evidence/NegativeControlEvidenceWrite.php
+  done
+fi
+
+if selected auditor-boundary; then
+  control auditor-boundary "bypassing the auditor adapter to write accreditation, assignment or report history must fail"
+  for auditor_model in AuditorProfile AuditorProfileVersion AuditorCertificate AuditLocation AuditLocationVersion AuditorIndependenceReview AuditorIndependenceVersion AuditAssignment AuditAssignmentVersion AuditConflictDeclaration AuditReport AuditReportVersion AuditLedgerOriginal AuditLedgerExtraction AuditSourceSnapshot AuditEngagementRelease AuditEngagementAcceptance AuditReportPublication AuditReportSignature AuditReportSeal AuditSigningKey AuditSigningKeyRevocation AuditStepUpProof; do
+  echo "    checking ${auditor_model}"
+  plant app/Application/Auditor/NegativeControlAuditorWrite.php <<VIOLATION
+<?php
+
+declare(strict_types=1);
+
+namespace App\\Application\\Auditor;
+
+use App\\Models\\${auditor_model};
+
+final class NegativeControlAuditorWrite
+{
+    public function handle(): ${auditor_model}
+    {
+        return ${auditor_model}::query()->create([]);
+    }
+}
+VIOLATION
+  if [ "${ARCHITECTURE_GREEN}" != true ]; then
+    report auditor-boundary fail "the architecture suite must be green beforehand"
+  elif gate_fails "${LOG_DIR}/auditor.log" vendor/bin/pest --ci --no-tia tests/Architecture/ArchitectureTest.php --filter='auditor accreditation records are only accessed' --compact; then
+    report auditor-boundary pass "the auditor accreditation boundary rejected it"
+  else
+    report auditor-boundary fail "the auditor accreditation boundary accepted an external write"
+    cat "${LOG_DIR}/auditor.log"
+  fi
+  rm -f app/Application/Auditor/NegativeControlAuditorWrite.php
+  done
+fi
+
+if selected audit-signing-boundary; then
+  control audit-signing-boundary "direct calls around authorized signing entry points must fail"
+  for signing_symbol in 'App\Application\Auditor\Contracts\AuditReportCryptography' 'App\Application\Auditor\Contracts\AuditStepUp' 'App\Application\Identity\Contracts\Authenticator' 'Jose\Component\Core\JWK'; do
+    plant app/Application/Auditor/NegativeControlSigningBypass.php <<VIOLATION
+<?php
+
+declare(strict_types=1);
+
+namespace App\\Application\\Auditor;
+
+final class NegativeControlSigningBypass
+{
+    public function __construct(private \\${signing_symbol} \$signer) {}
+}
+VIOLATION
+    if [ "${ARCHITECTURE_GREEN}" != true ]; then
+      report audit-signing-boundary fail "the architecture suite must be green beforehand"
+    elif gate_fails "${LOG_DIR}/signing.log" vendor/bin/pest --ci --no-tia tests/Architecture/ArchitectureTest.php --filter='audit signing' --compact \
+      && grep -Fq 'NegativeControlSigningBypass' "${LOG_DIR}/signing.log"; then
+      report audit-signing-boundary pass "${signing_symbol} cannot be called outside its authorized boundary"
+    else
+      report audit-signing-boundary fail "a signing entry point accepted an unauthorized caller"
+      cat "${LOG_DIR}/signing.log"
+    fi
+    rm -f app/Application/Auditor/NegativeControlSigningBypass.php
+  done
+fi
+
 if selected transport-boundary; then
   control transport-boundary "a controller querying persistence directly must fail the architecture suite"
 

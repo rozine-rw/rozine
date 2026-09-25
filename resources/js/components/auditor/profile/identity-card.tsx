@@ -2,7 +2,7 @@ import { Avatar } from '@/components/auditor/home/hero';
 import { INSET } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
-import type { AuditorIdentity } from '@/types/auditor';
+import type { AuditorProfileIdentity } from '@/types/auditor';
 
 function Tile({
     label,
@@ -25,7 +25,9 @@ function Tile({
 
 /**
  * The profile identity card (design L600–616). The design's "Pass rate" tile becomes on-time
- * closing: partners record findings, they do not pass or fail anyone (MVP-AUDITOR-AC-02).
+ * closing: partners record findings, they do not pass or fail anyone (MVP-AUDITOR-AC-02). A fact
+ * the server has no record of yet — the firm, the designation, the start year — is left out or
+ * reads as a dash, never filled in.
  */
 export function IdentityCard({
     auditor,
@@ -33,12 +35,15 @@ export function IdentityCard({
     onTimePct,
     jobsDone,
 }: {
-    auditor: AuditorIdentity;
+    auditor: AuditorProfileIdentity;
     qualityScore: number | null;
     onTimePct: number | null;
     jobsDone: number;
 }) {
     const { t } = useTranslation();
+    const affiliation = [auditor.firm, auditor.accreditation]
+        .filter((part) => part !== null)
+        .join(' · ');
 
     return (
         <div className="relative overflow-hidden rounded-[20px] border border-rz-border bg-rz-surface p-[17px] shadow-[0_10px_26px_-20px_rgba(20,45,95,.5)]">
@@ -52,9 +57,11 @@ export function IdentityCard({
                     <p className="text-[16px] leading-[1.25] font-bold text-rz-ink">
                         {auditor.name}
                     </p>
-                    <p className="mt-0.5 truncate text-[11.5px] text-rz-secondary">
-                        {auditor.firm} · {auditor.accreditation}
-                    </p>
+                    {affiliation !== '' && (
+                        <p className="mt-0.5 truncate text-[11.5px] text-rz-secondary">
+                            {affiliation}
+                        </p>
+                    )}
                 </div>
                 {qualityScore !== null && (
                     <div
@@ -91,7 +98,11 @@ export function IdentityCard({
                 />
                 <Tile
                     label={t('auditor.profile.since')}
-                    value={String(auditor.since_year)}
+                    value={
+                        auditor.since_year === null
+                            ? '—'
+                            : String(auditor.since_year)
+                    }
                     tone="text-rz-ink"
                 />
             </div>

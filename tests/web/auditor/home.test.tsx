@@ -112,7 +112,7 @@ describe('Auditor Home', () => {
             ).toHaveAttribute('href', '/preview/auditor-portfolio');
         }
 
-        expect(screen.getAllByLabelText('1 open Flash Audits')).toHaveLength(2);
+        expect(screen.getAllByLabelText('1 open offers')).toHaveLength(2);
     });
 
     it('asks the server to pause dispatch as a command and waits for its answer', async () => {
@@ -306,7 +306,7 @@ describe('Auditor Home', () => {
         ).toBeInTheDocument();
         expect(screen.getAllByText('—')).toHaveLength(3);
         expect(screen.getByText('2')).toHaveClass('text-rz-ink');
-        expect(screen.queryAllByLabelText(/open Flash Audits/)).toHaveLength(0);
+        expect(screen.queryAllByLabelText(/open offers/)).toHaveLength(0);
     });
 
     it('greets in the afternoon and counts several nearby jobs', () => {
@@ -321,6 +321,35 @@ describe('Auditor Home', () => {
         expect(screen.getByText('Good afternoon,')).toBeInTheDocument();
         expect(screen.getByText('3 Flash Audits nearby')).toBeInTheDocument();
         expect(screen.queryByText(/Closest/)).not.toBeInTheDocument();
+    });
+
+    it('leaves out the tabs and the nearby-work link whose routes the server has not published', () => {
+        const base = fixture();
+
+        render(
+            <AuditorHome
+                {...base}
+                links={{ ...base.links, jobs: null, portfolio: null }}
+            />,
+        );
+
+        expect(
+            screen.queryByText(/Flash Audit nearby/),
+        ).not.toBeInTheDocument();
+
+        for (const nav of screen.getAllByRole('navigation', {
+            name: 'App navigation',
+        })) {
+            expect(
+                within(nav).getByRole('link', { name: /^Home/ }),
+            ).toBeInTheDocument();
+            expect(
+                within(nav).queryByRole('link', { name: /Jobs/ }),
+            ).not.toBeInTheDocument();
+            expect(
+                within(nav).queryByRole('link', { name: /Portfolio/ }),
+            ).not.toBeInTheDocument();
+        }
     });
 
     it('renders every kind of activity the server records', () => {
@@ -404,9 +433,8 @@ describe('Auditor Home', () => {
         expect(amber).toHaveClass('bg-rz-accent-soft');
         expect(late).toHaveTextContent('00:00:00');
         expect(screen.getByText('Overdue')).toBeInTheDocument();
-        expect(
-            screen.getByText('Reassigned from Chantal Rwema, CPA'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('Reassigned to you')).toBeInTheDocument();
+        expect(screen.queryByText(/Chantal Rwema/)).not.toBeInTheDocument();
         expect(screen.getByText('Awaiting co-signature')).toBeInTheDocument();
 
         act(() => {

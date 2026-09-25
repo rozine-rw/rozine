@@ -43,18 +43,23 @@ it('completes the real browser identity switch return logout MFA and staff journ
     app(ConfigureStaffAccess::class)->handle($staff->id, true, 'Synthetic browser fixture.', (string) Str::uuid());
     $base = 'http://127.0.0.1:8013';
     $connection = config('database.connections.pgsql');
-    $server = new Process([PHP_BINARY, 'artisan', 'serve', '--host=127.0.0.1', '--port=8013', '--no-reload'], base_path(), [
+    $server = new Process([PHP_BINARY, '-S', '127.0.0.1:8013', base_path('vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php')], public_path(), [
         'APP_ENV' => 'testing', 'APP_NAME' => 'Rozine', 'APP_URL' => $base, 'DB_CONNECTION' => 'pgsql', 'DB_URL' => '',
         'DB_HOST' => (string) $connection['host'], 'DB_PORT' => (string) $connection['port'],
         'DB_DATABASE' => 'rozine_test', 'DB_USERNAME' => (string) $connection['username'], 'DB_PASSWORD' => (string) $connection['password'],
         'SESSION_DRIVER' => 'file', 'SESSION_COOKIE' => 'rozine_checkpoint_browser', 'CACHE_STORE' => 'array',
-        'MAIL_MAILER' => 'array', 'QUEUE_CONNECTION' => 'sync',
+        'MAIL_MAILER' => 'array', 'QUEUE_CONNECTION' => 'sync', 'PHP_CLI_SERVER_WORKERS' => false,
     ]);
     $server->setTimeout(null)->start();
     $session = 'rozine-checkpoint-test';
-    $run = function (array $arguments) use ($cli, $session, $directory): string {
+    $run = function (array $arguments) use ($cli, $session, $directory, $server): string {
         $process = new Process([$cli, '--session', $session, ...$arguments], $directory);
-        $process->setTimeout(60)->run();
+        $process->setTimeout(60)->start();
+        while ($process->isRunning()) {
+            $server->getIncrementalErrorOutput();
+            $process->checkTimeout();
+            usleep(10_000);
+        }
         $output = $process->getOutput();
         if (! $process->isSuccessful() || str_contains($output, '### Error')) {
             throw new RuntimeException(trim($output."\n".$process->getErrorOutput()));
@@ -63,7 +68,9 @@ it('completes the real browser identity switch return logout MFA and staff journ
         return $output;
     };
     try {
-        $server->waitUntil(fn (string $type, string $output): bool => str_contains($output, 'Server running'));
+        if (! $server->waitUntil(fn (string $type, string $output): bool => str_contains($output, 'Development Server (http://127.0.0.1:8013) started'))) {
+            throw new RuntimeException('The isolated identity browser server did not start.');
+        }
         $run(['open', $base.'/login']);
         file_put_contents($directory.'/login-snapshot.txt', $run(['snapshot']));
         $login = static fn (string $email): string => 'await page.goto('.json_encode($base.'/login').');'
@@ -145,11 +152,23 @@ it('completes the real browser identity switch return logout MFA and staff journ
         file_put_contents($directory.'/staff-result.txt', $result);
         expect($participant->refresh()->context_revision)->toBe(4)
             ->and(DB::table('role_bookmarks')->where('user_id', $participant->id)->count())->toBe(1);
+    } catch (Throwable $failure) {
+        try {
+            file_put_contents($directory.'/failure-snapshot.txt', $run(['snapshot']));
+            $run(['run-code', 'async (page) => { await page.screenshot({path:"failure.png", fullPage:true, animations:"disabled"}); }']);
+        } catch (Throwable $captureFailure) {
+            file_put_contents($directory.'/failure-capture.txt', $captureFailure->getMessage());
+        }
+
+        throw $failure;
     } finally {
         try {
             $run(['close']);
+        } catch (Throwable $closeFailure) {
+            file_put_contents($directory.'/close-failure.txt', $closeFailure->getMessage());
         } finally {
             $server->stop();
+            file_put_contents($directory.'/server.log', $server->getErrorOutput());
         }
     }
 })->group('browser');

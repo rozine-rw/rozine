@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
     createContext,
     useCallback,
@@ -8,6 +8,8 @@ import {
     useState,
 } from 'react';
 import type { ReactNode } from 'react';
+import { reloadPage } from '@/components/auditor/refresh';
+import type { ReloadScope } from '@/components/auditor/refresh';
 import { ErrorBanner } from '@/components/rozine/form';
 import { OperationNotice } from '@/components/rozine/operation-notice';
 import {
@@ -30,11 +32,12 @@ import type {
 } from '@/types/auditor';
 
 /**
- * Refusals the partner cannot fix by refreshing: a denial, a record out of scope, or a step-up
- * that needs a new authenticator code rather than new facts.
+ * Refusals the partner cannot fix by refreshing: a denial, a record out of scope, a step-up that
+ * needs a new authenticator code, or engagement terms to accept first, rather than new facts.
  */
 const FINAL_REFUSALS: ReadonlySet<string> = new Set([
     'ACTION_FORBIDDEN',
+    'AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED',
     'NOT_FOUND',
     'STEP_UP_INVALID',
     'STEP_UP_EXPIRED',
@@ -58,7 +61,22 @@ const REFUSALS = [
     'NOT_FOUND',
     'STEP_UP_INVALID',
     'STEP_UP_EXPIRED',
+    'AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED',
+    'APPLICATION_VERSION_CONFLICT',
+    'APPLICATION_NOT_SUBMITTED',
+    'APPLICATION_NOT_FOUND',
+    'AUDIT_APPLICATION_BOUND',
+    'AUDIT_REPORT_REASSIGNMENT_REQUIRED',
+    'AUDIT_REPORT_DECISION_NOT_ALLOWED',
+    'AUDIT_REPORT_NOT_AMENDABLE',
+    'AUDIT_PROCEDURE_SOURCE_CHANGED',
 ] as const;
+
+/**
+ * Protected work, and an offer's acceptance, refused because this partner has not accepted the
+ * current engagement terms (#96): the refusal links to the agreement page when the page has one.
+ */
+const TERMS_REFUSAL = 'AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED';
 
 type Refusal = (typeof REFUSALS)[number];
 
@@ -99,6 +117,13 @@ type Options = {
     page: AuditorPageContract;
     lookup: RouteLink;
     preview?: AuditorPreviewOutcome;
+    /** The props a reload after a command asks for; undefined reloads them all. */
+    reload?: ReloadScope;
+    /**
+     * The agreement page, as the page's engagement summary links it, for a refusal that needs the
+     * current terms accepted first. Without it that refusal is explained but not linked.
+     */
+    terms?: RouteLink | null;
 };
 
 /** A command to send: which one, about which business, where it goes and its own facts. */
@@ -108,6 +133,8 @@ export type CommandRequest = {
     route: RouteAction;
     /** The command's fields, with its target's `expected_revision`. */
     payload: Record<string, unknown>;
+    /** Its own operation lookup, when it is not the page's (see `AuditorCommand`). */
+    lookup?: RouteLink;
     /**
      * The target record's own `allowed_actions`, where a list page scopes each record; the
      * page's list otherwise.
@@ -133,7 +160,13 @@ export type CommandLane = 'ordinary' | 'conflict';
  * once and follows the receipt's destination; nothing the earlier command answers later — a
  * completion, a refusal or a lookup that found nothing — moves or reloads the page again.
  */
-export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
+export function useAuditorCommandCenter({
+    page,
+    lookup,
+    preview,
+    reload,
+    terms = null,
+}: Options) {
     const initial = initialFrom(preview);
     const callbacks = useRef(new Map<string, CommandCallbacks>());
     const withdrawn = useRef(false);
@@ -159,7 +192,7 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
         const { data } = resource;
 
         if (data === null) {
-            router.reload();
+            reloadPage(reload);
 
             return;
         }
@@ -205,7 +238,7 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
                 return;
             case 'AVAILABILITY_UPDATED':
                 /* The switch belongs to the page it is on: redraw it there, in place. */
-                router.reload();
+                reloadPage(reload);
 
                 return;
             default:
@@ -228,20 +261,23 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
         }
 
         if (refusalNeedsFreshFacts(code, status)) {
-            router.reload();
+            reloadPage(reload);
         }
     };
 
     /* A lookup that found nothing refreshes the page, unless access was withdrawn meanwhile. */
     const refresh = (): Promise<void> =>
-        withdrawn.current ? Promise.resolve() : reloadPreservingState();
+        withdrawn.current ? Promise.resolve() : reloadPreservingState(reload);
 
+    /* A command that names its own lookup recovers there; any other through the page's. */
+    const lookupFor = (sent: AuditorCommand): RouteLink =>
+        sent.lookup ?? lookup;
     const command = useOperationCommand<
         AuditorCommand,
         AuditorOperationResource
     >({
         actions: (sent) => sent.route,
-        lookup,
+        lookup: lookupFor,
         initial,
         refresh,
         onCompleted,
@@ -252,7 +288,7 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
         AuditorOperationResource
     >({
         actions: (sent) => sent.route,
-        lookup,
+        lookup: lookupFor,
         refresh,
         onCompleted,
         onRefused,
@@ -266,7 +302,14 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
      * `request_id`; the target's `expected_revision` comes with the payload.
      */
     const send = (
-        { name, business, route, payload, scope }: CommandRequest,
+        {
+            name,
+            business,
+            route,
+            payload,
+            scope,
+            lookup: ownLookup,
+        }: CommandRequest,
         own: CommandCallbacks = {},
     ): boolean => {
         if (!(scope ?? page.allowed_actions).includes(name)) {
@@ -282,6 +325,7 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
             name,
             business,
             route,
+            ...(ownLookup === undefined ? {} : { lookup: ownLookup }),
             payload: {
                 ...payload,
                 identity_context_revision: page.identity_context_revision,
@@ -321,6 +365,8 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
             }
         },
         blocked,
+        /** The agreement page a terms refusal links to, if the page has one. */
+        terms,
         /** Whether a sheet is open, so the notice shows inside it rather than beneath it. */
         sheetOpen: sheets > 0,
         opened,
@@ -355,6 +401,16 @@ export function useAuditorCommands(): AuditorCommandCenter {
     }
 
     return center;
+}
+
+/**
+ * Whether the page's commands have all settled: none in flight and none held for its lookup, in
+ * either lane. A page without commands is always settled.
+ */
+export function useCommandsSettled(): boolean {
+    const center = useContext(CommandContext);
+
+    return center === null || (center.idle && center.conflict.idle);
 }
 
 /** Marks a sheet as open while it is mounted, when the page has commands. */
@@ -468,6 +524,28 @@ function LaneNotice({
 
     if (notice === null) {
         return null;
+    }
+
+    if (
+        notice.kind === 'refused' &&
+        notice.code === TERMS_REFUSAL &&
+        center.terms !== null
+    ) {
+        return (
+            <div className={className ?? 'mb-4'}>
+                <ErrorBanner>
+                    <span>
+                        {refused(notice.code, notice.status)}{' '}
+                        <Link
+                            href={center.terms}
+                            className="font-bold underline underline-offset-2"
+                        >
+                            {t('auditor.command.review_terms')}
+                        </Link>
+                    </span>
+                </ErrorBanner>
+            </div>
+        );
     }
 
     return (

@@ -41,7 +41,7 @@ export function Avatar({
     auditor,
     className,
 }: {
-    auditor: AuditorIdentity;
+    auditor: Pick<AuditorIdentity, 'name' | 'avatar_url'>;
     className: string;
 }) {
     return (

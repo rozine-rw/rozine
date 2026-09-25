@@ -53,9 +53,12 @@ vi.mock('@inertiajs/react', () => ({
 const link = (url: string) => ({ url, method: 'get' as const });
 
 const entry: CreateApplicationEntry = {
-    action: { url: '/business/applications', method: 'post' },
-    operation: link('/business/operations/{request_id}'),
-    identity_context_revision: 4,
+    action: {
+        url: '/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications',
+        method: 'post',
+    },
+    operation: link('/business/application-operations/{request_id}'),
+    identity_context_revision: 7,
     expected_revision: 0,
 };
 
@@ -139,10 +142,10 @@ describe('Home — starting a raise', () => {
         );
         expect(inertia.calls).toEqual([
             {
-                url: '/business/applications',
+                url: '/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications',
                 method: 'post',
                 body: {
-                    identity_context_revision: 4,
+                    identity_context_revision: 7,
                     expected_revision: 0,
                     request_id: expect.any(String),
                 },
@@ -240,9 +243,12 @@ describe('Home — starting a raise', () => {
         const retry = await screen.findByRole('button', { name: 'Try again' });
 
         expect(inertia.calls[1].url).toBe(
-            `/business/operations/${(inertia.calls[0].body as { request_id: string }).request_id}`,
+            `/business/application-operations/${(inertia.calls[0].body as { request_id: string }).request_id}`,
         );
-        expect(inertia.calls[1].body).toEqual({ command: 'create' });
+        expect(inertia.calls[1].body).toEqual({
+            command: 'create',
+            identity_context_revision: 7,
+        });
         expect(
             screen.getByRole('button', { name: 'Apply for a raise' }),
         ).toBeDisabled();
