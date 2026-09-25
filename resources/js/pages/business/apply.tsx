@@ -2,6 +2,11 @@ import { router } from '@inertiajs/react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
+    carriedRefusal,
+    carryRefusal,
+    clearCarriedRefusal,
+} from '@/components/business/apply/carried-refusal';
+import {
     OPERATION_CODES,
     refusalRefreshes,
 } from '@/components/business/apply/operation-outcome';
@@ -149,7 +154,19 @@ export default function BusinessApply(props: BusinessApplyProps) {
                   props.application.term_months,
               );
     });
-    const [haltedKey, setHaltedKey] = useState<string | null>(null);
+    /*
+     * A refusal that read the page afresh is carried across the remount once: its banner shows
+     * again, and the refused request is still not resent unchanged.
+     */
+    const [carried] = useState(() => carriedRefusal(window.location.href));
+
+    useEffect(() => {
+        clearCarriedRefusal();
+    }, []);
+
+    const [haltedKey, setHaltedKey] = useState<string | null>(
+        carried?.haltedKey ?? null,
+    );
 
     /** Set while a fresh read is pending: nothing is saved, evaluated or signed meanwhile. */
     const [refreshing, setRefreshing] = useState(false);
@@ -181,6 +198,10 @@ export default function BusinessApply(props: BusinessApplyProps) {
         lookup: links.operation,
         identityContextRevision: props.identity_context_revision,
         preview: props.preview_outcome,
+        refusal:
+            carried === null
+                ? null
+                : { code: carried.code, status: carried.status },
         onCompleted: (sent, resource, { recovered }) => {
             const { data } = resource;
 
@@ -239,30 +260,29 @@ export default function BusinessApply(props: BusinessApplyProps) {
             router.reload({ only: REMAINING_PROPS });
         },
         onRefused: (sent, code, status) => {
-            if (sent.name !== 'submit') {
-                setHaltedKey(payloadKey(sent.payload));
-            }
+            const halted =
+                sent.name === 'submit' ? null : payloadKey(sent.payload);
 
-            if (code === 'QUOTE_STALE') {
-                setReview((fields) => ({ ...fields, accept_offer: false }));
-            }
-
-            if (code === 'MANDATE_STALE') {
-                setReview((fields) => ({ ...fields, signature_name: '' }));
-            }
-
-            if (code === 'DOCUMENT_VERSION_STALE') {
-                setReview((fields) => ({
-                    ...fields,
-                    disclosures: [],
-                    terms: false,
-                    privacy: false,
-                }));
-            }
-
+            /*
+             * Stale facts (a newer revision, quote, document or mandate) are read afresh with a
+             * remount, like a recovered receipt: the typed request, keys and acceptances start
+             * again from the current facts, so a later edit never writes old fields over another
+             * login's newer save. The refusal's banner is carried across that remount.
+             */
             if (refusalRefreshes(code, status)) {
-                setSnapshot(null);
-                router.reload();
+                carryRefusal({
+                    url: window.location.href,
+                    code,
+                    status,
+                    haltedKey: halted,
+                });
+                readAfresh();
+
+                return;
+            }
+
+            if (halted !== null) {
+                setHaltedKey(halted);
             }
         },
     });

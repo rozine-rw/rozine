@@ -10,6 +10,7 @@ import {
     it,
     vi,
 } from 'vite-plus/test';
+import { clearCarriedRefusal } from '@/components/business/apply/carried-refusal';
 import BusinessApply from '@/pages/business/apply';
 import type {
     ApplicationQuote,
@@ -176,6 +177,35 @@ const freshRead = (next: BusinessApplyProps) =>
         },
     );
 
+/** Another login's newer Raise: a different request, its own revision and its own quote. */
+const newerRaise = (page: BusinessApplyProps): BusinessApplyProps => {
+    const base = page.quote as ReadyQuote;
+
+    return {
+        ...page,
+        application: {
+            ...page.application,
+            revision: 9,
+            target: { currency: 'RWF', amount: '30000000' },
+            term_months: 5,
+        },
+        quote: {
+            ...base,
+            quote_id: 'QTE-2026-0412-09',
+            quote_revision: 9,
+            requested_principal: { currency: 'RWF', amount: '30000000' },
+            principal: { currency: 'RWF', amount: '30000000' },
+            offered_principal: { currency: 'RWF', amount: '30000000' },
+            term_months: 5,
+            total: { currency: 'RWF', amount: '33300000' },
+            schedule: [1, 2, 3, 4, 5].map((instalment) => ({
+                instalment,
+                amount: { currency: 'RWF' as const, amount: '6660000' },
+            })),
+        },
+    };
+};
+
 const FRESH_VISIT = [
     window.location.href,
     expect.objectContaining({ preserveState: false, replace: true }),
@@ -237,6 +267,7 @@ const acceptEverything = async (
 };
 
 beforeEach(() => {
+    clearCarriedRefusal();
     inertia.calls = [];
     inertia.queue = [];
     inertia.body = {};
@@ -757,11 +788,73 @@ describe('Apply — step 2, the quote', () => {
         expect(screen.getByRole('button', { name: 'Saving…' })).toBeDisabled();
     });
 
-    it('stops on a version conflict, refreshes, and asks again only when told to', async () => {
+    it('reads another login’s newer save afresh after a version conflict, keeping its banner once', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+        const page = props(raiseStep);
+        const newer = newerRaise(page);
+        const banner =
+            "This application changed since you opened it. We've loaded the latest version — check it and try again.";
+
+        inertia.visit.mockClear();
+        inertia.reload.mockClear();
+        inertia.queue.push(fails(409, { code: 'VERSION_CONFLICT' }));
+        freshRead(newer);
+        render(<InertiaPage initial={page} />);
+
+        await typeRequest(user);
+        act(() => {
+            vi.advanceTimersByTime(450);
+        });
+
+        await waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith(...FRESH_VISIT),
+        );
+        expect(inertia.reload).not.toHaveBeenCalled();
+        await waitFor(() =>
+            expect(
+                screen.getByLabelText('Fundraising target (RWF)'),
+            ).toHaveValue('30,000,000'),
+        );
+        expect(screen.getByRole('button', { name: '5' })).toHaveAttribute(
+            'aria-pressed',
+            'true',
+        );
+        expect(screen.getAllByRole('alert')).toHaveLength(1);
+        expect(screen.getByRole('alert')).toHaveTextContent(banner);
+
+        /* The typed 25M request is never saved over the newer one. */
+        act(() => {
+            vi.advanceTimersByTime(2000);
+        });
+        expect(inertia.calls).toHaveLength(1);
+
+        /* The banner was carried across one remount only. */
+        act(() => inertiaPage.swap?.(newer));
+        await waitFor(() =>
+            expect(screen.queryByRole('alert')).not.toBeInTheDocument(),
+        );
+
+        /* A Continue on the newer facts asks afresh, under a new request ID. */
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        await waitFor(() => expect(inertia.calls).toHaveLength(2));
+        expect(inertia.calls[1].body).toMatchObject({
+            target: '30000000',
+            term_months: 5,
+            step: 'review',
+            expected_revision: 9,
+        });
+        expect(inertia.calls[1].body.request_id).not.toBe(
+            inertia.calls[0].body.request_id,
+        );
+    });
+
+    it('stops on a denial without reading afresh, and asks again only when told to', async () => {
         vi.useFakeTimers({ shouldAdvanceTime: true });
         const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 
-        inertia.queue.push(fails(409, { code: 'VERSION_CONFLICT' }));
+        inertia.visit.mockClear();
+        inertia.queue.push(fails(403, { code: 'ACTION_FORBIDDEN' }));
         render(<BusinessApply {...props(raiseStep)} />);
 
         await typeRequest(user);
@@ -770,9 +863,9 @@ describe('Apply — step 2, the quote', () => {
         });
 
         expect(await screen.findByRole('alert')).toHaveTextContent(
-            "This application changed since you opened it. We've loaded the latest version — check it and try again.",
+            "You can't do this for this business.",
         );
-        expect(inertia.reload).toHaveBeenCalledWith();
+        expect(inertia.visit).not.toHaveBeenCalled();
         act(() => {
             vi.advanceTimersByTime(2000);
         });
@@ -787,6 +880,35 @@ describe('Apply — step 2, the quote', () => {
         expect(inertia.calls[1].body.request_id).not.toBe(
             inertia.calls[0].body.request_id,
         );
+    });
+
+    it('does not resend a refused request the fresh read left unchanged', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+        const page = props(raiseStep);
+
+        inertia.queue.push(fails(409, { code: 'VERSION_CONFLICT' }));
+        freshRead({
+            ...page,
+            application: {
+                ...page.application,
+                revision: 4,
+                target: { currency: 'RWF', amount: '25000000' },
+                term_months: 4,
+            },
+        });
+        render(<InertiaPage initial={page} />);
+
+        await typeRequest(user);
+        act(() => {
+            vi.advanceTimersByTime(450);
+        });
+
+        expect(await screen.findByRole('alert')).toBeInTheDocument();
+        act(() => {
+            vi.advanceTimersByTime(2000);
+        });
+        expect(inertia.calls).toHaveLength(1);
     });
 
     it('marks server field errors and releases the command after a 422', async () => {
@@ -1383,30 +1505,39 @@ describe('Apply — step 3, review & sign', () => {
         expect(inertia.calls).toHaveLength(2);
     });
 
-    it('asks for a fresh acceptance when the quote went stale, without resending', async () => {
+    it('asks for a fresh acceptance when the quote went stale, reading the new offer afresh', async () => {
         const user = userEvent.setup();
         const page = props(reviewStep);
+        const quote = page.quote as ReadyQuote;
 
         inertia.queue.push(fails(409, { code: 'QUOTE_STALE' }));
-        render(<BusinessApply {...page} />);
+        freshRead({
+            ...page,
+            quote: {
+                ...quote,
+                quote_id: 'QTE-2026-0412-09',
+                quote_revision: 9,
+            },
+        });
+        render(<InertiaPage initial={page} />);
 
         await acceptEverything(user, page);
         await user.click(
             screen.getByRole('button', { name: 'Sign application' }),
         );
 
+        await waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith(...FRESH_VISIT),
+        );
         expect(await screen.findByRole('alert')).toHaveTextContent(
             'Your quote changed before you signed. Check the new offer and accept it again.',
         );
-        expect(
-            screen.getByRole('checkbox', { name: /^I accept this offer/u }),
-        ).not.toBeChecked();
-        expect(
-            screen.getByRole('checkbox', {
-                name: 'I agree to the Terms & Conditions.',
-            }),
-        ).toBeChecked();
-        expect(inertia.reload).toHaveBeenCalledWith();
+
+        for (const box of screen.getAllByRole('checkbox')) {
+            expect(box).toHaveAttribute('aria-checked', 'false');
+        }
+
+        expect(screen.getByLabelText('Your full name')).toHaveValue('');
         expect(inertia.calls).toHaveLength(1);
     });
 
@@ -1415,7 +1546,8 @@ describe('Apply — step 3, review & sign', () => {
         const page = props(reviewStep);
 
         inertia.queue.push(fails(409, { code: 'MANDATE_STALE' }));
-        render(<BusinessApply {...page} />);
+        freshRead(page);
+        render(<InertiaPage initial={page} />);
 
         await acceptEverything(user, page);
         await user.click(
@@ -1429,11 +1561,9 @@ describe('Apply — step 3, review & sign', () => {
         expect(screen.getByText('Sign here')).toBeInTheDocument();
         expect(
             screen.getByRole('checkbox', { name: /^I accept this offer/u }),
-        ).toBeChecked();
-        expect(inertia.reload).toHaveBeenCalledWith();
+        ).not.toBeChecked();
 
-        await user.click(screen.getByLabelText('Your full name'));
-        await user.paste('Robert Mugisha');
+        await acceptEverything(user, page);
         await user.click(
             screen.getByRole('button', { name: 'Sign application' }),
         );
@@ -1461,7 +1591,8 @@ describe('Apply — step 3, review & sign', () => {
                 }),
             ),
         );
-        render(<BusinessApply {...page} />);
+        freshRead(page);
+        render(<InertiaPage initial={page} />);
 
         await acceptEverything(user, page);
         await user.click(
@@ -1481,9 +1612,6 @@ describe('Apply — step 3, review & sign', () => {
                 name: page.acceptance.disclosures[0].text,
             }),
         ).not.toBeChecked();
-        expect(
-            screen.getByRole('checkbox', { name: /^I accept this offer/u }),
-        ).toBeChecked();
     });
 
     it.each([
@@ -1544,21 +1672,28 @@ describe('Apply — step 3, review & sign', () => {
             '<html>',
             "The server couldn't complete this. We've loaded the latest version.",
         ],
-    ])('refreshes after a %i refusal', async (status, body, message) => {
-        const user = userEvent.setup();
-        const page = props(reviewStep);
+    ])(
+        'reads the page afresh after a %i refusal',
+        async (status, body, message) => {
+            const user = userEvent.setup();
+            const page = props(reviewStep);
 
-        inertia.queue.push(fails(status, body));
-        render(<BusinessApply {...page} />);
+            inertia.visit.mockClear();
+            inertia.queue.push(fails(status, body));
+            freshRead(page);
+            render(<InertiaPage initial={page} />);
 
-        await acceptEverything(user, page);
-        await user.click(
-            screen.getByRole('button', { name: 'Sign application' }),
-        );
+            await acceptEverything(user, page);
+            await user.click(
+                screen.getByRole('button', { name: 'Sign application' }),
+            );
 
-        expect(await screen.findByRole('alert')).toHaveTextContent(message);
-        expect(inertia.reload).toHaveBeenCalledWith();
-    });
+            await waitFor(() =>
+                expect(inertia.visit).toHaveBeenCalledWith(...FRESH_VISIT),
+            );
+            expect(await screen.findByRole('alert')).toHaveTextContent(message);
+        },
+    );
 
     it('looks up a lost answer and retries the identical request only when nothing was recorded', async () => {
         const user = userEvent.setup();

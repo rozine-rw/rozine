@@ -15,9 +15,10 @@ export type { CommandNotice };
 
 const initialNotice = (
     preview: ApplyPreviewOutcome | undefined,
+    refusal: { code: string; status: number } | null,
 ): CommandNotice | null => {
     if (preview === undefined) {
-        return null;
+        return refusal === null ? null : { kind: 'refused', ...refusal };
     }
 
     return preview.kind === 'unconfirmed'
@@ -31,6 +32,8 @@ type Options = {
     /** Sent with every lookup as `identity_context_revision`, beside `command`. */
     identityContextRevision: number;
     preview?: ApplyPreviewOutcome;
+    /** A refusal carried across the remount that read the page afresh, shown once again. */
+    refusal?: { code: string; status: number } | null;
     onCompleted: (
         command: ApplicationCommand,
         resource: OperationResource,
@@ -54,6 +57,7 @@ export function useApplicationCommand({
     lookup,
     identityContextRevision,
     preview,
+    refusal = null,
     onCompleted,
     onRefused,
 }: Options) {
@@ -63,7 +67,7 @@ export function useApplicationCommand({
         lookupQuery: { identity_context_revision: identityContextRevision },
         initial: {
             held: preview?.kind === 'unconfirmed' ? preview.command : null,
-            notice: initialNotice(preview),
+            notice: initialNotice(preview, refusal),
         },
         refresh: reloadPreservingState,
         onCompleted,
