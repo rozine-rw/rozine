@@ -3354,6 +3354,22 @@ const fr: Catalog = {
         "Contestation transmise à l'équipe Rozine",
     'business.audit_cosign.disputed.escalated.body':
         "Vous avez soumis une contestation le {date}. Votre expert-comptable a maintenu le rapport ou n'a pas agi : l'équipe Rozine examine donc le dossier. Le délai d'examen de 24 heures reste suspendu en attendant.",
+    'audit.verify_seal.head_title': "Vérifier le sceau d'audit",
+    'audit.verify_seal.title': "Vérification du sceau d'audit",
+    'audit.verify_seal.lead':
+        "Vérifiez si un rapport d'audit Rozine porte un sceau valide.",
+    'audit.verify_seal.valid': 'Sceau vérifié',
+    'audit.verify_seal.valid_body':
+        'Cette empreinte correspond au rapport scellé.',
+    'audit.verify_seal.unavailable':
+        'Ce sceau ne peut pas être vérifié pour le moment',
+    'audit.verify_seal.unavailable_body': 'Réessayez plus tard.',
+    'audit.verify_seal.report_id': 'Identifiant du rapport',
+    'audit.verify_seal.digest': 'Empreinte du rapport',
+    'audit.verify_seal.amends': 'Modifie le rapport {id}',
+    'audit.verify_seal.amended_by': 'Modifié par le rapport {id}',
+    'audit.verify_seal.scope':
+        "Seuls l'identifiant du rapport, son empreinte et le résultat de la vérification du sceau sont affichés ici.",
 };
 
 export default fr;

@@ -245,7 +245,7 @@ describe('Business audit co-sign — reading the sealed report', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByRole('link', { name: 'Verify seal' }),
-        ).toHaveAttribute('href', '/preview/business-audit-cosign');
+        ).toHaveAttribute('href', '/preview/audit-verify-seal');
         expect(screen.getByText(page.report.auditor_note)).toBeInTheDocument();
 
         const findings = within(

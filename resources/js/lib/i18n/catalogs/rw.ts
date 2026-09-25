@@ -3339,6 +3339,20 @@ const rw: Catalog = {
         'Ubujurire bwashyikirijwe abakozi ba Rozine',
     'business.audit_cosign.disputed.escalated.body':
         "Watanze ubujurire {date}. CPA wawe yemeje raporo uko iri cyangwa ntiyagira icyo akora, bityo abakozi ba Rozine barimo gusuzuma iki kibazo. Igihe cy'amasaha 24 cyo gusuzuma gikomeza guhagarikwa muri icyo gihe.",
+    'audit.verify_seal.head_title': "Genzura kashe y'igenzura",
+    'audit.verify_seal.title': "Igenzura rya kashe y'igenzura",
+    'audit.verify_seal.lead':
+        "Reba niba raporo y'igenzura ya Rozine ifite kashe ifite agaciro.",
+    'audit.verify_seal.valid': 'Kashe yagenzuwe',
+    'audit.verify_seal.valid_body': 'Iki kimenyetso gihuye na raporo yafunzwe.',
+    'audit.verify_seal.unavailable': 'Iyi kashe ntishobora kugenzurwa ubu',
+    'audit.verify_seal.unavailable_body': 'Ongera ugerageze nyuma.',
+    'audit.verify_seal.report_id': 'Nimero ya raporo',
+    'audit.verify_seal.digest': 'Ikimenyetso cya raporo',
+    'audit.verify_seal.amends': 'Ikosora raporo {id}',
+    'audit.verify_seal.amended_by': 'Yakosowe na raporo {id}',
+    'audit.verify_seal.scope':
+        "Hano herekanwa gusa nimero ya raporo, ikimenyetso cyayo n'igisubizo cy'igenzura rya kashe.",
 };
 
 export default rw;
