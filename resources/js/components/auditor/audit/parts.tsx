@@ -3,6 +3,7 @@ import { router, useForm } from '@inertiajs/react';
 import { useEffect, useRef } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { useAgo } from '@/components/auditor/clock';
+import { useAuditorCommands } from '@/components/auditor/commands';
 import { AMBER_TEXT, Eyebrow } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
@@ -17,33 +18,44 @@ export type StepContext = {
     /** Remembers unsaved input across a reload (MVP-SPINE-AC-12): `<audit id>:<step>`. */
     rememberKey: string;
     step: string;
+    auditId: string;
+    /** The audit's revision, sent as `expected_revision`. */
     revision: number;
+    business: string;
     save: RouteAction;
     serverTime: string;
+    /** The identity context a direct upload carries, as every command does. */
+    identityContextRevision: number;
 };
 
 /**
- * One step's form. Continue posts the step's facts with the aggregate revision it was read at;
- * the server validates, records and answers with the next step or field errors. Nothing here
- * decides whether the step is complete.
+ * One step's form. Continue sends `audit.save_step` with the step's facts and the audit revision
+ * it was read at; the server validates, records and answers with the next step or field errors.
+ * Nothing here decides whether the step is complete.
  */
 export function useStepForm<T extends FormDataType<T>>(
     context: StepContext,
     initial: T,
 ) {
     const form = useForm<T>(`auditor:${context.rememberKey}`, initial);
+    const center = useAuditorCommands();
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
-        form.transform((data) => ({
-            ...data,
-            step: context.step,
-            revision: context.revision,
-        }));
-        form.post(context.save.url, { preserveScroll: true });
+        center.send({
+            name: 'audit.save_step',
+            business: context.business,
+            route: context.save,
+            payload: {
+                ...form.data,
+                audit_id: context.auditId,
+                step: context.step,
+                expected_revision: context.revision,
+            },
+        });
     };
 
-    return { form, submit };
+    return { form, submit, errors: center.errors };
 }
 
 /**
@@ -160,9 +172,11 @@ const STATUS_DOT: Record<CapturePackage['status'], string> = {
 };
 
 /**
- * The capture companion handoff (D-04). Photos and the on-site check-in are taken in the narrow
- * native capture app, camera-only and signed on the device; the web shows where the package is
- * (MVP-AUDITOR-SCR-04-ST-01…03) and opens the app on this assignment.
+ * The capture companion handoff (D-04, auditor-filing-v1 point 5). Photos and the on-site check-in
+ * are taken in the narrow native capture app, never on the web; the page shows where the package
+ * is as the server last heard it (MVP-AUDITOR-SCR-04-ST-01…03) — storage-full and upload-failed are
+ * the companion's reports, not proof of what arrived — and opens the app through the server's
+ * handoff link. With no link, it says capture is unavailable and offers nothing in its place.
  */
 export function CaptureHandoff({
     capture,
@@ -258,12 +272,29 @@ export function CaptureHandoff({
                     )}
                 </span>
             </div>
-            <a
-                href={capture.handoff.url}
-                className="mt-3 flex h-[46px] w-full items-center justify-center rounded-xl bg-[#0c1830] text-[14px] font-bold text-white dark:bg-rz-accent-fill"
-            >
-                {action}
-            </a>
+            {capture.source === 'isolated_synthetic' && (
+                <p
+                    role="note"
+                    className="mt-3 rounded-[10px] border border-[#f2d69a] px-3 py-2.5 text-[11.5px] leading-[1.5] font-semibold text-[#8a6d2b] dark:border-[rgba(240,160,96,.3)] dark:text-[#e3b56a]"
+                >
+                    {t('auditor.capture.synthetic')}
+                </p>
+            )}
+            {capture.handoff === null ? (
+                <p
+                    role="note"
+                    className="mt-3 rounded-[10px] border border-dashed border-rz-border px-3 py-2.5 text-[11.5px] leading-[1.5] text-rz-secondary"
+                >
+                    {t('auditor.capture.unavailable')}
+                </p>
+            ) : (
+                <a
+                    href={capture.handoff.url}
+                    className="mt-3 flex h-[46px] w-full items-center justify-center rounded-xl bg-[#0c1830] text-[14px] font-bold text-white dark:bg-rz-accent-fill"
+                >
+                    {action}
+                </a>
+            )}
         </div>
     );
 }

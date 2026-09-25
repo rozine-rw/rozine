@@ -218,7 +218,8 @@
                     "url": "/preview/business-apply-business",
                     "method": "get"
                 }
-            }
+            },
+            "create_application": null
         },
         "application": {
             "id": "APP-2026-0398",
@@ -233,6 +234,7 @@
             "amount": "0"
         },
         "sources": [],
+        "allowed_actions": ["application.publish"],
         "links": {
             "close": {
                 "url": "/preview/business-home",

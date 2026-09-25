@@ -1,16 +1,25 @@
-import { useForm } from '@inertiajs/react';
-import type { FormEvent } from 'react';
+import { useState } from 'react';
+import {
+    AuditorCommandNotice,
+    useAuditorCommands,
+} from '@/components/auditor/commands';
 import { BottomSheet } from '@/components/auditor/sheets/bottom-sheet';
 import {
+    ChoiceChips,
     FORM_PRIMARY,
     NOTE_FIELD,
     SECONDARY_BUTTON,
+    SHEET_LABEL,
 } from '@/components/auditor/sheets/reason-sheet';
 import { FieldError } from '@/components/rozine/form';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import type { RouteAction } from '@/types';
-import type { ConflictKind } from '@/types/auditor';
+import type {
+    AuditorAllowedAction,
+    ConflictKind,
+    RecordRef,
+} from '@/types/auditor';
 
 export const CONFLICT_KINDS: ConflictKind[] = [
     'financial_interest',
@@ -21,37 +30,58 @@ export const CONFLICT_KINDS: ConflictKind[] = [
 
 type ConflictSheetProps = {
     business: string;
-    fileId: string;
+    /** The assignment the declaration targets, at the revision the page read. */
+    assignment: RecordRef;
     action: RouteAction;
+    /** The record's own `allowed_actions` on a list page. */
+    scope?: AuditorAllowedAction[];
     onClose: () => void;
 };
 
 /**
- * Declaring an interest (design L390–414, AC-08). The design declares on one tap; this asks which
- * kind of interest and confirms first, because the declaration goes on the permanent record. The
- * server re-dispatches the file and reports what it did.
+ * Declaring an interest (design L390–414, AC-08; auditor-filing-v1 point 3). The design declares
+ * on one tap; this asks which of the four kinds of interest it is and for a factual explanation,
+ * because the declaration goes on the permanent record. The server decides whether it blocks the
+ * work and where the assignment goes. The declaration runs in its own command lane; if the
+ * assignment turns out stale, the page refreshes and the typed kind and explanation stay here for
+ * the partner to send again — never discarded, never resent on their own.
  */
 export function ConflictSheet({
     business,
-    fileId,
+    assignment,
     action,
+    scope,
     onClose,
 }: ConflictSheetProps) {
     const { t } = useTranslation();
-    const form = useForm<{
-        file_id: string;
-        kind: ConflictKind | null;
-        note: string;
-    }>({
-        file_id: fileId,
-        kind: null,
-        note: '',
-    });
+    const center = useAuditorCommands();
+    const [kind, setKind] = useState<ConflictKind | null>(null);
+    const [note, setNote] = useState('');
+    /* Its own lane: only an unresolved declaration holds another one back. */
+    const lane = center.conflict;
+    /* The scope is read afresh each render: a refresh can take the declaration away. */
+    const permitted =
+        scope?.includes('conflict.declare') ??
+        center.allowed('conflict.declare');
+    const ready = permitted && kind !== null && note.trim() !== '' && lane.idle;
 
-    const submit = (event: FormEvent) => {
-        event.preventDefault();
-        form.post(action.url, { preserveScroll: true });
-    };
+    /* The button is enabled only once a kind is chosen, so `kind` is set here. */
+    const submit = () =>
+        center.send(
+            {
+                name: 'conflict.declare',
+                business,
+                route: action,
+                scope,
+                payload: {
+                    assignment_id: assignment.id,
+                    expected_revision: assignment.revision,
+                    kind: kind!,
+                    reason: note.trim(),
+                },
+            },
+            { onCompleted: onClose },
+        );
 
     return (
         <BottomSheet
@@ -59,55 +89,48 @@ export function ConflictSheet({
             lead={t('auditor.conflict.body')}
             onClose={onClose}
         >
-            <form onSubmit={submit} noValidate className="mt-3.5">
-                <fieldset>
-                    <legend className="text-[10px] font-bold tracking-[.05em] text-rz-secondary uppercase">
-                        {t('auditor.conflict.kind_label')}
-                    </legend>
-                    <div className="mt-[7px] flex flex-wrap gap-[7px]">
-                        {CONFLICT_KINDS.map((kind) => {
-                            const on = form.data.kind === kind;
-
-                            return (
-                                <button
-                                    key={kind}
-                                    type="button"
-                                    role="radio"
-                                    aria-checked={on}
-                                    onClick={() => form.setData('kind', kind)}
-                                    className={cn(
-                                        'rounded-[10px] border px-[11px] py-[7px] text-[12px] font-semibold',
-                                        on
-                                            ? 'border-[#f0dcb8] bg-rz-accent-soft text-rz-ink dark:border-[rgba(240,160,96,.4)]'
-                                            : 'border-rz-border bg-[#f8fafc] text-rz-secondary dark:bg-rz-surface-sunken',
-                                    )}
-                                >
-                                    {t(`auditor.conflict.kind.${kind}`)}
-                                </button>
-                            );
-                        })}
-                    </div>
-                    <FieldError id="auditor-conflict-kind-error">
-                        {form.errors.kind}
-                    </FieldError>
-                </fieldset>
+            <AuditorCommandNotice
+                placement="sheet"
+                lane="conflict"
+                shown={['kind', 'reason']}
+                className="mt-3.5"
+            />
+            {!permitted && (
+                <p
+                    role="note"
+                    className="mt-3.5 rounded-xl border border-rz-border px-3.5 py-3 text-[11.5px] leading-[1.5] text-rz-secondary"
+                >
+                    {t('auditor.conflict.not_allowed')}
+                </p>
+            )}
+            <div className="mt-3.5">
+                <ChoiceChips
+                    legend={t('auditor.conflict.kind_label')}
+                    choices={CONFLICT_KINDS.map((code) => ({
+                        code,
+                        label: t(`auditor.conflict.kind.${code}`),
+                    }))}
+                    value={kind}
+                    onChange={setKind}
+                    error={lane.errors.kind}
+                    errorId="auditor-conflict-kind-error"
+                />
                 <label
                     htmlFor="auditor-conflict-note"
-                    className="mt-3.5 mb-[5px] block text-[10px] font-bold tracking-[.04em] text-rz-slate uppercase"
+                    className={cn(SHEET_LABEL, 'mt-3.5')}
                 >
                     {t('auditor.conflict.note_label')}
                 </label>
                 <textarea
                     id="auditor-conflict-note"
-                    value={form.data.note}
-                    onChange={(event) =>
-                        form.setData('note', event.target.value)
-                    }
+                    value={note}
+                    onChange={(event) => setNote(event.target.value)}
                     placeholder={t('auditor.conflict.note_placeholder')}
+                    aria-invalid={lane.errors.reason ? true : undefined}
                     className={cn(NOTE_FIELD, 'min-h-[72px]')}
                 />
                 <FieldError id="auditor-conflict-note-error">
-                    {form.errors.note}
+                    {lane.errors.reason}
                 </FieldError>
                 <div className="mt-3 flex gap-[9px]">
                     <button
@@ -118,14 +141,16 @@ export function ConflictSheet({
                         {t('auditor.sheet.cancel')}
                     </button>
                     <button
-                        type="submit"
-                        disabled={form.processing || form.data.kind === null}
+                        type="button"
+                        onClick={submit}
+                        disabled={!ready}
+                        aria-busy={lane.busy || undefined}
                         className={cn(FORM_PRIMARY, 'flex-[2]')}
                     >
                         {t('auditor.conflict.submit')}
                     </button>
                 </div>
-            </form>
+            </div>
         </BottomSheet>
     );
 }

@@ -218,18 +218,17 @@
                     "url": "/preview/business-apply-business",
                     "method": "get"
                 }
-            }
+            },
+            "create_application": null
         },
         "audit": {
             "period": "2026-09-01",
             "window_open": true,
             "days_left": 7,
             "seal_by": "2026-10-07",
+            "cosign_by": "2026-10-07",
             "first": false,
             "reassigned": null
-        },
-        "policy": {
-            "cosign_minutes": 60
         },
         "links": {
             "close": {

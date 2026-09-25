@@ -1,6 +1,9 @@
 import { Head } from '@inertiajs/react';
 import type { ReactNode } from 'react';
+import { useCommandsSettled } from '@/components/auditor/commands';
 import { AuditorKeyframes } from '@/components/auditor/keyframes';
+import { useAuditorRefresh } from '@/components/auditor/refresh';
+import type { AuditorRefresh } from '@/components/auditor/refresh';
 import { AppFrame } from '@/components/rozine/app-frame';
 import { useTranslation } from '@/hooks/use-translation';
 import type { AuditorAppLinks } from '@/types/auditor';
@@ -120,13 +123,23 @@ type AuditorShellProps = {
     /** Eligible Flash Audits, shown as the phone Jobs tab's count badge (design L1911). */
     openJobs: number;
     showTabBar?: boolean;
+    /** What the page reads in the background, and the deadlines it reads again at. */
+    refresh?: AuditorRefresh;
     children: ReactNode;
 };
 
 /**
  * The Auditor app frame. All four design tabs ship: Portfolio carries the partner's filed reports
  * (MVP-AUDITOR-SCR-07) and conflict register (AC-08); its earnings, origination and managed-deal
- * panels are Phase 2 and are left out rather than shipped as dead ends.
+ * panels are Phase 2 and are left out rather than shipped as dead ends. A tab the server sends
+ * without a route is left out too.
+ *
+ * Every Auditor page reconciles its access here: on focus, reconnect or a return to the tab it
+ * reads its current facts once, so authority withdrawn meanwhile — by another tab switching the
+ * active role or by an operator — lands on the page the server now renders. A page with deadlines
+ * on screen also reads once each passes (`useAuditorRefresh`). A read waits while a command is in
+ * flight or held for its lookup, and runs once it settles. A fixture preview reloads its own
+ * fixture, which changes nothing.
  */
 export function AuditorShell({
     title,
@@ -134,33 +147,52 @@ export function AuditorShell({
     links,
     openJobs,
     showTabBar,
+    refresh = {},
     children,
 }: AuditorShellProps) {
     const { t } = useTranslation();
-    const nav = (['home', 'jobs', 'portfolio', 'profile'] as const).map(
-        (key) => ({
-            key,
-            label: t(`auditor.nav.${key}`),
-            href: links[key],
-            glyph: (
-                <>
-                    <Glyph className="max-lg:hidden">{DESKTOP[key]}</Glyph>
-                    <span className="relative flex lg:hidden">
-                        <Glyph className="size-[22px]">{PHONE[key]}</Glyph>
-                        {key === 'jobs' && openJobs > 0 && (
-                            <span
-                                aria-label={t('auditor.nav.jobs_badge', {
-                                    count: openJobs,
-                                })}
-                                className="absolute -top-[5px] -right-[9px] flex h-4 min-w-4 items-center justify-center rounded-[10px] bg-rz-accent-fill px-1 text-[10.5px] font-bold text-white"
-                            >
-                                {openJobs}
-                            </span>
-                        )}
-                    </span>
-                </>
-            ),
-        }),
+
+    useAuditorRefresh({ ...refresh, settled: useCommandsSettled() });
+    const nav = (['home', 'jobs', 'portfolio', 'profile'] as const).flatMap(
+        (key) => {
+            const href = links[key];
+
+            /* A tab whose route is not published yet is left out, never a dead link. */
+            return href === null
+                ? []
+                : [
+                      {
+                          key,
+                          label: t(`auditor.nav.${key}`),
+                          href,
+                          glyph: (
+                              <>
+                                  <Glyph className="max-lg:hidden">
+                                      {DESKTOP[key]}
+                                  </Glyph>
+                                  <span className="relative flex lg:hidden">
+                                      <Glyph className="size-[22px]">
+                                          {PHONE[key]}
+                                      </Glyph>
+                                      {key === 'jobs' && openJobs > 0 && (
+                                          <span
+                                              aria-label={t(
+                                                  'auditor.nav.jobs_badge',
+                                                  {
+                                                      count: openJobs,
+                                                  },
+                                              )}
+                                              className="absolute -top-[5px] -right-[9px] flex h-4 min-w-4 items-center justify-center rounded-[10px] bg-rz-accent-fill px-1 text-[10.5px] font-bold text-white"
+                                          >
+                                              {openJobs}
+                                          </span>
+                                      )}
+                                  </span>
+                              </>
+                          ),
+                      },
+                  ];
+        },
     );
 
     return (

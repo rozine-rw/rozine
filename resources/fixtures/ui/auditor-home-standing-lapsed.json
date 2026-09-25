@@ -1,0 +1,173 @@
+{
+    "component": "auditor/home",
+    "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
+        "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": ["availability.update"],
+        "auditor": {
+            "name": "Diane Uwase, CPA",
+            "firm": "Uwase & Co.",
+            "accreditation": "ICPAR · CPA",
+            "avatar_url": null,
+            "since_year": 2019
+        },
+        "quality_score": 99,
+        "earned_this_month": {
+            "currency": "RWF",
+            "amount": "644319"
+        },
+        "active_deals": 30,
+        "licence_expires_on": "2027-03-31",
+        "availability": {
+            "accepting": true,
+            "radius_km": 30,
+            "max_active": 3,
+            "revision": 5,
+            "update": {
+                "url": "/preview/auditor-home",
+                "method": "post"
+            }
+        },
+        "nearby": {
+            "count": 0,
+            "closest_km": null
+        },
+        "in_progress": [
+            {
+                "id": "fa_murakoze",
+                "revision": 1,
+                "state": "assigned",
+                "kind": "flash",
+                "business": "Murakoze Tech",
+                "district": "Kicukiro",
+                "distance_km": "7.7",
+                "deadline": {
+                    "due_at": "2026-10-04T13:59:55Z"
+                },
+                "step": 1,
+                "steps": 5,
+                "status": "in_progress",
+                "reassigned_from": null,
+                "link": {
+                    "url": "/preview/auditor-audit-review",
+                    "method": "get"
+                },
+                "allowed_actions": ["conflict.declare"],
+                "accept_by": null,
+                "complete_by": "2026-10-04T13:59:55Z"
+            },
+            {
+                "id": "fa_greenleaf",
+                "revision": 1,
+                "state": "assigned",
+                "kind": "flash",
+                "business": "GreenLeaf Agro",
+                "district": "Gasabo",
+                "distance_km": "8.8",
+                "deadline": {
+                    "due_at": "2026-10-04T08:59:55Z"
+                },
+                "step": 1,
+                "steps": 5,
+                "status": "in_progress",
+                "reassigned_from": null,
+                "link": {
+                    "url": "/preview/auditor-audit-check-in",
+                    "method": "get"
+                },
+                "allowed_actions": ["conflict.declare"],
+                "accept_by": null,
+                "complete_by": "2026-10-04T08:59:55Z"
+            }
+        ],
+        "standing": {
+            "current": false,
+            "reason": "STANDING_CHECK_REQUIRED",
+            "on_time_pct": 96,
+            "avg_variance_pct": "2.1",
+            "variance_flagged": false,
+            "jobs_done": 9,
+            "clock_expiries": 0
+        },
+        "activity": [
+            {
+                "kind": "payout",
+                "at": "2026-10-03T17:00:00Z",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "102400"
+                }
+            },
+            {
+                "kind": "payment_deferred",
+                "at": "2026-10-02T17:00:00Z",
+                "business": "Musanze Traders",
+                "cause": "Demand fell"
+            },
+            {
+                "kind": "report_filed",
+                "at": "2026-10-01T17:00:00Z",
+                "business": "Kivu Coffee Roasters",
+                "variance_pct": "2.1"
+            },
+            {
+                "kind": "payment_deferred",
+                "at": "2026-10-01T15:00:00Z",
+                "business": "Isoko Energy",
+                "cause": "Currency moved"
+            },
+            {
+                "kind": "payment_deferred",
+                "at": "2026-09-30T17:00:00Z",
+                "business": "Intare Supply",
+                "cause": "A client has not paid"
+            }
+        ],
+        "wallet": {
+            "available": {
+                "currency": "RWF",
+                "amount": "644319"
+            }
+        },
+        "unread_notifications": 2,
+        "links": {
+            "home": {
+                "url": "/preview/auditor-home",
+                "method": "get"
+            },
+            "jobs": {
+                "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/auditor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/auditor-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-auditor",
+                "method": "get"
+            },
+            "statement": {
+                "url": "/preview/auditor-home",
+                "method": "get"
+            },
+            "withdraw": {
+                "url": "/preview/auditor-home",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/preview/auditor-home",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
+                "method": "get"
+            }
+        }
+    }
+}

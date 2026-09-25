@@ -1,7 +1,16 @@
 {
     "component": "auditor/audit",
     "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": [
+            "audit.save_step",
+            "audit.seal",
+            "conflict.declare",
+            "audit.request_changes",
+            "audit.reject"
+        ],
         "audit": {
             "id": "mr_greenleaf",
             "kind": "monthly",
@@ -13,7 +22,8 @@
                 "due_at": "2026-10-07T21:59:59Z"
             },
             "revision": 3,
-            "reassigned_from": null
+            "reassigned_from": null,
+            "amends": null
         },
         "steps": [
             {
@@ -71,39 +81,190 @@
             },
             "findings": [
                 {
+                    "code": "scope",
                     "no": "Section 1",
                     "title": "Scope of engagement & agreed-upon procedures",
-                    "body": "Procedure MVP-AUP-1, monthly report for September 2026.\nStatements, cash, stock and site capture at GreenLeaf Agro, Gasabo."
+                    "body": "Procedure MVP-AUP-1, monthly report for September 2026.\nStatements, cash, stock and site capture at GreenLeaf Agro, Gasabo.",
+                    "evidence_ids": []
                 },
                 {
+                    "code": "factual_findings",
                     "no": "Section 2",
                     "title": "Factual findings",
-                    "body": "Cash counted: RWF 1,184,000 against RWF 1,210,000 in the statements (−2.1%).\nStock counted: 184 units against 190 reported (−3.2%).\nOperations active; 3 required photos captured in the capture app."
+                    "body": "Cash counted: RWF 1,184,000 against RWF 1,210,000 in the statements (−2.1%).\nStock counted: 184 units against 190 reported (−3.2%).\nOperations active; 3 required photos captured in the capture app.",
+                    "evidence_ids": [
+                        "ev_green_statement",
+                        "ev_green_cold_room",
+                        "ev_green_stock"
+                    ]
                 },
                 {
+                    "code": "attestation",
                     "no": "Section 3",
                     "title": "Licence attestation, location & digest",
-                    "body": "Licence ICPAR/P-2026/0481 in good standing, checked 28 Sep 2026.\nOn-site check-in -1.9502, 30.0588 (±9 m) at 10:14 on 3 Oct."
+                    "body": "Licence ICPAR/P-2026/0481 in good standing, checked 28 Sep 2026.\nOn-site check-in -1.9502, 30.0588 (±9 m) at 10:14 on 3 Oct.",
+                    "evidence_ids": ["ev_green_checkin"]
+                }
+            ],
+            "evidence": [
+                {
+                    "evidence_id": "ev_green_statement",
+                    "kind": "statement",
+                    "sha256": "24d7971524d1d7bfb5dcd32c1b5052aeca9376b4cd2fbfcf9f3258d4014d6094",
+                    "captured_at": null,
+                    "source": "web_upload",
+                    "device_attestation": "unavailable",
+                    "position": null,
+                    "accuracy_m": null
+                },
+                {
+                    "evidence_id": "ev_green_checkin",
+                    "kind": "check_in",
+                    "sha256": "50b1438010d5436bec16177e42055195efde8629060d70ca94adc81913ff9d69",
+                    "captured_at": "2026-10-03T10:14:00Z",
+                    "source": "companion_device",
+                    "device_attestation": "unavailable",
+                    "position": "-1.9502, 30.0588",
+                    "accuracy_m": 9
+                },
+                {
+                    "evidence_id": "ev_green_cold_room",
+                    "kind": "photo",
+                    "sha256": "dc7f1aa92ff67570fe2dc4675ac9faf58cd7d0f20f03047157d76cc1a773110a",
+                    "captured_at": "2026-10-03T10:20:00Z",
+                    "source": "companion_device",
+                    "device_attestation": "unavailable",
+                    "position": "-1.9502, 30.0588",
+                    "accuracy_m": 9
+                },
+                {
+                    "evidence_id": "ev_green_stock",
+                    "kind": "photo",
+                    "sha256": "4f5c7b1a77c87b67c15259dd2b60e5f3b332f20919fc42b56ac8e80cf72aaa1d",
+                    "captured_at": null,
+                    "source": "companion_device",
+                    "device_attestation": "unavailable",
+                    "position": null,
+                    "accuracy_m": null
                 }
             ],
             "procedure_version": "MVP-AUP-1",
+            "findings_version": "fnd-2026-10-03.4",
+            "evidence_version": "ev-2026-10-03.3",
             "digest": "sha256:9f2c4e71b0a85d3e6c1f47a2d9b83e05c6a1f24d7e98b3c05a6d1e2f47b8c9d0",
             "licence": "ICPAR/P-2026/0481",
-            "seal": {
-                "url": "/preview/auditor-audit-sealed",
-                "method": "post"
+            "mfa": {
+                "confirmed": true,
+                "settings": {
+                    "url": "/settings/security",
+                    "method": "get"
+                }
             },
-            "suggest": {
-                "url": "/preview/auditor-jobs",
-                "method": "post"
-            },
-            "reject": {
-                "url": "/preview/auditor-jobs",
-                "method": "post"
+            "reason_options": {
+                "request_changes": [
+                    {
+                        "code": "missing_originals",
+                        "label": "Original documents missing",
+                        "requires_explanation": true
+                    },
+                    {
+                        "code": "reconciliation_difference",
+                        "label": "Unexplained reconciliation difference",
+                        "requires_explanation": true
+                    },
+                    {
+                        "code": "classification_unresolved",
+                        "label": "Classification unresolved",
+                        "requires_explanation": true
+                    },
+                    {
+                        "code": "debt_evidence_missing",
+                        "label": "Debt or draw evidence missing",
+                        "requires_explanation": true
+                    },
+                    {
+                        "code": "capture_unverified",
+                        "label": "Capture could not be verified",
+                        "requires_explanation": true
+                    },
+                    {
+                        "code": "other",
+                        "label": "Other",
+                        "requires_explanation": true
+                    }
+                ],
+                "reject": [
+                    {
+                        "code": "evidence_unverifiable",
+                        "label": "Evidence cannot be verified",
+                        "requires_explanation": true
+                    },
+                    {
+                        "code": "procedure_incomplete",
+                        "label": "Procedure cannot be completed",
+                        "requires_explanation": true
+                    },
+                    {
+                        "code": "other",
+                        "label": "Other",
+                        "requires_explanation": true
+                    }
+                ]
             }
         },
         "can_continue": true,
         "hint": "Sealing binds your ICPAR licence, location and time; GreenLeaf Agro then co-signs by 7 Oct.",
+        "reason_options": {
+            "request_changes": [
+                {
+                    "code": "missing_originals",
+                    "label": "Original documents missing",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "reconciliation_difference",
+                    "label": "Unexplained reconciliation difference",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "classification_unresolved",
+                    "label": "Classification unresolved",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "debt_evidence_missing",
+                    "label": "Debt or draw evidence missing",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "capture_unverified",
+                    "label": "Capture could not be verified",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "other",
+                    "label": "Other",
+                    "requires_explanation": true
+                }
+            ],
+            "reject": [
+                {
+                    "code": "evidence_unverifiable",
+                    "label": "Evidence cannot be verified",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "procedure_incomplete",
+                    "label": "Procedure cannot be completed",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "other",
+                    "label": "Other",
+                    "requires_explanation": true
+                }
+            ]
+        },
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",
@@ -111,6 +272,10 @@
             },
             "back": {
                 "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
                 "method": "get"
             }
         },
@@ -122,16 +287,47 @@
             "conflict": {
                 "url": "/preview/auditor-jobs-conflict",
                 "method": "post"
+            },
+            "step_up": {
+                "url": "/preview/auditor-audit-seal-step-up",
+                "method": "post"
+            },
+            "seal": {
+                "url": "/preview/auditor-audit-sealed-monthly",
+                "method": "post"
+            },
+            "request_changes": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "reject": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "amend": {
+                "url": "/preview/auditor-audit-amendment",
+                "method": "post"
             }
         },
         "outcome": null,
         "jobs": {
+            "engagement": null,
+            "contract_version": "auditor-filing-v1",
+            "identity_context_revision": 3,
             "server_time": "2026-10-03T17:00:00Z",
+            "allowed_actions": [
+                "assignment.accept",
+                "assignment.decline",
+                "conflict.declare"
+            ],
             "radius_km": 30,
             "flash_hours": 24,
             "eligible": [
                 {
                     "id": "fa_huye",
+                    "revision": 2,
+                    "state": "offered",
+                    "kind": "flash",
                     "business": "Huye Motors",
                     "sector": "logistics",
                     "district": "Gasabo",
@@ -147,6 +343,8 @@
                         "east_km": 8.4,
                         "north_km": 7.1
                     },
+                    "accept_by": "2026-10-03T17:40:00Z",
+                    "complete_by": "2026-10-04T14:00:00Z",
                     "link": {
                         "url": "/preview/auditor-file",
                         "method": "get"
@@ -164,7 +362,14 @@
                             "url": "/preview/auditor-jobs-conflict",
                             "method": "post"
                         }
-                    }
+                    },
+                    "allowed_actions": [
+                        "assignment.accept",
+                        "assignment.decline",
+                        "conflict.declare"
+                    ],
+                    "deadline": null,
+                    "reassigned_from": null
                 }
             ],
             "assigned": [],
@@ -281,8 +486,38 @@
                 "launcher": {
                     "url": "/preview/launcher-auditor",
                     "method": "get"
+                },
+                "operation": {
+                    "url": "/preview/auditor-operation-{request_id}",
+                    "method": "get"
                 }
-            }
+            },
+            "decline_options": [
+                {
+                    "code": "unavailable",
+                    "label": "Not available inside the clock",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "capacity",
+                    "label": "At capacity with active work",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "location",
+                    "label": "Cannot reach the site",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "other",
+                    "label": "Other reason",
+                    "requires_explanation": true
+                }
+            ]
+        },
+        "assignment": {
+            "id": "asg_mr_greenleaf",
+            "revision": 4
         }
     }
 }

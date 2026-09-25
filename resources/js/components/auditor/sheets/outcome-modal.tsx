@@ -21,9 +21,17 @@ const DISC: Record<Tone, string> = {
 
 /**
  * The design's result card (L1790–1803): what the server did, said once, in plain words. It is
- * shown for the outcome the server flashed after a command and dismissed by the partner.
+ * shown for a command's own result, or an outcome the server flashed, and dismissed by the
+ * partner. A conflict never names who takes the file next.
  */
-export function OutcomeModal({ outcome }: { outcome: AuditorOutcome | null }) {
+export function OutcomeModal({
+    outcome,
+    onDone,
+}: {
+    outcome: AuditorOutcome | null;
+    /** What Done does after a command's own result: move on to the server's `next` page. */
+    onDone?: () => void;
+}) {
     const { t, locale } = useTranslation();
     const [dismissed, setDismissed] = useState<AuditorOutcome | null>(null);
 
@@ -38,20 +46,13 @@ export function OutcomeModal({ outcome }: { outcome: AuditorOutcome | null }) {
     switch (outcome.kind) {
         case 'conflict_declared':
             title = t('auditor.outcome.conflict.title');
-            body =
-                outcome.resolution === 'reassigned' &&
-                outcome.reassigned_to !== null
-                    ? t('auditor.outcome.conflict.reassigned', {
-                          business: outcome.business,
-                          name: outcome.reassigned_to,
-                      })
-                    : outcome.resolution === 'queued'
-                      ? t('auditor.outcome.conflict.queued', {
-                            business: outcome.business,
-                        })
-                      : t('auditor.outcome.conflict.recorded', {
-                            business: outcome.business,
-                        });
+            body = outcome.blocking
+                ? t(`auditor.outcome.conflict.blocking.${outcome.resolution}`, {
+                      business: outcome.business,
+                  })
+                : t('auditor.outcome.conflict.recorded', {
+                      business: outcome.business,
+                  });
             tone = 'warn';
             break;
         case 'job_declined':
@@ -131,7 +132,10 @@ export function OutcomeModal({ outcome }: { outcome: AuditorOutcome | null }) {
                 </p>
                 <button
                     type="button"
-                    onClick={() => setDismissed(outcome)}
+                    onClick={() => {
+                        setDismissed(outcome);
+                        onDone?.();
+                    }}
                     className="mt-5 h-12 w-full rounded-2xl bg-rz-accent-fill text-[14px] font-bold text-white"
                 >
                     {t('auditor.outcome.done')}

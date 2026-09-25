@@ -93,12 +93,14 @@ type JobHeaderProps = {
     close: RouteLink;
     business: string;
     district: string;
-    distanceKm: string;
+    /** Null when the distance cannot be stated: the district then stands alone. */
+    distanceKm: string | null;
     serverTime: string;
+    /** The job's deadline; null for a routine offer, whose deadline the report calendar owns. */
     dueAt: string | null;
-    /** The clock's length, shown while a job is only offered. */
-    hours?: number;
     steps?: ReactNode;
+    /** Whether the clock shows; work stopped by a blocking conflict has none to run. */
+    clock?: boolean;
 };
 
 /** A Flash file's header (design L1021–1035): back, eyebrow, business, clock and step bar. */
@@ -110,8 +112,8 @@ export function JobHeader({
     distanceKm,
     serverTime,
     dueAt,
-    hours,
     steps,
+    clock = true,
 }: JobHeaderProps) {
     const { t } = useTranslation();
 
@@ -129,18 +131,21 @@ export function JobHeader({
                         {business}
                     </h2>
                     <p className="mt-px text-[11.5px] text-rz-secondary">
-                        {t('auditor.file.place', {
-                            district,
-                            distance: distanceKm,
-                        })}
+                        {distanceKm === null
+                            ? district
+                            : t('auditor.file.place', {
+                                  district,
+                                  distance: distanceKm,
+                              })}
                     </p>
                 </div>
-                <ClockChip
-                    serverTime={serverTime}
-                    dueAt={dueAt}
-                    hours={hours}
-                    size="sheet"
-                />
+                {clock && dueAt !== null && (
+                    <ClockChip
+                        serverTime={serverTime}
+                        dueAt={dueAt}
+                        size="sheet"
+                    />
+                )}
             </div>
             {steps}
         </>

@@ -13,7 +13,8 @@ type HeroProps = {
     qualityScore: number | null;
     earned: Money | null;
     activeDeals: number;
-    licenceExpiresOn: string;
+    /** Null when no expiry is on record: the tile says so rather than inventing one. */
+    licenceExpiresOn: string | null;
 };
 
 function GlassTile({
@@ -40,7 +41,7 @@ export function Avatar({
     auditor,
     className,
 }: {
-    auditor: AuditorIdentity;
+    auditor: Pick<AuditorIdentity, 'name' | 'avatar_url'>;
     className: string;
 }) {
     return (
@@ -147,9 +148,18 @@ export function Hero({
                     <span className="text-[15px] font-bold">{activeDeals}</span>
                 </GlassTile>
                 <GlassTile label={t('auditor.home.tile.licence')}>
-                    <span className="truncate text-[15px] font-bold">
-                        {formatMonthYear(licenceExpiresOn, locale)}
-                    </span>
+                    {licenceExpiresOn === null ? (
+                        <span className="text-[15px] font-bold">
+                            <span aria-hidden>—</span>
+                            <span className="sr-only">
+                                {t('auditor.home.unavailable')}
+                            </span>
+                        </span>
+                    ) : (
+                        <span className="truncate text-[15px] font-bold">
+                            {formatMonthYear(licenceExpiresOn, locale)}
+                        </span>
+                    )}
                 </GlassTile>
             </div>
         </div>

@@ -14,9 +14,11 @@ createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {
         switch (true) {
+            // Public pages, audit seal verification among them: no session, no role shell.
             case name === 'home':
             case name === 'welcome':
             case name === 'pulse':
+            case name.startsWith('audit/'):
                 return PublicLayout;
             // The Suite launcher and the role apps draw their own shells.
             case name === 'dashboard':

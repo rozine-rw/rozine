@@ -23,6 +23,9 @@ describe('Auditor display formatting', () => {
         expect(compactAmount(rwf(102_400))).toBe('102K');
         expect(compactAmount(rwf(51_200_000))).toBe('51.2M');
         expect(compactRwf(rwf(1_640_000_000))).toBe('RWF 1.6B');
+        /* A net outflow keeps its sign, compacted like any other figure. */
+        expect(compactRwf(rwf(-10_400_000))).toBe('RWF −10.4M');
+        expect(compactAmount(rwf(-950))).toBe('−950');
     });
 
     it('never counts a clock below zero', () => {

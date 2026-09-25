@@ -1,7 +1,11 @@
 {
     "component": "auditor/profile",
     "props": {
+        "engagement": null,
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": ["accreditation.renew", "availability.update"],
         "section": "accreditation",
         "auditor": {
             "name": "Diane Uwase, CPA",
@@ -14,23 +18,25 @@
         "on_time_pct": 96,
         "jobs_done": 9,
         "accreditation": {
+            "status": "active",
+            "revision": 6,
             "licence": "ICPAR/P-2026/0481",
             "expires_on": "2027-03-31",
             "days_left": 179,
-            "status": "active",
-            "renewal": {
-                "status": "none",
-                "submit": {
-                    "url": "/preview/auditor-profile-pending",
-                    "method": "post"
-                }
+            "submission": {
+                "status": "none"
             }
+        },
+        "standing": {
+            "current": true,
+            "reason": null
         },
         "availability": {
             "accepting": true,
             "radius_km": 30,
             "max_active": 3,
-            "toggle": {
+            "revision": 5,
+            "update": {
                 "url": "/preview/auditor-profile",
                 "method": "post"
             }
@@ -66,6 +72,26 @@
                     "url": "/preview/auditor-profile-availability",
                     "method": "get"
                 }
+            },
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
+                "method": "get"
+            },
+            "certificate": null,
+            "submitted_certificate": null
+        },
+        "actions": {
+            "submit": {
+                "url": "/preview/auditor-profile-pending",
+                "method": "post"
+            },
+            "renew": {
+                "url": "/preview/auditor-profile-pending",
+                "method": "post"
+            },
+            "withdraw": {
+                "url": "/preview/auditor-profile",
+                "method": "post"
             }
         }
     }

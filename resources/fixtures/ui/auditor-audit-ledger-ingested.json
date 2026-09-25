@@ -1,0 +1,378 @@
+{
+    "component": "auditor/audit",
+    "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
+        "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": ["audit.save_step", "conflict.declare"],
+        "audit": {
+            "id": "fa_huye",
+            "kind": "flash",
+            "business": "Huye Motors",
+            "district": "Gasabo",
+            "distance_km": "11.2",
+            "month": null,
+            "deadline": {
+                "due_at": "2026-10-04T13:59:55Z"
+            },
+            "revision": 7,
+            "reassigned_from": null,
+            "amends": null
+        },
+        "steps": [
+            {
+                "key": "review",
+                "state": "done"
+            },
+            {
+                "key": "check_in",
+                "state": "done"
+            },
+            {
+                "key": "photos",
+                "state": "done"
+            },
+            {
+                "key": "ledger",
+                "state": "current"
+            },
+            {
+                "key": "seal",
+                "state": "todo"
+            }
+        ],
+        "stage": {
+            "step": "ledger",
+            "upload": null,
+            "reported_stock": {
+                "currency": "RWF",
+                "amount": "38000000"
+            },
+            "observed_stock": {
+                "currency": "RWF",
+                "amount": "36400000"
+            },
+            "tolerance": "RWF 0",
+            "variance": {
+                "pct": "-4.2",
+                "within": false
+            },
+            "documents": [
+                {
+                    "id": "ld_3",
+                    "name": "Huye-Motors-stock-book-Sep.pdf",
+                    "detail": "PDF · 1.1 MB",
+                    "state": "scanning",
+                    "failure": null,
+                    "fields": [],
+                    "ingestion": "INGESTED_NOT_AUDIT_APPROVED",
+                    "evidence": {
+                        "evidence_id": "ev_huye_ld_3",
+                        "kind": "ledger",
+                        "sha256": "b20a87635632404a7dc879e69d429b90e27d4c05b8169d85890f84a3edf8a81f",
+                        "captured_at": null,
+                        "source": "web_upload",
+                        "device_attestation": "unavailable",
+                        "position": null,
+                        "accuracy_m": null
+                    }
+                },
+                {
+                    "id": "ld_1",
+                    "name": "Huye-Motors-ledger-Q3.pdf",
+                    "detail": "PDF · 2.4 MB",
+                    "state": "parsed",
+                    "failure": null,
+                    "fields": [
+                        {
+                            "label": "Pages parsed",
+                            "value": "14"
+                        },
+                        {
+                            "label": "Ledger entries read",
+                            "value": "612"
+                        },
+                        {
+                            "label": "Period covered",
+                            "value": "1 Jul – 30 Sep 2026"
+                        },
+                        {
+                            "label": "Closing balance",
+                            "value": "RWF 4,812,300"
+                        }
+                    ],
+                    "ingestion": "INGESTED_NOT_AUDIT_APPROVED",
+                    "evidence": {
+                        "evidence_id": "ev_huye_ld_1",
+                        "kind": "ledger",
+                        "sha256": "08e13bba8ea73e1b38f0b126b3d37592f6412e4e000518bf25f19855835dd062",
+                        "captured_at": null,
+                        "source": "web_upload",
+                        "device_attestation": "unavailable",
+                        "position": null,
+                        "accuracy_m": null
+                    }
+                }
+            ],
+            "ledger_ready": true,
+            "reconciled": true
+        },
+        "can_continue": true,
+        "hint": null,
+        "reason_options": null,
+        "links": {
+            "close": {
+                "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
+            "back": {
+                "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "save": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "conflict": {
+                "url": "/preview/auditor-jobs-conflict",
+                "method": "post"
+            },
+            "step_up": {
+                "url": "/preview/auditor-audit-seal-step-up",
+                "method": "post"
+            },
+            "seal": {
+                "url": "/preview/auditor-audit-sealed",
+                "method": "post"
+            },
+            "request_changes": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "reject": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "amend": {
+                "url": "/preview/auditor-audit-amendment",
+                "method": "post"
+            }
+        },
+        "outcome": null,
+        "jobs": {
+            "engagement": null,
+            "contract_version": "auditor-filing-v1",
+            "identity_context_revision": 3,
+            "server_time": "2026-10-03T17:00:00Z",
+            "allowed_actions": [
+                "assignment.accept",
+                "assignment.decline",
+                "conflict.declare"
+            ],
+            "radius_km": 30,
+            "flash_hours": 24,
+            "eligible": [
+                {
+                    "id": "fa_huye",
+                    "revision": 2,
+                    "state": "offered",
+                    "kind": "flash",
+                    "business": "Huye Motors",
+                    "sector": "logistics",
+                    "district": "Gasabo",
+                    "offered_at": "2026-10-03T14:00:00Z",
+                    "distance_km": "11.2",
+                    "requested": {
+                        "currency": "RWF",
+                        "amount": "51200000"
+                    },
+                    "dscr": "1.02",
+                    "term_months": 6,
+                    "map": {
+                        "east_km": 8.4,
+                        "north_km": 7.1
+                    },
+                    "accept_by": "2026-10-03T17:40:00Z",
+                    "complete_by": "2026-10-04T14:00:00Z",
+                    "link": {
+                        "url": "/preview/auditor-file",
+                        "method": "get"
+                    },
+                    "actions": {
+                        "accept": {
+                            "url": "/preview/auditor-audit-review",
+                            "method": "post"
+                        },
+                        "decline": {
+                            "url": "/preview/auditor-jobs-declined",
+                            "method": "post"
+                        },
+                        "conflict": {
+                            "url": "/preview/auditor-jobs-conflict",
+                            "method": "post"
+                        }
+                    },
+                    "allowed_actions": [
+                        "assignment.accept",
+                        "assignment.decline",
+                        "conflict.declare"
+                    ],
+                    "deadline": null,
+                    "reassigned_from": null
+                }
+            ],
+            "assigned": [],
+            "monthly": {
+                "windows": [
+                    {
+                        "id": "mw_1",
+                        "note_title": "Cold-Chain Hub",
+                        "note_id": "RNP-2026-0118",
+                        "business": "GreenLeaf Agro",
+                        "month": "2026-09-01",
+                        "open": {
+                            "url": "/preview/auditor-audit-statements",
+                            "method": "post"
+                        }
+                    },
+                    {
+                        "id": "mw_2",
+                        "note_title": "Fleet Expansion",
+                        "note_id": "RNP-2026-0042",
+                        "business": "GreenLeaf Agro",
+                        "month": "2026-09-01",
+                        "open": {
+                            "url": "/preview/auditor-audit-statements",
+                            "method": "post"
+                        }
+                    },
+                    {
+                        "id": "mw_3",
+                        "note_title": "Builders Working Capital",
+                        "note_id": "RNP-2026-0077",
+                        "business": "Musanze Traders",
+                        "month": "2026-09-01",
+                        "open": {
+                            "url": "/preview/auditor-audit-statements",
+                            "method": "post"
+                        }
+                    },
+                    {
+                        "id": "mw_4",
+                        "note_title": "Works Inventory",
+                        "note_id": "RNP-2026-0091",
+                        "business": "Isoko Energy",
+                        "month": "2026-09-01",
+                        "open": {
+                            "url": "/preview/auditor-audit-statements",
+                            "method": "post"
+                        }
+                    }
+                ],
+                "reports": [
+                    {
+                        "id": "mr_1",
+                        "business": "Intare Supply",
+                        "sector": "retail",
+                        "note_title": "Motors Working Capital",
+                        "due_on": "2026-10-07",
+                        "status": "in_progress",
+                        "inflow": {
+                            "currency": "RWF",
+                            "amount": "162000000"
+                        },
+                        "outflow": {
+                            "currency": "RWF",
+                            "amount": "128400000"
+                        },
+                        "cover": "1.3",
+                        "link": {
+                            "url": "/preview/auditor-audit-count",
+                            "method": "get"
+                        }
+                    },
+                    {
+                        "id": "mr_2",
+                        "business": "Kivu Coffee Roasters",
+                        "sector": "agriculture",
+                        "note_title": "Harvest Stock",
+                        "due_on": "2026-10-07",
+                        "status": "awaiting_cosign",
+                        "inflow": {
+                            "currency": "RWF",
+                            "amount": "88500000"
+                        },
+                        "outflow": {
+                            "currency": "RWF",
+                            "amount": "71200000"
+                        },
+                        "cover": "1.4",
+                        "link": {
+                            "url": "/preview/auditor-audit-sealed-monthly",
+                            "method": "get"
+                        }
+                    }
+                ]
+            },
+            "outcome": null,
+            "links": {
+                "home": {
+                    "url": "/preview/auditor-home",
+                    "method": "get"
+                },
+                "jobs": {
+                    "url": "/preview/auditor-jobs",
+                    "method": "get"
+                },
+                "portfolio": {
+                    "url": "/preview/auditor-portfolio",
+                    "method": "get"
+                },
+                "profile": {
+                    "url": "/preview/auditor-profile",
+                    "method": "get"
+                },
+                "launcher": {
+                    "url": "/preview/launcher-auditor",
+                    "method": "get"
+                },
+                "operation": {
+                    "url": "/preview/auditor-operation-{request_id}",
+                    "method": "get"
+                }
+            },
+            "decline_options": [
+                {
+                    "code": "unavailable",
+                    "label": "Not available inside the clock",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "capacity",
+                    "label": "At capacity with active work",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "location",
+                    "label": "Cannot reach the site",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "other",
+                    "label": "Other reason",
+                    "requires_explanation": true
+                }
+            ]
+        },
+        "assignment": {
+            "id": "asg_fa_huye",
+            "revision": 4
+        }
+    }
+}

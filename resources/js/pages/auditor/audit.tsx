@@ -3,6 +3,8 @@ import { useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
 import { STEP_FORM, useStepForm } from '@/components/auditor/audit/parts';
 import type { StepContext } from '@/components/auditor/audit/parts';
+import { useReturnControls } from '@/components/auditor/audit/return-controls';
+import { ReturnedStatus } from '@/components/auditor/audit/returned-status';
 import { useSealFlow } from '@/components/auditor/audit/seal-flow';
 import { SealedStatus } from '@/components/auditor/audit/sealed-status';
 import { StepBar } from '@/components/auditor/audit/step-bar';
@@ -13,13 +15,20 @@ import { StepPhotos } from '@/components/auditor/audit/step-photos';
 import { StepStatements } from '@/components/auditor/audit/step-statements';
 import { AuditorShell } from '@/components/auditor/auditor-shell';
 import {
+    AuditorCommandNotice,
+    AuditorCommandProvider,
+    useAuditorCommandCenter,
+    useAuditorCommands,
+} from '@/components/auditor/commands';
+import { ConflictReceiptCard } from '@/components/auditor/conflict-receipt';
+import {
     BackButton,
     DetailSheet,
     JobHeader,
 } from '@/components/auditor/detail-sheet';
 import { FileReview } from '@/components/auditor/file/file-review';
 import { useJobCommands } from '@/components/auditor/job-commands';
-import { JobsBody } from '@/components/auditor/jobs/jobs-body';
+import { JobsBody, openOffers } from '@/components/auditor/jobs/jobs-body';
 import { OutcomeModal } from '@/components/auditor/sheets/outcome-modal';
 import { useTranslation } from '@/hooks/use-translation';
 import type { MessageCode } from '@/lib/i18n/types';
@@ -30,9 +39,18 @@ import type {
     SealStage,
 } from '@/types/auditor';
 
+/**
+ * The fields each step shows its own errors beside; any other field error from a step's command
+ * reaches the partner as a banner above the step.
+ */
+const SHOWN_FIELDS: Partial<Record<AuditStage['step'], string[]>> = {
+    ledger: ['observed_stock', 'document', 'replaces'],
+    seal: ['note'],
+};
+
 /** The primary label per step, as the design words it (L3715, L3801). */
 const CONTINUE: Record<
-    Exclude<AuditStage['step'], 'seal' | 'sealed'>,
+    Exclude<AuditStage['step'], 'seal' | 'sealed' | 'returned' | 'blocked'>,
     MessageCode
 > = {
     review: 'auditor.audit.continue',
@@ -82,14 +100,20 @@ function StepReview({
 /** The current step's body; the seal step's body comes from its own flow. */
 function StageBody({
     props,
+    stage,
     context,
     seal,
+    sealed,
+    returned,
 }: {
     props: AuditProcedureProps;
+    stage: AuditStage;
     context: StepContext;
     seal: ReactNode;
+    sealed: ReactNode;
+    returned: ReactNode;
 }) {
-    const { stage, audit } = props;
+    const { audit } = props;
 
     switch (stage.step) {
         case 'review':
@@ -117,7 +141,11 @@ function StageBody({
         case 'seal':
             return seal;
         case 'sealed':
-            return <SealedStatus stage={stage} />;
+            return sealed;
+        case 'returned':
+            return returned;
+        case 'blocked':
+            return <ConflictReceiptCard receipt={stage.conflict} />;
     }
 }
 
@@ -127,37 +155,52 @@ const NO_SEAL: SealStage = {
     summary: [],
     note: { required: false, why: '', value: '', min: 0, max: 0 },
     findings: [],
+    evidence: [],
     procedure_version: '',
+    findings_version: '',
+    evidence_version: '',
     digest: '',
     licence: '',
-    seal: { url: '', method: 'post' },
-    suggest: null,
-    reject: null,
+    mfa: { confirmed: false, settings: { url: '', method: 'get' } },
+    reason_options: null,
 };
 
-/**
- * The audit procedure (MVP-AUDITOR-SCR-03…06; design sheets L1017–1498): fixed-order steps from the
- * server, evidence captured in the companion app, reconciliation measured by the server, factual
- * findings, the ICPAR seal, and the co-signature that follows. A Flash Audit opens over the Jobs
- * left column and a monthly report over the right, as the design anchors them.
- */
-export default function AuditorAudit(props: AuditProcedureProps) {
+/** The procedure's sheet, inside the page's command center. */
+function AuditSheet(props: AuditProcedureProps) {
     const { t, locale } = useTranslation();
     const online = useOnline();
-    const { audit, stage, links } = props;
+    const center = useAuditorCommands();
+    const { audit, links, actions } = props;
+    /* A blocking conflict recorded here withdraws the procedure at once, before any reload. */
+    const stage: AuditStage =
+        center.blocked === null
+            ? props.stage
+            : { step: 'blocked', conflict: center.blocked };
+    const blocked = stage.step === 'blocked';
+    const sealed = stage.step === 'sealed';
+    const returned = stage.step === 'returned';
+    /* A sealed, returned or blocked report is final: nothing on it can be saved or returned. */
+    const terminal = sealed || returned || blocked;
     const period =
         audit.month === null ? '' : formatMonthYearLong(audit.month, locale);
     const context: StepContext = {
         rememberKey: `${audit.id}:${stage.step}`,
         step: stage.step,
+        auditId: audit.id,
         revision: audit.revision,
-        save: props.actions.save,
+        business: audit.business,
+        save: actions.save,
         serverTime: props.server_time,
+        identityContextRevision: props.identity_context_revision,
     };
     const commands = useJobCommands({
-        fileId: audit.id,
+        assignment: props.assignment,
         business: audit.business,
-        actions: { conflict: props.actions.conflict },
+        conflict: actions.conflict,
+        decline: null,
+        initialSheet: props.preview_conflict_open
+            ? { sheet: 'conflict', reason: null }
+            : null,
     });
     const seal = useSealFlow({
         stage: stage.step === 'seal' ? stage : NO_SEAL,
@@ -165,9 +208,21 @@ export default function AuditorAudit(props: AuditProcedureProps) {
         business: audit.business,
         period,
         canContinue: props.can_continue,
+        actions,
+        preview: props.preview_outcome,
     });
-    const sealed = stage.step === 'sealed';
-    const steps = <StepBar steps={props.steps} />;
+    const returns = useReturnControls({
+        options: terminal
+            ? null
+            : stage.step === 'seal'
+              ? stage.reason_options
+              : props.reason_options,
+        context,
+        business: audit.business,
+        actions,
+        preview: props.preview_outcome,
+    });
+    const steps = blocked ? null : <StepBar steps={props.steps} />;
 
     const header =
         audit.kind === 'flash' ? (
@@ -180,6 +235,7 @@ export default function AuditorAudit(props: AuditProcedureProps) {
                 serverTime={props.server_time}
                 dueAt={audit.deadline.due_at}
                 steps={steps}
+                clock={!blocked}
             />
         ) : (
             <>
@@ -203,9 +259,30 @@ export default function AuditorAudit(props: AuditProcedureProps) {
 
     let footer: ReactNode;
 
+    /*
+     * The server's link to the step before this one, never a path built here. At the seal it is
+     * the way back when a source changed after a preview and must be reviewed again.
+     */
+    const back = links.back !== null && (
+        <Link
+            href={links.back}
+            className="flex h-12 w-16 shrink-0 items-center justify-center rounded-xl bg-[#eef2f8] text-[13px] font-bold text-rz-slate dark:bg-rz-surface-muted"
+        >
+            {t('auditor.audit.back')}
+        </Link>
+    );
+
     if (stage.step === 'seal') {
-        footer = seal.footer;
-    } else if (sealed) {
+        footer = (
+            <>
+                <div className="flex gap-2.5">
+                    {back}
+                    <div className="min-w-0 flex-1">{seal.footer}</div>
+                </div>
+                {returns.buttons}
+            </>
+        );
+    } else if (terminal) {
         footer = (
             <Link
                 href={links.close}
@@ -217,27 +294,47 @@ export default function AuditorAudit(props: AuditProcedureProps) {
     } else {
         footer = (
             <div className="flex gap-2.5">
-                {links.back !== null && (
-                    <Link
-                        href={links.back}
-                        className="flex h-12 w-16 shrink-0 items-center justify-center rounded-xl bg-[#eef2f8] text-[13px] font-bold text-rz-slate dark:bg-rz-surface-muted"
+                {back}
+                {center.allowed('audit.save_step') && (
+                    <button
+                        type="submit"
+                        form={STEP_FORM}
+                        disabled={!props.can_continue || !center.idle}
+                        aria-busy={center.busy || undefined}
+                        className="h-12 flex-1 rounded-xl bg-[#0c1830] text-[14px] font-bold text-white disabled:cursor-not-allowed disabled:bg-rz-disabled disabled:text-rz-secondary dark:bg-rz-accent-fill dark:disabled:bg-rz-disabled"
                     >
-                        {t('auditor.audit.back')}
-                    </Link>
+                        {t(CONTINUE[stage.step])}
+                    </button>
                 )}
-                <button
-                    type="submit"
-                    form={STEP_FORM}
-                    disabled={!props.can_continue}
-                    className="h-12 flex-1 rounded-xl bg-[#0c1830] text-[14px] font-bold text-white disabled:cursor-not-allowed disabled:bg-rz-disabled disabled:text-rz-secondary dark:bg-rz-accent-fill"
-                >
-                    {t(CONTINUE[stage.step])}
-                </button>
             </div>
+        );
+        footer = (
+            <>
+                {footer}
+                {returns.buttons}
+            </>
         );
     }
 
-    const sheet = (
+    const amendRoute = actions.amend;
+    const amend =
+        amendRoute !== null && center.allowed('audit.amend')
+            ? {
+                  run: () =>
+                      center.send({
+                          name: 'audit.amend',
+                          business: audit.business,
+                          route: amendRoute,
+                          payload: {
+                              audit_id: audit.id,
+                              expected_revision: audit.revision,
+                          },
+                      }),
+                  disabled: !center.idle,
+              }
+            : null;
+
+    return (
         <DetailSheet
             label={t('auditor.audit.label', { business: audit.business })}
             close={links.close}
@@ -245,13 +342,13 @@ export default function AuditorAudit(props: AuditProcedureProps) {
                 stage.step === 'review' ||
                 stage.step === 'statements' ||
                 stage.step === 'check_in' ||
-                sealed
+                terminal
             }
             header={header}
             footer={
                 <>
                     {footer}
-                    {props.hint !== null && (
+                    {props.hint !== null && !blocked && (
                         <p className="text-center text-[10.5px] text-rz-secondary">
                             {props.hint}
                         </p>
@@ -259,9 +356,11 @@ export default function AuditorAudit(props: AuditProcedureProps) {
                 </>
             }
             nested={
-                stage.step === 'seal'
-                    ? (seal.nested ?? commands.sheet)
-                    : commands.sheet
+                blocked
+                    ? null
+                    : ((stage.step === 'seal' ? seal.nested : null) ??
+                      returns.sheet ??
+                      commands.sheet)
             }
         >
             {!online && (
@@ -272,32 +371,91 @@ export default function AuditorAudit(props: AuditProcedureProps) {
                     {t('auditor.audit.offline')}
                 </div>
             )}
-            <StageBody props={props} context={context} seal={seal.body} />
-            {!sealed && (
+            <AuditorCommandNotice
+                placement="page"
+                shown={SHOWN_FIELDS[stage.step] ?? []}
+            />
+            {audit.amends !== null && !blocked && (
+                <p
+                    role="note"
+                    className="mb-3.5 rounded-xl border border-rz-border bg-rz-surface px-3.5 py-3 text-[11.5px] leading-[1.5] text-rz-slate"
+                >
+                    {t('auditor.audit.amends', {
+                        report: audit.amends.report_id,
+                    })}{' '}
+                    <Link
+                        href={audit.amends.link}
+                        className="font-bold text-rz-accent-app-text"
+                    >
+                        {t('auditor.audit.open_original')}
+                    </Link>
+                </p>
+            )}
+            <StageBody
+                props={props}
+                stage={stage}
+                context={context}
+                seal={seal.body}
+                sealed={
+                    stage.step === 'sealed' && (
+                        <SealedStatus stage={stage} amend={amend} />
+                    )
+                }
+                returned={
+                    stage.step === 'returned' && (
+                        <ReturnedStatus stage={stage} amend={amend} />
+                    )
+                }
+            />
+            {!terminal && commands.conflictButton !== null && (
                 <div className="mt-5 flex justify-center">
                     {commands.conflictButton}
                 </div>
             )}
         </DetailSheet>
     );
+}
+
+/**
+ * The audit procedure (MVP-AUDITOR-SCR-03…06; design sheets L1017–1498; auditor-filing-v1): fixed-
+ * order steps from the server, evidence captured in the companion app, reconciliation measured by
+ * the server, factual findings, the ICPAR seal after a fresh authenticator confirmation, and the
+ * co-signature that follows. Every command goes only where `allowed_actions` allows it. A blocking
+ * conflict stops the work at once and leaves only the partner's receipt. A Flash Audit opens over
+ * the Jobs left column and a monthly report over the right, as the design anchors them.
+ */
+export default function AuditorAudit(props: AuditProcedureProps) {
+    const { t } = useTranslation();
+    const center = useAuditorCommandCenter({
+        page: props,
+        lookup: props.links.operation,
+        preview: props.preview_outcome,
+    });
 
     return (
-        <AuditorShell
-            title={t('auditor.audit.head_title', { business: audit.business })}
-            tab="jobs"
-            links={props.jobs.links}
-            openJobs={props.jobs.eligible.length}
-            showTabBar={false}
-        >
-            <JobsBody
-                {...props.jobs}
-                backdrop
-                overlay={{
-                    column: audit.kind === 'flash' ? 'left' : 'right',
-                    content: sheet,
-                }}
-            />
-            <OutcomeModal outcome={props.outcome} />
-        </AuditorShell>
+        <AuditorCommandProvider center={center}>
+            <AuditorShell
+                title={t('auditor.audit.head_title', {
+                    business: props.audit.business,
+                })}
+                tab="jobs"
+                links={props.jobs.links}
+                openJobs={openOffers(props.jobs)}
+                showTabBar={false}
+            >
+                <JobsBody
+                    {...props.jobs}
+                    backdrop
+                    overlay={{
+                        column: props.audit.kind === 'flash' ? 'left' : 'right',
+                        content: <AuditSheet {...props} />,
+                    }}
+                />
+                <OutcomeModal
+                    outcome={center.result?.outcome ?? props.outcome}
+                    onDone={center.finish}
+                />
+            </AuditorShell>
+        </AuditorCommandProvider>
     );
 }

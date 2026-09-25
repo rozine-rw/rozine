@@ -1,4 +1,11 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import {
+    act,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import {
     afterEach,
@@ -8,6 +15,7 @@ import {
     it,
     vi,
 } from 'vite-plus/test';
+import { TabColumns } from '@/components/auditor/tab-columns';
 import AuditorAudit from '@/pages/auditor/audit';
 import type {
     AuditProcedureProps,
@@ -15,28 +23,48 @@ import type {
     CountStage,
     LedgerStage,
     PhotosStage,
-    SealStage,
     SealedStage,
     StatementsStage,
 } from '@/types/auditor';
+import amendment from '../../../resources/fixtures/ui/auditor-audit-amendment.json';
 import checkInDone from '../../../resources/fixtures/ui/auditor-audit-check-in-done.json';
 import checkIn from '../../../resources/fixtures/ui/auditor-audit-check-in.json';
+import blocked from '../../../resources/fixtures/ui/auditor-audit-conflict-blocked.json';
 import count from '../../../resources/fixtures/ui/auditor-audit-count.json';
 import ledgerEmpty from '../../../resources/fixtures/ui/auditor-audit-ledger-empty.json';
+import ledgerIngested from '../../../resources/fixtures/ui/auditor-audit-ledger-ingested.json';
+import ledgerUndeclared from '../../../resources/fixtures/ui/auditor-audit-ledger-undeclared.json';
 import ledger from '../../../resources/fixtures/ui/auditor-audit-ledger.json';
 import monthlySeal from '../../../resources/fixtures/ui/auditor-audit-monthly-seal.json';
 import photosOffline from '../../../resources/fixtures/ui/auditor-audit-photos-offline.json';
+import photosStorageFull from '../../../resources/fixtures/ui/auditor-audit-photos-storage-full.json';
+import photosUploadFailed from '../../../resources/fixtures/ui/auditor-audit-photos-upload-failed.json';
 import photos from '../../../resources/fixtures/ui/auditor-audit-photos.json';
 import review from '../../../resources/fixtures/ui/auditor-audit-review.json';
-import seal from '../../../resources/fixtures/ui/auditor-audit-seal.json';
+import sealedMonthlyOverdue from '../../../resources/fixtures/ui/auditor-audit-sealed-monthly-overdue.json';
 import sealedMonthly from '../../../resources/fixtures/ui/auditor-audit-sealed-monthly.json';
+import sealedPublished from '../../../resources/fixtures/ui/auditor-audit-sealed-published.json';
+import sealedUnavailable from '../../../resources/fixtures/ui/auditor-audit-sealed-seal-unavailable.json';
 import sealed from '../../../resources/fixtures/ui/auditor-audit-sealed.json';
+import statementsNetOutflow from '../../../resources/fixtures/ui/auditor-audit-statements-net-outflow.json';
+import statementsNoCover from '../../../resources/fixtures/ui/auditor-audit-statements-no-cover.json';
 import statementsUnavailable from '../../../resources/fixtures/ui/auditor-audit-statements-unavailable.json';
 import statements from '../../../resources/fixtures/ui/auditor-audit-statements.json';
 import { renderWithUser } from '../helpers/render-with-user';
-import { inertia } from './inertia';
+import { answers, fails, inertia, invalid, operation } from './inertia';
 
 vi.mock('@inertiajs/react', () => import('./inertia'));
+
+vi.setConfig({ testTimeout: 30_000 });
+
+const HANDOFF = { url: 'https://capture.example/handoff/fa_huye' };
+
+const COMMAND = {
+    audit_id: 'fa_huye',
+    expected_revision: 7,
+    identity_context_revision: 3,
+    request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u),
+};
 
 const props = (fixture: { props: unknown }) =>
     structuredClone(fixture.props) as AuditProcedureProps;
@@ -52,9 +80,6 @@ const withStage = <S extends AuditProcedureProps['stage']>(
 
 const sheet = (business = 'Huye Motors') =>
     screen.getByRole('dialog', { name: `${business} audit` });
-
-const NOTE =
-    'Six crates of stock were in the delivery van when I counted the store.';
 
 beforeEach(() => inertia.reset());
 
@@ -89,14 +114,32 @@ describe('Audit procedure — review and check-in', () => {
             screen.getAllByRole('link', { name: 'Close' })[0],
         ).toHaveAttribute('href', '/preview/auditor-jobs');
 
+        inertia.queue.push(
+            answers(
+                operation({
+                    data: {
+                        next: {
+                            url: '/preview/auditor-audit-check-in',
+                            method: 'get',
+                        },
+                    },
+                }),
+            ),
+        );
         await user.click(
             within(dialog).getByRole('button', { name: 'Continue' }),
         );
 
-        expect(inertia.posts[0]).toMatchObject({
+        expect(inertia.calls[0]).toEqual({
             url: '/preview/auditor-jobs',
-            data: { step: 'review', revision: 7 },
+            method: 'post',
+            body: { ...COMMAND, step: 'review' },
         });
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([
+                { url: '/preview/auditor-audit-check-in' },
+            ]),
+        );
 
         await user.click(
             within(dialog).getByRole('button', { name: 'Declare a conflict' }),
@@ -119,11 +162,14 @@ describe('Audit procedure — review and check-in', () => {
             within(dialog).getByText('Capture app not opened on this job yet'),
         ).toBeInTheDocument();
         expect(within(dialog).queryByText(/Last sync/)).not.toBeInTheDocument();
+        expect(within(dialog).getByRole('note')).toHaveTextContent(
+            "The capture app isn't available for this assignment yet",
+        );
         expect(
-            within(dialog).getByRole('link', {
+            within(dialog).queryByRole('link', {
                 name: 'Check in with the capture app',
             }),
-        ).toHaveAttribute('href', 'rozine-capture://assignment/fa_huye');
+        ).not.toBeInTheDocument();
         expect(
             within(dialog).getByRole('button', { name: 'Continue' }),
         ).toBeDisabled();
@@ -134,11 +180,27 @@ describe('Audit procedure — review and check-in', () => {
         ).toBeInTheDocument();
     });
 
-    it('shows a recorded check-in, its position and a review flag', () => {
+    it('hands off to the capture app through the server’s link when there is one', () => {
+        render(
+            <AuditorAudit
+                {...withStage<CheckInStage>(checkIn, (stage) => ({
+                    ...stage,
+                    package: { ...stage.package, handoff: HANDOFF },
+                }))}
+            />,
+        );
+
+        expect(
+            screen.getByRole('link', { name: 'Check in with the capture app' }),
+        ).toHaveAttribute('href', HANDOFF.url);
+    });
+
+    it('shows a recorded check-in, its position, its evidence and a review flag', () => {
         render(
             <AuditorAudit
                 {...withStage<CheckInStage>(checkInDone, (stage) => ({
                     ...stage,
+                    package: { ...stage.package, handoff: HANDOFF },
                     check_in: {
                         ...stage.check_in,
                         review: true,
@@ -168,7 +230,54 @@ describe('Audit procedure — review and check-in', () => {
         expect(
             within(dialog).getByRole('link', { name: 'Open the capture app' }),
         ).toBeInTheDocument();
+
+        const evidence = within(dialog).getByRole('list', { name: 'Evidence' });
+
+        expect(
+            within(evidence).getByText('On-site check-in'),
+        ).toBeInTheDocument();
+        expect(
+            within(evidence).getByText('ev_huye_checkin'),
+        ).toBeInTheDocument();
+        expect(within(evidence).getByText('Capture app')).toBeInTheDocument();
+        expect(
+            within(evidence).getByText('Device attestation'),
+        ).toBeInTheDocument();
+        expect(within(evidence).getByText('Unavailable')).toBeInTheDocument();
+        expect(within(evidence).getByText('±12 m')).toBeInTheDocument();
+        expect(
+            within(evidence).getByText('3 Oct 2026 · 18:02'),
+        ).toBeInTheDocument();
     });
+
+    it.each([
+        [{ position: null, accuracy_m: null }, 'Position unavailable'],
+        [{ accuracy_m: null }, '-1.9441, 30.0619'],
+    ])(
+        'reads a check-in position the capture could not fully supply',
+        (gap, label) => {
+            render(
+                <AuditorAudit
+                    {...withStage<CheckInStage>(checkInDone, (stage) => {
+                        const recorded = stage.check_in as Extract<
+                            CheckInStage['check_in'],
+                            { state: 'recorded' }
+                        >;
+
+                        return {
+                            ...stage,
+                            check_in: {
+                                ...recorded,
+                                evidence: { ...recorded.evidence, ...gap },
+                            },
+                        };
+                    })}
+                />,
+            );
+
+            expect(screen.getAllByText(label)[0]).toBeInTheDocument();
+        },
+    );
 
     it('says when the browser drops offline and returns', () => {
         const online = vi
@@ -194,9 +303,57 @@ describe('Audit procedure — review and check-in', () => {
 });
 
 describe('Audit procedure — photos', () => {
+    const SYNTHETIC =
+        'Synthetic test evidence (isolated) — not a native capture.';
+
+    it('labels an isolated synthetic photo package, never as native proof', () => {
+        render(
+            <AuditorAudit
+                {...withStage<PhotosStage>(photos, (stage) => ({
+                    ...stage,
+                    package: { ...stage.package, source: 'isolated_synthetic' },
+                }))}
+            />,
+        );
+
+        expect(within(sheet()).getByText(SYNTHETIC)).toHaveAttribute(
+            'role',
+            'note',
+        );
+        /* No handoff still reads as capture unavailable, beside the label. */
+        expect(
+            within(sheet()).queryByRole('link', { name: /Add photo/ }),
+        ).not.toBeInTheDocument();
+    });
+
+    it.each([['companion_device' as const], [undefined]])(
+        'adds no synthetic label for a %s package',
+        (source) => {
+            render(
+                <AuditorAudit
+                    {...withStage<PhotosStage>(photos, (stage) => ({
+                        ...stage,
+                        package: { ...stage.package, source, handoff: HANDOFF },
+                    }))}
+                />,
+            );
+
+            expect(screen.queryByText(SYNTHETIC)).not.toBeInTheDocument();
+            expect(
+                within(sheet()).getByRole('link', { name: /Add photo/ }),
+            ).toHaveAttribute('href', HANDOFF.url);
+        },
+    );
+
     it('shows captured and missing shots, and saves titles for the extras', async () => {
         const { user } = renderWithUser(
-            <AuditorAudit {...props(photos)} can_continue />,
+            <AuditorAudit
+                {...withStage<PhotosStage>(photos, (stage) => ({
+                    ...stage,
+                    package: { ...stage.package, handoff: HANDOFF },
+                }))}
+                can_continue
+            />,
         );
         const dialog = sheet();
 
@@ -212,7 +369,7 @@ describe('Audit procedure — photos', () => {
         ).toBeInTheDocument();
         expect(
             within(dialog).getByRole('link', { name: /Add photo/ }),
-        ).toHaveAttribute('href', 'rozine-capture://assignment/fa_huye');
+        ).toHaveAttribute('href', HANDOFF.url);
 
         const title = within(dialog).getByLabelText('Extra 1');
 
@@ -226,9 +383,20 @@ describe('Audit procedure — photos', () => {
         await user.click(
             within(dialog).getByRole('button', { name: 'Continue' }),
         );
-        expect(inertia.posts[0]).toMatchObject({
-            data: { step: 'photos', titles: { 'extra-1': 'Loading bay' } },
+        expect(inertia.calls[0].body).toEqual({
+            ...COMMAND,
+            step: 'photos',
+            titles: { 'extra-1': 'Loading bay' },
         });
+    });
+
+    it('offers no capture of its own when the capture app is unavailable', () => {
+        render(<AuditorAudit {...props(photos)} />);
+
+        expect(
+            screen.queryByRole('link', { name: /Add photo/ }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('Capture unavailable')).toBeInTheDocument();
     });
 
     it('draws synced thumbnails, untitled extras and a monthly three-column grid', () => {
@@ -263,15 +431,24 @@ describe('Audit procedure — photos', () => {
         );
     });
 
-    it('explains a capture package that needs attention', () => {
-        render(<AuditorAudit {...props(photosOffline)} />);
+    it.each([
+        [
+            photosOffline,
+            'No signal — the capture app keeps everything encrypted and syncs when you reconnect',
+        ],
+        [
+            photosStorageFull,
+            "Your phone's storage is full — free space so the capture app can keep capturing",
+        ],
+        [photosUploadFailed, 'Upload failed — open the capture app to retry'],
+    ])(
+        'explains what the companion reports about its package: %#',
+        (fixture, text) => {
+            render(<AuditorAudit {...props(fixture)} />);
 
-        expect(
-            screen.getByText(
-                'No signal — the capture app keeps everything encrypted and syncs when you reconnect',
-            ),
-        ).toBeInTheDocument();
-    });
+            expect(screen.getByText(text)).toBeInTheDocument();
+        },
+    );
 
     it.each([
         [
@@ -358,10 +535,10 @@ describe('Audit procedure — ledger reconciliation', () => {
         ).toBeInTheDocument();
         expect(within(dialog).getByText('612')).toBeInTheDocument();
         expect(
-            within(dialog).getByText('Rejected · Scan · 1.1 MB'),
+            within(dialog).getByText('Rejected · CSV · 1.1 MB'),
         ).toBeInTheDocument();
         expect(
-            within(dialog).getByText(/OCR confidence 41%/),
+            within(dialog).getByText(/This CSV is not UTF-8 text/),
         ).toBeInTheDocument();
 
         await user.click(
@@ -370,13 +547,35 @@ describe('Audit procedure — ledger reconciliation', () => {
             }),
         );
         expect(click).toHaveBeenCalled();
+
+        const saved = operation({
+            code: 'AUDIT_STEP_SAVED',
+            revision: 8,
+            data: {
+                next: { url: '/preview/auditor-audit-ledger', method: 'get' },
+            },
+        });
+
+        inertia.queue.push(answers(saved), answers(saved));
         await user.upload(input, file);
 
-        expect(inertia.posts[0]).toMatchObject({
-            url: '/preview/auditor-audit-ledger',
-            data: { document: file, replaces: 'ld_2', revision: 7 },
-            options: { forceFormData: true },
+        expect(inertia.calls[0]).toEqual({
+            url: '/preview/auditor-audit-ledger-ingested',
+            method: 'post',
+            body: {
+                step: 'ledger',
+                document: file,
+                replaces: 'ld_2',
+                ...COMMAND,
+            },
         });
+        /* The receipt verifies nothing on its own: the page goes where the server says. */
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([
+                { url: '/preview/auditor-audit-ledger' },
+            ]),
+        );
+        expect(inertia.posts).toHaveLength(0);
 
         await user.click(
             within(dialog).getByRole('button', {
@@ -384,10 +583,40 @@ describe('Audit procedure — ledger reconciliation', () => {
             }),
         );
         await user.upload(input, file);
-        expect(inertia.posts[1].data).toMatchObject({ replaces: null });
+        expect(inertia.calls[1].body).toMatchObject({ replaces: null });
 
         fireEvent.change(input, { target: { files: [] } });
-        expect(inertia.posts).toHaveLength(2);
+        expect(inertia.calls).toHaveLength(2);
+    });
+
+    it('looks up a lost upload and resends the same upload, with the same request, only if unrecorded', async () => {
+        inertia.queue.push(
+            fails(503),
+            fails(404, { code: 'OPERATION_NOT_FOUND' }),
+        );
+        const { user } = renderWithUser(<AuditorAudit {...props(ledger)} />);
+        const input = screen.getByLabelText('Ledger document file');
+        const file = new File(['%PDF'], 'stock-book.pdf', {
+            type: 'application/pdf',
+        });
+
+        await user.upload(input, file);
+
+        expect(
+            await screen.findByRole('button', { name: 'Try again' }),
+        ).toBeInTheDocument();
+        expect(inertia.reloads).toEqual([{ onFinish: expect.any(Function) }]);
+        expect(
+            screen.getByRole('button', { name: /Add another ledger document/ }),
+        ).toBeDisabled();
+
+        await user.click(screen.getByRole('button', { name: 'Try again' }));
+
+        expect(inertia.calls[2]).toEqual(inertia.calls[0]);
+        expect(inertia.calls[2].body).toMatchObject({ document: file });
+        expect(inertia.calls[1].url).toMatch(
+            /^\/preview\/auditor-operation-[0-9a-f-]{36}$/u,
+        );
     });
 
     it('records whether the ledgers reconcile and commits the step', async () => {
@@ -406,11 +635,11 @@ describe('Audit procedure — ledger reconciliation', () => {
         await user.click(
             within(dialog).getByRole('button', { name: 'Review & seal' }),
         );
-        expect(inertia.posts[0].data).toEqual({
+        expect(inertia.calls[0].body).toEqual({
+            ...COMMAND,
             observed_stock: '36400000',
             reconciled: false,
             step: 'ledger',
-            revision: 7,
         });
         expect(
             screen.queryByRole('link', { name: 'Close' }),
@@ -430,15 +659,15 @@ describe('Audit procedure — ledger reconciliation', () => {
                             state: 'scanning',
                             fields: [],
                             failure: null,
+                            ingestion: null,
+                            evidence: null,
                         },
                     ],
                 }))}
             />,
         );
 
-        expect(
-            screen.getByText('OCR parsing … PDF · 0.8 MB'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('Checking … PDF · 0.8 MB')).toBeInTheDocument();
         expect(
             screen.getByRole('progressbar', { name: 'Reading the document' }),
         ).toBeInTheDocument();
@@ -446,15 +675,321 @@ describe('Audit procedure — ledger reconciliation', () => {
         expect(inertia.poll.start).toHaveBeenCalled();
     });
 
-    it('starts empty, blocks the reconciliation tick and shows field errors', () => {
-        inertia.errors = { observed_stock: 'Enter the value you counted.' };
+    it('offers the retained original as an ordinary download link', async () => {
+        const { user } = renderWithUser(
+            <AuditorAudit
+                {...withStage<LedgerStage>(ledger, (stage) => ({
+                    ...stage,
+                    documents: stage.documents.map((document, index) =>
+                        index === 0
+                            ? {
+                                  ...document,
+                                  link: {
+                                      url: '/auditor/reports/fa_huye/ledger/ld_1/original',
+                                      method: 'get',
+                                  },
+                              }
+                            : { ...document, link: null },
+                    ),
+                }))}
+            />,
+        );
+        const [download] = screen.getAllByRole('link', {
+            name: 'Download original',
+        });
+
+        expect(
+            screen.getAllByRole('link', { name: 'Download original' }),
+        ).toHaveLength(1);
+        expect(download).toHaveAttribute(
+            'href',
+            '/auditor/reports/fa_huye/ledger/ld_1/original',
+        );
+
+        /* A plain anchor: the browser downloads it, and Inertia never visits it. */
+        download.addEventListener('click', (event) => event.preventDefault());
+        await user.click(download);
+        expect(inertia.visits).toHaveLength(0);
+    });
+
+    it('uploads to the route the stage supplies, not the step save', async () => {
+        inertia.queue.push(answers(operation()));
+        const { user } = renderWithUser(
+            <AuditorAudit
+                {...withStage<LedgerStage>(ledger, (stage) => ({
+                    ...stage,
+                    upload: {
+                        url: '/auditor/reports/fa_huye/ledger',
+                        method: 'post',
+                    },
+                }))}
+            />,
+        );
+        const file = new File(['%PDF'], 'stock-book.pdf', {
+            type: 'application/pdf',
+        });
+
+        await user.upload(screen.getByLabelText('Ledger document file'), file);
+
+        expect(inertia.calls[0]).toMatchObject({
+            url: '/auditor/reports/fa_huye/ledger',
+            method: 'post',
+            body: { step: 'ledger', document: file, replaces: null },
+        });
+    });
+
+    it('offers no upload without the stage route, keeping the documents and their downloads', () => {
+        render(
+            <AuditorAudit
+                {...withStage<LedgerStage>(ledger, (stage) => ({
+                    ...stage,
+                    upload: null,
+                    documents: stage.documents.map((document) => ({
+                        ...document,
+                        link: {
+                            url: `/auditor/reports/fa_huye/ledger/${document.id}/original`,
+                            method: 'get',
+                        },
+                    })),
+                }))}
+            />,
+        );
+        const dialog = sheet();
+
+        expect(
+            within(dialog).queryByLabelText('Ledger document file'),
+        ).not.toBeInTheDocument();
+        expect(
+            within(dialog).queryByRole('button', { name: /ledger/iu }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(dialog).queryByRole('button', {
+                name: 'Re-scan this document',
+            }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(dialog).queryByText(/Upload the original ledger/u),
+        ).not.toBeInTheDocument();
+        expect(
+            within(dialog).getByText('Huye-Motors-ledger-Q3.pdf'),
+        ).toBeInTheDocument();
+        expect(
+            within(dialog).getAllByRole('link', { name: 'Download original' }),
+        ).toHaveLength(2);
+    });
+
+    it('offers no upload when the ledger is read from a later step', () => {
+        const page = props(ledgerIngested);
+
+        render(
+            <AuditorAudit
+                {...page}
+                steps={page.steps.map((step) => ({
+                    ...step,
+                    state: step.key === 'seal' ? 'current' : 'done',
+                }))}
+            />,
+        );
+
+        expect(
+            screen.queryByLabelText('Ledger document file'),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', {
+                name: /Add another ledger document/u,
+            }),
+        ).not.toBeInTheDocument();
+        expect(screen.getAllByText('Received · not yet reviewed')).toHaveLength(
+            2,
+        );
+    });
+
+    it('offers no download for a document without a link', () => {
+        render(<AuditorAudit {...props(ledger)} />);
+
+        expect(
+            screen.queryByRole('link', { name: 'Download original' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows a received document as not yet reviewed, never approved', () => {
+        render(<AuditorAudit {...props(ledgerIngested)} />);
+
+        expect(screen.getAllByText('Received · not yet reviewed')).toHaveLength(
+            2,
+        );
+        expect(screen.queryByText(/approved/i)).not.toBeInTheDocument();
+    });
+
+    it('shows the server’s field errors after a save', async () => {
+        inertia.queue.push(
+            invalid({ observed_stock: 'Enter the value you counted.' }),
+        );
+        const { user } = renderWithUser(<AuditorAudit {...props(ledger)} />);
+
+        await user.click(screen.getByRole('button', { name: 'Review & seal' }));
+
+        expect(
+            await screen.findByText('Enter the value you counted.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByLabelText('Observed on site · stock value (RWF)'),
+        ).toHaveAttribute('aria-invalid', 'true');
+    });
+
+    it.each([
+        [
+            {
+                document:
+                    'The ledger must be a PDF or UTF-8 CSV of at most 10 MB.',
+            },
+        ],
+        [{ replaces: 'That document is not on this audit.' }],
+    ])(
+        'shows why an upload was refused beside the upload: %j',
+        async (errors) => {
+            inertia.queue.push(invalid(errors));
+            const { user } = renderWithUser(
+                <AuditorAudit {...props(ledger)} />,
+            );
+
+            await user.upload(
+                screen.getByLabelText('Ledger document file'),
+                new File(['x'.repeat(10)], 'huge.pdf', {
+                    type: 'application/pdf',
+                }),
+            );
+
+            const [message] = Object.values(errors);
+
+            expect(await screen.findByText(message)).toBeInTheDocument();
+            expect(screen.getAllByText(message)).toHaveLength(1);
+            expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+        },
+    );
+
+    it('names the formats and the limit, and accepts only a PDF or CSV', () => {
+        render(<AuditorAudit {...props(ledger)} />);
+
+        expect(
+            screen.getByText(
+                'Upload the original ledger as a PDF or CSV (up to 10 MB). A scanned ledger can be a PDF; a scan without text is marked for manual source review.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByLabelText('Ledger document file')).toHaveAttribute(
+            'accept',
+            'application/pdf,.pdf,text/csv,.csv',
+        );
+        expect(sheet()).not.toHaveTextContent(/OCR|PNG|TIFF/u);
+    });
+
+    it.each([
+        [
+            new File(['x'], 'ledger.png', { type: 'image/png' }),
+            'Choose the ledger as a PDF or CSV file.',
+        ],
+        [
+            new File(['x'], 'ledger.tiff', { type: 'image/tiff' }),
+            'Choose the ledger as a PDF or CSV file.',
+        ],
+        [
+            new File(['x'.repeat(10 * 1024 * 1024 + 1)], 'ledger.pdf', {
+                type: 'application/pdf',
+            }),
+            'This file is larger than 10 MB. Upload a PDF or CSV of 10 MB or less.',
+        ],
+    ])(
+        'keeps a file the server would refuse on the page: %#',
+        (chosen, message) => {
+            render(<AuditorAudit {...props(ledger)} />);
+            const input = screen.getByLabelText('Ledger document file');
+
+            /* Past the picker's own filter, as a drag or a loose picker could be. */
+            fireEvent.change(input, { target: { files: [chosen] } });
+
+            expect(screen.getByText(message)).toBeInTheDocument();
+            expect(inertia.calls).toHaveLength(0);
+        },
+    );
+
+    it('sends a CSV the browser types loosely, at exactly the limit, and clears an earlier complaint', () => {
+        inertia.queue.push(
+            answers(
+                operation({
+                    data: {
+                        next: {
+                            url: '/preview/auditor-audit-ledger',
+                            method: 'get',
+                        },
+                    },
+                }),
+            ),
+        );
+        render(<AuditorAudit {...props(ledger)} />);
+        const input = screen.getByLabelText('Ledger document file');
+
+        fireEvent.change(input, {
+            target: {
+                files: [new File(['x'], 'ledger.png', { type: 'image/png' })],
+            },
+        });
+        expect(
+            screen.getByText('Choose the ledger as a PDF or CSV file.'),
+        ).toBeInTheDocument();
+
+        const csv = new File(['x'.repeat(10 * 1024 * 1024)], 'Stock.CSV', {
+            type: 'application/vnd.ms-excel',
+        });
+
+        fireEvent.change(input, { target: { files: [csv] } });
+
+        expect(
+            screen.queryByText('Choose the ledger as a PDF or CSV file.'),
+        ).not.toBeInTheDocument();
+        expect(inertia.calls[0].body).toMatchObject({
+            step: 'ledger',
+            document: csv,
+        });
+    });
+
+    it('sends a PDF or CSV named without its extension, by its type', async () => {
+        inertia.queue.push(answers(operation()), answers(operation()));
+        const { user } = renderWithUser(<AuditorAudit {...props(ledger)} />);
+        const input = screen.getByLabelText('Ledger document file');
+
+        await user.upload(
+            input,
+            new File(['%PDF'], 'ledger', { type: 'application/pdf' }),
+        );
+        await waitFor(() => expect(inertia.calls).toHaveLength(1));
+        await user.upload(
+            input,
+            new File(['a,b'], 'ledger', { type: 'text/csv' }),
+        );
+        await waitFor(() => expect(inertia.calls).toHaveLength(2));
+    });
+
+    it('banners a field error the step has no field for', async () => {
+        inertia.queue.push(invalid({ step: 'This step is not open.' }));
+        const { user } = renderWithUser(
+            <AuditorAudit {...props(photos)} can_continue />,
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            'This step is not open.',
+        );
+    });
+
+    it('starts empty and blocks the reconciliation tick', () => {
         render(<AuditorAudit {...props(ledgerEmpty)} />);
         const dialog = sheet();
 
         expect(within(dialog).getByText('None attached')).toBeInTheDocument();
         expect(
             within(dialog).getByRole('button', {
-                name: /Attach ledger document/,
+                name: 'Attach the ledger (PDF or CSV)',
             }),
         ).toBeInTheDocument();
         expect(
@@ -465,10 +1000,68 @@ describe('Audit procedure — ledger reconciliation', () => {
                 'Attach and pass at least one ledger document first.',
             ),
         ).toBeInTheDocument();
-        expect(
-            within(dialog).getByText('Enter the value you counted.'),
-        ).toBeInTheDocument();
         expect(within(dialog).queryByText(/tolerance/)).not.toBeInTheDocument();
+    });
+
+    it('reads an undeclared stock as not declared, never zero, and keeps reconciliation blocked', async () => {
+        const { user } = renderWithUser(
+            <AuditorAudit {...props(ledgerUndeclared)} />,
+        );
+        const dialog = sheet();
+        const tick = within(dialog).getByRole('checkbox', {
+            name: /reconcile with the digital statements/,
+        });
+
+        expect(within(dialog).getByText('Not declared')).toBeInTheDocument();
+        expect(
+            within(dialog).getByText(
+                'The business has not declared a stock value, so there is no reported figure to compare your count with. Record what you counted.',
+            ),
+        ).toBeInTheDocument();
+        expect(within(dialog).queryByText('RWF 0')).not.toBeInTheDocument();
+        expect(within(dialog).queryByText(/tolerance/)).not.toBeInTheDocument();
+        /* A parsed ledger alone does not open the reconciliation tick. */
+        expect(tick).toBeDisabled();
+        expect(tick).not.toBeChecked();
+        expect(
+            within(dialog).getByText(
+                'Reconciliation stays blocked until the business declares its stock.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(dialog).queryByText(
+                'Attach and pass at least one ledger document first.',
+            ),
+        ).not.toBeInTheDocument();
+        expect(
+            within(dialog).getByRole('button', { name: 'Review & seal' }),
+        ).toBeDisabled();
+
+        await user.click(tick);
+        expect(tick).not.toBeChecked();
+    });
+
+    it('never records a reconciliation against an undeclared stock', async () => {
+        const { user } = renderWithUser(
+            <AuditorAudit
+                {...withStage<LedgerStage>(ledgerUndeclared, (stage) => ({
+                    ...stage,
+                    reconciled: true,
+                }))}
+                can_continue
+            />,
+        );
+
+        expect(
+            screen.getByRole('checkbox', { name: /reconcile/ }),
+        ).not.toBeChecked();
+        await user.click(screen.getByRole('button', { name: 'Review & seal' }));
+        expect(inertia.calls[0].body).toEqual({
+            ...COMMAND,
+            observed_stock: '36400000',
+            reconciled: false,
+            step: 'ledger',
+        });
     });
 
     it('shows a variance inside tolerance', () => {
@@ -503,23 +1096,43 @@ describe('Audit procedure — monthly statements and count', () => {
         expect(within(dialog).getByText('RWF 33.6M')).toHaveClass(
             'text-rz-positive',
         );
-        expect(within(dialog).getByText('1.31×')).toHaveClass(
+        /* A factual cover with no approved thresholds: shown neutrally, never as a band. */
+        expect(within(dialog).getByText('1.31×')).toHaveClass('text-rz-ink');
+        expect(within(dialog).getByText('1.31×')).not.toHaveClass(
             'text-rz-positive',
         );
-        expect(
-            within(dialog).getByRole('link', {
-                name: /GreenLeaf-Agro-2026-09.pdf/,
-            }),
-        ).toBeInTheDocument();
         expect(
             within(dialog).getByRole('button', { name: 'Start the count' }),
         ).toBeEnabled();
     });
 
-    it.each([
-        ['watch', 'text-rz-ink'],
-        ['below', 'text-[#d0342c]'],
-    ] as const)('colours a %s liquidity cover', (band, tone) => {
+    it('lists every source document of the month as an ordinary download link', async () => {
+        const { user } = renderWithUser(
+            <AuditorAudit {...props(statements)} />,
+        );
+        const documents = within(sheet('GreenLeaf Agro')).getByRole('list', {
+            name: 'Source documents',
+        });
+        const links = within(documents).getAllByRole('link');
+
+        expect(links.map((link) => link.textContent)).toEqual([
+            'GreenLeaf-Agro-BK-current-2026-09.pdfView',
+            'GreenLeaf-Agro-BK-savings-2026-09.pdfView',
+            'GreenLeaf-Agro-MoMo-2026-09.csvView',
+        ]);
+        expect(links.map((link) => link.getAttribute('href'))).toEqual([
+            '/preview/auditor-audit-statements?document=sd_bk_current',
+            '/preview/auditor-audit-statements?document=sd_bk_savings',
+            '/preview/auditor-audit-statements?document=sd_momo',
+        ]);
+
+        /* A plain anchor: the browser downloads it, and Inertia never visits it. */
+        links[1].addEventListener('click', (event) => event.preventDefault());
+        await user.click(links[1]);
+        expect(inertia.visits).toHaveLength(0);
+    });
+
+    it('says when a month has no source documents on file', () => {
         render(
             <AuditorAudit
                 {...withStage<StatementsStage>(statements, (stage) => ({
@@ -529,13 +1142,42 @@ describe('Audit procedure — monthly statements and count', () => {
                             StatementsStage['statements'],
                             { status: 'available' }
                         >),
-                        cover: { value: '0.9', band },
+                        documents: [],
                     },
                 }))}
             />,
         );
 
-        expect(screen.getByText('0.9×')).toHaveClass(tone);
+        expect(
+            screen.getByText('No source documents are on file for this month.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('list', { name: 'Source documents' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('reads a cover that cannot be computed as unavailable, never zero', () => {
+        render(<AuditorAudit {...props(statementsNoCover)} />);
+        const dialog = sheet('GreenLeaf Agro');
+
+        expect(within(dialog).getByText('Unavailable')).toHaveClass(
+            'text-rz-secondary',
+        );
+        expect(within(dialog).queryByText(/×/u)).not.toBeInTheDocument();
+        expect(
+            within(
+                within(dialog).getByRole('list', { name: 'Source documents' }),
+            ).getAllByRole('link'),
+        ).toHaveLength(1);
+    });
+
+    it('never tones a net outflow green', () => {
+        render(<AuditorAudit {...props(statementsNetOutflow)} />);
+        const net = screen.getByText('RWF −10.4M');
+
+        expect(net).toHaveClass('text-rz-ink');
+        expect(net).not.toHaveClass('text-rz-positive');
+        expect(screen.getByText('0.92×')).toHaveClass('text-rz-ink');
     });
 
     it('says when the statements are not on file yet', () => {
@@ -617,14 +1259,17 @@ describe('Audit procedure — monthly statements and count', () => {
         fireEvent.click(
             within(dialog).getByRole('button', { name: 'Continue to photos' }),
         );
-        expect(inertia.posts[0].data).toEqual({
+        expect(inertia.calls[0].body).toEqual({
             financial_proofs: ['momo', 'po'],
             inventory_proofs: ['photo', 'delivery'],
             cash: '1200000',
             stock_units: '188',
             operational_status: 'suspended',
             step: 'count',
-            revision: 3,
+            audit_id: 'mr_greenleaf',
+            expected_revision: 3,
+            identity_context_revision: 3,
+            request_id: expect.any(String),
         });
     });
 
@@ -651,6 +1296,7 @@ describe('Audit procedure — monthly statements and count', () => {
             screen.getByText('No reported stock baseline for this period.'),
         ).toBeInTheDocument();
         expect(screen.getAllByText('—')).toHaveLength(2);
+        expect(screen.queryByText('Unavailable')).not.toBeInTheDocument();
         expect(
             screen.getByLabelText('Observed on site · cash (RWF)'),
         ).toHaveValue('');
@@ -660,204 +1306,62 @@ describe('Audit procedure — monthly statements and count', () => {
     });
 });
 
-describe('Audit procedure — seal', () => {
-    it('needs a note before the findings can be previewed, then seals with the PIN', async () => {
-        const { user } = renderWithUser(<AuditorAudit {...props(seal)} />);
-        const dialog = sheet();
-        const preview = within(dialog).getByRole('button', {
-            name: 'Preview findings',
-        });
-
-        expect(within(dialog).getByText('Stock variance')).toBeInTheDocument();
-        expect(
-            within(dialog).getByText('−4.2% · outside tolerance'),
-        ).toHaveClass('text-rz-danger-text');
-        expect(within(dialog).getByText('Required')).toBeInTheDocument();
-        expect(preview).toBeDisabled();
-        expect(
-            within(dialog).queryByRole('button', { name: 'Suggest changes' }),
-        ).not.toBeInTheDocument();
-
-        await user.click(within(dialog).getByLabelText('Assessment note'));
-        await user.paste(NOTE.slice(0, 100));
-        expect(within(dialog).getByText('Required · done')).toBeInTheDocument();
-        expect(
-            within(dialog).getByText(`${NOTE.slice(0, 100).length} / 100`),
-        ).toBeInTheDocument();
-
-        await user.click(preview);
-
-        const findings = screen.getByRole('dialog', { name: 'Huye Motors' });
-
-        expect(
-            within(findings).getByText('Factual findings · MVP-AUP-1'),
-        ).toBeInTheDocument();
-        expect(
-            within(findings).getByText(
-                'Scope of engagement & agreed-upon procedures',
-            ),
-        ).toBeInTheDocument();
-        expect(within(findings).getByText(/sha256:9f2c/)).toBeInTheDocument();
-
-        await user.click(
-            within(findings).getByRole('button', {
-                name: 'Apply ICPAR licence seal',
-            }),
-        );
-        expect(
-            within(findings).getByText(
-                'Enter your Rozine PIN to apply licence ICPAR/P-2026/0481.',
-            ),
-        ).toBeInTheDocument();
-
-        const submit = within(findings).getByRole('button', {
-            name: 'Seal & submit to Rozine',
-        });
-
-        expect(submit).toBeDisabled();
-
-        for (const digit of ['4', '8', '2', '9', '7']) {
-            await user.click(
-                within(findings).getByRole('button', { name: digit }),
-            );
-        }
-
-        expect(
-            within(findings).getByRole('img', {
-                name: '4 of 4 digits entered',
-            }),
-        ).toBeInTheDocument();
-        await user.click(
-            within(findings).getByRole('button', { name: 'Delete digit' }),
-        );
-        expect(
-            within(findings).getByRole('img', {
-                name: '3 of 4 digits entered',
-            }),
-        ).toBeInTheDocument();
-        await user.click(within(findings).getByRole('button', { name: '1' }));
-        await user.click(submit);
-
-        expect(inertia.posts[0]).toMatchObject({
-            url: '/preview/auditor-audit-sealed',
-            data: {
-                note: NOTE.slice(0, 100),
-                pin: '4821',
-                revision: 7,
-                digest: 'sha256:9f2c4e71b0a85d3e6c1f47a2d9b83e05c6a1f24d7e98b3c05a6d1e2f47b8c9d0',
-            },
-        });
-
-        act(() => inertia.posts[0].options.onError?.());
-        expect(
-            within(findings).getByRole('img', {
-                name: '0 of 4 digits entered',
-            }),
-        ).toBeInTheDocument();
-
-        await user.click(
-            within(findings).getByRole('button', { name: 'Close' }),
-        );
-        expect(
-            screen.queryByRole('dialog', { name: 'Huye Motors' }),
-        ).not.toBeInTheDocument();
-    });
-
-    it('shows server errors on the note and the PIN', async () => {
-        inertia.errors = {
-            note: 'Say what you saw.',
-            pin: 'That PIN is not right.',
-        };
-        const base = withStage<SealStage>(seal, (stage) => ({
-            ...stage,
-            note: { ...stage.note, required: false },
-        }));
-        const { user } = renderWithUser(<AuditorAudit {...base} />);
-
-        expect(screen.getByText('Optional')).toBeInTheDocument();
-        expect(screen.getByText('Say what you saw.')).toBeInTheDocument();
-        await user.click(
-            screen.getByRole('button', { name: 'Preview findings' }),
-        );
-        await user.click(
-            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
-        );
-        expect(screen.getByText('That PIN is not right.')).toBeInTheDocument();
-    });
-
-    it('keeps the preview closed while earlier steps are incomplete, and still offers a conflict', async () => {
-        const { user } = renderWithUser(
+describe('Audit procedure — retained records', () => {
+    it('reads a count period that was never pinned as unavailable', () => {
+        render(
             <AuditorAudit
-                {...withStage<SealStage>(seal, (stage) => ({
+                {...withStage<CountStage>(count, (stage) => ({
                     ...stage,
-                    note: { ...stage.note, required: false },
+                    period: null,
+                    cash: { ...stage.cash, statement: null, variance: null },
+                    stock: {
+                        ...stage.stock,
+                        reported_units: null,
+                        variance: null,
+                    },
                 }))}
-                can_continue={false}
+            />,
+        );
+        const dialog = sheet('GreenLeaf Agro');
+
+        expect(within(dialog).getByText('Unavailable')).toHaveClass(
+            'text-rz-secondary',
+        );
+        expect(within(dialog).queryByText(/ – /u)).not.toBeInTheDocument();
+        /* Missing declarations say so; none reads as a zero. */
+        expect(
+            within(dialog).getByText(
+                'No statement balance on file for this period.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(dialog).getByText(
+                'No reported stock baseline for this period.',
+            ),
+        ).toBeInTheDocument();
+        expect(within(dialog).queryByText(/RWF 0\b/u)).not.toBeInTheDocument();
+        expect(
+            within(dialog).queryByText(/\b0 units/u),
+        ).not.toBeInTheDocument();
+    });
+
+    it('offers no amendment while the stage does not enable it', () => {
+        const page = props(sealedMonthly);
+
+        render(
+            <AuditorAudit
+                {...page}
+                actions={{ ...page.actions, amend: null }}
             />,
         );
 
         expect(
-            screen.getByRole('button', { name: 'Preview findings' }),
-        ).toBeDisabled();
-        await user.click(
-            within(sheet()).getByRole('button', { name: 'Declare a conflict' }),
-        );
-        expect(
-            screen.getByRole('dialog', {
-                name: 'Declare an interest in Huye Motors',
-            }),
-        ).toBeInTheDocument();
+            screen.queryByRole('button', { name: 'Start a linked amendment' }),
+        ).not.toBeInTheDocument();
     });
+});
 
-    it('sends a monthly report back or rejects it with a recorded reason', async () => {
-        const { user } = renderWithUser(
-            <AuditorAudit {...props(monthlySeal)} />,
-        );
-        const dialog = sheet('GreenLeaf Agro');
-
-        expect(within(dialog).getByText('Required · done')).toBeInTheDocument();
-
-        await user.click(
-            within(dialog).getByRole('button', { name: 'Suggest changes' }),
-        );
-        let reason = screen.getByRole('dialog', { name: 'Suggest changes' });
-
-        await user.type(
-            within(reason).getByLabelText('Reason'),
-            'Sign the count',
-        );
-        await user.click(
-            within(reason).getByRole('button', { name: 'Send back' }),
-        );
-        expect(inertia.posts[0]).toMatchObject({
-            url: '/preview/auditor-jobs',
-            data: { reason: 'Sign the count', revision: 3 },
-        });
-        await user.click(
-            within(reason).getByRole('button', { name: 'Cancel' }),
-        );
-
-        await user.click(
-            within(dialog).getByRole('button', { name: 'Reject & flag' }),
-        );
-        reason = screen.getByRole('dialog', { name: 'Reject & flag' });
-        expect(
-            within(reason).getByRole('button', { name: 'Reject report' }),
-        ).toHaveClass('bg-[#c0392b]');
-        await user.click(
-            within(reason).getByRole('button', { name: 'Cancel' }),
-        );
-
-        await user.click(
-            within(dialog).getByRole('button', { name: 'Preview findings' }),
-        );
-        expect(
-            screen.getByRole('dialog', {
-                name: 'GreenLeaf Agro · September 2026',
-            }),
-        ).toBeInTheDocument();
-    });
-
+describe('Audit procedure — connection', () => {
     it('renders on the server as online, without a banner', () => {
         const view = renderToString(<AuditorAudit {...props(review)} />);
 
@@ -907,18 +1411,270 @@ describe('Audit procedure — after the seal', () => {
             }),
         ).not.toBeInTheDocument();
         expect(
-            within(dialog).queryByRole('link', { name: /amendment/ }),
+            within(dialog).queryByRole('button', { name: /amendment/ }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(dialog).getByText('rpt_01J9Q3W7K9V5D1'),
+        ).toBeInTheDocument();
+        expect(
+            within(dialog).getByText('sig_01J9Q3W7M4X2T8'),
+        ).toBeInTheDocument();
+        expect(
+            within(dialog).getByText('key_icpar_p2026_0481_v1'),
+        ).toBeInTheDocument();
+        /* A Flash report has no monthly deadline: co-signing is due, with no invented date. */
+        expect(
+            within(dialog).getByText(
+                'The report is sealed and can no longer be edited. Huye Motors still needs to co-sign; it publishes to holders after that.',
+            ),
+        ).toBeInTheDocument();
+        expect(dialog).not.toHaveTextContent(/co-signs by/u);
+        expect(within(dialog).queryByRole('note')).not.toBeInTheDocument();
+    });
+
+    /** The sealed report's sheet, whose introduction says where the filing stands. */
+    const intro = (business: string) => sheet(business);
+
+    it('keeps the co-sign date a monthly report awaiting its co-signature is due by', () => {
+        render(
+            <AuditorAudit
+                {...withStage<SealedStage>(sealedMonthly, (stage) => ({
+                    ...stage,
+                    cosign: {
+                        ...stage.cosign,
+                        state: 'pending',
+                        signed_at: null,
+                    },
+                    published_at: null,
+                }))}
+            />,
+        );
+
+        expect(
+            within(intro('Kivu Coffee Roasters')).getByText(
+                'The report is sealed and can no longer be edited. Kivu Coffee Roasters co-signs by 7 Oct 2026; it publishes to holders after that.',
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it.each([
+        [sealedPublished, 'Huye Motors', '4 Oct 2026'],
+        [sealedMonthly, 'Kivu Coffee Roasters', '3 Oct 2026'],
+    ])(
+        'says a published report was co-signed and published, never that it awaits either: %#',
+        (fixture, business, date) => {
+            render(<AuditorAudit {...props(fixture)} />);
+            const text = intro(business);
+
+            expect(text).toHaveTextContent(
+                `Sealed and co-signed; published to holders on ${date}.`,
+            );
+            expect(text).not.toHaveTextContent(
+                /needs to co-sign|co-signs by|publishes to holders after/u,
+            );
+        },
+    );
+
+    const AMENDMENT = {
+        report_id: 'rpt_01J9Q3W7K9V5D1_a1',
+        link: { url: '/auditor/reports/rpt_01J9Q3W7K9V5D1_a1', method: 'get' },
+    } as const;
+
+    it('says an unpublished report you amended is replaced, never that it awaits co-signing', () => {
+        render(
+            <AuditorAudit
+                {...withStage<SealedStage>(sealed, (stage) => ({
+                    ...stage,
+                    amended_by: AMENDMENT,
+                }))}
+            />,
+        );
+        const dialog = intro('Huye Motors');
+
+        expect(
+            within(dialog).getByText(
+                "You amended this report, so it won't be co-signed or published. The amendment replaces it.",
+            ),
+        ).toBeInTheDocument();
+        expect(dialog).not.toHaveTextContent(
+            /needs to co-sign|co-signs by|publishes to holders/u,
+        );
+        expect(
+            within(dialog).getByRole('link', { name: 'Open the amendment' }),
+        ).toHaveAttribute('href', AMENDMENT.link.url);
+    });
+
+    it('keeps the published wording for a report amended after publication', () => {
+        render(
+            <AuditorAudit
+                {...withStage<SealedStage>(sealedPublished, (stage) => ({
+                    ...stage,
+                    amended_by: AMENDMENT,
+                }))}
+            />,
+        );
+        const dialog = intro('Huye Motors');
+
+        expect(dialog).toHaveTextContent(
+            'Sealed and co-signed; published to holders on 4 Oct 2026.',
+        );
+        expect(dialog).not.toHaveTextContent(/won't be co-signed/u);
+        expect(
+            within(dialog).getByRole('link', { name: 'Open the amendment' }),
+        ).toHaveAttribute('href', AMENDMENT.link.url);
+    });
+
+    it('says an overdue co-signature closed without publishing or approving anything', () => {
+        render(<AuditorAudit {...props(sealedMonthlyOverdue)} />);
+        const text = intro('Kivu Coffee Roasters');
+
+        expect(text).toHaveTextContent(
+            "The report is sealed, but Kivu Coffee Roasters's co-signing window has passed. It can no longer be co-signed and is not published; nothing is approved automatically.",
+        );
+        expect(
+            within(
+                within(sheet('Kivu Coffee Roasters')).getByRole('list', {
+                    name: 'Filing progress',
+                }),
+            ).getByText('Overdue'),
+        ).toBeInTheDocument();
+    });
+
+    it.each([
+        [
+            'signed',
+            'The report is sealed and Kivu Coffee Roasters has co-signed it. It publishes to holders next.',
+        ],
+        [
+            'declined',
+            'The report is sealed. Kivu Coffee Roasters disputed it rather than co-signing, so it is not published.',
+        ],
+    ] as const)('says where a %s, unpublished report stands', (state, text) => {
+        render(
+            <AuditorAudit
+                {...withStage<SealedStage>(sealedMonthly, (stage) => ({
+                    ...stage,
+                    cosign: { ...stage.cosign, state },
+                    published_at: null,
+                }))}
+            />,
+        );
+
+        expect(intro('Kivu Coffee Roasters')).toHaveTextContent(text);
+    });
+
+    it('says a seal cannot be verified now while keeping the sealed record and its history', () => {
+        render(<AuditorAudit {...props(sealedUnavailable)} />);
+        const dialog = sheet('Kivu Coffee Roasters');
+
+        expect(within(dialog).getByRole('note')).toHaveTextContent(
+            "This seal can't be verified right now — its signing key is no longer current. The sealed record and its history are unchanged.",
+        );
+        /* The immutable seal, signature, digest and timeline stay as they were. */
+        const stage = props(sealedUnavailable).stage as SealedStage;
+
+        expect(within(dialog).getByText(stage.digest)).toBeInTheDocument();
+        expect(
+            within(dialog).getByText(stage.signature_ref),
+        ).toBeInTheDocument();
+        expect(within(dialog).getByText(stage.key_id)).toBeInTheDocument();
+        expect(
+            within(dialog).getByRole('list', { name: 'Filing progress' }),
+        ).toBeInTheDocument();
+        expect(dialog).not.toHaveTextContent(/seal (is )?valid/iu);
+    });
+
+    it('shows no verification notice for a seal that verifies', () => {
+        render(<AuditorAudit {...props(sealedMonthly)} />);
+
+        expect(
+            screen.queryByText(/can't be verified right now/u),
         ).not.toBeInTheDocument();
     });
 
-    it('shows a co-signed, published monthly report with its amendment route', () => {
-        render(<AuditorAudit {...props(sealedMonthly)} />);
+    it('starts a linked amendment of a published monthly report as a command', async () => {
+        inertia.queue.push(
+            answers(
+                operation({
+                    code: 'AUDIT_AMENDMENT_CREATED',
+                    data: {
+                        next: {
+                            url: '/preview/auditor-audit-amendment',
+                            method: 'get',
+                        },
+                    },
+                }),
+            ),
+        );
+        const { user } = renderWithUser(
+            <AuditorAudit {...props(sealedMonthly)} />,
+        );
 
         expect(screen.getByText('3 Oct 2026 · 11:20')).toBeInTheDocument();
         expect(screen.getByText('3 Oct 2026 · 11:21')).toBeInTheDocument();
+
+        const amend = screen.getByRole('button', {
+            name: 'Start a linked amendment',
+        });
+
+        await user.click(amend);
+        /* Exactly the amendment's target and revision, plus the common fields. */
+        expect(inertia.calls[0]).toEqual({
+            url: '/preview/auditor-audit-amendment',
+            method: 'post',
+            body: {
+                audit_id: 'mr_greenleaf',
+                expected_revision: 3,
+                identity_context_revision: 3,
+                request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u),
+            },
+        });
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([
+                { url: '/preview/auditor-audit-amendment' },
+            ]),
+        );
+    });
+
+    it('says an amended report stays as sealed and links its amendment', () => {
+        render(
+            <AuditorAudit
+                {...withStage<SealedStage>(sealedMonthly, (stage) => ({
+                    ...stage,
+                    amended_by: {
+                        report_id: 'rpt_02',
+                        link: {
+                            url: '/preview/auditor-audit-amendment',
+                            method: 'get',
+                        },
+                    },
+                }))}
+                allowed_actions={[]}
+            />,
+        );
+
         expect(
-            screen.getByRole('link', { name: 'Start a linked amendment' }),
+            screen.getByText(
+                /Report rpt_02 amends this one; this report stays as sealed./u,
+            ),
         ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Open the amendment' }),
+        ).toHaveAttribute('href', '/preview/auditor-audit-amendment');
+        expect(
+            screen.queryByRole('button', { name: 'Start a linked amendment' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('opens an amendment with its link to the unchanged original', () => {
+        render(<AuditorAudit {...props(amendment)} />);
+
+        expect(screen.getByRole('note')).toHaveTextContent(
+            'This is a linked amendment of report rpt_01J9Q3W7K9V5D1. That report remains unchanged.',
+        );
+        expect(
+            screen.getByRole('link', { name: 'Open the original' }),
+        ).toHaveAttribute('href', '/preview/auditor-audit-sealed-monthly');
     });
 
     it.each([
@@ -936,5 +1692,214 @@ describe('Audit procedure — after the seal', () => {
         );
 
         expect(screen.getByText(label)).toBeInTheDocument();
+    });
+});
+
+describe('Audit procedure — a blocking conflict', () => {
+    it('keeps only the receipt and a minimal status', () => {
+        render(<AuditorAudit {...props(blocked)} />);
+        const dialog = sheet();
+
+        expect(
+            within(dialog).getByRole('heading', { name: 'Conflict recorded' }),
+        ).toBeInTheDocument();
+        expect(
+            within(dialog).getByText(
+                'Your conflict has been recorded. Work on this assignment is stopped while Audit Operations arranges reassignment.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(dialog).getByText('Reassignment pending'),
+        ).toBeInTheDocument();
+        expect(
+            within(dialog).getByText(
+                'Owner, director, employee or adviser tie',
+            ),
+        ).toBeInTheDocument();
+        expect(within(dialog).queryByRole('timer')).not.toBeInTheDocument();
+        expect(
+            within(dialog).queryByRole('list', { name: 'Audit steps' }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(dialog).queryByRole('button', { name: /Continue|Declare/ }),
+        ).not.toBeInTheDocument();
+        expect(within(dialog).queryByText(/check-in/i)).not.toBeInTheDocument();
+        expect(
+            within(dialog).getByRole('link', { name: 'Back to jobs' }),
+        ).toHaveAttribute('href', '/preview/auditor-jobs');
+    });
+
+    it('withdraws the procedure the moment a blocking conflict is recorded', async () => {
+        inertia.queue.push(
+            answers(
+                operation({
+                    code: 'CONFLICT_RECORDED',
+                    data: {
+                        next: { url: '/preview/auditor-jobs', method: 'get' },
+                        conflict: {
+                            conflict_id: 'cf_9',
+                            kind: 'financial_interest',
+                            declared_at: '2026-10-03T17:00:00Z',
+                            note: 'I hold shares.',
+                            blocking: true,
+                            status: 'recorded',
+                        },
+                    },
+                }),
+            ),
+        );
+        const { user } = renderWithUser(
+            <AuditorAudit {...props(checkInDone)} />,
+        );
+
+        await user.click(
+            within(sheet()).getByRole('button', { name: 'Declare a conflict' }),
+        );
+        await user.click(
+            screen.getByRole('radio', { name: 'Financial interest' }),
+        );
+        await user.click(
+            screen.getByLabelText('Factual explanation (required)'),
+        );
+        await user.paste('I hold shares.');
+        await user.click(
+            screen.getByRole('button', { name: 'Declare interest' }),
+        );
+
+        expect(inertia.calls[0].body).toMatchObject({
+            assignment_id: 'asg_fa_huye',
+            expected_revision: 4,
+            kind: 'financial_interest',
+        });
+
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([{ url: '/preview/auditor-jobs' }]),
+        );
+        expect(
+            within(sheet()).queryByText('Checked in on site · 18:02'),
+        ).not.toBeInTheDocument();
+        expect(within(sheet()).getByText('Recorded')).toBeInTheDocument();
+    });
+});
+
+describe('Audit procedure — the monthly sheet on a phone', () => {
+    /** The lg breakpoint, switchable at run time as a window resize would. */
+    const viewport = (initial: boolean) => {
+        let matches = initial;
+        const listeners = new Set<() => void>();
+
+        vi.stubGlobal('matchMedia', (query: string) => ({
+            get matches() {
+                return matches;
+            },
+            media: query,
+            addEventListener: (_: string, listener: () => void) =>
+                listeners.add(listener),
+            removeEventListener: (_: string, listener: () => void) =>
+                listeners.delete(listener),
+        }));
+
+        return (next: boolean) => {
+            matches = next;
+            act(() => listeners.forEach((listener) => listener()));
+        };
+    };
+
+    /** Live Jobs send no monthly section, so a phone has no right backdrop at all. */
+    const liveMonthly = (): AuditProcedureProps => {
+        const page = props(statements);
+
+        return { ...page, jobs: { ...page.jobs, monthly: null } };
+    };
+
+    const startCount = () =>
+        screen.getByRole('button', { name: 'Start the count' });
+
+    afterEach(() => vi.unstubAllGlobals());
+
+    it('keeps the monthly procedure on a phone when Jobs send no monthly section', () => {
+        viewport(false);
+        render(<AuditorAudit {...liveMonthly()} />);
+
+        expect(screen.getByTestId('column-right')).toContainElement(
+            sheet('GreenLeaf Agro'),
+        );
+        expect(startCount()).toBeEnabled();
+    });
+
+    it('keeps the same procedure attached when a wide window narrows to a phone', () => {
+        const resize = viewport(true);
+
+        render(<AuditorAudit {...liveMonthly()} />);
+        const before = startCount();
+
+        resize(false);
+
+        expect(startCount()).toBe(before);
+        expect(before).toBeInTheDocument();
+        expect(screen.getByTestId('column-right')).toContainElement(before);
+    });
+
+    it('keeps the monthly section beneath the sheet on a wide screen', () => {
+        viewport(true);
+        render(<AuditorAudit {...props(statements)} />);
+        const right = screen.getByTestId('column-right');
+
+        expect(right).toContainElement(sheet('GreenLeaf Agro'));
+        expect(right).toContainElement(
+            screen.getByRole('heading', { name: 'Monthly reports' }),
+        );
+    });
+});
+
+describe('Tab columns', () => {
+    const overlay = (column: 'left' | 'right') => ({
+        column,
+        content: <div role="dialog" aria-label="Overlay" />,
+    });
+
+    it('opens a right overlay in its own column even with nothing beneath it', () => {
+        render(
+            <TabColumns
+                left={<p>Left</p>}
+                right={null}
+                overlay={overlay('right')}
+            />,
+        );
+
+        expect(screen.getByTestId('column-right')).toContainElement(
+            screen.getByRole('dialog', { name: 'Overlay' }),
+        );
+    });
+
+    it('leaves out a right column with neither content nor an overlay', () => {
+        render(
+            <TabColumns
+                left={<p>Left</p>}
+                right={null}
+                overlay={overlay('left')}
+            />,
+        );
+
+        expect(screen.queryByTestId('column-right')).not.toBeInTheDocument();
+        expect(screen.getByTestId('column-left')).toContainElement(
+            screen.getByRole('dialog', { name: 'Overlay' }),
+        );
+    });
+
+    it('draws both columns with the overlay over its own, as before', () => {
+        render(
+            <TabColumns
+                left={<p>Left</p>}
+                right={<p>Right</p>}
+                overlay={overlay('right')}
+            />,
+        );
+        const right = screen.getByTestId('column-right');
+
+        expect(right).toContainElement(screen.getByText('Right'));
+        expect(right).toContainElement(
+            screen.getByRole('dialog', { name: 'Overlay' }),
+        );
     });
 });

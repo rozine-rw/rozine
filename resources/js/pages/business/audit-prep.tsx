@@ -19,7 +19,6 @@ const FLOW = ['closes', 'visit', 'sealed', 'cosign'] as const;
 export default function BusinessAuditPrep({
     home,
     audit,
-    policy,
     links,
 }: BusinessAuditPrepProps) {
     const { t, locale } = useTranslation();
@@ -75,8 +74,11 @@ export default function BusinessAuditPrep({
                             </p>
                         </div>
                     </div>
-                    <p className="mt-3 text-[12.5px] leading-[1.55] text-rz-secondary">
-                        {t('business.audit_prep.intro', { month, seal })}
+                    <p className="mt-3 text-[12.5px] leading-[1.55] text-rz-ink">
+                        {t('business.audit_prep.intro')}
+                    </p>
+                    <p className="mt-2 text-[12.5px] leading-[1.55] text-rz-secondary">
+                        {t('business.audit_prep.seal_by', { month, seal })}
                     </p>
                     {audit.reassigned !== null && (
                         <p
@@ -176,7 +178,10 @@ export default function BusinessAuditPrep({
                                 </span>
                                 <span className="mt-[3px] block text-xs leading-normal text-rz-secondary">
                                     {t(`business.audit_prep.flow.${key}.body`, {
-                                        minutes: policy.cosign_minutes,
+                                        date: formatDayMonth(
+                                            audit.cosign_by,
+                                            locale,
+                                        ),
                                     })}
                                 </span>
                             </span>

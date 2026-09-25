@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useSheetPresence } from '@/components/auditor/commands';
 import { useTranslation } from '@/hooks/use-translation';
 
 type BottomSheetProps = {
@@ -20,6 +21,8 @@ export function BottomSheet({
     children,
 }: BottomSheetProps) {
     const { t } = useTranslation();
+
+    useSheetPresence();
 
     return (
         <div className="fixed inset-0 z-[60] flex items-end lg:absolute">

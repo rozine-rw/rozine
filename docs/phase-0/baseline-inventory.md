@@ -19,6 +19,522 @@ facts that would differ between machines, so they are excluded deliberately.
 
 ## Schema
 
+### `audit_assignment_versions`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `assignment_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `party_id` | `bpchar` | yes | — |
+| `status` | `varchar` | no | — |
+| `snapshot` | `text` | no | — |
+| `selection_basis` | `text` | no | — |
+| `actor_user_id` | `int8` | yes | — |
+| `command` | `varchar` | no | — |
+| `reason` | `text` | yes | — |
+| `policy_version` | `varchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `audit_assignment_versions_assignment_id_revision_unique` on (assignment_id, revision) — unique; `audit_assignment_versions_party_id_status_index` on (party_id, status); `audit_assignment_versions_pkey` on (id) — unique
+
+### `audit_assignments`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `party_id` | `bpchar` | yes | — |
+| `revision` | `int4` | no | — |
+| `status` | `varchar` | no | — |
+| `state` | `text` | no | — |
+| `completed_at` | `timestamptz` | yes | — |
+| `accept_by` | `timestamptz` | yes | — |
+| `created_at` | `timestamptz` | yes | — |
+| `updated_at` | `timestamptz` | yes | — |
+
+**Indexes:** `audit_assignment_business_key` on (id, business_id) — unique; `audit_assignment_open_business` on (business_id) — unique; `audit_assignments_accept_by_index` on (accept_by); `audit_assignments_party_id_status_index` on (party_id, status); `audit_assignments_pkey` on (id) — unique
+
+### `audit_conflict_declarations`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `assignment_id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `party_id` | `bpchar` | no | — |
+| `kind` | `text` | no | — |
+| `reason` | `text` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `policy_version` | `varchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `audit_conflict_declarations_assignment_id_party_id_unique` on (assignment_id, party_id) — unique; `audit_conflict_declarations_business_id_party_id_index` on (business_id, party_id); `audit_conflict_declarations_pkey` on (id) — unique
+
+### `audit_engagement_acceptances`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `audit_engagement_release_id` | `bpchar` | no | — |
+| `release_revision` | `int4` | no | — |
+| `release_sha256` | `bpchar` | no | — |
+| `party_id` | `bpchar` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `payload` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `audit_engagement_acceptance_party_key` on (id, party_id) — unique; `audit_engagement_acceptances_pkey` on (id) — unique; `audit_engagement_party_acceptance` on (audit_engagement_release_id, party_id) — unique
+
+### `audit_engagement_releases`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `status` | `varchar` | no | — |
+| `version` | `varchar` | yes | — |
+| `procedure_version` | `varchar` | no | — |
+| `documents` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `synthetic` | `bool` | no | — |
+| `approval_reference` | `text` | no | — |
+| `reason` | `text` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `audit_engagement_release_pin` on (id, revision, sha256) — unique; `audit_engagement_releases_pkey` on (id) — unique; `audit_engagement_releases_revision_unique` on (revision) — unique; `audit_engagement_releases_version_unique` on (version) — unique
+
+### `audit_ledger_extractions`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `audit_ledger_original_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `parser_version` | `varchar` | no | — |
+| `status` | `varchar` | no | — |
+| `reason_codes` | `jsonb` | no | — |
+| `record_count` | `int4` | yes | — |
+| `text` | `text` | yes | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `audit_ledger_extractions_audit_ledger_original_id_revision_uniq` on (audit_ledger_original_id, revision) — unique; `audit_ledger_extractions_pkey` on (id) — unique
+
+### `audit_ledger_originals`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `audit_report_id` | `bpchar` | no | — |
+| `report_revision` | `int4` | no | — |
+| `filename` | `text` | no | — |
+| `media_type` | `varchar` | no | — |
+| `size_bytes` | `int4` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `content` | `text` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `actor_party_id` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `audit_ledger_originals_audit_report_id_report_revision_unique` on (audit_report_id, report_revision) — unique; `audit_ledger_originals_audit_report_id_sha256_unique` on (audit_report_id, sha256) — unique; `audit_ledger_originals_pkey` on (id) — unique
+
+### `audit_location_versions`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `audit_location_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `snapshot` | `text` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `command` | `varchar` | no | — |
+| `reason` | `text` | no | — |
+| `policy_version` | `varchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `audit_location_versions_audit_location_id_revision_unique` on (audit_location_id, revision) — unique; `audit_location_versions_pkey` on (id) — unique
+
+### `audit_locations`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `office_party_id` | `bpchar` | yes | — |
+| `business_id` | `bpchar` | yes | — |
+| `revision` | `int4` | no | — |
+| `state` | `text` | no | — |
+| `created_at` | `timestamptz` | yes | — |
+| `updated_at` | `timestamptz` | yes | — |
+
+**Indexes:** `audit_locations_business_id_unique` on (business_id) — unique; `audit_locations_office_party_id_unique` on (office_party_id) — unique; `audit_locations_pkey` on (id) — unique
+
+### `audit_report_publications`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `audit_report_id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `mandate_version` | `int4` | no | — |
+| `report_revision` | `int4` | no | — |
+| `digest` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `status` | `varchar` | no | — |
+| `published_at` | `timestamptz` | yes | — |
+| `created_at` | `timestamptz` | yes | — |
+| `updated_at` | `timestamptz` | yes | — |
+
+**Indexes:** `audit_report_publications_audit_report_id_unique` on (audit_report_id) — unique; `audit_report_publications_pkey` on (id) — unique
+
+### `audit_report_seals`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `audit_report_id` | `bpchar` | no | — |
+| `report_revision` | `int4` | no | — |
+| `audit_signing_key_id` | `bpchar` | no | — |
+| `author_party_id` | `bpchar` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `digest` | `bpchar` | no | — |
+| `payload` | `text` | no | — |
+| `jws` | `text` | no | — |
+| `created_at` | `timestamptz` | no | — |
+| `step_up_proof_id` | `bpchar` | no | — |
+
+**Indexes:** `audit_report_seals_audit_report_id_unique` on (audit_report_id) — unique; `audit_report_seals_pkey` on (id) — unique; `audit_report_seals_step_up_proof_id_unique` on (step_up_proof_id) — unique
+
+### `audit_report_signatures`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `audit_report_publication_id` | `bpchar` | no | — |
+| `publication_revision` | `int4` | no | — |
+| `actor_party_id` | `bpchar` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `payload` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `audit_report_signature_party` on (audit_report_publication_id, actor_party_id) — unique; `audit_report_signature_revision` on (audit_report_publication_id, publication_revision) — unique; `audit_report_signatures_pkey` on (id) — unique
+
+### `audit_report_versions`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `audit_report_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `status` | `varchar` | no | — |
+| `step` | `varchar` | no | — |
+| `snapshot` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `actor_party_id` | `bpchar` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `command` | `varchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `audit_report_versions_audit_report_id_revision_unique` on (audit_report_id, revision) — unique; `audit_report_versions_pkey` on (id) — unique
+
+### `audit_reports`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `assignment_id` | `bpchar` | no | — |
+| `assignment_revision` | `int4` | no | — |
+| `author_party_id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `application_id` | `bpchar` | no | — |
+| `application_revision` | `int4` | no | — |
+| `application_version_id` | `bpchar` | no | — |
+| `submission_id` | `bpchar` | no | — |
+| `quote_id` | `bpchar` | no | — |
+| `amends_id` | `bpchar` | yes | — |
+| `revision` | `int4` | no | — |
+| `kind` | `varchar` | no | — |
+| `status` | `varchar` | no | — |
+| `step` | `varchar` | no | — |
+| `binding` | `text` | no | — |
+| `binding_sha256` | `bpchar` | no | — |
+| `draft` | `text` | no | — |
+| `created_at` | `timestamptz` | yes | — |
+| `updated_at` | `timestamptz` | yes | — |
+| `engagement_acceptance_id` | `bpchar` | no | — |
+
+**Indexes:** `audit_report_assignment_key` on (id, assignment_id, assignment_revision, author_party_id) — unique; `audit_report_root_assignment` on (assignment_id, assignment_revision) — unique; `audit_reports_amends_id_unique` on (amends_id) — unique; `audit_reports_pkey` on (id) — unique
+
+### `audit_signing_key_revocations`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `audit_signing_key_id` | `bpchar` | no | — |
+| `reason` | `text` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `audit_signing_key_revocations_audit_signing_key_id_unique` on (audit_signing_key_id) — unique; `audit_signing_key_revocations_pkey` on (id) — unique
+
+### `audit_signing_keys`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `private_jwk` | `text` | no | — |
+| `public_jwk` | `json` | no | — |
+| `valid_from` | `timestamptz` | no | — |
+| `rotate_at` | `timestamptz` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `audit_signing_keys_pkey` on (id) — unique
+
+### `audit_source_snapshots`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `assignment_id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `assignment_revision` | `int4` | no | — |
+| `party_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `status` | `varchar` | no | — |
+| `source_kind` | `varchar` | no | — |
+| `source_reference` | `text` | no | — |
+| `procedure_version` | `varchar` | no | — |
+| `facts` | `text` | yes | — |
+| `sha256` | `bpchar` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `reason` | `text` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `audit_source_snapshot_binding_revision` on (assignment_id, assignment_revision, revision) — unique; `audit_source_snapshots_pkey` on (id) — unique
+
+### `audit_step_up_proofs`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `actor_party_id` | `bpchar` | no | — |
+| `audit_report_id` | `bpchar` | no | — |
+| `identity_context_revision` | `int4` | no | — |
+| `report_revision` | `int4` | no | — |
+| `digest` | `bpchar` | no | — |
+| `credential_binding` | `bpchar` | no | — |
+| `proof_sha256` | `bpchar` | no | — |
+| `expires_at` | `timestamptz` | no | — |
+| `consumed_at` | `timestamptz` | yes | — |
+| `created_at` | `timestamptz` | no | — |
+| `purpose` | `varchar` | no | `'audit.seal'::character varying` |
+
+**Indexes:** `audit_step_up_proofs_pkey` on (id) — unique; `audit_step_up_proofs_proof_sha256_unique` on (proof_sha256) — unique
+
+### `auditor_certificates`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `auditor_profile_id` | `bpchar` | no | — |
+| `filename` | `text` | no | — |
+| `media_type` | `varchar` | no | — |
+| `size_bytes` | `int4` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `content` | `text` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `auditor_certificates_pkey` on (id) — unique
+
+### `auditor_independence_reviews`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `party_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `state` | `text` | no | — |
+| `created_at` | `timestamptz` | yes | — |
+| `updated_at` | `timestamptz` | yes | — |
+
+**Indexes:** `auditor_independence_reviews_business_id_party_id_unique` on (business_id, party_id) — unique; `auditor_independence_reviews_pkey` on (id) — unique
+
+### `auditor_independence_versions`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `review_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `snapshot` | `text` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `reason` | `text` | no | — |
+| `policy_version` | `varchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `auditor_independence_versions_pkey` on (id) — unique; `auditor_independence_versions_review_id_revision_unique` on (review_id, revision) — unique
+
+### `auditor_profile_versions`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `auditor_profile_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `snapshot` | `text` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `command` | `varchar` | no | — |
+| `reason` | `text` | yes | — |
+| `policy_version` | `varchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `auditor_profile_versions_auditor_profile_id_revision_unique` on (auditor_profile_id, revision) — unique; `auditor_profile_versions_pkey` on (id) — unique
+
+### `auditor_profiles`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `party_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `state` | `text` | no | — |
+| `created_at` | `timestamptz` | yes | — |
+| `updated_at` | `timestamptz` | yes | — |
+
+**Indexes:** `auditor_profiles_party_id_unique` on (party_id) — unique; `auditor_profiles_pkey` on (id) — unique
+
+### `business_application_quotes`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `business_application_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `payload` | `text` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `application_quote_owner_unique` on (business_application_id, id) — unique; `application_quote_revision_unique` on (business_application_id, revision) — unique; `business_application_quotes_pkey` on (id) — unique
+
+### `business_application_signatures`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `business_application_id` | `bpchar` | no | — |
+| `business_application_quote_id` | `bpchar` | no | — |
+| `consent_release_id` | `bpchar` | no | — |
+| `actor_party_id` | `bpchar` | no | — |
+| `binding_sha256` | `bpchar` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `payload` | `text` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `application_signature_party_unique` on (business_application_id, binding_sha256, actor_party_id) — unique; `business_application_signatures_pkey` on (id) — unique
+
+### `business_application_submissions`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `business_application_id` | `bpchar` | no | — |
+| `business_application_quote_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `binding_sha256` | `bpchar` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `payload` | `text` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `application_submission_once` on (business_application_id) — unique; `application_submission_owner_unique` on (business_application_id, id) — unique; `application_submission_revision_unique` on (business_application_id, revision) — unique; `business_application_submissions_pkey` on (id) — unique
+
+### `business_application_versions`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `business_application_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `snapshot` | `jsonb` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `actor_party_id` | `bpchar` | no | — |
+| `mandate_version` | `int4` | no | — |
+| `policy_version` | `varchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `application_version_binding_key` on (id, business_application_id, revision) — unique; `business_application_version_unique` on (business_application_id, revision) — unique; `business_application_versions_pkey` on (id) — unique
+
+### `business_applications`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `status` | `varchar` | no | — |
+| `step` | `varchar` | no | — |
+| `draft` | `jsonb` | no | — |
+| `mandate_version` | `int4` | no | — |
+| `created_at` | `timestamp` | yes | — |
+| `updated_at` | `timestamp` | yes | — |
+| `current_quote_id` | `bpchar` | yes | — |
+| `current_submission_id` | `bpchar` | yes | — |
+
+**Indexes:** `application_business_key` on (id, business_id) — unique; `business_application_one_draft` on (business_id) — unique; `business_applications_business_id_status_index` on (business_id, status); `business_applications_one_pending` on (business_id) — unique; `business_applications_pkey` on (id) — unique
+
+### `business_credit_snapshots`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `status` | `varchar` | no | — |
+| `source_kind` | `varchar` | no | — |
+| `source_reference` | `text` | no | — |
+| `facts` | `text` | yes | — |
+| `sha256` | `bpchar` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `reason` | `text` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_credit_snapshots_business_id_revision_unique` on (business_id, revision) — unique; `business_credit_snapshots_pkey` on (id) — unique
+
+### `business_mandates`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `version` | `int4` | no | — |
+| `terms` | `jsonb` | no | — |
+| `profile` | `jsonb` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `evidence_reference` | `varchar` | no | — |
+| `reason` | `text` | no | — |
+| `policy_version` | `varchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_mandates_business_id_version_unique` on (business_id, version) — unique; `business_mandates_pkey` on (id) — unique
+
+### `business_profiles`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `entity_party_id` | `bpchar` | no | — |
+| `entity_kind` | `varchar` | no | — |
+| `profile` | `jsonb` | no | — |
+| `revision` | `int4` | no | — |
+| `mandate_version` | `int4` | no | — |
+| `created_at` | `timestamp` | yes | — |
+| `updated_at` | `timestamp` | yes | — |
+
+**Indexes:** `business_profiles_entity_party_id_unique` on (entity_party_id) — unique; `business_profiles_pkey` on (id) — unique
+
 ### `cache`
 
 | Column | Type | Nullable | Default |
@@ -38,6 +554,42 @@ facts that would differ between machines, so they are excluded deliberately.
 | `expiration` | `int8` | no | — |
 
 **Indexes:** `cache_locks_expiration_index` on (expiration); `cache_locks_pkey` on (key) — unique
+
+### `command_operations`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `actor_key` | `varchar` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `command` | `varchar` | no | — |
+| `request_id` | `uuid` | no | — |
+| `request_hash` | `bpchar` | no | — |
+| `target_type` | `varchar` | no | — |
+| `target_id` | `varchar` | no | — |
+| `result` | `jsonb` | no | — |
+| `retain_until` | `timestamptz` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `command_operations_actor_key_command_request_id_unique` on (actor_key, command, request_id) — unique; `command_operations_pkey` on (id) — unique; `command_operations_target_type_target_id_index` on (target_type, target_id)
+
+### `consent_releases`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `status` | `varchar` | no | — |
+| `documents` | `jsonb` | no | — |
+| `disclosures` | `jsonb` | no | — |
+| `synthetic` | `bool` | no | — |
+| `approval_reference` | `varchar` | no | — |
+| `reason` | `text` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `policy_version` | `varchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `consent_releases_pkey` on (id) — unique; `consent_releases_revision_unique` on (revision) — unique
 
 ### `failed_jobs`
 
@@ -276,8 +828,94 @@ facts that would differ between machines, so they are excluded deliberately.
 | `enabled` | `bool` | no | `false` |
 | `created_at` | `timestamp` | yes | — |
 | `updated_at` | `timestamp` | yes | — |
+| `roles` | `jsonb` | no | `'[]'::jsonb` |
 
 **Indexes:** `staff_accounts_pkey` on (user_id) — unique
+
+### `statement_evidence`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `created_at` | `timestamp` | yes | — |
+| `updated_at` | `timestamp` | yes | — |
+
+**Indexes:** `statement_evidence_business_id_unique` on (business_id) — unique; `statement_evidence_pkey` on (id) — unique
+
+### `statement_extractions`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `statement_original_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `parser_version` | `varchar` | no | — |
+| `status` | `varchar` | no | — |
+| `reason_codes` | `jsonb` | no | — |
+| `record_count` | `int4` | yes | — |
+| `text` | `text` | yes | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `statement_extractions_pkey` on (id) — unique; `statement_extractions_statement_original_id_revision_unique` on (statement_original_id, revision) — unique
+
+### `statement_originals`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `statement_evidence_id` | `bpchar` | no | — |
+| `evidence_revision` | `int4` | no | — |
+| `filename` | `text` | no | — |
+| `media_type` | `varchar` | no | — |
+| `size_bytes` | `int4` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `content` | `text` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `actor_party_id` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `statement_original_digest_unique` on (statement_evidence_id, sha256) — unique; `statement_original_revision_unique` on (statement_evidence_id, evidence_revision) — unique; `statement_originals_pkey` on (id) — unique
+
+### `statement_transcriptions`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `statement_evidence_id` | `bpchar` | no | — |
+| `evidence_revision` | `int4` | no | — |
+| `amends_id` | `bpchar` | yes | — |
+| `classification_version` | `varchar` | no | — |
+| `payload` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `actor_party_id` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `statement_transcription_revision_unique` on (statement_evidence_id, evidence_revision) — unique; `statement_transcriptions_amends_id_unique` on (amends_id) — unique; `statement_transcriptions_pkey` on (id) — unique
+
+### `statement_verifications`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `statement_evidence_id` | `bpchar` | no | — |
+| `transcription_id` | `bpchar` | no | — |
+| `assignment_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `source_revision` | `int4` | no | — |
+| `amends_id` | `bpchar` | yes | — |
+| `payload` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `policy_version` | `varchar` | no | — |
+| `procedure_version` | `varchar` | no | — |
+| `actor_user_id` | `int8` | no | — |
+| `actor_party_id` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+| `engagement_acceptance_id` | `bpchar` | no | — |
+
+**Indexes:** `statement_verifications_amends_id_unique` on (amends_id) — unique; `statement_verifications_pkey` on (id) — unique; `statement_verifications_statement_evidence_id_revision_unique` on (statement_evidence_id, revision) — unique
 
 ### `users`
 
@@ -300,6 +938,18 @@ facts that would differ between machines, so they are excluded deliberately.
 | `context_revision` | `int4` | no | `0` |
 
 **Indexes:** `users_email_unique` on (email) — unique; `users_party_id_index` on (party_id); `users_pkey` on (id) — unique
+
+### `verified_organization_identities`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `registry_digest` | `bpchar` | no | — |
+| `party_id` | `bpchar` | no | — |
+| `evidence_reference` | `varchar` | no | — |
+| `created_at` | `timestamp` | yes | — |
+| `updated_at` | `timestamp` | yes | — |
+
+**Indexes:** `verified_organization_identities_party_id_unique` on (party_id) — unique; `verified_organization_identities_pkey` on (registry_digest) — unique
 
 ### `verified_person_identities`
 
@@ -333,6 +983,38 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_23_101346_create_identity_parties_and_role_memberships.php |
 | 2026_09_23_143859_add_controlled_identity_access.php |
 | 2026_09_24_020204_create_staff_access_and_role_bookmarks.php |
+| 2026_09_24_042532_add_roles_to_staff_accounts.php |
+| 2026_09_24_050223_create_verified_organization_identities_table.php |
+| 2026_09_24_052148_create_command_operations_table.php |
+| 2026_09_24_053517_create_business_profiles_and_mandates.php |
+| 2026_09_24_061212_create_consent_releases_table.php |
+| 2026_09_24_063740_create_business_applications_table.php |
+| 2026_09_24_070804_create_statement_evidence_tables.php |
+| 2026_09_24_075833_add_one_open_draft_constraint_to_business_applications.php |
+| 2026_09_24_081222_create_statement_transcriptions_table.php |
+| 2026_09_24_085637_encrypt_statement_original_filenames.php |
+| 2026_09_24_093501_create_auditor_profiles_and_accreditation_history.php |
+| 2026_09_24_103630_create_audit_locations_and_history.php |
+| 2026_09_24_110246_create_auditor_independence_reviews_and_history.php |
+| 2026_09_24_113400_create_audit_assignments_and_conflicts.php |
+| 2026_09_24_124527_create_statement_verifications_table.php |
+| 2026_09_24_154501_allow_closed_audit_assignments.php |
+| 2026_09_25_012151_create_business_credit_snapshots_table.php |
+| 2026_09_25_014242_create_business_application_quotes_table.php |
+| 2026_09_25_022105_create_business_application_acceptances.php |
+| 2026_09_25_041046_protect_closed_audit_assignments.php |
+| 2026_09_25_042503_protect_submitted_business_applications.php |
+| 2026_09_25_053838_create_audit_reports_and_versions.php |
+| 2026_09_25_070105_create_audit_engagement_releases_and_acceptances.php |
+| 2026_09_25_082804_enforce_audit_engagement_source_pins.php |
+| 2026_09_25_102249_create_audit_source_snapshots_table.php |
+| 2026_09_25_114139_enforce_audit_report_amendment_lineage.php |
+| 2026_09_25_120136_create_audit_ledger_evidence_tables.php |
+| 2026_09_25_130201_enforce_audit_ledger_report_authority.php |
+| 2026_09_25_131948_enforce_audit_report_decisions_and_fresh_amendments.php |
+| 2026_09_25_134827_create_audit_report_signing_tables.php |
+| 2026_09_25_140638_create_audit_report_publication_tables.php |
+| 2026_09_25_154051_enforce_audit_seal_proof_and_publication_lineage.php |
 
 ## Routes
 
@@ -343,7 +1025,51 @@ Vendor routes excluded, matching `route:list --except-vendor`.
 | GET | `/.well-known/passkey-endpoints` | `well-known.passkeys` | `Closure` | web |
 | GET | `/` | `home` | `SiteController@index` | web |
 | GET | `/admin` | `admin.home` | `StaffHomeController@__invoke` | web, auth, verified |
+| GET | `/admin/audit-assignments/operations/{request_id}` | `staff.audit.operations.show` | `AuditOperationsController@operation` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/admin/audit-assignments/{assignment}` | `staff.audit.show` | `AuditOperationsController@show` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/admin/audit-assignments/{assignment}/close` | `staff.audit.close` | `AuditOperationsController@resolve` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/admin/audit-assignments/{assignment}/redispatch` | `staff.audit.redispatch` | `AuditOperationsController@resolve` | web, auth, throttle:60,1, cache.headers:private;no_store |
 | GET | `/api/user` | — | `Closure` | api, auth:sanctum |
+| GET | `/api/v1/audit-seals/{report}` | `api.v1.audit.seals.verify` | `AuditSealVerificationController@__invoke` | api, throttle:60,1, cache.headers:no_store |
+| POST | `/api/v1/auditor/accreditation` | `api.v1.auditor.accreditation.submit` | `Api\V1\AuditorProfileController@submit` | api, auth:sanctum, throttle:60,1 |
+| GET | `/api/v1/auditor/accreditation/certificates/{certificate}` | `api.v1.auditor.accreditation.certificates.show` | `Api\V1\AuditorProfileController@certificate` | api, auth:sanctum, throttle:60,1 |
+| POST | `/api/v1/auditor/accreditation/renewal` | `api.v1.auditor.accreditation.renew` | `Api\V1\AuditorProfileController@renew` | api, auth:sanctum, throttle:60,1 |
+| POST | `/api/v1/auditor/accreditation/withdrawal` | `api.v1.auditor.accreditation.withdraw` | `Api\V1\AuditorProfileController@withdraw` | api, auth:sanctum, throttle:60,1 |
+| GET | `/api/v1/auditor/assignment-operations/{request_id}` | `api.v1.auditor.jobs.operations.show` | `Api\V1\AuditorJobsController@operation` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/auditor/availability` | `api.v1.auditor.availability.update` | `Api\V1\AuditorProfileController@availability` | api, auth:sanctum, throttle:60,1 |
+| GET | `/api/v1/auditor/conflicts` | `api.v1.auditor.conflicts.index` | `Api\V1\AuditorJobsController@conflicts` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/auditor/engagement` | `api.v1.auditor.engagement.show` | `Api\V1\AuditorEngagementController@show` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/auditor/engagement/accept` | `api.v1.auditor.engagement.accept` | `Api\V1\AuditorEngagementController@accept` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/auditor/engagement/operations/{request_id}` | `api.v1.auditor.engagement.operations.show` | `Api\V1\AuditorEngagementController@operation` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/auditor/jobs` | `api.v1.auditor.jobs.index` | `Api\V1\AuditorJobsController@index` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/auditor/jobs/{assignment}` | `api.v1.auditor.jobs.show` | `Api\V1\AuditorJobsController@show` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/auditor/jobs/{assignment}/accept` | `api.v1.auditor.jobs.accept` | `Api\V1\AuditorJobsController@respond` | api, auth:sanctum, throttle:60,1 |
+| GET | `/api/v1/auditor/jobs/{assignment}/conflict` | `api.v1.auditor.conflicts.show` | `Api\V1\AuditorJobsController@conflict` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/auditor/jobs/{assignment}/conflict` | `api.v1.auditor.jobs.conflict` | `Api\V1\AuditorJobsController@respond` | api, auth:sanctum, throttle:60,1 |
+| POST | `/api/v1/auditor/jobs/{assignment}/decline` | `api.v1.auditor.jobs.decline` | `Api\V1\AuditorJobsController@respond` | api, auth:sanctum, throttle:60,1 |
+| POST | `/api/v1/auditor/jobs/{assignment}/report` | `api.v1.auditor.reports.start` | `Api\V1\AuditorProcedureController@start` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/auditor/operations/{request_id}` | `api.v1.auditor.operations.show` | `Api\V1\AuditorProfileController@operation` | api, auth:sanctum, throttle:60,1 |
+| GET | `/api/v1/auditor/profile` | `api.v1.auditor.profile` | `Api\V1\AuditorProfileController@show` | api, auth:sanctum, throttle:60,1 |
+| GET | `/api/v1/auditor/report-operations/{request_id}` | `api.v1.auditor.reports.operations.show` | `Api\V1\AuditorProcedureController@operation` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/auditor/reports/{report}` | `api.v1.auditor.reports.show` | `Api\V1\AuditorProcedureController@show` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/auditor/reports/{report}/amend` | `api.v1.auditor.reports.amend` | `Api\V1\AuditorProcedureController@amend` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/auditor/reports/{report}/ledgers/{document}` | `api.v1.auditor.reports.ledgers.show` | `Api\V1\AuditorProcedureController@ledger` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/auditor/reports/{report}/reject` | `api.v1.auditor.reports.reject` | `Api\V1\AuditorProcedureController@reject` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/auditor/reports/{report}/request-changes` | `api.v1.auditor.reports.request-changes` | `Api\V1\AuditorProcedureController@requestChanges` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/auditor/reports/{report}/seal` | `api.v1.auditor.reports.seal` | `Api\V1\AuditorProcedureController@seal` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/auditor/reports/{report}/statements/{document}` | `api.v1.auditor.reports.statements.show` | `Api\V1\AuditorProcedureController@statement` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/auditor/reports/{report}/step-up` | `api.v1.auditor.reports.step-up` | `Api\V1\AuditorProcedureController@stepUp` | api, auth:sanctum, throttle:60,1, throttle:audit-step-up, cache.headers:private;no_store |
+| POST | `/api/v1/auditor/reports/{report}/steps` | `api.v1.auditor.reports.save` | `Api\V1\AuditorProcedureController@save` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/business` | `api.v1.business.index` | `Api\V1\BusinessApplicationController@index` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/business/application-operations/{request_id}` | `api.v1.business.applications.operations.show` | `Api\V1\BusinessApplicationController@operation` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/business/audit-report-operations/{request_id}` | `api.v1.business.audit-reports.operations.show` | `Api\V1\BusinessAuditReportController@operation` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/business/{business}/applications` | `api.v1.business.applications.create` | `Api\V1\BusinessApplicationController@create` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/business/{business}/applications/{application}` | `api.v1.business.applications.show` | `Api\V1\BusinessApplicationController@show` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/business/{business}/applications/{application}/evaluate` | `api.v1.business.applications.evaluate` | `Api\V1\BusinessApplicationController@evaluate` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/business/{business}/applications/{application}/save` | `api.v1.business.applications.save` | `Api\V1\BusinessApplicationController@save` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/business/{business}/applications/{application}/submit` | `api.v1.business.applications.submit` | `Api\V1\BusinessApplicationController@submit` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/business/{business}/audit-reports/{report}` | `api.v1.business.audit-reports.show` | `Api\V1\BusinessAuditReportController@show` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/business/{business}/audit-reports/{report}/cosign` | `api.v1.business.audit-reports.cosign` | `Api\V1\BusinessAuditReportController@cosign` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
 | GET | `/api/v1/identity` | `api.v1.identity.show` | `Api\V1\IdentityController@__invoke` | api, auth:sanctum, throttle:60,1 |
 | POST | `/api/v1/identity/active-role` | `api.v1.identity.active-role.store` | `Api\V1\IdentityManagementController@selectRole` | api, auth:sanctum, throttle:60,1 |
 | POST | `/api/v1/identity/bookmarks` | `api.v1.identity.bookmarks.store` | `Api\V1\RoleBookmarkController@store` | api, auth:sanctum, throttle:60,1 |
@@ -352,9 +1078,52 @@ Vendor routes excluded, matching `route:list --except-vendor`.
 | POST | `/api/v1/identity/people/resolve` | `api.v1.identity.people.resolve` | `Api\V1\IdentityManagementController@resolvePerson` | api, auth:sanctum, throttle:60,1 |
 | GET | `/api/v1/identity/roles/{role}` | `api.v1.identity.roles.show` | `Api\V1\IdentityManagementController@role` | api, auth:sanctum, throttle:60,1 |
 | GET | `/api/v1/staff-access` | `api.v1.staff-access.show` | `Api\V1\StaffAccessController@__invoke` | api, auth:sanctum, throttle:60,1 |
+| GET | `/api/v1/staff/audit-assignments/operations/{request_id}` | `api.v1.staff.audit.operations.show` | `AuditOperationsController@operation` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/staff/audit-assignments/{assignment}` | `api.v1.staff.audit.show` | `AuditOperationsController@show` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/staff/audit-assignments/{assignment}/close` | `api.v1.staff.audit.close` | `AuditOperationsController@resolve` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/staff/audit-assignments/{assignment}/redispatch` | `api.v1.staff.audit.redispatch` | `AuditOperationsController@resolve` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/audit-seals/{report}` | `audit.seals.verify` | `AuditSealVerificationController@__invoke` | web, throttle:60,1, cache.headers:no_store |
 | GET | `/auditor` | `auditor.home` | `RoleHomeController@__invoke` | web, auth, verified |
-| GET | `/business` | `business.home` | `RoleHomeController@__invoke` | web, auth, verified |
+| POST | `/auditor/accreditation` | `auditor.accreditation.submit` | `AuditorProfileController@submit` | web, auth, throttle:60,1 |
+| GET | `/auditor/accreditation/certificates/{certificate}` | `auditor.accreditation.certificates.show` | `AuditorProfileController@certificate` | web, auth, throttle:60,1 |
+| POST | `/auditor/accreditation/renewal` | `auditor.accreditation.renew` | `AuditorProfileController@renew` | web, auth, throttle:60,1 |
+| POST | `/auditor/accreditation/withdrawal` | `auditor.accreditation.withdraw` | `AuditorProfileController@withdraw` | web, auth, throttle:60,1 |
+| GET | `/auditor/assignment-operations/{request_id}` | `auditor.jobs.operations.show` | `AuditorJobsController@operation` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/auditor/availability` | `auditor.availability.update` | `AuditorProfileController@availability` | web, auth, throttle:60,1 |
+| GET | `/auditor/conflicts` | `auditor.conflicts.index` | `AuditorJobsController@conflicts` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/auditor/engagement` | `auditor.engagement.show` | `AuditorEngagementController@show` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/auditor/engagement/accept` | `auditor.engagement.accept` | `AuditorEngagementController@accept` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/auditor/engagement/operations/{request_id}` | `auditor.engagement.operations.show` | `AuditorEngagementController@operation` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/auditor/jobs` | `auditor.jobs.index` | `AuditorJobsController@index` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/auditor/jobs/{assignment}` | `auditor.jobs.show` | `AuditorJobsController@show` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/auditor/jobs/{assignment}/accept` | `auditor.jobs.accept` | `AuditorJobsController@respond` | web, auth, throttle:60,1 |
+| GET | `/auditor/jobs/{assignment}/conflict` | `auditor.conflicts.show` | `AuditorJobsController@conflict` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/auditor/jobs/{assignment}/conflict` | `auditor.jobs.conflict` | `AuditorJobsController@respond` | web, auth, throttle:60,1 |
+| POST | `/auditor/jobs/{assignment}/decline` | `auditor.jobs.decline` | `AuditorJobsController@respond` | web, auth, throttle:60,1 |
+| POST | `/auditor/jobs/{assignment}/report` | `auditor.reports.start` | `AuditorProcedureController@start` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/auditor/operations/{request_id}` | `auditor.operations.show` | `AuditorProfileController@operation` | web, auth, throttle:60,1 |
+| GET | `/auditor/profile` | `auditor.profile` | `AuditorProfileController@show` | web, auth, verified |
+| GET | `/auditor/report-operations/{request_id}` | `auditor.reports.operations.show` | `AuditorProcedureController@operation` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/auditor/reports/{report}` | `auditor.reports.show` | `AuditorProcedureController@show` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/auditor/reports/{report}/amend` | `auditor.reports.amend` | `AuditorProcedureController@amend` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/auditor/reports/{report}/ledgers/{document}` | `auditor.reports.ledgers.show` | `AuditorProcedureController@ledger` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/auditor/reports/{report}/reject` | `auditor.reports.reject` | `AuditorProcedureController@reject` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/auditor/reports/{report}/request-changes` | `auditor.reports.request-changes` | `AuditorProcedureController@requestChanges` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/auditor/reports/{report}/seal` | `auditor.reports.seal` | `AuditorProcedureController@seal` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/auditor/reports/{report}/statements/{document}` | `auditor.reports.statements.show` | `AuditorProcedureController@statement` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/auditor/reports/{report}/step-up` | `auditor.reports.step-up` | `AuditorProcedureController@stepUp` | web, auth, throttle:60,1, throttle:audit-step-up, cache.headers:private;no_store |
+| POST | `/auditor/reports/{report}/steps` | `auditor.reports.save` | `AuditorProcedureController@save` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/business` | `business.home` | `RoleHomeController@__invoke` | web, auth, verified, throttle:60,1, cache.headers:private;no_store |
 | POST | `/business` | `site.business.store` | `SiteController@storeBusiness` | web, throttle:10,1 |
+| GET | `/business/application-operations/{request_id}` | `business.applications.operations.show` | `BusinessApplicationController@operation` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/business/audit-report-operations/{request_id}` | `business.audit-reports.operations.show` | `BusinessAuditReportController@operation` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/business/{business}/applications` | `business.applications.create` | `BusinessApplicationController@create` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/business/{business}/applications/{application}` | `business.applications.show` | `BusinessApplicationController@show` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/business/{business}/applications/{application}/evaluate` | `business.applications.evaluate` | `BusinessApplicationController@evaluate` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/business/{business}/applications/{application}/save` | `business.applications.save` | `BusinessApplicationController@save` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/business/{business}/applications/{application}/submit` | `business.applications.submit` | `BusinessApplicationController@submit` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/business/{business}/audit-reports/{report}` | `business.audit-reports.show` | `BusinessAuditReportController@show` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/business/{business}/audit-reports/{report}/cosign` | `business.audit-reports.cosign` | `BusinessAuditReportController@cosign` | web, auth, throttle:60,1, cache.headers:private;no_store |
 | GET | `/dashboard` | `dashboard` | `DashboardController@__invoke` | web, auth, verified |
 | POST | `/identity/active-role` | `identity.active-role.store` | `IdentityManagementController@selectRole` | web, auth, throttle:60,1 |
 | POST | `/identity/bookmarks` | `identity.bookmarks.store` | `RoleBookmarkController@store` | web, auth, throttle:60,1 |
@@ -393,15 +1162,15 @@ The ADR-0001 layering as it stands. `tests/Architecture` enforces the dependency
 
 | Layer | Path | Classes | Contents |
 |---|---|---|---|
-| Domain | `app/Domain` | 7 | `Identity\ActiveRolePolicy`, `Identity\BookmarkDestination`, `Identity\IdentityViolation`, `Identity\MembershipTransitions`, `Identity\RoleAccess`, `Pulse\PulseSector`, `Pulse\PulseUnderwriting` |
-| Application | `app/Application` | 24 | `Environment\Contracts\DemoFixtureStore`, `Environment\EnvironmentIsolation`, `Environment\ResetDemoFixtures`, `Identity\AuthorizeActiveRole`, `Identity\ChangeMembership`, `Identity\ConfigureIdentityOperator`, `Identity\ConfigureStaffAccess`, `Identity\Contracts\IdentityAccessStore`, `Identity\Contracts\IdentityRepository`, `Identity\GetIdentityContext`, `Identity\GetRoleBookmark`, `Identity\GetStaffAccess`, `Identity\RegisterIdentity`, `Identity\ResolveVerifiedPerson`, `Identity\SaveRoleBookmark`, `Identity\SelectActiveRole`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor` |
-| Infrastructure | `app/Infrastructure` | 4 | `Environment\EloquentDemoFixtureStore`, `Identity\EloquentIdentityAccessStore`, `Identity\EloquentIdentityRepository`, `Pulse\EloquentPulseSignupRepository` |
-| HTTP — controllers | `app/Http/Controllers` | 14 | `Api\V1\IdentityController`, `Api\V1\IdentityManagementController`, `Api\V1\RoleBookmarkController`, `Api\V1\StaffAccessController`, `Controller`, `DashboardController`, `IdentityManagementController`, `PulseController`, `RoleBookmarkController`, `RoleHomeController`, `Settings\ProfileController`, `Settings\SecurityController`, `SiteController`, `StaffHomeController` |
-| HTTP — requests | `app/Http/Requests` | 14 | `Identity\ChangeMembershipRequest`, `Identity\ResolvePersonRequest`, `Identity\SaveRoleBookmarkRequest`, `Identity\SelectActiveRoleRequest`, `Pulse\PreviewBusinessRequest`, `Pulse\PreviewInvestorRequest`, `Pulse\StoreBusinessSignupRequest`, `Pulse\StoreInvestorPledgeRequest`, `Settings\PasswordUpdateRequest`, `Settings\ProfileDeleteRequest`, `Settings\ProfileUpdateRequest`, `Settings\TwoFactorAuthenticationRequest`, `Site\StoreSiteBusinessRequest`, `Site\StoreSiteInvestorRequest` |
-| HTTP — resources | `app/Http/Resources` | 11 | `IdentityContextResource`, `IdentityMutationResource`, `PulseBusinessPreviewResource`, `PulseBusinessSignupReceiptResource`, `PulseInvestorPreviewResource`, `PulseInvestorSignupReceiptResource`, `PulseListingResource`, `PulsePageResource`, `PulsePolicyResource`, `RoleBookmarkResource`, `StaffAccessResource` |
+| Domain | `app/Domain` | 46 | `Auditor\AccreditationCertificate`, `Auditor\AccreditationProfile`, `Auditor\AccreditationView`, `Auditor\AuditAssignmentClock`, `Auditor\AuditEngagementDocuments`, `Auditor\AuditEngagementState`, `Auditor\AuditMonthlyFacts`, `Auditor\AuditProcedure`, `Auditor\AuditReadPolicy`, `Auditor\AuditReportDecision`, `Auditor\AuditReportWindow`, `Auditor\AuditSourceFacts`, `Auditor\AuditVariance`, `Auditor\AuditorDispatch`, `Auditor\AuditorIndependence`, `Auditor\AuditorStanding`, `Auditor\VerifiedAuditLocation`, `Auditor\Wgs84Distance`, `Business\ApplicationAcceptance`, `Business\ApplicationDraft`, `Business\ApplicationEvidence`, `Business\MandateAuthority`, `Evidence\StatementAuditReview`, `Evidence\StatementReconciliation`, `Evidence\StatementSource`, `Identity\ActiveRolePolicy`, `Identity\BookmarkDestination`, `Identity\ConsentDocuments`, `Identity\IdentityViolation`, `Identity\MembershipTransitions`, `Identity\RoleAccess`, `Identity\StaffPermission`, `Operations\CommandRejection`, `Operations\OperationResult`, `Pulse\PulseSector`, `Pulse\PulseUnderwriting`, `Underwriting\ApplicationUnderwriting`, `Underwriting\BorrowerCreditFacts`, `Underwriting\CashFlowEvidence`, `Underwriting\EngineScorecard`, `Underwriting\ExactFinancialValue`, `Underwriting\FlatReturnPricing`, `Underwriting\LoanCapacity`, `Underwriting\LoanSchedule`, `Underwriting\UnderwritingObservationWindow`, `Underwriting\UnderwritingViolation` |
+| Application | `app/Application` | 139 | `Auditor\AcceptAuditEngagementTerms`, `Auditor\AdvanceAuditAssignment`, `Auditor\AdvanceExpiredAuditOffers`, `Auditor\AmendAuditReport`, `Auditor\BuildAuditReportPreview`, `Auditor\ConfirmAuditStepUp`, `Auditor\Contracts\AuditAssignmentStore`, `Auditor\Contracts\AuditEngagementStore`, `Auditor\Contracts\AuditLedgerEvidence`, `Auditor\Contracts\AuditLedgerExtractionQueue`, `Auditor\Contracts\AuditLocationStore`, `Auditor\Contracts\AuditReportCryptography`, `Auditor\Contracts\AuditReportLifecycle`, `Auditor\Contracts\AuditReportPublicationStore`, `Auditor\Contracts\AuditReportStore`, `Auditor\Contracts\AuditSourceFactsStore`, `Auditor\Contracts\AuditStepUp`, `Auditor\Contracts\AuditorIndependenceStore`, `Auditor\Contracts\AuditorProfileStore`, `Auditor\CosignAuditReport`, `Auditor\DecideAuditReport`, `Auditor\FindAuditAssignmentOperation`, `Auditor\FindAuditCosignOperation`, `Auditor\FindAuditEngagementOperation`, `Auditor\FindAuditReportOperation`, `Auditor\FindAuditResolutionOperation`, `Auditor\FindAuditorOperation`, `Auditor\GetAssignmentAuditReport`, `Auditor\GetAuditAssignment`, `Auditor\GetAuditEngagementSummary`, `Auditor\GetAuditEngagementTerms`, `Auditor\GetAuditLocation`, `Auditor\GetAuditOperationsCase`, `Auditor\GetAuditProcedure`, `Auditor\GetAuditProcedureSources`, `Auditor\GetAuditReport`, `Auditor\GetAuditSourceFacts`, `Auditor\GetAuditorAccreditation`, `Auditor\GetAuditorIndependence`, `Auditor\GetAuditorProfile`, `Auditor\GetBusinessAuditReport`, `Auditor\GetOwnAuditConflict`, `Auditor\IngestAuditLedger`, `Auditor\ListAuditJobs`, `Auditor\ListOwnAuditConflicts`, `Auditor\MarkAuditLocationMoved`, `Auditor\ProjectAuditAssignmentOperation`, `Auditor\ReadAuditLedger`, `Auditor\ReadAuditorCertificate`, `Auditor\RecordAuditEngagementTerms`, `Auditor\RecordAuditorIndependence`, `Auditor\RecordAuditorStanding`, `Auditor\RecordIsolatedAuditSourceFacts`, `Auditor\RequestAuditAssignment`, `Auditor\ResolveAuditAssignment`, `Auditor\RespondToAuditAssignment`, `Auditor\SaveAuditReportStep`, `Auditor\SealAuditReport`, `Auditor\SetAuditorAvailability`, `Auditor\StartAuditReport`, `Auditor\SubmitAuditorAccreditation`, `Auditor\VerifyAuditLocation`, `Auditor\VerifyAuditReportSeal`, `Auditor\WithAcceptedAuditAssignment`, `Auditor\WithCurrentAuditAssignment`, `Auditor\WithdrawAuditorAccreditation`, `Business\ConfigureBusinessAuthority`, `Business\Contracts\BusinessApplicationStore`, `Business\Contracts\BusinessAuthorityStore`, `Business\Contracts\BusinessCreditFactsStore`, `Business\CreateBusinessApplication`, `Business\EvaluateBusinessApplication`, `Business\FindBusinessOperation`, `Business\GetAuditApplication`, `Business\GetBusinessApplication`, `Business\GetBusinessApplicationPage`, `Business\GetBusinessApplicationQuote`, `Business\GetBusinessApplicationReview`, `Business\GetCurrentBusinessApplication`, `Business\ListBusinessApplications`, `Business\ProjectBusinessApplicationOperation`, `Business\RecordIsolatedBusinessCreditFacts`, `Business\SaveBusinessApplication`, `Business\SubmitBusinessApplication`, `Business\WithAuditApplicationBinding`, `Business\WithBusinessAuthority`, `Business\WithBusinessReview`, `Environment\Contracts\DemoFixtureStore`, `Environment\EnvironmentIsolation`, `Environment\ResetDemoFixtures`, `Evidence\Contracts\StatementExtractionQueue`, `Evidence\Contracts\StatementStore`, `Evidence\Contracts\StatementTextExtractor`, `Evidence\FindStatementOperation`, `Evidence\FindStatementVerificationOperation`, `Evidence\GetAuditStatementVerification`, `Evidence\GetAuditStatements`, `Evidence\GetAuditTranscription`, `Evidence\GetStatementEvidence`, `Evidence\GetStatementTranscription`, `Evidence\GetStatementVerification`, `Evidence\IngestStatement`, `Evidence\ReadAuditStatement`, `Evidence\ReadStatementOriginal`, `Evidence\RecordStatementTranscription`, `Evidence\RecordStatementVerification`, `Evidence\WithBusinessStatementVerification`, `Identity\AuthorizeActiveRole`, `Identity\AuthorizeEntityRole`, `Identity\AuthorizeStaffPermission`, `Identity\ChangeMembership`, `Identity\ConfigureIdentityOperator`, `Identity\ConfigureStaffAccess`, `Identity\Contracts\Authenticator`, `Identity\Contracts\ConsentCatalog`, `Identity\Contracts\IdentityAccessStore`, `Identity\Contracts\IdentityRepository`, `Identity\GetIdentityContext`, `Identity\GetRoleBookmark`, `Identity\GetStaffAccess`, `Identity\RecordConsentRelease`, `Identity\RegisterIdentity`, `Identity\ResolveVerifiedOrganization`, `Identity\ResolveVerifiedPerson`, `Identity\SaveRoleBookmark`, `Identity\SelectActiveRole`, `Identity\VerifyAuthenticator`, `Identity\WithCurrentConsent`, `Identity\WithVerifiedParties`, `Operations\Contracts\CanonicalJson`, `Operations\Contracts\OperationJournal`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor` |
+| Infrastructure | `app/Infrastructure` | 28 | `Auditor\EloquentAuditAssignmentStore`, `Auditor\EloquentAuditEngagementStore`, `Auditor\EloquentAuditLedgerEvidence`, `Auditor\EloquentAuditLedgerExtractionQueue`, `Auditor\EloquentAuditLocationStore`, `Auditor\EloquentAuditReportLifecycle`, `Auditor\EloquentAuditReportPublicationStore`, `Auditor\EloquentAuditReportStore`, `Auditor\EloquentAuditSourceFactsStore`, `Auditor\EloquentAuditStepUp`, `Auditor\EloquentAuditorIndependenceStore`, `Auditor\EloquentAuditorProfileStore`, `Auditor\JoseAuditReportCryptography`, `Business\EloquentBusinessApplicationStore`, `Business\EloquentBusinessAuthorityStore`, `Business\EloquentBusinessCreditFactsStore`, `Environment\EloquentDemoFixtureStore`, `Evidence\EloquentStatementExtractionQueue`, `Evidence\EloquentStatementStore`, `Evidence\IsolatedStatementTextExtractor`, `Evidence\PdfAndCsvTextExtractor`, `Identity\EloquentConsentCatalog`, `Identity\EloquentIdentityAccessStore`, `Identity\EloquentIdentityRepository`, `Identity\FortifyAuthenticator`, `Operations\EloquentOperationJournal`, `Operations\JcsCanonicalJson`, `Pulse\EloquentPulseSignupRepository` |
+| HTTP — controllers | `app/Http/Controllers` | 28 | `Api\V1\AuditorEngagementController`, `Api\V1\AuditorJobsController`, `Api\V1\AuditorProcedureController`, `Api\V1\AuditorProfileController`, `Api\V1\BusinessApplicationController`, `Api\V1\BusinessAuditReportController`, `Api\V1\IdentityController`, `Api\V1\IdentityManagementController`, `Api\V1\RoleBookmarkController`, `Api\V1\StaffAccessController`, `AuditOperationsController`, `AuditSealVerificationController`, `AuditorEngagementController`, `AuditorJobsController`, `AuditorProcedureController`, `AuditorProfileController`, `BusinessApplicationController`, `BusinessAuditReportController`, `Controller`, `DashboardController`, `IdentityManagementController`, `PulseController`, `RoleBookmarkController`, `RoleHomeController`, `Settings\ProfileController`, `Settings\SecurityController`, `SiteController`, `StaffHomeController` |
+| HTTP — requests | `app/Http/Requests` | 43 | `Auditor\AcceptEngagementTermsRequest`, `Auditor\AmendAuditReportRequest`, `Auditor\AuditorCommandRequest`, `Auditor\ConfirmAuditStepUpRequest`, `Auditor\DecideAuditReportRequest`, `Auditor\ListAuditJobsRequest`, `Auditor\ResolveAuditAssignmentRequest`, `Auditor\RespondToAssignmentRequest`, `Auditor\SaveAuditReportStepRequest`, `Auditor\SealAuditReportRequest`, `Auditor\ShowAuditReportOperationRequest`, `Auditor\ShowAuditReportRequest`, `Auditor\ShowAuditResolutionOperationRequest`, `Auditor\ShowAuditorOperationRequest`, `Auditor\StartAuditReportRequest`, `Auditor\SubmitAccreditationRequest`, `Auditor\UpdateAvailabilityRequest`, `Auditor\WithdrawAccreditationRequest`, `Business\BusinessCommandRequest`, `Business\CosignAuditReportRequest`, `Business\CreateApplicationRequest`, `Business\EvaluateApplicationRequest`, `Business\ListApplicationsRequest`, `Business\SaveApplicationRequest`, `Business\ShowApplicationOperationRequest`, `Business\ShowApplicationRequest`, `Business\ShowAuditCosignOperationRequest`, `Business\ShowAuditReportRequest`, `Business\SubmitApplicationRequest`, `Identity\ChangeMembershipRequest`, `Identity\ResolvePersonRequest`, `Identity\SaveRoleBookmarkRequest`, `Identity\SelectActiveRoleRequest`, `Pulse\PreviewBusinessRequest`, `Pulse\PreviewInvestorRequest`, `Pulse\StoreBusinessSignupRequest`, `Pulse\StoreInvestorPledgeRequest`, `Settings\PasswordUpdateRequest`, `Settings\ProfileDeleteRequest`, `Settings\ProfileUpdateRequest`, `Settings\TwoFactorAuthenticationRequest`, `Site\StoreSiteBusinessRequest`, `Site\StoreSiteInvestorRequest` |
+| HTTP — resources | `app/Http/Resources` | 24 | `AuditOperationsResource`, `AuditorAccreditationResource`, `AuditorConflictsResource`, `AuditorEngagementResource`, `AuditorEngagementSummaryResource`, `AuditorFileResource`, `AuditorJobsResource`, `AuditorProcedureResource`, `AuditorProfileResource`, `BusinessApplicationResource`, `BusinessApplicationsResource`, `BusinessAuditReportResource`, `IdentityContextResource`, `IdentityMutationResource`, `OperationResource`, `PulseBusinessPreviewResource`, `PulseBusinessSignupReceiptResource`, `PulseInvestorPreviewResource`, `PulseInvestorSignupReceiptResource`, `PulseListingResource`, `PulsePageResource`, `PulsePolicyResource`, `RoleBookmarkResource`, `StaffAccessResource` |
 | HTTP — middleware | `app/Http/Middleware` | 3 | `HandleAppearance`, `HandleInertiaRequests`, `SetLocale` |
-| Models | `app/Models` | 9 | `IdentityAuditEvent`, `IdentityOperator`, `Party`, `PulseSignup`, `RoleBookmark`, `RoleMembership`, `StaffAccount`, `User`, `VerifiedPersonIdentity` |
-| Console commands | `app/Console/Commands` | 5 | `CaptureBaselineInventory`, `CheckEnvironmentIsolation`, `ConfigureIdentityOperatorCommand`, `ConfigureStaffAccessCommand`, `ResetDemo` |
+| Models | `app/Models` | 48 | `AuditAssignment`, `AuditAssignmentVersion`, `AuditConflictDeclaration`, `AuditEngagementAcceptance`, `AuditEngagementRelease`, `AuditLedgerExtraction`, `AuditLedgerOriginal`, `AuditLocation`, `AuditLocationVersion`, `AuditReport`, `AuditReportPublication`, `AuditReportSeal`, `AuditReportSignature`, `AuditReportVersion`, `AuditSigningKey`, `AuditSigningKeyRevocation`, `AuditSourceSnapshot`, `AuditStepUpProof`, `AuditorCertificate`, `AuditorIndependenceReview`, `AuditorIndependenceVersion`, `AuditorProfile`, `AuditorProfileVersion`, `BusinessApplication`, `BusinessApplicationQuote`, `BusinessApplicationSignature`, `BusinessApplicationSubmission`, `BusinessApplicationVersion`, `BusinessCreditSnapshot`, `BusinessMandate`, `BusinessProfile`, `CommandOperation`, `ConsentRelease`, `IdentityAuditEvent`, `IdentityOperator`, `Party`, `PulseSignup`, `RoleBookmark`, `RoleMembership`, `StaffAccount`, `StatementEvidence`, `StatementExtraction`, `StatementOriginal`, `StatementTranscription`, `StatementVerification`, `User`, `VerifiedOrganizationIdentity`, `VerifiedPersonIdentity` |
+| Console commands | `app/Console/Commands` | 8 | `AdvanceAuditOffers`, `CaptureBaselineInventory`, `CheckEnvironmentIsolation`, `ConfigureIdentityOperatorCommand`, `ConfigureStaffAccessCommand`, `ExtractPendingStatements`, `RecordAuditEngagementTermsCommand`, `ResetDemo` |
 
 ## CI gates
 

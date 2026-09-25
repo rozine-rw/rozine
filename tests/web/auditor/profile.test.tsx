@@ -1,15 +1,25 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AuditorProfile from '@/pages/auditor/profile';
-import type { AuditorProfileProps } from '@/types/auditor';
+import type { Accreditation, AuditorProfileProps } from '@/types/auditor';
 import availabilityFixture from '../../../resources/fixtures/ui/auditor-profile-availability.json';
 import expiredFixture from '../../../resources/fixtures/ui/auditor-profile-expired.json';
+import firstTimePendingFixture from '../../../resources/fixtures/ui/auditor-profile-first-time-pending.json';
+import firstTimeFixture from '../../../resources/fixtures/ui/auditor-profile-first-time.json';
 import pendingFixture from '../../../resources/fixtures/ui/auditor-profile-pending.json';
 import profileFixture from '../../../resources/fixtures/ui/auditor-profile.json';
 import { renderWithUser } from '../helpers/render-with-user';
-import { inertia } from './inertia';
+import { answers, inertia, invalid, operation } from './inertia';
 
 vi.mock('@inertiajs/react', () => import('./inertia'));
+
+vi.setConfig({ testTimeout: 30_000 });
 
 const props = (fixture: { props: unknown } = profileFixture) =>
     structuredClone(fixture.props) as AuditorProfileProps;
@@ -53,6 +63,19 @@ describe('Auditor Profile', () => {
     });
 
     it('submits a renewal with its certificate for staff review', async () => {
+        inertia.queue.push(
+            answers(
+                operation({
+                    code: 'ACCREDITATION_SUBMITTED',
+                    data: {
+                        next: {
+                            url: '/preview/auditor-profile-pending',
+                            method: 'get',
+                        },
+                    },
+                }),
+            ),
+        );
         const { user } = renderWithUser(<AuditorProfile {...props()} />);
 
         await user.click(
@@ -78,16 +101,143 @@ describe('Auditor Profile', () => {
             screen.getByRole('button', { name: 'Submit for review' }),
         );
 
-        expect(inertia.posts[0]).toMatchObject({
+        expect(inertia.calls[0]).toMatchObject({
             url: '/preview/auditor-profile-pending',
-            data: {
+            body: {
                 licence: 'ICPAR/CPA/1234',
                 expires_on: '2028-03-31',
                 certificate,
+                expected_revision: 6,
+                identity_context_revision: 3,
             },
-            options: { forceFormData: true },
         });
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([
+                { url: '/preview/auditor-profile-pending' },
+            ]),
+        );
+        expect(
+            screen.getByRole('button', { name: 'Renew accreditation' }),
+        ).toBeInTheDocument();
+    });
 
+    it('sends a renewal to its own route, so its lookup names the renewal', async () => {
+        const base = props();
+        const { user } = renderWithUser(
+            <AuditorProfile
+                {...base}
+                actions={{
+                    ...base.actions,
+                    renew: {
+                        url: '/auditor/accreditation/renewal',
+                        method: 'post',
+                    },
+                }}
+            />,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'Renew accreditation' }),
+        );
+        await user.click(
+            screen.getByRole('button', { name: 'Submit for review' }),
+        );
+
+        expect(inertia.calls[0]).toMatchObject({
+            url: '/auditor/accreditation/renewal',
+            body: { licence: 'ICPAR/P-2026/0481', expected_revision: 6 },
+        });
+    });
+
+    it('shows a live partner without inventing facts, hides unpublished tabs and links their own certificates', () => {
+        const base = props(pendingFixture);
+
+        render(
+            <AuditorProfile
+                {...base}
+                auditor={{
+                    name: 'Synthetic Partner',
+                    firm: null,
+                    accreditation: null,
+                    avatar_url: null,
+                    since_year: null,
+                }}
+                quality_score={null}
+                on_time_pct={null}
+                links={{
+                    ...base.links,
+                    jobs: null,
+                    portfolio: null,
+                    certificate: {
+                        url: '/auditor/accreditation/certificates/on-record',
+                        method: 'get',
+                    },
+                    submitted_certificate: {
+                        url: '/auditor/accreditation/certificates/under-review',
+                        method: 'get',
+                    },
+                }}
+            />,
+        );
+
+        expect(screen.getByText('Synthetic Partner')).toBeInTheDocument();
+        expect(screen.queryByText(/ · $/)).not.toBeInTheDocument();
+        expect(screen.getAllByText('—')).toHaveLength(2);
+        expect(screen.getByText('Practising licence')).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', {
+                name: 'Download the certificate on record',
+            }),
+        ).toHaveAttribute(
+            'href',
+            '/auditor/accreditation/certificates/on-record',
+        );
+        expect(
+            screen.getByRole('link', {
+                name: 'Download the submitted certificate',
+            }),
+        ).toHaveAttribute(
+            'href',
+            '/auditor/accreditation/certificates/under-review',
+        );
+
+        for (const nav of screen.getAllByRole('navigation', {
+            name: 'App navigation',
+        })) {
+            expect(
+                within(nav).getByRole('link', { name: /Profile/ }),
+            ).toHaveAttribute('aria-current', 'page');
+            expect(
+                within(nav).queryByRole('link', { name: /Jobs/ }),
+            ).not.toBeInTheDocument();
+            expect(
+                within(nav).queryByRole('link', { name: /Portfolio/ }),
+            ).not.toBeInTheDocument();
+        }
+    });
+
+    it('shows only the affiliation facts on record', () => {
+        const base = props();
+
+        render(
+            <AuditorProfile
+                {...base}
+                auditor={{ ...base.auditor, firm: null }}
+            />,
+        );
+
+        expect(screen.getAllByText('ICPAR · CPA')).toHaveLength(2);
+        expect(
+            screen.queryByRole('link', { name: /Download the/ }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('closes the form with Cancel', async () => {
+        const { user } = renderWithUser(<AuditorProfile {...props()} />);
+
+        await user.click(
+            screen.getByRole('button', { name: 'Renew accreditation' }),
+        );
         await user.click(screen.getByRole('button', { name: 'Cancel' }));
         expect(
             screen.getByRole('button', { name: 'Renew accreditation' }),
@@ -95,17 +245,24 @@ describe('Auditor Profile', () => {
     });
 
     it('shows renewal field errors and clears a removed certificate', async () => {
-        inertia.errors = {
-            licence: 'Enter your licence.',
-            expires_on: 'Pick a future date.',
-            certificate: 'Attach the certificate.',
-        };
+        inertia.queue.push(
+            invalid({
+                licence: 'Enter your licence.',
+                expires_on: 'Pick a future date.',
+                certificate: 'Attach the certificate.',
+            }),
+        );
         const { user } = renderWithUser(<AuditorProfile {...props()} />);
 
         await user.click(
             screen.getByRole('button', { name: 'Renew accreditation' }),
         );
-        expect(screen.getByText('Enter your licence.')).toBeInTheDocument();
+        await user.click(
+            screen.getByRole('button', { name: 'Submit for review' }),
+        );
+        expect(
+            await screen.findByText('Enter your licence.'),
+        ).toBeInTheDocument();
         expect(screen.getByText('Pick a future date.')).toBeInTheDocument();
         expect(screen.getByText('Attach the certificate.')).toBeInTheDocument();
 
@@ -122,8 +279,7 @@ describe('Auditor Profile', () => {
         ).toBeInTheDocument();
     });
 
-    it('shows a pending renewal that can be withdrawn', async () => {
-        inertia.hold = true;
+    it('shows a pending renewal, its certificate evidence, and withdraws it', async () => {
         const { user } = renderWithUser(
             <AuditorProfile {...props(pendingFixture)} />,
         );
@@ -139,14 +295,108 @@ describe('Auditor Profile', () => {
             screen.queryByRole('button', { name: 'Renew accreditation' }),
         ).not.toBeInTheDocument();
 
+        expect(
+            screen.getByText(
+                /^Certificate ev_cert_2026_0419 · SHA-256 [0-9a-f]{12}…$/u,
+            ),
+        ).toBeInTheDocument();
+
         const withdraw = screen.getByRole('button', { name: 'Withdraw' });
 
         await user.click(withdraw);
-        expect(inertia.posts[0].url).toBe('/preview/auditor-profile');
+        expect(inertia.calls[0]).toMatchObject({
+            url: '/preview/auditor-profile',
+            body: { submission_id: 'REQ-2026-0419', expected_revision: 6 },
+        });
         expect(withdraw).toBeDisabled();
+    });
 
-        act(() => inertia.finish.forEach((finish) => finish()));
-        expect(withdraw).toBeEnabled();
+    it('offers no withdrawal or renewal the server does not allow', () => {
+        render(
+            <AuditorProfile {...props(pendingFixture)} allowed_actions={[]} />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Withdraw' }),
+        ).not.toBeInTheDocument();
+
+        render(<AuditorProfile {...props()} allowed_actions={[]} />);
+        expect(
+            screen.queryByRole('button', { name: 'Renew accreditation' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('asks a first-time partner for their licence, and says it confers no standing yet', async () => {
+        inertia.queue.push(
+            answers(
+                operation({
+                    code: 'ACCREDITATION_SUBMITTED',
+                    data: {
+                        next: {
+                            url: '/preview/auditor-profile-first-time-pending',
+                            method: 'get',
+                        },
+                    },
+                }),
+            ),
+        );
+        const { user } = renderWithUser(
+            <AuditorProfile {...props(firstTimeFixture)} />,
+        );
+
+        expect(screen.getByText('Not accredited')).toBeInTheDocument();
+        expect(screen.getByText('No licence on record')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Submit your ICPAR licence for review. Submitting gives you no standing: you can take work only after an authorized Rozine staff member records the ICPAR check and its dates.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('progressbar', {
+                name: 'Days of standing left',
+            }),
+        ).not.toBeInTheDocument();
+
+        await user.click(
+            screen.getByRole('button', { name: 'Submit your accreditation' }),
+        );
+        expect(screen.getByLabelText('Licence number')).toHaveValue('');
+        await user.type(
+            screen.getByLabelText('Licence number'),
+            'ICPAR/P-2026/0512',
+        );
+        await user.type(
+            screen.getByLabelText('Licence expiry date'),
+            '2027-12-31',
+        );
+        await user.click(
+            screen.getByRole('button', { name: 'Submit for review' }),
+        );
+
+        expect(inertia.calls[0]).toMatchObject({
+            url: '/preview/auditor-profile-pending',
+            body: {
+                licence: 'ICPAR/P-2026/0512',
+                expires_on: '2027-12-31',
+                certificate: null,
+                expected_revision: 6,
+            },
+        });
+    });
+
+    it('shows a first-time submission under review', () => {
+        render(<AuditorProfile {...props(firstTimePendingFixture)} />);
+
+        expect(screen.getByText('Under review')).toBeInTheDocument();
+        expect(
+            screen.getByText('First accreditation under review'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Withdraw' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Submit your accreditation' }),
+        ).not.toBeInTheDocument();
     });
 
     it('shows an expired licence and a declined renewal', () => {
@@ -177,7 +427,9 @@ describe('Auditor Profile', () => {
         render(
             <AuditorProfile
                 {...base}
-                accreditation={{ ...base.accreditation, days_left: days }}
+                accreditation={
+                    { ...base.accreditation, days_left: days } as Accreditation
+                }
             />,
         );
 
@@ -193,7 +445,12 @@ describe('Auditor Profile', () => {
                 quality_score={null}
                 on_time_pct={null}
                 auditor={{ ...base.auditor, avatar_url: '/me.jpg' }}
-                accreditation={{ ...base.accreditation, status: 'suspended' }}
+                accreditation={
+                    {
+                        ...base.accreditation,
+                        status: 'suspended',
+                    } as Accreditation
+                }
             />,
         );
 
@@ -228,10 +485,28 @@ describe('Auditor Profile', () => {
         await user.click(
             screen.getByRole('switch', { name: 'Accepting audits' }),
         );
-        expect(inertia.posts[0]).toMatchObject({
+        expect(inertia.calls[0]).toMatchObject({
             url: '/preview/auditor-profile',
-            data: { accepting: false },
+            body: { accepting: false, expected_revision: 5 },
         });
+    });
+
+    it('keeps the switch still, with a note, when the server does not offer the change', () => {
+        render(
+            <AuditorProfile
+                {...props(availabilityFixture)}
+                allowed_actions={[]}
+            />,
+        );
+
+        expect(
+            screen.getByRole('switch', { name: 'Accepting audits' }),
+        ).toBeDisabled();
+        expect(
+            screen.getByText(
+                "Your availability can't be changed from here right now.",
+            ),
+        ).toBeInTheDocument();
     });
 
     it('reads a paused partner', () => {

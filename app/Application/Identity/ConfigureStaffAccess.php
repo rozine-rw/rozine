@@ -10,9 +10,12 @@ final class ConfigureStaffAccess
 {
     public function __construct(private IdentityAccessStore $access) {}
 
-    /** @return array<string, mixed> */
-    public function handle(int $userId, bool $enabled, string $reason, string $requestId): array
+    /**
+     * @param  list<string>  $roles
+     * @return array<string, mixed>
+     */
+    public function handle(int $userId, bool $enabled, string $reason, string $requestId, array $roles = []): array
     {
-        return $this->access->configureStaff($userId, $enabled, $reason, $requestId);
+        return $this->access->configureStaff($userId, $enabled, $reason, $requestId, $roles);
     }
 }

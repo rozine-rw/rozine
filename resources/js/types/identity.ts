@@ -65,7 +65,16 @@ export type ResolveVerifiedPersonInput = {
 export type StaffAccess = {
     contract_version: 'staff-access-v1';
     can_open_admin: boolean;
-    allowed_actions: 'admin.open'[];
+    allowed_actions: (
+        | 'admin.open'
+        | 'businesses.view'
+        | 'businesses.verify'
+        | 'applications.review'
+        | 'audit.partners.verify'
+        | 'audit.assignments.manage'
+        | 'audit.reports.view'
+        | 'consent.documents.record'
+    )[];
 };
 
 export type RoleBookmark = {

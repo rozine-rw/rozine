@@ -1,7 +1,10 @@
 {
     "component": "auditor/audit",
     "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": ["audit.save_step", "conflict.declare"],
         "audit": {
             "id": "fa_huye",
             "kind": "flash",
@@ -13,7 +16,8 @@
                 "due_at": "2026-10-04T13:59:55Z"
             },
             "revision": 7,
-            "reassigned_from": null
+            "reassigned_from": null,
+            "amends": null
         },
         "steps": [
             {
@@ -39,6 +43,10 @@
         ],
         "stage": {
             "step": "ledger",
+            "upload": {
+                "url": "/preview/auditor-audit-ledger-ingested",
+                "method": "post"
+            },
             "reported_stock": {
                 "currency": "RWF",
                 "amount": "38000000"
@@ -75,31 +83,46 @@
                         {
                             "label": "Closing balance",
                             "value": "RWF 4,812,300"
-                        },
-                        {
-                            "label": "OCR confidence",
-                            "value": "97%"
                         }
-                    ]
+                    ],
+                    "ingestion": "INGESTED_NOT_AUDIT_APPROVED",
+                    "evidence": {
+                        "evidence_id": "ev_huye_ld_1",
+                        "kind": "ledger",
+                        "sha256": "08e13bba8ea73e1b38f0b126b3d37592f6412e4e000518bf25f19855835dd062",
+                        "captured_at": null,
+                        "source": "web_upload",
+                        "device_attestation": "unavailable",
+                        "position": null,
+                        "accuracy_m": null
+                    }
                 },
                 {
                     "id": "ld_2",
-                    "name": "Receipts-September.png",
-                    "detail": "Scan · 1.1 MB",
+                    "name": "Receipts-September.csv",
+                    "detail": "CSV · 1.1 MB",
                     "state": "failed",
                     "fields": [],
-                    "failure": "OCR confidence 41% — page skew and glare made three columns unreadable. Re-scan flat at 300dpi or export the ledger as a PDF."
+                    "failure": "This CSV is not UTF-8 text, so it could not be read. Export the ledger again as a UTF-8 CSV or a PDF.",
+                    "ingestion": "INGESTED_NOT_AUDIT_APPROVED",
+                    "evidence": {
+                        "evidence_id": "ev_huye_ld_2",
+                        "kind": "ledger",
+                        "sha256": "5c22347cdde9a91cb1b63fab0e98bd545bbd502723e44c818ee4002ce1572af2",
+                        "captured_at": null,
+                        "source": "web_upload",
+                        "device_attestation": "unavailable",
+                        "position": null,
+                        "accuracy_m": null
+                    }
                 }
             ],
             "ledger_ready": true,
-            "reconciled": true,
-            "upload": {
-                "url": "/preview/auditor-audit-ledger",
-                "method": "post"
-            }
+            "reconciled": true
         },
         "can_continue": true,
         "hint": null,
+        "reason_options": null,
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",
@@ -107,6 +130,10 @@
             },
             "back": {
                 "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
                 "method": "get"
             }
         },
@@ -118,16 +145,47 @@
             "conflict": {
                 "url": "/preview/auditor-jobs-conflict",
                 "method": "post"
+            },
+            "step_up": {
+                "url": "/preview/auditor-audit-seal-step-up",
+                "method": "post"
+            },
+            "seal": {
+                "url": "/preview/auditor-audit-sealed",
+                "method": "post"
+            },
+            "request_changes": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "reject": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "amend": {
+                "url": "/preview/auditor-audit-amendment",
+                "method": "post"
             }
         },
         "outcome": null,
         "jobs": {
+            "engagement": null,
+            "contract_version": "auditor-filing-v1",
+            "identity_context_revision": 3,
             "server_time": "2026-10-03T17:00:00Z",
+            "allowed_actions": [
+                "assignment.accept",
+                "assignment.decline",
+                "conflict.declare"
+            ],
             "radius_km": 30,
             "flash_hours": 24,
             "eligible": [
                 {
                     "id": "fa_huye",
+                    "revision": 2,
+                    "state": "offered",
+                    "kind": "flash",
                     "business": "Huye Motors",
                     "sector": "logistics",
                     "district": "Gasabo",
@@ -143,6 +201,8 @@
                         "east_km": 8.4,
                         "north_km": 7.1
                     },
+                    "accept_by": "2026-10-03T17:40:00Z",
+                    "complete_by": "2026-10-04T14:00:00Z",
                     "link": {
                         "url": "/preview/auditor-file",
                         "method": "get"
@@ -160,7 +220,14 @@
                             "url": "/preview/auditor-jobs-conflict",
                             "method": "post"
                         }
-                    }
+                    },
+                    "allowed_actions": [
+                        "assignment.accept",
+                        "assignment.decline",
+                        "conflict.declare"
+                    ],
+                    "deadline": null,
+                    "reassigned_from": null
                 }
             ],
             "assigned": [],
@@ -277,8 +344,38 @@
                 "launcher": {
                     "url": "/preview/launcher-auditor",
                     "method": "get"
+                },
+                "operation": {
+                    "url": "/preview/auditor-operation-{request_id}",
+                    "method": "get"
                 }
-            }
+            },
+            "decline_options": [
+                {
+                    "code": "unavailable",
+                    "label": "Not available inside the clock",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "capacity",
+                    "label": "At capacity with active work",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "location",
+                    "label": "Cannot reach the site",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "other",
+                    "label": "Other reason",
+                    "requires_explanation": true
+                }
+            ]
+        },
+        "assignment": {
+            "id": "asg_fa_huye",
+            "revision": 4
         }
     }
 }

@@ -1,7 +1,15 @@
 {
     "component": "auditor/audit",
     "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": [
+            "audit.save_step",
+            "conflict.declare",
+            "audit.request_changes",
+            "audit.reject"
+        ],
         "audit": {
             "id": "mr_greenleaf",
             "kind": "monthly",
@@ -13,7 +21,8 @@
                 "due_at": "2026-10-07T21:59:59Z"
             },
             "revision": 3,
-            "reassigned_from": null
+            "reassigned_from": null,
+            "amends": null
         },
         "steps": [
             {
@@ -51,25 +60,96 @@
                 },
                 "cover": {
                     "value": "1.31",
-                    "band": "healthy"
+                    "band": null
                 },
-                "document": {
-                    "name": "GreenLeaf-Agro-2026-09.pdf",
-                    "link": {
-                        "url": "/preview/auditor-audit-statements",
-                        "method": "get"
+                "documents": [
+                    {
+                        "name": "GreenLeaf-Agro-BK-current-2026-09.pdf",
+                        "link": {
+                            "url": "/preview/auditor-audit-statements?document=sd_bk_current",
+                            "method": "get"
+                        }
+                    },
+                    {
+                        "name": "GreenLeaf-Agro-BK-savings-2026-09.pdf",
+                        "link": {
+                            "url": "/preview/auditor-audit-statements?document=sd_bk_savings",
+                            "method": "get"
+                        }
+                    },
+                    {
+                        "name": "GreenLeaf-Agro-MoMo-2026-09.csv",
+                        "link": {
+                            "url": "/preview/auditor-audit-statements?document=sd_momo",
+                            "method": "get"
+                        }
                     }
-                }
+                ]
             }
         },
         "can_continue": true,
         "hint": null,
+        "reason_options": {
+            "request_changes": [
+                {
+                    "code": "missing_originals",
+                    "label": "Original documents missing",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "reconciliation_difference",
+                    "label": "Unexplained reconciliation difference",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "classification_unresolved",
+                    "label": "Classification unresolved",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "debt_evidence_missing",
+                    "label": "Debt or draw evidence missing",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "capture_unverified",
+                    "label": "Capture could not be verified",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "other",
+                    "label": "Other",
+                    "requires_explanation": true
+                }
+            ],
+            "reject": [
+                {
+                    "code": "evidence_unverifiable",
+                    "label": "Evidence cannot be verified",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "procedure_incomplete",
+                    "label": "Procedure cannot be completed",
+                    "requires_explanation": true
+                },
+                {
+                    "code": "other",
+                    "label": "Other",
+                    "requires_explanation": true
+                }
+            ]
+        },
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",
                 "method": "get"
             },
-            "back": null
+            "back": null,
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
+                "method": "get"
+            }
         },
         "actions": {
             "save": {
@@ -79,16 +159,47 @@
             "conflict": {
                 "url": "/preview/auditor-jobs-conflict",
                 "method": "post"
+            },
+            "step_up": {
+                "url": "/preview/auditor-audit-seal-step-up",
+                "method": "post"
+            },
+            "seal": {
+                "url": "/preview/auditor-audit-sealed-monthly",
+                "method": "post"
+            },
+            "request_changes": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "reject": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "amend": {
+                "url": "/preview/auditor-audit-amendment",
+                "method": "post"
             }
         },
         "outcome": null,
         "jobs": {
+            "engagement": null,
+            "contract_version": "auditor-filing-v1",
+            "identity_context_revision": 3,
             "server_time": "2026-10-03T17:00:00Z",
+            "allowed_actions": [
+                "assignment.accept",
+                "assignment.decline",
+                "conflict.declare"
+            ],
             "radius_km": 30,
             "flash_hours": 24,
             "eligible": [
                 {
                     "id": "fa_huye",
+                    "revision": 2,
+                    "state": "offered",
+                    "kind": "flash",
                     "business": "Huye Motors",
                     "sector": "logistics",
                     "district": "Gasabo",
@@ -104,6 +215,8 @@
                         "east_km": 8.4,
                         "north_km": 7.1
                     },
+                    "accept_by": "2026-10-03T17:40:00Z",
+                    "complete_by": "2026-10-04T14:00:00Z",
                     "link": {
                         "url": "/preview/auditor-file",
                         "method": "get"
@@ -121,7 +234,14 @@
                             "url": "/preview/auditor-jobs-conflict",
                             "method": "post"
                         }
-                    }
+                    },
+                    "allowed_actions": [
+                        "assignment.accept",
+                        "assignment.decline",
+                        "conflict.declare"
+                    ],
+                    "deadline": null,
+                    "reassigned_from": null
                 }
             ],
             "assigned": [],
@@ -238,8 +358,38 @@
                 "launcher": {
                     "url": "/preview/launcher-auditor",
                     "method": "get"
+                },
+                "operation": {
+                    "url": "/preview/auditor-operation-{request_id}",
+                    "method": "get"
                 }
-            }
+            },
+            "decline_options": [
+                {
+                    "code": "unavailable",
+                    "label": "Not available inside the clock",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "capacity",
+                    "label": "At capacity with active work",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "location",
+                    "label": "Cannot reach the site",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "other",
+                    "label": "Other reason",
+                    "requires_explanation": true
+                }
+            ]
+        },
+        "assignment": {
+            "id": "asg_mr_greenleaf",
+            "revision": 4
         }
     }
 }

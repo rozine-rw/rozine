@@ -1,8 +1,13 @@
-import { useAvailabilityToggle } from '@/components/auditor/availability';
+import {
+    AvailabilityLocked,
+    StandingNote,
+    useAvailabilityToggle,
+    useReceiving,
+} from '@/components/auditor/availability';
 import { DIVIDER, Eyebrow, Toggle } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
-import type { AuditorAvailability } from '@/types/auditor';
+import type { AuditorAvailability, DispatchStanding } from '@/types/auditor';
 
 function PolicyRow({
     title,
@@ -35,14 +40,19 @@ function PolicyRow({
  * Availability and coverage (design L890–916). Only the partner's on/off choice is theirs; the
  * design's editable weekly cap and district picker contradict the dispatch policy (30 km from the
  * registered office, three active engagements, CFG-05), so those rows show the policy instead.
+ * Receiving work needs both the saved choice and the server's current standing.
  */
 export function AvailabilitySection({
     availability,
+    standing,
 }: {
     availability: AuditorAvailability;
+    standing: DispatchStanding;
 }) {
     const { t } = useTranslation();
-    const { busy, toggle } = useAvailabilityToggle(availability);
+    const { allowed, busy, disabled, toggle } =
+        useAvailabilityToggle(availability);
+    const { receiving, reason, note } = useReceiving(availability, standing);
     const on = availability.accepting;
 
     return (
@@ -52,23 +62,27 @@ export function AvailabilitySection({
                 <div className="flex items-center gap-[13px]">
                     <div className="min-w-0 flex-1">
                         <p className="text-[14px] font-bold text-rz-ink">
-                            {on
+                            {receiving
                                 ? t('auditor.availability.accepting')
                                 : t('auditor.availability.paused')}
                         </p>
                         <p className="mt-0.5 text-[11.5px] leading-[1.5] text-rz-secondary">
-                            {on
-                                ? t('auditor.availability.accepting_sub')
-                                : t('auditor.availability.paused_sub')}
+                            {reason ??
+                                (receiving
+                                    ? t('auditor.availability.accepting_sub')
+                                    : t('auditor.availability.paused_sub'))}
                         </p>
                     </div>
                     <Toggle
                         on={on}
                         label={t('auditor.availability.toggle')}
-                        disabled={busy}
+                        disabled={disabled}
+                        aria-busy={busy || undefined}
                         onClick={toggle}
                     />
                 </div>
+                <StandingNote note={note} />
+                {!allowed && <AvailabilityLocked className="mt-2" />}
                 <PolicyRow
                     title={t('auditor.availability.max_title')}
                     sub={t('auditor.availability.max_sub')}

@@ -1,0 +1,442 @@
+{
+    "component": "auditor/audit",
+    "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
+        "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": [
+            "audit.save_step",
+            "audit.seal",
+            "conflict.declare"
+        ],
+        "audit": {
+            "id": "fa_huye",
+            "kind": "flash",
+            "business": "Huye Motors",
+            "district": "Gasabo",
+            "distance_km": "11.2",
+            "month": null,
+            "deadline": {
+                "due_at": "2026-10-04T13:59:55Z"
+            },
+            "revision": 7,
+            "reassigned_from": null,
+            "amends": null
+        },
+        "steps": [
+            {
+                "key": "review",
+                "state": "done"
+            },
+            {
+                "key": "check_in",
+                "state": "done"
+            },
+            {
+                "key": "photos",
+                "state": "done"
+            },
+            {
+                "key": "ledger",
+                "state": "done"
+            },
+            {
+                "key": "seal",
+                "state": "current"
+            }
+        ],
+        "stage": {
+            "step": "seal",
+            "summary": [
+                {
+                    "label": "Site photos captured",
+                    "value": "3 of 3 · 1 extra",
+                    "tone": "ok"
+                },
+                {
+                    "label": "On-site check-in",
+                    "value": "Logged 18:02",
+                    "tone": "ok"
+                },
+                {
+                    "label": "Stock variance",
+                    "value": "−4.2% · outside tolerance",
+                    "tone": "flag"
+                },
+                {
+                    "label": "Paper ledgers reconcile",
+                    "value": "Yes · 1 document",
+                    "tone": "ok"
+                }
+            ],
+            "note": {
+                "required": true,
+                "why": "A note is required because stock differs from the reported figure by 4.2%. Say what you saw and why.",
+                "value": "Six crates of stock were in the delivery van when I counted the store.",
+                "min": 40,
+                "max": 100
+            },
+            "findings": [
+                {
+                    "code": "scope",
+                    "no": "Section 1",
+                    "title": "Scope of engagement & agreed-upon procedures",
+                    "body": "Procedure MVP-AUP-1, Flash Audit.\nPremises, stock count, ledger reconciliation and site capture at Huye Motors, Gasabo.",
+                    "evidence_ids": []
+                },
+                {
+                    "code": "factual_findings",
+                    "no": "Section 2",
+                    "title": "Factual findings",
+                    "body": "Stock counted: RWF 36,400,000 against RWF 38,000,000 reported (−4.2%).\nLedgers: 1 of 2 documents accepted; paper ledgers reconcile with the statements on file.\nPhotos: 3 required and 1 extra, captured in the capture app.",
+                    "evidence_ids": [
+                        "ev_huye_storefront",
+                        "ev_huye_stock",
+                        "ev_huye_till",
+                        "ev_huye_extra_1",
+                        "ev_huye_ledger_1"
+                    ]
+                },
+                {
+                    "code": "attestation",
+                    "no": "Section 3",
+                    "title": "Licence attestation, location & digest",
+                    "body": "Licence ICPAR/P-2026/0481 in good standing, checked 28 Sep 2026.\nOn-site check-in -1.9441, 30.0619 (±12 m) at 18:02.",
+                    "evidence_ids": ["ev_huye_checkin"]
+                }
+            ],
+            "evidence": [
+                {
+                    "evidence_id": "ev_huye_checkin",
+                    "kind": "check_in",
+                    "sha256": "3e6ee4ec03b129d581c452946430646b0aa3859587e296954bb290bd1c395c95",
+                    "captured_at": "2026-10-03T16:02:00Z",
+                    "source": "companion_device",
+                    "device_attestation": "unavailable",
+                    "position": "-1.9441, 30.0619",
+                    "accuracy_m": 12
+                },
+                {
+                    "evidence_id": "ev_huye_storefront",
+                    "kind": "photo",
+                    "sha256": "e30331ede4472c8ca909df62119a271111ed95ac460ba272fda42b9bcc6eb952",
+                    "captured_at": "2026-10-03T16:05:00Z",
+                    "source": "companion_device",
+                    "device_attestation": "unavailable",
+                    "position": "-1.9441, 30.0619",
+                    "accuracy_m": 12
+                },
+                {
+                    "evidence_id": "ev_huye_stock",
+                    "kind": "photo",
+                    "sha256": "3f784f875218503d5c8cfe1fd4bde3b9b05565efdf155f678965d04d13093837",
+                    "captured_at": "2026-10-03T16:09:00Z",
+                    "source": "companion_device",
+                    "device_attestation": "unavailable",
+                    "position": "-1.9441, 30.0620",
+                    "accuracy_m": 14
+                },
+                {
+                    "evidence_id": "ev_huye_till",
+                    "kind": "photo",
+                    "sha256": "e95aa3caa5cacd9b51f2a1b8442d1f0c75826740626bf75d17d0101ad6b7decd",
+                    "captured_at": "2026-10-03T16:12:00Z",
+                    "source": "companion_device",
+                    "device_attestation": "unavailable",
+                    "position": null,
+                    "accuracy_m": null
+                },
+                {
+                    "evidence_id": "ev_huye_extra_1",
+                    "kind": "photo",
+                    "sha256": "d95fd7360c19570e962786fc71c1931d3a144425c6c439996d67c0258d4ad649",
+                    "captured_at": null,
+                    "source": "companion_device",
+                    "device_attestation": "unavailable",
+                    "position": null,
+                    "accuracy_m": null
+                },
+                {
+                    "evidence_id": "ev_huye_ledger_1",
+                    "kind": "ledger",
+                    "sha256": "34a34c79aa5c8098533424a15ded63e27396e9ba7fce1a6815f0d5169be303d6",
+                    "captured_at": null,
+                    "source": "web_upload",
+                    "device_attestation": "unavailable",
+                    "position": null,
+                    "accuracy_m": null
+                }
+            ],
+            "procedure_version": "MVP-AUP-1",
+            "findings_version": "fnd-2026-10-03.2",
+            "evidence_version": "ev-2026-10-03.5",
+            "digest": "sha256:9f2c4e71b0a85d3e6c1f47a2d9b83e05c6a1f24d7e98b3c05a6d1e2f47b8c9d0",
+            "licence": "ICPAR/P-2026/0481",
+            "mfa": {
+                "confirmed": true,
+                "settings": {
+                    "url": "/settings/security",
+                    "method": "get"
+                }
+            },
+            "reason_options": null
+        },
+        "can_continue": true,
+        "hint": "Sealing binds your ICPAR licence, location and time to this report; Huye Motors then co-signs.",
+        "reason_options": null,
+        "links": {
+            "close": {
+                "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
+            "back": {
+                "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "save": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "conflict": {
+                "url": "/preview/auditor-jobs-conflict",
+                "method": "post"
+            },
+            "step_up": {
+                "url": "/preview/auditor-audit-seal-step-up",
+                "method": "post"
+            },
+            "seal": {
+                "url": "/preview/auditor-audit-sealed",
+                "method": "post"
+            },
+            "request_changes": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "reject": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "amend": {
+                "url": "/preview/auditor-audit-amendment",
+                "method": "post"
+            }
+        },
+        "outcome": null,
+        "jobs": {
+            "engagement": null,
+            "contract_version": "auditor-filing-v1",
+            "identity_context_revision": 3,
+            "server_time": "2026-10-03T17:00:00Z",
+            "allowed_actions": [
+                "assignment.accept",
+                "assignment.decline",
+                "conflict.declare"
+            ],
+            "radius_km": 30,
+            "flash_hours": 24,
+            "eligible": [
+                {
+                    "id": "fa_huye",
+                    "revision": 2,
+                    "state": "offered",
+                    "kind": "flash",
+                    "business": "Huye Motors",
+                    "sector": "logistics",
+                    "district": "Gasabo",
+                    "offered_at": "2026-10-03T14:00:00Z",
+                    "distance_km": "11.2",
+                    "requested": {
+                        "currency": "RWF",
+                        "amount": "51200000"
+                    },
+                    "dscr": "1.02",
+                    "term_months": 6,
+                    "map": {
+                        "east_km": 8.4,
+                        "north_km": 7.1
+                    },
+                    "accept_by": "2026-10-03T17:40:00Z",
+                    "complete_by": "2026-10-04T14:00:00Z",
+                    "link": {
+                        "url": "/preview/auditor-file",
+                        "method": "get"
+                    },
+                    "actions": {
+                        "accept": {
+                            "url": "/preview/auditor-audit-review",
+                            "method": "post"
+                        },
+                        "decline": {
+                            "url": "/preview/auditor-jobs-declined",
+                            "method": "post"
+                        },
+                        "conflict": {
+                            "url": "/preview/auditor-jobs-conflict",
+                            "method": "post"
+                        }
+                    },
+                    "allowed_actions": [
+                        "assignment.accept",
+                        "assignment.decline",
+                        "conflict.declare"
+                    ],
+                    "deadline": null,
+                    "reassigned_from": null
+                }
+            ],
+            "assigned": [],
+            "monthly": {
+                "windows": [
+                    {
+                        "id": "mw_1",
+                        "note_title": "Cold-Chain Hub",
+                        "note_id": "RNP-2026-0118",
+                        "business": "GreenLeaf Agro",
+                        "month": "2026-09-01",
+                        "open": {
+                            "url": "/preview/auditor-audit-statements",
+                            "method": "post"
+                        }
+                    },
+                    {
+                        "id": "mw_2",
+                        "note_title": "Fleet Expansion",
+                        "note_id": "RNP-2026-0042",
+                        "business": "GreenLeaf Agro",
+                        "month": "2026-09-01",
+                        "open": {
+                            "url": "/preview/auditor-audit-statements",
+                            "method": "post"
+                        }
+                    },
+                    {
+                        "id": "mw_3",
+                        "note_title": "Builders Working Capital",
+                        "note_id": "RNP-2026-0077",
+                        "business": "Musanze Traders",
+                        "month": "2026-09-01",
+                        "open": {
+                            "url": "/preview/auditor-audit-statements",
+                            "method": "post"
+                        }
+                    },
+                    {
+                        "id": "mw_4",
+                        "note_title": "Works Inventory",
+                        "note_id": "RNP-2026-0091",
+                        "business": "Isoko Energy",
+                        "month": "2026-09-01",
+                        "open": {
+                            "url": "/preview/auditor-audit-statements",
+                            "method": "post"
+                        }
+                    }
+                ],
+                "reports": [
+                    {
+                        "id": "mr_1",
+                        "business": "Intare Supply",
+                        "sector": "retail",
+                        "note_title": "Motors Working Capital",
+                        "due_on": "2026-10-07",
+                        "status": "in_progress",
+                        "inflow": {
+                            "currency": "RWF",
+                            "amount": "162000000"
+                        },
+                        "outflow": {
+                            "currency": "RWF",
+                            "amount": "128400000"
+                        },
+                        "cover": "1.3",
+                        "link": {
+                            "url": "/preview/auditor-audit-count",
+                            "method": "get"
+                        }
+                    },
+                    {
+                        "id": "mr_2",
+                        "business": "Kivu Coffee Roasters",
+                        "sector": "agriculture",
+                        "note_title": "Harvest Stock",
+                        "due_on": "2026-10-07",
+                        "status": "awaiting_cosign",
+                        "inflow": {
+                            "currency": "RWF",
+                            "amount": "88500000"
+                        },
+                        "outflow": {
+                            "currency": "RWF",
+                            "amount": "71200000"
+                        },
+                        "cover": "1.4",
+                        "link": {
+                            "url": "/preview/auditor-audit-sealed-monthly",
+                            "method": "get"
+                        }
+                    }
+                ]
+            },
+            "outcome": null,
+            "links": {
+                "home": {
+                    "url": "/preview/auditor-home",
+                    "method": "get"
+                },
+                "jobs": {
+                    "url": "/preview/auditor-jobs",
+                    "method": "get"
+                },
+                "portfolio": {
+                    "url": "/preview/auditor-portfolio",
+                    "method": "get"
+                },
+                "profile": {
+                    "url": "/preview/auditor-profile",
+                    "method": "get"
+                },
+                "launcher": {
+                    "url": "/preview/launcher-auditor",
+                    "method": "get"
+                },
+                "operation": {
+                    "url": "/preview/auditor-operation-{request_id}",
+                    "method": "get"
+                }
+            },
+            "decline_options": [
+                {
+                    "code": "unavailable",
+                    "label": "Not available inside the clock",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "capacity",
+                    "label": "At capacity with active work",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "location",
+                    "label": "Cannot reach the site",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "other",
+                    "label": "Other reason",
+                    "requires_explanation": true
+                }
+            ]
+        },
+        "assignment": {
+            "id": "asg_fa_huye",
+            "revision": 4
+        }
+    }
+}

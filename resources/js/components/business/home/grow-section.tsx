@@ -1,16 +1,73 @@
 import { Link } from '@inertiajs/react';
+import type { ReactNode } from 'react';
+import { OutcomeBanner } from '@/components/business/apply/outcome-banner';
+import { useCreateApplication } from '@/components/business/use-create-application';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatRwf } from '@/lib/rozine/format';
 import type { Money, RouteLink } from '@/types';
+import type { CreateApplicationEntry } from '@/types/business';
 
 type GrowSectionProps = {
     headroom: Money | null;
-    links: { rating: RouteLink; apply: RouteLink };
+    links: { rating: RouteLink; apply: RouteLink | null };
+    createApplication: CreateApplicationEntry | null;
 };
 
+const CTA =
+    'mt-2.5 flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-rz-accent-fill text-[15px] font-bold text-white lg:h-[46px]';
+
+function ApplyLabel({ children }: { children: ReactNode }) {
+    return (
+        <>
+            <span aria-hidden className="text-[19px] leading-none">
+                +
+            </span>
+            {children}
+        </>
+    );
+}
+
+/** Starts a raise when no draft is open (#96, option (a)), then follows the server's `next`. */
+function CreateApplication({ entry }: { entry: CreateApplicationEntry }) {
+    const { t } = useTranslation();
+    const command = useCreateApplication(entry);
+
+    return (
+        <>
+            <button
+                type="button"
+                disabled={command.busy || command.unresolved}
+                aria-busy={command.busy || undefined}
+                onClick={command.start}
+                className={`${CTA} disabled:opacity-60`}
+            >
+                <ApplyLabel>
+                    {command.busy
+                        ? t('business.grow.starting')
+                        : t('business.grow.apply')}
+                </ApplyLabel>
+            </button>
+            {command.notice && (
+                <div className="mt-3">
+                    <OutcomeBanner
+                        notice={command.notice}
+                        busy={command.busy}
+                        onCheckAgain={command.checkAgain}
+                        onRetry={command.retry}
+                    />
+                </div>
+            )}
+        </>
+    );
+}
+
 /** "Grow" — headroom and the way into a new raise (design L331–341). */
-export function GrowSection({ headroom, links }: GrowSectionProps) {
+export function GrowSection({
+    headroom,
+    links,
+    createApplication,
+}: GrowSectionProps) {
     const { t } = useTranslation();
 
     return (
@@ -57,15 +114,15 @@ export function GrowSection({ headroom, links }: GrowSectionProps) {
                 </Link>
             )}
 
-            <Link
-                href={links.apply}
-                className="mt-2.5 flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-rz-accent-fill text-[15px] font-bold text-white lg:h-[46px]"
-            >
-                <span aria-hidden className="text-[19px] leading-none">
-                    +
-                </span>
-                {t('business.grow.apply')}
-            </Link>
+            {links.apply !== null ? (
+                <Link href={links.apply} className={CTA}>
+                    <ApplyLabel>{t('business.grow.apply')}</ApplyLabel>
+                </Link>
+            ) : (
+                createApplication !== null && (
+                    <CreateApplication entry={createApplication} />
+                )
+            )}
         </section>
     );
 }

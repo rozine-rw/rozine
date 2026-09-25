@@ -1,0 +1,40 @@
+{
+    "component": "auditor/conflicts",
+    "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
+        "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": [],
+        "conflicts": [],
+        "links": {
+            "home": {
+                "url": "/auditor",
+                "method": "get"
+            },
+            "jobs": {
+                "url": "/auditor/jobs",
+                "method": "get"
+            },
+            "portfolio": null,
+            "profile": {
+                "url": "/auditor/profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/dashboard",
+                "method": "get"
+            },
+            "conflicts": {
+                "url": "/auditor/conflicts",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/auditor/assignment-operations/{request_id}",
+                "method": "get"
+            }
+        },
+        "pagination": {
+            "next": null
+        }
+    }
+}

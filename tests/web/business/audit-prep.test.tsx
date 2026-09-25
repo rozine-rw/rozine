@@ -39,17 +39,47 @@ describe('Get ready for your audit', () => {
         expect(sheet.getByText('Days left')).toBeInTheDocument();
         expect(
             sheet.getByText(
-                /must seal it by 7 Oct\. You cannot start or edit the report/,
+                'Your CPA seals the September 2026 report by 7 Oct. You cannot start or edit it.',
             ),
         ).toBeInTheDocument();
         expect(sheet.queryByRole('status')).not.toBeInTheDocument();
         expect(
-            sheet.getByText(/You get 60 minutes to add a recap and co-sign/),
+            sheet.getByText(
+                'You add a recap and co-sign by 7 Oct, or dispute with counter-proof.',
+            ),
         ).toBeInTheDocument();
         expect(sheet.getByRole('link', { name: 'Back' })).toHaveAttribute(
             'href',
             '/preview/business-home',
         );
+    });
+
+    it("carries #99 C5's notification, receipts and on-site visit lines, and no upload wording", () => {
+        render(<BusinessAuditPrep {...props(prepFixture)} />);
+
+        const sheet = within(prep());
+
+        expect(
+            sheet.getByText(
+                'Notification received: Please prepare all bank statements, Mobile Money logs, and physical receipt books for your upcoming CPA visit.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            sheet.getByText(
+                "Ensure all physical till receipts and digital transactions are reconciled for the CPA's on-site review.",
+            ),
+        ).toBeInTheDocument();
+        expect(
+            sheet.getByText('Till receipts and transactions reconciled'),
+        ).toBeInTheDocument();
+        expect(
+            sheet.getByText(
+                'Your assigned CPA will visit your premises to review records, reconcile cash flows, and generate the monthly audit report.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            sheet.queryByText(/uploaded|linked feeds/u),
+        ).not.toBeInTheDocument();
     });
 
     it('lets the business tick off what it has ready', async () => {

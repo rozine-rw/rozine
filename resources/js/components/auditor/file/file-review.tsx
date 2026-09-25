@@ -92,6 +92,18 @@ function DocGlyph({ kind }: { kind: FileDocument['kind'] }) {
     );
 }
 
+/** A figure the server did not state: a dash, never 0. */
+const NO_FIGURE = '—';
+
+/** A section's honest empty line: nothing is on record, and nothing is made up in its place. */
+function NothingOnRecord({ children }: { children: ReactNode }) {
+    return (
+        <p className="px-[15px] py-3 text-[11.5px] leading-[1.5] text-rz-secondary">
+            {children}
+        </p>
+    );
+}
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
     return (
         <section>
@@ -108,7 +120,10 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 type FileReviewProps = {
     business: string;
     file: BusinessFile;
-    /** Set when the file came to this partner from another (MVP-AUDITOR-SCR-02-ST-02). */
+    /**
+     * Set when the file came to this partner from another (MVP-AUDITOR-SCR-02-ST-02). Only its
+     * presence is used: the other partner is never named.
+     */
     reassignedFrom: string | null;
 };
 
@@ -116,6 +131,8 @@ type FileReviewProps = {
  * The business file (MVP-AUDITOR-SCR-02, design step 0 L1038–1093): the raise, what the business
  * submitted, the engine's automated checks, why the field visit is needed and what it must clear,
  * and the file's history. Everything is read-only server evidence; the partner judges nothing here.
+ * A figure the server cannot state reads as a dash, a list it cannot state says nothing is on
+ * record, and a reason or mandate not yet published is left out — nothing is invented.
  */
 export function FileReview({
     business,
@@ -124,6 +141,18 @@ export function FileReview({
 }: FileReviewProps) {
     const { t, locale } = useTranslation();
     const { raise, history } = file;
+    const hasReason = file.reason !== null;
+    const hasMandate = file.mandate.length > 0;
+    /*
+     * The introduction claims only what is on record: "everything submitted, screened" needs a
+     * submitted raise (its figures, not the draft fallback's nulls) and a published pre-screen.
+     */
+    const submitted =
+        raise.requested !== null &&
+        raise.term_months !== null &&
+        raise.return_pct !== null;
+    const screened = file.prescreen.length > 0;
+    const submittedAndScreened = submitted && screened;
 
     return (
         <>
@@ -131,7 +160,15 @@ export function FileReview({
                 {t('auditor.file.title')}
             </h3>
             <p className="mt-1 text-[12.5px] leading-[1.5] text-rz-secondary">
-                {t('auditor.file.lead', { business })}
+                {submittedAndScreened
+                    ? t('auditor.file.lead', { business })
+                    : [
+                          t('auditor.file.lead_provisional', { business }),
+                          ...(screened
+                              ? []
+                              : [t('auditor.file.lead_no_prescreen')]),
+                          t('auditor.file.lead_field_check'),
+                      ].join(' ')}
             </p>
 
             {reassignedFrom !== null && (
@@ -140,9 +177,7 @@ export function FileReview({
                     className="mt-3.5 rounded-2xl border border-[#f2d69a] bg-rz-surface p-3.5 dark:border-[rgba(240,160,96,.3)]"
                 >
                     <p className={cn('text-[12px] font-bold', AMBER_TEXT)}>
-                        {t('auditor.file.reassigned_title', {
-                            name: reassignedFrom,
-                        })}
+                        {t('auditor.file.reassigned_title')}
                     </p>
                     <p
                         className={cn(
@@ -162,23 +197,35 @@ export function FileReview({
                 <div className="mt-2.5 flex gap-2">
                     <StatTile
                         label={t('auditor.jobs.requested')}
-                        value={compactRwf(raise.requested)}
+                        value={
+                            raise.requested === null
+                                ? NO_FIGURE
+                                : compactRwf(raise.requested)
+                        }
                         className={cn(INSET, 'p-2.5')}
                         valueClassName="text-[13.5px]"
                     />
                     <StatTile
                         label={t('auditor.jobs.term')}
-                        value={t('auditor.file.term_months', {
-                            months: raise.term_months,
-                        })}
+                        value={
+                            raise.term_months === null
+                                ? NO_FIGURE
+                                : t('auditor.file.term_months', {
+                                      months: raise.term_months,
+                                  })
+                        }
                         className={cn(INSET, 'p-2.5')}
                         valueClassName="text-[13.5px]"
                     />
                     <StatTile
                         label={t('auditor.file.return')}
-                        value={t('auditor.file.return_value', {
-                            pct: raise.return_pct,
-                        })}
+                        value={
+                            raise.return_pct === null
+                                ? NO_FIGURE
+                                : t('auditor.file.return_value', {
+                                      pct: raise.return_pct,
+                                  })
+                        }
                         className={cn(INSET, 'p-2.5')}
                         valueClassName="text-[13.5px]"
                     />
@@ -188,14 +235,23 @@ export function FileReview({
                         {t('auditor.file.use_of_funds')}
                     </span>
                     {' · '}
-                    {t(`auditor.sector.${raise.sector}`)}
+                    {raise.sector === null
+                        ? t('auditor.jobs.sector_unavailable')
+                        : t(`auditor.sector.${raise.sector}`)}
                 </p>
-                <p className="mt-1 text-[12.5px] leading-[1.5] text-rz-slate">
-                    {raise.use_of_funds}
-                </p>
+                {raise.use_of_funds !== '' && (
+                    <p className="mt-1 text-[12.5px] leading-[1.5] text-rz-slate">
+                        {raise.use_of_funds}
+                    </p>
+                )}
             </div>
 
             <Section title={t('auditor.file.documents')}>
+                {file.documents.length === 0 && (
+                    <NothingOnRecord>
+                        {t('auditor.file.no_documents')}
+                    </NothingOnRecord>
+                )}
                 <ul>
                     {file.documents.map((document) => (
                         <li
@@ -240,6 +296,11 @@ export function FileReview({
             </Section>
 
             <Section title={t('auditor.file.prescreen')}>
+                {file.prescreen.length === 0 && (
+                    <NothingOnRecord>
+                        {t('auditor.file.no_prescreen')}
+                    </NothingOnRecord>
+                )}
                 <ul>
                     {file.prescreen.map((check) => (
                         <li
@@ -298,81 +359,94 @@ export function FileReview({
                 </ul>
             </Section>
 
-            <div className="mt-3.5 rounded-2xl border border-[#f2d69a] bg-rz-surface p-3.5 dark:border-[rgba(240,160,96,.3)]">
-                <div className="flex items-center gap-2">
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        aria-hidden
-                        className="size-4 shrink-0"
-                    >
-                        <rect
-                            x="4.8"
-                            y="4.2"
-                            width="14.4"
-                            height="16.6"
-                            rx="2.8"
-                            fill="rgba(194,102,31,.10)"
-                            stroke="#c2661f"
-                            strokeWidth="1.6"
-                        />
-                        <path
-                            d="M9.2 4.4V3.6c0-.9.7-1.6 1.6-1.6h2.4c.9 0 1.6.7 1.6 1.6v.8"
-                            stroke="#c2661f"
-                            strokeWidth="1.6"
-                            strokeLinejoin="round"
-                        />
-                        <path
-                            d="m9.4 12.9 2.1 2.1 3.5-3.7"
-                            stroke="#c2661f"
-                            strokeWidth="1.9"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
-                    <h3
-                        className={cn(
-                            'text-[12px] font-bold uppercase',
-                            AMBER_TEXT,
-                        )}
-                    >
-                        {t('auditor.file.why')}
-                    </h3>
+            {(hasReason || hasMandate) && (
+                <div className="mt-3.5 rounded-2xl border border-[#f2d69a] bg-rz-surface p-3.5 dark:border-[rgba(240,160,96,.3)]">
+                    <div className="flex items-center gap-2">
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            aria-hidden
+                            className="size-4 shrink-0"
+                        >
+                            <rect
+                                x="4.8"
+                                y="4.2"
+                                width="14.4"
+                                height="16.6"
+                                rx="2.8"
+                                fill="rgba(194,102,31,.10)"
+                                stroke="#c2661f"
+                                strokeWidth="1.6"
+                            />
+                            <path
+                                d="M9.2 4.4V3.6c0-.9.7-1.6 1.6-1.6h2.4c.9 0 1.6.7 1.6 1.6v.8"
+                                stroke="#c2661f"
+                                strokeWidth="1.6"
+                                strokeLinejoin="round"
+                            />
+                            <path
+                                d="m9.4 12.9 2.1 2.1 3.5-3.7"
+                                stroke="#c2661f"
+                                strokeWidth="1.9"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
+                        <h3
+                            className={cn(
+                                'text-[12px] font-bold uppercase',
+                                AMBER_TEXT,
+                            )}
+                        >
+                            {hasReason
+                                ? t('auditor.file.why')
+                                : t('auditor.file.mandate')}
+                        </h3>
+                    </div>
+                    {hasReason && (
+                        <p
+                            className={cn(
+                                'mt-2 text-[12px] leading-[1.55]',
+                                AMBER_TEXT,
+                            )}
+                        >
+                            {file.reason}
+                        </p>
+                    )}
+                    {hasReason && hasMandate && (
+                        <p
+                            className={cn(
+                                'mt-3 border-t border-[#f2d69a] pt-3 text-[10.5px] font-bold tracking-[.05em] uppercase dark:border-[rgba(240,160,96,.3)]',
+                                AMBER_TEXT,
+                            )}
+                        >
+                            {t('auditor.file.mandate')}
+                        </p>
+                    )}
+                    {hasMandate && (
+                        <ol className="mt-[9px] flex flex-col gap-2">
+                            {file.mandate.map((step, index) => (
+                                <li
+                                    key={step}
+                                    className="flex items-start gap-[9px]"
+                                >
+                                    <span className="flex size-[17px] shrink-0 items-center justify-center rounded-[5px] bg-rz-accent-soft text-[10px] font-bold text-rz-ink">
+                                        {index + 1}
+                                    </span>
+                                    <span
+                                        className={cn(
+                                            'min-w-0 flex-1 text-[11.5px] leading-[1.5]',
+                                            AMBER_TEXT,
+                                        )}
+                                    >
+                                        {step}
+                                    </span>
+                                </li>
+                            ))}
+                        </ol>
+                    )}
                 </div>
-                <p
-                    className={cn(
-                        'mt-2 text-[12px] leading-[1.55]',
-                        AMBER_TEXT,
-                    )}
-                >
-                    {file.reason}
-                </p>
-                <p
-                    className={cn(
-                        'mt-3 border-t border-[#f2d69a] pt-3 text-[10.5px] font-bold tracking-[.05em] uppercase dark:border-[rgba(240,160,96,.3)]',
-                        AMBER_TEXT,
-                    )}
-                >
-                    {t('auditor.file.mandate')}
-                </p>
-                <ol className="mt-[9px] flex flex-col gap-2">
-                    {file.mandate.map((step, index) => (
-                        <li key={step} className="flex items-start gap-[9px]">
-                            <span className="flex size-[17px] shrink-0 items-center justify-center rounded-[5px] bg-rz-accent-soft text-[10px] font-bold text-rz-ink">
-                                {index + 1}
-                            </span>
-                            <span
-                                className={cn(
-                                    'min-w-0 flex-1 text-[11.5px] leading-[1.5]',
-                                    AMBER_TEXT,
-                                )}
-                            >
-                                {step}
-                            </span>
-                        </li>
-                    ))}
-                </ol>
-            </div>
+            )}
 
             <Section title={t('auditor.file.history')}>
                 <div className={cn('border-b px-[15px] py-3', DIVIDER)}>

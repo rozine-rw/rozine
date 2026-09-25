@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { useAuditorCommands } from '@/components/auditor/commands';
 import { ConflictSheet } from '@/components/auditor/sheets/conflict-sheet';
 import { DIVIDER } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { AssignedFile, AuditorPortfolioProps } from '@/types/auditor';
+import type { AuditorPortfolioProps } from '@/types/auditor';
 
 /** The design lists the four most recent declarations (L2862). */
 const RECORD_SHOWN = 4;
@@ -20,8 +21,20 @@ export function ConflictRegister({
     conflicts: AuditorPortfolioProps['conflicts'];
 }) {
     const { t, locale } = useTranslation();
-    const [file, setFile] = useState<AssignedFile | null>(null);
+    const center = useAuditorCommands();
+    /*
+     * Only the chosen file's ID is kept: the record, its revision and its scope are read from the
+     * current props on every render, so a declaration sent again after a refresh carries the
+     * refreshed revision. A file gone from the list on refresh closes the sheet.
+     */
+    const [fileId, setFileId] = useState<string | null>(null);
+    const file =
+        conflicts.files.find((assigned) => assigned.id === fileId) ?? null;
     const count = conflicts.files.length;
+    /* Each file is its own call (#96 point 3): only those it allows can be declared on. */
+    const declarable = conflicts.files.filter((assigned) =>
+        assigned.allowed_actions.includes('conflict.declare'),
+    );
 
     return (
         <section className="mt-3 rounded-[20px] border border-rz-border bg-rz-surface p-4">
@@ -36,25 +49,30 @@ export function ConflictRegister({
                     {t('auditor.conflict.none_assigned')}
                 </p>
             ) : (
-                <>
-                    <p className="mt-[11px] text-[10px] font-bold tracking-[.05em] text-rz-secondary uppercase">
-                        {count === 1
-                            ? t('auditor.conflict.options_one')
-                            : t('auditor.conflict.options_other', { count })}
-                    </p>
-                    <div className="rz-scroll mt-[7px] flex max-h-[132px] flex-wrap gap-[7px] overflow-y-auto">
-                        {conflicts.files.map((assigned) => (
-                            <button
-                                key={assigned.id}
-                                type="button"
-                                onClick={() => setFile(assigned)}
-                                className="h-[34px] rounded-[10px] border border-rz-border bg-rz-surface px-3 text-[11.5px] font-semibold whitespace-nowrap text-rz-ink"
-                            >
-                                {assigned.business}
-                            </button>
-                        ))}
-                    </div>
-                </>
+                declarable.length > 0 && (
+                    <>
+                        <p className="mt-[11px] text-[10px] font-bold tracking-[.05em] text-rz-secondary uppercase">
+                            {declarable.length === 1
+                                ? t('auditor.conflict.options_one')
+                                : t('auditor.conflict.options_other', {
+                                      count: declarable.length,
+                                  })}
+                        </p>
+                        <div className="rz-scroll mt-[7px] flex max-h-[132px] flex-wrap gap-[7px] overflow-y-auto">
+                            {declarable.map((assigned) => (
+                                <button
+                                    key={assigned.id}
+                                    type="button"
+                                    onClick={() => setFileId(assigned.id)}
+                                    disabled={!center.conflict.idle}
+                                    className="h-[34px] rounded-[10px] border border-rz-border bg-rz-surface px-3 text-[11.5px] font-semibold whitespace-nowrap text-rz-ink disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    {assigned.business}
+                                </button>
+                            ))}
+                        </div>
+                    </>
+                )
             )}
             {conflicts.record.length > 0 && (
                 <div className="mt-[11px]">
@@ -66,7 +84,7 @@ export function ConflictRegister({
                             .slice(0, RECORD_SHOWN)
                             .map((entry) => (
                                 <li
-                                    key={entry.id}
+                                    key={entry.conflict_id}
                                     className={cn(
                                         'flex items-start gap-[9px] border-b py-2 last:border-b-0',
                                         DIVIDER,
@@ -101,9 +119,10 @@ export function ConflictRegister({
             {file !== null && (
                 <ConflictSheet
                     business={file.business}
-                    fileId={file.id}
+                    assignment={{ id: file.id, revision: file.revision }}
                     action={conflicts.declare}
-                    onClose={() => setFile(null)}
+                    scope={file.allowed_actions}
+                    onClose={() => setFileId(null)}
                 />
             )}
         </section>

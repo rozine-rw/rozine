@@ -240,6 +240,16 @@ const fr: Catalog = {
     'business.note.empty.title': 'Aucune note avec ce statut',
     'business.note.empty.body':
         'Lancez une levée pour financer votre entreprise.',
+    'business.entries.title': 'Demandes de levée',
+    'business.entries.continue': 'Poursuivre votre demande',
+    'business.entries.view': 'Voir votre demande',
+    'business.entries.saved_at': 'Enregistrée à l’étape {step}',
+    'business.entries.submitted': 'Soumise · en cours d’examen',
+    'business.entries.view_only':
+        'Vous pouvez consulter cette entreprise, mais lancer une levée ne vous est pas ouvert.',
+    'business.entries.empty':
+        'Aucune entreprise pour laquelle vous pouvez agir n’est encore liée à ce compte.',
+    'business.entries.more': 'Afficher plus',
     'business.grow.title': 'Croître',
     'business.grow.subtitle': 'Levez davantage quand vous êtes prêt.',
     'business.grow.headroom': 'Marge disponible',
@@ -255,23 +265,29 @@ const fr: Catalog = {
     'business.apply.step_of': 'Étape {step} sur {total}',
     'business.apply.continue': 'Continuer',
     'business.apply.saving': 'Enregistrement…',
-    'business.apply.submit': 'Soumettre la note',
-    'business.apply.submitting': 'Envoi…',
+    'business.apply.submit': 'Signer la demande',
+    'business.apply.submitting': 'Signature…',
     'business.apply.incomplete': 'Terminez cette étape pour continuer',
     'business.apply.business.title': 'Entreprise et finances',
     'business.apply.business.subtitle':
-        'À partir de votre certificat RDB et de 5 ans de relevés bancaires et mobile money, vérifiés par OCR. Vérifiez — si tout est correct, continuez.',
+        'À partir de votre certificat RDB et de vos relevés bancaires et mobile money vérifiés. Vérifiez — si tout est correct, continuez.',
     'business.apply.business.rdb_verified': '✓ Vérifié par le RDB',
-    'business.apply.business.statements_verified': '✓ Relevés vérifiés · OCR',
+    'business.apply.business.statements_verified': '✓ Relevés vérifiés',
     'business.apply.business.active': '● Active',
     'business.apply.business.established': 'Fondée en {year}',
-    'business.apply.business.officer.ceo': 'Directeur général',
-    'business.apply.business.officer.board_chair': 'Président du conseil',
-    'business.apply.business.standing': 'Situation financière · {years} ans',
-    'business.apply.business.ocr_verified': 'OCR · vérifié',
+    'business.apply.business.standing': 'Situation financière',
+    'business.apply.business.statements_badge': 'Relevés vérifiés',
+    'business.apply.business.period': {
+        one: '{from} – {through} · {count} mois',
+        other: '{from} – {through} · {count} mois',
+    },
+    'business.apply.business.partial_year': {
+        one: '{year} · {count} mois',
+        other: '{year} · {count} mois',
+    },
     'business.apply.business.revenue': "Chiffre d'affaires",
     'business.apply.business.costs': 'Coûts',
-    'business.apply.business.net_profit': 'Bénéfice net',
+    'business.apply.business.net_profit': 'Trésorerie d’exploitation nette',
     'business.apply.business.existing_debt': 'Dette existante',
     'business.apply.business.crb_verified': '✓ Vérifié par le CRB',
     'business.apply.business.year_by_year': 'Année par année',
@@ -280,7 +296,7 @@ const fr: Catalog = {
         '· trésorerie × couverture des stocks',
     'business.apply.business.capacity_pending': 'Audit en attente',
     'business.apply.business.capacity_body':
-        'La plus grande levée que la trésorerie de votre entreprise peut supporter selon la couverture de stocks vérifiée. Les demandes supérieures sont refusées automatiquement.',
+        'La plus grande levée que la trésorerie de votre entreprise peut supporter selon la couverture de stocks vérifiée. Chaque offre est calibrée dans cette limite.',
     'business.apply.raise.title': 'Votre levée',
     'business.apply.raise.subtitle':
         'Fixez vos conditions et présentez-vous aux investisseurs.',
@@ -302,8 +318,7 @@ const fr: Catalog = {
     'business.apply.raise.rate_rated': 'Notée {band}',
     'business.apply.raise.rate_best': 'Meilleure notation, 3 mois',
     'business.apply.raise.rate_best_detail': 'Meilleur taux sur Rozine',
-    'business.apply.raise.rate_term_detail':
-        '+{points} points pour cette durée',
+    'business.apply.raise.rate_term_detail': '+{ratio} de prime de durée',
     'business.apply.raise.rate_cap': 'Jamais au-dessus de {cap} %',
     'business.apply.raise.quote_pending':
         'Saisissez un objectif et une durée pour voir votre offre.',
@@ -317,7 +332,6 @@ const fr: Catalog = {
     'business.apply.raise.interest_basis':
         '({rate} % forfaitaire · {months} mois)',
     'business.apply.raise.you_repay': 'Vous remboursez',
-    'business.apply.raise.per_month': '{amount} / mois',
     'business.apply.raise.first_payment':
         "À partir d'un mois après le financement",
     'business.apply.raise.reserve': 'Réserve de protection des investisseurs',
@@ -351,14 +365,6 @@ const fr: Catalog = {
     'business.apply.review.subtitle':
         'Reconnaissez les risques, acceptez les conditions et signez pour soumettre.',
     'business.apply.review.risk_disclosures': 'Informations sur les risques',
-    'business.apply.review.disclosure.accuracy':
-        "Je confirme l'exactitude de toutes les informations fournies.",
-    'business.apply.review.disclosure.obligations':
-        "Je comprends les obligations légales liées à l'émission de cette note.",
-    'business.apply.review.disclosure.statements':
-        "Je téléverserai à temps mes relevés bancaires et MoMo mensuels pour l'audit du partenaire.",
-    'business.apply.review.disclosure.repayment':
-        'Je reconnais les obligations de remboursement envers les investisseurs.',
     'business.apply.review.agreements': 'Accords',
     'business.apply.review.agree_terms_prefix': "J'accepte les",
     'business.apply.review.agree_privacy_prefix': "J'ai lu la",
@@ -366,7 +372,7 @@ const fr: Catalog = {
     'business.apply.review.document.privacy': 'Note de confidentialité',
     'business.apply.review.read': 'Lire',
     'business.apply.review.document_intro':
-        "Rozine · République du Rwanda · version {version}. Résumé des clauses clés — l'accord complet est disponible dans Profil.",
+        'Rozine · République du Rwanda · version {version}. Un résumé des clauses clés, puis le texte intégral que vous acceptez.',
     'business.apply.review.got_it': 'Compris',
     'business.apply.review.sign_submit': 'Signer et soumettre',
     'business.apply.review.full_name': 'Votre nom complet',
@@ -380,10 +386,10 @@ const fr: Catalog = {
     'business.apply.review.fee_note':
         'Aucuns frais sur le montant levé, et rien au-delà du taux annoncé. Facturés une fois la note approuvée, avant sa mise en ligne.',
     'business.apply.review.binding':
-        "Votre signature engage légalement l'entreprise aux obligations divulguées. L'identifiant de la note est généré à la soumission.",
-    'business.apply.submitted.title': 'Votre note a été soumise',
+        "Votre signature engage légalement l'entreprise aux obligations divulguées. L'identifiant de la demande est attribué à la soumission.",
+    'business.apply.submitted.title': 'Votre demande a été soumise',
     'business.apply.submitted.body':
-        "Votre note est en cours d'examen. Vous serez notifié à chaque étape.",
+        "Votre demande est en cours d'examen. Vous serez notifié à chaque étape.",
     'business.apply.submitted.note_id': 'ID de la note · {id}',
     'business.apply.submitted.funded_title': 'Une fois entièrement financée',
     'business.apply.submitted.funded_body':
@@ -570,17 +576,16 @@ const fr: Catalog = {
     'business.reports.subtitle':
         'Vérifiés chaque mois par votre auditeur sur site.',
     'business.reports.guide.title': 'Comment fonctionnent les audits mensuels',
-    'business.reports.guide.opens.title': 'Votre auditeur ouvre le dossier',
+    'business.reports.guide.opens.title': 'Rassemblez vos documents',
     'business.reports.guide.opens.body':
-        "Vous ne déposez pas le rapport. À la clôture de chaque mois, l'expert-comptable qui vous est attribué ouvre l'audit et récupère vos chiffres bancaires, Mobile Money et TPE directement depuis les flux liés.",
+        "Entre le 20 et la fin du mois, rassemblez tous vos documents financiers papier et numériques pour l'audit sur place prévu avec votre expert-comptable.",
     'business.reports.guide.visit.title': 'Préparez la visite sur site',
     'business.reports.guide.visit.body_before':
-        "Il compte le stock, vérifie vos registres et scelle l'audit avant le",
-    'business.reports.guide.visit.body_after':
-        '. Votre rôle : avoir relevés, stock et accès prêts — nous vous le rappelons chaque jour pendant les sept derniers jours du mois.',
+        "L'expert-comptable qui vous est attribué se rend dans vos locaux pour examiner vos documents et rapprocher vos flux de trésorerie, puis scelle le rapport avant le",
+    'business.reports.guide.visit.body_after': '.',
     'business.reports.guide.cosign.title': 'Cosignez ou contestez',
     'business.reports.guide.cosign.body':
-        "Une fois l'audit scellé, vous disposez de {minutes} minutes pour ajouter un résumé et cosigner, ou pour contester avec une contre-preuve. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
+        "Une fois l'audit scellé, vous ajoutez un résumé et le cosignez avant le {day}, ou vous le contestez avec une contre-preuve. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
     'business.reports.tabs': 'Statut des rapports',
     'business.reports.tab.verified': 'Publiés',
     'business.reports.tab.in_audit': 'En audit',
@@ -1448,7 +1453,7 @@ const fr: Catalog = {
     'auditor.nav.jobs': 'Missions',
     'auditor.nav.portfolio': 'Portefeuille',
     'auditor.nav.profile': 'Profil',
-    'auditor.nav.jobs_badge': '{count} audits flash ouverts',
+    'auditor.nav.jobs_badge': '{count} offres ouvertes',
     'auditor.clock.label': 'Temps restant pour cette mission',
     'auditor.clock.time_left': 'Temps restant',
     'auditor.time.minutes_ago': 'il y a {count} min',
@@ -1480,11 +1485,10 @@ const fr: Catalog = {
     'auditor.home.nearby_sub':
         'Le plus proche à {distance} km · le premier à accepter verrouille le dossier',
     'auditor.home.in_progress': 'En cours',
-    'auditor.job.progress_line':
-        '{district} · {distance} km · Étape {step} sur {steps}',
+    'auditor.job.step_of': 'Étape {step} sur {steps}',
     'auditor.job.status.overdue': 'En retard',
     'auditor.job.status.awaiting_cosign': 'En attente de cosignature',
-    'auditor.job.reassigned_from': 'Réattribué par {name}',
+    'auditor.job.reassigned': 'Vous a été réattribué',
     'auditor.standing.title': 'Votre situation',
     'auditor.standing.on_time': 'Clôture à temps',
     'auditor.standing.avg_variance': 'Écart moyen',
@@ -1510,19 +1514,31 @@ const fr: Catalog = {
     'auditor.jobs.head_title': 'Missions',
     'auditor.jobs.title': 'Audits flash',
     'auditor.jobs.lead':
-        'Contrôles sur site ouverts dans un rayon de {radius} km. Le premier à accepter verrouille le dossier et lance un délai de {hours} heures.',
+        'Contrôles sur site ouverts dans un rayon de {radius} km. Le premier à accepter verrouille le dossier. Chaque audit flash est dû {hours} heures après son envoi.',
     'auditor.jobs.map_label':
-        "Carte de votre rayon d'affectation de {radius} km avec {count} missions ouvertes",
+        "Carte de votre rayon d'affectation de {radius} km avec {count} missions ouvertes à des positions approximatives",
     'auditor.jobs.map_badge': 'Rayon {radius} km · {count} ouvertes',
+    'auditor.jobs.map_label_page':
+        "Carte de votre rayon d'affectation de {radius} km avec {count} missions sur cette page à des positions approximatives",
+    'auditor.jobs.map_badge_page': 'Rayon {radius} km · {count} sur cette page',
     'auditor.jobs.assigned': 'Qui vous sont attribuées',
     'auditor.jobs.distance': 'Distance',
     'auditor.jobs.km': '{distance} km',
+    'auditor.jobs.sector_unavailable': 'Secteur indisponible',
+    'auditor.jobs.kind_monthly': 'Visite mensuelle',
+    'auditor.jobs.show_more': 'Afficher plus',
+    'auditor.jobs.conflicts_link': 'Vos conflits déclarés →',
+    'auditor.jobs.page_empty':
+        'Rien à afficher sur cette page. Des missions plus anciennes peuvent suivre.',
+    'auditor.jobs.assigned_empty':
+        "Aucune mission acceptée n'est en cours pour le moment.",
+    'auditor.jobs.assigned_page_empty':
+        'Rien ne vous est attribué sur cette page.',
     'auditor.jobs.requested': 'Demandé',
     'auditor.jobs.dscr': 'DSCR',
     'auditor.jobs.term': 'Durée',
     'auditor.jobs.term_months': '{months} mois',
     'auditor.jobs.view_file': 'Voir le dossier complet →',
-    'auditor.jobs.accept': 'Accepter et lancer le délai de {hours} h',
     'auditor.jobs.decline': 'Refuser',
     'auditor.jobs.declare_conflict': 'Déclarer un conflit',
     'auditor.jobs.empty':
@@ -1551,14 +1567,13 @@ const fr: Catalog = {
     'auditor.sheet.cancel': 'Annuler',
     'auditor.decline.title': 'Refuser {business}',
     'auditor.decline.lead':
-        "La mission retourne à l'affectation. Dites pourquoi — le motif est enregistré avec votre refus.",
-    'auditor.decline.label': 'Motif',
+        "La mission retourne à l'affectation. Choisissez un motif ; il est enregistré avec votre refus.",
     'auditor.decline.placeholder':
-        'ex. je ne peux pas me rendre sur site dans le délai',
+        "Ce qui vous empêche d'accepter cette mission",
     'auditor.decline.submit': 'Refuser la mission',
     'auditor.conflict.sheet_title': 'Déclarer un intérêt dans {business}',
     'auditor.conflict.body':
-        "Si vous avez un intérêt dans une entreprise que vous devez vérifier, dites-le. La mission est réattribuée immédiatement et la déclaration est consignée. On ne vous demande jamais d'évaluer un dossier que vous avez apporté — Rozine l'interdit.",
+        "Si vous avez un intérêt dans une entreprise que vous devez vérifier, dites-le. La déclaration est consignée, et un conflit bloquant arrête aussitôt votre travail sur le dossier pendant que les Opérations d'audit organisent la réattribution. On ne vous demande jamais d'évaluer un dossier que vous avez apporté — Rozine l'interdit.",
     'auditor.conflict.kind_label': "Quel type d'intérêt",
     'auditor.conflict.kind.financial_interest': 'Intérêt financier',
     'auditor.conflict.kind.role_tie':
@@ -1566,18 +1581,14 @@ const fr: Catalog = {
     'auditor.conflict.kind.family_or_business':
         "Lien familial ou d'affaires proche",
     'auditor.conflict.kind.other': 'Autre',
-    'auditor.conflict.note_label': 'Précisions (facultatif)',
+    'auditor.conflict.note_label': 'Explication factuelle (obligatoire)',
     'auditor.conflict.note_placeholder':
         "La nature de l'intérêt et depuis quand",
     'auditor.conflict.submit': "Déclarer l'intérêt",
     'auditor.outcome.done': 'Terminé',
     'auditor.outcome.conflict.title': 'Intérêt déclaré',
-    'auditor.outcome.conflict.reassigned':
-        "{business} est désormais suivi par {name}. Vous n'êtes plus sur le dossier et la déclaration est consignée.",
-    'auditor.outcome.conflict.queued':
-        '{business} ne figure plus sur votre liste et attend une réattribution par les opérations. Vous ne pouvez pas le vérifier entre-temps.',
     'auditor.outcome.conflict.recorded':
-        'Votre intérêt dans {business} est consigné. Vous ne pouvez pas vérifier ce dossier.',
+        "Votre déclaration concernant {business} est consignée. Elle n'arrête pas votre travail sur cette mission.",
     'auditor.outcome.declined.title': 'Mission refusée',
     'auditor.outcome.declined.body':
         "{business} est retourné à l'affectation et votre motif est consigné.",
@@ -1585,13 +1596,13 @@ const fr: Catalog = {
     'auditor.outcome.sealed.flash':
         "Le rapport de terrain de {business} est scellé. {business} cosigne d'ici le {date} ; le moteur note l'entreprise à partir de vos constats.",
     'auditor.outcome.sealed.monthly':
-        "Le coffre de preuves de {month} pour {business} est scellé. {business} a jusqu'au {date} pour valider.",
-    'auditor.outcome.suggested.title': 'Renvoyé au fondateur',
+        'Le rapport de {month} pour {business} — ses relevés téléversés et vos constats factuels — est scellé. {business} contresigne avant le {date}.',
+    'auditor.outcome.suggested.title': 'Modifications demandées',
     'auditor.outcome.suggested.body':
-        'Le fondateur va réviser et soumettre à nouveau pour votre audit.',
-    'auditor.outcome.rejected.title': 'Signalé à Rozine',
+        "L'entreprise a reçu votre motif et votre explication, et peut soumettre à nouveau le dépôt pour votre audit.",
+    'auditor.outcome.rejected.title': 'Dépôt rejeté',
     'auditor.outcome.rejected.body':
-        "Ce rapport a été rejeté et transmis à l'administration Rozine.",
+        "Cette version du dépôt ne peut pas être vérifiée et est close avec votre motif consigné. Ce n'est pas un jugement de crédit, et ses preuves et l'historique du rapport sont conservés.",
     'auditor.sheet.back': 'Retour',
     'auditor.file.head_title': '{business} · dossier',
     'auditor.file.label': "Dossier de l'entreprise {business}",
@@ -1602,7 +1613,13 @@ const fr: Catalog = {
     'auditor.file.title': 'Examiner la demande',
     'auditor.file.lead':
         'Tout ce que {business} a soumis, contrôlé selon les seuils de Rozine. Votre contrôle sur site lève ce que le moteur ne peut pas confirmer à distance.',
-    'auditor.file.reassigned_title': 'Réattribué depuis {name}',
+    'auditor.file.lead_provisional':
+        'La demande de {business} telle qu’elle se présente actuellement.',
+    'auditor.file.lead_no_prescreen':
+        'Aucune présélection automatique n’est enregistrée.',
+    'auditor.file.lead_field_check':
+        'Votre contrôle sur site confirme ce qui ne peut pas être vérifié à distance.',
+    'auditor.file.reassigned_title': 'Ce dossier vous a été réattribué',
     'auditor.file.reassigned_body':
         "Le délai initial s'applique toujours — la réattribution ne relance pas le délai. Les preuves déjà au dossier restent consignées.",
     'auditor.file.raise': 'La levée',
@@ -1611,11 +1628,15 @@ const fr: Catalog = {
     'auditor.file.return_value': '{pct} % au total',
     'auditor.file.use_of_funds': 'Utilisation des fonds',
     'auditor.file.documents': 'Documents soumis',
+    'auditor.file.no_documents':
+        "Aucun document soumis n'est encore enregistré pour ce dossier.",
     'auditor.file.doc_status.parsed': '✓ OCR',
     'auditor.file.doc_status.verified': '✓ Vérifié',
     'auditor.file.doc_status.present': '✓ Présent',
     'auditor.file.doc_status.missing': 'Manquant',
     'auditor.file.prescreen': 'Présélection automatique',
+    'auditor.file.no_prescreen':
+        "Aucun résultat de présélection automatique n'a encore été publié pour ce dossier.",
     'auditor.file.check.met': 'Atteint',
     'auditor.file.check.flag': 'Signalé',
     'auditor.file.why': 'Pourquoi un audit sur site est requis',
@@ -1654,7 +1675,7 @@ const fr: Catalog = {
     'auditor.audit.outside_tolerance': "L'écart dépasse la tolérance",
     'auditor.capture.title': "Capturé dans l'application de capture Rozine",
     'auditor.capture.body':
-        "Les photos et votre arrivée sur site sont prises en direct dans l'application — appareil photo uniquement, lieu et heure signés sur votre téléphone — pour qu'elles ne puissent être ni antidatées ni empruntées.",
+        "Les photos et votre arrivée sur site sont prises dans l'application de capture, jamais sur le web. L'heure, la position et le contrôle de l'appareil de chaque élément s'affichent tels que le serveur les enregistre.",
     'auditor.capture.open': "Ouvrir l'application de capture",
     'auditor.capture.status.not_started':
         "L'application de capture n'a pas encore été ouverte pour cette mission",
@@ -1703,14 +1724,14 @@ const fr: Catalog = {
     'auditor.ledger.none': 'Aucune pièce',
     'auditor.ledger.accepted': '{parsed} sur {count} acceptées',
     'auditor.ledger.rules':
-        "Documents uniquement — PDF ou scan net de bonne qualité (PNG / TIFF / CSV). Les photos d'un registre ne sont pas acceptées. Chaque fichier est lu par OCR avant d'être accepté.",
-    'auditor.ledger.doc.scanning': 'Lecture OCR … {detail}',
+        'Téléversez le registre original en PDF ou CSV (10 Mo au plus). Un registre scanné peut être un PDF ; un scan sans texte est signalé pour une vérification manuelle de la source.',
+    'auditor.ledger.doc.scanning': 'Vérification … {detail}',
     'auditor.ledger.doc.parsed': 'Acceptée · {detail}',
     'auditor.ledger.doc.failed': 'Refusée · {detail}',
     'auditor.ledger.reading': 'Lecture du document',
     'auditor.ledger.rescan': 'Numériser à nouveau ce document',
     'auditor.ledger.file_input': 'Fichier du registre',
-    'auditor.ledger.attach': 'Joindre un registre (PDF ou scan)',
+    'auditor.ledger.attach': 'Joindre le registre (PDF ou CSV)',
     'auditor.ledger.attach_another': 'Ajouter un autre registre',
     'auditor.ledger.reconciles':
         'Les registres papier et les reçus concordent avec les relevés numériques.',
@@ -1760,27 +1781,23 @@ const fr: Catalog = {
     'auditor.seal.note_placeholder': 'Dites ce que vous avez vu et pourquoi',
     'auditor.seal.note_count': '{count} / {max}',
     'auditor.seal.preview': 'Aperçu des constats',
-    'auditor.seal.suggest': 'Suggérer des modifications',
+    'auditor.seal.suggest': 'Demander des modifications',
     'auditor.seal.suggest_lead':
-        'Le rapport de {business} retourne au fondateur pour révision. Dites ce qui doit changer.',
+        "Le dépôt de {business} retourne à l'entreprise pour correction et nouvelle soumission. Choisissez le motif et exposez les faits.",
     'auditor.seal.suggest_placeholder':
         "ex. la fiche de comptage de septembre n'est pas signée",
-    'auditor.seal.suggest_submit': 'Renvoyer',
-    'auditor.seal.reject': 'Rejeter et signaler',
+    'auditor.seal.suggest_submit': 'Demander des modifications',
+    'auditor.seal.reject': 'Rejeter le dépôt',
     'auditor.seal.reject_lead':
-        "Le rapport de {business} est rejeté et transmis à l'administration Rozine. Dites ce que vous avez constaté.",
-    'auditor.seal.reject_placeholder': 'Ce que vous avez constaté sur site',
-    'auditor.seal.reject_submit': 'Rejeter le rapport',
+        "Cette version du dépôt de {business} ne peut pas être vérifiée. Choisissez le motif et exposez les faits — cela concerne le dépôt, pas le crédit de l'entreprise, et ses preuves et son historique sont conservés.",
+    'auditor.seal.reject_placeholder':
+        "Ce que vous avez contrôlé et ce qui n'a pas pu être vérifié",
+    'auditor.seal.reject_submit': 'Rejeter le dépôt',
     'auditor.seal.findings_eyebrow': 'Constats factuels · {version}',
     'auditor.seal.digest': 'Empreinte en attente',
     'auditor.seal.digest_note':
         "Finalisée lors de l'apposition de votre sceau ICPAR. Le PDF signé est compilé par Rozine et publié aux porteurs après l'accord de l'entreprise.",
-    'auditor.seal.apply': 'Apposer le sceau de licence ICPAR',
-    'auditor.seal.pin_title': 'Authentifiez-vous pour sceller',
-    'auditor.seal.pin_lead':
-        'Saisissez votre code PIN Rozine pour apposer la licence {licence}.',
-    'auditor.seal.pin_entered': '{count} chiffres sur {total} saisis',
-    'auditor.seal.pin_delete': 'Effacer un chiffre',
+    'auditor.seal.apply': 'Confirmer avec votre authentificateur',
     'auditor.seal.submit': 'Sceller et soumettre à Rozine',
     'auditor.sealed.title': 'Scellé et déposé',
     'auditor.sealed.body':
@@ -1808,6 +1825,15 @@ const fr: Catalog = {
     'auditor.conflict.options_other':
         "Déclarer sur l'un de vos {count} dossiers attribués",
     'auditor.conflict.on_record': 'Consigné',
+    'auditor.conflict.business_on_record': 'Entreprise enregistrée',
+    'auditor.conflict.assignment_ref': 'Réf. {reference}',
+    'auditor.conflicts.head_title': 'Vos conflits',
+    'auditor.conflicts.title': 'Vos conflits déclarés',
+    'auditor.conflicts.lead':
+        "Chaque conflit que vous avez déclaré, tel qu'il a été enregistré. Chacun a arrêté votre travail sur la mission concernée, et seul votre reçu demeure.",
+    'auditor.conflicts.empty': "Vous n'avez déclaré aucun conflit.",
+    'auditor.conflicts.page_empty':
+        'Rien à afficher sur cette page. Des déclarations plus anciennes peuvent suivre.',
     'auditor.reports.title': 'Rapports déposés',
     'auditor.reports.count': '{count} au total',
     'auditor.reports.filters': 'Filtrer les rapports',
@@ -2050,14 +2076,14 @@ const fr: Catalog = {
     'business.audit_prep.day_left': 'Jour restant',
     'business.audit_prep.days_left': 'Jours restants',
     'business.audit_prep.intro':
-        'Votre auditeur ouvre le dossier de {month} à la clôture du mois et doit le sceller avant le {seal}. Vous ne pouvez ni lancer ni modifier le rapport — vous pouvez rendre la visite rapide et sans accroc.',
+        'Notification reçue : veuillez préparer tous vos relevés bancaires, historiques Mobile Money et carnets de reçus papier pour la prochaine visite de votre expert-comptable.',
     'business.audit_prep.reassigned':
         'Votre dossier est passé de {from} à {to}, avec tout votre historique.',
     'business.audit_prep.ready': 'Préparez ceci',
     'business.audit_prep.item.statements.title':
-        'Relevés bancaires et Mobile Money',
+        'Relevés bancaires et historiques Mobile Money',
     'business.audit_prep.item.statements.body':
-        "Le mois complet, jusqu'au dernier jour. Votre expert-comptable les récupère depuis les flux liés, mais gardez des copies imprimées pour la visite.",
+        "Le mois complet, jusqu'au dernier jour, prêt à être examiné sur place par votre expert-comptable.",
     'business.audit_prep.item.stock.title': 'Stock compté et registres à jour',
     'business.audit_prep.item.stock.body':
         "Votre auditeur fait un comptage physique. Un registre pas à jour apparaît comme un écart et réduit votre capacité d'emprunt.",
@@ -2066,9 +2092,9 @@ const fr: Catalog = {
     'business.audit_prep.item.access.body':
         'Tout ce qui est fermé ou inaccessible le jour J est compté comme manquant.',
     'business.audit_prep.item.papers.title':
-        'Reçus, bons de commande et lettres de voiture classés',
+        'Tickets de caisse et transactions rapprochés',
     'business.audit_prep.item.papers.body':
-        'Depuis le début du mois, au même endroit. Ils expliquent tout écart entre le flux et le comptage.',
+        "Assurez-vous que tous les tickets de caisse papier et toutes les transactions numériques sont rapprochés pour l'examen sur place de l'expert-comptable.",
     'business.audit_prep.item.person.title': 'Une personne habilitée sur place',
     'business.audit_prep.item.person.body':
         'Il faut une personne qui peut ouvrir les portes et répondre des chiffres — pas seulement le personnel de service.',
@@ -2078,15 +2104,15 @@ const fr: Catalog = {
         "Votre expert-comptable ouvre le dossier d'audit de la période. Rien n'est requis de votre part pour le lancer.",
     'business.audit_prep.flow.visit.title': 'Visite sur site',
     'business.audit_prep.flow.visit.body':
-        'Il compte le stock, rapproche la caisse du flux bancaire et photographie les preuves, en direct et géolocalisées.',
+        "L'expert-comptable qui vous est attribué se rendra dans vos locaux pour examiner vos documents, rapprocher vos flux de trésorerie et établir le rapport d'audit mensuel.",
     'business.audit_prep.flow.sealed.title': 'Scellé',
     'business.audit_prep.flow.sealed.body':
-        "Les constats, écarts et facteur d'escompte de crédit sont scellés sous sa licence ICPAR.",
+        'Les constats factuels et les écarts sont scellés sous sa licence ICPAR.',
     'business.audit_prep.flow.cosign.title': 'Vous cosignez',
     'business.audit_prep.flow.cosign.body':
-        'Vous disposez de {minutes} minutes pour ajouter un résumé et cosigner, ou contester avec une contre-preuve et un séquestre remboursable.',
+        'Vous ajoutez un résumé et cosignez avant le {date}, ou vous contestez avec une contre-preuve.',
     'business.audit_prep.closing':
-        "Vous ne déposez jamais le rapport mensuel vous-même. Votre auditeur l'ouvre, le vérifie sur site et le scelle — votre rôle est d'être prêt, puis de cosigner ou contester ses constats.",
+        "Vous ne déposez jamais le rapport mensuel vous-même. Votre expert-comptable se déplace, examine vos documents sur place et scelle le rapport — votre rôle est d'être prêt, puis de cosigner ou contester ses constats.",
 
     'investor.nav.deals': 'Offres',
     'investor.nav.portfolio': 'Portefeuille',
@@ -2813,10 +2839,545 @@ const fr: Catalog = {
     'investor.profile.statements.disclaimer':
         'Les relevés sont fournis pour vos archives. Rozine ne fournit pas de conseil fiscal — consultez un conseiller qualifié.',
 
+    'business.apply.business.unavailable': 'Indisponible',
+    'business.apply.business.ineligible': 'Pas encore éligible à une levée',
+    'business.apply.raise.resized':
+        "Vous avez demandé {requested} · voici l'offre que vous acceptez en signant",
+    'business.apply.raise.schedule': 'Échéancier de remboursement',
+    'business.apply.raise.instalment': 'Échéance {n}',
+    'business.apply.raise.instalment_final': 'Échéance {n} · dernière',
+    'business.apply.review.your_offer': 'Votre offre',
+    'business.apply.review.flat_rate': '{rate} % fixe',
+    'business.apply.review.accept_offer':
+        "J'accepte cette offre : {principal} sur {months} mois, remboursés selon l'échéancier ci-dessus.",
+    'business.apply.review.no_offer':
+        "Il n'y a pas encore d'offre à accepter. Revenez à votre levée pour obtenir une cotation.",
+    'business.apply.review.signatories': 'Signataires',
+    'business.apply.review.signatures_required':
+        'Signatures exigées par le mandat de la société : {count}',
+    'business.apply.review.signed_on': 'Signé · {date}',
+    'business.apply.review.signer.signed': 'Signé',
+    'business.apply.review.signer.pending': 'En attente',
+    'business.apply.review.attestation':
+        "Saisir votre nom confirme que vous signez vous-même. C'est votre compte vérifié, et non ce nom, qui signe.",
+    'business.apply.review.waiting':
+        'En attente de la signature de {names}. La demande est soumise dès que toutes les signatures requises sont réunies.',
+    'business.apply.review.cannot_sign':
+        'Seul un signataire du mandat vérifié de la société peut signer cette demande.',
+    'business.apply.review.agreement_unavailable':
+        "Le contrat n'est pas encore disponible.",
+    'business.apply.review.agreement_unavailable_body':
+        "Rozine n'a pas encore publié les conditions et les avertissements sur les risques approuvés pour cette demande : il n'y a donc rien à signer pour l'instant. Votre brouillon et votre offre restent enregistrés.",
+    'business.apply.view_only':
+        'Vous pouvez consulter cette demande, mais pas la modifier.',
+    'business.apply.submitted.application_id': 'ID de la demande · {id}',
+    'business.apply.outcome.checking.title': 'Vérification en cours',
+    'business.apply.outcome.checking.body':
+        'La connexion a été coupée avant la réponse du serveur. Nous vérifions si votre demande a été reçue.',
+    'business.apply.outcome.unconfirmed.title':
+        "Impossible de confirmer pour l'instant",
+    'business.apply.outcome.unconfirmed.body':
+        "Rien ne sera renvoyé tant que le serveur n'aura pas confirmé ce qu'il est advenu de votre demande.",
+    'business.apply.outcome.pending.title': 'Traitement en cours',
+    'business.apply.outcome.pending.body':
+        'Le serveur a reçu votre demande et la traite encore.',
+    'business.apply.outcome.not_recorded.title': 'Aucun résultat enregistré',
+    'business.apply.outcome.not_recorded.body':
+        "Le serveur n'a encore aucun résultat pour votre demande. Vous pouvez renvoyer exactement la même demande.",
+    'business.apply.outcome.check_again': 'Vérifier à nouveau',
+    'business.apply.outcome.try_again': 'Réessayer',
+    'business.apply.outcome.refused.VERSION_CONFLICT':
+        'Cette demande a changé depuis son ouverture. Nous avons chargé la dernière version — vérifiez-la et réessayez.',
+    'business.apply.outcome.refused.IDEMPOTENCY_CONFLICT':
+        "Cette demande a déjà été utilisée avec d'autres informations ; elle n'a donc pas été renvoyée. Nous avons chargé la dernière version.",
+    'business.apply.outcome.refused.QUOTE_STALE':
+        'Votre cotation a changé avant votre signature. Vérifiez la nouvelle offre et acceptez-la à nouveau.',
+    'business.apply.outcome.refused.DOCUMENT_VERSION_STALE':
+        'Un document ou une déclaration a changé avant votre signature. Lisez la nouvelle version et acceptez-la à nouveau.',
+    'business.apply.outcome.refused.ACTION_FORBIDDEN':
+        'Vous ne pouvez pas effectuer cette action pour cette entreprise.',
+    'business.apply.outcome.refused.MANDATE_REQUIRED':
+        'Votre mandat vérifié ne vous permet pas de signer pour cette entreprise.',
+    'business.apply.outcome.refused.NOT_FOUND':
+        'Cette demande ne vous est plus accessible.',
+    'business.apply.outcome.refused.denied':
+        'Votre accès a changé. Revenez à vos applications et réessayez.',
+    'business.apply.outcome.refused.failed':
+        "Le serveur n'a pas pu terminer cette action. Nous avons chargé la dernière version.",
+    'business.publish.unavailable':
+        "La publication s'ouvrira une fois votre demande approuvée et entièrement signée, et le processus de mise en ligne prêt.",
+
+    'business.apply.outcome.refused.MANDATE_STALE':
+        'Le mandat de signature de la société a changé avant votre signature. Vérifiez qui doit signer désormais, puis signez à nouveau.',
+
+    'business.apply.review.document_summary': 'Résumé',
+    'business.apply.outcome.refused.APPLICATION_PENDING_REVIEW':
+        'Votre entreprise a déjà une demande en cours d’examen. Vous pourrez en déposer une nouvelle une fois la décision rendue.',
+    'business.apply.outcome.refused.APPLICATION_STEP_INVALID':
+        'Revenez à « Vérifier et signer » pour soumettre cette demande.',
+    'business.apply.pending_review.link': 'Voir la demande en cours d’examen',
+    'business.apply.review.document_full_text': 'Texte intégral',
+    'business.apply.review.reduce.open': 'Prendre un montant inférieur',
+    'business.apply.review.reduce.label': 'Montant souhaité (RWF)',
+    'business.apply.review.reduce.help':
+        "Jusqu'à l'offre, par billets entiers de {unit}. Nous recalculons l'offre pour ce montant et vous l'acceptez à nouveau.",
+    'business.apply.review.reduce.submit': 'Recalculer',
+    'business.apply.review.reduce.cancel': "Garder l'offre",
+    'business.apply.review.reduced':
+        'Vous avez choisi {principal} sur les {offered} proposés.',
+    'business.apply.review.use_full': "Reprendre l'offre complète",
+
+    'business.apply.recalculating': 'Recalcul…',
+    'auditor.capture.unavailable':
+        "L'application de capture n'est pas encore disponible pour cette mission : les photos et l'arrivée sur site ne peuvent pas être prises. Il n'existe aucun moyen de les capturer sur le web.",
+    'auditor.photos.add_unavailable': 'Capture indisponible',
+    'auditor.checkin.position_unavailable': 'Position indisponible',
+    'auditor.ledger.ingested': 'Reçu · pas encore examiné',
+    'auditor.jobs.map_approximate': 'Positions approximatives',
+    'auditor.reason.label': 'Motif',
+    'auditor.reason.explanation_required':
+        'Explication factuelle (obligatoire)',
+    'auditor.reason.explanation_optional': 'Explication (facultative)',
+    'auditor.outcome.conflict.blocking.reassignment_pending':
+        "Votre conflit a été enregistré. Le travail sur cette mission est arrêté pendant que les Opérations d'audit organisent la réattribution.",
+    'auditor.outcome.conflict.blocking.reassigned':
+        'Votre conflit a été enregistré et {business} a été réattribuée. Votre travail sur cette mission est arrêté.',
+    'auditor.outcome.conflict.blocking.recorded':
+        'Votre conflit a été enregistré. Le travail sur cette mission est arrêté.',
+    'auditor.outcome.conflict.blocking.closed':
+        "Votre conflit a été enregistré. Les Opérations d'audit ont clôturé cette mission et votre travail sur celle-ci est arrêté.",
+    'auditor.seal.cites': 'Preuves : {ids}',
+    'auditor.seal.evidence': 'Preuves scellées avec ce rapport',
+    'auditor.seal.versions':
+        'Procédure {procedure} · constats {findings} · preuves {evidence}',
+    'auditor.seal.code_title': "Confirmez que c'est bien vous",
+    'auditor.seal.code_lead':
+        "Saisissez le code à six chiffres de votre application d'authentification pour sceller sous la licence {licence}.",
+    'auditor.seal.code_label': "Code d'authentification à six chiffres",
+    'auditor.seal.code_scope':
+        "Ce code confirme seulement que c'est vous qui scellez. Il ne dit rien des téléphones ou appareils utilisés pour capturer les preuves.",
+    'auditor.seal.code_wrong':
+        'Ce code ne correspond pas. Saisissez le code actuel de votre authentificateur.',
+    'auditor.seal.code_expired':
+        "Votre confirmation a expiré avant l'apposition du sceau. Saisissez un nouveau code.",
+    'auditor.seal.code_throttled':
+        'Trop de tentatives. Vous pourrez saisir un nouveau code dans {wait}.',
+    'auditor.seal.code_throttled_later':
+        'Trop de tentatives. Patientez un instant, puis saisissez un nouveau code.',
+    'auditor.seal.code_unreachable':
+        "Impossible de joindre Rozine pour vérifier votre code. Rien n'a été scellé — saisissez un nouveau code pour réessayer.",
+    'auditor.seal.sealing': 'Scellement…',
+    'auditor.seal.mfa_title':
+        "Activez l'authentification à deux facteurs pour sceller",
+    'auditor.seal.mfa_body':
+        "Le scellement demande un code d'une application d'authentification confirmée sur votre compte. Configurez-en une dans vos paramètres de sécurité, puis revenez sceller.",
+    'auditor.seal.mfa_settings': 'Ouvrir les paramètres de sécurité',
+    'auditor.sealed.report_id': 'Rapport',
+    'auditor.sealed.signature_ref': 'Signature',
+    'auditor.sealed.key_id': 'Clé',
+    'auditor.sealed.amended_by':
+        "Le rapport {report} modifie celui-ci ; ce rapport reste tel qu'il a été scellé.",
+    'auditor.sealed.open_amendment': 'Ouvrir la modification',
+    'auditor.audit.amends':
+        'Ceci est une modification liée du rapport {report}. Ce rapport reste inchangé.',
+    'auditor.audit.open_original': "Ouvrir l'original",
+    'auditor.receipt.title': 'Conflit enregistré',
+    'auditor.receipt.body.reassignment_pending':
+        "Votre conflit a été enregistré. Le travail sur cette mission est arrêté pendant que les Opérations d'audit organisent la réattribution.",
+    'auditor.receipt.body.reassigned':
+        "Votre conflit a été enregistré et la mission a été réattribuée. Vous n'avez plus accès à son dossier.",
+    'auditor.receipt.body.recorded':
+        "Votre conflit a été enregistré. Le travail sur cette mission est arrêté et vous n'avez plus accès à son dossier.",
+    'auditor.receipt.body.closed':
+        "Votre conflit a été enregistré. Les Opérations d'audit ont clôturé cette mission et vous n'avez plus accès à son dossier.",
+    'auditor.receipt.status': 'Mission',
+    'auditor.receipt.state.reassignment_pending': 'Réattribution en attente',
+    'auditor.receipt.state.reassigned': 'Réattribuée',
+    'auditor.receipt.state.recorded': 'Enregistré',
+    'auditor.receipt.state.closed': "Clôturée par les Opérations d'audit",
+    'auditor.receipt.kind': "Type d'intérêt",
+    'auditor.receipt.declared': 'Déclaré',
+    'auditor.receipt.note': 'Votre explication',
+    'auditor.evidence.title': 'Preuves',
+    'auditor.evidence.captured': 'Capturé',
+    'auditor.evidence.source': 'Source',
+    'auditor.evidence.attestation': "Attestation de l'appareil",
+    'auditor.evidence.position': 'Position',
+    'auditor.evidence.accuracy': 'Précision',
+    'auditor.evidence.metres': '±{metres} m',
+    'auditor.evidence.unavailable': 'Indisponible',
+    'auditor.evidence.digest': 'SHA-256 {digest}…',
+    'auditor.evidence.source_companion_device': 'Application de capture',
+    'auditor.evidence.source_web_upload': 'Téléversement web',
+    'auditor.evidence.attestation_verified': 'Attestée',
+    'auditor.evidence.attestation_unverified': 'Non attestée',
+    'auditor.evidence.attestation_unavailable': 'Indisponible',
+    'auditor.evidence.kind.photo': 'Photo du site',
+    'auditor.evidence.kind.check_in': 'Arrivée sur site',
+    'auditor.evidence.kind.ledger': 'Document de registre',
+    'auditor.evidence.kind.statement': 'Relevé',
+    'auditor.evidence.kind.licence_certificate': 'Certificat de licence',
+    'auditor.command.checking.title': 'Vérification en cours',
+    'auditor.command.checking.body':
+        "La réponse à votre dernière action s'est perdue : Rozine vérifie si elle a été enregistrée. Rien n'est renvoyé entre-temps.",
+    'auditor.command.unconfirmed.title':
+        'Impossible de confirmer votre dernière action',
+    'auditor.command.unconfirmed.body':
+        'Impossible de joindre Rozine pour vérifier si elle a été enregistrée. Vérifiez à nouveau avant toute autre action — elle ne sera pas envoyée deux fois.',
+    'auditor.command.pending.title': 'Enregistrée — traitement en cours',
+    'auditor.command.pending.body':
+        'Rozine a reçu votre dernière action et la traite encore. Vérifiez à nouveau dans un instant.',
+    'auditor.command.not_recorded.title': 'Non enregistrée',
+    'auditor.command.not_recorded.body':
+        "Rozine n'a aucune trace de votre dernière action. Vous pouvez renvoyer la même demande ; elle ne peut pas être appliquée deux fois.",
+    'auditor.command.check_again': 'Vérifier à nouveau',
+    'auditor.command.try_again': 'Réessayer',
+    'auditor.command.refused.VERSION_CONFLICT':
+        'Cet enregistrement a changé depuis son ouverture. La page a été actualisée — vérifiez-la et réessayez.',
+    'auditor.command.refused.IDEMPOTENCY_CONFLICT':
+        'Cette demande a déjà servi à une autre action. Recommencez depuis la page actualisée.',
+    'auditor.command.refused.DIGEST_STALE':
+        'Les preuves ont changé après votre aperçu. Relisez le nouvel aperçu et confirmez avec un nouveau code.',
+    'auditor.command.refused.EVIDENCE_VERSION_STALE':
+        'Les preuves ont changé après votre aperçu. Relisez le nouvel aperçu et confirmez à nouveau.',
+    'auditor.command.refused.FINDINGS_VERSION_STALE':
+        'Les constats ont changé après votre aperçu. Relisez le nouvel aperçu et confirmez à nouveau.',
+    'auditor.command.refused.PROCEDURE_VERSION_STALE':
+        'La version de la procédure a changé. Relisez le nouvel aperçu et confirmez à nouveau.',
+    'auditor.command.refused.MANDATE_STALE':
+        'Les conditions de votre mission ont changé. Relisez la page actualisée et confirmez à nouveau.',
+    'auditor.command.refused.ACTION_FORBIDDEN':
+        'Vous ne pouvez plus effectuer cette action sur cette mission. Votre accès a changé.',
+    'auditor.command.refused.NOT_FOUND':
+        'Cet enregistrement ne vous est pas accessible.',
+    'auditor.command.refused.STEP_UP_INVALID':
+        "Cette confirmation n'a pas abouti. Saisissez un nouveau code de votre authentificateur.",
+    'auditor.command.refused.STEP_UP_EXPIRED':
+        'Cette confirmation a expiré avant le scellement. Saisissez un nouveau code de votre authentificateur.',
+    'auditor.command.refused.denied':
+        "Votre accès a changé : l'action n'a pas été effectuée.",
+    'auditor.command.refused.failed':
+        "L'action n'a pas pu être effectuée. Actualisez la page et réessayez.",
+    'auditor.accreditation.badge.none': 'Non accrédité',
+    'auditor.accreditation.badge.first_pending': "En cours d'examen",
+    'auditor.accreditation.none_line': 'Aucune licence enregistrée',
+    'auditor.accreditation.none_body':
+        "Soumettez votre licence ICPAR pour examen. La soumission ne vous confère aucun statut : vous ne pourrez prendre de missions qu'après qu'un membre autorisé du personnel Rozine a enregistré le contrôle ICPAR et ses dates.",
+    'auditor.accreditation.first_pending_title':
+        "Première accréditation en cours d'examen",
+    'auditor.accreditation.evidence_line':
+        'Certificat {id} · SHA-256 {digest}…',
+    'auditor.accreditation.expiry_label_first':
+        "Date d'expiration de la licence",
+    'auditor.accreditation.first_submit': 'Soumettre votre accréditation',
+
+    'auditor.availability.locked':
+        'Votre disponibilité ne peut pas être modifiée ici pour le moment.',
+    'auditor.home.unavailable': 'Indisponible',
+
+    'auditor.availability.home_paused_locked':
+        "L'affectation ne vous propose pas de missions flash",
+
+    'business.grow.starting': 'Démarrage…',
+
+    'auditor.conflict.not_allowed':
+        "Vous ne pouvez plus faire de déclaration sur ce dossier : votre déclaration n'a pas été envoyée.",
+
+    'auditor.jobs.accept_due': 'Accepter · dû le {time}',
+    'auditor.jobs.accept_plain': 'Accepter',
+    'auditor.jobs.offer_open': "Offre ouverte jusqu'au {time} · encore {left}",
+    'auditor.jobs.offer_label': 'Temps restant pour accepter cette offre',
+    'auditor.jobs.offer_closed': 'Cette offre est close',
+    'auditor.command.refused.ASSIGNMENT_ACCEPTANCE_EXPIRED':
+        "Cette offre s'est close avant que votre acceptation n'arrive chez Rozine : elle n'a pas été acceptée. La page a été actualisée.",
+
+    'auditor.standing.reason.ACCREDITATION_REQUIRED':
+        "Vous n'avez pas encore d'accréditation approuvée.",
+    'auditor.command.refused.ACCREDITATION_REQUIRED':
+        "Vous n'avez pas encore d'accréditation approuvée. Aucune mission ne peut vous être proposée d'ici là : rien n'a été modifié.",
+    'auditor.standing.reason.ACCREDITATION_EXPIRED':
+        'Votre licence a expiré. Renouvelez-la pour recevoir à nouveau des missions.',
+    'auditor.command.refused.ACCREDITATION_EXPIRED':
+        "Votre licence a expiré. Renouvelez-la pour recevoir à nouveau des missions. Aucune mission ne peut vous être proposée d'ici là : rien n'a été modifié.",
+    'auditor.standing.reason.ACCREDITATION_SUSPENDED':
+        "Votre accréditation est suspendue par les Opérations d'audit.",
+    'auditor.command.refused.ACCREDITATION_SUSPENDED':
+        "Votre accréditation est suspendue par les Opérations d'audit. Aucune mission ne peut vous être proposée d'ici là : rien n'a été modifié.",
+    'auditor.standing.reason.STANDING_CHECK_REQUIRED':
+        "Un contrôle de statut par les Opérations d'audit est attendu.",
+    'auditor.command.refused.STANDING_CHECK_REQUIRED':
+        "Un contrôle de statut par les Opérations d'audit est attendu. Aucune mission ne peut vous être proposée d'ici là : rien n'a été modifié.",
+    'auditor.standing.paused_until_restored':
+        "L'affectation est suspendue jusqu'au rétablissement de votre statut. Votre choix d'accepter des audits est conservé.",
+    'auditor.standing.turning_on':
+        "L'activer n'apportera pas d'offres tant que votre statut n'est pas rétabli.",
+
+    'auditor.accreditation.licence_title': "Licence d'exercice",
+    'auditor.accreditation.view_certificate':
+        'Télécharger le certificat enregistré',
+    'auditor.accreditation.view_submitted': 'Télécharger le certificat soumis',
+
+    'auditor.engagement.head_title': 'Conditions de mission',
+    'auditor.engagement.title': 'Conditions de mission',
+    'auditor.engagement.lead':
+        'Lisez les deux documents en entier avant d’accepter. De nouvelles missions ne vous sont proposées que selon des conditions que vous avez acceptées.',
+    'auditor.engagement.synthetic_title': 'Conditions de test synthétiques',
+    'auditor.engagement.synthetic_body':
+        'Ce sont des conditions de test, pas pour de vraies missions. Les accepter ne représente aucune mission professionnelle réelle.',
+    'auditor.engagement.original_language':
+        'Les conditions sont affichées dans leur langue d’origine.',
+    'auditor.engagement.document.master_services': 'Contrat-cadre de services',
+    'auditor.engagement.document.agreed_procedures': 'Procédures convenues',
+    'auditor.engagement.document_meta': 'Version {version} · SHA-256 {hash}…',
+    'auditor.engagement.acceptance_title': 'Votre acceptation',
+    'auditor.engagement.release_meta':
+        'Version {version} · procédure {procedure}',
+    'auditor.engagement.release_hash': 'SHA-256 de la publication {hash}…',
+    'auditor.engagement.accept_label':
+        'J’ai lu et j’accepte le Contrat-cadre de services et les Procédures convenues',
+    'auditor.engagement.accept': 'Accepter les conditions',
+    'auditor.engagement.accepting': 'Acceptation…',
+    'auditor.engagement.acceptance_required':
+        'Cochez la case pour confirmer que vous avez lu et acceptez les deux documents.',
+    'auditor.engagement.accepted':
+        'Vous avez accepté la version {version} le {date}',
+    'auditor.engagement.accepted_receipt': 'SHA-256 du reçu {hash}…',
+    'auditor.engagement.no_accept':
+        'L’acceptation de ces conditions ne vous est pas proposée pour le moment.',
+    'auditor.engagement.unavailable':
+        'Aucune condition de mission n’est disponible pour le moment',
+    'auditor.engagement.unavailable_body':
+        'Les nouvelles missions sont suspendues jusqu’à ce que Rozine publie des conditions. Rien ne vous est demandé d’ici là.',
+    'auditor.engagement.refused.AUDIT_ENGAGEMENT_VERSION_CONFLICT':
+        'Les conditions ont changé avant que votre acceptation n’atteigne Rozine ; rien n’a été accepté. Lisez la version actuelle en entier avant d’accepter.',
+    'auditor.engagement.refused.AUDIT_ENGAGEMENT_TERMS_REQUIRED':
+        'Ces conditions ont été retirées avant que votre acceptation n’atteigne Rozine ; rien n’a été accepté.',
+    'auditor.engagement.banner.required':
+        'Lisez et acceptez les conditions de mission pour recevoir de nouvelles missions',
+    'auditor.engagement.banner.unavailable':
+        'Les conditions de mission ne sont pas disponibles ; les nouvelles missions sont suspendues',
+    'auditor.command.refused.AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED':
+        'Acceptez les conditions de mission actuelles pour continuer.',
+    'auditor.command.review_terms': 'Lire les conditions',
+    'auditor.seal.save_note': 'Enregistrer la note',
+    'auditor.seal.saving_note': 'Enregistrement de la note…',
+    'auditor.seal.note_unsaved':
+        "Enregistrez votre note avant l'aperçu. L'aperçu, votre code et le sceau portent tous sur la note enregistrée.",
+    'auditor.ledger.reported_undeclared': 'Non déclaré',
+    'auditor.ledger.reported_undeclared_note':
+        "L'entreprise n'a pas déclaré de valeur de stock : il n'y a donc aucun chiffre déclaré auquel comparer votre comptage. Saisissez ce que vous avez compté.",
+    'auditor.ledger.reconciles_undeclared':
+        "Le rapprochement reste bloqué tant que l'entreprise n'a pas déclaré son stock.",
+
+    'auditor.statements.cover_unavailable': 'Indisponible',
+    'auditor.statements.documents': 'Documents sources',
+    'auditor.statements.no_documents':
+        "Aucun document source n'est enregistré pour ce mois.",
+    'auditor.count.period_unavailable': 'Indisponible',
+
+    'auditor.file.start': "Commencer l'audit",
+    'auditor.file.starting': 'Démarrage…',
+    'auditor.file.application_unavailable':
+        "Aucune demande soumise n'est encore disponible pour l'audit.",
+    'auditor.command.refused.APPLICATION_VERSION_CONFLICT':
+        "La demande de l'entreprise a changé depuis l'ouverture de ce dossier. La page a été actualisée — vérifiez-la et recommencez.",
+    'auditor.command.refused.APPLICATION_NOT_SUBMITTED':
+        "Cette demande n'a pas été soumise : il n'y a donc encore rien à auditer. La page a été actualisée.",
+    'auditor.command.refused.APPLICATION_NOT_FOUND':
+        "Cette demande ne vous est plus accessible : rien n'a été commencé.",
+    'auditor.command.refused.AUDIT_APPLICATION_BOUND':
+        "Un rapport est déjà lié à cette demande : aucun nouveau n'a été commencé. La page a été actualisée — reprenez à partir de là.",
+    'auditor.command.refused.AUDIT_REPORT_REASSIGNMENT_REQUIRED':
+        "Ce rapport doit être réattribué avant que le travail puisse reprendre : rien n'a été commencé. La page a été actualisée.",
+
+    'auditor.evidence.source_isolated_synthetic':
+        'Preuve de test synthétique (isolée)',
+
+    'auditor.ledger.file_type': 'Choisissez le registre au format PDF ou CSV.',
+    'auditor.ledger.file_size':
+        'Ce fichier dépasse 10 Mo. Téléversez un PDF ou un CSV de 10 Mo au plus.',
+
+    'auditor.seal.note_unsaved_unsealable':
+        "Votre note n'est pas encore enregistrée. Enregistrez-la maintenant ; le scellement s'ouvrira quand le rapport sera prêt.",
+    'auditor.capture.synthetic':
+        'Preuve de test synthétique (isolée) — pas une capture native.',
+
+    'auditor.returned.title.changes_requested': 'Modifications demandées',
+    'auditor.returned.title.rejected': 'Déclaration rejetée',
+    'auditor.returned.lead.changes_requested':
+        "Cette déclaration a été renvoyée à l'entreprise pour le motif ci-dessous. Le rapport est conservé tel qu'il a été renvoyé.",
+    'auditor.returned.lead.rejected':
+        "Cette version de la déclaration n'a pas pu être vérifiée, pour le motif ci-dessous. Cela concerne la déclaration, pas le crédit de l'entreprise. Le rapport est conservé tel qu'il a été rejeté.",
+    'auditor.returned.reason': 'Motif',
+    'auditor.returned.recorded': 'Enregistré',
+    'auditor.returned.amend': 'Commencer une modification liée',
+    'auditor.returned.amended_by':
+        'Une modification {report} a été commencée à partir de ce rapport.',
+    'auditor.returned.view_amendment': 'Voir la modification',
+
+    'auditor.reason.count': '{count} / {max}',
+    'auditor.command.refused.AUDIT_REPORT_DECISION_NOT_ALLOWED':
+        "Ce rapport ne peut plus être renvoyé ni rejeté : rien n'a été enregistré. La page a été actualisée.",
+    'auditor.command.refused.AUDIT_REPORT_NOT_AMENDABLE':
+        "Ce rapport ne peut pas être modifié pour le moment : aucune modification n'a été commencée. La page a été actualisée.",
+    'auditor.ledger.download': "Télécharger l'original",
+
+    'auditor.sealed.body_undated':
+        'Le rapport est scellé et ne peut plus être modifié. {party} doit encore le cosigner ; il est ensuite publié aux porteurs.',
+    'auditor.sealed.unavailable':
+        "Ce sceau ne peut pas être vérifié pour le moment — sa clé de signature n'est plus en vigueur. L'enregistrement scellé et son historique restent inchangés.",
+
+    'auditor.sealed.body_published':
+        'Scellé et cosigné ; publié aux porteurs le {date}.',
+    'auditor.sealed.body_signed':
+        "Le rapport est scellé et {party} l'a cosigné. Il sera ensuite publié aux porteurs.",
+    'auditor.sealed.body_declined':
+        "Le rapport est scellé. {party} l'a contesté au lieu de le cosigner : il n'est donc pas publié.",
+    'auditor.sealed.body_overdue':
+        "Le rapport est scellé, mais le délai de cosignature de {party} est passé. Il ne peut plus être cosigné et n'est pas publié ; rien n'est approuvé automatiquement.",
+
+    'auditor.command.refused.AUDIT_PROCEDURE_SOURCE_CHANGED':
+        'Une source a changé après votre aperçu. Revenez en arrière pour la vérifier, puis prévisualisez à nouveau avant de sceller.',
+
+    'auditor.sealed.body_amended':
+        'Vous avez modifié ce rapport : il ne sera ni cosigné ni publié. La modification le remplace.',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',
     },
+    'business.audit_cosign.head_title': "Cosigner le rapport d'audit",
+    'business.audit_cosign.title': "Cosigner le rapport d'audit",
+    'business.audit_cosign.back': 'Retour',
+    'business.audit_cosign.lead':
+        "Votre expert-comptable a scellé ce rapport après l'audit sur place. Lisez les constats factuels avant de cosigner.",
+    'business.audit_cosign.kind.monthly': "Rapport d'audit mensuel",
+    'business.audit_cosign.kind.flash': "Rapport d'audit flash",
+    'business.audit_cosign.period': 'Période',
+    'business.audit_cosign.auditor': "Partenaire d'audit",
+    'business.audit_cosign.auditor_value': '{name} · licence {licence}',
+    'business.audit_cosign.procedure': 'Procédure',
+    'business.audit_cosign.digest': 'Empreinte du rapport',
+    'business.audit_cosign.digest_short': '{digest}…',
+    'business.audit_cosign.seal.title': 'Sceau',
+    'business.audit_cosign.seal.valid': 'Sceau valide',
+    'business.audit_cosign.seal.valid_at': 'Scellé le {date}',
+    'business.audit_cosign.seal.verify': 'Vérifier le sceau',
+    'business.audit_cosign.seal.unavailable':
+        'Le sceau ne peut pas être vérifié pour le moment.',
+    'business.audit_cosign.note_title': "Note du partenaire d'audit",
+    'business.audit_cosign.findings': 'Constats factuels',
+    'business.audit_cosign.findings_empty': "Aucun constat n'a été enregistré.",
+    'business.audit_cosign.evidence': {
+        one: '{count} élément de preuve',
+        other: '{count} éléments de preuve',
+    },
+    'business.audit_cosign.sealed_note':
+        'Ce rapport est scellé. Rien sur cette page ne le modifie.',
+    'business.audit_cosign.status.title': 'Cosignatures',
+    'business.audit_cosign.status.count':
+        '{signed} signature(s) sur {required}',
+    'business.audit_cosign.status.signers': 'Signataires',
+    'business.audit_cosign.status.you': 'Vous',
+    'business.audit_cosign.status.signed_on': 'Signé · {date}',
+    'business.audit_cosign.status.signed': 'Signé',
+    'business.audit_cosign.status.pending': 'En attente',
+    'business.audit_cosign.due': 'À cosigner avant le {date}',
+    'business.audit_cosign.overdue':
+        'En retard — la cosignature était due avant le {date}',
+    'business.audit_cosign.published': 'Publié le {date}',
+    'business.audit_cosign.yours.title': 'Votre cosignature',
+    'business.audit_cosign.yours.accept':
+        "J'ai examiné les constats d'audit et je cosigne ce rapport.",
+    'business.audit_cosign.yours.note': 'Votre résumé (facultatif)',
+    'business.audit_cosign.yours.note_help':
+        'Conservé avec votre signature. Il ne modifie pas le rapport scellé.',
+    'business.audit_cosign.yours.identity':
+        'Votre compte vérifié signe. Chaque signataire requis cosigne séparément.',
+    'business.audit_cosign.yours.submit': 'Cosigner le rapport',
+    'business.audit_cosign.yours.submitting': 'Cosignature…',
+    'business.audit_cosign.yours.signed': 'Vous avez cosigné ce rapport.',
+    'business.audit_cosign.yours.signed_on': 'Vous avez cosigné le {date}.',
+    'business.audit_cosign.yours.waiting':
+        'En attente de la cosignature de {names}. Le rapport est publié dès que toutes les signatures requises sont réunies.',
+    'business.audit_cosign.yours.all_in':
+        'Toutes les signatures requises sont réunies. Le rapport est publié dès que ses contrôles de publication sont validés.',
+    'business.audit_cosign.yours.published':
+        'Toutes les signatures requises sont réunies et le rapport est publié.',
+    'business.audit_cosign.yours.unavailable':
+        "Ce rapport n'est pas ouvert à la cosignature pour le moment.",
+    'business.audit_cosign.yours.cannot':
+        'Vous ne pouvez pas cosigner ce rapport.',
+    'business.audit_cosign.refused.with_code': '{reason} ({code})',
+    'business.audit_cosign.refused.VERSION_CONFLICT':
+        'Les signatures de ce rapport ont changé pendant que vous y travailliez. Nous avons chargé la dernière version — vérifiez-la et réessayez.',
+    'business.audit_cosign.refused.IDEMPOTENCY_CONFLICT':
+        "Cette demande a déjà été utilisée avec d'autres informations ; elle n'a donc pas été renvoyée. Nous avons chargé la dernière version.",
+    'business.audit_cosign.refused.DIGEST_STALE':
+        "Le rapport que vous avez lu n'est plus la version en vigueur. Nous l'avons chargé — lisez-le et réessayez.",
+    'business.audit_cosign.refused.MANDATE_STALE':
+        'Le mandat de signature de la société a changé. Vérifiez qui peut signer désormais, puis réessayez.',
+    'business.audit_cosign.refused.ACTION_FORBIDDEN':
+        'Vous ne pouvez pas effectuer cette action pour cette entreprise.',
+    'business.audit_cosign.refused.MANDATE_REQUIRED':
+        'Votre mandat vérifié ne vous permet pas de signer pour cette entreprise.',
+    'business.audit_cosign.refused.NOT_FOUND':
+        'Ce rapport ne vous est plus accessible.',
+    'business.audit_cosign.refused.denied':
+        'Votre accès a changé. Revenez à vos applications et réessayez.',
+    'business.audit_cosign.refused.failed':
+        "Cette action n'a pas été enregistrée. Vérifiez le rapport tel qu'il est maintenant et réessayez.",
+    'business.audit_prep.seal_by':
+        'Votre expert-comptable scelle le rapport de {month} au plus tard le {seal}. Vous ne pouvez ni le lancer ni le modifier.',
+    'business.audit_cosign.count': '{count}/{limit}',
+    'business.audit_cosign.published_auto':
+        'Publié automatiquement après le délai de 24 heures',
+    'business.audit_cosign.yours.published_auto':
+        "Personne n'a signé dans le délai : le rapport a été approuvé automatiquement et publié.",
+    'business.audit_cosign.dispute.open': 'Soumettre une contestation',
+    'business.audit_cosign.dispute.intro':
+        'Indiquez quels constats vous contestez et pourquoi, en vous en tenant aux faits. Votre contestation ne modifie pas le rapport scellé.',
+    'business.audit_cosign.dispute.reason': 'Votre motif',
+    'business.audit_cosign.dispute.reason_help':
+        'Obligatoire : les faits que vous contestez.',
+    'business.audit_cosign.dispute.supporting':
+        "Précisions à l'appui (facultatif)",
+    'business.audit_cosign.dispute.supporting_help':
+        'Décrivez les preuves dont vous disposez, si cela aide.',
+    'business.audit_cosign.dispute.submit': 'Soumettre la contestation',
+    'business.audit_cosign.dispute.submitting': 'Envoi…',
+    'business.audit_cosign.dispute.cancel': 'Annuler',
+    'business.audit_cosign.dispute.files': 'Justificatifs (facultatif)',
+    'business.audit_cosign.dispute.files_help':
+        'Ajoutez des photos ou des documents qui appuient votre contestation.',
+    'business.audit_cosign.dispute.files_add': 'Ajouter des fichiers',
+    'business.audit_cosign.dispute.file_remove': 'Retirer {name}',
+    'business.audit_cosign.disputed.under_review.title':
+        "Contestation en cours d'examen",
+    'business.audit_cosign.disputed.under_review.body':
+        "Vous avez soumis une contestation le {date}. Le délai d'examen de 24 heures est suspendu pendant que votre expert-comptable examine vos preuves et modifie ou maintient le rapport. S'il le maintient ou n'agit pas, l'équipe Rozine intervient. Un rapport modifié ouvre pour vous un nouveau délai de 24 heures pour l'examiner.",
+    'business.audit_cosign.disputed.escalated.title':
+        "Contestation transmise à l'équipe Rozine",
+    'business.audit_cosign.disputed.escalated.body':
+        "Vous avez soumis une contestation le {date}. Votre expert-comptable a maintenu le rapport ou n'a pas agi : l'équipe Rozine examine donc le dossier. Le délai d'examen de 24 heures reste suspendu en attendant.",
+    'audit.verify_seal.head_title': "Vérifier le sceau d'audit",
+    'audit.verify_seal.title': "Vérification du sceau d'audit",
+    'audit.verify_seal.lead':
+        "Vérifiez si un rapport d'audit Rozine porte un sceau valide.",
+    'audit.verify_seal.valid': 'Sceau vérifié',
+    'audit.verify_seal.valid_body':
+        'Cette empreinte correspond au rapport scellé.',
+    'audit.verify_seal.unavailable':
+        'Ce sceau ne peut pas être vérifié pour le moment',
+    'audit.verify_seal.unavailable_body': 'Réessayez plus tard.',
+    'audit.verify_seal.report_id': 'Identifiant du rapport',
+    'audit.verify_seal.digest': 'Empreinte du rapport',
+    'audit.verify_seal.amends': 'Modifie le rapport {id}',
+    'audit.verify_seal.amended_by': 'Modifié par le rapport {id}',
+    'audit.verify_seal.scope':
+        "Seuls l'identifiant du rapport, son empreinte et le résultat de la vérification du sceau sont affichés ici.",
+    'business.audit_cosign.refused.AUDIT_REPORT_AMENDED':
+        "L'auditeur a modifié ce rapport ; il ne peut donc plus être cosigné. Le rapport modifié vous sera soumis pour approbation une fois scellé.",
 };
 
 export default fr;
