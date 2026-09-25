@@ -23,7 +23,8 @@ class AuditEngagementAcceptanceFactory extends Factory
      */
     public function definition(): array
     {
-        return ['audit_engagement_release_id' => AuditEngagementRelease::factory(), 'party_id' => Party::factory()->verified(),
+        return ['audit_engagement_release_id' => fn (): string => AuditEngagementRelease::query()->orderByDesc('revision')->first()->id ?? AuditEngagementRelease::factory()->create()->id,
+            'party_id' => Party::factory()->verified(),
             'release_revision' => fn (array $attributes): int => AuditEngagementRelease::query()->whereKey($attributes['audit_engagement_release_id'])->firstOrFail()->revision,
             'release_sha256' => fn (array $attributes): string => AuditEngagementRelease::query()->whereKey($attributes['audit_engagement_release_id'])->firstOrFail()->sha256,
             'actor_user_id' => fn (array $attributes): int => User::factory()->withTwoFactor()->create(['party_id' => $attributes['party_id']])->id,

@@ -1746,3 +1746,89 @@ it('holds engagement terms current through a protected assignment effect before 
         ->and(fn () => app(WithAcceptedAuditAssignment::class)->handle($actor->id, 1, $assignment->id, fn (): bool => true))
         ->toThrow(CommandRejection::class, 'AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED');
 });
+
+it('holds the actual acceptance write through commit before a new engagement release can publish', function (): void {
+    $actor = AuditorFixture::make();
+    $release = AuditEngagementFixture::release($actor['staff']);
+    $default = DB::getDefaultConnection();
+    $publish = fn () => AuditEngagementFixture::release($actor['staff'], 1);
+    $event = 'eloquent.created: '.AuditEngagementAcceptance::class;
+    Event::listen($event, function () use ($default, $publish): void {
+        config(['database.connections.engagement_contender' => config('database.connections.pgsql')]);
+        DB::connection('engagement_contender')->statement("SET lock_timeout = '500ms'");
+        DB::setDefaultConnection('engagement_contender');
+        try {
+            expect($publish)->toThrow(QueryException::class);
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('engagement_contender');
+        }
+    });
+    try {
+        expect(AuditEngagementFixture::accept($actor['user'], $release)['code'])->toBe('AUDIT_ENGAGEMENT_ACCEPTED');
+    } finally {
+        Event::forget($event);
+    }
+    expect($publish()->revision)->toBe(2)
+        ->and(AuditEngagementFixture::accept($actor['user'], $release)['code'])->toBe('AUDIT_ENGAGEMENT_VERSION_CONFLICT')
+        ->and(AuditEngagementAcceptance::query()->count())->toBe(1);
+});
+
+it('serializes direct acceptance and source inserts against direct catalog publication through commit', function (string $target): void {
+    if ($target === 'acceptance') {
+        $actor = AuditorFixture::make();
+        $release = AuditEngagementFixture::release($actor['staff']);
+        $table = 'audit_engagement_acceptances';
+        $row = AuditEngagementAcceptance::factory()->make(['id' => (string) Str::ulid(), 'created_at' => now(), 'party_id' => $actor['party']->id,
+            'actor_user_id' => $actor['user']->id, 'audit_engagement_release_id' => $release->id])->getAttributes();
+    } else {
+        $fixture = BusinessQuoteFixture::ready();
+        BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
+        $assignment = $fixture['assignment']->refresh();
+        $application = $fixture['application']->refresh();
+        app(StartAuditReport::class)->handle($fixture['audit']['partners'][0]['user']->id, 1, $assignment->id,
+            $assignment->revision, $application->id, $application->revision, (string) Str::uuid());
+        $table = $target === 'report' ? 'audit_reports' : 'statement_verifications';
+        $original = DB::table($table)->first();
+        expect($original)->not->toBeNull();
+        $row = [...(array) $original, 'id' => (string) Str::ulid(), 'amends_id' => $original->id,
+            'revision' => $target === 'report' ? 1 : 2];
+        $release = AuditEngagementRelease::query()->orderByDesc('revision')->firstOrFail();
+    }
+    $next = AuditEngagementRelease::factory()->make(['id' => (string) Str::ulid(), 'created_at' => now(), 'revision' => $release->revision + 1,
+        'actor_user_id' => $release->actor_user_id])->getAttributes();
+    config(['database.connections.engagement_contender' => config('database.connections.pgsql')]);
+    DB::connection('engagement_contender')->statement("SET lock_timeout = '500ms'");
+    try {
+        DB::transaction(function () use ($table, $row, $next): void {
+            DB::table($table)->insert($row);
+            expect(fn () => DB::connection('engagement_contender')->table('audit_engagement_releases')->insert($next))
+                ->toThrow(QueryException::class, 'lock timeout');
+        });
+        expect(DB::connection('engagement_contender')->table('audit_engagement_releases')->insert($next))->toBeTrue()
+            ->and(DB::table($table)->where('id', $row['id'])->exists())->toBeTrue();
+    } finally {
+        DB::purge('engagement_contender');
+    }
+})->with(['acceptance', 'report', 'verification']);
+
+it('refuses stale direct acceptance after a concurrent catalog publication wins', function (): void {
+    $actor = AuditorFixture::make();
+    $old = AuditEngagementFixture::release($actor['staff']);
+    $row = AuditEngagementAcceptance::factory()->make(['id' => (string) Str::ulid(), 'created_at' => now(), 'party_id' => $actor['party']->id,
+        'actor_user_id' => $actor['user']->id, 'audit_engagement_release_id' => $old->id])->getAttributes();
+    config(['database.connections.engagement_contender' => config('database.connections.pgsql')]);
+    DB::connection('engagement_contender')->statement("SET lock_timeout = '500ms'");
+    try {
+        DB::transaction(function () use ($actor, $row): void {
+            AuditEngagementRelease::factory()->create(['revision' => 2, 'actor_user_id' => $actor['staff']->id]);
+            expect(fn () => DB::connection('engagement_contender')->table('audit_engagement_acceptances')->insert($row))
+                ->toThrow(QueryException::class, 'lock timeout');
+        });
+        expect(fn () => DB::connection('engagement_contender')->table('audit_engagement_acceptances')->insert($row))
+            ->toThrow(QueryException::class, 'Audit engagement acceptance requires the current active release')
+            ->and(AuditEngagementAcceptance::query()->count())->toBe(0);
+    } finally {
+        DB::purge('engagement_contender');
+    }
+});

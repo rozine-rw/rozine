@@ -66,6 +66,7 @@ final class EloquentAuditReportStore implements AuditReportStore
                                 $report = new AuditReport;
                                 $report->forceFill(['assignment_id' => $current['id'], 'business_id' => $current['business_id'],
                                     'assignment_revision' => $current['revision'], 'author_party_id' => $current['party_id'],
+                                    'engagement_acceptance_id' => $current['engagement']['id'],
                                     'application_id' => $application['application']['id'], 'application_revision' => $applicationRevision,
                                     'application_version_id' => $application['version']['id'], 'submission_id' => $application['submission']['id'],
                                     'quote_id' => $application['quote']['id'], 'amends_id' => null, 'revision' => 1,
@@ -175,6 +176,7 @@ final class EloquentAuditReportStore implements AuditReportStore
     {
         $version = AuditReportVersion::query()->where('audit_report_id', $record->id)->where('revision', $record->revision)->first();
         if (! hash_equals($record->binding_sha256, $this->hash($record->binding)) || $version === null
+            || ($record->binding['engagement']['id'] ?? null) !== $record->engagement_acceptance_id
             || ! hash_equals($version->sha256, $this->hash($version->snapshot))
             || $this->json->encode($version->snapshot) !== $this->json->encode($this->snapshot($record))) {
             throw new RuntimeException('AUDIT_REPORT_INTEGRITY_FAILED');

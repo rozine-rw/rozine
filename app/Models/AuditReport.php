@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $assignment_id
  * @property int $assignment_revision
  * @property string $author_party_id
+ * @property string $engagement_acceptance_id
  * @property string $business_id
  * @property string $application_id
  * @property int $application_revision

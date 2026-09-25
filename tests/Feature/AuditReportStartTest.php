@@ -156,12 +156,14 @@ it('refuses corrupted report bindings snapshots and missing history', function (
     $fixture = Fixture::ready();
     Fixture::submit($fixture, Fixture::acceptance($fixture));
     $receipt = startSubmittedAuditReport($fixture);
-    $model = in_array($fault, ['binding', 'missing'], true) ? AuditReport::class : AuditReportVersion::class;
+    $model = in_array($fault, ['binding', 'missing', 'engagement'], true) ? AuditReport::class : AuditReportVersion::class;
     $event = 'eloquent.retrieved: '.$model;
     Event::listen($event, function (AuditReport|AuditReportVersion $record) use ($fault): void {
         if ($record instanceof AuditReport) {
             if ($fault === 'binding') {
                 $record->binding_sha256 = str_repeat('0', 64);
+            } elseif ($fault === 'engagement') {
+                $record->engagement_acceptance_id = (string) Str::ulid();
             } else {
                 $record->revision++;
             }
@@ -180,7 +182,7 @@ it('refuses corrupted report bindings snapshots and missing history', function (
     } finally {
         Event::forget($event);
     }
-})->with(['binding', 'missing', 'digest', 'snapshot']);
+})->with(['binding', 'missing', 'digest', 'snapshot', 'engagement']);
 
 it('rejects unsupported journal commands unlinked identities and wrong target types', function (): void {
     $user = User::factory()->create();

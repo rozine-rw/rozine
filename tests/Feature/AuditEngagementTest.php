@@ -289,9 +289,12 @@ it('refuses destructive rollback of retained engagement history', function (): v
 
 it('can reverse an unused engagement schema without deleting other history', function (): void {
     $migration = require database_path('migrations/2026_09_25_070105_create_audit_engagement_releases_and_acceptances.php');
+    $sourcePins = require database_path('migrations/2026_09_25_082804_enforce_audit_engagement_source_pins.php');
+    $sourcePins->down();
     $migration->down();
     expect(Schema::hasTable('audit_engagement_releases'))->toBeFalse();
     $migration->up();
+    $sourcePins->up();
     expect(Schema::hasTable('audit_engagement_releases'))->toBeTrue();
 });
 

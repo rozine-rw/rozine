@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @phpstan-import-type VerificationPayload from \App\Application\Evidence\Contracts\StatementStore
  *
  * @property VerificationPayload $payload
+ * @property string $engagement_acceptance_id
  */
 class StatementVerification extends Model
 {

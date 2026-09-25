@@ -271,6 +271,7 @@ final class EloquentStatementStore implements StatementStore
                             'verified_at' => $verifiedAt, 'report_approval' => 'not_cosigned', 'observations' => $verified['observations']];
                         $record = new StatementVerification;
                         $record->forceFill(['statement_evidence_id' => $evidence->id, 'transcription_id' => $transcription['id'], 'assignment_id' => $assignment['id'],
+                            'engagement_acceptance_id' => $assignment['engagement']['id'],
                             'revision' => ($previous->revision ?? 0) + 1, 'source_revision' => $evidence->revision, 'amends_id' => $previous?->id,
                             'payload' => $snapshot, 'sha256' => hash('sha256', $this->json->encode($snapshot)),
                             'policy_version' => $snapshot['policy_version'], 'procedure_version' => $snapshot['procedure_version'],
@@ -358,6 +359,7 @@ final class EloquentStatementStore implements StatementStore
         if (! hash_equals($record->sha256, hash('sha256', $this->json->encode($payload))) || $payload['business_id'] !== $businessId
             || $payload['source_revision'] !== $record->source_revision || $payload['transcription']['id'] !== $record->transcription_id
             || $payload['assignment']['id'] !== $record->assignment_id || $payload['assignment']['party_id'] !== $record->actor_party_id
+            || $payload['assignment']['engagement']['id'] !== $record->engagement_acceptance_id
             || $payload['policy_version'] !== $record->policy_version || $payload['procedure_version'] !== $record->procedure_version
             || $transcription === null || ! hash_equals($payload['transcription']['sha256'], $transcription->sha256)
             || ! hash_equals($transcription->sha256, hash('sha256', $this->json->encode($transcription->payload)))

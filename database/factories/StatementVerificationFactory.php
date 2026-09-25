@@ -7,6 +7,7 @@ namespace Database\Factories;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Domain\Evidence\StatementAuditReview;
 use App\Models\AuditAssignment;
+use App\Models\AuditEngagementAcceptance;
 use App\Models\Party;
 use App\Models\StatementEvidence;
 use App\Models\StatementTranscription;
@@ -26,6 +27,7 @@ class StatementVerificationFactory extends Factory
     {
         return ['actor_party_id' => Party::factory(),
             'actor_user_id' => fn (array $attributes): int => User::factory()->create(['party_id' => $attributes['actor_party_id']])->id,
+            'engagement_acceptance_id' => fn (array $attributes): string => AuditEngagementAcceptance::factory()->create(['party_id' => $attributes['actor_party_id']])->id,
             'statement_evidence_id' => StatementEvidence::factory(),
             'transcription_id' => fn (array $attributes): string => StatementTranscription::factory()->create(['statement_evidence_id' => $attributes['statement_evidence_id']])->id,
             'assignment_id' => fn (array $attributes): string => AuditAssignment::factory()->create([
@@ -46,12 +48,13 @@ class StatementVerificationFactory extends Factory
     {
         $transcription = StatementTranscription::query()->whereKey($attributes['transcription_id'])->firstOrFail();
         $assignment = AuditAssignment::query()->whereKey($attributes['assignment_id'])->firstOrFail();
+        $acceptance = AuditEngagementAcceptance::query()->whereKey($attributes['engagement_acceptance_id'])->firstOrFail();
 
         return ['business_id' => $assignment->business_id, 'assignment' => ['id' => $assignment->id, 'business_id' => $assignment->business_id,
             'party_id' => $attributes['actor_party_id'], 'revision' => $assignment->revision, 'kind' => $assignment->state['kind'],
             'business_revision' => 0, 'mandate_version' => 0, 'mandate_sha256' => hash('sha256', '{}'),
-            'engagement' => ['id' => 'synthetic-only', 'release_id' => 'synthetic-only', 'release_revision' => 0,
-                'release_sha256' => hash('sha256', '{}'), 'accepted_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'), 'sha256' => hash('sha256', '{}')],
+            'engagement' => ['id' => $acceptance->id, 'release_id' => $acceptance->audit_engagement_release_id, 'release_revision' => $acceptance->release_revision,
+                'release_sha256' => $acceptance->release_sha256, 'accepted_at' => $acceptance->payload['accepted_at'], 'sha256' => $acceptance->sha256],
             'independence' => ['id' => 'synthetic-only', 'revision' => 0, 'checked_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'),
                 'evidence_reference' => 'synthetic:needs-review', 'sha256' => hash('sha256', '{}')],
             'accreditation' => ['profile_revision' => 0, 'status' => 'unverified', 'licence' => null, 'expires_on' => null, 'checked_at' => null]],

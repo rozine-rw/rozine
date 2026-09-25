@@ -401,9 +401,12 @@ it('keeps verification lookup scoped to the actual reviewer and assignment targe
 
 it('reverses the verification table without losing original evidence or its existing transcription schema', function (): void {
     $migration = require database_path('migrations/2026_09_24_124527_create_statement_verifications_table.php');
+    $sourcePins = require database_path('migrations/2026_09_25_082804_enforce_audit_engagement_source_pins.php');
+    $sourcePins->down();
     $migration->down();
     expect(Schema::hasTable('statement_verifications'))->toBeFalse()->and(Schema::hasTable('statement_transcriptions'))->toBeTrue();
     $migration->up();
+    $sourcePins->up();
     $record = StatementVerification::factory()->create();
     expect($record->revision)->toBe(1)->and($record->toArray())->not->toHaveKey('payload');
 });
@@ -516,7 +519,7 @@ it('keeps a valid historical classification readable but not current after a cla
     }
 });
 
-it('refuses a verification whose canonical snapshot disagrees with its transcription or observation classification', function (string $fault): void {
+it('refuses a verification whose canonical snapshot disagrees with its transcription classification or engagement', function (string $fault): void {
     $fixture = Fixture::make(1);
     $sources = Fixture::statements($fixture);
     $assignment = Fixture::request($fixture);
@@ -529,6 +532,8 @@ it('refuses a verification whose canonical snapshot disagrees with its transcrip
             $payload['transcription']['sha256'] = str_repeat('0', 64);
         } elseif ($fault === 'observation') {
             $payload['observations'][0]['classification_version'] = 'wrong';
+        } elseif ($fault === 'engagement') {
+            $payload['assignment']['engagement']['id'] = (string) Str::ulid();
         } else {
             $payload['classification_version'] = 'wrong';
         }
@@ -540,7 +545,7 @@ it('refuses a verification whose canonical snapshot disagrees with its transcrip
     } finally {
         Event::forget($event);
     }
-})->with(['digest', 'observation', 'classification']);
+})->with(['digest', 'observation', 'classification', 'engagement']);
 
 it('supplies the full first-time underwriting window only from persisted Auditor-reviewed source facts', function (): void {
     $fixture = Fixture::make(1);

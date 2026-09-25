@@ -85,7 +85,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `sha256` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
 
-**Indexes:** `audit_engagement_acceptances_pkey` on (id) — unique; `audit_engagement_party_acceptance` on (audit_engagement_release_id, party_id) — unique
+**Indexes:** `audit_engagement_acceptance_party_key` on (id, party_id) — unique; `audit_engagement_acceptances_pkey` on (id) — unique; `audit_engagement_party_acceptance` on (audit_engagement_release_id, party_id) — unique
 
 ### `audit_engagement_releases`
 
@@ -178,6 +178,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `draft` | `text` | no | — |
 | `created_at` | `timestamptz` | yes | — |
 | `updated_at` | `timestamptz` | yes | — |
+| `engagement_acceptance_id` | `bpchar` | no | — |
 
 **Indexes:** `audit_report_assignment_key` on (id, assignment_id, assignment_revision, author_party_id) — unique; `audit_report_root_assignment` on (assignment_id, assignment_revision) — unique; `audit_reports_amends_id_unique` on (amends_id) — unique; `audit_reports_pkey` on (id) — unique
 
@@ -761,6 +762,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `actor_user_id` | `int8` | no | — |
 | `actor_party_id` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
+| `engagement_acceptance_id` | `bpchar` | no | — |
 
 **Indexes:** `statement_verifications_amends_id_unique` on (amends_id) — unique; `statement_verifications_pkey` on (id) — unique; `statement_verifications_statement_evidence_id_revision_unique` on (statement_evidence_id, revision) — unique
 
@@ -853,6 +855,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_25_042503_protect_submitted_business_applications.php |
 | 2026_09_25_053838_create_audit_reports_and_versions.php |
 | 2026_09_25_070105_create_audit_engagement_releases_and_acceptances.php |
+| 2026_09_25_082804_enforce_audit_engagement_source_pins.php |
 
 ## Routes
 
