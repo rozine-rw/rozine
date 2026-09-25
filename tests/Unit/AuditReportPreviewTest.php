@@ -15,7 +15,8 @@ it('binds persisted observations, notes, licence and source revisions into the p
     $sources = ['verification' => $pin, 'declaration' => [...$pin, 'id' => 'declaration'], 'check_in' => [...$pin, 'id' => 'check-in'],
         'photos' => [...$pin, 'id' => 'photos'], 'reported_stock' => $reported, 'reported_cash' => $reported, 'reported_units' => $reported,
         'financial_proofs' => ['original-b'], 'inventory_proofs' => ['photo'], 'extra_photos' => [],
-        'documents' => [$document, [...$document, 'id' => 'original-a']], 'monthly' => null, 'licence' => 'SYNTHETIC-CPA', 'source_facts' => null];
+        'documents' => [$document, [...$document, 'id' => 'original-a']], 'monthly' => null, 'licence' => 'SYNTHETIC-CPA', 'source_facts' => null,
+        'authority' => ['mandate_version' => 1, 'mandate_sha256' => str_repeat('a', 64), 'profile_revision' => 1, 'engagement_id' => 'engagement']];
     $report = ['id' => 'report', 'assignment_id' => 'assignment', 'business_id' => 'business', 'application_id' => 'application',
         'application_revision' => 4, 'revision' => 8, 'kind' => $kind, 'status' => 'draft', 'step' => 'seal', 'period' => $kind === 'monthly' ? '2026-08' : null,
         'amends_id' => null, 'amendment_id' => null, 'binding_sha256' => str_repeat('c', 64), 'version' => ['id' => 'version', 'sha256' => str_repeat('d', 64)],

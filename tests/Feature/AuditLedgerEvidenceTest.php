@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\FindAuditReportOperation;
 use App\Application\Auditor\GetAuditProcedure;
 use App\Application\Auditor\IngestAuditLedger;
 use App\Application\Auditor\ReadAuditLedger;
@@ -25,12 +26,25 @@ use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditAssignmentFixture;
 use Tests\Support\AuditEngagementFixture;
 use Tests\Support\AuditLedgerFixture;
+use Tests\Support\AuditSealingFixture;
 use Tests\Support\BusinessQuoteFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();
     $this->withoutVite();
 });
+
+it('records malformed ledger filenames without losing retry and lookup identity', function (string $filename): void {
+    ['user' => $user, 'report' => $report] = AuditLedgerFixture::ready();
+    $request = (string) Str::uuid();
+    $upload = fn (): array => app(IngestAuditLedger::class)->handle($user->id, 1, $report->id, 4, $filename, "amount\n50\n", null, $request);
+    $receipt = $upload();
+    expect($receipt['code'])->toBe('STATEMENT_FILENAME_INVALID')->and($receipt['field_errors'])->toHaveKey('document')
+        ->and($upload())->toBe($receipt)
+        ->and(app(FindAuditReportOperation::class)->handle($user->id, 1, 'audit.save_step', $request))->toBe($receipt)
+        ->and($report->refresh()->revision)->toBe(4);
+    $this->assertDatabaseCount('audit_ledger_originals', 0);
+})->with(["ledger\u{2028}.csv", "ledger\u{2029}.csv", "ledger\xff.csv"]);
 
 it('continues from an actual upload to a pinned preview without changing Business statements or verification', function (): void {
     $fixture = AuditLedgerFixture::ready();
@@ -191,8 +205,7 @@ it('offers ledger upload only on the current editable step and retains read-only
         $response->assertConflict()->assertJsonPath('code', 'AUDIT_LEDGER_NOT_AVAILABLE');
     }
     expect($report->refresh()->revision)->toBe(6);
-    $report->forceFill(['revision' => 7, 'status' => 'sealed'])->save();
-    AuditReportVersion::factory()->forReport($report, $user->party_id, $user->id)->create();
+    AuditSealingFixture::seal(AuditSealingFixture::prepare(['user' => $user, 'report' => $report]));
     expect($read(['step' => 'ledger'])['stage']['upload'])->toBeNull();
 })->with([[false, false], [true, false], [true, true]]);
 
@@ -241,6 +254,8 @@ it('refuses to remove used ledger authority protection', function (): void {
 it('refuses inconsistent legacy ledger ownership without rewriting its original', function (): void {
     ['user' => $user, 'report' => $report] = AuditLedgerFixture::ready();
     $migration = require database_path('migrations/2026_09_25_130201_enforce_audit_ledger_report_authority.php');
+    $publicationMigration = require database_path('migrations/2026_09_25_140638_create_audit_report_publication_tables.php');
+    $publicationMigration->down();
     $migration->down();
     $original = AuditLedgerOriginal::factory()->forReport($report, $user)->create(['actor_party_id' => Party::factory()->create()->id]);
     $before = $original->refresh()->getAttributes();

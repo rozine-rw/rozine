@@ -80,6 +80,13 @@ interface AuditAssignmentStore
      */
     public function withVerificationValidity(array $assignment, Closure $operation): mixed;
 
+    /** @template TResult
+     * @param  AcceptedAssignment  $assignment
+     * @param  Closure(bool): TResult  $operation
+     * @return TResult
+     */
+    public function withPublicationAuthority(array $assignment, Closure $operation): mixed;
+
     /** @return array<string, mixed> */
     public function findOperation(int $userId, int $contextRevision, string $command, string $requestId): array;
 

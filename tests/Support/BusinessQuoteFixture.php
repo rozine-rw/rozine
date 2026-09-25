@@ -28,9 +28,9 @@ final class BusinessQuoteFixture
      * @param  list<ObligationInput>  $auditedObligations
      * @return Fixture
      */
-    public static function make(bool $credit = true, string $kind = 'person', int $signatories = 1, int $historyMonths = 36, array $auditedObligations = [], string $auditKind = 'flash'): array
+    public static function make(bool $credit = true, string $kind = 'person', int $signatories = 1, int $historyMonths = 36, array $auditedObligations = [], string $auditKind = 'flash', ?int $requiredSignatories = null): array
     {
-        $audit = AuditAssignmentFixture::make(1, $kind, $signatories);
+        $audit = AuditAssignmentFixture::make(1, $kind, $signatories, $requiredSignatories);
         $owner = $audit['authority']['users'][0];
         $created = app(CreateBusinessApplication::class)->handle($owner->id, 1, $audit['business'], 0, (string) Str::uuid());
         $application = BusinessApplication::query()->whereKey($created['data']['application']['id'])->firstOrFail();
@@ -92,9 +92,9 @@ final class BusinessQuoteFixture
     }
 
     /** @return Fixture */
-    public static function ready(int $signatories = 1, string $auditKind = 'flash'): array
+    public static function ready(int $signatories = 1, string $auditKind = 'flash', ?int $requiredSignatories = null): array
     {
-        $fixture = self::make(kind: $signatories === 1 ? 'person' : 'organization', signatories: $signatories, auditKind: $auditKind);
+        $fixture = self::make(kind: $signatories === 1 ? 'person' : 'organization', signatories: $signatories, auditKind: $auditKind, requiredSignatories: $requiredSignatories);
         ConsentFixture::record($fixture['audit']['staff']);
         self::evaluate($fixture);
         app(SaveBusinessApplication::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'],

@@ -23,6 +23,8 @@ it('rejects invalid statement names bytes and formats', function (string $filena
     'header injection' => ["source\n.csv", 'a,b', 'STATEMENT_FILENAME_INVALID'],
     'C1 control' => ["source\u{0085}.csv", 'a,b', 'STATEMENT_FILENAME_INVALID'],
     'bidi spoof' => ["source\u{202E}.csv", 'a,b', 'STATEMENT_FILENAME_INVALID'],
+    'line separator' => ["source\u{2028}.csv", 'a,b', 'STATEMENT_FILENAME_INVALID'],
+    'paragraph separator' => ["source\u{2029}.csv", 'a,b', 'STATEMENT_FILENAME_INVALID'],
     'long name' => [str_repeat('a', 181), 'a,b', 'STATEMENT_FILENAME_INVALID'],
     'invalid filename encoding' => ["\xff.csv", 'a,b', 'STATEMENT_FILENAME_INVALID'],
     'empty original' => ['source.csv', '', 'STATEMENT_SIZE_INVALID'],

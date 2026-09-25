@@ -29,6 +29,9 @@ class AuditorProcedureResource extends JsonResource
         if ($page['can_amend']) {
             $allowed[] = 'audit.amend';
         }
+        if ($page['can_seal']) {
+            $allowed[] = 'audit.seal';
+        }
         if ($request->routeIs('api.*') && ! $request->user()?->tokenCan('auditor:command')) {
             $allowed = [];
         }
@@ -44,7 +47,10 @@ class AuditorProcedureResource extends JsonResource
                 'revision' => $report['revision'], 'reassigned_from' => null, 'amends' => $report['amends_id'] === null ? null
                     : ['report_id' => $report['amends_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amends_id']])]],
             'assignment' => ['id' => $report['assignment_id'], 'revision' => $job['revision']],
-            'steps' => $page['steps'], 'stage' => $this->stage($report, $page['sources'], $file['file'], $prefix, $page['variance'], $page['seal'], $reasonOptions, $upload, $page['mfa_confirmed']),
+            'steps' => $page['steps'], 'stage' => $page['sealed'] === null || $report['step'] !== 'seal'
+                ? $this->stage($report, $page['sources'], $file['file'], $prefix, $page['variance'], $page['seal'], $reasonOptions, $upload, $page['mfa_confirmed'])
+                : [...array_diff_key($page['sealed'], ['sources' => true]), 'step' => 'sealed', 'amended_by' => $report['amendment_id'] === null ? null
+                    : ['report_id' => $report['amendment_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amendment_id']])]],
             'can_continue' => $page['can_continue'], 'hint' => $report['status'] === 'draft' ? $this->hint($page['unavailable']) : null,
             'reason_options' => $reasonOptions,
             'links' => ['close' => AuditorJobsResource::link($prefix.'jobs.index'),
@@ -52,7 +58,9 @@ class AuditorProcedureResource extends JsonResource
                     ? AuditorJobsResource::link($prefix.'jobs.show', ['assignment' => $report['assignment_id']])
                     : AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['id'], 'step' => $page['previous_step']]), 'operation' => $operation],
             'actions' => ['save' => ['url' => route($prefix.'reports.save', ['report' => $report['id']], false), 'method' => 'post'],
-                'conflict' => in_array('conflict.declare', $allowed, true) ? $file['actions']['conflict'] : null, 'step_up' => null, 'seal' => null,
+                'conflict' => in_array('conflict.declare', $allowed, true) ? $file['actions']['conflict'] : null,
+                'step_up' => in_array('audit.seal', $allowed, true) ? ['url' => route($prefix.'reports.step-up', ['report' => $report['id']], false), 'method' => 'post'] : null,
+                'seal' => in_array('audit.seal', $allowed, true) ? ['url' => route($prefix.'reports.seal', ['report' => $report['id']], false), 'method' => 'post'] : null,
                 'request_changes' => in_array('audit.request_changes', $allowed, true) ? ['url' => route($prefix.'reports.request-changes', ['report' => $report['id']], false), 'method' => 'post'] : null,
                 'reject' => in_array('audit.reject', $allowed, true) ? ['url' => route($prefix.'reports.reject', ['report' => $report['id']], false), 'method' => 'post'] : null,
                 'amend' => in_array('audit.amend', $allowed, true) ? ['url' => route($prefix.'reports.amend', ['report' => $report['id']], false), 'method' => 'post'] : null],

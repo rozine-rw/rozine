@@ -10,10 +10,18 @@ namespace App\Application\Auditor\Contracts;
  * @phpstan-import-type Projection from \App\Application\Auditor\GetAuditProcedureSources
  * @phpstan-import-type Original from \App\Application\Evidence\Contracts\StatementStore
  *
- * @phpstan-type Procedure array{report: Report, sources: Projection, mfa_confirmed: bool}
+ * @phpstan-type Procedure array{report: Report, sources: Projection, mfa_confirmed: bool, sealed: array<string, mixed>|null, signing_available: bool}
  */
 interface AuditReportStore
 {
+    /** @return array{proof: string, expires_at: string} */
+    public function stepUp(int $userId, int $contextRevision, string $reportId, int $expectedRevision, string $digest, string $code): array;
+
+    /** @param array<string, mixed> $fields
+     * @return array<string, mixed>
+     */
+    public function seal(int $userId, int $contextRevision, string $reportId, int $expectedRevision, array $fields, string $proof, string $requestId): array;
+
     /** @return array<string, mixed> */
     public function decide(int $userId, int $contextRevision, string $reportId, int $expectedRevision, bool $reject, mixed $reasonCode, mixed $reason, string $requestId): array;
 

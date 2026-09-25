@@ -23,7 +23,7 @@ use Illuminate\Support\Str;
 final class BusinessAuthorityFixture
 {
     /** @return Fixture */
-    public static function make(string $kind = 'person', int $count = 1, string $companyCode = 'COMPANY-001'): array
+    public static function make(string $kind = 'person', int $count = 1, string $companyCode = 'COMPANY-001', ?int $requiredSignatories = null): array
     {
         $staff = User::factory()->withTwoFactor()->create();
         app(ConfigureStaffAccess::class)->handle($staff->id, true, 'Verify business mandates.', (string) Str::uuid(), ['compliance']);
@@ -44,7 +44,7 @@ final class BusinessAuthorityFixture
 
         return ['staff' => $staff, 'people' => $people, 'users' => $users, 'entity' => $entity, 'kind' => $kind,
             'profile' => ['name' => 'Synthetic business', 'company_code' => $kind === 'person' ? null : $companyCode, 'industry' => 'Retail', 'district' => 'Gasabo', 'established_year' => 2020],
-            'terms' => ['people' => $members, 'required_signatories' => array_column($members, 'party_id'),
+            'terms' => ['people' => $members, 'required_signatories' => array_column(array_slice($members, 0, $requiredSignatories ?? $count), 'party_id'),
                 'effective_at' => now('UTC')->subMinute()->format('Y-m-d\TH:i:s\Z'), 'expires_at' => null, 'status' => 'active', 'attested_complete' => true]];
     }
 

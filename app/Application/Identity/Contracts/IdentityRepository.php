@@ -9,6 +9,8 @@ namespace App\Application\Identity\Contracts;
  */
 interface IdentityRepository
 {
+    public function accountName(int $userId): string;
+
     public function register(string $name, string $email, string $password): int;
 
     /** @return AccessSnapshot */

@@ -13,6 +13,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Tests\Support\AuditSealingFixture;
 use Tests\Support\BusinessQuoteFixture as Fixture;
 
 /** @return array<string, mixed> */
@@ -86,10 +87,18 @@ it('freezes source pins and prevents revision skipping while allowing a new draf
 });
 
 it('retains terminal reports and every version against direct writes and deletion', function (string $status): void {
-    $fixture = persistedAuditReportFixture(in_array($status, ['changes_requested', 'rejected'], true) ? 'routine' : 'flash');
-    $report = $fixture['report'];
+    if ($status === 'sealed') {
+        $fixture = AuditSealingFixture::ready();
+        AuditSealingFixture::seal($fixture);
+        $fixture['version'] = AuditReportVersion::query()->where('audit_report_id', $fixture['report']->id)->firstOrFail();
+    } else {
+        $fixture = persistedAuditReportFixture(in_array($status, ['changes_requested', 'rejected'], true) ? 'routine' : 'flash');
+    }
+    $report = $fixture['report']->refresh();
     if ($status !== 'draft') {
-        $report->forceFill(['revision' => 2, 'status' => $status, 'step' => 'seal'])->save();
+        if ($status !== 'sealed') {
+            $report->forceFill(['revision' => 2, 'status' => $status, 'step' => 'seal'])->save();
+        }
         expect(fn () => DB::transaction(fn (): int => DB::table('audit_reports')->where('id', $report->id)
             ->update(['revision' => 3, 'status' => 'draft'])))->toThrow(QueryException::class, 'Final audit reports and report history are immutable');
     }
@@ -123,13 +132,14 @@ it('rejects unrelated source IDs and invalid report states at the database bound
 });
 
 it('permits one original report and one linked successor per report within the same assignment', function (): void {
-    $fixture = persistedAuditReportFixture();
+    $fixture = AuditSealingFixture::ready();
     $report = $fixture['report'];
-    $factory = AuditReport::factory()->forBinding($fixture['accepted'], $fixture['binding']);
+    $factory = app(WithAuditApplicationBinding::class)->handle($fixture['user']->id, 1, $fixture['assignment']->id, $fixture['application']->id,
+        fn (array $assignment, array $binding) => AuditReport::factory()->forBinding($assignment, $binding));
     expect(fn () => DB::transaction(fn (): AuditReport => $factory->create()))->toThrow(QueryException::class);
     expect(fn () => DB::transaction(fn (): AuditReport => $factory->create(['amends_id' => $report->id])))
         ->toThrow(QueryException::class, 'Audit amendment requires a terminal report');
-    $report->forceFill(['revision' => 2, 'status' => 'sealed', 'step' => 'seal'])->save();
+    AuditSealingFixture::seal($fixture);
     $amendment = $factory->create(['amends_id' => $report->id]);
     expect($amendment->amends_id)->toBe($report->id);
     expect(fn () => DB::transaction(fn (): AuditReport => $factory->create(['amends_id' => $report->id])))
@@ -183,6 +193,10 @@ it('rolls the unused report schema back and reapplies it without rewriting appli
     $ledgers = require database_path('migrations/2026_09_25_120136_create_audit_ledger_evidence_tables.php');
     $ledgerAuthority = require database_path('migrations/2026_09_25_130201_enforce_audit_ledger_report_authority.php');
     $decisions = require database_path('migrations/2026_09_25_131948_enforce_audit_report_decisions_and_fresh_amendments.php');
+    $signing = require database_path('migrations/2026_09_25_134827_create_audit_report_signing_tables.php');
+    $publications = require database_path('migrations/2026_09_25_140638_create_audit_report_publication_tables.php');
+    $publications->down();
+    $signing->down();
     $decisions->down();
     $ledgerAuthority->down();
     $ledgers->down();
@@ -197,6 +211,8 @@ it('rolls the unused report schema back and reapplies it without rewriting appli
     $ledgerAuthority->up();
     $lineage->up();
     $decisions->up();
+    $signing->up();
+    $publications->up();
     expect(Schema::hasTable('audit_reports'))->toBeTrue()->and(Schema::hasTable('audit_report_versions'))->toBeTrue()
         ->and($fixture['application']->refresh()->getRawOriginal())->toBe($before);
 });

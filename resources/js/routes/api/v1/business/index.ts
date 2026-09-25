@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
+import auditReports from './audit-reports'
 import applications from './applications'
 /**
 * @see \App\Http\Controllers\Api\V1\BusinessApplicationController::index
@@ -82,6 +83,7 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 index.form = indexForm
 
 const business = {
+    auditReports: Object.assign(auditReports, auditReports),
     index: Object.assign(index, index),
     applications: Object.assign(applications, applications),
 }

@@ -332,6 +332,27 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         }, 3);
     }
 
+    /** @template TResult
+     * @param  AcceptedAssignment  $assignment
+     * @param  Closure(bool): TResult  $operation
+     * @return TResult
+     */
+    public function withPublicationAuthority(array $assignment, Closure $operation): mixed
+    {
+        $profile = AuditorProfile::query()->where('party_id', $assignment['party_id'])->lockForUpdate()->first();
+        $current = $profile !== null && $this->retainsVerification($assignment);
+        if ($current) {
+            try {
+                $this->standing->requireCurrent($profile->state['standing'], now()->toDateTimeImmutable());
+            } catch (CommandRejection) {
+                $current = false;
+            }
+        }
+
+        return $this->engagements->withCurrentAcceptances([$assignment['party_id']],
+            fn (array $acceptances): mixed => $operation($current && ($acceptances[$assignment['party_id']]['id'] ?? null) === $assignment['engagement']['id']));
+    }
+
     /** @param AcceptedAssignment $assignment */
     public function retainsVerification(array $assignment): bool
     {

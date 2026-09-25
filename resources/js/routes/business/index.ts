@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
+import auditReports from './audit-reports'
 import applications from './applications'
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
@@ -82,6 +83,7 @@ homeForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 home.form = homeForm
 
 const business = {
+    auditReports: Object.assign(auditReports, auditReports),
     home: Object.assign(home, home),
     applications: Object.assign(applications, applications),
 }

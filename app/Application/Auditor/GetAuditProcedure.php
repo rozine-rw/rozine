@@ -34,12 +34,13 @@ final class GetAuditProcedure
         $unavailable = $this->procedure->unavailable($report['kind'], $storedStep, $draft, $report['step'], $page['sources']);
         $fields = $draft['fields'][$report['step']] ?? [];
         $observed = [...$fields, ...array_intersect_key($preview, array_flip(['observed_stock', 'cash', 'stock_units']))];
-        $seal = $report['step'] === 'seal' ? $this->preview->handle($report, $page['sources']) : null;
+        $seal = $report['step'] === 'seal' && $report['status'] === 'draft' ? $this->preview->handle($report, $page['sources']) : null;
         if ($unavailable === null && ($seal['note_missing'] ?? false)) {
             $unavailable = 'AUDIT_NOTE_REQUIRED';
         }
 
         return [...$page, 'report' => $report,
+            'can_seal' => $page['signing_available'] && $report['step'] === 'seal' && $unavailable === null,
             'can_upload_ledger' => $report['status'] === 'draft' && $report['kind'] === 'flash'
                 && $storedStep === 'ledger' && $report['step'] === 'ledger',
             'can_amend' => AuditReportDecision::amendable($report['status']) && $report['amendment_id'] === null,

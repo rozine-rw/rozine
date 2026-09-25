@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Auditor;
 
+use App\Application\Auditor\BuildAuditReportPreview;
 use App\Application\Auditor\Contracts\AuditLedgerEvidence;
+use App\Application\Auditor\Contracts\AuditReportCryptography;
+use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Application\Auditor\Contracts\AuditReportStore;
+use App\Application\Auditor\Contracts\AuditStepUp;
 use App\Application\Auditor\GetAuditProcedureSources;
 use App\Application\Auditor\WithAcceptedAuditAssignment;
+use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\WithAuditApplicationBinding;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
@@ -18,6 +23,7 @@ use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\AuditReport;
+use App\Models\AuditReportSeal;
 use App\Models\AuditReportVersion;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -44,7 +50,119 @@ final class EloquentAuditReportStore implements AuditReportStore
         private AuditProcedure $procedure,
         private GetAuditProcedureSources $sources,
         private AuditLedgerEvidence $ledgers,
+        private AuditReportPublicationStore $publications,
+        private BusinessAuthorityStore $businesses,
+        private AuditStepUp $stepUpProofs,
+        private BuildAuditReportPreview $previews,
+        private AuditReportCryptography $cryptography,
     ) {}
+
+    /** @return array{proof: string, expires_at: string} */
+    public function stepUp(int $userId, int $contextRevision, string $reportId, int $expectedRevision, string $digest, string $code): array
+    {
+        $record = $this->owned($reportId, $this->party($userId));
+
+        return $this->assignments->handle($userId, $contextRevision, $record->assignment_id,
+            function (array $assignment) use ($userId, $contextRevision, $reportId, $expectedRevision, $digest, $code): array {
+                $record = AuditReport::query()->lockForUpdate()->findOrFail($reportId);
+                $this->author($record, $assignment);
+                $this->sealablePreview($record, $userId, $contextRevision, $assignment, $expectedRevision, $digest);
+                if (! $this->cryptography->available()) {
+                    throw new CommandRejection('SEAL_KEY_UNAVAILABLE', 503);
+                }
+
+                return $this->stepUpProofs->issue($userId, $assignment['party_id'], $contextRevision, $record->id, $record->revision, $digest, $code);
+            });
+    }
+
+    /** @param array<string, mixed> $fields
+     * @return array<string, mixed>
+     */
+    public function seal(int $userId, int $contextRevision, string $reportId, int $expectedRevision, array $fields, string $proof, string $requestId): array
+    {
+        $record = $this->owned($reportId, $this->party($userId));
+
+        return $this->assignments->handle($userId, $contextRevision, $record->assignment_id,
+            function (array $assignment) use ($userId, $contextRevision, $reportId, $expectedRevision, $fields, $proof, $requestId): array {
+                $record = AuditReport::query()->lockForUpdate()->findOrFail($reportId);
+                $this->author($record, $assignment);
+                $this->view($record);
+
+                return $this->journal->execute('party:'.$assignment['party_id'], $userId, 'audit.seal', $requestId, 'audit.report', $reportId,
+                    $this->inputFingerprint(['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'fields' => $fields,
+                        'proof_sha256' => hash('sha256', $proof)]), function (): void {},
+                    function () use ($record, $userId, $contextRevision, $assignment, $expectedRevision, $fields, $proof): OperationResult {
+                        $preview = $this->sealablePreview($record, $userId, $contextRevision, $assignment, $expectedRevision, $fields['digest'] ?? '');
+                        $expected = ['digest' => $preview['digest'], 'procedure_version' => $preview['payload']['procedure_version'],
+                            'findings_version' => $preview['findings_version'], 'evidence_version' => $preview['evidence_version'],
+                            'evidence_ids' => $preview['evidence_ids'], 'note' => $record->draft['note']];
+                        $actual = $fields;
+                        if (isset($actual['evidence_ids']) && is_array($actual['evidence_ids'])) {
+                            sort($actual['evidence_ids']);
+                        }
+                        try {
+                            $matches = $this->json->encode($actual) === $this->json->encode($expected);
+                        } catch (CommandRejection) {
+                            $matches = false;
+                        }
+                        if (! $matches) {
+                            throw new CommandRejection('DIGEST_STALE', revision: $record->revision);
+                        }
+                        $at = now('UTC')->format('Y-m-d\TH:i:s\Z');
+                        $business = $this->businesses->withAudit($userId, $contextRevision, $record->business_id, [$assignment['party_id']], true, fn (array $context): array => $context['business']);
+                        $payload = ['business' => $business, 'auditor_name' => $this->identities->accountName($userId), 'report' => $preview['payload'], 'digest' => $preview['digest'], 'sources' => $preview['sources'],
+                            'assignment' => $assignment, 'sealed_revision' => $record->revision + 1, 'sealed_at' => $at,
+                            'author_party_id' => $assignment['party_id'], 'actor_user_id' => $userId, 'synthetic' => true];
+                        $signature = $this->cryptography->sign($payload);
+                        $this->stepUpProofs->consume($userId, $assignment['party_id'], $contextRevision, $record->id, $record->revision, $preview['digest'], $proof);
+                        $seal = new AuditReportSeal;
+                        $seal->forceFill(['audit_report_id' => $record->id, 'report_revision' => $record->revision + 1,
+                            'audit_signing_key_id' => $signature['key_id'], 'author_party_id' => $assignment['party_id'], 'actor_user_id' => $userId,
+                            'digest' => $preview['digest'], 'payload' => $payload, 'jws' => $signature['jws'], 'created_at' => $at])->save();
+                        $record->forceFill(['revision' => $record->revision + 1, 'status' => 'sealed',
+                            'draft' => [...$record->draft, 'seal_id' => $seal->id]])->save();
+                        $this->append($record, $assignment['party_id'], $userId, 'audit.seal');
+                        $this->publications->open($record->id, $seal->digest, $payload);
+
+                        return new OperationResult('AUDIT_SEALED', ['audit_id' => $record->id, 'assignment_id' => $record->assignment_id,
+                            'sealed' => ['sealed_at' => $at, 'digest' => $seal->digest, 'licence' => $preview['payload']['licence'],
+                                'signature_ref' => $seal->id, 'report_id' => $record->id, 'key_id' => $seal->audit_signing_key_id]], $record->revision);
+                    });
+            });
+    }
+
+    /** @param AcceptedAssignment $assignment
+     * @return array<string, mixed>
+     */
+    private function sealablePreview(AuditReport $record, int $userId, int $contextRevision, array $assignment, int $expectedRevision, string $digest): array
+    {
+        if ($record->revision !== $expectedRevision) {
+            throw new CommandRejection('VERSION_CONFLICT', revision: $record->revision);
+        }
+        if ($record->status !== 'draft' || $record->step !== 'seal') {
+            throw new CommandRejection('AUDIT_PROCEDURE_INCOMPLETE', revision: $record->revision);
+        }
+        $report = $this->view($record);
+        $sources = $this->procedureSources($record, $userId, $contextRevision, $assignment);
+        /** @var Draft $draft */
+        $draft = $record->draft;
+        $unavailable = $this->procedure->unavailable($record->kind, $record->step, $draft, 'seal', $sources);
+        if ($unavailable !== null) {
+            throw new CommandRejection($unavailable, revision: $record->revision);
+        }
+        $preview = $this->previews->handle($report, $sources);
+        if ($preview['note_missing']) {
+            throw new CommandRejection('AUDIT_NOTE_REQUIRED', 422, $record->revision, ['note' => ['Explain the factual difference before sealing.']]);
+        }
+        if (! hash_equals($preview['digest'], $digest)) {
+            throw new CommandRejection('DIGEST_STALE', revision: $record->revision);
+        }
+        $ids = array_values(array_unique(array_filter([$sources['verification']['id'] ?? null, $sources['source_facts']['source']['id'] ?? null,
+            ...array_column($sources['documents'], 'id'), ...array_column($sources['ledger_documents'] ?? [], 'id')])));
+        sort($ids);
+
+        return [...$preview, 'sources' => $sources, 'evidence_ids' => $ids];
+    }
 
     /** @return array<string, mixed> */
     public function start(int $userId, int $contextRevision, string $assignmentId, int $expectedRevision, string $applicationId, int $applicationRevision, string $requestId): array
@@ -113,7 +231,7 @@ final class EloquentAuditReportStore implements AuditReportStore
                 $this->view($record);
 
                 return $this->journal->execute('party:'.$assignment['party_id'], $userId, 'audit.save_step', $requestId, 'audit.report', $reportId,
-                    ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'step' => $step, 'fields' => $fields],
+                    $this->inputFingerprint(['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'step' => $step, 'fields' => $fields]),
                     function (): void {}, function () use ($record, $assignment, $userId, $contextRevision, $expectedRevision, $step, $fields): OperationResult {
                         if ($record->revision !== $expectedRevision) {
                             throw new CommandRejection('VERSION_CONFLICT', revision: $record->revision);
@@ -145,8 +263,8 @@ final class EloquentAuditReportStore implements AuditReportStore
                 $this->view($record);
 
                 return $this->journal->execute('party:'.$assignment['party_id'], $userId, 'audit.save_step', $requestId, 'audit.report', $reportId,
-                    ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'step' => 'ledger',
-                        'upload' => ['filename' => $filename, 'sha256' => hash('sha256', $content), 'replaces' => $replaces]],
+                    $this->inputFingerprint(['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'step' => 'ledger',
+                        'upload' => ['filename' => $filename, 'sha256' => hash('sha256', $content), 'replaces' => $replaces]]),
                     function (): void {}, function () use ($record, $assignment, $userId, $expectedRevision, $filename, $content, $replaces): OperationResult {
                         if ($record->revision !== $expectedRevision) {
                             throw new CommandRejection('VERSION_CONFLICT', revision: $record->revision);
@@ -219,6 +337,20 @@ final class EloquentAuditReportStore implements AuditReportStore
                         return $this->receipt($reject ? 'AUDIT_REJECTED' : 'AUDIT_CHANGES_REQUESTED', $this->view($record));
                     });
             });
+    }
+
+    /** @param array<string, mixed> $input
+     * @return array<string, mixed>
+     */
+    private function inputFingerprint(array $input): array
+    {
+        try {
+            $this->json->encode($input);
+
+            return $input;
+        } catch (CommandRejection) {
+            return ['invalid_input_sha256' => hash('sha256', serialize($input))];
+        }
     }
 
     /**
@@ -302,8 +434,11 @@ final class EloquentAuditReportStore implements AuditReportStore
                 $record = AuditReport::query()->sharedLock()->findOrFail($reportId);
                 $this->author($record, $assignment);
 
-                return ['report' => $this->view($record), 'sources' => $this->procedureSources($record, $userId, $contextRevision, $assignment),
-                    'mfa_confirmed' => $this->identities->forUser($userId)['mfa_confirmed']];
+                $sealed = $record->status === 'sealed' ? $this->publications->forAuditor($record->id) : null;
+
+                return ['report' => $this->view($record), 'sources' => $sealed['sources'] ?? $this->procedureSources($record, $userId, $contextRevision, $assignment),
+                    'mfa_confirmed' => $this->identities->forUser($userId)['mfa_confirmed'], 'sealed' => $sealed,
+                    'signing_available' => $record->status === 'draft' && $this->cryptography->available()];
             });
     }
 
@@ -340,7 +475,7 @@ final class EloquentAuditReportStore implements AuditReportStore
     /** @return array<string, mixed> */
     public function findOperation(int $userId, int $contextRevision, string $command, string $requestId): array
     {
-        if (! in_array($command, ['audit.start', 'audit.save_step', 'audit.request_changes', 'audit.reject', 'audit.amend'], true)) {
+        if (! in_array($command, ['audit.start', 'audit.save_step', 'audit.request_changes', 'audit.reject', 'audit.amend', 'audit.seal'], true)) {
             throw new CommandRejection('OPERATION_NOT_FOUND', 404);
         }
 

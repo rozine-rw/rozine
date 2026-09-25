@@ -1,3 +1,4 @@
+import BusinessAuditReportController from './BusinessAuditReportController'
 import BusinessApplicationController from './BusinessApplicationController'
 import IdentityController from './IdentityController'
 import StaffAccessController from './StaffAccessController'
@@ -9,6 +10,7 @@ import AuditorJobsController from './AuditorJobsController'
 import AuditorProfileController from './AuditorProfileController'
 
 const V1 = {
+    BusinessAuditReportController: Object.assign(BusinessAuditReportController, BusinessAuditReportController),
     BusinessApplicationController: Object.assign(BusinessApplicationController, BusinessApplicationController),
     IdentityController: Object.assign(IdentityController, IdentityController),
     StaffAccessController: Object.assign(StaffAccessController, StaffAccessController),

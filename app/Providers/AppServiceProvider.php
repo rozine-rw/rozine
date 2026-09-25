@@ -11,9 +11,12 @@ use App\Application\Auditor\Contracts\AuditLedgerExtractionQueue;
 use App\Application\Auditor\Contracts\AuditLocationStore;
 use App\Application\Auditor\Contracts\AuditorIndependenceStore;
 use App\Application\Auditor\Contracts\AuditorProfileStore;
+use App\Application\Auditor\Contracts\AuditReportCryptography;
 use App\Application\Auditor\Contracts\AuditReportLifecycle;
+use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Application\Auditor\Contracts\AuditReportStore;
 use App\Application\Auditor\Contracts\AuditSourceFactsStore;
+use App\Application\Auditor\Contracts\AuditStepUp;
 use App\Application\Business\Contracts\BusinessApplicationStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\Contracts\BusinessCreditFactsStore;
@@ -22,6 +25,7 @@ use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Evidence\Contracts\StatementExtractionQueue;
 use App\Application\Evidence\Contracts\StatementStore;
 use App\Application\Evidence\Contracts\StatementTextExtractor;
+use App\Application\Identity\Contracts\Authenticator;
 use App\Application\Identity\Contracts\ConsentCatalog;
 use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\Contracts\IdentityRepository;
@@ -36,8 +40,11 @@ use App\Infrastructure\Auditor\EloquentAuditLocationStore;
 use App\Infrastructure\Auditor\EloquentAuditorIndependenceStore;
 use App\Infrastructure\Auditor\EloquentAuditorProfileStore;
 use App\Infrastructure\Auditor\EloquentAuditReportLifecycle;
+use App\Infrastructure\Auditor\EloquentAuditReportPublicationStore;
 use App\Infrastructure\Auditor\EloquentAuditReportStore;
 use App\Infrastructure\Auditor\EloquentAuditSourceFactsStore;
+use App\Infrastructure\Auditor\EloquentAuditStepUp;
+use App\Infrastructure\Auditor\JoseAuditReportCryptography;
 use App\Infrastructure\Business\EloquentBusinessApplicationStore;
 use App\Infrastructure\Business\EloquentBusinessAuthorityStore;
 use App\Infrastructure\Business\EloquentBusinessCreditFactsStore;
@@ -48,13 +55,17 @@ use App\Infrastructure\Evidence\IsolatedStatementTextExtractor;
 use App\Infrastructure\Identity\EloquentConsentCatalog;
 use App\Infrastructure\Identity\EloquentIdentityAccessStore;
 use App\Infrastructure\Identity\EloquentIdentityRepository;
+use App\Infrastructure\Identity\FortifyAuthenticator;
 use App\Infrastructure\Operations\EloquentOperationJournal;
 use App\Infrastructure\Operations\JcsCanonicalJson;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
 use Carbon\CarbonImmutable;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Console\Seeds\SeedCommand;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Head\Enums\ImageType;
@@ -72,6 +83,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(AuditReportPublicationStore::class, EloquentAuditReportPublicationStore::class);
+        $this->app->bind(Authenticator::class, FortifyAuthenticator::class);
+        $this->app->bind(AuditStepUp::class, EloquentAuditStepUp::class);
+        $this->app->bind(AuditReportCryptography::class, JoseAuditReportCryptography::class);
         $this->app->bind(PulseSignupRepository::class, EloquentPulseSignupRepository::class);
         $this->app->bind(DemoFixtureStore::class, EloquentDemoFixtureStore::class);
         $this->app->bind(IdentityRepository::class, EloquentIdentityRepository::class);
@@ -104,6 +119,10 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureHead();
+        RateLimiter::for('audit-step-up', fn (Request $request): array => [
+            Limit::perMinute(5)->by('account:'.$request->user()?->getAuthIdentifier()),
+            Limit::perMinute(20)->by('ip:'.$request->ip()),
+        ]);
     }
 
     /**

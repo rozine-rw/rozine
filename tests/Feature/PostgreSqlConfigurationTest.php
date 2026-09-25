@@ -70,6 +70,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $ledgerMigration = require database_path('migrations/2026_09_25_120136_create_audit_ledger_evidence_tables.php');
     $ledgerAuthority = require database_path('migrations/2026_09_25_130201_enforce_audit_ledger_report_authority.php');
     $decisions = require database_path('migrations/2026_09_25_131948_enforce_audit_report_decisions_and_fresh_amendments.php');
+    $signing = require database_path('migrations/2026_09_25_134827_create_audit_report_signing_tables.php');
+    $publications = require database_path('migrations/2026_09_25_140638_create_audit_report_publication_tables.php');
+    $publications->down();
+    $signing->down();
     $decisions->down();
     $ledgerAuthority->down();
     $ledgerMigration->down();
@@ -134,6 +138,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $engagementMigration->up();
     $sourcePinMigration->up();
     $sourceFactsMigration->up();
+    $signing->up();
+    $publications->up();
 
     expect(Schema::hasTable('parties'))->toBeTrue()
         ->and(Schema::hasTable('role_memberships'))->toBeTrue()

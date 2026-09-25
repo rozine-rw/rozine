@@ -19,8 +19,14 @@ use App\Models\AuditorIndependenceVersion;
 use App\Models\AuditorProfile;
 use App\Models\AuditorProfileVersion;
 use App\Models\AuditReport;
+use App\Models\AuditReportPublication;
+use App\Models\AuditReportSeal;
+use App\Models\AuditReportSignature;
 use App\Models\AuditReportVersion;
+use App\Models\AuditSigningKey;
+use App\Models\AuditSigningKeyRevocation;
 use App\Models\AuditSourceSnapshot;
+use App\Models\AuditStepUpProof;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationSignature;
@@ -232,6 +238,12 @@ it('has concrete targets for the auditor accreditation boundary', function (): v
         ->and(class_exists(AuditConflictDeclaration::class))->toBeTrue()
         ->and(class_exists(AuditReport::class))->toBeTrue()
         ->and(class_exists(AuditReportVersion::class))->toBeTrue()
+        ->and(class_exists(AuditReportPublication::class))->toBeTrue()
+        ->and(class_exists(AuditReportSignature::class))->toBeTrue()
+        ->and(class_exists(AuditReportSeal::class))->toBeTrue()
+        ->and(class_exists(AuditSigningKey::class))->toBeTrue()
+        ->and(class_exists(AuditSigningKeyRevocation::class))->toBeTrue()
+        ->and(class_exists(AuditStepUpProof::class))->toBeTrue()
         ->and(class_exists(AuditLedgerOriginal::class))->toBeTrue()
         ->and(class_exists(AuditLedgerExtraction::class))->toBeTrue()
         ->and(class_exists(AuditSourceSnapshot::class))->toBeTrue()
@@ -241,5 +253,5 @@ it('has concrete targets for the auditor accreditation boundary', function (): v
 })->group('arch');
 
 arch('auditor accreditation records are only accessed by their adapter')
-    ->expect(['App\Models\AuditorProfile', 'App\Models\AuditorProfileVersion', 'App\Models\AuditorCertificate', 'App\Models\AuditLocation', 'App\Models\AuditLocationVersion', 'App\Models\AuditorIndependenceReview', 'App\Models\AuditorIndependenceVersion', 'App\Models\AuditAssignment', 'App\Models\AuditAssignmentVersion', 'App\Models\AuditConflictDeclaration', 'App\Models\AuditReport', 'App\Models\AuditReportVersion', 'App\Models\AuditLedgerOriginal', 'App\Models\AuditLedgerExtraction', 'App\Models\AuditSourceSnapshot', 'App\Models\AuditEngagementRelease', 'App\Models\AuditEngagementAcceptance'])
+    ->expect(['App\Models\AuditorProfile', 'App\Models\AuditorProfileVersion', 'App\Models\AuditorCertificate', 'App\Models\AuditLocation', 'App\Models\AuditLocationVersion', 'App\Models\AuditorIndependenceReview', 'App\Models\AuditorIndependenceVersion', 'App\Models\AuditAssignment', 'App\Models\AuditAssignmentVersion', 'App\Models\AuditConflictDeclaration', 'App\Models\AuditReport', 'App\Models\AuditReportVersion', 'App\Models\AuditLedgerOriginal', 'App\Models\AuditLedgerExtraction', 'App\Models\AuditSourceSnapshot', 'App\Models\AuditEngagementRelease', 'App\Models\AuditEngagementAcceptance', 'App\Models\AuditReportPublication', 'App\Models\AuditReportSignature', 'App\Models\AuditReportSeal', 'App\Models\AuditSigningKey', 'App\Models\AuditSigningKeyRevocation', 'App\Models\AuditStepUpProof'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Auditor', 'App\Models', 'Database\Factories']);

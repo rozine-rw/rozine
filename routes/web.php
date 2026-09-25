@@ -7,7 +7,9 @@ use App\Http\Controllers\AuditorEngagementController;
 use App\Http\Controllers\AuditorJobsController;
 use App\Http\Controllers\AuditorProcedureController;
 use App\Http\Controllers\AuditorProfileController;
+use App\Http\Controllers\AuditSealVerificationController;
 use App\Http\Controllers\BusinessApplicationController;
+use App\Http\Controllers\BusinessAuditReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IdentityManagementController;
 use App\Http\Controllers\PulseController;
@@ -18,6 +20,15 @@ use App\Http\Controllers\StaffHomeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [SiteController::class, 'index'])->name('home');
+
+Route::get('audit-seals/{report}', AuditSealVerificationController::class)->whereUlid('report')
+    ->middleware(['throttle:60,1', 'cache.headers:no_store'])->name('audit.seals.verify');
+
+Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('business')->name('business.audit-reports.')->group(function (): void {
+    Route::get('audit-report-operations/{request_id}', [BusinessAuditReportController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
+    Route::get('{business}/audit-reports/{report}', [BusinessAuditReportController::class, 'show'])->whereUlid(['business', 'report'])->name('show');
+    Route::post('{business}/audit-reports/{report}/cosign', [BusinessAuditReportController::class, 'cosign'])->whereUlid(['business', 'report'])->name('cosign');
+});
 
 Route::get('pulse', [PulseController::class, 'index'])->name('pulse');
 
@@ -52,6 +63,8 @@ Route::middleware(['auth', 'throttle:60,1'])->prefix('auditor')->name('auditor.'
     Route::get('reports/{report}/statements/{document}', [AuditorProcedureController::class, 'statement'])->where(['report' => '[0-9a-z]{26}', 'document' => '[0-9a-z]{26}'])->middleware('cache.headers:private;no_store')->name('reports.statements.show');
     Route::get('reports/{report}/ledgers/{document}', [AuditorProcedureController::class, 'ledger'])->where(['report' => '[0-9a-z]{26}', 'document' => '[0-9a-z]{26}'])->middleware('cache.headers:private;no_store')->name('reports.ledgers.show');
     Route::post('reports/{report}/steps', [AuditorProcedureController::class, 'save'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.save');
+    Route::post('reports/{report}/step-up', [AuditorProcedureController::class, 'stepUp'])->where('report', '[0-9a-z]{26}')->middleware(['throttle:audit-step-up', 'cache.headers:private;no_store'])->name('reports.step-up');
+    Route::post('reports/{report}/seal', [AuditorProcedureController::class, 'seal'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.seal');
     Route::post('reports/{report}/request-changes', [AuditorProcedureController::class, 'requestChanges'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.request-changes');
     Route::post('reports/{report}/reject', [AuditorProcedureController::class, 'reject'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.reject');
     Route::post('reports/{report}/amend', [AuditorProcedureController::class, 'amend'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.amend');

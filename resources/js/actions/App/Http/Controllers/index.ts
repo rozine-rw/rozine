@@ -1,6 +1,8 @@
+import AuditSealVerificationController from './AuditSealVerificationController'
 import Api from './Api'
 import AuditOperationsController from './AuditOperationsController'
 import SiteController from './SiteController'
+import BusinessAuditReportController from './BusinessAuditReportController'
 import PulseController from './PulseController'
 import DashboardController from './DashboardController'
 import RoleHomeController from './RoleHomeController'
@@ -15,9 +17,11 @@ import RoleBookmarkController from './RoleBookmarkController'
 import Settings from './Settings'
 
 const Controllers = {
+    AuditSealVerificationController: Object.assign(AuditSealVerificationController, AuditSealVerificationController),
     Api: Object.assign(Api, Api),
     AuditOperationsController: Object.assign(AuditOperationsController, AuditOperationsController),
     SiteController: Object.assign(SiteController, SiteController),
+    BusinessAuditReportController: Object.assign(BusinessAuditReportController, BusinessAuditReportController),
     PulseController: Object.assign(PulseController, PulseController),
     DashboardController: Object.assign(DashboardController, DashboardController),
     RoleHomeController: Object.assign(RoleHomeController, RoleHomeController),

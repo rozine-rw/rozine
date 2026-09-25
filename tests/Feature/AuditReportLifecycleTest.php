@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditEngagementFixture;
+use Tests\Support\AuditSealingFixture;
 use Tests\Support\BusinessQuoteFixture;
 
 beforeEach(function (): void {
@@ -192,12 +193,11 @@ it('pins newly accepted engagement terms when amending after a release change', 
 });
 
 it('amends a retained sealed Flash version without copying completion or changing the original', function (): void {
-    $f = auditLifecycleFixture('flash');
-    $report = $f['report'];
-    $report->forceFill(['status' => 'sealed', 'step' => 'seal', 'revision' => 2])->save();
-    AuditReportVersion::factory()->forReport($report, $f['actor']->party_id, $f['actor']->id)->create();
-    $before = $report->refresh()->getAttributes();
-    $receipt = app(AmendAuditReport::class)->handle($f['actor']->id, 1, $report->id, 2, (string) Str::uuid());
+    $f = AuditSealingFixture::ready();
+    AuditSealingFixture::seal($f);
+    $report = $f['report']->refresh();
+    $before = $report->getAttributes();
+    $receipt = app(AmendAuditReport::class)->handle($f['user']->id, 1, $report->id, $report->revision, (string) Str::uuid());
     $child = AuditReport::query()->whereKey($receipt['data']['audit_id'])->firstOrFail();
     expect($child->step)->toBe('review')->and($child->draft['completed_steps'])->toBe([])
         ->and($report->refresh()->getAttributes())->toBe($before);

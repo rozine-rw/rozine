@@ -406,6 +406,10 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $ledgerMigration = require database_path('migrations/2026_09_25_120136_create_audit_ledger_evidence_tables.php');
     $ledgerAuthority = require database_path('migrations/2026_09_25_130201_enforce_audit_ledger_report_authority.php');
     $decisions = require database_path('migrations/2026_09_25_131948_enforce_audit_report_decisions_and_fresh_amendments.php');
+    $signing = require database_path('migrations/2026_09_25_134827_create_audit_report_signing_tables.php');
+    $publications = require database_path('migrations/2026_09_25_140638_create_audit_report_publication_tables.php');
+    $publications->down();
+    $signing->down();
     $decisions->down();
     $ledgerAuthority->down();
     $ledgerMigration->down();
@@ -424,6 +428,8 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $ledgerMigration->up();
     $ledgerAuthority->up();
     $sourceFacts->up();
+    $signing->up();
+    $publications->up();
 });
 
 it('automatically reoffers expired jobs with system history and without impersonating a staff user', function (): void {

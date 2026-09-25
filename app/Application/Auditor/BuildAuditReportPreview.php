@@ -57,7 +57,7 @@ final class BuildAuditReportPreview
         usort($originals, fn (array $left, array $right): int => strcmp($left['id'], $right['id']));
         $evidenceVersion = hash('sha256', $this->json->encode(['sources' => $sourcePins, 'originals' => $originals]));
         $payload = ['report_id' => $report['id'], 'report_revision' => $report['revision'], 'assignment_id' => $report['assignment_id'],
-            'binding_sha256' => $report['binding_sha256'], 'period' => $report['period'], 'licence' => $sources['licence'], 'procedure_version' => StatementAuditReview::PROCEDURE,
+            'binding_sha256' => $report['binding_sha256'], 'authority' => $sources['authority'], 'period' => $report['period'], 'licence' => $sources['licence'], 'procedure_version' => StatementAuditReview::PROCEDURE,
             'findings_version' => self::FINDINGS_VERSION, 'evidence_version' => $evidenceVersion, 'findings' => $findings,
             'sources' => $sourcePins, 'source_provenance' => $sources['source_facts']['source'] ?? null, 'originals' => $originals, 'draft' => $draft];
 

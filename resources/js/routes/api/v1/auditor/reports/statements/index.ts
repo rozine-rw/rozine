@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:61
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
 * @route '/api/v1/auditor/reports/{report}/statements/{document}'
 */
 export const show = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:61
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
 * @route '/api/v1/auditor/reports/{report}/statements/{document}'
 */
 show.url = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions) => {
@@ -42,7 +42,7 @@ show.url = (args: { report: string | number, document: string | number } | [repo
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:61
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
 * @route '/api/v1/auditor/reports/{report}/statements/{document}'
 */
 show.get = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -52,7 +52,7 @@ show.get = (args: { report: string | number, document: string | number } | [repo
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:61
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
 * @route '/api/v1/auditor/reports/{report}/statements/{document}'
 */
 show.head = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -62,7 +62,7 @@ show.head = (args: { report: string | number, document: string | number } | [rep
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:61
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
 * @route '/api/v1/auditor/reports/{report}/statements/{document}'
 */
 const showForm = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -72,7 +72,7 @@ const showForm = (args: { report: string | number, document: string | number } |
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:61
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
 * @route '/api/v1/auditor/reports/{report}/statements/{document}'
 */
 showForm.get = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ showForm.get = (args: { report: string | number, document: string | number } | [
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:61
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
 * @route '/api/v1/auditor/reports/{report}/statements/{document}'
 */
 showForm.head = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

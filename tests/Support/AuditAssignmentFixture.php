@@ -31,9 +31,9 @@ use Illuminate\Support\Str;
 final class AuditAssignmentFixture
 {
     /** @return Fixture */
-    public static function make(int $count = 2, string $kind = 'person', int $signatories = 1): array
+    public static function make(int $count = 2, string $kind = 'person', int $signatories = 1, ?int $requiredSignatories = null): array
     {
-        $authority = BusinessAuthorityFixture::make($kind, $signatories);
+        $authority = BusinessAuthorityFixture::make($kind, $signatories, requiredSignatories: $requiredSignatories);
         $business = BusinessAuthorityFixture::configure($authority)['data']['business']['id'];
         $staff = $authority['staff'];
         app(ConfigureStaffAccess::class)->handle($staff->id, true, 'Manage synthetic audit assignments.', (string) Str::uuid(), ['approver', 'compliance']);

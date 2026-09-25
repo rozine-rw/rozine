@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Auditor\AmendAuditReport;
+use App\Application\Auditor\ConfirmAuditStepUp;
 use App\Application\Auditor\DecideAuditReport;
 use App\Application\Auditor\FindAuditReportOperation;
 use App\Application\Auditor\GetAuditEngagementSummary;
@@ -14,19 +15,23 @@ use App\Application\Auditor\IngestAuditLedger;
 use App\Application\Auditor\ListAuditJobs;
 use App\Application\Auditor\ReadAuditLedger;
 use App\Application\Auditor\SaveAuditReportStep;
+use App\Application\Auditor\SealAuditReport;
 use App\Application\Auditor\StartAuditReport;
 use App\Application\Business\GetAuditApplication;
 use App\Application\Evidence\ReadAuditStatement;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Http\Requests\Auditor\AmendAuditReportRequest;
+use App\Http\Requests\Auditor\ConfirmAuditStepUpRequest;
 use App\Http\Requests\Auditor\DecideAuditReportRequest;
 use App\Http\Requests\Auditor\SaveAuditReportStepRequest;
+use App\Http\Requests\Auditor\SealAuditReportRequest;
 use App\Http\Requests\Auditor\ShowAuditReportOperationRequest;
 use App\Http\Requests\Auditor\ShowAuditReportRequest;
 use App\Http\Requests\Auditor\StartAuditReportRequest;
 use App\Http\Resources\AuditorJobsResource;
 use App\Http\Resources\AuditorProcedureResource;
 use App\Http\Resources\OperationResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Inertia\Inertia;
@@ -106,6 +111,21 @@ class AuditorProcedureController extends Controller
         [$userId, $revision] = $this->reader($request);
 
         return $this->present($request, $action->handle($userId, $revision, (string) $request->validated('command'), (string) $request->route('request_id')));
+    }
+
+    public function stepUp(ConfirmAuditStepUpRequest $request, ConfirmAuditStepUp $action): JsonResponse
+    {
+        return response()->json($action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
+            (string) $request->route('report'), (int) $request->validated('expected_revision'), (string) $request->validated('digest'), (string) $request->validated('code')));
+    }
+
+    public function seal(SealAuditReportRequest $request, SealAuditReport $action): OperationResource
+    {
+        $fields = $request->safe()->only(['digest', 'procedure_version', 'findings_version', 'evidence_version', 'evidence_ids', 'note']);
+        $fields['note'] ??= '';
+
+        return $this->present($request, $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
+            (string) $request->route('report'), (int) $request->validated('expected_revision'), $fields, (string) $request->validated('step_up.proof'), (string) $request->validated('request_id')));
     }
 
     public function requestChanges(DecideAuditReportRequest $request, DecideAuditReport $action): OperationResource

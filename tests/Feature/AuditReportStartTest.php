@@ -22,6 +22,7 @@ use Illuminate\Support\Str;
 use Tests\Support\AuditAssignmentFixture;
 use Tests\Support\AuditEngagementFixture;
 use Tests\Support\AuditorFixture;
+use Tests\Support\AuditSealingFixture;
 use Tests\Support\BusinessQuoteFixture as Fixture;
 
 /** @param array<string, mixed> $fixture
@@ -187,7 +188,7 @@ it('refuses corrupted report bindings snapshots and missing history', function (
 it('rejects unsupported journal commands unlinked identities and wrong target types', function (): void {
     $user = User::factory()->create();
     $lookup = app(FindAuditReportOperation::class);
-    expect(fn () => $lookup->handle($user->id, 1, 'audit.seal', (string) Str::uuid()))->toThrow(CommandRejection::class, 'OPERATION_NOT_FOUND')
+    expect(fn () => $lookup->handle($user->id, 1, 'audit.unknown', (string) Str::uuid()))->toThrow(CommandRejection::class, 'OPERATION_NOT_FOUND')
         ->and(fn () => $lookup->handle($user->id, 1, 'audit.start', (string) Str::uuid()))->toThrow(IdentityViolation::class, 'IDENTITY_NOT_LINKED');
     $fixture = Fixture::ready();
     $request = (string) Str::uuid();
@@ -267,18 +268,16 @@ it('rolls conflict declaration and reassignment back when report withdrawal hist
 });
 
 it('does not rewrite sealed history when an Auditor subsequently declares a conflict', function (): void {
-    $fixture = Fixture::ready();
-    Fixture::submit($fixture, Fixture::acceptance($fixture));
-    startSubmittedAuditReport($fixture);
-    $report = AuditReport::query()->firstOrFail();
-    $report->forceFill(['revision' => 2, 'status' => 'sealed', 'step' => 'seal'])->save();
-    AuditReportVersion::factory()->forReport($report, $fixture['audit']['partners'][0]['party']->id, $fixture['audit']['partners'][0]['user']->id)->create();
+    $fixture = AuditSealingFixture::ready();
+    AuditSealingFixture::seal($fixture);
+    $report = $fixture['report'];
+    $versionCount = AuditReportVersion::query()->count();
     $before = $report->refresh()->getRawOriginal();
     $request = (string) Str::uuid();
     $first = AuditAssignmentFixture::respond($fixture['audit']['partners'][0]['user'], $fixture['assignment']->refresh(), 'conflict',
         'New family tie.', 'family_or_business', $request);
     expect($first['code'])->toBe('CONFLICT_RECORDED')->and($report->refresh()->getRawOriginal())->toBe($before);
-    $this->assertDatabaseCount('audit_report_versions', 2);
+    $this->assertDatabaseCount('audit_report_versions', $versionCount);
 });
 
 it('replays an original refusal after the application becomes submitted without creating a report', function (): void {
