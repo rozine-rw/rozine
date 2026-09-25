@@ -27,9 +27,10 @@ interface BusinessAuthorityStore
      * @template TResult
      *
      * @param  Closure(Business, AccessSnapshot): TResult  $operation
+     * @param  list<string>  $additionalPartyIds
      * @return TResult
      */
-    public function withAuthority(int $userId, int $contextRevision, string $businessId, string $permission, ?int $mandateVersion, Closure $operation): mixed;
+    public function withAuthority(int $userId, int $contextRevision, string $businessId, string $permission, ?int $mandateVersion, Closure $operation, array $additionalPartyIds = []): mixed;
 
     /**
      * @template TResult

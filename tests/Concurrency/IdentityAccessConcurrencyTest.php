@@ -23,6 +23,7 @@ use App\Application\Evidence\GetStatementVerification;
 use App\Application\Evidence\IngestStatement;
 use App\Application\Evidence\ReadAuditStatement;
 use App\Application\Evidence\RecordStatementTranscription;
+use App\Application\Evidence\WithBusinessStatementVerification;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\ChangeMembership;
@@ -87,6 +88,78 @@ function concurrentIdentityOperator(): User
 
     return $user;
 }
+
+it('holds source authority through the Business calculation effect', function (string $change): void {
+    $fixture = AuditAssignmentFixture::make(1);
+    $sources = AuditAssignmentFixture::statements($fixture);
+    $assignment = AuditAssignmentFixture::request($fixture);
+    $partner = $fixture['partners'][0];
+    $operator = concurrentIdentityOperator();
+    AuditAssignmentFixture::respond($partner['user'], $assignment);
+    AuditAssignmentFixture::verifyStatements($fixture, $assignment->refresh(), $sources['transcription_id']);
+    DB::table('signup_counters')->insert(['name' => 'underwriting-effect', 'value' => 0]);
+    $changeAuthority = function () use ($fixture, $partner, $operator, $change): void {
+        if ($change === 'identity') {
+            Party::query()->whereKey($partner['party']->id)->update(['verified_at' => null]);
+        } elseif ($change === 'standing') {
+            AuditorFixture::review($partner['staff'], $partner['party']->id, 3, 'suspend');
+        } elseif ($change === 'membership') {
+            app(ChangeMembership::class)->handle($operator->id, $partner['party']->id, 'auditor', 'revoked', 1,
+                'case:withdrawal', 'Withdraw membership.', (string) Str::uuid());
+        } elseif ($change === 'independence') {
+            app(RecordAuditorIndependence::class)->handle($fixture['staff']->id, $fixture['business'], $partner['party']->id, 1,
+                [...AuditorIndependenceFixture::facts(), 'financial_interest' => true], now('UTC')->format('Y-m-d\TH:i:s\Z'),
+                'new:interest', 'Current interest found.', (string) Str::uuid());
+        } else {
+            app(IngestStatement::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business'], 2,
+                'new.csv', StatementFixture::csv('200'), (string) Str::uuid());
+        }
+    };
+    config(['database.connections.identity_contender' => config('database.connections.pgsql')]);
+    DB::connection('identity_contender')->statement("SET lock_timeout = '500ms'");
+    $default = DB::getDefaultConnection();
+    $guard = app(WithBusinessStatementVerification::class);
+    $guard->handle($fixture['authority']['users'][0]->id, 1, $fixture['business'], 'application.evaluate', 1,
+        function (array $business, array $identity, ?array $verification) use ($default, $changeAuthority): void {
+            expect($verification['current'])->toBeTrue();
+            DB::setDefaultConnection('identity_contender');
+            try {
+                expect($changeAuthority)->toThrow(QueryException::class, '55P03');
+            } finally {
+                DB::setDefaultConnection($default);
+                DB::purge('identity_contender');
+            }
+            DB::table('signup_counters')->where('name', 'underwriting-effect')->increment('value');
+        });
+    expect(DB::table('signup_counters')->where('name', 'underwriting-effect')->value('value'))->toBe(1);
+    $changeAuthority();
+    expect($guard->handle($fixture['authority']['users'][0]->id, 1, $fixture['business'], 'application.evaluate', 1,
+        fn (array $business, array $identity, ?array $verification): bool => $verification !== null && $verification['current']))->toBeFalse();
+})->with(['identity', 'standing', 'membership', 'independence', 'evidence']);
+
+it('leaves unrelated Auditor authority unlocked during a Business calculation', function (): void {
+    $fixture = AuditAssignmentFixture::make(2);
+    $sources = AuditAssignmentFixture::statements($fixture);
+    $assignment = AuditAssignmentFixture::request($fixture);
+    $partner = AuditAssignmentFixture::recipient($fixture, $assignment);
+    $other = array_values(array_filter($fixture['partners'], fn (array $candidate): bool => $candidate['party']->id !== $partner['party']->id))[0];
+    AuditAssignmentFixture::respond($partner['user'], $assignment);
+    AuditAssignmentFixture::verifyStatements($fixture, $assignment->refresh(), $sources['transcription_id']);
+    config(['database.connections.identity_contender' => config('database.connections.pgsql')]);
+    DB::connection('identity_contender')->statement("SET lock_timeout = '500ms'");
+    $default = DB::getDefaultConnection();
+    app(WithBusinessStatementVerification::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business'], 'application.evaluate', 1,
+        function (array $business, array $identity, ?array $verification) use ($default, $other): void {
+            expect($verification['current'])->toBeTrue();
+            DB::setDefaultConnection('identity_contender');
+            try {
+                expect(AuditorFixture::review($other['staff'], $other['party']->id, 3, 'suspend')['code'])->toBe('ACCREDITATION_REVIEWED');
+            } finally {
+                DB::setDefaultConnection($default);
+                DB::purge('identity_contender');
+            }
+        });
+});
 
 /**
  * @param  list<Closure(): void>  $operations

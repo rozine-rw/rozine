@@ -28,4 +28,16 @@ final class WithAcceptedAuditAssignment
     {
         return $this->store->retainsVerification($assignment);
     }
+
+    /**
+     * @template TResult
+     *
+     * @param  AcceptedAssignment  $assignment
+     * @param  Closure(bool): TResult  $operation
+     * @return TResult
+     */
+    public function withVerificationValidity(array $assignment, Closure $operation): mixed
+    {
+        return $this->store->withVerificationValidity($assignment, $operation);
+    }
 }

@@ -464,14 +464,19 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
      *
      * @param  list<string>  $personPartyIds
      * @param  Closure(AccessSnapshot): TResult  $operation
+     * @param  list<string>  $additionalPartyIds
      * @return TResult
      */
-    public function withEntityRole(int $userId, string $role, int $expectedContext, string $entityKind, string $entityPartyId, array $personPartyIds, Closure $operation, ?string $registryReference = null): mixed
+    public function withEntityRole(int $userId, string $role, int $expectedContext, string $entityKind, string $entityPartyId, array $personPartyIds, Closure $operation, ?string $registryReference = null, array $additionalPartyIds = []): mixed
     {
-        return DB::transaction(function () use ($userId, $role, $expectedContext, $entityKind, $entityPartyId, $personPartyIds, $operation, $registryReference): mixed {
+        return DB::transaction(function () use ($userId, $role, $expectedContext, $entityKind, $entityPartyId, $personPartyIds, $operation, $registryReference, $additionalPartyIds): mixed {
             $user = User::query()->lockForUpdate()->findOrFail($userId);
             if ($user->party_id === null || ! in_array($user->party_id, $personPartyIds, true)) {
                 throw new IdentityViolation('MANDATE_REQUIRED');
+            }
+            if ($additionalPartyIds !== []) {
+                $ids = array_values(array_unique([$entityPartyId, ...$personPartyIds, ...$additionalPartyIds]));
+                Party::query()->whereKey($ids)->orderBy('id')->lockForUpdate()->get();
             }
 
             return $this->withVerifiedParties($entityKind, $entityPartyId, $personPartyIds, function () use ($userId, $role, $expectedContext, $operation): mixed {

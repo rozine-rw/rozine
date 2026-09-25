@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Evidence\Contracts;
 
+use Closure;
+
 /**
  * @phpstan-import-type Rail from \App\Domain\Evidence\StatementReconciliation
  * @phpstan-import-type Statement from \App\Domain\Evidence\StatementReconciliation
@@ -11,6 +13,8 @@ namespace App\Application\Evidence\Contracts;
  * @phpstan-import-type AcceptedAssignment from \App\Application\Auditor\Contracts\AuditAssignmentStore
  * @phpstan-import-type Review from \App\Domain\Evidence\StatementAuditReview
  * @phpstan-import-type VerifiedObservation from \App\Domain\Evidence\StatementAuditReview
+ * @phpstan-import-type Business from \App\Application\Business\Contracts\BusinessAuthorityStore
+ * @phpstan-import-type AccessSnapshot from \App\Domain\Identity\ActiveRolePolicy
  *
  * @phpstan-type TranscriptionPayload array{business_id: string, source_revision: int, classification_version: string, rails: list<Rail>, months: list<string>, statements: list<Statement>, source_hashes: array<string, string>, observations: list<Observation>}
  * @phpstan-type Transcription array{id: string, revision: int, amends_id: string|null, sha256: string, current: bool, verified: false, payload: TranscriptionPayload}
@@ -65,6 +69,14 @@ interface StatementStore
 
     /** @return Verification|null */
     public function verification(int $userId, int $contextRevision, string $businessId, ?string $verificationId): ?array;
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(Business, AccessSnapshot, Verification|null): TResult  $operation
+     * @return TResult
+     */
+    public function withBusinessVerification(int $userId, int $contextRevision, string $businessId, string $permission, ?int $mandateVersion, Closure $operation): mixed;
 
     /** @return Verification|null */
     public function auditVerification(int $userId, int $contextRevision, string $assignmentId, ?string $verificationId): ?array;

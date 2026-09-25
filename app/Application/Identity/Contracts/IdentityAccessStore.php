@@ -58,10 +58,11 @@ interface IdentityAccessStore
      * @template TResult
      *
      * @param  list<string>  $personPartyIds
+     * @param  list<string>  $additionalPartyIds  Locked with the required parties without granting entity authority.
      * @param  Closure(AccessSnapshot): TResult  $operation
      * @return TResult
      */
-    public function withEntityRole(int $userId, string $role, int $expectedContext, string $entityKind, string $entityPartyId, array $personPartyIds, Closure $operation, ?string $registryReference = null): mixed;
+    public function withEntityRole(int $userId, string $role, int $expectedContext, string $entityKind, string $entityPartyId, array $personPartyIds, Closure $operation, ?string $registryReference = null, array $additionalPartyIds = []): mixed;
 
     /**
      * @template TResult

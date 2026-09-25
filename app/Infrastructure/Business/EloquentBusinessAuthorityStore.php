@@ -91,11 +91,12 @@ final class EloquentBusinessAuthorityStore implements BusinessAuthorityStore
      * @template TResult
      *
      * @param  Closure(Business, AccessSnapshot): TResult  $operation
+     * @param  list<string>  $additionalPartyIds
      * @return TResult
      */
-    public function withAuthority(int $userId, int $contextRevision, string $businessId, string $permission, ?int $mandateVersion, Closure $operation): mixed
+    public function withAuthority(int $userId, int $contextRevision, string $businessId, string $permission, ?int $mandateVersion, Closure $operation, array $additionalPartyIds = []): mixed
     {
-        return DB::transaction(function () use ($userId, $contextRevision, $businessId, $permission, $mandateVersion, $operation): mixed {
+        return DB::transaction(function () use ($userId, $contextRevision, $businessId, $permission, $mandateVersion, $operation, $additionalPartyIds): mixed {
             $business = BusinessProfile::query()->lockForUpdate()->find($businessId);
             $mandate = $business === null ? null : BusinessMandate::query()->where('business_id', $business->id)->where('version', $business->mandate_version)->first();
             $actor = $this->identities->forUser($userId)['party']['id'] ?? null;
@@ -119,7 +120,7 @@ final class EloquentBusinessAuthorityStore implements BusinessAuthorityStore
 
                     return $operation(['id' => $business->id, 'entity_kind' => $business->entity_kind, 'entity_party_id' => $business->entity_party_id,
                         'profile' => $business->profile, 'revision' => $business->revision, 'mandate_version' => $business->mandate_version, 'mandate' => $terms], $identity);
-                }, $business->profile['company_code'] === null ? null : 'RDB:'.$business->profile['company_code']);
+                }, $business->profile['company_code'] === null ? null : 'RDB:'.$business->profile['company_code'], $additionalPartyIds);
         }, 3);
     }
 

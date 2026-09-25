@@ -16,11 +16,12 @@ final class AuthorizeEntityRole
      * @template TResult
      *
      * @param  list<string>  $personPartyIds
+     * @param  list<string>  $additionalPartyIds
      * @param  Closure(AccessSnapshot): TResult  $operation
      * @return TResult
      */
-    public function handle(int $userId, string $role, int $expectedContext, string $entityKind, string $entityPartyId, array $personPartyIds, Closure $operation, ?string $registryReference = null): mixed
+    public function handle(int $userId, string $role, int $expectedContext, string $entityKind, string $entityPartyId, array $personPartyIds, Closure $operation, ?string $registryReference = null, array $additionalPartyIds = []): mixed
     {
-        return $this->access->withEntityRole($userId, $role, $expectedContext, $entityKind, $entityPartyId, $personPartyIds, $operation, $registryReference);
+        return $this->access->withEntityRole($userId, $role, $expectedContext, $entityKind, $entityPartyId, $personPartyIds, $operation, $registryReference, $additionalPartyIds);
     }
 }

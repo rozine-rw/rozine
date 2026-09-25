@@ -19,10 +19,11 @@ final class WithBusinessAuthority
      * @template TResult
      *
      * @param  Closure(Business, AccessSnapshot): TResult  $operation
+     * @param  list<string>  $additionalPartyIds
      * @return TResult
      */
-    public function handle(int $userId, int $contextRevision, string $businessId, string $permission, ?int $mandateVersion, Closure $operation): mixed
+    public function handle(int $userId, int $contextRevision, string $businessId, string $permission, ?int $mandateVersion, Closure $operation, array $additionalPartyIds = []): mixed
     {
-        return $this->store->withAuthority($userId, $contextRevision, $businessId, $permission, $mandateVersion, $operation);
+        return $this->store->withAuthority($userId, $contextRevision, $businessId, $permission, $mandateVersion, $operation, $additionalPartyIds);
     }
 }

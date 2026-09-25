@@ -21,6 +21,7 @@ use App\Models\StatementExtraction;
 use App\Models\StatementOriginal;
 use App\Models\StatementTranscription;
 use App\Models\StatementVerification;
+use Closure;
 use RuntimeException;
 
 /**
@@ -29,6 +30,8 @@ use RuntimeException;
  * @phpstan-import-type Transcription from StatementStore
  * @phpstan-import-type AuditFile from StatementStore
  * @phpstan-import-type Verification from StatementStore
+ * @phpstan-import-type Business from \App\Application\Business\Contracts\BusinessAuthorityStore
+ * @phpstan-import-type AccessSnapshot from \App\Domain\Identity\ActiveRolePolicy
  * @phpstan-import-type Review from StatementAuditReview
  * @phpstan-import-type Rail from StatementReconciliation
  * @phpstan-import-type Statement from StatementReconciliation
@@ -284,6 +287,33 @@ final class EloquentStatementStore implements StatementStore
     {
         return $this->authority->handle($userId, $contextRevision, $businessId, 'application.save', null,
             fn (array $business): ?array => $this->storedVerification($businessId, $verificationId, $business['revision']));
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(Business, AccessSnapshot, Verification|null): TResult  $operation
+     * @return TResult
+     */
+    public function withBusinessVerification(int $userId, int $contextRevision, string $businessId, string $permission, ?int $mandateVersion, Closure $operation): mixed
+    {
+        $evidenceId = StatementEvidence::query()->where('business_id', $businessId)->value('id');
+        $authorId = StatementVerification::query()->where('statement_evidence_id', $evidenceId)->orderByDesc('revision')->value('actor_party_id');
+
+        return $this->authority->handle($userId, $contextRevision, $businessId, $permission, $mandateVersion,
+            function (array $business, array $identity) use ($businessId, $authorId, $operation): mixed {
+                $verification = $this->storedVerification($businessId, null, $business['revision']);
+                if ($verification !== null && $verification['payload']['assignment']['party_id'] !== $authorId) {
+                    throw new CommandRejection('VERSION_CONFLICT', 409, $verification['revision']);
+                }
+
+                if ($verification === null) {
+                    return $operation($business, $identity, null);
+                }
+
+                return $this->assignments->withVerificationValidity($verification['payload']['assignment'],
+                    fn (bool $retained): mixed => $operation($business, $identity, [...$verification, 'current' => $verification['current'] && $retained]));
+            }, is_string($authorId) ? [$authorId] : []);
     }
 
     /** @return Verification|null */

@@ -27,6 +27,7 @@ use App\Models\AuditorIndependenceReview;
 use App\Models\AuditorProfile;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -296,6 +297,22 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                 'status' => match ($record->getAttribute('assignment_status')) {
                     'operations' => 'reassignment_pending', 'closed' => 'closed', default => 'reassigned',
                 }]];
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  AcceptedAssignment  $assignment
+     * @param  Closure(bool): TResult  $operation
+     * @return TResult
+     */
+    public function withVerificationValidity(array $assignment, Closure $operation): mixed
+    {
+        return DB::transaction(function () use ($assignment, $operation): mixed {
+            AuditorProfile::query()->where('party_id', $assignment['party_id'])->lockForUpdate()->first();
+
+            return $operation($this->retainsVerification($assignment));
+        }, 3);
     }
 
     /** @param AcceptedAssignment $assignment */

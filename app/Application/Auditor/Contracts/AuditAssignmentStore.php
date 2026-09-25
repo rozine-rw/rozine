@@ -67,6 +67,18 @@ interface AuditAssignmentStore
      */
     public function retainsVerification(array $assignment): bool;
 
+    /**
+     * Holds professional standing through the effect. The caller already holds the Business
+     * and the globally ordered required/source-author Party locks; this grants no access alone.
+     *
+     * @template TResult
+     *
+     * @param  AcceptedAssignment  $assignment
+     * @param  Closure(bool): TResult  $operation
+     * @return TResult
+     */
+    public function withVerificationValidity(array $assignment, Closure $operation): mixed;
+
     /** @return array<string, mixed> */
     public function findOperation(int $userId, int $contextRevision, string $command, string $requestId): array;
 
