@@ -20,6 +20,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\AuditAssignmentFixture;
+use Tests\Support\AuditEngagementFixture;
 use Tests\Support\AuditorFixture;
 use Tests\Support\BusinessQuoteFixture as Fixture;
 
@@ -81,6 +82,25 @@ it('records pin and submission refusals without starting or rewriting a report',
     $this->assertDatabaseCount('audit_reports', 0);
     $this->assertDatabaseCount('audit_report_versions', 0);
 })->with([['draft', 'APPLICATION_NOT_SUBMITTED'], ['assignment', 'VERSION_CONFLICT'], ['application', 'APPLICATION_VERSION_CONFLICT']]);
+
+it('binds the accepted engagement terms and resumes the same report after current terms are renewed', function (): void {
+    $fixture = Fixture::ready();
+    Fixture::submit($fixture, Fixture::acceptance($fixture));
+    $first = startSubmittedAuditReport($fixture);
+    $report = AuditReport::query()->firstOrFail();
+    $binding = $report->binding;
+    $originalRevision = $fixture['assignment']->refresh()->revision;
+    expect($binding['engagement']['release_revision'])->toBe(1)
+        ->and($binding['engagement']['sha256'])->toHaveLength(64);
+    $release = AuditEngagementFixture::release($fixture['audit']['staff'], 1);
+    expect(fn () => startSubmittedAuditReport($fixture))->toThrow(CommandRejection::class, 'AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED');
+    AuditEngagementFixture::accept($fixture['audit']['partners'][0]['user'], $release);
+    $resumed = startSubmittedAuditReport($fixture);
+    expect($resumed['code'])->toBe('AUDIT_REPORT_RESUMED')->and($resumed['data'])->toBe($first['data'])
+        ->and($report->refresh()->binding)->toBe($binding)
+        ->and($fixture['assignment']->refresh()->revision)->toBe($originalRevision);
+    $this->assertDatabaseCount('audit_reports', 1);
+});
 
 it('scopes both application selection and report reads without exposing other businesses', function (): void {
     $fixture = Fixture::ready();

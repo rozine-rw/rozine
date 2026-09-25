@@ -31,7 +31,8 @@ class AuditReportFactory extends Factory
      */
     public function forBinding(array $assignment, array $application): static
     {
-        $binding = ['assignment' => ['id' => $assignment['id'], 'revision' => $assignment['revision'], 'party_id' => $assignment['party_id']], 'application' => $application];
+        $binding = ['assignment' => ['id' => $assignment['id'], 'revision' => $assignment['revision'], 'party_id' => $assignment['party_id']],
+            'engagement' => $assignment['engagement'], 'application' => $application];
 
         return $this->state(['assignment_id' => $assignment['id'], 'business_id' => $assignment['business_id'],
             'assignment_revision' => $assignment['revision'], 'author_party_id' => $assignment['party_id'],

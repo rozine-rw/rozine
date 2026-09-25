@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Auditor;
 
 use App\Application\Auditor\Contracts\AuditAssignmentStore;
+use App\Application\Auditor\Contracts\AuditEngagementStore;
 use App\Application\Auditor\Contracts\AuditReportLifecycle;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Identity\AuthorizeActiveRole;
@@ -63,6 +64,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         private AuthorizeActiveRole $roles,
         private AuthorizeStaffPermission $staff,
         private AuditReportLifecycle $reports,
+        private AuditEngagementStore $engagements,
     ) {}
 
     /** @return array<string, mixed> */
@@ -243,10 +245,14 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                 if ($record->status !== 'accepted') {
                     throw new CommandRejection('ASSIGNMENT_NOT_ACCEPTED', 403);
                 }
+                if ($candidate['engagement'] === null) {
+                    throw new CommandRejection('AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED', 403);
+                }
                 $review = AuditorIndependenceReview::query()->where('business_id', $record->business_id)->where('party_id', $candidate['id'])->firstOrFail();
 
                 return $operation(['id' => $record->id, 'business_id' => $record->business_id, 'party_id' => $candidate['id'],
                     'revision' => $record->revision, 'kind' => $record->state['kind'], 'business_revision' => $context['business']['revision'],
+                    'engagement' => $candidate['engagement'],
                     'mandate_version' => $context['business']['mandate_version'], 'mandate_sha256' => hash('sha256', $this->json->encode($context['business']['mandate'])),
                     'independence' => ['id' => $review->id, 'revision' => $review->revision, 'checked_at' => $review->state['checked_at'],
                         'evidence_reference' => $review->state['evidence_reference'], 'sha256' => hash('sha256', $this->json->encode($review->state))],
@@ -518,7 +524,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     }
 
     /**
-     * Business -> actor -> sorted Parties -> sorted profiles -> locations -> independence.
+     * Business -> actor -> sorted Parties -> sorted profiles -> shared engagement catalog -> locations -> independence.
      * Responses lock assignment then journal; new requests lock journal then look up the assignment.
      * The Business lock serializes both paths. Participant reads/acceptance lock only their candidate.
      * The Party lock serializes capacity across Businesses and all logins for that Auditor.
@@ -536,39 +542,42 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         return $this->businesses->withAudit($userId, $contextRevision, $businessId, $ids, $requireVerified,
             function (array $context) use ($ids, $operation): mixed {
                 $profiles = AuditorProfile::query()->whereIn('party_id', $ids)->orderBy('party_id')->lockForUpdate()->get();
-                $businessId = $context['business']['id'];
-                $premises = AuditLocation::query()->where('business_id', $businessId)->lockForUpdate()->first();
-                $offices = AuditLocation::query()->whereIn('office_party_id', $ids)->orderBy('office_party_id')->lockForUpdate()->get()->keyBy('office_party_id');
-                $reviews = AuditorIndependenceReview::query()->where('business_id', $businessId)->whereIn('party_id', $ids)->orderBy('party_id')->lockForUpdate()->get()->keyBy('party_id');
-                $activeCounts = AuditAssignment::query()->whereIn('party_id', $ids)->where('status', 'accepted')->get(['party_id'])->countBy('party_id');
-                $lastOffers = AuditAssignmentVersion::query()->selectRaw('DISTINCT ON (party_id) party_id, snapshot')->whereIn('party_id', $ids)->where('status', 'offered')->orderBy('party_id')->orderByDesc('id')->get()->keyBy('party_id');
-                $reports = array_values(AuditAssignment::query()->where('business_id', $businessId)->where('status', 'completed')->orderByDesc('completed_at')->orderByDesc('id')->limit(3)->get()->map(fn (AuditAssignment $report): string => $report->party_id ?? '')->all());
-                $conflicted = AuditConflictDeclaration::query()->where('business_id', $businessId)->pluck('party_id')->all();
-                $candidates = [];
-                foreach ($profiles as $profile) {
-                    if (! in_array($profile->party_id, $context['candidate_ids'], true)) {
-                        continue;
-                    }
-                    try {
-                        $facts = $this->independence->facts($reviews->get($profile->party_id)?->state, $context['business']['mandate_version'], now()->toDateTimeImmutable());
-                    } catch (CommandRejection) {
-                        continue;
-                    }
-                    $office = $offices->get($profile->party_id)->state ?? $this->locations->empty();
-                    $site = $premises->state ?? $this->locations->empty();
-                    $tie = $context['role_ties'][$profile->party_id] ?? null;
-                    $last = $lastOffers->get($profile->party_id);
-                    $candidates[] = ['id' => $profile->party_id, 'standing' => $profile->state['standing'], 'accepting' => $profile->state['accepting'],
-                        'active_count' => $activeCounts->get($profile->party_id, 0),
-                        'consecutive_reports' => $this->consecutive($reports, $profile->party_id),
-                        'last_assigned_at' => $last === null ? null : $last->snapshot['state']['offered_at'], 'office' => $office, 'premises' => $site,
-                        'distance_upper_bound_m' => $office['point'] === null || $site['point'] === null ? null : $this->distance->upperBound($office['point'], $site['point']),
-                        ...$facts, 'current_role_tie' => $facts['current_role_tie'] || ($tie['current'] ?? false),
-                        'role_tie_ended_at' => $tie === null ? $facts['role_tie_ended_at'] : max($tie['ended_at'], $facts['role_tie_ended_at']),
-                        'unresolved_conflict' => $facts['unresolved_conflict'] || in_array($profile->party_id, $conflicted, true)];
-                }
 
-                return $operation($context, $candidates);
+                return $this->engagements->withCurrentAcceptances($ids, function (array $acceptances) use ($context, $ids, $profiles, $operation): mixed {
+                    $businessId = $context['business']['id'];
+                    $premises = AuditLocation::query()->where('business_id', $businessId)->lockForUpdate()->first();
+                    $offices = AuditLocation::query()->whereIn('office_party_id', $ids)->orderBy('office_party_id')->lockForUpdate()->get()->keyBy('office_party_id');
+                    $reviews = AuditorIndependenceReview::query()->where('business_id', $businessId)->whereIn('party_id', $ids)->orderBy('party_id')->lockForUpdate()->get()->keyBy('party_id');
+                    $activeCounts = AuditAssignment::query()->whereIn('party_id', $ids)->where('status', 'accepted')->get(['party_id'])->countBy('party_id');
+                    $lastOffers = AuditAssignmentVersion::query()->selectRaw('DISTINCT ON (party_id) party_id, snapshot')->whereIn('party_id', $ids)->where('status', 'offered')->orderBy('party_id')->orderByDesc('id')->get()->keyBy('party_id');
+                    $reports = array_values(AuditAssignment::query()->where('business_id', $businessId)->where('status', 'completed')->orderByDesc('completed_at')->orderByDesc('id')->limit(3)->get()->map(fn (AuditAssignment $report): string => $report->party_id ?? '')->all());
+                    $conflicted = AuditConflictDeclaration::query()->where('business_id', $businessId)->pluck('party_id')->all();
+                    $candidates = [];
+                    foreach ($profiles as $profile) {
+                        if (! in_array($profile->party_id, $context['candidate_ids'], true)) {
+                            continue;
+                        }
+                        try {
+                            $facts = $this->independence->facts($reviews->get($profile->party_id)?->state, $context['business']['mandate_version'], now()->toDateTimeImmutable());
+                        } catch (CommandRejection) {
+                            continue;
+                        }
+                        $office = $offices->get($profile->party_id)->state ?? $this->locations->empty();
+                        $site = $premises->state ?? $this->locations->empty();
+                        $tie = $context['role_ties'][$profile->party_id] ?? null;
+                        $last = $lastOffers->get($profile->party_id);
+                        $candidates[] = ['engagement' => $acceptances[$profile->party_id] ?? null, 'id' => $profile->party_id, 'standing' => $profile->state['standing'], 'accepting' => $profile->state['accepting'],
+                            'active_count' => $activeCounts->get($profile->party_id, 0),
+                            'consecutive_reports' => $this->consecutive($reports, $profile->party_id),
+                            'last_assigned_at' => $last === null ? null : $last->snapshot['state']['offered_at'], 'office' => $office, 'premises' => $site,
+                            'distance_upper_bound_m' => $office['point'] === null || $site['point'] === null ? null : $this->distance->upperBound($office['point'], $site['point']),
+                            ...$facts, 'current_role_tie' => $facts['current_role_tie'] || ($tie['current'] ?? false),
+                            'role_tie_ended_at' => $tie === null ? $facts['role_tie_ended_at'] : max($tie['ended_at'], $facts['role_tie_ended_at']),
+                            'unresolved_conflict' => $facts['unresolved_conflict'] || in_array($profile->party_id, $conflicted, true)];
+                    }
+
+                    return $operation($context, $candidates);
+                });
             });
     }
 

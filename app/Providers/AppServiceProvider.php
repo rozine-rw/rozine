@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Application\Auditor\Contracts\AuditAssignmentStore;
+use App\Application\Auditor\Contracts\AuditEngagementStore;
 use App\Application\Auditor\Contracts\AuditLocationStore;
 use App\Application\Auditor\Contracts\AuditorIndependenceStore;
 use App\Application\Auditor\Contracts\AuditorProfileStore;
@@ -25,6 +26,7 @@ use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Infrastructure\Auditor\EloquentAuditAssignmentStore;
+use App\Infrastructure\Auditor\EloquentAuditEngagementStore;
 use App\Infrastructure\Auditor\EloquentAuditLocationStore;
 use App\Infrastructure\Auditor\EloquentAuditorIndependenceStore;
 use App\Infrastructure\Auditor\EloquentAuditorProfileStore;
@@ -78,6 +80,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AuditorProfileStore::class, EloquentAuditorProfileStore::class);
         $this->app->bind(AuditAssignmentStore::class, EloquentAuditAssignmentStore::class);
         $this->app->bind(AuditReportStore::class, EloquentAuditReportStore::class);
+        $this->app->bind(AuditEngagementStore::class, EloquentAuditEngagementStore::class);
         $this->app->bind(AuditReportLifecycle::class, EloquentAuditReportLifecycle::class);
         $this->app->bind(AuditorIndependenceStore::class, EloquentAuditorIndependenceStore::class);
         $this->app->bind(AuditLocationStore::class, EloquentAuditLocationStore::class);

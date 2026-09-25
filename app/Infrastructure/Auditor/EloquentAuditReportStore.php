@@ -62,7 +62,7 @@ final class EloquentAuditReportStore implements AuditReportStore
 
                                     return $this->receipt('AUDIT_REPORT_RESUMED', $report);
                                 }
-                                $binding = ['assignment' => ['id' => $current['id'], 'revision' => $current['revision'], 'party_id' => $current['party_id']], 'application' => $application];
+                                $binding = ['assignment' => ['id' => $current['id'], 'revision' => $current['revision'], 'party_id' => $current['party_id']], 'engagement' => $current['engagement'], 'application' => $application];
                                 $report = new AuditReport;
                                 $report->forceFill(['assignment_id' => $current['id'], 'business_id' => $current['business_id'],
                                     'assignment_revision' => $current['revision'], 'author_party_id' => $current['party_id'],

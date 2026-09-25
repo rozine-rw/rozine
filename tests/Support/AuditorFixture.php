@@ -50,6 +50,8 @@ final class AuditorFixture
 
         return ['id' => $id, 'standing' => ['status' => 'active', 'licence' => 'SYNTHETIC-CPA', 'expires_on' => '2028-12-31',
             'checked_at' => '2026-09-24T08:00:00Z', 'check_reference' => 'synthetic-register-check'],
+            'engagement' => ['id' => 'synthetic-acceptance', 'release_id' => 'synthetic-release', 'release_revision' => 1,
+                'release_sha256' => str_repeat('a', 64), 'accepted_at' => '2026-09-24T08:00:00Z', 'sha256' => str_repeat('b', 64)],
             'accepting' => true, 'active_count' => 0, 'consecutive_reports' => 0, 'last_assigned_at' => null,
             'office' => $location, 'premises' => $location, 'distance_upper_bound_m' => 29900,
             'financial_interest' => false, 'current_role_tie' => false, 'role_tie_ended_at' => null,

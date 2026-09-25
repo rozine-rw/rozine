@@ -7,6 +7,7 @@ use App\Application\Auditor\GetAuditOperationsCase;
 use App\Application\Auditor\GetOwnAuditConflict;
 use App\Application\Auditor\ListOwnAuditConflicts;
 use App\Application\Auditor\MarkAuditLocationMoved;
+use App\Application\Auditor\RecordAuditEngagementTerms;
 use App\Application\Auditor\RecordAuditorIndependence;
 use App\Application\Auditor\RequestAuditAssignment;
 use App\Application\Auditor\ResolveAuditAssignment;
@@ -47,6 +48,8 @@ use App\Domain\Operations\OperationResult;
 use App\Models\AuditAssignment;
 use App\Models\AuditAssignmentVersion;
 use App\Models\AuditConflictDeclaration;
+use App\Models\AuditEngagementAcceptance;
+use App\Models\AuditEngagementRelease;
 use App\Models\AuditLocation;
 use App\Models\AuditLocationVersion;
 use App\Models\AuditorCertificate;
@@ -84,6 +87,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\AuditAssignmentFixture;
+use Tests\Support\AuditEngagementFixture;
 use Tests\Support\AuditorFixture;
 use Tests\Support\AuditorIndependenceFixture;
 use Tests\Support\BusinessApplicationFixture;
@@ -1687,3 +1691,58 @@ it('holds current authority through the actual audit report creation write', fun
     $change();
     expect(AuditReport::query()->count())->toBe(1)->and(AuditReportVersion::query()->count())->toBe($source === 'assignment' ? 2 : 1);
 })->with(['identity', 'standing', 'assignment', 'business']);
+
+it('serializes engagement acceptance by canonical Party across different logins', function (): void {
+    $actor = AuditorFixture::make();
+    $release = AuditEngagementFixture::release($actor['staff']);
+    $otherLogin = User::factory()->withTwoFactor()->for($actor['party'])->create();
+    app(SelectActiveRole::class)->handle($otherLogin->id, 'auditor', 0, (string) Str::uuid());
+    expect(runIdentityContenders([
+        function () use ($actor, $release): void {
+            AuditEngagementFixture::accept($actor['user'], $release);
+        },
+        function () use ($otherLogin, $release): void {
+            AuditEngagementFixture::accept($otherLogin, $release);
+        },
+    ]))->toBe([0, 0]);
+    expect(AuditEngagementAcceptance::query()->count())->toBe(1);
+});
+
+it('admits one competing engagement release from the same catalog revision', function (): void {
+    $staff = [ConsentFixture::staff(), ConsentFixture::staff()];
+    $operations = [];
+    foreach ($staff as $actor) {
+        $operations[] = function () use ($actor): void {
+            $receipt = app(RecordAuditEngagementTerms::class)->handle($actor->id, 0, 'active', 'synthetic-race',
+                AuditEngagementFixture::documents(), true, 'fixture:concurrency', 'Concurrent release.', (string) Str::uuid());
+            if ($receipt['status'] === 'rejected') {
+                throw new CommandRejection($receipt['code']);
+            }
+        };
+    }
+    expect(runIdentityContenders($operations))->toBe([0, 2])->and(AuditEngagementRelease::query()->count())->toBe(1);
+});
+
+it('holds engagement terms current through a protected assignment effect before withdrawal can commit', function (): void {
+    $fixture = AuditAssignmentFixture::make(1);
+    $assignment = AuditAssignmentFixture::request($fixture);
+    $actor = $fixture['partners'][0]['user'];
+    AuditAssignmentFixture::respond($actor, $assignment);
+    config(['database.connections.engagement_contender' => config('database.connections.pgsql')]);
+    DB::connection('engagement_contender')->statement("SET lock_timeout = '500ms'");
+    $default = DB::getDefaultConnection();
+    $withdraw = fn () => AuditEngagementFixture::release($fixture['staff'], 1, 'withdrawn');
+    app(WithAcceptedAuditAssignment::class)->handle($actor->id, 1, $assignment->id, function (array $context) use ($default, $withdraw): void {
+        expect($context['engagement']['release_revision'])->toBe(1);
+        DB::setDefaultConnection('engagement_contender');
+        try {
+            expect(fn () => $withdraw())->toThrow(QueryException::class);
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('engagement_contender');
+        }
+    });
+    expect($withdraw()->revision)->toBe(2)
+        ->and(fn () => app(WithAcceptedAuditAssignment::class)->handle($actor->id, 1, $assignment->id, fn (): bool => true))
+        ->toThrow(CommandRejection::class, 'AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED');
+});

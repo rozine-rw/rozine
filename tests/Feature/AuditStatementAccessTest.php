@@ -14,6 +14,7 @@ use App\Application\Identity\ChangeMembership;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
+use App\Models\AuditEngagementAcceptance;
 use App\Models\AuditorIndependenceReview;
 use App\Models\AuditorProfile;
 use App\Models\BusinessMandate;
@@ -40,8 +41,12 @@ it('requires an accepted assignment and leaves missing audit evidence explicitly
     $file = app(GetAuditStatements::class)->handle($user->id, 1, $offer->id);
     $review = AuditorIndependenceReview::query()->where('business_id', $fixture['business'])->firstOrFail();
     $json = app(CanonicalJson::class);
+    $engagement = AuditEngagementAcceptance::query()->where('party_id', $user->party_id)->firstOrFail();
     expect($file['assignment'])->toBe(['id' => $offer->id, 'business_id' => $fixture['business'], 'party_id' => $user->party_id,
-        'revision' => 2, 'kind' => 'flash', 'business_revision' => 1, 'mandate_version' => 1,
+        'revision' => 2, 'kind' => 'flash', 'business_revision' => 1,
+        'engagement' => ['id' => $engagement->id, 'release_id' => $engagement->audit_engagement_release_id,
+            'release_revision' => $engagement->release_revision, 'release_sha256' => $engagement->release_sha256,
+            'accepted_at' => $engagement->payload['accepted_at'], 'sha256' => $engagement->sha256], 'mandate_version' => 1,
         'mandate_sha256' => hash('sha256', $json->encode(BusinessMandate::query()->where('business_id', $fixture['business'])->firstOrFail()->terms)),
         'independence' => ['id' => $review->id, 'revision' => 1, 'checked_at' => $review->state['checked_at'],
             'evidence_reference' => $review->state['evidence_reference'], 'sha256' => hash('sha256', $json->encode($review->state))],

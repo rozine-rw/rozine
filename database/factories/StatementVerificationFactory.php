@@ -50,6 +50,8 @@ class StatementVerificationFactory extends Factory
         return ['business_id' => $assignment->business_id, 'assignment' => ['id' => $assignment->id, 'business_id' => $assignment->business_id,
             'party_id' => $attributes['actor_party_id'], 'revision' => $assignment->revision, 'kind' => $assignment->state['kind'],
             'business_revision' => 0, 'mandate_version' => 0, 'mandate_sha256' => hash('sha256', '{}'),
+            'engagement' => ['id' => 'synthetic-only', 'release_id' => 'synthetic-only', 'release_revision' => 0,
+                'release_sha256' => hash('sha256', '{}'), 'accepted_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'), 'sha256' => hash('sha256', '{}')],
             'independence' => ['id' => 'synthetic-only', 'revision' => 0, 'checked_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'),
                 'evidence_reference' => 'synthetic:needs-review', 'sha256' => hash('sha256', '{}')],
             'accreditation' => ['profile_revision' => 0, 'status' => 'unverified', 'licence' => null, 'expires_on' => null, 'checked_at' => null]],

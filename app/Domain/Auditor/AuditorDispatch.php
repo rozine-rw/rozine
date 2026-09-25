@@ -14,9 +14,10 @@ use DateTimeZone;
  *
  * @phpstan-import-type Standing from AuditorStanding
  * @phpstan-import-type Facts from AuditorIndependence
+ * @phpstan-import-type Acceptance from AuditEngagementDocuments
  *
  * @phpstan-type Location array{verified_at: string|null, moved_at: string|null, uncertainty_m: int|null}
- * @phpstan-type Candidate array{id: string, standing: Standing, accepting: bool, active_count: int, consecutive_reports: int, last_assigned_at: string|null, office: Location, premises: Location, distance_upper_bound_m: int|null, financial_interest: bool, current_role_tie: bool, role_tie_ended_at: string|null, family_or_business_conflict: bool, unresolved_conflict: bool}
+ * @phpstan-type Candidate array{id: string, standing: Standing, engagement: Acceptance|null, accepting: bool, active_count: int, consecutive_reports: int, last_assigned_at: string|null, office: Location, premises: Location, distance_upper_bound_m: int|null, financial_interest: bool, current_role_tie: bool, role_tie_ended_at: string|null, family_or_business_conflict: bool, unresolved_conflict: bool}
  */
 final class AuditorDispatch
 {
@@ -42,6 +43,9 @@ final class AuditorDispatch
         }
         if (! $candidate['accepting']) {
             $reasons[] = 'AUDITOR_UNAVAILABLE';
+        }
+        if ($candidate['engagement'] === null) {
+            $reasons[] = 'AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED';
         }
         if ($candidate['active_count'] >= 3) {
             $reasons[] = 'AUDITOR_CAPACITY_REACHED';

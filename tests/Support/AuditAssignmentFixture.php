@@ -44,6 +44,7 @@ final class AuditAssignmentFixture
             $submitted = AuditorFixture::submit($partner['user']);
             AuditorFixture::review($partner['staff'], $partner['party']->id, 1, 'approve', $submitted['data']['submission_id']);
             app(SetAuditorAvailability::class)->handle($partner['user']->id, 1, 2, true, (string) Str::uuid());
+            AuditEngagementFixture::ready($partner['staff'], $partner['user']);
             self::location($partner['staff'], 'office', $partner['party']->id);
             self::independence($staff, $business, $partner['party']->id);
             $partners[] = $partner;

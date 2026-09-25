@@ -39,6 +39,8 @@ it('excludes unsafe candidates without waiving standing capacity rotation confli
             break;
         case 'paused': $candidate['accepting'] = false;
             break;
+        case 'unsigned engagement': $candidate['engagement'] = null;
+            break;
         case 'full': $candidate['active_count'] = 3;
             break;
         case 'rotation': $candidate['consecutive_reports'] = 3;
@@ -91,6 +93,7 @@ it('excludes unsafe candidates without waiving standing capacity rotation confli
     ['suspended', 'ACCREDITATION_SUSPENDED'], ['empty id', 'AUDITOR_FACTS_INVALID'], ['negative count', 'AUDITOR_FACTS_INVALID'],
     ['negative reports', 'AUDITOR_FACTS_INVALID'], ['invalid assignment time', 'AUDITOR_FACTS_INVALID'], ['future assignment', 'AUDITOR_FACTS_INVALID'],
     ['paused', 'AUDITOR_UNAVAILABLE'], ['full', 'AUDITOR_CAPACITY_REACHED'], ['rotation', 'AUDITOR_ROTATION_REQUIRED'],
+    ['unsigned engagement', 'AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED'],
     ['financial interest', 'AUDITOR_CONFLICT'], ['current role tie', 'AUDITOR_CONFLICT'], ['family tie', 'AUDITOR_CONFLICT'],
     ['unresolved declaration', 'AUDITOR_CONFLICT'], ['role at cutoff', 'AUDITOR_CONFLICT'], ['invalid role date', 'AUDITOR_CONFLICT'],
     ['office not verified', 'AUDITOR_LOCATION_REVIEW_REQUIRED'], ['office stale', 'AUDITOR_LOCATION_REVIEW_REQUIRED'],

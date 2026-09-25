@@ -40,7 +40,7 @@ it('keeps the submitted source and report drafts encrypted and outside model ser
     $report = $fixture['report']->refresh();
     $version = $fixture['version']->refresh();
     $binding = ['assignment' => ['id' => $fixture['accepted']['id'], 'revision' => $fixture['accepted']['revision'],
-        'party_id' => $fixture['accepted']['party_id']], 'application' => $fixture['binding']];
+        'party_id' => $fixture['accepted']['party_id']], 'engagement' => $fixture['accepted']['engagement'], 'application' => $fixture['binding']];
 
     expect($report->binding)->toBe($binding)
         ->and($report->binding_sha256)->toBe(hash('sha256', app(CanonicalJson::class)->encode($binding)))

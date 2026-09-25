@@ -22,6 +22,7 @@
         }
     },
     "generatedPaths": [
+        "resources/js/actions/App/Http/Controllers/Api/V1/AuditorEngagementController.ts",
         "resources/js/actions/App/Http/Controllers/Api/V1/AuditorJobsController.ts",
         "resources/js/actions/App/Http/Controllers/Api/V1/AuditorProfileController.ts",
         "resources/js/actions/App/Http/Controllers/Api/V1/BusinessApplicationController.ts",
@@ -32,6 +33,7 @@
         "resources/js/actions/App/Http/Controllers/Api/V1/index.ts",
         "resources/js/actions/App/Http/Controllers/Api/index.ts",
         "resources/js/actions/App/Http/Controllers/AuditOperationsController.ts",
+        "resources/js/actions/App/Http/Controllers/AuditorEngagementController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorJobsController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorProfileController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessApplicationController.ts",
@@ -91,6 +93,8 @@
         "resources/js/routes/api/v1/auditor/accreditation/index.ts",
         "resources/js/routes/api/v1/auditor/availability/index.ts",
         "resources/js/routes/api/v1/auditor/conflicts/index.ts",
+        "resources/js/routes/api/v1/auditor/engagement/index.ts",
+        "resources/js/routes/api/v1/auditor/engagement/operations/index.ts",
         "resources/js/routes/api/v1/auditor/index.ts",
         "resources/js/routes/api/v1/auditor/jobs/index.ts",
         "resources/js/routes/api/v1/auditor/jobs/operations/index.ts",
@@ -114,6 +118,8 @@
         "resources/js/routes/auditor/accreditation/index.ts",
         "resources/js/routes/auditor/availability/index.ts",
         "resources/js/routes/auditor/conflicts/index.ts",
+        "resources/js/routes/auditor/engagement/index.ts",
+        "resources/js/routes/auditor/engagement/operations/index.ts",
         "resources/js/routes/auditor/index.ts",
         "resources/js/routes/auditor/jobs/index.ts",
         "resources/js/routes/auditor/jobs/operations/index.ts",
@@ -496,8 +502,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 468,
-        "generated": 133,
+        "totalTrackedSources": 474,
+        "generated": 139,
         "declarationOnly": 14,
         "authoredExecutable": 321
     },
