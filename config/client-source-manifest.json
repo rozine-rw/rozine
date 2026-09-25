@@ -247,6 +247,7 @@
         "resources/js/components/business/apply/carried-refusal.ts",
         "resources/js/components/business/apply/operation-outcome.ts",
         "resources/js/components/business/apply/outcome-banner.tsx",
+        "resources/js/components/business/apply/pending-review.tsx",
         "resources/js/components/business/apply/step-business.tsx",
         "resources/js/components/business/apply/step-heading.tsx",
         "resources/js/components/business/apply/step-raise.tsx",
@@ -494,10 +495,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 466,
+        "totalTrackedSources": 467,
         "generated": 133,
         "declarationOnly": 14,
-        "authoredExecutable": 319
+        "authoredExecutable": 320
     },
-    "coverageSetSha256": "b8fce26c274559053b54f54eabb750902410471ba55499d5169ee09a63bcf0f3"
+    "coverageSetSha256": "f156a934096e8b44eb54737d11596f8f9a5680592f5fd665e4a79ce8e6352851"
 }

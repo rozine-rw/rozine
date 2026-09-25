@@ -1,3 +1,4 @@
+import { http as transport } from '@inertiajs/core';
 import { router, useHttp } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import {
@@ -35,7 +36,7 @@ export type Completion = { recovered: boolean };
 
 type Attempt<R> =
     | { kind: 'resource'; resource: R }
-    | { kind: 'invalid'; errors: Record<string, unknown> }
+    | { kind: 'invalid'; errors: Record<string, unknown>; code: string | null }
     | { kind: 'failed'; status: number; code: string | null }
     | { kind: 'unreachable' };
 
@@ -55,6 +56,12 @@ type Options<C extends OperationCommand, R> = {
      * `identity_context_revision`. Read when the lookup is sent.
      */
     lookupQuery?: Record<string, string | number>;
+    /**
+     * Recorded 422 codes that mean a refusal of the whole command rather than a field to correct
+     * (e.g. `APPLICATION_STEP_INVALID`): the page is told, as for any refusal, instead of only
+     * showing field errors. Direct answers and lookup replays alike.
+     */
+    refusals422?: ReadonlySet<string>;
     /** A command a synthetic preview seeds as already sent, with what is known about it. */
     initial?: { held: C | null; notice: CommandNotice | null };
     /**
@@ -82,6 +89,7 @@ export function useOperationCommand<
     actions,
     lookup,
     lookupQuery,
+    refusals422,
     initial,
     refresh,
     onCompleted,
@@ -101,6 +109,21 @@ export function useOperationCommand<
     ): Promise<Attempt<R>> => {
         let failure: Attempt<R> = { kind: 'unreachable' };
         let fieldErrors: Record<string, unknown> = {};
+        let validationCode: string | null = null;
+        /*
+         * useHttp hands a 422 over as field errors only, so the recorded code is read from the
+         * response itself while this command's request is out.
+         */
+        const stopReading =
+            refusals422 === undefined
+                ? null
+                : transport.onResponse((response) => {
+                      if (response.status === 422) {
+                          validationCode = readErrorCode(response.data);
+                      }
+
+                      return response;
+                  });
 
         http.transform(() => body);
 
@@ -120,10 +143,12 @@ export function useOperationCommand<
 
             /* A 422 resolves without a body: useHttp has put the field errors in `errors`. */
             return resource === undefined
-                ? { kind: 'invalid', errors: fieldErrors }
+                ? { kind: 'invalid', errors: fieldErrors, code: validationCode }
                 : { kind: 'resource', resource };
         } catch {
             return failure;
+        } finally {
+            stopReading?.();
         }
     };
 
@@ -154,9 +179,20 @@ export function useOperationCommand<
     /**
      * A validation refusal (HTTP 422) is definitive: useHttp has put its field errors on the page
      * for a correction, which goes as a new command with a new `request_id` — never the same one
-     * again. A 422 with no field errors to show still says the command was refused.
+     * again. A 422 with no field errors to show still says the command was refused, and a 422
+     * whose code the page names in `refusals422` is a refusal of the command as a whole.
      */
-    const invalid = (errors: Record<string, unknown>) => {
+    const invalid = (
+        command: C,
+        errors: Record<string, unknown>,
+        code: string | null,
+    ) => {
+        if (code !== null && refusals422?.has(code)) {
+            refuse(command, code, 422);
+
+            return;
+        }
+
         held.current = null;
         setNotice(
             Object.keys(errors).length === 0
@@ -187,7 +223,7 @@ export function useOperationCommand<
 
         /* The lookup replayed a recorded 422: the command was refused, not lost. */
         if (attempt.kind === 'invalid') {
-            invalid(attempt.errors);
+            invalid(command, attempt.errors, attempt.code);
 
             return;
         }
@@ -238,7 +274,7 @@ export function useOperationCommand<
         }
 
         if (attempt.kind === 'invalid') {
-            invalid(attempt.errors);
+            invalid(command, attempt.errors, attempt.code);
 
             return;
         }

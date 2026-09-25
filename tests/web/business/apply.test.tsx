@@ -1,3 +1,4 @@
+import type * as InertiaCore from '@inertiajs/core';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useEffect, useState } from 'react';
@@ -57,6 +58,27 @@ const inertia = vi.hoisted(() => ({
     }[],
     queue: [] as Responder[],
     errors: {} as Record<string, string>,
+    /* The transport's response reader the command hook registers while a request is out. */
+    onResponse: null as
+        | null
+        | ((response: {
+              status: number;
+              data: string;
+              headers: Record<string, string>;
+          }) => unknown),
+}));
+
+vi.mock('@inertiajs/core', async (importOriginal) => ({
+    ...(await importOriginal<typeof InertiaCore>()),
+    http: {
+        onResponse: (handler: typeof inertia.onResponse) => {
+            inertia.onResponse = handler;
+
+            return () => {
+                inertia.onResponse = null;
+            };
+        },
+    },
 }));
 
 vi.mock('@inertiajs/react', () => ({
@@ -210,6 +232,22 @@ const FRESH_VISIT = [
     window.location.href,
     expect.objectContaining({ preserveState: false, replace: true }),
 ];
+
+/** A recorded 422 with its domain code, as useHttp hands it over: field errors only. */
+const invalidWith =
+    (code: string): Responder =>
+    () => {
+        inertia.onResponse?.({
+            status: 422,
+            data: JSON.stringify({
+                code,
+                errors: { step: ['Not at Review.'] },
+            }),
+            headers: {},
+        });
+
+        return Promise.resolve(undefined);
+    };
 
 const offline = (): Responder => () =>
     Promise.reject(new Error('Network error'));
@@ -1694,6 +1732,123 @@ describe('Apply — step 3, review & sign', () => {
             expect(await screen.findByRole('alert')).toHaveTextContent(message);
         },
     );
+
+    it('reads the page afresh with the step copy when a submit reaches the server outside Review', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+
+        inertia.visit.mockClear();
+        inertia.queue.push(invalidWith('APPLICATION_STEP_INVALID'));
+        freshRead({ ...page, step: 'raise' });
+        render(<InertiaPage initial={page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        await waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith(...FRESH_VISIT),
+        );
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            'Go back to Review & sign to submit this application.',
+        );
+        expect(inertia.onResponse).toBeNull();
+    });
+
+    it('settles a lost submit the lookup replays as a step refusal the same way', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+
+        inertia.visit.mockClear();
+        inertia.queue.push(offline(), invalidWith('APPLICATION_STEP_INVALID'));
+        freshRead({ ...page, step: 'raise' });
+        render(<InertiaPage initial={page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            'Go back to Review & sign to submit this application.',
+        );
+        expect(inertia.calls[1].method).toBe('get');
+        expect(inertia.visit).toHaveBeenCalledWith(...FRESH_VISIT);
+    });
+
+    it('keeps any other recorded 422 as field errors to correct, without a fresh read', async () => {
+        const user = userEvent.setup();
+        const page = props(reviewStep);
+
+        inertia.visit.mockClear();
+        inertia.queue.push(invalidWith('APPLICATION_ACCEPTANCE_REQUIRED'));
+        render(<BusinessApply {...page} />);
+
+        await acceptEverything(user, page);
+        await user.click(
+            screen.getByRole('button', { name: 'Sign application' }),
+        );
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(1));
+        expect(inertia.visit).not.toHaveBeenCalled();
+        expect(
+            screen.queryByText(
+                'Go back to Review & sign to submit this application.',
+            ),
+        ).not.toBeInTheDocument();
+    });
+
+    it('points to the application under review that blocks signing this one', () => {
+        const page = props(reviewStep);
+
+        page.allowed_actions = ['application.save'];
+        page.pending_application = {
+            id: '01k6q2m3n4p5q6r7s8t9v0w1x3',
+            link: {
+                url: '/business/01k6q2m3n4p5q6r7s8t9v0w1x2/applications/01k6q2m3n4p5q6r7s8t9v0w1x3',
+                method: 'get',
+            },
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            "Your business already has an application under review. You can apply again once it's decided.",
+        );
+        expect(
+            screen.getByRole('link', {
+                name: 'View the application under review',
+            }),
+        ).toHaveAttribute('href', page.pending_application.link.url);
+        expect(
+            screen.queryByText(/^Only a signatory/u),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Sign application' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('explains the blocking review on Raise instead of the view-only line', () => {
+        const page = props(raiseStep);
+
+        page.allowed_actions = [];
+        page.pending_application = {
+            id: '01k6q2m3n4p5q6r7s8t9v0w1x3',
+            link: { url: '/business/b/applications/a', method: 'get' },
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByRole('link', {
+                name: 'View the application under review',
+            }),
+        ).toHaveAttribute('href', '/business/b/applications/a');
+        expect(
+            screen.queryByText(
+                'You can view this application, but not change it.',
+            ),
+        ).not.toBeInTheDocument();
+    });
 
     it('looks up a lost answer and retries the identical request only when nothing was recorded', async () => {
         const user = userEvent.setup();

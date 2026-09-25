@@ -2916,6 +2916,7 @@ const fr: Catalog = {
         'Votre entreprise a déjà une demande en cours d’examen. Vous pourrez en déposer une nouvelle une fois la décision rendue.',
     'business.apply.outcome.refused.APPLICATION_STEP_INVALID':
         'Revenez à « Vérifier et signer » pour soumettre cette demande.',
+    'business.apply.pending_review.link': 'Voir la demande en cours d’examen',
     'business.apply.review.document_full_text': 'Texte intégral',
     'business.apply.review.reduce.open': 'Prendre un montant inférieur',
     'business.apply.review.reduce.label': 'Montant souhaité (RWF)',

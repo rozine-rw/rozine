@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "d20e5a56f4c10bf4b58e6d79cddb57fc3256a6ee7fd5ee758e96f5fdf2fdc908",
-    "coverageSetSha256": "b8fce26c274559053b54f54eabb750902410471ba55499d5169ee09a63bcf0f3",
+    "sourceManifestSha256": "82e4b28fee50643ffb96484f2457f74ec5073d616e5706b69573921909ff5f57",
+    "coverageSetSha256": "f156a934096e8b44eb54737d11596f8f9a5680592f5fd665e4a79ce8e6352851",
     "thresholds": {
         "critical": {
             "global": {
@@ -122,6 +122,7 @@
         "resources/js/components/business/apply/carried-refusal.ts",
         "resources/js/components/business/apply/operation-outcome.ts",
         "resources/js/components/business/apply/outcome-banner.tsx",
+        "resources/js/components/business/apply/pending-review.tsx",
         "resources/js/components/business/apply/step-business.tsx",
         "resources/js/components/business/apply/step-heading.tsx",
         "resources/js/components/business/apply/step-raise.tsx",

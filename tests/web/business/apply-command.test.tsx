@@ -1,3 +1,4 @@
+import type * as InertiaCore from '@inertiajs/core';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import {
@@ -16,6 +17,29 @@ const http = vi.hoisted(() => ({
     calls: [] as { url: string; body: unknown }[],
     body: undefined as unknown,
     responses: [] as ((options: HttpOptions) => Promise<unknown>)[],
+}));
+
+const transport = vi.hoisted(() => ({
+    handler: null as
+        | null
+        | ((response: {
+              status: number;
+              data: string;
+              headers: Record<string, string>;
+          }) => unknown),
+}));
+
+vi.mock('@inertiajs/core', async (importOriginal) => ({
+    ...(await importOriginal<typeof InertiaCore>()),
+    http: {
+        onResponse: (handler: typeof transport.handler) => {
+            transport.handler = handler;
+
+            return () => {
+                transport.handler = null;
+            };
+        },
+    },
 }));
 
 vi.mock('@inertiajs/react', () => ({
@@ -61,6 +85,29 @@ beforeEach(() => {
 });
 
 describe('Application commands', () => {
+    it('reads only a 422 for a recorded code, and passes every response on unchanged', async () => {
+        const onCompleted = vi.fn();
+        const completed = { status: 'completed', code: 'APPLICATION_SAVED' };
+        const other = { status: 200, data: '{}', headers: {} };
+        let passed: unknown = null;
+        const { result } = renderHook(() =>
+            useApplicationCommand({ ...options, onCompleted }),
+        );
+
+        http.responses.push(() => {
+            passed = transport.handler?.(other);
+
+            return Promise.resolve(completed);
+        });
+        act(() => {
+            result.current.send(command('plain'));
+        });
+
+        await waitFor(() => expect(onCompleted).toHaveBeenCalled());
+        expect(passed).toBe(other);
+        expect(transport.handler).toBeNull();
+    });
+
     it('says whether a completion was answered directly or recovered by the lookup', async () => {
         const onCompleted = vi.fn();
         const completed = { status: 'completed', code: 'APPLICATION_SAVED' };

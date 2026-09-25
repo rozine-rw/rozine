@@ -11,6 +11,7 @@ import {
     refusalRefreshes,
 } from '@/components/business/apply/operation-outcome';
 import { OutcomeBanner } from '@/components/business/apply/outcome-banner';
+import { PendingReview } from '@/components/business/apply/pending-review';
 import { StepBusiness } from '@/components/business/apply/step-business';
 import { StepRaise } from '@/components/business/apply/step-raise';
 import type { RaiseFields } from '@/components/business/apply/step-raise';
@@ -86,6 +87,8 @@ export default function BusinessApply(props: BusinessApplyProps) {
     const { t } = useTranslation();
     const { toast, show } = useToast();
     const { step, links, actions } = props;
+    /** Another application of this business under review, when one blocks this draft. */
+    const pendingReview = props.pending_application?.link ?? null;
     const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
     const application = snapshot?.application ?? props.application;
     const quote = snapshot === null ? props.quote : snapshot.quote;
@@ -537,7 +540,10 @@ export default function BusinessApply(props: BusinessApplyProps) {
                     onRetry={command.retry}
                 />
             )}
-            {step === 'raise' && !canSave && (
+            {step === 'raise' && pendingReview !== null && (
+                <PendingReview link={pendingReview} className="mb-4" />
+            )}
+            {step === 'raise' && pendingReview === null && !canSave && (
                 <p
                     role="status"
                     className="mb-4 rounded-2xl border border-[#dbe7ff] bg-rz-surface p-4 text-xs leading-[1.55] text-rz-secondary dark:border-rz-border"
@@ -574,6 +580,7 @@ export default function BusinessApply(props: BusinessApplyProps) {
                         quote={readyQuote}
                         canSign={canSign}
                         agreementAvailable={agreementAvailable}
+                        pendingReview={pendingReview}
                         reduce={reduce}
                         fields={review}
                         errors={errors}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+import { PendingReview } from '@/components/business/apply/pending-review';
 import { StepHeading } from '@/components/business/apply/step-heading';
 import { InstalmentSchedule } from '@/components/business/apply/step-raise';
 import { FieldError } from '@/components/rozine/form';
@@ -7,6 +8,7 @@ import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatAmount, formatDayMonth, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
+import type { RouteLink } from '@/types';
 import type {
     AcceptanceDocument,
     AcceptanceSigner,
@@ -35,6 +37,8 @@ type StepReviewProps = {
      * Without it there is nothing to sign, and nothing is put in its place.
      */
     agreementAvailable: boolean;
+    /** The application under review that blocks signing this one, when there is one. */
+    pendingReview: RouteLink | null;
     /** Present when the current person may evaluate a lower amount for this ready offer. */
     reduce: ReduceControl | null;
     fields: ReviewFields;
@@ -445,6 +449,7 @@ export function StepReview({
     quote,
     canSign,
     agreementAvailable,
+    pendingReview,
     reduce,
     fields,
     errors,
@@ -664,6 +669,8 @@ export function StepReview({
                         </div>
                     </div>
                 </>
+            ) : pendingReview !== null ? (
+                <PendingReview link={pendingReview} className="mt-3" />
             ) : (
                 <div
                     role="status"

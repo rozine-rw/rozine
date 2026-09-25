@@ -2906,6 +2906,7 @@ const rw: Catalog = {
         'Ubucuruzi bwawe bufite ubundi busabe burimo gusuzumwa. Uzashobora kongera gusaba bumaze gufatirwa icyemezo.',
     'business.apply.outcome.refused.APPLICATION_STEP_INVALID':
         'Subira kuri «Suzuma usinye» kugira ngo wohereze ubu busabe.',
+    'business.apply.pending_review.link': 'Reba ubusabe burimo gusuzumwa',
     'business.apply.review.document_full_text': 'Inyandiko yuzuye',
     'business.apply.review.reduce.open': 'Fata amafaranga make',
     'business.apply.review.reduce.label': 'Amafaranga ushaka (RWF)',

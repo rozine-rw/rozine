@@ -13,6 +13,11 @@ import type {
 
 export type { CommandNotice };
 
+/** Recorded 422s that refuse the whole command: submit outside Review is read afresh. */
+const COMMAND_REFUSALS_422: ReadonlySet<string> = new Set([
+    'APPLICATION_STEP_INVALID',
+]);
+
 const initialNotice = (
     preview: ApplyPreviewOutcome | undefined,
     refusal: { code: string; status: number } | null,
@@ -65,6 +70,7 @@ export function useApplicationCommand({
         actions,
         lookup,
         lookupQuery: { identity_context_revision: identityContextRevision },
+        refusals422: COMMAND_REFUSALS_422,
         initial: {
             held: preview?.kind === 'unconfirmed' ? preview.command : null,
             notice: initialNotice(preview, refusal),

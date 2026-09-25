@@ -2843,6 +2843,7 @@ const en = {
         "Your business already has an application under review. You can apply again once it's decided.",
     'business.apply.outcome.refused.APPLICATION_STEP_INVALID':
         'Go back to Review & sign to submit this application.',
+    'business.apply.pending_review.link': 'View the application under review',
     'business.apply.review.document_summary': 'Summary',
     'business.apply.review.document_full_text': 'Full text',
     'business.apply.review.reduce.open': 'Take a smaller amount',
