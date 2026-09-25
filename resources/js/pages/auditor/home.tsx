@@ -19,6 +19,7 @@ export default function AuditorHome(props: AuditorHomeProps) {
         page: props,
         lookup: props.links.operation,
         preview: props.preview_outcome,
+        terms: props.engagement?.link ?? null,
     });
 
     return (

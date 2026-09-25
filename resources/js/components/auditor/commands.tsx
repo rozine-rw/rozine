@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
     createContext,
     useCallback,
@@ -32,11 +32,12 @@ import type {
 } from '@/types/auditor';
 
 /**
- * Refusals the partner cannot fix by refreshing: a denial, a record out of scope, or a step-up
- * that needs a new authenticator code rather than new facts.
+ * Refusals the partner cannot fix by refreshing: a denial, a record out of scope, a step-up that
+ * needs a new authenticator code, or engagement terms to accept first, rather than new facts.
  */
 const FINAL_REFUSALS: ReadonlySet<string> = new Set([
     'ACTION_FORBIDDEN',
+    'AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED',
     'NOT_FOUND',
     'STEP_UP_INVALID',
     'STEP_UP_EXPIRED',
@@ -60,7 +61,14 @@ const REFUSALS = [
     'NOT_FOUND',
     'STEP_UP_INVALID',
     'STEP_UP_EXPIRED',
+    'AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED',
 ] as const;
+
+/**
+ * Protected work, and an offer's acceptance, refused because this partner has not accepted the
+ * current engagement terms (#96): the refusal links to the agreement page when the page has one.
+ */
+const TERMS_REFUSAL = 'AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED';
 
 type Refusal = (typeof REFUSALS)[number];
 
@@ -103,6 +111,11 @@ type Options = {
     preview?: AuditorPreviewOutcome;
     /** The props a reload after a command asks for; undefined reloads them all. */
     reload?: ReloadScope;
+    /**
+     * The agreement page, as the page's engagement summary links it, for a refusal that needs the
+     * current terms accepted first. Without it that refusal is explained but not linked.
+     */
+    terms?: RouteLink | null;
 };
 
 /** A command to send: which one, about which business, where it goes and its own facts. */
@@ -142,6 +155,7 @@ export function useAuditorCommandCenter({
     lookup,
     preview,
     reload,
+    terms = null,
 }: Options) {
     const initial = initialFrom(preview);
     const callbacks = useRef(new Map<string, CommandCallbacks>());
@@ -330,6 +344,8 @@ export function useAuditorCommandCenter({
             }
         },
         blocked,
+        /** The agreement page a terms refusal links to, if the page has one. */
+        terms,
         /** Whether a sheet is open, so the notice shows inside it rather than beneath it. */
         sheetOpen: sheets > 0,
         opened,
@@ -487,6 +503,28 @@ function LaneNotice({
 
     if (notice === null) {
         return null;
+    }
+
+    if (
+        notice.kind === 'refused' &&
+        notice.code === TERMS_REFUSAL &&
+        center.terms !== null
+    ) {
+        return (
+            <div className={className ?? 'mb-4'}>
+                <ErrorBanner>
+                    <span>
+                        {refused(notice.code, notice.status)}{' '}
+                        <Link
+                            href={center.terms}
+                            className="font-bold underline underline-offset-2"
+                        >
+                            {t('auditor.command.review_terms')}
+                        </Link>
+                    </span>
+                </ErrorBanner>
+            </div>
+        );
     }
 
     return (

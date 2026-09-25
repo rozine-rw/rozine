@@ -3037,6 +3037,47 @@ const en = {
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.
      */
+    'auditor.engagement.head_title': 'Engagement terms',
+    'auditor.engagement.title': 'Engagement terms',
+    'auditor.engagement.lead':
+        'Read both documents in full before you accept. Dispatch offers you new work only under terms you have accepted.',
+    'auditor.engagement.synthetic_title': 'Synthetic test terms',
+    'auditor.engagement.synthetic_body':
+        'These are test terms, not for real engagements. Accepting them represents no real professional engagement.',
+    'auditor.engagement.original_language':
+        'The terms are shown in their original language.',
+    'auditor.engagement.document.master_services': 'Master Services Agreement',
+    'auditor.engagement.document.agreed_procedures': 'Agreed Procedures',
+    'auditor.engagement.document_meta': 'Version {version} · SHA-256 {hash}…',
+    'auditor.engagement.acceptance_title': 'Your acceptance',
+    'auditor.engagement.release_meta':
+        'Version {version} · procedure {procedure}',
+    'auditor.engagement.release_hash': 'Release SHA-256 {hash}…',
+    'auditor.engagement.accept_label':
+        'I have read and accept the Master Services Agreement and the Agreed Procedures',
+    'auditor.engagement.accept': 'Accept the terms',
+    'auditor.engagement.accepting': 'Accepting…',
+    'auditor.engagement.acceptance_required':
+        'Tick the box to confirm you have read and accept both documents.',
+    'auditor.engagement.accepted': 'You accepted version {version} on {date}',
+    'auditor.engagement.accepted_receipt': 'Receipt SHA-256 {hash}…',
+    'auditor.engagement.no_accept':
+        'Accepting these terms isn’t available to you right now.',
+    'auditor.engagement.unavailable':
+        'No engagement terms are available right now',
+    'auditor.engagement.unavailable_body':
+        'New work is paused until Rozine publishes terms. Nothing is needed from you meanwhile.',
+    'auditor.engagement.refused.AUDIT_ENGAGEMENT_VERSION_CONFLICT':
+        'The engagement terms changed before your acceptance reached Rozine, so nothing was accepted. Read the current version in full before you accept.',
+    'auditor.engagement.refused.AUDIT_ENGAGEMENT_TERMS_REQUIRED':
+        'These engagement terms were withdrawn before your acceptance reached Rozine, so nothing was accepted.',
+    'auditor.engagement.banner.required':
+        'Review and accept the engagement terms to take new work',
+    'auditor.engagement.banner.unavailable':
+        'Engagement terms aren’t available; new work is paused',
+    'auditor.command.refused.AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED':
+        'Accept the current engagement terms to continue.',
+    'auditor.command.review_terms': 'Review the terms',
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} recovery code remaining',
         other: '{count} recovery codes remaining',

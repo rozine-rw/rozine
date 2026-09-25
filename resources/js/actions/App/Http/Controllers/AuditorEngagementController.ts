@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::show
-* @see app/Http/Controllers/AuditorEngagementController.php:21
+* @see app/Http/Controllers/AuditorEngagementController.php:29
 * @route '/auditor/engagement'
 */
 export const show = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::show
-* @see app/Http/Controllers/AuditorEngagementController.php:21
+* @see app/Http/Controllers/AuditorEngagementController.php:29
 * @route '/auditor/engagement'
 */
 show.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ show.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::show
-* @see app/Http/Controllers/AuditorEngagementController.php:21
+* @see app/Http/Controllers/AuditorEngagementController.php:29
 * @route '/auditor/engagement'
 */
 show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::show
-* @see app/Http/Controllers/AuditorEngagementController.php:21
+* @see app/Http/Controllers/AuditorEngagementController.php:29
 * @route '/auditor/engagement'
 */
 show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::show
-* @see app/Http/Controllers/AuditorEngagementController.php:21
+* @see app/Http/Controllers/AuditorEngagementController.php:29
 * @route '/auditor/engagement'
 */
 const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::show
-* @see app/Http/Controllers/AuditorEngagementController.php:21
+* @see app/Http/Controllers/AuditorEngagementController.php:29
 * @route '/auditor/engagement'
 */
 showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::show
-* @see app/Http/Controllers/AuditorEngagementController.php:21
+* @see app/Http/Controllers/AuditorEngagementController.php:29
 * @route '/auditor/engagement'
 */
 showForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::accept
-* @see app/Http/Controllers/AuditorEngagementController.php:28
+* @see app/Http/Controllers/AuditorEngagementController.php:43
 * @route '/auditor/engagement/accept'
 */
 export const accept = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +97,7 @@ accept.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::accept
-* @see app/Http/Controllers/AuditorEngagementController.php:28
+* @see app/Http/Controllers/AuditorEngagementController.php:43
 * @route '/auditor/engagement/accept'
 */
 accept.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ accept.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::accept
-* @see app/Http/Controllers/AuditorEngagementController.php:28
+* @see app/Http/Controllers/AuditorEngagementController.php:43
 * @route '/auditor/engagement/accept'
 */
 accept.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +116,7 @@ accept.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::accept
-* @see app/Http/Controllers/AuditorEngagementController.php:28
+* @see app/Http/Controllers/AuditorEngagementController.php:43
 * @route '/auditor/engagement/accept'
 */
 const acceptForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -126,7 +126,7 @@ const acceptForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::accept
-* @see app/Http/Controllers/AuditorEngagementController.php:28
+* @see app/Http/Controllers/AuditorEngagementController.php:43
 * @route '/auditor/engagement/accept'
 */
 acceptForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -138,7 +138,7 @@ accept.form = acceptForm
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::operation
-* @see app/Http/Controllers/AuditorEngagementController.php:36
+* @see app/Http/Controllers/AuditorEngagementController.php:51
 * @route '/auditor/engagement/operations/{request_id}'
 */
 export const operation = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -153,7 +153,7 @@ operation.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::operation
-* @see app/Http/Controllers/AuditorEngagementController.php:36
+* @see app/Http/Controllers/AuditorEngagementController.php:51
 * @route '/auditor/engagement/operations/{request_id}'
 */
 operation.url = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -180,7 +180,7 @@ operation.url = (args: { request_id: string | number } | [request_id: string | n
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::operation
-* @see app/Http/Controllers/AuditorEngagementController.php:36
+* @see app/Http/Controllers/AuditorEngagementController.php:51
 * @route '/auditor/engagement/operations/{request_id}'
 */
 operation.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -190,7 +190,7 @@ operation.get = (args: { request_id: string | number } | [request_id: string | n
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::operation
-* @see app/Http/Controllers/AuditorEngagementController.php:36
+* @see app/Http/Controllers/AuditorEngagementController.php:51
 * @route '/auditor/engagement/operations/{request_id}'
 */
 operation.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -200,7 +200,7 @@ operation.head = (args: { request_id: string | number } | [request_id: string | 
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::operation
-* @see app/Http/Controllers/AuditorEngagementController.php:36
+* @see app/Http/Controllers/AuditorEngagementController.php:51
 * @route '/auditor/engagement/operations/{request_id}'
 */
 const operationForm = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -210,7 +210,7 @@ const operationForm = (args: { request_id: string | number } | [request_id: stri
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::operation
-* @see app/Http/Controllers/AuditorEngagementController.php:36
+* @see app/Http/Controllers/AuditorEngagementController.php:51
 * @route '/auditor/engagement/operations/{request_id}'
 */
 operationForm.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -220,7 +220,7 @@ operationForm.get = (args: { request_id: string | number } | [request_id: string
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::operation
-* @see app/Http/Controllers/AuditorEngagementController.php:36
+* @see app/Http/Controllers/AuditorEngagementController.php:51
 * @route '/auditor/engagement/operations/{request_id}'
 */
 operationForm.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

@@ -1,5 +1,6 @@
 import { Head, Link, router, useHttp } from '@inertiajs/react';
 import { useRef, useState } from 'react';
+import { EngagementBanner } from '@/components/auditor/engagement/engagement-banner';
 import { BusinessApplicationEntries } from '@/components/business/application-entries';
 import { Button } from '@/components/ui/button';
 import { useAccessRefresh } from '@/hooks/use-access-refresh';
@@ -7,6 +8,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { dashboard } from '@/routes';
 import { store } from '@/routes/identity/bookmarks';
 import { edit } from '@/routes/profile';
+import type { EngagementSummary } from '@/types/auditor';
 import type { BusinessApplications } from '@/types/business';
 import type {
     IdentityContext,
@@ -15,8 +17,8 @@ import type {
     SaveRoleBookmarkInput,
 } from '@/types/identity';
 
-/** The facts a focus, reconnect or visibility signal reads afresh. */
-const REFRESHED_PROPS = ['identity', 'business_applications'];
+/** The facts a focus, reconnect or visibility signal reads afresh, the engagement summary included. */
+const REFRESHED_PROPS = ['identity', 'business_applications', 'engagement'];
 
 type Props = {
     identity: IdentityContext;
@@ -24,6 +26,11 @@ type Props = {
     section: 'overview' | 'access';
     /** The Business role's way into Apply; null (or absent) for every other role. */
     business_applications?: BusinessApplications | null;
+    /**
+     * The Auditor role's engagement summary; null for every other role. Like the Business entry
+     * above, it is optional so a page rendered without it simply shows none.
+     */
+    engagement?: EngagementSummary | null;
 };
 
 export default function RoleHome({
@@ -31,6 +38,7 @@ export default function RoleHome({
     role,
     section,
     business_applications: businessApplications = null,
+    engagement = null,
 }: Props) {
     const { t } = useTranslation();
     const request = useHttp<SaveRoleBookmarkInput, { data: RoleBookmark }>();
@@ -106,6 +114,7 @@ export default function RoleHome({
                                       : 'identity.home.ready',
                               )}
                     </p>
+                    <EngagementBanner engagement={engagement} />
                     {businessApplications !== null && (
                         <BusinessApplicationEntries
                             applications={businessApplications}

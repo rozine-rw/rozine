@@ -335,7 +335,7 @@ describe('Business role landing — raise applications', () => {
 
         expect(inertia.reload).toHaveBeenCalledWith(
             expect.objectContaining({
-                only: ['identity', 'business_applications'],
+                only: ['identity', 'business_applications', 'engagement'],
             }),
         );
     });

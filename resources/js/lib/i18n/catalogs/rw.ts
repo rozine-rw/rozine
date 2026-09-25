@@ -3106,6 +3106,47 @@ const rw: Catalog = {
     'auditor.accreditation.view_certificate': 'Kuramo icyemezo cyanditswe',
     'auditor.accreditation.view_submitted': 'Kuramo icyemezo cyoherejwe',
 
+    'auditor.engagement.head_title': 'Amasezerano y’akazi',
+    'auditor.engagement.title': 'Amasezerano y’akazi',
+    'auditor.engagement.lead':
+        'Soma inyandiko zombi zose mbere yo kwemera. Uhabwa akazi gashya gusa hakurikijwe amasezerano wemeye.',
+    'auditor.engagement.synthetic_title': 'Amasezerano y’igerageza',
+    'auditor.engagement.synthetic_body':
+        'Aya ni amasezerano y’igerageza, ntakoreshwa ku kazi nyako. Kuyemera ntibigaragaza akazi k’umwuga nyako.',
+    'auditor.engagement.original_language':
+        'Amasezerano agaragazwa mu rurimi yanditswemo.',
+    'auditor.engagement.document.master_services':
+        'Amasezerano Rusange ya Serivisi',
+    'auditor.engagement.document.agreed_procedures': 'Uburyo Bwumvikanyweho',
+    'auditor.engagement.document_meta': 'Verisiyo {version} · SHA-256 {hash}…',
+    'auditor.engagement.acceptance_title': 'Kwemera kwawe',
+    'auditor.engagement.release_meta':
+        'Verisiyo {version} · uburyo {procedure}',
+    'auditor.engagement.release_hash': 'SHA-256 y’itangazwa {hash}…',
+    'auditor.engagement.accept_label':
+        'Nasomye kandi nemeye Amasezerano Rusange ya Serivisi n’Uburyo Bwumvikanyweho',
+    'auditor.engagement.accept': 'Emera amasezerano',
+    'auditor.engagement.accepting': 'Biremezwa…',
+    'auditor.engagement.acceptance_required':
+        'Kanda ku kazu kugira ngo wemeze ko wasomye kandi wemeye inyandiko zombi.',
+    'auditor.engagement.accepted': 'Wemeye verisiyo {version} ku wa {date}',
+    'auditor.engagement.accepted_receipt': 'SHA-256 y’icyemezo {hash}…',
+    'auditor.engagement.no_accept':
+        'Kwemera aya masezerano ntibishoboka kuri wowe ubu.',
+    'auditor.engagement.unavailable': 'Nta masezerano y’akazi ahari ubu',
+    'auditor.engagement.unavailable_body':
+        'Akazi gashya karahagaze kugeza Rozine itangaje amasezerano. Nta cyo usabwa muri icyo gihe.',
+    'auditor.engagement.refused.AUDIT_ENGAGEMENT_VERSION_CONFLICT':
+        'Amasezerano yahindutse mbere y’uko kwemera kwawe kugera kuri Rozine, bityo nta cyemewe. Soma verisiyo iriho yose mbere yo kwemera.',
+    'auditor.engagement.refused.AUDIT_ENGAGEMENT_TERMS_REQUIRED':
+        'Aya masezerano yakuweho mbere y’uko kwemera kwawe kugera kuri Rozine, bityo nta cyemewe.',
+    'auditor.engagement.banner.required':
+        'Soma kandi wemere amasezerano y’akazi kugira ngo uhabwe akazi gashya',
+    'auditor.engagement.banner.unavailable':
+        'Amasezerano y’akazi ntaboneka; akazi gashya karahagaze',
+    'auditor.command.refused.AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED':
+        'Emera amasezerano y’akazi ariho kugira ngo ukomeze.',
+    'auditor.command.review_terms': 'Soma amasezerano',
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

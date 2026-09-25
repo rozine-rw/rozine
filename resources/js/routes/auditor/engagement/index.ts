@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 import operations from './operations'
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::show
-* @see app/Http/Controllers/AuditorEngagementController.php:21
+* @see app/Http/Controllers/AuditorEngagementController.php:29
 * @route '/auditor/engagement'
 */
 export const show = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +17,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::show
-* @see app/Http/Controllers/AuditorEngagementController.php:21
+* @see app/Http/Controllers/AuditorEngagementController.php:29
 * @route '/auditor/engagement'
 */
 show.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ show.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::show
-* @see app/Http/Controllers/AuditorEngagementController.php:21
+* @see app/Http/Controllers/AuditorEngagementController.php:29
 * @route '/auditor/engagement'
 */
 show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +36,7 @@ show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::show
-* @see app/Http/Controllers/AuditorEngagementController.php:21
+* @see app/Http/Controllers/AuditorEngagementController.php:29
 * @route '/auditor/engagement'
 */
 show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -46,7 +46,7 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::show
-* @see app/Http/Controllers/AuditorEngagementController.php:21
+* @see app/Http/Controllers/AuditorEngagementController.php:29
 * @route '/auditor/engagement'
 */
 const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -56,7 +56,7 @@ const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::show
-* @see app/Http/Controllers/AuditorEngagementController.php:21
+* @see app/Http/Controllers/AuditorEngagementController.php:29
 * @route '/auditor/engagement'
 */
 showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -66,7 +66,7 @@ showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::show
-* @see app/Http/Controllers/AuditorEngagementController.php:21
+* @see app/Http/Controllers/AuditorEngagementController.php:29
 * @route '/auditor/engagement'
 */
 showForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::accept
-* @see app/Http/Controllers/AuditorEngagementController.php:28
+* @see app/Http/Controllers/AuditorEngagementController.php:43
 * @route '/auditor/engagement/accept'
 */
 export const accept = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -98,7 +98,7 @@ accept.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::accept
-* @see app/Http/Controllers/AuditorEngagementController.php:28
+* @see app/Http/Controllers/AuditorEngagementController.php:43
 * @route '/auditor/engagement/accept'
 */
 accept.url = (options?: RouteQueryOptions) => {
@@ -107,7 +107,7 @@ accept.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::accept
-* @see app/Http/Controllers/AuditorEngagementController.php:28
+* @see app/Http/Controllers/AuditorEngagementController.php:43
 * @route '/auditor/engagement/accept'
 */
 accept.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -117,7 +117,7 @@ accept.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::accept
-* @see app/Http/Controllers/AuditorEngagementController.php:28
+* @see app/Http/Controllers/AuditorEngagementController.php:43
 * @route '/auditor/engagement/accept'
 */
 const acceptForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -127,7 +127,7 @@ const acceptForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\AuditorEngagementController::accept
-* @see app/Http/Controllers/AuditorEngagementController.php:28
+* @see app/Http/Controllers/AuditorEngagementController.php:43
 * @route '/auditor/engagement/accept'
 */
 acceptForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

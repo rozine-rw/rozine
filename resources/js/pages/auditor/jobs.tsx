@@ -23,6 +23,7 @@ export default function AuditorJobs(props: AuditorJobsProps) {
         page: props,
         lookup: props.links.operation,
         preview: props.preview_outcome,
+        terms: props.engagement?.link ?? null,
     });
 
     return (

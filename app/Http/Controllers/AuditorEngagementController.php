@@ -10,19 +10,34 @@ use App\Application\Auditor\GetAuditEngagementTerms;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Http\Requests\Auditor\AcceptEngagementTermsRequest;
 use App\Http\Resources\AuditorEngagementResource;
+use App\Http\Resources\AuditorJobsResource;
 use App\Http\Resources\OperationResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Inertia\Inertia;
+use Inertia\Response;
 
-/** Shared JSON boundary used by the web agreement surface and the versioned API. */
+/**
+ * The Auditor engagement terms. The web agreement page renders the Resource as flat Inertia props,
+ * beside the Auditor app's own navigation; the versioned API returns the same Resource in its JSON
+ * `data` envelope. Acceptance and its operation lookup are JSON on both surfaces.
+ */
 class AuditorEngagementController extends Controller
 {
     public function __construct(private AuthorizeActiveRole $identity) {}
 
-    public function show(Request $request, GetAuditEngagementTerms $terms): AuditorEngagementResource
+    public function show(Request $request, GetAuditEngagementTerms $terms): Response|AuditorEngagementResource
     {
         [$userId, $revision] = $this->readContext($request);
+        $resource = new AuditorEngagementResource([...$terms->handle($userId, $revision), 'identity_context_revision' => $revision]);
+        if ($request->routeIs('api.*')) {
+            return $resource;
+        }
+        /** @var array{links: array<string, mixed>} $page */
+        $page = $resource->resolve($request);
 
-        return new AuditorEngagementResource([...$terms->handle($userId, $revision), 'identity_context_revision' => $revision]);
+        return Inertia::render('auditor/engagement', [...$page, 'open_jobs' => 0,
+            'links' => [...Arr::except(AuditorJobsResource::links($request), ['operation']), ...$page['links']]]);
     }
 
     public function accept(AcceptEngagementTermsRequest $request, AcceptAuditEngagementTerms $terms): OperationResource
