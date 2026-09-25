@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @phpstan-import-type Fields from \App\Domain\Business\ApplicationDraft
  *
- * @phpstan-type VersionSnapshot array{id: string, business_id: string, revision: int, status: string, step: string, draft: Fields, mandate_version: int, quote_id?: string}
+ * @phpstan-type VersionSnapshot array{id: string, business_id: string, revision: int, status: string, step: string, draft: Fields, mandate_version: int, quote_id?: string, submission_id?: string}
  *
  * @property string $business_application_id
  * @property int $revision

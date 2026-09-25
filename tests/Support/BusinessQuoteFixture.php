@@ -7,7 +7,9 @@ namespace Tests\Support;
 use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\EvaluateBusinessApplication;
 use App\Application\Business\GetBusinessApplicationQuote;
+use App\Application\Business\GetBusinessApplicationReview;
 use App\Application\Business\SaveBusinessApplication;
+use App\Application\Business\SubmitBusinessApplication;
 use App\Application\Evidence\IngestStatement;
 use App\Application\Evidence\RecordStatementTranscription;
 use App\Models\AuditAssignment;
@@ -22,9 +24,9 @@ use Illuminate\Support\Str;
 final class BusinessQuoteFixture
 {
     /** @return Fixture */
-    public static function make(bool $credit = true): array
+    public static function make(bool $credit = true, string $kind = 'person', int $signatories = 1): array
     {
-        $audit = AuditAssignmentFixture::make(1);
+        $audit = AuditAssignmentFixture::make(1, $kind, $signatories);
         $owner = $audit['authority']['users'][0];
         $created = app(CreateBusinessApplication::class)->handle($owner->id, 1, $audit['business'], 0, (string) Str::uuid());
         $application = BusinessApplication::query()->whereKey($created['data']['application']['id'])->firstOrFail();
@@ -81,5 +83,56 @@ final class BusinessQuoteFixture
     {
         return app(GetBusinessApplicationQuote::class)->handle($fixture['audit']['authority']['users'][0]->id, 1,
             $fixture['audit']['business'], $fixture['application']->id);
+    }
+
+    /** @return Fixture */
+    public static function ready(int $signatories = 1): array
+    {
+        $fixture = self::make(kind: $signatories === 1 ? 'person' : 'organization', signatories: $signatories);
+        ConsentFixture::record($fixture['audit']['staff']);
+        self::evaluate($fixture);
+        app(SaveBusinessApplication::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'],
+            $fixture['application']->id, 3, BusinessApplicationFixture::fields('12000000'), 'review', (string) Str::uuid());
+        $fixture['application']->refresh();
+
+        return $fixture;
+    }
+
+    /**
+     * @param  Fixture  $fixture
+     * @return array<string, mixed>
+     */
+    public static function review(array $fixture): array
+    {
+        return app(GetBusinessApplicationReview::class)->handle($fixture['audit']['authority']['users'][0]->id, 1,
+            $fixture['audit']['business'], $fixture['application']->id);
+    }
+
+    /**
+     * @param  Fixture  $fixture
+     * @return array<string, mixed>
+     */
+    public static function acceptance(array $fixture): array
+    {
+        $review = self::review($fixture);
+        $quote = $review['quote'];
+
+        return ['quote_id' => $quote['quote_id'], 'quote_revision' => $quote['quote_revision'], 'evidence_version' => $quote['evidence_version'],
+            'mandate_version' => $quote['mandate_version'], 'accepted_principal' => $quote['principal']['amount'],
+            'documents' => array_map(fn (array $item): array => array_intersect_key($item, array_flip(['kind', 'version', 'sha256'])), $review['acceptance']['documents']),
+            'disclosures' => array_map(fn (array $item): array => array_intersect_key($item, array_flip(['key', 'version', 'sha256'])), $review['acceptance']['disclosures']),
+            'terms' => true, 'privacy' => true, 'signature_name' => 'Verified synthetic signer'];
+    }
+
+    /**
+     * @param  Fixture  $fixture
+     * @param  array<string, mixed>  $acceptance
+     * @return array<string, mixed>
+     */
+    public static function submit(array $fixture, array $acceptance, int $signer = 0, ?int $revision = null, ?string $request = null): array
+    {
+        return app(SubmitBusinessApplication::class)->handle($fixture['audit']['authority']['users'][$signer]->id, 1,
+            $fixture['audit']['business'], $fixture['application']->id, $revision ?? $fixture['application']->refresh()->revision,
+            $acceptance, $request ?? (string) Str::uuid());
     }
 }

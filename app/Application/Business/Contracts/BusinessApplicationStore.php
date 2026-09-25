@@ -20,13 +20,25 @@ interface BusinessApplicationStore
      * @param  Fields  $fields
      * @return array<string, mixed>
      */
-    public function save(int $userId, int $contextRevision, string $businessId, string $applicationId, int $expectedRevision, array $fields, string $step, string $requestId): array;
+    public function save(int $userId, int $contextRevision, string $businessId, string $applicationId, int $expectedRevision, array $fields, ?string $step, string $requestId): array;
 
     /** @return array<string, mixed> */
     public function evaluate(int $userId, int $contextRevision, string $businessId, string $applicationId, int $expectedRevision, ?string $acceptedPrincipal, string $requestId): array;
 
     /** @return array<string, mixed>|null */
     public function quote(int $userId, int $contextRevision, string $businessId, string $applicationId): ?array;
+
+    /**
+     * Records the current required Party's acceptance. Submission occurs only when every
+     * required Party has signed the identical quote, mandate and consent release.
+     *
+     * @param  array<string, mixed>  $acceptance
+     * @return array<string, mixed>
+     */
+    public function submit(int $userId, int $contextRevision, string $businessId, string $applicationId, int $expectedRevision, array $acceptance, string $requestId): array;
+
+    /** @return array<string, mixed> */
+    public function review(int $userId, int $contextRevision, string $businessId, string $applicationId): array;
 
     /** @return Application */
     public function get(int $userId, int $contextRevision, string $businessId, string $applicationId): array;

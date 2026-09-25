@@ -55,6 +55,8 @@ use App\Models\AuditorProfile;
 use App\Models\AuditorProfileVersion;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationQuote;
+use App\Models\BusinessApplicationSignature;
+use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessApplicationVersion;
 use App\Models\BusinessCreditSnapshot;
 use App\Models\BusinessMandate;
@@ -1459,3 +1461,82 @@ it('holds credit facts and source Auditor identity through actual application qu
         'synthetic:withdrawn', 'Withdraw after publication.', (string) Str::uuid());
     expect(BusinessQuoteFixture::quote($fixture))->toBeNull();
 });
+
+it('records one signature and submission for simultaneous identical acceptance commands', function (): void {
+    $fixture = BusinessQuoteFixture::ready();
+    $accepted = BusinessQuoteFixture::acceptance($fixture);
+    $request = (string) Str::uuid();
+    $submit = function () use ($fixture, $accepted, $request): void {
+        expect(BusinessQuoteFixture::submit($fixture, $accepted, revision: 4, request: $request)['code'])->toBe('APPLICATION_SUBMITTED');
+    };
+    expect(runIdentityContenders([$submit, $submit]))->toBe([0, 0])
+        ->and(BusinessApplicationSignature::query()->count())->toBe(1)
+        ->and(BusinessApplicationSubmission::query()->count())->toBe(1)
+        ->and($fixture['application']->refresh()->revision)->toBe(5)
+        ->and(CommandOperation::query()->where('command', 'application.submit')->count())->toBe(1);
+});
+
+it('serializes two required company signatures and requires fresh intent after revision conflict', function (): void {
+    $fixture = BusinessQuoteFixture::ready(2);
+    $accepted = BusinessQuoteFixture::acceptance($fixture);
+    $sign = fn (int $index): Closure => function () use ($fixture, $accepted, $index): void {
+        $result = BusinessQuoteFixture::submit($fixture, $accepted, $index, 4);
+        if ($result['code'] === 'VERSION_CONFLICT') {
+            throw new CommandRejection('VERSION_CONFLICT');
+        }
+        expect($result['code'])->toBe('APPLICATION_SIGNATURE_RECORDED');
+    };
+    expect(runIdentityContenders([$sign(0), $sign(1)]))->toBe([0, 2])
+        ->and(BusinessApplicationSignature::query()->count())->toBe(1)
+        ->and(BusinessApplicationSubmission::query()->count())->toBe(0)
+        ->and($fixture['application']->refresh()->revision)->toBe(5);
+    $signed = BusinessApplicationSignature::query()->firstOrFail()->actor_party_id;
+    $remaining = $signed === $fixture['audit']['authority']['people'][0]->id ? 1 : 0;
+    expect(BusinessQuoteFixture::submit($fixture, $accepted, $remaining, 5)['code'])->toBe('APPLICATION_SUBMITTED')
+        ->and(BusinessApplicationSignature::query()->count())->toBe(2)
+        ->and(BusinessApplicationSubmission::query()->count())->toBe(1);
+});
+
+it('holds every acceptance authority and source through the actual final submission write', function (string $source): void {
+    $fixture = BusinessQuoteFixture::ready();
+    $accepted = BusinessQuoteFixture::acceptance($fixture);
+    $operator = concurrentIdentityOperator();
+    $default = DB::getDefaultConnection();
+    $event = 'eloquent.creating: '.BusinessApplicationSubmission::class;
+    $change = function () use ($fixture, $source, $operator): void {
+        if ($source === 'consent') {
+            app(RecordConsentRelease::class)->handle($fixture['audit']['staff']->id, 1, 'withdrawn', [], [], true,
+                'fixture:withdrawal', 'Withdraw during final application submission.', (string) Str::uuid());
+        } elseif ($source === 'credit') {
+            app(RecordIsolatedBusinessCreditFacts::class)->handle($fixture['audit']['staff']->id, $fixture['audit']['business'], 1, null,
+                'synthetic:withdrawal', 'Withdraw during final application submission.', (string) Str::uuid());
+        } elseif ($source === 'mandate') {
+            $authority = $fixture['audit']['authority'];
+            $authority['profile']['name'] = 'Changed business name';
+            BusinessAuthorityFixture::configure($authority, 1);
+        } elseif ($source === 'signer') {
+            app(ChangeMembership::class)->handle($operator->id, $fixture['audit']['authority']['people'][0]->id, 'business', 'revoked', 1,
+                'case:withdrawal', 'Withdraw signer membership during final submission.', (string) Str::uuid());
+        } else {
+            Party::query()->whereKey($fixture['audit']['partners'][0]['party']->id)->update(['verified_at' => null]);
+        }
+    };
+    Event::listen($event, function () use ($default, $change): void {
+        config(['database.connections.acceptance_contender' => config('database.connections.pgsql')]);
+        DB::connection('acceptance_contender')->statement("SET lock_timeout = '500ms'");
+        DB::setDefaultConnection('acceptance_contender');
+        try {
+            expect($change)->toThrow(QueryException::class);
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('acceptance_contender');
+        }
+    });
+    try {
+        expect(BusinessQuoteFixture::submit($fixture, $accepted)['code'])->toBe('APPLICATION_SUBMITTED');
+    } finally {
+        Event::forget($event);
+    }
+    $change();
+    expect(BusinessApplicationSubmission::query()->count())->toBe(1);
+})->with(['consent', 'credit', 'mandate', 'signer', 'auditor']);

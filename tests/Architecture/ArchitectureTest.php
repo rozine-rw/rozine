@@ -16,6 +16,8 @@ use App\Models\AuditorProfile;
 use App\Models\AuditorProfileVersion;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationQuote;
+use App\Models\BusinessApplicationSignature;
+use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessApplicationVersion;
 use App\Models\BusinessCreditSnapshot;
 use App\Models\BusinessMandate;
@@ -190,11 +192,13 @@ it('has concrete targets for the business authority boundary', function (): void
         ->and(class_exists(BusinessApplication::class))->toBeTrue()
         ->and(class_exists(BusinessApplicationVersion::class))->toBeTrue()
         ->and(class_exists(BusinessApplicationQuote::class))->toBeTrue()
+        ->and(class_exists(BusinessApplicationSignature::class))->toBeTrue()
+        ->and(class_exists(BusinessApplicationSubmission::class))->toBeTrue()
         ->and(class_exists(BusinessCreditSnapshot::class))->toBeTrue();
 })->group('arch');
 
 arch('business authority records are only accessed by their adapter')
-    ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion', 'App\Models\BusinessCreditSnapshot', 'App\Models\BusinessApplicationQuote'])
+    ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion', 'App\Models\BusinessCreditSnapshot', 'App\Models\BusinessApplicationQuote', 'App\Models\BusinessApplicationSignature', 'App\Models\BusinessApplicationSubmission'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Models', 'Database\Factories']);
 
 it('has concrete targets for the immutable statement evidence boundary', function (): void {

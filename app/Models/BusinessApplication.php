@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property Fields $draft
  * @property int $mandate_version
  * @property string|null $current_quote_id
+ * @property string|null $current_submission_id
  */
 class BusinessApplication extends Model
 {
