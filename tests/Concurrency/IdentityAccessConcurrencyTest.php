@@ -1617,10 +1617,19 @@ it('holds every acceptance authority and source through the actual final submiss
     expect(BusinessApplicationSubmission::query()->count())->toBe(1);
 })->with(['consent', 'credit', 'mandate', 'signer', 'auditor']);
 
-it('serializes simultaneous report starts across logins for the same Auditor Party', function (bool $sameRequest): void {
+it('serializes simultaneous report starts across logins for the same Auditor Party', function (bool $sameRequest, bool $replacement): void {
     $fixture = BusinessQuoteFixture::ready();
     BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
     $partner = $fixture['audit']['partners'][0];
+    if ($replacement) {
+        app(StartAuditReport::class)->handle($partner['user']->id, 1, $fixture['assignment']->id, $fixture['assignment']->refresh()->revision,
+            $fixture['application']->id, $fixture['application']->refresh()->revision, (string) Str::uuid());
+        $successor = AuditAssignmentFixture::make(1)['partners'][0];
+        AuditAssignmentFixture::independence($fixture['audit']['staff'], $fixture['audit']['business'], $successor['party']->id);
+        AuditAssignmentFixture::respond($partner['user'], $fixture['assignment'], 'conflict', 'Related party identified.', 'family_or_business');
+        AuditAssignmentFixture::respond($successor['user'], $fixture['assignment']->refresh());
+        $partner = $successor;
+    }
     $otherLogin = User::factory()->withTwoFactor()->for($partner['party'])->create();
     app(SelectActiveRole::class)->handle($otherLogin->id, 'auditor', 0, (string) Str::uuid());
     $request = (string) Str::uuid();
@@ -1632,10 +1641,10 @@ it('serializes simultaneous report starts across logins for the same Auditor Par
         expect($result['code'])->toBeIn(['AUDIT_REPORT_STARTED', 'AUDIT_REPORT_RESUMED']);
     };
     expect(runIdentityContenders([$start($partner['user'], $request), $start($otherLogin, $sameRequest ? $request : (string) Str::uuid())]))->toBe([0, 0])
-        ->and(AuditReport::query()->count())->toBe(1)
-        ->and(AuditReportVersion::query()->count())->toBe(1)
-        ->and(CommandOperation::query()->where('command', 'audit.start')->count())->toBe($sameRequest ? 1 : 2);
-})->with([true, false]);
+        ->and(AuditReport::query()->count())->toBe($replacement ? 2 : 1)
+        ->and(AuditReportVersion::query()->count())->toBe($replacement ? 3 : 1)
+        ->and(CommandOperation::query()->where('command', 'audit.start')->count())->toBe(($sameRequest ? 1 : 2) + ($replacement ? 1 : 0));
+})->with([[true, false], [false, false], [true, true], [false, true]]);
 
 it('holds current authority through the actual audit report creation write', function (string $source): void {
     $fixture = BusinessQuoteFixture::ready();
@@ -1676,5 +1685,5 @@ it('holds current authority through the actual audit report creation write', fun
         Event::forget($event);
     }
     $change();
-    expect(AuditReport::query()->count())->toBe(1)->and(AuditReportVersion::query()->count())->toBe(1);
+    expect(AuditReport::query()->count())->toBe(1)->and(AuditReportVersion::query()->count())->toBe($source === 'assignment' ? 2 : 1);
 })->with(['identity', 'standing', 'assignment', 'business']);

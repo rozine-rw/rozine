@@ -6,6 +6,8 @@ use App\Application\Business\WithAuditApplicationBinding;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Models\AuditReport;
 use App\Models\AuditReportVersion;
+use App\Models\BusinessApplicationQuote;
+use App\Models\BusinessApplicationVersion;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -37,7 +39,8 @@ it('keeps the submitted source and report drafts encrypted and outside model ser
     $fixture = persistedAuditReportFixture();
     $report = $fixture['report']->refresh();
     $version = $fixture['version']->refresh();
-    $binding = ['assignment' => $fixture['accepted'], 'application' => $fixture['binding']];
+    $binding = ['assignment' => ['id' => $fixture['accepted']['id'], 'revision' => $fixture['accepted']['revision'],
+        'party_id' => $fixture['accepted']['party_id']], 'application' => $fixture['binding']];
 
     expect($report->binding)->toBe($binding)
         ->and($report->binding_sha256)->toBe(hash('sha256', app(CanonicalJson::class)->encode($binding)))
@@ -57,11 +60,12 @@ it('freezes source pins and prevents revision skipping while allowing a new draf
     $fixture = persistedAuditReportFixture();
     $report = $fixture['report'];
     $before = $report->refresh()->getRawOriginal();
-    foreach (['id', 'assignment_id', 'business_id', 'application_id', 'application_version_id', 'submission_id', 'quote_id', 'amends_id',
+    foreach (['id', 'assignment_id', 'assignment_revision', 'author_party_id', 'business_id', 'application_id', 'application_version_id', 'submission_id', 'quote_id', 'amends_id',
         'binding', 'binding_sha256', 'kind', 'created_at', 'application_revision'] as $column) {
         $value = match ($column) {
             'binding', 'binding_sha256' => str_repeat('a', 64), 'kind' => 'monthly',
             'created_at' => now()->subDay(), 'application_revision' => $report->application_revision + 1,
+            'assignment_revision' => $report->assignment_revision + 1,
             default => (string) Str::ulid(),
         };
         expect(fn () => DB::transaction(fn (): int => DB::table('audit_reports')->where('id', $report->id)
@@ -133,6 +137,30 @@ it('permits one original report and one linked successor per report within the s
     $id = (string) Str::ulid();
     expect(fn () => DB::transaction(fn (): AuditReport => $factory->create(['id' => $id, 'amends_id' => $id])))
         ->toThrow(QueryException::class);
+});
+
+it('rejects draft-era versions noncurrent quotes and another accepted authority at the database boundary', function (): void {
+    $fixture = persistedAuditReportFixture();
+    $application = $fixture['application']->refresh();
+    $prior = BusinessApplicationVersion::query()->where('business_application_id', $application->id)
+        ->where('revision', '<', $application->revision)->orderByDesc('revision')->firstOrFail();
+    $otherQuote = BusinessApplicationQuote::factory()->create(['business_application_id' => $application->id, 'revision' => 2]);
+    $factory = AuditReport::factory()->forBinding($fixture['accepted'], $fixture['binding']);
+    foreach ([['application_revision' => $prior->revision, 'application_version_id' => $prior->id],
+        ['quote_id' => $otherQuote->id], ['submission_id' => (string) Str::ulid()]] as $changes) {
+        expect(fn () => DB::transaction(fn (): AuditReport => $factory->create(['amends_id' => $fixture['report']->id, ...$changes])))
+            ->toThrow(QueryException::class, 'Audit report must bind the current submitted application');
+    }
+    foreach ([['assignment_revision' => $fixture['accepted']['revision'] + 1], ['author_party_id' => $fixture['audit']['authority']['users'][0]->party_id],
+        ['assignment_id' => (string) Str::ulid()]] as $changes) {
+        expect(fn () => DB::transaction(fn (): AuditReport => $factory->create(['amends_id' => $fixture['report']->id, ...$changes])))
+            ->toThrow(QueryException::class, 'Audit report must bind the current accepted Auditor');
+    }
+    $draft = Fixture::ready();
+    expect(fn () => DB::transaction(fn (): AuditReport => $factory->create(['application_id' => $draft['application']->id,
+        'application_revision' => $draft['application']->revision, 'amends_id' => $fixture['report']->id])))
+        ->toThrow(QueryException::class, 'Audit report must bind the current submitted application');
+    $this->assertDatabaseCount('audit_reports', 1);
 });
 
 it('refuses destructive rollback once any report history exists', function (): void {

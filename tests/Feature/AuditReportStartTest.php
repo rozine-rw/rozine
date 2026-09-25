@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Auditor\FindAuditReportOperation;
 use App\Application\Auditor\GetAssignmentAuditReport;
 use App\Application\Auditor\GetAuditReport;
+use App\Application\Auditor\ResolveAuditAssignment;
 use App\Application\Auditor\StartAuditReport;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
@@ -19,6 +20,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\AuditAssignmentFixture;
+use Tests\Support\AuditorFixture;
 use Tests\Support\BusinessQuoteFixture as Fixture;
 
 /** @param array<string, mixed> $fixture
@@ -46,6 +48,8 @@ it('starts one source-bound report through an explicit replayable command and ex
     $this->assertDatabaseCount('command_operations', $count);
     $first = startSubmittedAuditReport($fixture, $request);
     $report = AuditReport::query()->firstOrFail();
+    expect(json_encode($report->binding, JSON_THROW_ON_ERROR))->not->toContain('scorecard', 'credit_source_reference', 'actor_user_id',
+        'actor_party_id', 'recurring_owner_draw', 'obligations', 'pricing', 'capacity', 'payload', 'terms', 'draft');
     expect($first['code'])->toBe('AUDIT_REPORT_STARTED')
         ->and($first['data'])->toBe(['audit_id' => $report->id, 'assignment_id' => $fixture['assignment']->id])
         ->and($first['revision'])->toBe(1)
@@ -171,27 +175,140 @@ it('rejects unsupported journal commands unlinked identities and wrong target ty
         ->toThrow(CommandRejection::class, 'OPERATION_NOT_FOUND');
 });
 
-it('preserves the original report and requires explicit reassignment handling before its successor can work', function (): void {
+it('withdraws the original draft atomically and lets the replacement Auditor start and resume a fresh report', function (bool $redispatch): void {
     $fixture = Fixture::ready();
     Fixture::submit($fixture, Fixture::acceptance($fixture));
     $receipt = startSubmittedAuditReport($fixture);
+    $original = AuditReport::query()->whereKey($receipt['data']['audit_id'])->firstOrFail();
+    $binding = $original->getRawOriginal('binding');
     $other = AuditAssignmentFixture::make(1);
     $replacement = $other['partners'][0];
-    AuditAssignmentFixture::independence($fixture['audit']['staff'], $fixture['audit']['business'], $replacement['party']->id);
+    if (! $redispatch) {
+        AuditAssignmentFixture::independence($fixture['audit']['staff'], $fixture['audit']['business'], $replacement['party']->id);
+    }
     AuditAssignmentFixture::respond($fixture['audit']['partners'][0]['user'], $fixture['assignment']->refresh(), 'conflict', 'New family tie.', 'family_or_business');
+    if ($redispatch) {
+        expect($fixture['assignment']->refresh()->status)->toBe('operations');
+        AuditAssignmentFixture::independence($fixture['audit']['staff'], $fixture['audit']['business'], $replacement['party']->id);
+        expect(app(ResolveAuditAssignment::class)->handle($fixture['audit']['staff']->id, $fixture['assignment']->id, $fixture['assignment']->revision,
+            'redispatch', 'Reviewed new independent partner.', (string) Str::uuid())['code'])->toBe('ASSIGNMENT_REDISPATCHED');
+    }
     expect($fixture['assignment']->refresh()->party_id)->toBe($replacement['party']->id);
     AuditAssignmentFixture::respond($replacement['user'], $fixture['assignment']);
     $replacementFixture = $fixture;
     $replacementFixture['audit']['partners'][0] = $replacement;
 
-    expect(startSubmittedAuditReport($replacementFixture)['code'])->toBe('AUDIT_REPORT_REASSIGNMENT_REQUIRED')
-        ->and(fn () => app(GetAssignmentAuditReport::class)->handle($replacement['user']->id, 1, $fixture['assignment']->id))
-        ->toThrow(CommandRejection::class, 'AUDIT_REPORT_REASSIGNMENT_REQUIRED')
+    expect(app(GetAssignmentAuditReport::class)->handle($replacement['user']->id, 1, $fixture['assignment']->id))->toBeNull()
         ->and(fn () => app(GetAuditReport::class)->handle($replacement['user']->id, 1, $receipt['data']['audit_id']))
-        ->toThrow(CommandRejection::class, 'AUDIT_REPORT_REASSIGNMENT_REQUIRED');
-    $this->assertDatabaseCount('audit_reports', 1);
+        ->toThrow(CommandRejection::class, 'AUDIT_REPORT_NOT_FOUND');
+    $replacementStart = startSubmittedAuditReport($replacementFixture);
+    expect($replacementStart['code'])->toBe('AUDIT_REPORT_STARTED')
+        ->and($replacementStart['data']['audit_id'])->not->toBe($original->id)
+        ->and(startSubmittedAuditReport($replacementFixture)['code'])->toBe('AUDIT_REPORT_RESUMED')
+        ->and(app(GetAssignmentAuditReport::class)->handle($replacement['user']->id, 1, $fixture['assignment']->id)['id'])
+        ->toBe($replacementStart['data']['audit_id'])
+        ->and(app(GetAuditReport::class)->handle($replacement['user']->id, 1, $replacementStart['data']['audit_id'])['revision'])->toBe(1)
+        ->and($original->refresh()->status)->toBe('withdrawn')
+        ->and($original->revision)->toBe(2)->and($original->getRawOriginal('binding'))->toBe($binding)
+        ->and($original->draft['withdrawal']['reason_code'])->toBe('AUDITOR_CONFLICT')
+        ->and(AuditReportVersion::query()->where('audit_report_id', $original->id)->where('revision', 1)->firstOrFail()->status)->toBe('draft')
+        ->and(AuditReportVersion::query()->where('audit_report_id', $original->id)->where('revision', 2)->firstOrFail()->command)->toBe('conflict.declare');
+    $this->assertDatabaseCount('audit_reports', 2);
+    $this->assertDatabaseCount('audit_report_versions', 3);
+})->with([false, true]);
+
+it('rolls conflict declaration and reassignment back when report withdrawal history cannot be appended', function (): void {
+    $fixture = Fixture::ready();
+    Fixture::submit($fixture, Fixture::acceptance($fixture));
+    startSubmittedAuditReport($fixture);
+    $assignmentBefore = $fixture['assignment']->refresh()->getRawOriginal();
+    $reportBefore = AuditReport::query()->firstOrFail()->getRawOriginal();
+    $event = 'eloquent.creating: '.AuditReportVersion::class;
+    Event::listen($event, function (): void {
+        throw new RuntimeException('Withdrawal history unavailable.');
+    });
+    $request = (string) Str::uuid();
+    try {
+        expect(fn () => AuditAssignmentFixture::respond($fixture['audit']['partners'][0]['user'], $fixture['assignment'], 'conflict',
+            'New family tie.', 'family_or_business', $request))->toThrow(RuntimeException::class, 'Withdrawal history unavailable.');
+    } finally {
+        Event::forget($event);
+    }
+    expect($fixture['assignment']->refresh()->getRawOriginal())->toBe($assignmentBefore)
+        ->and(AuditReport::query()->firstOrFail()->getRawOriginal())->toBe($reportBefore)
+        ->and(CommandOperation::query()->where('request_id', $request)->exists())->toBeFalse();
+    $this->assertDatabaseCount('audit_conflict_declarations', 0);
     $this->assertDatabaseCount('audit_report_versions', 1);
+    expect(AuditAssignmentFixture::respond($fixture['audit']['partners'][0]['user'], $fixture['assignment'], 'conflict',
+        'New family tie.', 'family_or_business', $request)['code'])->toBe('CONFLICT_RECORDED');
+    $this->assertDatabaseCount('audit_report_versions', 2);
 });
+
+it('does not rewrite sealed history when an Auditor subsequently declares a conflict', function (): void {
+    $fixture = Fixture::ready();
+    Fixture::submit($fixture, Fixture::acceptance($fixture));
+    startSubmittedAuditReport($fixture);
+    $report = AuditReport::query()->firstOrFail();
+    $report->forceFill(['revision' => 2, 'status' => 'sealed', 'step' => 'seal'])->save();
+    AuditReportVersion::factory()->forReport($report, $fixture['audit']['partners'][0]['party']->id, $fixture['audit']['partners'][0]['user']->id)->create();
+    $before = $report->refresh()->getRawOriginal();
+    $request = (string) Str::uuid();
+    $first = AuditAssignmentFixture::respond($fixture['audit']['partners'][0]['user'], $fixture['assignment']->refresh(), 'conflict',
+        'New family tie.', 'family_or_business', $request);
+    expect($first['code'])->toBe('CONFLICT_RECORDED')->and($report->refresh()->getRawOriginal())->toBe($before);
+    $this->assertDatabaseCount('audit_report_versions', 2);
+});
+
+it('replays an original refusal after the application becomes submitted without creating a report', function (): void {
+    $fixture = Fixture::ready();
+    $request = (string) Str::uuid();
+    $revision = $fixture['application']->revision;
+    $refusal = startSubmittedAuditReport($fixture, $request, applicationRevision: $revision);
+    expect($refusal['code'])->toBe('APPLICATION_NOT_SUBMITTED');
+    Fixture::submit($fixture, Fixture::acceptance($fixture));
+    expect(startSubmittedAuditReport($fixture, $request, applicationRevision: $revision))->toBe($refusal);
+    $this->assertDatabaseCount('audit_reports', 0);
+    expect(startSubmittedAuditReport($fixture)['code'])->toBe('AUDIT_REPORT_STARTED');
+});
+
+it('denies a new report before journaling for suspended expired offered and nonparticipant Auditors', function (string $fault, string $code): void {
+    $fixture = Fixture::ready();
+    Fixture::submit($fixture, Fixture::acceptance($fixture));
+    $partner = $fixture['audit']['partners'][0];
+    if ($fault === 'suspended') {
+        AuditorFixture::review($partner['staff'], $partner['party']->id, 3, 'suspend');
+    } elseif ($fault === 'expired') {
+        $this->travelTo(now()->addYear()->addDay());
+    } else {
+        $replacement = AuditAssignmentFixture::make(1)['partners'][0];
+        if ($fault === 'offered') {
+            AuditAssignmentFixture::independence($fixture['audit']['staff'], $fixture['audit']['business'], $replacement['party']->id);
+            AuditAssignmentFixture::respond($partner['user'], $fixture['assignment']->refresh(), 'conflict', 'New family tie.', 'family_or_business');
+        }
+        $fixture['audit']['partners'][0] = $replacement;
+    }
+    $request = (string) Str::uuid();
+    expect(fn () => startSubmittedAuditReport($fixture, $request))->toThrow(CommandRejection::class, $code)
+        ->and(CommandOperation::query()->where('request_id', $request)->exists())->toBeFalse();
+    $this->assertDatabaseCount('audit_reports', 0);
+})->with([['suspended', 'ACCREDITATION_SUSPENDED'], ['expired', 'ACCREDITATION_EXPIRED'],
+    ['offered', 'ASSIGNMENT_NOT_ACCEPTED'], ['unrelated', 'ASSIGNMENT_NOT_FOUND']]);
+
+it('checks the stored author and accepted revision again before exposing a report', function (string $column): void {
+    $fixture = Fixture::ready();
+    Fixture::submit($fixture, Fixture::acceptance($fixture));
+    $receipt = startSubmittedAuditReport($fixture);
+    $event = 'eloquent.retrieved: '.AuditReport::class;
+    Event::listen($event, function (AuditReport $record) use ($column): void {
+        $record->setAttribute($column, $column === 'author_party_id' ? (string) Str::ulid() : $record->assignment_revision - 1);
+    });
+    try {
+        expect(fn () => app(GetAuditReport::class)->handle($fixture['audit']['partners'][0]['user']->id, 1, $receipt['data']['audit_id']))
+            ->toThrow(CommandRejection::class, 'AUDIT_REPORT_REASSIGNMENT_REQUIRED');
+    } finally {
+        Event::forget($event);
+    }
+})->with(['author_party_id', 'assignment_revision']);
 
 it('does not reveal a former Party receipt when identity changes before locked authorization', function (): void {
     $fixture = Fixture::ready();

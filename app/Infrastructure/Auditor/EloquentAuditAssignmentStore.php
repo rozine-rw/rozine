@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Auditor;
 
 use App\Application\Auditor\Contracts\AuditAssignmentStore;
+use App\Application\Auditor\Contracts\AuditReportLifecycle;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\AuthorizeStaffPermission;
@@ -61,6 +62,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         private CanonicalJson $json,
         private AuthorizeActiveRole $roles,
         private AuthorizeStaffPermission $staff,
+        private AuditReportLifecycle $reports,
     ) {}
 
     /** @return array<string, mixed> */
@@ -136,6 +138,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                                 $conflict->forceFill(['assignment_id' => $record->id, 'business_id' => $record->business_id,
                                     'party_id' => $partyId, 'kind' => $conflictKind, 'reason' => $reason, 'actor_user_id' => $userId,
                                     'policy_version' => 'engineering-2026-09-23.4'])->save();
+                                $this->reports->withdrawForConflict($record->id, $partyId, $userId, $conflict->id);
                             }
                             $state = $this->offer($state, $context, $candidates);
                         }

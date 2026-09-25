@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $assignment_id
+ * @property int $assignment_revision
+ * @property string $author_party_id
  * @property string $business_id
  * @property string $application_id
  * @property int $application_revision
@@ -40,6 +42,6 @@ class AuditReport extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['revision' => 'integer', 'application_revision' => 'integer', 'binding' => 'encrypted:array', 'draft' => 'encrypted:array'];
+        return ['revision' => 'integer', 'application_revision' => 'integer', 'assignment_revision' => 'integer', 'binding' => 'encrypted:array', 'draft' => 'encrypted:array'];
     }
 }

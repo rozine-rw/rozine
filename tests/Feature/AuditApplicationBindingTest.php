@@ -55,11 +55,14 @@ it('pins the submitted application version quote and mandate without changing fr
         ->and($binding['application']['revision'])->toBe($application->revision)
         ->and($binding['version'])->toBe(['id' => $version->id, 'sha256' => hash('sha256', app(CanonicalJson::class)->encode($version->snapshot))])
         ->and($binding['submission'])->toBe(['id' => $submission->id, 'sha256' => $submission->sha256, 'submitted_at' => $submission->payload['submitted_at']])
-        ->and($binding['quote'])->toBe(['id' => $quote->id, 'revision' => $quote->revision, 'sha256' => $quote->sha256, 'payload' => $quote->payload])
-        ->and($binding['mandate']['terms'])->toBe($submission->payload['agreement']['mandate'])
-        ->and($binding['mandate']['sha256'])->toBe(hash('sha256', app(CanonicalJson::class)->encode($binding['mandate']['terms'])))
+        ->and($binding['application'])->toBe(['id' => $application->id, 'business_id' => $application->business_id, 'revision' => $application->revision])
+        ->and($binding['quote'])->toBe(['id' => $quote->id, 'revision' => $quote->revision, 'sha256' => $quote->sha256])
+        ->and($binding['mandate'])->toBe(['version' => $submission->payload['agreement']['mandate_version'],
+            'sha256' => hash('sha256', app(CanonicalJson::class)->encode($submission->payload['agreement']['mandate']))])
         ->and($application->refresh()->getRawOriginal())->toBe($before)
         ->and(BusinessApplicationVersion::query()->where('business_application_id', $application->id)->count())->toBe($versions);
+    expect(json_encode($binding, JSON_THROW_ON_ERROR))->not->toContain('scorecard', 'credit_source_reference', 'actor_user_id', 'actor_party_id',
+        'recurring_owner_draw', 'obligations', 'pricing', 'capacity', 'payload', 'terms', 'draft');
 });
 
 it('does not bind a draft or an application with only one of its required signatures', function (bool $partlySigned): void {

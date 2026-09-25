@@ -15,7 +15,7 @@ use Closure;
  * @phpstan-type Application array{id: string, business_id: string, revision: int, status: string, step: string, draft: Fields, mandate_version: int}
  * @phpstan-type AuditApplication array{work: Work, application: array{id: string, revision: int, title: string, target: string|null, term_months: int|null, use_of_funds: list<string>}|null}
  * @phpstan-type EvaluationExpectation array{target: string, term_months: int, evidence_version: string}
- * @phpstan-type AuditBinding array{application: Application, version: array{id: string, sha256: string}, submission: array{id: string, sha256: string, submitted_at: string}, quote: array{id: string, revision: int, sha256: string, payload: array<string, mixed>}, mandate: array{version: int, terms: Terms, sha256: string}}
+ * @phpstan-type AuditBinding array{application: array{id: string, business_id: string, revision: int}, version: array{id: string, sha256: string}, submission: array{id: string, sha256: string, submitted_at: string}, quote: array{id: string, revision: int, sha256: string}, mandate: array{version: int, sha256: string}}
  */
 interface BusinessApplicationStore
 {

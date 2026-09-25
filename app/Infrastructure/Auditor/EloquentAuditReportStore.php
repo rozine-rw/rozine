@@ -52,7 +52,7 @@ final class EloquentAuditReportStore implements AuditReportStore
                                 if ($application['application']['revision'] !== $applicationRevision) {
                                     throw new CommandRejection('APPLICATION_VERSION_CONFLICT', revision: $application['application']['revision']);
                                 }
-                                $existing = $this->latest($current['id'])->lockForUpdate()->first();
+                                $existing = $this->latest($current)->lockForUpdate()->first();
                                 if ($existing !== null) {
                                     $this->author($existing, $current);
                                     if ($existing->application_id !== $application['application']['id']) {
@@ -62,9 +62,10 @@ final class EloquentAuditReportStore implements AuditReportStore
 
                                     return $this->receipt('AUDIT_REPORT_RESUMED', $report);
                                 }
-                                $binding = ['assignment' => $current, 'application' => $application];
+                                $binding = ['assignment' => ['id' => $current['id'], 'revision' => $current['revision'], 'party_id' => $current['party_id']], 'application' => $application];
                                 $report = new AuditReport;
                                 $report->forceFill(['assignment_id' => $current['id'], 'business_id' => $current['business_id'],
+                                    'assignment_revision' => $current['revision'], 'author_party_id' => $current['party_id'],
                                     'application_id' => $application['application']['id'], 'application_revision' => $applicationRevision,
                                     'application_version_id' => $application['version']['id'], 'submission_id' => $application['submission']['id'],
                                     'quote_id' => $application['quote']['id'], 'amends_id' => null, 'revision' => 1,
@@ -83,9 +84,10 @@ final class EloquentAuditReportStore implements AuditReportStore
     /** @return Report */
     public function get(int $userId, int $contextRevision, string $reportId): array
     {
-        $record = AuditReport::query()->whereKey($reportId)
+        $partyId = $this->party($userId);
+        $record = AuditReport::query()->whereKey($reportId)->where('author_party_id', $partyId)
             ->whereExists(fn (Query $query): Query => $query->selectRaw('1')->from('audit_assignments')
-                ->whereColumn('audit_assignments.id', 'audit_reports.assignment_id')->where('party_id', $this->party($userId)))->first()
+                ->whereColumn('audit_assignments.id', 'audit_reports.assignment_id')->where('party_id', $partyId))->first()
             ?? throw new CommandRejection('AUDIT_REPORT_NOT_FOUND', 404);
 
         return $this->assignments->handle($userId, $contextRevision, $record->assignment_id, function (array $assignment) use ($reportId): array {
@@ -99,8 +101,8 @@ final class EloquentAuditReportStore implements AuditReportStore
     /** @return Report|null */
     public function forAssignment(int $userId, int $contextRevision, string $assignmentId): ?array
     {
-        return $this->assignments->handle($userId, $contextRevision, $assignmentId, function (array $assignment) use ($assignmentId): ?array {
-            $record = $this->latest($assignmentId)->lockForUpdate()->first();
+        return $this->assignments->handle($userId, $contextRevision, $assignmentId, function (array $assignment): ?array {
+            $record = $this->latest($assignment)->lockForUpdate()->first();
             if ($record === null) {
                 return null;
             }
@@ -132,10 +134,14 @@ final class EloquentAuditReportStore implements AuditReportStore
             });
     }
 
-    /** @return Builder<AuditReport> */
-    private function latest(string $assignmentId): Builder
+    /**
+     * @param  AcceptedAssignment  $assignment
+     * @return Builder<AuditReport>
+     */
+    private function latest(array $assignment): Builder
     {
-        return AuditReport::query()->where('assignment_id', $assignmentId)
+        return AuditReport::query()->where('assignment_id', $assignment['id'])->where('assignment_revision', $assignment['revision'])
+            ->where('author_party_id', $assignment['party_id'])
             ->whereNotExists(fn (Query $query): Query => $query->selectRaw('1')->from('audit_reports as amendments')
                 ->whereColumn('amendments.amends_id', 'audit_reports.id'));
     }
@@ -143,7 +149,7 @@ final class EloquentAuditReportStore implements AuditReportStore
     /** @param AcceptedAssignment $assignment */
     private function author(AuditReport $record, array $assignment): void
     {
-        if ($record->binding['assignment']['party_id'] !== $assignment['party_id']) {
+        if ($record->author_party_id !== $assignment['party_id'] || $record->assignment_revision !== $assignment['revision']) {
             throw new CommandRejection('AUDIT_REPORT_REASSIGNMENT_REQUIRED', revision: $record->revision);
         }
     }

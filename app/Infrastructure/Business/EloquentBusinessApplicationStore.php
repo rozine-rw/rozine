@@ -810,10 +810,11 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
             throw new RuntimeException('APPLICATION_QUOTE_INTEGRITY_FAILED');
         }
 
-        return ['application' => $snapshot, 'version' => ['id' => $version->id, 'sha256' => hash('sha256', $this->json->encode($version->snapshot))],
+        return ['application' => ['id' => $application->id, 'business_id' => $application->business_id, 'revision' => $application->revision],
+            'version' => ['id' => $version->id, 'sha256' => hash('sha256', $this->json->encode($version->snapshot))],
             'submission' => ['id' => $submitted['submission_id'], 'sha256' => hash('sha256', $this->json->encode($submitted)), 'submitted_at' => $submitted['submitted_at']],
-            'quote' => ['id' => $quote->id, 'revision' => $quote->revision, 'sha256' => $quote->sha256, 'payload' => $quote->payload],
-            'mandate' => ['version' => $agreement['mandate_version'], 'terms' => $agreement['mandate'], 'sha256' => hash('sha256', $this->json->encode($agreement['mandate']))]];
+            'quote' => ['id' => $quote->id, 'revision' => $quote->revision, 'sha256' => $quote->sha256],
+            'mandate' => ['version' => $agreement['mandate_version'], 'sha256' => hash('sha256', $this->json->encode($agreement['mandate']))]];
     }
 
     /** @return array<string, mixed> */
