@@ -59,7 +59,7 @@
         "server_time": "2026-09-25T10:00:00+02:00",
         "contract_version": "staff-disbursement-v1",
         "staff_access_version": "staff-access-v1",
-        "allowed_actions": ["disbursement.authorize", "disbursement.hold"],
+        "allowed_actions": ["disbursement.release_hold"],
         "disbursements": [
             {
                 "id": "01k5za1m7q3r8t2v6w9x4y0b1c",
@@ -254,34 +254,46 @@
         },
         "awaiting_second_approver": 2,
         "disbursement": {
-            "id": "01k5za1m7q3r8t2v6w9x4y0b1c",
-            "reference": "PAY-2026-0612",
-            "business": "GreenLeaf Agro",
-            "note_title": "Cold-Chain Hub",
-            "destination": "MoMo ••• 4521",
+            "id": "01k5za4q0t6v1x5y9z2a7b3e4f",
+            "reference": "PAY-2026-0607",
+            "business": "Kivu Fresh",
+            "note_title": "Chiller Upgrade",
+            "destination": "MoMo ••• 3308",
             "amount": {
                 "currency": "RWF",
-                "amount": "18000000"
+                "amount": "4200000"
             },
-            "state": "ready",
+            "state": "on_hold",
             "provider_state": null,
             "link": {
-                "url": "/preview/admin-disbursements-ready",
+                "url": "/preview/admin-disbursements-on-hold",
                 "method": "get"
             },
-            "campaign_id": "01k5zc1m7q3r8t2v6w9x4y0b1c",
-            "revision": 3,
+            "campaign_id": "01k5zc4q0t6v1x5y9z2a7b3e4f",
+            "revision": 5,
             "due_on": null,
             "precheck": {
-                "state": "not_run",
-                "checked_at": null,
-                "policy_version": null,
+                "state": "passed",
+                "checked_at": "2026-09-24T09:12:03+02:00",
+                "policy_version": "staff-disbursement-policy-synthetic-0",
                 "causes": []
             },
-            "maker": null,
+            "maker": {
+                "actor": "Eric Ndoli",
+                "at": "2026-09-24T09:12:00+02:00",
+                "reason": "Raise fully funded; destination verified against the RDB mandate."
+            },
             "checker": null,
             "viewer_is_maker": false,
-            "approval_binding": null,
+            "approval_binding": {
+                "revision": 5,
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "4200000"
+                },
+                "destination": "MoMo ••• 3308",
+                "intent_digest": "sha256:4f1c9a0e7b2d58c36e91f0a4d7b3c2e815a96f0d2b4c7e1a3f58d09c6b2e7a41"
+            },
             "step_up": {
                 "purpose": "disbursement.approve",
                 "route": null
@@ -289,13 +301,42 @@
             "intent": null,
             "dispatch": null,
             "provider": null,
-            "hold": null,
+            "hold": {
+                "placed_by": {
+                    "actor": "Grace Kalisa",
+                    "at": "2026-09-24T10:05:00+02:00",
+                    "reason": null
+                },
+                "reason": "Waiting for the business to confirm its new MoMo number."
+            },
             "viewer_placed_hold": false,
             "issue": null,
             "refund": null,
             "trail": [
                 {
                     "id": "ev_1",
+                    "at": "2026-09-24T10:05:00+02:00",
+                    "actor": "Grace Kalisa",
+                    "action": {
+                        "code": "disbursement.held",
+                        "label": "Held",
+                        "tone": "amber"
+                    },
+                    "reason": "Waiting for the business to confirm its new MoMo number."
+                },
+                {
+                    "id": "ev_2",
+                    "at": "2026-09-24T09:12:00+02:00",
+                    "actor": "Eric Ndoli",
+                    "action": {
+                        "code": "disbursement.authorized",
+                        "label": "Authorized",
+                        "tone": "blue"
+                    },
+                    "reason": "Raise fully funded; destination verified against the RDB mandate."
+                },
+                {
+                    "id": "ev_3",
                     "at": "2026-09-22T18:00:00+02:00",
                     "actor": "System",
                     "action": {
@@ -306,14 +347,10 @@
                     "reason": null
                 }
             ],
-            "allowed_actions": ["disbursement.authorize", "disbursement.hold"],
+            "allowed_actions": ["disbursement.release_hold"],
             "actions": {
-                "authorize": {
+                "release_hold": {
                     "url": "/preview/admin-disbursements-awaiting-second",
-                    "method": "post"
-                },
-                "hold": {
-                    "url": "/preview/admin-disbursements-on-hold",
                     "method": "post"
                 }
             },

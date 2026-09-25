@@ -266,7 +266,7 @@
             "state": "ready",
             "provider_state": null,
             "link": {
-                "url": "/preview/admin-disbursements-ready",
+                "url": "/preview/admin-disbursements-not-recorded",
                 "method": "get"
             },
             "campaign_id": "01k5zc1m7q3r8t2v6w9x4y0b1c",
@@ -329,6 +329,18 @@
                 }
             }
         },
-        "refusal": null
+        "refusal": null,
+        "preview_outcome": {
+            "kind": "not_recorded",
+            "command": {
+                "name": "disbursement.authorize",
+                "payload": {
+                    "request_id": "6f0a3c2e-5b1d-4e8f-9a7c-2d4b6e8f0a1c",
+                    "disbursement_id": "01k5za1m7q3r8t2v6w9x4y0b1c",
+                    "expected_revision": 3,
+                    "reason": "Raise fully funded; destination verified against the RDB mandate."
+                }
+            }
+        }
     }
 }

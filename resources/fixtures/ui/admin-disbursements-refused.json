@@ -59,7 +59,7 @@
         "server_time": "2026-09-25T10:00:00+02:00",
         "contract_version": "staff-disbursement-v1",
         "staff_access_version": "staff-access-v1",
-        "allowed_actions": ["disbursement.authorize", "disbursement.hold"],
+        "allowed_actions": [],
         "disbursements": [
             {
                 "id": "01k5za1m7q3r8t2v6w9x4y0b1c",
@@ -254,39 +254,78 @@
         },
         "awaiting_second_approver": 2,
         "disbursement": {
-            "id": "01k5za1m7q3r8t2v6w9x4y0b1c",
-            "reference": "PAY-2026-0612",
-            "business": "GreenLeaf Agro",
-            "note_title": "Cold-Chain Hub",
-            "destination": "MoMo ••• 4521",
+            "id": "01k5za5r1v7w2y6z0a3b8c4f5g",
+            "reference": "PAY-2026-0606",
+            "business": "Umucyo Bakery",
+            "note_title": "Second Oven",
+            "destination": "BK ••• 2291",
             "amount": {
                 "currency": "RWF",
-                "amount": "18000000"
+                "amount": "3100000"
             },
-            "state": "ready",
+            "state": "queued",
             "provider_state": null,
             "link": {
-                "url": "/preview/admin-disbursements-ready",
+                "url": "/preview/admin-disbursements-refused",
                 "method": "get"
             },
-            "campaign_id": "01k5zc1m7q3r8t2v6w9x4y0b1c",
-            "revision": 3,
+            "campaign_id": "01k5zc5r1v7w2y6z0a3b8c4f5g",
+            "revision": 6,
             "due_on": null,
             "precheck": {
-                "state": "not_run",
-                "checked_at": null,
-                "policy_version": null,
+                "state": "passed",
+                "checked_at": "2026-09-24T09:12:03+02:00",
+                "policy_version": "staff-disbursement-policy-synthetic-0",
                 "causes": []
             },
-            "maker": null,
-            "checker": null,
+            "maker": {
+                "actor": "Eric Ndoli",
+                "at": "2026-09-24T09:12:00+02:00",
+                "reason": "Raise fully funded; destination verified against the RDB mandate."
+            },
+            "checker": {
+                "actor": "Grace Kalisa",
+                "at": "2026-09-24T11:40:00+02:00",
+                "reason": "Funded total and destination match the offer."
+            },
             "viewer_is_maker": false,
-            "approval_binding": null,
+            "approval_binding": {
+                "revision": 5,
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "3100000"
+                },
+                "destination": "BK ••• 2291",
+                "intent_digest": "sha256:4f1c9a0e7b2d58c36e91f0a4d7b3c2e815a96f0d2b4c7e1a3f58d09c6b2e7a41"
+            },
             "step_up": {
                 "purpose": "disbursement.approve",
                 "route": null
             },
-            "intent": null,
+            "intent": {
+                "operation_id": "01k5zoiqueu000000000000000",
+                "recorded_at": "2026-09-24T11:40:02+02:00",
+                "receipt": {
+                    "receipt_id": "01k5zriqueu000000000000000",
+                    "operation_id": "01k5zoiqueu000000000000000",
+                    "request_id": "9b7c2f4e-1d3a-4c5b-8e6f-iqueu0000000",
+                    "code": "DISBURSEMENT_INTENT_RECORDED",
+                    "recorded_at": "2026-09-24T11:40:02+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "3100000"
+                    },
+                    "units": null,
+                    "reference": "RZ-DIS-2026-0606",
+                    "revision": 6,
+                    "policy_version": "staff-disbursement-policy-synthetic-0",
+                    "disclosure_version": null,
+                    "link": {
+                        "url": "/preview/admin-disbursements-queued",
+                        "method": "get"
+                    }
+                }
+            },
             "dispatch": null,
             "provider": null,
             "hold": null,
@@ -296,6 +335,28 @@
             "trail": [
                 {
                     "id": "ev_1",
+                    "at": "2026-09-24T11:40:00+02:00",
+                    "actor": "Grace Kalisa",
+                    "action": {
+                        "code": "disbursement.intent_recorded",
+                        "label": "Intent recorded",
+                        "tone": "blue"
+                    },
+                    "reason": "Funded total and destination match the offer."
+                },
+                {
+                    "id": "ev_2",
+                    "at": "2026-09-24T09:12:00+02:00",
+                    "actor": "Eric Ndoli",
+                    "action": {
+                        "code": "disbursement.authorized",
+                        "label": "Authorized",
+                        "tone": "blue"
+                    },
+                    "reason": "Raise fully funded; destination verified against the RDB mandate."
+                },
+                {
+                    "id": "ev_3",
                     "at": "2026-09-22T18:00:00+02:00",
                     "actor": "System",
                     "action": {
@@ -306,17 +367,8 @@
                     "reason": null
                 }
             ],
-            "allowed_actions": ["disbursement.authorize", "disbursement.hold"],
-            "actions": {
-                "authorize": {
-                    "url": "/preview/admin-disbursements-awaiting-second",
-                    "method": "post"
-                },
-                "hold": {
-                    "url": "/preview/admin-disbursements-on-hold",
-                    "method": "post"
-                }
-            },
+            "allowed_actions": [],
+            "actions": {},
             "links": {
                 "close": {
                     "url": "/preview/admin-disbursements",
@@ -329,6 +381,11 @@
                 }
             }
         },
-        "refusal": null
+        "refusal": null,
+        "preview_outcome": {
+            "kind": "refused",
+            "code": "DISBURSEMENT_IN_FLIGHT",
+            "status": 409
+        }
     }
 }

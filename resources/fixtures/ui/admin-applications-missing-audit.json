@@ -1,5 +1,6 @@
 {
     "component": "admin/applications",
+    "synthetic": true,
     "props": {
         "viewer": {
             "id": "stf_01",
@@ -248,8 +249,15 @@
                     "url": "/admin/applications/APP-20250091/escalate",
                     "method": "post"
                 }
-            }
+            },
+            "release": null
         },
-        "stage": null
+        "stage": null,
+        "links": {
+            "operation": {
+                "url": "/preview/admin-applications-operation-{request_id}",
+                "method": "get"
+            }
+        }
     }
 }

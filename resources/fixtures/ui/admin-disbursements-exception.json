@@ -59,7 +59,7 @@
         "server_time": "2026-09-25T10:00:00+02:00",
         "contract_version": "staff-disbursement-v1",
         "staff_access_version": "staff-access-v1",
-        "allowed_actions": ["disbursement.authorize", "disbursement.hold"],
+        "allowed_actions": ["disbursement.requery"],
         "disbursements": [
             {
                 "id": "01k5za1m7q3r8t2v6w9x4y0b1c",
@@ -254,41 +254,96 @@
         },
         "awaiting_second_approver": 2,
         "disbursement": {
-            "id": "01k5za1m7q3r8t2v6w9x4y0b1c",
-            "reference": "PAY-2026-0612",
-            "business": "GreenLeaf Agro",
-            "note_title": "Cold-Chain Hub",
-            "destination": "MoMo ••• 4521",
+            "id": "01k5za9w5z1a6c0d4e7f2g8k9m",
+            "reference": "PAY-2026-0602",
+            "business": "Rubavu Tea",
+            "note_title": "Drying Shed",
+            "destination": "BK ••• 5503",
             "amount": {
                 "currency": "RWF",
-                "amount": "18000000"
+                "amount": "7300000"
             },
-            "state": "ready",
-            "provider_state": null,
+            "state": "dispatched",
+            "provider_state": "unknown",
             "link": {
-                "url": "/preview/admin-disbursements-ready",
+                "url": "/preview/admin-disbursements-exception",
                 "method": "get"
             },
-            "campaign_id": "01k5zc1m7q3r8t2v6w9x4y0b1c",
-            "revision": 3,
+            "campaign_id": "01k5zc9w5z1a6c0d4e7f2g8k9m",
+            "revision": 7,
             "due_on": null,
             "precheck": {
-                "state": "not_run",
-                "checked_at": null,
-                "policy_version": null,
+                "state": "passed",
+                "checked_at": "2026-09-24T09:12:03+02:00",
+                "policy_version": "staff-disbursement-policy-synthetic-0",
                 "causes": []
             },
-            "maker": null,
-            "checker": null,
+            "maker": {
+                "actor": "Eric Ndoli",
+                "at": "2026-09-24T09:12:00+02:00",
+                "reason": "Raise fully funded; destination verified against the RDB mandate."
+            },
+            "checker": {
+                "actor": "Grace Kalisa",
+                "at": "2026-09-24T11:40:00+02:00",
+                "reason": "Funded total and destination match the offer."
+            },
             "viewer_is_maker": false,
-            "approval_binding": null,
+            "approval_binding": {
+                "revision": 5,
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "7300000"
+                },
+                "destination": "BK ••• 5503",
+                "intent_digest": "sha256:4f1c9a0e7b2d58c36e91f0a4d7b3c2e815a96f0d2b4c7e1a3f58d09c6b2e7a41"
+            },
             "step_up": {
                 "purpose": "disbursement.approve",
                 "route": null
             },
-            "intent": null,
-            "dispatch": null,
-            "provider": null,
+            "intent": {
+                "operation_id": "01k5zoiexce000000000000000",
+                "recorded_at": "2026-09-24T11:40:02+02:00",
+                "receipt": {
+                    "receipt_id": "01k5zriexce000000000000000",
+                    "operation_id": "01k5zoiexce000000000000000",
+                    "request_id": "9b7c2f4e-1d3a-4c5b-8e6f-iexce0000000",
+                    "code": "DISBURSEMENT_INTENT_RECORDED",
+                    "recorded_at": "2026-09-24T11:40:02+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "7300000"
+                    },
+                    "units": null,
+                    "reference": "RZ-DIS-2026-0602",
+                    "revision": 6,
+                    "policy_version": "staff-disbursement-policy-synthetic-0",
+                    "disclosure_version": null,
+                    "link": {
+                        "url": "/preview/admin-disbursements-exception",
+                        "method": "get"
+                    }
+                }
+            },
+            "dispatch": {
+                "sent_at": "2026-09-24T11:41:10+02:00",
+                "recheck": {
+                    "state": "passed",
+                    "checked_at": "2026-09-24T11:41:08+02:00",
+                    "causes": []
+                }
+            },
+            "provider": {
+                "state": "unknown",
+                "operation_id": "01k5zoiexce000000000000000",
+                "provider_reference": "BK-240924-11873",
+                "error_code": "OUTCOME_CONFLICT",
+                "observed_at": "2026-09-24T12:10:00+02:00",
+                "effective_at": null,
+                "reconciliation": "exception",
+                "reconciled_at": null
+            },
             "hold": null,
             "viewer_placed_hold": false,
             "issue": null,
@@ -296,6 +351,39 @@
             "trail": [
                 {
                     "id": "ev_1",
+                    "at": "2026-09-24T11:41:10+02:00",
+                    "actor": "System",
+                    "action": {
+                        "code": "disbursement.dispatched",
+                        "label": "Sent to provider",
+                        "tone": "blue"
+                    },
+                    "reason": null
+                },
+                {
+                    "id": "ev_2",
+                    "at": "2026-09-24T11:40:00+02:00",
+                    "actor": "Grace Kalisa",
+                    "action": {
+                        "code": "disbursement.intent_recorded",
+                        "label": "Intent recorded",
+                        "tone": "blue"
+                    },
+                    "reason": "Funded total and destination match the offer."
+                },
+                {
+                    "id": "ev_3",
+                    "at": "2026-09-24T09:12:00+02:00",
+                    "actor": "Eric Ndoli",
+                    "action": {
+                        "code": "disbursement.authorized",
+                        "label": "Authorized",
+                        "tone": "blue"
+                    },
+                    "reason": "Raise fully funded; destination verified against the RDB mandate."
+                },
+                {
+                    "id": "ev_4",
                     "at": "2026-09-22T18:00:00+02:00",
                     "actor": "System",
                     "action": {
@@ -306,14 +394,10 @@
                     "reason": null
                 }
             ],
-            "allowed_actions": ["disbursement.authorize", "disbursement.hold"],
+            "allowed_actions": ["disbursement.requery"],
             "actions": {
-                "authorize": {
-                    "url": "/preview/admin-disbursements-awaiting-second",
-                    "method": "post"
-                },
-                "hold": {
-                    "url": "/preview/admin-disbursements-on-hold",
+                "requery": {
+                    "url": "/preview/admin-disbursements-exception",
                     "method": "post"
                 }
             },

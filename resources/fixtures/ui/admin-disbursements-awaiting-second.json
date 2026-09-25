@@ -59,7 +59,11 @@
         "server_time": "2026-09-25T10:00:00+02:00",
         "contract_version": "staff-disbursement-v1",
         "staff_access_version": "staff-access-v1",
-        "allowed_actions": ["disbursement.authorize", "disbursement.hold"],
+        "allowed_actions": [
+            "disbursement.approve",
+            "disbursement.reject",
+            "disbursement.hold"
+        ],
         "disbursements": [
             {
                 "id": "01k5za1m7q3r8t2v6w9x4y0b1c",
@@ -254,34 +258,46 @@
         },
         "awaiting_second_approver": 2,
         "disbursement": {
-            "id": "01k5za1m7q3r8t2v6w9x4y0b1c",
-            "reference": "PAY-2026-0612",
-            "business": "GreenLeaf Agro",
-            "note_title": "Cold-Chain Hub",
-            "destination": "MoMo ••• 4521",
+            "id": "01k5za2n8r4s9v3w7x0y5z1c2d",
+            "reference": "PAY-2026-0611",
+            "business": "Sebeya Logistics",
+            "note_title": "Fleet Expansion",
+            "destination": "Equity ••• 0934",
             "amount": {
                 "currency": "RWF",
-                "amount": "18000000"
+                "amount": "24100000"
             },
-            "state": "ready",
+            "state": "awaiting_second_approver",
             "provider_state": null,
             "link": {
-                "url": "/preview/admin-disbursements-ready",
+                "url": "/preview/admin-disbursements-awaiting-second",
                 "method": "get"
             },
-            "campaign_id": "01k5zc1m7q3r8t2v6w9x4y0b1c",
-            "revision": 3,
+            "campaign_id": "01k5zc2n8r4s9v3w7x0y5z1c2d",
+            "revision": 4,
             "due_on": null,
             "precheck": {
-                "state": "not_run",
-                "checked_at": null,
-                "policy_version": null,
+                "state": "passed",
+                "checked_at": "2026-09-24T09:12:03+02:00",
+                "policy_version": "staff-disbursement-policy-synthetic-0",
                 "causes": []
             },
-            "maker": null,
+            "maker": {
+                "actor": "Eric Ndoli",
+                "at": "2026-09-24T09:12:00+02:00",
+                "reason": "Raise fully funded; destination verified against the RDB mandate."
+            },
             "checker": null,
             "viewer_is_maker": false,
-            "approval_binding": null,
+            "approval_binding": {
+                "revision": 4,
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "24100000"
+                },
+                "destination": "Equity ••• 0934",
+                "intent_digest": "sha256:4f1c9a0e7b2d58c36e91f0a4d7b3c2e815a96f0d2b4c7e1a3f58d09c6b2e7a41"
+            },
             "step_up": {
                 "purpose": "disbursement.approve",
                 "route": null
@@ -296,6 +312,17 @@
             "trail": [
                 {
                     "id": "ev_1",
+                    "at": "2026-09-24T09:12:00+02:00",
+                    "actor": "Eric Ndoli",
+                    "action": {
+                        "code": "disbursement.authorized",
+                        "label": "Authorized",
+                        "tone": "blue"
+                    },
+                    "reason": "Raise fully funded; destination verified against the RDB mandate."
+                },
+                {
+                    "id": "ev_2",
                     "at": "2026-09-22T18:00:00+02:00",
                     "actor": "System",
                     "action": {
@@ -306,10 +333,18 @@
                     "reason": null
                 }
             ],
-            "allowed_actions": ["disbursement.authorize", "disbursement.hold"],
+            "allowed_actions": [
+                "disbursement.approve",
+                "disbursement.reject",
+                "disbursement.hold"
+            ],
             "actions": {
-                "authorize": {
-                    "url": "/preview/admin-disbursements-awaiting-second",
+                "approve": {
+                    "url": "/preview/admin-disbursements-queued",
+                    "method": "post"
+                },
+                "reject": {
+                    "url": "/preview/admin-disbursements-ready",
                     "method": "post"
                 },
                 "hold": {

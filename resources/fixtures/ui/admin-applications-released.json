@@ -117,7 +117,7 @@
                 }
             }
         ],
-        "active_tab": "pending",
+        "active_tab": "approved",
         "applications": [
             {
                 "id": "APP-20250091",
@@ -136,19 +136,16 @@
                     "score": "3.5"
                 },
                 "submitted_at": "2026-09-02T10:00:00+02:00",
-                "state": "submitted",
+                "state": "approved",
                 "decision": {
                     "code": "reject",
                     "reason": "Requested exceeds CFADS debt capacity (max RWF 15M at DSCR 1.25)"
                 },
                 "link": {
-                    "url": "/preview/admin-applications-review",
+                    "url": "/preview/admin-applications-released",
                     "method": "get"
                 },
-                "approve_link": {
-                    "url": "/preview/admin-applications-approve",
-                    "method": "get"
-                }
+                "approve_link": null
             }
         ],
         "review": {
@@ -156,7 +153,7 @@
             "business": "Kigali Motors",
             "note_title": "Kigali Expansion",
             "sector": "Hospitality",
-            "state": "submitted",
+            "state": "approved",
             "decision": {
                 "code": "reject",
                 "reason": "Requested exceeds CFADS debt capacity (max RWF 15M at DSCR 1.25)"
@@ -211,8 +208,30 @@
             },
             "use_of_funds": "Packhouse automation and hiring",
             "submitted_at": "2026-09-02T10:00:00+02:00",
-            "reviewer": null,
+            "reviewer": "Grace Kalisa",
             "trail": [
+                {
+                    "id": "ev_rel",
+                    "at": "2026-09-24T14:20:00+02:00",
+                    "actor": "A. Diane",
+                    "action": {
+                        "code": "application.released",
+                        "label": "Released for listing",
+                        "tone": "green"
+                    },
+                    "reason": "Engine, authority and sealed report all confirmed."
+                },
+                {
+                    "id": "ev_ap",
+                    "at": "2026-09-24T09:00:00+02:00",
+                    "actor": "Grace Kalisa",
+                    "action": {
+                        "code": "application.approved",
+                        "label": "Approved",
+                        "tone": "green"
+                    },
+                    "reason": "Engine approve; audit sealed; capacity within policy."
+                },
                 {
                     "id": "ev_1",
                     "at": "2026-09-02T10:00:00+02:00",
@@ -235,29 +254,52 @@
                     "method": "get"
                 }
             },
-            "actions": {
-                "take": {
-                    "url": "/admin/applications/APP-20250091/take",
-                    "method": "post"
+            "actions": {},
+            "release": {
+                "revision": 3,
+                "state": "released",
+                "gates": [
+                    {
+                        "key": "engine",
+                        "state": "passed",
+                        "cause": null
+                    },
+                    {
+                        "key": "authority",
+                        "state": "passed",
+                        "cause": null
+                    },
+                    {
+                        "key": "report",
+                        "state": "passed",
+                        "cause": null
+                    }
+                ],
+                "allowed_actions": [],
+                "actions": {
+                    "release": null
                 },
-                "approve": {
-                    "url": "/admin/applications/APP-20250091/approve",
-                    "method": "post"
-                },
-                "reject": {
-                    "url": "/admin/applications/APP-20250091/reject",
-                    "method": "post"
-                },
-                "info": {
-                    "url": "/admin/applications/APP-20250091/info",
-                    "method": "post"
-                },
-                "escalate": {
-                    "url": "/admin/applications/APP-20250091/escalate",
-                    "method": "post"
+                "receipt": {
+                    "receipt_id": "01k5zrrel00000000000000000",
+                    "operation_id": "01k5zorel00000000000000000",
+                    "request_id": "2c4e6a8b-0d1f-4a3c-9e5b-7d9f1b3d5f70",
+                    "code": "APPLICATION_RELEASED",
+                    "recorded_at": "2026-09-24T14:20:00+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "50000000"
+                    },
+                    "units": null,
+                    "reference": "RZ-REL-20250091",
+                    "revision": 3,
+                    "policy_version": "staff-release-policy-synthetic-0",
+                    "disclosure_version": null,
+                    "link": {
+                        "url": "/preview/admin-applications-released",
+                        "method": "get"
+                    }
                 }
-            },
-            "release": null
+            }
         },
         "stage": null,
         "links": {

@@ -1,5 +1,6 @@
 {
     "component": "admin/applications",
+    "synthetic": true,
     "props": {
         "viewer": {
             "id": "stf_01",
@@ -119,6 +120,12 @@
         "active_tab": "rejected",
         "applications": [],
         "review": null,
-        "stage": null
+        "stage": null,
+        "links": {
+            "operation": {
+                "url": "/preview/admin-applications-operation-{request_id}",
+                "method": "get"
+            }
+        }
     }
 }

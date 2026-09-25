@@ -59,7 +59,7 @@
         "server_time": "2026-09-25T10:00:00+02:00",
         "contract_version": "staff-disbursement-v1",
         "staff_access_version": "staff-access-v1",
-        "allowed_actions": ["disbursement.authorize", "disbursement.hold"],
+        "allowed_actions": [],
         "disbursements": [
             {
                 "id": "01k5za1m7q3r8t2v6w9x4y0b1c",
@@ -253,82 +253,10 @@
             "next": null
         },
         "awaiting_second_approver": 2,
-        "disbursement": {
-            "id": "01k5za1m7q3r8t2v6w9x4y0b1c",
-            "reference": "PAY-2026-0612",
-            "business": "GreenLeaf Agro",
-            "note_title": "Cold-Chain Hub",
-            "destination": "MoMo ••• 4521",
-            "amount": {
-                "currency": "RWF",
-                "amount": "18000000"
-            },
-            "state": "ready",
-            "provider_state": null,
-            "link": {
-                "url": "/preview/admin-disbursements-ready",
-                "method": "get"
-            },
-            "campaign_id": "01k5zc1m7q3r8t2v6w9x4y0b1c",
-            "revision": 3,
-            "due_on": null,
-            "precheck": {
-                "state": "not_run",
-                "checked_at": null,
-                "policy_version": null,
-                "causes": []
-            },
-            "maker": null,
-            "checker": null,
-            "viewer_is_maker": false,
-            "approval_binding": null,
-            "step_up": {
-                "purpose": "disbursement.approve",
-                "route": null
-            },
-            "intent": null,
-            "dispatch": null,
-            "provider": null,
-            "hold": null,
-            "viewer_placed_hold": false,
-            "issue": null,
-            "refund": null,
-            "trail": [
-                {
-                    "id": "ev_1",
-                    "at": "2026-09-22T18:00:00+02:00",
-                    "actor": "System",
-                    "action": {
-                        "code": "raise.funded",
-                        "label": "Raise fully funded",
-                        "tone": "green"
-                    },
-                    "reason": null
-                }
-            ],
-            "allowed_actions": ["disbursement.authorize", "disbursement.hold"],
-            "actions": {
-                "authorize": {
-                    "url": "/preview/admin-disbursements-awaiting-second",
-                    "method": "post"
-                },
-                "hold": {
-                    "url": "/preview/admin-disbursements-on-hold",
-                    "method": "post"
-                }
-            },
-            "links": {
-                "close": {
-                    "url": "/preview/admin-disbursements",
-                    "method": "get"
-                },
-                "ledger": null,
-                "operation": {
-                    "url": "/preview/admin-disbursements-operation-{request_id}",
-                    "method": "get"
-                }
-            }
-        },
-        "refusal": null
+        "disbursement": null,
+        "refusal": {
+            "code": "NOT_FOUND",
+            "status": 404
+        }
     }
 }

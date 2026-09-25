@@ -1,105 +1,54 @@
 import { Link } from '@inertiajs/react';
 import { AdminFrame } from '@/components/admin/admin-frame';
+import { DisbursementDrawer } from '@/components/admin/disbursements/disbursement-drawer';
 import {
-    DisbursementDrawer,
-    STATE_TONE,
-} from '@/components/admin/disbursements/disbursement-drawer';
+    DisbursementStateChip,
+    ProviderStateChip,
+} from '@/components/admin/disbursements/disbursement-status';
 import { SearchEmpty } from '@/components/admin/search-empty';
 import {
     CardTitle,
-    Chip,
     EmptyState,
     HeadCell,
-    PolicyPeek,
     ROW_RULE,
+    ShowMoreLink,
     TABLE_HEAD,
     TableCard,
 } from '@/components/admin/ui';
+import { useRefusalText } from '@/components/rozine/c3-notice';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
-    AdminDisbursementsProps,
-    DisbursementRow,
-    DisbursementState,
+    C3AdminDisbursementsProps,
+    C3DisbursementRow,
+    C3DisbursementState,
 } from '@/types/admin';
 
 const GRID =
-    'grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.9fr)_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(230px,1.5fr)] gap-3 px-5';
+    'grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.9fr)_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(230px,1.5fr)] gap-3 px-5';
 
 const OPEN_LABEL: Record<
-    DisbursementState,
-    'release' | 'check' | 'open' | 'inspect'
+    C3DisbursementState,
+    'authorize' | 'check' | 'open' | 'inspect'
 > = {
-    ready: 'release',
+    ready: 'authorize',
     awaiting_second_approver: 'check',
     on_hold: 'open',
+    queued: 'open',
     dispatched: 'open',
-    paid: 'open',
-    failed: 'inspect',
+    succeeded: 'open',
+    failed_closing: 'inspect',
 };
 
-/** Whole Kigali calendar days from the server's today to the due date. */
-const daysUntil = (dueOn: string, serverTime: string): number =>
-    Math.round(
-        (Date.parse(`${dueOn.slice(0, 10)}T00:00:00Z`) -
-            Date.parse(`${serverTime.slice(0, 10)}T00:00:00Z`)) /
-            86400000,
-    );
+const OPEN_TONE: Partial<Record<C3DisbursementState, string>> = {
+    ready: 'bg-[#1d9e75] text-white',
+    awaiting_second_approver: 'bg-[#1d9e75] text-white',
+    failed_closing: 'bg-[#e5484d] text-white',
+};
 
-function DueLabel({
-    dueOn,
-    serverTime,
-}: {
-    dueOn: string;
-    serverTime: string;
-}) {
+function Row({ row }: { row: C3DisbursementRow }) {
     const { t } = useTranslation();
-    const days = daysUntil(dueOn, serverTime);
-
-    if (days < 0) {
-        return (
-            <span className="text-[12px] font-semibold text-[#e5484d] dark:text-[#ff6b6f]">
-                {t('admin.disbursements.overdue', { count: -days })}
-            </span>
-        );
-    }
-
-    if (days === 0) {
-        return (
-            <span className="text-[12px] font-semibold text-[#e5484d] dark:text-[#ff6b6f]">
-                {t('admin.disbursements.today')}
-            </span>
-        );
-    }
-
-    if (days === 1) {
-        return (
-            <span className="text-[12px] font-semibold text-[#c2661f] dark:text-[#f0a060]">
-                {t('admin.disbursements.tomorrow')}
-            </span>
-        );
-    }
-
-    return (
-        <span className="text-[12px] font-semibold text-rz-body">
-            {t('admin.disbursements.in_days', { count: days })}
-        </span>
-    );
-}
-
-function Row({
-    row,
-    serverTime,
-}: {
-    row: DisbursementRow;
-    serverTime: string;
-}) {
-    const { t } = useTranslation();
-    const primary =
-        row.state === 'ready' ||
-        row.state === 'awaiting_second_approver' ||
-        row.state === 'failed';
 
     return (
         <div role="row" className={cn(GRID, ROW_RULE, 'items-center py-3.5')}>
@@ -119,12 +68,10 @@ function Row({
                 {formatRwfShort(row.amount)}
             </span>
             <span role="cell">
-                <DueLabel dueOn={row.due_on} serverTime={serverTime} />
+                <ProviderStateChip state={row.provider_state} />
             </span>
             <div role="cell" className="flex items-center justify-end gap-1.5">
-                <Chip tone={STATE_TONE[row.state]}>
-                    {t(`admin.disbursements.state.${row.state}`)}
-                </Chip>
+                <DisbursementStateChip state={row.state} />
                 <Link
                     href={row.link}
                     aria-label={t('admin.disbursements.open_named', {
@@ -132,11 +79,8 @@ function Row({
                     })}
                     className={cn(
                         'shrink-0 rounded-lg px-3 py-1.5 text-[11.5px] font-semibold',
-                        primary
-                            ? row.state === 'failed'
-                                ? 'bg-[#e5484d] text-white'
-                                : 'bg-[#1d9e75] text-white'
-                            : 'border border-rz-hairline bg-rz-surface text-rz-slate',
+                        OPEN_TONE[row.state] ??
+                            'border border-rz-hairline bg-rz-surface text-rz-slate',
                     )}
                 >
                     {t(`admin.disbursements.action.${OPEN_LABEL[row.state]}`)}
@@ -147,13 +91,15 @@ function Row({
 }
 
 /**
- * Disbursements (MVP-ADMIN-SCR-03, design "Pending disbursements" T1690–1715): approved, funded
- * raises waiting to be paid to their business. The design's per-row Release and "Release all"
- * are replaced by the maker-checker drawer — no release commits from the list, and nothing is
- * released in bulk (AC-03).
+ * Disbursements (MVP-ADMIN-SCR-03, C3 proposal v2 §2e): funded raises waiting to be paid to
+ * their business, and the ones already in flight. No release commits from the list and nothing
+ * is released in bulk; every command runs from the drawer with two distinct staff. There is no
+ * sourced deadline after full funding, so none is shown, and a provider that has not confirmed an
+ * outcome never reads as paid or failed.
  */
-export default function AdminDisbursements(props: AdminDisbursementsProps) {
+export default function AdminDisbursements(props: C3AdminDisbursementsProps) {
     const { t } = useTranslation();
+    const refusal = useRefusalText();
     const awaiting = props.awaiting_second_approver;
 
     return (
@@ -166,14 +112,19 @@ export default function AdminDisbursements(props: AdminDisbursementsProps) {
                         key={props.disbursement.id}
                         disbursement={props.disbursement}
                         viewer={props.viewer}
+                        preview={props.preview_outcome}
                     />
                 )
             }
         >
-            <PolicyPeek
-                title={t('admin.disbursements.policy_title')}
-                items={props.policy}
-            />
+            {props.disbursement === null && props.refusal !== null && (
+                <p
+                    role="alert"
+                    className="mb-3.5 rounded-2xl border border-rz-border bg-rz-surface p-4 text-[12.5px] leading-[1.55] text-rz-secondary"
+                >
+                    {refusal(props.refusal.code)}
+                </p>
+            )}
             <div className="mb-3.5 flex flex-wrap items-center gap-2.5">
                 <CardTitle>{t('admin.disbursements.title')}</CardTitle>
                 {awaiting > 0 && (
@@ -190,6 +141,13 @@ export default function AdminDisbursements(props: AdminDisbursementsProps) {
             <TableCard
                 label={t('admin.disbursements.table')}
                 minWidth="min-w-[900px]"
+                footer={
+                    props.pagination.next !== null && (
+                        <ShowMoreLink link={props.pagination.next}>
+                            {t('admin.disbursements.older')}
+                        </ShowMoreLink>
+                    )
+                }
             >
                 <div role="row" className={cn(GRID, TABLE_HEAD, 'py-[13px]')}>
                     <HeadCell>
@@ -200,17 +158,13 @@ export default function AdminDisbursements(props: AdminDisbursementsProps) {
                         {t('admin.disbursements.col.recipient')}
                     </HeadCell>
                     <HeadCell>{t('admin.disbursements.col.amount')}</HeadCell>
-                    <HeadCell>{t('admin.disbursements.col.due')}</HeadCell>
+                    <HeadCell>{t('admin.disbursements.col.provider')}</HeadCell>
                     <HeadCell end>
                         {t('admin.disbursements.col.actions')}
                     </HeadCell>
                 </div>
                 {props.disbursements.map((row) => (
-                    <Row
-                        key={row.id}
-                        row={row}
-                        serverTime={props.server_time}
-                    />
+                    <Row key={row.id} row={row} />
                 ))}
                 {props.disbursements.length === 0 && (
                     <EmptyState
