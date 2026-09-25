@@ -5,10 +5,12 @@ import type { AuditorFileProps, BusinessFile } from '@/types/auditor';
 import blockedFixture from '../../../resources/fixtures/ui/auditor-file-conflict-blocked.json';
 import declineOtherFixture from '../../../resources/fixtures/ui/auditor-file-decline-other.json';
 import liveMinimalFixture from '../../../resources/fixtures/ui/auditor-file-live-minimal.json';
+import noApplicationFixture from '../../../resources/fixtures/ui/auditor-file-no-application.json';
 import reassignedFixture from '../../../resources/fixtures/ui/auditor-file-reassigned.json';
+import startFixture from '../../../resources/fixtures/ui/auditor-file-start.json';
 import fileFixture from '../../../resources/fixtures/ui/auditor-file.json';
 import { renderWithUser } from '../helpers/render-with-user';
-import { answers, inertia, operation } from './inertia';
+import { answers, fails, inertia, offline, operation } from './inertia';
 
 vi.mock('@inertiajs/react', () => import('./inertia'));
 
@@ -480,4 +482,215 @@ describe('Auditor business file on the live S-C projection', () => {
             within(sheet).queryByText(/Working capital/u),
         ).not.toBeInTheDocument();
     });
+});
+
+describe('Auditor business file — starting the report', () => {
+    const STARTED = operation({
+        code: 'AUDIT_STARTED',
+        data: { next: { url: '/preview/auditor-audit-review', method: 'get' } },
+    });
+
+    it('starts the report with the job revision and the application pins, then follows next', async () => {
+        inertia.queue.push(answers(STARTED));
+        const { user } = renderWithUser(
+            <AuditorFile {...props(startFixture)} />,
+        );
+        const start = within(sheetFor()).getByRole('button', {
+            name: 'Start the audit',
+        });
+
+        expect(
+            within(sheetFor()).queryByRole('link', {
+                name: 'Continue the audit',
+            }),
+        ).not.toBeInTheDocument();
+        await user.click(start);
+
+        expect(inertia.calls[0]).toEqual({
+            url: '/preview/auditor-audit-review',
+            method: 'post',
+            body: {
+                assignment_id: 'fa_huye',
+                expected_revision: 2,
+                application_id: 'app_huye_motors',
+                application_revision: 4,
+                identity_context_revision: 3,
+                request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u),
+            },
+        });
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([
+                { url: '/preview/auditor-audit-review' },
+            ]),
+        );
+    });
+
+    it('says it is starting while the start is in flight', async () => {
+        const { user } = renderWithUser(
+            <AuditorFile {...props(startFixture)} />,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'Start the audit' }),
+        );
+
+        const starting = screen.getByRole('button', { name: 'Starting…' });
+
+        expect(starting).toBeDisabled();
+        expect(starting).toHaveAttribute('aria-busy', 'true');
+    });
+
+    it('recovers a start whose answer was lost through the report lookup, not the assignment one', async () => {
+        inertia.queue.push(fails(503), answers(STARTED));
+        const { user } = renderWithUser(
+            <AuditorFile {...props(startFixture)} />,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'Start the audit' }),
+        );
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(2));
+        const sent = inertia.calls[0].body as { request_id: string };
+
+        expect(inertia.calls[1]).toEqual({
+            url: `/preview/auditor-report-operation-${sent.request_id}`,
+            method: 'get',
+            body: { command: 'audit.start' },
+        });
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([
+                { url: '/preview/auditor-audit-review' },
+            ]),
+        );
+    });
+
+    it('keeps the assignment lookup for an assignment command on the same page', async () => {
+        inertia.queue.push(fails(503), offline());
+        const { user } = renderWithUser(<AuditorFile {...props()} />);
+
+        await user.click(
+            within(sheetFor()).getByRole('button', { name: /^Accept/u }),
+        );
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(2));
+        expect(inertia.calls[1].url).toMatch(
+            /^\/preview\/auditor-operation-[0-9a-f-]{36}$/u,
+        );
+    });
+
+    it('continues an existing report instead of starting another', () => {
+        const page = props(startFixture);
+
+        render(
+            <AuditorFile
+                {...page}
+                actions={{ ...page.actions, start: null }}
+                links={{
+                    ...page.links,
+                    procedure: {
+                        url: '/preview/auditor-audit-review',
+                        method: 'get',
+                    },
+                }}
+            />,
+        );
+
+        expect(
+            screen.getByRole('link', { name: 'Continue the audit' }),
+        ).toHaveAttribute('href', '/preview/auditor-audit-review');
+        expect(
+            screen.queryByRole('button', { name: 'Start the audit' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('says there is no application to audit, with nothing to start', () => {
+        render(<AuditorFile {...props(noApplicationFixture)} />);
+
+        expect(within(sheetFor()).getByRole('note')).toHaveTextContent(
+            'No submitted application is available to audit yet.',
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Start the audit' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('offers no start the server does not allow, and no unavailable line either', () => {
+        render(
+            <AuditorFile
+                {...props(startFixture)}
+                allowed_actions={['conflict.declare']}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Start the audit' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(
+                'No submitted application is available to audit yet.',
+            ),
+        ).not.toBeInTheDocument();
+    });
+
+    it.each([
+        [
+            'VERSION_CONFLICT',
+            409,
+            'This record changed since you opened it. The page has been refreshed — check it and try again.',
+            true,
+        ],
+        [
+            'APPLICATION_VERSION_CONFLICT',
+            409,
+            "The business's application changed since you opened this file. The page has been refreshed — check it and start again.",
+            true,
+        ],
+        [
+            'APPLICATION_NOT_SUBMITTED',
+            409,
+            "This application hasn't been submitted, so there is nothing to audit yet. The page has been refreshed.",
+            true,
+        ],
+        [
+            'APPLICATION_NOT_FOUND',
+            404,
+            'This application is no longer available to you, so nothing was started.',
+            false,
+        ],
+        [
+            'AUDIT_APPLICATION_BOUND',
+            409,
+            'A report is already bound to this application, so no new one was started. The page has been refreshed — continue from there.',
+            true,
+        ],
+        [
+            'AUDIT_REPORT_REASSIGNMENT_REQUIRED',
+            409,
+            'This report has to be reassigned before work on it can continue, so nothing was started. The page has been refreshed.',
+            true,
+        ],
+        [
+            'AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED',
+            403,
+            'Accept the current engagement terms to continue.',
+            false,
+        ],
+    ] as const)(
+        'explains a %s refusal of the start',
+        async (code, status, text, fresh) => {
+            inertia.queue.push(fails(status, { code }));
+            const { user } = renderWithUser(
+                <AuditorFile {...props(startFixture)} />,
+            );
+
+            await user.click(
+                screen.getByRole('button', { name: 'Start the audit' }),
+            );
+
+            expect(await screen.findByText(text)).toBeInTheDocument();
+            expect(inertia.reloads).toHaveLength(fresh ? 1 : 0);
+            expect(inertia.visits).toHaveLength(0);
+        },
+    );
 });

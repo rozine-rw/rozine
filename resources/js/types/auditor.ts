@@ -23,6 +23,7 @@ export type AuditorAllowedAction =
     | 'assignment.accept'
     | 'assignment.decline'
     | 'conflict.declare'
+    | 'audit.start'
     | 'audit.save_step'
     | 'audit.seal'
     | 'audit.request_changes'
@@ -133,6 +134,11 @@ export type AuditorCommand = OperationCommand<AuditorCommandName> & {
     route: RouteAction;
     /** The business the command concerns, for the result card. */
     business: string;
+    /**
+     * The operation lookup this command recovers through, when it is not the page's own: a report
+     * start is looked up at `links.start_operation`, never the assignment's lookup.
+     */
+    lookup?: RouteLink;
 };
 
 /** The record a sealed report returns (point 6). Algorithm and key custody are the server's. */
@@ -675,23 +681,26 @@ export type AuditorFileProps = AuditorPageContract &
         job: FileJob;
         actions: JobActions & {
             /**
-             * Pending S-D (`audit.start`, #96), types only: no page sends or reads it yet. Present
-             * once assigned and while no report exists; null otherwise. Starting sends the
-             * assignment revision with the `application` pins and follows `data.next`; the file GET
-             * creates nothing, and once a report exists `links.procedure` resumes it.
+             * `audit.start` (#96): present once assigned and while no report exists, null
+             * otherwise. Starting sends the assignment revision with the `application` pins and
+             * follows `data.next`; the file GET creates nothing, and once a report exists
+             * `links.procedure` resumes it instead.
              */
-            start?: RouteAction | null;
+            start: RouteAction | null;
         };
         /**
-         * Pending S-D (`audit.start`, #96), types only: the exact application ID and revision the
-         * report will bind, sent with `actions.start`. It stays outside the frozen submitted row.
+         * The exact application ID and revision a started report binds, sent with `actions.start`.
+         * Null when no application exists: the file then says there is nothing to start.
          */
-        application?: RecordRef;
+        application: RecordRef | null;
         decline_options: ServerOption<DeclineReason>[];
+        /** `operation` recovers assignment and conflict commands; a start has its own lookup. */
         links: OperationLookupLinks & {
             close: RouteLink;
-            /** Null until the procedure is served (S-D): the page then offers no Continue button. */
+            /** The started report's procedure; null until a report exists. */
             procedure: RouteLink | null;
+            /** The report start's operation lookup, with the literal `{request_id}` token. */
+            start_operation: RouteLink;
         };
         /** Jobs, drawn beneath the sheet on a wide screen. */
         jobs: AuditorJobsProps;

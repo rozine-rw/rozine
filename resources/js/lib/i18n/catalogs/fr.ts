@@ -3176,6 +3176,21 @@ const fr: Catalog = {
         "Aucun document source n'est enregistré pour ce mois.",
     'auditor.count.period_unavailable': 'Indisponible',
 
+    'auditor.file.start': "Commencer l'audit",
+    'auditor.file.starting': 'Démarrage…',
+    'auditor.file.application_unavailable':
+        "Aucune demande soumise n'est encore disponible pour l'audit.",
+    'auditor.command.refused.APPLICATION_VERSION_CONFLICT':
+        "La demande de l'entreprise a changé depuis l'ouverture de ce dossier. La page a été actualisée — vérifiez-la et recommencez.",
+    'auditor.command.refused.APPLICATION_NOT_SUBMITTED':
+        "Cette demande n'a pas été soumise : il n'y a donc encore rien à auditer. La page a été actualisée.",
+    'auditor.command.refused.APPLICATION_NOT_FOUND':
+        "Cette demande ne vous est plus accessible : rien n'a été commencé.",
+    'auditor.command.refused.AUDIT_APPLICATION_BOUND':
+        "Un rapport est déjà lié à cette demande : aucun nouveau n'a été commencé. La page a été actualisée — reprenez à partir de là.",
+    'auditor.command.refused.AUDIT_REPORT_REASSIGNMENT_REQUIRED':
+        "Ce rapport doit être réattribué avant que le travail puisse reprendre : rien n'a été commencé. La page a été actualisée.",
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

@@ -48,9 +48,10 @@ type Options<C extends OperationCommand, R> = {
     actions: Record<C['name'], RouteAction> | ((command: C) => RouteAction);
     /**
      * The operation lookup. Its url holds the literal `{request_id}` token, which is replaced; the
-     * command name goes as the `command` query unless `lookupNamesCommand` is false.
+     * command name goes as the `command` query unless `lookupNamesCommand` is false. It can be read
+     * from the command itself when a command recovers through a lookup of its own.
      */
-    lookup: RouteLink;
+    lookup: RouteLink | ((command: C) => RouteLink);
     /**
      * Whether the lookup names the command in its `command` query (the default). A contract whose
      * lookup serves a single command, such as auditor-engagement-v1, takes no `command` query.
@@ -210,9 +211,10 @@ export function useOperationCommand<
     const lookUp = async (command: C) => {
         setNotice({ kind: 'checking' });
 
+        const found = typeof lookup === 'function' ? lookup(command) : lookup;
         const attempt = await request(
             {
-                url: lookup.url.replace(
+                url: found.url.replace(
                     '{request_id}',
                     encodeURIComponent(command.payload.request_id),
                 ),

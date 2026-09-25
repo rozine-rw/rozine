@@ -3047,6 +3047,20 @@ const en = {
     'auditor.statements.no_documents':
         'No source documents are on file for this month.',
     'auditor.count.period_unavailable': 'Unavailable',
+    'auditor.file.start': 'Start the audit',
+    'auditor.file.starting': 'Starting…',
+    'auditor.file.application_unavailable':
+        'No submitted application is available to audit yet.',
+    'auditor.command.refused.APPLICATION_VERSION_CONFLICT':
+        "The business's application changed since you opened this file. The page has been refreshed — check it and start again.",
+    'auditor.command.refused.APPLICATION_NOT_SUBMITTED':
+        "This application hasn't been submitted, so there is nothing to audit yet. The page has been refreshed.",
+    'auditor.command.refused.APPLICATION_NOT_FOUND':
+        'This application is no longer available to you, so nothing was started.',
+    'auditor.command.refused.AUDIT_APPLICATION_BOUND':
+        'A report is already bound to this application, so no new one was started. The page has been refreshed — continue from there.',
+    'auditor.command.refused.AUDIT_REPORT_REASSIGNMENT_REQUIRED':
+        'This report has to be reassigned before work on it can continue, so nothing was started. The page has been refreshed.',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

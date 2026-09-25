@@ -62,6 +62,11 @@ const REFUSALS = [
     'STEP_UP_INVALID',
     'STEP_UP_EXPIRED',
     'AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED',
+    'APPLICATION_VERSION_CONFLICT',
+    'APPLICATION_NOT_SUBMITTED',
+    'APPLICATION_NOT_FOUND',
+    'AUDIT_APPLICATION_BOUND',
+    'AUDIT_REPORT_REASSIGNMENT_REQUIRED',
 ] as const;
 
 /**
@@ -125,6 +130,8 @@ export type CommandRequest = {
     route: RouteAction;
     /** The command's fields, with its target's `expected_revision`. */
     payload: Record<string, unknown>;
+    /** Its own operation lookup, when it is not the page's (see `AuditorCommand`). */
+    lookup?: RouteLink;
     /**
      * The target record's own `allowed_actions`, where a list page scopes each record; the
      * page's list otherwise.
@@ -259,12 +266,15 @@ export function useAuditorCommandCenter({
     const refresh = (): Promise<void> =>
         withdrawn.current ? Promise.resolve() : reloadPreservingState(reload);
 
+    /* A command that names its own lookup recovers there; any other through the page's. */
+    const lookupFor = (sent: AuditorCommand): RouteLink =>
+        sent.lookup ?? lookup;
     const command = useOperationCommand<
         AuditorCommand,
         AuditorOperationResource
     >({
         actions: (sent) => sent.route,
-        lookup,
+        lookup: lookupFor,
         initial,
         refresh,
         onCompleted,
@@ -275,7 +285,7 @@ export function useAuditorCommandCenter({
         AuditorOperationResource
     >({
         actions: (sent) => sent.route,
-        lookup,
+        lookup: lookupFor,
         refresh,
         onCompleted,
         onRefused,
@@ -289,7 +299,14 @@ export function useAuditorCommandCenter({
      * `request_id`; the target's `expected_revision` comes with the payload.
      */
     const send = (
-        { name, business, route, payload, scope }: CommandRequest,
+        {
+            name,
+            business,
+            route,
+            payload,
+            scope,
+            lookup: ownLookup,
+        }: CommandRequest,
         own: CommandCallbacks = {},
     ): boolean => {
         if (!(scope ?? page.allowed_actions).includes(name)) {
@@ -305,6 +322,7 @@ export function useAuditorCommandCenter({
             name,
             business,
             route,
+            ...(ownLookup === undefined ? {} : { lookup: ownLookup }),
             payload: {
                 ...payload,
                 identity_context_revision: page.identity_context_revision,

@@ -123,7 +123,12 @@
             "conflict": {
                 "url": "/preview/auditor-jobs-conflict",
                 "method": "post"
-            }
+            },
+            "start": null
+        },
+        "application": {
+            "id": "app_huye_motors",
+            "revision": 4
         },
         "links": {
             "close": {
@@ -133,6 +138,10 @@
             "procedure": null,
             "operation": {
                 "url": "/preview/auditor-operation-{request_id}",
+                "method": "get"
+            },
+            "start_operation": {
+                "url": "/preview/auditor-report-operation-{request_id}",
                 "method": "get"
             }
         },
