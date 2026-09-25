@@ -3157,6 +3157,12 @@ const rw: Catalog = {
     'auditor.ledger.reconciles_undeclared':
         'Guhuza bizakomeza guhagarara kugeza ikigo gitangaje ububiko bwacyo.',
 
+    'auditor.statements.cover_unavailable': 'Ntibiboneka',
+    'auditor.statements.documents': "Inyandiko z'umwimerere",
+    'auditor.statements.no_documents':
+        "Nta nyandiko z'umwimerere zibitswe z'uku kwezi.",
+    'auditor.count.period_unavailable': 'Ntibiboneka',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

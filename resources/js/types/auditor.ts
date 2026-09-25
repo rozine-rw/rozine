@@ -820,8 +820,17 @@ export type StatementsStage = {
               inflow: Money;
               outflow: Money;
               net: Money;
-              cover: { value: string; band: 'healthy' | 'watch' | 'below' };
-              document: { name: string; link: RouteLink };
+              /**
+               * The factual cover, `inflow / (outflow + debt_service)` to two decimals: "1.84".
+               * Null when the denominator is zero, and it reads "Unavailable". No monitoring
+               * thresholds are approved, so there is no band and the figure is shown neutrally.
+               */
+              cover: { value: string; band: null } | null;
+              /**
+               * Every original document behind the month, each a protected download (web or API)
+               * opened as an ordinary link. None stands in for the others.
+               */
+              documents: { name: string; link: RouteLink }[];
           }
         | { status: 'unavailable'; reason: string };
 };
@@ -842,7 +851,8 @@ export type CountStage = {
         variance: Variance | null;
     };
     tolerance: string;
-    period: { from: string; to: string };
+    /** The statement period; null for a retained record with no pinned period. */
+    period: { from: string; to: string } | null;
     account_ref: string;
     sector: { label: string; definition: string };
     inventory_proofs: ProofItem[];
@@ -959,12 +969,16 @@ export type AuditProcedureProps = AuditorPageContract & {
     actions: {
         save: RouteAction;
         conflict: RouteAction;
+        /**
+         * The commands below are null while the delivered stage does not enable them (they are
+         * then also absent from `allowed_actions`): the page offers no button for a null one.
+         */
         /** Returns a `StepUpProof` for the authenticator code; not an operation. */
-        step_up: RouteAction;
-        seal: RouteAction;
-        request_changes: RouteAction;
-        reject: RouteAction;
-        amend: RouteAction;
+        step_up: RouteAction | null;
+        seal: RouteAction | null;
+        request_changes: RouteAction | null;
+        reject: RouteAction | null;
+        amend: RouteAction | null;
     };
     outcome: AuditorOutcome | null;
     /** Jobs, drawn beneath the sheet on a wide screen. */

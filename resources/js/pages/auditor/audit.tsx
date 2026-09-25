@@ -276,21 +276,23 @@ function AuditSheet(props: AuditProcedureProps) {
         );
     }
 
-    const amend = center.allowed('audit.amend')
-        ? {
-              run: () =>
-                  center.send({
-                      name: 'audit.amend',
-                      business: audit.business,
-                      route: actions.amend,
-                      payload: {
-                          audit_id: audit.id,
-                          expected_revision: audit.revision,
-                      },
-                  }),
-              disabled: !center.idle,
-          }
-        : null;
+    const amendRoute = actions.amend;
+    const amend =
+        amendRoute !== null && center.allowed('audit.amend')
+            ? {
+                  run: () =>
+                      center.send({
+                          name: 'audit.amend',
+                          business: audit.business,
+                          route: amendRoute,
+                          payload: {
+                              audit_id: audit.id,
+                              expected_revision: audit.revision,
+                          },
+                      }),
+                  disabled: !center.idle,
+              }
+            : null;
 
     return (
         <DetailSheet

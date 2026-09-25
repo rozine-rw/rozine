@@ -1054,6 +1054,76 @@ describe('Seal — a confirmation withdrawn while its code is checked', () => {
     });
 });
 
+describe('Seal — commands the stage does not enable yet', () => {
+    const without = (
+        fixture: { props: unknown },
+        nulls: (keyof AuditProcedureProps['actions'])[],
+    ): AuditProcedureProps => {
+        const page = props(fixture);
+
+        return {
+            ...page,
+            actions: {
+                ...page.actions,
+                ...Object.fromEntries(nulls.map((key) => [key, null])),
+            },
+        };
+    };
+
+    it.each([[['step_up']], [['seal']], [['step_up', 'seal']]] as const)(
+        'offers no preview or seal when %j is null, even with the step-up previewed',
+        (nulls) => {
+            render(<AuditorAudit {...without(stepUp, [...nulls])} />);
+
+            expect(
+                screen.queryByRole('button', { name: 'Preview findings' }),
+            ).not.toBeInTheDocument();
+            expect(
+                screen.queryByRole('dialog', { name: 'Huye Motors' }),
+            ).not.toBeInTheDocument();
+            expect(procedure()).toBeInTheDocument();
+        },
+    );
+
+    it('offers neither monthly reason command while both are null', () => {
+        render(
+            <AuditorAudit
+                {...without(monthlyRequestChanges, [
+                    'request_changes',
+                    'reject',
+                ])}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Request changes' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Reject filing' }),
+        ).not.toBeInTheDocument();
+        /* The previewed sheet has no command behind it, so it does not open. */
+        expect(
+            screen.queryByRole('dialog', { name: 'Request changes' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Preview findings' }),
+        ).toBeInTheDocument();
+    });
+
+    it('offers only the monthly reason command that is enabled', () => {
+        render(
+            <AuditorAudit {...without(monthlyReject, ['request_changes'])} />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Request changes' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('dialog', { name: 'Reject filing' }),
+        ).toBeInTheDocument();
+    });
+});
+
 describe('Seal — previewed states', () => {
     it('opens on the code entry for a step-up', () => {
         render(<AuditorAudit {...props(stepUp)} />);

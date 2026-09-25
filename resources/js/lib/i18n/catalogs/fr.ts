@@ -3170,6 +3170,12 @@ const fr: Catalog = {
     'auditor.ledger.reconciles_undeclared':
         "Le rapprochement reste bloqué tant que l'entreprise n'a pas déclaré son stock.",
 
+    'auditor.statements.cover_unavailable': 'Indisponible',
+    'auditor.statements.documents': 'Documents sources',
+    'auditor.statements.no_documents':
+        "Aucun document source n'est enregistré pour ce mois.",
+    'auditor.count.period_unavailable': 'Indisponible',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

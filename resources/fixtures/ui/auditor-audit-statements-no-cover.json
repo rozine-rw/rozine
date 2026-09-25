@@ -6,35 +6,31 @@
         "server_time": "2026-10-03T17:00:00Z",
         "allowed_actions": ["audit.save_step", "conflict.declare"],
         "audit": {
-            "id": "fa_huye",
-            "kind": "flash",
-            "business": "Huye Motors",
+            "id": "mr_greenleaf",
+            "kind": "monthly",
+            "business": "GreenLeaf Agro",
             "district": "Gasabo",
-            "distance_km": "11.2",
-            "month": null,
+            "distance_km": "8.8",
+            "month": "2026-09-01",
             "deadline": {
-                "due_at": "2026-10-04T13:59:55Z"
+                "due_at": "2026-10-07T21:59:59Z"
             },
-            "revision": 7,
+            "revision": 3,
             "reassigned_from": null,
             "amends": null
         },
         "steps": [
             {
-                "key": "review",
-                "state": "done"
+                "key": "statements",
+                "state": "current"
             },
             {
-                "key": "check_in",
-                "state": "done"
+                "key": "count",
+                "state": "todo"
             },
             {
                 "key": "photos",
-                "state": "done"
-            },
-            {
-                "key": "ledger",
-                "state": "current"
+                "state": "todo"
             },
             {
                 "key": "seal",
@@ -42,89 +38,41 @@
             }
         ],
         "stage": {
-            "step": "ledger",
-            "reported_stock": null,
-            "observed_stock": {
-                "currency": "RWF",
-                "amount": "36400000"
-            },
-            "tolerance": "RWF 0",
-            "variance": null,
-            "documents": [
-                {
-                    "id": "ld_1",
-                    "name": "Huye-Motors-ledger-Q3.pdf",
-                    "detail": "PDF · 2.4 MB",
-                    "state": "parsed",
-                    "failure": null,
-                    "fields": [
-                        {
-                            "label": "Pages parsed",
-                            "value": "14"
-                        },
-                        {
-                            "label": "Ledger entries read",
-                            "value": "612"
-                        },
-                        {
-                            "label": "Period covered",
-                            "value": "1 Jul – 30 Sep 2026"
-                        },
-                        {
-                            "label": "Closing balance",
-                            "value": "RWF 4,812,300"
-                        },
-                        {
-                            "label": "OCR confidence",
-                            "value": "97%"
-                        }
-                    ],
-                    "ingestion": "INGESTED_NOT_AUDIT_APPROVED",
-                    "evidence": {
-                        "evidence_id": "ev_huye_ld_1",
-                        "kind": "ledger",
-                        "sha256": "08e13bba8ea73e1b38f0b126b3d37592f6412e4e000518bf25f19855835dd062",
-                        "captured_at": null,
-                        "source": "web_upload",
-                        "device_attestation": "unavailable",
-                        "position": null,
-                        "accuracy_m": null
-                    }
+            "step": "statements",
+            "statements": {
+                "status": "available",
+                "inflow": {
+                    "currency": "RWF",
+                    "amount": "96000000"
                 },
-                {
-                    "id": "ld_2",
-                    "name": "Receipts-September.png",
-                    "detail": "Scan · 1.1 MB",
-                    "state": "failed",
-                    "fields": [],
-                    "failure": "OCR confidence 41% — page skew and glare made three columns unreadable. Re-scan flat at 300dpi or export the ledger as a PDF.",
-                    "ingestion": "INGESTED_NOT_AUDIT_APPROVED",
-                    "evidence": {
-                        "evidence_id": "ev_huye_ld_2",
-                        "kind": "ledger",
-                        "sha256": "5c22347cdde9a91cb1b63fab0e98bd545bbd502723e44c818ee4002ce1572af2",
-                        "captured_at": null,
-                        "source": "web_upload",
-                        "device_attestation": "unavailable",
-                        "position": null,
-                        "accuracy_m": null
+                "outflow": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "net": {
+                    "currency": "RWF",
+                    "amount": "96000000"
+                },
+                "cover": null,
+                "documents": [
+                    {
+                        "name": "GreenLeaf-Agro-MoMo-2026-09.csv",
+                        "link": {
+                            "url": "/preview/auditor-audit-statements?document=sd_momo",
+                            "method": "get"
+                        }
                     }
-                }
-            ],
-            "ledger_ready": true,
-            "reconciled": false
+                ]
+            }
         },
-        "can_continue": false,
-        "hint": "The business has not declared its stock, so the count cannot be reconciled yet.",
+        "can_continue": true,
+        "hint": null,
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",
                 "method": "get"
             },
-            "back": {
-                "url": "/preview/auditor-jobs",
-                "method": "get"
-            },
+            "back": null,
             "operation": {
                 "url": "/preview/auditor-operation-{request_id}",
                 "method": "get"
@@ -144,7 +92,7 @@
                 "method": "post"
             },
             "seal": {
-                "url": "/preview/auditor-audit-sealed",
+                "url": "/preview/auditor-audit-sealed-monthly",
                 "method": "post"
             },
             "request_changes": {
@@ -367,7 +315,7 @@
             ]
         },
         "assignment": {
-            "id": "asg_fa_huye",
+            "id": "asg_mr_greenleaf",
             "revision": 4
         }
     }

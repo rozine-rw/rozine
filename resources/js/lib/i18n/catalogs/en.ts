@@ -3042,6 +3042,11 @@ const en = {
         'The business has not declared a stock value, so there is no reported figure to compare your count with. Record what you counted.',
     'auditor.ledger.reconciles_undeclared':
         'Reconciliation stays blocked until the business declares its stock.',
+    'auditor.statements.cover_unavailable': 'Unavailable',
+    'auditor.statements.documents': 'Source documents',
+    'auditor.statements.no_documents':
+        'No source documents are on file for this month.',
+    'auditor.count.period_unavailable': 'Unavailable',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

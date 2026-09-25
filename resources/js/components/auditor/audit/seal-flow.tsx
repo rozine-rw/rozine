@@ -198,11 +198,12 @@ type SealFlowOptions = {
     /** The audited month, or the empty string for a Flash Audit. */
     period: string;
     canContinue: boolean;
+    /** Null while the delivered stage does not enable that command: it then has no button. */
     actions: {
-        step_up: RouteAction;
-        seal: RouteAction;
-        request_changes: RouteAction;
-        reject: RouteAction;
+        step_up: RouteAction | null;
+        seal: RouteAction | null;
+        request_changes: RouteAction | null;
+        reject: RouteAction | null;
     };
     preview?: AuditorPreviewOutcome;
 };
@@ -234,7 +235,7 @@ export function useSealFlow({
     const { t } = useTranslation();
     const center = useAuditorCommands();
     const refusalText = useRefusalText();
-    const stepUp = useStepUp(actions.step_up);
+    const stepUp = useStepUp();
     const [nested, setNested] = useState<Nested>(() => initialNested(preview));
     const [note, setNote] = useState(stage.note.value);
     const [code, setCode] = useState('');
@@ -284,12 +285,24 @@ export function useSealFlow({
         center.idle &&
         center.allowed('audit.save_step');
     const ready = canContinue && noteReady && center.idle;
-    const canSeal = center.allowed('audit.seal');
-    const canRequestChanges =
-        stage.reason_options !== null &&
-        center.allowed('audit.request_changes');
-    const canReject =
-        stage.reason_options !== null && center.allowed('audit.reject');
+    /* Sealing needs both its routes: the step-up and the seal itself. */
+    const sealRoutes =
+        actions.step_up !== null &&
+        actions.seal !== null &&
+        center.allowed('audit.seal')
+            ? { stepUp: actions.step_up, seal: actions.seal }
+            : null;
+    const canSeal = sealRoutes !== null;
+    const requestChangesRoute =
+        stage.reason_options !== null && center.allowed('audit.request_changes')
+            ? actions.request_changes
+            : null;
+    const canRequestChanges = requestChangesRoute !== null;
+    const rejectRoute =
+        stage.reason_options !== null && center.allowed('audit.reject')
+            ? actions.reject
+            : null;
+    const canReject = rejectRoute !== null;
     const throttled = entry.kind === 'throttled';
     const busy = stepUp.checking || center.busy;
 
@@ -331,12 +344,12 @@ export function useSealFlow({
         );
     };
 
-    const seal = (proof: string) =>
+    const seal = (route: RouteAction, proof: string) =>
         center.send(
             {
                 name: 'audit.seal',
                 business,
-                route: actions.seal,
+                route,
                 payload: {
                     audit_id: context.auditId,
                     expected_revision: context.revision,
@@ -375,7 +388,10 @@ export function useSealFlow({
             },
         );
 
-    const confirm = async () => {
+    const confirm = async (routes: {
+        stepUp: RouteAction;
+        seal: RouteAction;
+    }) => {
         /* The code leaves the page in this one request and is not kept for any retry. */
         const typed = code;
 
@@ -383,7 +399,7 @@ export function useSealFlow({
         withdraw();
 
         const current = attempt.current;
-        const result = await stepUp.verify({
+        const result = await stepUp.verify(routes.stepUp, {
             audit_id: context.auditId,
             expected_revision: context.revision,
             digest: stage.digest,
@@ -400,7 +416,7 @@ export function useSealFlow({
         switch (result.kind) {
             case 'proof':
                 setEntry({ kind: 'ready' });
-                seal(result.proof.proof);
+                seal(routes.seal, result.proof.proof);
 
                 return;
             case 'invalid':
@@ -599,7 +615,11 @@ export function useSealFlow({
     let overlay: ReactNode = null;
     const reasons = stage.reason_options;
 
-    if (nested === 'request_changes' && canRequestChanges && reasons !== null) {
+    if (
+        nested === 'request_changes' &&
+        requestChangesRoute !== null &&
+        reasons !== null
+    ) {
         overlay = (
             <ReasonSheet
                 title={t('auditor.seal.suggest')}
@@ -613,7 +633,7 @@ export function useSealFlow({
                         {
                             name: 'audit.request_changes',
                             business,
-                            route: actions.request_changes,
+                            route: requestChangesRoute,
                             payload: reasonFields(fields),
                         },
                         { onCompleted: close },
@@ -622,7 +642,11 @@ export function useSealFlow({
                 onClose={close}
             />
         );
-    } else if (nested === 'reject' && canReject && reasons !== null) {
+    } else if (
+        nested === 'reject' &&
+        rejectRoute !== null &&
+        reasons !== null
+    ) {
         overlay = (
             <ReasonSheet
                 title={t('auditor.seal.reject')}
@@ -637,7 +661,7 @@ export function useSealFlow({
                         {
                             name: 'audit.reject',
                             business,
-                            route: actions.reject,
+                            route: rejectRoute,
                             payload: reasonFields(fields),
                         },
                         { onCompleted: close },
@@ -648,7 +672,7 @@ export function useSealFlow({
         );
     } else if (
         (nested === 'preview' || nested === 'code') &&
-        canSeal &&
+        sealRoutes !== null &&
         !unsaved
     ) {
         const notice = center.notice;
@@ -844,7 +868,7 @@ export function useSealFlow({
                         ) : stage.mfa.confirmed ? (
                             <button
                                 type="button"
-                                onClick={() => void confirm()}
+                                onClick={() => void confirm(sealRoutes)}
                                 disabled={
                                     code.length < CODE_LENGTH ||
                                     busy ||
