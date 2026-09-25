@@ -16,9 +16,9 @@ use Illuminate\Support\Str;
 use Tests\Support\BusinessQuoteFixture as Fixture;
 
 /** @return array<string, mixed> */
-function persistedAuditReportFixture(): array
+function persistedAuditReportFixture(string $kind = 'flash'): array
 {
-    $fixture = Fixture::ready();
+    $fixture = Fixture::ready(auditKind: $kind);
     Fixture::submit($fixture, Fixture::acceptance($fixture));
     $user = $fixture['audit']['partners'][0]['user'];
 
@@ -86,7 +86,7 @@ it('freezes source pins and prevents revision skipping while allowing a new draf
 });
 
 it('retains terminal reports and every version against direct writes and deletion', function (string $status): void {
-    $fixture = persistedAuditReportFixture();
+    $fixture = persistedAuditReportFixture(in_array($status, ['changes_requested', 'rejected'], true) ? 'routine' : 'flash');
     $report = $fixture['report'];
     if ($status !== 'draft') {
         $report->forceFill(['revision' => 2, 'status' => $status, 'step' => 'seal'])->save();
@@ -181,6 +181,10 @@ it('rolls the unused report schema back and reapplies it without rewriting appli
     $migration = require database_path('migrations/2026_09_25_053838_create_audit_reports_and_versions.php');
     $sourceFacts = require database_path('migrations/2026_09_25_102249_create_audit_source_snapshots_table.php');
     $ledgers = require database_path('migrations/2026_09_25_120136_create_audit_ledger_evidence_tables.php');
+    $ledgerAuthority = require database_path('migrations/2026_09_25_130201_enforce_audit_ledger_report_authority.php');
+    $decisions = require database_path('migrations/2026_09_25_131948_enforce_audit_report_decisions_and_fresh_amendments.php');
+    $decisions->down();
+    $ledgerAuthority->down();
     $ledgers->down();
     $lineage = require database_path('migrations/2026_09_25_114139_enforce_audit_report_amendment_lineage.php');
     $lineage->down();
@@ -190,7 +194,9 @@ it('rolls the unused report schema back and reapplies it without rewriting appli
     $migration->up();
     $sourceFacts->up();
     $ledgers->up();
+    $ledgerAuthority->up();
     $lineage->up();
+    $decisions->up();
     expect(Schema::hasTable('audit_reports'))->toBeTrue()->and(Schema::hasTable('audit_report_versions'))->toBeTrue()
         ->and($fixture['application']->refresh()->getRawOriginal())->toBe($before);
 });

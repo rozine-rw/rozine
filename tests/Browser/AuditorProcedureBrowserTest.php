@@ -140,6 +140,16 @@ it('starts and completes the factual procedure, saves its note and withdraws sta
             if (await page.locator("#auditor-seal-note").inputValue() !== "Observed stock differs from the declared inventory.") throw new Error("Note did not persist");
             if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw new Error("Seal preview overflow");
             await page.screenshot({path:"preview-phone.png", fullPage:true, animations:"disabled"});
+            if ('.json_encode($kind).' === "flash") {
+                const previewUrl = page.url();
+                await page.goto(previewUrl.split("?")[0] + "?step=ledger");
+                await page.getByRole("heading", {name:"Inventory & ledger sign-off", exact:true}).waitFor();
+                if (await page.getByLabel("Ledger document file", {exact:true}).count()) throw new Error("Saved ledger offers an unavailable upload");
+                await page.getByRole("link", {name:"Download original", exact:true}).first().waitFor();
+                await page.screenshot({path:"saved-ledger-phone.png", fullPage:true, animations:"disabled"});
+                await page.goto(previewUrl);
+                await page.locator("#auditor-seal-note").waitFor();
+            }
             await page.setViewportSize({width:1280, height:900});
             await page.screenshot({path:"preview-desktop.png", fullPage:true, animations:"disabled"});
             if (errors.length) throw new Error(JSON.stringify(errors));
@@ -174,7 +184,7 @@ it('starts and completes the factual procedure, saves its note and withdraws sta
                     await page.getByRole("button", {name:decision.button, exact:true}).click();
                     const sheet = page.getByRole("dialog", {name:decision.button, exact:true});
                     await sheet.getByRole("radio", {name:decision.reason, exact:true}).click();
-                    await sheet.locator("#auditor-reason").fill("The retained original cannot support this monthly filing.");
+                    await sheet.locator("#auditor-reason").fill("The retained original cannot support this monthly filing.\nA second factual paragraph needs clarification.");
                     await sheet.getByRole("button", {name:decision.button, exact:true}).click();
                     await page.getByRole("alertdialog").getByRole("button", {name:"Done", exact:true}).click();
                     await page.getByRole("heading", {name:decision.heading, exact:true}).waitFor();

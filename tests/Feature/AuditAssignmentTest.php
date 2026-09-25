@@ -404,6 +404,10 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $sourceFacts = require database_path('migrations/2026_09_25_102249_create_audit_source_snapshots_table.php');
     $sourceFacts->down();
     $ledgerMigration = require database_path('migrations/2026_09_25_120136_create_audit_ledger_evidence_tables.php');
+    $ledgerAuthority = require database_path('migrations/2026_09_25_130201_enforce_audit_ledger_report_authority.php');
+    $decisions = require database_path('migrations/2026_09_25_131948_enforce_audit_report_decisions_and_fresh_amendments.php');
+    $decisions->down();
+    $ledgerAuthority->down();
     $ledgerMigration->down();
     $lineageMigration = require database_path('migrations/2026_09_25_114139_enforce_audit_report_amendment_lineage.php');
     $lineageMigration->down();
@@ -416,7 +420,9 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $verification->up();
     $reports->up();
     $lineageMigration->up();
+    $decisions->up();
     $ledgerMigration->up();
+    $ledgerAuthority->up();
     $sourceFacts->up();
 });
 

@@ -45,7 +45,7 @@ it('retains a hostile PDF while bounding extraction outside report and journal l
 
 it('records parser failures and corrupt originals without exposing private exception details', function (string $failure): void {
     ['user' => $user, 'report' => $report] = AuditLedgerFixture::ready();
-    $original = AuditLedgerOriginal::factory()->create(['audit_report_id' => $report->id, 'report_revision' => 5,
+    $original = AuditLedgerOriginal::factory()->forReport($report, $user)->create([
         ...match ($failure) {
             'hash' => ['sha256' => str_repeat('0', 64)], 'length' => ['size_bytes' => 1], default => [],
         }]);

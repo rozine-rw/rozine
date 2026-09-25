@@ -116,13 +116,13 @@ it('rolls back a step when its immutable history cannot be appended', function (
 });
 
 it('refuses edits to a terminal report and refuses a receipt from another target scope', function (): void {
-    $fixture = procedureReportFixture();
+    $fixture = procedureReportFixture('routine');
     $user = $fixture['auditor'];
     $report = AuditReport::query()->whereKey($fixture['report_id'])->firstOrFail();
     $report->forceFill(['revision' => 2, 'status' => 'rejected'])->save();
     AuditReportVersion::factory()->forReport($report, $user->party_id, $user->id)->create();
     $before = $report->refresh()->getRawOriginal();
-    $result = app(SaveAuditReportStep::class)->handle($user->id, 1, $report->id, 2, 'review', [], (string) Str::uuid());
+    $result = app(SaveAuditReportStep::class)->handle($user->id, 1, $report->id, 2, 'statements', [], (string) Str::uuid());
     expect($result['code'])->toBe('AUDIT_REPORT_NOT_EDITABLE')->and($report->refresh()->getRawOriginal())->toBe($before);
     $request = (string) Str::uuid();
     app(OperationJournal::class)->execute('party:'.$user->party_id, $user->id, 'audit.save_step', $request, 'another.target', $report->id, [],

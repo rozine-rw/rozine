@@ -915,6 +915,8 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_25_102249_create_audit_source_snapshots_table.php |
 | 2026_09_25_114139_enforce_audit_report_amendment_lineage.php |
 | 2026_09_25_120136_create_audit_ledger_evidence_tables.php |
+| 2026_09_25_130201_enforce_audit_ledger_report_authority.php |
+| 2026_09_25_131948_enforce_audit_report_decisions_and_fresh_amendments.php |
 
 ## Routes
 

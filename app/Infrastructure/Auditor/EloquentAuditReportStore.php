@@ -201,12 +201,16 @@ final class EloquentAuditReportStore implements AuditReportStore
                 $this->view($record);
 
                 return $this->journal->execute('party:'.$assignment['party_id'], $userId, $command, $requestId, 'audit.report', $reportId,
-                    ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'reason_code' => $reasonCode, 'reason' => $reason],
+                    $this->decisionInput($contextRevision, $expectedRevision, $reasonCode, $reason),
                     function (): void {}, function () use ($record, $assignment, $userId, $expectedRevision, $reject, $reasonCode, $reason, $command): OperationResult {
                         if ($record->revision !== $expectedRevision) {
                             throw new CommandRejection('VERSION_CONFLICT', revision: $record->revision);
                         }
-                        $decision = AuditReportDecision::reason($record->kind, $record->status, $reject, $reasonCode, $reason);
+                        try {
+                            $decision = AuditReportDecision::reason($record->kind, $record->status, $reject, $reasonCode, $reason);
+                        } catch (CommandRejection $failure) {
+                            throw new CommandRejection($failure->reason, $failure->status, $record->revision, $failure->fieldErrors);
+                        }
                         $draft = $record->draft;
                         $draft['decision'] = [...$decision, 'recorded_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')];
                         $record->forceFill(['revision' => $record->revision + 1, 'status' => $reject ? 'rejected' : 'changes_requested', 'draft' => $draft])->save();
@@ -215,6 +219,24 @@ final class EloquentAuditReportStore implements AuditReportStore
                         return $this->receipt($reject ? 'AUDIT_REJECTED' : 'AUDIT_CHANGES_REQUESTED', $this->view($record));
                     });
             });
+    }
+
+    /**
+     * Preserve existing receipt fingerprints; previously unhashable input still receives recorded validation.
+     *
+     * @return array<string, mixed>
+     */
+    private function decisionInput(int $contextRevision, int $expectedRevision, mixed $reasonCode, mixed $reason): array
+    {
+        $input = ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'reason_code' => $reasonCode, 'reason' => $reason];
+        try {
+            $this->json->encode($input);
+
+            return $input;
+        } catch (CommandRejection) {
+            return ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision,
+                'invalid_reason_input_sha256' => hash('sha256', serialize([$reasonCode, $reason]))];
+        }
     }
 
     /** @return array<string, mixed> */
@@ -280,7 +302,8 @@ final class EloquentAuditReportStore implements AuditReportStore
                 $record = AuditReport::query()->sharedLock()->findOrFail($reportId);
                 $this->author($record, $assignment);
 
-                return ['report' => $this->view($record), 'sources' => $this->procedureSources($record, $userId, $contextRevision, $assignment)];
+                return ['report' => $this->view($record), 'sources' => $this->procedureSources($record, $userId, $contextRevision, $assignment),
+                    'mfa_confirmed' => $this->identities->forUser($userId)['mfa_confirmed']];
             });
     }
 

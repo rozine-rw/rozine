@@ -10,7 +10,7 @@ namespace App\Application\Auditor\Contracts;
  * @phpstan-import-type Projection from \App\Application\Auditor\GetAuditProcedureSources
  * @phpstan-import-type Original from \App\Application\Evidence\Contracts\StatementStore
  *
- * @phpstan-type Procedure array{report: Report, sources: Projection}
+ * @phpstan-type Procedure array{report: Report, sources: Projection, mfa_confirmed: bool}
  */
 interface AuditReportStore
 {

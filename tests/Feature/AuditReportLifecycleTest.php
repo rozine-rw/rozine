@@ -228,3 +228,58 @@ it('refuses to enable lineage protection over an inconsistent legacy amendment w
     expect(fn () => $migration->up())->toThrow(RuntimeException::class, 'Existing audit amendment lineage must be reconciled before protection.')
         ->and($invalid->refresh()->getAttributes())->toBe($before);
 });
+
+it('records malformed reason values and recovers their field errors on both transports', function (bool $api, mixed $code, mixed $reason, string $field): void {
+    $f = auditLifecycleFixture();
+    $prefix = $api ? 'api.v1.auditor.' : 'auditor.';
+    if ($api) {
+        Sanctum::actingAs($f['actor'], ['auditor:read', 'auditor:command']);
+    } else {
+        $this->actingAs($f['actor']);
+    }
+    $path = route($prefix.'reports.request-changes', ['report' => $f['report']->id]);
+    $body = ['audit_id' => $f['report']->id, 'expected_revision' => 1, 'identity_context_revision' => 1,
+        'request_id' => (string) Str::uuid(), 'reason_code' => $code, 'reason' => $reason];
+    $first = $this->postJson($path, $body)->assertUnprocessable()->assertJsonPath('code', 'AUDIT_REPORT_DECISION_INVALID')
+        ->assertJsonPath('revision', 1)->assertJsonValidationErrors($field)->json();
+    $this->postJson($path, $body)->assertUnprocessable()->assertJsonPath('operation_id', $first['operation_id']);
+    $this->getJson(route($prefix.'reports.operations.show', ['request_id' => $body['request_id'], 'command' => 'audit.request_changes']))
+        ->assertUnprocessable()->assertJsonPath('operation_id', $first['operation_id'])->assertJsonValidationErrors($field);
+    $this->postJson($path, [...$body, 'reason_code' => 'other', 'reason' => 'Corrected input.'])->assertConflict()->assertJsonPath('code', 'IDEMPOTENCY_CONFLICT');
+    $this->assertDatabaseCount('audit_report_versions', 1);
+})->with([false, true])->with([
+    [1.5, 'Missing original.', 'reason_code'],
+    ['other', "Pasted\u{2028}text", 'reason'],
+    [['nested' => 1.5], 'Missing original.', 'reason_code'],
+    ['other', 1.5, 'reason'],
+]);
+
+it('retains a multiline explanation and sends no conflict action on its returned page', function (): void {
+    $f = auditLifecycleFixture();
+    $this->actingAs($f['actor']);
+    $this->postJson(route('auditor.reports.request-changes', ['report' => $f['report']->id]), ['audit_id' => $f['report']->id,
+        'expected_revision' => 1, 'identity_context_revision' => 1, 'request_id' => (string) Str::uuid(),
+        'reason_code' => 'other', 'reason' => "First factual paragraph.\r\nSecond factual paragraph."])->assertOk();
+    $page = $this->get(route('auditor.reports.show', ['report' => $f['report']->id]))->assertOk()->viewData('page')['props'];
+    expect($page['stage']['reason']['explanation'])->toBe("First factual paragraph.\nSecond factual paragraph.")
+        ->and($page['actions']['conflict'])->toBeNull()->and($page['allowed_actions'])->not->toContain('conflict.declare');
+});
+
+it('rejects database Flash returns and nonfresh amendment metadata', function (): void {
+    $flash = auditLifecycleFixture('flash');
+    foreach (['changes_requested', 'rejected'] as $status) {
+        expect(fn () => DB::transaction(fn (): bool => $flash['report']->forceFill(['revision' => 2, 'status' => $status])->save()))
+            ->toThrow(QueryException::class, 'audit_report_monthly_decision');
+        $flash['report']->refresh();
+    }
+    $f = auditLifecycleFixture();
+    app(DecideAuditReport::class)->handle($f['actor']->id, 1, $f['report']->id, 1, false, 'other', 'Missing original.', (string) Str::uuid());
+    foreach ([['revision' => 2], ['status' => 'sealed', 'step' => 'seal'], ['step' => 'count']] as $changes) {
+        $child = $f['report']->refresh()->replicate();
+        $child->forceFill(['amends_id' => $f['report']->id, 'status' => 'draft', 'revision' => 1, 'step' => 'statements', ...$changes]);
+        expect(fn () => DB::transaction(fn (): bool => $child->save()))
+            ->toThrow(QueryException::class, 'Audit amendment must start as a draft at revision one and its first step');
+    }
+    $migration = require database_path('migrations/2026_09_25_131948_enforce_audit_report_decisions_and_fresh_amendments.php');
+    expect(fn () => $migration->down())->toThrow(RuntimeException::class, 'Existing audit report decision history requires a forward migration.');
+});

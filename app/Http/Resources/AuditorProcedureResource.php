@@ -34,6 +34,8 @@ class AuditorProcedureResource extends JsonResource
         }
 
         $reasonOptions = $page['decision_options'] === null ? null : $this->reasonOptions($page['decision_options']);
+        $upload = $page['can_upload_ledger'] && in_array('audit.save_step', $allowed, true)
+            ? ['url' => route($prefix.'reports.save', ['report' => $report['id']], false), 'method' => 'post'] : null;
 
         return [...AuditorJobsResource::envelope($page['jobs']['identity_context_revision']), 'allowed_actions' => $allowed,
             'engagement' => $file['engagement'],
@@ -42,7 +44,7 @@ class AuditorProcedureResource extends JsonResource
                 'revision' => $report['revision'], 'reassigned_from' => null, 'amends' => $report['amends_id'] === null ? null
                     : ['report_id' => $report['amends_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amends_id']])]],
             'assignment' => ['id' => $report['assignment_id'], 'revision' => $job['revision']],
-            'steps' => $page['steps'], 'stage' => $this->stage($report, $page['sources'], $file['file'], $prefix, $page['variance'], $page['seal'], $reasonOptions),
+            'steps' => $page['steps'], 'stage' => $this->stage($report, $page['sources'], $file['file'], $prefix, $page['variance'], $page['seal'], $reasonOptions, $upload, $page['mfa_confirmed']),
             'can_continue' => $page['can_continue'], 'hint' => $report['status'] === 'draft' ? $this->hint($page['unavailable']) : null,
             'reason_options' => $reasonOptions,
             'links' => ['close' => AuditorJobsResource::link($prefix.'jobs.index'),
@@ -50,7 +52,7 @@ class AuditorProcedureResource extends JsonResource
                     ? AuditorJobsResource::link($prefix.'jobs.show', ['assignment' => $report['assignment_id']])
                     : AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['id'], 'step' => $page['previous_step']]), 'operation' => $operation],
             'actions' => ['save' => ['url' => route($prefix.'reports.save', ['report' => $report['id']], false), 'method' => 'post'],
-                'conflict' => $file['actions']['conflict'], 'step_up' => null, 'seal' => null,
+                'conflict' => in_array('conflict.declare', $allowed, true) ? $file['actions']['conflict'] : null, 'step_up' => null, 'seal' => null,
                 'request_changes' => in_array('audit.request_changes', $allowed, true) ? ['url' => route($prefix.'reports.request-changes', ['report' => $report['id']], false), 'method' => 'post'] : null,
                 'reject' => in_array('audit.reject', $allowed, true) ? ['url' => route($prefix.'reports.reject', ['report' => $report['id']], false), 'method' => 'post'] : null,
                 'amend' => in_array('audit.amend', $allowed, true) ? ['url' => route($prefix.'reports.amend', ['report' => $report['id']], false), 'method' => 'post'] : null],
@@ -64,9 +66,10 @@ class AuditorProcedureResource extends JsonResource
      * @param  array<string, mixed>  $variance
      * @param  array<string, mixed>|null  $seal
      * @param  array<string, mixed>|null  $reasonOptions
+     * @param  array{url: string, method: string}|null  $upload
      * @return array<string, mixed>
      */
-    private function stage(array $report, array $sources, array $file, string $prefix, array $variance, ?array $seal, ?array $reasonOptions): array
+    private function stage(array $report, array $sources, array $file, string $prefix, array $variance, ?array $seal, ?array $reasonOptions, ?array $upload, bool $mfaConfirmed): array
     {
         if (in_array($report['status'], ['changes_requested', 'rejected'], true)) {
             $decision = $report['draft']['decision'];
@@ -84,7 +87,7 @@ class AuditorProcedureResource extends JsonResource
             'check_in' => ['step' => 'check_in', 'package' => $package, 'check_in' => $this->checkIn($sources)],
             'photos' => ['step' => 'photos', 'package' => $package, 'required' => count($sources['source_facts']['photos']['required'] ?? []),
                 'slots' => $this->photoSlots($sources, $fields), 'title_max' => 100],
-            'ledger' => ['step' => 'ledger', 'reported_stock' => AuditorJobsResource::money($sources['reported_stock']),
+            'ledger' => ['step' => 'ledger', 'upload' => $upload, 'reported_stock' => AuditorJobsResource::money($sources['reported_stock']),
                 'observed_stock' => AuditorJobsResource::money($fields['observed_stock'] ?? null), 'tolerance' => 'RWF 0', 'variance' => $variance['ledger'],
                 'documents' => $this->ledgerDocuments($sources['ledger_documents'] ?? [], $report, $prefix), 'ledger_ready' => $sources['verification'] !== null,
                 'reconciled' => $fields['reconciled'] ?? false],
@@ -98,7 +101,7 @@ class AuditorProcedureResource extends JsonResource
                 'sector' => ['label' => $sources['source_facts']['declared_sector_label'] ?? __('Unavailable'),
                     'definition' => $sources['source_facts']['declared_unit_label'] ?? __('A declared inventory unit definition is required.')],
                 'operational_status' => $fields['operational_status'] ?? null],
-            'seal' => $this->seal($report, $sources, $seal ?? throw new \LogicException('A persisted report preview is required.'), $reasonOptions),
+            'seal' => $this->seal($report, $sources, $seal ?? throw new \LogicException('A persisted report preview is required.'), $reasonOptions, $mfaConfirmed),
             default => ['step' => 'statements', 'statements' => $this->statements($report, $sources, $prefix)],
         };
     }
@@ -184,7 +187,7 @@ class AuditorProcedureResource extends JsonResource
      * @param  array<string, mixed>|null  $reasonOptions
      * @return array<string, mixed>
      */
-    private function seal(array $report, array $sources, array $seal, ?array $reasonOptions): array
+    private function seal(array $report, array $sources, array $seal, ?array $reasonOptions, bool $mfaConfirmed): array
     {
         $findings = [];
         foreach ($seal['findings'] as $index => $finding) {
@@ -202,7 +205,7 @@ class AuditorProcedureResource extends JsonResource
             'value' => $report['draft']['note'], 'min' => $seal['note_required'] ? 1 : 0, 'max' => 100],
             'findings' => $findings, 'evidence' => $this->evidence($sources), 'procedure_version' => $seal['payload']['procedure_version'],
             'findings_version' => $seal['findings_version'], 'evidence_version' => $seal['evidence_version'], 'digest' => $seal['digest'],
-            'licence' => $sources['licence'], 'mfa' => ['confirmed' => true, 'settings' => AuditorJobsResource::link('security.edit')],
+            'licence' => $sources['licence'], 'mfa' => ['confirmed' => $mfaConfirmed, 'settings' => AuditorJobsResource::link('security.edit')],
             'reason_options' => $reasonOptions];
     }
 

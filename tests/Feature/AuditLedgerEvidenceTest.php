@@ -6,21 +6,26 @@ use App\Application\Auditor\GetAuditProcedure;
 use App\Application\Auditor\IngestAuditLedger;
 use App\Application\Auditor\ReadAuditLedger;
 use App\Application\Auditor\SaveAuditReportStep;
+use App\Application\Auditor\StartAuditReport;
 use App\Application\Evidence\GetAuditStatements;
 use App\Application\Evidence\GetAuditStatementVerification;
 use App\Domain\Operations\CommandRejection;
 use App\Models\AuditLedgerExtraction;
 use App\Models\AuditLedgerOriginal;
+use App\Models\AuditReport;
 use App\Models\AuditReportVersion;
 use App\Models\CommandOperation;
+use App\Models\Party;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
+use Tests\Support\AuditAssignmentFixture;
 use Tests\Support\AuditEngagementFixture;
 use Tests\Support\AuditLedgerFixture;
+use Tests\Support\BusinessQuoteFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();
@@ -99,7 +104,7 @@ it('does not accept another report original as a replacement or allow its downlo
 
 it('rejects corrupted source bytes and report document references', function (string $corruption): void {
     ['user' => $user, 'report' => $report] = AuditLedgerFixture::ready();
-    $original = AuditLedgerOriginal::factory()->create(['audit_report_id' => $report->id, 'report_revision' => 5,
+    $original = AuditLedgerOriginal::factory()->forReport($report, $user)->create([
         'sha256' => $corruption === 'content' ? str_repeat('0', 64) : hash('sha256', "date,amount\n2026-08-01,100\n")]);
     if ($corruption === 'content') {
         expect(fn () => app(ReadAuditLedger::class)->handle($user->id, 1, $report->id, $original->id))->toThrow(RuntimeException::class, 'AUDIT_LEDGER_INTEGRITY_FAILED');
@@ -155,3 +160,113 @@ it('projects parsed and review-required ledger originals with protected download
         ->assertJsonPath('data.stage.documents.0.state', $state)
         ->assertJsonPath('data.stage.documents.0.link.url', route('api.v1.auditor.reports.ledgers.show', ['report' => $report->id, 'document' => $receipt['data']['document_id']], false));
 })->with([['text_extracted', 'parsed'], ['needs_review', 'failed']]);
+
+it('offers ledger upload only on the current editable step and retains read-only downloads', function (bool $api, bool $readOnly): void {
+    ['user' => $user, 'report' => $report] = AuditLedgerFixture::ready();
+    $prefix = $api ? 'api.v1.auditor.' : 'auditor.';
+    if ($api) {
+        Sanctum::actingAs($user, $readOnly ? ['auditor:read'] : ['auditor:read', 'auditor:command']);
+    } else {
+        $this->actingAs($user);
+    }
+    $read = function (array $query = []) use ($api, $prefix, $report): array {
+        $response = $this->get(route($prefix.'reports.show', ['report' => $report->id, ...$query]))->assertOk();
+
+        return $api ? $response->json('data') : $response->viewData('page')['props'];
+    };
+    expect($read()['stage']['upload'])->toBe($readOnly ? null : ['url' => route($prefix.'reports.save', ['report' => $report->id], false), 'method' => 'post']);
+    $receipt = app(IngestAuditLedger::class)->handle($user->id, 1, $report->id, 4, 'ledger.csv', "amount\n38000000\n", null, (string) Str::uuid());
+    app(SaveAuditReportStep::class)->handle($user->id, 1, $report->id, 5, 'ledger', ['observed_stock' => '38000000', 'reconciled' => true], (string) Str::uuid());
+    $versions = AuditReportVersion::query()->count();
+    $page = $read(['step' => 'ledger']);
+    expect($page['stage']['upload'])->toBeNull()->and($page['stage']['documents'][0]['id'])->toBe($receipt['data']['document_id'])
+        ->and(AuditReportVersion::query()->count())->toBe($versions)->and($read()['stage']['mfa']['confirmed'])->toBeTrue();
+    $this->get($page['stage']['documents'][0]['link']['url'])->assertOk();
+    $upload = ['audit_id' => $report->id, 'expected_revision' => 6, 'identity_context_revision' => 1,
+        'request_id' => (string) Str::uuid(), 'step' => 'ledger', 'document' => UploadedFile::fake()->createWithContent('later.csv', "amount\n51\n")];
+    $response = $this->postJson(route($prefix.'reports.save', ['report' => $report->id]), $upload);
+    if ($readOnly) {
+        $response->assertForbidden();
+    } else {
+        $response->assertConflict()->assertJsonPath('code', 'AUDIT_LEDGER_NOT_AVAILABLE');
+    }
+    expect($report->refresh()->revision)->toBe(6);
+    $report->forceFill(['revision' => 7, 'status' => 'sealed'])->save();
+    AuditReportVersion::factory()->forReport($report, $user->party_id, $user->id)->create();
+    expect($read(['step' => 'ledger'])['stage']['upload'])->toBeNull();
+})->with([[false, false], [true, false], [true, true]]);
+
+it('requires the current account MFA confirmation for procedure access', function (): void {
+    ['user' => $user, 'report' => $report] = AuditLedgerFixture::ready();
+    expect(app(GetAuditProcedure::class)->handle($user->id, 1, $report->id)['mfa_confirmed'])->toBeTrue();
+    $user->forceFill(['two_factor_confirmed_at' => null])->save();
+    $this->actingAs($user)->getJson(route('auditor.reports.show', ['report' => $report->id]))->assertForbidden();
+});
+
+it('rejects direct ledger insertion outside the report author and exact current ledger revision', function (string $case): void {
+    if ($case === 'monthly') {
+        $fixture = BusinessQuoteFixture::ready(auditKind: 'routine');
+        BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
+        $user = $fixture['audit']['partners'][0]['user'];
+        $receipt = app(StartAuditReport::class)->handle($user->id, 1, $fixture['assignment']->id,
+            $fixture['assignment']->refresh()->revision, $fixture['application']->id, $fixture['application']->refresh()->revision, (string) Str::uuid());
+        $report = AuditReport::query()->findOrFail($receipt['data']['audit_id']);
+    } else {
+        ['user' => $user, 'report' => $report] = AuditLedgerFixture::ready();
+    }
+    if (in_array($case, ['earlier_step', 'terminal'], true)) {
+        $report->forceFill(['revision' => 5, ...($case === 'terminal' ? ['status' => 'withdrawn'] : ['step' => 'review'])])->save();
+    }
+    $changed = match ($case) {
+        'foreign_author' => ['actor_party_id' => Party::factory()->create()->id],
+        'missing_report' => ['audit_report_id' => (string) Str::ulid()],
+        'old_revision' => ['report_revision' => $report->revision],
+        'future_revision' => ['report_revision' => $report->revision + 2],
+        default => [],
+    };
+    $row = AuditLedgerOriginal::factory()->forReport($report, $user)->make(['id' => (string) Str::ulid(), 'created_at' => now(), ...$changed])->getAttributes();
+    expect(fn () => DB::transaction(fn (): bool => DB::table('audit_ledger_originals')->insert($row)))
+        ->toThrow(QueryException::class, 'Audit ledger requires its author and current draft Flash ledger revision');
+    $this->assertDatabaseCount('audit_ledger_originals', 0);
+})->with(['foreign_author', 'missing_report', 'old_revision', 'future_revision', 'earlier_step', 'terminal', 'monthly']);
+
+it('refuses to remove used ledger authority protection', function (): void {
+    ['user' => $user, 'report' => $report] = AuditLedgerFixture::ready();
+    app(IngestAuditLedger::class)->handle($user->id, 1, $report->id, 4, 'ledger.csv', "amount\n50\n", null, (string) Str::uuid());
+    $migration = require database_path('migrations/2026_09_25_130201_enforce_audit_ledger_report_authority.php');
+    expect(fn () => $migration->down())->toThrow(RuntimeException::class, 'Existing audit ledger authority history requires a forward migration.');
+    $this->assertDatabaseCount('audit_ledger_originals', 1);
+});
+
+it('refuses inconsistent legacy ledger ownership without rewriting its original', function (): void {
+    ['user' => $user, 'report' => $report] = AuditLedgerFixture::ready();
+    $migration = require database_path('migrations/2026_09_25_130201_enforce_audit_ledger_report_authority.php');
+    $migration->down();
+    $original = AuditLedgerOriginal::factory()->forReport($report, $user)->create(['actor_party_id' => Party::factory()->create()->id]);
+    $before = $original->refresh()->getAttributes();
+    expect(fn () => $migration->up())->toThrow(RuntimeException::class, 'Existing audit ledger ownership must be reconciled before protection.')
+        ->and($original->refresh()->getAttributes())->toBe($before);
+});
+
+it('denies original downloads and uploads to both a withdrawn Auditor and the accepted successor', function (): void {
+    $fixture = AuditLedgerFixture::ready();
+    ['user' => $user, 'report' => $report] = $fixture;
+    $receipt = app(IngestAuditLedger::class)->handle($user->id, 1, $report->id, 4, 'ledger.csv', "amount\n38000000\n", null, (string) Str::uuid());
+    $other = AuditAssignmentFixture::make(1);
+    $replacement = $other['partners'][0];
+    AuditAssignmentFixture::independence($fixture['audit']['staff'], $report->business_id, $replacement['party']->id);
+    AuditAssignmentFixture::respond($user, $fixture['assignment']->refresh(), 'conflict', 'New family tie.', 'family_or_business');
+    expect($fixture['assignment']->refresh()->party_id)->toBe($replacement['party']->id);
+    AuditAssignmentFixture::respond($replacement['user'], $fixture['assignment']);
+    $versions = AuditReportVersion::query()->count();
+    $operations = CommandOperation::query()->count();
+    foreach ([$user, $replacement['user']] as $actor) {
+        Sanctum::actingAs($actor, ['auditor:read', 'auditor:command']);
+        $this->getJson(route('api.v1.auditor.reports.ledgers.show', ['report' => $report->id, 'document' => $receipt['data']['document_id']]))->assertNotFound();
+        $this->postJson(route('api.v1.auditor.reports.save', ['report' => $report->id]), ['audit_id' => $report->id,
+            'identity_context_revision' => 1, 'expected_revision' => $report->refresh()->revision, 'request_id' => (string) Str::uuid(),
+            'step' => 'ledger', 'document' => UploadedFile::fake()->createWithContent('later.csv', "amount\n51\n")])->assertNotFound();
+    }
+    expect(AuditReportVersion::query()->count())->toBe($versions)->and(CommandOperation::query()->count())->toBe($operations)
+        ->and(AuditLedgerOriginal::query()->count())->toBe(1);
+});

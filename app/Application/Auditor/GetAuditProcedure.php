@@ -40,6 +40,8 @@ final class GetAuditProcedure
         }
 
         return [...$page, 'report' => $report,
+            'can_upload_ledger' => $report['status'] === 'draft' && $report['kind'] === 'flash'
+                && $storedStep === 'ledger' && $report['step'] === 'ledger',
             'can_amend' => AuditReportDecision::amendable($report['status']) && $report['amendment_id'] === null,
             'decision_options' => $report['kind'] === 'monthly' && $report['status'] === 'draft'
                 ? ['request_changes' => AuditReportDecision::CHANGES, 'reject' => AuditReportDecision::REJECTION] : null, 'previous_step' => $index > 0 ? $steps[$index - 1] : null,

@@ -23,4 +23,10 @@ class AuditLedgerOriginalFactory extends Factory
             'sha256' => hash('sha256', $content), 'content' => $content,
             'actor_user_id' => User::factory(), 'actor_party_id' => Party::factory()];
     }
+
+    public function forReport(AuditReport $report, User $actor): static
+    {
+        return $this->state(['audit_report_id' => $report->id, 'report_revision' => $report->revision + 1,
+            'actor_user_id' => $actor->id, 'actor_party_id' => $report->author_party_id]);
+    }
 }

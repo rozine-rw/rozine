@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Auditor\AuditReportDecision;
 use App\Domain\Operations\CommandRejection;
+use PHPUnit\Framework\Assert;
 
 it('retains every agreed factual reason without assigning a credit verdict', function (bool $reject, string $code): void {
     expect(AuditReportDecision::reason('monthly', 'draft', $reject, $code, '  Original balances cannot be reconciled.  '))
@@ -27,3 +28,25 @@ it('requires a known reason and bounded plain factual explanation', function (mi
 it('amends only a returned rejected or sealed version', function (string $status, bool $allowed): void {
     expect(AuditReportDecision::amendable($status))->toBe($allowed);
 })->with([['changes_requested', true], ['rejected', true], ['sealed', true], ['draft', false], ['withdrawn', false]]);
+
+it('normalizes textarea line endings and retains ordinary multiline text', function (): void {
+    expect(AuditReportDecision::reason('monthly', 'draft', false, 'other', " First line.\r\nSecond line.\rThird\tline. ")['explanation'])
+        ->toBe("First line.\nSecond line.\nThird\tline.");
+});
+
+it('reports precise reason errors together with the missing code', function (mixed $reason, string $message): void {
+    try {
+        AuditReportDecision::reason('monthly', 'draft', false, null, $reason);
+        Assert::fail('Invalid decision unexpectedly accepted.');
+    } catch (CommandRejection $failure) {
+        expect($failure->fieldErrors)->toBe(['reason_code' => ['Choose a factual report reason.'], 'reason' => [$message]]);
+    }
+})->with([
+    [null, 'Supply a factual explanation.'],
+    [" \n\t ", 'Supply a factual explanation.'],
+    [str_repeat('é', 2001), 'Use at most 2,000 characters for the explanation.'],
+    ["Bad\0text", 'Use valid text without hidden or unsupported characters.'],
+    ["\xFF", 'Use valid text without hidden or unsupported characters.'],
+    ["Bad\u{2028}text", 'Use valid text without hidden or unsupported characters.'],
+    ["Bad\u{2029}text", 'Use valid text without hidden or unsupported characters.'],
+]);
