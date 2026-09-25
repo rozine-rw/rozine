@@ -2,7 +2,7 @@ import {
     reloadPreservingState,
     useOperationCommand,
 } from '@/hooks/use-operation-command';
-import type { CommandNotice } from '@/hooks/use-operation-command';
+import type { CommandNotice, Completion } from '@/hooks/use-operation-command';
 import type { RouteLink } from '@/types';
 import type {
     ApplicationCommand,
@@ -34,6 +34,7 @@ type Options = {
     onCompleted: (
         command: ApplicationCommand,
         resource: OperationResource,
+        completion: Completion,
     ) => void;
     onRefused: (
         command: ApplicationCommand,

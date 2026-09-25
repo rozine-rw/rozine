@@ -53,7 +53,10 @@ vi.mock('@inertiajs/react', () => ({
 const link = (url: string) => ({ url, method: 'get' as const });
 
 const entry: CreateApplicationEntry = {
-    action: { url: '/business/BUS-103847291/applications', method: 'post' },
+    action: {
+        url: '/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications',
+        method: 'post',
+    },
     operation: link('/business/application-operations/{request_id}'),
     identity_context_revision: 7,
     expected_revision: 0,
@@ -139,7 +142,7 @@ describe('Home — starting a raise', () => {
         );
         expect(inertia.calls).toEqual([
             {
-                url: '/business/BUS-103847291/applications',
+                url: '/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications',
                 method: 'post',
                 body: {
                     identity_context_revision: 7,

@@ -61,6 +61,41 @@ beforeEach(() => {
 });
 
 describe('Application commands', () => {
+    it('says whether a completion was answered directly or recovered by the lookup', async () => {
+        const onCompleted = vi.fn();
+        const completed = { status: 'completed', code: 'APPLICATION_SAVED' };
+        const { result } = renderHook(() =>
+            useApplicationCommand({ ...options, onCompleted }),
+        );
+
+        http.responses.push(() => Promise.resolve(completed));
+        act(() => {
+            result.current.send(command('direct'));
+        });
+        await waitFor(() =>
+            expect(onCompleted).toHaveBeenCalledWith(
+                command('direct'),
+                completed,
+                { recovered: false },
+            ),
+        );
+
+        http.responses.push(
+            () => Promise.reject(new Error('offline')),
+            () => Promise.resolve(completed),
+        );
+        act(() => {
+            result.current.send(command('lost'));
+        });
+        await waitFor(() =>
+            expect(onCompleted).toHaveBeenLastCalledWith(
+                command('lost'),
+                completed,
+                { recovered: true },
+            ),
+        );
+    });
+
     it('keeps one command in flight and refuses a second meanwhile', () => {
         const { result } = renderHook(() => useApplicationCommand(options));
         let first = false;

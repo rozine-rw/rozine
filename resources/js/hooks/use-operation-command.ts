@@ -26,6 +26,13 @@ export type CommandNotice =
     | { kind: 'not_recorded' }
     | { kind: 'refused'; code: string; status: number };
 
+/**
+ * How a completion became known. `recovered` is true when the operation lookup reported it after an
+ * unknown outcome: its recorded snapshot is a historical receipt, which a later revision may have
+ * overtaken, so a page reads its facts afresh rather than showing that snapshot as current.
+ */
+export type Completion = { recovered: boolean };
+
 type Attempt<R> =
     | { kind: 'resource'; resource: R }
     | { kind: 'invalid'; errors: Record<string, unknown> }
@@ -55,7 +62,7 @@ type Options<C extends OperationCommand, R> = {
      * lookup found no recorded result. It must not touch the held command.
      */
     refresh: () => Promise<void>;
-    onCompleted: (command: C, resource: R) => void;
+    onCompleted: (command: C, resource: R, completion: Completion) => void;
     onRefused: (command: C, code: string, status: number) => void;
 };
 
@@ -126,11 +133,11 @@ export function useOperationCommand<
         onRefused(command, code, status);
     };
 
-    const conclude = (command: C, resource: R) => {
+    const conclude = (command: C, resource: R, recovered: boolean) => {
         if (resource.status === 'completed') {
             held.current = null;
             setNotice(null);
-            onCompleted(command, resource);
+            onCompleted(command, resource, { recovered });
 
             return;
         }
@@ -173,7 +180,7 @@ export function useOperationCommand<
         );
 
         if (attempt.kind === 'resource') {
-            conclude(command, attempt.resource);
+            conclude(command, attempt.resource, true);
 
             return;
         }
@@ -225,7 +232,7 @@ export function useOperationCommand<
         const attempt = await request(route, command.payload);
 
         if (attempt.kind === 'resource') {
-            conclude(command, attempt.resource);
+            conclude(command, attempt.resource, false);
 
             return;
         }

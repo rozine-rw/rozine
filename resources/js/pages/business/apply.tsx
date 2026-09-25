@@ -162,7 +162,7 @@ export default function BusinessApply(props: BusinessApplyProps) {
         lookup: links.operation,
         identityContextRevision: props.identity_context_revision,
         preview: props.preview_outcome,
-        onCompleted: (sent, resource) => {
+        onCompleted: (sent, resource, { recovered }) => {
             const { data } = resource;
 
             if (data === null) {
@@ -171,14 +171,23 @@ export default function BusinessApply(props: BusinessApplyProps) {
                 return;
             }
 
-            revision.current = data.application.revision;
-            setSnapshot({
-                application: data.application,
-                quote: data.quote,
-                acceptance: data.acceptance,
-                submission: data.submission,
-                allowed_actions: resource.allowed_actions,
-            });
+            /*
+             * A completion the lookup recovered is a historical receipt: a later revision may have
+             * overtaken it, so its snapshot is never shown as current. The page follows `next` (a
+             * fresh read) or reloads all of its facts instead.
+             */
+            if (recovered) {
+                setSnapshot(null);
+            } else {
+                revision.current = data.application.revision;
+                setSnapshot({
+                    application: data.application,
+                    quote: data.quote,
+                    acceptance: data.acceptance,
+                    submission: data.submission,
+                    allowed_actions: resource.allowed_actions,
+                });
+            }
 
             if (sent.name === 'evaluate') {
                 /* A new quote is a new decision: its offer is accepted afresh. */
@@ -197,6 +206,12 @@ export default function BusinessApply(props: BusinessApplyProps) {
 
             if (sent.advance || resource.code === OPERATION_CODES.submitted) {
                 router.visit(data.next);
+
+                return;
+            }
+
+            if (recovered) {
+                router.reload();
 
                 return;
             }

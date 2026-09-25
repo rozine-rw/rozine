@@ -217,7 +217,7 @@
         },
         "create_application": {
             "action": {
-                "url": "/business/BUS-103847291/applications",
+                "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications",
                 "method": "post"
             },
             "operation": {

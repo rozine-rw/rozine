@@ -2,7 +2,7 @@
     "component": "business/apply",
     "props": {
         "contract_version": "business-application-v1",
-        "business_id": "BUS-103847291",
+        "business_id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
         "identity_context_revision": 4,
         "server_time": "2026-09-24T09:15:00+02:00",
         "allowed_actions": [
@@ -12,7 +12,7 @@
         ],
         "step": "review",
         "application": {
-            "id": "APP-2026-0412",
+            "id": "01k6p4c8s3d0f4g9h2j6k1m7n3",
             "revision": 4,
             "title": "Cold-Chain Hub",
             "target": {

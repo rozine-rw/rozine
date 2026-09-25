@@ -292,6 +292,44 @@ describe('Apply — step 1, business & finances', () => {
         ]);
     });
 
+    it('follows next when a Continue is recovered by the lookup, without applying its receipt', async () => {
+        const user = userEvent.setup();
+        const page = props(businessStep);
+
+        inertia.visit.mockClear();
+        inertia.reload.mockClear();
+        inertia.queue.push(
+            offline(),
+            answers(
+                operation({
+                    allowed_actions: [],
+                    data: snapshotOf(page, {
+                        next: {
+                            url: '/preview/business-apply-raise',
+                            method: 'get',
+                        },
+                    }),
+                }),
+            ),
+        );
+        render(<BusinessApply {...page} />);
+
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+        await waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith({
+                url: '/preview/business-apply-raise',
+                method: 'get',
+            }),
+        );
+        expect(inertia.calls[1].method).toBe('get');
+        expect(inertia.reload).not.toHaveBeenCalled();
+        /* The recorded (empty) capabilities never replace the page's own. */
+        expect(
+            screen.getByRole('button', { name: 'Continue' }),
+        ).toBeInTheDocument();
+    });
+
     it('starts a business with no draft yet from an empty request', async () => {
         const user = userEvent.setup();
         const page = props(businessStep);
@@ -767,6 +805,46 @@ describe('Apply — step 2, the quote', () => {
             body: { command: 'save', identity_context_revision: 7 },
         });
         expect(evaluate.url).toBe('/preview/business-apply-evaluations');
+    });
+
+    it('reads every fact afresh after a recovered evaluation, never showing its recorded quote as current', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+        const page = props(raiseStep);
+        const quote = quoteFor25m(page.quote as ReadyQuote);
+
+        inertia.visit.mockClear();
+        inertia.reload.mockClear();
+        inertia.queue.push(
+            answers(operation({ data: snapshotOf(page) })),
+            offline(),
+            answers(
+                operation({
+                    code: 'APPLICATION_EVALUATED',
+                    data: snapshotOf(page, { quote }),
+                }),
+            ),
+        );
+        render(<BusinessApply {...page} />);
+
+        await typeRequest(user);
+        act(() => {
+            vi.advanceTimersByTime(450);
+        });
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(3));
+        expect(inertia.calls[2].url).toMatch(
+            /^\/preview\/business-operation-/u,
+        );
+        /* The direct save refreshes the remaining props; the recovered evaluation reloads all. */
+        await waitFor(() => expect(inertia.reload).toHaveBeenCalledTimes(2));
+        expect(inertia.reload.mock.calls[0]).toEqual([
+            { only: expect.arrayContaining(['allowed_actions']) },
+        ]);
+        expect(inertia.reload.mock.calls[1]).toEqual([]);
+        expect(screen.queryByText('RWF 27,650,000')).not.toBeInTheDocument();
+        expect(screen.getByText('RWF 37,611,735')).toBeInTheDocument();
+        expect(inertia.visit).not.toHaveBeenCalled();
     });
 
     it('offers no command when the server allows none', async () => {
@@ -1843,7 +1921,7 @@ describe('Apply — submitted', () => {
             }),
         ).toBeInTheDocument();
         expect(
-            screen.getByText('Application ID · APP-2026-0412'),
+            screen.getByText('Application ID · 01k6p4c8s3d0f4g9h2j6k1m7n3'),
         ).toBeInTheDocument();
         expect(screen.queryByText(/^Note ID/u)).not.toBeInTheDocument();
 
@@ -1936,7 +2014,8 @@ describe('Apply — without Home', () => {
 });
 
 describe('Apply — the live business-application-v1 projection', () => {
-    const LIVE = '/business/BUS-103847291/applications/APP-2026-0412' as const;
+    const LIVE =
+        '/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications/01k6p4c8s3d0f4g9h2j6k1m7n3' as const;
 
     it('reads the flat draft and the quote with its offered principal, with no preview outcome', () => {
         const page = props(liveStep);
