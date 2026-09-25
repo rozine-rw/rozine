@@ -278,12 +278,10 @@ export function useSealFlow({
         savedFrom === stage || (center.busy && sentFrom === stage);
     const noteReady =
         !stage.note.required || note.trim().length >= stage.note.min;
+    /* Saving the note is its own command: it can be enabled before sealing is. */
+    const mayRecordNote = center.allowed('audit.save_step');
     const canSaveNote =
-        unsaved &&
-        noteReady &&
-        !savingNote &&
-        center.idle &&
-        center.allowed('audit.save_step');
+        unsaved && noteReady && !savingNote && center.idle && mayRecordNote;
     const ready = canContinue && noteReady && center.idle;
     /* Sealing needs both its routes: the step-up and the seal itself. */
     const sealRoutes =
@@ -546,12 +544,14 @@ export function useSealFlow({
             <FieldError id="auditor-seal-note-error">
                 {center.errors.note}
             </FieldError>
-            {unsaved && canSeal && (
+            {unsaved && (canSeal || mayRecordNote) && (
                 <p
                     id="auditor-seal-note-unsaved"
                     className="mt-1.5 text-[11.5px] leading-[1.5] text-rz-secondary"
                 >
-                    {t('auditor.seal.note_unsaved')}
+                    {canSeal
+                        ? t('auditor.seal.note_unsaved')
+                        : t('auditor.seal.note_unsaved_unsealable')}
                 </p>
             )}
         </>
@@ -559,20 +559,20 @@ export function useSealFlow({
 
     const footer = (
         <>
-            {canSeal &&
-                (unsaved ? (
-                    <button
-                        type="button"
-                        disabled={!canSaveNote}
-                        onClick={saveNote}
-                        aria-busy={savingNote || undefined}
-                        className={PRIMARY}
-                    >
-                        {savingNote
-                            ? t('auditor.seal.saving_note')
-                            : t('auditor.seal.save_note')}
-                    </button>
-                ) : (
+            {unsaved && (canSeal || mayRecordNote) ? (
+                <button
+                    type="button"
+                    disabled={!canSaveNote}
+                    onClick={saveNote}
+                    aria-busy={savingNote || undefined}
+                    className={PRIMARY}
+                >
+                    {savingNote
+                        ? t('auditor.seal.saving_note')
+                        : t('auditor.seal.save_note')}
+                </button>
+            ) : (
+                canSeal && (
                     <button
                         type="button"
                         disabled={!ready}
@@ -584,7 +584,8 @@ export function useSealFlow({
                     >
                         {t('auditor.seal.preview')}
                     </button>
-                ))}
+                )
+            )}
             {(canRequestChanges || canReject) && (
                 <div className="flex gap-[9px]">
                     {canRequestChanges && (

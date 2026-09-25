@@ -3066,6 +3066,10 @@ const en = {
     'auditor.ledger.file_type': 'Choose the ledger as a PDF or CSV file.',
     'auditor.ledger.file_size':
         'This file is larger than 10 MB. Upload a PDF or CSV of 10 MB or less.',
+    'auditor.seal.note_unsaved_unsealable':
+        "Your note isn't saved yet. Save it now; sealing opens once the report is ready for it.",
+    'auditor.capture.synthetic':
+        'Synthetic test evidence (isolated) — not a native capture.',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

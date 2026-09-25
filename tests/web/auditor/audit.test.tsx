@@ -299,6 +299,48 @@ describe('Audit procedure — review and check-in', () => {
 });
 
 describe('Audit procedure — photos', () => {
+    const SYNTHETIC =
+        'Synthetic test evidence (isolated) — not a native capture.';
+
+    it('labels an isolated synthetic photo package, never as native proof', () => {
+        render(
+            <AuditorAudit
+                {...withStage<PhotosStage>(photos, (stage) => ({
+                    ...stage,
+                    package: { ...stage.package, source: 'isolated_synthetic' },
+                }))}
+            />,
+        );
+
+        expect(within(sheet()).getByText(SYNTHETIC)).toHaveAttribute(
+            'role',
+            'note',
+        );
+        /* No handoff still reads as capture unavailable, beside the label. */
+        expect(
+            within(sheet()).queryByRole('link', { name: /Add photo/ }),
+        ).not.toBeInTheDocument();
+    });
+
+    it.each([['companion_device' as const], [undefined]])(
+        'adds no synthetic label for a %s package',
+        (source) => {
+            render(
+                <AuditorAudit
+                    {...withStage<PhotosStage>(photos, (stage) => ({
+                        ...stage,
+                        package: { ...stage.package, source, handoff: HANDOFF },
+                    }))}
+                />,
+            );
+
+            expect(screen.queryByText(SYNTHETIC)).not.toBeInTheDocument();
+            expect(
+                within(sheet()).getByRole('link', { name: /Add photo/ }),
+            ).toHaveAttribute('href', HANDOFF.url);
+        },
+    );
+
     it('shows captured and missing shots, and saves titles for the extras', async () => {
         const { user } = renderWithUser(
             <AuditorAudit
