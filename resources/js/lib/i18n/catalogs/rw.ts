@@ -1726,14 +1726,14 @@ const rw: Catalog = {
     'auditor.ledger.none': 'Nta nyandiko yometseho',
     'auditor.ledger.accepted': '{parsed} kuri {count} byemewe',
     'auditor.ledger.rules':
-        "Inyandiko gusa — PDF, cyangwa scan isobanutse (PNG / TIFF / CSV). Amafoto y'igitabo ntiyemerwa. Buri dosiye isomwa na OCR mbere yo kwemerwa.",
-    'auditor.ledger.doc.scanning': 'Birasomwa na OCR … {detail}',
+        "Ohereza igitabo cy'umwimerere nka PDF cyangwa CSV (kugeza kuri MB 10). Igitabo cyaskaninwe gishobora kuba PDF; scan idafite inyandiko ishyirwa ku ruhande ngo isuzumwe n'umuntu.",
+    'auditor.ledger.doc.scanning': 'Biragenzurwa … {detail}',
     'auditor.ledger.doc.parsed': 'Byemewe · {detail}',
     'auditor.ledger.doc.failed': 'Byanzwe · {detail}',
     'auditor.ledger.reading': 'Inyandiko irasomwa',
     'auditor.ledger.rescan': 'Ongera usikane iyi nyandiko',
     'auditor.ledger.file_input': "Dosiye y'igitabo",
-    'auditor.ledger.attach': 'Ometseho igitabo (PDF cyangwa scan)',
+    'auditor.ledger.attach': 'Ometseho igitabo (PDF cyangwa CSV)',
     'auditor.ledger.attach_another': 'Ongeraho ikindi gitabo',
     'auditor.ledger.reconciles':
         "Ibitabo byo ku mpapuro n'inyemezabwishyu bihura n'inyandiko za konti z'ikoranabuhanga.",
@@ -3180,6 +3180,10 @@ const rw: Catalog = {
 
     'auditor.evidence.source_isolated_synthetic':
         "Igihamya cy'igerageza cy'ikigereranyo (cyitaruye)",
+
+    'auditor.ledger.file_type': 'Hitamo igitabo kiri muri PDF cyangwa CSV.',
+    'auditor.ledger.file_size':
+        'Iyi dosiye irengeje MB 10. Ohereza PDF cyangwa CSV itarenze MB 10.',
 
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',

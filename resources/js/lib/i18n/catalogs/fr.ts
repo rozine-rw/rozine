@@ -1725,14 +1725,14 @@ const fr: Catalog = {
     'auditor.ledger.none': 'Aucune pièce',
     'auditor.ledger.accepted': '{parsed} sur {count} acceptées',
     'auditor.ledger.rules':
-        "Documents uniquement — PDF ou scan net de bonne qualité (PNG / TIFF / CSV). Les photos d'un registre ne sont pas acceptées. Chaque fichier est lu par OCR avant d'être accepté.",
-    'auditor.ledger.doc.scanning': 'Lecture OCR … {detail}',
+        'Téléversez le registre original en PDF ou CSV (10 Mo au plus). Un registre scanné peut être un PDF ; un scan sans texte est signalé pour une vérification manuelle de la source.',
+    'auditor.ledger.doc.scanning': 'Vérification … {detail}',
     'auditor.ledger.doc.parsed': 'Acceptée · {detail}',
     'auditor.ledger.doc.failed': 'Refusée · {detail}',
     'auditor.ledger.reading': 'Lecture du document',
     'auditor.ledger.rescan': 'Numériser à nouveau ce document',
     'auditor.ledger.file_input': 'Fichier du registre',
-    'auditor.ledger.attach': 'Joindre un registre (PDF ou scan)',
+    'auditor.ledger.attach': 'Joindre le registre (PDF ou CSV)',
     'auditor.ledger.attach_another': 'Ajouter un autre registre',
     'auditor.ledger.reconciles':
         'Les registres papier et les reçus concordent avec les relevés numériques.',
@@ -3193,6 +3193,10 @@ const fr: Catalog = {
 
     'auditor.evidence.source_isolated_synthetic':
         'Preuve de test synthétique (isolée)',
+
+    'auditor.ledger.file_type': 'Choisissez le registre au format PDF ou CSV.',
+    'auditor.ledger.file_size':
+        'Ce fichier dépasse 10 Mo. Téléversez un PDF ou un CSV de 10 Mo au plus.',
 
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',

@@ -98,10 +98,6 @@
                         {
                             "label": "Closing balance",
                             "value": "RWF 4,812,300"
-                        },
-                        {
-                            "label": "OCR confidence",
-                            "value": "97%"
                         }
                     ],
                     "ingestion": "INGESTED_NOT_AUDIT_APPROVED",

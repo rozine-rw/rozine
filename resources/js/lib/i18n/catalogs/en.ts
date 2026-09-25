@@ -1684,14 +1684,14 @@ const en = {
     'auditor.ledger.none': 'None attached',
     'auditor.ledger.accepted': '{parsed} of {count} accepted',
     'auditor.ledger.rules':
-        'Documents only — PDF, or a light high-quality scan (PNG / TIFF / CSV). Photos of a ledger are not accepted. Each file is OCR-parsed before it is accepted.',
-    'auditor.ledger.doc.scanning': 'OCR parsing … {detail}',
+        'Upload the original ledger as a PDF or CSV (up to 10 MB). A scanned ledger can be a PDF; a scan without text is marked for manual source review.',
+    'auditor.ledger.doc.scanning': 'Checking … {detail}',
     'auditor.ledger.doc.parsed': 'Accepted · {detail}',
     'auditor.ledger.doc.failed': 'Rejected · {detail}',
     'auditor.ledger.reading': 'Reading the document',
     'auditor.ledger.rescan': 'Re-scan this document',
     'auditor.ledger.file_input': 'Ledger document file',
-    'auditor.ledger.attach': 'Attach ledger document (PDF or scan)',
+    'auditor.ledger.attach': 'Attach the ledger (PDF or CSV)',
     'auditor.ledger.attach_another': 'Add another ledger document',
     'auditor.ledger.reconciles':
         'Secondary paper ledgers and receipts reconcile with the digital statements.',
@@ -3063,6 +3063,9 @@ const en = {
         'This report has to be reassigned before work on it can continue, so nothing was started. The page has been refreshed.',
     'auditor.evidence.source_isolated_synthetic':
         'Synthetic test evidence (isolated)',
+    'auditor.ledger.file_type': 'Choose the ledger as a PDF or CSV file.',
+    'auditor.ledger.file_size':
+        'This file is larger than 10 MB. Upload a PDF or CSV of 10 MB or less.',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

@@ -79,10 +79,6 @@
                         {
                             "label": "Closing balance",
                             "value": "RWF 4,812,300"
-                        },
-                        {
-                            "label": "OCR confidence",
-                            "value": "97%"
                         }
                     ],
                     "ingestion": "INGESTED_NOT_AUDIT_APPROVED",
@@ -99,11 +95,11 @@
                 },
                 {
                     "id": "ld_2",
-                    "name": "Receipts-September.png",
-                    "detail": "Scan · 1.1 MB",
+                    "name": "Receipts-September.csv",
+                    "detail": "CSV · 1.1 MB",
                     "state": "failed",
                     "fields": [],
-                    "failure": "OCR confidence 41% — page skew and glare made three columns unreadable. Re-scan flat at 300dpi or export the ledger as a PDF.",
+                    "failure": "This CSV is not UTF-8 text, so it could not be read. Export the ledger again as a UTF-8 CSV or a PDF.",
                     "ingestion": "INGESTED_NOT_AUDIT_APPROVED",
                     "evidence": {
                         "evidence_id": "ev_huye_ld_2",

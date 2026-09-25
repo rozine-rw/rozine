@@ -489,10 +489,10 @@ describe('Audit procedure — ledger reconciliation', () => {
         ).toBeInTheDocument();
         expect(within(dialog).getByText('612')).toBeInTheDocument();
         expect(
-            within(dialog).getByText('Rejected · Scan · 1.1 MB'),
+            within(dialog).getByText('Rejected · CSV · 1.1 MB'),
         ).toBeInTheDocument();
         expect(
-            within(dialog).getByText(/OCR confidence 41%/),
+            within(dialog).getByText(/This CSV is not UTF-8 text/),
         ).toBeInTheDocument();
 
         await user.click(
@@ -621,9 +621,7 @@ describe('Audit procedure — ledger reconciliation', () => {
             />,
         );
 
-        expect(
-            screen.getByText('OCR parsing … PDF · 0.8 MB'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('Checking … PDF · 0.8 MB')).toBeInTheDocument();
         expect(
             screen.getByRole('progressbar', { name: 'Reading the document' }),
         ).toBeInTheDocument();
@@ -660,7 +658,7 @@ describe('Audit procedure — ledger reconciliation', () => {
         [
             {
                 document:
-                    'The ledger must be a PDF, PNG, TIFF or CSV under 20 MB.',
+                    'The ledger must be a PDF or UTF-8 CSV of at most 10 MB.',
             },
         ],
         [{ replaces: 'That document is not on this audit.' }],
@@ -687,6 +685,107 @@ describe('Audit procedure — ledger reconciliation', () => {
         },
     );
 
+    it('names the formats and the limit, and accepts only a PDF or CSV', () => {
+        render(<AuditorAudit {...props(ledger)} />);
+
+        expect(
+            screen.getByText(
+                'Upload the original ledger as a PDF or CSV (up to 10 MB). A scanned ledger can be a PDF; a scan without text is marked for manual source review.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByLabelText('Ledger document file')).toHaveAttribute(
+            'accept',
+            'application/pdf,.pdf,text/csv,.csv',
+        );
+        expect(sheet()).not.toHaveTextContent(/OCR|PNG|TIFF/u);
+    });
+
+    it.each([
+        [
+            new File(['x'], 'ledger.png', { type: 'image/png' }),
+            'Choose the ledger as a PDF or CSV file.',
+        ],
+        [
+            new File(['x'], 'ledger.tiff', { type: 'image/tiff' }),
+            'Choose the ledger as a PDF or CSV file.',
+        ],
+        [
+            new File(['x'.repeat(10 * 1024 * 1024 + 1)], 'ledger.pdf', {
+                type: 'application/pdf',
+            }),
+            'This file is larger than 10 MB. Upload a PDF or CSV of 10 MB or less.',
+        ],
+    ])(
+        'keeps a file the server would refuse on the page: %#',
+        (chosen, message) => {
+            render(<AuditorAudit {...props(ledger)} />);
+            const input = screen.getByLabelText('Ledger document file');
+
+            /* Past the picker's own filter, as a drag or a loose picker could be. */
+            fireEvent.change(input, { target: { files: [chosen] } });
+
+            expect(screen.getByText(message)).toBeInTheDocument();
+            expect(inertia.calls).toHaveLength(0);
+        },
+    );
+
+    it('sends a CSV the browser types loosely, at exactly the limit, and clears an earlier complaint', () => {
+        inertia.queue.push(
+            answers(
+                operation({
+                    data: {
+                        next: {
+                            url: '/preview/auditor-audit-ledger',
+                            method: 'get',
+                        },
+                    },
+                }),
+            ),
+        );
+        render(<AuditorAudit {...props(ledger)} />);
+        const input = screen.getByLabelText('Ledger document file');
+
+        fireEvent.change(input, {
+            target: {
+                files: [new File(['x'], 'ledger.png', { type: 'image/png' })],
+            },
+        });
+        expect(
+            screen.getByText('Choose the ledger as a PDF or CSV file.'),
+        ).toBeInTheDocument();
+
+        const csv = new File(['x'.repeat(10 * 1024 * 1024)], 'Stock.CSV', {
+            type: 'application/vnd.ms-excel',
+        });
+
+        fireEvent.change(input, { target: { files: [csv] } });
+
+        expect(
+            screen.queryByText('Choose the ledger as a PDF or CSV file.'),
+        ).not.toBeInTheDocument();
+        expect(inertia.calls[0].body).toMatchObject({
+            step: 'ledger',
+            document: csv,
+        });
+    });
+
+    it('sends a PDF or CSV named without its extension, by its type', async () => {
+        inertia.queue.push(answers(operation()), answers(operation()));
+        const { user } = renderWithUser(<AuditorAudit {...props(ledger)} />);
+        const input = screen.getByLabelText('Ledger document file');
+
+        await user.upload(
+            input,
+            new File(['%PDF'], 'ledger', { type: 'application/pdf' }),
+        );
+        await waitFor(() => expect(inertia.calls).toHaveLength(1));
+        await user.upload(
+            input,
+            new File(['a,b'], 'ledger', { type: 'text/csv' }),
+        );
+        await waitFor(() => expect(inertia.calls).toHaveLength(2));
+    });
+
     it('banners a field error the step has no field for', async () => {
         inertia.queue.push(invalid({ step: 'This step is not open.' }));
         const { user } = renderWithUser(
@@ -707,7 +806,7 @@ describe('Audit procedure — ledger reconciliation', () => {
         expect(within(dialog).getByText('None attached')).toBeInTheDocument();
         expect(
             within(dialog).getByRole('button', {
-                name: /Attach ledger document/,
+                name: 'Attach the ledger (PDF or CSV)',
             }),
         ).toBeInTheDocument();
         expect(
