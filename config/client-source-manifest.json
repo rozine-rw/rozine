@@ -24,6 +24,7 @@
     "generatedPaths": [
         "resources/js/actions/App/Http/Controllers/Api/V1/AuditorEngagementController.ts",
         "resources/js/actions/App/Http/Controllers/Api/V1/AuditorJobsController.ts",
+        "resources/js/actions/App/Http/Controllers/Api/V1/AuditorProcedureController.ts",
         "resources/js/actions/App/Http/Controllers/Api/V1/AuditorProfileController.ts",
         "resources/js/actions/App/Http/Controllers/Api/V1/BusinessApplicationController.ts",
         "resources/js/actions/App/Http/Controllers/Api/V1/IdentityController.ts",
@@ -35,6 +36,7 @@
         "resources/js/actions/App/Http/Controllers/AuditOperationsController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorEngagementController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorJobsController.ts",
+        "resources/js/actions/App/Http/Controllers/AuditorProcedureController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorProfileController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessApplicationController.ts",
         "resources/js/actions/App/Http/Controllers/DashboardController.ts",
@@ -99,6 +101,9 @@
         "resources/js/routes/api/v1/auditor/jobs/index.ts",
         "resources/js/routes/api/v1/auditor/jobs/operations/index.ts",
         "resources/js/routes/api/v1/auditor/operations/index.ts",
+        "resources/js/routes/api/v1/auditor/reports/index.ts",
+        "resources/js/routes/api/v1/auditor/reports/operations/index.ts",
+        "resources/js/routes/api/v1/auditor/reports/statements/index.ts",
         "resources/js/routes/api/v1/business/applications/index.ts",
         "resources/js/routes/api/v1/business/applications/operations/index.ts",
         "resources/js/routes/api/v1/business/index.ts",
@@ -124,6 +129,9 @@
         "resources/js/routes/auditor/jobs/index.ts",
         "resources/js/routes/auditor/jobs/operations/index.ts",
         "resources/js/routes/auditor/operations/index.ts",
+        "resources/js/routes/auditor/reports/index.ts",
+        "resources/js/routes/auditor/reports/operations/index.ts",
+        "resources/js/routes/auditor/reports/statements/index.ts",
         "resources/js/routes/boost/index.ts",
         "resources/js/routes/business/applications/index.ts",
         "resources/js/routes/business/applications/operations/index.ts",
@@ -506,8 +514,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 478,
-        "generated": 139,
+        "totalTrackedSources": 486,
+        "generated": 147,
         "declarationOnly": 14,
         "authoredExecutable": 325
     },
