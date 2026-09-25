@@ -24,6 +24,7 @@
     "generatedPaths": [
         "resources/js/actions/App/Http/Controllers/Api/V1/AuditorJobsController.ts",
         "resources/js/actions/App/Http/Controllers/Api/V1/AuditorProfileController.ts",
+        "resources/js/actions/App/Http/Controllers/Api/V1/BusinessApplicationController.ts",
         "resources/js/actions/App/Http/Controllers/Api/V1/IdentityController.ts",
         "resources/js/actions/App/Http/Controllers/Api/V1/IdentityManagementController.ts",
         "resources/js/actions/App/Http/Controllers/Api/V1/RoleBookmarkController.ts",
@@ -33,6 +34,7 @@
         "resources/js/actions/App/Http/Controllers/AuditOperationsController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorJobsController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorProfileController.ts",
+        "resources/js/actions/App/Http/Controllers/BusinessApplicationController.ts",
         "resources/js/actions/App/Http/Controllers/DashboardController.ts",
         "resources/js/actions/App/Http/Controllers/IdentityManagementController.ts",
         "resources/js/actions/App/Http/Controllers/PulseController.ts",
@@ -93,6 +95,9 @@
         "resources/js/routes/api/v1/auditor/jobs/index.ts",
         "resources/js/routes/api/v1/auditor/jobs/operations/index.ts",
         "resources/js/routes/api/v1/auditor/operations/index.ts",
+        "resources/js/routes/api/v1/business/applications/index.ts",
+        "resources/js/routes/api/v1/business/applications/operations/index.ts",
+        "resources/js/routes/api/v1/business/index.ts",
         "resources/js/routes/api/v1/identity/active-role/index.ts",
         "resources/js/routes/api/v1/identity/bookmarks/index.ts",
         "resources/js/routes/api/v1/identity/index.ts",
@@ -114,6 +119,8 @@
         "resources/js/routes/auditor/jobs/operations/index.ts",
         "resources/js/routes/auditor/operations/index.ts",
         "resources/js/routes/boost/index.ts",
+        "resources/js/routes/business/applications/index.ts",
+        "resources/js/routes/business/applications/operations/index.ts",
         "resources/js/routes/business/index.ts",
         "resources/js/routes/identity/active-role/index.ts",
         "resources/js/routes/identity/bookmarks/index.ts",
@@ -484,8 +491,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 456,
-        "generated": 126,
+        "totalTrackedSources": 463,
+        "generated": 133,
         "declarationOnly": 14,
         "authoredExecutable": 316
     },
