@@ -86,6 +86,7 @@
         "resources/js/components/business/audit-cosign/cosign-form.tsx",
         "resources/js/components/business/audit-cosign/cosign-notice.tsx",
         "resources/js/components/business/audit-cosign/cosign-status.tsx",
+        "resources/js/components/business/audit-cosign/dispute-sheet.tsx",
         "resources/js/components/business/audit-cosign/report-summary.tsx",
         "resources/js/components/business/business-auth-frame.tsx",
         "resources/js/components/business/business-shell.tsx",

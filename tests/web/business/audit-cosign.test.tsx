@@ -1,5 +1,11 @@
 import type * as InertiaCore from '@inertiajs/core';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useEffect, useState } from 'react';
 import type { ComponentProps } from 'react';
@@ -24,6 +30,8 @@ import type {
     AuditCosignOperationResource,
     BusinessAuditCosignPageProps,
 } from '@/types/business-audit';
+import autoApprovedFixture from '../../../resources/fixtures/ui/business-audit-cosign-auto-approved-n6-pending.json';
+import disputeFixture from '../../../resources/fixtures/ui/business-audit-cosign-dispute-n6-pending.json';
 import flashFixture from '../../../resources/fixtures/ui/business-audit-cosign-flash.json';
 import overdueFixture from '../../../resources/fixtures/ui/business-audit-cosign-overdue.json';
 import partlyFixture from '../../../resources/fixtures/ui/business-audit-cosign-partly-signed.json';
@@ -158,8 +166,7 @@ function InertiaPage({ initial }: { initial: BusinessAuditCosignPageProps }) {
 
 type VisitOptions = { preserveState?: boolean; onFinish?: () => void };
 
-const ACCEPT =
-    'I confirm the statements behind this report are on file and its findings are factual.';
+const ACCEPT = 'I have reviewed the audit findings and co-sign this report.';
 
 const acceptBox = () => screen.getByRole('checkbox', { name: ACCEPT });
 
@@ -206,6 +213,14 @@ describe('Business audit co-sign — reading the sealed report', () => {
         expect(
             screen.getByRole('heading', { name: 'Co-sign the audit report' }),
         ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Your CPA sealed this report after the on-site audit. Read the factual findings before you co-sign.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(/uploaded|on file|24 hours|automatically/u),
+        ).not.toBeInTheDocument();
         expect(screen.getByText('Monthly audit report')).toBeInTheDocument();
         expect(
             screen.getByText('GreenLeaf Agro (synthetic)'),
@@ -364,7 +379,7 @@ describe('Business audit co-sign — reading the sealed report', () => {
 
         expect(
             screen.getByRole('checkbox', {
-                name: 'Je confirme que les relevés sur lesquels repose ce rapport sont bien au dossier et que ses constats sont factuels.',
+                name: "J'ai examiné les constats d'audit et je cosigne ce rapport.",
             }),
         ).toBeInTheDocument();
         expect(screen.getByText('Constats factuels')).toBeInTheDocument();
@@ -705,9 +720,9 @@ describe('Business audit co-sign — the co-signature', () => {
             ),
         );
         expect(
-            await screen.findByText(/^The signatures on this report changed/u),
+            await screen.findByText(/^This report's signatures changed/u),
         ).toHaveTextContent(
-            "The signatures on this report changed while you were signing. We've loaded the latest — check it and co-sign again. (VERSION_CONFLICT)",
+            "This report's signatures changed while you were working on it. We've loaded the latest — check it and try again. (VERSION_CONFLICT)",
         );
         expect(screen.getByText('1 of 2 signatures')).toBeInTheDocument();
         expect(acceptBox()).not.toBeChecked();
@@ -718,11 +733,11 @@ describe('Business audit co-sign — the co-signature', () => {
     it.each([
         [
             'DIGEST_STALE',
-            "The report you read is no longer the current one. We've loaded it — read it and co-sign again.",
+            "The report you read is no longer the current one. We've loaded it — read it and try again.",
         ],
         [
             'MANDATE_STALE',
-            "The company's signing mandate changed. Check who must co-sign now, then co-sign again.",
+            "The company's signing mandate changed. Check who can sign now, then try again.",
         ],
         [
             'IDEMPOTENCY_CONFLICT',
@@ -730,7 +745,7 @@ describe('Business audit co-sign — the co-signature', () => {
         ],
         [
             'REPORT_WINDOW_CLOSED',
-            "Your co-signature wasn't recorded. Check the report as it stands now and try again.",
+            "This wasn't recorded. Check the report as it stands now and try again.",
         ],
     ])(
         'reads the page afresh after %s and shows the code as sent',
@@ -766,11 +781,11 @@ describe('Business audit co-sign — the co-signature', () => {
     });
 
     it.each([
-        [403, 'ACTION_FORBIDDEN', "You can't co-sign for this business."],
+        [403, 'ACTION_FORBIDDEN', "You can't do this for this business."],
         [
             403,
             'MANDATE_REQUIRED',
-            "Your verified mandate doesn't let you co-sign for this business.",
+            "Your verified mandate doesn't let you sign for this business.",
         ],
         [404, 'NOT_FOUND', 'This report is no longer available to you.'],
         [
@@ -813,5 +828,358 @@ describe('Business audit co-sign — the co-signature', () => {
         expect(screen.getByRole('alert')).toHaveTextContent(
             'The report changed.',
         );
+    });
+});
+
+describe('Business audit co-sign — pending N6 and dispute (additive, optional)', () => {
+    const disputeButton = () =>
+        screen.queryByRole('button', { name: 'Submit a dispute' });
+
+    const openDispute = async (user: ReturnType<typeof userEvent.setup>) => {
+        await user.click(disputeButton()!);
+    };
+
+    it('labels a report published by automatic approval, without a deadline line', () => {
+        setup(props(autoApprovedFixture));
+
+        expect(
+            screen.getByText(
+                'Published automatically after the 24-hour window',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'No one signed within the window, so the report was approved automatically and published.',
+        );
+        expect(screen.getByText('0 of 2 signatures')).toBeInTheDocument();
+        expect(
+            screen.queryByText(/Co-sign by|Overdue/u),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+        expect(disputeButton()).not.toBeInTheDocument();
+    });
+
+    it('reads a signed publication exactly as the current contract does', () => {
+        const page = props(publishedFixture);
+
+        page.cosign.published_reason = 'signed';
+        setup(page);
+
+        expect(
+            screen.getByText(
+                `Published ${formatDate(page.report.published_at!, 'en')}`,
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(/Published automatically/u),
+        ).not.toBeInTheDocument();
+    });
+
+    it('offers no dispute unless both the pending action and its route are sent', () => {
+        const first = setup();
+
+        expect(disputeButton()).not.toBeInTheDocument();
+        first.unmount();
+
+        const noRoute = props(disputeFixture);
+
+        noRoute.actions.dispute = null;
+        const second = setup(noRoute);
+
+        expect(disputeButton()).not.toBeInTheDocument();
+        second.unmount();
+
+        const notAllowed = props(disputeFixture);
+
+        notAllowed.allowed_actions = ['report.cosign'];
+        setup(notAllowed);
+
+        expect(disputeButton()).not.toBeInTheDocument();
+        expect(acceptBox()).toBeInTheDocument();
+    });
+
+    it('offers a dispute beside the co-signature, and alone when co-signing is not allowed', () => {
+        const first = setup(props(disputeFixture));
+
+        expect(disputeButton()).toBeEnabled();
+        expect(acceptBox()).toBeInTheDocument();
+        first.unmount();
+
+        const disputeOnly = props(disputeFixture);
+
+        disputeOnly.allowed_actions = ['report.dispute'];
+        setup(disputeOnly);
+
+        expect(disputeButton()).toBeEnabled();
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    });
+
+    it('requires a factual reason and limits the reason and the supporting text', async () => {
+        const { user } = setup(props(disputeFixture));
+        await openDispute(user);
+        const sheet = within(
+            screen.getByRole('dialog', { name: 'Submit a dispute' }),
+        );
+        const submit = sheet.getByRole('button', { name: 'Submit dispute' });
+        const reason = sheet.getByLabelText('Your reason');
+        const supporting = sheet.getByLabelText(
+            'Supporting details (optional)',
+        );
+
+        expect(
+            sheet.getByText(
+                'State which findings you dispute and why, as facts. Your dispute does not change the sealed report.',
+            ),
+        ).toBeInTheDocument();
+        expect(sheet.getByText('0/2000')).toBeInTheDocument();
+        expect(sheet.getByText('0/1000')).toBeInTheDocument();
+        expect(submit).toBeDisabled();
+
+        await user.type(reason, '   ');
+        expect(submit).toBeDisabled();
+
+        fireEvent.change(reason, { target: { value: 'r'.repeat(2050) } });
+        expect(reason).toHaveValue('r'.repeat(2000));
+        expect(sheet.getByText('2000/2000')).toBeInTheDocument();
+        expect(submit).toBeEnabled();
+
+        fireEvent.change(supporting, { target: { value: 's'.repeat(1050) } });
+        expect(supporting).toHaveValue('s'.repeat(1000));
+        expect(sheet.getByText('1000/1000')).toBeInTheDocument();
+        expect(inertia.calls).toEqual([]);
+    });
+
+    it('sends only the required dispute body when there is no proof', async () => {
+        const page = props(disputeFixture);
+        const { user } = setup(page);
+        await openDispute(user);
+        const sheet = within(
+            screen.getByRole('dialog', { name: 'Submit a dispute' }),
+        );
+
+        await user.type(
+            sheet.getByLabelText('Your reason'),
+            '  Finding SYN-F-02 counts a refund as a sale.  ',
+        );
+        await user.click(sheet.getByRole('button', { name: 'Submit dispute' }));
+
+        expect(inertia.calls).toEqual([
+            {
+                url: '/preview/business-audit-cosign-disputes',
+                method: 'post',
+                body: {
+                    request_id: expect.stringMatching(
+                        /^[0-9a-f-]{36}$/u,
+                    ) as string,
+                    identity_context_revision: 4,
+                    expected_revision: 7,
+                    report_revision: 3,
+                    digest: page.report.digest,
+                    reason: 'Finding SYN-F-02 counts a refund as a sale.',
+                },
+            },
+        ]);
+        expect(
+            sheet.getByRole('button', { name: 'Submitting…' }),
+        ).toHaveAttribute('aria-busy', 'true');
+    });
+
+    it('sends supporting text and every attached file with the dispute', async () => {
+        const { user } = setup(props(disputeFixture));
+        await openDispute(user);
+        const sheet = within(
+            screen.getByRole('dialog', { name: 'Submit a dispute' }),
+        );
+        const receipt = new File(['r'], 'receipt-book.jpg', {
+            type: 'image/jpeg',
+        });
+        const refund = new File(['s'], 'refund-slip.pdf', {
+            type: 'application/pdf',
+        });
+        const extra = new File(['x'], 'extra.png', { type: 'image/png' });
+        const input = sheet.getByLabelText('Proof files (optional)', {
+            selector: 'input',
+        });
+
+        await user.type(
+            sheet.getByLabelText('Your reason'),
+            'Refund, not sale.',
+        );
+        await user.type(
+            sheet.getByLabelText('Supporting details (optional)'),
+            'Refund slip 0142 matches the till roll.',
+        );
+        await user.upload(input, [receipt, extra]);
+        await user.upload(input, refund);
+
+        expect(
+            within(
+                sheet.getByRole('list', { name: 'Proof files (optional)' }),
+            ).getAllByRole('listitem'),
+        ).toHaveLength(3);
+
+        await user.click(
+            sheet.getByRole('button', { name: 'Remove extra.png' }),
+        );
+        await user.click(sheet.getByRole('button', { name: 'Submit dispute' }));
+
+        expect(inertia.calls[0].body).toEqual(
+            expect.objectContaining({
+                reason: 'Refund, not sale.',
+                supporting_text: 'Refund slip 0142 matches the till roll.',
+                proof_files: [receipt, refund],
+            }),
+        );
+    });
+
+    it('opens the file picker from its button', async () => {
+        const { user } = setup(props(disputeFixture));
+        await openDispute(user);
+        const sheet = within(
+            screen.getByRole('dialog', { name: 'Submit a dispute' }),
+        );
+        const input = sheet.getByLabelText('Proof files (optional)', {
+            selector: 'input',
+        });
+        const click = vi.spyOn(input, 'click');
+
+        await user.click(sheet.getByRole('button', { name: 'Add files' }));
+
+        expect(click).toHaveBeenCalledTimes(1);
+        fireEvent.change(input, { target: { files: null } });
+        expect(
+            sheet.queryByRole('list', { name: 'Proof files (optional)' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('reads the page afresh once the dispute is recorded', async () => {
+        inertia.queue.push(answers(operation({ code: 'REPORT_DISPUTED' })));
+        const { user } = setup(props(disputeFixture));
+        await openDispute(user);
+        const sheet = within(
+            screen.getByRole('dialog', { name: 'Submit a dispute' }),
+        );
+
+        await user.type(
+            sheet.getByLabelText('Your reason'),
+            'Refund, not sale.',
+        );
+        await user.click(sheet.getByRole('button', { name: 'Submit dispute' }));
+
+        await waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith(
+                window.location.href,
+                expect.objectContaining({ preserveState: false }),
+            ),
+        );
+        expect(inertia.reload).not.toHaveBeenCalled();
+    });
+
+    it('closes the sheet on a denial and shows its code on the page', async () => {
+        inertia.queue.push(fails(403, { code: 'ACTION_FORBIDDEN' }));
+        const { user } = setup(props(disputeFixture));
+        await openDispute(user);
+        const sheet = within(
+            screen.getByRole('dialog', { name: 'Submit a dispute' }),
+        );
+
+        await user.type(
+            sheet.getByLabelText('Your reason'),
+            'Refund, not sale.',
+        );
+        await user.click(sheet.getByRole('button', { name: 'Submit dispute' }));
+
+        expect(
+            await screen.findByText(
+                "You can't do this for this business. (ACTION_FORBIDDEN)",
+            ),
+        ).toBeInTheDocument();
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(inertia.visit).not.toHaveBeenCalled();
+    });
+
+    it('keeps an unconfirmed dispute in the sheet until the lookup answers', async () => {
+        inertia.queue.push(offline(), fails(503));
+        const { user } = setup(props(disputeFixture));
+        await openDispute(user);
+        const sheet = within(
+            screen.getByRole('dialog', { name: 'Submit a dispute' }),
+        );
+
+        await user.type(
+            sheet.getByLabelText('Your reason'),
+            'Refund, not sale.',
+        );
+        await user.click(sheet.getByRole('button', { name: 'Submit dispute' }));
+
+        expect(
+            await sheet.findByText("We couldn't confirm this yet"),
+        ).toBeInTheDocument();
+        expect(
+            sheet.getByRole('button', { name: 'Submit dispute' }),
+        ).toBeDisabled();
+        expect(inertia.calls[1].body).toEqual({ command: 'report.dispute' });
+
+        await user.click(sheet.getByRole('button', { name: 'Cancel' }));
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(
+            screen.getByText("We couldn't confirm this yet"),
+        ).toBeInTheDocument();
+        expect(disputeButton()).toBeDisabled();
+    });
+
+    it('marks dispute field errors in the sheet and shows any other there as a banner', async () => {
+        inertia.errors = {
+            identity_context_revision: 'Unrelated.',
+            reason: 'Say what you dispute.',
+            supporting_text: 'Too long.',
+            proof_files: 'That file type is not accepted.',
+        };
+        const { user } = setup(props(disputeFixture));
+
+        expect(screen.getByRole('alert')).toHaveTextContent('Unrelated.');
+
+        await openDispute(user);
+        const sheet = within(
+            screen.getByRole('dialog', { name: 'Submit a dispute' }),
+        );
+
+        expect(sheet.getByText('Say what you dispute.')).toBeInTheDocument();
+        expect(sheet.getByText('Too long.')).toBeInTheDocument();
+        expect(
+            sheet.getByText('That file type is not accepted.'),
+        ).toBeInTheDocument();
+        expect(sheet.getByLabelText('Your reason')).toHaveAttribute(
+            'aria-invalid',
+            'true',
+        );
+        expect(sheet.getByRole('alert')).toHaveTextContent('Unrelated.');
+
+        await user.click(screen.getAllByRole('button', { name: 'Cancel' })[0]);
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('reads the dispute and automatic approval in French and Kinyarwanda', async () => {
+        const user = userEvent.setup();
+        const { unmount } = render(
+            <I18nContext value={{ locale: 'fr', catalog: catalogFor('fr') }}>
+                <BusinessAuditCosign {...props(disputeFixture)} />
+            </I18nContext>,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'Soumettre une contestation' }),
+        );
+        expect(screen.getByLabelText('Votre motif')).toBeInTheDocument();
+        unmount();
+
+        render(
+            <I18nContext value={{ locale: 'rw', catalog: catalogFor('rw') }}>
+                <BusinessAuditCosign {...props(autoApprovedFixture)} />
+            </I18nContext>,
+        );
+
+        expect(
+            screen.getByText("Yatangajwe mu buryo bwikora nyuma y'amasaha 24"),
+        ).toBeInTheDocument();
     });
 });

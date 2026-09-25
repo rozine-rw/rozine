@@ -558,14 +558,13 @@ const en = {
     'business.reports.subtitle':
         'Verified each month by your on-site Audit Partner.',
     'business.reports.guide.title': 'How monthly audits work',
-    'business.reports.guide.opens.title': 'Your Audit Partner opens the file',
+    'business.reports.guide.opens.title': 'Gather your records',
     'business.reports.guide.opens.body':
-        'You do not file the report. At the close of each month your assigned CPA opens the audit and works from the bank and Mobile Money statements you uploaded.',
+        'Between the 20th and month-end, gather all physical and digital financial records for your scheduled CPA in-person audit.',
     'business.reports.guide.visit.title': 'Be ready for the site visit',
     'business.reports.guide.visit.body_before':
-        'They count stock, check your ledgers and seal the audit before the',
-    'business.reports.guide.visit.body_after':
-        '. Your job is to have statements, stock and access ready — we remind you daily for the last seven days of the month.',
+        'Your assigned CPA visits your premises to review records and reconcile cash flows, then seals the report before the',
+    'business.reports.guide.visit.body_after': '.',
     'business.reports.guide.cosign.title': 'Co-sign, or dispute',
     'business.reports.guide.cosign.body':
         'When the audit is sealed you add a recap and co-sign it by the {day}, or raise a dispute with counter-proof. Because you never touch the figures, the report is independent — which is exactly what investors pay for.',
@@ -2020,14 +2019,14 @@ const en = {
     'business.audit_prep.day_left': 'Day left',
     'business.audit_prep.days_left': 'Days left',
     'business.audit_prep.intro':
-        'Your Audit Partner opens the {month} file once the month closes and must seal it by {seal}. You cannot start or edit the report — what you can do is make the visit quick and clean.',
+        'Notification received: Please prepare all bank statements, Mobile Money logs, and physical receipt books for your upcoming CPA visit.',
     'business.audit_prep.reassigned':
         'Your file moved from {from} to {to}, and your history moved with it.',
     'business.audit_prep.ready': 'Have this ready',
     'business.audit_prep.item.statements.title':
-        'Bank & Mobile Money statements',
+        'Bank statements & Mobile Money logs',
     'business.audit_prep.item.statements.body':
-        'The full month, to the last day. Your CPA works from the statements you uploaded — keep printed copies for the walk-through.',
+        'The full month, to the last day, ready for your CPA to review on site.',
     'business.audit_prep.item.stock.title': 'Stock counted and ledgers current',
     'business.audit_prep.item.stock.body':
         'Your Audit Partner does a physical count. A stale ledger reads as a variance and cuts your borrowing capacity.',
@@ -2036,9 +2035,9 @@ const en = {
     'business.audit_prep.item.access.body':
         'Anything locked or unreachable on the day is counted as missing.',
     'business.audit_prep.item.papers.title':
-        'Receipts, purchase orders and waybills filed',
+        'Till receipts and transactions reconciled',
     'business.audit_prep.item.papers.body':
-        'Month-to-date, in one place. These explain any gap between your statements and the count.',
+        "Ensure all physical till receipts and digital transactions are reconciled for the CPA's on-site review.",
     'business.audit_prep.item.person.title': 'Someone with authority on site',
     'business.audit_prep.item.person.body':
         'They need a person who can open doors and answer for the numbers — not just staff on shift.',
@@ -2048,7 +2047,7 @@ const en = {
         'Your CPA opens the audit file for the period. Nothing is required from you to start it.',
     'business.audit_prep.flow.visit.title': 'On-site visit',
     'business.audit_prep.flow.visit.body':
-        'They count stock, reconcile the till against your statements and photograph the evidence on site.',
+        'Your assigned CPA will visit your premises to review records, reconcile cash flows, and generate the monthly audit report.',
     'business.audit_prep.flow.sealed.title': 'Sealed',
     'business.audit_prep.flow.sealed.body':
         'The factual findings and variances are sealed under their ICPAR licence.',
@@ -2056,7 +2055,7 @@ const en = {
     'business.audit_prep.flow.cosign.body':
         'You add a recap and co-sign by {date}, or dispute with counter-proof.',
     'business.audit_prep.closing':
-        'You never file the monthly report yourself. Your Audit Partner opens it, verifies it on site and seals it — your part is being ready, then co-signing or disputing what they found.',
+        'You never file the monthly report yourself. Your CPA visits, reviews your records on site and seals the report — your part is being ready, then co-signing or disputing what they found.',
     'investor.nav.deals': 'Deals',
     'investor.nav.portfolio': 'Portfolio',
     'investor.nav.profile': 'Profile',
@@ -3141,7 +3140,7 @@ const en = {
     'business.audit_cosign.title': 'Co-sign the audit report',
     'business.audit_cosign.back': 'Back',
     'business.audit_cosign.lead':
-        'Your Audit Partner sealed this report from the statements you uploaded. Read the factual findings before you co-sign.',
+        'Your CPA sealed this report after the on-site audit. Read the factual findings before you co-sign.',
     'business.audit_cosign.kind.monthly': 'Monthly audit report',
     'business.audit_cosign.kind.flash': 'Flash audit report',
     'business.audit_cosign.period': 'Period',
@@ -3177,9 +3176,8 @@ const en = {
     'business.audit_cosign.published': 'Published {date}',
     'business.audit_cosign.yours.title': 'Your co-signature',
     'business.audit_cosign.yours.accept':
-        'I confirm the statements behind this report are on file and its findings are factual.',
+        'I have reviewed the audit findings and co-sign this report.',
     'business.audit_cosign.yours.note': 'Your recap (optional)',
-    'business.audit_cosign.yours.note_count': '{count}/{limit}',
     'business.audit_cosign.yours.note_help':
         'Kept with your signature. It does not change the sealed report.',
     'business.audit_cosign.yours.identity':
@@ -3199,23 +3197,47 @@ const en = {
     'business.audit_cosign.yours.cannot': "You can't co-sign this report.",
     'business.audit_cosign.refused.with_code': '{reason} ({code})',
     'business.audit_cosign.refused.VERSION_CONFLICT':
-        "The signatures on this report changed while you were signing. We've loaded the latest — check it and co-sign again.",
+        "This report's signatures changed while you were working on it. We've loaded the latest — check it and try again.",
     'business.audit_cosign.refused.IDEMPOTENCY_CONFLICT':
         "This request was already used with different details, so it was not sent again. We've loaded the latest.",
     'business.audit_cosign.refused.DIGEST_STALE':
-        "The report you read is no longer the current one. We've loaded it — read it and co-sign again.",
+        "The report you read is no longer the current one. We've loaded it — read it and try again.",
     'business.audit_cosign.refused.MANDATE_STALE':
-        "The company's signing mandate changed. Check who must co-sign now, then co-sign again.",
+        "The company's signing mandate changed. Check who can sign now, then try again.",
     'business.audit_cosign.refused.ACTION_FORBIDDEN':
-        "You can't co-sign for this business.",
+        "You can't do this for this business.",
     'business.audit_cosign.refused.MANDATE_REQUIRED':
-        "Your verified mandate doesn't let you co-sign for this business.",
+        "Your verified mandate doesn't let you sign for this business.",
     'business.audit_cosign.refused.NOT_FOUND':
         'This report is no longer available to you.',
     'business.audit_cosign.refused.denied':
         'Your access has changed. Return to your apps and try again.',
     'business.audit_cosign.refused.failed':
-        "Your co-signature wasn't recorded. Check the report as it stands now and try again.",
+        "This wasn't recorded. Check the report as it stands now and try again.",
+    'business.audit_prep.seal_by':
+        'Your CPA seals the {month} report by {seal}. You cannot start or edit it.',
+    'business.audit_cosign.count': '{count}/{limit}',
+    'business.audit_cosign.published_auto':
+        'Published automatically after the 24-hour window',
+    'business.audit_cosign.yours.published_auto':
+        'No one signed within the window, so the report was approved automatically and published.',
+    'business.audit_cosign.dispute.open': 'Submit a dispute',
+    'business.audit_cosign.dispute.intro':
+        'State which findings you dispute and why, as facts. Your dispute does not change the sealed report.',
+    'business.audit_cosign.dispute.reason': 'Your reason',
+    'business.audit_cosign.dispute.reason_help':
+        'Required: the facts you dispute.',
+    'business.audit_cosign.dispute.supporting': 'Supporting details (optional)',
+    'business.audit_cosign.dispute.supporting_help':
+        'Describe the proof you can show, if it helps.',
+    'business.audit_cosign.dispute.submit': 'Submit dispute',
+    'business.audit_cosign.dispute.submitting': 'Submitting…',
+    'business.audit_cosign.dispute.cancel': 'Cancel',
+    'business.audit_cosign.dispute.files': 'Proof files (optional)',
+    'business.audit_cosign.dispute.files_help':
+        'Add photos or documents that back your dispute.',
+    'business.audit_cosign.dispute.files_add': 'Add files',
+    'business.audit_cosign.dispute.file_remove': 'Remove {name}',
 } as const;
 
 export default en;

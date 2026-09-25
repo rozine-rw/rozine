@@ -79,7 +79,7 @@ export function CosignForm({
                         aria-live="polite"
                         className="text-[11px] font-semibold text-rz-secondary tabular-nums"
                     >
-                        {t('business.audit_cosign.yours.note_count', {
+                        {t('business.audit_cosign.count', {
                             count: note.length,
                             limit: NOTE_LIMIT,
                         })}
