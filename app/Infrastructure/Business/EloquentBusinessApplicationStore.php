@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Business;
 
+use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Auditor\WithCurrentAuditAssignment;
 use App\Application\Business\Contracts\BusinessApplicationStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
@@ -32,6 +33,7 @@ use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationSignature;
 use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessApplicationVersion;
+use Closure;
 use DateTimeImmutable;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -47,6 +49,8 @@ use RuntimeException;
  * @phpstan-import-type Terms from \App\Domain\Business\MandateAuthority
  * @phpstan-import-type EvaluationExpectation from BusinessApplicationStore
  * @phpstan-import-type Selection from UnderwritingObservationWindow
+ * @phpstan-import-type AuditBinding from BusinessApplicationStore
+ * @phpstan-import-type AcceptedAssignment from \App\Application\Auditor\Contracts\AuditAssignmentStore
  */
 final class EloquentBusinessApplicationStore implements BusinessApplicationStore
 {
@@ -67,6 +71,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
         private BusinessAuthorityStore $businesses,
         private IdentityAccessStore $access,
         private UnderwritingObservationWindow $windows,
+        private WithAcceptedAuditAssignment $acceptedAssignments,
     ) {}
 
     /** @return array<string, mixed> */
@@ -760,6 +765,55 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                 'title' => $application->draft['title'], 'target' => $application->draft['target'], 'term_months' => $application->draft['term_months'],
                 'use_of_funds' => $application->draft['use_of_funds']]];
         });
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(AcceptedAssignment, AuditBinding): TResult  $operation
+     * @return TResult
+     */
+    public function withAuditBinding(int $userId, int $contextRevision, string $assignmentId, string $applicationId, Closure $operation): mixed
+    {
+        return $this->acceptedAssignments->handle($userId, $contextRevision, $assignmentId,
+            function (array $assignment) use ($applicationId, $operation): mixed {
+                $application = $this->application($assignment['business_id'], $applicationId);
+                if ($application->status !== 'submitted') {
+                    throw new CommandRejection('APPLICATION_NOT_SUBMITTED', revision: $application->revision);
+                }
+
+                return $operation($assignment, $this->auditBinding($application));
+            });
+    }
+
+    /** @return AuditBinding */
+    private function auditBinding(BusinessApplication $application): array
+    {
+        $submitted = $this->submittedSnapshot($application);
+        $snapshot = $this->snapshot($application);
+        $version = BusinessApplicationVersion::query()->where('business_application_id', $application->id)
+            ->where('revision', $application->revision)->first();
+        $expected = [...$snapshot, 'quote_id' => $application->current_quote_id, 'submission_id' => $application->current_submission_id];
+        if ($version === null || $this->json->encode($version->snapshot) !== $this->json->encode($expected)
+            || $this->json->encode($submitted['review']['application']) !== $this->json->encode($snapshot)) {
+            throw new RuntimeException('APPLICATION_VERSION_INTEGRITY_FAILED');
+        }
+        $quote = BusinessApplicationQuote::query()->where('business_application_id', $application->id)
+            ->whereKey($application->current_quote_id)->first();
+        $agreement = $submitted['agreement'];
+        if ($quote === null || ! hash_equals($quote->sha256, hash('sha256', $this->json->encode($quote->payload)))
+            || $agreement['quote_id'] !== $quote->id || $agreement['quote_revision'] !== $quote->revision
+            || $agreement['quote_sha256'] !== $quote->sha256 || $quote->payload['quote_id'] !== $quote->id
+            || $quote->payload['quote_revision'] !== $quote->revision || $quote->payload['application_id'] !== $application->id
+            || $quote->payload['business_id'] !== $application->business_id
+            || $this->json->encode($quote->payload['draft']) !== $this->json->encode($application->draft)) {
+            throw new RuntimeException('APPLICATION_QUOTE_INTEGRITY_FAILED');
+        }
+
+        return ['application' => $snapshot, 'version' => ['id' => $version->id, 'sha256' => hash('sha256', $this->json->encode($version->snapshot))],
+            'submission' => ['id' => $submitted['submission_id'], 'sha256' => hash('sha256', $this->json->encode($submitted)), 'submitted_at' => $submitted['submitted_at']],
+            'quote' => ['id' => $quote->id, 'revision' => $quote->revision, 'sha256' => $quote->sha256, 'payload' => $quote->payload],
+            'mandate' => ['version' => $agreement['mandate_version'], 'terms' => $agreement['mandate'], 'sha256' => hash('sha256', $this->json->encode($agreement['mandate']))]];
     }
 
     /** @return array<string, mixed> */

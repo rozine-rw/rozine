@@ -342,8 +342,8 @@ VIOLATION
 fi
 
 if selected auditor-boundary; then
-  control auditor-boundary "bypassing the auditor adapter to write accreditation or certificate history must fail"
-  for auditor_model in AuditorProfile AuditorProfileVersion AuditorCertificate AuditLocation AuditLocationVersion AuditorIndependenceReview AuditorIndependenceVersion AuditAssignment AuditAssignmentVersion AuditConflictDeclaration; do
+  control auditor-boundary "bypassing the auditor adapter to write accreditation, assignment or report history must fail"
+  for auditor_model in AuditorProfile AuditorProfileVersion AuditorCertificate AuditLocation AuditLocationVersion AuditorIndependenceReview AuditorIndependenceVersion AuditAssignment AuditAssignmentVersion AuditConflictDeclaration AuditReport AuditReportVersion; do
   echo "    checking ${auditor_model}"
   plant app/Application/Auditor/NegativeControlAuditorWrite.php <<VIOLATION
 <?php

@@ -28,7 +28,7 @@ final class BusinessQuoteFixture
      * @param  list<ObligationInput>  $auditedObligations
      * @return Fixture
      */
-    public static function make(bool $credit = true, string $kind = 'person', int $signatories = 1, int $historyMonths = 36, array $auditedObligations = []): array
+    public static function make(bool $credit = true, string $kind = 'person', int $signatories = 1, int $historyMonths = 36, array $auditedObligations = [], string $auditKind = 'flash'): array
     {
         $audit = AuditAssignmentFixture::make(1, $kind, $signatories);
         $owner = $audit['authority']['users'][0];
@@ -57,7 +57,7 @@ final class BusinessQuoteFixture
         }
         $transcribed = app(RecordStatementTranscription::class)->handle($owner->id, 1, $audit['business'], 1,
             [['id' => 'bank-a', 'active_from' => $first->format('Y-m'), 'active_until' => null]], $months, $statements, (string) Str::uuid());
-        $assignment = AuditAssignmentFixture::request($audit);
+        $assignment = AuditAssignmentFixture::request($audit, $auditKind);
         AuditAssignmentFixture::respond($audit['partners'][0]['user'], $assignment);
         $review = StatementFixture::review([$source => hash('sha256', $csv)]);
         $review['recurring_owner_draw'] = '0';
@@ -92,9 +92,9 @@ final class BusinessQuoteFixture
     }
 
     /** @return Fixture */
-    public static function ready(int $signatories = 1): array
+    public static function ready(int $signatories = 1, string $auditKind = 'flash'): array
     {
-        $fixture = self::make(kind: $signatories === 1 ? 'person' : 'organization', signatories: $signatories);
+        $fixture = self::make(kind: $signatories === 1 ? 'person' : 'organization', signatories: $signatories, auditKind: $auditKind);
         ConsentFixture::record($fixture['audit']['staff']);
         self::evaluate($fixture);
         app(SaveBusinessApplication::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'],

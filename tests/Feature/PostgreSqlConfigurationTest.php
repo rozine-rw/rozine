@@ -52,6 +52,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $creditMigration = require database_path('migrations/2026_09_25_012151_create_business_credit_snapshots_table.php');
     $quoteMigration = require database_path('migrations/2026_09_25_014242_create_business_application_quotes_table.php');
     $acceptanceMigration = require database_path('migrations/2026_09_25_022105_create_business_application_acceptances.php');
+    $reportMigration = require database_path('migrations/2026_09_25_053838_create_audit_reports_and_versions.php');
     $party = Party::factory()->verified()->create();
     $user = User::factory()->for($party)->create();
     RoleMembership::factory()->for($party)->active()->create();
@@ -60,6 +61,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
 
     expect(Schema::hasIndex('users', ['party_id']))->toBeTrue();
 
+    $reportMigration->down();
     $acceptanceMigration->down();
     $quoteMigration->down();
     $creditMigration->down();
@@ -110,6 +112,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $creditMigration->up();
     $quoteMigration->up();
     $acceptanceMigration->up();
+    $reportMigration->up();
 
     expect(Schema::hasTable('parties'))->toBeTrue()
         ->and(Schema::hasTable('role_memberships'))->toBeTrue()
@@ -134,5 +137,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasTable('auditor_independence_versions'))->toBeTrue()
         ->and(Schema::hasTable('business_credit_snapshots'))->toBeTrue()
         ->and(Schema::hasTable('business_application_quotes'))->toBeTrue()
+        ->and(Schema::hasTable('audit_reports'))->toBeTrue()
+        ->and(Schema::hasTable('audit_report_versions'))->toBeTrue()
         ->and(Schema::hasColumn('business_applications', 'current_quote_id'))->toBeTrue();
 });

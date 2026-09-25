@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace App\Application\Business\Contracts;
 
+use Closure;
+
 /**
  * @phpstan-import-type Fields from \App\Domain\Business\ApplicationDraft
  * @phpstan-import-type Work from \App\Application\Auditor\Contracts\AuditAssignmentStore
+ * @phpstan-import-type AcceptedAssignment from \App\Application\Auditor\Contracts\AuditAssignmentStore
+ * @phpstan-import-type Terms from \App\Domain\Business\MandateAuthority
  *
  * @phpstan-type Application array{id: string, business_id: string, revision: int, status: string, step: string, draft: Fields, mandate_version: int}
  * @phpstan-type AuditApplication array{work: Work, application: array{id: string, revision: int, title: string, target: string|null, term_months: int|null, use_of_funds: list<string>}|null}
  * @phpstan-type EvaluationExpectation array{target: string, term_months: int, evidence_version: string}
+ * @phpstan-type AuditBinding array{application: Application, version: array{id: string, sha256: string}, submission: array{id: string, sha256: string, submitted_at: string}, quote: array{id: string, revision: int, sha256: string, payload: array<string, mixed>}, mandate: array{version: int, terms: Terms, sha256: string}}
  */
 interface BusinessApplicationStore
 {
@@ -64,6 +69,17 @@ interface BusinessApplicationStore
 
     /** @return AuditApplication */
     public function audit(int $userId, int $contextRevision, string $assignmentId): array;
+
+    /**
+     * Holds current accepted-assignment authority through the caller's effect. This private
+     * report input pins a submitted application; it is not an audience Resource or a new offer.
+     *
+     * @template TResult
+     *
+     * @param  Closure(AcceptedAssignment, AuditBinding): TResult  $operation
+     * @return TResult
+     */
+    public function withAuditBinding(int $userId, int $contextRevision, string $assignmentId, string $applicationId, Closure $operation): mixed;
 
     /** @return array<string, mixed> */
     public function findOperation(int $userId, int $contextRevision, string $command, string $requestId): array;

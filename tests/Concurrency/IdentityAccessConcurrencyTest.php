@@ -11,6 +11,7 @@ use App\Application\Auditor\RecordAuditorIndependence;
 use App\Application\Auditor\RequestAuditAssignment;
 use App\Application\Auditor\ResolveAuditAssignment;
 use App\Application\Auditor\SetAuditorAvailability;
+use App\Application\Auditor\StartAuditReport;
 use App\Application\Auditor\VerifyAuditLocation;
 use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Auditor\WithdrawAuditorAccreditation;
@@ -53,6 +54,8 @@ use App\Models\AuditorIndependenceReview;
 use App\Models\AuditorIndependenceVersion;
 use App\Models\AuditorProfile;
 use App\Models\AuditorProfileVersion;
+use App\Models\AuditReport;
+use App\Models\AuditReportVersion;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationSignature;
@@ -1613,3 +1616,65 @@ it('holds every acceptance authority and source through the actual final submiss
     $change();
     expect(BusinessApplicationSubmission::query()->count())->toBe(1);
 })->with(['consent', 'credit', 'mandate', 'signer', 'auditor']);
+
+it('serializes simultaneous report starts across logins for the same Auditor Party', function (bool $sameRequest): void {
+    $fixture = BusinessQuoteFixture::ready();
+    BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
+    $partner = $fixture['audit']['partners'][0];
+    $otherLogin = User::factory()->withTwoFactor()->for($partner['party'])->create();
+    app(SelectActiveRole::class)->handle($otherLogin->id, 'auditor', 0, (string) Str::uuid());
+    $request = (string) Str::uuid();
+    $assignment = $fixture['assignment']->refresh();
+    $application = $fixture['application']->refresh();
+    $start = fn (User $user, string $uuid): Closure => function () use ($user, $uuid, $assignment, $application): void {
+        $result = app(StartAuditReport::class)->handle($user->id, 1, $assignment->id, $assignment->revision,
+            $application->id, $application->revision, $uuid);
+        expect($result['code'])->toBeIn(['AUDIT_REPORT_STARTED', 'AUDIT_REPORT_RESUMED']);
+    };
+    expect(runIdentityContenders([$start($partner['user'], $request), $start($otherLogin, $sameRequest ? $request : (string) Str::uuid())]))->toBe([0, 0])
+        ->and(AuditReport::query()->count())->toBe(1)
+        ->and(AuditReportVersion::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'audit.start')->count())->toBe($sameRequest ? 1 : 2);
+})->with([true, false]);
+
+it('holds current authority through the actual audit report creation write', function (string $source): void {
+    $fixture = BusinessQuoteFixture::ready();
+    BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
+    $partner = $fixture['audit']['partners'][0];
+    $assignment = $fixture['assignment']->refresh();
+    $application = $fixture['application']->refresh();
+    $default = DB::getDefaultConnection();
+    $change = function () use ($fixture, $partner, $source, $assignment): void {
+        if ($source === 'identity') {
+            Party::query()->whereKey($partner['party']->id)->update(['verified_at' => null]);
+        } elseif ($source === 'standing') {
+            AuditorFixture::review($partner['staff'], $partner['party']->id, 3, 'suspend');
+        } elseif ($source === 'assignment') {
+            AuditAssignmentFixture::respond($partner['user'], $assignment, 'conflict', 'Related party found during report creation.', 'family_or_business');
+        } else {
+            $authority = $fixture['audit']['authority'];
+            $authority['profile']['name'] = 'Changed during report creation';
+            BusinessAuthorityFixture::configure($authority, 1);
+        }
+    };
+    $event = 'eloquent.creating: '.AuditReport::class;
+    Event::listen($event, function () use ($default, $change): void {
+        config(['database.connections.report_contender' => config('database.connections.pgsql')]);
+        DB::connection('report_contender')->statement("SET lock_timeout = '500ms'");
+        DB::setDefaultConnection('report_contender');
+        try {
+            expect($change)->toThrow(QueryException::class);
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('report_contender');
+        }
+    });
+    try {
+        expect(app(StartAuditReport::class)->handle($partner['user']->id, 1, $assignment->id, $assignment->revision,
+            $application->id, $application->revision, (string) Str::uuid())['code'])->toBe('AUDIT_REPORT_STARTED');
+    } finally {
+        Event::forget($event);
+    }
+    $change();
+    expect(AuditReport::query()->count())->toBe(1)->and(AuditReportVersion::query()->count())->toBe(1);
+})->with(['identity', 'standing', 'assignment', 'business']);

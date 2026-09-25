@@ -400,12 +400,15 @@ it('makes assignment history and conflicts immutable and protects mass assignmen
 it('reverses and reapplies only the assignment schema on the isolated test database', function (): void {
     $migration = require database_path('migrations/2026_09_24_113400_create_audit_assignments_and_conflicts.php');
     $verification = require database_path('migrations/2026_09_24_124527_create_statement_verifications_table.php');
+    $reports = require database_path('migrations/2026_09_25_053838_create_audit_reports_and_versions.php');
+    $reports->down();
     $verification->down();
     $migration->down();
     expect(Schema::hasTable('audit_assignments'))->toBeFalse();
     $migration->up();
     expect(Schema::hasTable('audit_conflict_declarations'))->toBeTrue();
     $verification->up();
+    $reports->up();
 });
 
 it('automatically reoffers expired jobs with system history and without impersonating a staff user', function (): void {
