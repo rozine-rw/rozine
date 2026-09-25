@@ -15,6 +15,9 @@ import type {
     SaveRoleBookmarkInput,
 } from '@/types/identity';
 
+/** The facts a focus, reconnect or visibility signal reads afresh. */
+const REFRESHED_PROPS = ['identity', 'business_applications'];
+
 type Props = {
     identity: IdentityContext;
     role: MarketplaceRole;
@@ -31,7 +34,8 @@ export default function RoleHome({
 }: Props) {
     const { t } = useTranslation();
     const request = useHttp<SaveRoleBookmarkInput, { data: RoleBookmark }>();
-    const refreshing = useAccessRefresh(['identity']);
+    /* A withdrawn Business entry disappears on the same fresh read as a withdrawn role. */
+    const refreshing = useAccessRefresh(REFRESHED_PROPS);
     const pending = useRef<SaveRoleBookmarkInput | null>(null);
     const [failed, setFailed] = useState(false);
     async function changeSection(next: 'overview' | 'access') {

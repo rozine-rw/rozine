@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Business\RecordIsolatedBusinessCreditFacts;
+use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationSignature;
 use App\Models\BusinessApplicationSubmission;
 use App\Models\User;
@@ -10,6 +11,7 @@ use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Symfony\Component\Process\Process;
+use Tests\Support\BusinessAuthorityFixture as AuthorityFixture;
 use Tests\Support\BusinessQuoteFixture as QuoteFixture;
 use Tests\Support\ConsentFixture;
 use Tests\TestCase;
@@ -35,6 +37,9 @@ it('runs the real-record Business Apply resume save evaluate sign and submit jou
     $password = 'Synthetic-browser-fixture-42!';
     $solo = QuoteFixture::make();
     ConsentFixture::record($solo['audit']['staff']);
+    /* A second business the sole trader represents, with no application yet: started from the launcher. */
+    $related = AuthorityFixture::relatedOrganization($solo['audit']['authority']);
+    $relatedBusiness = AuthorityFixture::configure($related, 1)['data']['business']['id'];
     $pair = QuoteFixture::ready(2);
     $stale = QuoteFixture::ready();
     $login = static function (User $user, string $email) use ($password): string {
@@ -95,13 +100,36 @@ it('runs the real-record Business Apply resume save evaluate sign and submit jou
         $run(['open', $base.'/login']);
         $run(['open', $base.'/login'], 1);
 
-        /* Resumes the saved draft at its earlier Business view, then Continue saves on to Raise. */
+        /*
+         * From the launcher: the Business landing lists both businesses. Apply for a raise starts the
+         * second one's application and follows next into Apply; the first resumes its saved draft,
+         * whose Back link opens the earlier Business view, and Continue saves on to Raise.
+         */
         $result = $run(['run-code', 'async (page) => {
             const errors = []; page.on("pageerror", error => errors.push(error.message));
             await page.setViewportSize({width:1113, height:750});
             '.$signIn($soloEmail).'
-            await page.goto('.json_encode($base.$path($solo).'?view_step=business').');
+            const list = page.getByRole("region", {name:"Raise applications"});
+            await list.getByRole("link", {name:"Continue your application"}).waitFor();
+            await list.getByText("Saved at Your raise").waitFor();
+            await page.screenshot({path:"ua-live-rolehome-desktop.png", fullPage:true, animations:"disabled"});
+            const created = page.waitForResponse(response => response.url().endsWith('.json_encode('/business/'.$relatedBusiness.'/applications').') && response.request().method() === "POST");
+            await list.getByRole("button", {name:"Apply for a raise", exact:true}).click();
+            const creation = await (await created).json();
+            if (creation.code !== "APPLICATION_CREATED") throw new Error("Create: " + creation.code);
+            await page.waitForURL("**" + creation.data.next.url);
+            const started = page.getByRole("dialog", {name:"Raise application"});
+            await started.getByRole("heading", {name:"Business & finances"}).waitFor();
+            await page.goto('.json_encode($base.'/business').');
+            if (await list.getByRole("button", {name:"Apply for a raise"}).count() !== 0) throw new Error("The started business still offers a new raise");
+            if (await list.getByRole("link", {name:"Continue your application"}).count() !== 2) throw new Error("Both drafts should resume");
+            await list.getByText("Saved at Your raise").waitFor();
+            await list.getByRole("listitem").filter({hasText:"Saved at Your raise"}).getByRole("link", {name:"Continue your application"}).click();
+            await page.waitForURL('.json_encode('**'.$path($solo)).');
             const sheet = page.getByRole("dialog", {name:"Raise application"});
+            await sheet.getByRole("heading", {name:"Your raise"}).waitFor();
+            await page.getByRole("link", {name:"Back", exact:true}).click();
+            await page.waitForURL("**?view_step=business");
             await sheet.getByRole("heading", {name:"Business & finances"}).waitFor();
             await sheet.getByText(/ · 36 months$/).waitFor();
             if (await sheet.getByText(/^RDB /).count() !== 0) throw new Error("Sole trader shows a company code");
@@ -113,7 +141,7 @@ it('runs the real-record Business Apply resume save evaluate sign and submit jou
             await page.waitForURL('.json_encode('**'.$path($solo)).');
             await sheet.getByRole("heading", {name:"Your raise"}).waitFor();
             if (errors.length) throw new Error(JSON.stringify(errors));
-            return {resumed:true, continueStep:body.step};
+            return {launcher:true, created:creation.code, resumed:true, continueStep:body.step};
         }']);
         file_put_contents($directory.'/resume-result.txt', $result);
 
@@ -181,7 +209,11 @@ it('runs the real-record Business Apply resume save evaluate sign and submit jou
             const errors = []; page.on("pageerror", error => errors.push(error.message));
             await page.setViewportSize({width:390, height:844});
             '.$signIn($secondEmail).'
-            await page.goto('.json_encode($base.$path($pair)).');
+            await page.getByRole("region", {name:"Raise applications"}).getByRole("link", {name:"Continue your application"}).waitFor();
+            '.$noOverflow.'
+            await page.screenshot({path:"ua-live-rolehome-phone.png", fullPage:true, animations:"disabled"});
+            await page.getByRole("region", {name:"Raise applications"}).getByRole("link", {name:"Continue your application"}).click();
+            await page.waitForURL('.json_encode('**'.$path($pair)).');
             '.$accept.'
             '.$noOverflow.'
             await page.screenshot({path:"ua-live-review-phone.png", fullPage:true, animations:"disabled"});
@@ -226,7 +258,8 @@ it('runs the real-record Business Apply resume save evaluate sign and submit jou
         }'], 1);
         file_put_contents($directory.'/stale-result.txt', $result);
 
-        expect(BusinessApplicationSubmission::query()->count())->toBe(2)
+        expect(BusinessApplication::query()->where('business_id', $relatedBusiness)->count())->toBe(1)
+            ->and(BusinessApplicationSubmission::query()->count())->toBe(2)
             ->and(BusinessApplicationSignature::query()->where('business_application_id', $pair['application']->id)->count())->toBe(2)
             ->and(BusinessApplicationSubmission::query()->where('business_application_id', $stale['application']->id)->exists())->toBeFalse();
     } catch (Throwable $failure) {

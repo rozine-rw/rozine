@@ -227,6 +227,18 @@ describe('Business role landing — raise applications', () => {
         expect(screen.queryByRole('list')).not.toBeInTheDocument();
     });
 
+    it('reads the entries afresh with the identity on focus, so a withdrawn entry leaves', () => {
+        render(<RoleHome {...props()} />);
+
+        window.dispatchEvent(new Event('focus'));
+
+        expect(inertia.reload).toHaveBeenCalledWith(
+            expect.objectContaining({
+                only: ['identity', 'business_applications'],
+            }),
+        );
+    });
+
     it('shows no applications section for another role', () => {
         const page = props();
 
