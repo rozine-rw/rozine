@@ -31,6 +31,9 @@ import type { AuditorPreviewOutcome, SealStage } from '@/types/auditor';
 /** A confirmed authenticator's one-time code (auditor-filing-v1 point 2). */
 export const CODE_LENGTH = 6;
 
+const PRIMARY =
+    'h-[50px] w-full rounded-2xl bg-rz-accent-fill text-[14.5px] font-bold text-white disabled:cursor-not-allowed disabled:bg-rz-disabled disabled:text-rz-secondary';
+
 const SUMMARY_TONE = {
     ok: 'text-rz-positive',
     flag: 'text-rz-danger-text',
@@ -212,6 +215,12 @@ type SealFlowOptions = {
  * the proof and the pinned versions, and the server signs. A stale digest or version asks for a
  * new preview and a new code; a monthly filing can instead go back to the business or be
  * rejected, each with a coded reason and a factual explanation — never a credit verdict.
+ *
+ * The note is saved before anything is previewed (#96, S-D): an edited note goes to the server
+ * through `audit.save_step` at `step: seal`, and the page is read afresh with the new report
+ * revision and a digest that covers it. Only a note that matches the persisted one can be
+ * previewed, confirmed and sealed, so no note ever travels beside an older digest; editing it
+ * again withdraws any open preview and code entry until it is saved again.
  */
 export function useSealFlow({
     stage,
@@ -231,14 +240,31 @@ export function useSealFlow({
     const [code, setCode] = useState('');
     const [entry, setEntry] = useState<Entry>(() => initialEntry(preview));
     const [stale, setStale] = useState<string | null>(null);
+    /*
+     * The stage a note save was sent from, and the one it completed on. Either stays current only
+     * until fresh props arrive, so "Saving note…" lasts from the request to the fresh read.
+     */
+    const [sentFrom, setSentFrom] = useState<SealStage | null>(null);
+    const [savedFrom, setSavedFrom] = useState<SealStage | null>(null);
     const initialReason = preview?.kind === 'sheet' ? preview.reason : null;
 
     const close = () => {
         setNested(null);
         setCode('');
     };
+    /* The note the server holds, and which the digest covers; only it is ever sealed. */
+    const persisted = stage.note.value;
+    const unsaved = note.trim() !== persisted.trim();
+    const savingNote =
+        savedFrom === stage || (center.busy && sentFrom === stage);
     const noteReady =
         !stage.note.required || note.trim().length >= stage.note.min;
+    const canSaveNote =
+        unsaved &&
+        noteReady &&
+        !savingNote &&
+        center.idle &&
+        center.allowed('audit.save_step');
     const ready = canContinue && noteReady && center.idle;
     const canSeal = center.allowed('audit.seal');
     const canRequestChanges =
@@ -248,6 +274,43 @@ export function useSealFlow({
         stage.reason_options !== null && center.allowed('audit.reject');
     const throttled = entry.kind === 'throttled';
     const busy = stepUp.checking || center.busy;
+
+    const editNote = (value: string) => {
+        setNote(value);
+
+        /*
+         * A preview, and any code typed against it, covered the note as it was saved: both are
+         * withdrawn, and an earlier attempt's message with them. A throttle still runs its course.
+         */
+        if (nested === 'preview' || nested === 'code') {
+            close();
+        }
+
+        setEntry((current) =>
+            current.kind === 'throttled' ? current : { kind: 'ready' },
+        );
+    };
+
+    const saveNote = () => {
+        const from = stage;
+
+        setStale(null);
+        setSentFrom(from);
+        center.send(
+            {
+                name: 'audit.save_step',
+                business,
+                route: context.save,
+                payload: {
+                    audit_id: context.auditId,
+                    step: 'seal',
+                    expected_revision: context.revision,
+                    note: note.trim(),
+                },
+            },
+            { onCompleted: () => setSavedFrom(from) },
+        );
+    };
 
     const seal = (proof: string) =>
         center.send(
@@ -265,7 +328,8 @@ export function useSealFlow({
                     evidence_ids: stage.evidence.map(
                         (item) => item.evidence_id,
                     ),
-                    note: note.trim(),
+                    /* An exact echo of the persisted note the digest covers. */
+                    note: persisted,
                     step_up: { proof },
                 },
             },
@@ -422,9 +486,13 @@ export function useSealFlow({
                 id="auditor-seal-note"
                 value={note}
                 maxLength={stage.note.max}
-                onChange={(event) => setNote(event.target.value)}
+                readOnly={savingNote}
+                onChange={(event) => editNote(event.target.value)}
                 placeholder={t('auditor.seal.note_placeholder')}
                 aria-invalid={center.errors.note ? true : undefined}
+                aria-describedby={
+                    unsaved ? 'auditor-seal-note-unsaved' : undefined
+                }
                 className={cn(NOTE_FIELD, 'mt-2 min-h-[84px]')}
             />
             <p className="mt-1 text-right text-[10.5px] text-rz-secondary">
@@ -436,24 +504,45 @@ export function useSealFlow({
             <FieldError id="auditor-seal-note-error">
                 {center.errors.note}
             </FieldError>
+            {unsaved && canSeal && (
+                <p
+                    id="auditor-seal-note-unsaved"
+                    className="mt-1.5 text-[11.5px] leading-[1.5] text-rz-secondary"
+                >
+                    {t('auditor.seal.note_unsaved')}
+                </p>
+            )}
         </>
     );
 
     const footer = (
         <>
-            {canSeal && (
-                <button
-                    type="button"
-                    disabled={!ready}
-                    onClick={() => {
-                        setStale(null);
-                        setNested('preview');
-                    }}
-                    className="h-[50px] w-full rounded-2xl bg-rz-accent-fill text-[14.5px] font-bold text-white disabled:cursor-not-allowed disabled:bg-rz-disabled disabled:text-rz-secondary"
-                >
-                    {t('auditor.seal.preview')}
-                </button>
-            )}
+            {canSeal &&
+                (unsaved ? (
+                    <button
+                        type="button"
+                        disabled={!canSaveNote}
+                        onClick={saveNote}
+                        aria-busy={savingNote || undefined}
+                        className={PRIMARY}
+                    >
+                        {savingNote
+                            ? t('auditor.seal.saving_note')
+                            : t('auditor.seal.save_note')}
+                    </button>
+                ) : (
+                    <button
+                        type="button"
+                        disabled={!ready}
+                        onClick={() => {
+                            setStale(null);
+                            setNested('preview');
+                        }}
+                        className={PRIMARY}
+                    >
+                        {t('auditor.seal.preview')}
+                    </button>
+                ))}
             {(canRequestChanges || canReject) && (
                 <div className="flex gap-[9px]">
                     {canRequestChanges && (
@@ -531,7 +620,11 @@ export function useSealFlow({
                 onClose={close}
             />
         );
-    } else if ((nested === 'preview' || nested === 'code') && canSeal) {
+    } else if (
+        (nested === 'preview' || nested === 'code') &&
+        canSeal &&
+        !unsaved
+    ) {
         const notice = center.notice;
         const ownNotice =
             notice?.kind === 'refused' && STEP_UP_REFUSALS.has(notice.code);
@@ -624,6 +717,16 @@ export function useSealFlow({
                                         )}
                                     </section>
                                 ))}
+                                {persisted !== '' && (
+                                    <section>
+                                        <StepEyebrow>
+                                            {t('auditor.seal.note')}
+                                        </StepEyebrow>
+                                        <p className="mt-2 text-[12px] leading-[1.55] whitespace-pre-line text-rz-slate">
+                                            {persisted}
+                                        </p>
+                                    </section>
+                                )}
                                 <section>
                                     <StepEyebrow>
                                         {t('auditor.seal.evidence')}

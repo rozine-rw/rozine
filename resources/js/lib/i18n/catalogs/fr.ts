@@ -3160,6 +3160,16 @@ const fr: Catalog = {
     'auditor.command.refused.AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED':
         'Acceptez les conditions de mission actuelles pour continuer.',
     'auditor.command.review_terms': 'Lire les conditions',
+    'auditor.seal.save_note': 'Enregistrer la note',
+    'auditor.seal.saving_note': 'Enregistrement de la note…',
+    'auditor.seal.note_unsaved':
+        "Enregistrez votre note avant l'aperçu. L'aperçu, votre code et le sceau portent tous sur la note enregistrée.",
+    'auditor.ledger.reported_undeclared': 'Non déclaré',
+    'auditor.ledger.reported_undeclared_note':
+        "L'entreprise n'a pas déclaré de valeur de stock : il n'y a donc aucun chiffre déclaré auquel comparer votre comptage. Saisissez ce que vous avez compté.",
+    'auditor.ledger.reconciles_undeclared':
+        "Le rapprochement reste bloqué tant que l'entreprise n'a pas déclaré son stock.",
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

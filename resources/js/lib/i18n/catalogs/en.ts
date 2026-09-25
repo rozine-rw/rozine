@@ -3033,6 +3033,15 @@ const en = {
         'Download the certificate on record',
     'auditor.accreditation.view_submitted':
         'Download the submitted certificate',
+    'auditor.seal.save_note': 'Save note',
+    'auditor.seal.saving_note': 'Saving note…',
+    'auditor.seal.note_unsaved':
+        'Save your note before you preview. The preview, your code and the seal all cover the saved note.',
+    'auditor.ledger.reported_undeclared': 'Not declared',
+    'auditor.ledger.reported_undeclared_note':
+        'The business has not declared a stock value, so there is no reported figure to compare your count with. Record what you counted.',
+    'auditor.ledger.reconciles_undeclared':
+        'Reconciliation stays blocked until the business declares its stock.',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

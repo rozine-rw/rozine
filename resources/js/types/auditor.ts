@@ -673,7 +673,20 @@ export type FileJob = {
 export type AuditorFileProps = AuditorPageContract &
     EngagementSummaryProp & {
         job: FileJob;
-        actions: JobActions;
+        actions: JobActions & {
+            /**
+             * Pending S-D (`audit.start`, #96), types only: no page sends or reads it yet. Present
+             * once assigned and while no report exists; null otherwise. Starting sends the
+             * assignment revision with the `application` pins and follows `data.next`; the file GET
+             * creates nothing, and once a report exists `links.procedure` resumes it.
+             */
+            start?: RouteAction | null;
+        };
+        /**
+         * Pending S-D (`audit.start`, #96), types only: the exact application ID and revision the
+         * report will bind, sent with `actions.start`. It stays outside the frozen submitted row.
+         */
+        application?: RecordRef;
         decline_options: ServerOption<DeclineReason>[];
         links: OperationLookupLinks & {
             close: RouteLink;
@@ -778,7 +791,12 @@ export type LedgerDocument = {
 
 export type LedgerStage = {
     step: 'ledger';
-    reported_stock: Money;
+    /**
+     * The stock value the business declared. Null when no Business stock declaration exists (the
+     * application and statement facts do not supply one, #96 S-D): it reads "Not declared", never
+     * zero, and reconciliation stays blocked.
+     */
+    reported_stock: Money | null;
     observed_stock: Money | null;
     /** The policy tolerance, as the server words it: "RWF 0". */
     tolerance: string;

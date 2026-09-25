@@ -3147,6 +3147,16 @@ const rw: Catalog = {
     'auditor.command.refused.AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED':
         'Emera amasezerano y’akazi ariho kugira ngo ukomeze.',
     'auditor.command.review_terms': 'Soma amasezerano',
+    'auditor.seal.save_note': 'Bika inyandiko',
+    'auditor.seal.saving_note': 'Inyandiko irabikwa…',
+    'auditor.seal.note_unsaved':
+        'Bika inyandiko yawe mbere yo kureba ibizashyirwaho kashe. Igenzura, kode yawe na kashe byose bishingira ku nyandiko yabitswe.',
+    'auditor.ledger.reported_undeclared': 'Ntibyatangajwe',
+    'auditor.ledger.reported_undeclared_note':
+        "Ikigo nticyatangaje agaciro k'ububiko, bityo nta mubare watangajwe wo kugereranya n'ibyo wabaze. Andika ibyo wabaze.",
+    'auditor.ledger.reconciles_undeclared':
+        'Guhuza bizakomeza guhagarara kugeza ikigo gitangaje ububiko bwacyo.',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

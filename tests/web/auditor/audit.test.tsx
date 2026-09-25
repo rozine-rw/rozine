@@ -32,6 +32,7 @@ import blocked from '../../../resources/fixtures/ui/auditor-audit-conflict-block
 import count from '../../../resources/fixtures/ui/auditor-audit-count.json';
 import ledgerEmpty from '../../../resources/fixtures/ui/auditor-audit-ledger-empty.json';
 import ledgerIngested from '../../../resources/fixtures/ui/auditor-audit-ledger-ingested.json';
+import ledgerUndeclared from '../../../resources/fixtures/ui/auditor-audit-ledger-undeclared.json';
 import ledger from '../../../resources/fixtures/ui/auditor-audit-ledger.json';
 import monthlySeal from '../../../resources/fixtures/ui/auditor-audit-monthly-seal.json';
 import photosOffline from '../../../resources/fixtures/ui/auditor-audit-photos-offline.json';
@@ -716,6 +717,67 @@ describe('Audit procedure — ledger reconciliation', () => {
             ),
         ).toBeInTheDocument();
         expect(within(dialog).queryByText(/tolerance/)).not.toBeInTheDocument();
+    });
+
+    it('reads an undeclared stock as not declared, never zero, and keeps reconciliation blocked', async () => {
+        const { user } = renderWithUser(
+            <AuditorAudit {...props(ledgerUndeclared)} />,
+        );
+        const dialog = sheet();
+        const tick = within(dialog).getByRole('checkbox', {
+            name: /reconcile with the digital statements/,
+        });
+
+        expect(within(dialog).getByText('Not declared')).toBeInTheDocument();
+        expect(
+            within(dialog).getByText(
+                'The business has not declared a stock value, so there is no reported figure to compare your count with. Record what you counted.',
+            ),
+        ).toBeInTheDocument();
+        expect(within(dialog).queryByText('RWF 0')).not.toBeInTheDocument();
+        expect(within(dialog).queryByText(/tolerance/)).not.toBeInTheDocument();
+        /* A parsed ledger alone does not open the reconciliation tick. */
+        expect(tick).toBeDisabled();
+        expect(tick).not.toBeChecked();
+        expect(
+            within(dialog).getByText(
+                'Reconciliation stays blocked until the business declares its stock.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(dialog).queryByText(
+                'Attach and pass at least one ledger document first.',
+            ),
+        ).not.toBeInTheDocument();
+        expect(
+            within(dialog).getByRole('button', { name: 'Review & seal' }),
+        ).toBeDisabled();
+
+        await user.click(tick);
+        expect(tick).not.toBeChecked();
+    });
+
+    it('never records a reconciliation against an undeclared stock', async () => {
+        const { user } = renderWithUser(
+            <AuditorAudit
+                {...withStage<LedgerStage>(ledgerUndeclared, (stage) => ({
+                    ...stage,
+                    reconciled: true,
+                }))}
+                can_continue
+            />,
+        );
+
+        expect(
+            screen.getByRole('checkbox', { name: /reconcile/ }),
+        ).not.toBeChecked();
+        await user.click(screen.getByRole('button', { name: 'Review & seal' }));
+        expect(inertia.calls[0].body).toEqual({
+            ...COMMAND,
+            observed_stock: '36400000',
+            reconciled: false,
+            step: 'ledger',
+        });
     });
 
     it('shows a variance inside tolerance', () => {
