@@ -5,7 +5,15 @@ import {
     screen,
     waitFor,
 } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+} from 'vite-plus/test';
+import { LOOKUP_TIMEOUT_MS } from '@/hooks/use-operation-command';
 import { catalogFor } from '@/lib/i18n';
 import { I18nContext } from '@/lib/i18n/context';
 import AuditorEngagement from '@/pages/auditor/engagement';
@@ -69,6 +77,10 @@ const acceptButton = () =>
     screen.getByRole('button', { name: 'Accept the terms' });
 
 beforeEach(() => inertia.reset());
+
+afterEach(() => {
+    vi.useRealTimers();
+});
 
 describe('Auditor engagement terms', () => {
     it('shows both documents in full as plain text, with their version, hashes and synthetic provenance', () => {
@@ -286,6 +298,46 @@ describe('Auditor engagement terms', () => {
                 { url: '/preview/auditor-engagement' },
             ]),
         );
+        expect(inertia.calls[2].url).toBe(inertia.calls[1].url);
+    });
+
+    it('offers "Check again" once a lookup goes unanswered past its time limit, without resending', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        /* The acceptance's answer is lost, and the lookup after it never answers. */
+        inertia.queue.push(fails(503));
+        const view = renderWithUser(<AuditorEngagement {...props()} />);
+
+        await tick(view);
+        await view.user.click(acceptButton());
+
+        expect(
+            await screen.findByText('Checking what happened'),
+        ).toBeInTheDocument();
+
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(LOOKUP_TIMEOUT_MS);
+        });
+
+        const again = await screen.findByRole('button', {
+            name: 'Check again',
+        });
+
+        expect(
+            screen.queryByText('Checking what happened'),
+        ).not.toBeInTheDocument();
+        inertia.queue.push(answers(ACCEPTED));
+        await view.user.click(again);
+
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([
+                { url: '/preview/auditor-engagement' },
+            ]),
+        );
+        expect(inertia.calls.map((call) => call.method)).toEqual([
+            'post',
+            'get',
+            'get',
+        ]);
         expect(inertia.calls[2].url).toBe(inertia.calls[1].url);
     });
 
