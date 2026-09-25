@@ -17,6 +17,14 @@ final class BusinessCreditFactsFixture
         return ['history' => UnderwritingEvidenceFixture::application()['history'], 'obligations' => [], 'restriction_active' => false];
     }
 
+    /** @return Facts */
+    public static function repeat(): array
+    {
+        return ['history' => [...UnderwritingEvidenceFixture::application()['history'], 'has_rozine_history' => true,
+            'repeat_eligibility' => UnderwritingEvidenceFixture::repeat(), 'instalment_conduct' => ['on_time' => 6, 'total' => 6],
+            'report_conduct' => ['on_time' => 6, 'total' => 6]], 'obligations' => [], 'restriction_active' => false];
+    }
+
     /**
      * @param  array<string, mixed>|null  $facts
      * @return array<string, mixed>

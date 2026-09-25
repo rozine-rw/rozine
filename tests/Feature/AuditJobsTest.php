@@ -36,7 +36,7 @@ it('lists current offers with real application inputs while keeping originals an
     $case = app(GetAuditApplication::class)->handle($partner['user']->id, 1, $assignment->id);
     expect($case['application'])->toBe(['id' => $id, 'revision' => 2, 'title' => 'Synthetic equipment purchase', 'target' => '8000000',
         'term_months' => 6, 'use_of_funds' => ['equipment']])
-        ->and($case['work']['business'])->toBe(['name' => 'Synthetic business', 'industry' => 'retail', 'district' => 'Gasabo'])
+        ->and($case['work']['business'])->toBe(['name' => 'Synthetic business', 'industry' => 'Retail', 'district' => 'Gasabo'])
         ->and($case['work']['assignment']['allowed_actions'])->toContain('assignment.accept', 'assignment.decline', 'conflict.declare')
         ->and($case['work']['assignment']['accept_by'])->toBe($assignment->state['accept_by'])
         ->and($case['work']['assignment']['complete_by'])->toBe($assignment->state['complete_by'])
