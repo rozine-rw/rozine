@@ -97,6 +97,8 @@ const setWide = (wide: boolean) => {
 
 beforeEach(() => {
     inertia.reset();
+    /* A read delivers a page rendered after every deadline here, unless a test says otherwise. */
+    inertia.reloadProps = { server_time: '2026-12-01T00:00:00Z' };
     hidden.mockReturnValue(false);
     vi.spyOn(document, 'hidden', 'get').mockImplementation(hidden);
     vi.useFakeTimers({ now: DEVICE_NOW });
@@ -226,20 +228,97 @@ describe('The Jobs list reads again only at its next deadline', () => {
         expect(inertia.reloads).toHaveLength(1);
     });
 
-    it('leaves a deadline to a read already in flight', () => {
-        inertia.holdReload = true;
+    describe('when the deadline passes during a read that started before it', () => {
+        /* A recovery read starts at 17:50:00Z, and Kimisagara's offer closes while it is out. */
+        const crossDuringRead = () => {
+            inertia.holdReload = true;
+            inertia.reloadProps = null;
+            const view = render(
+                <AuditorJobs {...props<AuditorJobsProps>(liveFixture)} />,
+            );
+
+            advance(50 * MINUTE);
+            signal('online');
+            advance(DEADLINE_GRACE_MS);
+
+            expect(inertia.reloads).toHaveLength(1);
+
+            return view;
+        };
+
+        const finishReads = () =>
+            act(() => {
+                const finishing = inertia.finishReload;
+
+                inertia.finishReload = [];
+                finishing.forEach((finish) => finish());
+            });
+
+        it('catches up exactly once when that read delivers no fresh page', () => {
+            crossDuringRead();
+            finishReads();
+
+            expect(inertia.reloads).toHaveLength(2);
+
+            /* The catch-up fails too: it queues nothing further. */
+            finishReads();
+            advance(HOUR);
+
+            expect(inertia.reloads).toHaveLength(2);
+        });
+
+        it('catches up when the page it delivers was rendered before the deadline', () => {
+            crossDuringRead();
+            inertia.reloadProps = { server_time: '2026-10-03T17:49:59Z' };
+            finishReads();
+
+            expect(inertia.reloads).toHaveLength(2);
+        });
+
+        it('does not catch up when the page it delivers was rendered after the deadline', () => {
+            crossDuringRead();
+            inertia.reloadProps = { server_time: '2026-10-03T17:50:06Z' };
+            finishReads();
+            advance(HOUR);
+
+            expect(inertia.reloads).toHaveLength(1);
+        });
+
+        it('does not catch up when the server sent the partner to another page', () => {
+            crossDuringRead();
+            inertia.reloadProps = { status: 403 };
+            finishReads();
+
+            expect(inertia.reloads).toHaveLength(1);
+        });
+
+        it('does not catch up once the page has gone', () => {
+            const { unmount } = crossDuringRead();
+
+            unmount();
+            finishReads();
+
+            expect(inertia.reloads).toHaveLength(1);
+        });
+    });
+
+    it('keeps waiting for the next deadline after reads that deliver nothing', () => {
+        inertia.reloadProps = null;
         render(<AuditorJobs {...props<AuditorJobsProps>(liveFixture)} />);
 
-        advance(50 * MINUTE);
-        signal('online');
-        advance(DEADLINE_GRACE_MS);
+        /* 17:50:05Z: the deadline read and its one catch-up. */
+        advance(50 * MINUTE + DEADLINE_GRACE_MS);
 
-        expect(inertia.reloads).toHaveLength(1);
+        expect(inertia.reloads).toHaveLength(2);
 
-        act(() => inertia.finishReload.forEach((finish) => finish()));
-        advance(HOUR);
+        /* No new props arrived, yet Nyamirambo's offer still closes at 19:10Z. */
+        advance(HOUR + 20 * MINUTE - 1);
 
-        expect(inertia.reloads).toHaveLength(1);
+        expect(inertia.reloads).toHaveLength(2);
+
+        advance(1);
+
+        expect(inertia.reloads).toHaveLength(4);
     });
 
     it('holds a deadline read while a command is in flight, then reads once it settles', async () => {
@@ -298,6 +377,36 @@ describe('Recovery reads', () => {
         signal('focus');
 
         expect(inertia.reloads).toHaveLength(2);
+    });
+
+    it('holds a reconnect while the tab is hidden and reads once it is visible again', () => {
+        render(<AuditorJobs {...props<AuditorJobsProps>(emptyFixture)} />);
+
+        becomeVisible(false);
+        signal('online');
+        signal('focus');
+
+        expect(inertia.reloads).toHaveLength(0);
+
+        becomeVisible(true);
+        signal('focus');
+
+        expect(inertia.reloads).toHaveLength(1);
+    });
+
+    it('holds a reconnect while the tab is hidden and reads on the focus that shows it', () => {
+        render(<AuditorJobs {...props<AuditorJobsProps>(emptyFixture)} />);
+
+        becomeVisible(false);
+        signal('online');
+
+        expect(inertia.reloads).toHaveLength(0);
+
+        hidden.mockReturnValue(false);
+        signal('focus');
+        signal('online');
+
+        expect(inertia.reloads).toHaveLength(1);
     });
 });
 

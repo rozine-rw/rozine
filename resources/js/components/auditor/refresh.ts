@@ -79,6 +79,18 @@ type Options = AuditorRefresh & {
     settled: boolean;
 };
 
+/** A read on a signal (focus, reconnect, a return to the tab) or for a deadline that passed. */
+type ReadKind = 'recovery' | 'deadline';
+
+/**
+ * The server's clock on the page a read delivered. A page with no `server_time` is not this page's
+ * facts — the server sent the partner elsewhere — so it leaves this page nothing to catch up.
+ */
+const deliveredAt = (props: Record<string, unknown>): number =>
+    typeof props.server_time === 'string'
+        ? Date.parse(props.server_time)
+        : Number.POSITIVE_INFINITY;
+
 /**
  * When an Auditor page reads its facts again in the background. Every read takes the server's
  * record locks, so the page reads only when something has changed or may have:
@@ -86,8 +98,12 @@ type Options = AuditorRefresh & {
  * - on focus, reconnect or a return to the tab — access may have been withdrawn meanwhile — as one
  *   read, however many of those signals arrive together;
  * - once, just after the next deadline the page shows passes on the server's clock (an offer
- *   closing, work turning overdue), then not again until the deadline after it. A hidden tab does
- *   not read; the deadline read runs when it becomes visible again.
+ *   closing, work turning overdue), then not again until the deadline after it.
+ *
+ * A hidden tab does not read: a signal or deadline while it is hidden waits, and the tab reads once
+ * when it becomes visible again. A read answers for a deadline that passed only when the page it
+ * delivers was rendered after that deadline; a read that started before it, or delivered no page,
+ * is followed by exactly one catch-up read once it finishes.
  *
  * Nothing reads on a timer otherwise: the countdowns tick from `server_time` on their own. A read
  * waits while a command is unsettled, so it never overtakes a command or its recorded outcome, and
@@ -95,6 +111,7 @@ type Options = AuditorRefresh & {
  * reauthorizes each one whatever the page last read.
  */
 export function useAuditorRefresh({ settled, scope, deadlines }: Options) {
+    const alive = useRef(true);
     const inFlight = useRef(false);
     const waiting = useRef(false);
     const ready = useRef(settled);
@@ -102,35 +119,69 @@ export function useAuditorRefresh({ settled, scope, deadlines }: Options) {
     const handled = useRef(Number.NEGATIVE_INFINITY);
     const missed = useRef<number | null>(null);
     const scoped = useRef(scope);
-    const [read] = useState(() => (recovery: boolean): void => {
-        if (
-            inFlight.current ||
-            (recovery && Date.now() - lastRead.current < RECOVERY_WINDOW_MS)
-        ) {
-            return;
-        }
+    const [read] = useState(() => {
+        /*
+         * Once a read finishes, a deadline that passed is answered or gets its catch-up read. It is
+         * cleared first, so the catch-up cannot queue another for the same deadline.
+         */
+        const settle = (delivered: number): void => {
+            const due = missed.current;
 
-        /* This read starts after the missed deadline passed, so it answers for it. */
-        if (missed.current !== null) {
-            handled.current = missed.current;
+            if (due === null || !alive.current) {
+                return;
+            }
+
             missed.current = null;
-        }
+            handled.current = Math.max(handled.current, due);
 
-        if (!ready.current) {
-            waiting.current = true;
+            if (delivered < due) {
+                run('deadline');
+            }
+        };
 
-            return;
-        }
+        const run = (kind: ReadKind): void => {
+            /* Becoming visible reads anyway, so a signal while hidden leaves the read to it. */
+            if (
+                document.hidden ||
+                inFlight.current ||
+                (kind === 'recovery' &&
+                    Date.now() - lastRead.current < RECOVERY_WINDOW_MS)
+            ) {
+                return;
+            }
 
-        inFlight.current = true;
-        lastRead.current = Date.now();
-        router.reload({
-            ...scoped.current,
-            onFinish: () => {
-                inFlight.current = false;
-            },
-        });
+            if (!ready.current) {
+                waiting.current = true;
+
+                return;
+            }
+
+            let delivered = Number.NEGATIVE_INFINITY;
+
+            inFlight.current = true;
+            lastRead.current = Date.now();
+            router.reload({
+                ...scoped.current,
+                onSuccess: (page) => {
+                    delivered = deliveredAt(page.props);
+                },
+                onFinish: () => {
+                    inFlight.current = false;
+                    settle(delivered);
+                },
+            });
+        };
+
+        return run;
     });
+
+    useEffect(() => {
+        alive.current = true;
+
+        return () => {
+            alive.current = false;
+        };
+    }, []);
 
     useEffect(() => {
         scoped.current = scope;
@@ -141,18 +192,15 @@ export function useAuditorRefresh({ settled, scope, deadlines }: Options) {
 
         if (settled && waiting.current) {
             waiting.current = false;
-            read(false);
+            read('deadline');
         }
     }, [settled, read]);
 
     useEffect(() => {
-        const signal = () => read(true);
+        const signal = () => read('recovery');
         /* A deadline that passed while the tab was hidden is read for at once, whatever the window. */
-        const visibility = () => {
-            if (!document.hidden) {
-                read(missed.current === null);
-            }
-        };
+        const visibility = () =>
+            read(missed.current === null ? 'recovery' : 'deadline');
         window.addEventListener('focus', signal);
         window.addEventListener('online', signal);
         document.addEventListener('visibilitychange', visibility);
@@ -175,36 +223,39 @@ export function useAuditorRefresh({ settled, scope, deadlines }: Options) {
             return;
         }
 
-        const at = nextDeadline(
-            key === '' ? [] : key.split(' '),
-            serverTime,
-            handled.current,
-        );
-
-        if (at === null) {
-            return;
-        }
-
+        const list = key === '' ? [] : key.split(' ');
         /* The server's clock, as of when these props arrived; the device clock only measures time since. */
         const offset = Date.parse(serverTime) - Date.now();
         let timer = 0;
-        const arm = () => {
-            const wait = at + DEADLINE_GRACE_MS - (Date.now() + offset);
+        /* Waits for the next deadline after `after`; once it passes, for the one after that. */
+        const schedule = (after: number): void => {
+            const at = nextDeadline(list, serverTime, after);
 
-            if (wait > 0) {
-                timer = window.setTimeout(arm, Math.min(wait, MAX_TIMER_MS));
-
+            if (at === null) {
                 return;
             }
 
-            missed.current = at;
+            const arm = () => {
+                const wait = at + DEADLINE_GRACE_MS - (Date.now() + offset);
 
-            if (!document.hidden) {
-                read(false);
-            }
+                if (wait > 0) {
+                    timer = window.setTimeout(
+                        arm,
+                        Math.min(wait, MAX_TIMER_MS),
+                    );
+
+                    return;
+                }
+
+                missed.current = at;
+                read('deadline');
+                schedule(at);
+            };
+
+            arm();
         };
 
-        arm();
+        schedule(handled.current);
 
         return () => window.clearTimeout(timer);
     }, [key, serverTime, read]);

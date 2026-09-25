@@ -50,6 +50,8 @@ export const inertia = {
     /** Hold a reload's `onFinish` so a test can see the page while it refreshes. */
     holdReload: false,
     finishReload: [] as (() => void)[],
+    /** The props a finished reload delivers; null delivers no page, as a failed reload would. */
+    reloadProps: null as Record<string, unknown> | null,
     reset() {
         this.posts = [];
         this.reloads = [];
@@ -64,6 +66,7 @@ export const inertia = {
         this.httpErrors = {};
         this.holdReload = false;
         this.finishReload = [];
+        this.reloadProps = null;
     },
 };
 
@@ -102,14 +105,27 @@ export const router = {
         inertia.posts.push({ url, data, options });
         run(options);
     },
-    reload: (options?: { onFinish?: () => void }) => {
+    reload: (options?: {
+        onSuccess?: (page: { props: Record<string, unknown> }) => void;
+        onFinish?: () => void;
+    }) => {
         inertia.reloads.push(options);
 
         if (options?.onFinish) {
+            const { onSuccess, onFinish } = options;
+            /* The page is delivered as the reload finishes, so a held reload can still change it. */
+            const finish = () => {
+                if (inertia.reloadProps !== null) {
+                    onSuccess?.({ props: inertia.reloadProps });
+                }
+
+                onFinish();
+            };
+
             if (inertia.holdReload) {
-                inertia.finishReload.push(options.onFinish);
+                inertia.finishReload.push(finish);
             } else {
-                options.onFinish();
+                finish();
             }
         }
     },
