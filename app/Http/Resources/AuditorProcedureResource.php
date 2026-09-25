@@ -65,7 +65,7 @@ class AuditorProcedureResource extends JsonResource
                 'slots' => $this->photoSlots($sources, $fields), 'title_max' => 100],
             'ledger' => ['step' => 'ledger', 'reported_stock' => AuditorJobsResource::money($sources['reported_stock']),
                 'observed_stock' => AuditorJobsResource::money($fields['observed_stock'] ?? null), 'tolerance' => 'RWF 0', 'variance' => $variance['ledger'],
-                'documents' => $this->ledgerDocuments($sources['documents']), 'ledger_ready' => $sources['verification'] !== null,
+                'documents' => $this->ledgerDocuments($sources['ledger_documents'] ?? [], $report, $prefix), 'ledger_ready' => $sources['verification'] !== null,
                 'reconciled' => $fields['reconciled'] ?? false],
             'count' => ['step' => 'count', 'financial_proofs' => $this->proofs($sources['financial_proofs'], $fields['financial_proofs'] ?? []),
                 'inventory_proofs' => $this->proofs($sources['inventory_proofs'], $fields['inventory_proofs'] ?? []),
@@ -202,8 +202,12 @@ class AuditorProcedureResource extends JsonResource
             $item = $this->sourceEvidence($sources, 'photo');
             $items[$item['evidence_id']] = $item;
         }
-        foreach ($this->ledgerDocuments($sources['documents']) as $document) {
+        foreach ($this->ledgerDocuments($sources['ledger_documents'] ?? []) as $document) {
             $items[$document['id']] = $document['evidence'];
+        }
+        foreach ($sources['documents'] as $document) {
+            $items[$document['id']] = ['evidence_id' => $document['id'], 'kind' => 'statement', 'sha256' => $document['sha256'],
+                'captured_at' => null, 'source' => 'web_upload', 'device_attestation' => 'unavailable', 'position' => null, 'accuracy_m' => null];
         }
 
         return array_values($items);
@@ -222,11 +226,13 @@ class AuditorProcedureResource extends JsonResource
 
     /**
      * @param  list<array<string, mixed>>  $documents
+     * @param  array<string, mixed>|null  $report
      * @return list<array<string, mixed>>
      */
-    private function ledgerDocuments(array $documents): array
+    private function ledgerDocuments(array $documents, ?array $report = null, string $prefix = 'auditor.'): array
     {
         return array_map(fn (array $document): array => ['id' => $document['id'], 'name' => $document['filename'],
+            'link' => $report === null ? null : AuditorJobsResource::link($prefix.'reports.ledgers.show', ['report' => $report['id'], 'document' => $document['id']]),
             'detail' => $document['media_type'].' · '.$document['size_bytes'].' bytes',
             'state' => match ($document['extraction']['status']) {
                 'pending' => 'scanning', 'text_extracted' => 'parsed', default => 'failed',
@@ -262,6 +268,7 @@ class AuditorProcedureResource extends JsonResource
             null => null,
             'AUDIT_CAPTURE_REQUIRED' => (string) __('A verified capture package is required before this step can continue.'),
             'AUDIT_DECLARATION_REQUIRED' => (string) __('The Business declaration needed for reconciliation is unavailable.'),
+            'AUDIT_PROOFS_REQUIRED' => (string) __('The required financial or inventory proofs are unavailable.'),
             'AUDIT_VERIFIED_STATEMENTS_REQUIRED' => (string) __('Current verified statements are required before continuing.'),
             'AUDIT_PROCEDURE_SOURCE_CHANGED' => (string) __('A source changed. Review it again before continuing.'),
             'AUDIT_NOTE_REQUIRED' => (string) __('Save a factual explanation of the observed differences before continuing.'),

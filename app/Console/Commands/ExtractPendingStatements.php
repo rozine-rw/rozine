@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Application\Auditor\Contracts\AuditLedgerExtractionQueue;
 use App\Application\Evidence\Contracts\StatementExtractionQueue;
 use Illuminate\Console\Command;
 
@@ -13,7 +14,7 @@ class ExtractPendingStatements extends Command
 
     protected $description = 'Extract pending private statement text in bounded processes without Business or journal locks';
 
-    public function handle(StatementExtractionQueue $queue): int
+    public function handle(StatementExtractionQueue $queue, AuditLedgerExtractionQueue $ledgers): int
     {
         $limit = filter_var($this->option('limit'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 20]]);
         if ($limit === false) {
@@ -22,6 +23,7 @@ class ExtractPendingStatements extends Command
             return self::FAILURE;
         }
         $this->components->info('Processed '.$queue->processPending($limit).' pending statement originals.');
+        $this->components->info('Processed '.$ledgers->processPending($limit).' pending audit ledger originals.');
 
         return self::SUCCESS;
     }

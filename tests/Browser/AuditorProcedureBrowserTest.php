@@ -97,7 +97,19 @@ it('starts and completes the factual procedure, saves its note and withdraws sta
             await page.locator("#auditor-stock").fill("189");
             await page.getByRole("radio", {name:"Active", exact:true}).click();
             await page.getByRole("button", {name:"Continue to photos", exact:true}).click();';
+        file_put_contents($directory.'/ledger.csv', "date,amount\n2026-08-01,38000000\n");
         $ledger = $kind === 'flash' ? 'await page.getByRole("heading", {name:"Inventory & ledger sign-off", exact:true}).waitFor();
+            await page.waitForLoadState("networkidle");
+            const uploaded = page.waitForResponse(response => response.url().endsWith("/steps") && response.request().method() === "POST");
+            await page.locator("input[type=file]").setInputFiles('.json_encode($directory.'/ledger.csv').');
+            if (!(await uploaded).ok()) throw new Error("Ledger upload refused");
+            await page.getByText(/^ledger-[a-z0-9]+\.csv$/).waitFor();
+            const [original] = await Promise.all([
+                page.waitForEvent("download"),
+                page.getByRole("link", {name:"Download original", exact:true}).click(),
+            ]);
+            await original.saveAs("ledger-original.csv");
+            await page.waitForLoadState("networkidle");
             await page.locator("#auditor-observed-stock").fill("37000000");
             await page.getByRole("checkbox", {name:/Secondary paper ledgers/}).click();
             await page.getByRole("button", {name:"Review & seal", exact:true}).click();' : '';
@@ -135,6 +147,9 @@ it('starts and completes the factual procedure, saves its note and withdraws sta
             } catch (failure) { throw new Error([String(failure), ...errors, ...requests].join("\n")); }
         }']);
         file_put_contents($directory.'/result.txt', $result);
+        if ($kind === 'flash') {
+            expect(file_get_contents($directory.'/ledger-original.csv'))->toBe(file_get_contents($directory.'/ledger.csv'));
+        }
         expect($report->refresh()->step)->toBe('seal')->and($report->draft['note'])->toBe('Observed stock differs from the declared inventory.');
         $versions = AuditReportVersion::query()->where('audit_report_id', $report->id)->count();
         app(RecordIsolatedAuditSourceFacts::class)->handle($fixture['audit']['staff']->id, $fixture['assignment']->id,

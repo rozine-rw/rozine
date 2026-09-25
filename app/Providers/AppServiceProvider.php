@@ -6,6 +6,8 @@ namespace App\Providers;
 
 use App\Application\Auditor\Contracts\AuditAssignmentStore;
 use App\Application\Auditor\Contracts\AuditEngagementStore;
+use App\Application\Auditor\Contracts\AuditLedgerEvidence;
+use App\Application\Auditor\Contracts\AuditLedgerExtractionQueue;
 use App\Application\Auditor\Contracts\AuditLocationStore;
 use App\Application\Auditor\Contracts\AuditorIndependenceStore;
 use App\Application\Auditor\Contracts\AuditorProfileStore;
@@ -28,6 +30,8 @@ use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Infrastructure\Auditor\EloquentAuditAssignmentStore;
 use App\Infrastructure\Auditor\EloquentAuditEngagementStore;
+use App\Infrastructure\Auditor\EloquentAuditLedgerEvidence;
+use App\Infrastructure\Auditor\EloquentAuditLedgerExtractionQueue;
 use App\Infrastructure\Auditor\EloquentAuditLocationStore;
 use App\Infrastructure\Auditor\EloquentAuditorIndependenceStore;
 use App\Infrastructure\Auditor\EloquentAuditorProfileStore;
@@ -89,6 +93,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AuditLocationStore::class, EloquentAuditLocationStore::class);
         $this->app->bind(StatementTextExtractor::class, IsolatedStatementTextExtractor::class);
         $this->app->bind(StatementExtractionQueue::class, EloquentStatementExtractionQueue::class);
+        $this->app->bind(AuditLedgerExtractionQueue::class, EloquentAuditLedgerExtractionQueue::class);
+        $this->app->bind(AuditLedgerEvidence::class, EloquentAuditLedgerEvidence::class);
     }
 
     /**

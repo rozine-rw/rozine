@@ -13,8 +13,8 @@ use App\Domain\Underwriting\UnderwritingViolation;
  * supplied by protected application ports; none of them are accepted from a step's form.
  *
  * @phpstan-type Source array{id: string, revision: int, sha256: string}
- * @phpstan-type Sources array{verification: Source|null, check_in: Source|null, photos: Source|null, declaration: Source|null, reported_stock: string|null, reported_cash: string|null, reported_units: string|null, financial_proofs: list<string>, inventory_proofs: list<string>, extra_photos: list<string>}
- * @phpstan-type Draft array{note: string, completed_steps: list<string>, fields: array<string, array<string, mixed>>, sources?: array<string, array<string, Source>>}
+ * @phpstan-type Sources array{verification: Source|null, check_in: Source|null, photos: Source|null, declaration: Source|null, reported_stock: string|null, reported_cash: string|null, reported_units: string|null, financial_proofs: list<string>, inventory_proofs: list<string>, extra_photos: list<string>, ledger_sources?: array<string, Source>}
+ * @phpstan-type Draft array{note: string, completed_steps: list<string>, fields: array<string, array<string, mixed>>, sources?: array<string, array<string, Source>>, documents?: list<array{id: string, revision: int, sha256: string, replaces: string|null}>}
  */
 final class AuditProcedure
 {
@@ -68,6 +68,9 @@ final class AuditProcedure
                 || ($step === 'count' && ($sources['reported_cash'] === null || $sources['reported_units'] === null))) {
                 return 'AUDIT_DECLARATION_REQUIRED';
             }
+            if ($step === 'count' && ($sources['financial_proofs'] === [] || $sources['inventory_proofs'] === [])) {
+                return 'AUDIT_PROOFS_REQUIRED';
+            }
         } catch (CommandRejection $failure) {
             return $failure->reason;
         }
@@ -106,6 +109,9 @@ final class AuditProcedure
         $draft['fields'] = array_intersect_key($draft['fields'], $retained);
         $draft['sources'] = array_intersect_key($draft['sources'] ?? [], $retained);
         $draft['completed_steps'] = $completed;
+        if ($kind === 'flash' && $index < array_search('ledger', $steps, true)) {
+            unset($draft['documents']);
+        }
         if ($step === 'seal') {
             $draft['note'] = (string) $fields['note'];
         } else {
@@ -207,7 +213,7 @@ final class AuditProcedure
             $pins[$key] = $pin;
         }
 
-        return $pins;
+        return $step === 'ledger' ? [...$pins, ...$sources['ledger_sources'] ?? []] : $pins;
     }
 
     private function amount(mixed $value, string $field): string

@@ -1,9 +1,10 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 import operations from './operations'
 import statements from './statements'
+import ledgers from './ledgers'
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::start
-* @see app/Http/Controllers/AuditorProcedureController.php:49
+* @see app/Http/Controllers/AuditorProcedureController.php:50
 * @route '/auditor/jobs/{assignment}/report'
 */
 export const start = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -18,7 +19,7 @@ start.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::start
-* @see app/Http/Controllers/AuditorProcedureController.php:49
+* @see app/Http/Controllers/AuditorProcedureController.php:50
 * @route '/auditor/jobs/{assignment}/report'
 */
 start.url = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -45,7 +46,7 @@ start.url = (args: { assignment: string | number } | [assignment: string | numbe
 
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::start
-* @see app/Http/Controllers/AuditorProcedureController.php:49
+* @see app/Http/Controllers/AuditorProcedureController.php:50
 * @route '/auditor/jobs/{assignment}/report'
 */
 start.post = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -55,7 +56,7 @@ start.post = (args: { assignment: string | number } | [assignment: string | numb
 
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::start
-* @see app/Http/Controllers/AuditorProcedureController.php:49
+* @see app/Http/Controllers/AuditorProcedureController.php:50
 * @route '/auditor/jobs/{assignment}/report'
 */
 const startForm = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -65,7 +66,7 @@ const startForm = (args: { assignment: string | number } | [assignment: string |
 
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::start
-* @see app/Http/Controllers/AuditorProcedureController.php:49
+* @see app/Http/Controllers/AuditorProcedureController.php:50
 * @route '/auditor/jobs/{assignment}/report'
 */
 startForm.post = (args: { assignment: string | number } | [assignment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -77,7 +78,7 @@ start.form = startForm
 
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::show
-* @see app/Http/Controllers/AuditorProcedureController.php:36
+* @see app/Http/Controllers/AuditorProcedureController.php:37
 * @route '/auditor/reports/{report}'
 */
 export const show = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -92,7 +93,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::show
-* @see app/Http/Controllers/AuditorProcedureController.php:36
+* @see app/Http/Controllers/AuditorProcedureController.php:37
 * @route '/auditor/reports/{report}'
 */
 show.url = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -119,7 +120,7 @@ show.url = (args: { report: string | number } | [report: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::show
-* @see app/Http/Controllers/AuditorProcedureController.php:36
+* @see app/Http/Controllers/AuditorProcedureController.php:37
 * @route '/auditor/reports/{report}'
 */
 show.get = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -129,7 +130,7 @@ show.get = (args: { report: string | number } | [report: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::show
-* @see app/Http/Controllers/AuditorProcedureController.php:36
+* @see app/Http/Controllers/AuditorProcedureController.php:37
 * @route '/auditor/reports/{report}'
 */
 show.head = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -139,7 +140,7 @@ show.head = (args: { report: string | number } | [report: string | number ] | st
 
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::show
-* @see app/Http/Controllers/AuditorProcedureController.php:36
+* @see app/Http/Controllers/AuditorProcedureController.php:37
 * @route '/auditor/reports/{report}'
 */
 const showForm = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -149,7 +150,7 @@ const showForm = (args: { report: string | number } | [report: string | number ]
 
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::show
-* @see app/Http/Controllers/AuditorProcedureController.php:36
+* @see app/Http/Controllers/AuditorProcedureController.php:37
 * @route '/auditor/reports/{report}'
 */
 showForm.get = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -159,7 +160,7 @@ showForm.get = (args: { report: string | number } | [report: string | number ] |
 
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::show
-* @see app/Http/Controllers/AuditorProcedureController.php:36
+* @see app/Http/Controllers/AuditorProcedureController.php:37
 * @route '/auditor/reports/{report}'
 */
 showForm.head = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -176,7 +177,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::save
-* @see app/Http/Controllers/AuditorProcedureController.php:71
+* @see app/Http/Controllers/AuditorProcedureController.php:86
 * @route '/auditor/reports/{report}/steps'
 */
 export const save = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -191,7 +192,7 @@ save.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::save
-* @see app/Http/Controllers/AuditorProcedureController.php:71
+* @see app/Http/Controllers/AuditorProcedureController.php:86
 * @route '/auditor/reports/{report}/steps'
 */
 save.url = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -218,7 +219,7 @@ save.url = (args: { report: string | number } | [report: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::save
-* @see app/Http/Controllers/AuditorProcedureController.php:71
+* @see app/Http/Controllers/AuditorProcedureController.php:86
 * @route '/auditor/reports/{report}/steps'
 */
 save.post = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -228,7 +229,7 @@ save.post = (args: { report: string | number } | [report: string | number ] | st
 
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::save
-* @see app/Http/Controllers/AuditorProcedureController.php:71
+* @see app/Http/Controllers/AuditorProcedureController.php:86
 * @route '/auditor/reports/{report}/steps'
 */
 const saveForm = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -238,7 +239,7 @@ const saveForm = (args: { report: string | number } | [report: string | number ]
 
 /**
 * @see \App\Http\Controllers\AuditorProcedureController::save
-* @see app/Http/Controllers/AuditorProcedureController.php:71
+* @see app/Http/Controllers/AuditorProcedureController.php:86
 * @route '/auditor/reports/{report}/steps'
 */
 saveForm.post = (args: { report: string | number } | [report: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -253,6 +254,7 @@ const reports = {
     operations: Object.assign(operations, operations),
     show: Object.assign(show, show),
     statements: Object.assign(statements, statements),
+    ledgers: Object.assign(ledgers, ledgers),
     save: Object.assign(save, save),
 }
 

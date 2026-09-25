@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Auditor;
 
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Domain\Evidence\StatementAuditReview;
 use App\Domain\Underwriting\ExactFinancialValue;
 
 /**
@@ -49,11 +50,14 @@ final class BuildAuditReportPreview
             $requiresNote = $requiresNote || $fields['operational_status'] !== 'active';
         }
         $sourcePins = array_intersect_key($sources, array_flip(['verification', 'check_in', 'photos', 'declaration']));
-        $originals = array_map(fn (array $document): array => ['id' => $document['id'], 'sha256' => $document['sha256']], $sources['documents']);
+        $originals = array_map(fn (array $document): array => ['id' => $document['id'], 'sha256' => $document['sha256'], 'kind' => 'statement'], $sources['documents']);
+        foreach ($sources['ledger_documents'] ?? [] as $document) {
+            $originals[] = ['id' => $document['id'], 'sha256' => $document['sha256'], 'kind' => 'ledger'];
+        }
         usort($originals, fn (array $left, array $right): int => strcmp($left['id'], $right['id']));
         $evidenceVersion = hash('sha256', $this->json->encode(['sources' => $sourcePins, 'originals' => $originals]));
         $payload = ['report_id' => $report['id'], 'report_revision' => $report['revision'], 'assignment_id' => $report['assignment_id'],
-            'binding_sha256' => $report['binding_sha256'], 'period' => $report['period'], 'licence' => $sources['licence'], 'procedure_version' => 'MVP-AUP-1',
+            'binding_sha256' => $report['binding_sha256'], 'period' => $report['period'], 'licence' => $sources['licence'], 'procedure_version' => StatementAuditReview::PROCEDURE,
             'findings_version' => self::FINDINGS_VERSION, 'evidence_version' => $evidenceVersion, 'findings' => $findings,
             'sources' => $sourcePins, 'source_provenance' => $sources['source_facts']['source'] ?? null, 'originals' => $originals, 'draft' => $draft];
 

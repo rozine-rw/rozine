@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Evidence\Contracts;
 
-use App\Domain\Operations\OperationResult;
 use Closure;
 
 /**
@@ -58,9 +57,6 @@ interface StatementStore
 
     /** @return Original */
     public function auditRead(int $userId, int $contextRevision, string $assignmentId, string $documentId): array;
-
-    /** Retains an assigned Auditor's original inside the calling report command transaction. */
-    public function ingestAudit(int $userId, int $contextRevision, string $assignmentId, string $filename, string $content, ?string $replaces): OperationResult;
 
     /** @return Transcription|null */
     public function auditTranscription(int $userId, int $contextRevision, string $assignmentId, ?string $transcriptionId): ?array;

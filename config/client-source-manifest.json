@@ -102,6 +102,7 @@
         "resources/js/routes/api/v1/auditor/jobs/operations/index.ts",
         "resources/js/routes/api/v1/auditor/operations/index.ts",
         "resources/js/routes/api/v1/auditor/reports/index.ts",
+        "resources/js/routes/api/v1/auditor/reports/ledgers/index.ts",
         "resources/js/routes/api/v1/auditor/reports/operations/index.ts",
         "resources/js/routes/api/v1/auditor/reports/statements/index.ts",
         "resources/js/routes/api/v1/business/applications/index.ts",
@@ -130,6 +131,7 @@
         "resources/js/routes/auditor/jobs/operations/index.ts",
         "resources/js/routes/auditor/operations/index.ts",
         "resources/js/routes/auditor/reports/index.ts",
+        "resources/js/routes/auditor/reports/ledgers/index.ts",
         "resources/js/routes/auditor/reports/operations/index.ts",
         "resources/js/routes/auditor/reports/statements/index.ts",
         "resources/js/routes/boost/index.ts",
@@ -514,8 +516,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 486,
-        "generated": 147,
+        "totalTrackedSources": 488,
+        "generated": 149,
         "declarationOnly": 14,
         "authoredExecutable": 325
     },

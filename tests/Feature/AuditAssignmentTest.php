@@ -403,6 +403,8 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $reports = require database_path('migrations/2026_09_25_053838_create_audit_reports_and_versions.php');
     $sourceFacts = require database_path('migrations/2026_09_25_102249_create_audit_source_snapshots_table.php');
     $sourceFacts->down();
+    $ledgerMigration = require database_path('migrations/2026_09_25_120136_create_audit_ledger_evidence_tables.php');
+    $ledgerMigration->down();
     $reports->down();
     $verification->down();
     $migration->down();
@@ -411,6 +413,7 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     expect(Schema::hasTable('audit_conflict_declarations'))->toBeTrue();
     $verification->up();
     $reports->up();
+    $ledgerMigration->up();
     $sourceFacts->up();
 });
 

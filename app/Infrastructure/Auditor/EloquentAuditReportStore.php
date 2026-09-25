@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Auditor;
 
+use App\Application\Auditor\Contracts\AuditLedgerEvidence;
 use App\Application\Auditor\Contracts\AuditReportStore;
 use App\Application\Auditor\GetAuditProcedureSources;
 use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Business\WithAuditApplicationBinding;
-use App\Application\Evidence\IngestAuditStatement;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
@@ -29,6 +29,8 @@ use RuntimeException;
  * @phpstan-import-type Report from AuditReportStore
  * @phpstan-import-type Draft from AuditProcedure
  * @phpstan-import-type Procedure from AuditReportStore
+ * @phpstan-import-type Original from \App\Application\Evidence\Contracts\StatementStore
+ * @phpstan-import-type Projection from GetAuditProcedureSources
  */
 final class EloquentAuditReportStore implements AuditReportStore
 {
@@ -40,7 +42,7 @@ final class EloquentAuditReportStore implements AuditReportStore
         private CanonicalJson $json,
         private AuditProcedure $procedure,
         private GetAuditProcedureSources $sources,
-        private IngestAuditStatement $ingestion,
+        private AuditLedgerEvidence $ledgers,
     ) {}
 
     /** @return array<string, mixed> */
@@ -121,7 +123,7 @@ final class EloquentAuditReportStore implements AuditReportStore
                         /** @var Draft $draft */
                         $draft = $record->draft;
                         $next = $this->procedure->save($record->kind, $record->step, $draft, $step, $fields,
-                            $this->sources->handle($userId, $contextRevision, $assignment, $record->kind, $record->binding['period'] ?? null));
+                            $this->procedureSources($record, $userId, $contextRevision, $assignment));
                         $record->forceFill(['revision' => $record->revision + 1, 'step' => $next['step'], 'draft' => $next['draft']])->save();
                         $this->append($record, $assignment['party_id'], $userId, 'audit.save_step');
 
@@ -144,7 +146,7 @@ final class EloquentAuditReportStore implements AuditReportStore
                 return $this->journal->execute('party:'.$assignment['party_id'], $userId, 'audit.save_step', $requestId, 'audit.report', $reportId,
                     ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'step' => 'ledger',
                         'upload' => ['filename' => $filename, 'sha256' => hash('sha256', $content), 'replaces' => $replaces]],
-                    function (): void {}, function () use ($record, $assignment, $userId, $contextRevision, $expectedRevision, $filename, $content, $replaces): OperationResult {
+                    function (): void {}, function () use ($record, $assignment, $userId, $expectedRevision, $filename, $content, $replaces): OperationResult {
                         if ($record->revision !== $expectedRevision) {
                             throw new CommandRejection('VERSION_CONFLICT', revision: $record->revision);
                         }
@@ -152,19 +154,36 @@ final class EloquentAuditReportStore implements AuditReportStore
                             throw new CommandRejection('AUDIT_LEDGER_NOT_AVAILABLE', revision: $record->revision);
                         }
                         try {
-                            $ingested = $this->ingestion->handle($userId, $contextRevision, $assignment['id'], $filename, $content, $replaces);
+                            $ingested = $this->ledgers->retain($record->id, $record->revision, $record->author_party_id, $userId, $record->draft['documents'] ?? [], $filename, $content, $replaces);
                         } catch (CommandRejection $failure) {
                             throw new CommandRejection($failure->reason, $failure->status, $record->revision,
                                 isset($failure->fieldErrors['file']) ? ['document' => $failure->fieldErrors['file']] : $failure->fieldErrors, $failure->data);
                         }
                         $draft = $record->draft;
-                        $draft['documents'][] = ['id' => $ingested->data['document_id'], 'replaces' => $replaces];
+                        $draft['documents'] = array_values(array_filter($draft['documents'] ?? [],
+                            fn (array $document): bool => $document['id'] !== $replaces && $document['id'] !== $ingested['id']));
+                        $draft['documents'][] = $ingested;
                         $record->forceFill(['revision' => $record->revision + 1, 'draft' => $draft])->save();
                         $this->append($record, $assignment['party_id'], $userId, 'audit.save_step');
 
                         return new OperationResult('INGESTED_NOT_AUDIT_APPROVED', ['audit_id' => $record->id, 'assignment_id' => $assignment['id'],
-                            'step' => 'ledger', 'document_id' => $ingested->data['document_id'], 'evidence_revision' => $ingested->revision], $record->revision);
+                            'step' => 'ledger', 'document_id' => $ingested['id']], $record->revision);
                     });
+            });
+    }
+
+    /** @return Original */
+    public function readLedger(int $userId, int $contextRevision, string $reportId, string $documentId): array
+    {
+        $record = $this->owned($reportId, $this->party($userId));
+
+        return $this->assignments->handle($userId, $contextRevision, $record->assignment_id,
+            function (array $assignment) use ($reportId, $documentId): array {
+                $record = AuditReport::query()->sharedLock()->findOrFail($reportId);
+                $this->author($record, $assignment);
+                $this->view($record);
+
+                return $this->ledgers->read($record->id, $documentId);
             });
     }
 
@@ -192,8 +211,24 @@ final class EloquentAuditReportStore implements AuditReportStore
                 $record = AuditReport::query()->sharedLock()->findOrFail($reportId);
                 $this->author($record, $assignment);
 
-                return ['report' => $this->view($record), 'sources' => $this->sources->handle($userId, $contextRevision, $assignment, $record->kind, $record->binding['period'] ?? null)];
+                return ['report' => $this->view($record), 'sources' => $this->procedureSources($record, $userId, $contextRevision, $assignment)];
             });
+    }
+
+    /**
+     * @param  AcceptedAssignment  $assignment
+     * @return Projection
+     */
+    private function procedureSources(AuditReport $record, int $userId, int $contextRevision, array $assignment): array
+    {
+        $sources = $this->sources->handle($userId, $contextRevision, $assignment, $record->kind, $record->binding['period'] ?? null);
+        $pins = [];
+        foreach ($record->draft['documents'] ?? [] as $document) {
+            $pins['ledger:'.$document['id']] = ['id' => $document['id'], 'revision' => $document['revision'], 'sha256' => $document['sha256']];
+        }
+        ksort($pins);
+
+        return [...$sources, 'ledger_documents' => $this->ledgers->documents($record->id, $record->draft['documents'] ?? []), 'ledger_sources' => $pins];
     }
 
     /** @return Report|null */

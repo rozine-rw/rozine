@@ -200,3 +200,24 @@ it('makes the read gate explain invalid, incomplete and changed source states', 
     $state = procedureBefore('flash', 'ledger');
     expect($procedure->unavailable('flash', 'ledger', $state['draft'], 'ledger', [...$sources, 'reported_stock' => null]))->toBe('AUDIT_DECLARATION_REQUIRED');
 });
+
+it('withdraws count readiness when required proof lists are unavailable', function (string $key): void {
+    $state = procedureBefore('monthly', 'count');
+    $sources = procedureSources();
+    if ($key === 'financial_proofs') {
+        $sources['financial_proofs'] = [];
+    } else {
+        $sources['inventory_proofs'] = [];
+    }
+    expect((new AuditProcedure)->unavailable('monthly', 'count', $state['draft'], 'count', $sources))->toBe('AUDIT_PROOFS_REQUIRED');
+})->with(['financial_proofs', 'inventory_proofs']);
+
+it('pins the exact active ledger originals and requires review if that set changes', function (): void {
+    $procedure = new AuditProcedure;
+    $state = procedureBefore('flash', 'ledger');
+    $sources = [...procedureSources(), 'ledger_sources' => ['ledger:one' => procedureSource('ledger')]];
+    $state = $procedure->save('flash', 'ledger', $state['draft'], 'ledger', procedureFields('ledger'), $sources);
+    expect($state['draft']['sources']['ledger']['ledger:one'] ?? null)->toBe(procedureSource('ledger'));
+    $sources['ledger_sources']['ledger:one']['sha256'] = 'changed';
+    expect($procedure->unavailable('flash', 'seal', $state['draft'], 'seal', $sources))->toBe('AUDIT_PROCEDURE_SOURCE_CHANGED');
+});

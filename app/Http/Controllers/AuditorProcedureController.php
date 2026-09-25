@@ -10,6 +10,7 @@ use App\Application\Auditor\GetAuditProcedure;
 use App\Application\Auditor\GetAuditReport;
 use App\Application\Auditor\IngestAuditLedger;
 use App\Application\Auditor\ListAuditJobs;
+use App\Application\Auditor\ReadAuditLedger;
 use App\Application\Auditor\SaveAuditReportStep;
 use App\Application\Auditor\StartAuditReport;
 use App\Application\Business\GetAuditApplication;
@@ -58,6 +59,20 @@ class AuditorProcedureController extends Controller
         [$userId, $revision] = $this->reader($request);
         $report = $reports->handle($userId, $revision, (string) $request->route('report'));
         $document = $statements->handle($userId, $revision, $report['assignment_id'], (string) $request->route('document'));
+
+        return $this->download($document);
+    }
+
+    public function ledger(Request $request, ReadAuditLedger $ledgers): HttpResponse
+    {
+        [$userId, $revision] = $this->reader($request);
+
+        return $this->download($ledgers->handle($userId, $revision, (string) $request->route('report'), (string) $request->route('document')));
+    }
+
+    /** @param array{content: string, media_type: string, sha256: string, filename: string} $document */
+    private function download(array $document): HttpResponse
+    {
         $response = new HttpResponse($document['content'], 200, [
             'Content-Type' => $document['media_type'], 'Cache-Control' => 'private, no-store',
             'X-Content-Type-Options' => 'nosniff', 'Content-Security-Policy' => "default-src 'none'; sandbox",

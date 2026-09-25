@@ -74,19 +74,6 @@ final class EloquentStatementStore implements StatementStore
             });
     }
 
-    public function ingestAudit(int $userId, int $contextRevision, string $assignmentId, string $filename, string $content, ?string $replaces): OperationResult
-    {
-        return $this->assignments->handle($userId, $contextRevision, $assignmentId,
-            function (array $assignment) use ($userId, $filename, $content, $replaces): OperationResult {
-                $evidence = StatementEvidence::query()->where('business_id', $assignment['business_id'])->lockForUpdate()->first();
-                if ($replaces !== null && ($evidence === null || ! StatementOriginal::query()->whereKey($replaces)->where('statement_evidence_id', $evidence->id)->exists())) {
-                    throw new CommandRejection('STATEMENT_NOT_FOUND', 404);
-                }
-
-                return $this->retain($evidence, $assignment['business_id'], $userId, $assignment['party_id'], $filename, $content);
-            });
-    }
-
     private function retain(?StatementEvidence $evidence, string $businessId, int $userId, string $partyId, string $filename, string $content): OperationResult
     {
         $revision = $evidence->revision ?? 0;

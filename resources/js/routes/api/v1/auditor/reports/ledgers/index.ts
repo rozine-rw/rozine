@@ -1,8 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:57
-* @route '/api/v1/auditor/reports/{report}/statements/{document}'
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
+* @route '/api/v1/auditor/reports/{report}/ledgers/{document}'
 */
 export const show = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
@@ -11,13 +11,13 @@ export const show = (args: { report: string | number, document: string | number 
 
 show.definition = {
     methods: ["get","head"],
-    url: '/api/v1/auditor/reports/{report}/statements/{document}',
+    url: '/api/v1/auditor/reports/{report}/ledgers/{document}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:57
-* @route '/api/v1/auditor/reports/{report}/statements/{document}'
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
+* @route '/api/v1/auditor/reports/{report}/ledgers/{document}'
 */
 show.url = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
@@ -42,8 +42,8 @@ show.url = (args: { report: string | number, document: string | number } | [repo
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:57
-* @route '/api/v1/auditor/reports/{report}/statements/{document}'
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
+* @route '/api/v1/auditor/reports/{report}/ledgers/{document}'
 */
 show.get = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
@@ -52,8 +52,8 @@ show.get = (args: { report: string | number, document: string | number } | [repo
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:57
-* @route '/api/v1/auditor/reports/{report}/statements/{document}'
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
+* @route '/api/v1/auditor/reports/{report}/ledgers/{document}'
 */
 show.head = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
@@ -62,8 +62,8 @@ show.head = (args: { report: string | number, document: string | number } | [rep
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:57
-* @route '/api/v1/auditor/reports/{report}/statements/{document}'
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
+* @route '/api/v1/auditor/reports/{report}/ledgers/{document}'
 */
 const showForm = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, options),
@@ -72,8 +72,8 @@ const showForm = (args: { report: string | number, document: string | number } |
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:57
-* @route '/api/v1/auditor/reports/{report}/statements/{document}'
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
+* @route '/api/v1/auditor/reports/{report}/ledgers/{document}'
 */
 showForm.get = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, options),
@@ -82,8 +82,8 @@ showForm.get = (args: { report: string | number, document: string | number } | [
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProcedureController::show
-* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:57
-* @route '/api/v1/auditor/reports/{report}/statements/{document}'
+* @see app/Http/Controllers/Api/V1/AuditorProcedureController.php:66
+* @route '/api/v1/auditor/reports/{report}/ledgers/{document}'
 */
 showForm.head = (args: { report: string | number, document: string | number } | [report: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, {
@@ -97,8 +97,8 @@ showForm.head = (args: { report: string | number, document: string | number } | 
 
 show.form = showForm
 
-const statements = {
+const ledgers = {
     show: Object.assign(show, show),
 }
 
-export default statements
+export default ledgers

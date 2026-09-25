@@ -6,6 +6,7 @@ use App\Application\Auditor\AdvanceExpiredAuditOffers;
 use App\Application\Auditor\GetAuditOperationsCase;
 use App\Application\Auditor\GetAuditSourceFacts;
 use App\Application\Auditor\GetOwnAuditConflict;
+use App\Application\Auditor\IngestAuditLedger;
 use App\Application\Auditor\ListOwnAuditConflicts;
 use App\Application\Auditor\MarkAuditLocationMoved;
 use App\Application\Auditor\RecordAuditEngagementTerms;
@@ -53,6 +54,7 @@ use App\Models\AuditAssignmentVersion;
 use App\Models\AuditConflictDeclaration;
 use App\Models\AuditEngagementAcceptance;
 use App\Models\AuditEngagementRelease;
+use App\Models\AuditLedgerOriginal;
 use App\Models\AuditLocation;
 use App\Models\AuditLocationVersion;
 use App\Models\AuditorCertificate;
@@ -92,6 +94,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\AuditAssignmentFixture;
 use Tests\Support\AuditEngagementFixture;
+use Tests\Support\AuditLedgerFixture;
 use Tests\Support\AuditorFixture;
 use Tests\Support\AuditorIndependenceFixture;
 use Tests\Support\AuditSourceFactsFixture;
@@ -1961,3 +1964,28 @@ it('refuses stale direct acceptance after a concurrent catalog publication wins'
         DB::purge('engagement_contender');
     }
 });
+
+it('keeps Auditor ledger uploads independent of concurrent Business statement changes', function (string $command): void {
+    $fixture = AuditLedgerFixture::ready();
+    ['user' => $user, 'report' => $report] = $fixture;
+    $file = app(GetAuditStatements::class)->handle($user->id, 1, $report->assignment_id);
+    $businessUser = $fixture['audit']['authority']['users'][0];
+    $businessId = $report->business_id;
+    $version = $file['evidence']['revision'];
+    $payload = $file['transcription']['payload'];
+    $ledger = function () use ($user, $report): void {
+        $result = app(IngestAuditLedger::class)->handle($user->id, 1, $report->id, 4, 'ledger.csv', "amount\n38000000\n", null, (string) Str::uuid());
+        expect($result['code'])->toBe('INGESTED_NOT_AUDIT_APPROVED');
+    };
+    $business = function () use ($command, $businessUser, $businessId, $version, $payload): void {
+        $result = $command === 'ingest'
+            ? app(IngestStatement::class)->handle($businessUser->id, 1, $businessId, $version, 'new.csv', "amount\n40000000\n", (string) Str::uuid())
+            : app(RecordStatementTranscription::class)->handle($businessUser->id, 1, $businessId, $version,
+                $payload['rails'], $payload['months'], $payload['statements'], (string) Str::uuid());
+        expect($result['code'])->toBe($command === 'ingest' ? 'INGESTED_NOT_AUDIT_APPROVED' : 'STATEMENT_RECONCILED_UNVERIFIED');
+    };
+    expect(runIdentityContenders([$ledger, $business]))->toBe([0, 0])
+        ->and($report->refresh()->revision)->toBe(5)
+        ->and(AuditLedgerOriginal::query()->where('audit_report_id', $report->id)->count())->toBe(1)
+        ->and(app(GetAuditStatements::class)->handle($user->id, 1, $report->assignment_id)['evidence']['revision'])->toBe($version + 1);
+})->with(['ingest', 'reconcile']);

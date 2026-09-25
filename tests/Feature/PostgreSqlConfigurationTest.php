@@ -67,6 +67,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $sourceFactsMigration->down();
     $sourcePinMigration->down();
     $engagementMigration->down();
+    $ledgerMigration = require database_path('migrations/2026_09_25_120136_create_audit_ledger_evidence_tables.php');
+    $ledgerMigration->down();
     $reportMigration->down();
     $acceptanceMigration->down();
     $quoteMigration->down();
@@ -119,6 +121,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $quoteMigration->up();
     $acceptanceMigration->up();
     $reportMigration->up();
+    $ledgerMigration->up();
     $engagementMigration->up();
     $sourcePinMigration->up();
     $sourceFactsMigration->up();

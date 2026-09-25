@@ -15,7 +15,7 @@ use App\Domain\Auditor\AuditMonthlyFacts;
  * @phpstan-import-type AcceptedAssignment from \App\Application\Auditor\Contracts\AuditAssignmentStore
  * @phpstan-import-type SourceFacts from \App\Application\Auditor\Contracts\AuditSourceFactsStore
  *
- * @phpstan-type Projection array{verification: Source|null, check_in: Source|null, photos: Source|null, declaration: Source|null, reported_stock: string|null, reported_cash: string|null, reported_units: string|null, financial_proofs: list<string>, inventory_proofs: list<string>, extra_photos: list<string>, documents: list<Document>, monthly: Monthly|null, licence: string, source_facts: SourceFacts|null}
+ * @phpstan-type Projection array{verification: Source|null, check_in: Source|null, photos: Source|null, declaration: Source|null, reported_stock: string|null, reported_cash: string|null, reported_units: string|null, financial_proofs: list<string>, inventory_proofs: list<string>, extra_photos: list<string>, documents: list<Document>, ledger_documents?: list<Document>, ledger_sources?: array<string, Source>, monthly: Monthly|null, licence: string, source_facts: SourceFacts|null}
  */
 final class GetAuditProcedureSources
 {

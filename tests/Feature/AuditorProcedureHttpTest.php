@@ -355,3 +355,17 @@ it('offers an explicit start command then resumes the same report without mutati
     $this->assertDatabaseCount('audit_reports', 1);
     $this->assertDatabaseCount('audit_report_versions', 1);
 })->with([false, true]);
+
+it('withdraws count readiness and explains missing source proof lists', function (string $key): void {
+    $fixture = procedureHttpFixture('routine');
+    $facts = completeProcedureFacts();
+    $facts['proof_ids'][$key] = null;
+    AuditSourceFactsFixture::record($fixture['audit']['staff'], $fixture['assignment']->refresh(), facts: $facts);
+    $user = $fixture['audit']['partners'][0]['user'];
+    Sanctum::actingAs($user, ['auditor:read', 'auditor:command']);
+    $id = $this->postJson(route('api.v1.auditor.reports.start', ['assignment' => $fixture['assignment']->id]), procedureStartPayload($fixture))->assertOk()->json('data.audit_id');
+    $this->postJson(route('api.v1.auditor.reports.save', ['report' => $id]), ['audit_id' => $id, 'step' => 'statements',
+        'request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'expected_revision' => 1])->assertOk();
+    $this->getJson(route('api.v1.auditor.reports.show', ['report' => $id]))->assertOk()->assertJsonPath('data.can_continue', false)
+        ->assertJsonPath('data.hint', 'The required financial or inventory proofs are unavailable.');
+})->with(['financial', 'inventory']);

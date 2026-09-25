@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Auditor\FindAuditReportOperation;
 use App\Application\Auditor\GetAuditReport;
 use App\Application\Auditor\IngestAuditLedger;
+use App\Application\Auditor\ReadAuditLedger;
 use App\Application\Auditor\StartAuditReport;
 use App\Application\Evidence\GetAuditStatements;
 use App\Application\Evidence\GetAuditStatementVerification;
@@ -53,16 +54,16 @@ it('retains a ledger original once and recovers its receipt without approving or
     $action = app(IngestAuditLedger::class);
     $first = $action->handle($user->id, 1, $report->id, 2, 'ledger.csv', $body, null, $request);
     expect($first['code'])->toBe('INGESTED_NOT_AUDIT_APPROVED')->and($first['revision'])->toBe(3)
-        ->and($first['data']['step'])->toBe('ledger')->and($first['data']['evidence_revision'])->toBe($before['evidence']['revision'] + 1)
+        ->and($first['data']['step'])->toBe('ledger')->and(app(GetAuditStatements::class)->handle($user->id, 1, $report->assignment_id))->toBe($before)
         ->and($action->handle($user->id, 1, $report->id, 2, 'ledger.csv', $body, null, $request))->toBe($first)
         ->and(app(FindAuditReportOperation::class)->handle($user->id, 1, 'audit.save_step', $request))->toBe($first);
     $read = app(GetAuditReport::class)->handle($user->id, 1, $report->id);
     expect($read['status'])->toBe('draft')->and($read['step'])->toBe('ledger')
-        ->and($read['draft']['documents'])->toBe([['id' => $first['data']['document_id'], 'replaces' => null]])
+        ->and($read['draft']['documents'])->toBe([['id' => $first['data']['document_id'], 'revision' => 3, 'sha256' => hash('sha256', $body), 'replaces' => null]])
         ->and($read['draft']['fields'])->not->toHaveKey('ledger');
-    $original = app(ReadAuditStatement::class)->handle($user->id, 1, $report->assignment_id, $first['data']['document_id']);
+    $original = app(ReadAuditLedger::class)->handle($user->id, 1, $report->id, $first['data']['document_id']);
     expect($original['content'])->toBe($body)->and($original['sha256'])->toBe(hash('sha256', $body))
-        ->and(app(GetAuditStatementVerification::class)->handle($user->id, 1, $report->assignment_id)['current'])->toBeFalse();
+        ->and(app(GetAuditStatementVerification::class)->handle($user->id, 1, $report->assignment_id)['current'])->toBeTrue();
     $this->assertDatabaseCount('audit_report_versions', 3);
     expect(fn () => $action->handle($user->id, 1, $report->id, 2, 'ledger.csv', $body.'changed', null, $request))
         ->toThrow(CommandRejection::class, 'IDEMPOTENCY_CONFLICT');
@@ -73,16 +74,25 @@ it('retains rescan lineage and the original while rejecting stale revisions and 
     $user = $fixture['user'];
     $report = $fixture['report'];
     $action = app(IngestAuditLedger::class);
-    $old = app(GetAuditStatements::class)->handle($user->id, 1, $report->assignment_id)['evidence']['documents'][0]['id'];
-    $source = app(ReadAuditStatement::class)->handle($user->id, 1, $report->assignment_id, $old);
-    $same = $action->handle($user->id, 1, $report->id, 2, 'rescan.csv', $source['content'], $old, (string) Str::uuid());
-    expect($same['data']['document_id'])->toBe($old)
-        ->and($report->refresh()->draft['documents'])->toBe([['id' => $old, 'replaces' => $old]]);
+    $businessOriginal = app(GetAuditStatements::class)->handle($user->id, 1, $report->assignment_id)['evidence']['documents'][0]['id'];
+    $source = app(ReadAuditStatement::class)->handle($user->id, 1, $report->assignment_id, $businessOriginal);
+    $foreign = $action->handle($user->id, 1, $report->id, 2, 'rescan.csv', $source['content'], $businessOriginal, (string) Str::uuid());
+    expect($foreign['code'])->toBe('STATEMENT_NOT_FOUND');
+    $first = $action->handle($user->id, 1, $report->id, 2, 'ledger.csv', $source['content'], null, (string) Str::uuid());
+    $old = $first['data']['document_id'];
+    expect($old)->not->toBe($businessOriginal);
+    $same = $action->handle($user->id, 1, $report->id, 3, 'rescan.csv', $source['content'], $old, (string) Str::uuid());
+    expect($same['data']['document_id'])->toBe($old)->and($report->refresh()->draft['documents'][0]['replaces'])->toBeNull();
+    $rescan = $action->handle($user->id, 1, $report->id, 4, 'rescan.csv', $source['content']."2026-08-02,10\n", $old, (string) Str::uuid());
+    expect($rescan['data']['document_id'])->not->toBe($old)
+        ->and($report->refresh()->draft['documents'][0]['replaces'])->toBe($old)
+        ->and(app(ReadAuditLedger::class)->handle($user->id, 1, $report->id, $old)['content'])->toBe($source['content']);
     $stale = $action->handle($user->id, 1, $report->id, 2, 'rescan.csv', $source['content'], null, (string) Str::uuid());
     expect($stale['code'])->toBe('VERSION_CONFLICT');
-    $foreign = $action->handle($user->id, 1, $report->id, 3, 'rescan.csv', $source['content'], (string) Str::ulid(), (string) Str::uuid());
-    expect($foreign['code'])->toBe('STATEMENT_NOT_FOUND')->and($report->refresh()->revision)->toBe(3);
+    $foreign = $action->handle($user->id, 1, $report->id, 5, 'rescan.csv', $source['content'], (string) Str::ulid(), (string) Str::uuid());
+    expect($foreign['code'])->toBe('STATEMENT_NOT_FOUND')->and($report->refresh()->revision)->toBe(5);
     $this->assertDatabaseCount('statement_originals', 1);
+    $this->assertDatabaseCount('audit_ledger_originals', 2);
 });
 
 it('records unsupported uploads against the document field without writing an original', function (): void {
@@ -121,6 +131,8 @@ it('rolls back originals and parser work if report history fails', function (): 
     }
     $this->assertDatabaseCount('statement_originals', 1);
     $this->assertDatabaseCount('statement_extractions', 1);
+    $this->assertDatabaseCount('audit_ledger_originals', 0);
+    $this->assertDatabaseCount('audit_ledger_extractions', 0);
     expect($fixture['report']->refresh()->revision)->toBe(2)->and(CommandOperation::query()->where('request_id', $request)->exists())->toBeFalse();
 });
 

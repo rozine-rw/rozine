@@ -9,6 +9,8 @@ use App\Models\AuditAssignmentVersion;
 use App\Models\AuditConflictDeclaration;
 use App\Models\AuditEngagementAcceptance;
 use App\Models\AuditEngagementRelease;
+use App\Models\AuditLedgerExtraction;
+use App\Models\AuditLedgerOriginal;
 use App\Models\AuditLocation;
 use App\Models\AuditLocationVersion;
 use App\Models\AuditorCertificate;
@@ -230,6 +232,8 @@ it('has concrete targets for the auditor accreditation boundary', function (): v
         ->and(class_exists(AuditConflictDeclaration::class))->toBeTrue()
         ->and(class_exists(AuditReport::class))->toBeTrue()
         ->and(class_exists(AuditReportVersion::class))->toBeTrue()
+        ->and(class_exists(AuditLedgerOriginal::class))->toBeTrue()
+        ->and(class_exists(AuditLedgerExtraction::class))->toBeTrue()
         ->and(class_exists(AuditSourceSnapshot::class))->toBeTrue()
         ->and(class_exists(AuditEngagementRelease::class))->toBeTrue()
         ->and(class_exists(AuditEngagementAcceptance::class))->toBeTrue()
@@ -237,5 +241,5 @@ it('has concrete targets for the auditor accreditation boundary', function (): v
 })->group('arch');
 
 arch('auditor accreditation records are only accessed by their adapter')
-    ->expect(['App\Models\AuditorProfile', 'App\Models\AuditorProfileVersion', 'App\Models\AuditorCertificate', 'App\Models\AuditLocation', 'App\Models\AuditLocationVersion', 'App\Models\AuditorIndependenceReview', 'App\Models\AuditorIndependenceVersion', 'App\Models\AuditAssignment', 'App\Models\AuditAssignmentVersion', 'App\Models\AuditConflictDeclaration', 'App\Models\AuditReport', 'App\Models\AuditReportVersion', 'App\Models\AuditSourceSnapshot', 'App\Models\AuditEngagementRelease', 'App\Models\AuditEngagementAcceptance'])
+    ->expect(['App\Models\AuditorProfile', 'App\Models\AuditorProfileVersion', 'App\Models\AuditorCertificate', 'App\Models\AuditLocation', 'App\Models\AuditLocationVersion', 'App\Models\AuditorIndependenceReview', 'App\Models\AuditorIndependenceVersion', 'App\Models\AuditAssignment', 'App\Models\AuditAssignmentVersion', 'App\Models\AuditConflictDeclaration', 'App\Models\AuditReport', 'App\Models\AuditReportVersion', 'App\Models\AuditLedgerOriginal', 'App\Models\AuditLedgerExtraction', 'App\Models\AuditSourceSnapshot', 'App\Models\AuditEngagementRelease', 'App\Models\AuditEngagementAcceptance'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Auditor', 'App\Models', 'Database\Factories']);
