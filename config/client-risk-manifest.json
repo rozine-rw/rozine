@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "5e660d08764d946dbb942ebc3fcbc48d7188f05c8963adc3322a0b9bdf8ed369",
-    "coverageSetSha256": "a9da0aa4ec3ff25d80aa9408f9ff407b9c19846fdb8f78fda5540690a55d4fe3",
+    "sourceManifestSha256": "9d77185924b5103b17250fa6d05cf87137c8fb8bccd28ff19ac9b46cadc855c5",
+    "coverageSetSha256": "5d20a54b81ee4b4210e261d693bae18eabcbcecaba617c7023d86abbff2060cb",
     "thresholds": {
         "critical": {
             "global": {
@@ -111,6 +111,7 @@
         "resources/js/components/auditor/profile/accreditation-section.tsx",
         "resources/js/components/auditor/profile/availability-section.tsx",
         "resources/js/components/auditor/profile/identity-card.tsx",
+        "resources/js/components/auditor/refresh.ts",
         "resources/js/components/auditor/sheets/bottom-sheet.tsx",
         "resources/js/components/auditor/sheets/conflict-sheet.tsx",
         "resources/js/components/auditor/sheets/outcome-modal.tsx",

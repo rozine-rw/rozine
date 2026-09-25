@@ -65,7 +65,7 @@ describe('Auditor pages reconcile their access', () => {
         signal('online');
 
         expect(inertia.reloads).toHaveLength(1);
-        expect(inertia.reloads[0]).not.toHaveProperty('only');
+        expect(inertia.reloads[0]).toMatchObject({ except: ['jobs'] });
     });
 
     it('reloads the conflict receipts when the tab becomes visible again', () => {

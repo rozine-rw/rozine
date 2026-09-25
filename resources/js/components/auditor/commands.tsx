@@ -8,6 +8,8 @@ import {
     useState,
 } from 'react';
 import type { ReactNode } from 'react';
+import { reloadPage } from '@/components/auditor/refresh';
+import type { ReloadScope } from '@/components/auditor/refresh';
 import { ErrorBanner } from '@/components/rozine/form';
 import { OperationNotice } from '@/components/rozine/operation-notice';
 import {
@@ -99,6 +101,8 @@ type Options = {
     page: AuditorPageContract;
     lookup: RouteLink;
     preview?: AuditorPreviewOutcome;
+    /** The props a reload after a command asks for; undefined reloads them all. */
+    reload?: ReloadScope;
 };
 
 /** A command to send: which one, about which business, where it goes and its own facts. */
@@ -133,7 +137,12 @@ export type CommandLane = 'ordinary' | 'conflict';
  * once and follows the receipt's destination; nothing the earlier command answers later — a
  * completion, a refusal or a lookup that found nothing — moves or reloads the page again.
  */
-export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
+export function useAuditorCommandCenter({
+    page,
+    lookup,
+    preview,
+    reload,
+}: Options) {
     const initial = initialFrom(preview);
     const callbacks = useRef(new Map<string, CommandCallbacks>());
     const withdrawn = useRef(false);
@@ -159,7 +168,7 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
         const { data } = resource;
 
         if (data === null) {
-            router.reload();
+            reloadPage(reload);
 
             return;
         }
@@ -205,7 +214,7 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
                 return;
             case 'AVAILABILITY_UPDATED':
                 /* The switch belongs to the page it is on: redraw it there, in place. */
-                router.reload();
+                reloadPage(reload);
 
                 return;
             default:
@@ -228,13 +237,13 @@ export function useAuditorCommandCenter({ page, lookup, preview }: Options) {
         }
 
         if (refusalNeedsFreshFacts(code, status)) {
-            router.reload();
+            reloadPage(reload);
         }
     };
 
     /* A lookup that found nothing refreshes the page, unless access was withdrawn meanwhile. */
     const refresh = (): Promise<void> =>
-        withdrawn.current ? Promise.resolve() : reloadPreservingState();
+        withdrawn.current ? Promise.resolve() : reloadPreservingState(reload);
 
     const command = useOperationCommand<
         AuditorCommand,
