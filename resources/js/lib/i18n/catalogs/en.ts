@@ -3082,6 +3082,11 @@ const en = {
     'auditor.returned.amended_by':
         'An amendment {report} was started from this report.',
     'auditor.returned.view_amendment': 'View the amendment',
+    'auditor.reason.count': '{count} / {max}',
+    'auditor.command.refused.AUDIT_REPORT_DECISION_NOT_ALLOWED':
+        'This report can no longer be returned or rejected, so nothing was recorded. The page has been refreshed.',
+    'auditor.command.refused.AUDIT_REPORT_NOT_AMENDABLE':
+        "This report can't be amended now, so no amendment was started. The page has been refreshed.",
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

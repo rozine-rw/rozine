@@ -22,19 +22,19 @@
         "steps": [
             {
                 "key": "statements",
-                "state": "done"
+                "state": "current"
             },
             {
                 "key": "count",
-                "state": "done"
+                "state": "todo"
             },
             {
                 "key": "photos",
-                "state": "done"
+                "state": "todo"
             },
             {
                 "key": "seal",
-                "state": "done"
+                "state": "todo"
             }
         ],
         "stage": {
@@ -50,6 +50,7 @@
         },
         "can_continue": false,
         "hint": null,
+        "reason_options": null,
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",

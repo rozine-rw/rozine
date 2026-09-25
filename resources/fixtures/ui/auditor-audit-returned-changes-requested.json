@@ -34,7 +34,7 @@
             },
             {
                 "key": "seal",
-                "state": "done"
+                "state": "current"
             }
         ],
         "stage": {
@@ -50,6 +50,7 @@
         },
         "can_continue": false,
         "hint": null,
+        "reason_options": null,
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",

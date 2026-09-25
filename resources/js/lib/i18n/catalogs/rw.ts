@@ -3203,6 +3203,12 @@ const rw: Catalog = {
         'Ivugurura {report} ryatangijwe kuri iyi raporo.',
     'auditor.returned.view_amendment': 'Reba ivugurura',
 
+    'auditor.reason.count': '{count} / {max}',
+    'auditor.command.refused.AUDIT_REPORT_DECISION_NOT_ALLOWED':
+        'Iyi raporo ntigishobora gusubizwa cyangwa kwangwa, bityo nta kintu cyanditswe. Paji yavuguruwe.',
+    'auditor.command.refused.AUDIT_REPORT_NOT_AMENDABLE':
+        'Iyi raporo ntishobora kuvugururwa ubu, bityo nta vugurura ryatangiye. Paji yavuguruwe.',
+
     'auth.two_factor.recovery_codes_remaining': {
         one: 'Hasigaye kode {count} yo kugarura konti',
         other: 'Hasigaye kode {count} zo kugarura konti',

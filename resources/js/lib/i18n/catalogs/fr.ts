@@ -3216,6 +3216,12 @@ const fr: Catalog = {
         'Une modification {report} a été commencée à partir de ce rapport.',
     'auditor.returned.view_amendment': 'Voir la modification',
 
+    'auditor.reason.count': '{count} / {max}',
+    'auditor.command.refused.AUDIT_REPORT_DECISION_NOT_ALLOWED':
+        "Ce rapport ne peut plus être renvoyé ni rejeté : rien n'a été enregistré. La page a été actualisée.",
+    'auditor.command.refused.AUDIT_REPORT_NOT_AMENDABLE':
+        "Ce rapport ne peut pas être modifié pour le moment : aucune modification n'a été commencée. La page a été actualisée.",
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

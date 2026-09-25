@@ -9,6 +9,9 @@ import type { AuditorPreviewOutcome, ReasonOptions } from '@/types/auditor';
 
 type Open = 'request_changes' | 'reject' | null;
 
+/** The longest factual explanation the server records for a return (#96). */
+export const RETURN_REASON_MAX = 2000;
+
 type ReturnControlsOptions = {
     /** The server's labelled reasons, or null where the report cannot be returned. */
     options: ReasonOptions | null;
@@ -110,6 +113,8 @@ export function useReturnControls({
                 submitLabel={t('auditor.seal.suggest_submit')}
                 options={(options as ReasonOptions).request_changes}
                 initialReason={initialReason}
+                explanationRequired
+                maxLength={RETURN_REASON_MAX}
                 onSubmit={(fields) =>
                     send('audit.request_changes', requestChangesRoute, fields)
                 }
@@ -125,6 +130,8 @@ export function useReturnControls({
                 submitLabel={t('auditor.seal.reject_submit')}
                 options={(options as ReasonOptions).reject}
                 initialReason={initialReason}
+                explanationRequired
+                maxLength={RETURN_REASON_MAX}
                 destructive
                 onSubmit={(fields) => send('audit.reject', rejectRoute, fields)}
                 onClose={close}

@@ -216,7 +216,7 @@ function AuditSheet(props: AuditProcedureProps) {
             ? null
             : stage.step === 'seal'
               ? stage.reason_options
-              : (props.reason_options ?? null),
+              : props.reason_options,
         context,
         business: audit.business,
         actions,

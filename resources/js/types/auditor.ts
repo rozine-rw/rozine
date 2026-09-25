@@ -1005,11 +1005,10 @@ export type AuditProcedureProps = AuditorPageContract & {
     /** What still blocks the step, or what sealing will do, as the server words it. */
     hint: string | null;
     /**
-     * Not yet in the delivery 2 contract (#96): the labelled reasons for returning the filing
-     * before its seal step, where the stage carries none. Absent or null offers no return there;
-     * the seal stage keeps its own `reason_options`.
+     * The labelled reasons for returning a monthly draft at any step (delivery 2, #96), the same
+     * shape as the seal stage's; null when unavailable — a Flash Audit or a terminal report.
      */
-    reason_options?: ReasonOptions | null;
+    reason_options: ReasonOptions | null;
     links: OperationLookupLinks & { close: RouteLink; back: RouteLink | null };
     actions: {
         save: RouteAction;
