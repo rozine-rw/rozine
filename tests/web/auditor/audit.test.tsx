@@ -557,7 +557,7 @@ describe('Audit procedure — ledger reconciliation', () => {
         await user.upload(input, file);
 
         expect(inertia.calls[0]).toEqual({
-            url: '/preview/auditor-jobs',
+            url: '/preview/auditor-audit-ledger-ingested',
             method: 'post',
             body: {
                 step: 'ledger',
@@ -707,6 +707,98 @@ describe('Audit procedure — ledger reconciliation', () => {
         download.addEventListener('click', (event) => event.preventDefault());
         await user.click(download);
         expect(inertia.visits).toHaveLength(0);
+    });
+
+    it('uploads to the route the stage supplies, not the step save', async () => {
+        inertia.queue.push(answers(operation()));
+        const { user } = renderWithUser(
+            <AuditorAudit
+                {...withStage<LedgerStage>(ledger, (stage) => ({
+                    ...stage,
+                    upload: {
+                        url: '/auditor/reports/fa_huye/ledger',
+                        method: 'post',
+                    },
+                }))}
+            />,
+        );
+        const file = new File(['%PDF'], 'stock-book.pdf', {
+            type: 'application/pdf',
+        });
+
+        await user.upload(screen.getByLabelText('Ledger document file'), file);
+
+        expect(inertia.calls[0]).toMatchObject({
+            url: '/auditor/reports/fa_huye/ledger',
+            method: 'post',
+            body: { step: 'ledger', document: file, replaces: null },
+        });
+    });
+
+    it('offers no upload without the stage route, keeping the documents and their downloads', () => {
+        render(
+            <AuditorAudit
+                {...withStage<LedgerStage>(ledger, (stage) => ({
+                    ...stage,
+                    upload: null,
+                    documents: stage.documents.map((document) => ({
+                        ...document,
+                        link: {
+                            url: `/auditor/reports/fa_huye/ledger/${document.id}/original`,
+                            method: 'get',
+                        },
+                    })),
+                }))}
+            />,
+        );
+        const dialog = sheet();
+
+        expect(
+            within(dialog).queryByLabelText('Ledger document file'),
+        ).not.toBeInTheDocument();
+        expect(
+            within(dialog).queryByRole('button', { name: /ledger/iu }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(dialog).queryByRole('button', {
+                name: 'Re-scan this document',
+            }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(dialog).queryByText(/Upload the original ledger/u),
+        ).not.toBeInTheDocument();
+        expect(
+            within(dialog).getByText('Huye-Motors-ledger-Q3.pdf'),
+        ).toBeInTheDocument();
+        expect(
+            within(dialog).getAllByRole('link', { name: 'Download original' }),
+        ).toHaveLength(2);
+    });
+
+    it('offers no upload when the ledger is read from a later step', () => {
+        const page = props(ledgerIngested);
+
+        render(
+            <AuditorAudit
+                {...page}
+                steps={page.steps.map((step) => ({
+                    ...step,
+                    state: step.key === 'seal' ? 'current' : 'done',
+                }))}
+            />,
+        );
+
+        expect(
+            screen.queryByLabelText('Ledger document file'),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', {
+                name: /Add another ledger document/u,
+            }),
+        ).not.toBeInTheDocument();
+        expect(screen.getAllByText('Received · not yet reviewed')).toHaveLength(
+            2,
+        );
     });
 
     it('offers no download for a document without a link', () => {

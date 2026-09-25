@@ -18,6 +18,7 @@ import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
+import type { RouteAction } from '@/types';
 import type { LedgerDocument, LedgerStage } from '@/types/auditor';
 
 /** The retained original only (C2): a PDF or a UTF-8 CSV export. */
@@ -57,7 +58,8 @@ function DocumentRow({
     onRescan,
 }: {
     document: LedgerDocument;
-    canUpload: boolean;
+    /** Null where the step offers no upload: the card then offers no re-scan either. */
+    canUpload: boolean | null;
     onRescan: () => void;
 }) {
     const { t } = useTranslation();
@@ -139,14 +141,16 @@ function DocumentRow({
                     <p className="mt-[11px] rounded-[10px] border border-[#f4c9c6] bg-rz-surface px-3 py-2.5 text-[11px] leading-[1.5] text-[#c8322b] dark:border-[rgba(255,107,111,.3)] dark:text-rz-danger-text">
                         {document.failure}
                     </p>
-                    <button
-                        type="button"
-                        onClick={onRescan}
-                        disabled={!canUpload}
-                        className="mt-[9px] h-[38px] w-full rounded-[10px] border border-[#f0c9c6] bg-rz-surface text-[12px] font-bold text-[#c8322b] dark:border-[rgba(255,107,111,.3)] dark:text-rz-danger-text"
-                    >
-                        {t('auditor.ledger.rescan')}
-                    </button>
+                    {canUpload !== null && (
+                        <button
+                            type="button"
+                            onClick={onRescan}
+                            disabled={!canUpload}
+                            className="mt-[9px] h-[38px] w-full rounded-[10px] border border-[#f0c9c6] bg-rz-surface text-[12px] font-bold text-[#c8322b] dark:border-[rgba(255,107,111,.3)] dark:text-rz-danger-text"
+                        >
+                            {t('auditor.ledger.rescan')}
+                        </button>
+                    )}
                 </>
             )}
         </li>
@@ -172,7 +176,9 @@ export function StepLedger({
 }) {
     const { t } = useTranslation();
     const center = useAuditorCommands();
-    const canUpload = center.allowed('audit.save_step') && center.idle;
+    /* The server's upload route is the only gate: null offers no upload, re-scan or input. */
+    const uploadRoute = stage.upload;
+    const canUpload = uploadRoute === null ? null : center.idle;
     const declared = stage.reported_stock !== null;
     const canReconcile = declared && stage.ledger_ready;
     const { form, submit, errors } = useStepForm(context, {
@@ -209,7 +215,10 @@ export function StepLedger({
         file.current?.click();
     };
 
-    const upload = (event: ChangeEvent<HTMLInputElement>) => {
+    const upload = (
+        event: ChangeEvent<HTMLInputElement>,
+        route: RouteAction,
+    ) => {
         const chosen = event.target.files?.[0];
 
         if (!chosen) {
@@ -233,7 +242,7 @@ export function StepLedger({
         center.send({
             name: 'audit.save_step',
             business: context.business,
-            route: context.save,
+            route,
             payload: {
                 step: 'ledger',
                 audit_id: context.auditId,
@@ -322,9 +331,11 @@ export function StepLedger({
                           })}
                 </span>
             </div>
-            <p className="mt-1 text-[11.5px] leading-[1.5] text-rz-secondary">
-                {t('auditor.ledger.rules')}
-            </p>
+            {uploadRoute !== null && (
+                <p className="mt-1 text-[11.5px] leading-[1.5] text-rz-secondary">
+                    {t('auditor.ledger.rules')}
+                </p>
+            )}
             <ul className="mt-2.5 flex flex-col gap-[9px]">
                 {stage.documents.map((document) => (
                     <DocumentRow
@@ -335,30 +346,37 @@ export function StepLedger({
                     />
                 ))}
             </ul>
-            <input
-                ref={file}
-                type="file"
-                accept={ACCEPT}
-                aria-label={t('auditor.ledger.file_input')}
-                onChange={upload}
-                className="sr-only"
-                tabIndex={-1}
-            />
-            <button
-                type="button"
-                onClick={() => pick(null)}
-                disabled={!canUpload}
-                className="mt-[9px] flex w-full items-center justify-center gap-[9px] rounded-xl border-[1.5px] border-dashed border-rz-secondary bg-[#f8fafc] p-3.5 dark:bg-rz-surface-sunken"
-            >
-                <span aria-hidden className="text-[15px] text-rz-secondary">
-                    ＋
-                </span>
-                <span className="text-[12.5px] font-bold text-rz-slate">
-                    {stage.documents.length === 0
-                        ? t('auditor.ledger.attach')
-                        : t('auditor.ledger.attach_another')}
-                </span>
-            </button>
+            {uploadRoute !== null && (
+                <>
+                    <input
+                        ref={file}
+                        type="file"
+                        accept={ACCEPT}
+                        aria-label={t('auditor.ledger.file_input')}
+                        onChange={(event) => upload(event, uploadRoute)}
+                        className="sr-only"
+                        tabIndex={-1}
+                    />
+                    <button
+                        type="button"
+                        onClick={() => pick(null)}
+                        disabled={!canUpload}
+                        className="mt-[9px] flex w-full items-center justify-center gap-[9px] rounded-xl border-[1.5px] border-dashed border-rz-secondary bg-[#f8fafc] p-3.5 dark:bg-rz-surface-sunken"
+                    >
+                        <span
+                            aria-hidden
+                            className="text-[15px] text-rz-secondary"
+                        >
+                            ＋
+                        </span>
+                        <span className="text-[12.5px] font-bold text-rz-slate">
+                            {stage.documents.length === 0
+                                ? t('auditor.ledger.attach')
+                                : t('auditor.ledger.attach_another')}
+                        </span>
+                    </button>
+                </>
+            )}
             <FieldError id="auditor-ledger-document-error">
                 {problem === null
                     ? errors.document

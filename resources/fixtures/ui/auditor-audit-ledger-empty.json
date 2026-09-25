@@ -43,6 +43,10 @@
         ],
         "stage": {
             "step": "ledger",
+            "upload": {
+                "url": "/preview/auditor-audit-ledger-ingested",
+                "method": "post"
+            },
             "reported_stock": {
                 "currency": "RWF",
                 "amount": "38000000"

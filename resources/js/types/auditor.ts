@@ -813,6 +813,12 @@ export type LedgerDocument = {
 export type LedgerStage = {
     step: 'ledger';
     /**
+     * Where a ledger original is uploaded: present only on the current, editable Flash ledger step
+     * while the command is allowed; null for a previous-step read, a terminal report or a
+     * read-only token, which then offers no upload at all.
+     */
+    upload: RouteAction | null;
+    /**
      * The stock value the business declared. Null when no Business stock declaration exists (the
      * application and statement facts do not supply one, #96 S-D): it reads "Not declared", never
      * zero, and reconciliation stays blocked.
