@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use App\Application\Auditor\AdvanceExpiredAuditOffers;
 use App\Application\Auditor\GetAuditOperationsCase;
+use App\Application\Auditor\GetAuditSourceFacts;
 use App\Application\Auditor\GetOwnAuditConflict;
 use App\Application\Auditor\ListOwnAuditConflicts;
 use App\Application\Auditor\MarkAuditLocationMoved;
 use App\Application\Auditor\RecordAuditEngagementTerms;
 use App\Application\Auditor\RecordAuditorIndependence;
+use App\Application\Auditor\RecordIsolatedAuditSourceFacts;
 use App\Application\Auditor\RequestAuditAssignment;
 use App\Application\Auditor\ResolveAuditAssignment;
 use App\Application\Auditor\SetAuditorAvailability;
@@ -59,6 +61,7 @@ use App\Models\AuditorProfile;
 use App\Models\AuditorProfileVersion;
 use App\Models\AuditReport;
 use App\Models\AuditReportVersion;
+use App\Models\AuditSourceSnapshot;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationSignature;
@@ -90,6 +93,7 @@ use Tests\Support\AuditAssignmentFixture;
 use Tests\Support\AuditEngagementFixture;
 use Tests\Support\AuditorFixture;
 use Tests\Support\AuditorIndependenceFixture;
+use Tests\Support\AuditSourceFactsFixture;
 use Tests\Support\BusinessApplicationFixture;
 use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\BusinessCreditFactsFixture;
@@ -1411,6 +1415,77 @@ it('retains staff authority through credit facts publication', function (): void
     }
     $revoke();
     expect(fn () => BusinessCreditFactsFixture::record($fixture['authority']['staff'], $fixture['business']->id, 1))->toThrow(IdentityViolation::class, 'STAFF_ACCESS_REQUIRED');
+});
+
+it('records assignment source facts once under simultaneous identical retries', function (): void {
+    $fixture = AuditSourceFactsFixture::accepted();
+    $request = (string) Str::uuid();
+    $write = function () use ($fixture, $request): void {
+        expect(AuditSourceFactsFixture::record($fixture['audit']['staff'], $fixture['assignment'], requestId: $request)['code'])->toBe('AUDIT_SOURCE_FACTS_RECORDED');
+    };
+    expect(runIdentityContenders([$write, $write]))->toBe([0, 0])
+        ->and(AuditSourceSnapshot::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'audit.source.fixture')->count())->toBe(1);
+});
+
+it('admits one assignment source revision when independent writers compete', function (): void {
+    $fixture = AuditSourceFactsFixture::accepted();
+    $write = function () use ($fixture): void {
+        $result = AuditSourceFactsFixture::record($fixture['audit']['staff'], $fixture['assignment']);
+        if ($result['code'] === 'VERSION_CONFLICT') {
+            throw new CommandRejection('VERSION_CONFLICT');
+        }
+        expect($result['code'])->toBe('AUDIT_SOURCE_FACTS_RECORDED');
+    };
+    expect(runIdentityContenders([$write, $write]))->toBe([0, 2])
+        ->and(AuditSourceSnapshot::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'audit.source.fixture')->where('result->code', 'VERSION_CONFLICT')->count())->toBe(1);
+});
+
+it('never binds source facts to a replacement while a conflict declaration races publication', function (): void {
+    $fixture = AuditSourceFactsFixture::accepted(2);
+    $original = $fixture['partner'];
+    $boundRevision = $fixture['assignment']->revision;
+    expect(runIdentityContenders([
+        function () use ($fixture): void {
+            expect(AuditSourceFactsFixture::record($fixture['audit']['staff'], $fixture['assignment'])['code'])
+                ->toBeIn(['AUDIT_SOURCE_FACTS_RECORDED', 'ASSIGNMENT_NOT_ACCEPTED']);
+        },
+        function () use ($fixture, $original): void {
+            expect(AuditAssignmentFixture::respond($original['user'], $fixture['assignment'], 'conflict', 'New family tie.', 'family_or_business')['code'])
+                ->toBe('CONFLICT_RECORDED');
+        },
+    ]))->toBe([0, 0]);
+    $assignment = $fixture['assignment']->refresh();
+    $replacement = AuditAssignmentFixture::recipient($fixture['audit'], $assignment);
+    AuditAssignmentFixture::respond($replacement['user'], $assignment);
+    expect(AuditSourceSnapshot::query()->where(fn ($query) => $query->where('assignment_revision', '<>', $boundRevision)
+        ->orWhere('party_id', '<>', $original['party']->id))->count())->toBe(0)
+        ->and(AuditSourceSnapshot::query()->count())->toBeLessThanOrEqual(1)
+        ->and(app(GetAuditSourceFacts::class)->handle($replacement['user']->id, 1, $assignment->id))->toBeNull();
+});
+
+it('holds one assignment source revision stable through an accepted Auditor read', function (): void {
+    $fixture = AuditSourceFactsFixture::accepted();
+    AuditSourceFactsFixture::record($fixture['audit']['staff'], $fixture['assignment']);
+    config(['database.connections.source_contender' => config('database.connections.pgsql')]);
+    DB::connection('source_contender')->statement("SET lock_timeout = '500ms'");
+    $default = DB::getDefaultConnection();
+    $withdraw = fn (): array => app(RecordIsolatedAuditSourceFacts::class)->handle($fixture['audit']['staff']->id, $fixture['assignment']->id,
+        $fixture['assignment']->revision, 1, null, 'synthetic:withdrawal', 'Withdraw fixture after the protected read.', (string) Str::uuid());
+    app(WithAcceptedAuditAssignment::class)->handle($fixture['partner']['user']->id, 1, $fixture['assignment']->id,
+        function (array $assignment) use ($default, $withdraw): void {
+            expect(app(GetAuditSourceFacts::class)->forAccepted($assignment)['source']['revision'])->toBe(1);
+            DB::setDefaultConnection('source_contender');
+            try {
+                expect(fn () => $withdraw())->toThrow(QueryException::class);
+            } finally {
+                DB::setDefaultConnection($default);
+                DB::purge('source_contender');
+            }
+        });
+    expect($withdraw()['revision'])->toBe(2)
+        ->and(app(GetAuditSourceFacts::class)->handle($fixture['partner']['user']->id, 1, $fixture['assignment']->id))->toBeNull();
 });
 
 it('publishes one application quote for simultaneous identical evaluations', function (): void {

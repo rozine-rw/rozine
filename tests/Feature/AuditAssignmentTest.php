@@ -401,6 +401,8 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $migration = require database_path('migrations/2026_09_24_113400_create_audit_assignments_and_conflicts.php');
     $verification = require database_path('migrations/2026_09_24_124527_create_statement_verifications_table.php');
     $reports = require database_path('migrations/2026_09_25_053838_create_audit_reports_and_versions.php');
+    $sourceFacts = require database_path('migrations/2026_09_25_102249_create_audit_source_snapshots_table.php');
+    $sourceFacts->down();
     $reports->down();
     $verification->down();
     $migration->down();
@@ -409,6 +411,7 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     expect(Schema::hasTable('audit_conflict_declarations'))->toBeTrue();
     $verification->up();
     $reports->up();
+    $sourceFacts->up();
 });
 
 it('automatically reoffers expired jobs with system history and without impersonating a staff user', function (): void {
