@@ -230,6 +230,8 @@ it('runs the real-record Auditor Jobs accept decline conflict and receipt journe
     } finally {
         try {
             $run(['close']);
+        } catch (Throwable $closeFailure) {
+            file_put_contents($directory.'/close-failure.txt', $closeFailure->getMessage());
         } finally {
             $server->stop();
             file_put_contents($directory.'/server.log', $server->getErrorOutput());

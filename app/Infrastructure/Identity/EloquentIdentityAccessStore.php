@@ -291,10 +291,14 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
     }
 
     /** @return array<string, mixed> */
-    public function staffAccess(int $userId, bool $required = false): array
+    public function staffAccess(int $userId, bool $required = false, bool $lock = true): array
     {
-        return DB::transaction(function () use ($userId, $required): array {
-            $user = User::query()->lockForUpdate()->findOrFail($userId);
+        return DB::transaction(function () use ($userId, $required, $lock): array {
+            $query = User::query();
+            if ($lock) {
+                $query->lockForUpdate();
+            }
+            $user = $query->findOrFail($userId);
             $staff = StaffAccount::query()->find($userId);
             $allowed = $user->party_id === null && $this->emailVerified($user) && $this->mfaConfirmed($user)
                 && $staff !== null && $staff->enabled;

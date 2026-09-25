@@ -2,20 +2,26 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\AdvanceAuditAssignment;
 use App\Application\Auditor\FindAuditResolutionOperation;
 use App\Application\Auditor\GetAuditOperationsCase;
 use App\Application\Auditor\GetOwnAuditConflict;
+use App\Application\Auditor\RequestAuditAssignment;
 use App\Application\Auditor\ResolveAuditAssignment;
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Auditor\AuditEngagementState;
+use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
+use App\Models\AuditAssignment;
 use App\Models\AuditAssignmentVersion;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditAssignmentFixture as Fixture;
 use Tests\Support\BusinessAuthorityFixture;
@@ -92,7 +98,68 @@ it('does not use Operations to reset exhausted attempts or an elapsed original d
     expect(app(GetAuditOperationsCase::class)->handle($fixture['staff']->id, $assignment->id)['allowed_actions'])->toBe(['audit.assignment.close']);
     $result = app(ResolveAuditAssignment::class)->handle($fixture['staff']->id, $assignment->id, $assignment->revision, 'redispatch', 'Try again.', (string) Str::uuid());
     expect($result['code'])->toBe('AUDIT_DISPATCH_EXHAUSTED')->and($result['http_status'])->toBe(409)->and($assignment->refresh()->state)->toBe($prior);
+    app(ResolveAuditAssignment::class)->handle($fixture['staff']->id, $assignment->id, $assignment->revision, 'close', 'Close exhausted engagement.', (string) Str::uuid());
+    $closed = $assignment->refresh()->state;
+    foreach (['flash', 'routine'] as $kind) {
+        $requestId = (string) Str::uuid();
+        $request = fn (): array => app(RequestAuditAssignment::class)->handle($fixture['staff']->id, $fixture['business'], $kind, 'Try a new case.', $requestId);
+        $refused = $request();
+        expect($refused)->toMatchArray(['status' => 'rejected', 'code' => 'AUDIT_ENGAGEMENT_CLOSED', 'http_status' => 409,
+            'data' => ['assignment_id' => $assignment->id], 'revision' => $assignment->revision])
+            ->and($request())->toBe($refused)->and($assignment->refresh()->state)->toBe($closed);
+    }
+    expect(AuditAssignment::query()->where('business_id', $fixture['business'])->count())->toBe(1);
 })->with(['attempts', 'deadline']);
+
+it('does not disclose or lock a real or missing case before staff permission is established', function (bool $isStaff): void {
+    $fixture = Fixture::make(0);
+    $assignment = Fixture::request($fixture);
+    $user = $isStaff ? $fixture['staff'] : User::factory()->withTwoFactor()->create();
+    if ($isStaff) {
+        app(ConfigureStaffAccess::class)->handle($user->id, true, 'Read-only analyst.', (string) Str::uuid(), ['analyst']);
+    }
+    $code = $isStaff ? 'STAFF_PERMISSION_REQUIRED' : 'STAFF_ACCESS_REQUIRED';
+    Sanctum::actingAs($user, ['staff:audit:read', 'staff:audit:manage']);
+    DB::enableQueryLog();
+    DB::flushQueryLog();
+    try {
+        foreach ([$assignment->id, strtolower((string) Str::ulid())] as $id) {
+            $this->getJson('/api/v1/staff/audit-assignments/'.$id)->assertForbidden()->assertExactJson(['message' => $code, 'code' => $code]);
+            $this->postJson('/api/v1/staff/audit-assignments/'.$id.'/close', ['expected_revision' => 1, 'reason' => 'Close.', 'request_id' => (string) Str::uuid()])
+                ->assertForbidden()->assertExactJson(['message' => $code, 'code' => $code]);
+            expect(fn () => app(AdvanceAuditAssignment::class)->handle($user->id, $id, 1, (string) Str::uuid()))->toThrow(IdentityViolation::class, $code);
+        }
+        expect(fn () => app(RequestAuditAssignment::class)->handle($user->id, 'missing-business', 'flash', 'Request.', (string) Str::uuid()))
+            ->toThrow(IdentityViolation::class, $code);
+        $this->getJson('/api/v1/staff/audit-assignments/operations/'.Str::uuid().'?command=audit.assignment.close')
+            ->assertForbidden()->assertJsonPath('code', $code);
+        expect(implode("\n", array_column(DB::getQueryLog(), 'query')))->not->toContain('audit_assignments', 'business_profiles');
+    } finally {
+        DB::disableQueryLog();
+    }
+})->with([false, true]);
+
+it('requires both read and manage token abilities before an Operations command can return a case', function (string $ability): void {
+    $fixture = Fixture::make(0);
+    $assignment = Fixture::request($fixture);
+    Sanctum::actingAs($fixture['staff'], [$ability]);
+    $read = $this->getJson('/api/v1/staff/audit-assignments/'.$assignment->id);
+    $ability === 'staff:audit:read' ? $read->assertOk() : $read->assertForbidden();
+    $this->postJson('/api/v1/staff/audit-assignments/'.$assignment->id.'/close', ['expected_revision' => 1, 'reason' => 'Close.', 'request_id' => (string) Str::uuid()])
+        ->assertForbidden();
+    expect($assignment->refresh()->status)->toBe('operations')->and($assignment->revision)->toBe(1);
+})->with(['staff:audit:read', 'staff:audit:manage']);
+
+it('renders withdrawn staff case access as an Inertia denial without stale case facts', function (string $path): void {
+    $fixture = Fixture::make(0);
+    $assignment = Fixture::request($fixture);
+    app(ConfigureStaffAccess::class)->handle($fixture['staff']->id, true, 'Withdraw management.', (string) Str::uuid(), ['analyst']);
+    $path = str_replace(['{assignment}', '{request_id}'], [$assignment->id, (string) Str::uuid()], $path);
+    $this->actingAs($fixture['staff'])->get($path)->assertForbidden()->assertInertia(fn (Assert $page): Assert => $page
+        ->component('identity/access-denied')->where('code', 'STAFF_PERMISSION_REQUIRED')->missing('case')->missing('actions'));
+    $this->get($path, ['X-Inertia' => 'true', 'X-Inertia-Version' => (string) Inertia::getVersion()])->assertForbidden()
+        ->assertHeader('X-Inertia', 'true')->assertJsonPath('component', 'identity/access-denied');
+})->with(['/admin/audit-assignments/{assignment}', '/admin/audit-assignments/operations/{request_id}?command=audit.assignment.close']);
 
 it('requires current Business authority and independence for redispatch and never reuses a tried partner', function (): void {
     $fixture = Fixture::make(1);

@@ -55,7 +55,7 @@ final class EloquentOperationJournal implements OperationJournal
             } catch (CommandRejection $exception) {
                 $result = [
                     'operation_id' => $operationId, 'status' => 'rejected', 'code' => $exception->reason,
-                    'data' => [], 'revision' => $exception->revision, 'policy_version' => 'engineering-2026-09-23.4',
+                    'data' => $exception->data, 'revision' => $exception->revision, 'policy_version' => 'engineering-2026-09-23.4',
                     'allowed_actions' => [], 'field_errors' => $exception->fieldErrors, 'http_status' => $exception->status,
                 ];
             }

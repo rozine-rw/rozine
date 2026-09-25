@@ -109,9 +109,9 @@ class AuditorJobsResource extends JsonResource
         $operation = self::link(self::prefix($request).'jobs.operations.show', ['request_id' => $placeholder]);
         $operation['url'] = str_replace($placeholder, '{request_id}', $operation['url']);
 
-        return ['home' => self::link('auditor.home'), 'jobs' => self::link('auditor.jobs.index'), 'portfolio' => null,
-            'profile' => self::link('auditor.profile'), 'launcher' => self::link('dashboard'),
-            'conflicts' => self::link('auditor.conflicts.index'), 'operation' => $operation];
+        return ['home' => $request->routeIs('api.*') ? null : self::link('auditor.home'), 'jobs' => self::link(self::prefix($request).'jobs.index'), 'portfolio' => null,
+            'profile' => self::link(self::prefix($request).'profile'), 'launcher' => self::link($request->routeIs('api.*') ? 'api.v1.identity.show' : 'dashboard'),
+            'conflicts' => self::link(self::prefix($request).'conflicts.index'), 'operation' => $operation];
     }
 
     /** @return array{next: array{url: string, method: 'get'}|null} */

@@ -12,6 +12,7 @@ use App\Domain\Operations\CommandRejection;
 use App\Models\AuditAssignment;
 use App\Models\AuditAssignmentVersion;
 use App\Models\AuditorProfile;
+use App\Models\BusinessApplication;
 use App\Models\RoleMembership;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
@@ -104,7 +105,7 @@ it('replays one acceptance across web and API with fresh response time and curre
     expect(AuditAssignmentVersion::query()->where('assignment_id', $assignment->id)->count())->toBe(2);
     Fixture::respond($user, $assignment->refresh(), 'conflict', 'Private tie.', 'other');
     $this->getJson('/api/v1/auditor/assignment-operations/'.$body['request_id'].'?command=assignment.accept')->assertOk()
-        ->assertJsonPath('allowed_actions', [])->assertJsonPath('data.next.url', '/auditor/jobs');
+        ->assertJsonPath('allowed_actions', [])->assertJsonPath('data.next.url', '/api/v1/auditor/jobs');
     $this->getJson('/api/v1/auditor/jobs/'.$assignment->id)->assertNotFound();
 });
 
@@ -120,7 +121,7 @@ it('records domain refusals for same UUID recovery and rejects a changed retry b
         ->assertJsonPath('operation_id', $refused['operation_id'])->assertJsonPath('field_errors.reason', $refused['errors']['reason']);
     $this->postJson('/api/v1/auditor/jobs/'.$assignment->id.'/decline', [...$body, 'reason' => 'Changed body.'])->assertConflict();
     $this->postJson('/api/v1/auditor/jobs/'.$assignment->id.'/decline', [...jobsHttpEnvelope($assignment), 'reason_code' => 'capacity'])->assertOk()
-        ->assertJsonPath('code', 'ASSIGNMENT_DECLINED')->assertJsonPath('allowed_actions', [])->assertJsonPath('data.next.url', '/auditor/jobs');
+        ->assertJsonPath('code', 'ASSIGNMENT_DECLINED')->assertJsonPath('allowed_actions', [])->assertJsonPath('data.next.url', '/api/v1/auditor/jobs');
     $this->getJson('/api/v1/auditor/assignment-operations/'.Str::uuid().'?command=assignment.accept')->assertNotFound();
     $this->getJson('/api/v1/auditor/assignment-operations/'.Str::uuid().'?command=unknown')->assertNotFound();
 });
@@ -134,7 +135,7 @@ it('returns only the declarants private conflict receipt after access to the fil
     $receipt = $this->postJson('/api/v1/auditor/jobs/'.$assignment->id.'/conflict', $body)->assertOk()
         ->assertJsonPath('code', 'CONFLICT_RECORDED')->assertJsonPath('data.conflict.note', $body['reason'])
         ->assertJsonPath('data.conflict.blocking', true)->assertJsonPath('data.conflict.status', 'reassigned')
-        ->assertJsonPath('allowed_actions', [])->assertJsonPath('data.next.url', '/auditor/jobs/'.$assignment->id.'/conflict')->json();
+        ->assertJsonPath('allowed_actions', [])->assertJsonPath('data.next.url', '/api/v1/auditor/jobs/'.$assignment->id.'/conflict')->json();
     $this->getJson('/api/v1/auditor/jobs/'.$assignment->id)->assertNotFound();
     $this->getJson('/api/v1/auditor/jobs/'.$assignment->id.'/conflict')->assertOk()->assertJsonCount(1, 'data.conflicts')
         ->assertJsonPath('data.conflicts.0.conflict', $receipt['data']['conflict'])->assertJsonMissingPath('data.conflicts.0.business');
@@ -182,6 +183,12 @@ it('paginates the bounded Jobs projection without duplicating records and valida
     $this->getJson($first['pagination']['next']['url'])->assertOk()->assertJsonPath('data.eligible.0.id', $ids[1])->assertJsonPath('data.pagination.next', null);
     $this->getJson('/api/v1/auditor/jobs?before=unknown')->assertUnprocessable();
     $this->getJson('/api/v1/auditor/jobs?limit=51')->assertUnprocessable();
+    $authority = $other['authority'];
+    $authority['terms']['status'] = 'revoked';
+    BusinessAuthorityFixture::configure($authority, 1);
+    $empty = $this->getJson('/api/v1/auditor/jobs?limit=1')->assertOk()->assertJsonCount(0, 'data.eligible')->assertJsonCount(0, 'data.assigned')->json('data');
+    expect($empty['pagination']['next'])->not->toBeNull();
+    $this->getJson($empty['pagination']['next']['url'])->assertOk()->assertJsonPath('data.eligible.0.id', $ids[1])->assertJsonPath('data.pagination.next', null);
 });
 
 it('enforces authentication current role MFA context and per-token abilities on Jobs reads and commands', function (): void {
@@ -201,6 +208,7 @@ it('enforces authentication current role MFA context and per-token abilities on 
     $this->postJson('/api/v1/auditor/jobs/'.$assignment->id.'/accept', [...jobsHttpEnvelope($assignment), 'identity_context_revision' => 0])->assertConflict();
     $this->postJson('/api/v1/auditor/jobs/'.$assignment->id.'/accept', ['request_id' => 'invalid'])->assertUnprocessable();
     Sanctum::actingAs($partner['user'], ['auditor:read']);
+    $this->postJson('/api/v1/auditor/jobs/'.$assignment->id.'/accept', jobsHttpEnvelope($assignment))->assertForbidden();
     $partner['user']->forceFill(['two_factor_confirmed_at' => null])->save();
     $this->getJson('/api/v1/auditor/jobs')->assertForbidden()->assertJsonPath('code', 'MFA_REQUIRED');
     $unrelated = AuditorFixture::make();
@@ -257,9 +265,52 @@ it('keeps a command outcome immutable while clearing actions after Business veri
     $first = $this->postJson('/api/v1/auditor/jobs/'.$assignment->id.'/accept', $body)->assertOk()->json();
     $fixture['authority']['people'][0]->forceFill(['verified_at' => null])->save();
     $this->getJson('/api/v1/auditor/assignment-operations/'.$body['request_id'].'?command=assignment.accept')->assertOk()
-        ->assertJsonPath('operation_id', $first['operation_id'])->assertJsonPath('allowed_actions', [])->assertJsonPath('data.next.url', '/auditor/jobs');
+        ->assertJsonPath('operation_id', $first['operation_id'])->assertJsonPath('allowed_actions', [])->assertJsonPath('data.next.url', '/api/v1/auditor/jobs');
     $receipt = app(FindAuditAssignmentOperation::class)->handle($partner['user']->id, 1, 'assignment.accept', $body['request_id']);
     $partner['user']->forceFill(['two_factor_confirmed_at' => null])->save();
     expect(fn () => app(ProjectAuditAssignmentOperation::class)->handle($partner['user']->id, 1, $receipt))
         ->toThrow(IdentityViolation::class, 'MFA_REQUIRED');
+});
+
+it('keeps bearer-only clients on authorized API routes through navigation acceptance and conflict recovery', function (): void {
+    $fixture = Fixture::make(1);
+    $assignment = Fixture::request($fixture);
+    $user = $fixture['partners'][0]['user'];
+    $token = $user->createToken('auditor-navigation-test', ['auditor:read', 'auditor:command']);
+    $this->withToken($token->plainTextToken);
+    $links = $this->getJson('/api/v1/auditor/jobs')->assertOk()->assertJsonPath('data.links.home', null)->json('data.links');
+    foreach (['jobs', 'profile', 'launcher', 'conflicts'] as $name) {
+        expect($links[$name]['url'])->toStartWith('/api/v1/');
+        $this->getJson($links[$name]['url'])->assertOk();
+    }
+    $body = jobsHttpEnvelope($assignment);
+    $accepted = $this->postJson('/api/v1/auditor/jobs/'.$assignment->id.'/accept', $body)->assertOk()
+        ->assertJsonPath('data.next.url', '/api/v1/auditor/jobs/'.$assignment->id)->json();
+    $file = $this->getJson($accepted['data']['next']['url'])->assertOk()->json('data');
+    expect($file['links']['close']['url'])->toBe('/api/v1/auditor/jobs');
+    $this->getJson($file['links']['close']['url'])->assertOk();
+    $operationUrl = str_replace('{request_id}', $body['request_id'], $links['operation']['url']).'?command=assignment.accept';
+    $this->getJson($operationUrl)->assertOk()->assertJsonPath('data.next.url', $accepted['data']['next']['url']);
+    $conflict = $this->postJson('/api/v1/auditor/jobs/'.$assignment->id.'/conflict', [...jobsHttpEnvelope($assignment->refresh()), 'kind' => 'other', 'reason' => 'Private interest.'])
+        ->assertOk()->assertJsonPath('data.next.url', '/api/v1/auditor/jobs/'.$assignment->id.'/conflict')->json();
+    $this->getJson($conflict['data']['next']['url'])->assertOk()->assertJsonPath('data.conflicts.0.conflict.note', 'Private interest.');
+    $this->getJson($operationUrl)->assertOk()->assertJsonPath('data.next.url', '/api/v1/auditor/jobs');
+});
+
+it('keeps submitted application facts in an Auditor file when the owner starts and edits another draft', function (): void {
+    $fixture = Fixture::make(1);
+    $owner = $fixture['authority']['users'][0];
+    $create = app(CreateBusinessApplication::class);
+    $save = app(SaveBusinessApplication::class);
+    $submitted = $create->handle($owner->id, 1, $fixture['business'], 0, (string) Str::uuid())['data']['application']['id'];
+    $save->handle($owner->id, 1, $fixture['business'], $submitted, 1, BusinessApplicationFixture::fields(), 'raise', (string) Str::uuid());
+    BusinessApplication::query()->whereKey($submitted)->firstOrFail()->forceFill(['status' => 'submitted', 'step' => 'submitted'])->save();
+    $assignment = Fixture::request($fixture);
+    $later = $create->handle($owner->id, 1, $fixture['business'], 0, (string) Str::uuid())['data']['application']['id'];
+    $save->handle($owner->id, 1, $fixture['business'], $later, 1, [...BusinessApplicationFixture::fields('15000000'), 'term_months' => 9, 'use_of_funds' => ['inventory']], 'raise', (string) Str::uuid());
+    Sanctum::actingAs($fixture['partners'][0]['user'], ['auditor:read']);
+    $this->getJson('/api/v1/auditor/jobs/'.$assignment->id)->assertOk()
+        ->assertJsonPath('data.file.raise.requested.amount', '8000000')->assertJsonPath('data.file.raise.term_months', 6)->assertJsonPath('data.file.raise.use_of_funds', 'equipment');
+    $save->handle($owner->id, 1, $fixture['business'], $later, 2, BusinessApplicationFixture::fields('20000000'), 'raise', (string) Str::uuid());
+    $this->getJson('/api/v1/auditor/jobs')->assertOk()->assertJsonPath('data.eligible.0.requested.amount', '8000000')->assertJsonPath('data.eligible.0.term_months', 6);
 });

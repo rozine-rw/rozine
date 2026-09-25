@@ -7,6 +7,7 @@ namespace App\Infrastructure\Auditor;
 use App\Application\Auditor\Contracts\AuditAssignmentStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Identity\AuthorizeActiveRole;
+use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
@@ -58,19 +59,25 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         private Wgs84Distance $distance,
         private CanonicalJson $json,
         private AuthorizeActiveRole $roles,
+        private AuthorizeStaffPermission $staff,
     ) {}
 
     /** @return array<string, mixed> */
     public function request(int $actorId, string $businessId, string $kind, string $reason, string $requestId): array
     {
+        $this->staff->check($actorId, 'audit.assignments.manage');
+
         return $this->scope($actorId, null, $businessId, true, function (array $context, array $candidates) use ($actorId, $businessId, $kind, $reason, $requestId): array {
             return $this->journal->execute('staff:'.$actorId, $actorId, 'audit.assignment.request', $requestId, 'business', $businessId,
                 ['kind' => $kind, 'reason' => $reason], function (): void {},
                 function () use ($actorId, $businessId, $kind, $reason, $context, $candidates): OperationResult {
                     $this->states->reason($reason);
                     $state = $this->states->start($kind, now()->toDateTimeImmutable());
-                    $existing = AuditAssignment::query()->where('business_id', $businessId)->whereIn('status', ['offered', 'accepted', 'operations'])->lockForUpdate()->first();
-                    if ($existing !== null) {
+                    $existing = AuditAssignment::query()->where('business_id', $businessId)->orderByDesc('id')->lockForUpdate()->first();
+                    if ($existing?->status === 'closed') {
+                        throw new CommandRejection('AUDIT_ENGAGEMENT_CLOSED', revision: $existing->revision, data: ['assignment_id' => $existing->id]);
+                    }
+                    if ($existing !== null && $existing->status !== 'completed') {
                         return new OperationResult('AUDIT_ASSIGNMENT_RESUMED', ['assignment_id' => $existing->id], $existing->revision);
                     }
                     $record = new AuditAssignment;
@@ -415,6 +422,8 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     /** @return array<string, mixed> */
     public function advance(int $actorId, string $assignmentId, int $expectedRevision, string $requestId): array
     {
+        $this->staff->check($actorId, 'audit.assignments.manage');
+
         return $this->scope($actorId, null, $this->businessId($assignmentId), false,
             function (array $context, array $candidates) use ($actorId, $assignmentId, $expectedRevision, $requestId): array {
                 $record = AuditAssignment::query()->lockForUpdate()->findOrFail($assignmentId);
@@ -438,6 +447,8 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     /** @return OperationsCase */
     public function operationsCase(int $actorId, string $assignmentId): array
     {
+        $this->staff->check($actorId, 'audit.assignments.manage');
+
         return $this->scope($actorId, null, $this->businessId($assignmentId), false, function () use ($assignmentId): array {
             $record = AuditAssignment::query()->lockForUpdate()->findOrFail($assignmentId);
             $state = $record->state;
@@ -452,6 +463,8 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     /** @return array<string, mixed> */
     public function resolve(int $actorId, string $assignmentId, int $expectedRevision, string $decision, string $reason, string $requestId): array
     {
+        $this->staff->check($actorId, 'audit.assignments.manage');
+
         if (! in_array($decision, ['redispatch', 'close'], true)) {
             throw new CommandRejection('ASSIGNMENT_RESOLUTION_INVALID', 422);
         }
@@ -486,6 +499,8 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     /** @return array<string, mixed> */
     public function findResolutionOperation(int $actorId, string $command, string $requestId): array
     {
+        $this->staff->check($actorId, 'audit.assignments.manage');
+
         if (! in_array($command, ['audit.assignment.redispatch', 'audit.assignment.close'], true)) {
             throw new CommandRejection('OPERATION_NOT_FOUND', 404);
         }

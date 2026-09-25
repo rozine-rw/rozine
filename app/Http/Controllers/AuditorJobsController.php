@@ -74,14 +74,14 @@ class AuditorJobsController extends Controller
         $result = $action->handle($userId, $revision, (string) $request->route('assignment'), (int) $request->validated('expected_revision'),
             $decision, $request->validated('kind'), (string) $request->validated('reason', ''), (string) $request->validated('request_id'), $request->validated('reason_code'));
 
-        return $this->present($result, $userId, $revision);
+        return $this->present($request, $result, $userId, $revision);
     }
 
     public function operation(ShowAuditorOperationRequest $request, FindAuditAssignmentOperation $action): OperationResource
     {
         [$userId, $revision] = $this->reader($request);
 
-        return $this->present($action->handle($userId, $revision, (string) $request->validated('command'), (string) $request->route('request_id')),
+        return $this->present($request, $action->handle($userId, $revision, (string) $request->validated('command'), (string) $request->route('request_id')),
             $userId, $revision);
     }
 
@@ -95,17 +95,18 @@ class AuditorJobsController extends Controller
     }
 
     /** @param array<string, mixed> $result */
-    private function present(array $result, int $userId, int $revision): OperationResource
+    private function present(Request $request, array $result, int $userId, int $revision): OperationResource
     {
         $result = $this->outcomes->handle($userId, $revision, $result);
         $data = (array) $result['data'];
         $assignmentId = $data['assignment_id'] ?? null;
+        $prefix = $request->routeIs('api.*') ? 'api.v1.auditor.' : 'auditor.';
         if ($result['status'] === 'completed') {
-            $data['next'] = AuditorJobsResource::link('auditor.jobs.index');
+            $data['next'] = AuditorJobsResource::link($prefix.'jobs.index');
             if ($result['code'] === 'ASSIGNMENT_ACCEPTED' && is_string($assignmentId) && $result['allowed_actions'] !== []) {
-                $data['next'] = AuditorJobsResource::link('auditor.jobs.show', ['assignment' => $assignmentId]);
+                $data['next'] = AuditorJobsResource::link($prefix.'jobs.show', ['assignment' => $assignmentId]);
             } elseif ($result['code'] === 'CONFLICT_RECORDED' && is_string($assignmentId)) {
-                $data['next'] = AuditorJobsResource::link('auditor.conflicts.show', ['assignment' => $assignmentId]);
+                $data['next'] = AuditorJobsResource::link($prefix.'conflicts.show', ['assignment' => $assignmentId]);
             }
         }
 

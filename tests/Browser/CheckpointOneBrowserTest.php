@@ -164,6 +164,8 @@ it('completes the real browser identity switch return logout MFA and staff journ
     } finally {
         try {
             $run(['close']);
+        } catch (Throwable $closeFailure) {
+            file_put_contents($directory.'/close-failure.txt', $closeFailure->getMessage());
         } finally {
             $server->stop();
             file_put_contents($directory.'/server.log', $server->getErrorOutput());

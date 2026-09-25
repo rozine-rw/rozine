@@ -8,6 +8,7 @@ use App\Application\Auditor\GetOwnAuditConflict;
 use App\Application\Auditor\ListOwnAuditConflicts;
 use App\Application\Auditor\MarkAuditLocationMoved;
 use App\Application\Auditor\RecordAuditorIndependence;
+use App\Application\Auditor\RequestAuditAssignment;
 use App\Application\Auditor\ResolveAuditAssignment;
 use App\Application\Auditor\SetAuditorAvailability;
 use App\Application\Auditor\VerifyAuditLocation;
@@ -1224,4 +1225,103 @@ it('holds staff assignment-management authority through an Operations case read'
     }
     $withdraw();
     expect(fn () => app(GetAuditOperationsCase::class)->handle($fixture['staff']->id, $assignment->id))->toThrow(IdentityViolation::class, 'STAFF_PERMISSION_REQUIRED');
+});
+
+it('never resets an engagement when a new staff request races its closure', function (): void {
+    $this->freezeTime();
+    $fixture = AuditAssignmentFixture::make(1);
+    $assignment = AuditAssignmentFixture::request($fixture);
+    AuditAssignmentFixture::respond($fixture['partners'][0]['user'], $assignment, 'decline', 'Unavailable.');
+    $assignment->refresh();
+    $prior = $assignment->state;
+    expect(runIdentityContenders([
+        function () use ($fixture, $assignment): void {
+            expect(app(ResolveAuditAssignment::class)->handle($fixture['staff']->id, $assignment->id, 2, 'close', 'Close engagement.', (string) Str::uuid())['code'])->toBe('ASSIGNMENT_CLOSED');
+        },
+        function () use ($fixture, $assignment): void {
+            $result = app(RequestAuditAssignment::class)->handle($fixture['staff']->id, $fixture['business'], 'flash', 'Request again.', (string) Str::uuid());
+            expect($result['code'])->toBeIn(['AUDIT_ASSIGNMENT_RESUMED', 'AUDIT_ENGAGEMENT_CLOSED'])->and($result['data']['assignment_id'])->toBe($assignment->id);
+        },
+    ]))->toBe([0, 0]);
+    expect(AuditAssignment::query()->where('business_id', $fixture['business'])->count())->toBe(1)
+        ->and($assignment->refresh()->status)->toBe('closed')->and($assignment->revision)->toBe(3)
+        ->and($assignment->state['tried'])->toBe($prior['tried'])->and($assignment->state['attempt'])->toBe($prior['attempt'])
+        ->and($assignment->state['original_dispatch_at'])->toBe($prior['original_dispatch_at'])->and($assignment->state['complete_by'])->toBe($prior['complete_by']);
+});
+
+it('takes no staff row lock during preflight and rechecks a revocation before protected case access', function (): void {
+    $fixture = AuditAssignmentFixture::make(0);
+    $assignment = AuditAssignmentFixture::request($fixture);
+    config(['database.connections.audit_preflight_contender' => config('database.connections.pgsql')]);
+    DB::connection('audit_preflight_contender')->statement("SET lock_timeout = '500ms'");
+    $default = DB::getDefaultConnection();
+    $event = 'eloquent.retrieved: '.BusinessProfile::class;
+    $changed = false;
+    Event::listen($event, function () use ($fixture, $default, &$changed): void {
+        if ($changed) {
+            return;
+        }
+        $changed = true;
+        DB::setDefaultConnection('audit_preflight_contender');
+        try {
+            app(ConfigureStaffAccess::class)->handle($fixture['staff']->id, true, 'Withdraw after preflight.', (string) Str::uuid(), ['analyst']);
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('audit_preflight_contender');
+        }
+    });
+    try {
+        DB::transaction(function () use ($fixture, $assignment): void {
+            expect(fn () => app(GetAuditOperationsCase::class)->handle($fixture['staff']->id, $assignment->id))->toThrow(IdentityViolation::class, 'STAFF_PERMISSION_REQUIRED');
+        });
+    } finally {
+        Event::forget($event);
+    }
+    expect($changed)->toBeTrue()->and($assignment->refresh()->revision)->toBe(1);
+});
+
+it('serializes redispatch with a same-Party acceptance on another Business at the capacity limit', function (): void {
+    $this->freezeTime();
+    $first = AuditAssignmentFixture::make(1);
+    $second = AuditAssignmentFixture::make(0);
+    $partner = $first['partners'][0];
+    $pending = AuditAssignmentFixture::request($second);
+    AuditAssignmentFixture::independence($second['staff'], $second['business'], $partner['party']->id);
+    $offered = AuditAssignmentFixture::request($first);
+    AuditAssignmentFixture::engagement($partner['party']->id);
+    AuditAssignmentFixture::engagement($partner['party']->id);
+    expect(runIdentityContenders([
+        function () use ($second, $pending): void {
+            $result = app(ResolveAuditAssignment::class)->handle($second['staff']->id, $pending->id, 1, 'redispatch', 'Recheck capacity.', (string) Str::uuid());
+            expect($result['code'])->toBeIn(['ASSIGNMENT_REDISPATCHED', 'ASSIGNMENT_REDISPATCH_PENDING']);
+        },
+        function () use ($partner, $offered): void {
+            expect(AuditAssignmentFixture::respond($partner['user'], $offered)['code'])->toBe('ASSIGNMENT_ACCEPTED');
+        },
+    ]))->toBe([0, 0]);
+    if ($pending->refresh()->status === 'offered') {
+        expect(AuditAssignmentFixture::respond($partner['user'], $pending)['code'])->toBe('AUDITOR_CAPACITY_REACHED');
+    }
+    expect(AuditAssignment::query()->where('party_id', $partner['party']->id)->where('status', 'accepted')->count())->toBe(3)
+        ->and($pending->state['original_dispatch_at'])->toBe(now('UTC')->format('Y-m-d\TH:i:s\Z'));
+});
+
+it('does not redispatch or restart a case while the expiry worker advances the same expired offer', function (): void {
+    $this->freezeTime();
+    $fixture = AuditAssignmentFixture::make(1);
+    $assignment = AuditAssignmentFixture::request($fixture);
+    $prior = $assignment->state;
+    $this->travel(1)->hours();
+    expect(runIdentityContenders([
+        function () use ($fixture, $assignment): void {
+            $result = app(ResolveAuditAssignment::class)->handle($fixture['staff']->id, $assignment->id, 1, 'redispatch', 'Retry while expiring.', (string) Str::uuid());
+            expect($result['code'])->toBeIn(['ASSIGNMENT_NOT_IN_OPERATIONS', 'VERSION_CONFLICT']);
+        },
+        function (): void {
+            expect(app(AdvanceExpiredAuditOffers::class)->handle(100))->toBe(1);
+        },
+    ]))->toBe([0, 0]);
+    expect($assignment->refresh()->status)->toBe('operations')->and($assignment->revision)->toBe(2)
+        ->and($assignment->state['tried'])->toBe($prior['tried'])->and($assignment->state['attempt'])->toBe(1)
+        ->and($assignment->state['original_dispatch_at'])->toBe($prior['original_dispatch_at'])->and($assignment->state['complete_by'])->toBe($prior['complete_by']);
 });

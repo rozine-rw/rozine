@@ -144,7 +144,8 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
     public function audit(int $userId, int $contextRevision, string $assignmentId): array
     {
         return $this->assignments->handle($userId, $contextRevision, $assignmentId, function (array $work): array {
-            $application = BusinessApplication::query()->where('business_id', $work['assignment']['business_id'])->orderByDesc('id')->first();
+            $application = BusinessApplication::query()->where('business_id', $work['assignment']['business_id'])
+                ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', ['submitted'])->orderByDesc('id')->first();
 
             return ['work' => $work, 'application' => $application === null ? null : ['id' => $application->id, 'revision' => $application->revision,
                 'title' => $application->draft['title'], 'target' => $application->draft['target'], 'term_months' => $application->draft['term_months'],

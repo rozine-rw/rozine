@@ -37,7 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (IdentityViolation $exception, Request $request) {
             if (! $request->expectsJson() && $request->routeIs('investor.home', 'business.home', 'auditor.home', 'auditor.profile',
-                'auditor.jobs.index', 'auditor.jobs.show', 'auditor.conflicts.index', 'auditor.conflicts.show', 'admin.home', 'identity.roles.resume')) {
+                'auditor.jobs.index', 'auditor.jobs.show', 'auditor.conflicts.index', 'auditor.conflicts.show', 'staff.audit.show', 'staff.audit.operations.show', 'admin.home', 'identity.roles.resume')) {
                 return Inertia::render('identity/access-denied', ['code' => $exception->reason])
                     ->toResponse($request)->setStatusCode($exception->status);
             }

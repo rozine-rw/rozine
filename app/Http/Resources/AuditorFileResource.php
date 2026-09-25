@@ -25,7 +25,7 @@ class AuditorFileResource extends JsonResource
 
         return [...AuditorJobsResource::envelope($file['jobs']['identity_context_revision']), 'allowed_actions' => $job['allowed_actions'],
             'job' => $job, 'actions' => AuditorJobsResource::actions($request, $job['id']), 'decline_options' => AuditorJobsResource::declineOptions(),
-            'links' => ['close' => AuditorJobsResource::link('auditor.jobs.index'), 'procedure' => null, 'operation' => AuditorJobsResource::links($request)['operation']],
+            'links' => ['close' => AuditorJobsResource::links($request)['jobs'], 'procedure' => null, 'operation' => AuditorJobsResource::links($request)['operation']],
             'jobs' => (new AuditorJobsResource($file['jobs']))->resolve($request), 'blocked' => null,
             'file' => ['raise' => ['requested' => AuditorJobsResource::money($record['application']['target'] ?? null),
                 'term_months' => $record['application']['term_months'] ?? null, 'return_pct' => null,
