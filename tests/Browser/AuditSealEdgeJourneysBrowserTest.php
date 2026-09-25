@@ -154,7 +154,7 @@ it('refuses an expired or already used step-up proof without sealing, then seals
     $this->assertDatabaseCount('audit_report_seals', 1);
 });
 
-it('refuses a seal after the sources change under the preview, re-reads and leads back to a new preview', function (): void {
+it('refuses a seal after the sources change under the preview, re-reads and leads back through the footer to a new preview', function (): void {
     $fixture = AuditSealingFixture::ready(findings: true);
     $auditor = udSignIn($fixture['user'], 'ud-source@example.test');
     $report = $fixture['report'];
@@ -186,27 +186,38 @@ it('refuses a seal after the sources change under the preview, re-reads and lead
             const response = await answer;
             const refused = {status: response.status(), code: (await response.json()).code};
             await page.locator("[aria-labelledby=auditor-findings-title]").waitFor({state:"detached"});
-            await page.getByText("A source changed. Review it again before continuing.").first().waitFor();
-            await shot('.$journey->shot('changed-phone').');
+            await page.getByText("A source changed after your preview. Go back to review it, then preview again before sealing.", {exact:true}).waitFor();
+            /* The server\'s re-read has landed: it names the changed source and withdraws the seal. */
+            await page.getByText("A source changed. Review it again before continuing.", {exact:true}).waitFor();
             await noOverflow();
-            if (await page.getByRole("button", {name:"Preview findings"}).count() !== 0) throw new Error("A preview is offered on changed sources");
+            await shot('.$journey->shot('changed-phone').');
+            const preview = page.getByRole("button", {name:"Preview findings", exact:true});
+            if (await preview.count() !== 0 && !(await preview.isDisabled())) throw new Error("A preview is offered on changed sources");
             if (await page.getByText("Refresh the page and try again", {exact:false}).count() !== 0) throw new Error("Asked to refresh a page that was just re-read");
-            /* The re-read seal step leads back to the procedure, so the changed source can be reviewed. */
-            const back = page.getByRole("link", {name:"Back", exact:true});
-            if (await back.count() === 0) throw new Error("No way back to review the changed source");
+            /* The re-read seal step leads back through its footer, to the server\'s previous step. */
+            const back = page.getByRole("link", {name:"Back", exact:true}).filter({hasText:"Back"});
+            const href = await back.getAttribute("href");
             await back.click();
-            await page.getByRole("button", {name:"Continue", exact:true}).waitFor();
-            return refused;');
-        expect($refusal)->toBe(['status' => 409, 'code' => 'AUDIT_PROCEDURE_SOURCE_CHANGED'])
+            await page.waitForURL((url) => url.search.includes("step="));
+            /* The ledger step, still held on the changed source, with its own way further back. */
+            await page.getByRole("heading", {name:"Inventory & ledger sign-off", exact:true}).waitFor();
+            await page.getByText("A source changed. Review it again before continuing.", {exact:true}).waitFor();
+            if (!(await page.getByRole("button", {name:"Review & seal", exact:true}).isDisabled())) throw new Error("The ledger step continues on a changed source");
+            if (await back.count() !== 1) throw new Error("The ledger step has no way further back");
+            await noOverflow();
+            await shot('.$journey->shot('back-phone').');
+            return {...refused, back: (href.match(/[?&]step=([a-z_]+)/) || [])[1] ?? null};');
+        expect($refusal)->toBe(['status' => 409, 'code' => 'AUDIT_PROCEDURE_SOURCE_CHANGED', 'back' => 'ledger'])
             ->and($report->refresh()->status)->toBe('draft');
         $this->assertDatabaseCount('audit_report_seals', 0);
         $this->assertDatabaseCount('audit_step_up_proofs', 0);
 
-        /* Re-reviewed on the new sources, the report previews with a new digest and seals. */
+        /* The Auditor re-reviews the steps on the new sources, then comes forward to the seal again. */
         udReReview($fixture);
         $second = $journey->code('ud2a', '
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
             await page.goto('.json_encode($journey->base.'/auditor/reports/'.$report->id).');
+            if (await page.getByText("A source changed", {exact:false}).count() !== 0) throw new Error("The re-reviewed report still reports a changed source");
             await page.getByRole("button", {name:"Preview findings", exact:true}).click();
             const digest = await page.locator("[aria-labelledby=auditor-findings-title]").getByText(/^[0-9a-f]{64}$/).textContent();
             await page.getByRole("button", {name:"Confirm with your authenticator", exact:true}).click();
@@ -218,7 +229,7 @@ it('refuses a seal after the sources change under the preview, re-reads and lead
         expect($second)->toBeString()->not->toBe($first)
             ->and(AuditReportSeal::query()->sole()->digest)->toBe($second);
     });
-})->skip('BUG: after a source changes under an open seal preview, the step-up is refused (409 AUDIT_PROCEDURE_SOURCE_CHANGED) and the page re-reads with the hint "A source changed. Review it again before continuing.", but the seal step renders no Back link or step navigation (links.back is dropped from the seal footer in pages/auditor/audit.tsx; the StepBar is not interactive), so the Auditor cannot reach the changed step without editing the URL (?step=check_in works). The banner is also the generic "This couldn\'t be done. Refresh the page and try again." because AUDIT_PROCEDURE_SOURCE_CHANGED has no auditor.command.refused copy.');
+});
 
 it('refuses a lost seal retried after another session moved the report on, and seals only after a new preview', function (): void {
     $fixture = AuditSealingFixture::ready(findings: true);
@@ -560,9 +571,17 @@ it('recovers a lost co-sign answer through the same request ID with exactly one 
             await page.goto('.json_encode($journey->base.'/business/'.$fixture['audit']['business'].'/audit-reports/'.$report->id).');
             await page.getByRole("checkbox", {name:"I have reviewed the audit findings and co-sign this report.", exact:true}).click();
             '.udDropAnswer('**/audit-reports/*/cosign').'
+            const answers = [];
+            page.on("response", (response) => { if (/operations\//.test(response.url())) answers.push(response.status()); });
             await page.getByRole("button", {name:"Co-sign report", exact:true}).click();
             await page.getByText("Every required signature is in and the report is published.", {exact:true}).waitFor();
             if (await page.getByRole("button", {name:"Co-sign report"}).count() !== 0) throw new Error("Co-sign offered again");
+            if (await page.getByRole("checkbox").count() !== 0) throw new Error("The acceptance is offered again");
+            if (await page.getByRole("alert").count() !== 0) throw new Error("A refusal is shown: " + (await page.getByRole("alert").allTextContents()).join(" | "));
+            if (answers.some((status) => status !== 200)) throw new Error("A lookup failed: " + answers.join(","));
+            await page.reload();
+            await page.getByText("Every required signature is in and the report is published.", {exact:true}).waitFor();
+            if (await page.getByRole("button", {name:"Co-sign report"}).count() !== 0) throw new Error("Co-sign offered after a reload");
             await noOverflow();
             await shot('.$journey->shot('recovered-phone').');
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
@@ -571,10 +590,11 @@ it('recovers a lost co-sign answer through the same request ID with exactly one 
         expect($cosigned['dropped'])->toHaveCount(1)
             ->and($cosigned['dropped'][0]['code'])->toBe('REPORT_PUBLISHED')
             ->and($cosigned['lookups'])->not->toBeEmpty()->each->toContain($cosigned['dropped'][0]['request_id'])
+            ->and($cosigned['lookups'])->each->toContain('identity_context_revision=1')
             ->and(CommandOperation::query()->where('command', 'report.cosign')->where('request_id', $cosigned['dropped'][0]['request_id'])->count())->toBe(1);
     });
 
     expect(CommandOperation::query()->where('command', 'report.cosign')->count())->toBe(1)
         ->and(AuditReportPublication::query()->sole()->status)->toBe('published');
     $this->assertDatabaseCount('audit_report_signatures', 1);
-})->skip('BUG: the Business co-sign page cannot recover a lost co-sign answer. pages/business/audit-cosign.tsx calls useOperationCommand without lookupQuery, so the same-UUID lookup goes to GET /business/audit-report-operations/{request_id}?command=report.cosign with no identity_context_revision, which ShowAuditCosignOperationRequest requires: the lookup answers 422, the page treats the committed signature as refused, shows "The identity context revision field is required." and re-offers "Co-sign report" although the report is already published.');
+});
