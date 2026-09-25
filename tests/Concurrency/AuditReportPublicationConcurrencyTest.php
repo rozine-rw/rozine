@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\AmendAuditReport;
 use App\Application\Auditor\Contracts\AuditReportCryptography;
+use App\Application\Auditor\FindAuditCosignOperation;
+use App\Models\AuditReport;
 use App\Models\AuditReportPublication;
 use App\Models\AuditReportSeal;
 use App\Models\AuditReportSignature;
@@ -107,4 +110,69 @@ it('holds signing-key validity through the actual seal or Business signature wri
     AuditSigningKeyRevocation::factory()->create(['audit_signing_key_id' => $fixture['key']->id]);
     $seal = AuditReportSeal::query()->firstOrFail();
     expect(app(AuditReportCryptography::class)->verify($seal->audit_signing_key_id, $seal->jws, $seal->payload))->toBeFalse();
+})->with([false, true]);
+
+it('serializes amendment and co-sign commands so only a pre-amendment signature can publish the parent', function (): void {
+    $fixture = Fixture::ready();
+    Fixture::seal($fixture);
+    $amendRequest = (string) Str::uuid();
+    $signRequest = (string) Str::uuid();
+    expect(auditSigningContenders([
+        function () use ($fixture, $amendRequest): void {
+            expect(app(AmendAuditReport::class)->handle($fixture['user']->id, 1, $fixture['report']->id,
+                $fixture['report']->revision + 1, $amendRequest)['code'])->toBe('AUDIT_AMENDMENT_CREATED');
+        },
+        function () use ($fixture, $signRequest): void {
+            expect(Fixture::cosign($fixture, overrides: ['requestId' => $signRequest])['code'])->toBeIn(['REPORT_PUBLISHED', 'AUDIT_REPORT_AMENDED']);
+        },
+    ]))->toBe([0, 0]);
+    $receipt = app(FindAuditCosignOperation::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $signRequest);
+    $published = $receipt['code'] === 'REPORT_PUBLISHED';
+    expect(AuditReport::query()->where('amends_id', $fixture['report']->id)->count())->toBe(1)
+        ->and(AuditReportPublication::query()->firstOrFail()->status)->toBe($published ? 'published' : 'pending')
+        ->and(AuditReportSignature::query()->count())->toBe($published ? 1 : 0);
+});
+
+it('holds the same parent lock against direct competing amendment or signature inserts', function (bool $amendFirst): void {
+    $fixture = Fixture::ready();
+    Fixture::seal($fixture);
+    $parent = $fixture['report']->fresh();
+    $publication = AuditReportPublication::query()->firstOrFail();
+    $default = DB::getDefaultConnection();
+    $event = 'eloquent.creating: '.($amendFirst ? AuditReport::class : AuditReportSignature::class);
+    Event::listen($event, function () use ($amendFirst, $fixture, $parent, $publication, $default): void {
+        config(['database.connections.audit_lineage_contender' => config('database.connections.pgsql')]);
+        DB::connection('audit_lineage_contender')->statement("SET lock_timeout = '500ms'");
+        DB::setDefaultConnection('audit_lineage_contender');
+        try {
+            if ($amendFirst) {
+                expect(fn () => AuditReportSignature::factory()->forPublication($publication, $fixture['audit']['authority']['users'][0])->create())
+                    ->toThrow(QueryException::class, 'lock timeout');
+            } else {
+                $child = $parent->replicate();
+                $child->forceFill(['amends_id' => $parent->id, 'revision' => 1, 'status' => 'draft', 'step' => 'review',
+                    'draft' => ['note' => '', 'completed_steps' => [], 'fields' => []]]);
+                expect(fn () => $child->save())->toThrow(QueryException::class, 'lock timeout');
+            }
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('audit_lineage_contender');
+        }
+    });
+    try {
+        if ($amendFirst) {
+            expect(app(AmendAuditReport::class)->handle($fixture['user']->id, 1, $parent->id, $parent->revision, (string) Str::uuid())['code'])
+                ->toBe('AUDIT_AMENDMENT_CREATED');
+        } else {
+            expect(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
+        }
+    } finally {
+        Event::forget($event);
+    }
+    if ($amendFirst) {
+        expect(Fixture::cosign($fixture)['code'])->toBe('AUDIT_REPORT_AMENDED')->and(AuditReportSignature::query()->count())->toBe(0);
+    } else {
+        expect(app(AmendAuditReport::class)->handle($fixture['user']->id, 1, $parent->id, $parent->revision, (string) Str::uuid())['code'])
+            ->toBe('AUDIT_AMENDMENT_CREATED')->and($publication->fresh()->status)->toBe('published');
+    }
 })->with([false, true]);

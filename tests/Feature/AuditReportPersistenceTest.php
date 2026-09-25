@@ -195,6 +195,8 @@ it('rolls the unused report schema back and reapplies it without rewriting appli
     $decisions = require database_path('migrations/2026_09_25_131948_enforce_audit_report_decisions_and_fresh_amendments.php');
     $signing = require database_path('migrations/2026_09_25_134827_create_audit_report_signing_tables.php');
     $publications = require database_path('migrations/2026_09_25_140638_create_audit_report_publication_tables.php');
+    $proofLineage = require database_path('migrations/2026_09_25_154051_enforce_audit_seal_proof_and_publication_lineage.php');
+    $proofLineage->down();
     $publications->down();
     $signing->down();
     $decisions->down();
@@ -213,6 +215,7 @@ it('rolls the unused report schema back and reapplies it without rewriting appli
     $decisions->up();
     $signing->up();
     $publications->up();
+    $proofLineage->up();
     expect(Schema::hasTable('audit_reports'))->toBeTrue()->and(Schema::hasTable('audit_report_versions'))->toBeTrue()
         ->and($fixture['application']->refresh()->getRawOriginal())->toBe($before);
 });

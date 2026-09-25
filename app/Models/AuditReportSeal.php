@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $audit_report_id
  * @property int $report_revision
  * @property string $audit_signing_key_id
+ * @property string $step_up_proof_id
  * @property string $author_party_id
  * @property int $actor_user_id
  * @property string $digest

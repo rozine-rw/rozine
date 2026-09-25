@@ -13,6 +13,7 @@ it('binds the current confirmed authenticator and rejects an incorrect code', fu
     $authenticator = app(Authenticator::class);
     $code = (new Google2FA)->getCurrentOtp('JBSWY3DPEHPK3PXP');
     expect($authenticator->verify($user->id, $code))->toBe($authenticator->binding($user->id));
+    expect(fn () => $authenticator->verify($user->id, $code))->toThrow(CommandRejection::class, 'STEP_UP_CODE_INVALID');
     expect(fn () => $authenticator->verify($user->id, $code === '000000' ? '000001' : '000000'))
         ->toThrow(CommandRejection::class, 'STEP_UP_CODE_INVALID');
 });

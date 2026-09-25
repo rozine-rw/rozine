@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\Contracts\AuditReportCryptography;
+use App\Application\Auditor\Contracts\AuditStepUp;
+use App\Application\Identity\Contracts\Authenticator;
 use App\Application\Identity\RegisterIdentity;
 use App\Http\Controllers\Controller;
 use App\Models\AuditAssignment;
@@ -47,21 +50,19 @@ use App\Models\StatementVerification;
 use App\Models\VerifiedOrganizationIdentity;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Jose\Component\Core\JWK;
+use Symfony\Component\Finder\Finder;
 
 /*
  * Executable form of the ADR-0001 boundaries.
  *
- * Rules are stated over namespaces, never over individual classes. A rule that
- * names a class stops being architecture the moment that class is renamed or a
- * second one appears beside it, and it says nothing about the module added
- * next week. Everything below therefore holds for any module placed inside
- * these layers.
+ * Layer rules cover namespaces. Frozen signing entry points additionally have
+ * explicit callers and existence checks, so moving or removing a protected
+ * symbol cannot silently turn its rule into a vacuous pass.
  *
  * Section 11.2's sixth boundary - the protected ledger, settlement,
- * underwriting-publication and seal seams - has no rules
- * here yet because those namespaces do not exist. They arrive with the module
- * that introduces them; writing rules over absent namespaces would report a
- * protection that is not there.
+ * underwriting-publication seams - arrives with those modules. The concrete
+ * Auditor seal and publication boundaries are enforced below.
  */
 
 // ---------------------------------------------------------------------------
@@ -255,3 +256,51 @@ it('has concrete targets for the auditor accreditation boundary', function (): v
 arch('auditor accreditation records are only accessed by their adapter')
     ->expect(['App\Models\AuditorProfile', 'App\Models\AuditorProfileVersion', 'App\Models\AuditorCertificate', 'App\Models\AuditLocation', 'App\Models\AuditLocationVersion', 'App\Models\AuditorIndependenceReview', 'App\Models\AuditorIndependenceVersion', 'App\Models\AuditAssignment', 'App\Models\AuditAssignmentVersion', 'App\Models\AuditConflictDeclaration', 'App\Models\AuditReport', 'App\Models\AuditReportVersion', 'App\Models\AuditLedgerOriginal', 'App\Models\AuditLedgerExtraction', 'App\Models\AuditSourceSnapshot', 'App\Models\AuditEngagementRelease', 'App\Models\AuditEngagementAcceptance', 'App\Models\AuditReportPublication', 'App\Models\AuditReportSignature', 'App\Models\AuditReportSeal', 'App\Models\AuditSigningKey', 'App\Models\AuditSigningKeyRevocation', 'App\Models\AuditStepUpProof'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Auditor', 'App\Models', 'Database\Factories']);
+
+it('has concrete targets for the audit signing entry points', function (): void {
+    expect(interface_exists(AuditReportCryptography::class))->toBeTrue()
+        ->and(interface_exists(AuditStepUp::class))->toBeTrue()
+        ->and(interface_exists(Authenticator::class))->toBeTrue()
+        ->and(class_exists(JWK::class))->toBeTrue();
+})->group('arch');
+
+arch('audit signing cryptography is only reached through authorized report stores')
+    ->expect('App\Application\Auditor\Contracts\AuditReportCryptography')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Auditor\EloquentAuditReportStore', 'App\Infrastructure\Auditor\EloquentAuditReportPublicationStore',
+        'App\Infrastructure\Auditor\JoseAuditReportCryptography', 'App\Providers\AppServiceProvider']);
+
+arch('audit signing step up is only reached through the report store')
+    ->expect('App\Application\Auditor\Contracts\AuditStepUp')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Auditor\EloquentAuditReportStore', 'App\Infrastructure\Auditor\EloquentAuditStepUp', 'App\Providers\AppServiceProvider']);
+
+arch('audit signing authenticator verification uses its identity entry point')
+    ->expect('App\Application\Identity\Contracts\Authenticator')
+    ->toOnlyBeUsedIn(['App\Application\Identity\VerifyAuthenticator', 'App\Infrastructure\Identity\FortifyAuthenticator', 'App\Providers\AppServiceProvider']);
+
+arch('audit signing JOSE primitives stay inside the cryptographic adapter')
+    ->expect(['Jose\Component\Core\JWK', 'Jose\Component\Core\AlgorithmManager', 'Jose\Component\Signature\Algorithm\ES256',
+        'Jose\Component\Signature\JWSBuilder', 'Jose\Component\Signature\JWSVerifier', 'Jose\Component\Signature\Serializer\CompactSerializer',
+        'Jose\Component\KeyManagement\JWKFactory'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Auditor\JoseAuditReportCryptography', 'Database\Factories\AuditSigningKeyFactory']);
+
+it('keeps every audit signing JOSE namespace reference inside the adapter or synthetic key factory', function (): void {
+    $root = dirname(__DIR__, 2);
+    $allowed = ['app/Infrastructure/Auditor/JoseAuditReportCryptography.php', 'database/factories/AuditSigningKeyFactory.php'];
+    $violations = [];
+    // Inspect names without loading optional JOSE encryption algorithms and their optional dependencies.
+    foreach (Finder::create()->files()->in([$root.'/app', $root.'/database'])->name('*.php') as $file) {
+        $relative = substr($file->getPathname(), strlen($root) + 1);
+        if (in_array($relative, $allowed, true)) {
+            continue;
+        }
+        foreach (token_get_all($file->getContents()) as $token) {
+            if (is_array($token) && in_array($token[0], [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
+                $name = ltrim($token[1], '\\');
+                if ($name === 'Jose' || str_starts_with($name, 'Jose\\')) {
+                    $violations[] = $relative.':'.$token[2];
+                }
+            }
+        }
+    }
+    expect($violations)->toBe([]);
+})->group('arch');

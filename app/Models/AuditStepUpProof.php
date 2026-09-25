@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $audit_report_id
  * @property int $report_revision
  * @property string $digest
+ * @property string $purpose
  * @property string $credential_binding
  * @property CarbonImmutable $expires_at
  * @property CarbonImmutable|null $consumed_at

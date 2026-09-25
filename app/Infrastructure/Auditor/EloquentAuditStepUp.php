@@ -20,7 +20,7 @@ final class EloquentAuditStepUp implements AuditStepUp
         $credentialBinding = $this->authenticator->handle($userId, $code);
         $proof = Str::random(64);
         $expires = now('UTC')->addMinutes(5);
-        (new AuditStepUpProof)->forceFill(['actor_user_id' => $userId, 'actor_party_id' => $partyId,
+        (new AuditStepUpProof)->forceFill(['purpose' => 'audit.seal', 'actor_user_id' => $userId, 'actor_party_id' => $partyId,
             'identity_context_revision' => $contextRevision, 'audit_report_id' => $reportId, 'report_revision' => $reportRevision,
             'digest' => $digest, 'credential_binding' => $credentialBinding, 'proof_sha256' => hash('sha256', $proof),
             'expires_at' => $expires])->save();
@@ -28,10 +28,10 @@ final class EloquentAuditStepUp implements AuditStepUp
         return ['proof' => $proof, 'expires_at' => $expires->toIso8601String()];
     }
 
-    public function consume(int $userId, string $partyId, int $contextRevision, string $reportId, int $reportRevision, string $digest, string $proof): void
+    public function consume(int $userId, string $partyId, int $contextRevision, string $reportId, int $reportRevision, string $digest, string $proof): string
     {
         $record = AuditStepUpProof::query()->where('proof_sha256', hash('sha256', $proof))->lockForUpdate()->first();
-        if ($record === null || $record->consumed_at !== null || $record->actor_user_id !== $userId
+        if ($record === null || $record->purpose !== 'audit.seal' || $record->consumed_at !== null || $record->actor_user_id !== $userId
             || $record->actor_party_id !== $partyId || $record->identity_context_revision !== $contextRevision
             || $record->audit_report_id !== $reportId || $record->report_revision !== $reportRevision
             || ! hash_equals($record->digest, $digest) || ! hash_equals($record->credential_binding, $this->authenticator->binding($userId))) {
@@ -41,5 +41,7 @@ final class EloquentAuditStepUp implements AuditStepUp
             throw new CommandRejection('STEP_UP_EXPIRED', 403);
         }
         $record->forceFill(['consumed_at' => now('UTC')])->save();
+
+        return $record->id;
     }
 }

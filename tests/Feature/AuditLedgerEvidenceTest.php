@@ -255,6 +255,8 @@ it('refuses inconsistent legacy ledger ownership without rewriting its original'
     ['user' => $user, 'report' => $report] = AuditLedgerFixture::ready();
     $migration = require database_path('migrations/2026_09_25_130201_enforce_audit_ledger_report_authority.php');
     $publicationMigration = require database_path('migrations/2026_09_25_140638_create_audit_report_publication_tables.php');
+    $proofLineage = require database_path('migrations/2026_09_25_154051_enforce_audit_seal_proof_and_publication_lineage.php');
+    $proofLineage->down();
     $publicationMigration->down();
     $migration->down();
     $original = AuditLedgerOriginal::factory()->forReport($report, $user)->create(['actor_party_id' => Party::factory()->create()->id]);

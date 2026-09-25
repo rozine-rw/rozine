@@ -73,6 +73,9 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                         if ($publication->mandate_version !== $mandateVersion || $business['mandate_version'] !== $mandateVersion) {
                             throw new CommandRejection('MANDATE_STALE', revision: $publication->revision);
                         }
+                        if (AuditReport::query()->where('amends_id', $publication->audit_report_id)->exists()) {
+                            throw new CommandRejection('AUDIT_REPORT_AMENDED', revision: $publication->revision);
+                        }
                         if (! $accepted) {
                             throw new CommandRejection('REPORT_ACCEPTANCE_REQUIRED', 422, $publication->revision, ['accepted' => ['Confirm this sealed report before co-signing.']]);
                         }
@@ -87,21 +90,22 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                         if (! $current || ! $this->cryptography->verify($seal->audit_signing_key_id, $seal->jws, $seal->payload)) {
                             throw new CommandRejection('AUDIT_PUBLICATION_UNAVAILABLE', revision: $publication->revision);
                         }
-                        if (! $this->window->mayPublish($seal->payload['report']['period'], now()->toDateTimeImmutable())) {
+                        $at = now('UTC')->toImmutable();
+                        if (! $this->window->mayPublish($seal->payload['report']['period'], $at->toDateTimeImmutable())) {
                             throw new CommandRejection('REPORT_WINDOW_CLOSED', revision: $publication->revision);
                         }
                         $payload = ['report_id' => $publication->audit_report_id, 'report_revision' => $reportRevision, 'digest' => $digest,
                             'mandate_version' => $mandateVersion, 'mandate_sha256' => hash('sha256', $this->json->encode($business['mandate'])),
                             'actor_party_id' => $partyId, 'actor_user_id' => $userId, 'accepted' => true, 'note' => $note,
-                            'signed_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')];
+                            'signed_at' => $at->format('Y-m-d\TH:i:s\Z')];
                         $signature = new AuditReportSignature;
                         $signature->forceFill(['audit_report_publication_id' => $publication->id, 'publication_revision' => $publication->revision + 1,
                             'actor_party_id' => $partyId, 'actor_user_id' => $userId, 'payload' => $payload,
-                            'sha256' => hash('sha256', $this->json->encode($payload))])->save();
+                            'sha256' => hash('sha256', $this->json->encode($payload)), 'created_at' => $at])->save();
                         $signed = AuditReportSignature::query()->where('audit_report_publication_id', $publication->id)->pluck('actor_party_id')->all();
                         $complete = array_diff($business['mandate']['required_signatories'], $signed) === [];
                         $publication->forceFill(['revision' => $publication->revision + 1, 'status' => $complete ? 'published' : 'pending',
-                            'published_at' => $complete ? now('UTC') : null])->save();
+                            'published_at' => $complete ? $at : null])->save();
 
                         return $this->receipt($publication, $signature);
                     });
@@ -167,12 +171,15 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
     {
         return $this->evidence->handle($userId, $contextRevision, $businessId, $permission, null,
             function (array $business, array $identity, ?array $verification) use ($reportId, $operation): mixed {
+                AuditReport::query()->whereKey($reportId)->where('business_id', $business['id'])->sharedLock()->first()
+                    ?? throw new CommandRejection('AUDIT_REPORT_NOT_FOUND', 404);
                 $publication = AuditReportPublication::query()->where('business_id', $business['id'])->where('audit_report_id', $reportId)->lockForUpdate()->first()
                     ?? throw new CommandRejection('AUDIT_REPORT_NOT_FOUND', 404);
                 $seal = $this->seal($publication);
                 $partyId = $identity['party']['id'] ?? throw new CommandRejection('ACTION_FORBIDDEN', 403);
                 $source = $seal->payload['sources']['verification'];
-                $current = $business['mandate_version'] === $publication->mandate_version
+                $current = ! AuditReport::query()->where('amends_id', $reportId)->exists()
+                    && $business['mandate_version'] === $publication->mandate_version
                     && $this->json->encode($business['mandate']) === $this->json->encode($seal->payload['business']['mandate'])
                     && $verification !== null && $verification['current'] && $source !== null
                     && $verification['id'] === $source['id'] && hash_equals($verification['sha256'], $source['sha256']);
@@ -252,7 +259,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                 'seal' => ['status' => $valid ? 'valid' : 'unavailable', 'signed_at' => $seal->payload['sealed_at']], 'published_at' => $publication->published_at?->toIso8601String()],
             'cosign' => ['revision' => $publication->revision, 'state' => $publication->status === 'published' ? 'signed' : (! $available ? 'unavailable' : ($signatures->isEmpty() ? 'pending' : 'partly_signed')),
                 'mandate_version' => $publication->mandate_version, 'required_signatures' => count($signers), 'signed_count' => $signatures->count(), 'signers' => $signers,
-                'your_note' => $own?->payload['note'] ?? '', 'due_at' => $due, 'overdue' => $due !== null && $due < now('UTC')->format('Y-m-d\TH:i:s\Z')],
+                'your_note' => $own?->payload['note'] ?? '', 'due_at' => $due, 'overdue' => $publication->status !== 'published' && $due !== null && $due < now('UTC')->format('Y-m-d\TH:i:s\Z')],
             'can_cosign' => $canSign];
     }
 

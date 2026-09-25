@@ -66,7 +66,7 @@ report() {
   echo
 }
 
-ALL_CONTROLS=(strict-types domain-purity transport-boundary identity-boundary operation-boundary business-boundary evidence-boundary auditor-boundary adapter-leak php-coverage phpstan-tests)
+ALL_CONTROLS=(strict-types domain-purity transport-boundary identity-boundary operation-boundary business-boundary evidence-boundary auditor-boundary audit-signing-boundary adapter-leak php-coverage phpstan-tests)
 
 selected() {
   local wanted="$1" name
@@ -371,6 +371,34 @@ VIOLATION
     cat "${LOG_DIR}/auditor.log"
   fi
   rm -f app/Application/Auditor/NegativeControlAuditorWrite.php
+  done
+fi
+
+if selected audit-signing-boundary; then
+  control audit-signing-boundary "direct calls around authorized signing entry points must fail"
+  for signing_symbol in 'App\Application\Auditor\Contracts\AuditReportCryptography' 'App\Application\Auditor\Contracts\AuditStepUp' 'App\Application\Identity\Contracts\Authenticator' 'Jose\Component\Core\JWK'; do
+    plant app/Application/Auditor/NegativeControlSigningBypass.php <<VIOLATION
+<?php
+
+declare(strict_types=1);
+
+namespace App\\Application\\Auditor;
+
+final class NegativeControlSigningBypass
+{
+    public function __construct(private \\${signing_symbol} \$signer) {}
+}
+VIOLATION
+    if [ "${ARCHITECTURE_GREEN}" != true ]; then
+      report audit-signing-boundary fail "the architecture suite must be green beforehand"
+    elif gate_fails "${LOG_DIR}/signing.log" vendor/bin/pest --ci --no-tia tests/Architecture/ArchitectureTest.php --filter='audit signing' --compact \
+      && grep -Fq 'NegativeControlSigningBypass' "${LOG_DIR}/signing.log"; then
+      report audit-signing-boundary pass "${signing_symbol} cannot be called outside its authorized boundary"
+    else
+      report audit-signing-boundary fail "a signing entry point accepted an unauthorized caller"
+      cat "${LOG_DIR}/signing.log"
+    fi
+    rm -f app/Application/Auditor/NegativeControlSigningBypass.php
   done
 fi
 

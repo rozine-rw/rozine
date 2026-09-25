@@ -114,10 +114,10 @@ final class EloquentAuditReportStore implements AuditReportStore
                             'assignment' => $assignment, 'sealed_revision' => $record->revision + 1, 'sealed_at' => $at,
                             'author_party_id' => $assignment['party_id'], 'actor_user_id' => $userId, 'synthetic' => true];
                         $signature = $this->cryptography->sign($payload);
-                        $this->stepUpProofs->consume($userId, $assignment['party_id'], $contextRevision, $record->id, $record->revision, $preview['digest'], $proof);
+                        $proofId = $this->stepUpProofs->consume($userId, $assignment['party_id'], $contextRevision, $record->id, $record->revision, $preview['digest'], $proof);
                         $seal = new AuditReportSeal;
                         $seal->forceFill(['audit_report_id' => $record->id, 'report_revision' => $record->revision + 1,
-                            'audit_signing_key_id' => $signature['key_id'], 'author_party_id' => $assignment['party_id'], 'actor_user_id' => $userId,
+                            'audit_signing_key_id' => $signature['key_id'], 'step_up_proof_id' => $proofId, 'author_party_id' => $assignment['party_id'], 'actor_user_id' => $userId,
                             'digest' => $preview['digest'], 'payload' => $payload, 'jws' => $signature['jws'], 'created_at' => $at])->save();
                         $record->forceFill(['revision' => $record->revision + 1, 'status' => 'sealed',
                             'draft' => [...$record->draft, 'seal_id' => $seal->id]])->save();

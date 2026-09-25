@@ -202,8 +202,9 @@ facts that would differ between machines, so they are excluded deliberately.
 | `payload` | `text` | no | — |
 | `jws` | `text` | no | — |
 | `created_at` | `timestamptz` | no | — |
+| `step_up_proof_id` | `bpchar` | no | — |
 
-**Indexes:** `audit_report_seals_audit_report_id_unique` on (audit_report_id) — unique; `audit_report_seals_pkey` on (id) — unique
+**Indexes:** `audit_report_seals_audit_report_id_unique` on (audit_report_id) — unique; `audit_report_seals_pkey` on (id) — unique; `audit_report_seals_step_up_proof_id_unique` on (step_up_proof_id) — unique
 
 ### `audit_report_signatures`
 
@@ -328,6 +329,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `expires_at` | `timestamptz` | no | — |
 | `consumed_at` | `timestamptz` | yes | — |
 | `created_at` | `timestamptz` | no | — |
+| `purpose` | `varchar` | no | `'audit.seal'::character varying` |
 
 **Indexes:** `audit_step_up_proofs_pkey` on (id) — unique; `audit_step_up_proofs_proof_sha256_unique` on (proof_sha256) — unique
 
@@ -1012,6 +1014,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_25_131948_enforce_audit_report_decisions_and_fresh_amendments.php |
 | 2026_09_25_134827_create_audit_report_signing_tables.php |
 | 2026_09_25_140638_create_audit_report_publication_tables.php |
+| 2026_09_25_154051_enforce_audit_seal_proof_and_publication_lineage.php |
 
 ## Routes
 
