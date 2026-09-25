@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\AuditOperationsController;
 use App\Http\Controllers\AuditorJobsController;
 use App\Http\Controllers\AuditorProfileController;
+use App\Http\Controllers\BusinessApplicationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IdentityManagementController;
 use App\Http\Controllers\PulseController;
@@ -58,6 +59,15 @@ Route::middleware(['auth', 'throttle:60,1'])->prefix('auditor')->name('auditor.'
         ->where('certificate', '[0-9a-z]{26}')->name('accreditation.certificates.show');
     Route::post('availability', [AuditorProfileController::class, 'availability'])->name('availability.update');
     Route::get('operations/{request_id}', [AuditorProfileController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
+});
+
+Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('business')->name('business.applications.')->group(function (): void {
+    Route::get('application-operations/{request_id}', [BusinessApplicationController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
+    Route::post('{business}/applications', [BusinessApplicationController::class, 'create'])->whereUlid('business')->name('create');
+    Route::get('{business}/applications/{application}', [BusinessApplicationController::class, 'show'])->whereUlid(['business', 'application'])->name('show');
+    foreach (['save', 'evaluate', 'submit'] as $command) {
+        Route::post('{business}/applications/{application}/'.$command, [BusinessApplicationController::class, $command])->whereUlid(['business', 'application'])->name($command);
+    }
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/audit-assignments')->name('staff.audit.')->group(function (): void {

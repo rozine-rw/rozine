@@ -10,11 +10,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @phpstan-import-type Application from \App\Application\Business\Contracts\BusinessApplicationStore
+ * @phpstan-import-type Fields from \App\Domain\Business\ApplicationDraft
+ *
+ * @phpstan-type VersionSnapshot array{id: string, business_id: string, revision: int, status: string, step: string, draft: Fields, mandate_version: int, quote_id?: string, submission_id?: string}
  *
  * @property string $business_application_id
  * @property int $revision
- * @property Application $snapshot
+ * @property VersionSnapshot $snapshot
  */
 class BusinessApplicationVersion extends Model
 {
