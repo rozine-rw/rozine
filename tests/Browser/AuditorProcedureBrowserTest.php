@@ -88,7 +88,7 @@ it('starts and completes the factual procedure, saves its note and withdraws sta
             await page.getByText(/^Synthetic test evidence \(isolated\)/).first().waitFor();
             await page.getByRole("button", {name:"Continue", exact:true}).click();';
         $monthlySteps = 'await page.getByRole("heading", {name:"Read the month", exact:true}).waitFor();
-            await page.getByRole("button", {name:"Start the count", exact:true}).click({timeout:5000});
+            await page.getByRole("button", {name:"Start the count", exact:true}).click();
             await page.getByRole("heading", {name:"Count & cash", exact:true}).waitFor();
             await page.getByRole("checkbox", {name:/^bank/}).click();
             await page.getByRole("checkbox", {name:/^momo/}).click();
@@ -103,6 +103,9 @@ it('starts and completes the factual procedure, saves its note and withdraws sta
             await page.getByRole("button", {name:"Review & seal", exact:true}).click();' : '';
         $result = $run(['run-code', 'async (page) => {
             const errors = []; page.on("pageerror", error => errors.push(error.message));
+            const requests = []; page.on("request", request => {
+                if (request.url().includes("/auditor/")) requests.push(request.method() + " " + request.url().split("?")[0]);
+            });
             try {
             await page.setViewportSize({width:390, height:844});
             '.($kind === 'flash' ? $flashSteps : $monthlySteps).'
@@ -114,6 +117,7 @@ it('starts and completes the factual procedure, saves its note and withdraws sta
             await page.getByRole("button", {name:"Continue", exact:true}).click();
             '.$ledger.'
             await page.locator("#auditor-seal-note").waitFor();
+            await page.waitForLoadState("networkidle");
             await page.locator("#auditor-seal-note").fill("Observed stock differs from the declared inventory.");
             const saved = page.waitForResponse(response => response.url().endsWith("/steps") && response.request().method() === "POST");
             await page.getByRole("button", {name:"Save note", exact:true}).click();
@@ -128,7 +132,7 @@ it('starts and completes the factual procedure, saves its note and withdraws sta
             await page.screenshot({path:"preview-desktop.png", fullPage:true, animations:"disabled"});
             if (errors.length) throw new Error(JSON.stringify(errors));
             return {kind:'.json_encode($kind).', saved:true, synthetic:true};
-            } catch (failure) { throw new Error([String(failure), ...errors].join("\n")); }
+            } catch (failure) { throw new Error([String(failure), ...errors, ...requests].join("\n")); }
         }']);
         file_put_contents($directory.'/result.txt', $result);
         expect($report->refresh()->step)->toBe('seal')->and($report->draft['note'])->toBe('Observed stock differs from the declared inventory.');
