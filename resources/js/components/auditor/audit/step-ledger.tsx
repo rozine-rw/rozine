@@ -109,6 +109,14 @@ function DocumentRow({
                     />
                 )}
             </div>
+            {document.link != null && (
+                <a
+                    href={document.link.url}
+                    className="mt-[9px] inline-block text-[11.5px] font-bold text-rz-accent-app-text"
+                >
+                    {t('auditor.ledger.download')}
+                </a>
+            )}
             {parsed && (
                 <dl className="mt-[11px] rounded-[10px] border border-[#eef2f9] bg-[#f8fafc] px-3 py-[3px] dark:border-rz-divider dark:bg-rz-surface-sunken">
                     {document.fields.map((field) => (

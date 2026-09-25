@@ -3203,6 +3203,8 @@ const fr: Catalog = {
     'auditor.capture.synthetic':
         'Preuve de test synthétique (isolée) — pas une capture native.',
 
+    'auditor.ledger.download': "Télécharger l'original",
+
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

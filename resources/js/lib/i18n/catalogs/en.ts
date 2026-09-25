@@ -3070,6 +3070,7 @@ const en = {
         "Your note isn't saved yet. Save it now; sealing opens once the report is ready for it.",
     'auditor.capture.synthetic':
         'Synthetic test evidence (isolated) — not a native capture.',
+    'auditor.ledger.download': 'Download original',
     /**
      * Plural example. Selection uses Intl.PluralRules for the active locale, so a locale needing
      * more categories than English simply declares them.

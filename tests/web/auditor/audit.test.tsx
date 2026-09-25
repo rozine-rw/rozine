@@ -672,6 +672,51 @@ describe('Audit procedure — ledger reconciliation', () => {
         expect(inertia.poll.start).toHaveBeenCalled();
     });
 
+    it('offers the retained original as an ordinary download link', async () => {
+        const { user } = renderWithUser(
+            <AuditorAudit
+                {...withStage<LedgerStage>(ledger, (stage) => ({
+                    ...stage,
+                    documents: stage.documents.map((document, index) =>
+                        index === 0
+                            ? {
+                                  ...document,
+                                  link: {
+                                      url: '/auditor/reports/fa_huye/ledger/ld_1/original',
+                                      method: 'get',
+                                  },
+                              }
+                            : { ...document, link: null },
+                    ),
+                }))}
+            />,
+        );
+        const [download] = screen.getAllByRole('link', {
+            name: 'Download original',
+        });
+
+        expect(
+            screen.getAllByRole('link', { name: 'Download original' }),
+        ).toHaveLength(1);
+        expect(download).toHaveAttribute(
+            'href',
+            '/auditor/reports/fa_huye/ledger/ld_1/original',
+        );
+
+        /* A plain anchor: the browser downloads it, and Inertia never visits it. */
+        download.addEventListener('click', (event) => event.preventDefault());
+        await user.click(download);
+        expect(inertia.visits).toHaveLength(0);
+    });
+
+    it('offers no download for a document without a link', () => {
+        render(<AuditorAudit {...props(ledger)} />);
+
+        expect(
+            screen.queryByRole('link', { name: 'Download original' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows a received document as not yet reviewed, never approved', () => {
         render(<AuditorAudit {...props(ledgerIngested)} />);
 
