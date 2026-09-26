@@ -71,6 +71,9 @@ it('seals with a current authenticator and publishes after the Business co-signa
             await page.getByRole("button", {name:"Continue", exact:true}).click();
             await page.waitForURL("**/dashboard");
             await page.setViewportSize({width:390, height:844});
+            await page.goto('.json_encode($base.'/auditor').');
+            await page.getByRole("link", {name:"Jobs", exact:true}).click();
+            await page.waitForURL("**/auditor/jobs");
             await page.goto('.json_encode($base.'/auditor/reports/'.$fixture['report']->id).');
             await page.getByRole("button", {name:"Preview findings", exact:true}).click();
             await page.getByRole("button", {name:"Confirm with your authenticator", exact:true}).click();
@@ -84,6 +87,12 @@ it('seals with a current authenticator and publishes after the Business co-signa
             await page.getByRole("heading", {name:"Sealed and filed", exact:true}).waitFor();
             if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw new Error("Sealed report overflows phone");
             await page.screenshot({path:"sealed-phone.png", fullPage:true, animations:"disabled"});
+            await page.locator('.json_encode('a[href="/audit-seals/'.$fixture['report']->id.'"]').').click();
+            await page.waitForURL("**/audit-seals/*");
+            await page.goto('.json_encode($base.'/auditor/jobs').');
+            await page.getByText("Awaiting co-signature", {exact:true}).waitFor();
+            await page.screenshot({path:"awaiting-cosign-phone.png", fullPage:true, animations:"disabled"});
+            await page.goto('.json_encode($base.'/auditor/reports/'.$fixture['report']->id).');
             if (errors.length) throw new Error(errors.join("\n"));
         }']);
         expect($fixture['report']->refresh()->status)->toBe('sealed');
@@ -117,6 +126,12 @@ it('seals with a current authenticator and publishes after the Business co-signa
             await page.reload();
             await page.getByRole("heading", {name:"Sealed and filed", exact:true}).waitFor();
             await page.screenshot({path:"auditor-published-phone.png", fullPage:true, animations:"disabled"});
+            await page.goto('.json_encode($base.'/auditor/jobs').');
+            if (await page.getByText("Awaiting co-signature", {exact:true}).count()) throw new Error("Published work remains active");
+            const response = await page.goto('.json_encode($base.'/missing-walkthrough-page').');
+            if (response?.status() !== 404) throw new Error("Missing page did not return 404");
+            await page.getByRole("heading", {name:/find that page/}).waitFor();
+            await page.screenshot({path:"missing-page-phone.png", fullPage:true, animations:"disabled"});
         }']);
     } catch (Throwable $failure) {
         foreach (['auditor', 'business'] as $role) {
