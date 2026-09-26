@@ -451,7 +451,7 @@ Before enabling the five-file dispute envelope in a hosted environment, verify t
 
 ### C3 acceptance exposure foundation — 2026-09-26
 
-`EloquentBusinessExposureReservations` is an internal Business adapter helper, reached by the existing authorized `BusinessApplicationStore` commands. `BusinessExposureReservation` joins the protected Business model set and its direct-write negative control. No new actor-facing command or acceptance checkbox is added.
+`BusinessExposureStore` is the internal source port for current accepted exposure and reservation from a retained submission. It is container-bound to `EloquentBusinessExposureReservations` and reached by the existing authorized `BusinessApplicationStore` commands; persistence models never cross the port. `BusinessExposureReservation` joins the protected Business model set and its direct-write negative control. No new actor-facing command or acceptance checkbox is added.
 
 Only the final required `application.submit` signature writes the reservation, in the same transaction as immutable submission, application revision and operation receipt. The economic commitment ID equals the retained submission ID; the shared submission projection exposes it as optional `exposure_reservation_id` (absent for pre-C3 history). Unique application/submission keys and composite parent foreign keys prevent a second reservation or a cross-Business binding. PostgreSQL serializes inserts on the Business aggregate and prohibits update/delete; occupied reservations require a forward migration to add release/issue transitions. Historical submissions are not backfilled.
 

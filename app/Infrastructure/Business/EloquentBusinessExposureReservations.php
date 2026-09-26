@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Business;
 
+use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Underwriting\ExactFinancialValue;
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /** @phpstan-import-type Commitment from \App\Domain\Underwriting\AcceptedExposure */
-final class EloquentBusinessExposureReservations
+final class EloquentBusinessExposureReservations implements BusinessExposureStore
 {
     public function __construct(private CanonicalJson $json) {}
 
@@ -49,25 +50,30 @@ final class EloquentBusinessExposureReservations
     }
 
     /** The caller has verified every required signature and holds current source/authority locks. */
-    public function reserve(BusinessApplication $application, BusinessApplicationSubmission $submission, BusinessApplicationQuote $quote): void
+    public function reserve(string $businessId, string $submissionId): void
     {
-        $current = $this->current($application->business_id);
-        if (($quote->payload['accepted_commitments'] ?? []) !== $current) {
-            throw new CommandRejection('QUOTE_STALE', 409, $application->revision);
-        }
-        $principal = $quote->payload['result']['capacity']['offer']['principal']['amount'];
-        $room = $quote->payload['result']['cash_flow']['remaining_room'];
-        if (ExactFinancialValue::amount($principal)->toBigRational()->isGreaterThan(BigRational::ofFraction($room['numerator'], $room['denominator']))) {
-            throw new CommandRejection('EXPOSURE_LIMIT', 422, $application->revision);
-        }
-        $record = new BusinessExposureReservation;
-        $record->id = $submission->id;
-        $payload = ['reservation_id' => $record->id, 'business_id' => $application->business_id,
-            'application_id' => $application->id, 'submission_id' => $submission->id, 'submission_sha256' => $submission->sha256,
-            'quote_id' => $quote->id, 'quote_sha256' => $quote->sha256, 'principal' => $principal,
-            'accepted_at' => $submission->payload['submitted_at'], 'policy_version' => $quote->payload['policy_version']];
-        $record->forceFill(['business_id' => $application->business_id, 'business_application_id' => $application->id,
-            'business_application_submission_id' => $submission->id, 'principal' => $principal, 'payload' => $payload,
-            'sha256' => hash('sha256', $this->json->encode($payload))])->save();
+        DB::transaction(function () use ($businessId, $submissionId): void {
+            $current = $this->current($businessId);
+            $submission = BusinessApplicationSubmission::query()->whereKey($submissionId)->firstOrFail();
+            $application = BusinessApplication::query()->where('business_id', $businessId)->whereKey($submission->business_application_id)->firstOrFail();
+            $quote = BusinessApplicationQuote::query()->where('business_application_id', $application->id)->whereKey($submission->business_application_quote_id)->firstOrFail();
+            if (($quote->payload['accepted_commitments'] ?? []) !== $current) {
+                throw new CommandRejection('QUOTE_STALE', 409, $application->revision);
+            }
+            $principal = $quote->payload['result']['capacity']['offer']['principal']['amount'];
+            $room = $quote->payload['result']['cash_flow']['remaining_room'];
+            if (ExactFinancialValue::amount($principal)->toBigRational()->isGreaterThan(BigRational::ofFraction($room['numerator'], $room['denominator']))) {
+                throw new CommandRejection('EXPOSURE_LIMIT', 422, $application->revision);
+            }
+            $record = new BusinessExposureReservation;
+            $record->id = $submission->id;
+            $payload = ['reservation_id' => $record->id, 'business_id' => $application->business_id,
+                'application_id' => $application->id, 'submission_id' => $submission->id, 'submission_sha256' => $submission->sha256,
+                'quote_id' => $quote->id, 'quote_sha256' => $quote->sha256, 'principal' => $principal,
+                'accepted_at' => $submission->payload['submitted_at'], 'policy_version' => $quote->payload['policy_version']];
+            $record->forceFill(['business_id' => $application->business_id, 'business_application_id' => $application->id,
+                'business_application_submission_id' => $submission->id, 'principal' => $principal, 'payload' => $payload,
+                'sha256' => hash('sha256', $this->json->encode($payload))])->save();
+        });
     }
 }

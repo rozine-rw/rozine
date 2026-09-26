@@ -10,6 +10,7 @@ use App\Application\Auditor\WithCurrentAuditAssignment;
 use App\Application\Business\Contracts\BusinessApplicationStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\Contracts\BusinessCreditFactsStore;
+use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\WithBusinessStatementVerification;
 use App\Application\Identity\Contracts\IdentityAccessStore;
@@ -75,7 +76,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
         private UnderwritingObservationWindow $windows,
         private WithAcceptedAuditAssignment $acceptedAssignments,
         private AuditReportPublicationStore $reports,
-        private EloquentBusinessExposureReservations $exposures,
+        private BusinessExposureStore $exposures,
     ) {}
 
     /** @return array<string, mixed> */
@@ -382,7 +383,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                                     $submission->forceFill(['business_application_id' => $application->id, 'business_application_quote_id' => $quote->id,
                                         'revision' => $application->revision, 'binding_sha256' => $bindingHash,
                                         'payload' => $payload, 'sha256' => hash('sha256', $this->json->encode($payload))])->save();
-                                    $this->exposures->reserve($application, $submission, $quote);
+                                    $this->exposures->reserve($business['id'], $submission->id);
                                     $application->current_submission_id = $submission->id;
                                 }
                                 $application->save();

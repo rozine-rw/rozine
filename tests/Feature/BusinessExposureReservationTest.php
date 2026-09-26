@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Domain\Operations\CommandRejection;
-use App\Infrastructure\Business\EloquentBusinessExposureReservations;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationSignature;
 use App\Models\BusinessApplicationSubmission;
@@ -36,7 +36,7 @@ it('reserves full accepted principal only at the final required signature and re
         ->and(BusinessQuoteFixture::submit($fixture, $acceptance, 1, 5, $request))->toBe($result)
         ->and(BusinessQuoteFixture::review($fixture))->toEqual($result['data'])
         ->and(BusinessExposureReservation::query()->count())->toBe(1)
-        ->and(app(EloquentBusinessExposureReservations::class)->current($fixture['audit']['business']))
+        ->and(app(BusinessExposureStore::class)->current($fixture['audit']['business']))
         ->toBe([['id' => $reservation->id, 'principal' => $reservation->principal]]);
 });
 
@@ -138,10 +138,10 @@ it('refuses a changed exposure snapshot or insufficient exact room at the reserv
     } else {
         $payload['result']['cash_flow']['remaining_room'] = ['numerator' => '1079999999', 'denominator' => '100'];
     }
-    $quote->payload = $payload;
+    $quote = BusinessApplicationQuote::factory()->create(['business_application_id' => $fixture['application']->id, 'revision' => 2, 'payload' => $payload]);
     $submission = BusinessApplicationSubmission::factory()->create(['business_application_id' => $fixture['application']->id,
         'business_application_quote_id' => $quote->id]);
-    expect(fn () => DB::transaction(fn () => app(EloquentBusinessExposureReservations::class)->reserve($fixture['application'], $submission, $quote)))
+    expect(fn () => DB::transaction(fn () => app(BusinessExposureStore::class)->reserve($fixture['audit']['business'], $submission->id)))
         ->toThrow(CommandRejection::class, $stale ? 'QUOTE_STALE' : 'EXPOSURE_LIMIT');
     expect(BusinessExposureReservation::query()->count())->toBe(0);
 })->with([false, true]);
