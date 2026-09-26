@@ -77,7 +77,8 @@ it('freezes a disputed report, retains protected original proof and escalates CP
     $this->travel(25)->hours();
     expect($store->advanceDue()['published'])->toBe(0);
     $upheld = $store->uphold($fixture['user']->id, $fixture['report']->id, [...$input, 'request_id' => (string) Str::uuid(), 'expected_revision' => 2, 'reason' => 'The receipt postdates this reporting period.']);
-    expect($upheld['code'])->toBe('REPORT_DISPUTE_ESCALATED')->and(AuditReportPublication::query()->firstOrFail()->status)->toBe('escalated');
+    expect($upheld['code'])->toBe('REPORT_DISPUTE_ESCALATED')->and(AuditReportPublication::query()->firstOrFail()->status)->toBe('escalated')
+        ->and(AuditReportPublication::query()->firstOrFail()->review['resolution_note_by'])->toBe('cpa');
     $amend = app(AmendAuditReport::class)->handle($fixture['user']->id, 1, $fixture['report']->id, $fixture['report']->revision + 1, (string) Str::uuid());
     expect($amend['code'])->toBe('REPORT_DISPUTE_STAFF_REVIEW_REQUIRED');
     $resolved = $store->staffDecision($fixture['audit']['staff']->id, $fixture['assignment']->id, $fixture['report']->id, 'audit.dispute.resolve',

@@ -446,7 +446,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                         }
                         $review = ['id' => strtolower((string) Str::ulid()), 'revision' => $publication->revision + 1, 'status' => 'under_review',
                             'submitted_at' => $at->format('Y-m-d\TH:i:s\Z'), 'supporting_text' => $text,
-                            'outcome' => null, 'resolution_note' => null, 'amendment' => null];
+                            'outcome' => null, 'resolution_note' => null, 'resolution_note_by' => null, 'amendment' => null];
                         $event = $this->event($publication, 'report.dispute', 'party', $userId, $partyId,
                             ['review' => $review, 'proofs' => array_map(fn (array $file): array => array_diff_key($file, ['content' => true, 'filename' => true]), $proofs)], at: $at);
                         foreach ($proofs as $proof) {
@@ -474,7 +474,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                             throw new CommandRejection('REPORT_REVIEW_CLOSED', revision: $publication->revision);
                         }
                         $reason = $this->reviewPolicy->decisionReason($input['reason']);
-                        $review = [...$publication->review, 'revision' => $publication->revision + 1, 'status' => 'escalated', 'resolution_note' => $reason];
+                        $review = [...$publication->review, 'revision' => $publication->revision + 1, 'status' => 'escalated', 'resolution_note' => $reason, 'resolution_note_by' => 'cpa'];
                         $this->event($publication, 'audit.dispute.uphold', 'party', $userId, $partyId, ['review' => $review]);
                         $publication->forceFill(['revision' => $publication->revision + 1, 'status' => 'escalated', 'review' => $review])->save();
 
@@ -516,7 +516,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                         });
                     }
                     $review = [...$publication->review, 'revision' => $publication->revision + 1,
-                        'status' => $publish ? 'resolved' : 'escalated', 'resolution_note' => $reason,
+                        'status' => $publish ? 'resolved' : 'escalated', 'resolution_note' => $reason, 'resolution_note_by' => 'staff',
                         'outcome' => $escalate ? null : ($publish ? 'upheld' : 'amendment_required')];
                     $at = now('UTC')->toImmutable();
                     $this->event($publication, $command, 'staff', $userId, null, ['review' => $review, 'decision' => $decision], at: $at);

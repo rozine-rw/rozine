@@ -62,6 +62,7 @@ it('retains a disputed parent until its authorized replacement is sealed and sta
             [...$input, 'request_id' => (string) Str::uuid(), 'expected_revision' => 3, 'reason' => 'The retained evidence requires a correction.', 'decision' => 'require_amendment']);
     }
     $parent = AuditReportPublication::query()->firstOrFail();
+    expect($parent->review['resolution_note_by'])->toBe($staffRequired ? 'staff' : null);
     $this->travel(2)->hours();
     $amended = app(AmendAuditReport::class)->handle($fixture['user']->id, 1, $fixture['report']->id, $fixture['report']->revision + 1, (string) Str::uuid());
     expect($amended['code'])->toBe('AUDIT_AMENDMENT_CREATED')->and($parent->fresh()->status)->toBe($staffRequired ? 'escalated' : 'disputed');
