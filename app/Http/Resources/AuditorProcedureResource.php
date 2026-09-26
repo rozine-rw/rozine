@@ -199,7 +199,7 @@ class AuditorProcedureResource extends JsonResource
     {
         $findings = [];
         foreach ($seal['findings'] as $index => $finding) {
-            $values = array_intersect_key($finding, array_flip(['reported', 'observed', 'difference']));
+            $values = AuditorJobsResource::figures(array_intersect_key($finding, array_flip(['reported', 'observed', 'difference'])));
             $findings[] = ['code' => $finding['code'], 'no' => (string) ($index + 1),
                 'title' => match ($finding['measure']) {
                     'stock_value' => __('Stock value'), 'cash' => __('Cash balance'), 'stock_units' => __('Inventory units'), default => __('Operating status'),

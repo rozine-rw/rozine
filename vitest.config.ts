@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite-plus';
 import clientSourceManifest from './config/client-source-manifest.json';
+import reactCompilerCoverageHints from './tests/web/support/react-compiler-coverage-hints';
 
 const authoredExecutablePaths = clientSourceManifest.authoredExecutablePaths;
 
@@ -15,7 +16,18 @@ if (
 }
 
 export default defineConfig({
-    plugins: [react()],
+    plugins: [
+        // Compile components exactly as vite.config.ts does, so tests exercise
+        // the same memoised React that ships.
+        react({
+            babel: {
+                plugins: [
+                    'babel-plugin-react-compiler',
+                    reactCompilerCoverageHints,
+                ],
+            },
+        }),
+    ],
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./resources/js', import.meta.url)),

@@ -81,11 +81,13 @@ export function EligibleCard({
                         </span>
                     </span>
                 </span>
-                {job.kind === 'monthly' && (
-                    <StatusPill tone="blue" className="mt-2.5 inline-block">
-                        {t('auditor.jobs.kind_monthly')}
-                    </StatusPill>
-                )}
+                {/* Offers of both kinds share the list, so each says which it is. */}
+                <StatusPill
+                    tone={job.kind === 'monthly' ? 'blue' : 'amber'}
+                    className="mt-2.5 inline-block"
+                >
+                    {t(`auditor.jobs.kind_${job.kind}`)}
+                </StatusPill>
                 <div className="mt-3 flex gap-2">
                     <StatTile
                         label={t('auditor.jobs.requested')}

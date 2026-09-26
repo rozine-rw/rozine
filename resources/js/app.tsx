@@ -8,17 +8,24 @@ import AuthLayout from '@/layouts/auth-layout';
 import PublicLayout from '@/layouts/public-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+/*
+ * The product's name, not an environment setting: APP_NAME (and VITE_APP_NAME from it) still reads
+ * the starter kit's "Laravel" in some .env files, and it must never reach a tab title.
+ */
+const appName = 'Rozine';
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
-    layout: (name) => {
+    layout: (name, page) => {
         switch (true) {
-            // Public pages, audit seal verification among them: no session, no role shell.
+            // Public pages, audit seal verification among them: no session, no role shell. The
+            // error page's not-found answer too, which a visitor with no session reaches from a
+            // public link.
             case name === 'home':
             case name === 'welcome':
             case name === 'pulse':
             case name.startsWith('audit/'):
+            case name === 'identity/access-denied' && page.props.status === 404:
                 return PublicLayout;
             // The Suite launcher and the role apps draw their own shells.
             case name === 'dashboard':

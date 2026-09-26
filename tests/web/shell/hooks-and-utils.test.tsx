@@ -1,4 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useFlashToast } from '@/hooks/use-flash-toast';
@@ -81,7 +82,13 @@ describe('current URL behavior', () => {
     it('uses a deterministic origin when rendering without a browser window', () => {
         vi.stubGlobal('window', undefined);
 
-        expect(useCurrentUrl().currentUrl).toBe('/settings/profile');
+        function ServerUrl() {
+            return <span>{useCurrentUrl().currentUrl}</span>;
+        }
+
+        expect(renderToString(<ServerUrl />)).toBe(
+            '<span>/settings/profile</span>',
+        );
     });
 
     it('returns the requested current and fallback values', () => {

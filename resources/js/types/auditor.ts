@@ -980,6 +980,11 @@ export type SealedStage = SealedRecord & {
     seal_status: 'valid' | 'unavailable';
     /** A linked amendment of this report, if one exists; this report stays unchanged. */
     amended_by: { report_id: string; link: RouteLink } | null;
+    /**
+     * The public seal check for this report, as the Business co-sign page's `seal.verification`
+     * links it. Optional until the server sends it on the sealed stage; no link shows without it.
+     */
+    verification?: RouteLink | null;
 };
 
 /** A blocking conflict: work stopped, only the partner's receipt shown. */

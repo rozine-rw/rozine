@@ -1,5 +1,5 @@
 import type { FormDataType } from '@inertiajs/core';
-import { router, useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useRef } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { useAgo } from '@/components/auditor/clock';
@@ -86,6 +86,23 @@ export function useVariancePreview(
 
         return () => window.clearTimeout(timer);
     }, [key, delay]);
+}
+
+/**
+ * The figure a step's field starts from. A variance preview puts the typed figure in the page's
+ * query, and a reload of that URL has the server measure the variance against it again — so the
+ * field shows that same figure, never an empty or older one beside a variance it did not produce.
+ * With no previewed figure, it is the figure the server holds for the step (or empty).
+ */
+export function usePreviewedFigure(name: string, saved: string | null): string {
+    const { url } = usePage();
+    const previewed = new URL(url, 'https://rozine.invalid').searchParams.get(
+        name,
+    );
+
+    return previewed !== null && /^\d+$/u.test(previewed)
+        ? previewed
+        : (saved ?? '');
 }
 
 /** Step title and lead (design L1039–1040). */

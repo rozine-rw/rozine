@@ -143,10 +143,19 @@ export function StepPhotos({
         <form id={STEP_FORM} onSubmit={submit} noValidate>
             <StepHeading
                 title={t('auditor.photos.title')}
-                lead={t('auditor.photos.lead', {
-                    required: stage.required,
-                    captured,
-                })}
+                lead={
+                    extras.length === 0
+                        ? t('auditor.photos.lead', {
+                              required: stage.required,
+                              captured,
+                          })
+                        : `${t('auditor.photos.lead', {
+                              required: stage.required,
+                              captured,
+                          })} ${t('auditor.photos.extras', {
+                              count: extras.length,
+                          })}`
+                }
             />
             <ul
                 aria-label={t('auditor.photos.grid')}
