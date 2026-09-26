@@ -220,6 +220,7 @@ describe('A repayment', () => {
             },
         ];
         opened(page).servicing_before.dpd = null;
+        opened(page).dpd_at_receipt = null;
         render(<AdminRepayments {...page} />);
         const panel = section('Allocation');
 
@@ -230,6 +231,7 @@ describe('A repayment', () => {
             within(panel).queryByRole('link', { name: 'Open the postings' }),
         ).not.toBeInTheDocument();
         expect(section('Note servicing')).toHaveTextContent('DPD—');
+        expect(drawer()).toHaveTextContent('DPD at receipt—');
     });
 
     it('renders the live-minimal contract with nothing offered', () => {
