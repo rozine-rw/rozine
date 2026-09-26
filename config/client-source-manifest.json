@@ -480,6 +480,7 @@
         "resources/js/lib/investor/use-wide.ts",
         "resources/js/lib/pass-card-image.ts",
         "resources/js/lib/pulse.ts",
+        "resources/js/lib/rozine/dispute-note.ts",
         "resources/js/lib/rozine/format.ts",
         "resources/js/lib/rozine/operation.ts",
         "resources/js/lib/utils.ts",
@@ -544,10 +545,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 516,
+        "totalTrackedSources": 517,
         "generated": 160,
         "declarationOnly": 17,
-        "authoredExecutable": 339
+        "authoredExecutable": 340
     },
-    "coverageSetSha256": "6f37010204e7eaf91e335d9bf1dd979cd9e7373eba28c99806438b5cb8d1bbc5"
+    "coverageSetSha256": "df7abe23cab0aa17272822b4e94fde8a9bd16fbb617bd268a73294cd62e49a5e"
 }

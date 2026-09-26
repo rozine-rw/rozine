@@ -3419,8 +3419,6 @@ const rw: Catalog = {
     'business.audit_cosign.disputed.supporting_text':
         'Inyandiko yawe isobanura',
     'business.audit_cosign.disputed.files': "Dosiye zawe z'ibimenyetso",
-    'business.audit_cosign.disputed.resolution_note':
-        "Icyitonderwa cy'abakozi ba Rozine",
     'auditor.sealed.body_disputed':
         'Raporo ifite kashe. {party} yarayijuririye, bityo igihe cyo kuyisuzuma cyahagaritswe kandi nta kintu gitangazwa mu gihe ubujurire bugikomeza.',
     'auditor.sealed.dispute.title': "Ubujurire bw'ikigo",
@@ -3441,8 +3439,6 @@ const rw: Catalog = {
     'auditor.sealed.dispute.outcome.amended': 'Umwanzuro: yavuguruwe',
     'auditor.sealed.dispute.outcome.upheld':
         'Umwanzuro: ibyagaragajwe byagumishijweho',
-    'auditor.sealed.dispute.resolution_note':
-        "Icyitonderwa cy'abakozi ba Rozine",
     'auditor.sealed.dispute.uphold': 'Gumishaho ibyagaragajwe',
     'auditor.dispute_uphold.lead':
         'Impamvu yawe yoherezwa ku bakozi ba Rozine, basuzuma ubujurire bwa {business}. Kugumishaho ibyagaragajwe ntibitangaza raporo.',
@@ -3459,6 +3455,29 @@ const rw: Catalog = {
     'auditor.sealed.body_published_staff':
         "Byatangajwe n'abakozi ba Rozine ku wa {date}. Ikigo nticyayisinyeho.",
     'auditor.sealed.cosign.not_signed': 'Ntiyasinywe',
+    'business.audit_cosign.head_title_read': "Raporo y'igenzura",
+    'business.audit_cosign.lead_read':
+        "CPA wawe yafunze iyi raporo nyuma y'igenzura ryakorewe aho ukorera. Ibi ni ibyo yabonye.",
+    'business.audit_cosign.heading.signed':
+        "Raporo y'igenzura, yasinywe kandi iratangazwa",
+    'business.audit_cosign.heading.auto_approved':
+        "Raporo y'igenzura, yatangajwe mu buryo bwikora nyuma y'amasaha 24",
+    'business.audit_cosign.heading.staff_resolved':
+        "Raporo y'igenzura, yatangajwe n'abakozi ba Rozine",
+    'business.audit_cosign.heading.disputed':
+        "Raporo y'igenzura, ubujurire burimo gusuzumwa",
+    'business.audit_cosign.heading.amended':
+        "Raporo y'igenzura, yavuguruwe nyuma y'ubujurire bwawe",
+    'business.audit_cosign.heading.dispute_closed':
+        "Raporo y'igenzura, ubujurire bwarangiye",
+    'business.audit_cosign.heading.unavailable': "Raporo y'igenzura",
+    'business.audit_cosign.disputed.note.cpa': 'Impamvu ya CPA',
+    'business.audit_cosign.disputed.note.staff':
+        "Icyitonderwa cy'abakozi ba Rozine",
+    'business.audit_cosign.disputed.note.unknown': "Icyitonderwa cy'isuzuma",
+    'auditor.sealed.dispute.note.cpa': 'Impamvu yawe yo kugumishaho',
+    'auditor.sealed.dispute.note.staff': "Icyitonderwa cy'abakozi ba Rozine",
+    'auditor.sealed.dispute.note.unknown': "Icyitonderwa cy'isuzuma",
 };
 
 export default rw;

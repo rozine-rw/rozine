@@ -3438,8 +3438,6 @@ const fr: Catalog = {
     'business.audit_cosign.disputed.supporting_text':
         'Votre texte justificatif',
     'business.audit_cosign.disputed.files': 'Vos fichiers justificatifs',
-    'business.audit_cosign.disputed.resolution_note':
-        'Note du personnel Rozine',
     'auditor.sealed.body_disputed':
         "Le rapport est scellé. {party} l'a contesté : sa fenêtre d'examen est suspendue et rien n'est publié tant que la contestation est ouverte.",
     'auditor.sealed.dispute.title': "Contestation de l'entreprise",
@@ -3460,7 +3458,6 @@ const fr: Catalog = {
         'Issue : modification requise',
     'auditor.sealed.dispute.outcome.amended': 'Issue : rapport modifié',
     'auditor.sealed.dispute.outcome.upheld': 'Issue : constats maintenus',
-    'auditor.sealed.dispute.resolution_note': 'Note du personnel Rozine',
     'auditor.sealed.dispute.uphold': 'Maintenir les constats',
     'auditor.dispute_uphold.lead':
         'Votre motif est transmis au personnel Rozine, qui examine la contestation de {business}. Maintenir les constats ne publie pas le rapport.',
@@ -3477,6 +3474,28 @@ const fr: Catalog = {
     'auditor.sealed.body_published_staff':
         "Publié par le personnel Rozine le {date}. L'entreprise ne l'a pas cosigné.",
     'auditor.sealed.cosign.not_signed': 'Non cosigné',
+    'business.audit_cosign.head_title_read': "Rapport d'audit",
+    'business.audit_cosign.lead_read':
+        "Votre expert-comptable a scellé ce rapport après l'audit sur place. Voici ses constats factuels.",
+    'business.audit_cosign.heading.signed':
+        "Rapport d'audit, cosigné et publié",
+    'business.audit_cosign.heading.auto_approved':
+        "Rapport d'audit, publié automatiquement après la fenêtre de 24 heures",
+    'business.audit_cosign.heading.staff_resolved':
+        "Rapport d'audit, publié par le personnel Rozine",
+    'business.audit_cosign.heading.disputed':
+        "Rapport d'audit, contestation en cours d'examen",
+    'business.audit_cosign.heading.amended':
+        "Rapport d'audit, modifié après votre contestation",
+    'business.audit_cosign.heading.dispute_closed':
+        "Rapport d'audit, contestation close",
+    'business.audit_cosign.heading.unavailable': "Rapport d'audit",
+    'business.audit_cosign.disputed.note.cpa': 'Motif du CPA',
+    'business.audit_cosign.disputed.note.staff': 'Note du personnel Rozine',
+    'business.audit_cosign.disputed.note.unknown': "Note d'examen",
+    'auditor.sealed.dispute.note.cpa': 'Votre motif de maintien',
+    'auditor.sealed.dispute.note.staff': 'Note du personnel Rozine',
+    'auditor.sealed.dispute.note.unknown': "Note d'examen",
 };
 
 export default fr;

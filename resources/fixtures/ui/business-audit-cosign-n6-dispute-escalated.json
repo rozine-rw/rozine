@@ -79,7 +79,7 @@
                 "supporting_text": "Synthetic fixture text. Finding SYN-F-02 counts refund slip 0142 as a sale; the refund slip and the 14 August till roll are attached.",
                 "proof_files": [],
                 "outcome": null,
-                "resolution_note": null,
+                "resolution_note": "Synthetic CPA reason. The till roll shows the sale on 14 August and the refund slip is dated 16 August, so the finding stands.",
                 "amendment": null
             }
         },

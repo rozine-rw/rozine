@@ -3,6 +3,7 @@ import { StatusPill } from '@/components/auditor/ui';
 import type { PillTone } from '@/components/auditor/ui';
 import { ProofFileList } from '@/components/rozine/proof-file-list';
 import { useTranslation } from '@/hooks/use-translation';
+import { disputeNoteAuthor } from '@/lib/rozine/dispute-note';
 import { formatDate } from '@/lib/rozine/format';
 import type { AuditDispute, AuditDisputeStatus } from '@/types/audit-dispute';
 
@@ -106,7 +107,9 @@ export function DisputePanel({
             {dispute.resolution_note !== null && (
                 <div className="mt-2 rounded-xl bg-rz-page px-3 py-2.5 dark:bg-rz-surface-muted">
                     <p className="text-[10px] font-bold tracking-[.04em] text-rz-slate uppercase">
-                        {t('auditor.sealed.dispute.resolution_note')}
+                        {t(
+                            `auditor.sealed.dispute.note.${disputeNoteAuthor(dispute)}`,
+                        )}
                     </p>
                     <p className="mt-1 text-[12px] leading-[1.5] break-words whitespace-pre-line text-rz-ink">
                         {dispute.resolution_note}

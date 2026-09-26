@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import { SectionLabel } from '@/components/business/audit-cosign/report-summary';
 import { ProofFileList } from '@/components/rozine/proof-file-list';
 import { useTranslation } from '@/hooks/use-translation';
+import { disputeNoteAuthor } from '@/lib/rozine/dispute-note';
 import { formatDateTime } from '@/lib/rozine/format';
 import type { BusinessAuditDispute } from '@/types/business-audit';
 
@@ -97,7 +98,9 @@ export function DisputeRecord({ dispute }: { dispute: BusinessAuditDispute }) {
             {dispute.resolution_note !== null && (
                 <div className="mt-2.5 rounded-xl bg-rz-page px-3.5 py-3 dark:bg-rz-surface-muted">
                     <p className="text-[11px] font-bold tracking-[.04em] text-rz-slate uppercase">
-                        {t('business.audit_cosign.disputed.resolution_note')}
+                        {t(
+                            `business.audit_cosign.disputed.note.${disputeNoteAuthor(dispute)}`,
+                        )}
                     </p>
                     <p className="mt-1 text-[12.5px] leading-[1.55] break-words whitespace-pre-line text-rz-ink">
                         {dispute.resolution_note}
