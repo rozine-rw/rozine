@@ -29,6 +29,7 @@ use App\Models\AuditReportSeal;
 use App\Models\AuditReportSignature;
 use Carbon\CarbonImmutable;
 use Closure;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -60,6 +61,18 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
             $this->event($publication, 'report.delivered', 'system', null, null,
                 ['delivered_at' => $payload['sealed_at'], 'due_at' => $publication->due_at?->toIso8601String()], 1);
         }
+    }
+
+    /** @return array{id: string, kind: string, status: string}|null */
+    public function latestForBusiness(string $businessId): ?array
+    {
+        $report = AuditReport::query()->join('audit_report_publications as publications', 'publications.audit_report_id', '=', 'audit_reports.id')
+            ->where('audit_reports.business_id', $businessId)->where('audit_reports.status', 'sealed')
+            ->whereNotExists(fn (Builder $query): Builder => $query->selectRaw('1')->from('audit_reports as amendments')
+                ->whereColumn('amendments.amends_id', 'audit_reports.id'))
+            ->orderByDesc('audit_reports.id')->first(['audit_reports.id', 'audit_reports.kind', 'publications.status as publication_status']);
+
+        return $report === null ? null : ['id' => $report->id, 'kind' => $report->kind, 'status' => $report->getAttribute('publication_status')];
     }
 
     /** @return array<string, mixed> */

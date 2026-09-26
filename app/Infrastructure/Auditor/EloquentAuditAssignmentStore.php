@@ -32,6 +32,7 @@ use App\Models\AuditorProfile;
 use App\Models\AuditReport;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as Query;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -178,7 +179,15 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             if ($limit < 1 || $limit > AuditReadPolicy::MAX_PAGE_SIZE || ($before !== null && ! preg_match('/^[0-9a-hjkmnp-tv-z]{26}$/D', $before))) {
                 throw new CommandRejection('AUDIT_JOBS_PAGE_INVALID', 422);
             }
-            $query = AuditAssignment::query()->where('party_id', $partyId)->whereIn('status', ['offered', 'accepted'])->orderByDesc('id');
+            $query = AuditAssignment::query()->where('party_id', $partyId)->whereIn('status', ['offered', 'accepted'])
+                ->whereNotExists(fn (Query $reports): Query => $reports->selectRaw('1')->from('audit_reports as reports')
+                    ->join('audit_report_publications as publications', 'publications.audit_report_id', '=', 'reports.id')
+                    ->whereColumn('reports.assignment_id', 'audit_assignments.id')
+                    ->whereColumn('reports.assignment_revision', 'audit_assignments.revision')
+                    ->whereColumn('reports.author_party_id', 'audit_assignments.party_id')->where('publications.status', 'published')
+                    ->whereNotExists(fn (Query $children): Query => $children->selectRaw('1')->from('audit_reports as children')
+                        ->whereColumn('children.amends_id', 'reports.id')))
+                ->orderByDesc('id');
             if ($before !== null) {
                 $query->where('id', '<', $before);
             }
@@ -203,10 +212,18 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             function (array $context, array $candidates) use ($assignmentId, $operation): mixed {
                 [$record, $candidate] = $this->current($context, $candidates, $assignmentId);
                 $profile = $context['business']['profile'];
+                $report = $record->status === 'accepted' ? AuditReport::query()
+                    ->leftJoin('audit_report_publications as publications', 'publications.audit_report_id', '=', 'audit_reports.id')
+                    ->where('audit_reports.assignment_id', $record->id)->where('audit_reports.assignment_revision', $record->revision)
+                    ->where('audit_reports.author_party_id', $record->party_id)
+                    ->whereNotExists(fn (Query $query): Query => $query->selectRaw('1')->from('audit_reports as amendments')
+                        ->whereColumn('amendments.amends_id', 'audit_reports.id'))
+                    ->first(['audit_reports.id', 'audit_reports.status', 'publications.status as publication_status']) : null;
 
                 return $operation(['assignment' => $this->view($record, $candidate),
                     'business' => ['name' => $profile['name'], 'industry' => $profile['industry'], 'district' => $profile['district']],
-                    'distance_upper_bound_m' => $candidate['distance_upper_bound_m']]);
+                    'distance_upper_bound_m' => $candidate['distance_upper_bound_m'],
+                    'report' => $report === null ? null : ['id' => $report->id, 'status' => $report->status, 'publication_status' => $report->getAttribute('publication_status')]]);
             }, [$partyId]);
     }
 

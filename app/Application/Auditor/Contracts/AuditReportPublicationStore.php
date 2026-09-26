@@ -14,6 +14,14 @@ interface AuditReportPublicationStore
      */
     public function forAuditor(string $reportId): array;
 
+    /**
+     * The caller holds current Business view authority. Return only the latest unamended
+     * sealed report's navigation metadata; the destination rechecks publication authority.
+     *
+     * @return array{id: string, kind: string, status: string}|null
+     */
+    public function latestForBusiness(string $businessId): ?array;
+
     /** @return array<string, mixed> */
     public function get(int $userId, int $contextRevision, string $businessId, string $reportId): array;
 
