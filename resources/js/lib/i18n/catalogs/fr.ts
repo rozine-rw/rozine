@@ -34,6 +34,7 @@ const fr: Catalog = {
         'Votre compte personnel est autorisé à ouvrir cet espace.',
     'identity.home.back': 'Choisir une application',
     'identity.home.settings': 'Paramètres du compte',
+    'identity.home.auditor_nav': "Votre travail d'audit",
     'identity.home.saving': 'Enregistrement de votre position…',
     'identity.home.failed':
         'Impossible de mettre à jour votre position. Revenez au lanceur pour vérifier votre accès.',
@@ -2986,6 +2987,7 @@ const fr: Catalog = {
     'auditor.sealed.amended_by':
         "Le rapport {report} modifie celui-ci ; ce rapport reste tel qu'il a été scellé.",
     'auditor.sealed.open_amendment': 'Ouvrir la modification',
+    'auditor.sealed.verify': 'Vérifier le sceau',
     'auditor.audit.amends':
         'Ceci est une modification liée du rapport {report}. Ce rapport reste inchangé.',
     'auditor.audit.open_original': "Ouvrir l'original",

@@ -35,6 +35,7 @@ const rw: Catalog = {
     'identity.home.staff_ready': 'Konti yawe y’umukozi yemerewe kwinjira hano.',
     'identity.home.back': 'Hitamo porogaramu',
     'identity.home.settings': 'Igenamiterere rya konti',
+    'identity.home.auditor_nav': "Akazi kawe k'igenzura",
     'identity.home.saving': 'Kubika aho ugeze…',
     'identity.home.failed':
         'Ntitwashoboye kubika aho ugeze. Subira aho uhitamo porogaramu urebe uburenganzira bwawe.',
@@ -2976,6 +2977,7 @@ const rw: Catalog = {
     'auditor.sealed.amended_by':
         'Raporo {report} ikosora iyi; iyi raporo iguma uko yashyizweho kashe.',
     'auditor.sealed.open_amendment': 'Fungura ikosora',
+    'auditor.sealed.verify': 'Genzura kashe',
     'auditor.audit.amends':
         'Iyi ni ikosora rifitanye isano na raporo {report}. Iyo raporo iguma idahindutse.',
     'auditor.audit.open_original': "Fungura iy'umwimerere",

@@ -1567,6 +1567,28 @@ describe('Audit procedure — after the seal', () => {
         ).toBeInTheDocument();
         expect(dialog).not.toHaveTextContent(/co-signs by/u);
         expect(within(dialog).queryByRole('note')).not.toBeInTheDocument();
+        /* No public seal check is linked until the server sends one. */
+        expect(
+            within(dialog).queryByRole('link', { name: 'Verify seal' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('links the public seal check the server sends with the sealed report', () => {
+        render(
+            <AuditorAudit
+                {...withStage<SealedStage>(sealed, (stage) => ({
+                    ...stage,
+                    verification: {
+                        url: '/audit-seals/rpt_01J9Q3W7K9V5D1',
+                        method: 'get',
+                    },
+                }))}
+            />,
+        );
+
+        expect(
+            screen.getByRole('link', { name: 'Verify seal' }),
+        ).toHaveAttribute('href', '/audit-seals/rpt_01J9Q3W7K9V5D1');
     });
 
     /** The sealed report's sheet, whose introduction says where the filing stands. */

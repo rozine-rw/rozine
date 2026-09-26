@@ -191,6 +191,14 @@ export function SealedStatus({
                 <p className="mt-1.5 text-[10.5px] leading-[1.5] text-[#1e3aff] dark:text-rz-investor-text">
                     {t('auditor.sealed.licence', { licence: stage.licence })}
                 </p>
+                {stage.verification != null && (
+                    <Link
+                        href={stage.verification}
+                        className="mt-2 inline-block text-[12px] font-bold text-rz-accent-app-text"
+                    >
+                        {t('auditor.sealed.verify')}
+                    </Link>
+                )}
             </div>
 
             {stage.amended_by !== null && (

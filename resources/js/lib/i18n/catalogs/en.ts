@@ -34,6 +34,7 @@ const en = {
         'Your staff account has permission to open this workspace.',
     'identity.home.back': 'Choose an app',
     'identity.home.settings': 'Account settings',
+    'identity.home.auditor_nav': 'Your audit work',
     'identity.home.saving': 'Saving your position…',
     'identity.home.failed':
         'We could not update your position. Return to the launcher to check your access.',
@@ -2911,6 +2912,7 @@ const en = {
     'auditor.sealed.amended_by':
         'Report {report} amends this one; this report stays as sealed.',
     'auditor.sealed.open_amendment': 'Open the amendment',
+    'auditor.sealed.verify': 'Verify seal',
     'auditor.audit.amends':
         'This is a linked amendment of report {report}. That report remains unchanged.',
     'auditor.audit.open_original': 'Open the original',
