@@ -19,9 +19,9 @@ use RuntimeException;
 final class AuditSealingFixture
 {
     /** @return array<string, mixed> */
-    public static function ready(int $signatories = 1, string $kind = 'flash', bool $findings = false, ?int $requiredSignatories = null): array
+    public static function ready(int $signatories = 1, string $kind = 'flash', bool $findings = false, ?int $requiredSignatories = null, bool $recordConsent = true): array
     {
-        $fixture = BusinessQuoteFixture::ready($signatories, $kind === 'flash' ? 'flash' : 'routine', $requiredSignatories);
+        $fixture = BusinessQuoteFixture::ready($signatories, $kind === 'flash' ? 'flash' : 'routine', $requiredSignatories, $recordConsent);
         $acceptance = BusinessQuoteFixture::acceptance($fixture);
         for ($index = 0; $index < ($requiredSignatories ?? $signatories); $index++) {
             BusinessQuoteFixture::submit($fixture, $acceptance, $index);

@@ -92,10 +92,12 @@ final class BusinessQuoteFixture
     }
 
     /** @return Fixture */
-    public static function ready(int $signatories = 1, string $auditKind = 'flash', ?int $requiredSignatories = null): array
+    public static function ready(int $signatories = 1, string $auditKind = 'flash', ?int $requiredSignatories = null, bool $recordConsent = true): array
     {
         $fixture = self::make(kind: $signatories === 1 ? 'person' : 'organization', signatories: $signatories, auditKind: $auditKind, requiredSignatories: $requiredSignatories);
-        ConsentFixture::record($fixture['audit']['staff']);
+        if ($recordConsent) {
+            ConsentFixture::record($fixture['audit']['staff']);
+        }
         self::evaluate($fixture);
         app(SaveBusinessApplication::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'],
             $fixture['application']->id, 3, BusinessApplicationFixture::fields('12000000'), 'review', (string) Str::uuid());
