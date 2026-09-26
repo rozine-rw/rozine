@@ -21,6 +21,7 @@ use App\Models\AuditReportPublication;
 use App\Models\AuditReportSeal;
 use App\Models\AuditReportSignature;
 use Closure;
+use Illuminate\Database\Query\Builder;
 
 /**
  * @phpstan-import-type Business from \App\Application\Business\Contracts\BusinessAuthorityStore
@@ -39,6 +40,18 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
         (new AuditReportPublication)->forceFill(['audit_report_id' => $reportId, 'business_id' => $payload['business']['id'],
             'mandate_version' => $payload['business']['mandate_version'], 'report_revision' => $payload['sealed_revision'],
             'digest' => $digest, 'revision' => 1, 'status' => 'pending'])->save();
+    }
+
+    /** @return array{id: string, kind: string, status: string}|null */
+    public function latestForBusiness(string $businessId): ?array
+    {
+        $report = AuditReport::query()->join('audit_report_publications as publications', 'publications.audit_report_id', '=', 'audit_reports.id')
+            ->where('audit_reports.business_id', $businessId)->where('audit_reports.status', 'sealed')
+            ->whereNotExists(fn (Builder $query): Builder => $query->selectRaw('1')->from('audit_reports as amendments')
+                ->whereColumn('amendments.amends_id', 'audit_reports.id'))
+            ->orderByDesc('audit_reports.id')->first(['audit_reports.id', 'audit_reports.kind', 'publications.status as publication_status']);
+
+        return $report === null ? null : ['id' => $report->id, 'kind' => $report->kind, 'status' => $report->getAttribute('publication_status')];
     }
 
     /** @return array<string, mixed> */

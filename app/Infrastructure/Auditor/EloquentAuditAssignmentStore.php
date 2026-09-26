@@ -29,8 +29,10 @@ use App\Models\AuditConflictDeclaration;
 use App\Models\AuditLocation;
 use App\Models\AuditorIndependenceReview;
 use App\Models\AuditorProfile;
+use App\Models\AuditReport;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as Query;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -202,10 +204,18 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             function (array $context, array $candidates) use ($assignmentId, $operation): mixed {
                 [$record, $candidate] = $this->current($context, $candidates, $assignmentId);
                 $profile = $context['business']['profile'];
+                $report = $record->status === 'accepted' ? AuditReport::query()
+                    ->leftJoin('audit_report_publications as publications', 'publications.audit_report_id', '=', 'audit_reports.id')
+                    ->where('audit_reports.assignment_id', $record->id)->where('audit_reports.assignment_revision', $record->revision)
+                    ->where('audit_reports.author_party_id', $record->party_id)
+                    ->whereNotExists(fn (Query $query): Query => $query->selectRaw('1')->from('audit_reports as amendments')
+                        ->whereColumn('amendments.amends_id', 'audit_reports.id'))
+                    ->first(['audit_reports.id', 'audit_reports.status', 'publications.status as publication_status']) : null;
 
                 return $operation(['assignment' => $this->view($record, $candidate),
                     'business' => ['name' => $profile['name'], 'industry' => $profile['industry'], 'district' => $profile['district']],
-                    'distance_upper_bound_m' => $candidate['distance_upper_bound_m']]);
+                    'distance_upper_bound_m' => $candidate['distance_upper_bound_m'],
+                    'report' => $report === null ? null : ['id' => $report->id, 'status' => $report->status, 'publication_status' => $report->getAttribute('publication_status')]]);
             }, [$partyId]);
     }
 

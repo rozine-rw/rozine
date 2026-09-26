@@ -31,7 +31,8 @@
                             "url": "/business/01k6q1a2b3c4d5e6f7g8h9j0k1/applications",
                             "method": "post"
                         }
-                    }
+                    },
+                    "audit_report": null
                 },
                 {
                     "business_id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
@@ -49,7 +50,8 @@
                     },
                     "actions": {
                         "create": null
-                    }
+                    },
+                    "audit_report": null
                 },
                 {
                     "business_id": "01k6q2m3n4p5q6r7s8t9v0w1x2",
@@ -67,7 +69,8 @@
                     },
                     "actions": {
                         "create": null
-                    }
+                    },
+                    "audit_report": null
                 },
                 {
                     "business_id": "01k6q3y4z5a6b7c8d9e0f1g2h3",
@@ -76,7 +79,8 @@
                     "application": null,
                     "actions": {
                         "create": null
-                    }
+                    },
+                    "audit_report": null
                 },
                 {
                     "business_id": "01k6q4j5k6m7n8p9q0r1s2t3v4",
@@ -94,7 +98,8 @@
                     },
                     "actions": {
                         "create": null
-                    }
+                    },
+                    "audit_report": null
                 }
             ],
             "operation": {
@@ -107,6 +112,7 @@
                     "method": "get"
                 }
             }
-        }
+        },
+        "links": null
     }
 }
