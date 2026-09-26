@@ -14,7 +14,6 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Mockery\MockInterface;
 use Tests\Support\AuditSealingFixture;
 use Tests\Support\BusinessQuoteFixture as Fixture;
 
@@ -187,10 +186,10 @@ it('refuses destructive rollback once any report history exists', function (): v
 });
 
 it('rolls the unused report schema back and reapplies it without rewriting legacy application history', function (): void {
-    $this->mock(BusinessExposureStore::class, function (MockInterface $mock): void {
-        $mock->shouldReceive('current')->andReturn([]);
-        $mock->shouldReceive('reserve')->once();
-    });
+    $exposures = $this->createMock(BusinessExposureStore::class);
+    $exposures->method('current')->willReturn([]);
+    $exposures->expects($this->once())->method('reserve');
+    $this->app->instance(BusinessExposureStore::class, $exposures);
     $fixture = Fixture::ready();
     Fixture::submit($fixture, Fixture::acceptance($fixture));
     $before = $fixture['application']->refresh()->getRawOriginal();
