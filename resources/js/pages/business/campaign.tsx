@@ -12,7 +12,10 @@ import { useBoundedPoll } from '@/hooks/use-bounded-poll';
 import { useC3Command } from '@/hooks/use-c3-command';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
-import type { BusinessCampaignProps } from '@/types/business';
+import type {
+    BusinessCampaignProps,
+    BusinessCampaignV2Props,
+} from '@/types/business';
 import type { CampaignLifecycle } from '@/types/settlement';
 
 /** Lifecycles where the raise ended without the business receiving the money. */
@@ -31,7 +34,8 @@ const POLLED = [
  * A published campaign's progress (C3 v2 §2f, `business.campaigns.show`), opened from the live
  * raise or Your notes. Only aggregate progress is shown: no Investor names, identity kinds or
  * per-Investor amounts, and no investor list (H16). While raising, and only while the server lists
- * `campaign.cancel`, the business may cancel; an in-flight closing is polled within bounds.
+ * `campaign.cancel`, the business may cancel; an in-flight closing is polled within bounds. A
+ * `business-campaign-v2` page adds the repaying and repaid phases once the notes are issued (C4 v1).
  */
 export default function BusinessCampaign({
     home,
@@ -43,7 +47,7 @@ export default function BusinessCampaign({
     identity_context_revision,
     server_time,
     preview_outcome,
-}: BusinessCampaignProps) {
+}: BusinessCampaignProps | BusinessCampaignV2Props) {
     const { t } = useTranslation();
     const [cancelling, setCancelling] = useState(false);
     const { progress } = note;

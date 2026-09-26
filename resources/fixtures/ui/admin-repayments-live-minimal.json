@@ -1,0 +1,186 @@
+{
+    "component": "admin/repayments",
+    "synthetic": true,
+    "props": {
+        "viewer": {
+            "id": "01k5zs0a1b2c3d4e5f6g7h8j9k",
+            "name": "Staff Member",
+            "email": "staff@example.test",
+            "initials": "SM",
+            "role": "approver"
+        },
+        "nav": {
+            "applications": {
+                "url": "/admin/applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/admin/disbursements",
+                "method": "get"
+            },
+            "repayments": {
+                "url": "/admin/repayments",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/admin/businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/admin/investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/admin/auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/admin/staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/admin/ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/admin/events",
+                "method": "get"
+            },
+            "today": {
+                "url": "/admin",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/dashboard",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 0,
+            "disbursements": 1
+        },
+        "search": "",
+        "server_time": "2027-01-23T10:00:00+02:00",
+        "contract_version": "staff-servicing-v1",
+        "staff_access_version": "staff-access-v1",
+        "allowed_actions": [],
+        "counts": {
+            "due_today": 0,
+            "overdue": 0,
+            "exceptions": 0
+        },
+        "repayments": [
+            {
+                "id": "01k7c3p0a1b2c3d4e5f6g7h8j9",
+                "reference": "RPY-2027-0001",
+                "business": "Business",
+                "note_title": "Note",
+                "source": "wallet",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "3465000"
+                },
+                "state": "received",
+                "dpd_at_receipt": 0,
+                "received_at": "2027-01-23T09:12:04+02:00",
+                "link": {
+                    "url": "/admin/repayments/01k7c3p0a1b2c3d4e5f6g7h8j9",
+                    "method": "get"
+                }
+            }
+        ],
+        "pagination": {
+            "next": null
+        },
+        "repayment": {
+            "id": "01k7c3p0a1b2c3d4e5f6g7h8j9",
+            "reference": "RPY-2027-0001",
+            "business": "Business",
+            "note_title": "Note",
+            "source": "wallet",
+            "amount": {
+                "currency": "RWF",
+                "amount": "3465000"
+            },
+            "state": "received",
+            "dpd_at_receipt": 0,
+            "received_at": "2027-01-23T09:12:04+02:00",
+            "link": {
+                "url": "/admin/repayments/01k7c3p0a1b2c3d4e5f6g7h8j9",
+                "method": "get"
+            },
+            "revision": 1,
+            "note_id": "note_h8j9",
+            "servicing_before": {
+                "state": "due_today",
+                "dpd": 0,
+                "outstanding": {
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "3000000"
+                    },
+                    "return": {
+                        "currency": "RWF",
+                        "amount": "405000"
+                    },
+                    "late_fees": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "service_fee": {
+                        "currency": "RWF",
+                        "amount": "60000"
+                    },
+                    "total": {
+                        "currency": "RWF",
+                        "amount": "3465000"
+                    }
+                }
+            },
+            "servicing_after": null,
+            "source_detail": {
+                "kind": "wallet",
+                "wallet_entry_id": "01k7c3p0wle0000000000000000"
+            },
+            "reconciliation": {
+                "state": "unreconciled",
+                "tolerance": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "expected": {
+                    "currency": "RWF",
+                    "amount": "3465000"
+                },
+                "observed": {
+                    "currency": "RWF",
+                    "amount": "3465000"
+                },
+                "difference": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "causes": [],
+                "checked_at": null,
+                "policy_version": "synthetic-reconciliation-policy-0"
+            },
+            "allocation": null,
+            "receipts": [],
+            "trail": [],
+            "allowed_actions": [],
+            "actions": {},
+            "links": {
+                "close": {
+                    "url": "/admin/repayments",
+                    "method": "get"
+                },
+                "ledger": null,
+                "operation": {
+                    "url": "/admin/repayments/operations/{request_id}",
+                    "method": "get"
+                },
+                "business": null
+            }
+        }
+    }
+}

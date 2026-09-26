@@ -10,8 +10,8 @@ use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * The pages that read the checkpoint 3 contracts (C3 proposal v2), whose fixtures are all synthetic
- * and non-activatable.
+ * The pages that read the checkpoint 3 contracts (C3 proposal v2) and the checkpoint 4 contracts
+ * (C4 proposal v1), whose fixtures are all synthetic and non-activatable.
  *
  * @return list<string>
  */
@@ -20,7 +20,7 @@ function c3PreviewComponents(): array
     return [
         'investor/deals', 'investor/deal', 'investor/checkout', 'investor/commitment',
         'investor/portfolio', 'investor/holding', 'investor/wallet',
-        'admin/disbursements', 'admin/applications',
+        'admin/disbursements', 'admin/applications', 'admin/repayments',
         'business/publish', 'business/campaign',
     ];
 }
@@ -140,6 +140,56 @@ test('C3 fixtures cover every surface in the scaffold, each with a live-minimal 
         'business-campaign-cancelled', 'business-campaign-failed-closing',
     );
 });
+
+test('C4 fixtures cover every surface in the scaffold, each with a live-minimal shape', function () {
+    $fixtures = c3PreviewFixtures();
+    $names = array_keys($fixtures);
+
+    foreach (['investor-holding-servicing', 'investor-portfolio-earnings', 'admin-repayments', 'business-campaign-v2'] as $surface) {
+        expect($names)->toContain("{$surface}-live-minimal");
+    }
+
+    expect($names)->toContain(
+        'investor-holding-servicing-current', 'investor-holding-servicing-processing',
+        'investor-holding-servicing-arrears-dpd8', 'investor-holding-servicing-late-fee-collected',
+        'investor-holding-servicing-repaid', 'investor-portfolio-earnings', 'investor-portfolio-earnings-empty',
+        'admin-repayments', 'admin-repayments-allocated', 'admin-repayments-received',
+        'admin-repayments-exception-mismatch', 'admin-repayments-requery-unknown', 'admin-repayments-unconfirmed',
+        'business-campaign-repaying', 'business-campaign-repaying-overdue', 'business-campaign-repaid',
+    );
+
+    foreach ($fixtures as $name => $fixture) {
+        $version = $fixture['props']['contract_version'] ?? null;
+
+        if (str_starts_with($name, 'investor-holding-servicing') || str_starts_with($name, 'investor-portfolio-earnings')) {
+            expect($version)->toBe('investor-servicing-v1', $name);
+        }
+
+        if (str_starts_with($name, 'admin-repayments')) {
+            expect($version)->toBe('staff-servicing-v1', $name);
+        }
+
+        if (in_array($name, ['business-campaign-repaying', 'business-campaign-repaying-overdue', 'business-campaign-repaid', 'business-campaign-v2-live-minimal'], true)) {
+            expect($version)->toBe('business-campaign-v2', $name);
+        }
+    }
+});
+
+test('every C4 holding is never eligible for resale, and flags each late-fee line as collection-only and unguaranteed', function (string $name) {
+    /** @var array{secondary: array{eligibility: array{eligible: bool, causes: list<string>}}, late_fees: array{lines: list<array<string, mixed>>}|null} $holding */
+    $holding = c3PreviewFixtures()[$name]['props']['holding'];
+
+    expect($holding['secondary']['eligibility']['eligible'])->toBeFalse()
+        ->and($holding['secondary']['eligibility']['causes'])->toContain('FEATURE_DISABLED');
+
+    foreach ($holding['late_fees']['lines'] ?? [] as $line) {
+        expect($line['payable_only_on_collection'])->toBeTrue()
+            ->and($line['guaranteed_by_rozine'])->toBeFalse();
+    }
+})->with(fn () => array_values(array_filter(
+    array_keys(c3PreviewFixtures()),
+    static fn (string $name): bool => str_starts_with($name, 'investor-holding-servicing'),
+)));
 
 test('no C3 fixture posts anywhere real', function (string $name) {
     $fixture = c3PreviewFixtures()[$name];

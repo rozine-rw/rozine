@@ -57,6 +57,16 @@ const GLYPHS: Record<AdminSection, ReactNode> = {
             <path d="M3 10h18" />
         </>
     ),
+    repayments: (
+        <>
+            <rect x="3" y="6" width="18" height="12" rx="2.5" />
+            <path
+                d="M8 12h8M13 9l3 3-3 3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </>
+    ),
     ledger: (
         <path
             d="M12 3v18M8 7h6a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h7"
@@ -95,7 +105,7 @@ const GROUPS: {
     { group: null, items: ['today'] },
     { group: 'accounts', items: ['businesses', 'investors', 'auditors'] },
     { group: 'capital', items: ['applications'] },
-    { group: 'treasury', items: ['disbursements', 'ledger'] },
+    { group: 'treasury', items: ['disbursements', 'repayments', 'ledger'] },
     { group: 'console', items: ['staff', 'events'] },
 ];
 

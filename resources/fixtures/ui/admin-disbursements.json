@@ -22,6 +22,10 @@
                 "url": "/preview/admin-disbursements",
                 "method": "get"
             },
+            "repayments": {
+                "url": "/preview/admin-repayments",
+                "method": "get"
+            },
             "businesses": {
                 "url": "/preview/admin-businesses",
                 "method": "get"
