@@ -11,6 +11,8 @@ use LogicException;
 
 class PrepareCheckpointTwo extends Command
 {
+    protected $hidden = true;
+
     protected $signature = 'local:checkpoint-two {--otp= : Show the current authenticator code for a C2 account alias, e.g. auditor-seal}';
 
     protected $description = 'Prepare or inspect the additive, local-only checkpoint 2 manual test pack';

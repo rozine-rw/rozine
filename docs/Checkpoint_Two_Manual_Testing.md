@@ -4,7 +4,7 @@ This pack exercises the merged checkpoint 2 implementation with synthetic data. 
 
 ## Setup and repeat runs
 
-From the repository root, with the normal local PostgreSQL configuration (`APP_ENV=local`, loopback host, database `rozine`):
+Use a fresh local PostgreSQL database with no consent or engagement releases. Existing developer databases that have already run audit scenarios will be refused and preserved. From the repository root, use `APP_ENV=local`, a loopback host, and database `rozine` or the dedicated `rozine_manual`:
 
 ```sh
 composer install
@@ -14,6 +14,8 @@ php artisan local:checkpoint-two --no-interaction
 ```
 
 The command prints the accounts and application/report paths. Open `storage/app/private/manual-tests/checkpoint-two/START-HERE.md` for clickable links. The machine-readable IDs are in `manifest.json` beside it. The equivalent explicit seeder is `php artisan db:seed --class=CheckpointTwoSeeder --no-interaction`; ordinary `db:seed` does not install this pack.
+
+For a separate manual-testing database, create an empty local `rozine_manual` database and point a separate checkout's `.env` at it before running the commands above. Each checkout must keep its own private storage and manifest with its database. This lets you keep your normal developer database intact. The opt-in command is hidden from `artisan list` and refuses execution outside local/testing even when invoked by name.
 
 Keep the scheduler running in another terminal while testing:
 
@@ -25,7 +27,7 @@ The scheduler runs `audits:advance-offers` and `statements:extract` every minute
 
 Rerunning preserves all accounts, passwords, workflow progress and existing records. It does not reset, truncate or re-date evidence. Keep the manifest with its database. If the manifest is stale, missing while reserved accounts remain, or the database already has unrelated consent/engagement releases, the command refuses to overwrite them. Use a separate clean local installation for a fresh pack; do not run `migrate:fresh` against a database you want to retain. Pending deadlines and credential/evidence freshness continue to follow real time.
 
-The pack requires Composer development dependencies and `Tests\Support` scenario builders. It runs the same application actions used by the acceptance tests. Local/testing environments and loopback PostgreSQL databases named `rozine` or `rozine_test` are allowed; testing is restricted to `rozine_test`. UAT, demo and production are refused. Tests use the dedicated `rozine_test` database, never the manual-testing database.
+The pack requires Composer development dependencies and `Tests\Support` scenario builders. It runs the same application actions used by the acceptance tests. Local environments allow loopback PostgreSQL databases named `rozine`, `rozine_manual` or `rozine_test`; testing is restricted to `rozine_test`. UAT, demo and production are refused. Tests use the dedicated `rozine_test` database, never the manual-testing database.
 
 ## Logins
 
@@ -45,7 +47,7 @@ Rozine-C2-local-only-42!
 
 The second organization signatory is `signatory-review@c2.rozine.invalid`. The main Operations account is `operations@c2.rozine.invalid`; it has Approver and Compliance access. Additional scenario-specific staff accounts appear in the command output and manifest.
 
-Business accounts do not require MFA. Auditor and staff accounts each have a separate authenticator secret. Obtain their current six-digit code with the account alias:
+Business accounts do not require MFA. New Auditor and staff accounts each have a separate authenticator secret and no pre-generated recovery codes. Obtain their current six-digit code with the account alias:
 
 ```sh
 php artisan local:checkpoint-two --otp=auditor-seal

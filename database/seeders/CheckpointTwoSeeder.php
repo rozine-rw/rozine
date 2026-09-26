@@ -48,7 +48,7 @@ class CheckpointTwoSeeder extends Seeder
         if (! in_array($isolation->profile(), ['local', 'testing'], true)
             || ($config['driver'] ?? null) !== 'pgsql'
             || ! in_array($config['host'] ?? null, ['127.0.0.1', 'localhost', '::1'], true)
-            || ! in_array($config['database'] ?? null, ['rozine', 'rozine_test'], true)
+            || ! in_array($config['database'] ?? null, ['rozine', 'rozine_test', 'rozine_manual'], true)
             || ($isolation->profile() === 'testing' && $config['database'] !== 'rozine_test')
             || ! empty($config['url']) || isset($config['read']) || isset($config['write'])
             || config('filesystems.disks.local.driver') !== 'local') {
@@ -116,10 +116,10 @@ class CheckpointTwoSeeder extends Seeder
                 $assignment = $fixture['assignment']->id;
                 $report = isset($fixture['report']) ? $fixture['report']->id : null;
                 $scenarios[$name] = ['business' => $business, 'application' => $application, 'assignment' => $assignment, 'report' => $report,
-                    'business_path' => "/business/{$business}/applications/{$application}",
-                    'auditor_path' => $report === null ? "/auditor/jobs/{$assignment}" : "/auditor/reports/{$report}",
-                    'operations_path' => "/admin/audit-assignments/{$assignment}",
-                    'report_path' => $report === null ? null : "/business/{$business}/audit-reports/{$report}"];
+                    'business_path' => route('business.applications.show', ['business' => $business, 'application' => $application], false),
+                    'auditor_path' => $report === null ? route('auditor.jobs.show', ['assignment' => $assignment], false) : route('auditor.reports.show', ['report' => $report], false),
+                    'operations_path' => route('staff.audit.show', ['assignment' => $assignment], false),
+                    'report_path' => $report === null ? null : route('business.audit-reports.show', ['business' => $business, 'report' => $report], false)];
             }
             foreach ([$draft, $review] as $fixture) {
                 $facts = AuditSourceFactsFixture::facts();
@@ -154,7 +154,7 @@ class CheckpointTwoSeeder extends Seeder
         $email = $alias.'@c2.rozine.invalid';
         $user->forceFill(['name' => 'C2 Synthetic '.$alias, 'email' => $email, 'password' => self::PASSWORD,
             'two_factor_secret' => $mfa ? encrypt((new Google2FA)->generateSecretKey()) : null,
-            'two_factor_recovery_codes' => $mfa ? encrypt(json_encode(['c2-local-recovery-'.$alias], JSON_THROW_ON_ERROR)) : null,
+            'two_factor_recovery_codes' => $mfa ? encrypt('[]') : null,
             'two_factor_confirmed_at' => $mfa ? now()->subMinute() : null])->save();
 
         return ['id' => $user->id, 'label' => $alias, 'email' => $email, 'mfa' => $mfa];
@@ -197,8 +197,8 @@ class CheckpointTwoSeeder extends Seeder
                 $report = DB::table('audit_reports')->where('application_id', $scenario['application'])->whereNull('amends_id')->value('id');
                 if (is_string($report)) {
                     $pack['scenarios'][$name]['report'] = $report;
-                    $pack['scenarios'][$name]['auditor_path'] = '/auditor/reports/'.$report;
-                    $pack['scenarios'][$name]['report_path'] = '/business/'.$scenario['business'].'/audit-reports/'.$report;
+                    $pack['scenarios'][$name]['auditor_path'] = route('auditor.reports.show', ['report' => $report], false);
+                    $pack['scenarios'][$name]['report_path'] = route('business.audit-reports.show', ['business' => $scenario['business'], 'report' => $report], false);
                 }
             }
         }
@@ -217,13 +217,13 @@ class CheckpointTwoSeeder extends Seeder
             $csv .= "{$day},sales,4000000\n{$day},costs,-1000000\n";
         }
         $guide = "# Local checkpoint 2 test pack\n\nSynthetic data only. Created ".$pack['created_at'].". Reruns preserve progress.\n\n";
-        $guide .= '[Log in]('.url('/login').') — password: `'.self::PASSWORD."`\n\n";
+        $guide .= '[Log in]('.route('login').') — password: `'.self::PASSWORD."`\n\n";
         $guide .= "Auditor and staff MFA: `php artisan local:checkpoint-two --otp=ACCOUNT-ALIAS`. Use a fresh code for sealing after login; a code can only be used once.\n\n";
         foreach ($pack['scenarios'] as $name => $scenario) {
             $guide .= '## '.ucfirst($name)."\n\nBusiness: `business-{$name}@c2.rozine.invalid`; Auditor: `auditor-{$name}@c2.rozine.invalid`.\n\n";
             $guide .= '[Application]('.url($scenario['business_path']).') · [Auditor job/report]('.url($scenario['auditor_path']).') · [Operations case JSON]('.url($scenario['operations_path']).")\n\n";
             if ($scenario['report_path'] !== null) {
-                $guide .= '[Business report and co-sign]('.url($scenario['report_path']).') · [Verify seal]('.url('/audit-seals/'.$scenario['report']).")\n\n";
+                $guide .= '[Business report and co-sign]('.url($scenario['report_path']).') · [Verify seal]('.route('audit.seals.verify', ['report' => $scenario['report']]).")\n\n";
             }
         }
         $guide .= "Review needs the second account `signatory-review@c2.rozine.invalid`. Operations: `operations@c2.rozine.invalid`.\n\n";

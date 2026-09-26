@@ -6,12 +6,14 @@ use App\Application\Auditor\GetAuditProcedure;
 use App\Application\Auditor\GetBusinessAuditReport;
 use App\Application\Auditor\VerifyAuditReportSeal;
 use App\Application\Identity\Contracts\ConsentCatalog;
+use App\Console\Commands\PrepareCheckpointTwo;
 use App\Models\User;
 use Database\Seeders\CheckpointTwoSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Tests\Support\AuditEngagementFixture;
 use Tests\Support\ConsentFixture;
 
 beforeEach(function (): void {
@@ -30,13 +32,18 @@ it('creates usable staged cases and preserves existing data and manual progress 
     $this->assertDatabaseCount('audit_report_signatures', 1);
     $this->assertDatabaseHas('audit_report_publications', ['audit_report_id' => $pack['scenarios']['published']['report'], 'status' => 'published']);
     $this->assertDatabaseHas('audit_report_publications', ['audit_report_id' => $pack['scenarios']['cosign']['report'], 'status' => 'pending']);
+    $secrets = [];
     foreach ($pack['accounts'] as $account) {
         $user = User::query()->findOrFail($account['id']);
         expect(Hash::check(CheckpointTwoSeeder::PASSWORD, $user->password))->toBeTrue();
         if ($account['mfa']) {
-            expect(decrypt($user->two_factor_secret))->toMatch('/^[A-Z2-7]{16,}$/');
+            $secrets[] = decrypt($user->two_factor_secret);
+            expect(end($secrets))->toMatch('/^[A-Z2-7]{16,}$/');
+            expect(json_decode(decrypt($user->two_factor_recovery_codes), true))->toBeEmpty();
         }
     }
+    expect($secrets)->toHaveCount(15)->not->toContain('JBSWY3DPEHPK3PXP')
+        ->and(array_unique($secrets))->toHaveCount(15);
     $auditor = User::query()->where('email', 'auditor-seal@c2.rozine.invalid')->firstOrFail();
     expect(app(GetAuditProcedure::class)->handle($auditor->id, 1, $pack['scenarios']['seal']['report'])['can_seal'])->toBeTrue();
     $owner = User::query()->where('email', 'business-cosign@c2.rozine.invalid')->firstOrFail();
@@ -75,6 +82,7 @@ it('rejects nonlocal environments and database targets before writing', function
     ['environment', 'uat'],
     ['database.connections.pgsql.host', 'database.example.com'],
     ['database.connections.pgsql.database', 'rozine_live'],
+    ['database.connections.pgsql.database', 'rozine_manual'],
     ['database.connections.pgsql.url', 'postgresql://user:pass@example.com/rozine'],
 ]);
 
@@ -113,4 +121,23 @@ it('refuses existing consent releases without replacing them', function (): void
     $this->assertDatabaseCount('consent_releases', 1);
     $this->assertDatabaseCount('users', 1);
     $this->assertDatabaseCount('business_applications', 0);
+});
+
+it('refuses existing engagement releases without replacing them', function (): void {
+    $release = AuditEngagementFixture::release(ConsentFixture::staff());
+    $before = $release->getRawOriginal();
+    expect(Artisan::call('local:checkpoint-two'))->toBe(1);
+    expect(Artisan::output())->toContain('C2_EXISTING_RELEASES');
+    expect($release->refresh()->getRawOriginal())->toBe($before);
+    $this->assertDatabaseCount('audit_engagement_releases', 1);
+    $this->assertDatabaseCount('consent_releases', 0);
+    $this->assertDatabaseCount('business_applications', 0);
+    Storage::disk('local')->assertMissing(CheckpointTwoSeeder::MANIFEST);
+});
+
+it('permits the dedicated manual database only in local and hides the opt-in command', function (): void {
+    app()->instance('env', 'local');
+    config(['database.connections.pgsql.database' => 'rozine_manual']);
+    app(CheckpointTwoSeeder::class)->assertLocal();
+    expect(app(PrepareCheckpointTwo::class)->isHidden())->toBeTrue();
 });
