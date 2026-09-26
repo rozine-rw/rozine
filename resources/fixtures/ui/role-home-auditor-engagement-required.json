@@ -24,6 +24,33 @@
                 "url": "/preview/auditor-engagement",
                 "method": "get"
             }
+        },
+        "links": {
+            "home": {
+                "url": "/preview/role-home-auditor-engagement-required",
+                "method": "get"
+            },
+            "jobs": {
+                "url": "/preview/auditor-jobs-engagement-required",
+                "method": "get"
+            },
+            "portfolio": null,
+            "profile": {
+                "url": "/preview/auditor-profile-engagement-required",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-auditor",
+                "method": "get"
+            },
+            "conflicts": {
+                "url": "/preview/auditor-conflicts",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
+                "method": "get"
+            }
         }
     }
 }

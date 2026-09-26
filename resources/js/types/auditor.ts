@@ -894,6 +894,11 @@ export type CountStage = {
         observed_units: string | null;
         reported_units: string | null;
         variance: Variance | null;
+        /**
+         * The stock policy tolerance in units, as the server words it: "0". It is separate from
+         * the cash `tolerance` above, which is in RWF.
+         */
+        tolerance_units: string;
     };
     operational_status: 'active' | 'suspended' | 'restricted' | null;
 };

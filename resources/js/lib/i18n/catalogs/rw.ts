@@ -256,6 +256,12 @@ const rw: Catalog = {
         'Ushobora kureba ubu bucuruzi, ariko ntiwemerewe gutangiza ubusabe bw’igishoro.',
     'business.entries.empty':
         'Nta bucuruzi ushobora gukorera buhujwe n’iyi konti.',
+    'business.entries.audit_report.pending':
+        'Raporo y’igenzura yiteguye: yisuzume kandi uyishyireho umukono',
+    'business.entries.audit_report.published': 'Raporo y’igenzura yatangajwe',
+    'business.entries.audit_report.disputed': 'Ubujurire bwawe burasuzumwa',
+    'business.entries.audit_report.escalated':
+        'Abakozi ba Rozine barasuzuma ubujurire bwawe',
     'business.entries.more': 'Erekana ibindi',
     'business.grow.title': 'Kwaguka',
     'business.grow.subtitle': 'Shaka igishoro kinini igihe witeguye.',
@@ -1464,6 +1470,7 @@ const rw: Catalog = {
     'auditor.nav.jobs': 'Imirimo',
     'auditor.nav.portfolio': 'Ibyo ushinzwe',
     'auditor.nav.profile': 'Umwirondoro',
+    'auditor.nav.conflicts': 'Inyungu wagaragaje',
     'auditor.nav.jobs_badge': 'Imirimo {count} ifunguye',
     'auditor.clock.label': 'Igihe gisigaye kuri uyu murimo',
     'auditor.clock.time_left': 'Igihe gisigaye',
@@ -1780,6 +1787,7 @@ const rw: Catalog = {
     'auditor.count.units': 'ibice',
     'auditor.count.stock_hint': 'Ububiko bwatangajwe: ibice {units}',
     'auditor.count.stock_no_baseline': 'Nta bubiko bwatangajwe kuri iki gihe.',
+    'auditor.count.stock_tolerance': 'Urugero rw’ububiko: ibice {units}',
     'auditor.count.operational': 'Uko ikigo gikora',
     'auditor.count.status.active': 'Kirakora',
     'auditor.count.status.suspended': 'Cyahagaze',

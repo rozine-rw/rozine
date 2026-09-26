@@ -1369,6 +1369,13 @@ describe('Audit procedure — monthly statements and count', () => {
         expect(
             within(dialog).getByText('Reported stock: 190 units'),
         ).toBeInTheDocument();
+        /* The stock tolerance is in units, apart from the cash line's RWF tolerance. */
+        expect(
+            within(dialog).getByText('Stock tolerance: 0 units'),
+        ).toBeInTheDocument();
+        expect(
+            within(dialog).queryByText(/Stock tolerance: RWF/u),
+        ).not.toBeInTheDocument();
         expect(
             within(dialog).getByText('1 Sept – 30 Sept'),
         ).toBeInTheDocument();
@@ -1433,6 +1440,7 @@ describe('Audit procedure — monthly statements and count', () => {
                     ...stage,
                     cash: { observed: null, statement: null, variance: null },
                     stock: {
+                        ...stage.stock,
                         observed_units: null,
                         reported_units: null,
                         variance: null,
@@ -1456,6 +1464,27 @@ describe('Audit procedure — monthly statements and count', () => {
         expect(screen.queryAllByRole('radio', { checked: true })).toHaveLength(
             0,
         );
+    });
+
+    it('states the stock tolerance in units exactly as the server sends it', () => {
+        render(
+            <AuditorAudit
+                {...withStage<CountStage>(count, (stage) => ({
+                    ...stage,
+                    tolerance: 'RWF 5,000',
+                    stock: { ...stage.stock, tolerance_units: '1500' },
+                }))}
+            />,
+        );
+
+        expect(
+            screen.getByText('Stock tolerance: 1,500 units'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Statements show RWF 1,210,000 · tolerance RWF 5,000',
+            ),
+        ).toBeInTheDocument();
     });
 });
 
@@ -1493,9 +1522,10 @@ describe('Audit procedure — retained records', () => {
             ),
         ).toBeInTheDocument();
         expect(within(dialog).queryByText(/RWF 0\b/u)).not.toBeInTheDocument();
-        expect(
-            within(dialog).queryByText(/\b0 units/u),
-        ).not.toBeInTheDocument();
+        /* The only zero in units is the stock policy tolerance, never a missing count. */
+        expect(within(dialog).getAllByText(/\b0 units/u)).toEqual([
+            within(dialog).getByText('Stock tolerance: 0 units'),
+        ]);
     });
 
     it('offers no amendment while the stage does not enable it', () => {
