@@ -15,9 +15,9 @@ import {
 } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
-    MonthlyUpdate,
     MonthlyUpdateStatus,
-    ProofPhoto,
+    MonthlyUpdateSummary,
+    PublishedPhoto,
 } from '@/types/investor';
 
 const STATUS_PILL: Record<MonthlyUpdateStatus, string> = {
@@ -29,7 +29,7 @@ const STATUS_PILL: Record<MonthlyUpdateStatus, string> = {
 /** The design shows three reports, then the rest on "Show more". */
 const FIRST_PAGE = 3;
 
-const netTone = (update: MonthlyUpdate) =>
+const netTone = (update: MonthlyUpdateSummary) =>
     isNegative(update.net) ? 'text-rz-danger-text' : POSITIVE_TEXT;
 
 function StatusPill({ status }: { status: MonthlyUpdateStatus }) {
@@ -73,9 +73,9 @@ function MonthTile({ month }: { month: string }) {
 }
 
 type UpdateListProps = {
-    updates: MonthlyUpdate[];
+    updates: MonthlyUpdateSummary[];
     variant: 'phone' | 'desk';
-    onOpen: (update: MonthlyUpdate) => void;
+    onOpen: (update: MonthlyUpdateSummary) => void;
 };
 
 /**
@@ -230,14 +230,15 @@ function Micro({ children }: { children: string }) {
 }
 
 type UpdateSheetProps = {
-    update: MonthlyUpdate;
+    update: MonthlyUpdateSummary;
     onClose: () => void;
 };
 
 /**
  * One verified monthly report (phone L4543–4602, desk L468–527): who audited it and when, the
- * statement-verified inflow and outflow, the net, the business's note, the auditor's note and the
- * proof photos, each of which opens full size.
+ * statement-verified inflow and outflow, the net, the business's note, the auditor's note and any
+ * captioned images the business published, each of which opens full size. No location text or
+ * Audit Partner originals are shown (C3 v2, H9).
  */
 export function UpdateSheet({ update, onClose }: UpdateSheetProps) {
     const { t, locale } = useTranslation();
@@ -394,7 +395,7 @@ export function UpdateSheet({ update, onClose }: UpdateSheetProps) {
 
                 {update.photos.length > 0 && (
                     <>
-                        <Micro>{t('investor.updates.proof_photos')}</Micro>
+                        <Micro>{t('investor.updates.published_photos')}</Micro>
                         <div className="rz-hscroll mt-[9px] flex gap-[9px] overflow-x-auto">
                             {update.photos.map((item, index) => (
                                 <button
@@ -438,18 +439,15 @@ export function UpdateSheet({ update, onClose }: UpdateSheetProps) {
 }
 
 type ProofLightboxProps = {
-    photos: ProofPhoto[];
+    photos: PublishedPhoto[];
     index: number;
     onMove: (index: number) => void;
     onClose: () => void;
 };
 
-/**
- * A proof photo full size (design L4507–4541): caption, required-or-added tag, counter, GPS and
- * capture time, and the camera-only provenance line.
- */
+/** A published image full size (design L4507–4541): its caption and counter, and nothing else. */
 function ProofLightbox({ photos, index, onMove, onClose }: ProofLightboxProps) {
-    const { t, locale } = useTranslation();
+    const { t } = useTranslation();
     const photo = photos[index];
     const many = photos.length > 1;
 
@@ -483,43 +481,10 @@ function ProofLightbox({ photos, index, onMove, onClose }: ProofLightboxProps) {
                         <span className="min-w-0 flex-1 text-[14.5px] font-bold text-white">
                             {photo.caption}
                         </span>
-                        <span
-                            className={cn(
-                                'shrink-0 rounded-[10px] px-2 py-1 text-[10.5px] font-bold tracking-[.04em] text-white',
-                                photo.required
-                                    ? 'bg-[rgba(29,158,117,.5)]'
-                                    : 'bg-[rgba(30,58,255,.5)]',
-                            )}
-                        >
-                            {photo.required
-                                ? t('investor.updates.required_shot')
-                                : t('investor.updates.added_by_auditor')}
-                        </span>
                         <span className="shrink-0 text-[11px] font-semibold text-white">
                             {index + 1} / {photos.length}
                         </span>
                     </div>
-                    <div className="mt-3 flex flex-wrap gap-x-7 gap-y-3">
-                        <div className="min-w-0">
-                            <p className="text-[10.5px] font-bold tracking-[.07em] text-white/55 uppercase">
-                                {t('investor.updates.gps')}
-                            </p>
-                            <p className="mt-1 text-[12.5px] font-semibold text-white">
-                                {photo.gps}
-                            </p>
-                        </div>
-                        <div className="min-w-0">
-                            <p className="text-[10.5px] font-bold tracking-[.07em] text-white/55 uppercase">
-                                {t('investor.updates.captured')}
-                            </p>
-                            <p className="mt-1 text-[12.5px] font-semibold text-white">
-                                {formatDate(photo.captured_at, locale)}
-                            </p>
-                        </div>
-                    </div>
-                    <p className="mt-3 border-t border-white/[.07] pt-2.5 text-[10.5px] text-white">
-                        {t('investor.updates.camera_only')}
-                    </p>
                 </div>
             </div>
             {many && (

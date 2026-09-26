@@ -10,6 +10,18 @@ import { vi } from 'vite-plus/test';
 type Payload = Record<string, unknown>;
 type Transform = (data: Payload) => Payload;
 
+type HttpOptions = {
+    onError?: (errors: Record<string, string>) => void;
+    onHttpException?: (response: {
+        status: number;
+        data: string;
+        headers: Record<string, string>;
+    }) => void;
+};
+
+/** Answers one JSON command sent through `useHttp`, in the order a test queues them. */
+export type Responder = (options: HttpOptions) => Promise<unknown>;
+
 export const inertia = {
     posts: [] as { url: string; data: Payload }[],
     reload: vi.fn(),
@@ -19,6 +31,11 @@ export const inertia = {
     errors: {} as Record<string, string>,
     processing: false,
     succeed: false,
+    /** Every JSON request sent through `useHttp`, with the body it carried. */
+    calls: [] as { url: string; method: string; body: unknown }[],
+    queue: [] as Responder[],
+    /** Field errors `useHttp` reports after a 422. */
+    httpErrors: {} as Record<string, string>,
 };
 
 export function resetInertia(): void {
@@ -27,9 +44,82 @@ export function resetInertia(): void {
     inertia.errors = {};
     inertia.processing = false;
     inertia.succeed = false;
+    inertia.calls = [];
+    inertia.queue = [];
+    inertia.httpErrors = {};
     inertia.reload.mockReset();
     inertia.visit.mockReset();
     inertia.routerPost.mockReset();
+}
+
+/** A reload that finishes at once, so a refresh the page awaits resolves. */
+export function finishReloads(): void {
+    inertia.reload.mockImplementation((options?: { onFinish?: () => void }) =>
+        options?.onFinish?.(),
+    );
+}
+
+export const answers =
+    (result: unknown): Responder =>
+    () =>
+        Promise.resolve(result);
+
+/** A 422: the field errors land in `errors` and the request resolves without a body. */
+export const invalid =
+    (errors: Record<string, string>): Responder =>
+    () => {
+        inertia.httpErrors = errors;
+
+        return Promise.resolve(undefined);
+    };
+
+export const fails =
+    (status: number, body?: unknown): Responder =>
+    (options) => {
+        options.onHttpException?.({
+            status,
+            data: body === undefined ? '' : JSON.stringify(body),
+            headers: {},
+        });
+
+        return Promise.reject(new Error(`HTTP ${status}`));
+    };
+
+export const offline = (): Responder => () =>
+    Promise.reject(new Error('Network error'));
+
+export function useHttp() {
+    const body = useRef<() => unknown>(() => ({}));
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+    return {
+        errors,
+        clearErrors: () => setErrors({}),
+        transform: (callback: () => unknown) => {
+            body.current = callback;
+        },
+        submit: async (
+            route: { url: string; method: string },
+            options: HttpOptions,
+        ) => {
+            inertia.calls.push({
+                url: route.url,
+                method: route.method,
+                body: body.current(),
+            });
+            const respond = inertia.queue.shift();
+            const result = await (respond
+                ? respond(options)
+                : new Promise(() => undefined));
+
+            if (result === undefined) {
+                setErrors(inertia.httpErrors);
+                options.onError?.(inertia.httpErrors);
+            }
+
+            return result;
+        },
+    };
 }
 
 export function Head({ title }: { title: string }) {

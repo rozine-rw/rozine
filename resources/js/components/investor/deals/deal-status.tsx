@@ -1,33 +1,45 @@
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatMonthYearLong } from '@/lib/rozine/format';
+import { formatDate, formatMonthYearLong } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { DealCard, DealDetail } from '@/types/investor';
+import type { C3DealCard, C3DealDetail } from '@/types/investor';
 
 /**
- * Why a listing cannot be bought right now (crosswalk MVP-INVESTOR-SCR-01-ST-02 and
- * SCR-02-ST-01..03: sold out, frozen, withdrawn). Rendered in the design's info-box style; it
- * names the actual state and never invents a next listing date.
+ * Why a listing cannot be bought right now (C3 v2 §2b): a restriction and the campaign's lifecycle
+ * are separate facts, so a restricted campaign still says whether it is raising, funded or in
+ * flight. Rendered in the design's info-box style; it names the actual state and never invents a
+ * next listing date.
  */
 export function DealStatusNotice({
     deal,
     className,
 }: {
-    deal: Pick<DealCard, 'status'>;
+    deal: Pick<C3DealCard, 'lifecycle' | 'restriction'>;
     className?: string;
 }) {
-    const { t } = useTranslation();
-
-    if (deal.status === 'open') {
-        return null;
-    }
+    const { t, locale } = useTranslation();
 
     return (
-        <InfoNotice
-            title={t(`investor.deal.notice.${deal.status}.title`)}
-            body={t(`investor.deal.notice.${deal.status}.body`)}
-            className={className}
-        />
+        <>
+            {deal.restriction !== null && (
+                <InfoNotice
+                    title={t(
+                        `investor.deal.restriction.${deal.restriction.code}`,
+                    )}
+                    body={t('investor.deal.restriction.body', {
+                        date: formatDate(deal.restriction.since, locale),
+                    })}
+                    className={className}
+                />
+            )}
+            {deal.lifecycle !== 'live' && (
+                <InfoNotice
+                    title={t(`investor.deal.notice.${deal.lifecycle}.title`)}
+                    body={t(`investor.deal.notice.${deal.lifecycle}.body`)}
+                    className={className}
+                />
+            )}
+        </>
     );
 }
 
@@ -63,7 +75,11 @@ export function InfoNotice({
 }
 
 /** A monthly report that missed the 7th (design L966–971). */
-export function OverdueReport({ deal }: { deal: DealDetail }) {
+export function OverdueReport({
+    deal,
+}: {
+    deal: Pick<C3DealDetail, 'overdue_report'>;
+}) {
     const { t, locale } = useTranslation();
 
     if (deal.overdue_report === null) {

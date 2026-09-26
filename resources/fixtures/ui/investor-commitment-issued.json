@@ -1,0 +1,185 @@
+{
+    "component": "investor/commitment",
+    "synthetic": true,
+    "props": {
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 5,
+        "server_time": "2026-09-23T09:00:00+02:00",
+        "allowed_actions": [],
+        "commitment": {
+            "id": "cmt1_01k6r3",
+            "revision": 2,
+            "campaign_id": "cmp_greenleaf",
+            "deal_name": "GreenLeaf Agro",
+            "units": "6",
+            "ordinals": [
+                {
+                    "first": "1201",
+                    "last": "1206"
+                }
+            ],
+            "principal": {
+                "currency": "RWF",
+                "amount": "30000"
+            },
+            "rights": {
+                "total_return": {
+                    "currency": "RWF",
+                    "amount": "4050"
+                },
+                "instalments": [
+                    {
+                        "index": 1,
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "5000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "675"
+                        }
+                    },
+                    {
+                        "index": 2,
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "5000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "675"
+                        }
+                    },
+                    {
+                        "index": 3,
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "5000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "675"
+                        }
+                    },
+                    {
+                        "index": 4,
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "5000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "675"
+                        }
+                    },
+                    {
+                        "index": 5,
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "5000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "675"
+                        }
+                    },
+                    {
+                        "index": 6,
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "5000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "675"
+                        }
+                    }
+                ]
+            },
+            "state": "issued",
+            "cancelled_by": null,
+            "closing": null,
+            "terms": {
+                "rate_pct": "13.5",
+                "term_months": 6,
+                "payout_fee": {
+                    "currency": "RWF",
+                    "amount": "341"
+                },
+                "policy_version": "synthetic-primary-policy-0",
+                "disclosure_version": "disclosure-2026-09.1"
+            },
+            "confirmation": {
+                "receipt_id": "rcp_cmt1",
+                "operation_id": "op_cmt1",
+                "request_id": "7f1c2a90-0000-4000-8000-00000000cmt1",
+                "code": "PRIMARY_COMMITTED",
+                "recorded_at": "2026-09-23T09:02:10+02:00",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "30000"
+                },
+                "units": "6",
+                "reference": "RZ-CMT-CMT1",
+                "revision": 2,
+                "policy_version": "synthetic-primary-policy-0",
+                "disclosure_version": "disclosure-2026-09.1",
+                "link": {
+                    "url": "/preview/investor-commitment-confirmed",
+                    "method": "get"
+                }
+            },
+            "refund": null,
+            "holding": {
+                "id": "h-greenleaf-c3",
+                "link": {
+                    "url": "/preview/investor-holding-issued",
+                    "method": "get"
+                }
+            },
+            "allowed_actions": [],
+            "actions": {
+                "cancel": null
+            },
+            "link": {
+                "url": "/preview/investor-commitment-issued",
+                "method": "get"
+            }
+        },
+        "refusal": null,
+        "links": {
+            "deals": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "close": {
+                "url": "/preview/investor-portfolio-awaiting-issue",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/investor-primary-operation-{request_id}",
+                "method": "get"
+            }
+        }
+    }
+}

@@ -2,42 +2,58 @@ import { Link, router } from '@inertiajs/react';
 import { InvestorShell } from '@/components/investor/investor-shell';
 import {
     BalanceCard,
-    FundingPanel,
-    FundingSwitch,
+    DepositPanel,
 } from '@/components/investor/wallet/funding';
 import {
-    EarningsCard,
+    DepositIntents,
+    HoldsList,
     ReceiptSheet,
-    Transactions,
+    WalletHistory,
 } from '@/components/investor/wallet/history';
+import { PollStopped } from '@/components/rozine/c3-notice';
+import { useBoundedPoll } from '@/hooks/use-bounded-poll';
 import { useTranslation } from '@/hooks/use-translation';
 import { useWide } from '@/lib/investor/use-wide';
-import type { InvestorWalletProps } from '@/types/investor';
+import type { C3InvestorWalletProps } from '@/types/investor';
 
 /**
- * Wallet (MVP-INVESTOR-SCR-08, design L2835–3095) and its receipts (L4637–4703): the available
- * balance, deposit and withdrawal through linked accounts, what came back (earnings) and every
- * money movement with its status. A phone shows one column; a wide screen shows balance and the
- * open panel beside the history, with receipts sliding up inside that column. The design's Rozine
- * Plus upsell is outside the MVP.
+ * Wallet (MVP-INVESTOR-SCR-08, design L2835–3095; C3 v2 §2a): the ledger total and its breakdown,
+ * live checkout holds, deposit through a linked account under a versioned deposit policy, recorded
+ * deposit intents, and the history with external cash apart from internal transfers. Withdrawal,
+ * earnings and exports are hidden in C3. Deposit intents still `pending` or `unknown` are polled,
+ * boundedly, for fresh facts. The design's Rozine Plus upsell is outside the MVP.
  */
-export default function InvestorWallet(props: InvestorWalletProps) {
+export default function InvestorWallet(props: C3InvestorWalletProps) {
     const { t } = useTranslation();
     const wide = useWide();
     const kind = props.funding.kind ?? (wide ? 'deposit' : null);
+    const inFlight = props.deposits.some(
+        (deposit) => deposit.state === 'pending' || deposit.state === 'unknown',
+    );
+    const poll = useBoundedPoll(inFlight, ['wallet', 'deposits', 'history']);
     const closeReceipt = () =>
         router.visit(props.links.close, { preserveScroll: true });
 
     const left = (
         <>
             <BalanceCard wallet={props.wallet} />
-            <FundingSwitch kind={kind} links={props.links} />
-            {kind !== null && (
-                <FundingPanel
+            {kind === null ? (
+                <Link
+                    href={props.links.deposit}
+                    preserveScroll
+                    className="mt-3.5 flex items-center justify-center gap-[7px] rounded-2xl bg-rz-accent-fill py-[13px] text-[13px] font-semibold text-white shadow-[0_5px_14px_-8px_rgba(20,45,95,.3)]"
+                >
+                    {t('investor.wallet.deposit')}
+                </Link>
+            ) : (
+                <DepositPanel
                     key={kind}
-                    kind={kind}
                     funding={props.funding}
                     actions={props.actions}
+                    allowed_actions={props.allowed_actions}
+                    identity_context_revision={props.identity_context_revision}
+                    preview_outcome={props.preview_outcome}
+                    operation={props.links.operation}
                     close={wide ? null : props.links.close}
                     wide={wide}
                 />
@@ -53,13 +69,20 @@ export default function InvestorWallet(props: InvestorWalletProps) {
                     </Link>
                 </p>
             )}
+            <HoldsList holds={props.holds} serverTime={props.server_time} />
         </>
     );
 
-    const receipt =
-        props.receipt !== null ? (
-            <ReceiptSheet receipt={props.receipt} close={closeReceipt} />
-        ) : null;
+    const right = (
+        <>
+            <DepositIntents deposits={props.deposits} />
+            <PollStopped {...poll} className="mt-2" />
+            <WalletHistory history={props.history} />
+            {props.receipt !== null && (
+                <ReceiptSheet receipt={props.receipt} close={closeReceipt} />
+            )}
+        </>
+    );
 
     return (
         <InvestorShell
@@ -79,12 +102,7 @@ export default function InvestorWallet(props: InvestorWalletProps) {
                                 {left}
                             </div>
                             <div className="rz-scroll relative flex min-h-0 min-w-0 flex-[0_0_calc(50%-9px)] flex-col overflow-y-auto rounded-2xl border border-rz-border bg-rz-surface p-4">
-                                <EarningsCard earnings={props.earnings} wide />
-                                <Transactions
-                                    transactions={props.transactions}
-                                    wide
-                                />
-                                {receipt}
+                                {right}
                             </div>
                         </div>
                     </div>
@@ -104,12 +122,7 @@ export default function InvestorWallet(props: InvestorWalletProps) {
                         </h1>
                     </div>
                     {left}
-                    <EarningsCard earnings={props.earnings} wide={false} />
-                    <Transactions
-                        transactions={props.transactions}
-                        wide={false}
-                    />
-                    {receipt}
+                    {right}
                 </div>
             )}
         </InvestorShell>

@@ -1,0 +1,168 @@
+{
+    "component": "admin/disbursements",
+    "synthetic": true,
+    "props": {
+        "viewer": {
+            "id": "01k5zs0a1b2c3d4e5f6g7h8j9k",
+            "name": "Staff Member",
+            "email": "staff@example.test",
+            "initials": "SM",
+            "role": "approver"
+        },
+        "nav": {
+            "applications": {
+                "url": "/admin/applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/admin/disbursements",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/admin/businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/admin/investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/admin/auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/admin/staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/admin/ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/admin/events",
+                "method": "get"
+            },
+            "today": {
+                "url": "/admin",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/dashboard",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 0,
+            "disbursements": 1
+        },
+        "search": "",
+        "server_time": "2026-10-03T17:00:00Z",
+        "contract_version": "staff-disbursement-v1",
+        "staff_access_version": "staff-access-v1",
+        "allowed_actions": [],
+        "disbursements": [
+            {
+                "id": "01k5zd7f3g9h2j6k0m4n8p1q5r",
+                "reference": "PAY-2026-0700",
+                "business": "Kimisagara Hardware",
+                "note_title": "Stock Expansion",
+                "destination": "MoMo ••• 0042",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "5000000"
+                },
+                "state": "ready",
+                "provider_state": null,
+                "link": {
+                    "url": "/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r",
+                    "method": "get"
+                }
+            }
+        ],
+        "pagination": {
+            "next": null
+        },
+        "awaiting_second_approver": 0,
+        "disbursement": {
+            "id": "01k5zd7f3g9h2j6k0m4n8p1q5r",
+            "reference": "PAY-2026-0700",
+            "business": "Kimisagara Hardware",
+            "note_title": "Stock Expansion",
+            "destination": "MoMo ••• 0042",
+            "amount": {
+                "currency": "RWF",
+                "amount": "5000000"
+            },
+            "state": "ready",
+            "provider_state": null,
+            "link": {
+                "url": "/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r",
+                "method": "get"
+            },
+            "campaign_id": "01k5zc9a8b7c6d5e4f3g2h1j0k",
+            "revision": 1,
+            "due_on": null,
+            "precheck": {
+                "state": "not_run",
+                "checked_at": null,
+                "policy_version": null,
+                "causes": []
+            },
+            "maker": null,
+            "checker": null,
+            "viewer_is_maker": false,
+            "approval_binding": null,
+            "step_up": {
+                "purpose": "disbursement.approve",
+                "route": null
+            },
+            "intent": null,
+            "dispatch": null,
+            "provider": null,
+            "hold": null,
+            "viewer_placed_hold": false,
+            "issue": null,
+            "refund": null,
+            "trail": [],
+            "allowed_actions": [],
+            "actions": {
+                "authorize": {
+                    "url": "/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/authorize",
+                    "method": "post"
+                },
+                "approve": {
+                    "url": "/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/approve",
+                    "method": "post"
+                },
+                "reject": {
+                    "url": "/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/reject",
+                    "method": "post"
+                },
+                "hold": {
+                    "url": "/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/hold",
+                    "method": "post"
+                },
+                "release_hold": {
+                    "url": "/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/release-hold",
+                    "method": "post"
+                },
+                "requery": {
+                    "url": "/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/requery",
+                    "method": "post"
+                }
+            },
+            "links": {
+                "close": {
+                    "url": "/admin/disbursements",
+                    "method": "get"
+                },
+                "ledger": null,
+                "operation": {
+                    "url": "/admin/disbursements/operations/{request_id}",
+                    "method": "get"
+                }
+            }
+        },
+        "refusal": null
+    }
+}

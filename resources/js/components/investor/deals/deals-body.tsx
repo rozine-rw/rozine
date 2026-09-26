@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import {
@@ -15,16 +15,16 @@ import {
     DeskTopBar,
     PhoneTopBar,
 } from '@/components/investor/deals/deal-top-bar';
-import { InvestBar } from '@/components/investor/deals/invest-bar';
+import { canReserve, InvestBar } from '@/components/investor/deals/invest-bar';
 import { useQuotedUnits } from '@/components/investor/deals/use-quote';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { withQuery } from '@/lib/investor/links';
 import { useFitScale } from '@/lib/investor/use-fit-scale';
 import { useWide } from '@/lib/investor/use-wide';
-import type { InvestorDealsProps } from '@/types/investor';
+import type { C3InvestorDealsProps, InvestGate } from '@/types/investor';
 
-type DealsBodyProps = InvestorDealsProps & {
+type DealsBodyProps = C3InvestorDealsProps & {
     /** A sheet drawn over the deck and invest bar (checkout), anchored to that column. */
     overlay?: ReactNode;
 };
@@ -32,9 +32,35 @@ type DealsBodyProps = InvestorDealsProps & {
 /** The design's Deals canvas height (L136); a shorter pane scales the canvas down. */
 const CANVAS_HEIGHT = 720;
 
-/** "No deals open" (crosswalk SCR-01-ST-01), in the design's caught-up layout (L596–603). */
-function EmptyDeals() {
+/**
+ * "No deals open" (crosswalk SCR-01-ST-01), in the design's caught-up layout (L596–603). An
+ * unverified Investor gets the gate only (H8): no deal, name or figure is sent, just the way to
+ * verify.
+ */
+function EmptyDeals({ gate }: { gate: InvestGate }) {
     const { t } = useTranslation();
+
+    if (gate.status === 'verification_required') {
+        return (
+            <div className="flex flex-1 flex-col items-center justify-center px-[22px] py-16 text-center">
+                <span className="flex size-[72px] items-center justify-center rounded-[20px] bg-rz-accent-soft text-[26px]">
+                    <Icon name="shield" />
+                </span>
+                <p className="mt-4 text-lg font-semibold text-rz-ink">
+                    {t('investor.deals.gated_title')}
+                </p>
+                <p className="mt-1.5 max-w-[250px] text-[13px] leading-normal text-rz-secondary">
+                    {t('investor.deals.gated_body')}
+                </p>
+                <Link
+                    href={gate.link}
+                    className="mt-4 flex h-11 items-center justify-center rounded-[14px] bg-rz-accent-fill px-5 text-sm font-semibold text-white"
+                >
+                    {t('investor.deals.verify_to_invest')}
+                </Link>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-1 flex-col items-center justify-center px-[22px] py-16 text-center">
@@ -61,13 +87,22 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
     const { frame, scale, width } = useFitScale(CANVAS_HEIGHT);
     const start = Math.max(
         0,
-        props.deals.findIndex((deal) => deal.id === props.focus?.id),
+        props.deals.findIndex(
+            (deal) => deal.campaign_id === props.focus?.campaign_id,
+        ),
     );
     const [index, setIndex] = useState(start);
     const current = props.deals.length > 0 ? props.deals[index] : null;
-    const quoted = useQuotedUnits(props.quote?.units ?? 1, {
-        deal: current?.id ?? '',
+    const quoted = useQuotedUnits(Number(props.quote?.units ?? '1'), {
+        deal: current?.campaign_id ?? '',
     });
+    /* The quote is the focused deal's; another card in front shows none until it is focused. */
+    const quote =
+        current !== null &&
+        props.focus !== null &&
+        props.focus.campaign_id === current.campaign_id
+            ? props.quote
+            : null;
 
     const move = (next: number) => {
         const at = wrapIndex(next, props.deals.length);
@@ -76,16 +111,21 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
         quoted.resetUnits();
         router.reload({
             only: ['focus', 'quote'],
-            data: { deal: props.deals[at].id },
+            data: { deal: props.deals[at].campaign_id },
         });
     };
 
     const checkout =
         current !== null &&
         props.links.checkout !== null &&
-        props.gate.status === 'eligible'
+        canReserve({
+            deal: current,
+            gate: props.gate,
+            allowed: props.allowed_actions,
+            quote,
+        })
             ? withQuery(props.links.checkout, {
-                  deal: current.id,
+                  deal: current.campaign_id,
                   units: quoted.units,
               })
             : null;
@@ -94,7 +134,7 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
         current !== null && (
             <InvestBar
                 deal={current}
-                quote={props.quote}
+                quote={quote}
                 units={quoted.units}
                 onUnits={quoted.setUnits}
                 quoting={quoted.quoting}
@@ -116,7 +156,7 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                     <SortChips sorts={props.sorts} size="phone" />
                 </div>
                 {current === null ? (
-                    <EmptyDeals />
+                    <EmptyDeals gate={props.gate} />
                 ) : (
                     <>
                         <PhoneDeck
@@ -157,7 +197,7 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                         <div className="relative flex min-h-0 min-w-0 flex-[0_0_508px] flex-col">
                             <SortChips sorts={props.sorts} size="desk" />
                             {current === null ? (
-                                <EmptyDeals />
+                                <EmptyDeals gate={props.gate} />
                             ) : (
                                 <>
                                     <DeskDeck
@@ -177,7 +217,7 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                         </div>
                         {props.focus !== null && (
                             <DealPanel
-                                key={props.focus.id}
+                                key={props.focus.campaign_id}
                                 deal={props.focus}
                                 serverTime={props.server_time}
                             />

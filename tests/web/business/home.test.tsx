@@ -184,8 +184,11 @@ describe('Business Home', () => {
 
         expect(
             screen.getByText(
-                'Pay the RWF 0 application fee to publish it to investors.',
+                "Publish it to investors. There's no listing fee.",
             ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Publish/ }),
         ).toBeInTheDocument();
         expect(
             screen.getByText(
@@ -196,6 +199,28 @@ describe('Business Home', () => {
         expect(
             screen.getByText('Fleet Expansion Note · Due 5 Oct 2026'),
         ).toBeInTheDocument();
+    });
+
+    it('asks for the listing fee only when the server charges one', () => {
+        const today: BusinessTodo[] = [
+            {
+                kind: 'application_approved',
+                title: 'Warehouse Robotics',
+                fee: money(50000),
+                link: link('/p'),
+            },
+        ];
+
+        render(<BusinessHome {...fixture} today={today} />);
+
+        expect(
+            screen.getByText(
+                'Pay the RWF 50,000 application fee to publish it to investors.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Pay fee & publish/ }),
+        ).toHaveAttribute('href', '/p');
     });
 
     it('says when nothing needs doing', () => {

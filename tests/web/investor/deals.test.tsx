@@ -10,11 +10,18 @@ import {
 } from 'vite-plus/test';
 import InvestorDeal from '@/pages/investor/deal';
 import InvestorDeals from '@/pages/investor/deals';
-import type { InvestorDealProps, InvestorDealsProps } from '@/types/investor';
-import soldOutFixture from '../../../resources/fixtures/ui/investor-deal-sold-out.json';
+import type {
+    C3InvestorDealProps,
+    C3InvestorDealsProps,
+} from '@/types/investor';
+import fullyReservedFixture from '../../../resources/fixtures/ui/investor-deal-fully-reserved.json';
+import photosUnavailableFixture from '../../../resources/fixtures/ui/investor-deal-photos-unavailable.json';
 import dealFixture from '../../../resources/fixtures/ui/investor-deal.json';
+import disbursingFixture from '../../../resources/fixtures/ui/investor-deals-disbursing.json';
 import emptyFixture from '../../../resources/fixtures/ui/investor-deals-empty.json';
 import gatedFixture from '../../../resources/fixtures/ui/investor-deals-gated.json';
+import minimalFixture from '../../../resources/fixtures/ui/investor-deals-live-minimal.json';
+import restrictedFixture from '../../../resources/fixtures/ui/investor-deals-restricted.json';
 import dealsFixture from '../../../resources/fixtures/ui/investor-deals.json';
 import { inertia, resetInertia, setWide } from './inertia-mock';
 
@@ -24,9 +31,9 @@ vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 vi.setConfig({ testTimeout: 30_000 });
 
 const deals = (fixture: { props: unknown } = dealsFixture) =>
-    structuredClone(fixture.props) as InvestorDealsProps;
+    structuredClone(fixture.props) as C3InvestorDealsProps;
 const deal = (fixture: { props: unknown } = dealFixture) =>
-    structuredClone(fixture.props) as InvestorDealProps;
+    structuredClone(fixture.props) as C3InvestorDealProps;
 
 beforeEach(() => {
     resetInertia();
@@ -95,9 +102,10 @@ describe('Deals on a phone', () => {
             within(bar).getByRole('link', { name: 'Invest' }),
         ).toHaveAttribute(
             'href',
-            '/preview/investor-checkout?deal=greenleaf&units=1',
+            '/preview/investor-checkout?deal=cmp_greenleaf&units=1',
         );
         expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.queryByText(/withdraw/iu)).not.toBeInTheDocument();
     });
 
     it('re-quotes a new quantity from the server instead of multiplying', () => {
@@ -120,7 +128,7 @@ describe('Deals on a phone', () => {
         expect(inertia.reload).toHaveBeenLastCalledWith(
             expect.objectContaining({
                 only: ['quote'],
-                data: { deal: 'greenleaf', units: 3 },
+                data: { deal: 'cmp_greenleaf', units: 3 },
             }),
         );
 
@@ -143,13 +151,15 @@ describe('Deals on a phone', () => {
         fireEvent.change(slider, { target: { value: '2' } });
         act(() => vi.advanceTimersByTime(250));
         expect(inertia.reload).toHaveBeenLastCalledWith(
-            expect.objectContaining({ data: { deal: 'greenleaf', units: 2 } }),
+            expect.objectContaining({
+                data: { deal: 'cmp_greenleaf', units: 2 },
+            }),
         );
         expect(
             within(bar).getByRole('link', { name: 'Invest' }),
         ).toHaveAttribute(
             'href',
-            '/preview/investor-checkout?deal=greenleaf&units=2',
+            '/preview/investor-checkout?deal=cmp_greenleaf&units=2',
         );
     });
 
@@ -161,17 +171,22 @@ describe('Deals on a phone', () => {
         await user.click(screen.getByRole('button', { name: 'Next deal' }));
         expect(inertia.reload).toHaveBeenLastCalledWith({
             only: ['focus', 'quote'],
-            data: { deal: 'sebeya' },
+            data: { deal: 'cmp_sebeya' },
         });
+        const other = screen.getByRole('region', {
+            name: 'Invest in Sebeya Logistics',
+        });
+
+        expect(other).toHaveTextContent('RWF—');
         expect(
-            screen.getByRole('region', { name: 'Invest in Sebeya Logistics' }),
-        ).toBeInTheDocument();
+            within(other).getByRole('button', { name: 'Invest' }),
+        ).toBeDisabled();
 
         await user.click(screen.getByRole('button', { name: 'Previous deal' }));
         await user.click(screen.getByRole('button', { name: 'Previous deal' }));
         expect(inertia.reload).toHaveBeenLastCalledWith({
             only: ['focus', 'quote'],
-            data: { deal: 'inzovu' },
+            data: { deal: 'cmp_inzovu' },
         });
 
         const deck = screen.getByRole('article', { name: 'Inzovu Coffee Co.' });
@@ -182,7 +197,7 @@ describe('Deals on a phone', () => {
         fireEvent.pointerUp(deck);
         expect(inertia.reload).toHaveBeenLastCalledWith({
             only: ['focus', 'quote'],
-            data: { deal: 'greenleaf' },
+            data: { deal: 'cmp_greenleaf' },
         });
 
         fireEvent.pointerDown(deck, { clientX: 100 });
@@ -190,7 +205,7 @@ describe('Deals on a phone', () => {
         fireEvent.pointerCancel(deck);
         expect(inertia.reload).toHaveBeenLastCalledWith({
             only: ['focus', 'quote'],
-            data: { deal: 'inzovu' },
+            data: { deal: 'cmp_inzovu' },
         });
 
         fireEvent.pointerDown(deck, { clientX: 100 });
@@ -239,22 +254,36 @@ describe('Deals on a phone', () => {
         expect(next).toBeEnabled();
     });
 
-    it('explains the verification gate and the other invest states', () => {
+    it('gives an unverified investor the gate only, with no deal or business named', () => {
         const { unmount } = render(<InvestorDeals {...deals(gatedFixture)} />);
 
         expect(
             screen.getByRole('link', { name: 'Verify to invest' }),
         ).toHaveAttribute('href', '/preview/investor-verification');
-        expect(screen.getByRole('status')).toHaveTextContent(
-            'Verify your identity to invest.',
-        );
+        expect(
+            screen.getByText('Verify to see open deals'),
+        ).toBeInTheDocument();
+        expect(screen.queryByRole('article')).not.toBeInTheDocument();
+        expect(screen.queryByRole('region')).not.toBeInTheDocument();
+        expect(screen.queryByText(/GreenLeaf/u)).not.toBeInTheDocument();
         unmount();
+        setWide(true);
+        render(<InvestorDeals {...deals(gatedFixture)} />);
+        expect(
+            screen.getByText('Verify to see open deals'),
+        ).toBeInTheDocument();
+        expect(screen.queryByRole('article')).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(/Independently audited/u),
+        ).not.toBeInTheDocument();
+    });
 
+    it('explains the other invest states', () => {
         const pending = deals();
 
         pending.gate = { status: 'verification_pending' };
         pending.quote = null;
-        pending.deals[0].status = 'sold_out';
+        pending.deals[0].lifecycle = 'funded';
         pending.wallet.next_payout = null;
         pending.unread_notifications = 0;
         const { unmount: unmountSecond } = render(
@@ -304,7 +333,7 @@ describe('Deals on a phone', () => {
         const props = deals();
 
         props.deals = [props.deals[1], props.deals[2], props.deals[4]];
-        props.deals[2].closes_at = '2026-09-22T09:00:00+02:00';
+        props.deals[2].clock.expires_at = '2026-09-22T09:00:00+02:00';
         props.focus = null;
         render(<InvestorDeals {...props} />);
 
@@ -351,12 +380,11 @@ describe('Deals on a wide screen', () => {
         expect(observe).toHaveBeenCalled();
         expect(screen.getByRole('link', { name: 'Deposit' })).toHaveAttribute(
             'href',
-            '/preview/investor-wallet',
+            '/preview/investor-wallet-deposit',
         );
-        expect(screen.getByRole('link', { name: 'Withdraw' })).toHaveAttribute(
-            'href',
-            '/preview/investor-wallet-withdraw',
-        );
+        expect(
+            screen.queryByRole('link', { name: 'Withdraw' }),
+        ).not.toBeInTheDocument();
 
         const card = screen.getByRole('article', { name: 'GreenLeaf Agro' });
 
@@ -370,10 +398,16 @@ describe('Deals on a wide screen', () => {
             within(panel).getByText('6,560 of 8,400 notes'),
         ).toBeInTheDocument();
         expect(within(panel).getByText('RWF 96M')).toBeInTheDocument();
-        expect(within(panel).getByText('103847291')).toBeInTheDocument();
-        expect(within(panel).getAllByText('Agriculture · Gasabo')).toHaveLength(
-            2,
-        );
+        expect(within(panel).queryByText('103847291')).not.toBeInTheDocument();
+        expect(
+            within(panel).getByText(
+                /Grows, cools and distributes fresh produce/u,
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(panel).getAllByText('Agriculture · Gasabo').length,
+        ).toBeGreaterThan(0);
+        expect(within(panel).getByText('Live')).toBeInTheDocument();
 
         await user.click(
             within(panel).getByRole('button', {
@@ -383,6 +417,13 @@ describe('Deals on a wide screen', () => {
         expect(
             within(panel).getByText('sha256:c41d7a9038…'),
         ).toBeInTheDocument();
+        expect(panel).toHaveTextContent('Governed toleranceRWF 50,000');
+        expect(panel).toHaveTextContent(
+            /reconcile to the reported inflow, within the governed tolerance/u,
+        );
+        expect(panel).not.toHaveTextContent(
+            /GEO-TAGGED|Download signed|Cash \/ MoMo|Variance/u,
+        );
 
         await user.click(
             within(panel).getByRole('button', { name: /August 2026/u }),
@@ -396,12 +437,12 @@ describe('Deals on a wide screen', () => {
         await user.click(screen.getByRole('button', { name: 'Next deal' }));
         expect(inertia.reload).toHaveBeenLastCalledWith({
             only: ['focus', 'quote'],
-            data: { deal: 'sebeya' },
+            data: { deal: 'cmp_sebeya' },
         });
         await user.click(screen.getByRole('button', { name: 'Previous deal' }));
         expect(inertia.reload).toHaveBeenLastCalledWith({
             only: ['focus', 'quote'],
-            data: { deal: 'greenleaf' },
+            data: { deal: 'cmp_greenleaf' },
         });
 
         unmount();
@@ -445,14 +486,19 @@ describe('Deal detail on a phone', () => {
             screen.getByText('6,560 of 8,400 notes sold'),
         ).toBeInTheDocument();
         expect(screen.getAllByText('Reported by business')).toHaveLength(3);
-        expect(screen.getByText('RWF 46M')).toBeInTheDocument();
+        expect(screen.getByText('RWF 96M')).toBeInTheDocument();
+        expect(screen.queryByText('RWF 46M')).not.toBeInTheDocument();
+        expect(screen.queryByText('RWF 12M')).not.toBeInTheDocument();
         expect(screen.getByText('4.2 / 5')).toBeInTheDocument();
         expect(screen.getByText('6 months')).toBeInTheDocument();
-        expect(screen.getByText('RDB company code')).toBeInTheDocument();
+        expect(screen.queryByText('RDB company code')).not.toBeInTheDocument();
         expect(screen.queryByText(/\bTIN\b/u)).not.toBeInTheDocument();
         expect(
-            screen.getByText('KG 11 Ave, Gasabo, Kigali'),
-        ).toBeInTheDocument();
+            screen.queryByText('KG 11 Ave, Gasabo, Kigali'),
+        ).not.toBeInTheDocument();
+        expect(screen.getAllByText('Image unavailable').length).toBeGreaterThan(
+            0,
+        );
 
         const card = screen.getByRole('region', { name: 'YOUR INVESTMENT' });
 
@@ -470,7 +516,7 @@ describe('Deal detail on a phone', () => {
         await vi.waitFor(() =>
             expect(inertia.reload).toHaveBeenLastCalledWith(
                 expect.objectContaining({
-                    data: { deal: 'greenleaf', units: 2 },
+                    data: { deal: 'cmp_greenleaf', units: 2 },
                 }),
             ),
         );
@@ -478,7 +524,7 @@ describe('Deal detail on a phone', () => {
             within(card).getByRole('link', { name: 'Invest' }),
         ).toHaveAttribute(
             'href',
-            '/preview/investor-checkout?deal=greenleaf&units=2',
+            '/preview/investor-checkout?deal=cmp_greenleaf&units=2',
         );
         await user.click(
             within(card).getByRole('button', { name: 'One note fewer' }),
@@ -521,13 +567,15 @@ describe('Deal detail on a phone', () => {
         const photo = screen.getByRole('dialog', { name: 'Warehouse stock' });
 
         expect(within(photo).getByText('1 / 3')).toBeInTheDocument();
-        expect(within(photo).getByText('Required shot')).toBeInTheDocument();
+        expect(photo).not.toHaveTextContent(
+            /Required shot|Added by auditor|GPS|-1\.94/u,
+        );
         await user.click(
             within(photo).getByRole('button', { name: 'Previous photo' }),
         );
         expect(
             screen.getByRole('dialog', { name: 'Cold room' }),
-        ).toHaveTextContent('Added by auditor');
+        ).toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: 'Next photo' }));
         await user.click(screen.getByRole('button', { name: 'Next photo' }));
         expect(
@@ -546,15 +594,14 @@ describe('Deal detail on a phone', () => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
-    it('shows a sold-out deal as unbuyable and explains why', () => {
-        render(<InvestorDeal {...deal(soldOutFixture)} />);
+    it('shows a fully reserved deal as unbuyable and explains why', () => {
+        render(<InvestorDeal {...deal(fullyReservedFixture)} />);
 
         expect(screen.getByRole('status')).toHaveTextContent(
-            'This raise is fully funded',
+            'Every note is reserved right now',
         );
-        expect(screen.getByText('SOLD OUT')).toBeInTheDocument();
         expect(
-            screen.getByRole('button', { name: 'Fully funded' }),
+            screen.getByRole('button', { name: 'Fully reserved' }),
         ).toBeDisabled();
         expect(
             screen.getByRole('region', { name: 'YOUR INVESTMENT' }),
@@ -570,14 +617,19 @@ describe('Deal detail on a phone', () => {
         props.deal.photos = [];
         props.deal.updates = [];
         props.deal.overdue_report = { month: '2026-08-01T00:00:00+02:00' };
-        props.deal.status = 'frozen';
+        props.deal.restriction = {
+            code: 'NOTE_INELIGIBLE',
+            since: '2026-09-20T00:00:00+02:00',
+        };
         props.gate = {
             status: 'verification_required',
             link: { url: '/verify', method: 'get' },
         };
         const { unmount } = render(<InvestorDeal {...props} />);
 
-        expect(screen.queryByText('Photos')).not.toBeInTheDocument();
+        expect(
+            screen.getByText("The business hasn't published any photos."),
+        ).toBeInTheDocument();
         expect(
             screen.queryByText(/Independently audited/u),
         ).not.toBeInTheDocument();
@@ -590,7 +642,12 @@ describe('Deal detail on a phone', () => {
         expect(
             screen.getByText('August 2026 report overdue · compliance watch'),
         ).toBeInTheDocument();
-        expect(screen.getByText('This raise is paused')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                "Investing is paused: this note isn't eligible right now",
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByText(/Since 20 Sept 2026/u)).toBeInTheDocument();
         expect(
             screen.getByRole('link', { name: 'Verify to invest' }),
         ).toHaveAttribute('href', '/verify');
@@ -616,22 +673,24 @@ describe('Deal detail on a phone', () => {
             within(sheet).queryByText("AUDITOR'S NOTE"),
         ).not.toBeInTheDocument();
         expect(
-            within(sheet).queryByText('PROOF PHOTOS'),
+            within(sheet).queryByText('PUBLISHED PHOTOS'),
         ).not.toBeInTheDocument();
     });
 
-    it('marks audit variance outside tolerance and a withdrawn listing on the desktop panel', async () => {
+    it('states a cancelled raise and an audit with no cited tolerance on the desktop panel', async () => {
         setWide(true);
         const user = userEvent.setup();
         const props = deals();
 
-        const focus = props.focus as NonNullable<InvestorDealsProps['focus']>;
+        const focus = props.focus as NonNullable<C3InvestorDealsProps['focus']>;
         const audit = focus.audit as NonNullable<typeof focus.audit>;
 
-        audit.variance_within_tolerance = false;
-        audit.variance_pct = '18.4';
-        audit.photos[0].url = 'https://example.test/store.jpg';
-        focus.status = 'withdrawn';
+        audit.tolerance = null;
+        focus.lifecycle = 'cancelled';
+        focus.financials.ebitda = {
+            value: null,
+            unavailable: 'NOT_SOURCED_AS_EBITDA',
+        };
         focus.track_record = {
             raises: 2,
             on_time_pct: null,
@@ -640,15 +699,23 @@ describe('Deal detail on a phone', () => {
         render(<InvestorDeals {...props} />);
 
         expect(
-            screen.getByText('This raise was withdrawn'),
+            screen.getByText('The business cancelled this raise'),
         ).toBeInTheDocument();
-        expect(screen.getByText('WITHDRAWN')).toBeInTheDocument();
+        expect(screen.getByText('Cancelled')).toBeInTheDocument();
+        expect(screen.getByText('Not sourced as EBITDA')).toBeInTheDocument();
         await user.click(
             screen.getByRole('button', { name: /Independently audited/u }),
         );
-        expect(screen.getByText('+18.4%')).toHaveClass('text-[#d0342c]');
+        expect(
+            screen.queryByText('Governed tolerance'),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByText('RECONCILIATION STATEMENT'),
+        ).toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: /Hide$/u }));
-        expect(screen.queryByText('+18.4%')).not.toBeInTheDocument();
+        expect(
+            screen.queryByText('RECONCILIATION STATEMENT'),
+        ).not.toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: 'Show more' }));
         expect(
             screen.getByRole('button', { name: 'Show less' }),
@@ -662,12 +729,12 @@ describe('Deal edge states', () => {
         const props = deals();
         const extra = props.deals.map((entry, index) => ({
             ...entry,
-            id: `${entry.id}-${index}`,
+            campaign_id: `${entry.campaign_id}-${index}`,
             name: `${entry.name} ${index}`,
         }));
 
         props.deals = [...props.deals, ...extra];
-        props.deals[0].status = 'sold_out';
+        props.deals[0].lifecycle = 'funded';
         props.industries[0].active = false;
         props.industries[1].active = true;
         render(<InvestorDeals {...props} />);
@@ -694,9 +761,9 @@ describe('Deal edge states', () => {
     it('labels a multi-note quote and shows a proof photo when its file exists', async () => {
         const user = userEvent.setup();
         const props = deal();
-        const quote = props.quote as NonNullable<InvestorDealProps['quote']>;
+        const quote = props.quote as NonNullable<C3InvestorDealProps['quote']>;
 
-        quote.units = 2;
+        quote.units = '2';
         quote.amount = { currency: 'RWF', amount: '10000' };
         props.deal.updates[0].photos[0].url = 'https://example.test/stock.jpg';
         render(<InvestorDeal {...props} />);
@@ -724,5 +791,107 @@ describe('Deal edge states', () => {
                 screen.getByRole('dialog', { name: 'Warehouse stock' }),
             ).getAllByRole('presentation')[0],
         ).toHaveAttribute('src', 'https://example.test/stock.jpg');
+    });
+});
+
+describe('Deals in C3 states', () => {
+    it('keeps a restricted campaign live but unreservable, naming the restriction apart from its lifecycle', () => {
+        setWide(true);
+        render(<InvestorDeals {...deals(restrictedFixture)} />);
+
+        const panel = screen.getByRole('main');
+
+        expect(
+            within(panel).getByText(
+                'Investing is paused: a restriction applies',
+            ),
+        ).toBeInTheDocument();
+        expect(within(panel).getByText('Live')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Paused' })).toBeDisabled();
+        expect(
+            screen.queryByRole('link', { name: 'Invest' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows a disbursing campaign as paying out, not yet confirmed', () => {
+        render(<InvestorDeals {...deals(disbursingFixture)} />);
+
+        expect(
+            screen.getByRole('button', { name: 'Paying out' }),
+        ).toBeDisabled();
+        expect(
+            screen.getByRole('article', { name: 'GreenLeaf Agro' }),
+        ).toHaveTextContent('Paying out');
+    });
+
+    it('still points to verification if a gated page ever carries a deal', () => {
+        const props = deals();
+
+        props.gate = {
+            status: 'verification_required',
+            link: { url: '/preview/investor-verification', method: 'get' },
+        };
+        render(<InvestorDeals {...props} />);
+
+        expect(
+            screen.getByRole('link', { name: 'Verify to invest' }),
+        ).toHaveAttribute('href', '/preview/investor-verification');
+    });
+
+    it('offers Invest only while the server lists primary.reserve', () => {
+        const props = deals();
+
+        props.allowed_actions = [];
+        render(<InvestorDeals {...props} />);
+
+        expect(screen.getByRole('button', { name: 'Invest' })).toBeDisabled();
+    });
+
+    it('names the cap that binds once the chosen quantity reaches it', () => {
+        const props = deals();
+        const quote = props.quote as NonNullable<C3InvestorDealsProps['quote']>;
+
+        quote.capacity.max_units = '1';
+        quote.capacity.binding = 'raise_cap';
+        const { unmount } = render(<InvestorDeals {...props} />);
+
+        expect(
+            screen.getByText(
+                'Up to 1 note: your single-investor limit for this raise.',
+            ),
+        ).toBeInTheDocument();
+        unmount();
+
+        const none = deal();
+        const noneQuote = none.quote as NonNullable<
+            C3InvestorDealProps['quote']
+        >;
+
+        noneQuote.capacity.max_units = '0';
+        noneQuote.capacity.binding = 'connected_party';
+        render(<InvestorDeal {...none} />);
+        expect(
+            screen.getByText(
+                "You can't take any more notes here: you're connected to this business.",
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Invest' })).toBeDisabled();
+    });
+
+    it('shows no published photos and an unsourced EBITDA as unavailable', () => {
+        render(<InvestorDeal {...deal(photosUnavailableFixture)} />);
+
+        expect(
+            screen.getByText("The business hasn't published any photos."),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Unavailable')).toBeInTheDocument();
+        expect(screen.getByText('Not sourced as EBITDA')).toBeInTheDocument();
+        expect(screen.queryByText(/-1\.94/u)).not.toBeInTheDocument();
+    });
+
+    it('renders the live-minimal shape', () => {
+        render(<InvestorDeals {...deals(minimalFixture)} />);
+
+        expect(screen.getByText('No deals open right now')).toBeInTheDocument();
     });
 });

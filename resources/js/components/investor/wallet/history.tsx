@@ -1,246 +1,59 @@
-import { Link, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { Link } from '@inertiajs/react';
+import { useTimeLeft } from '@/components/investor/deals/time-left';
 import { LocalSheet, SheetClose } from '@/components/investor/local-sheet';
 import { POSITIVE_TEXT } from '@/components/investor/tokens';
 import { Icon } from '@/components/rozine/icon';
-import type { IconName } from '@/components/rozine/icon';
+import type { IconName, IconTone } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
-import {
-    formatCompact,
-    formatSigned,
-    intlTag,
-    isNegative,
-} from '@/lib/investor/format';
-import { formatDate, formatMonthYear, formatRwf } from '@/lib/rozine/format';
+import { formatDate, formatDateTime, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
-    InvestorWalletProps,
-    TransactionItem,
-    TransactionKind,
-    TransactionReceipt,
-    TransactionStatus,
+    C3InvestorWalletProps,
+    CheckoutHold,
+    DepositIntent,
+    WalletEntry,
 } from '@/types/investor';
+import type { ProviderOutcomeState, Receipt } from '@/types/settlement';
 
-/**
- * Earnings history (design L2936–2980): interest and principal that came back between two dates.
- * The range chips are the server's; editing a date re-reads the history for it.
- */
-export function EarningsCard({
-    earnings,
-    wide,
-}: {
-    earnings: InvestorWalletProps['earnings'];
-    wide: boolean;
-}) {
-    const { t, locale } = useTranslation();
-    const reread = (from: string, to: string) =>
-        router.reload({ only: ['earnings'], data: { from, to } });
-    const date =
-        'box-border h-8 rounded-[10px] border border-rz-border bg-rz-surface px-2 text-[11px] font-semibold text-rz-ink outline-none';
-    const totals = [
-        [
-            'investor.wallet.earn.interest',
-            formatCompact(earnings.totals.interest),
-            POSITIVE_TEXT,
-        ],
-        [
-            'investor.wallet.earn.received',
-            formatCompact(earnings.totals.received),
-            'text-rz-ink',
-        ],
-        [
-            'investor.wallet.earn.payouts',
-            String(earnings.totals.payouts),
-            'text-rz-ink',
-        ],
-        [
-            'investor.wallet.earn.avg',
-            formatCompact(earnings.totals.avg_monthly),
-            'text-rz-ink',
-        ],
-    ] as const;
+/** A deposit intent's state as the Investor may see it: pending and unknown are "not yet confirmed". */
+const INTENT_TONE: Record<ProviderOutcomeState, string> = {
+    pending: 'text-[#a55418] dark:text-[#f0a060]',
+    unknown: 'text-[#a55418] dark:text-[#f0a060]',
+    succeeded: POSITIVE_TEXT,
+    failed: 'text-rz-secondary',
+};
 
-    return (
-        <section
-            aria-label={t('investor.wallet.earn.title')}
-            className={cn(
-                'rounded-2xl border border-rz-border bg-rz-surface px-4 py-[15px]',
-                !wide && 'mt-5',
-            )}
-        >
-            <div className="flex flex-wrap items-end justify-between gap-2.5">
-                <div>
-                    <h2 className="text-sm font-semibold text-rz-ink">
-                        {t('investor.wallet.earn.title')}
-                    </h2>
-                    <p className="mt-[3px] text-[11.5px] text-rz-secondary">
-                        {t('investor.wallet.earn.subtitle')}
-                    </p>
-                </div>
-                <div className="flex items-center gap-1.5">
-                    <input
-                        type="date"
-                        aria-label={t('investor.wallet.earn.from')}
-                        defaultValue={earnings.from.slice(0, 10)}
-                        onChange={(event) =>
-                            reread(event.target.value, earnings.to.slice(0, 10))
-                        }
-                        className={date}
-                    />
-                    <span className="text-[11px] text-rz-secondary">
-                        {t('investor.wallet.earn.to')}
-                    </span>
-                    <input
-                        type="date"
-                        aria-label={t('investor.wallet.earn.to_date')}
-                        defaultValue={earnings.to.slice(0, 10)}
-                        onChange={(event) =>
-                            reread(
-                                earnings.from.slice(0, 10),
-                                event.target.value,
-                            )
-                        }
-                        className={date}
-                    />
-                </div>
-            </div>
-            <nav
-                aria-label={t('investor.wallet.earn.ranges')}
-                className="mt-[11px] flex flex-wrap gap-[7px]"
-            >
-                {earnings.ranges.map((range) => (
-                    <Link
-                        key={range.key}
-                        href={range.link}
-                        preserveScroll
-                        aria-current={range.active ? 'true' : undefined}
-                        className={cn(
-                            'rounded-[10px] border px-[11px] py-1.5 text-[11.5px] font-semibold',
-                            range.active
-                                ? 'border-rz-accent-fill bg-rz-accent-fill text-white'
-                                : 'border-rz-border bg-rz-surface text-rz-slate',
-                        )}
-                    >
-                        {t(`investor.wallet.earn.range.${range.key}`)}
-                    </Link>
-                ))}
-            </nav>
-            <div className="mt-3 grid grid-cols-2 gap-[9px]">
-                {totals.map(([label, value, tone]) => (
-                    <div
-                        key={label}
-                        className="min-w-0 rounded-xl border border-[#eef2f9] bg-[#f7f9fd] px-[11px] py-2.5 dark:border-rz-divider dark:bg-rz-surface-sunken"
-                    >
-                        <p className="truncate text-[10.5px] font-bold tracking-[.05em] text-rz-slate uppercase">
-                            {t(label)}
-                        </p>
-                        <p
-                            className={cn(
-                                'mt-[3px] truncate text-sm font-bold',
-                                tone,
-                            )}
-                        >
-                            {value}
-                        </p>
-                    </div>
-                ))}
-            </div>
-            <table className="mt-3 w-full overflow-hidden rounded-xl border border-[#eef2f9] text-left whitespace-nowrap dark:border-rz-divider">
-                <thead className="bg-[#f7f9fd] dark:bg-rz-surface-sunken">
-                    <tr className="border-b border-[#eef2f9] text-[10.5px] font-bold text-rz-slate uppercase dark:border-rz-divider">
-                        <th className="px-[11px] py-[9px]">
-                            {t('investor.wallet.earn.month')}
-                        </th>
-                        <th className="py-[9px]">
-                            {t('investor.wallet.earn.paid')}
-                        </th>
-                        <th className="py-[9px] text-right">
-                            {t('investor.wallet.earn.interest')}
-                        </th>
-                        <th className="px-[11px] py-[9px] text-right">
-                            {t('investor.wallet.earn.total')}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {earnings.months.map((row) => (
-                        <tr
-                            key={row.month}
-                            className="border-b border-[#f4f7fb] last:border-0 dark:border-rz-divider"
-                        >
-                            <td className="truncate px-[11px] py-2.5 text-[11.5px] font-semibold text-rz-ink">
-                                {formatMonthYear(row.month, locale)}
-                            </td>
-                            <td className="py-2.5 text-[11.5px] text-rz-secondary">
-                                {row.payouts}
-                            </td>
-                            <td
-                                className={cn(
-                                    'truncate py-2.5 text-right text-[11.5px] font-semibold',
-                                    POSITIVE_TEXT,
-                                )}
-                            >
-                                +{formatCompact(row.interest)}
-                            </td>
-                            <td className="truncate px-[11px] py-2.5 text-right text-[11.5px] font-bold text-rz-ink">
-                                {formatCompact(row.total)}
-                            </td>
-                        </tr>
-                    ))}
-                    {earnings.months.length === 0 && (
-                        <tr>
-                            <td
-                                colSpan={4}
-                                className="px-[11px] py-5 text-center text-[11.5px] text-rz-secondary"
-                            >
-                                {t('investor.wallet.earn.empty')}
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
-        </section>
-    );
-}
-
-const KIND_ICON: Record<
-    TransactionKind,
-    { icon: IconName; tint: string; tone: 'green' | 'amber' | 'blue' | 'red' }
+const ENTRY_ICON: Record<
+    WalletEntry['kind'],
+    { icon: IconName; tint: string; tone: IconTone }
 > = {
-    deposit: {
-        icon: 'money-out',
-        tint: 'bg-[rgba(29,158,117,.10)]',
-        tone: 'green',
-    },
-    withdrawal: {
-        icon: 'money-out',
+    deposit: { icon: 'money-out', tint: 'bg-rz-accent-soft', tone: 'blue' },
+    hold: {
+        icon: 'hourglass',
         tint: 'bg-[rgba(194,102,31,.10)]',
         tone: 'amber',
     },
-    investment: { icon: 'note', tint: 'bg-rz-accent-soft', tone: 'blue' },
-    payout: {
-        icon: 'repeat',
+    hold_release: { icon: 'undo', tint: 'bg-rz-accent-soft', tone: 'blue' },
+    commitment: {
+        icon: 'handshake',
         tint: 'bg-[rgba(29,158,117,.10)]',
         tone: 'green',
     },
-    refund: { icon: 'undo', tint: 'bg-rz-accent-soft', tone: 'blue' },
-    fee: { icon: 'receipt', tint: 'bg-[rgba(229,72,77,.10)]', tone: 'red' },
+    commitment_refund: {
+        icon: 'undo',
+        tint: 'bg-rz-accent-soft',
+        tone: 'blue',
+    },
 };
 
-const STATUS_TEXT: Record<TransactionStatus, string> = {
-    completed: POSITIVE_TEXT,
-    pending: 'text-[#a55418] dark:text-[#f0a060]',
-    failed: 'text-rz-danger-text',
-};
-
-function KindTile({
+function EntryTile({
     kind,
     large = false,
 }: {
-    kind: TransactionKind;
+    kind: WalletEntry['kind'];
     large?: boolean;
 }) {
-    const spec = KIND_ICON[kind];
+    const spec = ENTRY_ICON[kind];
 
     return (
         <span
@@ -255,196 +68,244 @@ function KindTile({
     );
 }
 
-function amountTone(item: TransactionItem): string {
-    if (item.status === 'failed') {
-        return 'text-rz-secondary line-through';
+function HoldRow({
+    hold,
+    serverTime,
+}: {
+    hold: CheckoutHold;
+    serverTime: string;
+}) {
+    const { t } = useTranslation();
+    const clock = useTimeLeft(hold.clock.expires_at, serverTime);
+
+    return (
+        <li className="border-b border-[#eef2f9] last:border-0 dark:border-rz-divider">
+            <Link
+                href={hold.link}
+                className="flex items-center gap-[11px] px-[13px] py-3"
+            >
+                <EntryTile kind="hold" />
+                <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[12.5px] font-semibold text-rz-ink">
+                        {t('investor.wallet.c3.hold_line', {
+                            name: hold.deal_name,
+                            count: Number(hold.units),
+                        })}
+                    </span>
+                    <span className="mt-px block text-[11px] text-rz-secondary tabular-nums">
+                        {t('investor.wallet.c3.hold_expires', {
+                            time: clock.label,
+                        })}
+                    </span>
+                </span>
+                <span className="text-[12.5px] font-semibold whitespace-nowrap text-rz-slate">
+                    {formatRwf(hold.amount)}
+                </span>
+            </Link>
+        </li>
+    );
+}
+
+/** Live checkout reservations holding wallet cash, each counting down against the server clock. */
+export function HoldsList({
+    holds,
+    serverTime,
+}: {
+    holds: CheckoutHold[];
+    serverTime: string;
+}) {
+    const { t } = useTranslation();
+
+    if (holds.length === 0) {
+        return null;
     }
 
-    return isNegative(item.amount) ? 'text-rz-slate' : POSITIVE_TEXT;
+    return (
+        <section aria-label={t('investor.wallet.c3.holds')} className="mt-4">
+            <h2 className="text-sm font-semibold text-rz-ink">
+                {t('investor.wallet.c3.holds')}
+            </h2>
+            <ul className="mt-2 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
+                {holds.map((hold) => (
+                    <HoldRow
+                        key={hold.reservation_id}
+                        hold={hold}
+                        serverTime={serverTime}
+                    />
+                ))}
+            </ul>
+        </section>
+    );
 }
 
 /**
- * Transaction history (design L2981–3095): the server's range chips and exports, then each money
- * movement with its status — pending and failed transfers show as such, never as settled (crosswalk
- * SCR-08-ST-02/03). The design's free date-range popover is folded into the chips.
+ * Recorded deposit intents. `pending` and `unknown` read "not yet confirmed" and are never shown as
+ * credited or failed; the Investor sees no provider reference (H15).
  */
-export function Transactions({
-    transactions,
-    wide,
-}: {
-    transactions: InvestorWalletProps['transactions'];
-    wide: boolean;
-}) {
+export function DepositIntents({ deposits }: { deposits: DepositIntent[] }) {
     const { t, locale } = useTranslation();
-    const [menu, setMenu] = useState(false);
-    const [all, setAll] = useState(false);
-    const first = wide ? transactions.items.length : 3;
-    const shown = all ? transactions.items : transactions.items.slice(0, first);
+
+    if (deposits.length === 0) {
+        return null;
+    }
 
     return (
-        <section
-            aria-label={t('investor.wallet.tx.title')}
-            className={cn(!wide && 'mt-5')}
-        >
-            <div
-                className={cn(
-                    'flex items-center justify-between gap-2',
-                    wide && 'mt-3.5',
-                )}
-            >
-                <h2 className="text-sm font-semibold text-rz-ink">
-                    {t(
-                        wide
-                            ? 'investor.wallet.tx.title_short'
-                            : 'investor.wallet.tx.title',
-                    )}
-                </h2>
-                <div className="relative">
-                    <button
-                        type="button"
-                        aria-label={t('investor.wallet.tx.export')}
-                        aria-expanded={menu}
-                        onClick={() => setMenu(!menu)}
-                        className="flex size-[30px] items-center justify-center rounded-[10px] border border-rz-border bg-rz-surface text-rz-slate"
-                    >
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            aria-hidden
-                            className="size-3.5"
-                        >
-                            <path
-                                d="M12 3v12M8 11l4 4 4-4M5 20h14"
-                                stroke="currentColor"
-                                strokeWidth="1.9"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            />
-                        </svg>
-                    </button>
-                    {menu && (
-                        <div className="absolute top-[37px] right-0 z-40 w-[168px] animate-[rz-fade_.18s_ease] rounded-xl border border-rz-border bg-rz-surface p-[5px] shadow-[0_20px_44px_-16px_rgba(20,45,95,.34)]">
-                            {(
-                                [
-                                    [
-                                        'pdf',
-                                        'investor.wallet.tx.pdf',
-                                        'bg-[rgba(229,72,77,.10)]',
-                                        'red',
-                                    ],
-                                    [
-                                        'csv',
-                                        'investor.wallet.tx.csv',
-                                        'bg-[rgba(29,158,117,.10)]',
-                                        'green',
-                                    ],
-                                ] as const
-                            ).map(([key, label, tint, tone]) => (
-                                <a
-                                    key={key}
-                                    href={transactions.exports[key].url}
-                                    className="flex w-full items-center gap-2.5 rounded-[10px] px-2.5 py-[9px] text-left"
-                                >
-                                    <span
-                                        className={cn(
-                                            'flex size-[26px] items-center justify-center rounded-[10px] text-sm',
-                                            tint,
-                                        )}
-                                    >
-                                        <Icon name="document" tone={tone} />
-                                    </span>
-                                    <span className="text-[12.5px] font-semibold text-rz-ink">
-                                        {t(label)}
-                                    </span>
-                                </a>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-            <nav
-                aria-label={t('investor.wallet.tx.ranges')}
-                className="rz-hscroll mt-[11px] flex shrink-0 gap-[7px] overflow-x-auto"
-            >
-                {transactions.ranges.map((range) => (
-                    <Link
-                        key={range.key}
-                        href={range.link}
-                        preserveScroll
-                        aria-current={range.active ? 'true' : undefined}
-                        className={cn(
-                            'shrink-0 rounded-[10px] border px-[13px] py-[7px] text-xs font-semibold whitespace-nowrap',
-                            range.active
-                                ? 'border-[#d6e4ff] bg-rz-accent-fill text-white dark:border-rz-investor'
-                                : 'border-rz-border bg-rz-surface text-rz-slate',
-                        )}
-                    >
-                        {t(`investor.wallet.tx.range.${range.key}`)}
-                    </Link>
-                ))}
-            </nav>
-            <ul className="mt-2.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
-                {shown.map((item) => (
+        <section aria-label={t('investor.wallet.c3.deposits')} className="mt-4">
+            <h2 className="text-sm font-semibold text-rz-ink">
+                {t('investor.wallet.c3.deposits')}
+            </h2>
+            <ul className="mt-2 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
+                {deposits.map((deposit) => (
                     <li
-                        key={item.id}
+                        key={deposit.id}
                         className="border-b border-[#eef2f9] last:border-0 dark:border-rz-divider"
                     >
                         <Link
-                            href={item.link}
+                            href={deposit.link}
                             preserveScroll
-                            className="flex w-full items-center gap-[11px] px-[13px] py-3 text-left"
+                            className="flex items-center gap-[11px] px-[13px] py-3"
                         >
-                            <KindTile kind={item.kind} />
+                            <EntryTile kind="deposit" />
                             <span className="min-w-0 flex-1">
                                 <span className="block truncate text-[12.5px] font-semibold text-rz-ink">
-                                    {t(`investor.wallet.tx.kind.${item.kind}`, {
-                                        counterparty: item.counterparty,
+                                    {t('investor.wallet.c3.deposit_from', {
+                                        method: deposit.method.label,
                                     })}
                                 </span>
                                 <span className="mt-px block text-[11px] text-rz-secondary">
-                                    {formatDate(item.occurred_at, locale)}
-                                    {item.status !== 'completed' && (
-                                        <span
-                                            className={cn(
-                                                'ml-1.5 font-semibold',
-                                                STATUS_TEXT[item.status],
-                                            )}
-                                        >
-                                            ·{' '}
-                                            {t(
-                                                `investor.wallet.tx.status.${item.status}`,
-                                            )}
-                                        </span>
-                                    )}
+                                    {formatDate(deposit.created_at, locale)} ·{' '}
+                                    <span
+                                        className={cn(
+                                            'font-semibold',
+                                            INTENT_TONE[deposit.state],
+                                        )}
+                                    >
+                                        {t(
+                                            `investor.wallet.c3.intent.${deposit.state}`,
+                                        )}
+                                    </span>
                                 </span>
                             </span>
                             <span
                                 className={cn(
                                     'text-[12.5px] font-semibold whitespace-nowrap',
-                                    amountTone(item),
+                                    deposit.credit_receipt === null
+                                        ? 'text-rz-secondary'
+                                        : POSITIVE_TEXT,
                                 )}
                             >
-                                {formatSigned(item.amount)}
+                                {formatRwf(deposit.amount)}
                             </span>
                         </Link>
                     </li>
                 ))}
-                {transactions.items.length === 0 && (
+            </ul>
+        </section>
+    );
+}
+
+function entryLabel(
+    t: ReturnType<typeof useTranslation>['t'],
+    entry: WalletEntry,
+): string {
+    if (entry.movement === 'external') {
+        return t(`investor.wallet.c3.entry.deposit_${entry.direction}`, {
+            counterparty: entry.counterparty,
+        });
+    }
+
+    return t(`investor.wallet.c3.entry.${entry.kind}`, {
+        name: entry.deal_name,
+    });
+}
+
+/**
+ * The wallet history (design L2981–3095), with external cash movements and internal transfers
+ * (holds, commitments, refunds) as separate views (H5). Amounts are shown as a magnitude with a
+ * direction, never as a sign the client computed. Newest first; older entries page on.
+ */
+export function WalletHistory({
+    history,
+}: {
+    history: C3InvestorWalletProps['history'];
+}) {
+    const { t, locale } = useTranslation();
+
+    return (
+        <section aria-label={t('investor.wallet.tx.title')} className="mt-5">
+            <h2 className="text-sm font-semibold text-rz-ink">
+                {t('investor.wallet.tx.title')}
+            </h2>
+            <nav
+                aria-label={t('investor.wallet.c3.movement')}
+                className="mt-[11px] flex shrink-0 gap-[7px]"
+            >
+                {history.filters.map((filter) => (
+                    <Link
+                        key={filter.key}
+                        href={filter.link}
+                        preserveScroll
+                        aria-current={filter.active ? 'true' : undefined}
+                        className={cn(
+                            'shrink-0 rounded-[10px] border px-[13px] py-[7px] text-xs font-semibold whitespace-nowrap',
+                            filter.active
+                                ? 'border-[#d6e4ff] bg-rz-accent-fill text-white dark:border-rz-investor'
+                                : 'border-rz-border bg-rz-surface text-rz-slate',
+                        )}
+                    >
+                        {t(`investor.wallet.c3.filter.${filter.key}`)}
+                    </Link>
+                ))}
+            </nav>
+            <ul className="mt-2.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
+                {history.items.map((entry) => (
+                    <li
+                        key={entry.id}
+                        className="border-b border-[#eef2f9] last:border-0 dark:border-rz-divider"
+                    >
+                        <Link
+                            href={entry.link}
+                            preserveScroll
+                            className="flex w-full items-center gap-[11px] px-[13px] py-3 text-left"
+                        >
+                            <EntryTile kind={entry.kind} />
+                            <span className="min-w-0 flex-1">
+                                <span className="block truncate text-[12.5px] font-semibold text-rz-ink">
+                                    {entryLabel(t, entry)}
+                                </span>
+                                <span className="mt-px block text-[11px] text-rz-secondary">
+                                    {formatDate(entry.occurred_at, locale)}
+                                    {entry.movement === 'internal' &&
+                                        ` · ${t('investor.wallet.c3.transfer', {
+                                            from: t(
+                                                `investor.wallet.c3.bucket.${entry.from}`,
+                                            ),
+                                            to: t(
+                                                `investor.wallet.c3.bucket.${entry.to}`,
+                                            ),
+                                        })}`}
+                                </span>
+                            </span>
+                            <span className="text-[12.5px] font-semibold whitespace-nowrap text-rz-slate">
+                                {formatRwf(entry.amount)}
+                            </span>
+                        </Link>
+                    </li>
+                ))}
+                {history.items.length === 0 && (
                     <li className="px-4 py-[26px] text-center text-[12.5px] text-rz-secondary">
                         {t('investor.wallet.tx.empty')}
                     </li>
                 )}
-                {transactions.items.length > first && (
+                {history.pagination.next !== null && (
                     <li>
-                        <button
-                            type="button"
-                            onClick={() => setAll(!all)}
-                            className="w-full bg-[#fafbfd] py-3 text-[12.5px] font-semibold text-rz-accent-app-text dark:bg-rz-surface-sunken"
+                        <Link
+                            href={history.pagination.next}
+                            preserveScroll
+                            className="block w-full bg-[#fafbfd] py-3 text-center text-[12.5px] font-semibold text-rz-accent-app-text dark:bg-rz-surface-sunken"
                         >
-                            {all
-                                ? t('investor.updates.show_less')
-                                : t('investor.updates.show_more')}
-                        </button>
+                            {t('investor.wallet.c3.older')}
+                        </Link>
                     </li>
                 )}
             </ul>
@@ -452,86 +313,67 @@ export function Transactions({
     );
 }
 
+function ReceiptRows({ rows }: { rows: [string, string][] }) {
+    return (
+        <dl className="px-4 pt-1.5 pb-0.5">
+            {rows.map(([label, value], index) => (
+                <div
+                    key={label}
+                    className={cn(
+                        'flex items-center justify-between gap-3 py-2',
+                        index < rows.length - 1 &&
+                            'border-b border-[#f1f4f9] dark:border-rz-divider',
+                    )}
+                >
+                    <dt className="text-xs text-rz-secondary">{label}</dt>
+                    <dd className="text-right text-xs font-semibold break-all text-rz-ink">
+                        {value}
+                    </dd>
+                </div>
+            ))}
+        </dl>
+    );
+}
+
+const isIntent = (
+    receipt: NonNullable<C3InvestorWalletProps['receipt']>,
+): receipt is DepositIntent => 'intent_receipt' in receipt;
+
 /**
- * A transaction receipt (design L4637–4703): what moved, its status, time, identifiers and the
- * wallet balance either side; withdrawals add gross, fee and net, and payouts the principal, return
- * and investor fee they carried (crosswalk AC-09, every earning traces to a repayment).
+ * A receipt (design L4637–4703): the immutable record of what was recorded, with its reference and
+ * policy version. A deposit intent shows its recorded intent receipt and, only after a verified
+ * success, its credit receipt; until then it reads "not yet confirmed" and nothing is credited.
  */
 export function ReceiptSheet({
     receipt,
     close,
 }: {
-    receipt: TransactionReceipt;
+    receipt: NonNullable<C3InvestorWalletProps['receipt']>;
     close: () => void;
 }) {
     const { t, locale } = useTranslation();
-    const rows: [string, string, string?][] = [
-        [
-            t('investor.wallet.receipt.type'),
-            t(
-                isNegative(receipt.amount)
-                    ? 'investor.wallet.receipt.debit'
-                    : 'investor.wallet.receipt.credit',
-            ),
-        ],
+    const recordRows = (record: Receipt): [string, string][] => [
         [
             t('investor.wallet.receipt.when'),
-            new Intl.DateTimeFormat(intlTag(locale), {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                timeZone: 'Africa/Kigali',
-            }).format(new Date(receipt.occurred_at)),
+            formatDateTime(record.recorded_at, locale),
         ],
-        [t('investor.wallet.receipt.transaction_id'), receipt.transaction_id],
-        [t('investor.wallet.receipt.reference'), receipt.reference],
-        [
-            t('investor.wallet.receipt.before'),
-            formatRwf(receipt.balance_before),
-        ],
-        [
-            t('investor.wallet.receipt.after'),
-            formatRwf(receipt.balance_after),
-            'font-bold',
-        ],
+        [t('investor.wallet.receipt.reference'), record.reference],
+        [t('investor.wallet.c3.receipt_policy'), record.policy_version],
     ];
 
-    if (receipt.breakdown !== null) {
-        rows.push(
-            [
-                t('investor.wallet.receipt.gross'),
-                formatRwf(receipt.breakdown.gross),
-            ],
-            [
-                t('investor.wallet.receipt.fee'),
-                formatRwf(receipt.breakdown.fee),
-            ],
-            [
-                t('investor.wallet.receipt.net'),
-                formatRwf(receipt.breakdown.net),
-                'font-bold',
-            ],
-        );
-    }
-
-    if (receipt.payout !== null) {
-        rows.push(
-            [
-                t('investor.wallet.receipt.principal'),
-                formatRwf(receipt.payout.principal),
-            ],
-            [
-                t('investor.wallet.receipt.return'),
-                formatRwf(receipt.payout.return),
-            ],
-            [
-                t('investor.wallet.receipt.payout_fee'),
-                formatRwf(receipt.payout.fee),
-            ],
-        );
-    }
+    const intent = isIntent(receipt) ? receipt : null;
+    const title = intent
+        ? t('investor.wallet.c3.deposit_from', { method: intent.method.label })
+        : entryLabel(t, receipt as WalletEntry);
+    const rows = intent
+        ? [
+              [
+                  t('investor.wallet.receipt.status'),
+                  t(`investor.wallet.c3.intent.${intent.state}`),
+              ] as [string, string],
+              ...recordRows(intent.intent_receipt),
+          ]
+        : recordRows((receipt as WalletEntry & { receipt: Receipt }).receipt);
 
     return (
         <LocalSheet
@@ -541,15 +383,17 @@ export function ReceiptSheet({
             className="lg:rounded-2xl"
         >
             <div className="flex shrink-0 items-center gap-[11px] border-b border-[#eef2f9] px-4 pt-3.5 pb-3 dark:border-rz-divider">
-                <KindTile kind={receipt.kind} large />
-                <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-rz-ink">
-                        {t(`investor.wallet.receipt.kind.${receipt.kind}`)}
-                    </p>
-                    <p className="mt-px text-[11px] text-rz-secondary">
-                        {receipt.counterparty}
-                    </p>
-                </div>
+                <EntryTile
+                    kind={
+                        intent === null
+                            ? (receipt as WalletEntry).kind
+                            : 'deposit'
+                    }
+                    large
+                />
+                <p className="min-w-0 flex-1 text-sm font-semibold text-rz-ink">
+                    {title}
+                </p>
                 <SheetClose onClose={close} />
             </div>
             <div className="rz-scroll min-h-0 flex-1 overflow-y-auto">
@@ -557,53 +401,33 @@ export function ReceiptSheet({
                     <p className="text-[10px] font-bold tracking-[.05em] text-rz-slate uppercase">
                         {t('investor.wallet.receipt.amount')}
                     </p>
-                    <p
-                        className={cn(
-                            'mt-[3px] text-2xl font-bold',
-                            amountTone(receipt),
-                        )}
-                    >
-                        {formatSigned(receipt.amount)}
+                    <p className="mt-[3px] text-2xl font-bold text-rz-ink">
+                        {formatRwf(receipt.amount)}
                     </p>
                 </div>
-                <dl className="px-4 pt-1.5 pb-0.5">
-                    <div className="flex items-center justify-between border-b border-[#f1f4f9] py-2 dark:border-rz-divider">
-                        <dt className="text-xs text-rz-secondary">
-                            {t('investor.wallet.receipt.status')}
-                        </dt>
-                        <dd
-                            className={cn(
-                                'inline-flex items-center gap-1.5 text-xs font-semibold',
-                                STATUS_TEXT[receipt.status],
-                            )}
+                <ReceiptRows rows={rows} />
+                {intent !== null &&
+                    (intent.credit_receipt === null ? (
+                        <p
+                            role="status"
+                            className="mx-4 mt-2 rounded-xl bg-rz-surface-sunken px-3 py-2.5 text-[11.5px] leading-[1.5] text-rz-secondary"
                         >
-                            <span className="size-1.5 rounded-full bg-current" />
-                            {t(`investor.wallet.tx.status.${receipt.status}`)}
-                        </dd>
-                    </div>
-                    {rows.map(([label, value, weight], index) => (
-                        <div
-                            key={label}
-                            className={cn(
-                                'flex items-center justify-between gap-3 py-2',
-                                index < rows.length - 1 &&
-                                    'border-b border-[#f1f4f9] dark:border-rz-divider',
+                            {t(
+                                intent.state === 'failed'
+                                    ? 'investor.wallet.c3.not_credited_failed'
+                                    : 'investor.wallet.c3.not_credited',
                             )}
-                        >
-                            <dt className="text-xs text-rz-secondary">
-                                {label}
-                            </dt>
-                            <dd
-                                className={cn(
-                                    'text-right text-xs text-rz-ink',
-                                    weight ?? 'font-semibold',
-                                )}
-                            >
-                                {value}
-                            </dd>
-                        </div>
+                        </p>
+                    ) : (
+                        <>
+                            <p className="mt-2 px-4 text-[10.5px] font-bold tracking-[.05em] text-rz-slate uppercase">
+                                {t('investor.wallet.c3.credit_receipt')}
+                            </p>
+                            <ReceiptRows
+                                rows={recordRows(intent.credit_receipt)}
+                            />
+                        </>
                     ))}
-                </dl>
             </div>
             <div className="shrink-0 px-4 pt-2.5 pb-[calc(env(safe-area-inset-bottom)+14px)] lg:pb-3.5">
                 <button

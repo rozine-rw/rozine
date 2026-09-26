@@ -1,50 +1,143 @@
-import { Link, useForm } from '@inertiajs/react';
-import type { FormEvent } from 'react';
+import { Link } from '@inertiajs/react';
 import { BusinessShell } from '@/components/business/business-shell';
-import { HomeBody } from '@/components/business/home/home-body';
+import { BlankBody, HomeBody } from '@/components/business/home/home-body';
+import { C3Notice } from '@/components/rozine/c3-notice';
 import { ColumnSheet } from '@/components/rozine/column-sheet';
 import { Icon } from '@/components/rozine/icon';
-import type { IconName } from '@/components/rozine/icon';
+import { useC3Command } from '@/hooks/use-c3-command';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatRwf } from '@/lib/rozine/format';
+import { formatDateTime, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { BusinessPublishProps, PaymentSourceKey } from '@/types/business';
+import type { C3BusinessPublishProps } from '@/types/business';
 
-const SOURCE_ICON: Record<PaymentSourceKey, IconName> = {
-    wallet: 'wallet',
-    mtn: 'phone',
-    airtel: 'phone',
-    card: 'card',
-};
+/** Release causes with their own explanation; any other code reads as a generic refusal. */
+const RELEASE_CAUSES = [
+    'ENGINE_GATE_FAILED',
+    'AUTHORITY_CHANGED',
+    'REPORT_NOT_CURRENT',
+] as const;
+
+type ReleaseCause = (typeof RELEASE_CAUSES)[number];
+
+const isReleaseCause = (code: string): code is ReleaseCause =>
+    (RELEASE_CAUSES as readonly string[]).includes(code);
+
+const ROW =
+    'flex items-center justify-between gap-3 border-b border-[#eef2f9] py-[11px] last:border-b-0 dark:border-rz-divider';
 
 /**
- * "Publish to the Investor feed" (listing, design L2090–2120), opened from the approved
- * application on Home. The server decides the fee; while it is zero there is nothing to pay, so
- * the sheet discloses the zero fee and publishes without asking for a payment source. Publishing
- * stays closed — and the sheet says why — until the server lists `application.publish`: an
- * approved, fully signed application and the checkpoint 3 listing transaction.
+ * "Publish to the Investor feed" (AC-03, C3 contract v2 §2f), opened from the released application
+ * on Home. Publishing reuses the signatures retained at Review, so the sheet asks for no second
+ * acceptance: it states each prerequisite as the server reports it, and when the quote or terms
+ * changed since signing it leads back to Review instead of offering Publish. The listing fee is an
+ * explicit zero MVP waiver with its disclosure; there is nothing to pay and no payment source.
+ * Publish is offered only while the server lists `application.publish`, and nothing is shown as
+ * published before the server's `LISTING_PUBLISHED` receipt.
  */
 export default function BusinessPublish({
-    home,
+    identity_context_revision,
     application,
-    fee,
-    sources,
+    release,
+    prerequisites,
+    listing_fee,
+    fee_disclosure,
+    listing,
     allowed_actions,
-    links,
     actions,
-}: BusinessPublishProps) {
-    const { t } = useTranslation();
-    const charged = sources.length > 0;
-    const canPublish = allowed_actions.includes('application.publish');
-    const form = useForm<{ source: PaymentSourceKey | null }>({
-        source: sources[0]?.key ?? null,
+    links,
+    home,
+    shell_links,
+    preview_outcome,
+}: C3BusinessPublishProps) {
+    const { t, locale } = useTranslation();
+    const command = useC3Command<'application.publish'>({
+        actions: { 'application.publish': actions.publish },
+        lookup: links.operation,
+        lookupQuery: { identity_context_revision },
+        allowed: allowed_actions,
+        preview: preview_outcome,
     });
-    const selected = sources.find((source) => source.key === form.data.source);
+    const canPublish =
+        links.review === null &&
+        allowed_actions.includes('application.publish');
 
-    const submit = (event: FormEvent) => {
-        event.preventDefault();
-        form.post(actions.publish.url, { preserveScroll: true });
+    const publish = () => {
+        command.send('application.publish', {
+            identity_context_revision,
+            application_id: application.id,
+            expected_application_revision: application.revision,
+            fee_disclosure_version: fee_disclosure.version,
+        });
     };
+
+    const published = listing !== null && (
+        <div className="rz-scroll min-h-0 flex-1 overflow-y-auto px-5 pt-4 pb-[22px]">
+            <div className="flex items-center gap-3">
+                <span className="flex size-[46px] shrink-0 items-center justify-center rounded-xl bg-rz-accent-soft text-2xl">
+                    <Icon name="check-badge" tone="green" />
+                </span>
+                <h2 className="text-[19px] leading-[1.25] font-semibold text-rz-ink">
+                    {t('business.publish.published.title')}
+                </h2>
+            </div>
+            <p className="mt-3 text-[12.5px] leading-normal text-rz-secondary">
+                {t('business.publish.published.body', {
+                    title: application.title,
+                })}
+            </p>
+            <dl
+                aria-label={t('business.publish.published.receipt')}
+                className="mt-4 rounded-2xl border border-[#eef2f9] bg-[#f6f9fd] px-[15px] py-1.5 dark:border-rz-divider dark:bg-rz-surface-sunken"
+            >
+                <div className={ROW}>
+                    <dt className="text-[13px] text-rz-secondary">
+                        {t('business.publish.fee_label')}
+                    </dt>
+                    <dd className="text-[13px] font-semibold text-rz-ink">
+                        {formatRwf(listing.receipt.amount)}
+                    </dd>
+                </div>
+                <div className={ROW}>
+                    <dt className="text-[13px] text-rz-secondary">
+                        {t('business.publish.published.reference')}
+                    </dt>
+                    <dd className="text-[13px] font-semibold text-rz-ink">
+                        {listing.receipt.reference}
+                    </dd>
+                </div>
+                <div className={ROW}>
+                    <dt className="text-[13px] text-rz-secondary">
+                        {t('business.publish.published.recorded')}
+                    </dt>
+                    <dd className="text-[13px] font-semibold text-rz-ink">
+                        {formatDateTime(listing.receipt.recorded_at, locale)}
+                    </dd>
+                </div>
+                {listing.receipt.disclosure_version !== null && (
+                    <div className={ROW}>
+                        <dt className="text-[13px] text-rz-secondary">
+                            {t('business.publish.published.disclosure')}
+                        </dt>
+                        <dd className="text-[13px] font-semibold text-rz-ink">
+                            {listing.receipt.disclosure_version}
+                        </dd>
+                    </div>
+                )}
+            </dl>
+            <Link
+                href={listing.campaign}
+                className="mt-4 flex h-[52px] w-full items-center justify-center rounded-xl bg-rz-accent-fill text-[15px] font-semibold text-white"
+            >
+                {t('business.publish.published.campaign')}
+            </Link>
+            <Link
+                href={links.close}
+                className="mt-2.5 flex h-[46px] w-full items-center justify-center rounded-xl border border-rz-border text-sm font-semibold text-rz-slate"
+            >
+                {t('business.publish.published.home')}
+            </Link>
+        </div>
+    );
 
     const sheet = (
         <ColumnSheet
@@ -52,144 +145,156 @@ export default function BusinessPublish({
             close={links.close}
             fraction={0.8}
         >
-            <form
-                onSubmit={submit}
-                className="rz-scroll min-h-0 flex-1 overflow-y-auto px-5 pt-4 pb-[22px]"
-            >
-                <div className="flex items-center gap-3">
-                    <span className="flex size-[46px] shrink-0 items-center justify-center rounded-xl bg-rz-accent-soft text-2xl">
-                        <Icon name="rocket" tone="green" />
-                    </span>
-                    <h2 className="text-[19px] leading-[1.25] font-semibold text-rz-ink">
-                        {t('business.publish.title')}
-                    </h2>
-                </div>
-                <p className="mt-3 text-[12.5px] leading-normal text-rz-secondary">
-                    {charged
-                        ? t('business.publish.body_fee', {
-                              title: application.title,
-                          })
-                        : t('business.publish.body_free', {
-                              title: application.title,
-                          })}
-                </p>
-                <div className="mt-4 rounded-2xl border border-[#eef2f9] bg-[#f6f9fd] px-[15px] py-1.5 dark:border-rz-divider dark:bg-rz-surface-sunken">
-                    <div className="flex items-center justify-between border-b border-[#eef2f9] py-[11px] dark:border-rz-divider">
-                        <span className="text-[13px] text-rz-secondary">
-                            {t('business.publish.target')}
+            {published || (
+                <div className="rz-scroll min-h-0 flex-1 overflow-y-auto px-5 pt-4 pb-[22px]">
+                    <div className="flex items-center gap-3">
+                        <span className="flex size-[46px] shrink-0 items-center justify-center rounded-xl bg-rz-accent-soft text-2xl">
+                            <Icon name="rocket" tone="green" />
                         </span>
-                        <span className="text-[13px] font-semibold text-rz-ink">
-                            {formatRwf(application.target)}
-                        </span>
+                        <h2 className="text-[19px] leading-[1.25] font-semibold text-rz-ink">
+                            {t('business.publish.title')}
+                        </h2>
                     </div>
-                    <div className="flex items-center justify-between pt-3 pb-[11px]">
-                        <span className="text-[13px] font-bold text-rz-ink">
-                            {t('business.publish.fee')}
-                        </span>
-                        <span className="text-base font-bold text-rz-accent-app-text">
-                            {formatRwf(fee)}
-                        </span>
-                    </div>
-                </div>
+                    <p className="mt-3 text-[12.5px] leading-normal text-rz-secondary">
+                        {t('business.publish.intro', {
+                            title: application.title,
+                        })}
+                    </p>
 
-                {charged && (
-                    <>
-                        <p className="mt-4 text-[11px] font-bold tracking-[.05em] text-rz-slate uppercase">
-                            {t('business.publish.pay_with')}
-                        </p>
-                        <div
-                            role="radiogroup"
-                            aria-label={t('business.publish.pay_with')}
-                            className="mt-2 flex gap-1.5"
-                        >
-                            {sources.map((source) => {
-                                const on = source.key === form.data.source;
+                    <ReleaseState release={release} />
 
-                                return (
-                                    <button
-                                        key={source.key}
-                                        type="button"
-                                        role="radio"
-                                        aria-checked={on}
-                                        onClick={() =>
-                                            form.setData('source', source.key)
-                                        }
-                                        className={cn(
-                                            'relative flex min-w-0 flex-1 flex-col items-center gap-1.5 rounded-xl border-[1.5px] px-1 py-2.5',
-                                            on
-                                                ? 'border-[#d6e4ff] bg-rz-page text-rz-investor-text dark:border-rz-investor'
-                                                : 'border-rz-border bg-rz-surface text-[#46526b] dark:text-rz-secondary',
-                                        )}
-                                    >
-                                        <span className="text-xl">
-                                            <Icon
-                                                name={SOURCE_ICON[source.key]}
-                                            />
-                                        </span>
-                                        <span className="text-[10px] font-semibold whitespace-nowrap">
-                                            {t(
-                                                `business.publish.source.${source.key}`,
-                                            )}
-                                        </span>
-                                        {on && (
-                                            <span
-                                                aria-hidden
-                                                className="absolute top-[5px] right-[5px] flex size-3.5 items-center justify-center rounded-full bg-rz-accent-fill text-[10px] text-white"
-                                            >
-                                                ✓
-                                            </span>
-                                        )}
-                                    </button>
-                                );
-                            })}
+                    <p className="mt-4 text-[11px] font-bold tracking-[.05em] text-rz-slate uppercase">
+                        {t('business.publish.prerequisites')}
+                    </p>
+                    <ul
+                        aria-label={t('business.publish.prerequisites')}
+                        className="mt-2 rounded-2xl border border-rz-border bg-rz-surface px-[15px] py-1"
+                    >
+                        {prerequisites.map((item) => (
+                            <li
+                                key={item.key}
+                                className="flex items-center gap-2.5 border-b border-rz-divider py-2.5 last:border-b-0"
+                            >
+                                <span
+                                    aria-hidden
+                                    className={cn(
+                                        'flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold',
+                                        item.met
+                                            ? 'bg-rz-accent-fill text-white'
+                                            : 'border-[1.5px] border-rz-border text-transparent',
+                                    )}
+                                >
+                                    ✓
+                                </span>
+                                <span className="flex-1 text-[12.5px] text-rz-ink">
+                                    {t(
+                                        `business.publish.prerequisite.${item.key}`,
+                                    )}
+                                </span>
+                                <span
+                                    className={cn(
+                                        'shrink-0 text-[11px] font-semibold',
+                                        item.met
+                                            ? 'text-rz-accent-app-text'
+                                            : 'text-rz-secondary',
+                                    )}
+                                >
+                                    {item.met
+                                        ? t('business.publish.met')
+                                        : t('business.publish.not_met')}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+
+                    <dl className="mt-4 rounded-2xl border border-[#eef2f9] bg-[#f6f9fd] px-[15px] py-1.5 dark:border-rz-divider dark:bg-rz-surface-sunken">
+                        <div className={ROW}>
+                            <dt className="text-[13px] text-rz-secondary">
+                                {t('business.publish.target')}
+                            </dt>
+                            <dd className="text-[13px] font-semibold text-rz-ink">
+                                {formatRwf(application.target)}
+                            </dd>
                         </div>
-                        <p className="mt-2 text-center text-[11px] text-rz-secondary">
-                            {selected?.detail}
+                        <div className={ROW}>
+                            <dt className="text-[13px] font-bold text-rz-ink">
+                                {t('business.publish.fee_label')}
+                                <span className="block text-[11px] font-normal text-rz-secondary">
+                                    {t('business.publish.fee_waived')}
+                                </span>
+                            </dt>
+                            <dd className="text-base font-bold text-rz-accent-app-text">
+                                {formatRwf(listing_fee)}
+                            </dd>
+                        </div>
+                    </dl>
+                    <div className="mt-3 rounded-2xl border border-rz-border bg-rz-surface p-[15px]">
+                        <p className="text-[11px] font-bold tracking-[.05em] text-rz-slate uppercase">
+                            {t('business.publish.disclosure_title')}
                         </p>
-                    </>
-                )}
+                        <p className="mt-1.5 text-xs leading-[1.55] text-rz-ink">
+                            {fee_disclosure.text}
+                        </p>
+                        <p className="mt-1.5 text-[11px] text-rz-secondary">
+                            {t('business.publish.disclosure_version', {
+                                version: fee_disclosure.version,
+                            })}
+                        </p>
+                    </div>
 
-                {canPublish ? (
-                    <button
-                        type="submit"
-                        disabled={form.processing}
-                        aria-busy={form.processing || undefined}
-                        className="mt-4 flex h-[52px] w-full items-center justify-center gap-[9px] rounded-xl bg-rz-accent-fill text-[15px] font-semibold text-white"
+                    <C3Notice command={command} className="mt-4" />
+
+                    {links.review !== null ? (
+                        <>
+                            <p
+                                role="status"
+                                className="mt-4 rounded-2xl border border-[#fbe4cc] bg-[#fff8f1] p-[15px] text-[12.5px] leading-normal text-rz-ink dark:border-transparent dark:bg-[rgba(194,102,31,.12)]"
+                            >
+                                {t('business.publish.changed')}
+                            </p>
+                            <Link
+                                href={links.review}
+                                className="mt-3 flex h-[52px] w-full items-center justify-center rounded-xl bg-rz-accent-fill text-[15px] font-semibold text-white"
+                            >
+                                {t('business.publish.review_again')}
+                            </Link>
+                        </>
+                    ) : canPublish ? (
+                        <button
+                            type="button"
+                            onClick={publish}
+                            disabled={command.busy || command.unresolved}
+                            aria-busy={command.busy || undefined}
+                            className="mt-4 flex h-[52px] w-full items-center justify-center gap-[9px] rounded-xl bg-rz-accent-fill text-[15px] font-semibold text-white disabled:opacity-60"
+                        >
+                            {command.busy && (
+                                <span className="size-[17px] animate-spin rounded-full border-[2.5px] border-white/40 border-t-white" />
+                            )}
+                            {command.busy
+                                ? t('business.publish.publishing')
+                                : t('business.publish.publish')}
+                        </button>
+                    ) : (
+                        <p
+                            role="status"
+                            className="mt-4 flex items-start gap-3 rounded-2xl border border-[#dbe7ff] bg-rz-surface p-4 text-xs leading-[1.55] text-rz-secondary dark:border-rz-border"
+                        >
+                            <span className="flex size-[34px] shrink-0 items-center justify-center rounded-xl bg-rz-accent-soft text-base">
+                                <Icon name="hourglass" />
+                            </span>
+                            <span className="flex-1 self-center">
+                                {t('business.publish.blocked')}
+                            </span>
+                        </p>
+                    )}
+                    <Link
+                        href={links.close}
+                        className="mt-2.5 flex h-[46px] w-full items-center justify-center rounded-xl border border-rz-border text-sm font-semibold text-rz-slate"
                     >
-                        {form.processing && (
-                            <span className="size-[17px] animate-spin rounded-full border-[2.5px] border-white/40 border-t-white" />
-                        )}
-                        {form.processing
-                            ? t('business.publish.publishing')
-                            : charged
-                              ? t('business.publish.pay_and_publish')
-                              : t('business.publish.publish')}
-                    </button>
-                ) : (
-                    <p
-                        role="status"
-                        className="mt-4 flex items-start gap-3 rounded-2xl border border-[#dbe7ff] bg-rz-surface p-4 text-xs leading-[1.55] text-rz-secondary dark:border-rz-border"
-                    >
-                        <span className="flex size-[34px] shrink-0 items-center justify-center rounded-xl bg-rz-accent-soft text-base">
-                            <Icon name="hourglass" />
-                        </span>
-                        <span className="flex-1 self-center">
-                            {t('business.publish.unavailable')}
-                        </span>
-                    </p>
-                )}
-                <Link
-                    href={links.close}
-                    className="mt-2.5 flex h-[46px] w-full items-center justify-center rounded-xl border border-rz-border text-sm font-semibold text-rz-slate"
-                >
-                    {t('business.publish.not_yet')}
-                </Link>
-                {form.errors.source && (
-                    <p className="mt-2 text-center text-xs font-semibold text-rz-danger-text">
-                        {form.errors.source}
-                    </p>
-                )}
-            </form>
+                        {t('business.publish.not_yet')}
+                    </Link>
+                </div>
+            )}
         </ColumnSheet>
     );
 
@@ -197,9 +302,67 @@ export default function BusinessPublish({
         <BusinessShell
             title={t('business.publish.title')}
             tab="home"
-            links={home.links}
+            links={shell_links}
         >
-            <HomeBody {...home} overlay={{ column: 'left', content: sheet }} />
+            {home === null ? (
+                <BlankBody overlay={{ column: 'left', content: sheet }} />
+            ) : (
+                <HomeBody
+                    {...home}
+                    overlay={{ column: 'left', content: sheet }}
+                />
+            )}
         </BusinessShell>
+    );
+}
+
+/** Where staff review of the application stands; a refusal names its causes. */
+function ReleaseState({
+    release,
+}: {
+    release: C3BusinessPublishProps['release'];
+}) {
+    const { t } = useTranslation();
+
+    if (release.state === 'released') {
+        return (
+            <p className="mt-4 flex items-center gap-3 rounded-2xl border border-[#cfe9d8] bg-rz-accent-soft p-[15px] text-[12.5px] leading-normal text-rz-ink dark:border-transparent">
+                <Icon name="check-badge" tone="green" />
+                <span className="flex-1">
+                    {t('business.publish.release.released')}
+                </span>
+            </p>
+        );
+    }
+
+    if (release.state === 'awaiting_staff_review') {
+        return (
+            <p className="mt-4 flex items-start gap-3 rounded-2xl border border-rz-border bg-rz-surface p-[15px] text-[12.5px] leading-normal text-rz-ink">
+                <Icon name="hourglass" />
+                <span className="flex-1">
+                    {t('business.publish.release.awaiting')}
+                </span>
+            </p>
+        );
+    }
+
+    return (
+        <div className="mt-4 rounded-2xl border border-[rgba(229,72,77,.25)] bg-[rgba(229,72,77,.06)] p-[15px] text-[12.5px] leading-normal text-rz-ink">
+            <p className="flex items-center gap-3 font-semibold">
+                <Icon name="blocked" tone="red" />
+                <span className="flex-1">
+                    {t('business.publish.release.refused')}
+                </span>
+            </p>
+            <ul className="mt-2 list-disc space-y-1 pl-9">
+                {release.causes.map((cause) => (
+                    <li key={cause}>
+                        {isReleaseCause(cause)
+                            ? t(`business.publish.cause.${cause}`)
+                            : t('business.publish.cause.other')}
+                    </li>
+                ))}
+            </ul>
+        </div>
     );
 }

@@ -4,6 +4,7 @@ import {
     ApplicationStateChip,
     DECISION_TONE,
 } from '@/components/admin/applications/application-status';
+import { ReleasePanel } from '@/components/admin/applications/release-panel';
 import { Drawer, DrawerClose } from '@/components/admin/drawer';
 import { avatarColor, initialOf } from '@/components/admin/format';
 import { ReasonStage } from '@/components/admin/reason-stage';
@@ -19,9 +20,10 @@ import {
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate, formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { RouteAction } from '@/types';
+import type { RouteAction, RouteLink } from '@/types';
 import type {
-    ApplicationReview,
+    C3AdminApplicationsProps,
+    C3ApplicationReview,
     EvidenceFactorKey,
     ReviewAction,
     StaffViewer,
@@ -56,16 +58,22 @@ const TONAL_BUTTON =
  * The underwriting review (design T2920–3013). The engine's recommendation and evidence are
  * shown read-only — nobody types a score or a rating here (MVP-ADMIN-AC-04). Every decision,
  * including approval, carries a written reason (AC-01), and approval is blocked while the listing
- * audit is not sealed (MVP-ADMIN-SCR-02-ST-02).
+ * audit is not sealed (MVP-ADMIN-SCR-02-ST-02). Once approved, the minimal staff release (C3)
+ * shows its gates and, only when the server offers it, the release command.
  */
 export function ReviewDrawer({
     review,
     viewer,
     initialStage,
+    lookup,
+    preview,
 }: {
-    review: ApplicationReview;
+    review: C3ApplicationReview;
     viewer: StaffViewer;
     initialStage: ReviewAction | null;
+    /** The C3 operation lookup the release command reads an uncertain outcome from. */
+    lookup: RouteLink;
+    preview?: C3AdminApplicationsProps['preview_outcome'];
 }) {
     const { t, locale } = useTranslation();
     const opening =
@@ -409,6 +417,16 @@ export function ReviewDrawer({
                     >
                         {t('admin.review.business_profile')}
                     </Link>
+
+                    {review.release !== null && (
+                        <ReleasePanel
+                            applicationId={review.id}
+                            release={review.release}
+                            viewer={viewer}
+                            lookup={lookup}
+                            preview={preview}
+                        />
+                    )}
 
                     <TrailList
                         title={t('admin.review.trail')}

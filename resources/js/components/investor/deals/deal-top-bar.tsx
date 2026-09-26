@@ -12,7 +12,6 @@ type DealTopBarProps = {
     links: {
         wallet: RouteLink;
         deposit: RouteLink;
-        withdraw: RouteLink;
         notifications: RouteLink;
     };
 };
@@ -154,7 +153,10 @@ export function PhoneTopBar({ wallet, unread, links }: DealTopBarProps) {
     );
 }
 
-/** Wide-screen top bar (design L140–194): balance card with deposit/withdraw, and the bell. */
+/**
+ * Wide-screen top bar (design L140–194): balance card with deposit, and the bell. Withdrawal stays
+ * hidden until it has its own contract (C3 v2, H6).
+ */
 export function DeskTopBar({ wallet, unread, links }: DealTopBarProps) {
     const { t, locale } = useTranslation();
     const payout = nextPayoutLabel(wallet, locale);
@@ -193,26 +195,6 @@ export function DeskTopBar({ wallet, unread, links }: DealTopBarProps) {
                         <path
                             d="M12 5v14M5 12l7 7 7-7"
                             stroke="#fff"
-                            strokeWidth="2.2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
-                </Link>
-                <Link
-                    href={links.withdraw}
-                    aria-label={t('investor.deals.withdraw')}
-                    className="flex size-9 shrink-0 items-center justify-center rounded-[10px] border border-rz-border bg-rz-page text-[#46526b] dark:text-rz-slate"
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        aria-hidden
-                        className="size-4"
-                    >
-                        <path
-                            d="M12 19V5M5 12l7-7 7 7"
-                            stroke="currentColor"
                             strokeWidth="2.2"
                             strokeLinecap="round"
                             strokeLinejoin="round"

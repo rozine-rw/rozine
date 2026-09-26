@@ -139,10 +139,18 @@ export function TodaySection({ items }: { items: BusinessTodo[] }) {
                         dot="bg-rz-accent-app-text"
                         kicker={t('business.today.approved.kicker')}
                         title={item.title}
-                        sub={t('business.today.approved.sub', {
-                            fee: formatRwf(item.fee),
-                        })}
-                        cta={t('business.today.approved.cta')}
+                        sub={
+                            item.fee.amount === '0'
+                                ? t('business.today.approved.sub_free')
+                                : t('business.today.approved.sub', {
+                                      fee: formatRwf(item.fee),
+                                  })
+                        }
+                        cta={
+                            item.fee.amount === '0'
+                                ? t('business.today.approved.cta_free')
+                                : t('business.today.approved.cta')
+                        }
                         ctaTone={GREEN_TEXT}
                     />
                 );

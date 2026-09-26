@@ -193,6 +193,9 @@ const fr: Catalog = {
     'business.today.approved.sub':
         'Payez les frais de demande de {fee} pour la publier aux investisseurs.',
     'business.today.approved.cta': 'Payer et publier',
+    'business.today.approved.sub_free':
+        'Publiez-la auprès des investisseurs. Aucuns frais de publication.',
+    'business.today.approved.cta_free': 'Publier',
     'business.today.declined.kicker': 'Demande refusée',
     'business.today.declined.sub':
         'Au-delà de votre capacité approuvée — contactez-nous avant de soumettre à nouveau.',
@@ -1090,25 +1093,26 @@ const fr: Catalog = {
     'admin.disbursements.trail': 'Historique du versement',
     'admin.disbursements.trail_empty': "Rien d'enregistré pour l'instant.",
     'admin.disbursements.command.authorize': 'Autoriser le versement',
-    'admin.disbursements.command.approve': 'Approuver le versement',
+    'admin.disbursements.command.approve': 'Approuver le décaissement',
     'admin.disbursements.command.reject': 'Refuser',
     'admin.disbursements.command.hold': 'Suspendre',
     'admin.disbursements.command.retry': 'Réessayer le versement',
     'admin.disbursements.stage.authorize.title': 'Autoriser ce versement',
     'admin.disbursements.stage.authorize.body':
-        'Vous autorisez le versement de {amount} à {business}. Si le montant exige deux personnes, il attend ensuite un autre approbateur.',
+        "Vous autorisez le paiement de {amount} à {business}. Le contrôle préalable est exécuté ; un autre membre du personnel doit ensuite l'approuver.",
     'admin.disbursements.stage.authorize.cta': 'Autoriser',
     'admin.disbursements.stage.authorize.placeholder':
         'ex. Levée entièrement financée ; destination vérifiée selon le mandat RDB.',
     'admin.disbursements.stage.approve.title': 'Approuver ce versement',
     'admin.disbursements.stage.approve.body':
-        'En tant que second approbateur, vous versez {amount} à {business}. Le paiement part chez le prestataire dès votre confirmation.',
-    'admin.disbursements.stage.approve.cta': 'Approuver et verser',
+        "En tant que second membre du personnel, vous approuvez le paiement de {amount} à {business}. Cela enregistre l'intention de paiement ; ce n'est pas un paiement. Le service ne l'envoie qu'après sa propre revérification.",
+    'admin.disbursements.stage.approve.cta':
+        "Approuver et enregistrer l'intention",
     'admin.disbursements.stage.approve.placeholder':
         "ex. Total financé et destination conformes à l'offre.",
     'admin.disbursements.stage.reject.title': 'Refuser ce versement',
     'admin.disbursements.stage.reject.body':
-        "Le versement revient à l'autorisation. Dites ce qui doit changer d'abord.",
+        "Cela annule uniquement l'autorisation et enregistre votre motif. La levée n'est pas annulée ; le décaissement revient à l'autorisation.",
     'admin.disbursements.stage.reject.cta': 'Refuser le versement',
     'admin.disbursements.stage.reject.placeholder':
         "ex. Le nom du compte de destination ne correspond pas à l'entreprise.",
@@ -3265,6 +3269,530 @@ const fr: Catalog = {
     'auditor.sealed.body_amended':
         'Vous avez modifié ce rapport : il ne sera ni cosigné ni publié. La modification le remplace.',
 
+    'settlement.notice.checking.title': 'Vérification en cours',
+    'settlement.notice.checking.body':
+        "La réponse ne nous est pas parvenue : nous vérifions si la demande a été enregistrée. Rien n'est renvoyé entre-temps.",
+    'settlement.notice.unconfirmed.title': 'Pas encore confirmé',
+    'settlement.notice.unconfirmed.body':
+        "Impossible de joindre le serveur pour le confirmer. Rien n'a été renvoyé. Vérifiez de nouveau une fois connecté.",
+    'settlement.notice.pending.title': 'Enregistré, pas encore confirmé',
+    'settlement.notice.pending.body':
+        'Le serveur a enregistré cette demande et la traite encore. Cette page affichera le résultat une fois confirmé.',
+    'settlement.notice.not_recorded.title': "Rien n'a été enregistré",
+    'settlement.notice.not_recorded.body':
+        "Le serveur n'a aucune trace de cette demande. Les informations ont été actualisées ; vous pouvez renvoyer la même demande.",
+    'settlement.notice.check_again': 'Vérifier de nouveau',
+    'settlement.notice.try_again': 'Renvoyer la même demande',
+    'settlement.notice.no_longer_allowed':
+        "Rien n'a été enregistré, et cette action n'est plus disponible avec les informations actuelles.",
+    'settlement.poll.stopped':
+        "Pas encore confirmé. La vérification automatique s'est arrêtée — actualisez pour voir le dernier état.",
+    'settlement.poll.refresh': 'Actualiser',
+    'settlement.refusal.other':
+        'Cette demande a été refusée. Actualisez et réessayez.',
+    'settlement.refusal.VALIDATION_FAILED':
+        'Certaines informations doivent être corrigées avant de continuer.',
+    'settlement.refusal.EXPOSURE_LIMIT':
+        "Cela dépasserait l'une de vos limites d'investissement.",
+    'settlement.refusal.INSUFFICIENT_AVAILABLE_FUNDS':
+        'Votre solde disponible ne couvre pas ce montant.',
+    'settlement.refusal.VERSION_CONFLICT':
+        'Quelque chose a changé depuis le chargement de la page. Les informations ont été actualisées — vérifiez-les et réessayez.',
+    'settlement.refusal.IDEMPOTENCY_CONFLICT':
+        'Cette demande a déjà servi à autre chose. Recommencez à partir des informations actuelles.',
+    'settlement.refusal.RESERVATION_EXPIRED':
+        'Votre réservation de 5 minutes a expiré et ses titres ont été libérés. Réservez de nouveau pour continuer.',
+    'settlement.refusal.CAMPAIGN_CLOSED': "Cette levée n'est plus ouverte.",
+    'settlement.refusal.UNITS_UNAVAILABLE':
+        'Ces titres ne sont plus disponibles. Choisissez-en moins ou réessayez plus tard.',
+    'settlement.refusal.COMMITMENT_LOCKED':
+        'La levée est entièrement financée : cela ne peut plus être annulé.',
+    'settlement.refusal.NOTE_INELIGIBLE':
+        "Ce titre n'est pas éligible pour le moment.",
+    'settlement.refusal.DISCLOSURE_STALE':
+        "L'information a changé. Lisez la version actuelle et confirmez-la de nouveau.",
+    'settlement.refusal.POLICY_INPUT_REQUIRED':
+        "Ce n'est pas encore disponible : une règle requise n'a pas été définie.",
+    'settlement.refusal.DEPOSIT_METHOD_UNVERIFIED':
+        "Ce compte n'est pas encore vérifié pour les dépôts.",
+    'settlement.refusal.APPLICATION_NOT_RELEASED':
+        "Cette demande n'a pas encore été autorisée à la publication.",
+    'settlement.refusal.DISBURSEMENT_IN_FLIGHT':
+        "L'intention de paiement est déjà enregistrée : elle ne peut plus être modifiée ainsi.",
+    'settlement.refusal.PROVIDER_OUTCOME_UNRESOLVED':
+        "Le résultat du prestataire n'est pas encore résolu : l'action est bloquée.",
+    'settlement.refusal.ACTION_FORBIDDEN':
+        'Vous ne pouvez pas faire cela avec votre accès actuel.',
+    'settlement.refusal.IDENTITY_VERIFICATION_REQUIRED':
+        'Vérifiez votre identité pour investir.',
+    'settlement.refusal.RESTRICTION_ACTIVE':
+        "Une restriction est en place : ce n'est pas disponible pour le moment.",
+    'settlement.refusal.CONNECTED_PARTY':
+        'Vous êtes lié à cette entreprise : vous ne pouvez pas participer.',
+    'settlement.refusal.SELF_APPROVAL_FORBIDDEN':
+        'Un autre membre du personnel doit le faire : vous ne pouvez pas valider votre propre action.',
+    'settlement.refusal.STEP_UP_REQUIRED':
+        "Une nouvelle confirmation renforcée est d'abord requise.",
+    'settlement.refusal.MANDATE_REQUIRED':
+        "Cela nécessite une personne habilitée par le mandat de l'entreprise.",
+    'settlement.refusal.STAFF_ACCESS_REQUIRED':
+        'Un accès personnel est requis.',
+    'settlement.refusal.STAFF_PERMISSION_REQUIRED':
+        'Vos autorisations ne couvrent pas cette action.',
+    'settlement.refusal.STAFF_VERIFIED_EMAIL_AND_MFA_REQUIRED':
+        "Vérifiez votre e-mail et activez l'authentification à deux facteurs pour continuer.",
+    'settlement.refusal.MFA_REQUIRED':
+        "L'authentification à deux facteurs est requise.",
+    'settlement.refusal.NOT_FOUND':
+        'Vous ne pouvez plus consulter cet enregistrement.',
+    'investor.wallet.c3.total': 'Total du portefeuille',
+    'investor.wallet.c3.bucket.available': 'Disponible',
+    'investor.wallet.c3.bucket.held': 'Réservé',
+    'investor.wallet.c3.bucket.committed': 'Engagé',
+    'investor.wallet.c3.spendable':
+        "Seul le disponible peut être dépensé. Le réservé est dans un paiement en cours ; l'engagé attend l'émission.",
+    'investor.wallet.c3.restricted':
+        "Une restriction s'applique depuis le {date}. Les dépôts restent possibles.",
+    'investor.wallet.c3.no_pending': 'Aucun dépôt en attente',
+    'investor.wallet.c3.pending_deposits':
+        '{amount} pas encore confirmé — hors du total',
+    'investor.wallet.c3.no_policy':
+        "Les dépôts ne sont pas encore disponibles : aucune règle de dépôt n'a été définie.",
+    'investor.wallet.c3.credited_on_success': 'Crédité une fois confirmé',
+    'investor.wallet.c3.policy_synthetic':
+        "Règle de dépôt fictive {version} — chiffres d'aperçu, pas une règle en vigueur.",
+    'investor.wallet.c3.policy': 'Règle de dépôt {version}.',
+    'investor.wallet.c3.policy_minimum': 'Minimum {amount}.',
+    'investor.wallet.c3.policy_maximum': 'Maximum {amount}.',
+    'investor.wallet.c3.deposit_unavailable':
+        'Le dépôt ne vous est pas accessible pour le moment.',
+    'investor.wallet.c3.intent_only':
+        "Cela enregistre votre demande de dépôt. Rien n'est crédité avant la confirmation du paiement.",
+    'investor.wallet.c3.holds': 'Réservé pour un paiement',
+    'investor.wallet.c3.hold_line': {
+        one: '{name} · {count} titre',
+        other: '{name} · {count} titres',
+    },
+    'investor.wallet.c3.hold_expires': 'Libéré dans {time} sauf confirmation',
+    'investor.wallet.c3.deposits': 'Dépôts',
+    'investor.wallet.c3.deposit_from': 'Dépôt depuis {method}',
+    'investor.wallet.c3.intent.pending': 'Pas encore confirmé',
+    'investor.wallet.c3.intent.unknown':
+        'Pas encore confirmé — nous vérifions auprès du prestataire',
+    'investor.wallet.c3.intent.succeeded': 'Crédité',
+    'investor.wallet.c3.intent.failed': "Non abouti — rien n'a été crédité",
+    'investor.wallet.c3.entry.deposit_in': 'Dépôt depuis {counterparty}',
+    'investor.wallet.c3.entry.deposit_out': 'Virement vers {counterparty}',
+    'investor.wallet.c3.entry.hold': 'Réservé pour {name}',
+    'investor.wallet.c3.entry.hold_release': 'Réservation libérée · {name}',
+    'investor.wallet.c3.entry.commitment': 'Engagé dans {name}',
+    'investor.wallet.c3.entry.commitment_refund': 'Remboursement · {name}',
+    'investor.wallet.c3.movement': 'Type de mouvement',
+    'investor.wallet.c3.filter.external': 'Entrées et sorties',
+    'investor.wallet.c3.filter.internal': 'Réservations et engagements',
+    'investor.wallet.c3.transfer': '{from} → {to}',
+    'investor.wallet.c3.older': 'Afficher plus ancien',
+    'investor.wallet.c3.receipt_policy': 'Version de la règle',
+    'investor.wallet.c3.not_credited':
+        "Enregistré, pas encore confirmé. Rien n'a été crédité ; ce ne sera fait qu'après confirmation du paiement.",
+    'investor.wallet.c3.not_credited_failed':
+        "Le paiement a été confirmé comme non effectué. Rien n'a été crédité.",
+    'investor.wallet.c3.credit_receipt': 'Reçu de crédit',
+    'business.publish.intro':
+        "{title} sera visible des investisseurs dès que chaque étape ci-dessous sera remplie. La publication reprend les signatures données à la revue : il n'y a rien de plus à signer ici.",
+    'business.publish.release.awaiting':
+        "En attente de la revue du personnel Rozine. Le personnel ne libère une demande que si le moteur de notation, le pouvoir de signature et le rapport d'audit sont tous conformes.",
+    'business.publish.release.released':
+        'Libérée pour la mise en ligne par le personnel Rozine.',
+    'business.publish.release.refused': 'Non libérée pour la mise en ligne',
+    'business.publish.cause.ENGINE_GATE_FAILED':
+        'Les critères de crédit du moteur de notation ne sont pas remplis.',
+    'business.publish.cause.AUTHORITY_CHANGED':
+        "Le pouvoir de signature de l'entreprise a changé depuis votre signature.",
+    'business.publish.cause.REPORT_NOT_CURRENT':
+        "Le rapport d'audit n'est plus à jour.",
+    'business.publish.cause.other':
+        "Une vérification de libération n'a pas abouti.",
+    'business.publish.prerequisites': 'Avant de publier',
+    'business.publish.prerequisite.staff_release':
+        'Libérée par le personnel Rozine après revue',
+    'business.publish.prerequisite.signatures_retained':
+        'Vos signatures de la revue sont enregistrées',
+    'business.publish.prerequisite.quote_current':
+        'Offre inchangée depuis votre signature',
+    'business.publish.prerequisite.terms_current':
+        'Conditions inchangées depuis votre signature',
+    'business.publish.met': 'Fait',
+    'business.publish.not_met': 'Pas encore',
+    'business.publish.fee_label': 'Frais de mise en ligne',
+    'business.publish.fee_waived': 'Supprimés pour le MVP',
+    'business.publish.disclosure_title': 'Information sur les frais',
+    'business.publish.disclosure_version': 'Information {version}',
+    'business.publish.changed':
+        "L'offre ou les conditions ont changé depuis votre signature. Relisez-les et signez à nouveau avant de publier.",
+    'business.publish.review_again': 'Relire et signer à nouveau',
+    'business.publish.blocked':
+        "La publication s'ouvrira dès que chaque étape ci-dessus sera remplie.",
+    'business.publish.published.title': 'En ligne pour les investisseurs',
+    'business.publish.published.body':
+        "{title} est en ligne sur le fil des investisseurs. Rien n'a été facturé.",
+    'business.publish.published.receipt': 'Reçu de mise en ligne',
+    'business.publish.published.reference': 'Référence',
+    'business.publish.published.recorded': 'Enregistré',
+    'business.publish.published.disclosure': 'Information sur les frais',
+    'business.publish.published.campaign': 'Voir la campagne',
+    'business.publish.published.home': "Retour à l'accueil",
+    'business.campaign.state.live': 'En ligne',
+    'business.campaign.state.fully_reserved': 'Entièrement réservée',
+    'business.campaign.state.funded': 'Financée',
+    'business.campaign.state.disbursing': 'Versement en cours',
+    'business.campaign.state.issued': 'Titres émis',
+    'business.campaign.state.expired': 'Non remplie',
+    'business.campaign.state.cancelled': 'Annulée',
+    'business.campaign.state.failed_closing': 'Clôturée et remboursée',
+    'business.campaign.lifecycle.live': 'Levée · en cours',
+    'business.campaign.lifecycle.fully_reserved':
+        'Levée · entièrement réservée',
+    'business.campaign.restriction.RESTRICTION_ACTIVE':
+        'Restreinte depuis le {date}. Les nouveaux engagements sont suspendus pendant la restriction ; ceux déjà pris restent.',
+    'business.campaign.restriction.NOTE_INELIGIBLE':
+        'Non éligible à de nouveaux engagements depuis le {date} ; ceux déjà pris restent.',
+    'business.campaign.tile.committed': 'Engagé',
+    'business.campaign.tile.refunded': 'Remboursé',
+    'business.campaign.closing_now': 'Clôture en cours',
+    'business.campaign.committed': 'Engagé',
+    'business.campaign.reserved': 'Réservé',
+    'business.campaign.reserved_note':
+        'Les notes réservées sont bloquées dans des paiements en cours et ne sont pas encore engagées ; une réservation non confirmée est libérée après 5 minutes.',
+    'business.campaign.units':
+        '{committed} notes engagées sur {total} · {reserved} réservées · {available} disponibles',
+    'business.campaign.closes': 'Clôture le {date}',
+    'business.campaign.fully_reserved':
+        'Chaque note est réservée dans un paiement en cours. Les réservations non confirmées sous 5 minutes sont remises en vente.',
+    'business.campaign.funded':
+        'Entièrement financée le {date}. La levée ne peut plus être annulée.',
+    'business.campaign.closing_title': 'Décaissement',
+    'business.campaign.closing.awaiting.title': 'En attente de décaissement',
+    'business.campaign.closing.awaiting.body':
+        "Rozine prépare le paiement vers votre compte. Il s'affichera ici une fois envoyé et confirmé.",
+    'business.campaign.closing.in_flight.title': 'Pas encore confirmé',
+    'business.campaign.closing.in_flight.pending':
+        "Le paiement vers votre compte est en cours. Le décaissement s'affichera ici une fois confirmé.",
+    'business.campaign.closing.in_flight.unknown':
+        "Le résultat du paiement n'est pas encore confirmé. Rien n'est définitif avant cela ; il s'affichera ici une fois confirmé.",
+    'business.campaign.disbursed':
+        '{amount} ont été décaissés vers {destination}.',
+    'business.campaign.disbursed_amount': 'Décaissé',
+    'business.campaign.destination': 'Vers',
+    'business.campaign.effective_at': 'Effectif',
+    'business.campaign.effective_date': "Date de l'échéancier (Kigali)",
+    'business.campaign.receipt.title': 'Reçu de décaissement',
+    'business.campaign.receipt.amount': 'Montant',
+    'business.campaign.receipt.reference': 'Référence',
+    'business.campaign.receipt.recorded': 'Enregistré',
+    'business.campaign.receipt.view': 'Voir le reçu',
+    'business.campaign.closed.expired':
+        "Cette levée s'est clôturée le {date} avant d'être entièrement financée. {amount} ont été intégralement rendus aux investisseurs, sans frais.",
+    'business.campaign.closed.cancelled':
+        'Cette levée a été annulée le {date}. {amount} ont été intégralement rendus aux investisseurs, sans frais.',
+    'business.campaign.closed.failed_closing':
+        "Cette levée n'a pas pu être clôturée : une vérification avant décaissement a échoué le {date}. {amount} ont été intégralement rendus aux investisseurs, sans frais.",
+    'business.campaign.cancel.open': 'Annuler cette levée',
+    'business.campaign.cancel.cancelling': 'Annulation…',
+    'business.campaign.cancel.title': 'Annuler cette levée ?',
+    'business.campaign.cancel.body':
+        "Chaque engagement est intégralement rendu à l'investisseur, sans frais, et la levée est définitivement close. Cette action est irréversible.",
+    'business.campaign.cancel.reason': 'Motif (facultatif)',
+    'business.campaign.cancel.confirm': 'Annuler la levée',
+    'business.campaign.cancel.keep': 'Continuer la levée',
+    'admin.disbursements.col.provider': 'Prestataire',
+    'admin.disbursements.state.queued': 'Intention enregistrée · en file',
+    'admin.disbursements.state.succeeded': 'Payé · rapproché',
+    'admin.disbursements.state.failed_closing': 'Clôture en échec · remboursé',
+    'admin.disbursements.provider.none': 'Non envoyé',
+    'admin.disbursements.provider.pending': 'En attente · pas encore confirmé',
+    'admin.disbursements.provider.unknown': 'Inconnu · pas encore confirmé',
+    'admin.disbursements.provider.succeeded': 'Réussi · vérifié',
+    'admin.disbursements.provider.failed': 'Échoué · vérifié',
+    'admin.disbursements.action.authorize': 'Autoriser',
+    'admin.disbursements.older': 'Décaissements plus anciens',
+    'admin.disbursements.deadline': 'Échéance',
+    'admin.disbursements.deadline_unavailable': 'Aucune échéance établie',
+    'admin.disbursements.rule_two_staff':
+        "Deux membres du personnel différents sont nécessaires : l'un autorise, l'autre approuve. Il n'y a ni seuil de montant ni dérogation. Les rôles ne sont que des libellés : ce que vous pouvez faire dépend de vos permissions.",
+    'admin.disbursements.causes': 'Causes',
+    'admin.disbursements.receipt.code': 'Reçu',
+    'admin.disbursements.receipt.reference': 'Référence',
+    'admin.disbursements.receipt.amount': 'Montant',
+    'admin.disbursements.receipt.recorded_at': 'Enregistré le',
+    'admin.disbursements.receipt.revision': 'Révision',
+    'admin.disbursements.check.not_run': 'Pas encore exécuté',
+    'admin.disbursements.check.passed': 'Réussi',
+    'admin.disbursements.check.failed': 'Échoué',
+    'admin.disbursements.precheck.title': 'Contrôle préalable',
+    'admin.disbursements.checked_at': 'Contrôlé le',
+    'admin.disbursements.policy_version': 'Version de la politique',
+    'admin.disbursements.binding.title': "Ce que l'approbation engage",
+    'admin.disbursements.binding.none':
+        'Défini lorsque le décaissement est autorisé.',
+    'admin.disbursements.binding.revision': 'Révision',
+    'admin.disbursements.binding.amount': 'Montant exact',
+    'admin.disbursements.binding.digest': "Empreinte de l'intention",
+    'admin.disbursements.step_up.unavailable':
+        "L'approbation exige une nouvelle confirmation renforcée liée à ces détails. Cette confirmation n'est pas encore disponible : l'approbation ne peut donc pas être donnée ici.",
+    'admin.disbursements.step_up.required':
+        "L'approbation demande une nouvelle confirmation renforcée liée à ces détails.",
+    'admin.disbursements.intent.title': 'Intention de paiement',
+    'admin.disbursements.intent.not_payment':
+        "Intention enregistrée — ce n'est pas un paiement. Le service de paiement ne l'envoie qu'après sa propre revérification.",
+    'admin.disbursements.intent.not_sent':
+        "Pas encore envoyé : le service n'a pas encore envoyé ce paiement.",
+    'admin.disbursements.operation': 'Opération',
+    'admin.disbursements.dispatch.title': 'Envoi',
+    'admin.disbursements.dispatch.sent_at': 'Envoyé le',
+    'admin.disbursements.dispatch.recheck': 'Revérification du service',
+    'admin.disbursements.outcome.title': 'Résultat du prestataire',
+    'admin.disbursements.outcome.pending':
+        "En attente : le prestataire n'a pas confirmé de résultat. Ce n'est ni payé ni en échec.",
+    'admin.disbursements.outcome.unknown':
+        "Inconnu : le résultat du prestataire n'est pas confirmé. Ce n'est ni payé ni en échec.",
+    'admin.disbursements.outcome.succeeded':
+        'Réussi : le prestataire a vérifié le paiement.',
+    'admin.disbursements.outcome.failed':
+        'Échoué : le prestataire a vérifié un échec définitif.',
+    'admin.disbursements.outcome.failed_unreconciled':
+        "Pas encore rapproché : rien n'est clôturé ni remboursé tant que l'échec n'est pas rapproché.",
+    'admin.disbursements.outcome.exception':
+        "Exception de rapprochement : la réponse du prestataire est contradictoire ou ne peut être résolue. Ce décaissement reste bloqué et n'est pas rapproché.",
+    'admin.disbursements.outcome.reference': 'Référence du prestataire',
+    'admin.disbursements.outcome.error_code': "Code d'erreur",
+    'admin.disbursements.outcome.observed_at': 'Observé le',
+    'admin.disbursements.outcome.effective_at': 'Effectif le',
+    'admin.disbursements.outcome.reconciliation': 'Rapprochement',
+    'admin.disbursements.outcome.reconciled_at': 'Rapproché le',
+    'admin.disbursements.outcome.requery_note':
+        "Interroger à nouveau le prestataire porte sur cette même opération. Le paiement n'est jamais renvoyé. Un rapprochement planifié l'interroge aussi.",
+    'admin.disbursements.reconciliation.unreconciled': 'Pas encore rapproché',
+    'admin.disbursements.reconciliation.matched': 'Rapproché',
+    'admin.disbursements.reconciliation.exception':
+        'Exception · bloqué, non rapproché',
+    'admin.disbursements.hold.title': 'Suspension',
+    'admin.disbursements.hold.release_note':
+        "Lever la suspension n'approuve pas ce décaissement et n'envoie aucun paiement. Il faut un membre du personnel autre que celui qui l'a posée.",
+    'admin.disbursements.hold.self':
+        'Vous avez posé cette suspension : un autre membre du personnel doit la lever.',
+    'admin.disbursements.issue.title': 'Émission',
+    'admin.disbursements.issue.holdings': 'Titres émis',
+    'admin.disbursements.issue.issued_at': 'Émis le',
+    'admin.disbursements.issue.effective_date': "Date d'effet (Kigali)",
+    'admin.disbursements.refund.title': 'Remboursements',
+    'admin.disbursements.refund.commitments': 'Engagements remboursés',
+    'admin.disbursements.refund.total': 'Total remboursé',
+    'admin.disbursements.ledger': 'Ouvrir dans le grand livre',
+    'admin.disbursements.command.release_hold': 'Lever la suspension',
+    'admin.disbursements.command.requery':
+        'Interroger à nouveau le prestataire',
+    'admin.disbursements.stage.release_hold.title': 'Lever cette suspension',
+    'admin.disbursements.stage.release_hold.body':
+        "Lever la suspension n'approuve pas ce décaissement et n'envoie aucun paiement. Il revient là où il en était avant la suspension.",
+    'admin.disbursements.stage.release_hold.cta': 'Lever la suspension',
+    'admin.disbursements.stage.release_hold.placeholder':
+        "ex. L'entreprise a confirmé son nouveau numéro MoMo.",
+    'admin.disbursements.stage.requery.title':
+        'Interroger à nouveau le prestataire',
+    'admin.disbursements.stage.requery.body':
+        "Cela interroge le prestataire sur la même opération. Le paiement n'est jamais renvoyé.",
+    'admin.disbursements.stage.requery.cta': 'Interroger le prestataire',
+    'admin.disbursements.stage.requery.placeholder':
+        "ex. La page d'état du prestataire indique que la panne est terminée.",
+    'admin.applications.release.title': 'Libération pour la mise en ligne',
+    'admin.applications.release.state.awaiting_staff_review':
+        "En attente d'examen",
+    'admin.applications.release.state.released': 'Libéré',
+    'admin.applications.release.state.refused': 'Refusé',
+    'admin.applications.release.explain':
+        "La libération permet à l'entreprise de publier cette levée. Les contrôles du moteur, du mandat et du rapport doivent réussir, et elle ne peut pas passer outre un contrôle en échec.",
+    'admin.applications.release.gates': 'Contrôles de libération',
+    'admin.applications.release.gate.engine': "Moteur d'évaluation",
+    'admin.applications.release.gate.authority': "Mandat de l'entreprise",
+    'admin.applications.release.gate.report':
+        "Rapport d'audit de mise en ligne",
+    'admin.applications.release.gate_state.passed': 'Réussi',
+    'admin.applications.release.gate_state.failed': 'Bloqué',
+    'admin.applications.release.blocked':
+        'Un contrôle a échoué : cette demande ne peut pas être libérée. La libération ne passe jamais outre un contrôle en échec.',
+    'admin.applications.release.receipt': 'Reçu de libération',
+    'admin.applications.release.command': 'Libérer pour la mise en ligne',
+    'admin.applications.release.stage.title': 'Libérer cette demande',
+    'admin.applications.release.stage.body':
+        "L'entreprise pourra alors publier sa levée. Rien n'est mis en ligne ni financé tant qu'elle ne l'a pas fait.",
+    'admin.applications.release.stage.cta': 'Libérer',
+    'admin.applications.release.stage.placeholder':
+        'ex. Moteur, mandat et rapport scellé tous confirmés.',
+    'investor.audit.tolerance': 'Tolérance encadrée',
+    'investor.audit.reconciliation': 'DÉCLARATION DE RAPPROCHEMENT',
+    'investor.deal.ebitda_unavailable': 'Indisponible',
+    'investor.deal.ebitda_not_sourced': "Non établi en tant qu'EBITDA",
+    'investor.deal.photos_none': "L'entreprise n'a publié aucune photo.",
+    'investor.deal.photo_unavailable': 'Image indisponible',
+    'investor.deal.restriction.NOTE_INELIGIBLE':
+        "Investissement suspendu : ce titre n'est pas éligible pour le moment",
+    'investor.deal.restriction.RESTRICTION_ACTIVE':
+        "Investissement suspendu : une restriction s'applique",
+    'investor.deal.restriction.body':
+        "Depuis le {date}. La levée elle-même se poursuit en l'état ; les nouvelles réservations attendent la levée de la restriction.",
+    'investor.deal.lifecycle.live': 'En cours',
+    'investor.deal.lifecycle.fully_reserved': 'Entièrement réservé',
+    'investor.deal.lifecycle.funded': 'Entièrement financé',
+    'investor.deal.lifecycle.disbursing': 'Versement en cours',
+    'investor.deal.lifecycle.issued': 'Titres émis',
+    'investor.deal.lifecycle.expired': 'Non rempli',
+    'investor.deal.lifecycle.cancelled': 'Annulé',
+    'investor.deal.lifecycle.failed_closing': 'Clôturé et remboursé',
+    'investor.deal.notice.fully_reserved.title':
+        'Tous les titres sont réservés pour le moment',
+    'investor.deal.notice.fully_reserved.body':
+        "Les paiements réservent des titres jusqu'à 5 minutes. Ceux qui expirent reviennent dans cette levée.",
+    'investor.deal.notice.funded.title': 'Entièrement financé',
+    'investor.deal.notice.funded.body':
+        "Les engagements sont verrouillés pendant le versement à l'entreprise. Les titres sont émis une fois ce paiement confirmé.",
+    'investor.deal.notice.disbursing.title':
+        "Versement à l'entreprise en cours",
+    'investor.deal.notice.disbursing.body':
+        "Le paiement à l'entreprise n'est pas encore confirmé. Les titres ne sont émis qu'après confirmation.",
+    'investor.deal.notice.issued.title': 'Cette levée est clôturée',
+    'investor.deal.notice.issued.body':
+        "L'entreprise a été payée et les titres ont été émis à ses investisseurs.",
+    'investor.deal.notice.expired.title':
+        "Cette levée n'a pas été remplie à temps",
+    'investor.deal.notice.expired.body':
+        'Chaque engagement a été remboursé intégralement, sans frais.',
+    'investor.deal.notice.cancelled.title': "L'entreprise a annulé cette levée",
+    'investor.deal.notice.cancelled.body':
+        'Chaque engagement a été remboursé intégralement, sans frais.',
+    'investor.deal.notice.failed_closing.title':
+        "Cette levée s'est clôturée sans versement",
+    'investor.deal.notice.failed_closing.body':
+        "Une dernière vérification avant paiement n'a pas abouti : chaque engagement a été remboursé intégralement.",
+    'investor.deals.gated_title':
+        'Vérifiez votre identité pour voir les offres',
+    'investor.deals.gated_body':
+        "Les offres et leurs entreprises ne sont montrées qu'aux investisseurs vérifiés.",
+    'investor.deals.paused': 'Suspendu',
+    'investor.deal.cap.max': {
+        one: "Jusqu'à {count} titre : {reason}.",
+        other: "Jusqu'à {count} titres : {reason}.",
+    },
+    'investor.deal.cap.none':
+        'Vous ne pouvez plus prendre de titres ici : {reason}.',
+    'investor.deal.cap.reason.raise_cap':
+        'votre plafond par investisseur pour cette levée',
+    'investor.deal.cap.reason.availability':
+        'ce sont tous les titres encore disponibles',
+    'investor.deal.cap.reason.restriction': "une restriction s'applique",
+    'investor.deal.cap.reason.connected_party':
+        'vous êtes lié à cette entreprise',
+    'investor.updates.published_photos': 'PHOTOS PUBLIÉES',
+    'investor.checkout.c3.processing': 'Envoi…',
+    'investor.checkout.c3.hold_ended':
+        'Votre réservation est terminée — ces titres ont peut-être été libérés',
+    'investor.checkout.c3.hold_left':
+        'Réservé pour vous · {time} pour confirmer',
+    'investor.checkout.c3.committed': 'Engagé',
+    'investor.checkout.c3.committed_body':
+        "Engagé — vos titres sont émis après le paiement de l'entreprise. D'ici là, c'est un engagement, pas une détention.",
+    'investor.checkout.c3.view_awaiting': "Voir dans « En attente d'émission »",
+    'investor.checkout.c3.reserved_title': 'Confirmez vos titres',
+    'investor.checkout.c3.held_amount': 'Réservé sur le disponible',
+    'investor.checkout.c3.release': 'Libérer ces titres',
+    'investor.checkout.c3.confirm_fine_print':
+        "Confirmer engage le montant réservé. Vous pouvez annuler sans frais jusqu'au financement complet de la levée.",
+    'investor.checkout.c3.at_maturity': {
+        one: 'Retour sur {count} mois',
+        other: 'Retour sur {count} mois',
+    },
+    'investor.checkout.c3.indicative':
+        "Indicatif jusqu'à la réservation : les droits exacts de vos titres sont fixés à la réservation.",
+    'investor.checkout.c3.reserve': 'Réserver · {amount}',
+    'investor.checkout.c3.reserve_unavailable':
+        "La réservation n'est pas disponible pour le moment.",
+    'investor.checkout.c3.reserve_fine_print':
+        'Réserver bloque les titres et le montant pendant 5 minutes, le temps de confirmer.',
+    'investor.primary.status.confirmed': 'Engagé — émis après le versement',
+    'investor.primary.status.awaiting_disbursement':
+        'Entièrement financé — versement en attente',
+    'investor.primary.status.in_flight_pending':
+        'Versement pas encore confirmé',
+    'investor.primary.status.in_flight_unknown':
+        'Versement pas encore confirmé — vérification',
+    'investor.primary.status.issued': 'Émis',
+    'investor.primary.status.cancelled': 'Annulé — remboursé',
+    'investor.primary.status.expired': 'Non rempli — remboursé',
+    'investor.primary.status.failed_closing': 'Clôturé — remboursé',
+    'investor.primary.status_body.confirmed':
+        "La levée est encore ouverte. Vous pouvez annuler sans frais jusqu'à son financement complet.",
+    'investor.primary.status_body.awaiting_disbursement':
+        "La levée est entièrement financée : l'annulation est verrouillée. Les titres sont émis une fois le versement confirmé.",
+    'investor.primary.status_body.in_flight_pending':
+        "Le versement à l'entreprise a été envoyé et n'est pas encore confirmé. Rien n'est émis avant.",
+    'investor.primary.status_body.in_flight_unknown':
+        "Nous ne savons pas encore si le versement à l'entreprise a abouti et nous vérifions. Il n'est ni payé, ni échoué, ni remboursé ; rien n'est émis avant confirmation.",
+    'investor.primary.status_body.issued':
+        "L'entreprise a été payée et vos titres ont été émis.",
+    'investor.primary.status_body.cancelled':
+        'Annulé par {by}. Votre capital a été remboursé intégralement, sans frais.',
+    'investor.primary.status_body.expired':
+        "La levée n'a pas été remplie à temps. Votre capital a été remboursé intégralement, sans frais.",
+    'investor.primary.status_body.failed_closing':
+        "Une dernière vérification avant versement n'a pas abouti. Votre capital a été remboursé intégralement, sans frais.",
+    'investor.primary.cancelled_by.investor': 'vous',
+    'investor.primary.cancelled_by.business': "l'entreprise",
+    'investor.primary.cancelled_by.none': 'Rozine',
+    'investor.primary.receipt.amount': 'Montant',
+    'investor.primary.receipt.recorded': 'Enregistré',
+    'investor.primary.receipt.reference': 'Référence',
+    'investor.primary.receipt.confirmation': 'REÇU DE CONFIRMATION',
+    'investor.primary.receipt.refund': 'REÇU DE REMBOURSEMENT',
+    'investor.primary.units': 'Titres',
+    'investor.primary.units_value': {
+        one: '{count} titre · {ordinals}',
+        other: '{count} titres · {ordinals}',
+    },
+    'investor.primary.units_short': {
+        one: '{count} titre',
+        other: '{count} titres',
+    },
+    'investor.primary.principal': 'Capital',
+    'investor.primary.terms': 'Conditions',
+    'investor.primary.maturity': "Date d'échéance",
+    'investor.primary.maturity_at_issue': "Fixée à l'émission des titres",
+    'investor.primary.versions': 'Règle · information',
+    'investor.primary.view_holding': 'Voir la détention',
+    'investor.primary.awaiting_issue': "En attente d'émission",
+    'investor.primary.awaiting_issue_note':
+        'Engagements, pas encore des détentions',
+    'investor.primary.rights.title': 'Droits de vos titres',
+    'investor.primary.rights.instalment': 'Échéance',
+    'investor.primary.rights.principal': 'Capital',
+    'investor.primary.rights.return': 'Rendement',
+    'investor.primary.rights.nth': 'N° {n}',
+    'investor.primary.rights.total_return': 'Rendement total',
+    'investor.primary.rights.undated':
+        "Les échéances sont fixées à l'émission : la première tombe un mois après la date d'effet du versement.",
+    'investor.primary.commitment_title': 'Engagement',
+    'investor.primary.back_to_portfolio': 'Retour au portefeuille',
+    'investor.primary.cancel': "Annuler l'engagement",
+    'investor.primary.cancel_title': 'Annuler cet engagement ?',
+    'investor.primary.cancel_body':
+        'Votre capital revient intégralement sur le disponible, sans frais, et ces titres sont libérés.',
+    'investor.primary.cancel_confirm': 'Oui, annuler et rembourser',
+    'investor.primary.cancel_keep': 'Le conserver',
+    'investor.holding.issue.title': "Relevé d'émission",
+    'investor.holding.issue.issued_at': 'Émis le',
+    'investor.holding.issue.effective_at': 'Versement effectif',
+    'investor.holding.issue.effective_date': "Date d'effet (Kigali)",
+    'investor.holding.issue.schedule': 'Échéancier',
+    'investor.holding.issue.due': 'Échéance',
     'auth.two_factor.recovery_codes_remaining': {
         one: '{count} code de récupération restant',
         other: '{count} codes de récupération restants',

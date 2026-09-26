@@ -1,0 +1,76 @@
+{
+    "component": "investor/deals",
+    "synthetic": true,
+    "props": {
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 1,
+        "server_time": "2026-09-23T09:00:00+02:00",
+        "allowed_actions": [],
+        "gate": {
+            "status": "eligible"
+        },
+        "wallet": {
+            "available": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "next_payout": null
+        },
+        "unread_notifications": 0,
+        "sorts": [
+            {
+                "key": "all",
+                "active": true,
+                "link": {
+                    "url": "/investor/deals",
+                    "method": "get"
+                }
+            }
+        ],
+        "industries": [
+            {
+                "industry": null,
+                "count": 0,
+                "active": true,
+                "link": {
+                    "url": "/investor/deals",
+                    "method": "get"
+                }
+            }
+        ],
+        "deals": [],
+        "focus": null,
+        "quote": null,
+        "links": {
+            "deals": {
+                "url": "/investor/deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/investor/portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/investor/profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/investor/wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/investor/notifications",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/launcher",
+                "method": "get"
+            },
+            "deposit": {
+                "url": "/investor/wallet?kind=deposit",
+                "method": "get"
+            },
+            "checkout": null
+        }
+    }
+}

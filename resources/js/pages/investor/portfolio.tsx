@@ -7,21 +7,24 @@ import {
     PayoutChart,
     TotalCard,
 } from '@/components/investor/portfolio/portfolio-insights';
+import { AwaitingIssue } from '@/components/investor/primary/commitment';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { useWide } from '@/lib/investor/use-wide';
 import { cn } from '@/lib/utils';
-import type { InvestorPortfolioProps } from '@/types/investor';
+import type { C3InvestorPortfolioProps } from '@/types/investor';
 
 /** The design lists three holdings on a phone and four on a wide screen before "See all". */
 const FIRST = { phone: 3, desk: 4 } as const;
 
 /**
  * Portfolio (MVP-INVESTOR-SCR-04, design L1062–1303): what the investor holds, its value and gain,
- * scheduled payouts, and concentration by business, industry and rating. The design's Secondary
- * and Saved tabs (resale and the watchlist) and its Rozine Plus charge card are outside the MVP.
+ * scheduled payouts, and concentration by business, industry and rating. Commitments still awaiting
+ * issue are listed apart, above the holdings, and never counted among them (C3 v2 §2d). The
+ * design's Secondary and Saved tabs (resale and the watchlist) and its Rozine Plus charge card are
+ * outside the MVP.
  */
-export default function InvestorPortfolio(props: InvestorPortfolioProps) {
+export default function InvestorPortfolio(props: C3InvestorPortfolioProps) {
     const { t } = useTranslation();
     const wide = useWide();
     const [all, setAll] = useState(false);
@@ -77,6 +80,9 @@ export default function InvestorPortfolio(props: InvestorPortfolioProps) {
                     wide ? 'px-4 pb-4' : 'px-5 pt-4',
                 )}
             >
+                {props.tab === 'active' && (
+                    <AwaitingIssue commitments={props.commitments} />
+                )}
                 {shown.map((holding) => (
                     <HoldingCard key={holding.id} holding={holding} />
                 ))}

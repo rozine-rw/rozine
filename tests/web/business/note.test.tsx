@@ -5,9 +5,6 @@ import { describe, expect, it, vi } from 'vite-plus/test';
 import BusinessNote from '@/pages/business/note';
 import type { BusinessNoteProps, NoteProgress } from '@/types/business';
 import completedFixture from '../../../resources/fixtures/ui/business-note-completed.json';
-import expiredFixture from '../../../resources/fixtures/ui/business-note-expired.json';
-import fundedFixture from '../../../resources/fixtures/ui/business-note-funded.json';
-import raisingFixture from '../../../resources/fixtures/ui/business-note-raising.json';
 import repayingFixture from '../../../resources/fixtures/ui/business-note-repaying.json';
 
 vi.mock('@inertiajs/react', () => ({
@@ -33,6 +30,38 @@ const money = (amount: number) => ({
 
 const noteSheet = (page: BusinessNoteProps) =>
     screen.getByRole('dialog', { name: page.note.title });
+
+/**
+ * The Phase 1B raise phases keep their shape, but their previews moved to the C3 campaign page
+ * (business-campaign-*); they are drawn here from the repaying note with the phase swapped in.
+ */
+const withProgress = (
+    progress: NoteProgress,
+    status: BusinessNoteProps['note']['status'],
+): BusinessNoteProps => {
+    const page = props(repayingFixture);
+
+    page.note.title = 'Cold-Chain Hub';
+    page.note.status = status;
+    page.note.progress = progress;
+
+    return page;
+};
+
+const raising = () =>
+    withProgress(
+        {
+            phase: 'raising',
+            raised: money(11900000),
+            target: money(18000000),
+            remaining: money(6100000),
+            funded_pct: 66,
+            investors: 284,
+            closes_on: '2026-10-02',
+            days_left: 9,
+        },
+        'active',
+    );
 
 describe('Note dashboard frame', () => {
     it('opens over Home and leads back to it', () => {
@@ -85,7 +114,7 @@ describe('A repaying note', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('offers Pay and the full investor list once those screens are open', () => {
+    it('offers Pay once that screen is open', () => {
         const page = props(repayingFixture);
         const progress = page.note.progress as Extract<
             NoteProgress,
@@ -100,7 +129,6 @@ describe('A repaying note', () => {
             days_until: 1,
         };
         page.links.pay = link('/business/notes/RNP-2024-0042/repay');
-        page.links.investors = link('/business/notes/RNP-2024-0042/investors');
 
         render(<BusinessNote {...page} />);
         const sheet = within(noteSheet(page));
@@ -114,9 +142,6 @@ describe('A repaying note', () => {
             'href',
             '/business/notes/RNP-2024-0042/repay',
         );
-        expect(
-            sheet.getByRole('link', { name: 'View all 647 ›' }),
-        ).toHaveAttribute('href', '/business/notes/RNP-2024-0042/investors');
     });
 
     it('marks a completed note as fully repaid with nothing left to pay', () => {
@@ -133,7 +158,7 @@ describe('A repaying note', () => {
 
 describe('A note still raising', () => {
     it('shows the raise so far and when the listing closes', () => {
-        const page = props(raisingFixture);
+        const page = raising();
 
         render(<BusinessNote {...page} />);
         const sheet = within(noteSheet(page));
@@ -151,7 +176,7 @@ describe('A note still raising', () => {
     });
 
     it('counts down the last day', () => {
-        const page = props(raisingFixture);
+        const page = raising();
 
         (
             page.note.progress as Extract<NoteProgress, { phase: 'raising' }>
@@ -165,7 +190,17 @@ describe('A note still raising', () => {
 
 describe('A note that has stopped raising', () => {
     it('explains a fully funded note is waiting for disbursement', () => {
-        const page = props(fundedFixture);
+        const page = withProgress(
+            {
+                phase: 'funded',
+                raised: money(18000000),
+                investors: 402,
+                funded_on: '2026-09-20',
+            },
+            'funded',
+        );
+
+        page.note.performance = null;
 
         render(<BusinessNote {...page} />);
         const sheet = within(noteSheet(page));
@@ -179,7 +214,18 @@ describe('A note that has stopped raising', () => {
     });
 
     it('explains an expired listing refunded every investor', () => {
-        const page = props(expiredFixture);
+        const page = withProgress(
+            {
+                phase: 'expired',
+                raised: money(11900000),
+                target: money(18000000),
+                investors: 284,
+                closed_on: '2026-09-20',
+            },
+            'failed',
+        );
+
+        page.note.photos = [];
 
         render(<BusinessNote {...page} />);
         const sheet = within(noteSheet(page));
@@ -196,7 +242,7 @@ describe('A note that has stopped raising', () => {
 describe('Note photos', () => {
     it('opens a photo and steps through the set by button and key', async () => {
         const user = userEvent.setup();
-        const page = props(raisingFixture);
+        const page = raising();
 
         page.note.photos[1].url = '/storage/notes/operations.jpg';
         render(<BusinessNote {...page} />);
@@ -254,7 +300,7 @@ describe('Note photos', () => {
 describe('Performance trend', () => {
     it('shows six months, then twelve, and inspects a month', async () => {
         const user = userEvent.setup();
-        const page = props(raisingFixture);
+        const page = raising();
 
         render(<BusinessNote {...page} />);
         const sheet = within(noteSheet(page));
@@ -298,7 +344,7 @@ describe('Performance trend', () => {
     });
 
     it('draws a flat period without dividing by nothing', () => {
-        const page = props(raisingFixture);
+        const page = raising();
         const flat = {
             month: '2026-08-01',
             revenue: money(150000000),
@@ -322,5 +368,47 @@ describe('Performance trend', () => {
         const sheet = within(noteSheet(page));
 
         expect(sheet.getAllByText('RWF 150M')).toHaveLength(2);
+    });
+});
+
+describe('Investor identities (H16)', () => {
+    it('never names, types or sizes an Investor, even if a record arrives', () => {
+        const page = props(repayingFixture);
+
+        expect(page.note.recent_investors).toEqual([]);
+
+        page.note.recent_investors = [
+            {
+                initials: 'JK',
+                name: 'Jean Kamanzi',
+                kind: 'individual',
+                amount: money(500000),
+            },
+            {
+                initials: 'PF',
+                name: 'Pension Fund RW',
+                kind: 'institution',
+                amount: money(5000000),
+            },
+        ];
+        page.links.investors = link('/business/notes/RNP-2024-0042/investors');
+
+        render(<BusinessNote {...page} />);
+        const sheet = noteSheet(page);
+
+        for (const text of [
+            'Jean Kamanzi',
+            'Pension Fund RW',
+            'Institution',
+            'Individual',
+            'RWF 500,000',
+            'Recent investors',
+        ]) {
+            expect(sheet).not.toHaveTextContent(text);
+        }
+
+        expect(
+            within(sheet).queryByRole('link', { name: /View all/ }),
+        ).not.toBeInTheDocument();
     });
 });

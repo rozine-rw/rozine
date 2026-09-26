@@ -1,90 +1,195 @@
+import { Link } from '@inertiajs/react';
 import { useState } from 'react';
+import { CommandStage } from '@/components/admin/disbursements/command-stage';
+import type { CommandTone } from '@/components/admin/disbursements/command-stage';
+import { DisbursementStateChip } from '@/components/admin/disbursements/disbursement-status';
+import {
+    BindingPanel,
+    DispatchPanel,
+    HOLD_SELF_NOTE,
+    HoldPanel,
+    IntentPanel,
+    IssuePanel,
+    PrecheckPanel,
+    ProviderPanel,
+    RefundPanel,
+    STEP_UP_NOTE,
+} from '@/components/admin/disbursements/panels';
 import { Drawer, DrawerClose } from '@/components/admin/drawer';
-import { formatTimestamp } from '@/components/admin/format';
 import { MakerChecker } from '@/components/admin/maker-checker';
-import { ReasonStage } from '@/components/admin/reason-stage';
-import type { StageTone } from '@/components/admin/reason-stage';
 import { TrailList } from '@/components/admin/trail-list';
-import { CAPTION, Chip, EXPLAIN } from '@/components/admin/ui';
+import { CAPTION, EXPLAIN } from '@/components/admin/ui';
+import { C3Notice, PollStopped } from '@/components/rozine/c3-notice';
+import { useBoundedPoll } from '@/hooks/use-bounded-poll';
+import { useC3Command } from '@/hooks/use-c3-command';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatDate, formatRwf } from '@/lib/rozine/format';
+import { formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { RouteAction } from '@/types';
 import type {
-    DisbursementDetail,
-    DisbursementState,
+    C3DisbursementDetail,
+    DisbursementAllowedAction,
+    DisbursementCommandKey,
     StaffViewer,
-    Tone,
 } from '@/types/admin';
+import type { C3PreviewOutcome } from '@/types/settlement';
 
-export const STATE_TONE: Record<DisbursementState, Tone> = {
-    ready: 'blue',
-    awaiting_second_approver: 'purple',
-    on_hold: 'amber',
-    dispatched: 'blue',
-    paid: 'green',
-    failed: 'red',
-};
+/** What a command, a poll or a refresh reads again: fresh authority and actions each time. */
+export const DISBURSEMENT_RELOAD = [
+    'disbursement',
+    'disbursements',
+    'awaiting_second_approver',
+    'allowed_actions',
+    'badges',
+    'server_time',
+];
 
-type Command = 'authorize' | 'approve' | 'reject' | 'hold' | 'retry';
-
-const COMMANDS: { key: Command; tone: StageTone; button: string }[] = [
+const COMMANDS: {
+    key: DisbursementCommandKey;
+    tone: CommandTone;
+    button: string;
+}[] = [
     {
         key: 'authorize',
         tone: 'green',
-        button: 'bg-[#1d9e75] text-white border-transparent',
+        button: 'border-transparent bg-[#1d9e75] text-white',
     },
     {
         key: 'approve',
         tone: 'green',
-        button: 'bg-[#1d9e75] text-white border-transparent',
+        button: 'border-transparent bg-[#1d9e75] text-white',
     },
     {
-        key: 'retry',
+        key: 'requery',
         tone: 'blue',
-        button: 'bg-rz-accent-fill text-white border-transparent',
+        button: 'border-transparent bg-rz-accent-fill text-white',
+    },
+    {
+        key: 'release_hold',
+        tone: 'blue',
+        button: 'border-rz-hairline bg-rz-surface text-rz-accent-app-text',
     },
     {
         key: 'hold',
         tone: 'amber',
-        button: 'bg-rz-surface border-[#f6e7c8] text-[#c2661f] dark:border-rz-border dark:text-[#f0a060]',
+        button: 'border-[#f6e7c8] bg-rz-surface text-[#c2661f] dark:border-rz-border dark:text-[#f0a060]',
     },
     {
         key: 'reject',
         tone: 'red',
-        button: 'bg-rz-surface border-[#fdd9da] text-[#e5484d] dark:border-[rgba(255,107,111,.3)] dark:text-[#ff6b6f]',
+        button: 'border-[#fdd9da] bg-rz-surface text-[#e5484d] dark:border-[rgba(255,107,111,.3)] dark:text-[#ff6b6f]',
     },
 ];
+
+const BUTTON =
+    'h-[46px] min-w-[150px] flex-1 rounded-xl border text-[14px] font-bold disabled:cursor-not-allowed disabled:opacity-45';
 
 const TILE =
     'min-w-0 rounded-[11px] border border-rz-hairline bg-rz-surface px-3 py-2.5';
 
+const commandName = (key: DisbursementCommandKey): DisbursementAllowedAction =>
+    `disbursement.${key}`;
+
 /**
- * One release, opened from the queue (MVP-ADMIN-SCR-03). It shows the two-person rule for this
- * amount, who authorized and who checked (with reasons and times), and — for a failed payout —
- * the provider's failure in full before any retry is offered (SCR-03-ST-02).
+ * Still waiting on the provider: queued for the worker, or sent with no confirmed outcome. Only
+ * these are polled; a verified outcome is not.
+ */
+const unsettled = (disbursement: C3DisbursementDetail): boolean =>
+    disbursement.state === 'queued' ||
+    (disbursement.state === 'dispatched' &&
+        (disbursement.provider === null ||
+            disbursement.provider.state === 'pending' ||
+            disbursement.provider.state === 'unknown'));
+
+/**
+ * Why a command the viewer might expect is withheld: approve for the maker (no self-approval) or
+ * while the step-up it needs has no route yet, and hold release for the staff member who placed
+ * the hold. The server withholds all three too; this only explains it.
+ */
+const withheld = (
+    disbursement: C3DisbursementDetail,
+    key: DisbursementCommandKey,
+): string | null => {
+    if (key === 'approve') {
+        if (
+            disbursement.viewer_is_maker &&
+            disbursement.state === 'awaiting_second_approver'
+        ) {
+            return 'disbursement-maker-note';
+        }
+
+        if (
+            disbursement.allowed_actions.includes('disbursement.approve') &&
+            disbursement.step_up.route === null
+        ) {
+            return STEP_UP_NOTE;
+        }
+    }
+
+    if (
+        key === 'release_hold' &&
+        disbursement.hold !== null &&
+        disbursement.viewer_placed_hold
+    ) {
+        return HOLD_SELF_NOTE;
+    }
+
+    return null;
+};
+
+/**
+ * One disbursement (MVP-ADMIN-SCR-03, C3 proposal v2 §2e): precheck, the two distinct staff, what
+ * an approval binds and its step-up, the recorded intent (not a payment), the worker's dispatch,
+ * the provider's outcome and its reconciliation, any hold, and what issue or failed closing
+ * recorded. Every command comes from `allowed_actions` only, carries a written reason and goes
+ * through the shared operation command: an uncertain answer is looked up, never resent on its own.
  */
 export function DisbursementDrawer({
     disbursement,
     viewer,
+    preview,
 }: {
-    disbursement: DisbursementDetail;
+    disbursement: C3DisbursementDetail;
     viewer: StaffViewer;
+    preview?: C3PreviewOutcome<DisbursementAllowedAction>;
 }) {
-    const { t, locale } = useTranslation();
-    const [stage, setStage] = useState<{
-        key: Command;
-        tone: StageTone;
-        action: RouteAction;
-    } | null>(null);
-    const waiting = disbursement.state === 'awaiting_second_approver';
-    const selfBlocked = waiting && disbursement.viewer_is_maker;
-    const failure = disbursement.failure;
-    const available = COMMANDS.flatMap((command) => {
-        const action = disbursement.actions[command.key];
-
-        return action === undefined ? [] : [{ ...command, action }];
+    const { t } = useTranslation();
+    const [stage, setStage] = useState<(typeof COMMANDS)[number] | null>(null);
+    const command = useC3Command<DisbursementAllowedAction>({
+        actions: Object.fromEntries(
+            COMMANDS.map(({ key }) => [
+                commandName(key),
+                disbursement.actions[key] ?? null,
+            ]),
+        ),
+        lookup: disbursement.links.operation,
+        allowed: disbursement.allowed_actions,
+        preview,
+        only: DISBURSEMENT_RELOAD,
     });
+    const poll = useBoundedPoll(unsettled(disbursement), DISBURSEMENT_RELOAD);
+    const waiting = disbursement.state === 'awaiting_second_approver';
+    const buttons = COMMANDS.flatMap(
+        (
+            entry,
+        ): ((typeof COMMANDS)[number] & { blockedBy: string | null })[] => {
+            const blockedBy = withheld(disbursement, entry.key);
+            const offered =
+                disbursement.allowed_actions.includes(commandName(entry.key)) &&
+                disbursement.actions[entry.key] !== undefined;
+
+            return blockedBy !== null || offered
+                ? [{ ...entry, blockedBy }]
+                : [];
+        },
+    );
+
+    const send = (key: DisbursementCommandKey, reason: string) => {
+        command.send(commandName(key), {
+            disbursement_id: disbursement.id,
+            expected_revision: disbursement.revision,
+            reason,
+        });
+    };
 
     return (
         <Drawer
@@ -100,11 +205,7 @@ export function DisbursementDrawer({
                             <h2 className="font-mono text-[17px] font-bold text-rz-ink">
                                 {disbursement.reference}
                             </h2>
-                            <Chip tone={STATE_TONE[disbursement.state]}>
-                                {t(
-                                    `admin.disbursements.state.${disbursement.state}`,
-                                )}
-                            </Chip>
+                            <DisbursementStateChip state={disbursement.state} />
                         </div>
                         <p className="mt-0.5 truncate text-[12px] text-[#7b8699] dark:text-rz-muted">
                             {disbursement.business} · {disbursement.note_title}
@@ -148,86 +249,63 @@ export function DisbursementDrawer({
                                 CAPTION,
                             )}
                         >
-                            {t('admin.disbursements.due')}
+                            {t('admin.disbursements.deadline')}
                         </dt>
-                        <dd className="mt-[3px] text-[15px] font-bold text-rz-ink">
-                            {formatDate(disbursement.due_on, locale)}
+                        <dd className="mt-[3px] text-[13px] font-semibold text-rz-faint">
+                            {t('admin.disbursements.deadline_unavailable')}
                         </dd>
                     </div>
                 </dl>
 
-                <p className="mt-3.5 rounded-xl bg-[rgba(30,58,255,.07)] px-3.5 py-2.5 text-[12.5px] leading-[1.5] text-[#5f6fc8] dark:text-[#99a3ff]">
-                    {disbursement.requires_second_approver
-                        ? t('admin.disbursements.rule_dual', {
-                              threshold: formatRwf(disbursement.threshold),
-                          })
-                        : t('admin.disbursements.rule_single', {
-                              threshold: formatRwf(disbursement.threshold),
-                          })}
-                </p>
-
-                {failure !== null && (
-                    <section
-                        aria-label={t('admin.disbursements.failure_title')}
-                        className="mt-3.5 rounded-[14px] border border-[#fdeaea] bg-[rgba(255,77,79,.06)] px-[17px] py-3.5 dark:border-[rgba(255,107,111,.25)]"
-                    >
-                        <h3 className="text-[13px] font-bold text-[#e5484d] dark:text-[#ff6b6f]">
-                            {t('admin.disbursements.failure_title')}
-                        </h3>
-                        <p
-                            className={cn(
-                                'mt-1 text-[12.5px] leading-[1.5]',
-                                EXPLAIN,
-                            )}
-                        >
-                            {failure.message}
-                        </p>
-                        <dl className="mt-2.5 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[12px]">
-                            <dt className={CAPTION}>
-                                {t('admin.disbursements.failure_code')}
-                            </dt>
-                            <dd className="font-mono font-semibold text-rz-ink">
-                                {failure.code}
-                            </dd>
-                            <dt className={CAPTION}>
-                                {t('admin.disbursements.failure_provider')}
-                            </dt>
-                            <dd className="font-mono font-semibold text-rz-ink">
-                                {failure.provider_reference}
-                            </dd>
-                            <dt className={CAPTION}>
-                                {t('admin.disbursements.failure_at')}
-                            </dt>
-                            <dd className="font-semibold text-rz-ink tabular-nums">
-                                {formatTimestamp(failure.failed_at)}
-                            </dd>
-                            <dt className={CAPTION}>
-                                {t('admin.disbursements.failure_attempts')}
-                            </dt>
-                            <dd className="font-semibold text-rz-ink">
-                                {failure.attempts}
-                            </dd>
-                        </dl>
-                        <p
-                            className={cn(
-                                'mt-2.5 text-[12px] leading-[1.5]',
-                                EXPLAIN,
-                            )}
-                        >
-                            {t('admin.disbursements.failure_inspect')}
-                        </p>
-                    </section>
-                )}
-
-                <h3 className="mt-5 mb-2.5 text-[12px] font-bold tracking-[.05em] text-[#7b8699] uppercase dark:text-rz-muted">
-                    {t('admin.disbursements.approvals')}
-                </h3>
-                <MakerChecker
-                    maker={disbursement.maker}
-                    checker={disbursement.checker}
-                    viewerIsMaker={disbursement.viewer_is_maker}
-                    waiting={waiting}
+                <PollStopped
+                    exhausted={poll.exhausted}
+                    refresh={poll.refresh}
+                    className="mt-3.5"
                 />
+
+                <HoldPanel disbursement={disbursement} />
+
+                <PrecheckPanel precheck={disbursement.precheck} />
+
+                <section
+                    aria-label={t('admin.disbursements.approvals')}
+                    className="mt-5"
+                >
+                    <h3 className="mb-2.5 text-[12px] font-bold tracking-[.05em] text-[#7b8699] uppercase dark:text-rz-muted">
+                        {t('admin.disbursements.approvals')}
+                    </h3>
+                    <MakerChecker
+                        maker={disbursement.maker}
+                        checker={disbursement.checker}
+                        viewerIsMaker={disbursement.viewer_is_maker}
+                        waiting={waiting}
+                        noteId="disbursement-maker-note"
+                    />
+                    <p
+                        className={cn(
+                            'mt-2.5 text-[12px] leading-[1.5]',
+                            EXPLAIN,
+                        )}
+                    >
+                        {t('admin.disbursements.rule_two_staff')}
+                    </p>
+                </section>
+
+                <BindingPanel disbursement={disbursement} />
+                <IntentPanel disbursement={disbursement} />
+                <DispatchPanel dispatch={disbursement.dispatch} />
+                <ProviderPanel provider={disbursement.provider} />
+                <IssuePanel issue={disbursement.issue} />
+                <RefundPanel refund={disbursement.refund} />
+
+                {disbursement.links.ledger !== null && (
+                    <Link
+                        href={disbursement.links.ledger}
+                        className="mt-3.5 block w-full rounded-[11px] border border-rz-hairline bg-rz-surface p-[11px] text-center text-[13px] font-bold text-rz-accent-app-text"
+                    >
+                        {t('admin.disbursements.ledger')}
+                    </Link>
+                )}
 
                 <TrailList
                     title={t('admin.disbursements.trail')}
@@ -235,37 +313,30 @@ export function DisbursementDrawer({
                     empty={t('admin.disbursements.trail_empty')}
                 />
 
-                {stage === null && (available.length > 0 || selfBlocked) && (
+                <C3Notice command={command} className="mt-[18px]" />
+
+                {stage === null && buttons.length > 0 && (
                     <div className="mt-[18px] flex flex-wrap gap-2.5 border-t border-rz-hairline pt-[18px]">
-                        {selfBlocked && (
+                        {buttons.map((entry) => (
                             <button
+                                key={entry.key}
                                 type="button"
-                                disabled
-                                className="h-[46px] min-w-[150px] flex-1 cursor-not-allowed rounded-xl bg-[#1d9e75] text-[14px] font-bold text-white opacity-45"
+                                disabled={
+                                    entry.blockedBy !== null ||
+                                    command.unresolved
+                                }
+                                aria-describedby={entry.blockedBy ?? undefined}
+                                onClick={() => setStage(entry)}
+                                className={cn(BUTTON, entry.button)}
                             >
-                                {t('admin.disbursements.command.approve')}
-                            </button>
-                        )}
-                        {available.map((command) => (
-                            <button
-                                key={command.key}
-                                type="button"
-                                onClick={() => setStage(command)}
-                                className={cn(
-                                    'h-[46px] min-w-[150px] flex-1 rounded-xl border text-[14px] font-bold',
-                                    command.button,
-                                )}
-                            >
-                                {t(
-                                    `admin.disbursements.command.${command.key}`,
-                                )}
+                                {t(`admin.disbursements.command.${entry.key}`)}
                             </button>
                         ))}
                     </div>
                 )}
 
                 {stage !== null && (
-                    <ReasonStage
+                    <CommandStage
                         key={stage.key}
                         title={t(
                             `admin.disbursements.stage.${stage.key}.title`,
@@ -279,8 +350,11 @@ export function DisbursementDrawer({
                             `admin.disbursements.stage.${stage.key}.placeholder`,
                         )}
                         tone={stage.tone}
-                        action={stage.action}
                         viewer={viewer}
+                        busy={command.busy}
+                        locked={command.unresolved}
+                        error={command.errors.reason}
+                        onSubmit={(reason) => send(stage.key, reason)}
                         onCancel={() => setStage(null)}
                     />
                 )}

@@ -5,6 +5,7 @@ import { PhotoFill } from '@/components/investor/deals/deal-bits';
 import { SourceBadge } from '@/components/investor/deals/deal-sections';
 import { UpdateList, UpdateSheet } from '@/components/investor/monthly-updates';
 import { HealthPill } from '@/components/investor/portfolio/holding-card';
+import { IssueRecord } from '@/components/investor/portfolio/issue-record';
 import {
     ACCENT_FILL,
     accentBanner,
@@ -17,7 +18,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { formatAmount, formatDate, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
-import type { HoldingDetail, MonthlyUpdate } from '@/types/investor';
+import type { C3HoldingDetail, MonthlyUpdateSummary } from '@/types/investor';
 
 const MICRO =
     'text-[10.5px] font-bold tracking-[.04em] text-rz-slate uppercase';
@@ -102,7 +103,7 @@ export function HoldingBanner({
     back,
     wide,
 }: {
-    holding: HoldingDetail;
+    holding: C3HoldingDetail;
     back: RouteLink;
     wide: boolean;
 }) {
@@ -182,7 +183,7 @@ export function HoldingBanner({
  * the photos the business filed. The design's "Sell on the market" card is secondary trading,
  * outside the MVP.
  */
-export function HoldingFigures({ holding }: { holding: HoldingDetail }) {
+export function HoldingFigures({ holding }: { holding: C3HoldingDetail }) {
     const { t, locale } = useTranslation();
     const rating = RATING_STYLE[holding.rating.band];
 
@@ -529,13 +530,17 @@ export function HoldingFigures({ holding }: { holding: HoldingDetail }) {
     );
 }
 
-/** Repayment progress and the audited monthly updates (design L1583–1642). */
-export function HoldingSchedule({ holding }: { holding: HoldingDetail }) {
+/**
+ * How the Holding was issued, its repayment progress and the audited monthly updates (design
+ * L1583–1642; C3 v2 §2d). Servicing figures keep their empty states until C4.
+ */
+export function HoldingSchedule({ holding }: { holding: C3HoldingDetail }) {
     const { t, locale } = useTranslation();
-    const [update, setUpdate] = useState<MonthlyUpdate | null>(null);
+    const [update, setUpdate] = useState<MonthlyUpdateSummary | null>(null);
 
     return (
         <>
+            <IssueRecord issue={holding.issue} />
             <h2 className={cn(HEADING, 'mt-[18px]')}>
                 {t('investor.holding.progress')}
             </h2>

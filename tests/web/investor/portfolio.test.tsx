@@ -4,14 +4,18 @@ import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import InvestorHolding from '@/pages/investor/holding';
 import InvestorPortfolio from '@/pages/investor/portfolio';
 import type {
-    InvestorHoldingProps,
-    InvestorPortfolioProps,
+    C3InvestorHoldingProps,
+    C3InvestorPortfolioProps,
 } from '@/types/investor';
 import arrearsFixture from '../../../resources/fixtures/ui/investor-holding-arrears.json';
+import issuedFixture from '../../../resources/fixtures/ui/investor-holding-issued.json';
+import holdingMinimalFixture from '../../../resources/fixtures/ui/investor-holding-live-minimal.json';
 import maturedFixture from '../../../resources/fixtures/ui/investor-holding-matured.json';
 import planFixture from '../../../resources/fixtures/ui/investor-holding-plan.json';
 import holdingFixture from '../../../resources/fixtures/ui/investor-holding.json';
+import awaitingFixture from '../../../resources/fixtures/ui/investor-portfolio-awaiting-issue.json';
 import emptyFixture from '../../../resources/fixtures/ui/investor-portfolio-empty.json';
+import portfolioMinimalFixture from '../../../resources/fixtures/ui/investor-portfolio-live-minimal.json';
 import portfolioFixture from '../../../resources/fixtures/ui/investor-portfolio.json';
 import { resetInertia, setWide } from './inertia-mock';
 
@@ -20,9 +24,9 @@ vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 vi.setConfig({ testTimeout: 30_000 });
 
 const portfolio = (fixture: { props: unknown } = portfolioFixture) =>
-    structuredClone(fixture.props) as InvestorPortfolioProps;
+    structuredClone(fixture.props) as C3InvestorPortfolioProps;
 const holding = (fixture: { props: unknown } = holdingFixture) =>
-    structuredClone(fixture.props) as InvestorHoldingProps;
+    structuredClone(fixture.props) as C3InvestorHoldingProps;
 
 beforeEach(() => {
     resetInertia();
@@ -335,6 +339,85 @@ describe('Holding detail', () => {
         );
         expect(
             screen.getByRole('progressbar', { name: 'REPAYMENT PROGRESS' }),
+        ).toBeInTheDocument();
+    });
+});
+
+describe('Commitments and issue (C3)', () => {
+    it('lists commitments awaiting issue apart from holdings, never counted among them', () => {
+        const { unmount } = render(<InvestorPortfolio {...portfolio()} />);
+
+        const awaiting = screen.getByRole('region', { name: 'Awaiting issue' });
+
+        expect(awaiting).toHaveTextContent('Commitments, not yet holdings');
+        expect(
+            within(awaiting).getByRole('link', { name: /GreenLeaf Agro/u }),
+        ).toHaveAttribute('href', '/preview/investor-commitment-confirmed');
+        expect(awaiting).toHaveTextContent(
+            'Committed — issued after disbursement',
+        );
+        expect(
+            within(awaiting).getByRole('link', { name: /Kivu Coffee/u }),
+        ).toHaveTextContent('Payout not yet confirmed — checking');
+        expect(awaiting).not.toHaveTextContent(/failed|paid out|refunded/iu);
+        expect(awaiting).toHaveTextContent('RWF 30,0006 notes');
+        unmount();
+
+        render(<InvestorPortfolio {...portfolio(awaitingFixture)} />);
+        expect(
+            screen.getByRole('region', { name: 'Awaiting issue' }),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Nothing held yet')).toBeInTheDocument();
+    });
+
+    it('keeps the awaiting section to the active tab and renders the live-minimal shape', () => {
+        const matured = portfolio();
+
+        matured.tab = 'matured';
+        const { unmount } = render(<InvestorPortfolio {...matured} />);
+
+        expect(
+            screen.queryByRole('region', { name: 'Awaiting issue' }),
+        ).not.toBeInTheDocument();
+        unmount();
+
+        render(<InvestorPortfolio {...portfolio(portfolioMinimalFixture)} />);
+        expect(
+            screen.queryByRole('region', { name: 'Awaiting issue' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows how a holding was issued: its receipt, units, local issue time, effective date and dated schedule', () => {
+        render(<InvestorHolding {...holding(issuedFixture)} />);
+
+        const record = screen.getByRole('region', { name: 'Issue record' });
+
+        expect(record).toHaveTextContent('Units6 notes · #1201–#1206');
+        expect(record).toHaveTextContent('PrincipalRWF 30,000');
+        expect(record).toHaveTextContent('Issued21 Sept 2026 · 15:20');
+        expect(record).toHaveTextContent(
+            'Payout effective21 Sept 2026 · 15:18',
+        );
+        expect(record).toHaveTextContent('Effective date (Kigali)21 Sept 2026');
+        expect(record).toHaveTextContent('RZ-HLD-2201');
+
+        const schedule = within(record).getByRole('table');
+
+        expect(within(schedule).getAllByRole('row')).toHaveLength(7);
+        expect(schedule).toHaveTextContent('21 Oct 2026RWF 5,000RWF 675');
+        expect(
+            screen.getByRole('progressbar', { name: 'REPAYMENT PROGRESS' }),
+        ).toHaveValue(0);
+        expect(
+            screen.getByText('No monthly reports published yet.'),
+        ).toBeInTheDocument();
+    });
+
+    it('renders the holding live-minimal shape', () => {
+        render(<InvestorHolding {...holding(holdingMinimalFixture)} />);
+
+        expect(
+            screen.getByRole('region', { name: 'Issue record' }),
         ).toBeInTheDocument();
     });
 });

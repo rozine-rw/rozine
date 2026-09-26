@@ -12,7 +12,8 @@ import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
 import type { NoteProgress } from '@/types/business';
 
-function Tile({
+/** One of the dashboard's figure tiles (design L638–646). */
+export function Tile({
     label,
     value,
     green = false,

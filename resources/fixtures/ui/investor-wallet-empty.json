@@ -1,36 +1,58 @@
 {
     "component": "investor/wallet",
+    "synthetic": true,
     "props": {
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 5,
+        "server_time": "2026-10-02T09:00:00+02:00",
+        "allowed_actions": [],
         "wallet": {
-            "available": {
+            "revision": 1,
+            "status": "active",
+            "restriction": null,
+            "total": {
                 "currency": "RWF",
                 "amount": "0"
             },
-            "status": "active",
-            "pending_withdrawal": null
+            "breakdown": {
+                "available": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "held": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "committed": {
+                    "currency": "RWF",
+                    "amount": "0"
+                }
+            },
+            "pending_deposits": {
+                "currency": "RWF",
+                "amount": "0"
+            }
         },
+        "holds": [],
         "funding": {
             "kind": null,
-            "methods": [
-                {
-                    "id": "mtn-1",
-                    "kind": "mtn",
-                    "label": "MTN MoMo",
-                    "masked": "+250 788 ···· 456"
+            "policy": {
+                "version": "synthetic-deposit-policy-0",
+                "synthetic": true,
+                "fee": {
+                    "currency": "RWF",
+                    "amount": "0"
                 },
-                {
-                    "id": "airtel-1",
-                    "kind": "airtel",
-                    "label": "Airtel",
-                    "masked": "+250 73 ···· 218"
+                "minimum": {
+                    "currency": "RWF",
+                    "amount": "1000"
                 },
-                {
-                    "id": "bk-1",
-                    "kind": "bank",
-                    "label": "Bank of Kigali",
-                    "masked": "Account ····2231"
+                "maximum": {
+                    "currency": "RWF",
+                    "amount": "5000000"
                 }
-            ],
+            },
+            "methods": [],
             "picks": [
                 {
                     "currency": "RWF",
@@ -51,20 +73,12 @@
             ],
             "quote": null
         },
-        "earnings": {
-            "from": "2026-03-23T00:00:00+02:00",
-            "to": "2026-09-23T00:00:00+02:00",
-            "ranges": [
+        "deposits": [],
+        "history": {
+            "movement": "external",
+            "filters": [
                 {
-                    "key": "3m",
-                    "active": false,
-                    "link": {
-                        "url": "/preview/investor-wallet",
-                        "method": "get"
-                    }
-                },
-                {
-                    "key": "6m",
+                    "key": "external",
                     "active": true,
                     "link": {
                         "url": "/preview/investor-wallet",
@@ -72,88 +86,22 @@
                     }
                 },
                 {
-                    "key": "12m",
+                    "key": "internal",
                     "active": false,
                     "link": {
-                        "url": "/preview/investor-wallet",
-                        "method": "get"
-                    }
-                },
-                {
-                    "key": "ytd",
-                    "active": false,
-                    "link": {
-                        "url": "/preview/investor-wallet",
-                        "method": "get"
-                    }
-                }
-            ],
-            "totals": {
-                "interest": {
-                    "currency": "RWF",
-                    "amount": "0"
-                },
-                "received": {
-                    "currency": "RWF",
-                    "amount": "0"
-                },
-                "payouts": 0,
-                "avg_monthly": {
-                    "currency": "RWF",
-                    "amount": "0"
-                }
-            },
-            "months": []
-        },
-        "transactions": {
-            "range": "30d",
-            "ranges": [
-                {
-                    "key": "today",
-                    "active": false,
-                    "link": {
-                        "url": "/preview/investor-wallet",
-                        "method": "get"
-                    }
-                },
-                {
-                    "key": "7d",
-                    "active": false,
-                    "link": {
-                        "url": "/preview/investor-wallet",
-                        "method": "get"
-                    }
-                },
-                {
-                    "key": "30d",
-                    "active": true,
-                    "link": {
-                        "url": "/preview/investor-wallet",
-                        "method": "get"
-                    }
-                },
-                {
-                    "key": "all",
-                    "active": false,
-                    "link": {
-                        "url": "/preview/investor-wallet",
+                        "url": "/preview/investor-wallet-internal",
                         "method": "get"
                     }
                 }
             ],
             "items": [],
-            "exports": {
-                "pdf": {
-                    "url": "/preview/investor-wallet",
-                    "method": "get"
-                },
-                "csv": {
-                    "url": "/preview/investor-wallet",
-                    "method": "get"
-                }
+            "pagination": {
+                "next": null
             }
         },
         "receipt": null,
+        "earnings": null,
+        "exports": null,
         "links": {
             "deals": {
                 "url": "/preview/investor-deals",
@@ -187,22 +135,18 @@
                 "url": "/preview/investor-wallet-deposit",
                 "method": "get"
             },
-            "withdraw": {
-                "url": "/preview/investor-wallet-withdraw",
-                "method": "get"
-            },
             "link_account": {
                 "url": "/preview/investor-profile-linked",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/investor-wallet-operation-{request_id}",
                 "method": "get"
             }
         },
         "actions": {
             "deposit": {
-                "url": "/preview/investor-wallet",
-                "method": "post"
-            },
-            "withdraw": {
-                "url": "/preview/investor-wallet",
+                "url": "/preview/investor-wallet-deposit-pending",
                 "method": "post"
             }
         }

@@ -1,0 +1,80 @@
+{
+    "component": "business/publish",
+    "synthetic": true,
+    "props": {
+        "contract_version": "business-campaign-v1",
+        "identity_context_revision": 4,
+        "server_time": "2026-09-25T09:00:00+02:00",
+        "application": {
+            "id": "01k6p4c8s3d0f4g9h2j6k1m7n3",
+            "title": "Warehouse Robotics",
+            "target": {
+                "currency": "RWF",
+                "amount": "30000000"
+            },
+            "revision": 7
+        },
+        "release": {
+            "state": "awaiting_staff_review",
+            "causes": []
+        },
+        "prerequisites": [
+            {
+                "key": "staff_release",
+                "met": false
+            },
+            {
+                "key": "signatures_retained",
+                "met": true
+            },
+            {
+                "key": "quote_current",
+                "met": true
+            },
+            {
+                "key": "terms_current",
+                "met": true
+            }
+        ],
+        "listing_fee": {
+            "currency": "RWF",
+            "amount": "0"
+        },
+        "fee_disclosure": {
+            "version": "synthetic-listing-fee-disclosure-0",
+            "text": "Rozine waives the listing fee for the MVP, so publishing this application costs RWF 0. Any future listing fee will be disclosed here, with its own version, before you publish."
+        },
+        "listing": null,
+        "allowed_actions": [],
+        "actions": {
+            "publish": {
+                "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications/01k6p4c8s3d0f4g9h2j6k1m7n3/publish",
+                "method": "post"
+            }
+        },
+        "links": {
+            "close": {
+                "url": "/business",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/business/campaign-operations/{request_id}",
+                "method": "get"
+            },
+            "review": null
+        },
+        "home": null,
+        "shell_links": {
+            "home": {
+                "url": "/business",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/dashboard",
+                "method": "get"
+            },
+            "reports": null,
+            "profile": null
+        }
+    }
+}

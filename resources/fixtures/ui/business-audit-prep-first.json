@@ -32,7 +32,7 @@
                     "amount": "18000000"
                 },
                 "link": {
-                    "url": "/preview/business-note-raising",
+                    "url": "/preview/business-campaign-raising-live",
                     "method": "get"
                 }
             },
@@ -104,7 +104,7 @@
                         "amount": "18000000"
                     },
                     "link": {
-                        "url": "/preview/business-note-raising",
+                        "url": "/preview/business-campaign-raising-live",
                         "method": "get"
                     }
                 },
