@@ -515,6 +515,7 @@
         "resources/js/pages/business/reports.tsx",
         "resources/js/pages/business/wallet.tsx",
         "resources/js/pages/dashboard.tsx",
+        "resources/js/pages/errors/not-found.tsx",
         "resources/js/pages/home.tsx",
         "resources/js/pages/identity/access-denied.tsx",
         "resources/js/pages/identity/role-home.tsx",
@@ -538,10 +539,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 510,
+        "totalTrackedSources": 511,
         "generated": 160,
         "declarationOnly": 16,
-        "authoredExecutable": 334
+        "authoredExecutable": 335
     },
     "coverageSetSha256": "39365b3de673ae1e72d5a5e54e90fbdd677c0e754061dca62488646d005be2f3"
 }

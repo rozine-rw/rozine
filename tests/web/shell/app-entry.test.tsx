@@ -73,6 +73,7 @@ describe('application entry point', () => {
         expect(options.layout('welcome')).toBe(state.publicLayout);
         expect(options.layout('pulse')).toBe(state.publicLayout);
         expect(options.layout('audit/verify-seal')).toBe(state.publicLayout);
+        expect(options.layout('errors/not-found')).toBe(state.publicLayout);
         expect(options.layout('auth/login')).toBe(state.authLayout);
         expect(options.layout('settings/profile')).toEqual([
             state.appLayout,

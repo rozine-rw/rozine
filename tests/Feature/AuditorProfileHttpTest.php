@@ -358,7 +358,7 @@ it('renders the error page, not raw JSON, when a browser page read is refused', 
     $this->actingAs($fixture['user']);
 
     $this->get(route('auditor.accreditation.certificates.show', str_repeat('0', 26)))->assertNotFound()
-        ->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied')
+        ->assertInertia(fn (Assert $page): Assert => $page->component('errors/not-found')
             ->where('code', 'ACCREDITATION_CERTIFICATE_NOT_FOUND'));
 
     /* A pending submission whose certificate record is missing fails the read's integrity check. */

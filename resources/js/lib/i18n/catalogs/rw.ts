@@ -41,6 +41,14 @@ const rw: Catalog = {
     'identity.denied.title': 'Uburenganzira bugomba kugenzurwa',
     'identity.denied.body':
         'Konti yawe nticyemerewe gufungura uru rupapuro mu nshingano wahisemo. Hitamo porogaramu wongere kugenzura uburenganzira bwawe.',
+    'identity.denied.expired_offer.title': 'Iki cyifuzo cyarafunzwe',
+    'identity.denied.expired_offer.body':
+        'Igihe cyo kwemera uyu murimo cyarangiye, ntukiwufunguriwe. Hitamo porogaramu urebe imirimo yawe iriho.',
+    'errors.not_found.head_title': 'Ntibibonetse',
+    'errors.not_found.title': 'Ntitwabonye uru rupapuro',
+    'errors.not_found.body':
+        'Birashoboka ko ihuza ryanditswe nabi, cyangwa icyo ryerekezagaho kitakiboneka. Reba ihuza, cyangwa wongere utangirire kuri Rozine.',
+    'errors.not_found.home': 'Jya ku rupapuro rw’ibanze rwa Rozine',
     'environment.demo': 'Demo — si urubuga nyarwo',
     'environment.uat': 'UAT — si urubuga nyarwo',
     'environment.synthetic_only':

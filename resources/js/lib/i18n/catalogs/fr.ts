@@ -40,6 +40,14 @@ const fr: Catalog = {
     'identity.denied.title': 'Votre accès doit être vérifié',
     'identity.denied.body':
         'Votre compte ne peut plus ouvrir cette page avec le rôle sélectionné. Choisissez une application pour actualiser votre accès.',
+    'identity.denied.expired_offer.title': 'Cette offre est close',
+    'identity.denied.expired_offer.body':
+        'Le délai pour accepter cette mission est dépassé : elle ne vous est plus ouverte. Choisissez une application pour voir vos missions en cours.',
+    'errors.not_found.head_title': 'Page introuvable',
+    'errors.not_found.title': 'Nous ne trouvons pas cette page',
+    'errors.not_found.body':
+        "Le lien est peut-être mal saisi, ou ce vers quoi il pointait n'est plus disponible. Vérifiez le lien ou recommencez depuis Rozine.",
+    'errors.not_found.home': "Aller à l'accueil de Rozine",
     'environment.demo': 'Démo — hors production',
     'environment.uat': 'UAT — hors production',
     'environment.synthetic_only':

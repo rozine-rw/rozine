@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\AdvanceExpiredAuditOffers;
 use App\Application\Auditor\FindAuditAssignmentOperation;
 use App\Application\Auditor\ProjectAuditAssignmentOperation;
 use App\Application\Auditor\ResolveAuditAssignment;
@@ -315,4 +316,21 @@ it('keeps submitted application facts in an Auditor file when a legacy draft is 
     $this->getJson('/api/v1/auditor/jobs')->assertOk()->assertJsonPath('data.assigned.0.id', $assignment->id);
     $this->getJson('/api/v1/auditor/jobs/'.$assignment->id)->assertOk()
         ->assertJsonPath('data.file.raise.requested.amount', '12000000')->assertJsonPath('data.file.raise.term_months', 6);
+});
+
+it('shows a closed offer as a refusal and an unknown offer as not found when read in the browser', function (): void {
+    $fixture = Fixture::make(1);
+    $assignment = Fixture::request($fixture);
+    $partner = Fixture::recipient($fixture, $assignment);
+    $this->travel(1)->hours();
+    expect(app(AdvanceExpiredAuditOffers::class)->handle(100))->toBe(1);
+
+    /* A closed offer keeps its 409 refusal and code; the page words it from that code. */
+    $this->actingAs($partner['user'])->get('/auditor/jobs/'.$assignment->id)->assertStatus(409)
+        ->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied')->where('code', 'ASSIGNMENT_ACCEPTANCE_EXPIRED'));
+    /* A read that found nothing is a not-found page, not an account-access one; JSON is unchanged. */
+    $this->get('/auditor/jobs/'.strtolower((string) Str::ulid()))->assertNotFound()
+        ->assertInertia(fn (Assert $page): Assert => $page->component('errors/not-found')->where('code', 'ASSIGNMENT_NOT_FOUND'));
+    $this->getJson('/auditor/jobs/'.strtolower((string) Str::ulid()))->assertNotFound()
+        ->assertExactJson(['message' => 'ASSIGNMENT_NOT_FOUND', 'code' => 'ASSIGNMENT_NOT_FOUND']);
 });

@@ -19,6 +19,8 @@ createInertiaApp({
             case name === 'welcome':
             case name === 'pulse':
             case name.startsWith('audit/'):
+            // Error pages a visitor with no session can reach (a public link that found nothing).
+            case name.startsWith('errors/'):
                 return PublicLayout;
             // The Suite launcher and the role apps draw their own shells.
             case name === 'dashboard':

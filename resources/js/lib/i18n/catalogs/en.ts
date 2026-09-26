@@ -40,6 +40,14 @@ const en = {
     'identity.denied.title': 'Access needs to be checked',
     'identity.denied.body':
         'Your account can no longer open this page in the selected role. Choose an app to refresh your access.',
+    'identity.denied.expired_offer.title': 'This offer has closed',
+    'identity.denied.expired_offer.body':
+        'The time to accept this job ran out, so it is no longer open to you. Choose an app to see your current work.',
+    'errors.not_found.head_title': 'Not found',
+    'errors.not_found.title': "We couldn't find that page",
+    'errors.not_found.body':
+        'The link may be mistyped, or what it pointed to is no longer available. Check the link, or start again from Rozine.',
+    'errors.not_found.home': 'Go to the Rozine home page',
     'environment.demo': 'Demo — not live',
     'environment.uat': 'UAT — not live',
     'environment.synthetic_only':
