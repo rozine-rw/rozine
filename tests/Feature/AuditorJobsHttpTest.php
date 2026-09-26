@@ -327,10 +327,12 @@ it('shows a closed offer as a refusal and an unknown offer as not found when rea
 
     /* A closed offer keeps its 409 refusal and code; the page words it from that code. */
     $this->actingAs($partner['user'])->get('/auditor/jobs/'.$assignment->id)->assertStatus(409)
-        ->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied')->where('code', 'ASSIGNMENT_ACCEPTANCE_EXPIRED'));
-    /* A read that found nothing is a not-found page, not an account-access one; JSON is unchanged. */
+        ->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied')
+            ->where('code', 'ASSIGNMENT_ACCEPTANCE_EXPIRED')->where('status', 409));
+    /* A read that found nothing carries its 404, so the page reads as not found; JSON is unchanged. */
     $this->get('/auditor/jobs/'.strtolower((string) Str::ulid()))->assertNotFound()
-        ->assertInertia(fn (Assert $page): Assert => $page->component('errors/not-found')->where('code', 'ASSIGNMENT_NOT_FOUND'));
+        ->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied')
+            ->where('code', 'ASSIGNMENT_NOT_FOUND')->where('status', 404));
     $this->getJson('/auditor/jobs/'.strtolower((string) Str::ulid()))->assertNotFound()
         ->assertExactJson(['message' => 'ASSIGNMENT_NOT_FOUND', 'code' => 'ASSIGNMENT_NOT_FOUND']);
 });

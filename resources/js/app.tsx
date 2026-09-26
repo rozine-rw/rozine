@@ -16,15 +16,16 @@ const appName = 'Rozine';
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
-    layout: (name) => {
+    layout: (name, page) => {
         switch (true) {
-            // Public pages, audit seal verification among them: no session, no role shell. Error
-            // pages too, which a visitor with no session reaches from a public link.
+            // Public pages, audit seal verification among them: no session, no role shell. The
+            // error page's not-found answer too, which a visitor with no session reaches from a
+            // public link.
             case name === 'home':
             case name === 'welcome':
             case name === 'pulse':
             case name.startsWith('audit/'):
-            case name.startsWith('errors/'):
+            case name === 'identity/access-denied' && page.props.status === 404:
                 return PublicLayout;
             // The Suite launcher and the role apps draw their own shells.
             case name === 'dashboard':

@@ -361,7 +361,6 @@
         "resources/js/pages/business/reports.tsx",
         "resources/js/pages/business/wallet.tsx",
         "resources/js/pages/dashboard.tsx",
-        "resources/js/pages/errors/not-found.tsx",
         "resources/js/pages/home.tsx",
         "resources/js/pages/identity/access-denied.tsx",
         "resources/js/pages/identity/role-home.tsx",

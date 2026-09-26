@@ -39,7 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (IdentityViolation $exception, Request $request) {
             if (! $request->expectsJson() && $request->routeIs('investor.home', 'business.home', 'auditor.home', 'auditor.profile',
                 'auditor.jobs.index', 'auditor.jobs.show', 'auditor.conflicts.index', 'auditor.conflicts.show', 'auditor.reports.show', 'auditor.engagement.show', 'business.applications.show', 'business.audit-reports.show', 'staff.audit.show', 'staff.audit.operations.show', 'admin.home', 'identity.roles.resume')) {
-                return Inertia::render($exception->status === 404 ? 'errors/not-found' : 'identity/access-denied', ['code' => $exception->reason])
+                return Inertia::render('identity/access-denied', ['code' => $exception->reason, 'status' => $exception->status])
                     ->toResponse($request)->setStatusCode($exception->status);
             }
 
@@ -49,11 +49,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // A command refused before it was recorded (an idempotency conflict, a lookup that found
         // nothing): its own code, and Laravel's errors bag with every 422. A page read in the
         // browser gets the error page instead of raw JSON; commands, lookups and the API keep JSON.
-        // A read that found nothing (404) gets the not-found page: it is no account-access problem,
-        // and the public seal check reaches it with no account at all.
+        // The page carries the status too, so a read that found nothing (404) reads as not found:
+        // it is no account-access problem, and the public seal check reaches it with no account.
         $exceptions->render(function (CommandRejection $exception, Request $request) {
             if (! $request->expectsJson() && ! $request->is('api/*') && $request->isMethod('GET')) {
-                return Inertia::render($exception->status === 404 ? 'errors/not-found' : 'identity/access-denied', ['code' => $exception->reason])
+                return Inertia::render('identity/access-denied', ['code' => $exception->reason, 'status' => $exception->status])
                     ->toResponse($request)->setStatusCode($exception->status);
             }
 
