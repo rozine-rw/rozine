@@ -1,3 +1,8 @@
+import type {
+    AuditDispute,
+    AuditPublicationPolicy,
+    AuditPublishedReason,
+} from './audit-dispute';
 import type { BusinessShellLinks } from './business';
 import type {
     OperationCommand,
@@ -64,35 +69,42 @@ export type AuditCosign = {
     signers: AuditCosigner[];
     /** At most 100 characters, retained with this Party's signature. */
     your_note: string;
-    /** The monthly by-the-7th deadline of the original reporting cycle; null for Flash. */
+    /**
+     * When the window closes. Under `monthly-review-2026-09-26` it is `delivered_at` + 24 hours and
+     * authoritative; a legacy monthly report keeps its by-the-7th date; null for Flash.
+     */
     due_at: string | null;
     overdue: boolean;
     /**
-     * Pending the delivery 3 contract and the N6 amendment decision (not sent today). Why a
-     * published report was published: every required signature, or automatic approval once the
-     * co-sign window lapsed. Absent, the page reads publication from `report.published_at` alone.
+     * The persisted co-sign policy (N6). `monthly-review-2026-09-26` is the 24-hour sign-off or
+     * dispute window; `audit-publication-legacy` is a Flash report or a monthly report sealed
+     * before it, which keeps its original wording, deadline and signature rules.
      */
-    published_reason?: 'signed' | 'auto_approved' | null;
+    policy_version: AuditPublicationPolicy;
     /**
-     * Pending the delivery 3 contract and the N6 amendment decision (not sent today). A dispute
-     * this business submitted: while it is `under_review` (the CPA reviews the proof, then amends
-     * or upholds the report) or `escalated` (upheld or not acted on, so Rozine staff review it),
-     * the 24-hour review timer is paused and nothing is signed or disputed. An amended report
-     * comes back `resolved` with a fresh `due_at`, and the page reads as usual.
+     * When the sealed report reached this Business's app: the 24-hour window counts from here.
+     * Null under the legacy policy.
      */
-    dispute?: AuditCosignDispute | null;
+    delivered_at: string | null;
+    /**
+     * Why a published report was published: every required signature, automatic approval at the
+     * end of the window (no signature is recorded for it) or a staff resolution of a dispute.
+     */
+    published_reason: AuditPublishedReason | null;
+    /**
+     * This Business's dispute of the report. While one exists nothing is signed or disputed, and
+     * an open one pauses the window: the page never calls it overdue.
+     */
+    dispute: BusinessAuditDispute | null;
 };
 
-/** Pending the delivery 3 contract: where a submitted dispute stands. */
-export type AuditCosignDispute = {
-    status: 'under_review' | 'escalated' | 'resolved';
-    submitted_at: string;
+export type { AuditPublicationPolicy, AuditPublishedReason };
+
+/** The Business projection of a dispute: the shared record and, once sealed, its amendment. */
+export type BusinessAuditDispute = AuditDispute & {
+    amendment: { report_id: string; link: RouteLink } | null;
 };
 
-/**
- * `report.dispute` is pending the delivery 3 contract: it is offered only alongside
- * `actions.dispute`, and the current contract never sends it.
- */
 export type AuditCosignAllowedAction = 'report.cosign' | 'report.dispute';
 
 export type BusinessAuditCosignProps = {
@@ -105,8 +117,8 @@ export type BusinessAuditCosignProps = {
     allowed_actions: AuditCosignAllowedAction[];
     actions: {
         cosign: RouteAction | null;
-        /** Pending the delivery 3 contract: absent or null, no dispute is offered. */
-        dispute?: RouteAction | null;
+        /** Null, no dispute is offered. */
+        dispute: RouteAction | null;
     };
     links: { current: RouteLink; close: RouteLink; operation: RouteLink };
 };
@@ -124,13 +136,11 @@ export type BusinessAuditCosignPageProps = BusinessAuditCosignProps & {
  * A co-signature or dispute exactly as sent, with the route it went to, so a lookup or retry is
  * identical.
  *
- * The dispute is pending the delivery 3 contract. Its body is `{request_id,
- * identity_context_revision, expected_revision: cosign.revision, report_revision, digest, reason}`
- * with a required factual `reason` (at most 2,000 characters). Proof is optional text, files or
- * both (#99): `supporting_text` (at most 1,000 characters) only when written, and `proof_files`
- * only when attached, in which case the command goes as multipart through the same transport, as
- * the Auditor ledger upload does. The field names, the upload transport (multipart or a separate
- * upload) and the accepted file types and sizes are pending that contract.
+ * A dispute (N6) sends `{request_id, identity_context_revision, expected_revision:
+ * cosign.revision, report_revision, mandate_version, digest}` with `supporting_text` (plain text,
+ * at most 1,000 characters) when written and `proof_files[]` (at most five PDF, JPEG or PNG files
+ * of up to 10 MiB each) when attached: at least one of the two. Files go as multipart through the
+ * same transport, as the Auditor ledger upload does.
  */
 export type AuditCosignCommand = OperationCommand<AuditCosignAllowedAction> & {
     route: RouteAction;
@@ -138,8 +148,8 @@ export type AuditCosignCommand = OperationCommand<AuditCosignAllowedAction> & {
 
 /**
  * `REPORT_COSIGNATURE_RECORDED` (one required signature retained) or `REPORT_PUBLISHED` (every
- * required signature in, and published); `REPORT_DISPUTED` for a dispute, pending the delivery 3
- * contract. `data.next` is where the page continues.
+ * required signature in, and published); `REPORT_DISPUTED` for a recorded dispute. `data.next` is
+ * where the page continues.
  */
 export type AuditCosignOperationResource = SharedOperationResource<{
     next: RouteLink;

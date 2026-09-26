@@ -4,13 +4,13 @@
     "props": {
         "contract_version": "business-audit-report-v1",
         "identity_context_revision": 4,
-        "server_time": "2026-09-03T12:00:00+02:00",
+        "server_time": "2026-09-03T18:00:00+02:00",
         "business": {
             "id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
             "name": "GreenLeaf Agro (synthetic)"
         },
         "report": {
-            "id": "SYN-RPT-2026-08",
+            "id": "SYN-RPT-2026-08-N6",
             "revision": 3,
             "kind": "monthly",
             "period": "2026-08",
@@ -49,13 +49,13 @@
                     "method": "get"
                 }
             },
-            "published_at": null
+            "published_at": "2026-09-03T16:45:00+02:00"
         },
         "cosign": {
             "revision": 7,
             "state": "pending",
             "mandate_version": 2,
-            "required_signatures": 2,
+            "required_signatures": 1,
             "signed_count": 0,
             "signers": [
                 {
@@ -63,29 +63,24 @@
                     "state": "pending",
                     "signed_at": null,
                     "is_you": true
-                },
-                {
-                    "name": "Synthetic signatory Eric Nshuti",
-                    "state": "pending",
-                    "signed_at": null,
-                    "is_you": false
                 }
             ],
             "your_note": "",
-            "due_at": "2026-09-07T23:59:59+02:00",
+            "due_at": "2026-09-03T16:45:00+02:00",
             "overdue": false,
-            "dispute": {
-                "status": "under_review",
-                "submitted_at": "2026-09-03T11:20:00+02:00"
-            }
+            "policy_version": "monthly-review-2026-09-26",
+            "delivered_at": "2026-09-02T16:45:00+02:00",
+            "published_reason": "auto_approved",
+            "dispute": null
         },
         "allowed_actions": [],
         "actions": {
-            "cosign": null
+            "cosign": null,
+            "dispute": null
         },
         "links": {
             "current": {
-                "url": "/preview/business-audit-cosign-disputed-n6-pending",
+                "url": "/preview/business-audit-cosign-n6-auto-approved",
                 "method": "get"
             },
             "close": {

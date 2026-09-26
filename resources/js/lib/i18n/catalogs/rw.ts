@@ -3331,34 +3331,12 @@ const rw: Catalog = {
     'business.audit_cosign.count': '{count}/{limit}',
     'business.audit_cosign.published_auto':
         "Yatangajwe mu buryo bwikora nyuma y'amasaha 24",
-    'business.audit_cosign.yours.published_auto':
-        'Nta wasinye mu gihe cyagenwe, bityo raporo yemejwe mu buryo bwikora kandi iratangazwa.',
     'business.audit_cosign.dispute.open': 'Tanga ubujurire',
-    'business.audit_cosign.dispute.intro':
-        "Vuga ibyabonetse ujuririra n'impamvu, ushingiye ku kuri. Ubujurire bwawe ntibuhindura raporo yafunzwe.",
-    'business.audit_cosign.dispute.reason': 'Impamvu yawe',
-    'business.audit_cosign.dispute.reason_help': 'Birasabwa: ibintu ujuririra.',
-    'business.audit_cosign.dispute.supporting':
-        'Ibisobanuro byunganira (si ngombwa)',
-    'business.audit_cosign.dispute.supporting_help':
-        'Sobanura ibimenyetso ufite, niba bifasha.',
     'business.audit_cosign.dispute.submit': 'Ohereza ubujurire',
     'business.audit_cosign.dispute.submitting': 'Biroherezwa…',
     'business.audit_cosign.dispute.cancel': 'Hagarika',
-    'business.audit_cosign.dispute.files':
-        "Amadosiye y'ibimenyetso (si ngombwa)",
-    'business.audit_cosign.dispute.files_help':
-        'Ongeraho amafoto cyangwa inyandiko bishyigikira ubujurire bwawe.',
     'business.audit_cosign.dispute.files_add': 'Ongeraho amadosiye',
     'business.audit_cosign.dispute.file_remove': 'Kuramo {name}',
-    'business.audit_cosign.disputed.under_review.title':
-        'Ubujurire burimo gusuzumwa',
-    'business.audit_cosign.disputed.under_review.body':
-        "Watanze ubujurire {date}. Igihe cy'amasaha 24 cyo gusuzuma cyahagaritswe mu gihe CPA wawe asuzuma ibimenyetso byawe, agakosora raporo cyangwa akayemeza uko iri. Niba ayemeje uko iri cyangwa ntagire icyo akora, abakozi ba Rozine barabyinjiramo. Raporo ikosowe iguha andi masaha 24 yo kuyisuzuma.",
-    'business.audit_cosign.disputed.escalated.title':
-        'Ubujurire bwashyikirijwe abakozi ba Rozine',
-    'business.audit_cosign.disputed.escalated.body':
-        "Watanze ubujurire {date}. CPA wawe yemeje raporo uko iri cyangwa ntiyagira icyo akora, bityo abakozi ba Rozine barimo gusuzuma iki kibazo. Igihe cy'amasaha 24 cyo gusuzuma gikomeza guhagarikwa muri icyo gihe.",
     'audit.verify_seal.head_title': "Genzura kashe y'igenzura",
     'audit.verify_seal.title': "Igenzura rya kashe y'igenzura",
     'audit.verify_seal.lead':
@@ -3375,6 +3353,112 @@ const rw: Catalog = {
         "Hano herekanwa gusa nimero ya raporo, ikimenyetso cyayo n'igisubizo cy'igenzura rya kashe.",
     'business.audit_cosign.refused.AUDIT_REPORT_AMENDED':
         'Umugenzuzi yakosoye iyi raporo, bityo ntishobora gushyirwaho umukono. Raporo ikosowe izakugezwaho ngo uyishyireho umukono imaze gufungwa.',
+    'common.file_size.kb': '{size} KB',
+    'common.file_size.mb': '{size} MB',
+    'common.file_size.kind': '{kind} · {size}',
+    'common.proof_file.download': 'Kuramo {name}',
+    'common.proof_file.download_short': 'Kuramo',
+    'business.audit_cosign.published_staff':
+        "Byatangajwe n'abakozi ba Rozine {date}",
+    'business.audit_cosign.yours.published_auto':
+        "Byatangajwe mu buryo bwikora nyuma y'amasaha 24: nta wabyemeje cyangwa ngo abijurire ku gihe. Nta mukono wanditswe.",
+    'business.audit_cosign.yours.published_staff':
+        'Abakozi ba Rozine bakemuye ubujurire kandi batangaza raporo. Nta mukono wanditswe.',
+    'business.audit_cosign.window.title': "Igihe cyo gusuzuma cy'amasaha 24",
+    'business.audit_cosign.window.left': 'Hasigaye {time}',
+    'business.audit_cosign.window.body':
+        "Iyo raporo y'igenzura imaze gushyirwaho kashe muri porogaramu yawe, ufite amasaha 24 yo kuyemeza cyangwa gutanga ubujurire buherekejwe n'ibimenyetso.",
+    'business.audit_cosign.window.delivered':
+        'Yageze muri porogaramu yawe {date}',
+    'business.audit_cosign.window.due':
+        'Emeza cyangwa ujurire bitarenze {date}',
+    'business.audit_cosign.window.ended': "Igihe cy'amasaha 24 cyarangiye.",
+    'business.audit_cosign.window.auto':
+        'Raporo zitasinywe zemezwa mu buryo bwikora iyo igihe kirangiye.',
+    'business.audit_cosign.dispute.intro':
+        "Garagaza ibyo ujuririra mu byagaragajwe n'ibimenyetso byawe. Ubujurire bwawe ntibuhindura raporo ifite kashe, kandi buhagarika igihe cy'amasaha 24 mu gihe CPA ibusuzuma.",
+    'business.audit_cosign.dispute.proof_rule':
+        'Ongeraho inyandiko isobanura, nibura dosiye imwe, cyangwa byombi.',
+    'business.audit_cosign.dispute.supporting': 'Inyandiko isobanura',
+    'business.audit_cosign.dispute.supporting_help':
+        'Inyandiko isanzwe, inyuguti zitarenze 1,000.',
+    'business.audit_cosign.dispute.files': "Dosiye z'ibimenyetso",
+    'business.audit_cosign.dispute.files_help':
+        'Dosiye zitarenze {limit}: PDF, JPEG cyangwa PNG, buri imwe itarenze 10 MB.',
+    'business.audit_cosign.dispute.file_type':
+        '{name} ntiyongeweho: hemerwa gusa dosiye za PDF, JPEG cyangwa PNG.',
+    'business.audit_cosign.dispute.file_size':
+        '{name} ntiyongeweho: buri dosiye ntigomba kurenza 10 MB.',
+    'business.audit_cosign.dispute.file_limit':
+        '{name} ntiyongeweho: ubujurire bushobora kugira dosiye zitarenze {limit}.',
+    'business.audit_cosign.disputed.under_review.title':
+        'Ubujurire burimo gusuzumwa',
+    'business.audit_cosign.disputed.under_review.body':
+        'Igihe cyahagaritswe. CPA irimo gusuzuma ibimenyetso byawe.',
+    'business.audit_cosign.disputed.escalated.title':
+        'Abakozi ba Rozine barimo gusuzuma',
+    'business.audit_cosign.disputed.escalated.body':
+        'Abakozi ba Rozine barimo gusuzuma ubujurire bwawe. Igihe gikomeza guhagarara kandi raporo ntitangazwa muri icyo gihe.',
+    'business.audit_cosign.disputed.amendment_required.title':
+        'Hakenewe ivugurura',
+    'business.audit_cosign.disputed.amendment_required.body':
+        "Umugenzuzi agomba kuvugurura raporo; uzahabwa igihe gishya cy'amasaha 24. Igihe gikomeza guhagarara kugeza icyo gihe.",
+    'business.audit_cosign.disputed.amended.title': 'Raporo yavuguruwe',
+    'business.audit_cosign.disputed.amended.body':
+        "Umugenzuzi yavuguruye raporo. Raporo ivuguruye ifite igihe cyayo cy'amasaha 24.",
+    'business.audit_cosign.disputed.upheld.title':
+        "Byatangajwe n'abakozi ba Rozine",
+    'business.audit_cosign.disputed.upheld.body':
+        'Abakozi ba Rozine basuzumye ubujurire bwawe, bagumishaho ibyagaragajwe kandi batangaza raporo. Nta mukono wanditswe.',
+    'business.audit_cosign.disputed.resolved.title': 'Ubujurire bwarangiye',
+    'business.audit_cosign.disputed.resolved.body': 'Ubu bujurire bwarangiye.',
+    'business.audit_cosign.disputed.open_amendment':
+        'Fungura raporo ivuguruye ({report})',
+    'business.audit_cosign.disputed.record_title': 'Ubujurire bwawe',
+    'business.audit_cosign.disputed.submitted': 'Bwatanzwe {date}',
+    'business.audit_cosign.disputed.supporting_text':
+        'Inyandiko yawe isobanura',
+    'business.audit_cosign.disputed.files': "Dosiye zawe z'ibimenyetso",
+    'business.audit_cosign.disputed.resolution_note':
+        "Icyitonderwa cy'abakozi ba Rozine",
+    'auditor.sealed.body_disputed':
+        'Raporo ifite kashe. {party} yarayijuririye, bityo igihe cyo kuyisuzuma cyahagaritswe kandi nta kintu gitangazwa mu gihe ubujurire bugikomeza.',
+    'auditor.sealed.dispute.title': "Ubujurire bw'ikigo",
+    'auditor.sealed.dispute.status.under_review': 'Burimo gusuzumwa',
+    'auditor.sealed.dispute.status.escalated': 'Kuri abakozi ba Rozine',
+    'auditor.sealed.dispute.status.resolved': 'Bwakemutse',
+    'auditor.sealed.dispute.submitted': 'Bwatanzwe {date} · {time}',
+    'auditor.sealed.dispute.guide.under_review':
+        'Banza usuzume ibimenyetso. Hanyuma utangire ivugurura rifitanye isano, cyangwa ugumishaho ibyo wagaragaje.',
+    'auditor.sealed.dispute.guide.escalated':
+        'Abakozi ba Rozine barimo gusuzuma ubu bujurire. Gushyira kashe ku ivugurura ntibizabukemura keretse abakozi banditse ko ivugurura rikenewe.',
+    'auditor.sealed.dispute.guide.amendment_required':
+        "Abakozi ba Rozine basabye ivugurura. Numara gushyira kashe ku ivugurura rifitanye isano, ikigo kizahabwa igihe gishya cy'amasaha 24.",
+    'auditor.sealed.dispute.supporting_text': "Inyandiko isobanura y'ikigo",
+    'auditor.sealed.dispute.files': "Dosiye z'ibimenyetso",
+    'auditor.sealed.dispute.outcome.amendment_required':
+        'Umwanzuro: hakenewe ivugurura',
+    'auditor.sealed.dispute.outcome.amended': 'Umwanzuro: yavuguruwe',
+    'auditor.sealed.dispute.outcome.upheld':
+        'Umwanzuro: ibyagaragajwe byagumishijweho',
+    'auditor.sealed.dispute.resolution_note':
+        "Icyitonderwa cy'abakozi ba Rozine",
+    'auditor.sealed.dispute.uphold': 'Gumishaho ibyagaragajwe',
+    'auditor.dispute_uphold.lead':
+        'Impamvu yawe yoherezwa ku bakozi ba Rozine, basuzuma ubujurire bwa {business}. Kugumishaho ibyagaragajwe ntibitangaza raporo.',
+    'auditor.dispute_uphold.label': 'Impamvu yawe (irakenewe)',
+    'auditor.dispute_uphold.placeholder':
+        "Vuga, mu buryo bw'ukuri, impamvu ibyagaragajwe bigumaho nyuma yo gusuzuma ibimenyetso.",
+    'auditor.dispute_uphold.submit': 'Ohereza ku bakozi ba Rozine',
+    'business.audit_cosign.refused.REPORT_WINDOW_CLOSED':
+        "Igihe cyo gusuzuma cy'amasaha 24 cyarangiye, bityo iyi raporo ntigishobora kwemezwa cyangwa kujuririrwa. Twayifunguye uko imeze ubu.",
+    'business.audit_cosign.refused.REPORT_REVIEW_CLOSED':
+        'Iyi raporo yamaze kujuririrwa, iri kwa bakozi ba Rozine cyangwa yaratangajwe, bityo ntigishobora kwemezwa cyangwa kujuririrwa. Twayifunguye uko imeze ubu.',
+    'auditor.sealed.body_published_auto':
+        "Byatangajwe mu buryo bwikora nyuma y'amasaha 24, ku wa {date}. Ikigo nticyayisinyeho.",
+    'auditor.sealed.body_published_staff':
+        "Byatangajwe n'abakozi ba Rozine ku wa {date}. Ikigo nticyayisinyeho.",
+    'auditor.sealed.cosign.not_signed': 'Ntiyasinywe',
 };
 
 export default rw;

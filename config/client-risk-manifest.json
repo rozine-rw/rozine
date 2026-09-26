@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "eae845f97722934a698abe5c289ccb01c7766a224732a93a39ad1b581eb95a84",
-    "coverageSetSha256": "39365b3de673ae1e72d5a5e54e90fbdd677c0e754061dca62488646d005be2f3",
+    "sourceManifestSha256": "c23394ed2395950021c0e8e7781ae7f1901e11210e0c40d3962486e71ebed5b0",
+    "coverageSetSha256": "6f37010204e7eaf91e335d9bf1dd979cd9e7373eba28c99806438b5cb8d1bbc5",
     "thresholds": {
         "critical": {
             "global": {
@@ -76,6 +76,8 @@
         "resources/js/components/app-sidebar.tsx",
         "resources/js/components/appearance-tabs.tsx",
         "resources/js/components/auditor/assigned-job-card.tsx",
+        "resources/js/components/auditor/audit/dispute-panel.tsx",
+        "resources/js/components/auditor/audit/dispute-uphold.tsx",
         "resources/js/components/auditor/audit/evidence.tsx",
         "resources/js/components/auditor/audit/parts.tsx",
         "resources/js/components/auditor/audit/return-controls.tsx",
@@ -140,8 +142,10 @@
         "resources/js/components/business/audit-cosign/cosign-form.tsx",
         "resources/js/components/business/audit-cosign/cosign-notice.tsx",
         "resources/js/components/business/audit-cosign/cosign-status.tsx",
+        "resources/js/components/business/audit-cosign/dispute-record.tsx",
         "resources/js/components/business/audit-cosign/dispute-sheet.tsx",
         "resources/js/components/business/audit-cosign/report-summary.tsx",
+        "resources/js/components/business/audit-cosign/review-window.tsx",
         "resources/js/components/business/business-auth-frame.tsx",
         "resources/js/components/business/business-shell.tsx",
         "resources/js/components/business/detail-sheet.tsx",
@@ -252,6 +256,7 @@
         "resources/js/components/rozine/icon.tsx",
         "resources/js/components/rozine/logo.tsx",
         "resources/js/components/rozine/operation-notice.tsx",
+        "resources/js/components/rozine/proof-file-list.tsx",
         "resources/js/components/rozine/role-icon.tsx",
         "resources/js/components/rozine/toast.tsx",
         "resources/js/components/text-link.tsx",

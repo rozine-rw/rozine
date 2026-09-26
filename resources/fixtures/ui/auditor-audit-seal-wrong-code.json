@@ -226,7 +226,8 @@
             "amend": {
                 "url": "/preview/auditor-audit-amendment",
                 "method": "post"
-            }
+            },
+            "dispute_uphold": null
         },
         "outcome": null,
         "jobs": {

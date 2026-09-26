@@ -1,10 +1,13 @@
 import { Link } from '@inertiajs/react';
+import { DisputePanel } from '@/components/auditor/audit/dispute-panel';
 import { formatKigaliTime } from '@/components/auditor/clock';
 import { StatusPill, Tick } from '@/components/auditor/ui';
 import type { PillTone } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
+import type { MessageCode } from '@/lib/i18n/types';
 import { formatDate } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
+import type { AuditPublishedReason } from '@/types/audit-dispute';
 import type { CosignState, SealedStage } from '@/types/auditor';
 
 const COSIGN_TONE: Record<CosignState, PillTone> = {
@@ -12,6 +15,13 @@ const COSIGN_TONE: Record<CosignState, PillTone> = {
     signed: 'green',
     declined: 'red',
     overdue: 'red',
+};
+
+/** A published report's introduction by why it was published: only `signed` was co-signed. */
+const PUBLISHED_COPY: Record<AuditPublishedReason, MessageCode> = {
+    signed: 'auditor.sealed.body_published',
+    auto_approved: 'auditor.sealed.body_published_auto',
+    staff_resolved: 'auditor.sealed.body_published_staff',
 };
 
 type Stage = {
@@ -27,15 +37,19 @@ type Stage = {
  * the seal's opaque report, key and signature references as sent. A sealed report is immutable; a
  * correction is a new linked amendment, and this report stays as it is (AC-03). A seal that can no
  * longer be verified (a revoked signing key) keeps all of this visible and says so, never implying
- * the seal verifies now; a Flash report has no co-sign date, so none is shown.
+ * the seal verifies now; a Flash report has no co-sign date, so none is shown. A Business dispute
+ * (N6) shows its own panel with the retained proof, where the CPA may uphold the findings.
  */
 export function SealedStatus({
     stage,
     amend,
+    uphold,
 }: {
     stage: SealedStage;
     /** Starts a linked amendment, when the server allows one. */
     amend: { run: () => void; disabled: boolean } | null;
+    /** Opens the uphold sheet for the dispute, when the server offers it. */
+    uphold: { open: () => void; disabled: boolean } | null;
 }) {
     const { t, locale } = useTranslation();
     const references = [
@@ -47,6 +61,11 @@ export function SealedStatus({
         { label: t('auditor.sealed.key_id'), value: stage.key_id },
     ];
     const { cosign } = stage;
+    /* Published automatically or by staff: the Business never co-signed, and is not waited on. */
+    const withoutSignature =
+        stage.published_at !== null &&
+        (stage.published_reason === 'auto_approved' ||
+            stage.published_reason === 'staff_resolved');
 
     /*
      * Where the filing stands, from the server's publication and co-sign facts — never from the
@@ -55,7 +74,8 @@ export function SealedStatus({
      */
     const intro = (): string => {
         if (stage.published_at !== null) {
-            return t('auditor.sealed.body_published', {
+            /* Only a co-signature is a co-signature: automatic and staff publication record none. */
+            return t(PUBLISHED_COPY[stage.published_reason ?? 'signed'], {
                 date: formatDate(stage.published_at, locale),
             });
         }
@@ -63,6 +83,11 @@ export function SealedStatus({
         /* An unpublished report you amended is replaced by its amendment: nobody co-signs it. */
         if (stage.amended_by !== null) {
             return t('auditor.sealed.body_amended');
+        }
+
+        /* An open dispute pauses the Business's window; nothing publishes meanwhile. */
+        if (stage.dispute !== null && stage.dispute.status !== 'resolved') {
+            return t('auditor.sealed.body_disputed', { party: cosign.party });
         }
 
         switch (cosign.state) {
@@ -115,6 +140,10 @@ export function SealedStatus({
                 </p>
             </div>
 
+            {stage.dispute !== null && (
+                <DisputePanel dispute={stage.dispute} uphold={uphold} />
+            )}
+
             {stage.seal_status === 'unavailable' && (
                 <p
                     role="note"
@@ -153,6 +182,10 @@ export function SealedStatus({
                                 {formatDate(item.when, locale)} ·{' '}
                                 {formatKigaliTime(item.when)}
                             </span>
+                        ) : item.key === 'cosigned' && withoutSignature ? (
+                            <StatusPill tone="neutral">
+                                {t('auditor.sealed.cosign.not_signed')}
+                            </StatusPill>
                         ) : item.key === 'cosigned' ? (
                             <StatusPill tone={COSIGN_TONE[cosign.state]}>
                                 {t(`auditor.sealed.cosign.${cosign.state}`)}

@@ -3346,34 +3346,12 @@ const fr: Catalog = {
     'business.audit_cosign.count': '{count}/{limit}',
     'business.audit_cosign.published_auto':
         'Publié automatiquement après le délai de 24 heures',
-    'business.audit_cosign.yours.published_auto':
-        "Personne n'a signé dans le délai : le rapport a été approuvé automatiquement et publié.",
     'business.audit_cosign.dispute.open': 'Soumettre une contestation',
-    'business.audit_cosign.dispute.intro':
-        'Indiquez quels constats vous contestez et pourquoi, en vous en tenant aux faits. Votre contestation ne modifie pas le rapport scellé.',
-    'business.audit_cosign.dispute.reason': 'Votre motif',
-    'business.audit_cosign.dispute.reason_help':
-        'Obligatoire : les faits que vous contestez.',
-    'business.audit_cosign.dispute.supporting':
-        "Précisions à l'appui (facultatif)",
-    'business.audit_cosign.dispute.supporting_help':
-        'Décrivez les preuves dont vous disposez, si cela aide.',
     'business.audit_cosign.dispute.submit': 'Soumettre la contestation',
     'business.audit_cosign.dispute.submitting': 'Envoi…',
     'business.audit_cosign.dispute.cancel': 'Annuler',
-    'business.audit_cosign.dispute.files': 'Justificatifs (facultatif)',
-    'business.audit_cosign.dispute.files_help':
-        'Ajoutez des photos ou des documents qui appuient votre contestation.',
     'business.audit_cosign.dispute.files_add': 'Ajouter des fichiers',
     'business.audit_cosign.dispute.file_remove': 'Retirer {name}',
-    'business.audit_cosign.disputed.under_review.title':
-        "Contestation en cours d'examen",
-    'business.audit_cosign.disputed.under_review.body':
-        "Vous avez soumis une contestation le {date}. Le délai d'examen de 24 heures est suspendu pendant que votre expert-comptable examine vos preuves et modifie ou maintient le rapport. S'il le maintient ou n'agit pas, l'équipe Rozine intervient. Un rapport modifié ouvre pour vous un nouveau délai de 24 heures pour l'examiner.",
-    'business.audit_cosign.disputed.escalated.title':
-        "Contestation transmise à l'équipe Rozine",
-    'business.audit_cosign.disputed.escalated.body':
-        "Vous avez soumis une contestation le {date}. Votre expert-comptable a maintenu le rapport ou n'a pas agi : l'équipe Rozine examine donc le dossier. Le délai d'examen de 24 heures reste suspendu en attendant.",
     'audit.verify_seal.head_title': "Vérifier le sceau d'audit",
     'audit.verify_seal.title': "Vérification du sceau d'audit",
     'audit.verify_seal.lead':
@@ -3392,6 +3370,113 @@ const fr: Catalog = {
         "Seuls l'identifiant du rapport, son empreinte et le résultat de la vérification du sceau sont affichés ici.",
     'business.audit_cosign.refused.AUDIT_REPORT_AMENDED':
         "L'auditeur a modifié ce rapport ; il ne peut donc plus être cosigné. Le rapport modifié vous sera soumis pour approbation une fois scellé.",
+    'common.file_size.kb': '{size} Ko',
+    'common.file_size.mb': '{size} Mo',
+    'common.file_size.kind': '{kind} · {size}',
+    'common.proof_file.download': 'Télécharger {name}',
+    'common.proof_file.download_short': 'Télécharger',
+    'business.audit_cosign.published_staff':
+        'Publié par le personnel Rozine le {date}',
+    'business.audit_cosign.yours.published_auto':
+        "Publié automatiquement après la fenêtre de 24 heures : personne ne l'a approuvé ni contesté à temps. Aucune signature n'a été enregistrée.",
+    'business.audit_cosign.yours.published_staff':
+        "Le personnel Rozine a tranché la contestation et publié le rapport. Aucune signature n'a été enregistrée.",
+    'business.audit_cosign.window.title': "Fenêtre d'examen de 24 heures",
+    'business.audit_cosign.window.left': '{time} restantes',
+    'business.audit_cosign.window.body':
+        "Une fois le rapport d'audit scellé dans votre application, vous avez 24 heures pour l'approuver ou soumettre une contestation avec des justificatifs.",
+    'business.audit_cosign.window.delivered':
+        'Reçu dans votre application le {date}',
+    'business.audit_cosign.window.due':
+        'Approuvez ou contestez avant le {date}',
+    'business.audit_cosign.window.ended':
+        'La fenêtre de 24 heures est terminée.',
+    'business.audit_cosign.window.auto':
+        'Les rapports non signés sont approuvés automatiquement à la fin de la fenêtre.',
+    'business.audit_cosign.dispute.intro':
+        "Indiquez ce que vous contestez dans les constats et vos justificatifs. Votre contestation ne modifie pas le rapport scellé et suspend la fenêtre de 24 heures pendant l'examen par le CPA.",
+    'business.audit_cosign.dispute.proof_rule':
+        'Ajoutez un texte justificatif, au moins un fichier, ou les deux.',
+    'business.audit_cosign.dispute.supporting': 'Texte justificatif',
+    'business.audit_cosign.dispute.supporting_help':
+        "Texte simple, jusqu'à 1 000 caractères.",
+    'business.audit_cosign.dispute.files': 'Fichiers justificatifs',
+    'business.audit_cosign.dispute.files_help':
+        "Jusqu'à {limit} fichiers : PDF, JPEG ou PNG, 10 Mo maximum chacun.",
+    'business.audit_cosign.dispute.file_type':
+        "{name} n'a pas été ajouté : seuls les fichiers PDF, JPEG ou PNG sont acceptés.",
+    'business.audit_cosign.dispute.file_size':
+        "{name} n'a pas été ajouté : chaque fichier est limité à 10 Mo.",
+    'business.audit_cosign.dispute.file_limit':
+        "{name} n'a pas été ajouté : une contestation compte au plus {limit} fichiers.",
+    'business.audit_cosign.disputed.under_review.title':
+        "Contestation en cours d'examen",
+    'business.audit_cosign.disputed.under_review.body':
+        'Le délai est suspendu. Le CPA examine vos justificatifs.',
+    'business.audit_cosign.disputed.escalated.title':
+        'Le personnel Rozine examine le dossier',
+    'business.audit_cosign.disputed.escalated.body':
+        "Le personnel Rozine examine votre contestation. Le délai reste suspendu et le rapport n'est pas publié entre-temps.",
+    'business.audit_cosign.disputed.amendment_required.title':
+        'Modification requise',
+    'business.audit_cosign.disputed.amendment_required.body':
+        "L'auditeur doit modifier le rapport ; vous aurez une nouvelle fenêtre de 24 heures. Le délai reste suspendu d'ici là.",
+    'business.audit_cosign.disputed.amended.title': 'Rapport modifié',
+    'business.audit_cosign.disputed.amended.body':
+        "L'auditeur a modifié le rapport. Le rapport modifié a sa propre fenêtre de 24 heures.",
+    'business.audit_cosign.disputed.upheld.title':
+        'Publié par le personnel Rozine',
+    'business.audit_cosign.disputed.upheld.body':
+        "Le personnel Rozine a examiné votre contestation, maintenu les constats et publié le rapport. Aucune signature n'a été enregistrée.",
+    'business.audit_cosign.disputed.resolved.title': 'Contestation close',
+    'business.audit_cosign.disputed.resolved.body':
+        'Cette contestation est close.',
+    'business.audit_cosign.disputed.open_amendment':
+        'Ouvrir le rapport modifié ({report})',
+    'business.audit_cosign.disputed.record_title': 'Votre contestation',
+    'business.audit_cosign.disputed.submitted': 'Soumise le {date}',
+    'business.audit_cosign.disputed.supporting_text':
+        'Votre texte justificatif',
+    'business.audit_cosign.disputed.files': 'Vos fichiers justificatifs',
+    'business.audit_cosign.disputed.resolution_note':
+        'Note du personnel Rozine',
+    'auditor.sealed.body_disputed':
+        "Le rapport est scellé. {party} l'a contesté : sa fenêtre d'examen est suspendue et rien n'est publié tant que la contestation est ouverte.",
+    'auditor.sealed.dispute.title': "Contestation de l'entreprise",
+    'auditor.sealed.dispute.status.under_review': "En cours d'examen",
+    'auditor.sealed.dispute.status.escalated': 'Auprès du personnel Rozine',
+    'auditor.sealed.dispute.status.resolved': 'Résolue',
+    'auditor.sealed.dispute.submitted': 'Soumise le {date} · {time}',
+    'auditor.sealed.dispute.guide.under_review':
+        "Examinez d'abord les justificatifs. Puis lancez une modification liée ou maintenez vos constats.",
+    'auditor.sealed.dispute.guide.escalated':
+        "Le personnel Rozine examine cette contestation. Sceller une modification ne la résout pas tant que le personnel n'a pas indiqué qu'une modification est requise.",
+    'auditor.sealed.dispute.guide.amendment_required':
+        "Le personnel Rozine exige une modification. Dès que vous scellez une modification liée, l'entreprise dispose d'une nouvelle fenêtre de 24 heures.",
+    'auditor.sealed.dispute.supporting_text':
+        "Texte justificatif de l'entreprise",
+    'auditor.sealed.dispute.files': 'Fichiers justificatifs',
+    'auditor.sealed.dispute.outcome.amendment_required':
+        'Issue : modification requise',
+    'auditor.sealed.dispute.outcome.amended': 'Issue : rapport modifié',
+    'auditor.sealed.dispute.outcome.upheld': 'Issue : constats maintenus',
+    'auditor.sealed.dispute.resolution_note': 'Note du personnel Rozine',
+    'auditor.sealed.dispute.uphold': 'Maintenir les constats',
+    'auditor.dispute_uphold.lead':
+        'Votre motif est transmis au personnel Rozine, qui examine la contestation de {business}. Maintenir les constats ne publie pas le rapport.',
+    'auditor.dispute_uphold.label': 'Votre motif (obligatoire)',
+    'auditor.dispute_uphold.placeholder':
+        "Indiquez, en faits, pourquoi les constats restent valables après l'examen des justificatifs.",
+    'auditor.dispute_uphold.submit': 'Transmettre au personnel Rozine',
+    'business.audit_cosign.refused.REPORT_WINDOW_CLOSED':
+        "La fenêtre d'examen de 24 heures est close : ce rapport ne peut plus être approuvé ni contesté. Nous l'avons rechargé tel qu'il est maintenant.",
+    'business.audit_cosign.refused.REPORT_REVIEW_CLOSED':
+        "Ce rapport est déjà contesté, examiné par le personnel Rozine ou publié : il ne peut plus être approuvé ni contesté. Nous l'avons rechargé tel qu'il est maintenant.",
+    'auditor.sealed.body_published_auto':
+        "Publié automatiquement après la fenêtre de 24 heures, le {date}. L'entreprise ne l'a pas cosigné.",
+    'auditor.sealed.body_published_staff':
+        "Publié par le personnel Rozine le {date}. L'entreprise ne l'a pas cosigné.",
+    'auditor.sealed.cosign.not_signed': 'Non cosigné',
 };
 
 export default fr;
