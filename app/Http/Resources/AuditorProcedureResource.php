@@ -32,8 +32,16 @@ class AuditorProcedureResource extends JsonResource
         if ($page['can_seal']) {
             $allowed[] = 'audit.seal';
         }
+        if ($page['sealed']['can_dispute_uphold'] ?? false) {
+            $allowed[] = 'audit.dispute.uphold';
+        }
         if ($request->routeIs('api.*') && ! $request->user()?->tokenCan('auditor:command')) {
             $allowed = [];
+        }
+
+        if ($page['sealed'] !== null) {
+            $page['sealed']['dispute'] = AuditDisputeResource::project($page['sealed']['dispute'] ?? null, $request, 'auditor', ['report' => $report['id']]);
+            unset($page['sealed']['can_dispute_uphold']);
         }
 
         $reasonOptions = $page['decision_options'] === null ? null : $this->reasonOptions($page['decision_options']);
@@ -49,7 +57,7 @@ class AuditorProcedureResource extends JsonResource
             'assignment' => ['id' => $report['assignment_id'], 'revision' => $job['revision']],
             'steps' => $page['steps'], 'stage' => $page['sealed'] === null || $report['step'] !== 'seal'
                 ? $this->stage($report, $page['sources'], $file['file'], $prefix, $page['variance'], $page['seal'], $reasonOptions, $upload, $page['mfa_confirmed'])
-                : [...array_diff_key($page['sealed'], ['sources' => true]), 'step' => 'sealed', 'amended_by' => $report['amendment_id'] === null ? null
+                : [...array_diff_key($page['sealed'], ['sources' => true]), 'step' => 'sealed', 'verification' => AuditorJobsResource::link($request->routeIs('api.*') ? 'api.v1.audit.seals.verify' : 'audit.seals.verify', ['report' => $report['id']]), 'amended_by' => $report['amendment_id'] === null ? null
                     : ['report_id' => $report['amendment_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amendment_id']])]],
             'can_continue' => $page['can_continue'], 'hint' => $report['status'] === 'draft' ? $this->hint($page['unavailable']) : null,
             'reason_options' => $reasonOptions,
@@ -57,7 +65,7 @@ class AuditorProcedureResource extends JsonResource
                 'back' => $page['previous_step'] === null
                     ? AuditorJobsResource::link($prefix.'jobs.show', ['assignment' => $report['assignment_id']])
                     : AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['id'], 'step' => $page['previous_step']]), 'operation' => $operation],
-            'actions' => ['save' => ['url' => route($prefix.'reports.save', ['report' => $report['id']], false), 'method' => 'post'],
+            'actions' => ['dispute_uphold' => in_array('audit.dispute.uphold', $allowed, true) ? ['url' => route($prefix.'reports.disputes.uphold', ['report' => $report['id']], false), 'method' => 'post'] : null, 'save' => ['url' => route($prefix.'reports.save', ['report' => $report['id']], false), 'method' => 'post'],
                 'conflict' => in_array('conflict.declare', $allowed, true) ? $file['actions']['conflict'] : null,
                 'step_up' => in_array('audit.seal', $allowed, true) ? ['url' => route($prefix.'reports.step-up', ['report' => $report['id']], false), 'method' => 'post'] : null,
                 'seal' => in_array('audit.seal', $allowed, true) ? ['url' => route($prefix.'reports.seal', ['report' => $report['id']], false), 'method' => 'post'] : null,
@@ -102,7 +110,7 @@ class AuditorProcedureResource extends JsonResource
             'count' => ['step' => 'count', 'financial_proofs' => $this->proofs($sources['financial_proofs'], $fields['financial_proofs'] ?? []),
                 'inventory_proofs' => $this->proofs($sources['inventory_proofs'], $fields['inventory_proofs'] ?? []),
                 'cash' => ['observed' => AuditorJobsResource::money($fields['cash'] ?? null), 'statement' => AuditorJobsResource::money($sources['reported_cash']), 'variance' => $variance['cash']],
-                'stock' => ['observed_units' => $fields['stock_units'] ?? null, 'reported_units' => $sources['reported_units'], 'variance' => $variance['stock']],
+                'stock' => ['observed_units' => $fields['stock_units'] ?? null, 'reported_units' => $sources['reported_units'], 'variance' => $variance['stock'], 'tolerance_units' => '0'],
                 'tolerance' => 'RWF 0', 'period' => $report['period'] === null ? null : [
                     'from' => $report['period'].'-01', 'to' => CarbonImmutable::parse($report['period'].'-01')->endOfMonth()->toDateString()],
                 'account_ref' => $sources['source_facts']['declared_account_label'] ?? __('Unavailable'),

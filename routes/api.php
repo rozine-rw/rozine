@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\IdentityController;
 use App\Http\Controllers\Api\V1\IdentityManagementController;
 use App\Http\Controllers\Api\V1\RoleBookmarkController;
 use App\Http\Controllers\Api\V1\StaffAccessController;
+use App\Http\Controllers\AuditDisputeController;
 use App\Http\Controllers\AuditOperationsController;
 use App\Http\Controllers\AuditSealVerificationController;
 use Illuminate\Http\Request;
@@ -24,6 +25,8 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::get('audit-report-operations/{request_id}', [BusinessAuditReportController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
     Route::get('{business}/audit-reports/{report}', [BusinessAuditReportController::class, 'show'])->whereUlid(['business', 'report'])->name('show');
     Route::post('{business}/audit-reports/{report}/cosign', [BusinessAuditReportController::class, 'cosign'])->whereUlid(['business', 'report'])->name('cosign');
+    Route::post('{business}/audit-reports/{report}/dispute', [AuditDisputeController::class, 'dispute'])->whereUlid(['business', 'report'])->name('dispute');
+    Route::get('{business}/audit-reports/{report}/dispute/proofs/{proof}', [AuditDisputeController::class, 'proof'])->whereUlid(['business', 'report', 'proof'])->defaults('review_role', 'business')->name('disputes.proofs.show');
 });
 
 Route::get('v1/business', [BusinessApplicationController::class, 'index'])
@@ -61,6 +64,12 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('v1/identity')->nam
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/audit-assignments')->name('api.v1.staff.audit.')->group(function (): void {
     Route::get('operations/{request_id}', [AuditOperationsController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
+    Route::get('dispute-operations/{request_id}', [AuditDisputeController::class, 'operation'])->whereUuid('request_id')->name('disputes.operations.show');
+    Route::get('{assignment}/reports/{report}/dispute', [AuditDisputeController::class, 'show'])->whereUlid(['assignment', 'report'])->name('disputes.show');
+    Route::get('{assignment}/reports/{report}/dispute/proofs/{proof}', [AuditDisputeController::class, 'proof'])->whereUlid(['assignment', 'report', 'proof'])->defaults('review_role', 'staff')->name('disputes.proofs.show');
+    foreach (['escalate', 'resolve'] as $decision) {
+        Route::post('{assignment}/reports/{report}/dispute/'.$decision, [AuditDisputeController::class, 'resolve'])->whereUlid(['assignment', 'report'])->defaults('decision_kind', $decision)->name('disputes.'.$decision);
+    }
     Route::get('{assignment}', [AuditOperationsController::class, 'show'])->where('assignment', '[0-9a-z]{26}')->name('show');
     foreach (['redispatch', 'close'] as $decision) {
         Route::post('{assignment}/'.$decision, [AuditOperationsController::class, 'resolve'])->where('assignment', '[0-9a-z]{26}')->defaults('decision', $decision)->name($decision);
@@ -70,6 +79,8 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('v1/auditor')->name('api.v1.auditor.')->group(function (): void {
     Route::post('jobs/{assignment}/report', [AuditorProcedureController::class, 'start'])->where('assignment', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.start');
     Route::get('report-operations/{request_id}', [AuditorProcedureController::class, 'operation'])->whereUuid('request_id')->middleware('cache.headers:private;no_store')->name('reports.operations.show');
+    Route::post('reports/{report}/dispute/uphold', [AuditDisputeController::class, 'uphold'])->whereUlid('report')->middleware('cache.headers:private;no_store')->name('reports.disputes.uphold');
+    Route::get('reports/{report}/dispute/proofs/{proof}', [AuditDisputeController::class, 'proof'])->whereUlid(['report', 'proof'])->middleware('cache.headers:private;no_store')->defaults('review_role', 'auditor')->name('reports.disputes.proofs.show');
     Route::get('reports/{report}', [AuditorProcedureController::class, 'show'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.show');
     Route::get('reports/{report}/statements/{document}', [AuditorProcedureController::class, 'statement'])->where(['report' => '[0-9a-z]{26}', 'document' => '[0-9a-z]{26}'])->middleware('cache.headers:private;no_store')->name('reports.statements.show');
     Route::get('reports/{report}/ledgers/{document}', [AuditorProcedureController::class, 'ledger'])->where(['report' => '[0-9a-z]{26}', 'document' => '[0-9a-z]{26}'])->middleware('cache.headers:private;no_store')->name('reports.ledgers.show');

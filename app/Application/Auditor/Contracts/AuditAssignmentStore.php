@@ -14,9 +14,9 @@ use Closure;
  * @phpstan-type ConflictReceipt array{conflict_id: string, kind: string, declared_at: string, note: string, blocking: true, status: 'reassignment_pending'|'reassigned'|'closed'}
  * @phpstan-type OwnConflict array{assignment_id: string, business_id: string, conflict: ConflictReceipt}
  * @phpstan-type ConflictPage array{data: list<OwnConflict>, next_cursor: string|null}
- * @phpstan-type Work array{assignment: View, business: array{name: string, industry: string, district: string}, distance_upper_bound_m: int|null}
+ * @phpstan-type Work array{assignment: View, business: array{name: string, industry: string, district: string}, distance_upper_bound_m: int|null, report?: array{id: string, status: string, publication_status: string|null}|null}
  * @phpstan-type WorkIdentifiers array{party_id: string, ids: list<string>, next_cursor: string|null}
- * @phpstan-type OperationsCase array{id: string, business_id: string, revision: int, kind: string, status: string, original_dispatch_at: string, complete_by: string|null, attempt: int, operations_reason: string|null, closed_at: string|null, allowed_actions: list<string>}
+ * @phpstan-type OperationsCase array{audit_reviews: list<array{report_id: string, status: string, due_at?: string|null, publication_available?: bool, unavailable_reason?: string|null}>, id: string, business_id: string, revision: int, kind: string, status: string, original_dispatch_at: string, complete_by: string|null, attempt: int, operations_reason: string|null, closed_at: string|null, allowed_actions: list<string>}
  * @phpstan-type Assignment array{id: string, business_id: string, revision: int, state: State}
  * @phpstan-type AcceptedAssignment array{id: string, business_id: string, party_id: string, revision: int, kind: string, original_dispatch_at?: string, business_revision: int, mandate_version: int, mandate_sha256: string, engagement: Acceptance, independence: array{id: string, revision: int, checked_at: string, evidence_reference: string, sha256: string}, accreditation: array{profile_revision: int, status: string, licence: string|null, expires_on: string|null, checked_at: string|null}}
  */

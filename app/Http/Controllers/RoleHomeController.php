@@ -9,6 +9,7 @@ use App\Application\Business\ListBusinessApplications;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Http\Requests\Business\ListApplicationsRequest;
 use App\Http\Resources\AuditorEngagementSummaryResource;
+use App\Http\Resources\AuditorJobsResource;
 use App\Http\Resources\BusinessApplicationsResource;
 use App\Http\Resources\IdentityContextResource;
 use Inertia\Inertia;
@@ -26,6 +27,7 @@ class RoleHomeController extends Controller
         return Inertia::render('identity/role-home', [
             'identity' => (new IdentityContextResource($identity))->resolve($request),
             'role' => $role,
+            'links' => $role === 'auditor' ? AuditorJobsResource::links($request) : null,
             'section' => $request->query('section') === 'access' ? 'access' : 'overview',
             'engagement' => $role === 'auditor' ? (new AuditorEngagementSummaryResource($engagements->handle($userId, $identity['context_revision'])))->resolve($request) : null,
             'business_applications' => $role === 'business' ? (new BusinessApplicationsResource($applications->handle($userId, $identity['context_revision'],

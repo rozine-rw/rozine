@@ -409,6 +409,8 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $signing = require database_path('migrations/2026_09_25_134827_create_audit_report_signing_tables.php');
     $publications = require database_path('migrations/2026_09_25_140638_create_audit_report_publication_tables.php');
     $proofLineage = require database_path('migrations/2026_09_25_154051_enforce_audit_seal_proof_and_publication_lineage.php');
+    $monthlyReview = require database_path('migrations/2026_09_26_103442_add_monthly_audit_review_policy.php');
+    $monthlyReview->down();
     $proofLineage->down();
     $publications->down();
     $signing->down();
@@ -433,6 +435,7 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $signing->up();
     $publications->up();
     $proofLineage->up();
+    $monthlyReview->up();
 });
 
 it('automatically reoffers expired jobs with system history and without impersonating a staff user', function (): void {

@@ -9,6 +9,6 @@ class ShowAuditCosignOperationRequest extends ShowAuditReportRequest
     /** @return array<string, list<string>> */
     public function rules(): array
     {
-        return ['identity_context_revision' => ['required', 'integer', 'min:0'], 'command' => ['required', 'in:report.cosign']];
+        return ['identity_context_revision' => ['required', 'integer', 'min:0'], 'command' => ['sometimes', 'in:report.cosign,report.dispute']];
     }
 }

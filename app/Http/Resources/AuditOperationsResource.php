@@ -16,6 +16,8 @@ class AuditOperationsResource extends JsonResource
         /** @var OperationsCase $case */
         $case = $this->resource;
         $prefix = $request->routeIs('api.*') ? 'api.v1.' : '';
+        $case['audit_reviews'] = array_map(fn (array $review): array => [...$review, 'link' => [
+            'url' => route($prefix.'staff.audit.disputes.show', ['assignment' => $case['id'], 'report' => $review['report_id']], false), 'method' => 'get']], $case['audit_reviews']);
         $actions = [];
         foreach (['redispatch', 'close'] as $decision) {
             $actions[$decision] = ['url' => route($prefix.'staff.audit.'.$decision, ['assignment' => $case['id']], false), 'method' => 'post'];

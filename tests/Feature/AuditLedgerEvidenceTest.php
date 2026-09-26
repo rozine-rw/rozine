@@ -256,6 +256,8 @@ it('refuses inconsistent legacy ledger ownership without rewriting its original'
     $migration = require database_path('migrations/2026_09_25_130201_enforce_audit_ledger_report_authority.php');
     $publicationMigration = require database_path('migrations/2026_09_25_140638_create_audit_report_publication_tables.php');
     $proofLineage = require database_path('migrations/2026_09_25_154051_enforce_audit_seal_proof_and_publication_lineage.php');
+    $monthlyReview = require database_path('migrations/2026_09_26_103442_add_monthly_audit_review_policy.php');
+    $monthlyReview->down();
     $proofLineage->down();
     $publicationMigration->down();
     $migration->down();

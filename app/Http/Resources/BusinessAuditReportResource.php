@@ -17,6 +17,8 @@ class BusinessAuditReportResource extends JsonResource
         $report = $page['report'];
         $parameters = ['business' => $page['business']['id'], 'report' => $report['id']];
         $prefix = self::prefix($request);
+        $canDispute = ($page['can_dispute'] ?? false) && (! $request->routeIs('api.*') || $request->user()?->tokenCan('business:command'));
+        $page['cosign']['dispute'] = AuditDisputeResource::project($page['cosign']['dispute'] ?? null, $request, 'business', $parameters);
         $canSign = $page['can_cosign'] && (! $request->routeIs('api.*') || $request->user()?->tokenCan('business:command'));
         $placeholder = '00000000-0000-0000-0000-000000000000';
         $operation = self::link($prefix.'operations.show', ['request_id' => $placeholder]);
@@ -34,8 +36,8 @@ class BusinessAuditReportResource extends JsonResource
 
         return ['contract_version' => 'business-audit-report-v1', 'identity_context_revision' => $page['identity_context_revision'],
             'server_time' => now()->toIso8601String(), 'business' => $page['business'], 'report' => $report, 'cosign' => $page['cosign'],
-            'allowed_actions' => $canSign ? ['report.cosign'] : [],
-            'actions' => ['cosign' => $canSign ? ['url' => route($prefix.'cosign', $parameters, false), 'method' => 'post'] : null],
+            'allowed_actions' => [...($canSign ? ['report.cosign'] : []), ...($canDispute ? ['report.dispute'] : [])],
+            'actions' => ['dispute' => $canDispute ? ['url' => route($prefix.'dispute', $parameters, false), 'method' => 'post'] : null, 'cosign' => $canSign ? ['url' => route($prefix.'cosign', $parameters, false), 'method' => 'post'] : null],
             'links' => ['current' => self::link($prefix.'show', $parameters), 'close' => $home, 'operation' => $operation],
             'shell_links' => ['home' => $home, 'launcher' => self::link($request->routeIs('api.*') ? 'api.v1.identity.show' : 'dashboard'),
                 'reports' => null, 'profile' => null]];

@@ -22,7 +22,13 @@ class BusinessApplicationsResource extends JsonResource
                 $application['link'] = ['url' => route($prefix.'show', ['business' => $entry['business_id'], 'application' => $application['id']], false), 'method' => 'get'];
             }
 
-            return ['business_id' => $entry['business_id'], 'name' => $entry['name'], 'allowed_actions' => $allowed,
+            $report = $entry['audit_report'] ?? null;
+            if ($report !== null) {
+                $report['link'] = ['url' => route($request->routeIs('api.*') ? 'api.v1.business.audit-reports.show' : 'business.audit-reports.show',
+                    ['business' => $entry['business_id'], 'report' => $report['id']], false), 'method' => 'get'];
+            }
+
+            return ['audit_report' => $report, 'business_id' => $entry['business_id'], 'name' => $entry['name'], 'allowed_actions' => $allowed,
                 'application' => $application, 'actions' => ['create' => in_array('application.create', $allowed, true)
                     ? ['url' => route($prefix.'create', ['business' => $entry['business_id']], false), 'method' => 'post'] : null]];
         }, $page['entries']);

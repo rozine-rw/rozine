@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 import operations from './operations'
+import disputes from './disputes'
 /**
 * @see \App\Http\Controllers\AuditOperationsController::show
 * @see app/Http/Controllers/AuditOperationsController.php:20
@@ -249,6 +250,7 @@ close.form = closeForm
 
 const audit = {
     operations: Object.assign(operations, operations),
+    disputes: Object.assign(disputes, disputes),
     show: Object.assign(show, show),
     redispatch: Object.assign(redispatch, redispatch),
     close: Object.assign(close, close),
