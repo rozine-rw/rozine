@@ -303,6 +303,22 @@ describe('Audit procedure — review and check-in', () => {
 });
 
 describe('Audit procedure — photos', () => {
+    it('counts the required photos alone when no extra photo was taken', () => {
+        render(
+            <AuditorAudit
+                {...withStage<PhotosStage>(photos, (stage) => ({
+                    ...stage,
+                    slots: stage.slots.filter((slot) => !slot.extra),
+                }))}
+            />,
+        );
+
+        expect(
+            screen.getByText(/2 of 3 required captured\.$/u),
+        ).toBeInTheDocument();
+        expect(screen.queryByText(/extra photo/u)).not.toBeInTheDocument();
+    });
+
     const SYNTHETIC =
         'Synthetic test evidence (isolated) — not a native capture.';
 
