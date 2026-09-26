@@ -30,8 +30,10 @@ class AuditorJobsResource extends JsonResource
                     'term_months' => $record['application']['term_months'] ?? null, 'dscr' => null, 'map' => null,
                     'link' => self::link('auditor.jobs.show', ['assignment' => $job['id']]), 'actions' => self::actions($request, $job['id'])];
             } else {
+                $report = $record['work']['report'] ?? null;
                 $assigned[] = [...$job, 'step' => null, 'steps' => null,
-                    'status' => $job['deadline'] !== null && $job['deadline']['due_at'] <= now('UTC')->format('Y-m-d\TH:i:s\Z') ? 'overdue' : 'in_progress',
+                    'status' => ($report['status'] ?? null) === 'sealed' ? 'awaiting_cosign'
+                        : ($job['deadline'] !== null && $job['deadline']['due_at'] <= now('UTC')->format('Y-m-d\TH:i:s\Z') ? 'overdue' : 'in_progress'),
                     'link' => self::link('auditor.jobs.show', ['assignment' => $job['id']])];
             }
         }

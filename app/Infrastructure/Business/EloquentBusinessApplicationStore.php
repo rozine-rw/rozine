@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Business;
 
+use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Auditor\WithCurrentAuditAssignment;
 use App\Application\Business\Contracts\BusinessApplicationStore;
@@ -73,6 +74,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
         private IdentityAccessStore $access,
         private UnderwritingObservationWindow $windows,
         private WithAcceptedAuditAssignment $acceptedAssignments,
+        private AuditReportPublicationStore $reports,
     ) {}
 
     /** @return array<string, mixed> */
@@ -96,6 +98,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                             ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', ['draft'])->orderByDesc('id')->first();
 
                         return ['business_id' => $business['id'], 'name' => $business['profile']['name'],
+                            'audit_report' => $this->reports->latestForBusiness($business['id']),
                             'allowed_actions' => $canCreate ? ['application.create'] : [],
                             'application' => $application === null ? null : ['id' => $application->id, 'status' => $application->status,
                                 'step' => $application->step, 'revision' => $application->revision]];
