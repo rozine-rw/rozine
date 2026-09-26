@@ -1,0 +1,114 @@
+{
+    "component": "investor/portfolio",
+    "synthetic": true,
+    "props": {
+        "contract_version": "investor-servicing-v1",
+        "identity_context_revision": 1,
+        "server_time": "2026-09-23T09:00:00+02:00",
+        "allowed_actions": [],
+        "tab": "active",
+        "tabs": [
+            {
+                "key": "active",
+                "active": true,
+                "link": {
+                    "url": "/investor/portfolio?tab=active",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "matured",
+                "active": false,
+                "link": {
+                    "url": "/investor/portfolio?tab=matured",
+                    "method": "get"
+                }
+            }
+        ],
+        "earnings": {
+            "invested": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "outstanding_principal": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "realised": {
+                "principal": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "return": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "late_fees": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "fees": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "net_return": {
+                    "currency": "RWF",
+                    "amount": "0"
+                }
+            },
+            "projected": {
+                "remaining_return": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "next_3m": {
+                    "currency": "RWF",
+                    "amount": "0"
+                }
+            },
+            "this_month_net": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "avg_monthly_net": null,
+            "next_payout": null
+        },
+        "bases": {},
+        "holdings": [],
+        "payouts": [],
+        "industries": [],
+        "risk": [],
+        "concentration": null,
+        "idle": {
+            "currency": "RWF",
+            "amount": "1253485"
+        },
+        "links": {
+            "deals": {
+                "url": "/investor/deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/investor/portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/investor/profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/investor/wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/investor/notifications",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/launcher",
+                "method": "get"
+            }
+        },
+        "commitments": []
+    }
+}

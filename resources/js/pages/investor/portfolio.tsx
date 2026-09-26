@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { InvestorShell } from '@/components/investor/investor-shell';
+import { EarningsCard } from '@/components/investor/portfolio/earnings-card';
 import { HoldingCard } from '@/components/investor/portfolio/holding-card';
 import {
     Exposure,
@@ -12,7 +13,10 @@ import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { useWide } from '@/lib/investor/use-wide';
 import { cn } from '@/lib/utils';
-import type { C3InvestorPortfolioProps } from '@/types/investor';
+import type {
+    C3InvestorPortfolioProps,
+    C4InvestorPortfolioProps,
+} from '@/types/investor';
 
 /** The design lists three holdings on a phone and four on a wide screen before "See all". */
 const FIRST = { phone: 3, desk: 4 } as const;
@@ -22,15 +26,24 @@ const FIRST = { phone: 3, desk: 4 } as const;
  * scheduled payouts, and concentration by business, industry and rating. Commitments still awaiting
  * issue are listed apart, above the holdings, and never counted among them (C3 v2 §2d). The
  * design's Secondary and Saved tabs (resale and the watchlist) and its Rozine Plus charge card are
- * outside the MVP.
+ * outside the MVP. An `investor-servicing-v1` page (C4 v1 §4c) shows realised and projected
+ * earnings apart in place of the Phase 1B value and gain.
  */
-export default function InvestorPortfolio(props: C3InvestorPortfolioProps) {
+export default function InvestorPortfolio(
+    props: C3InvestorPortfolioProps | C4InvestorPortfolioProps,
+) {
     const { t } = useTranslation();
     const wide = useWide();
     const [all, setAll] = useState(false);
     const first = wide ? FIRST.desk : FIRST.phone;
     const shown = all ? props.holdings : props.holdings.slice(0, first);
     const more = props.holdings.length - first;
+    const total =
+        props.contract_version === 'investor-servicing-v1' ? (
+            <EarningsCard earnings={props.earnings} bases={props.bases} />
+        ) : (
+            <TotalCard totals={props.totals} />
+        );
 
     const list = (
         <>
@@ -45,11 +58,7 @@ export default function InvestorPortfolio(props: C3InvestorPortfolioProps) {
                     {t('investor.portfolio.title')}
                 </h1>
             </div>
-            {!wide && (
-                <div className="mt-4 px-5">
-                    <TotalCard totals={props.totals} />
-                </div>
-            )}
+            {!wide && <div className="mt-4 px-5">{total}</div>}
             <nav
                 aria-label={t('investor.portfolio.tabs')}
                 className={cn(
@@ -149,9 +158,7 @@ export default function InvestorPortfolio(props: C3InvestorPortfolioProps) {
                             {list}
                         </div>
                         <div className="rz-scroll flex min-h-0 min-w-[296px] flex-[0_1_384px] flex-col overflow-y-auto rounded-2xl border border-rz-border bg-rz-surface">
-                            <div className="px-4 pt-4 pb-1.5">
-                                <TotalCard totals={props.totals} />
-                            </div>
+                            <div className="px-4 pt-4 pb-1.5">{total}</div>
                             {insights}
                         </div>
                     </div>

@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "0594a9efa001ef2637df7dda9476bc07d6106584ca2b213279ef35be727744c1",
-    "coverageSetSha256": "ba7d7ab85b417488a9261aa73959f86bc90b00632f4c7f3af7ee613519e2c743",
+    "sourceManifestSha256": "3573e28a452df794a7c9a849ec43b1de925eb73ee0846b28210950fc019a1517",
+    "coverageSetSha256": "b929152c69a632db74074e4dfcf5ee8b41eaccbbe537a37512144ba748212d84",
     "thresholds": {
         "critical": {
             "global": {
@@ -65,6 +65,8 @@
         "resources/js/components/admin/parties/directory-table.tsx",
         "resources/js/components/admin/parties/party-drawer.tsx",
         "resources/js/components/admin/reason-stage.tsx",
+        "resources/js/components/admin/repayments/panels.tsx",
+        "resources/js/components/admin/repayments/repayment-drawer.tsx",
         "resources/js/components/admin/search-empty.tsx",
         "resources/js/components/admin/today/today-panels.tsx",
         "resources/js/components/admin/today/today-queues.tsx",
@@ -223,8 +225,10 @@
         "resources/js/components/investor/local-sheet.tsx",
         "resources/js/components/investor/logo-stack.tsx",
         "resources/js/components/investor/monthly-updates.tsx",
+        "resources/js/components/investor/portfolio/earnings-card.tsx",
         "resources/js/components/investor/portfolio/holding-card.tsx",
         "resources/js/components/investor/portfolio/holding-detail.tsx",
+        "resources/js/components/investor/portfolio/holding-servicing.tsx",
         "resources/js/components/investor/portfolio/issue-record.tsx",
         "resources/js/components/investor/portfolio/portfolio-insights.tsx",
         "resources/js/components/investor/primary/commitment.tsx",
@@ -347,6 +351,7 @@
         "resources/js/pages/admin/events.tsx",
         "resources/js/pages/admin/ledger.tsx",
         "resources/js/pages/admin/parties.tsx",
+        "resources/js/pages/admin/repayments.tsx",
         "resources/js/pages/admin/today.tsx",
         "resources/js/pages/audit/verify-seal.tsx",
         "resources/js/pages/auditor/audit.tsx",

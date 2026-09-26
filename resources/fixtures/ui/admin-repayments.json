@@ -1,0 +1,169 @@
+{
+    "component": "admin/repayments",
+    "synthetic": true,
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "repayments": {
+                "url": "/preview/admin-repayments",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2027-01-23T10:00:00+02:00",
+        "contract_version": "staff-servicing-v1",
+        "staff_access_version": "staff-access-v1",
+        "allowed_actions": [],
+        "counts": {
+            "due_today": 3,
+            "overdue": 1,
+            "exceptions": 1
+        },
+        "repayments": [
+            {
+                "id": "rpy_0301",
+                "reference": "RPY-2026-0301",
+                "business": "Umucyo Foods",
+                "note_title": "Cold-Chain Hub",
+                "source": "wallet",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "3465000"
+                },
+                "state": "allocated",
+                "dpd_at_receipt": 0,
+                "received_at": "2027-01-23T09:12:04+02:00",
+                "link": {
+                    "url": "/preview/admin-repayments-allocated",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "rpy_0302",
+                "reference": "RPY-2026-0302",
+                "business": "Kivu Coffee",
+                "note_title": "Harvest Capex",
+                "source": "wallet",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "2310000"
+                },
+                "state": "received",
+                "dpd_at_receipt": 0,
+                "received_at": "2027-01-23T09:40:51+02:00",
+                "link": {
+                    "url": "/preview/admin-repayments-received",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "rpy_0303",
+                "reference": "RPY-2026-0303",
+                "business": "Isoko Energy",
+                "note_title": "Solar Kiosks",
+                "source": "inbound_receipt",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "1150000"
+                },
+                "state": "exception",
+                "dpd_at_receipt": 8,
+                "received_at": "2027-01-22T16:05:33+02:00",
+                "link": {
+                    "url": "/preview/admin-repayments-exception-mismatch",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "rpy_0304",
+                "reference": "RPY-2026-0304",
+                "business": "GreenLeaf Agro",
+                "note_title": "Warehouse Robotics",
+                "source": "inbound_receipt",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "4833334"
+                },
+                "state": "received",
+                "dpd_at_receipt": 1,
+                "received_at": "2027-01-22T11:20:09+02:00",
+                "link": {
+                    "url": "/preview/admin-repayments-requery-unknown",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "rpy_0299",
+                "reference": "RPY-2026-0299",
+                "business": "Umucyo Foods",
+                "note_title": "Cold-Chain Hub",
+                "source": "wallet",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "3465000"
+                },
+                "state": "allocated",
+                "dpd_at_receipt": 0,
+                "received_at": "2026-12-23T08:58:17+02:00",
+                "link": {
+                    "url": "/preview/admin-repayments-allocated",
+                    "method": "get"
+                }
+            }
+        ],
+        "pagination": {
+            "next": null
+        },
+        "repayment": null
+    }
+}
