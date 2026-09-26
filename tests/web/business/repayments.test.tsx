@@ -254,12 +254,12 @@ describe('Repayments', () => {
         expect(
             within(repayments()).getByText('Due day missed'),
         ).toBeInTheDocument();
-        expect(within(repayments()).getAllByText('+10%')).toHaveLength(2);
+        expect(within(repayments()).getAllByText('+5%')).toHaveLength(2);
         expect(
             within(repayments()).getByText('+5% · legal'),
         ).toBeInTheDocument();
         expect(
-            within(repayments()).getByText('Total owed → RWF 6,937,500'),
+            within(repayments()).getByText('Total owed → RWF 6,382,500'),
         ).toBeInTheDocument();
         expect(
             within(repayments()).getByText('Profile & deals halted'),

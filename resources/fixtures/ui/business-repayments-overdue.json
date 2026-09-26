@@ -247,7 +247,7 @@
             "state": "overdue",
             "amount": {
                 "currency": "RWF",
-                "amount": "6660000"
+                "amount": "6105000"
             },
             "due_on": "2026-09-05",
             "days": 18,
@@ -342,18 +342,18 @@
         "late_ladder": [
             {
                 "step": "due_day",
-                "fee_percent": "10",
+                "fee_percent": "5",
                 "total": {
                     "currency": "RWF",
-                    "amount": "6105000"
+                    "amount": "5827500"
                 }
             },
             {
                 "step": "day_7",
-                "fee_percent": "10",
+                "fee_percent": "5",
                 "total": {
                     "currency": "RWF",
-                    "amount": "6660000"
+                    "amount": "6105000"
                 }
             },
             {
@@ -361,7 +361,7 @@
                 "fee_percent": "5",
                 "total": {
                     "currency": "RWF",
-                    "amount": "6937500"
+                    "amount": "6382500"
                 }
             }
         ],
