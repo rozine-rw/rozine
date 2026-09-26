@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { DisputePanel } from '@/components/auditor/audit/dispute-panel';
 import { formatKigaliTime } from '@/components/auditor/clock';
 import { StatusPill, Tick } from '@/components/auditor/ui';
 import type { PillTone } from '@/components/auditor/ui';
@@ -27,15 +28,19 @@ type Stage = {
  * the seal's opaque report, key and signature references as sent. A sealed report is immutable; a
  * correction is a new linked amendment, and this report stays as it is (AC-03). A seal that can no
  * longer be verified (a revoked signing key) keeps all of this visible and says so, never implying
- * the seal verifies now; a Flash report has no co-sign date, so none is shown.
+ * the seal verifies now; a Flash report has no co-sign date, so none is shown. A Business dispute
+ * (N6) shows its own panel with the retained proof, where the CPA may uphold the findings.
  */
 export function SealedStatus({
     stage,
     amend,
+    uphold,
 }: {
     stage: SealedStage;
     /** Starts a linked amendment, when the server allows one. */
     amend: { run: () => void; disabled: boolean } | null;
+    /** Opens the uphold sheet for the dispute, when the server offers it. */
+    uphold: { open: () => void; disabled: boolean } | null;
 }) {
     const { t, locale } = useTranslation();
     const references = [
@@ -55,14 +60,25 @@ export function SealedStatus({
      */
     const intro = (): string => {
         if (stage.published_at !== null) {
-            return t('auditor.sealed.body_published', {
-                date: formatDate(stage.published_at, locale),
-            });
+            /* Staff published it over an upheld dispute: nobody co-signed it. */
+            return t(
+                stage.dispute?.outcome === 'upheld'
+                    ? 'auditor.sealed.body_published_staff'
+                    : 'auditor.sealed.body_published',
+                {
+                    date: formatDate(stage.published_at, locale),
+                },
+            );
         }
 
         /* An unpublished report you amended is replaced by its amendment: nobody co-signs it. */
         if (stage.amended_by !== null) {
             return t('auditor.sealed.body_amended');
+        }
+
+        /* An open dispute pauses the Business's window; nothing publishes meanwhile. */
+        if (stage.dispute !== null && stage.dispute.status !== 'resolved') {
+            return t('auditor.sealed.body_disputed', { party: cosign.party });
         }
 
         switch (cosign.state) {
@@ -114,6 +130,10 @@ export function SealedStatus({
                     {intro()}
                 </p>
             </div>
+
+            {stage.dispute !== null && (
+                <DisputePanel dispute={stage.dispute} uphold={uphold} />
+            )}
 
             {stage.seal_status === 'unavailable' && (
                 <p

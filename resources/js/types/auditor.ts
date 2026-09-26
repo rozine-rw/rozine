@@ -1,3 +1,4 @@
+import type { AuditDispute } from './audit-dispute';
 import type { Money } from './money';
 import type { OperationCommand, OperationResource } from './operation';
 import type { RouteAction, RouteLink } from './routing';
@@ -29,6 +30,7 @@ export type AuditorAllowedAction =
     | 'audit.request_changes'
     | 'audit.reject'
     | 'audit.amend'
+    | 'audit.dispute.uphold'
     | 'accreditation.submit'
     | 'accreditation.renew'
     | 'accreditation.withdraw'
@@ -171,7 +173,8 @@ export type AuditorOperationData = {
  * The shared operation Resource. Completed codes: `ACCREDITATION_SUBMITTED`,
  * `ACCREDITATION_WITHDRAWN`, `ASSIGNMENT_ACCEPTED`, `ASSIGNMENT_DECLINED`, `CONFLICT_RECORDED`,
  * `AUDIT_STEP_SAVED`, `AUDIT_SEALED`, `AUDIT_CHANGES_REQUESTED`, `AUDIT_REJECTED`,
- * `AUDIT_AMENDMENT_CREATED`; a denial keeps its own code.
+ * `AUDIT_AMENDMENT_CREATED`, `REPORT_DISPUTE_ESCALATED` (an upheld dispute, now with Rozine
+ * staff); a denial keeps its own code.
  */
 export type AuditorOperationResource = OperationResource<AuditorOperationData>;
 
@@ -985,6 +988,13 @@ export type SealedStage = SealedRecord & {
      * links it. Optional until the server sends it on the sealed stage; no link shows without it.
      */
     verification?: RouteLink | null;
+    /**
+     * The Business's dispute of this report (N6), for the assigned CPA: its status, the proof as
+     * sent and the outcome. The CPA reviews it first and either starts a linked amendment or
+     * upholds the findings, which escalates it to Rozine staff and never publishes. Null when the
+     * report is not disputed.
+     */
+    dispute: AuditDispute | null;
 };
 
 /** A blocking conflict: work stopped, only the partner's receipt shown. */
@@ -1048,6 +1058,11 @@ export type AuditProcedureProps = AuditorPageContract & {
         request_changes: RouteAction | null;
         reject: RouteAction | null;
         amend: RouteAction | null;
+        /**
+         * Upholds the findings against the Business's dispute (`audit.dispute.uphold`): the
+         * dispute escalates to Rozine staff with the CPA's reason, and nothing is published.
+         */
+        dispute_uphold: RouteAction | null;
     };
     outcome: AuditorOutcome | null;
     /** Jobs, drawn beneath the sheet on a wide screen. */

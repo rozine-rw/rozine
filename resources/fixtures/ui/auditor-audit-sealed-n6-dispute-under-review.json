@@ -3,17 +3,12 @@
     "props": {
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
-        "server_time": "2026-10-03T17:00:00Z",
-        "allowed_actions": [
-            "audit.save_step",
-            "conflict.declare",
-            "audit.request_changes",
-            "audit.reject"
-        ],
+        "server_time": "2026-10-04T09:00:00Z",
+        "allowed_actions": ["audit.amend", "audit.dispute.uphold"],
         "audit": {
             "id": "mr_greenleaf",
             "kind": "monthly",
-            "business": "GreenLeaf Agro",
+            "business": "Kivu Coffee Roasters (synthetic)",
             "district": "Gasabo",
             "distance_km": "8.8",
             "month": "2026-09-01",
@@ -27,119 +22,75 @@
         "steps": [
             {
                 "key": "statements",
-                "state": "current"
+                "state": "done"
             },
             {
                 "key": "count",
-                "state": "todo"
+                "state": "done"
             },
             {
                 "key": "photos",
-                "state": "todo"
+                "state": "done"
             },
             {
                 "key": "seal",
-                "state": "todo"
+                "state": "done"
             }
         ],
         "stage": {
-            "step": "statements",
-            "statements": {
-                "status": "available",
-                "inflow": {
-                    "currency": "RWF",
-                    "amount": "162000000"
-                },
-                "outflow": {
-                    "currency": "RWF",
-                    "amount": "128400000"
-                },
-                "net": {
-                    "currency": "RWF",
-                    "amount": "33600000"
-                },
-                "cover": {
-                    "value": "1.31",
-                    "band": null
-                },
-                "documents": [
+            "step": "sealed",
+            "sealed_at": "2026-10-03T16:40:00Z",
+            "digest": "sha256:9f2c4e71b0a85d3e6c1f47a2d9b83e05c6a1f24d7e98b3c05a6d1e2f47b8c9d0",
+            "licence": "ICPAR/P-2026/0481",
+            "signature_ref": "sig_01J9Q3W7M4X2T8",
+            "report_id": "rpt_01J9Q3W7K9V5D1",
+            "key_id": "key_icpar_p2026_0481_v1",
+            "cosign": {
+                "party": "Kivu Coffee Roasters (synthetic)",
+                "state": "declined",
+                "due_on": "2026-10-04",
+                "signed_at": null
+            },
+            "published_at": null,
+            "seal_status": "valid",
+            "amended_by": null,
+            "dispute": {
+                "id": "SYN-DSP-01",
+                "revision": 2,
+                "status": "under_review",
+                "submitted_at": "2026-10-03T20:10:00Z",
+                "supporting_text": "Synthetic fixture text. Finding F-02 counts refund slip 0142 as a sale; the refund slip and the till roll are attached.",
+                "proof_files": [
                     {
-                        "name": "GreenLeaf-Agro-BK-current-2026-09.pdf",
-                        "link": {
-                            "url": "/preview/auditor-audit-statements?document=sd_bk_current",
+                        "id": "SYN-PRF-01",
+                        "name": "synthetic-refund-slip-0142.pdf",
+                        "mime_type": "application/pdf",
+                        "size_bytes": 248311,
+                        "sha256": "5d1be7e2c0a94f3b8e6d2a7c9f1b3e5d7a9c1e3f5b7d9a1c3e5f7b9d1a3c5e7f",
+                        "download": {
+                            "url": "/auditor/reports/rpt_01J9Q3W7K9V5D1/dispute/proofs/SYN-PRF-01",
                             "method": "get"
                         }
                     },
                     {
-                        "name": "GreenLeaf-Agro-BK-savings-2026-09.pdf",
-                        "link": {
-                            "url": "/preview/auditor-audit-statements?document=sd_bk_savings",
-                            "method": "get"
-                        }
-                    },
-                    {
-                        "name": "GreenLeaf-Agro-MoMo-2026-09.csv",
-                        "link": {
-                            "url": "/preview/auditor-audit-statements?document=sd_momo",
+                        "id": "SYN-PRF-02",
+                        "name": "synthetic-till-roll-14-aug.jpg",
+                        "mime_type": "image/jpeg",
+                        "size_bytes": 1874012,
+                        "sha256": "a3c5e7f9b1d3f5a7c9e1b3d5f7a9c1e3b5d7f9a1c3e5b7d9f1a3c5e7b9d1f3a5",
+                        "download": {
+                            "url": "/auditor/reports/rpt_01J9Q3W7K9V5D1/dispute/proofs/SYN-PRF-02",
                             "method": "get"
                         }
                     }
-                ]
+                ],
+                "outcome": null,
+                "resolution_note": null
             }
         },
         "can_continue": true,
         "hint": null,
-        "reason_options": {
-            "request_changes": [
-                {
-                    "code": "missing_originals",
-                    "label": "Original documents missing",
-                    "requires_explanation": true
-                },
-                {
-                    "code": "reconciliation_difference",
-                    "label": "Unexplained reconciliation difference",
-                    "requires_explanation": true
-                },
-                {
-                    "code": "classification_unresolved",
-                    "label": "Classification unresolved",
-                    "requires_explanation": true
-                },
-                {
-                    "code": "debt_evidence_missing",
-                    "label": "Debt or draw evidence missing",
-                    "requires_explanation": true
-                },
-                {
-                    "code": "capture_unverified",
-                    "label": "Capture could not be verified",
-                    "requires_explanation": true
-                },
-                {
-                    "code": "other",
-                    "label": "Other",
-                    "requires_explanation": true
-                }
-            ],
-            "reject": [
-                {
-                    "code": "evidence_unverifiable",
-                    "label": "Evidence cannot be verified",
-                    "requires_explanation": true
-                },
-                {
-                    "code": "procedure_incomplete",
-                    "label": "Procedure cannot be completed",
-                    "requires_explanation": true
-                },
-                {
-                    "code": "other",
-                    "label": "Other",
-                    "requires_explanation": true
-                }
-            ]
-        },
+        "reason_options": null,
         "links": {
             "close": {
                 "url": "/preview/auditor-jobs",
@@ -180,7 +131,10 @@
                 "url": "/preview/auditor-audit-amendment",
                 "method": "post"
             },
-            "dispute_uphold": null
+            "dispute_uphold": {
+                "url": "/preview/auditor-audit-sealed-n6-dispute-escalated",
+                "method": "post"
+            }
         },
         "outcome": null,
         "jobs": {
@@ -391,11 +345,7 @@
         "assignment": {
             "id": "asg_mr_greenleaf",
             "revision": 4
-        },
-        "preview_outcome": {
-            "kind": "sheet",
-            "sheet": "reject",
-            "reason": "evidence_unverifiable"
         }
-    }
+    },
+    "synthetic": true
 }

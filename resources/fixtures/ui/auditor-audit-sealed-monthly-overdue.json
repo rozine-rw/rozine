@@ -53,7 +53,8 @@
             },
             "published_at": null,
             "seal_status": "valid",
-            "amended_by": null
+            "amended_by": null,
+            "dispute": null
         },
         "can_continue": true,
         "hint": null,
@@ -97,7 +98,8 @@
             "amend": {
                 "url": "/preview/auditor-audit-amendment",
                 "method": "post"
-            }
+            },
+            "dispute_uphold": null
         },
         "outcome": null,
         "jobs": {
