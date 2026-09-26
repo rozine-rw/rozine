@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Business\WithAuditApplicationBinding;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Models\AuditReport;
@@ -184,7 +185,11 @@ it('refuses destructive rollback once any report history exists', function (): v
     $this->assertDatabaseCount('audit_report_versions', 1);
 });
 
-it('rolls the unused report schema back and reapplies it without rewriting application history', function (): void {
+it('rolls the unused report schema back and reapplies it without rewriting legacy application history', function (): void {
+    $exposures = $this->createMock(BusinessExposureStore::class);
+    $exposures->method('current')->willReturn([]);
+    $exposures->expects($this->once())->method('reserve');
+    $this->app->instance(BusinessExposureStore::class, $exposures);
     $fixture = Fixture::ready();
     Fixture::submit($fixture, Fixture::acceptance($fixture));
     $before = $fixture['application']->refresh()->getRawOriginal();
@@ -197,6 +202,8 @@ it('rolls the unused report schema back and reapplies it without rewriting appli
     $publications = require database_path('migrations/2026_09_25_140638_create_audit_report_publication_tables.php');
     $proofLineage = require database_path('migrations/2026_09_25_154051_enforce_audit_seal_proof_and_publication_lineage.php');
     $monthlyReview = require database_path('migrations/2026_09_26_103442_add_monthly_audit_review_policy.php');
+    $exposure = require database_path('migrations/2026_09_26_190340_create_business_exposure_reservations_table.php');
+    $exposure->down();
     $monthlyReview->down();
     $proofLineage->down();
     $publications->down();
@@ -219,6 +226,7 @@ it('rolls the unused report schema back and reapplies it without rewriting appli
     $publications->up();
     $proofLineage->up();
     $monthlyReview->up();
+    $exposure->up();
     expect(Schema::hasTable('audit_reports'))->toBeTrue()->and(Schema::hasTable('audit_report_versions'))->toBeTrue()
         ->and($fixture['application']->refresh()->getRawOriginal())->toBe($before);
 });

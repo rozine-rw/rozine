@@ -8,6 +8,7 @@ use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationSignature;
 use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessApplicationVersion;
+use App\Models\BusinessExposureReservation;
 use App\Models\RoleMembership;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
@@ -244,3 +245,26 @@ it('enforces authentication token abilities current identity and application sco
     $this->getJson('/api/v1'.$path)->assertForbidden();
     $this->actingAs($user)->get($path)->assertForbidden()->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied'));
 });
+
+it('returns the same reserved exposure identity in submission receipts and reloads on both transports', function (string $prefix): void {
+    $fixture = QuoteFixture::ready();
+    $user = $fixture['audit']['authority']['users'][0];
+    if ($prefix === '/api/v1') {
+        Sanctum::actingAs($user, ['business:read', 'business:command']);
+    } else {
+        $this->actingAs($user);
+    }
+    $path = $prefix.'/business/'.$fixture['audit']['business'].'/applications/'.$fixture['application']->id;
+    $body = [...applicationHttpEnvelope(4), ...QuoteFixture::acceptance($fixture)];
+    $receipt = $this->postJson($path.'/submit', $body)->assertOk()->assertJsonPath('code', 'APPLICATION_SUBMITTED');
+    $id = BusinessExposureReservation::query()->sole()->id;
+    $receipt->assertJsonPath('data.submission.exposure_reservation_id', $id);
+    $this->postJson($path.'/submit', $body)->assertOk()->assertJsonPath('data.submission.exposure_reservation_id', $id);
+    $this->getJson($prefix.'/business/application-operations/'.$body['request_id'].'?command=submit&identity_context_revision=1')
+        ->assertOk()->assertJsonPath('data.submission.exposure_reservation_id', $id);
+    if ($prefix === '/api/v1') {
+        $this->getJson($path.'?identity_context_revision=1')->assertOk()->assertJsonPath('data.submission.exposure_reservation_id', $id);
+    } else {
+        $this->get($path)->assertOk()->assertInertia(fn (Assert $page): Assert => $page->where('submission.exposure_reservation_id', $id));
+    }
+})->with(['', '/api/v1']);
