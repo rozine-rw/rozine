@@ -244,7 +244,7 @@ it('fails closed on corrupt retained review events, proof content and seal polic
     });
     try {
         if ($fault === 'proof') {
-            expect(fn () => $store->proof($owner->id, 1, 'business', $fixture['audit']['business'], $fixture['report']->id, $proof->id))->toThrow(RuntimeException::class, 'AUDIT_DISPUTE_PROOF_INTEGRITY_FAILED');
+            expect(fn () => $store->proof($owner->id, 1, 'business', $fixture['audit']['business'], $fixture['report']->id, $proof->id))->toThrow(CommandRejection::class, 'AUDIT_DISPUTE_PROOF_INTEGRITY_FAILED');
         } else {
             expect(fn () => $store->get($owner->id, 1, $fixture['audit']['business'], $fixture['report']->id))->toThrow(CommandRejection::class,
                 $fault === 'policy' ? 'AUDIT_SEAL_UNAVAILABLE' : 'AUDIT_REVIEW_UNAVAILABLE');
@@ -353,7 +353,8 @@ it('requires every retained event to commit with its publication and rejects for
     $publication = AuditReportPublication::query()->firstOrFail();
     $owner = $fixture['audit']['authority']['users'][0];
     $event = ['audit_report_publication_id' => $publication->id, 'publication_revision' => 2, 'command' => 'report.dispute',
-        'actor_kind' => 'party', 'actor_party_id' => $owner->party_id, 'actor_user_id' => $owner->id, 'created_at' => now()];
+        'actor_kind' => 'party', 'actor_party_id' => $owner->party_id, 'actor_user_id' => $owner->id, 'created_at' => now(),
+        'previous_sha256' => AuditPublicationEvent::query()->firstOrFail()->sha256];
     expect(fn () => DB::transaction(function () use ($event): void {
         AuditPublicationEvent::factory()->create($event);
         DB::statement('SET CONSTRAINTS audit_publication_event_committed IMMEDIATE');

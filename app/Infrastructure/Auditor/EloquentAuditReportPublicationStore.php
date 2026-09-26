@@ -31,7 +31,6 @@ use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Str;
-use RuntimeException;
 
 /**
  * @phpstan-import-type Business from \App\Application\Business\Contracts\BusinessAuthorityStore
@@ -214,34 +213,52 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
      * @param  Closure(AuditReportPublication, AuditReportSeal, Business, string, bool): TResult  $operation
      * @return TResult
      */
-    private function scope(int $userId, int $contextRevision, string $businessId, string $reportId, string $permission, Closure $operation): mixed
+    private function scope(int $userId, int $contextRevision, string $businessId, string $reportId, string $permission, Closure $operation, bool $currentEvidence = true): mixed
     {
-        return $this->evidence->handle($userId, $contextRevision, $businessId, $permission, null,
-            function (array $business, array $identity, ?array $verification) use ($reportId, $operation): mixed {
-                AuditReport::query()->whereKey($reportId)->where('business_id', $business['id'])->sharedLock()->first()
-                    ?? throw new CommandRejection('AUDIT_REPORT_NOT_FOUND', 404);
-                $publication = AuditReportPublication::query()->where('business_id', $business['id'])->where('audit_report_id', $reportId)->lockForUpdate()->first()
-                    ?? throw new CommandRejection('AUDIT_REPORT_NOT_FOUND', 404);
-                $seal = $this->seal($publication);
-                $partyId = $identity['party']['id'] ?? throw new CommandRejection('ACTION_FORBIDDEN', 403);
-                $source = $seal->payload['sources']['verification'];
-                $current = ! AuditReport::query()->where('amends_id', $reportId)->exists()
-                    && $business['mandate_version'] === $publication->mandate_version
-                    && $this->json->encode($business['mandate']) === $this->json->encode($seal->payload['business']['mandate'])
-                    && $verification !== null && $verification['current'] && $source !== null
-                    && $verification['id'] === $source['id'] && hash_equals($verification['sha256'], $source['sha256']);
-                if (! $current) {
-                    return $operation($publication, $seal, $business, $partyId, false);
-                }
+        return $currentEvidence
+            ? $this->evidence->handle($userId, $contextRevision, $businessId, $permission, null,
+                fn (array $business, array $identity, ?array $verification): mixed => $this->readPublication($business, $identity, $reportId, $operation, true, $verification))
+            : $this->authority->handle($userId, $contextRevision, $businessId, $permission, null,
+                fn (array $business, array $identity): mixed => $this->readPublication($business, $identity, $reportId, $operation, false));
+    }
 
-                return $this->assignments->withPublicationAuthority($seal->payload['assignment'],
-                    function (bool $valid) use ($publication, $seal, $business, $partyId, $operation): mixed {
-                        $facts = $valid ? $this->sourceFacts->forAccepted($seal->payload['assignment']) : null;
-                        $pinned = $seal->payload['sources']['source_facts']['source'];
+    /**
+     * @template TResult
+     *
+     * @param  Business  $business
+     * @param  AccessSnapshot  $identity
+     * @param  Closure(AuditReportPublication, AuditReportSeal, Business, string, bool): TResult  $operation
+     * @param  Verification|null  $verification
+     * @return TResult
+     */
+    private function readPublication(array $business, array $identity, string $reportId, Closure $operation, bool $currentEvidence, ?array $verification = null): mixed
+    {
+        AuditReport::query()->whereKey($reportId)->where('business_id', $business['id'])->sharedLock()->first()
+            ?? throw new CommandRejection('AUDIT_REPORT_NOT_FOUND', 404);
+        $publication = AuditReportPublication::query()->where('business_id', $business['id'])->where('audit_report_id', $reportId)->lockForUpdate()->first()
+            ?? throw new CommandRejection('AUDIT_REPORT_NOT_FOUND', 404);
+        $seal = $this->seal($publication);
+        $partyId = $identity['party']['id'] ?? throw new CommandRejection('ACTION_FORBIDDEN', 403);
+        if (! $currentEvidence) {
+            return $operation($publication, $seal, $business, $partyId, false);
+        }
+        $source = $seal->payload['sources']['verification'];
+        $current = ! AuditReport::query()->where('amends_id', $reportId)->exists()
+            && $business['mandate_version'] === $publication->mandate_version
+            && $this->json->encode($business['mandate']) === $this->json->encode($seal->payload['business']['mandate'])
+            && $verification !== null && $verification['current'] && $source !== null
+            && $verification['id'] === $source['id'] && hash_equals($verification['sha256'], $source['sha256']);
+        if (! $current) {
+            return $operation($publication, $seal, $business, $partyId, false);
+        }
 
-                        return $operation($publication, $seal, $business, $partyId, $valid && $facts !== null
-                            && $facts['source']['id'] === $pinned['id'] && hash_equals($facts['source']['sha256'], $pinned['sha256']));
-                    });
+        return $this->assignments->withPublicationAuthority($seal->payload['assignment'],
+            function (bool $valid) use ($publication, $seal, $business, $partyId, $operation): mixed {
+                $facts = $valid ? $this->sourceFacts->forAccepted($seal->payload['assignment']) : null;
+                $pinned = $seal->payload['sources']['source_facts']['source'];
+
+                return $operation($publication, $seal, $business, $partyId, $valid && $facts !== null
+                    && $facts['source']['id'] === $pinned['id'] && hash_equals($facts['source']['sha256'], $pinned['sha256']));
             });
     }
 
@@ -312,7 +329,13 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                     : ($publication->status === 'published' ? ($this->monthly($publication) && $publication->published_reason !== 'signed' ? 'pending' : 'signed') : (! $available ? 'unavailable' : ($signatures->isEmpty() ? 'pending' : 'partly_signed'))),
                 'mandate_version' => $publication->mandate_version, 'required_signatures' => $this->monthly($publication) ? 1 : count($signers), 'signed_count' => $signatures->count(), 'signers' => $signers,
                 'your_note' => $own?->payload['note'] ?? '', 'due_at' => $due, 'overdue' => ! $this->monthly($publication) && $publication->status === 'pending' && $due !== null && $due < now('UTC')->format('Y-m-d\TH:i:s\Z')],
-            'can_cosign' => $canSign, 'can_dispute' => $this->monthly($publication) && $canSign];
+            'can_cosign' => $canSign, 'can_dispute' => $this->monthly($publication) && $valid
+                && $business['mandate_version'] === $publication->mandate_version
+                && $this->json->encode($business['mandate']) === $this->json->encode($seal->payload['business']['mandate'])
+                && ! AuditReport::query()->where('amends_id', $publication->audit_report_id)->exists()
+                && $this->reviewPolicy->isOpen($publication->status, $due, now()->toDateTimeImmutable())
+                && in_array($partyId, $business['mandate']['required_signatories'], true)
+                && in_array('report.cosign', $person['permissions'] ?? [], true)];
     }
 
     private function monthly(AuditReportPublication $publication): bool
@@ -328,9 +351,20 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
         $event = new AuditPublicationEvent;
         $event->forceFill(['audit_report_publication_id' => $publication->id, 'publication_revision' => $revision ?? $publication->revision + 1,
             'command' => $command, 'actor_kind' => $actorKind, 'actor_user_id' => $userId, 'actor_party_id' => $partyId,
-            'payload' => $payload, 'sha256' => hash('sha256', $this->json->encode($payload)), 'created_at' => $at ?? now('UTC')])->save();
+            'previous_sha256' => AuditPublicationEvent::query()->where('audit_report_publication_id', $publication->id)->orderByDesc('publication_revision')->value('sha256'),
+            'payload' => $payload, 'created_at' => $at ?? now('UTC')]);
+        $event->sha256 = $this->eventHash($event);
+        $event->save();
 
         return $event;
+    }
+
+    private function eventHash(AuditPublicationEvent $event): string
+    {
+        return hash('sha256', $this->json->encode(['publication_id' => $event->audit_report_publication_id,
+            'publication_revision' => $event->publication_revision, 'command' => $event->command,
+            'actor_kind' => $event->actor_kind, 'actor_user_id' => $event->actor_user_id, 'actor_party_id' => $event->actor_party_id,
+            'created_at' => $event->created_at->utc()->format('Y-m-d\TH:i:s\Z'), 'previous_sha256' => $event->previous_sha256, 'payload' => $event->payload]));
     }
 
     /** @return array<string, mixed> */
@@ -347,16 +381,22 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
         if (! $this->monthly($publication)) {
             return null;
         }
-        $event = AuditPublicationEvent::query()->where('audit_report_publication_id', $publication->id)
-            ->where('publication_revision', $publication->revision)->first();
-        if ($event === null || ! hash_equals($event->sha256, hash('sha256', $this->json->encode($event->payload)))
-            || ($event->payload['review'] ?? null) !== $publication->review) {
+        $events = AuditPublicationEvent::query()->where('audit_report_publication_id', $publication->id)->orderBy('publication_revision')->get();
+        $previous = null;
+        foreach ($events as $index => $event) {
+            if ($event->publication_revision !== $index + 1 || $event->previous_sha256 !== $previous
+                || ! hash_equals($event->sha256, $this->eventHash($event))) {
+                throw new CommandRejection('AUDIT_REVIEW_UNAVAILABLE', 503);
+            }
+            $previous = $event->sha256;
+        }
+        if ($events->count() !== $publication->revision || ($events->last()?->payload['review'] ?? null) !== $publication->review) {
             throw new CommandRejection('AUDIT_REVIEW_UNAVAILABLE', 503);
         }
         if ($publication->review === null) {
             return null;
         }
-        $proofs = AuditDisputeProof::query()->where('audit_report_publication_id', $publication->id)->orderBy('id')->get();
+        $proofs = AuditDisputeProof::query()->where('audit_report_publication_id', $publication->id)->orderBy('id')->get(['id', 'mime_type', 'size_bytes', 'sha256']);
 
         return [...$publication->review, 'proof_files' => $proofs->map(fn (AuditDisputeProof $proof): array => [
             'id' => $proof->id, 'name' => $this->proofName($proof), 'mime_type' => $proof->mime_type,
@@ -412,7 +452,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
     public function dispute(int $userId, string $businessId, string $reportId, array $input, array $files): array
     {
         return $this->scope($userId, $input['identity_context_revision'], $businessId, $reportId, 'report.cosign',
-            function (AuditReportPublication $publication, AuditReportSeal $seal, array $business, string $partyId, bool $current) use ($userId, $input, $files): array {
+            function (AuditReportPublication $publication, AuditReportSeal $seal, array $business, string $partyId) use ($userId, $input, $files): array {
                 $this->requireSigner($business, $partyId);
                 $text = str_replace(["\r\n", "\r"], "\n", trim($input['supporting_text'] ?? ''));
                 $metadata = array_map(fn (array $file): array => ['filename' => $file['filename'], 'size_bytes' => strlen($file['content']),
@@ -420,7 +460,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                 $fingerprint = $this->fingerprint([...array_diff_key($input, ['request_id' => true]), 'supporting_text' => $text, 'proof_files' => $metadata]);
 
                 return $this->journal->execute('party:'.$partyId, $userId, 'report.dispute', $input['request_id'], 'audit.publication', $publication->id,
-                    $fingerprint, function (): void {}, function () use ($publication, $seal, $business, $partyId, $userId, $input, $files, $text, $current): OperationResult {
+                    $fingerprint, function (): void {}, function () use ($publication, $seal, $business, $partyId, $userId, $input, $files, $text): OperationResult {
                         $this->requireReviewInput($publication, $input);
                         if ($publication->mandate_version !== $input['mandate_version'] || $business['mandate_version'] !== $input['mandate_version']) {
                             throw new CommandRejection('MANDATE_STALE', revision: $publication->revision);
@@ -428,11 +468,11 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                         if (AuditReport::query()->where('amends_id', $publication->audit_report_id)->exists()) {
                             throw new CommandRejection('AUDIT_REPORT_AMENDED', revision: $publication->revision);
                         }
-                        if (! $current || ! $this->validSeal($seal)) {
-                            throw new CommandRejection('AUDIT_PUBLICATION_UNAVAILABLE', revision: $publication->revision);
-                        }
                         $at = now('UTC')->toImmutable();
                         $this->reviewPolicy->requireOpen($publication->status, $publication->due_at->toIso8601String(), $at->toDateTimeImmutable());
+                        if (! $this->validSeal($seal)) {
+                            throw new CommandRejection('AUDIT_PUBLICATION_UNAVAILABLE', revision: $publication->revision);
+                        }
                         $text = $this->reviewPolicy->proofText($text, count($files));
                         $proofs = [];
                         foreach ($files as $file) {
@@ -457,7 +497,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
 
                         return $this->reviewReceipt($publication, 'REPORT_DISPUTED');
                     });
-            });
+            }, currentEvidence: false);
     }
 
     /** @param array<string, mixed> $input
@@ -497,7 +537,8 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                 $this->fingerprint(array_diff_key($input, ['request_id' => true])), function (): void {}, function () use ($publication, $userId, $command, $input): OperationResult {
                     $this->requireReviewInput($publication, $input);
                     $escalate = $command === 'audit.dispute.escalate';
-                    if ($publication->status !== ($escalate ? 'disputed' : 'escalated')) {
+                    if ($publication->status !== ($escalate ? 'disputed' : 'escalated')
+                        || ($publication->review['outcome'] ?? null) === 'amendment_required') {
                         throw new CommandRejection('REPORT_REVIEW_CLOSED', revision: $publication->revision);
                     }
                     $reason = $this->reviewPolicy->decisionReason($input['reason']);
@@ -668,10 +709,10 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                 ?? throw new CommandRejection('REPORT_PROOF_NOT_FOUND', 404);
             $event = AuditPublicationEvent::query()->findOrFail($proof->audit_publication_event_id);
             $metadata = array_find($event->payload['proofs'] ?? [], fn (array $file): bool => $file['id'] === $proof->id);
-            if (! hash_equals($event->sha256, hash('sha256', $this->json->encode($event->payload))) || $metadata === null
+            if (! hash_equals($event->sha256, $this->eventHash($event)) || $metadata === null
                 || ! hash_equals($proof->sha256, hash('sha256', $proof->content)) || $metadata['sha256'] !== $proof->sha256
                 || $metadata['mime_type'] !== $proof->mime_type || $metadata['size_bytes'] !== strlen($proof->content)) {
-                throw new RuntimeException('AUDIT_DISPUTE_PROOF_INTEGRITY_FAILED');
+                throw new CommandRejection('AUDIT_DISPUTE_PROOF_INTEGRITY_FAILED', 503);
             }
 
             return ['content' => $proof->content, 'filename' => $this->proofName($proof), 'mime_type' => $proof->mime_type];

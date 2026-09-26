@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Auditor\AmendAuditReport;
 use App\Application\Auditor\Contracts\AuditAssignmentStore;
+use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Models\RoleMembership;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -56,7 +57,11 @@ it('projects sealed jobs as awaiting co-sign and removes published jobs from act
     expect($page['stage']['verification'])->toBe(['url' => ($api ? '/api/v1' : '').'/audit-seals/'.$fixture['report']->id, 'method' => 'get']);
     $this->travel(25)->hours();
     expect($read()['assigned'][0]['status'])->toBe('awaiting_cosign');
-    Fixture::cosign($fixture);
+    if ($kind === 'monthly') {
+        expect(app(AuditReportPublicationStore::class)->advanceDue()['published'])->toBe(1);
+    } else {
+        expect(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
+    }
     expect($read()['assigned'])->toBeEmpty();
     $this->travel(25)->hours();
     expect($read()['assigned'])->toBeEmpty();

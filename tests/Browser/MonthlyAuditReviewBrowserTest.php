@@ -104,6 +104,8 @@ it('submits retained proof, escalates through CPA review and displays staff publ
             await page.getByLabel("Your reason (required)", {exact:true}).fill("The retained receipt postdates the cutoff, so these findings stand.");
             await page.getByRole("button", {name:"Send to Rozine staff", exact:true}).click();
             await page.getByText("With Rozine staff", {exact:true}).waitFor();
+            await page.getByText("Your reason for upholding", {exact:true}).waitFor();
+            if (await page.getByText("Rozine staff note", {exact:true}).count()) throw new Error("CPA reason was attributed to staff");
             if (await page.getByRole("button", {name:"Start a linked amendment", exact:true}).count()) throw new Error("Escalated report allowed an unauthorized amendment");
             await page.screenshot({path:"escalated-phone.png", fullPage:true, animations:"disabled"});
         }']);
@@ -118,12 +120,20 @@ it('submits retained proof, escalates through CPA review and displays staff publ
             const errors = []; page.on("pageerror", e => errors.push(e.message));
             await page.reload();
             await page.getByText("Published by Rozine staff", {exact:true}).waitFor();
+            await page.getByRole("heading", {name:"Audit report, published by Rozine staff", exact:true}).waitFor();
+            await page.getByText("Rozine staff note", {exact:true}).waitFor();
             await page.getByText("Rozine staff reviewed your dispute, kept the findings and published the report. No signature was recorded for it.", {exact:true}).waitFor();
             if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw new Error("Monthly report overflows phone");
             await page.screenshot({path:"staff-published-phone.png", fullPage:true, animations:"disabled"});
             await page.setViewportSize({width:1280, height:900});
             await page.screenshot({path:"staff-published-desktop.png", fullPage:true, animations:"disabled"});
             if (errors.length) throw new Error(errors.join("\n"));
+        }']);
+        $run('auditor', ['run-code', 'async (page) => {
+            await page.reload();
+            await page.getByText("Not co-signed", {exact:true}).waitFor();
+            await page.getByText("Rozine staff note", {exact:true}).waitFor();
+            await page.screenshot({path:"auditor-staff-published-phone.png", fullPage:true, animations:"disabled"});
         }']);
     } catch (Throwable $failure) {
         foreach (['auditor', 'business'] as $role) {

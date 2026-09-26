@@ -17,7 +17,7 @@ class AuditDisputeResource extends JsonResource
         $prefix = ($request->routeIs('api.*') ? 'api.v1.' : '').'staff.audit.disputes.';
         $parameters = ['assignment' => $page['assignment_id'], 'report' => $page['report_id']];
         $command = match ($page['status']) {
-            'disputed' => 'escalate', 'escalated' => 'resolve', default => null,
+            'disputed' => 'escalate', 'escalated' => ($page['dispute']['outcome'] ?? null) === 'amendment_required' ? null : 'resolve', default => null,
         };
         $canManage = ! $request->routeIs('api.*') || $request->user()?->tokenCan('staff:audit:manage');
         $operation = ['url' => route($prefix.'operations.show', ['request_id' => '00000000-0000-0000-0000-000000000000'], false), 'method' => 'get'];

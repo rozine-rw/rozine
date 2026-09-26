@@ -199,6 +199,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `actor_party_id` | `bpchar` | yes | — |
 | `payload` | `text` | no | — |
 | `sha256` | `bpchar` | no | — |
+| `previous_sha256` | `bpchar` | yes | — |
 | `created_at` | `timestamptz` | no | — |
 
 **Indexes:** `audit_publication_event_revision` on (audit_report_publication_id, publication_revision) — unique; `audit_publication_events_pkey` on (id) — unique

@@ -29,6 +29,7 @@ return new class extends Migration
             $table->foreignUlid('actor_party_id')->nullable()->constrained('parties')->restrictOnDelete();
             $table->text('payload');
             $table->char('sha256', 64);
+            $table->char('previous_sha256', 64)->nullable();
             $table->timestampTz('created_at');
             $table->unique(['audit_report_publication_id', 'publication_revision'], 'audit_publication_event_revision');
         });
@@ -81,6 +82,14 @@ return new class extends Migration
                     OR NOT ((NEW.publication_revision = 1 AND publication.revision = 1 AND NEW.command = 'report.delivered')
                         OR (NEW.command <> 'report.delivered' AND NEW.publication_revision = publication.revision + 1 AND publication.status NOT IN ('published', 'amended'))) THEN
                     RAISE EXCEPTION 'Monthly review events advance the current retained publication' USING ERRCODE = '23514';
+                END IF;
+                IF NEW.previous_sha256 IS DISTINCT FROM (SELECT sha256 FROM audit_publication_events
+                    WHERE audit_report_publication_id = NEW.audit_report_publication_id AND publication_revision = NEW.publication_revision - 1) THEN
+                    RAISE EXCEPTION 'Review events must extend their retained predecessor' USING ERRCODE = '23514';
+                END IF;
+                IF NEW.command = 'audit.dispute.resolve' AND EXISTS (SELECT 1 FROM audit_publication_events
+                    WHERE audit_report_publication_id = publication.id AND publication_revision = publication.revision AND command = 'audit.dispute.resolve') THEN
+                    RAISE EXCEPTION 'A required amendment remains frozen until its replacement is sealed' USING ERRCODE = '23514';
                 END IF;
                 IF NEW.actor_kind = 'party' AND NOT EXISTS (SELECT 1 FROM users WHERE id = NEW.actor_user_id AND party_id = NEW.actor_party_id) THEN
                     RAISE EXCEPTION 'Review actor account must belong to its attributed Party' USING ERRCODE = '23514';
