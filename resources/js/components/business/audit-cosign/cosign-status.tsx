@@ -1,4 +1,8 @@
 import { SectionLabel } from '@/components/business/audit-cosign/report-summary';
+import {
+    ReviewWindow,
+    underMonthlyReview,
+} from '@/components/business/audit-cosign/review-window';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate, formatDayMonth } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
@@ -6,21 +10,37 @@ import type { AuditCosign, AuditReport } from '@/types/business-audit';
 
 /**
  * Where the co-signatures stand, as the server counts them: signed against required, each
- * mandated signatory with the current person marked, and — for a monthly report only — the
- * original cycle's co-sign date. A Flash report has no deadline, so none is shown.
+ * mandated signatory with the current person marked, and when the window closes. A report under
+ * the 24-hour review policy shows its open window with a countdown; a legacy monthly report keeps
+ * its by-the-7th date; a Flash report has no deadline, so none is shown. A disputed report shows
+ * no deadline at all: its window is paused or closed, and it is never called overdue.
  */
 export function CosignStatus({
     report,
     cosign,
+    serverTime,
 }: {
     report: AuditReport;
     cosign: AuditCosign;
+    serverTime: string;
 }) {
     const { t, locale } = useTranslation();
-    /* A dispute under review or escalated pauses the window, so no deadline is shown. */
-    const paused =
-        cosign.dispute?.status === 'under_review' ||
-        cosign.dispute?.status === 'escalated';
+    const disputed = cosign.dispute !== null;
+    const reviewPolicy = underMonthlyReview(cosign);
+    const published = (publishedAt: string): string => {
+        switch (cosign.published_reason) {
+            case 'auto_approved':
+                return t('business.audit_cosign.published_auto');
+            case 'staff_resolved':
+                return t('business.audit_cosign.published_staff', {
+                    date: formatDate(publishedAt, locale),
+                });
+            default:
+                return t('business.audit_cosign.published', {
+                    date: formatDate(publishedAt, locale),
+                });
+        }
+    };
 
     return (
         <>
@@ -36,17 +56,24 @@ export function CosignStatus({
                 </p>
                 {report.published_at !== null && (
                     <span className="rounded-[10px] bg-rz-accent-soft px-[9px] py-1 text-[11px] font-semibold text-rz-accent-app-text">
-                        {cosign.published_reason === 'auto_approved'
-                            ? t('business.audit_cosign.published_auto')
-                            : t('business.audit_cosign.published', {
-                                  date: formatDate(report.published_at, locale),
-                              })}
+                        {published(report.published_at)}
                     </span>
                 )}
             </div>
-            {cosign.due_at !== null &&
+            {reviewPolicy &&
+                cosign.due_at !== null &&
+                report.published_at === null &&
+                !disputed && (
+                    <ReviewWindow
+                        serverTime={serverTime}
+                        deliveredAt={cosign.delivered_at}
+                        dueAt={cosign.due_at}
+                    />
+                )}
+            {!reviewPolicy &&
+                cosign.due_at !== null &&
                 cosign.published_reason !== 'auto_approved' &&
-                !paused && (
+                !disputed && (
                     <p
                         data-overdue={cosign.overdue || undefined}
                         className={cn(

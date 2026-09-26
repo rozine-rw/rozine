@@ -55,14 +55,19 @@
             ],
             "your_note": "",
             "due_at": null,
-            "overdue": false
+            "overdue": false,
+            "policy_version": null,
+            "delivered_at": null,
+            "published_reason": null,
+            "dispute": null
         },
         "allowed_actions": ["report.cosign"],
         "actions": {
             "cosign": {
                 "url": "/preview/business-audit-cosign-signatures",
                 "method": "post"
-            }
+            },
+            "dispute": null
         },
         "links": {
             "current": {

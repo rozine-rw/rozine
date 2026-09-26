@@ -3249,32 +3249,12 @@ const en = {
     'business.audit_cosign.count': '{count}/{limit}',
     'business.audit_cosign.published_auto':
         'Published automatically after the 24-hour window',
-    'business.audit_cosign.yours.published_auto':
-        'No one signed within the window, so the report was approved automatically and published.',
     'business.audit_cosign.dispute.open': 'Submit a dispute',
-    'business.audit_cosign.dispute.intro':
-        'State which findings you dispute and why, as facts. Your dispute does not change the sealed report.',
-    'business.audit_cosign.dispute.reason': 'Your reason',
-    'business.audit_cosign.dispute.reason_help':
-        'Required: the facts you dispute.',
-    'business.audit_cosign.dispute.supporting': 'Supporting details (optional)',
-    'business.audit_cosign.dispute.supporting_help':
-        'Describe the proof you can show, if it helps.',
     'business.audit_cosign.dispute.submit': 'Submit dispute',
     'business.audit_cosign.dispute.submitting': 'Submitting…',
     'business.audit_cosign.dispute.cancel': 'Cancel',
-    'business.audit_cosign.dispute.files': 'Proof files (optional)',
-    'business.audit_cosign.dispute.files_help':
-        'Add photos or documents that back your dispute.',
     'business.audit_cosign.dispute.files_add': 'Add files',
     'business.audit_cosign.dispute.file_remove': 'Remove {name}',
-    'business.audit_cosign.disputed.under_review.title': 'Dispute Under Review',
-    'business.audit_cosign.disputed.under_review.body':
-        'You submitted a dispute on {date}. The 24-hour review timer is paused while your CPA reviews your proof and amends or upholds the report. If they uphold it or do not act, Rozine staff step in. An amended report opens a fresh 24-hour window for you to review it.',
-    'business.audit_cosign.disputed.escalated.title':
-        'Dispute with Rozine staff',
-    'business.audit_cosign.disputed.escalated.body':
-        'You submitted a dispute on {date}. Your CPA upheld the report or did not act, so Rozine staff are reviewing the case. The 24-hour review timer stays paused meanwhile.',
     'audit.verify_seal.head_title': 'Verify audit seal',
     'audit.verify_seal.title': 'Audit seal check',
     'audit.verify_seal.lead':
@@ -3291,6 +3271,96 @@ const en = {
         'Only the report ID, its digest and the result of the seal check are shown here.',
     'business.audit_cosign.refused.AUDIT_REPORT_AMENDED':
         "The auditor has amended this report, so it can no longer be co-signed. The amended report will come to you for sign-off once it's sealed.",
+    'common.file_size.kb': '{size} KB',
+    'common.file_size.mb': '{size} MB',
+    'common.file_size.kind': '{kind} · {size}',
+    'common.proof_file.download': 'Download {name}',
+    'common.proof_file.download_short': 'Download',
+    'business.audit_cosign.published_staff': 'Published by Rozine staff {date}',
+    'business.audit_cosign.yours.published_auto':
+        'Published automatically after the 24-hour window: no one signed off or disputed it in time. No signature was recorded for it.',
+    'business.audit_cosign.yours.published_staff':
+        'Rozine staff resolved the dispute and published the report. No signature was recorded for it.',
+    'business.audit_cosign.window.title': '24-hour review window',
+    'business.audit_cosign.window.left': '{time} left',
+    'business.audit_cosign.window.body':
+        'Once the audit report is sealed in your app, you have 24 hours to sign off or submit a dispute with supporting proof.',
+    'business.audit_cosign.window.delivered': 'Arrived in your app {date}',
+    'business.audit_cosign.window.due': 'Sign off or dispute by {date}',
+    'business.audit_cosign.window.ended': 'The 24-hour window has ended.',
+    'business.audit_cosign.window.auto':
+        'Unsigned reports are automatically approved at the end of the window.',
+    'business.audit_cosign.dispute.intro':
+        'Show what you dispute in the findings and your proof. Your dispute does not change the sealed report, and it pauses the 24-hour window while the CPA reviews it.',
+    'business.audit_cosign.dispute.proof_rule':
+        'Add supporting text, at least one file, or both.',
+    'business.audit_cosign.dispute.supporting': 'Supporting text',
+    'business.audit_cosign.dispute.supporting_help':
+        'Plain text, up to 1,000 characters.',
+    'business.audit_cosign.dispute.files': 'Proof files',
+    'business.audit_cosign.dispute.files_help':
+        'Up to {limit} files: PDF, JPEG or PNG, at most 10 MB each.',
+    'business.audit_cosign.dispute.file_type':
+        "{name} wasn't added: only PDF, JPEG or PNG files are accepted.",
+    'business.audit_cosign.dispute.file_size':
+        "{name} wasn't added: each file can be at most 10 MB.",
+    'business.audit_cosign.dispute.file_limit':
+        "{name} wasn't added: a dispute can carry at most {limit} files.",
+    'business.audit_cosign.disputed.under_review.title': 'Dispute under review',
+    'business.audit_cosign.disputed.under_review.body':
+        'The timer is paused. The CPA is reviewing your proof.',
+    'business.audit_cosign.disputed.escalated.title':
+        'Rozine staff are reviewing',
+    'business.audit_cosign.disputed.escalated.body':
+        'Rozine staff are reviewing your dispute. The timer stays paused and the report is not published meanwhile.',
+    'business.audit_cosign.disputed.amendment_required.title':
+        'Amendment required',
+    'business.audit_cosign.disputed.amendment_required.body':
+        "The auditor must amend the report; you'll get a fresh 24-hour window. The timer stays paused until then.",
+    'business.audit_cosign.disputed.amended.title': 'Report amended',
+    'business.audit_cosign.disputed.amended.body':
+        'The auditor amended the report. The amended report has its own 24-hour window.',
+    'business.audit_cosign.disputed.upheld.title': 'Published by Rozine staff',
+    'business.audit_cosign.disputed.upheld.body':
+        'Rozine staff reviewed your dispute, kept the findings and published the report. No signature was recorded for it.',
+    'business.audit_cosign.disputed.resolved.title': 'Dispute closed',
+    'business.audit_cosign.disputed.resolved.body': 'This dispute is closed.',
+    'business.audit_cosign.disputed.open_amendment':
+        'Open the amended report ({report})',
+    'business.audit_cosign.disputed.record_title': 'Your dispute',
+    'business.audit_cosign.disputed.submitted': 'Submitted {date}',
+    'business.audit_cosign.disputed.supporting_text': 'Your supporting text',
+    'business.audit_cosign.disputed.files': 'Your proof files',
+    'business.audit_cosign.disputed.resolution_note': 'Rozine staff note',
+    'auditor.sealed.body_disputed':
+        'The report is sealed. {party} disputed it, so its review window is paused and nothing is published while the dispute is open.',
+    'auditor.sealed.dispute.title': 'Business dispute',
+    'auditor.sealed.dispute.status.under_review': 'Under review',
+    'auditor.sealed.dispute.status.escalated': 'With Rozine staff',
+    'auditor.sealed.dispute.status.resolved': 'Resolved',
+    'auditor.sealed.dispute.submitted': 'Submitted {date} · {time}',
+    'auditor.sealed.dispute.guide.under_review':
+        'Review the proof first. Then start a linked amendment, or uphold your findings.',
+    'auditor.sealed.dispute.guide.escalated':
+        "Rozine staff are reviewing this dispute. Sealing an amendment won't resolve it unless staff record that an amendment is required.",
+    'auditor.sealed.dispute.guide.amendment_required':
+        'Rozine staff require an amendment. Once you seal a linked amendment, the business gets a fresh 24-hour window.',
+    'auditor.sealed.dispute.supporting_text': "The business's supporting text",
+    'auditor.sealed.dispute.files': 'Proof files',
+    'auditor.sealed.dispute.outcome.amendment_required':
+        'Outcome: amendment required',
+    'auditor.sealed.dispute.outcome.amended': 'Outcome: amended',
+    'auditor.sealed.dispute.outcome.upheld': 'Outcome: findings upheld',
+    'auditor.sealed.dispute.resolution_note': 'Rozine staff note',
+    'auditor.sealed.dispute.uphold': 'Uphold findings',
+    'auditor.dispute_uphold.lead':
+        "Your reason goes to Rozine staff, who review {business}'s dispute. Upholding does not publish the report.",
+    'auditor.dispute_uphold.label': 'Your reason (required)',
+    'auditor.dispute_uphold.placeholder':
+        'State, as facts, why the findings stand after reviewing the proof.',
+    'auditor.dispute_uphold.submit': 'Send to Rozine staff',
+    'auditor.sealed.body_published_staff':
+        'Rozine staff upheld the findings and published the report to holders on {date}. The business did not co-sign it.',
 } as const;
 
 export default en;

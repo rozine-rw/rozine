@@ -1,5 +1,6 @@
 import type * as InertiaCore from '@inertiajs/core';
 import {
+    act,
     fireEvent,
     render,
     screen,
@@ -30,10 +31,15 @@ import type {
     AuditCosignOperationResource,
     BusinessAuditCosignPageProps,
 } from '@/types/business-audit';
-import autoApprovedFixture from '../../../resources/fixtures/ui/business-audit-cosign-auto-approved-n6-pending.json';
-import disputeFixture from '../../../resources/fixtures/ui/business-audit-cosign-dispute-n6-pending.json';
-import disputedFixture from '../../../resources/fixtures/ui/business-audit-cosign-disputed-n6-pending.json';
 import flashFixture from '../../../resources/fixtures/ui/business-audit-cosign-flash.json';
+import n6AutoApprovedFixture from '../../../resources/fixtures/ui/business-audit-cosign-n6-auto-approved.json';
+import n6AmendedFixture from '../../../resources/fixtures/ui/business-audit-cosign-n6-dispute-amended.json';
+import n6AmendmentRequiredFixture from '../../../resources/fixtures/ui/business-audit-cosign-n6-dispute-amendment-required.json';
+import n6EscalatedFixture from '../../../resources/fixtures/ui/business-audit-cosign-n6-dispute-escalated.json';
+import n6UnderReviewFixture from '../../../resources/fixtures/ui/business-audit-cosign-n6-dispute-under-review.json';
+import n6UpheldFixture from '../../../resources/fixtures/ui/business-audit-cosign-n6-dispute-upheld.json';
+import n6OpenFixture from '../../../resources/fixtures/ui/business-audit-cosign-n6-open.json';
+import n6SignedFixture from '../../../resources/fixtures/ui/business-audit-cosign-n6-signed.json';
 import overdueFixture from '../../../resources/fixtures/ui/business-audit-cosign-overdue.json';
 import partlyFixture from '../../../resources/fixtures/ui/business-audit-cosign-partly-signed.json';
 import publishedFixture from '../../../resources/fixtures/ui/business-audit-cosign-published.json';
@@ -80,7 +86,8 @@ vi.mock('@inertiajs/react', () => ({
         children,
         ...props
     }: Omit<ComponentProps<'a'>, 'href'> & { href: { url: string } }) => (
-        <a href={href.url} {...props}>
+        /* Marked, so a test can tell an Inertia visit from a plain download anchor. */
+        <a href={href.url} data-inertia-link="" {...props}>
             {children}
         </a>
     ),
@@ -923,16 +930,125 @@ describe('Business audit co-sign — the co-signature', () => {
     });
 });
 
-describe('Business audit co-sign — pending N6 and dispute (additive, optional)', () => {
-    const disputeButton = () =>
-        screen.queryByRole('button', { name: 'Submit a dispute' });
+describe('Business audit co-sign — N6 review window copy', () => {
+    it('shows the 24-hour wording, the arrival, the close and a countdown under the N6 policy', () => {
+        vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+        vi.setSystemTime(new Date('2026-09-03T08:00:00Z'));
 
-    const openDispute = async (user: ReturnType<typeof userEvent.setup>) => {
-        await user.click(disputeButton()!);
-    };
+        try {
+            const page = props(n6OpenFixture);
 
-    it('labels a report published by automatic approval, without a deadline line', () => {
-        setup(props(autoApprovedFixture));
+            render(<InertiaPage initial={page} />);
+
+            const reviewWindow = screen.getByRole('note', {
+                name: '24-hour review window',
+            });
+
+            expect(reviewWindow).toHaveTextContent(
+                '24-hour review window' +
+                    '06:45:00 left' +
+                    'Once the audit report is sealed in your app, you have 24 hours to sign off or submit a dispute with supporting proof.' +
+                    `Arrived in your app ${formatDateTime(page.cosign.delivered_at!, 'en')}` +
+                    `Sign off or dispute by ${formatDateTime(page.cosign.due_at!, 'en')}` +
+                    'Unsigned reports are automatically approved at the end of the window.',
+            );
+
+            act(() => {
+                vi.advanceTimersByTime(1000);
+            });
+
+            expect(reviewWindow).toHaveTextContent('06:44:59 left');
+            expect(
+                screen.queryByText(/Co-sign by|Overdue/u),
+            ).not.toBeInTheDocument();
+            expect(screen.getByText('0 of 1 signatures')).toBeInTheDocument();
+            expect(acceptBox()).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Submit a dispute' }),
+            ).toBeEnabled();
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it('says the window has ended, never overdue, once due_at has passed before the server publishes', () => {
+        const page = props(n6OpenFixture);
+
+        page.server_time = '2026-09-03T17:00:00+02:00';
+        page.cosign.overdue = true;
+        page.cosign.delivered_at = null;
+        setup(page);
+
+        const reviewWindow = screen.getByRole('note', {
+            name: '24-hour review window',
+        });
+
+        expect(reviewWindow).toHaveTextContent('The 24-hour window has ended.');
+        expect(reviewWindow).not.toHaveTextContent(/left|Arrived/u);
+        expect(screen.queryByText(/Overdue/u)).not.toBeInTheDocument();
+    });
+
+    it('keeps the by-the-7th wording for a report under any other policy, and Flash as it was', () => {
+        const legacy = props(n6OpenFixture);
+
+        legacy.cosign.policy_version = 'monthly-cosign-2026-06';
+        const first = setup(legacy);
+
+        expect(
+            screen.getByText(
+                `Co-sign by ${formatDate(legacy.cosign.due_at!, 'en')}`,
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(/24 hours|automatically/u),
+        ).not.toBeInTheDocument();
+        first.unmount();
+
+        const second = setup(props(pendingFixture));
+
+        expect(
+            screen.queryByRole('note', { name: '24-hour review window' }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByText(/^Co-sign by /u)).toBeInTheDocument();
+        second.unmount();
+
+        setup(props(flashFixture));
+        expect(
+            screen.queryByText(/Co-sign by|24 hours|Overdue/u),
+        ).not.toBeInTheDocument();
+    });
+
+    it('reads the window in French and Kinyarwanda', () => {
+        const { unmount } = render(
+            <I18nContext value={{ locale: 'fr', catalog: catalogFor('fr') }}>
+                <BusinessAuditCosign {...props(n6OpenFixture)} />
+            </I18nContext>,
+        );
+
+        expect(
+            screen.getByText(
+                "Une fois le rapport d'audit scellé dans votre application, vous avez 24 heures pour l'approuver ou soumettre une contestation avec des justificatifs.",
+            ),
+        ).toBeInTheDocument();
+        unmount();
+
+        render(
+            <I18nContext value={{ locale: 'rw', catalog: catalogFor('rw') }}>
+                <BusinessAuditCosign {...props(n6OpenFixture)} />
+            </I18nContext>,
+        );
+
+        expect(
+            screen.getByText(
+                'Raporo zitasinywe zemezwa mu buryo bwikora iyo igihe kirangiye.',
+            ),
+        ).toBeInTheDocument();
+    });
+});
+
+describe('Business audit co-sign — N6 publication', () => {
+    it('says a report published automatically after the window carries no signature', () => {
+        setup(props(n6AutoApprovedFixture));
 
         expect(
             screen.getByText(
@@ -940,20 +1056,18 @@ describe('Business audit co-sign — pending N6 and dispute (additive, optional)
             ),
         ).toBeInTheDocument();
         expect(screen.getByRole('status')).toHaveTextContent(
-            'No one signed within the window, so the report was approved automatically and published.',
+            'Published automatically after the 24-hour window: no one signed off or disputed it in time. No signature was recorded for it.',
         );
-        expect(screen.getByText('0 of 2 signatures')).toBeInTheDocument();
+        expect(screen.getByText('0 of 1 signatures')).toBeInTheDocument();
         expect(
-            screen.queryByText(/Co-sign by|Overdue/u),
+            screen.queryByRole('note', { name: '24-hour review window' }),
         ).not.toBeInTheDocument();
-        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
-        expect(disputeButton()).not.toBeInTheDocument();
+        expect(screen.queryByRole('button')).not.toBeInTheDocument();
     });
 
-    it('reads a signed publication exactly as the current contract does', () => {
-        const page = props(publishedFixture);
+    it('shows a signed publication with its date', () => {
+        const page = props(n6SignedFixture);
 
-        page.cosign.published_reason = 'signed';
         setup(page);
 
         expect(
@@ -961,18 +1075,283 @@ describe('Business audit co-sign — pending N6 and dispute (additive, optional)
                 `Published ${formatDate(page.report.published_at!, 'en')}`,
             ),
         ).toBeInTheDocument();
+        expect(screen.getByText('1 of 1 signatures')).toBeInTheDocument();
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Every required signature is in and the report is published.',
+        );
+    });
+
+    it('reads a publication without a reason as signed', () => {
+        const page = props(publishedFixture);
+
+        page.cosign.published_reason = null;
+        setup(page);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Every required signature is in and the report is published.',
+        );
+    });
+
+    it('says staff published a report, with no signature implied', () => {
+        const page = props(n6UpheldFixture);
+
+        page.cosign.dispute = null;
+        setup(page);
+
         expect(
-            screen.queryByText(/Published automatically/u),
+            screen.getByText(
+                `Published by Rozine staff ${formatDate(page.report.published_at!, 'en')}`,
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Rozine staff resolved the dispute and published the report. No signature was recorded for it.',
+        );
+    });
+});
+
+describe('Business audit co-sign — N6 dispute states', () => {
+    const proofText =
+        'Synthetic fixture text. Finding SYN-F-02 counts refund slip 0142 as a sale; the refund slip and the 14 August till roll are attached.';
+
+    /** The submitted proof shows in every state, each file a plain download of the server's link. */
+    const expectProof = (
+        page: BusinessAuditCosignPageProps,
+        { text = true }: { text?: boolean } = {},
+    ) => {
+        const dispute = page.cosign.dispute!;
+
+        expect(
+            screen.getByRole('heading', { name: 'Your dispute' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                `Submitted ${formatDateTime(dispute.submitted_at, 'en')}`,
+            ),
+        ).toBeInTheDocument();
+
+        if (text) {
+            expect(screen.getByText(proofText)).toBeInTheDocument();
+        } else {
+            expect(
+                screen.queryByText('Your supporting text'),
+            ).not.toBeInTheDocument();
+        }
+
+        const files = within(
+            screen.getByRole('list', { name: 'Your proof files' }),
+        ).getAllByRole('listitem');
+
+        expect(files).toHaveLength(2);
+        expect(files[0]).toHaveTextContent(
+            'synthetic-refund-slip-0142.pdfPDF · 242 KBDownload',
+        );
+        expect(files[1]).toHaveTextContent(
+            'synthetic-till-roll-14-aug.jpgJPEG · 1.8 MBDownload',
+        );
+
+        for (const file of dispute.proof_files) {
+            const download = screen.getByRole('link', {
+                name: `Download ${file.name}`,
+            });
+
+            expect(download).toHaveAttribute('href', file.download.url);
+            expect(download).not.toHaveAttribute('data-inertia-link');
+        }
+    };
+
+    /** Nothing can be signed or disputed, and no deadline or overdue shows. */
+    const expectNoActions = () => {
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+        expect(screen.queryByRole('button')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('note', { name: '24-hour review window' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(/Co-sign by|Overdue|overdue/u),
+        ).not.toBeInTheDocument();
+    };
+
+    it('says a dispute under review pauses the timer, shows the proof and offers nothing, even when actions are sent', () => {
+        const page = props(n6UnderReviewFixture);
+
+        page.cosign.overdue = true;
+        page.allowed_actions = ['report.cosign', 'report.dispute'];
+        page.actions = {
+            cosign: { url: '/cosign', method: 'post' },
+            dispute: { url: '/dispute', method: 'post' },
+        };
+        setup(page);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Dispute under review' +
+                'The timer is paused. The CPA is reviewing your proof.',
+        );
+        expectProof(page);
+        expectNoActions();
+    });
+
+    it('says Rozine staff are reviewing an escalated dispute', () => {
+        const page = props(n6EscalatedFixture);
+
+        setup(page);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Rozine staff are reviewing' +
+                'Rozine staff are reviewing your dispute. The timer stays paused and the report is not published meanwhile.',
+        );
+        expect(screen.getByText(proofText)).toBeInTheDocument();
+        expect(
+            screen.queryByRole('list', { name: 'Your proof files' }),
+        ).not.toBeInTheDocument();
+        expectNoActions();
+    });
+
+    it('says the auditor must amend the report when staff require an amendment', () => {
+        const page = props(n6AmendmentRequiredFixture);
+
+        setup(page);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Amendment required' +
+                "The auditor must amend the report; you'll get a fresh 24-hour window. The timer stays paused until then.",
+        );
+        expect(screen.getByText('Rozine staff note')).toBeInTheDocument();
+        expect(
+            screen.getByText(page.cosign.dispute!.resolution_note!),
+        ).toBeInTheDocument();
+        expectProof(page);
+        expectNoActions();
+    });
+
+    it('links the amendment of a resolved, amended dispute', () => {
+        const page = props(n6AmendedFixture);
+
+        setup(page);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Report amended' +
+                'The auditor amended the report. The amended report has its own 24-hour window.',
+        );
+        expect(
+            screen.getByRole('link', {
+                name: 'Open the amended report (SYN-RPT-2026-08-N6-A1)',
+            }),
+        ).toHaveAttribute('href', '/preview/business-audit-cosign-n6-open');
+        expectProof(page, { text: false });
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    });
+
+    it('offers no amendment link while the server sends none', () => {
+        const page = props(n6AmendedFixture);
+
+        page.cosign.dispute!.amendment = null;
+        setup(page);
+
+        expect(
+            screen.queryByRole('link', { name: /Open the amended report/u }),
         ).not.toBeInTheDocument();
     });
 
-    it('offers no dispute unless both the pending action and its route are sent', () => {
+    it('says staff upheld the findings and published the report, with their note', () => {
+        const page = props(n6UpheldFixture);
+
+        setup(page);
+
+        expect(
+            screen.getByText(
+                `Published by Rozine staff ${formatDate(page.report.published_at!, 'en')}`,
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Published by Rozine staff' +
+                'Rozine staff reviewed your dispute, kept the findings and published the report. No signature was recorded for it.',
+        );
+        expect(
+            screen.getByText(page.cosign.dispute!.resolution_note!),
+        ).toBeInTheDocument();
+        expect(screen.getByText('0 of 1 signatures')).toBeInTheDocument();
+        expectProof(page);
+        expectNoActions();
+    });
+
+    it('reads a resolved dispute without an outcome as closed', () => {
+        const page = props(n6AmendedFixture);
+
+        page.cosign.dispute!.outcome = null;
+        setup(page);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Dispute closed' + 'This dispute is closed.',
+        );
+    });
+
+    it('reads an escalated dispute with an unexpected outcome as with staff', () => {
+        const page = props(n6EscalatedFixture);
+
+        page.cosign.dispute!.outcome = 'upheld';
+        setup(page);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Rozine staff are reviewing',
+        );
+    });
+
+    it('reads the dispute states in French and Kinyarwanda', () => {
+        const { unmount } = render(
+            <I18nContext value={{ locale: 'fr', catalog: catalogFor('fr') }}>
+                <BusinessAuditCosign {...props(n6UnderReviewFixture)} />
+            </I18nContext>,
+        );
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            "Contestation en cours d'examen" +
+                'Le délai est suspendu. Le CPA examine vos justificatifs.',
+        );
+        expect(
+            screen.getByRole('link', {
+                name: 'Télécharger synthetic-refund-slip-0142.pdf',
+            }),
+        ).toBeInTheDocument();
+        expect(screen.getByText('PDF · 242 Ko')).toBeInTheDocument();
+        unmount();
+
+        render(
+            <I18nContext value={{ locale: 'rw', catalog: catalogFor('rw') }}>
+                <BusinessAuditCosign {...props(n6AmendmentRequiredFixture)} />
+            </I18nContext>,
+        );
+
+        expect(screen.getByText('Hakenewe ivugurura')).toBeInTheDocument();
+    });
+});
+
+describe('Business audit co-sign — N6 dispute sheet', () => {
+    const disputeButton = () =>
+        screen.queryByRole('button', { name: 'Submit a dispute' });
+
+    const openSheet = async (user: ReturnType<typeof userEvent.setup>) => {
+        await user.click(disputeButton()!);
+    };
+
+    const fileInput = () =>
+        screen.getByLabelText('Proof files', {
+            selector: 'input',
+        }) as HTMLInputElement;
+
+    /** Hands files to the picker as a browser would, whatever `accept` says. */
+    const choose = (input: HTMLInputElement, files: File[]) =>
+        fireEvent.change(input, { target: { files } });
+
+    const pdf = (name = 'refund-slip.pdf', size = 3) =>
+        new File(['x'.repeat(size)], name, { type: 'application/pdf' });
+
+    it('offers no dispute unless both the action and its route are sent', () => {
         const first = setup();
 
         expect(disputeButton()).not.toBeInTheDocument();
         first.unmount();
 
-        const noRoute = props(disputeFixture);
+        const noRoute = props(n6OpenFixture);
 
         noRoute.actions.dispute = null;
         const second = setup(noRoute);
@@ -980,7 +1359,7 @@ describe('Business audit co-sign — pending N6 and dispute (additive, optional)
         expect(disputeButton()).not.toBeInTheDocument();
         second.unmount();
 
-        const notAllowed = props(disputeFixture);
+        const notAllowed = props(n6OpenFixture);
 
         notAllowed.allowed_actions = ['report.cosign'];
         setup(notAllowed);
@@ -989,14 +1368,14 @@ describe('Business audit co-sign — pending N6 and dispute (additive, optional)
         expect(acceptBox()).toBeInTheDocument();
     });
 
-    it('offers a dispute beside the co-signature, and alone when co-signing is not allowed', () => {
-        const first = setup(props(disputeFixture));
+    it('offers a dispute beside the sign-off, and alone when signing is not allowed', () => {
+        const first = setup(props(n6OpenFixture));
 
         expect(disputeButton()).toBeEnabled();
         expect(acceptBox()).toBeInTheDocument();
         first.unmount();
 
-        const disputeOnly = props(disputeFixture);
+        const disputeOnly = props(n6OpenFixture);
 
         disputeOnly.allowed_actions = ['report.dispute'];
         setup(disputeOnly);
@@ -1005,53 +1384,142 @@ describe('Business audit co-sign — pending N6 and dispute (additive, optional)
         expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
     });
 
-    it('requires a factual reason and limits the reason and the supporting text', async () => {
-        const { user } = setup(props(disputeFixture));
-        await openDispute(user);
+    it('needs supporting text or a file, has no separate reason, and limits the text to 1,000 characters', async () => {
+        const { user } = setup(props(n6OpenFixture));
+        await openSheet(user);
         const sheet = within(
             screen.getByRole('dialog', { name: 'Submit a dispute' }),
         );
         const submit = sheet.getByRole('button', { name: 'Submit dispute' });
-        const reason = sheet.getByLabelText('Your reason');
-        const supporting = sheet.getByLabelText(
-            'Supporting details (optional)',
-        );
+        const text = sheet.getByLabelText('Supporting text');
 
         expect(
             sheet.getByText(
-                'State which findings you dispute and why, as facts. Your dispute does not change the sealed report.',
+                'Show what you dispute in the findings and your proof. Your dispute does not change the sealed report, and it pauses the 24-hour window while the CPA reviews it.',
             ),
         ).toBeInTheDocument();
-        expect(sheet.getByText('0/2000')).toBeInTheDocument();
+        expect(
+            sheet.getByText('Add supporting text, at least one file, or both.'),
+        ).toBeInTheDocument();
+        expect(
+            sheet.getByText(
+                'Up to 5 files: PDF, JPEG or PNG, at most 10 MB each.',
+            ),
+        ).toBeInTheDocument();
+        expect(sheet.queryByLabelText(/reason/iu)).not.toBeInTheDocument();
         expect(sheet.getByText('0/1000')).toBeInTheDocument();
         expect(submit).toBeDisabled();
 
-        await user.type(reason, '   ');
+        await user.type(text, '   ');
         expect(submit).toBeDisabled();
 
-        fireEvent.change(reason, { target: { value: 'r'.repeat(2050) } });
-        expect(reason).toHaveValue('r'.repeat(2000));
-        expect(sheet.getByText('2000/2000')).toBeInTheDocument();
+        fireEvent.change(text, { target: { value: 's'.repeat(1050) } });
+        expect(text).toHaveValue('s'.repeat(1000));
+        expect(sheet.getByText('1000/1000')).toBeInTheDocument();
         expect(submit).toBeEnabled();
 
-        fireEvent.change(supporting, { target: { value: 's'.repeat(1050) } });
-        expect(supporting).toHaveValue('s'.repeat(1000));
-        expect(sheet.getByText('1000/1000')).toBeInTheDocument();
+        fireEvent.change(text, { target: { value: '' } });
+        expect(submit).toBeDisabled();
+
+        choose(fileInput(), [pdf()]);
+        expect(submit).toBeEnabled();
         expect(inertia.calls).toEqual([]);
     });
 
-    it('sends only the required dispute body when there is no proof', async () => {
-        const page = props(disputeFixture);
-        const { user } = setup(page);
-        await openDispute(user);
+    it('checks each file before sending: PDF, JPEG or PNG, at most 10 MiB, at most five', async () => {
+        const { user } = setup(props(n6OpenFixture));
+        await openSheet(user);
         const sheet = within(
             screen.getByRole('dialog', { name: 'Submit a dispute' }),
         );
+        const input = fileInput();
+        const oversized = pdf('bank-statement.pdf', 10 * 1024 * 1024 + 1);
+        const atLimit = pdf('ledger.pdf', 10 * 1024 * 1024);
+        const untyped = new File(['p'], 'TILL-ROLL.PNG', { type: '' });
+
+        choose(input, [
+            new File(['t'], 'notes.txt', { type: 'text/plain' }),
+            oversized,
+            atLimit,
+            untyped,
+        ]);
+
+        expect(sheet.getByRole('alert')).toHaveTextContent(
+            "notes.txt wasn't added: only PDF, JPEG or PNG files are accepted." +
+                "bank-statement.pdf wasn't added: each file can be at most 10 MB.",
+        );
+
+        const listed = () =>
+            within(
+                sheet.getByRole('list', { name: 'Proof files' }),
+            ).getAllByRole('listitem');
+
+        expect(listed()).toHaveLength(2);
+        expect(listed()[0]).toHaveTextContent('ledger.pdf10 MB');
+        expect(listed()[1]).toHaveTextContent('TILL-ROLL.PNG1 KB');
+
+        choose(input, [
+            new File(['j'], 'photo-1.jpg', { type: 'image/jpeg' }),
+            new File(['j'], 'photo-2.jpeg', { type: 'image/jpeg' }),
+            new File(['j'], 'photo-3.jpg', { type: 'image/jpeg' }),
+            new File(['j'], 'photo-4.jpg', { type: 'image/jpeg' }),
+        ]);
+
+        expect(listed()).toHaveLength(5);
+        expect(sheet.getByRole('alert')).toHaveTextContent(
+            "photo-4.jpg wasn't added: a dispute can carry at most 5 files.",
+        );
+        expect(sheet.getByRole('button', { name: 'Add files' })).toBeDisabled();
+
+        await user.click(
+            sheet.getByRole('button', { name: 'Remove photo-1.jpg' }),
+        );
+        expect(listed()).toHaveLength(4);
+        expect(sheet.getByRole('button', { name: 'Add files' })).toBeEnabled();
+
+        choose(input, [pdf('another.pdf')]);
+        expect(sheet.queryByRole('alert')).not.toBeInTheDocument();
+        expect(input).toHaveAttribute(
+            'accept',
+            'application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png',
+        );
+    });
+
+    it('opens the file picker from its button and ignores an empty choice', async () => {
+        const { user } = setup(props(n6OpenFixture));
+        await openSheet(user);
+        const sheet = within(
+            screen.getByRole('dialog', { name: 'Submit a dispute' }),
+        );
+        const input = fileInput();
+        const click = vi.spyOn(input, 'click');
+
+        await user.click(sheet.getByRole('button', { name: 'Add files' }));
+
+        expect(click).toHaveBeenCalledTimes(1);
+        fireEvent.change(input, { target: { files: null } });
+        expect(
+            sheet.queryByRole('list', { name: 'Proof files' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('sends exactly the contract body with supporting text and files', async () => {
+        const page = props(n6OpenFixture);
+        const { user } = setup(page);
+        await openSheet(user);
+        const sheet = within(
+            screen.getByRole('dialog', { name: 'Submit a dispute' }),
+        );
+        const receipt = new File(['r'], 'receipt-book.jpg', {
+            type: 'image/jpeg',
+        });
+        const refund = pdf('refund-slip.pdf');
 
         await user.type(
-            sheet.getByLabelText('Your reason'),
-            '  Finding SYN-F-02 counts a refund as a sale.  ',
+            sheet.getByLabelText('Supporting text'),
+            '  Refund slip 0142 matches the till roll.  ',
         );
+        choose(fileInput(), [receipt, refund]);
         await user.click(sheet.getByRole('button', { name: 'Submit dispute' }));
 
         expect(inertia.calls).toEqual([
@@ -1065,8 +1533,10 @@ describe('Business audit co-sign — pending N6 and dispute (additive, optional)
                     identity_context_revision: 4,
                     expected_revision: 7,
                     report_revision: 3,
+                    mandate_version: 2,
                     digest: page.report.digest,
-                    reason: 'Finding SYN-F-02 counts a refund as a sale.',
+                    supporting_text: 'Refund slip 0142 matches the till roll.',
+                    proof_files: [receipt, refund],
                 },
             },
         ]);
@@ -1075,86 +1545,81 @@ describe('Business audit co-sign — pending N6 and dispute (additive, optional)
         ).toHaveAttribute('aria-busy', 'true');
     });
 
-    it('sends supporting text and every attached file with the dispute', async () => {
-        const { user } = setup(props(disputeFixture));
-        await openDispute(user);
+    it('sends text alone without proof_files, and files alone without supporting_text', async () => {
+        const first = setup(props(n6OpenFixture));
+        await openSheet(first.user);
+        let sheet = within(
+            screen.getByRole('dialog', { name: 'Submit a dispute' }),
+        );
+
+        await first.user.type(sheet.getByLabelText('Supporting text'), 'x');
+        await first.user.click(
+            sheet.getByRole('button', { name: 'Submit dispute' }),
+        );
+
+        expect(inertia.calls[0].body).not.toHaveProperty('proof_files');
+        expect(inertia.calls[0].body).toHaveProperty('supporting_text', 'x');
+        first.unmount();
+
+        const second = setup(props(n6OpenFixture));
+        await openSheet(second.user);
+        sheet = within(
+            screen.getByRole('dialog', { name: 'Submit a dispute' }),
+        );
+        const only = pdf();
+
+        choose(fileInput(), [only]);
+        await second.user.click(
+            sheet.getByRole('button', { name: 'Submit dispute' }),
+        );
+
+        expect(inertia.calls[1].body).not.toHaveProperty('supporting_text');
+        expect(inertia.calls[1].body).toHaveProperty('proof_files', [only]);
+    });
+
+    it('follows data.next once the dispute is recorded', async () => {
+        inertia.queue.push(
+            answers(
+                operation({
+                    code: 'REPORT_DISPUTED',
+                    data: {
+                        next: {
+                            url: '/preview/business-audit-cosign-n6-dispute-under-review',
+                            method: 'get',
+                        },
+                    },
+                }),
+            ),
+        );
+        const { user } = setup(props(n6OpenFixture));
+        await openSheet(user);
         const sheet = within(
             screen.getByRole('dialog', { name: 'Submit a dispute' }),
         );
-        const receipt = new File(['r'], 'receipt-book.jpg', {
-            type: 'image/jpeg',
-        });
-        const refund = new File(['s'], 'refund-slip.pdf', {
-            type: 'application/pdf',
-        });
-        const extra = new File(['x'], 'extra.png', { type: 'image/png' });
-        const input = sheet.getByLabelText('Proof files (optional)', {
-            selector: 'input',
-        });
 
-        await user.type(
-            sheet.getByLabelText('Your reason'),
-            'Refund, not sale.',
-        );
-        await user.type(
-            sheet.getByLabelText('Supporting details (optional)'),
-            'Refund slip 0142 matches the till roll.',
-        );
-        await user.upload(input, [receipt, extra]);
-        await user.upload(input, refund);
-
-        expect(
-            within(
-                sheet.getByRole('list', { name: 'Proof files (optional)' }),
-            ).getAllByRole('listitem'),
-        ).toHaveLength(3);
-
-        await user.click(
-            sheet.getByRole('button', { name: 'Remove extra.png' }),
-        );
+        await user.type(sheet.getByLabelText('Supporting text'), 'x');
         await user.click(sheet.getByRole('button', { name: 'Submit dispute' }));
 
-        expect(inertia.calls[0].body).toEqual(
-            expect.objectContaining({
-                reason: 'Refund, not sale.',
-                supporting_text: 'Refund slip 0142 matches the till roll.',
-                proof_files: [receipt, refund],
+        await waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith({
+                url: '/preview/business-audit-cosign-n6-dispute-under-review',
+                method: 'get',
             }),
         );
+        expect(inertia.reload).not.toHaveBeenCalled();
     });
 
-    it('opens the file picker from its button', async () => {
-        const { user } = setup(props(disputeFixture));
-        await openDispute(user);
-        const sheet = within(
-            screen.getByRole('dialog', { name: 'Submit a dispute' }),
+    it('reads the page afresh when a recorded dispute names no next page', async () => {
+        inertia.queue.push(
+            answers(operation({ code: 'REPORT_DISPUTED', data: null })),
         );
-        const input = sheet.getByLabelText('Proof files (optional)', {
-            selector: 'input',
-        });
-        const click = vi.spyOn(input, 'click');
-
-        await user.click(sheet.getByRole('button', { name: 'Add files' }));
-
-        expect(click).toHaveBeenCalledTimes(1);
-        fireEvent.change(input, { target: { files: null } });
-        expect(
-            sheet.queryByRole('list', { name: 'Proof files (optional)' }),
-        ).not.toBeInTheDocument();
-    });
-
-    it('reads the page afresh once the dispute is recorded', async () => {
-        inertia.queue.push(answers(operation({ code: 'REPORT_DISPUTED' })));
-        const { user } = setup(props(disputeFixture));
-        await openDispute(user);
+        const { user } = setup(props(n6OpenFixture));
+        await openSheet(user);
         const sheet = within(
             screen.getByRole('dialog', { name: 'Submit a dispute' }),
         );
 
-        await user.type(
-            sheet.getByLabelText('Your reason'),
-            'Refund, not sale.',
-        );
+        await user.type(sheet.getByLabelText('Supporting text'), 'x');
         await user.click(sheet.getByRole('button', { name: 'Submit dispute' }));
 
         await waitFor(() =>
@@ -1163,21 +1628,62 @@ describe('Business audit co-sign — pending N6 and dispute (additive, optional)
                 expect.objectContaining({ preserveState: false }),
             ),
         );
-        expect(inertia.reload).not.toHaveBeenCalled();
     });
 
-    it('closes the sheet on a denial and shows its code on the page', async () => {
+    it.each([
+        [
+            'DIGEST_STALE',
+            "The report you read is no longer the current one. We've loaded it — read it and try again.",
+        ],
+        [
+            'MANDATE_STALE',
+            "The company's signing mandate changed. Check who can sign now, then try again.",
+        ],
+        ['AUDIT_REPORT_DISPUTE_WINDOW_CLOSED', null],
+        ['AUDIT_REPORT_ALREADY_DISPUTED', null],
+    ])(
+        'reads a %s refusal afresh with its code carried across',
+        async (code, reason) => {
+            inertia.queue.push(fails(409, { code }));
+            const { user } = setup(props(n6OpenFixture));
+            await openSheet(user);
+            const sheet = within(
+                screen.getByRole('dialog', { name: 'Submit a dispute' }),
+            );
+
+            await user.type(sheet.getByLabelText('Supporting text'), 'x');
+            await user.click(
+                sheet.getByRole('button', { name: 'Submit dispute' }),
+            );
+
+            await waitFor(() =>
+                expect(inertia.visit).toHaveBeenCalledWith(
+                    window.location.href,
+                    expect.objectContaining({ preserveState: false }),
+                ),
+            );
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+            expect(
+                await screen.findByText(new RegExp(`\\(${code}\\)$`, 'u')),
+            ).toBeInTheDocument();
+
+            if (reason !== null) {
+                expect(
+                    screen.getByText(`${reason} (${code})`),
+                ).toBeInTheDocument();
+            }
+        },
+    );
+
+    it('keeps a withdrawn authority on the page as a denial, without reading afresh', async () => {
         inertia.queue.push(fails(403, { code: 'ACTION_FORBIDDEN' }));
-        const { user } = setup(props(disputeFixture));
-        await openDispute(user);
+        const { user } = setup(props(n6OpenFixture));
+        await openSheet(user);
         const sheet = within(
             screen.getByRole('dialog', { name: 'Submit a dispute' }),
         );
 
-        await user.type(
-            sheet.getByLabelText('Your reason'),
-            'Refund, not sale.',
-        );
+        await user.type(sheet.getByLabelText('Supporting text'), 'x');
         await user.click(sheet.getByRole('button', { name: 'Submit dispute' }));
 
         expect(
@@ -1189,18 +1695,15 @@ describe('Business audit co-sign — pending N6 and dispute (additive, optional)
         expect(inertia.visit).not.toHaveBeenCalled();
     });
 
-    it('keeps an unconfirmed dispute in the sheet until the lookup answers', async () => {
+    it('looks a lost dispute up by command and identity context, keeping it in the sheet', async () => {
         inertia.queue.push(offline(), fails(503));
-        const { user } = setup(props(disputeFixture));
-        await openDispute(user);
+        const { user } = setup(props(n6OpenFixture));
+        await openSheet(user);
         const sheet = within(
             screen.getByRole('dialog', { name: 'Submit a dispute' }),
         );
 
-        await user.type(
-            sheet.getByLabelText('Your reason'),
-            'Refund, not sale.',
-        );
+        await user.type(sheet.getByLabelText('Supporting text'), 'x');
         await user.click(sheet.getByRole('button', { name: 'Submit dispute' }));
 
         expect(
@@ -1209,9 +1712,13 @@ describe('Business audit co-sign — pending N6 and dispute (additive, optional)
         expect(
             sheet.getByRole('button', { name: 'Submit dispute' }),
         ).toBeDisabled();
-        expect(inertia.calls[1].body).toEqual({
-            identity_context_revision: 4,
-            command: 'report.dispute',
+
+        const sent = inertia.calls[0].body as { request_id: string };
+
+        expect(inertia.calls[1]).toEqual({
+            url: `/preview/business-audit-cosign-operation-${sent.request_id}`,
+            method: 'get',
+            body: { identity_context_revision: 4, command: 'report.dispute' },
         });
 
         await user.click(sheet.getByRole('button', { name: 'Cancel' }));
@@ -1222,28 +1729,27 @@ describe('Business audit co-sign — pending N6 and dispute (additive, optional)
         expect(disputeButton()).toBeDisabled();
     });
 
-    it('marks dispute field errors in the sheet and shows any other there as a banner', async () => {
+    it('marks the text and file errors in the sheet, including one file, and any other as a banner', async () => {
         inertia.errors = {
             identity_context_revision: 'Unrelated.',
-            reason: 'Say what you dispute.',
             supporting_text: 'Too long.',
-            proof_files: 'That file type is not accepted.',
+            'proof_files.1': 'That file could not be read.',
         };
-        const { user } = setup(props(disputeFixture));
+        const { user } = setup(props(n6OpenFixture));
 
         expect(screen.getByRole('alert')).toHaveTextContent('Unrelated.');
 
-        await openDispute(user);
+        await openSheet(user);
+
         const sheet = within(
             screen.getByRole('dialog', { name: 'Submit a dispute' }),
         );
 
-        expect(sheet.getByText('Say what you dispute.')).toBeInTheDocument();
         expect(sheet.getByText('Too long.')).toBeInTheDocument();
         expect(
-            sheet.getByText('That file type is not accepted.'),
+            sheet.getByText('That file could not be read.'),
         ).toBeInTheDocument();
-        expect(sheet.getByLabelText('Your reason')).toHaveAttribute(
+        expect(sheet.getByLabelText('Supporting text')).toHaveAttribute(
             'aria-invalid',
             'true',
         );
@@ -1253,86 +1759,40 @@ describe('Business audit co-sign — pending N6 and dispute (additive, optional)
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
-    it('shows a dispute under review, pauses the deadline and offers no action', () => {
-        const page = props(disputedFixture);
-
-        setup(page);
-
-        expect(screen.getByRole('status')).toHaveTextContent(
-            'Dispute Under Review' +
-                `You submitted a dispute on ${formatDayMonth(page.cosign.dispute!.submitted_at, 'en')}. ` +
-                'The 24-hour review timer is paused while your CPA reviews your proof and amends or upholds the report. ' +
-                'If they uphold it or do not act, Rozine staff step in. ' +
-                'An amended report opens a fresh 24-hour window for you to review it.',
+    it('marks an error on the whole file list in the sheet', async () => {
+        inertia.errors = { proof_files: 'Add at most 5 files.' };
+        const { user } = setup(props(n6OpenFixture));
+        await openSheet(user);
+        const sheet = within(
+            screen.getByRole('dialog', { name: 'Submit a dispute' }),
         );
-        expect(
-            screen.queryByText(/Co-sign by|Overdue/u),
-        ).not.toBeInTheDocument();
-        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
-        expect(screen.queryByRole('button')).not.toBeInTheDocument();
+
+        expect(sheet.getByText('Add at most 5 files.')).toBeInTheDocument();
+        expect(sheet.queryByRole('alert')).not.toBeInTheDocument();
     });
 
-    it('offers no co-sign or dispute while disputed, even when both are sent', () => {
-        const page = props(disputeFixture);
-
-        page.cosign.dispute = {
-            status: 'escalated',
-            submitted_at: '2026-09-03T11:20:00+02:00',
-        };
-        setup(page);
-
-        expect(screen.getByRole('status')).toHaveTextContent(
-            'Dispute with Rozine staff' +
-                'You submitted a dispute on 3 Sept. Your CPA upheld the report or did not act, so Rozine staff are reviewing the case. ' +
-                'The 24-hour review timer stays paused meanwhile.',
-        );
-        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
-        expect(disputeButton()).not.toBeInTheDocument();
-    });
-
-    it('reads a resolved dispute as the current contract does, with its fresh deadline', () => {
-        const page = props(disputeFixture);
-
-        page.cosign.dispute = {
-            status: 'resolved',
-            submitted_at: '2026-09-03T11:20:00+02:00',
-        };
-        setup(page);
-
-        expect(
-            screen.getByText(
-                `Co-sign by ${formatDate(page.cosign.due_at!, 'en')}`,
-            ),
-        ).toBeInTheDocument();
-        expect(acceptBox()).toBeInTheDocument();
-        expect(disputeButton()).toBeEnabled();
-        expect(
-            screen.queryByText(/Dispute Under Review/u),
-        ).not.toBeInTheDocument();
-    });
-
-    it('reads the dispute and automatic approval in French and Kinyarwanda', async () => {
+    it('reads the sheet in French and Kinyarwanda', async () => {
         const user = userEvent.setup();
         const { unmount } = render(
             <I18nContext value={{ locale: 'fr', catalog: catalogFor('fr') }}>
-                <BusinessAuditCosign {...props(disputeFixture)} />
+                <BusinessAuditCosign {...props(n6OpenFixture)} />
             </I18nContext>,
         );
 
         await user.click(
             screen.getByRole('button', { name: 'Soumettre une contestation' }),
         );
-        expect(screen.getByLabelText('Votre motif')).toBeInTheDocument();
+        expect(screen.getByLabelText('Texte justificatif')).toBeInTheDocument();
         unmount();
 
         render(
             <I18nContext value={{ locale: 'rw', catalog: catalogFor('rw') }}>
-                <BusinessAuditCosign {...props(autoApprovedFixture)} />
+                <BusinessAuditCosign {...props(n6OpenFixture)} />
             </I18nContext>,
         );
 
         expect(
-            screen.getByText("Yatangajwe mu buryo bwikora nyuma y'amasaha 24"),
+            screen.getByText("Igihe cyo gusuzuma cy'amasaha 24"),
         ).toBeInTheDocument();
     });
 });

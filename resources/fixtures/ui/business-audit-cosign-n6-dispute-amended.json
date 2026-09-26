@@ -4,13 +4,13 @@
     "props": {
         "contract_version": "business-audit-report-v1",
         "identity_context_revision": 4,
-        "server_time": "2026-09-03T10:00:00+02:00",
+        "server_time": "2026-09-08T09:00:00+02:00",
         "business": {
             "id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
             "name": "GreenLeaf Agro (synthetic)"
         },
         "report": {
-            "id": "SYN-RPT-2026-08",
+            "id": "SYN-RPT-2026-08-N6",
             "revision": 3,
             "kind": "monthly",
             "period": "2026-08",
@@ -42,9 +42,12 @@
                 }
             ],
             "seal": {
-                "status": "unavailable",
-                "signed_at": null,
-                "verification": null
+                "status": "valid",
+                "signed_at": "2026-09-02T16:40:00+02:00",
+                "verification": {
+                    "url": "/preview/audit-verify-seal",
+                    "method": "get"
+                }
             },
             "published_at": null
         },
@@ -52,7 +55,7 @@
             "revision": 7,
             "state": "pending",
             "mandate_version": 2,
-            "required_signatures": 2,
+            "required_signatures": 1,
             "signed_count": 0,
             "signers": [
                 {
@@ -60,33 +63,63 @@
                     "state": "pending",
                     "signed_at": null,
                     "is_you": true
-                },
-                {
-                    "name": "Synthetic signatory Eric Nshuti",
-                    "state": "pending",
-                    "signed_at": null,
-                    "is_you": false
                 }
             ],
             "your_note": "",
-            "due_at": "2026-09-07T23:59:59+02:00",
+            "due_at": "2026-09-03T16:45:00+02:00",
             "overdue": false,
-            "policy_version": null,
-            "delivered_at": null,
+            "policy_version": "monthly-review-2026-09-26",
+            "delivered_at": "2026-09-02T16:45:00+02:00",
             "published_reason": null,
-            "dispute": null
+            "dispute": {
+                "id": "SYN-DSP-01",
+                "revision": 2,
+                "status": "resolved",
+                "submitted_at": "2026-09-03T11:20:00+02:00",
+                "supporting_text": null,
+                "proof_files": [
+                    {
+                        "id": "SYN-PRF-01",
+                        "name": "synthetic-refund-slip-0142.pdf",
+                        "mime_type": "application/pdf",
+                        "size_bytes": 248311,
+                        "sha256": "5d1be7e2c0a94f3b8e6d2a7c9f1b3e5d7a9c1e3f5b7d9a1c3e5f7b9d1a3c5e7f",
+                        "download": {
+                            "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/audit-reports/SYN-RPT-2026-08-N6/dispute/proofs/SYN-PRF-01",
+                            "method": "get"
+                        }
+                    },
+                    {
+                        "id": "SYN-PRF-02",
+                        "name": "synthetic-till-roll-14-aug.jpg",
+                        "mime_type": "image/jpeg",
+                        "size_bytes": 1874012,
+                        "sha256": "a3c5e7f9b1d3f5a7c9e1b3d5f7a9c1e3b5d7f9a1c3e5b7d9f1a3c5e7b9d1f3a5",
+                        "download": {
+                            "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/audit-reports/SYN-RPT-2026-08-N6/dispute/proofs/SYN-PRF-02",
+                            "method": "get"
+                        }
+                    }
+                ],
+                "outcome": "amended",
+                "resolution_note": null,
+                "amendment": {
+                    "report_id": "SYN-RPT-2026-08-N6-A1",
+                    "link": {
+                        "url": "/preview/business-audit-cosign-n6-open",
+                        "method": "get"
+                    }
+                }
+            }
         },
-        "allowed_actions": ["report.cosign"],
+        "allowed_actions": [],
         "actions": {
-            "cosign": {
-                "url": "/preview/business-audit-cosign-signatures",
-                "method": "post"
-            },
+            "cosign": null,
             "dispute": null
         },
         "links": {
             "current": {
-                "url": "/preview/business-audit-cosign-seal-unavailable",
+                "url": "/preview/business-audit-cosign-n6-dispute-amended",
                 "method": "get"
             },
             "close": {

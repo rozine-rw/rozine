@@ -10,7 +10,7 @@
             "name": "GreenLeaf Agro (synthetic)"
         },
         "report": {
-            "id": "SYN-RPT-2026-08",
+            "id": "SYN-RPT-2026-08-N6",
             "revision": 3,
             "kind": "monthly",
             "period": "2026-08",
@@ -55,7 +55,7 @@
             "revision": 7,
             "state": "pending",
             "mandate_version": 2,
-            "required_signatures": 2,
+            "required_signatures": 1,
             "signed_count": 0,
             "signers": [
                 {
@@ -63,17 +63,15 @@
                     "state": "pending",
                     "signed_at": null,
                     "is_you": true
-                },
-                {
-                    "name": "Synthetic signatory Eric Nshuti",
-                    "state": "pending",
-                    "signed_at": null,
-                    "is_you": false
                 }
             ],
             "your_note": "",
-            "due_at": "2026-09-07T23:59:59+02:00",
-            "overdue": false
+            "due_at": "2026-09-03T16:45:00+02:00",
+            "overdue": false,
+            "policy_version": "monthly-review-2026-09-26",
+            "delivered_at": "2026-09-02T16:45:00+02:00",
+            "published_reason": null,
+            "dispute": null
         },
         "allowed_actions": ["report.cosign", "report.dispute"],
         "actions": {
@@ -88,7 +86,7 @@
         },
         "links": {
             "current": {
-                "url": "/preview/business-audit-cosign-dispute-n6-pending",
+                "url": "/preview/business-audit-cosign-n6-open",
                 "method": "get"
             },
             "close": {
