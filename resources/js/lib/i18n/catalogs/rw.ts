@@ -1523,7 +1523,7 @@ const rw: Catalog = {
     'auditor.sector.technology': 'Ikoranabuhanga',
     'auditor.sector.services': 'Serivisi',
     'auditor.jobs.head_title': 'Imirimo',
-    'auditor.jobs.title': 'Amagenzura yihuse',
+    'auditor.jobs.title': "Imirimo y'igenzura",
     'auditor.jobs.lead':
         'Igenzura ryo ku kibanza riri mu birometero {radius}. Uwemeye mbere afata dosiye. Buri igenzura ryihuse rigomba kurangira mu masaha {hours} nyuma yo koherezwa.',
     'auditor.jobs.map_label':
@@ -1537,6 +1537,7 @@ const rw: Catalog = {
     'auditor.jobs.km': 'km {distance}',
     'auditor.jobs.sector_unavailable': 'Urwego ntirubonetse',
     'auditor.jobs.kind_monthly': 'Isura rya buri kwezi',
+    'auditor.jobs.kind_flash': 'Igenzura ryihuse',
     'auditor.jobs.show_more': 'Erekana ibindi',
     'auditor.jobs.conflicts_link': 'Inyungu wagaragaje →',
     'auditor.jobs.page_empty':
@@ -1712,7 +1713,11 @@ const rw: Catalog = {
         "Ukuri kw'aho uri cyangwa intera n'aho ikigo cyanditse birenze amabwiriza. Komeza; ibikorwa by'igenzura bizabisuzuma.",
     'auditor.photos.title': "Amafoto y'ikibanza afite aho yafatiwe",
     'auditor.photos.lead':
-        'Bifatwa ako kanya muri porogaramu — gukura amafoto mu bubiko byahagaritswe kugira ngo hatabaho uburiganya. {required} birakenewe · {captured} byafashwe.',
+        'Bifatwa ako kanya muri porogaramu — gukura amafoto mu bubiko byahagaritswe kugira ngo hatabaho uburiganya. {captured} kuri {required} bikenewe byafashwe.',
+    'auditor.photos.extras': {
+        one: 'Hiyongereyeho ifoto {count} y’inyongera.',
+        other: 'Hiyongereyeho amafoto {count} y’inyongera.',
+    },
     'auditor.photos.grid': "Amafoto y'ikibanza",
     'auditor.photos.pending': 'Ntirafatwa',
     'auditor.photos.captured': 'Yafashwe',
@@ -1773,8 +1778,7 @@ const rw: Catalog = {
     'auditor.count.inventory': "Ibimenyetso by'ububiko",
     'auditor.count.stock': 'Byabonetse ku kibanza · ububiko (ibice)',
     'auditor.count.units': 'ibice',
-    'auditor.count.stock_hint':
-        'Ububiko bwatangajwe ibice {units} · urugero {tolerance}',
+    'auditor.count.stock_hint': 'Ububiko bwatangajwe: ibice {units}',
     'auditor.count.stock_no_baseline': 'Nta bubiko bwatangajwe kuri iki gihe.',
     'auditor.count.operational': 'Uko ikigo gikora',
     'auditor.count.status.active': 'Kirakora',

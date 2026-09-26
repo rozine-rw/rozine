@@ -1521,7 +1521,7 @@ const fr: Catalog = {
     'auditor.sector.technology': 'Technologie',
     'auditor.sector.services': 'Services',
     'auditor.jobs.head_title': 'Missions',
-    'auditor.jobs.title': 'Audits flash',
+    'auditor.jobs.title': "Missions d'audit",
     'auditor.jobs.lead':
         'Contrôles sur site ouverts dans un rayon de {radius} km. Le premier à accepter verrouille le dossier. Chaque audit flash est dû {hours} heures après son envoi.',
     'auditor.jobs.map_label':
@@ -1535,6 +1535,7 @@ const fr: Catalog = {
     'auditor.jobs.km': '{distance} km',
     'auditor.jobs.sector_unavailable': 'Secteur indisponible',
     'auditor.jobs.kind_monthly': 'Visite mensuelle',
+    'auditor.jobs.kind_flash': 'Audit flash',
     'auditor.jobs.show_more': 'Afficher plus',
     'auditor.jobs.conflicts_link': 'Vos conflits déclarés →',
     'auditor.jobs.page_empty':
@@ -1712,7 +1713,11 @@ const fr: Catalog = {
         "La précision de la position ou sa distance aux locaux enregistrés est hors politique. Continuez ; les opérations d'audit l'examinent.",
     'auditor.photos.title': 'Photos du site géolocalisées',
     'auditor.photos.lead':
-        "Prises en direct dans l'application — l'import depuis la galerie est désactivé pour éviter la fraude. {required} requises · {captured} prises.",
+        "Prises en direct dans l'application — l'import depuis la galerie est désactivé pour éviter la fraude. {captured} sur {required} requises prises.",
+    'auditor.photos.extras': {
+        one: 'Plus {count} photo supplémentaire.',
+        other: 'Plus {count} photos supplémentaires.',
+    },
     'auditor.photos.grid': 'Photos du site',
     'auditor.photos.pending': 'Pas encore prise',
     'auditor.photos.captured': 'Prise',
@@ -1772,8 +1777,7 @@ const fr: Catalog = {
     'auditor.count.inventory': "Preuves d'inventaire",
     'auditor.count.stock': 'Constaté sur site · stock (unités)',
     'auditor.count.units': 'unités',
-    'auditor.count.stock_hint':
-        'Stock déclaré {units} unités · tolérance {tolerance}',
+    'auditor.count.stock_hint': 'Stock déclaré : {units} unités',
     'auditor.count.stock_no_baseline':
         'Aucune base de stock déclarée pour cette période.',
     'auditor.count.operational': 'Statut opérationnel',

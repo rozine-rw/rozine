@@ -1485,7 +1485,7 @@ const en = {
     'auditor.sector.technology': 'Technology',
     'auditor.sector.services': 'Services',
     'auditor.jobs.head_title': 'Jobs',
-    'auditor.jobs.title': 'Flash Audits',
+    'auditor.jobs.title': 'Audit jobs',
     'auditor.jobs.lead':
         "Open field checks within {radius}km. First to accept locks the file. Each flash audit is due {hours} hours after it's sent out.",
     'auditor.jobs.map_label':
@@ -1499,6 +1499,7 @@ const en = {
     'auditor.jobs.km': '{distance}km',
     'auditor.jobs.sector_unavailable': 'Sector unavailable',
     'auditor.jobs.kind_monthly': 'Monthly visit',
+    'auditor.jobs.kind_flash': 'Flash audit',
     'auditor.jobs.show_more': 'Show more',
     'auditor.jobs.conflicts_link': 'Your declared conflicts →',
     'auditor.jobs.page_empty':
@@ -1671,7 +1672,11 @@ const en = {
         "The location's accuracy or its distance from the registered premises is outside policy. Carry on; Audit Operations reviews it.",
     'auditor.photos.title': 'Geo-tagged site photos',
     'auditor.photos.lead':
-        'Captured live in the capture app — gallery uploads are disabled to prevent spoofing. {required} required · {captured} captured.',
+        'Captured live in the capture app — gallery uploads are disabled to prevent spoofing. {captured} of {required} required captured.',
+    'auditor.photos.extras': {
+        one: 'Plus {count} extra photo.',
+        other: 'Plus {count} extra photos.',
+    },
     'auditor.photos.grid': 'Site photos',
     'auditor.photos.pending': 'Not captured yet',
     'auditor.photos.captured': 'Captured',
@@ -1731,8 +1736,7 @@ const en = {
     'auditor.count.inventory': 'Inventory proof',
     'auditor.count.stock': 'Observed on site · stock (units)',
     'auditor.count.units': 'units',
-    'auditor.count.stock_hint':
-        'Reported stock {units} units · tolerance {tolerance}',
+    'auditor.count.stock_hint': 'Reported stock: {units} units',
     'auditor.count.stock_no_baseline':
         'No reported stock baseline for this period.',
     'auditor.count.operational': 'Operational status',

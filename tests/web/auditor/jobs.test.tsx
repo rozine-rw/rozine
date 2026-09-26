@@ -43,7 +43,7 @@ describe('Auditor Jobs', () => {
 
         expect(screen.getByTestId('head')).toHaveTextContent('Jobs');
         expect(
-            screen.getByRole('heading', { name: 'Flash Audits' }),
+            screen.getByRole('heading', { name: 'Audit jobs' }),
         ).toBeInTheDocument();
         expect(
             screen.getByText(
@@ -513,6 +513,48 @@ describe('Auditor Jobs', () => {
         ).toHaveAttribute('href', '/preview/auditor-audit-ledger');
         expect(screen.getByText('Reassigned to you')).toBeInTheDocument();
         expect(screen.queryByText(/Chantal Rwema/)).not.toBeInTheDocument();
+    });
+
+    it('says which kind each job is, and stops the clock on work awaiting co-signature', () => {
+        const page = props();
+        const [job] = props(overdueFixture).assigned;
+
+        render(
+            <AuditorJobs
+                {...page}
+                eligible={page.eligible.slice(0, 1)}
+                assigned={[
+                    {
+                        ...job,
+                        id: 'running',
+                        kind: 'flash',
+                        status: 'in_progress',
+                    },
+                    {
+                        ...job,
+                        id: 'finished',
+                        business: 'Finished Traders',
+                        kind: 'monthly',
+                        status: 'awaiting_cosign',
+                    },
+                ]}
+            />,
+        );
+
+        const running = screen.getAllByRole('link', {
+            name: new RegExp(job.business, 'u'),
+        })[0];
+        const finished = screen.getByRole('link', {
+            name: /Finished Traders/u,
+        });
+
+        expect(within(running).getByText('Flash audit')).toBeInTheDocument();
+        expect(within(running).getByRole('timer')).toBeInTheDocument();
+        expect(within(finished).getByText('Monthly visit')).toBeInTheDocument();
+        expect(
+            within(finished).getByText('Awaiting co-signature'),
+        ).toBeInTheDocument();
+        expect(within(finished).queryByRole('timer')).not.toBeInTheDocument();
     });
 });
 

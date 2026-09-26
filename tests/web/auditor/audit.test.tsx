@@ -358,7 +358,9 @@ describe('Audit procedure — photos', () => {
         const dialog = sheet();
 
         expect(
-            within(dialog).getByText(/3 required · 2 captured/),
+            within(dialog).getByText(
+                /2 of 3 required captured\. Plus 1 extra photo\./u,
+            ),
         ).toBeInTheDocument();
         expect(within(dialog).getAllByText('Captured')).toHaveLength(3);
         expect(
@@ -1349,9 +1351,7 @@ describe('Audit procedure — monthly statements and count', () => {
             ),
         ).toBeInTheDocument();
         expect(
-            within(dialog).getByText(
-                'Reported stock 190 units · tolerance RWF 0',
-            ),
+            within(dialog).getByText('Reported stock: 190 units'),
         ).toBeInTheDocument();
         expect(
             within(dialog).getByText('1 Sept – 30 Sept'),

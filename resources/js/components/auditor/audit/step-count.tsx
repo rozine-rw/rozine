@@ -293,7 +293,6 @@ export function StepCount({
                                   units: groupDigits(
                                       stage.stock.reported_units,
                                   ),
-                                  tolerance: stage.tolerance,
                               })}
                     </p>
                 </div>

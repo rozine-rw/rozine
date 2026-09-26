@@ -111,10 +111,17 @@ export function ReportSummary({
                 )}
             </div>
 
-            <SectionLabel>{t('business.audit_cosign.note_title')}</SectionLabel>
-            <p className="mt-[11px] rounded-2xl border border-rz-border bg-rz-surface p-3.5 text-[13px] leading-[1.6] whitespace-pre-line text-rz-slate">
-                {report.auditor_note}
-            </p>
+            {/* A report sealed with no note has no note section, never an empty box. */}
+            {report.auditor_note.trim() !== '' && (
+                <>
+                    <SectionLabel>
+                        {t('business.audit_cosign.note_title')}
+                    </SectionLabel>
+                    <p className="mt-[11px] rounded-2xl border border-rz-border bg-rz-surface p-3.5 text-[13px] leading-[1.6] whitespace-pre-line text-rz-slate">
+                        {report.auditor_note}
+                    </p>
+                </>
+            )}
 
             <SectionLabel>{t('business.audit_cosign.findings')}</SectionLabel>
             {report.findings.length === 0 ? (
