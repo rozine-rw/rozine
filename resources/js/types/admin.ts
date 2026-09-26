@@ -2,11 +2,15 @@ import type { BusinessRating, NoteStatus } from './business';
 import type { Money } from './money';
 import type { RouteAction, RouteLink } from './routing';
 import type {
+    AllocationKind,
     C3PreviewOutcome,
+    ComponentAmounts,
+    KigaliDate,
     Pagination,
     ProviderOutcome,
     ProviderOutcomeState,
     Receipt,
+    ServicingState,
 } from './settlement';
 
 /**
@@ -21,6 +25,7 @@ export type AdminSection =
     | 'today'
     | 'applications'
     | 'disbursements'
+    | 'repayments'
     | 'businesses'
     | 'investors'
     | 'auditors'
@@ -840,3 +845,132 @@ export type C3AdminApplicationsProps = Omit<
     links: { operation: RouteLink };
     preview_outcome?: C3PreviewOutcome<'application.release'>;
 };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Checkpoint 4: staff-servicing-v1 repayments (C4 contract proposal v1 §4b, AC-13)            */
+/* ------------------------------------------------------------------------------------------ */
+
+/*
+ * Additive and non-activatable, under `staff-access-v1` like the C3 staff pages. This scaffold is
+ * the read side of AC-13 plus requery: the queue, one repayment's reconciliation at the policy
+ * tolerance and its allocation. Attributing inbound receipts (maker/checker) waits on Q3, so no
+ * attribute, approve or reject command exists here yet. There is no balance editing and no amount
+ * field anywhere.
+ */
+
+/** New `StaffPermission` entries for the read and requery slice. */
+export type RepaymentPermission = 'repayments.view' | 'repayments.requery';
+
+/** Asks the provider about the same operation again; never a resend (H13). */
+export type RepaymentAllowedAction = 'repayment.requery';
+
+export type StaffServicingPageContract = {
+    contract_version: 'staff-servicing-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: RepaymentAllowedAction[];
+};
+
+/** `exception` is blocked and is never shown as reconciled; resolving it is Phase 2. */
+export type RepaymentState = 'received' | 'allocated' | 'exception';
+
+export type ReconciliationCheck = {
+    state: 'unreconciled' | 'matched' | 'exception';
+    /** "0" (#99 N7): a policy value from the server, never a UI constant. */
+    tolerance: Money;
+    expected: Money;
+    observed: Money;
+    difference: Money;
+    /** Stable codes, e.g. AMOUNT_MISMATCH, IDENTITY_MISMATCH, DUPLICATE, CONFLICTING_FINAL. */
+    causes: string[];
+    checked_at: string | null;
+    policy_version: string;
+};
+
+export type AllocationLine = {
+    kind: AllocationKind;
+    instalment_index: number | null;
+    amount: Money;
+    /** The ledger account; the drill-down is through `Allocation.ledger`. */
+    account_code: string;
+    /** Entitlement rows affected, on Investor lines only. */
+    holders: number | null;
+};
+
+/**
+ * Where a receipt went. `balanced` is the core's own check that what was paid, the receipt and
+ * what was distributed agree; the console never adds the lines up itself.
+ */
+export type Allocation = {
+    receipt_amount: Money;
+    /** Principal, then return, then late fees (§11.4), the service fee, and anything unapplied. */
+    paid: AllocationLine[];
+    /** Service fee, steward share, Investor lines and the PSP fee. */
+    distributed: AllocationLine[];
+    balanced: boolean;
+    entitlements: {
+        holdings: number;
+        record_date: KigaliDate;
+        rule: 'largest_remainder_by_ordinal';
+    };
+    posted_at: string | null;
+    ledger: RouteLink | null;
+};
+
+export type RepaymentRow = {
+    id: string;
+    reference: string;
+    business: string;
+    note_title: string;
+    source: 'wallet' | 'inbound_receipt';
+    amount: Money;
+    state: RepaymentState;
+    dpd_at_receipt: number | null;
+    received_at: string;
+    link: RouteLink;
+};
+
+export type ServicingSnapshot = {
+    state: ServicingState;
+    dpd: number | null;
+    outstanding: ComponentAmounts;
+};
+
+export type RepaymentDetail = RepaymentRow & {
+    revision: number;
+    note_id: string;
+    servicing_before: ServicingSnapshot;
+    /** Null until the allocation posts. */
+    servicing_after: ServicingSnapshot | null;
+    source_detail:
+        | { kind: 'wallet'; wallet_entry_id: string }
+        | {
+              kind: 'inbound_receipt';
+              receipt_id: string;
+              /** Staff audience: references and error codes are allowed here. */
+              provider: ProviderOutcome;
+          };
+    reconciliation: ReconciliationCheck;
+    /** Null while `received`. */
+    allocation: Allocation | null;
+    /** REPAYMENT_RECEIVED, REPAYMENT_ALLOCATED, …, each immutable. */
+    receipts: Receipt[];
+    trail: TrailEntry[];
+    allowed_actions: RepaymentAllowedAction[];
+    actions: Partial<Record<'requery', RouteAction>>;
+    links: {
+        close: RouteLink;
+        ledger: RouteLink | null;
+        operation: RouteLink;
+        business: RouteLink | null;
+    };
+};
+
+export type AdminRepaymentsProps = AdminShellProps &
+    StaffServicingPageContract & {
+        counts: { due_today: number; overdue: number; exceptions: number };
+        repayments: RepaymentRow[];
+        pagination: Pagination;
+        repayment: RepaymentDetail | null;
+        preview_outcome?: C3PreviewOutcome<RepaymentAllowedAction>;
+    };

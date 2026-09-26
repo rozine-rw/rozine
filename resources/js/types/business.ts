@@ -10,7 +10,10 @@ import type {
     CampaignRestriction,
     Clock,
     CoarseInFlight,
+    ComponentAmounts,
+    KigaliDate,
     Receipt,
+    ServicingState,
     Units,
 } from './settlement';
 
@@ -1080,7 +1083,10 @@ export type BusinessRepaymentsProps = {
         amount: Money;
         status: 'paid' | 'due' | 'overdue' | 'upcoming';
     }[];
-    /** The approved late-fee ladder, with the total owed at each step for this instalment. */
+    /**
+     * The late-fee ladder, with the total owed at each step for this instalment. The 5/5/5 steps
+     * follow Robert's adopted #99 N4; provisional pending #99 R1/R2 and the §8.5 amendment.
+     */
     late_ladder: {
         step: 'due_day' | 'day_7' | 'day_30';
         fee_percent: string;
@@ -1261,4 +1267,67 @@ export type BusinessCampaignProps = Omit<
     links: { close: RouteLink; operation: RouteLink };
     actions: { cancel: RouteAction | null };
     preview_outcome?: C3PreviewOutcome<'campaign.cancel'>;
+};
+
+/* ------------------------------------------------------------------------------------------ */
+/* Checkpoint 4: business-campaign-v2 (C4 contract proposal v1 §4a)                            */
+/* ------------------------------------------------------------------------------------------ */
+
+/*
+ * Additive and non-activatable. v2 only adds the servicing phases to a campaign's progress: an
+ * issued note that is repaying, and one that is fully repaid. It still shows aggregate figures
+ * only, with the number of Investors and never who they are (H16).
+ */
+
+/** Where a note's repayment stands, as the campaign page shows it. Every figure is the server's. */
+export type CampaignServicing = {
+    state: ServicingState;
+    /** Days past due on the oldest unpaid instalment (MC-03); null when nothing is due. */
+    dpd: number | null;
+    progress: {
+        repaid: Money;
+        total: Money;
+        remaining: Money;
+        /** One decimal: "40.0". */
+        repaid_pct: string;
+        payments_made: number;
+        payments_total: number;
+        remaining_instalments: number;
+    };
+    next: {
+        index: number;
+        due_on: KigaliDate;
+        amounts: ComponentAmounts;
+    } | null;
+    /** `ARREARS` appears from DPD 1 and freezes secondary (§8.3); it never replaces the state. */
+    restriction: {
+        code: 'ARREARS' | 'RESTRICTION_ACTIVE';
+        since: string;
+    } | null;
+};
+
+export type CampaignProgressV2 =
+    | CampaignProgress
+    | {
+          phase: 'repaying';
+          servicing: CampaignServicing;
+          investors: number;
+          /** The note's repayments page. */
+          link: RouteLink;
+      }
+    | {
+          phase: 'repaid';
+          total_repaid: Money;
+          completed_on: KigaliDate;
+          investors: number;
+      };
+
+export type BusinessCampaignV2Props = Omit<
+    BusinessCampaignProps,
+    'contract_version' | 'note'
+> & {
+    contract_version: 'business-campaign-v2';
+    note: Omit<BusinessCampaignProps['note'], 'progress'> & {
+        progress: CampaignProgressV2;
+    };
 };

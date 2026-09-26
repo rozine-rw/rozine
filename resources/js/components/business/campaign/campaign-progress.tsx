@@ -13,10 +13,27 @@ import {
     formatRwfShort,
 } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { CampaignProgress as Progress } from '@/types/business';
-import type { CampaignRestriction, Units } from '@/types/settlement';
+import type {
+    CampaignProgressV2 as Progress,
+    CampaignServicing,
+} from '@/types/business';
+import type {
+    CampaignRestriction,
+    ServicingState,
+    Units,
+} from '@/types/settlement';
 
 type Phase<P extends Progress['phase']> = Extract<Progress, { phase: P }>;
+
+/** Repayment states in tone: amber when a payment is due, red once it is late. */
+const SERVICING_TONE: Record<ServicingState, string> = {
+    current: 'bg-rz-accent-soft text-rz-accent-app-text',
+    due_today:
+        'bg-[#fff3e6] text-[#a55418] dark:bg-[rgba(194,102,31,.14)] dark:text-[#f0a060]',
+    overdue: 'bg-[rgba(229,72,77,.1)] text-rz-danger-text',
+    repaid: 'bg-rz-accent-soft text-rz-accent-app-text',
+    defaulted: 'bg-[rgba(229,72,77,.1)] text-rz-danger-text',
+};
 
 /** A whole-unit count as the server sent it, grouped for reading: "1,200". */
 const formatUnits = (units: Units): string =>
@@ -376,11 +393,209 @@ function Closed({
     );
 }
 
+/** A servicing restriction, drawn apart from the state: it never hides how late a payment is. */
+function ServicingRestriction({
+    restriction,
+}: {
+    restriction: CampaignServicing['restriction'];
+}) {
+    const { t, locale } = useTranslation();
+
+    if (restriction === null) {
+        return null;
+    }
+
+    return (
+        <p
+            role="alert"
+            className="mt-3 flex items-start gap-3 rounded-2xl border border-[rgba(229,72,77,.25)] bg-[rgba(229,72,77,.06)] p-[15px] text-[12.5px] leading-normal text-rz-ink"
+        >
+            <Icon name="blocked" tone="red" />
+            <span className="flex-1">
+                {t(
+                    `business.campaign.servicing.restriction.${restriction.code}`,
+                    { date: formatDate(restriction.since, locale) },
+                )}
+            </span>
+        </p>
+    );
+}
+
+function Repaying({ progress }: { progress: Phase<'repaying'> }) {
+    const { t, locale } = useTranslation();
+    const { servicing } = progress;
+    const pct = Math.min(
+        100,
+        Math.max(0, Number(servicing.progress.repaid_pct)),
+    );
+
+    return (
+        <>
+            <p className="mt-4 flex flex-wrap items-center gap-2">
+                <span
+                    className={cn(
+                        'rounded-full px-2.5 py-1 text-[11px] font-bold',
+                        SERVICING_TONE[servicing.state],
+                    )}
+                >
+                    {t(`business.campaign.servicing.state.${servicing.state}`)}
+                </span>
+                {servicing.dpd !== null && servicing.dpd > 0 && (
+                    <span className="text-[11.5px] font-semibold text-rz-danger-text">
+                        {t('business.campaign.servicing.dpd', {
+                            count: servicing.dpd,
+                        })}
+                    </span>
+                )}
+            </p>
+            <ServicingRestriction restriction={servicing.restriction} />
+            <div className="mt-4 grid grid-cols-2 gap-[11px]">
+                <Tile
+                    label={t('business.note.tracker.repaid')}
+                    value={formatRwfShort(servicing.progress.repaid)}
+                    green
+                />
+                <Tile
+                    label={t('business.note.tracker.left_to_pay')}
+                    value={formatRwfShort(servicing.progress.remaining)}
+                />
+                <Tile
+                    label={t('business.note.tile.payments_made')}
+                    value={t('business.campaign.servicing.payments', {
+                        made: servicing.progress.payments_made,
+                        total: servicing.progress.payments_total,
+                    })}
+                />
+                <Tile
+                    label={t('business.note.tile.investors')}
+                    value={formatCount(progress.investors)}
+                />
+            </div>
+            <div className="mt-4 rounded-2xl border border-rz-border bg-rz-surface p-4">
+                <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold tracking-[.04em] text-rz-slate uppercase">
+                        {t('business.note.tracker.repayment')}
+                    </span>
+                    <span className="text-[11px] font-semibold text-rz-accent-app-text">
+                        {t('business.note.tracker.repaid_pct', {
+                            pct: servicing.progress.repaid_pct,
+                        })}
+                    </span>
+                </div>
+                <div
+                    role="progressbar"
+                    aria-label={t('business.note.tracker.repayment')}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={pct}
+                    aria-valuetext={t('business.note.tracker.repaid_pct', {
+                        pct: servicing.progress.repaid_pct,
+                    })}
+                    className="mt-[11px] h-[9px] overflow-hidden rounded-[5px] bg-rz-page"
+                >
+                    <div
+                        className="h-full rounded-[5px] bg-rz-accent-fill"
+                        style={{ width: `${pct}%` }}
+                    />
+                </div>
+                <dl className="mt-3">
+                    <Row
+                        label={t('business.note.tracker.repaid')}
+                        value={formatRwf(servicing.progress.repaid)}
+                    />
+                    <Row
+                        label={t('business.note.tracker.left_to_pay')}
+                        value={formatRwf(servicing.progress.remaining)}
+                    />
+                    <Row
+                        label={t('business.campaign.servicing.total')}
+                        value={formatRwf(servicing.progress.total)}
+                    />
+                </dl>
+                <p className="mt-2 text-[11px] leading-normal text-rz-secondary">
+                    {t('business.campaign.servicing.instalments_left', {
+                        count: servicing.progress.remaining_instalments,
+                    })}
+                </p>
+            </div>
+            {servicing.next !== null && (
+                <section
+                    aria-label={t('business.campaign.servicing.next_title')}
+                    className="mt-3 rounded-2xl border border-rz-border bg-rz-surface px-[15px] py-2.5"
+                >
+                    <p className="py-[5px] text-[11px] font-bold tracking-[.05em] text-rz-slate uppercase">
+                        {t('business.campaign.servicing.next_title')}
+                    </p>
+                    <p className="text-[12.5px] text-rz-secondary">
+                        {t('business.campaign.servicing.next_due', {
+                            index: servicing.next.index,
+                            date: formatDate(servicing.next.due_on, locale),
+                        })}
+                    </p>
+                    <dl className="mt-1">
+                        <Row
+                            label={t('business.campaign.servicing.principal')}
+                            value={formatRwf(servicing.next.amounts.principal)}
+                        />
+                        <Row
+                            label={t('business.campaign.servicing.return')}
+                            value={formatRwf(servicing.next.amounts.return)}
+                        />
+                        <Row
+                            label={t('business.campaign.servicing.service_fee')}
+                            value={formatRwf(
+                                servicing.next.amounts.service_fee,
+                            )}
+                        />
+                        <Row
+                            label={t('business.campaign.servicing.next_total')}
+                            value={formatRwf(servicing.next.amounts.total)}
+                        />
+                    </dl>
+                </section>
+            )}
+            <Link
+                href={progress.link}
+                className="mt-3 flex h-[46px] w-full items-center justify-center rounded-xl bg-rz-accent-fill text-sm font-semibold text-white"
+            >
+                {t('business.campaign.servicing.open')}
+            </Link>
+        </>
+    );
+}
+
+function Repaid({ progress }: { progress: Phase<'repaid'> }) {
+    const { t, locale } = useTranslation();
+
+    return (
+        <>
+            <div className="mt-4 grid grid-cols-2 gap-[11px]">
+                <Tile
+                    label={t('business.note.tracker.repaid')}
+                    value={formatRwfShort(progress.total_repaid)}
+                    green
+                />
+                <Tile
+                    label={t('business.note.tile.investors')}
+                    value={formatCount(progress.investors)}
+                />
+            </div>
+            <Notice tone="green">
+                {t('business.campaign.servicing.repaid', {
+                    amount: formatRwf(progress.total_repaid),
+                    date: formatDate(progress.completed_on, locale),
+                })}
+            </Notice>
+        </>
+    );
+}
+
 /**
  * A campaign's aggregate funding progress (C3 v2 §2f). Every figure is the server's and the client
  * never subtracts; no Investor is named, typed or given an amount (H16). Closing is coarse (H15):
  * a payment in flight reads "not yet confirmed" — never paid or failed — until the server moves it
- * on, and it carries no provider reference.
+ * on, and it carries no provider reference. Once issued, v2 adds the repayment phases (C4 v1 §4a):
+ * how much is repaid and left, the next instalment and any arrears, all as the server states them.
  */
 export function CampaignProgress({
     progress,
@@ -398,6 +613,10 @@ export function CampaignProgress({
             return <Funded progress={progress} poll={poll} />;
         case 'disbursed':
             return <Disbursed progress={progress} />;
+        case 'repaying':
+            return <Repaying progress={progress} />;
+        case 'repaid':
+            return <Repaid progress={progress} />;
         default:
             return <Closed progress={progress} />;
     }

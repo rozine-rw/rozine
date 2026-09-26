@@ -1,15 +1,21 @@
 import type { Money } from './money';
 import type { RouteAction, RouteLink } from './routing';
 import type {
+    Bps,
     C3PreviewOutcome,
     CampaignLifecycle,
     CampaignRestriction,
     Clock,
     CoarseInFlight,
+    InstalmentStatus,
+    KigaliDate,
+    LateFeeStatus,
+    LateFeeStep,
     Ordinals,
     Pagination,
     ProviderOutcomeState,
     Receipt,
+    ServicingState,
     UnitRights,
     Units,
 } from './settlement';
@@ -1296,3 +1302,247 @@ export type C3InvestorHoldingProps = InvestorPageContract & {
     holding: C3HoldingDetail;
     links: InvestorAppLinks & { back: RouteLink };
 };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Checkpoint 4: investor-servicing-v1 (C4 contract proposal v1 §4c, §4f)                      */
+/* ------------------------------------------------------------------------------------------ */
+
+/*
+ * Additive and non-activatable. `investor-servicing-v1` replaces `investor-primary-v1` on the
+ * portfolio and holding pages only; deals, checkout and commitment keep the C3 contract. Nothing
+ * returns these shapes yet: the pages are reviewed through synthetic fixtures. There is no
+ * Investor servicing command, so `allowed_actions` stays empty on both pages.
+ */
+
+export type InvestorServicingPageContract = {
+    contract_version: 'investor-servicing-v1';
+    identity_context_revision: number;
+    server_time: string;
+    allowed_actions: InvestorAllowedAction[];
+};
+
+/** A vested entitlement credited, net, to the Investor's wallet (`PAYOUT_CREDITED`). */
+export type Payout = {
+    id: string;
+    holding_id: string;
+    note_title: string;
+    instalment_index: number;
+    /** The entitlement cutoff (§5 Entitlement). */
+    record_date: KigaliDate;
+    vested_at: string;
+    gross: { principal: Money; return: Money; late_fees: Money; total: Money };
+    /** Server-owned and never recomputed; `net` is the server's, never gross − fee. */
+    fee: Money;
+    /** Provisional pending #99 R5 (the Plus basis) and Q6: the server names the rule it applied. */
+    fee_basis: {
+        code: 'INVESTOR_REPAYMENT_FEE' | 'PLUS_EARNINGS_FEE';
+        rate_bps: Bps;
+        policy_version: string;
+    };
+    net: Money;
+    credited_at: string;
+    /** PAYOUT_CREDITED. */
+    receipt: Receipt;
+    link: RouteLink;
+};
+
+/**
+ * One instalment of this holding. `processing` means the Business paid and the allocation has not
+ * posted: it is never shown as paid until a payout is credited.
+ */
+export type HoldingInstalment = {
+    index: number;
+    due_on: KigaliDate;
+    /** This holding's component rights (MC-04). */
+    entitled: { principal: Money; return: Money };
+    paid: { principal: Money; return: Money };
+    status: InstalmentStatus;
+    payout: { id: string; net: Money; link: RouteLink } | null;
+};
+
+/**
+ * This holding's share of one late-fee assessment, line by line. Provisional pending the #99 C7
+ * amendment (late-fee pass-through) and #99 R1/R2 (the ladder's base and mechanics). The two flags
+ * are carried as data on every line, not only in copy: a late fee is payable only if the Business
+ * pays it, and Rozine does not guarantee it.
+ */
+export type InvestorLateFeeLine = {
+    id: string;
+    instalment_index: number;
+    step: LateFeeStep;
+    applies_on: KigaliDate;
+    rate_bps: Bps;
+    your_share: { assessed: Money; collected: Money; outstanding: Money };
+    status: LateFeeStatus;
+    payable_only_on_collection: true;
+    guaranteed_by_rozine: false;
+    /** Set once a collected share is credited. */
+    payout: { id: string; link: RouteLink } | null;
+};
+
+/** Provisional pending the #99 C7 amendment; see `InvestorLateFeeLine`. */
+export type LateFeeBreakdown = {
+    lines: InvestorLateFeeLine[];
+    totals: { assessed: Money; collected: Money; outstanding: Money };
+    /** The legal text renders from this version once R4 approves it. */
+    disclosure: { version: string };
+};
+
+export type HoldingRestrictionCode =
+    | 'ARREARS'
+    | 'DEFAULT'
+    | 'DISPUTED'
+    | 'RESTRICTION_ACTIVE'
+    | 'NOTE_INELIGIBLE';
+
+export type HoldingServicing = {
+    revision: number;
+    state: ServicingState;
+    dpd: number | null;
+    /** Independent causes: clearing one never clears another (MC-05). */
+    restrictions: { code: HoldingRestrictionCode; since: string }[];
+    /** The server's display band; never derived from `state`. */
+    health: HoldingHealth;
+    /** Projected and gross. */
+    next_payment: { due_on: KigaliDate; entitled: Money } | null;
+    on_time: { made: number; on_time: number; late: number };
+    received: {
+        principal: Money;
+        return: Money;
+        late_fees: Money;
+        fees: Money;
+        net: Money;
+    };
+    outstanding_principal: Money;
+    /** Scheduled, not guaranteed. */
+    remaining_projected: Money;
+};
+
+/** The secondary-ready read shapes (`investor-secondary-ready-v1`): no trading in C4. */
+export type HoldingLot = {
+    id: string;
+    holding_id: string;
+    note_id: string;
+    revision: number;
+    allocation_revision: number;
+    origin:
+        | { kind: 'primary_issue'; operation_id: string; receipt: Receipt }
+        | { kind: 'secondary_trade'; trade_id: string; receipt: Receipt };
+    /** The C3 ordinals, preserved (H3). */
+    ordinals: Ordinals;
+    units: {
+        acquired: Units;
+        disposed: Units;
+        available: Units;
+        encumbered: Units;
+    };
+    /** Of these exact ordinals (MC-04), never a rounded average. */
+    unpaid_principal: Money;
+    /** Excludes vested entitlements (§6). */
+    remaining_transferable_payout: Money;
+    /** Stays with the record-date owner. */
+    vested_unpaid: Money;
+};
+
+export type SecondaryIneligibility =
+    | 'FEATURE_DISABLED'
+    | 'MARKET_HALTED'
+    | 'NOTE_HALTED'
+    | 'ARREARS'
+    | 'DEFAULT'
+    | 'DISPUTED'
+    | 'RESTRICTION_ACTIVE'
+    | 'REPORT_STALE'
+    | 'NO_AVAILABLE_UNITS'
+    | 'NOTE_INELIGIBLE';
+
+/**
+ * The server's eligibility snapshot. In C4 it is never eligible and always lists
+ * `FEATURE_DISABLED`; the UI renders the causes in order and never infers eligibility itself.
+ */
+export type SecondaryEligibility = {
+    revision: number;
+    evaluated_at: string;
+    eligible: false;
+    causes: SecondaryIneligibility[];
+    next_record_date: KigaliDate | null;
+    /** Null in C4; Phase 3 computes the §6 bounds. */
+    price_band: { unit_floor: Money; unit_ceiling: Money } | null;
+};
+
+export type HoldingSecondaryReady = {
+    lots: HoldingLot[];
+    eligibility: SecondaryEligibility;
+};
+
+/**
+ * A servicing holding. C4 emits only the `missed` arrears step, and no recovery plan: contact,
+ * plans and resumption are Phase 2.
+ *
+ * TODO(#99 C7): whether an Investor shares in collected late fees, or they stay platform revenue
+ * (§11.4, CFG-04), waits on the joint amendment. The preview carries `late_fees` to review the
+ * line-by-line breakdown; neither rule is asserted here.
+ */
+export type C4HoldingDetail = Omit<
+    C3HoldingDetail,
+    'recovery_plan' | 'arrears'
+> & {
+    servicing: HoldingServicing;
+    instalments: HoldingInstalment[];
+    /** Null when nothing has ever been assessed. */
+    late_fees: LateFeeBreakdown | null;
+    /** Newest first. */
+    payouts: Payout[];
+    arrears: {
+        dpd: number;
+        since: KigaliDate;
+        steps: { key: 'missed'; state: RecoveryStepState }[];
+    } | null;
+    recovery_plan: null;
+    secondary: HoldingSecondaryReady;
+};
+
+export type C4InvestorHoldingProps = InvestorServicingPageContract & {
+    holding: C4HoldingDetail;
+    /** A figure without a basis renders without a drill-down, never a made-up link. */
+    bases: Partial<
+        Record<
+            'received' | 'outstanding_principal' | 'remaining_projected',
+            RouteLink
+        >
+    >;
+    links: InvestorAppLinks & { back: RouteLink };
+};
+
+/** Realised (paid and credited) apart from projected (scheduled, not guaranteed). */
+export type PortfolioEarnings = {
+    invested: Money;
+    outstanding_principal: Money;
+    realised: {
+        principal: Money;
+        return: Money;
+        late_fees: Money;
+        fees: Money;
+        net_return: Money;
+    };
+    projected: { remaining_return: Money; next_3m: Money };
+    this_month_net: Money;
+    avg_monthly_net: Money | null;
+    next_payout: { due_on: KigaliDate; projected: Money } | null;
+};
+
+export type C4InvestorPortfolioProps = InvestorServicingPageContract &
+    Omit<
+        C3InvestorPortfolioProps,
+        | 'contract_version'
+        | 'identity_context_revision'
+        | 'server_time'
+        | 'allowed_actions'
+        | 'totals'
+    > & {
+        /** Replaces the Phase 1B `totals` value and gain, which blurred realised and projected. */
+        earnings: PortfolioEarnings;
+        bases: Partial<
+            Record<'invested' | 'realised' | 'outstanding_principal', RouteLink>
+        >;
+    };

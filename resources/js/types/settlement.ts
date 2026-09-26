@@ -122,3 +122,80 @@ export type UnitRights = {
     total_return: Money;
     instalments: { index: number; principal: Money; return: Money }[];
 };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Checkpoint 4: servicing primitives (C4 contract proposal v1 §3)                             */
+/* ------------------------------------------------------------------------------------------ */
+
+/*
+ * Additive and non-activatable, like the C3 primitives above. Nothing returns these shapes yet:
+ * the pages that read them are reviewed through synthetic `preview/{fixture}` fixtures only, and
+ * every figure stays a server fact. The client never derives DPD, a ladder step or "days left"
+ * from the browser clock, and never adds, subtracts or splits money.
+ */
+
+/** An Africa/Kigali calendar date, `YYYY-MM-DD`, with no time part (contractual dates only). */
+export type KigaliDate = string;
+
+/** Integer basis points (engineering contract §4): `500` is 5%. */
+export type Bps = number;
+
+/** `processing`: a receipt is recorded and its allocation has not posted yet. */
+export type InstalmentStatus =
+    | 'upcoming'
+    | 'due'
+    | 'overdue'
+    | 'processing'
+    | 'partially_paid'
+    | 'paid';
+
+/**
+ * Where a note's servicing stands. `due_today` is DPD 0 on the oldest unpaid instalment and
+ * `overdue` is DPD 1 or more (MC-03). `defaulted` is reserved: nothing emits it before Phase 2.
+ */
+export type ServicingState =
+    | 'current'
+    | 'due_today'
+    | 'overdue'
+    | 'repaid'
+    | 'defaulted';
+
+/** Server-summed components; the client never adds them up. */
+export type ComponentAmounts = {
+    principal: Money;
+    return: Money;
+    late_fees: Money;
+    service_fee: Money;
+    total: Money;
+};
+
+/**
+ * A late-fee ladder step. Provisional pending #99 R1/R2 and the §8.5 amendment: the steps follow
+ * Robert's adopted #99 N4 (+5% at the due date, day 7 and day 30), but the base each step applies
+ * to, its DPD mapping and whether it replaces §8.5 are still open. The server sends all of them.
+ */
+export type LateFeeStep = 'due_date' | 'day_7' | 'day_30';
+
+export type LateFeeStatus =
+    | 'projected'
+    | 'assessed'
+    | 'partially_collected'
+    | 'collected'
+    | 'waived';
+
+/**
+ * One line of an allocation: what a receipt paid, in §11.4 order, then where it went. The
+ * `investor_late_fee` line is provisional pending the #99 C7 amendment (late-fee pass-through).
+ */
+export type AllocationKind =
+    | 'principal'
+    | 'return'
+    | 'late_fee'
+    | 'service_fee'
+    | 'steward_share'
+    | 'investor_gross'
+    | 'investor_fee'
+    | 'investor_net'
+    | 'investor_late_fee'
+    | 'psp_fee'
+    | 'unapplied';

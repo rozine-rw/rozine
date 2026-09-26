@@ -16,7 +16,12 @@ import {
 } from 'vite-plus/test';
 import { POLL_INTERVAL_MS, POLL_LIMIT } from '@/hooks/use-bounded-poll';
 import BusinessCampaign from '@/pages/business/campaign';
-import type { BusinessCampaignProps, CampaignProgress } from '@/types/business';
+import type {
+    BusinessCampaignProps,
+    BusinessCampaignV2Props,
+    CampaignProgress,
+    CampaignProgressV2,
+} from '@/types/business';
 import cancelRefusedFixture from '../../../resources/fixtures/ui/business-campaign-cancel-refused.json';
 import cancelUnconfirmedFixture from '../../../resources/fixtures/ui/business-campaign-cancel-unconfirmed.json';
 import cancelledFixture from '../../../resources/fixtures/ui/business-campaign-cancelled.json';
@@ -30,6 +35,10 @@ import unknownFixture from '../../../resources/fixtures/ui/business-campaign-fun
 import liveMinimalFixture from '../../../resources/fixtures/ui/business-campaign-live-minimal.json';
 import liveFixture from '../../../resources/fixtures/ui/business-campaign-raising-live.json';
 import restrictedFixture from '../../../resources/fixtures/ui/business-campaign-raising-restricted.json';
+import repaidFixture from '../../../resources/fixtures/ui/business-campaign-repaid.json';
+import overdueFixture from '../../../resources/fixtures/ui/business-campaign-repaying-overdue.json';
+import repayingFixture from '../../../resources/fixtures/ui/business-campaign-repaying.json';
+import v2LiveMinimalFixture from '../../../resources/fixtures/ui/business-campaign-v2-live-minimal.json';
 import { answers, fails, inertia, operation } from '../auditor/inertia';
 import { renderWithUser } from '../helpers/render-with-user';
 
@@ -606,5 +615,145 @@ describe('The live-minimal campaign', () => {
         expect(
             view.queryByRole('button', { name: 'Cancel this raise' }),
         ).not.toBeInTheDocument();
+    });
+});
+
+const v2Props = (fixture: { props: unknown }) =>
+    structuredClone(fixture.props) as BusinessCampaignV2Props;
+
+const repaying = (page: BusinessCampaignV2Props) =>
+    page.note.progress as Extract<CampaignProgressV2, { phase: 'repaying' }>;
+
+describe('A repaying campaign (business-campaign-v2)', () => {
+    it('shows repayment progress, the next instalment and the repayments link, with no investor list', () => {
+        renderWithUser(<BusinessCampaign {...v2Props(repayingFixture)} />);
+        const view = within(campaignSheet());
+
+        expect(view.getByText('Notes issued')).toHaveClass(
+            'text-rz-accent-app-text',
+        );
+        expect(view.getByText('Repaying · on track')).toBeInTheDocument();
+        expect(view.queryByText(/days? past due/)).not.toBeInTheDocument();
+        expect(view.queryByRole('alert')).not.toBeInTheDocument();
+        expect(view.getByText('2 of 6')).toBeInTheDocument();
+        expect(view.getByText('318')).toBeInTheDocument();
+        expect(
+            view.getByRole('progressbar', { name: 'Repayment tracker' }),
+        ).toHaveValue(33.3);
+        expect(view.getByText('4 instalments left')).toBeInTheDocument();
+        expect(view.getByText('Total to repay')).toBeInTheDocument();
+        expect(view.getByText('RWF 20,790,000')).toBeInTheDocument();
+
+        const next = view.getByRole('region', { name: 'Next instalment' });
+
+        expect(next).toHaveTextContent('Instalment 3 · due 23 Dec 2026');
+        expect(next).toHaveTextContent('PrincipalRWF 3,000,000');
+        expect(next).toHaveTextContent('ReturnRWF 405,000');
+        expect(next).toHaveTextContent('Service feeRWF 60,000');
+        expect(next).toHaveTextContent('Total dueRWF 3,465,000');
+        expect(
+            view.getByRole('link', { name: 'Open repayments' }),
+        ).toHaveAttribute('href', '/preview/business-repayments');
+
+        for (const name of IDENTITIES) {
+            expect(view.queryByText(name)).not.toBeInTheDocument();
+        }
+
+        expect(
+            view.queryByRole('button', { name: 'Cancel this raise' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('keeps the arrears restriction beside how late the payment is', () => {
+        renderWithUser(<BusinessCampaign {...v2Props(overdueFixture)} />);
+        const view = within(campaignSheet());
+
+        expect(view.getByText('Payment overdue')).toHaveClass(
+            'text-rz-danger-text',
+        );
+        expect(view.getByText('8 days past due')).toBeInTheDocument();
+        expect(view.getByRole('alert')).toHaveTextContent(
+            'In arrears since 24 Dec 2026. Resale of this note is paused until the overdue payment is received and reconciled.',
+        );
+        expect(
+            view.getByRole('region', { name: 'Next instalment' }),
+        ).toHaveTextContent('Instalment 4 · due 23 Jan 2027');
+    });
+
+    it.each([
+        ['due_today', 0, 'Payment due today', null],
+        ['overdue', 1, 'Payment overdue', '1 day past due'],
+        ['repaid', null, 'Fully repaid', null],
+        ['defaulted', 40, 'In default', '40 days past due'],
+    ] as const)(
+        'names the %s state from the server, never from the browser clock',
+        (state, dpd, label, late) => {
+            const page = v2Props(repayingFixture);
+
+            repaying(page).servicing.state = state;
+            repaying(page).servicing.dpd = dpd;
+            repaying(page).servicing.restriction = {
+                code: 'RESTRICTION_ACTIVE',
+                since: '2026-11-30T09:00:00+02:00',
+            };
+            renderWithUser(<BusinessCampaign {...page} />);
+            const view = within(campaignSheet());
+
+            expect(view.getByText(label)).toBeInTheDocument();
+            expect(view.getByRole('alert')).toHaveTextContent(
+                'A restriction has applied since 30 Nov 2026. Repayments are still accepted.',
+            );
+
+            if (late === null) {
+                expect(
+                    view.queryByText(/days? past due/),
+                ).not.toBeInTheDocument();
+            } else {
+                expect(view.getByText(late)).toBeInTheDocument();
+            }
+        },
+    );
+
+    it('clamps the repayment tracker to its range', () => {
+        const page = v2Props(repayingFixture);
+
+        repaying(page).servicing.progress.repaid_pct = '-2.0';
+        renderWithUser(<BusinessCampaign {...page} />);
+
+        expect(
+            within(campaignSheet()).getByRole('progressbar', {
+                name: 'Repayment tracker',
+            }),
+        ).toHaveValue(0);
+    });
+
+    it('shows a fully repaid note with its total and completion date', () => {
+        renderWithUser(<BusinessCampaign {...v2Props(repaidFixture)} />);
+        const view = within(campaignSheet());
+
+        expect(view.getByText('RWF 20.8M')).toBeInTheDocument();
+        expect(view.getByRole('status')).toHaveTextContent(
+            'Every instalment is paid: RWF 20,790,000 repaid by 23 Mar 2027.',
+        );
+        expect(
+            view.queryByRole('link', { name: 'Open repayments' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('renders the v2 live-minimal shape with no next instalment and nothing offered', () => {
+        renderWithUser(<BusinessCampaign {...v2Props(v2LiveMinimalFixture)} />);
+        const view = within(campaignSheet());
+
+        expect(
+            view.queryByRole('region', { name: 'Next instalment' }),
+        ).not.toBeInTheDocument();
+        expect(view.getByText('6 instalments left')).toBeInTheDocument();
+        expect(
+            view.getByRole('link', { name: 'Open repayments' }),
+        ).toHaveAttribute(
+            'href',
+            '/business/01k6r3d9t4e1g5h0j3k7m2n8p4/notes/01k6r3d9t4e1g5h0j3k7m2n8p4/repayments',
+        );
+        expect(view.queryAllByRole('button')).toEqual([]);
     });
 });

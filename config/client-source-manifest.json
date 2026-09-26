@@ -239,6 +239,8 @@
         "resources/js/components/admin/parties/directory-table.tsx",
         "resources/js/components/admin/parties/party-drawer.tsx",
         "resources/js/components/admin/reason-stage.tsx",
+        "resources/js/components/admin/repayments/panels.tsx",
+        "resources/js/components/admin/repayments/repayment-drawer.tsx",
         "resources/js/components/admin/search-empty.tsx",
         "resources/js/components/admin/today/today-panels.tsx",
         "resources/js/components/admin/today/today-queues.tsx",
@@ -397,8 +399,10 @@
         "resources/js/components/investor/local-sheet.tsx",
         "resources/js/components/investor/logo-stack.tsx",
         "resources/js/components/investor/monthly-updates.tsx",
+        "resources/js/components/investor/portfolio/earnings-card.tsx",
         "resources/js/components/investor/portfolio/holding-card.tsx",
         "resources/js/components/investor/portfolio/holding-detail.tsx",
+        "resources/js/components/investor/portfolio/holding-servicing.tsx",
         "resources/js/components/investor/portfolio/issue-record.tsx",
         "resources/js/components/investor/portfolio/portfolio-insights.tsx",
         "resources/js/components/investor/primary/commitment.tsx",
@@ -521,6 +525,7 @@
         "resources/js/pages/admin/events.tsx",
         "resources/js/pages/admin/ledger.tsx",
         "resources/js/pages/admin/parties.tsx",
+        "resources/js/pages/admin/repayments.tsx",
         "resources/js/pages/admin/today.tsx",
         "resources/js/pages/audit/verify-seal.tsx",
         "resources/js/pages/auditor/audit.tsx",
@@ -578,10 +583,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 547,
+        "totalTrackedSources": 552,
         "generated": 175,
         "declarationOnly": 18,
-        "authoredExecutable": 354
+        "authoredExecutable": 359
     },
-    "coverageSetSha256": "ba7d7ab85b417488a9261aa73959f86bc90b00632f4c7f3af7ee613519e2c743"
+    "coverageSetSha256": "b929152c69a632db74074e4dfcf5ee8b41eaccbbe537a37512144ba748212d84"
 }

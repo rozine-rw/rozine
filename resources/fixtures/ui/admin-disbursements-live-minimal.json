@@ -18,6 +18,10 @@
                 "url": "/admin/disbursements",
                 "method": "get"
             },
+            "repayments": {
+                "url": "/admin/repayments",
+                "method": "get"
+            },
             "businesses": {
                 "url": "/admin/businesses",
                 "method": "get"
