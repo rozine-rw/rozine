@@ -32,8 +32,16 @@ class AuditorProcedureResource extends JsonResource
         if ($page['can_seal']) {
             $allowed[] = 'audit.seal';
         }
+        if ($page['sealed']['can_dispute_uphold'] ?? false) {
+            $allowed[] = 'audit.dispute.uphold';
+        }
         if ($request->routeIs('api.*') && ! $request->user()?->tokenCan('auditor:command')) {
             $allowed = [];
+        }
+
+        if ($page['sealed'] !== null) {
+            $page['sealed']['dispute'] = AuditDisputeResource::project($page['sealed']['dispute'] ?? null, $request, 'auditor', ['report' => $report['id']]);
+            unset($page['sealed']['can_dispute_uphold']);
         }
 
         $reasonOptions = $page['decision_options'] === null ? null : $this->reasonOptions($page['decision_options']);
@@ -57,7 +65,7 @@ class AuditorProcedureResource extends JsonResource
                 'back' => $page['previous_step'] === null
                     ? AuditorJobsResource::link($prefix.'jobs.show', ['assignment' => $report['assignment_id']])
                     : AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['id'], 'step' => $page['previous_step']]), 'operation' => $operation],
-            'actions' => ['save' => ['url' => route($prefix.'reports.save', ['report' => $report['id']], false), 'method' => 'post'],
+            'actions' => ['dispute_uphold' => in_array('audit.dispute.uphold', $allowed, true) ? ['url' => route($prefix.'reports.disputes.uphold', ['report' => $report['id']], false), 'method' => 'post'] : null, 'save' => ['url' => route($prefix.'reports.save', ['report' => $report['id']], false), 'method' => 'post'],
                 'conflict' => in_array('conflict.declare', $allowed, true) ? $file['actions']['conflict'] : null,
                 'step_up' => in_array('audit.seal', $allowed, true) ? ['url' => route($prefix.'reports.step-up', ['report' => $report['id']], false), 'method' => 'post'] : null,
                 'seal' => in_array('audit.seal', $allowed, true) ? ['url' => route($prefix.'reports.seal', ['report' => $report['id']], false), 'method' => 'post'] : null,

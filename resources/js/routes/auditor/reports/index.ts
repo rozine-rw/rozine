@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 import operations from './operations'
+import disputes from './disputes'
 import statements from './statements'
 import ledgers from './ledgers'
 /**
@@ -622,6 +623,7 @@ amend.form = amendForm
 const reports = {
     start: Object.assign(start, start),
     operations: Object.assign(operations, operations),
+    disputes: Object.assign(disputes, disputes),
     show: Object.assign(show, show),
     statements: Object.assign(statements, statements),
     ledgers: Object.assign(ledgers, ledgers),

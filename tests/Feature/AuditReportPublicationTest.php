@@ -154,14 +154,14 @@ it('rejects direct signature mutation and publication without retained signature
         ->and(fn () => DB::transaction(fn () => $signature->delete()))->toThrow(QueryException::class);
 });
 
-it('uses the retained reporting cycle for monthly publication and keeps a late report unsigned', function (bool $late): void {
+it('opens a full 24 hour monthly review window even after the legacy seventh cutoff', function (bool $late): void {
     $this->travelTo(now('UTC')->startOfMonth()->addDays($late ? 7 : 4)->setTime(10, 0));
     $fixture = Fixture::ready(kind: 'monthly');
     expect(Fixture::seal($fixture)['code'])->toBe('AUDIT_SEALED');
     $page = app(GetBusinessAuditReport::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'], $fixture['report']->id);
-    expect($page['cosign']['overdue'])->toBe($late)->and($page['cosign']['due_at'])->toBe(now('UTC')->day(7)->setTime(21, 59, 59)->format('Y-m-d\TH:i:s\Z'))
-        ->and($page['can_cosign'])->toBe(! $late)
-        ->and(Fixture::cosign($fixture)['code'])->toBe($late ? 'REPORT_WINDOW_CLOSED' : 'REPORT_PUBLISHED');
+    expect($page['cosign']['overdue'])->toBeFalse()->and($page['cosign']['due_at'])->toBe(now('UTC')->addHours(24)->toIso8601String())
+        ->and($page['can_cosign'])->toBeTrue()
+        ->and(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
 })->with([false, true]);
 
 it('retains signatures and current-authority receipt recovery without accepting a second signature from the same Party', function (): void {

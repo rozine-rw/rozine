@@ -43,7 +43,8 @@ final class GetAuditProcedure
             'can_seal' => $page['signing_available'] && $report['step'] === 'seal' && $unavailable === null,
             'can_upload_ledger' => $report['status'] === 'draft' && $report['kind'] === 'flash'
                 && $storedStep === 'ledger' && $report['step'] === 'ledger',
-            'can_amend' => AuditReportDecision::amendable($report['status']) && $report['amendment_id'] === null,
+            'can_amend' => AuditReportDecision::amendable($report['status']) && $report['amendment_id'] === null
+                && (($page['sealed']['dispute']['status'] ?? null) !== 'escalated' || ($page['sealed']['dispute']['outcome'] ?? null) === 'amendment_required'),
             'decision_options' => $report['kind'] === 'monthly' && $report['status'] === 'draft'
                 ? ['request_changes' => AuditReportDecision::CHANGES, 'reject' => AuditReportDecision::REJECTION] : null, 'previous_step' => $index > 0 ? $steps[$index - 1] : null,
             'seal' => $seal, 'can_continue' => $report['status'] === 'draft' && $unavailable === null,
