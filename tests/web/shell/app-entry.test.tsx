@@ -67,8 +67,8 @@ describe('application entry point', () => {
     it('configures fallback titles, layouts, progress, and providers', async () => {
         const options = await loadApplication('');
 
-        expect(options.title('Dashboard')).toBe('Dashboard - Laravel');
-        expect(options.title('')).toBe('Laravel');
+        expect(options.title('Dashboard')).toBe('Dashboard - Rozine');
+        expect(options.title('')).toBe('Rozine');
         expect(options.layout('home')).toBe(state.publicLayout);
         expect(options.layout('welcome')).toBe(state.publicLayout);
         expect(options.layout('pulse')).toBe(state.publicLayout);
@@ -93,8 +93,8 @@ describe('application entry point', () => {
         expect(screen.getByText('Toast outlet')).toBeInTheDocument();
     });
 
-    it('uses the configured application name', async () => {
-        const options = await loadApplication('Rozine');
+    it('titles every tab Rozine, whatever name the environment carries', async () => {
+        const options = await loadApplication('Laravel');
 
         expect(options.title('Dashboard')).toBe('Dashboard - Rozine');
         expect(options.title('')).toBe('Rozine');

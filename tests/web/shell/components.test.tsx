@@ -298,6 +298,15 @@ describe('shell building blocks', () => {
         );
     });
 
+    it('names the product Rozine, whatever APP_NAME the server shares', () => {
+        state.page.name = 'Laravel';
+        render(<AppLogo />);
+
+        expect(screen.getByText('Rozine')).toBeInTheDocument();
+        expect(screen.queryByText('Laravel')).not.toBeInTheDocument();
+        state.page.name = 'Rozine';
+    });
+
     it('renders the application logo and merges caller icon styles', () => {
         state.page.auth.user = user;
         render(
@@ -513,8 +522,9 @@ describe('navigation components', () => {
 
         expect(screen.getAllByText('Rozine')).not.toHaveLength(0);
         expect(screen.getByText('Dashboard')).toBeInTheDocument();
-        expect(screen.getByText('Repository')).toBeInTheDocument();
-        expect(screen.getByText('Documentation')).toBeInTheDocument();
+        /* The starter kit's own links are gone from the product. */
+        expect(screen.queryByText('Repository')).not.toBeInTheDocument();
+        expect(screen.queryByText('Documentation')).not.toBeInTheDocument();
         expect(screen.getAllByText('Ada Lovelace')).not.toHaveLength(0);
     });
 });
