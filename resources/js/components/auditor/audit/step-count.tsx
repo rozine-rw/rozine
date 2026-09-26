@@ -295,6 +295,11 @@ export function StepCount({
                                   ),
                               })}
                     </p>
+                    <p className="mt-0.5 text-[10.5px] text-rz-secondary">
+                        {t('auditor.count.stock_tolerance', {
+                            units: groupDigits(stage.stock.tolerance_units),
+                        })}
+                    </p>
                 </div>
                 <fieldset>
                     <legend className="text-[11.5px] font-bold text-rz-ink">

@@ -1,0 +1,62 @@
+{
+    "component": "identity/role-home",
+    "props": {
+        "engagement": null,
+        "identity": {
+            "contract_version": "identity-v2",
+            "policy_version": "engineering-2026-09-23.4",
+            "code": "IDENTITY_READY",
+            "party": {
+                "id": "01k5tfp4r7y0000000000000a1",
+                "kind": "person",
+                "verification_status": "verified"
+            },
+            "available_roles": ["business"],
+            "active_role": "business",
+            "context_revision": 4,
+            "allowed_actions": ["identity.select_role", "identity.view_role"]
+        },
+        "role": "business",
+        "section": "overview",
+        "business_applications": {
+            "identity_context_revision": 4,
+            "entries": [
+                {
+                    "business_id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
+                    "name": "GreenLeaf Agro",
+                    "allowed_actions": [],
+                    "application": {
+                        "id": "01k6p4c8s3d0f4g9h2j6k1m7n3",
+                        "status": "draft",
+                        "step": "raise",
+                        "revision": 3,
+                        "link": {
+                            "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications/01k6p4c8s3d0f4g9h2j6k1m7n3",
+                            "method": "get"
+                        }
+                    },
+                    "actions": {
+                        "create": null
+                    },
+                    "audit_report": {
+                        "id": "01k6r8m1n2p3q4r5s6t7v8w9x0",
+                        "kind": "monthly",
+                        "status": "disputed",
+                        "link": {
+                            "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/audit-reports/01k6r8m1n2p3q4r5s6t7v8w9x0",
+                            "method": "get"
+                        }
+                    }
+                }
+            ],
+            "operation": {
+                "url": "/business/application-operations/{request_id}",
+                "method": "get"
+            },
+            "pagination": {
+                "next": null
+            }
+        },
+        "links": null
+    }
+}

@@ -114,7 +114,8 @@
                 "variance": {
                     "pct": "-3.2",
                     "within": false
-                }
+                },
+                "tolerance_units": "0"
             },
             "operational_status": "active"
         },
