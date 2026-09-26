@@ -109,6 +109,7 @@ it('serves the co-sign contract and one-signature publication through both trans
     $page = $api ? $response->json('data') : $response->viewData('page')['props'];
     expect($page['contract_version'])->toBe('business-audit-report-v1')->and($page['allowed_actions'])->toBe(['report.cosign'])
         ->and($page['report']['findings'][0])->toHaveKeys(['code', 'title', 'body', 'evidence_ids'])
+        ->and($page['report']['findings'][0]['body'])->toBe('Reported: 38,000,000. Observed: 37,000,000. Difference: -1,000,000.')
         ->and($page['report']['auditor_note'])->toBe('Observed difference retained for review.');
     $request = (string) Str::uuid();
     $body = ['identity_context_revision' => 1, 'expected_revision' => 1, 'report_revision' => $fixture['report']->revision + 1,

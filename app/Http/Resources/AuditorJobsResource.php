@@ -69,6 +69,26 @@ class AuditorJobsResource extends JsonResource
             'reassigned_from' => null, 'allowed_actions' => $assignment['allowed_actions']];
     }
 
+    /**
+     * A finding's whole-number figures grouped for reading: "38000000" reads "38,000,000" and
+     * "-1600000" reads "-1,600,000". Only the displayed sentence changes; the sealed values and
+     * their digest do not. Anything else, such as an observed status, is left as it is.
+     *
+     * @param  array<string, mixed>  $values
+     * @return array<string, mixed>
+     */
+    public static function figures(array $values): array
+    {
+        return array_map(function (mixed $value): mixed {
+            if (! is_string($value) || preg_match('/^-?\d+$/', $value) !== 1) {
+                return $value;
+            }
+            $digits = ltrim($value, '-');
+
+            return ($digits === $value ? '' : '-').preg_replace('/\B(?=(\d{3})+(?!\d))/', ',', $digits);
+        }, $values);
+    }
+
     /** @return array{currency: 'RWF', amount: string}|null */
     public static function money(?string $amount): ?array
     {
