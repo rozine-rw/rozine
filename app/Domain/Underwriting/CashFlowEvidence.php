@@ -15,9 +15,12 @@ use Brick\Math\BigRational;
  */
 final class CashFlowEvidence
 {
+    public function __construct(private AcceptedExposure $acceptedExposure = new AcceptedExposure) {}
+
     /**
      * @param  list<MonthInput>  $months
      * @param  list<ObligationInput>  $obligations
+     * @param  list<array{id: string, principal: string}>  $acceptedCommitments
      * @param  RepeatEligibility|null  $repeatEligibility  Null selects the first-time 36-month window.
      * @return array<string, mixed>
      */
@@ -29,6 +32,7 @@ final class CashFlowEvidence
         string $recurringOwnerDraw,
         array $obligations,
         ?array $repeatEligibility = null,
+        array $acceptedCommitments = [],
     ): array {
         FlatReturnPricing::validateTenor($tenor);
         $last = $this->monthIndex($lastCompleteMonth);
@@ -64,6 +68,7 @@ final class CashFlowEvidence
         }
         $repaymentMonths = array_map($this->monthLabel(...), range($firstRepayment, $firstRepayment + $tenor - 1));
         [$exposure, $contractualDebt] = $this->obligations($obligations, $repaymentMonths);
+        $exposure = $exposure->plus($this->acceptedExposure->additional($obligations, $acceptedCommitments));
         $meanDebt = $debt->dividedBy($required);
         $existingService = BigRational::max($meanDebt, ...array_values($contractualDebt));
         $ownerDraw = BigRational::max($draw->dividedBy($required), ExactFinancialValue::amount($recurringOwnerDraw));

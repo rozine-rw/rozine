@@ -16,11 +16,11 @@ use Brick\Math\BigRational;
  *
  * @phpstan-type Conduct array{on_time: int, total: int}
  * @phpstan-type History array{has_rozine_history: bool, repeat_eligibility: RepeatEligibility|null, instalment_conduct: Conduct|null, report_conduct: Conduct|null, post_grace_arrears: bool, reporting_breach: bool, defaulted: bool, days_past_due: int}
- * @phpstan-type Inputs array{requested_principal: string, tenor_months: int, accepted_principal: string|null, months: list<MonthInput>, last_complete_month: string, first_repayment_month: string, recurring_owner_draw: string, obligations: list<ObligationInput>, history: History|null, restriction_active: bool}
+ * @phpstan-type Inputs array{requested_principal: string, tenor_months: int, accepted_principal: string|null, months: list<MonthInput>, last_complete_month: string, first_repayment_month: string, recurring_owner_draw: string, obligations: list<ObligationInput>, history: History|null, restriction_active: bool, accepted_commitments?: list<array{id: string, principal: string}>}
  */
 final class ApplicationUnderwriting
 {
-    public const VERSION = 'application-underwriting-1';
+    public const VERSION = 'application-underwriting-2';
 
     public function __construct(
         private CashFlowEvidence $evidence,
@@ -57,7 +57,7 @@ final class ApplicationUnderwriting
                 throw new UnderwritingViolation('REPEAT_TRACK_INELIGIBLE');
             }
             $facts = $this->evidence->analyze($inputs['months'], $inputs['last_complete_month'], $inputs['first_repayment_month'], $inputs['tenor_months'],
-                $inputs['recurring_owner_draw'], $inputs['obligations'], $history['repeat_eligibility']);
+                $inputs['recurring_owner_draw'], $inputs['obligations'], $history['repeat_eligibility'], $inputs['accepted_commitments'] ?? []);
         } catch (UnderwritingViolation $failure) {
             return [...$result, 'code' => 'UNDERWRITING_EVIDENCE_REQUIRED', 'evidence_reason' => $failure->reasonCode];
         }
