@@ -106,7 +106,7 @@ it('runs the real-record Auditor Jobs accept decline conflict and receipt journe
             await page.getByRole("button", {name:"Auditor", exact:true}).click();
             await page.waitForURL("**/auditor");
             await page.goto('.json_encode($base.'/auditor/jobs').');
-            await page.getByRole("heading", {name:"Flash Audits"}).waitFor();
+            await page.getByRole("heading", {name:"Audit jobs"}).waitFor();
             const offer = '.$card($accepted).';
             await offer.getByRole("button", {name:/^Accept · due /}).waitFor();
             const countdown = await offer.getByRole("timer", {name:"Time left to accept this offer"}).textContent();
@@ -187,7 +187,7 @@ it('runs the real-record Auditor Jobs accept decline conflict and receipt journe
 
             await page.setViewportSize({width:390, height:844});
             await page.goto('.json_encode($base.'/auditor/jobs').');
-            await page.getByRole("heading", {name:"Flash Audits"}).waitFor();
+            await page.getByRole("heading", {name:"Audit jobs"}).waitFor();
             '.$noOverflow.'
             await page.screenshot({path:"jobs-mobile.png", fullPage:true, animations:"disabled"});
             await page.goto('.json_encode($base.'/auditor/jobs/'.$accepted->id.'/conflict').');
@@ -195,7 +195,7 @@ it('runs the real-record Auditor Jobs accept decline conflict and receipt journe
             '.$noOverflow.'
             await page.screenshot({path:"conflict-receipt-mobile.png", fullPage:true, animations:"disabled"});
             await page.goto('.json_encode($base.'/auditor/jobs').');
-            await page.getByRole("heading", {name:"Flash Audits"}).waitFor();
+            await page.getByRole("heading", {name:"Audit jobs"}).waitFor();
             if (errors.length) throw new Error(JSON.stringify(errors));
             return {conflictReceipt:true, fileDenied:true, register:true, mobile:true};
         }']);
