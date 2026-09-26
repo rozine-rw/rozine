@@ -5,6 +5,7 @@ import {
     VarianceChip,
     groupDigits,
     onlyDigits,
+    usePreviewedFigure,
     useStepForm,
     useVariancePreview,
 } from '@/components/auditor/audit/parts';
@@ -98,6 +99,14 @@ export function StepCount({
     context: StepContext;
 }) {
     const { t, locale } = useTranslation();
+    const cash = usePreviewedFigure(
+        'cash',
+        stage.cash.observed?.amount ?? null,
+    );
+    const stockUnits = usePreviewedFigure(
+        'stock_units',
+        stage.stock.observed_units,
+    );
     const { form, submit } = useStepForm(context, {
         financial_proofs: stage.financial_proofs
             .filter((proof) => proof.seen)
@@ -105,8 +114,8 @@ export function StepCount({
         inventory_proofs: stage.inventory_proofs
             .filter((proof) => proof.seen)
             .map((proof) => proof.key),
-        cash: stage.cash.observed?.amount ?? '',
-        stock_units: stage.stock.observed_units ?? '',
+        cash,
+        stock_units: stockUnits,
         operational_status: stage.operational_status ?? '',
     });
 

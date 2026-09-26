@@ -549,7 +549,7 @@ describe('Audit procedure — ledger reconciliation', () => {
         expect(click).toHaveBeenCalled();
 
         const saved = operation({
-            code: 'AUDIT_STEP_SAVED',
+            code: 'INGESTED_NOT_AUDIT_APPROVED',
             revision: 8,
             data: {
                 next: { url: '/preview/auditor-audit-ledger', method: 'get' },
@@ -569,12 +569,12 @@ describe('Audit procedure — ledger reconciliation', () => {
                 ...COMMAND,
             },
         });
-        /* The receipt verifies nothing on its own: the page goes where the server says. */
-        await waitFor(() =>
-            expect(inertia.visits).toEqual([
-                { url: '/preview/auditor-audit-ledger' },
-            ]),
-        );
+        /*
+         * The receipt verifies and advances nothing: its `next` is this same step, which is
+         * redrawn in place rather than visited afresh.
+         */
+        await waitFor(() => expect(inertia.reloads).toEqual([undefined]));
+        expect(inertia.visits).toEqual([]);
         expect(inertia.posts).toHaveLength(0);
 
         await user.click(
@@ -673,6 +673,130 @@ describe('Audit procedure — ledger reconciliation', () => {
         ).toBeInTheDocument();
         expect(screen.getByText('0 of 1 accepted')).toBeInTheDocument();
         expect(inertia.poll.start).toHaveBeenCalled();
+    });
+
+    it('pauses the re-check while Review & seal is in flight, then follows the server to the next step', async () => {
+        let answer: (value: unknown) => void = () => undefined;
+
+        inertia.queue.push(
+            () =>
+                new Promise((resolve) => {
+                    answer = resolve;
+                }),
+        );
+        const { user } = renderWithUser(
+            <AuditorAudit
+                {...withStage<LedgerStage>(ledger, (stage) => ({
+                    ...stage,
+                    documents: [
+                        {
+                            ...stage.documents[0],
+                            state: 'scanning',
+                            fields: [],
+                        },
+                    ],
+                }))}
+            />,
+        );
+
+        expect(inertia.poll.start).toHaveBeenCalledTimes(1);
+        expect(inertia.poll.stop).not.toHaveBeenCalled();
+
+        await user.click(screen.getByRole('button', { name: 'Review & seal' }));
+
+        /* A read sent now could land after the move to the seal step and undo it. */
+        expect(inertia.poll.stop).toHaveBeenCalledTimes(1);
+        expect(inertia.calls[0].body).toMatchObject({
+            step: 'ledger',
+            observed_stock: '36400000',
+        });
+
+        await act(async () => {
+            answer(
+                operation({
+                    data: {
+                        next: {
+                            url: '/auditor/reports/fa_huye',
+                            method: 'get',
+                        },
+                    },
+                }),
+            );
+        });
+
+        expect(inertia.visits).toEqual([{ url: '/auditor/reports/fa_huye' }]);
+    });
+
+    it('keeps a typed, unsaved stock value through a ledger upload and seals with it', async () => {
+        const page = withStage<LedgerStage>(ledger, (stage) => ({
+            ...stage,
+            observed_stock: null,
+        }));
+        const { user } = renderWithUser(<AuditorAudit {...page} />);
+        const box = screen.getByLabelText(
+            'Observed on site · stock value (RWF)',
+        );
+
+        expect(box).toHaveValue('');
+        await user.type(box, '38000000');
+        expect(box).toHaveValue('38,000,000');
+
+        inertia.queue.push(
+            answers(
+                operation({
+                    code: 'INGESTED_NOT_AUDIT_APPROVED',
+                    data: {
+                        next: {
+                            url: '/auditor/reports/fa_huye',
+                            method: 'get',
+                        },
+                    },
+                }),
+            ),
+        );
+        await user.upload(
+            screen.getByLabelText('Ledger document file'),
+            new File(['amount\n1\n'], 'ledger.csv', { type: 'text/csv' }),
+        );
+
+        await waitFor(() => expect(inertia.reloads).toContainEqual(undefined));
+        expect(inertia.visits).toEqual([]);
+        expect(box).toHaveValue('38,000,000');
+
+        inertia.queue.push(answers(operation()));
+        await user.click(screen.getByRole('button', { name: 'Review & seal' }));
+
+        expect(inertia.calls[1].body).toMatchObject({
+            step: 'ledger',
+            observed_stock: '38000000',
+        });
+    });
+
+    it('shows the previewed figure the variance was measured against when the page is reloaded', () => {
+        inertia.url = '/auditor/reports/fa_huye?observed_stock=38000000';
+        render(
+            <AuditorAudit
+                {...withStage<LedgerStage>(ledger, (stage) => ({
+                    ...stage,
+                    observed_stock: null,
+                    variance: { pct: '0.0', within: true },
+                }))}
+            />,
+        );
+
+        expect(
+            screen.getByLabelText('Observed on site · stock value (RWF)'),
+        ).toHaveValue('38,000,000');
+        expect(screen.getByText('Within tolerance')).toBeInTheDocument();
+    });
+
+    it('shows the saved stock value after a reload with no preview, and ignores a malformed one', () => {
+        inertia.url = '/auditor/reports/fa_huye?observed_stock=12abc';
+        render(<AuditorAudit {...props(ledger)} />);
+
+        expect(
+            screen.getByLabelText('Observed on site · stock value (RWF)'),
+        ).toHaveValue('36,400,000');
     });
 
     it('offers the retained original as an ordinary download link', async () => {
@@ -1271,6 +1395,19 @@ describe('Audit procedure — monthly statements and count', () => {
             identity_context_revision: 3,
             request_id: expect.any(String),
         });
+    });
+
+    it('shows the previewed cash and units a reloaded count was measured against', () => {
+        inertia.url =
+            '/auditor/reports/mr_greenleaf?cash=1200000&stock_units=188';
+        render(<AuditorAudit {...props(count)} />);
+
+        expect(
+            screen.getByLabelText('Observed on site · cash (RWF)'),
+        ).toHaveValue('1,200,000');
+        expect(
+            screen.getByLabelText('Observed on site · stock (units)'),
+        ).toHaveValue('188');
     });
 
     it('starts a count with no baseline, no counts and no status', () => {

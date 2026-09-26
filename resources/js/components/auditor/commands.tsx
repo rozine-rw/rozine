@@ -241,6 +241,16 @@ export function useAuditorCommandCenter({
                 reloadPage(reload);
 
                 return;
+            case 'INGESTED_NOT_AUDIT_APPROVED':
+                /*
+                 * A ledger upload's receipt: the document is kept, nothing is verified and the
+                 * step does not move. Its `next` is this same step, so the step is redrawn in
+                 * place rather than visited afresh, which would drop the stock value the partner
+                 * has typed but not yet saved — and Review & seal would then send it empty.
+                 */
+                reloadPage(reload);
+
+                return;
             default:
                 router.visit(data.next);
         }
