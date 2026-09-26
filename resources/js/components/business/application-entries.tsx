@@ -10,6 +10,7 @@ import type { RouteAction, RouteLink } from '@/types';
 import type {
     BusinessApplications,
     BusinessApplicationSummary,
+    BusinessAuditReportEntry,
 } from '@/types/business';
 
 /** The saved pointers the Apply wizard names; any other is left unnamed rather than guessed. */
@@ -142,6 +143,25 @@ function ApplicationLink({
 }
 
 /**
+ * The business's latest sealed audit report (#124): which kind it is, where it stands for the
+ * business, and the way into it. The destination rechecks authority, so nothing else is shown.
+ */
+function AuditReportLink({ report }: { report: BusinessAuditReportEntry }) {
+    const { t } = useTranslation();
+
+    return (
+        <div className="flex flex-col gap-1 border-t pt-3">
+            <p className="text-sm text-muted-foreground">
+                {t(`business.audit_cosign.kind.${report.kind}`)}
+            </p>
+            <Link href={report.link} className="font-medium">
+                {t(`business.entries.audit_report.${report.status}`)}
+            </Link>
+        </div>
+    );
+}
+
+/**
  * The Business role landing page's way into Apply (#96): each business the person may act for,
  * with its application, or a way to start one when the server allows `application.create`. It
  * carries no financial facts, so none are shown or stood in for.
@@ -203,6 +223,11 @@ export function BusinessApplicationEntries({
                                     <p className="text-sm text-muted-foreground">
                                         {t('business.entries.view_only')}
                                     </p>
+                                )}
+                                {entry.audit_report !== null && (
+                                    <AuditReportLink
+                                        report={entry.audit_report}
+                                    />
                                 )}
                             </li>
                         );

@@ -159,6 +159,29 @@ export type BusinessApplicationSummary = {
     link: RouteLink;
 };
 
+/**
+ * Where a business's latest unamended sealed audit report stands for it (#124): `pending` — sealed
+ * and waiting on the business; `published`; and, under the N6 policy (#126), `disputed` — the
+ * business's dispute is with the CPA — and `escalated` — Rozine staff hold it.
+ */
+export type BusinessAuditReportStatus =
+    | 'pending'
+    | 'published'
+    | 'disputed'
+    | 'escalated';
+
+/**
+ * The business's way into its latest sealed audit report on the role landing page. The
+ * destination rechecks publication authority, so this carries navigation only, no findings.
+ */
+export type BusinessAuditReportEntry = {
+    /** Opaque; never parsed. */
+    id: string;
+    kind: 'flash' | 'monthly';
+    status: BusinessAuditReportStatus;
+    link: RouteLink;
+};
+
 /** One business the current person may act for on the Business role landing page (#96). */
 export type BusinessApplicationsEntry = {
     /** Opaque; never parsed. */
@@ -167,6 +190,8 @@ export type BusinessApplicationsEntry = {
     allowed_actions: 'application.create'[];
     application: BusinessApplicationSummary | null;
     actions: { create: RouteAction | null };
+    /** The latest unamended sealed audit report; null when there is none, and nothing shows. */
+    audit_report: BusinessAuditReportEntry | null;
 };
 
 /**

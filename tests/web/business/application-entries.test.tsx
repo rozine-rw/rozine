@@ -5,6 +5,10 @@ import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import RoleHome from '@/pages/identity/role-home';
 import type { BusinessApplications } from '@/types/business';
 import type { IdentityContext, MarketplaceRole } from '@/types/identity';
+import auditDisputed from '../../../resources/fixtures/ui/role-home-business-audit-disputed.json';
+import auditEscalated from '../../../resources/fixtures/ui/role-home-business-audit-escalated.json';
+import auditPending from '../../../resources/fixtures/ui/role-home-business-audit-pending.json';
+import auditPublished from '../../../resources/fixtures/ui/role-home-business-audit-published.json';
 import roleHomeFixture from '../../../resources/fixtures/ui/role-home-business.json';
 
 type Responder = (options: {
@@ -469,5 +473,98 @@ describe('Business role landing — raise applications', () => {
         expect(await screen.findByRole('alert')).toBeInTheDocument();
         expect(inertia.reload).toHaveBeenCalled();
         expect(inertia.visit).not.toHaveBeenCalled();
+    });
+});
+
+describe('Business role landing — latest audit report', () => {
+    const fixtureProps = (fixture: { props: unknown }) =>
+        structuredClone(fixture.props) as RoleHomeProps;
+
+    const reportIn = (name: string) => {
+        const entry = entryFor(name);
+
+        return {
+            kind: (label: string) => within(entry).getByText(label),
+            link: (label: string) =>
+                within(entry).getByRole('link', { name: label }),
+            links: () =>
+                within(entry)
+                    .queryAllByRole('link')
+                    .map((link) => link.getAttribute('href')),
+        };
+    };
+
+    it('shows no audit report where the server sends none', () => {
+        render(<RoleHome {...props()} />);
+
+        expect(screen.queryByText(/audit report/iu)).not.toBeInTheDocument();
+        expect(screen.queryByText(/dispute/iu)).not.toBeInTheDocument();
+    });
+
+    it('invites review and co-signing of a pending Flash or Monthly report, per business', () => {
+        render(<RoleHome {...fixtureProps(auditPending)} />);
+
+        const kigali = reportIn('Kigali Fresh Foods');
+        const greenleaf = reportIn('GreenLeaf Agro');
+
+        expect(kigali.kind('Flash audit report')).toBeInTheDocument();
+        expect(
+            kigali.link('Audit report ready: review and co-sign'),
+        ).toHaveAttribute(
+            'href',
+            '/business/01k6q1a2b3c4d5e6f7g8h9j0k1/audit-reports/01k6r8a1b2c3d4e5f6g7h8j9k0',
+        );
+        expect(greenleaf.kind('Monthly audit report')).toBeInTheDocument();
+        expect(
+            greenleaf.link('Audit report ready: review and co-sign'),
+        ).toHaveAttribute(
+            'href',
+            '/business/01k6p4b7r2c9d3f8g1h5j0k6m2/audit-reports/01k6r8m1n2p3q4r5s6t7v8w9x0',
+        );
+        /* The application's own way in stays beside the report. */
+        expect(greenleaf.links()).toEqual([
+            '/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications/01k6p4c8s3d0f4g9h2j6k1m7n3',
+            '/business/01k6p4b7r2c9d3f8g1h5j0k6m2/audit-reports/01k6r8m1n2p3q4r5s6t7v8w9x0',
+        ]);
+        expect(reportIn('Nyamirambo Crafts').links()).toEqual([]);
+    });
+
+    it('says a Flash or Monthly report is published', () => {
+        render(<RoleHome {...fixtureProps(auditPublished)} />);
+
+        const kigali = reportIn('Kigali Fresh Foods');
+        const huye = reportIn('Huye Motors');
+
+        expect(kigali.kind('Flash audit report')).toBeInTheDocument();
+        expect(kigali.link('Audit report published')).toHaveAttribute(
+            'href',
+            '/business/01k6q1a2b3c4d5e6f7g8h9j0k1/audit-reports/01k6r8a1b2c3d4e5f6g7h8j9k0',
+        );
+        expect(huye.kind('Monthly audit report')).toBeInTheDocument();
+        expect(huye.link('Audit report published')).toHaveAttribute(
+            'href',
+            '/business/01k6q2m3n4p5q6r7s8t9v0w1x2/audit-reports/01k6r8m1n2p3q4r5s6t7v8w9x1',
+        );
+        expect(
+            screen.queryByText('Audit report ready: review and co-sign'),
+        ).not.toBeInTheDocument();
+    });
+
+    it.each([
+        [auditDisputed, 'Your dispute is under review'],
+        [auditEscalated, 'Rozine staff are reviewing your dispute'],
+    ])('tells the business where its dispute stands (%#)', (fixture, copy) => {
+        render(<RoleHome {...fixtureProps(fixture)} />);
+
+        const greenleaf = reportIn('GreenLeaf Agro');
+
+        expect(greenleaf.kind('Monthly audit report')).toBeInTheDocument();
+        expect(greenleaf.link(copy)).toHaveAttribute(
+            'href',
+            '/business/01k6p4b7r2c9d3f8g1h5j0k6m2/audit-reports/01k6r8m1n2p3q4r5s6t7v8w9x0',
+        );
+        expect(
+            screen.queryByText(/Audit report (ready|published)/u),
+        ).not.toBeInTheDocument();
     });
 });

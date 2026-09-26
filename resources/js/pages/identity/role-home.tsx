@@ -8,8 +8,11 @@ import { useTranslation } from '@/hooks/use-translation';
 import { dashboard } from '@/routes';
 import { store } from '@/routes/identity/bookmarks';
 import { edit } from '@/routes/profile';
-import type { RouteLink } from '@/types';
-import type { EngagementSummary } from '@/types/auditor';
+import type {
+    AuditorAppLinks,
+    EngagementSummary,
+    OperationLookupLinks,
+} from '@/types/auditor';
 import type { BusinessApplications } from '@/types/business';
 import type {
     IdentityContext,
@@ -33,10 +36,10 @@ type Props = {
      */
     engagement?: EngagementSummary | null;
     /**
-     * The Auditor role's way into its work, as the Auditor shell's `links` carry them. Optional
-     * until the server sends them on the role home; a destination it does not send is not shown.
+     * The Auditor role's way into its work, as the Auditor shell's `links` carry them (#124); null
+     * for every other role. A destination the server leaves null is not shown.
      */
-    links?: { jobs: RouteLink | null; profile: RouteLink | null } | null;
+    links?: (AuditorAppLinks & OperationLookupLinks) | null;
 };
 
 export default function RoleHome({
@@ -135,6 +138,11 @@ export default function RoleHome({
                             {links?.profile != null && (
                                 <Link href={links.profile}>
                                     {t('auditor.nav.profile')}
+                                </Link>
+                            )}
+                            {links?.conflicts != null && (
+                                <Link href={links.conflicts}>
+                                    {t('auditor.nav.conflicts')}
                                 </Link>
                             )}
                             <Link href={engagement.link}>

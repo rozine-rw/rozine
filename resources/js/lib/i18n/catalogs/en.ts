@@ -253,6 +253,12 @@ const en = {
         'You can view this business, but starting a raise is not open to you.',
     'business.entries.empty':
         'No business you can act for is linked to this account yet.',
+    'business.entries.audit_report.pending':
+        'Audit report ready: review and co-sign',
+    'business.entries.audit_report.published': 'Audit report published',
+    'business.entries.audit_report.disputed': 'Your dispute is under review',
+    'business.entries.audit_report.escalated':
+        'Rozine staff are reviewing your dispute',
     'business.entries.more': 'Show more',
     'business.grow.title': 'Grow',
     'business.grow.subtitle': "Raise more when you're ready.",
@@ -1426,6 +1432,7 @@ const en = {
     'auditor.nav.jobs': 'Jobs',
     'auditor.nav.portfolio': 'Portfolio',
     'auditor.nav.profile': 'Profile',
+    'auditor.nav.conflicts': 'Conflicts',
     'auditor.nav.jobs_badge': '{count} open offers',
     'auditor.clock.label': 'Time left on this job',
     'auditor.clock.time_left': 'Time left',
@@ -1739,6 +1746,7 @@ const en = {
     'auditor.count.stock_hint': 'Reported stock: {units} units',
     'auditor.count.stock_no_baseline':
         'No reported stock baseline for this period.',
+    'auditor.count.stock_tolerance': 'Stock tolerance: {units} units',
     'auditor.count.operational': 'Operational status',
     'auditor.count.status.active': 'Active',
     'auditor.count.status.suspended': 'Suspended',

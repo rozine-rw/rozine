@@ -57,43 +57,52 @@ describe('The Auditor role home', () => {
         );
     });
 
-    it('links the engagement terms, and Jobs and Profile once the server sends them', () => {
-        const { rerender } = render(<RoleHome {...props(auditorFixture)} />);
+    it('links Jobs, Profile, Conflicts and the engagement terms from the server’s links', () => {
+        render(<RoleHome {...props(auditorFixture)} />);
+        const nav = screen.getByRole('navigation', {
+            name: 'Your audit work',
+        });
+
+        expect(
+            within(nav)
+                .getAllByRole('link')
+                .map((link) => [link.textContent, link.getAttribute('href')]),
+        ).toEqual([
+            ['Jobs', '/preview/auditor-jobs-engagement-required'],
+            ['Profile', '/preview/auditor-profile-engagement-required'],
+            ['Conflicts', '/preview/auditor-conflicts'],
+            ['Engagement terms', '/preview/auditor-engagement'],
+        ]);
+    });
+
+    it('leaves out a destination the server does not send', () => {
+        const fixture = props(auditorFixture);
+        const { rerender } = render(
+            <RoleHome
+                {...fixture}
+                links={{
+                    ...(fixture.links as NonNullable<Props['links']>),
+                    jobs: null,
+                    conflicts: null,
+                }}
+            />,
+        );
         const nav = () =>
             screen.getByRole('navigation', { name: 'Your audit work' });
 
         expect(
-            within(nav()).getByRole('link', { name: 'Engagement terms' }),
-        ).toHaveAttribute('href', '/preview/auditor-engagement');
-        expect(
-            within(nav()).queryByRole('link', { name: 'Jobs' }),
-        ).not.toBeInTheDocument();
+            within(nav())
+                .getAllByRole('link')
+                .map((link) => link.textContent),
+        ).toEqual(['Profile', 'Engagement terms']);
 
-        rerender(
-            <RoleHome
-                {...props(auditorFixture)}
-                links={{
-                    jobs: { url: '/auditor/jobs', method: 'get' },
-                    profile: { url: '/auditor/profile', method: 'get' },
-                }}
-            />,
-        );
+        rerender(<RoleHome {...fixture} links={null} />);
 
         expect(
-            within(nav()).getByRole('link', { name: 'Jobs' }),
-        ).toHaveAttribute('href', '/auditor/jobs');
-        expect(
-            within(nav()).getByRole('link', { name: 'Profile' }),
-        ).toHaveAttribute('href', '/auditor/profile');
-
-        rerender(
-            <RoleHome
-                {...props(auditorFixture)}
-                links={{ jobs: null, profile: null }}
-            />,
-        );
-
-        expect(within(nav()).getAllByRole('link')).toHaveLength(1);
+            within(nav())
+                .getAllByRole('link')
+                .map((link) => link.textContent),
+        ).toEqual(['Engagement terms']);
     });
 
     it('shows no engagement banner on a role home that is not the Auditor’s', () => {

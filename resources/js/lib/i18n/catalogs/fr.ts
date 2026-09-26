@@ -258,6 +258,13 @@ const fr: Catalog = {
         'Vous pouvez consulter cette entreprise, mais lancer une levée ne vous est pas ouvert.',
     'business.entries.empty':
         'Aucune entreprise pour laquelle vous pouvez agir n’est encore liée à ce compte.',
+    'business.entries.audit_report.pending':
+        'Rapport d’audit prêt : à examiner et cosigner',
+    'business.entries.audit_report.published': 'Rapport d’audit publié',
+    'business.entries.audit_report.disputed':
+        'Votre contestation est en cours d’examen',
+    'business.entries.audit_report.escalated':
+        'L’équipe Rozine examine votre contestation',
     'business.entries.more': 'Afficher plus',
     'business.grow.title': 'Croître',
     'business.grow.subtitle': 'Levez davantage quand vous êtes prêt.',
@@ -1462,6 +1469,7 @@ const fr: Catalog = {
     'auditor.nav.jobs': 'Missions',
     'auditor.nav.portfolio': 'Portefeuille',
     'auditor.nav.profile': 'Profil',
+    'auditor.nav.conflicts': 'Conflits',
     'auditor.nav.jobs_badge': '{count} offres ouvertes',
     'auditor.clock.label': 'Temps restant pour cette mission',
     'auditor.clock.time_left': 'Temps restant',
@@ -1780,6 +1788,7 @@ const fr: Catalog = {
     'auditor.count.stock_hint': 'Stock déclaré : {units} unités',
     'auditor.count.stock_no_baseline':
         'Aucune base de stock déclarée pour cette période.',
+    'auditor.count.stock_tolerance': 'Tolérance de stock : {units} unités',
     'auditor.count.operational': 'Statut opérationnel',
     'auditor.count.status.active': 'Actif',
     'auditor.count.status.suspended': 'Suspendu',
