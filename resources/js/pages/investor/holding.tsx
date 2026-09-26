@@ -7,7 +7,7 @@ import {
 } from '@/components/investor/portfolio/holding-detail';
 import { useTranslation } from '@/hooks/use-translation';
 import { useWide } from '@/lib/investor/use-wide';
-import type { InvestorHoldingProps } from '@/types/investor';
+import type { C3InvestorHoldingProps } from '@/types/investor';
 
 /**
  * Note detail (MVP-INVESTOR-SCR-05, design L1304–1694): one holding's figures, schedule, rating
@@ -17,7 +17,7 @@ import type { InvestorHoldingProps } from '@/types/investor';
 export default function InvestorHolding({
     holding,
     links,
-}: InvestorHoldingProps) {
+}: C3InvestorHoldingProps) {
     const { t } = useTranslation();
     const wide = useWide();
     const frozen =

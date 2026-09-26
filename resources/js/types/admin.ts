@@ -1,6 +1,13 @@
 import type { BusinessRating, NoteStatus } from './business';
 import type { Money } from './money';
 import type { RouteAction, RouteLink } from './routing';
+import type {
+    C3PreviewOutcome,
+    Pagination,
+    ProviderOutcome,
+    ProviderOutcomeState,
+    Receipt,
+} from './settlement';
 
 /**
  * Admin console page contracts (Phase 1B, crosswalk MVP-ADMIN-SCR-01..09). Every figure, count,
@@ -640,4 +647,196 @@ export type AdminEventsProps = AdminShellProps & {
     more: RouteLink | null;
     export: EventExport;
     actions: { export?: RouteAction };
+};
+
+/* ------------------------------------------------------------------------------------------ */
+/* Checkpoint 3: staff-disbursement-v1 and the minimal staff release (C3 proposal v2 §2e)      */
+/* ------------------------------------------------------------------------------------------ */
+
+/*
+ * Additive and non-activatable. The Phase 1B disbursement and application shapes above stay
+ * untouched; the console pages read these, reviewed only through synthetic fixtures. Staff pages
+ * sit under the separately versioned staff-access contract: no `identity_context_revision`, no
+ * Party key, and permission only ever from the staff permission map, never a role label.
+ */
+
+/** New `StaffPermission` entries, to be added and tested in the C3 server slice (H11). */
+export type DisbursementPermission =
+    | 'disbursements.view'
+    | 'disbursements.authorize'
+    | 'disbursements.approve'
+    | 'disbursements.hold'
+    | 'disbursements.requery';
+
+/**
+ * From current permissions and segregation: `approve` needs a checker other than the maker and a
+ * fresh bound step-up; `reject` voids the maker's authorization only; `release_hold` needs someone
+ * other than the staff member who placed the hold; `requery` asks about the same operation and
+ * never resends. There is no `retry` or `reauthorize` (H12).
+ */
+export type DisbursementAllowedAction =
+    | 'disbursement.authorize'
+    | 'disbursement.approve'
+    | 'disbursement.reject'
+    | 'disbursement.hold'
+    | 'disbursement.release_hold'
+    | 'disbursement.requery';
+
+export type DisbursementCommandKey =
+    | 'authorize'
+    | 'approve'
+    | 'reject'
+    | 'hold'
+    | 'release_hold'
+    | 'requery';
+
+export type StaffDisbursementPageContract = {
+    contract_version: 'staff-disbursement-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: DisbursementAllowedAction[];
+};
+
+/**
+ * `queued`: the intent is recorded (DISBURSEMENT_INTENT_RECORDED) and the worker has not sent it.
+ * `dispatched`: the worker sent it after its own recheck; the outcome is in `provider`, and a
+ * verified failure stays here until it is reconciled. `succeeded` is verified and reconciled, with
+ * issue committed. `failed_closing` is a failed recheck or a verified, reconciled final failure,
+ * refunded (§11.3).
+ */
+export type C3DisbursementState =
+    | 'ready'
+    | 'awaiting_second_approver'
+    | 'on_hold'
+    | 'queued'
+    | 'dispatched'
+    | 'succeeded'
+    | 'failed_closing';
+
+export type C3DisbursementRow = {
+    id: string;
+    reference: string;
+    business: string;
+    note_title: string;
+    /** Masked by the server. */
+    destination: string;
+    amount: Money;
+    state: C3DisbursementState;
+    provider_state: ProviderOutcomeState | null;
+    link: RouteLink;
+};
+
+/**
+ * The staff step-up an approval needs. It has its own staff route and purpose, not the Auditor
+ * seal's; that route and its codes are still to be settled, so `route` is null until they exist.
+ */
+export type DisbursementStepUp = {
+    purpose: 'disbursement.approve';
+    route: RouteAction | null;
+};
+
+export type C3DisbursementDetail = C3DisbursementRow & {
+    campaign_id: string;
+    revision: number;
+    /** No sourced deadline after full funding exists; rendered as unavailable (H12). */
+    due_on: null;
+    precheck: {
+        state: 'not_run' | 'passed' | 'failed';
+        checked_at: string | null;
+        policy_version: string | null;
+        causes: string[];
+    };
+    maker: Attribution | null;
+    checker: Attribution | null;
+    viewer_is_maker: boolean;
+    /** What the approval's step-up proof binds (H11). */
+    approval_binding: {
+        revision: number;
+        amount: Money;
+        /** Masked. */
+        destination: string;
+        intent_digest: string;
+    } | null;
+    step_up: DisbursementStepUp;
+    intent: {
+        operation_id: string;
+        recorded_at: string;
+        receipt: Receipt;
+    } | null;
+    dispatch: {
+        sent_at: string;
+        recheck: {
+            state: 'passed' | 'failed';
+            checked_at: string;
+            causes: string[];
+        };
+    } | null;
+    /** Staff audience: references and error codes are allowed here. */
+    provider: ProviderOutcome | null;
+    /** Releasing needs a staff member other than the one who placed it. */
+    hold: { placed_by: Attribution; reason: string } | null;
+    viewer_placed_hold: boolean;
+    issue: {
+        holdings: number;
+        issued_at: string;
+        effective_date: string;
+    } | null;
+    refund: { commitments: number; total: Money; receipt: Receipt } | null;
+    trail: TrailEntry[];
+    allowed_actions: DisbursementAllowedAction[];
+    actions: Partial<Record<DisbursementCommandKey, RouteAction>>;
+    links: {
+        close: RouteLink;
+        ledger: RouteLink | null;
+        operation: RouteLink;
+    };
+};
+
+export type C3AdminDisbursementsProps = AdminShellProps &
+    StaffDisbursementPageContract & {
+        disbursements: C3DisbursementRow[];
+        pagination: Pagination;
+        awaiting_second_approver: number;
+        disbursement: C3DisbursementDetail | null;
+        /**
+         * Null with a scoped refusal when the viewer may no longer read the opened disbursement:
+         * a lookup's `current: null` still needs lookup authorization.
+         */
+        refusal: { code: string; status: number } | null;
+        preview_outcome?: C3PreviewOutcome<DisbursementAllowedAction>;
+    };
+
+/**
+ * The minimal staff release of a reviewed application into a campaign (AC-02/AC-03, H1). It uses
+ * the existing `applications.review` permission, offered only through `allowed_actions`, and can
+ * never override a failed gate: a failed gate shows as blocking.
+ */
+export type StaffReleaseGate = {
+    key: 'engine' | 'authority' | 'report';
+    state: 'passed' | 'failed';
+    /** A stable cause code when the gate failed. */
+    cause: string | null;
+};
+
+export type StaffRelease = {
+    revision: number;
+    state: 'awaiting_staff_review' | 'released' | 'refused';
+    gates: StaffReleaseGate[];
+    allowed_actions: 'application.release'[];
+    actions: { release: RouteAction | null };
+    /** Set once released: the release receipt. */
+    receipt: Receipt | null;
+};
+
+export type C3ApplicationReview = ApplicationReview & {
+    release: StaffRelease | null;
+};
+
+export type C3AdminApplicationsProps = Omit<
+    AdminApplicationsProps,
+    'review'
+> & {
+    review: C3ApplicationReview | null;
+    links: { operation: RouteLink };
+    preview_outcome?: C3PreviewOutcome<'application.release'>;
 };

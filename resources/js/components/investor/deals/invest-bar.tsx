@@ -5,15 +5,85 @@ import { useTranslation } from '@/hooks/use-translation';
 import { formatAmount, formatCount } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
-import type { DealCard, InvestGate, InvestQuote } from '@/types/investor';
+import type {
+    C3DealCard,
+    InvestGate,
+    InvestorAllowedAction,
+    PrimaryQuote,
+} from '@/types/investor';
 
 /** The design's `.rz-qty` range: a 4px track and a 22px accent thumb ringed in white. */
 export const RANGE_CLASS =
     'h-1 min-w-0 flex-1 cursor-pointer appearance-none rounded-[3px] bg-[#e2e8f2] outline-none dark:bg-rz-surface-muted [&::-moz-range-thumb]:size-[18px] [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-4 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-rz-accent-fill [&::-webkit-slider-thumb]:size-[22px] [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-rz-accent-fill [&::-webkit-slider-thumb]:shadow-[0_2px_8px_rgba(30,58,255,.4)] active:[&::-webkit-slider-thumb]:shadow-[0_0_0_7px_rgba(30,58,255,.10)]';
 
+/**
+ * Whether a deal may be reserved now (C3 v2 §2b): the server lists `primary.reserve`, the campaign
+ * is live with no restriction, the Investor is eligible and the quote allows at least one unit.
+ */
+export function canReserve({
+    deal,
+    gate,
+    allowed,
+    quote,
+}: {
+    deal: Pick<C3DealCard, 'lifecycle' | 'restriction'>;
+    gate: InvestGate;
+    allowed: InvestorAllowedAction[];
+    quote: PrimaryQuote | null;
+}): boolean {
+    return (
+        allowed.includes('primary.reserve') &&
+        deal.lifecycle === 'live' &&
+        deal.restriction === null &&
+        gate.status === 'eligible' &&
+        quote !== null &&
+        Number(quote.capacity.max_units) >= 1
+    );
+}
+
+/** Names the cap that binds once the chosen quantity reaches `max_units` (H9 `capacity.binding`). */
+export function CapNote({
+    quote,
+    units,
+    className,
+}: {
+    quote: PrimaryQuote | null;
+    units: number;
+    className?: string;
+}) {
+    const { t } = useTranslation();
+
+    if (quote === null) {
+        return null;
+    }
+
+    const max = Number(quote.capacity.max_units);
+
+    if (units < max) {
+        return null;
+    }
+
+    const reason = t(`investor.deal.cap.reason.${quote.capacity.binding}`);
+
+    return (
+        <p
+            role="status"
+            className={cn(
+                'text-center text-[11px] leading-[1.4] text-rz-secondary',
+                className,
+            )}
+        >
+            {max === 0
+                ? t('investor.deal.cap.none', { reason })
+                : t('investor.deal.cap.max', { count: max, reason })}
+        </p>
+    );
+}
+
 type InvestBarProps = {
-    deal: DealCard;
-    quote: InvestQuote | null;
+    deal: C3DealCard;
+    /** The server's quote for this deal, or null while it is not the focused one. */
+    quote: PrimaryQuote | null;
     /** The quantity the investor has chosen; a whole number of notes. */
     units: number;
     onUnits: (units: number) => void;
@@ -42,9 +112,9 @@ export function InvestBar({
 }: InvestBarProps) {
     const { t } = useTranslation();
     const [draft, setDraft] = useState<string | null>(null);
-    const current = quote !== null && quote.deal_id === deal.id ? quote : null;
-    const max = current?.max_units ?? 1;
-    const soldOut = deal.status !== 'open';
+    const current = quote;
+    const max = Math.max(Number(current?.capacity.max_units ?? '1'), 1);
+    const soldOut = deal.lifecycle !== 'live' || deal.restriction !== null;
     const phone = size === 'phone';
     const micro = cn(
         'font-bold tracking-[.08em] whitespace-nowrap text-[#7c869a] uppercase dark:text-rz-muted',
@@ -67,9 +137,12 @@ export function InvestBar({
         onUnits(Math.min(parsed, max));
     };
 
-    const investLabel = soldOut
-        ? t('investor.deals.fully_funded')
-        : t('investor.deals.invest');
+    const investLabel =
+        deal.lifecycle !== 'live'
+            ? t(`investor.deal.lifecycle.${deal.lifecycle}`)
+            : deal.restriction !== null
+              ? t('investor.deals.paused')
+              : t('investor.deals.invest');
     const investClass = cn(
         'flex shrink-0 items-center justify-center whitespace-nowrap',
         phone
@@ -142,7 +215,7 @@ export function InvestBar({
                         )}
                     >
                         {t('investor.deals.of_left', {
-                            count: formatCount(deal.units_left),
+                            count: formatCount(Number(deal.units.available)),
                         })}
                     </span>
                 </div>
@@ -224,7 +297,7 @@ export function InvestBar({
                         </span>
                         {current === null
                             ? '—'
-                            : formatAmount(current.get_back)}
+                            : formatAmount(current.maturity_value)}
                     </p>
                 </div>
             </div>
@@ -262,13 +335,17 @@ export function InvestBar({
                     </Link>
                 )}
             </div>
-            {gate.status !== 'eligible' && (
+            {gate.status !== 'eligible' ? (
                 <p
                     role="status"
                     className="mt-2 text-center text-[11px] leading-[1.4] text-rz-secondary"
                 >
                     {t(`investor.deals.gate.${gate.status}`)}
                 </p>
+            ) : (
+                !soldOut && (
+                    <CapNote quote={current} units={units} className="mt-2" />
+                )
             )}
         </section>
     );

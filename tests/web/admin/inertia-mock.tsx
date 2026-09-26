@@ -1,10 +1,23 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { ComponentProps, ReactNode } from 'react';
+
+type HttpOptions = {
+    onError?: (errors: Record<string, string>) => void;
+    onHttpException?: (response: {
+        status: number;
+        data: string;
+        headers: Record<string, string>;
+    }) => void;
+};
+
+/** Answers one JSON request sent through `useHttp`. */
+export type Responder = (options: HttpOptions) => Promise<unknown>;
 
 /**
  * A shared stand-in for `@inertiajs/react` in the console tests. Links render as anchors (or
  * buttons for `as="button"`), `router` calls and form posts are recorded on `inertia` so each
- * test can assert what the page asked the server to do.
+ * test can assert what the page asked the server to do. JSON commands go through `useHttp`,
+ * answered in order by the responders a test queues on `inertia.queue`.
  */
 export const inertia = {
     reload: [] as Record<string, unknown>[],
@@ -15,6 +28,11 @@ export const inertia = {
     succeed: false,
     forms: [] as { action?: string; method?: string }[],
     formState: { processing: false, errors: {} as Record<string, string> },
+    /** Every JSON request sent through `useHttp`, with the body it carried. */
+    calls: [] as { url: string; method: string; body: unknown }[],
+    queue: [] as Responder[],
+    /** Field errors `useHttp` reports after a 422. */
+    httpErrors: {} as Record<string, string>,
 };
 
 export function resetInertia() {
@@ -26,6 +44,9 @@ export function resetInertia() {
     inertia.succeed = false;
     inertia.forms = [];
     inertia.formState = { processing: false, errors: {} };
+    inertia.calls = [];
+    inertia.queue = [];
+    inertia.httpErrors = {};
 }
 
 type LinkProps = Omit<ComponentProps<'a'>, 'href'> & {
@@ -86,8 +107,9 @@ export function Form({
 }
 
 export const router = {
-    reload: (options: Record<string, unknown>) => {
+    reload: (options: Record<string, unknown> & { onFinish?: () => void }) => {
         inertia.reload.push(options);
+        options.onFinish?.();
     },
     visit: (url: string) => {
         inertia.visits.push(url);
@@ -111,3 +133,70 @@ export function useForm<T extends Record<string, unknown>>(initial: T) {
         },
     };
 }
+
+export function useHttp() {
+    const body = useRef<() => unknown>(() => ({}));
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+    return {
+        errors,
+        clearErrors: () => setErrors({}),
+        transform: (callback: () => unknown) => {
+            body.current = callback;
+        },
+        submit: async (
+            route: { url: string; method: string },
+            options: HttpOptions,
+        ) => {
+            inertia.calls.push({
+                url: route.url,
+                method: route.method,
+                body: body.current(),
+            });
+            const respond = inertia.queue.shift();
+            const result = await (respond
+                ? respond(options)
+                : new Promise(() => undefined));
+
+            if (result === undefined) {
+                setErrors(inertia.httpErrors);
+                options.onError?.(inertia.httpErrors);
+            }
+
+            return result;
+        },
+    };
+}
+
+/* ------------------------------------------------------------------------------------------ */
+/* Responders                                                                                   */
+/* ------------------------------------------------------------------------------------------ */
+
+export const answers =
+    (result: unknown): Responder =>
+    () =>
+        Promise.resolve(result);
+
+/** A 422: the field errors land in `errors` and the request resolves without a body. */
+export const invalid =
+    (errors: Record<string, string>): Responder =>
+    () => {
+        inertia.httpErrors = errors;
+
+        return Promise.resolve(undefined);
+    };
+
+export const fails =
+    (status: number, body?: unknown): Responder =>
+    (options) => {
+        options.onHttpException?.({
+            status,
+            data: body === undefined ? '' : JSON.stringify(body),
+            headers: {},
+        });
+
+        return Promise.reject(new Error(`HTTP ${status}`));
+    };
+
+export const offline = (): Responder => () =>
+    Promise.reject(new Error('Network error'));

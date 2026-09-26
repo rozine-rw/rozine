@@ -4,10 +4,10 @@ import { DeskCard } from '@/components/investor/deals/desk-card';
 import { SwipeCard } from '@/components/investor/deals/swipe-card';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
-import type { DealCard } from '@/types/investor';
+import type { C3DealCard } from '@/types/investor';
 
 type DeckProps = {
-    deals: DealCard[];
+    deals: C3DealCard[];
     index: number;
     serverTime: string;
     onMove: (index: number) => void;
@@ -135,7 +135,7 @@ export function PhoneDeck({ deals, index, serverTime, onMove }: DeckProps) {
 
                     return (
                         <div
-                            key={deal.id}
+                            key={deal.campaign_id}
                             aria-hidden={front ? undefined : true}
                             inert={front ? undefined : true}
                             className={cn(
@@ -195,7 +195,7 @@ export function DeskDeck({ deals, index, serverTime, onMove }: DeckProps) {
 
                     return (
                         <div
-                            key={deal.id}
+                            key={deal.campaign_id}
                             aria-hidden={front ? undefined : true}
                             inert={front ? undefined : true}
                             className={cn(

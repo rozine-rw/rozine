@@ -1,7 +1,14 @@
 {
     "component": "investor/deals",
+    "synthetic": true,
     "props": {
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 5,
         "server_time": "2026-09-23T09:00:00+02:00",
+        "allowed_actions": [],
+        "gate": {
+            "status": "eligible"
+        },
         "wallet": {
             "available": {
                 "currency": "RWF",
@@ -16,9 +23,6 @@
             }
         },
         "unread_notifications": 2,
-        "gate": {
-            "status": "eligible"
-        },
         "sorts": [
             {
                 "key": "all",
@@ -56,8 +60,53 @@
         "industries": [
             {
                 "industry": null,
-                "count": 0,
+                "count": 6,
                 "active": true,
+                "link": {
+                    "url": "/preview/investor-deals",
+                    "method": "get"
+                }
+            },
+            {
+                "industry": "Agriculture",
+                "count": 2,
+                "active": false,
+                "link": {
+                    "url": "/preview/investor-deals",
+                    "method": "get"
+                }
+            },
+            {
+                "industry": "Logistics",
+                "count": 1,
+                "active": false,
+                "link": {
+                    "url": "/preview/investor-deals",
+                    "method": "get"
+                }
+            },
+            {
+                "industry": "Energy",
+                "count": 1,
+                "active": false,
+                "link": {
+                    "url": "/preview/investor-deals",
+                    "method": "get"
+                }
+            },
+            {
+                "industry": "Manufacturing",
+                "count": 1,
+                "active": false,
+                "link": {
+                    "url": "/preview/investor-deals",
+                    "method": "get"
+                }
+            },
+            {
+                "industry": "Technology",
+                "count": 1,
+                "active": false,
                 "link": {
                     "url": "/preview/investor-deals",
                     "method": "get"
@@ -93,11 +142,7 @@
                 "method": "get"
             },
             "deposit": {
-                "url": "/preview/investor-wallet",
-                "method": "get"
-            },
-            "withdraw": {
-                "url": "/preview/investor-wallet-withdraw",
+                "url": "/preview/investor-wallet-deposit",
                 "method": "get"
             },
             "checkout": {

@@ -1,0 +1,93 @@
+{
+    "component": "investor/portfolio",
+    "synthetic": true,
+    "props": {
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 1,
+        "server_time": "2026-09-23T09:00:00+02:00",
+        "allowed_actions": [],
+        "tab": "active",
+        "tabs": [
+            {
+                "key": "active",
+                "active": true,
+                "link": {
+                    "url": "/investor/portfolio?tab=active",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "matured",
+                "active": false,
+                "link": {
+                    "url": "/investor/portfolio?tab=matured",
+                    "method": "get"
+                }
+            }
+        ],
+        "totals": {
+            "businesses": 0,
+            "value": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "invested": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "gain": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "this_month": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "projected_3m": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "next_payout": null,
+            "avg_monthly": {
+                "currency": "RWF",
+                "amount": "0"
+            }
+        },
+        "holdings": [],
+        "payouts": [],
+        "industries": [],
+        "risk": [],
+        "concentration": null,
+        "idle": {
+            "currency": "RWF",
+            "amount": "1253485"
+        },
+        "links": {
+            "deals": {
+                "url": "/investor/deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/investor/portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/investor/profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/investor/wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/investor/notifications",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/launcher",
+                "method": "get"
+            }
+        },
+        "commitments": []
+    }
+}

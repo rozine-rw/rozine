@@ -21,7 +21,7 @@ import {
 import { useTranslation } from '@/hooks/use-translation';
 import { formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { AdminApplicationsProps, ApplicationRow } from '@/types/admin';
+import type { ApplicationRow, C3AdminApplicationsProps } from '@/types/admin';
 
 const GRID =
     'grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1.1fr)_minmax(92px,0.6fr)_minmax(0,0.9fr)_minmax(0,1.5fr)] gap-3 px-5';
@@ -176,9 +176,10 @@ function QueueRow({
 /**
  * The applications queue (MVP-ADMIN-SCR-02, design T348–417): the policy in force, one tab per
  * state with its server count, and each application with the engine's decision beside it.
- * Approve never commits from the row — it opens the review at its reasoned approval stage.
+ * Approve never commits from the row — it opens the review at its reasoned approval stage. An
+ * approved application's review carries the minimal staff release (C3).
  */
-export default function AdminApplications(props: AdminApplicationsProps) {
+export default function AdminApplications(props: C3AdminApplicationsProps) {
     const { t } = useTranslation();
     const ago = useRelativeLabel(props.server_time);
 
@@ -193,6 +194,8 @@ export default function AdminApplications(props: AdminApplicationsProps) {
                         review={props.review}
                         viewer={props.viewer}
                         initialStage={props.stage}
+                        lookup={props.links.operation}
+                        preview={props.preview_outcome}
                     />
                 )
             }

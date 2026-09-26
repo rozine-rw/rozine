@@ -1,0 +1,346 @@
+{
+    "component": "admin/disbursements",
+    "synthetic": true,
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2026-09-25T10:00:00+02:00",
+        "contract_version": "staff-disbursement-v1",
+        "staff_access_version": "staff-access-v1",
+        "allowed_actions": ["disbursement.authorize", "disbursement.hold"],
+        "disbursements": [
+            {
+                "id": "01k5za1m7q3r8t2v6w9x4y0b1c",
+                "reference": "PAY-2026-0612",
+                "business": "GreenLeaf Agro",
+                "note_title": "Cold-Chain Hub",
+                "destination": "MoMo ••• 4521",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "18000000"
+                },
+                "state": "ready",
+                "provider_state": null,
+                "link": {
+                    "url": "/preview/admin-disbursements-ready",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "01k5za2n8r4s9v3w7x0y5z1c2d",
+                "reference": "PAY-2026-0611",
+                "business": "Sebeya Logistics",
+                "note_title": "Fleet Expansion",
+                "destination": "Equity ••• 0934",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "24100000"
+                },
+                "state": "awaiting_second_approver",
+                "provider_state": null,
+                "link": {
+                    "url": "/preview/admin-disbursements-awaiting-second",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "01k5za3p9s5t0w4x8y1z6a2d3e",
+                "reference": "PAY-2026-0609",
+                "business": "Inzovu Coffee",
+                "note_title": "Roastery Line",
+                "destination": "BK ••• 7710",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "6700000"
+                },
+                "state": "awaiting_second_approver",
+                "provider_state": null,
+                "link": {
+                    "url": "/preview/admin-disbursements-self",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "01k5za4q0t6v1x5y9z2a7b3e4f",
+                "reference": "PAY-2026-0607",
+                "business": "Kivu Fresh",
+                "note_title": "Chiller Upgrade",
+                "destination": "MoMo ••• 3308",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "4200000"
+                },
+                "state": "on_hold",
+                "provider_state": null,
+                "link": {
+                    "url": "/preview/admin-disbursements-on-hold",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "01k5za5r1v7w2y6z0a3b8c4f5g",
+                "reference": "PAY-2026-0606",
+                "business": "Umucyo Bakery",
+                "note_title": "Second Oven",
+                "destination": "BK ••• 2291",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "3100000"
+                },
+                "state": "queued",
+                "provider_state": null,
+                "link": {
+                    "url": "/preview/admin-disbursements-queued",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "01k5za6s2w8x3z7a1b4c9d5g6h",
+                "reference": "PAY-2026-0605",
+                "business": "Nyanza Dairy",
+                "note_title": "Milk Collection",
+                "destination": "MoMo ••• 6612",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "8800000"
+                },
+                "state": "dispatched",
+                "provider_state": "pending",
+                "link": {
+                    "url": "/preview/admin-disbursements-dispatched-pending",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "01k5za7t3x9y4a8b2c5d0e6h7j",
+                "reference": "PAY-2026-0604",
+                "business": "Isoko Farms",
+                "note_title": "Irrigation",
+                "destination": "MoMo ••• 1187",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "9500000"
+                },
+                "state": "dispatched",
+                "provider_state": "unknown",
+                "link": {
+                    "url": "/preview/admin-disbursements-dispatched-unknown",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "01k5za8v4y0z5b9c3d6e1f7j8k",
+                "reference": "PAY-2026-0603",
+                "business": "Muhanga Textiles",
+                "note_title": "Loom Line",
+                "destination": "Equity ••• 4470",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "12400000"
+                },
+                "state": "dispatched",
+                "provider_state": "failed",
+                "link": {
+                    "url": "/preview/admin-disbursements-verified-failure-unreconciled",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "01k5za9w5z1a6c0d4e7f2g8k9m",
+                "reference": "PAY-2026-0602",
+                "business": "Rubavu Tea",
+                "note_title": "Drying Shed",
+                "destination": "BK ••• 5503",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "7300000"
+                },
+                "state": "dispatched",
+                "provider_state": "unknown",
+                "link": {
+                    "url": "/preview/admin-disbursements-exception",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "01k5zab0x6a2b7d1e5f8g3h9m0",
+                "reference": "PAY-2026-0601",
+                "business": "Huye Crafts",
+                "note_title": "Workshop Fit-out",
+                "destination": "MoMo ••• 9024",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "2600000"
+                },
+                "state": "failed_closing",
+                "provider_state": null,
+                "link": {
+                    "url": "/preview/admin-disbursements-failed-closing",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "01k5zac1y7b3c8e2f6g9h4j0n1",
+                "reference": "PAY-2026-0598",
+                "business": "Musanze Tours",
+                "note_title": "Lodge Refit",
+                "destination": "Equity ••• 1150",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "15000000"
+                },
+                "state": "succeeded",
+                "provider_state": "succeeded",
+                "link": {
+                    "url": "/preview/admin-disbursements-succeeded",
+                    "method": "get"
+                }
+            }
+        ],
+        "pagination": {
+            "next": null
+        },
+        "awaiting_second_approver": 2,
+        "disbursement": {
+            "id": "01k5za1m7q3r8t2v6w9x4y0b1c",
+            "reference": "PAY-2026-0612",
+            "business": "GreenLeaf Agro",
+            "note_title": "Cold-Chain Hub",
+            "destination": "MoMo ••• 4521",
+            "amount": {
+                "currency": "RWF",
+                "amount": "18000000"
+            },
+            "state": "ready",
+            "provider_state": null,
+            "link": {
+                "url": "/preview/admin-disbursements-not-recorded",
+                "method": "get"
+            },
+            "campaign_id": "01k5zc1m7q3r8t2v6w9x4y0b1c",
+            "revision": 3,
+            "due_on": null,
+            "precheck": {
+                "state": "not_run",
+                "checked_at": null,
+                "policy_version": null,
+                "causes": []
+            },
+            "maker": null,
+            "checker": null,
+            "viewer_is_maker": false,
+            "approval_binding": null,
+            "step_up": {
+                "purpose": "disbursement.approve",
+                "route": null
+            },
+            "intent": null,
+            "dispatch": null,
+            "provider": null,
+            "hold": null,
+            "viewer_placed_hold": false,
+            "issue": null,
+            "refund": null,
+            "trail": [
+                {
+                    "id": "ev_1",
+                    "at": "2026-09-22T18:00:00+02:00",
+                    "actor": "System",
+                    "action": {
+                        "code": "raise.funded",
+                        "label": "Raise fully funded",
+                        "tone": "green"
+                    },
+                    "reason": null
+                }
+            ],
+            "allowed_actions": ["disbursement.authorize", "disbursement.hold"],
+            "actions": {
+                "authorize": {
+                    "url": "/preview/admin-disbursements-awaiting-second",
+                    "method": "post"
+                },
+                "hold": {
+                    "url": "/preview/admin-disbursements-on-hold",
+                    "method": "post"
+                }
+            },
+            "links": {
+                "close": {
+                    "url": "/preview/admin-disbursements",
+                    "method": "get"
+                },
+                "ledger": null,
+                "operation": {
+                    "url": "/preview/admin-disbursements-operation-{request_id}",
+                    "method": "get"
+                }
+            }
+        },
+        "refusal": null,
+        "preview_outcome": {
+            "kind": "not_recorded",
+            "command": {
+                "name": "disbursement.authorize",
+                "payload": {
+                    "request_id": "6f0a3c2e-5b1d-4e8f-9a7c-2d4b6e8f0a1c",
+                    "disbursement_id": "01k5za1m7q3r8t2v6w9x4y0b1c",
+                    "expected_revision": 3,
+                    "reason": "Raise fully funded; destination verified against the RDB mandate."
+                }
+            }
+        }
+    }
+}

@@ -21,12 +21,15 @@ export function MakerChecker({
     checker,
     viewerIsMaker,
     waiting,
+    noteId,
 }: {
     maker: Attribution | null;
     checker: Attribution | null;
     viewerIsMaker: boolean;
     /** The request is waiting on the second person right now. */
     waiting: boolean;
+    /** An id for the self-approval explanation, so a withheld Approve can point at it. */
+    noteId?: string;
 }) {
     const { t } = useTranslation();
     const steps: Step[] = [
@@ -77,6 +80,11 @@ export function MakerChecker({
                         </div>
                         {step.by === null ? (
                             <p
+                                id={
+                                    pending && viewerIsMaker
+                                        ? noteId
+                                        : undefined
+                                }
                                 className={cn(
                                     'mt-1.5 text-[12.5px] leading-[1.55]',
                                     EXPLAIN,

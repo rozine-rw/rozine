@@ -5,7 +5,7 @@ import { POSITIVE_TEXT, RATING_STYLE } from '@/components/investor/tokens';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCount, formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { DealDetail, UseOfFunds } from '@/types/investor';
+import type { C3DealDetail, UseOfFunds } from '@/types/investor';
 
 export type Variant = 'phone' | 'desk';
 
@@ -136,12 +136,13 @@ export function FundingProgress({
     serverTime,
     variant,
 }: {
-    deal: DealDetail;
+    deal: C3DealDetail;
     serverTime: string;
     variant: Variant;
 }) {
     const { t } = useTranslation();
-    const clock = useTimeLeft(deal.closes_at, serverTime);
+    const clock = useTimeLeft(deal.clock.expires_at, serverTime);
+    const open = deal.lifecycle === 'live' && deal.restriction === null;
     const phone = variant === 'phone';
     const label = cn(
         'text-[10.5px] text-rz-secondary uppercase',
@@ -174,13 +175,11 @@ export function FundingProgress({
                     className={cn(
                         'inline-flex items-center gap-[5px] text-[11px]',
                         phone ? 'font-semibold' : 'font-bold',
-                        deal.status === 'open'
-                            ? POSITIVE_TEXT
-                            : 'text-rz-secondary',
+                        open ? POSITIVE_TEXT : 'text-rz-secondary',
                     )}
                 >
                     <span className="size-[7px] rounded-full bg-current" />
-                    {t(`investor.deal.status.${deal.status}`)}
+                    {t(`investor.deal.lifecycle.${deal.lifecycle}`)}
                 </span>
             </div>
             <div
@@ -244,8 +243,8 @@ export function FundingProgress({
                             ? 'investor.deal.notes_sold_of'
                             : 'investor.deal.notes_of',
                         {
-                            sold: formatCount(deal.units_sold),
-                            total: formatCount(deal.units_total),
+                            sold: formatCount(Number(deal.units.committed)),
+                            total: formatCount(Number(deal.units.total)),
                         },
                     )}
                 </span>
@@ -254,19 +253,19 @@ export function FundingProgress({
     );
 }
 
-/** Photos the business filed (phone L805–819, desk L409–414). */
+/**
+ * Captioned images the business published (phone L805–819, desk L409–414). They are optional: none
+ * published reads as such, and an image whose file is unavailable keeps its caption over the accent
+ * fill. No coordinates, location text or Audit Partner originals are shown (H9).
+ */
 export function PhotosRow({
     deal,
     variant,
 }: {
-    deal: DealDetail;
+    deal: Pick<C3DealDetail, 'photos' | 'accent'>;
     variant: Variant;
 }) {
     const { t } = useTranslation();
-
-    if (deal.photos.length === 0) {
-        return null;
-    }
 
     return (
         <Section
@@ -289,6 +288,11 @@ export function PhotosRow({
                         : 'mt-2.5 gap-2.5 pb-0.5',
                 )}
             >
+                {deal.photos.length === 0 && (
+                    <p className="rounded-xl border border-dashed border-rz-border px-3 py-4 text-center text-[11.5px] text-rz-secondary">
+                        {t('investor.deal.photos_none')}
+                    </p>
+                )}
                 {deal.photos.map((photo) => (
                     <figure
                         key={photo.caption}
@@ -300,6 +304,11 @@ export function PhotosRow({
                         )}
                     >
                         <PhotoFill photo={photo} accent={deal.accent} />
+                        {photo.url === null && (
+                            <span className="absolute top-2 left-2 rounded-md bg-[rgba(8,16,34,.5)] px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                                {t('investor.deal.photo_unavailable')}
+                            </span>
+                        )}
                         <figcaption className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(10,15,28,0),rgba(10,15,28,.85))] px-[11px] pt-[18px] pb-2 text-[11px] font-semibold text-white">
                             {photo.caption}
                         </figcaption>
@@ -324,7 +333,7 @@ export function UseOfFundsChips({
     deal,
     variant,
 }: {
-    deal: DealDetail;
+    deal: Pick<C3DealDetail, 'use_of_funds'>;
     variant: Variant;
 }) {
     const { t } = useTranslation();
@@ -373,7 +382,7 @@ export function UseOfFundsChips({
 }
 
 /** Rating as the design's stats strip writes it: band word in its colour, then the score. */
-export function RatingWord({ deal }: { deal: Pick<DealDetail, 'rating'> }) {
+export function RatingWord({ deal }: { deal: Pick<C3DealDetail, 'rating'> }) {
     const { t } = useTranslation();
     const style = RATING_STYLE[deal.rating.band];
 

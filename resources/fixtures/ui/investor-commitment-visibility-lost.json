@@ -1,0 +1,49 @@
+{
+    "component": "investor/commitment",
+    "synthetic": true,
+    "props": {
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 5,
+        "server_time": "2026-09-23T09:00:00+02:00",
+        "allowed_actions": [],
+        "commitment": null,
+        "refusal": {
+            "code": "NOT_FOUND",
+            "status": 404
+        },
+        "links": {
+            "deals": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "close": {
+                "url": "/preview/investor-portfolio-awaiting-issue",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/investor-primary-operation-{request_id}",
+                "method": "get"
+            }
+        }
+    }
+}

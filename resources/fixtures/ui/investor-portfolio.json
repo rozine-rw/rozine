@@ -1,6 +1,11 @@
 {
     "component": "investor/portfolio",
+    "synthetic": true,
     "props": {
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 5,
+        "server_time": "2026-09-23T09:00:00+02:00",
+        "allowed_actions": [],
         "tab": "active",
         "tabs": [
             {
@@ -427,6 +432,41 @@
                 "url": "/preview/launcher-ready",
                 "method": "get"
             }
-        }
+        },
+        "commitments": [
+            {
+                "id": "cmt1_01k6r3",
+                "deal_name": "GreenLeaf Agro",
+                "units": "6",
+                "principal": {
+                    "currency": "RWF",
+                    "amount": "30000"
+                },
+                "state": "confirmed",
+                "closing": null,
+                "link": {
+                    "url": "/preview/investor-commitment-confirmed",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "cmt2_01k6r3",
+                "deal_name": "Kivu Coffee",
+                "units": "6",
+                "principal": {
+                    "currency": "RWF",
+                    "amount": "30000"
+                },
+                "state": "funded",
+                "closing": {
+                    "stage": "in_flight",
+                    "provider": "unknown"
+                },
+                "link": {
+                    "url": "/preview/investor-commitment-funded-unknown",
+                    "method": "get"
+                }
+            }
+        ]
     }
 }

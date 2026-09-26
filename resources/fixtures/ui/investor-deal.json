@@ -1,9 +1,14 @@
 {
     "component": "investor/deal",
+    "synthetic": true,
     "props": {
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 5,
         "server_time": "2026-09-23T09:00:00+02:00",
+        "allowed_actions": ["primary.reserve"],
         "deal": {
-            "id": "greenleaf",
+            "campaign_id": "cmp_greenleaf",
+            "revision": 3,
             "name": "GreenLeaf Agro",
             "accent": "green",
             "industry": "Agriculture",
@@ -45,23 +50,38 @@
                 "amount": "42000000"
             },
             "funded_pct": "78.1",
-            "avg_monthly_revenue": {
-                "currency": "RWF",
-                "amount": "32000000"
-            },
             "left_to_fill": {
                 "currency": "RWF",
                 "amount": "9200000"
             },
-            "units_sold": 6560,
-            "units_total": 8400,
-            "units_left": 1840,
+            "avg_monthly_revenue": {
+                "currency": "RWF",
+                "amount": "32000000"
+            },
+            "units": {
+                "total": "8400",
+                "available": "1840",
+                "reserved": "0",
+                "committed": "6560"
+            },
+            "unit_price": {
+                "currency": "RWF",
+                "amount": "5000"
+            },
             "investors": 647,
-            "closes_at": "2026-10-05T09:00:00+02:00",
+            "lifecycle": "live",
+            "restriction": null,
+            "clock": {
+                "starts_at": "2026-09-05T09:00:00+02:00",
+                "expires_at": "2026-10-05T09:00:00+02:00"
+            },
+            "listing_fee": {
+                "currency": "RWF",
+                "amount": "0"
+            },
             "story": "GreenLeaf Agro is a vertically integrated agriculture business supplying maize, beans and horticulture across the Eastern Province. Profitable for 6 consecutive years, the company is raising to expand cold-storage capacity and double export volumes.",
             "rate_pct": "13.5",
             "term_months": 6,
-            "status": "open",
             "links": {
                 "detail": {
                     "url": "/preview/investor-deal",
@@ -75,16 +95,10 @@
                     "amount": "32000000"
                 },
                 "ebitda": {
-                    "currency": "RWF",
-                    "amount": "96000000"
-                },
-                "existing_debt": {
-                    "currency": "RWF",
-                    "amount": "12000000"
-                },
-                "capacity": {
-                    "currency": "RWF",
-                    "amount": "46000000"
+                    "value": {
+                        "currency": "RWF",
+                        "amount": "96000000"
+                    }
                 }
             },
             "rationale": "Six years of profitable trading with margins above 20% and no missed repayments. Verified statements cover 12 months; existing debt is small against appraised capacity.",
@@ -97,45 +111,20 @@
                 }
             },
             "about": {
-                "company_code": "103847291",
-                "registered_year": 2019,
-                "years_operating": 7,
-                "team_size": 84,
-                "address": "KG 11 Ave, Gasabo, Kigali"
+                "description": "Grows, cools and distributes fresh produce to Kigali retailers and hotels, with its own cold room in Gasabo.",
+                "industry": "Agriculture",
+                "district": "Gasabo"
             },
             "audit": {
                 "standard": "Field Flash Audit v2.0",
                 "partner": "Diane Uwase, CPA",
                 "licence": "ICPAR/P-2026/0481",
                 "verified_on": "2026-07-24T00:00:00+02:00",
-                "cash_observed": {
-                    "currency": "RWF",
-                    "amount": "1250000"
-                },
-                "inventory_sample": 149,
-                "variance_pct": "-2.0",
-                "variance_within_tolerance": true,
                 "digest": "c41d7a9038b6e152aa09f3d1",
-                "photos": [
-                    {
-                        "label": "Storefront",
-                        "geo": "-1.9441, 30.0619",
-                        "url": null
-                    },
-                    {
-                        "label": "POS / register",
-                        "geo": "-1.9441, 30.0619",
-                        "url": null
-                    },
-                    {
-                        "label": "Inventory sample",
-                        "geo": "-1.9442, 30.0620",
-                        "url": null
-                    }
-                ],
-                "report": {
-                    "url": "/preview/investor-deal",
-                    "method": "get"
+                "reconciliation_statement": "Bank and mobile-money statements for July reconcile to the reported inflow, within the governed tolerance cited in the sealed report.",
+                "tolerance": {
+                    "currency": "RWF",
+                    "amount": "50000"
                 }
             },
             "updates": [
@@ -166,24 +155,15 @@
                     "photos": [
                         {
                             "url": null,
-                            "caption": "Warehouse stock",
-                            "required": true,
-                            "gps": "-1.9441, 30.0619",
-                            "captured_at": "2026-09-05T10:12:00+02:00"
+                            "caption": "Warehouse stock"
                         },
                         {
                             "url": null,
-                            "caption": "POS register",
-                            "required": true,
-                            "gps": "-1.9441, 30.0619",
-                            "captured_at": "2026-09-05T10:20:00+02:00"
+                            "caption": "POS register"
                         },
                         {
                             "url": null,
-                            "caption": "Cold room",
-                            "required": false,
-                            "gps": "-1.9442, 30.0620",
-                            "captured_at": "2026-09-05T10:31:00+02:00"
+                            "caption": "Cold room"
                         }
                     ]
                 },
@@ -214,24 +194,15 @@
                     "photos": [
                         {
                             "url": null,
-                            "caption": "Warehouse stock",
-                            "required": true,
-                            "gps": "-1.9441, 30.0619",
-                            "captured_at": "2026-08-05T10:12:00+02:00"
+                            "caption": "Warehouse stock"
                         },
                         {
                             "url": null,
-                            "caption": "POS register",
-                            "required": true,
-                            "gps": "-1.9441, 30.0619",
-                            "captured_at": "2026-08-05T10:20:00+02:00"
+                            "caption": "POS register"
                         },
                         {
                             "url": null,
-                            "caption": "Cold room",
-                            "required": false,
-                            "gps": "-1.9442, 30.0620",
-                            "captured_at": "2026-08-05T10:31:00+02:00"
+                            "caption": "Cold room"
                         }
                     ]
                 },
@@ -262,24 +233,15 @@
                     "photos": [
                         {
                             "url": null,
-                            "caption": "Warehouse stock",
-                            "required": true,
-                            "gps": "-1.9441, 30.0619",
-                            "captured_at": "2026-07-05T10:12:00+02:00"
+                            "caption": "Warehouse stock"
                         },
                         {
                             "url": null,
-                            "caption": "POS register",
-                            "required": true,
-                            "gps": "-1.9441, 30.0619",
-                            "captured_at": "2026-07-05T10:20:00+02:00"
+                            "caption": "POS register"
                         },
                         {
                             "url": null,
-                            "caption": "Cold room",
-                            "required": false,
-                            "gps": "-1.9442, 30.0620",
-                            "captured_at": "2026-07-05T10:31:00+02:00"
+                            "caption": "Cold room"
                         }
                     ]
                 },
@@ -310,24 +272,15 @@
                     "photos": [
                         {
                             "url": null,
-                            "caption": "Warehouse stock",
-                            "required": true,
-                            "gps": "-1.9441, 30.0619",
-                            "captured_at": "2026-06-05T10:12:00+02:00"
+                            "caption": "Warehouse stock"
                         },
                         {
                             "url": null,
-                            "caption": "POS register",
-                            "required": true,
-                            "gps": "-1.9441, 30.0619",
-                            "captured_at": "2026-06-05T10:20:00+02:00"
+                            "caption": "POS register"
                         },
                         {
                             "url": null,
-                            "caption": "Cold room",
-                            "required": false,
-                            "gps": "-1.9442, 30.0620",
-                            "captured_at": "2026-06-05T10:31:00+02:00"
+                            "caption": "Cold room"
                         }
                     ]
                 }
@@ -338,8 +291,8 @@
             "status": "eligible"
         },
         "quote": {
-            "deal_id": "greenleaf",
-            "units": 1,
+            "basis": "indicative",
+            "units": "1",
             "unit_price": {
                 "currency": "RWF",
                 "amount": "5000"
@@ -349,6 +302,7 @@
                 "amount": "5000"
             },
             "rate_pct": "13.5",
+            "term_months": 6,
             "expected_return": {
                 "currency": "RWF",
                 "amount": "675"
@@ -357,14 +311,32 @@
                 "currency": "RWF",
                 "amount": "54"
             },
-            "get_back": {
+            "maturity_value": {
                 "currency": "RWF",
                 "amount": "5621"
             },
-            "max_units": 200
+            "maturity_date": null,
+            "rights": null,
+            "revision": 7,
+            "capacity": {
+                "max_units": "200",
+                "binding": "raise_cap",
+                "remaining": {
+                    "raise": {
+                        "currency": "RWF",
+                        "amount": "2500000"
+                    }
+                }
+            }
         },
         "home": {
+            "contract_version": "investor-primary-v1",
+            "identity_context_revision": 5,
             "server_time": "2026-09-23T09:00:00+02:00",
+            "allowed_actions": ["primary.reserve"],
+            "gate": {
+                "status": "eligible"
+            },
             "wallet": {
                 "available": {
                     "currency": "RWF",
@@ -379,9 +351,6 @@
                 }
             },
             "unread_notifications": 2,
-            "gate": {
-                "status": "eligible"
-            },
             "sorts": [
                 {
                     "key": "all",
@@ -474,7 +443,8 @@
             ],
             "deals": [
                 {
-                    "id": "greenleaf",
+                    "campaign_id": "cmp_greenleaf",
+                    "revision": 3,
                     "name": "GreenLeaf Agro",
                     "accent": "green",
                     "industry": "Agriculture",
@@ -516,23 +486,38 @@
                         "amount": "42000000"
                     },
                     "funded_pct": "78.1",
-                    "avg_monthly_revenue": {
-                        "currency": "RWF",
-                        "amount": "32000000"
-                    },
                     "left_to_fill": {
                         "currency": "RWF",
                         "amount": "9200000"
                     },
-                    "units_sold": 6560,
-                    "units_total": 8400,
-                    "units_left": 1840,
+                    "avg_monthly_revenue": {
+                        "currency": "RWF",
+                        "amount": "32000000"
+                    },
+                    "units": {
+                        "total": "8400",
+                        "available": "1840",
+                        "reserved": "0",
+                        "committed": "6560"
+                    },
+                    "unit_price": {
+                        "currency": "RWF",
+                        "amount": "5000"
+                    },
                     "investors": 647,
-                    "closes_at": "2026-10-05T09:00:00+02:00",
+                    "lifecycle": "live",
+                    "restriction": null,
+                    "clock": {
+                        "starts_at": "2026-09-05T09:00:00+02:00",
+                        "expires_at": "2026-10-05T09:00:00+02:00"
+                    },
+                    "listing_fee": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
                     "story": "GreenLeaf Agro is a vertically integrated agriculture business supplying maize, beans and horticulture across the Eastern Province. Profitable for 6 consecutive years, the company is raising to expand cold-storage capacity and double export volumes.",
                     "rate_pct": "13.5",
                     "term_months": 6,
-                    "status": "open",
                     "links": {
                         "detail": {
                             "url": "/preview/investor-deal",
@@ -541,7 +526,8 @@
                     }
                 },
                 {
-                    "id": "sebeya",
+                    "campaign_id": "cmp_sebeya",
+                    "revision": 3,
                     "name": "Sebeya Logistics",
                     "accent": "blue",
                     "industry": "Logistics",
@@ -583,23 +569,38 @@
                         "amount": "60000000"
                     },
                     "funded_pct": "91.0",
-                    "avg_monthly_revenue": {
-                        "currency": "RWF",
-                        "amount": "43000000"
-                    },
                     "left_to_fill": {
                         "currency": "RWF",
                         "amount": "5400000"
                     },
-                    "units_sold": 10920,
-                    "units_total": 12000,
-                    "units_left": 1080,
+                    "avg_monthly_revenue": {
+                        "currency": "RWF",
+                        "amount": "43000000"
+                    },
+                    "units": {
+                        "total": "12000",
+                        "available": "1080",
+                        "reserved": "0",
+                        "committed": "10920"
+                    },
+                    "unit_price": {
+                        "currency": "RWF",
+                        "amount": "5000"
+                    },
                     "investors": 1203,
-                    "closes_at": "2026-09-23T23:08:21+02:00",
+                    "lifecycle": "live",
+                    "restriction": null,
+                    "clock": {
+                        "starts_at": "2026-09-05T09:00:00+02:00",
+                        "expires_at": "2026-09-23T23:08:21+02:00"
+                    },
+                    "listing_fee": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
                     "story": "Sebeya Logistics operates a modern fleet serving cross-border trade between Rwanda, Uganda and DRC. The raise funds fleet expansion and a new Musanze distribution hub.",
                     "rate_pct": "12.5",
                     "term_months": 5,
-                    "status": "open",
                     "links": {
                         "detail": {
                             "url": "/preview/investor-deal",
@@ -608,7 +609,8 @@
                     }
                 },
                 {
-                    "id": "volt",
+                    "campaign_id": "cmp_volt",
+                    "revision": 3,
                     "name": "Volt Energy Rwanda",
                     "accent": "amber",
                     "industry": "Energy",
@@ -650,23 +652,38 @@
                         "amount": "34000000"
                     },
                     "funded_pct": "62.1",
-                    "avg_monthly_revenue": {
-                        "currency": "RWF",
-                        "amount": "26000000"
-                    },
                     "left_to_fill": {
                         "currency": "RWF",
                         "amount": "12900000"
                     },
-                    "units_sold": 4220,
-                    "units_total": 6800,
-                    "units_left": 2580,
+                    "avg_monthly_revenue": {
+                        "currency": "RWF",
+                        "amount": "26000000"
+                    },
+                    "units": {
+                        "total": "6800",
+                        "available": "2580",
+                        "reserved": "0",
+                        "committed": "4220"
+                    },
+                    "unit_price": {
+                        "currency": "RWF",
+                        "amount": "5000"
+                    },
                     "investors": 418,
-                    "closes_at": "2026-10-14T09:00:00+02:00",
+                    "lifecycle": "live",
+                    "restriction": null,
+                    "clock": {
+                        "starts_at": "2026-09-05T09:00:00+02:00",
+                        "expires_at": "2026-10-14T09:00:00+02:00"
+                    },
+                    "listing_fee": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
                     "story": "Volt Energy installs and operates solar mini-grids for rural cooperatives. Recurring revenue from 9,000+ connections underpins a stable repayment profile.",
                     "rate_pct": "14.0",
                     "term_months": 6,
-                    "status": "open",
                     "links": {
                         "detail": {
                             "url": "/preview/investor-deal",
@@ -675,7 +692,8 @@
                     }
                 },
                 {
-                    "id": "akabanga",
+                    "campaign_id": "cmp_akabanga",
+                    "revision": 3,
                     "name": "Akabanga Foods",
                     "accent": "purple",
                     "industry": "Manufacturing",
@@ -717,23 +735,38 @@
                         "amount": "24000000"
                     },
                     "funded_pct": "45.0",
-                    "avg_monthly_revenue": {
-                        "currency": "RWF",
-                        "amount": "20000000"
-                    },
                     "left_to_fill": {
                         "currency": "RWF",
                         "amount": "13200000"
                     },
-                    "units_sold": 2160,
-                    "units_total": 4800,
-                    "units_left": 2640,
+                    "avg_monthly_revenue": {
+                        "currency": "RWF",
+                        "amount": "20000000"
+                    },
+                    "units": {
+                        "total": "4800",
+                        "available": "2640",
+                        "reserved": "0",
+                        "committed": "2160"
+                    },
+                    "unit_price": {
+                        "currency": "RWF",
+                        "amount": "5000"
+                    },
                     "investors": 276,
-                    "closes_at": "2026-10-21T09:00:00+02:00",
+                    "lifecycle": "live",
+                    "restriction": null,
+                    "clock": {
+                        "starts_at": "2026-09-05T09:00:00+02:00",
+                        "expires_at": "2026-10-21T09:00:00+02:00"
+                    },
+                    "listing_fee": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
                     "story": "A heritage food manufacturer scaling its export line of sauces and condiments to regional supermarkets. Funds support new packaging lines and certification.",
                     "rate_pct": "14.5",
                     "term_months": 6,
-                    "status": "open",
                     "links": {
                         "detail": {
                             "url": "/preview/investor-deal",
@@ -742,7 +775,8 @@
                     }
                 },
                 {
-                    "id": "murakoze",
+                    "campaign_id": "cmp_murakoze",
+                    "revision": 3,
                     "name": "Murakoze Tech",
                     "accent": "teal",
                     "industry": "Technology",
@@ -784,23 +818,38 @@
                         "amount": "18000000"
                     },
                     "funded_pct": "32.8",
-                    "avg_monthly_revenue": {
-                        "currency": "RWF",
-                        "amount": "14000000"
-                    },
                     "left_to_fill": {
                         "currency": "RWF",
                         "amount": "12100000"
                     },
-                    "units_sold": 1180,
-                    "units_total": 3600,
-                    "units_left": 2420,
+                    "avg_monthly_revenue": {
+                        "currency": "RWF",
+                        "amount": "14000000"
+                    },
+                    "units": {
+                        "total": "3600",
+                        "available": "2420",
+                        "reserved": "0",
+                        "committed": "1180"
+                    },
+                    "unit_price": {
+                        "currency": "RWF",
+                        "amount": "5000"
+                    },
                     "investors": 189,
-                    "closes_at": "2026-10-26T09:00:00+02:00",
+                    "lifecycle": "live",
+                    "restriction": null,
+                    "clock": {
+                        "starts_at": "2026-09-05T09:00:00+02:00",
+                        "expires_at": "2026-10-26T09:00:00+02:00"
+                    },
+                    "listing_fee": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
                     "story": "Murakoze Tech builds payments infrastructure for SMEs. High-growth with strong margins; capital accelerates merchant acquisition across East Africa.",
                     "rate_pct": "12.0",
                     "term_months": 4,
-                    "status": "open",
                     "links": {
                         "detail": {
                             "url": "/preview/investor-deal",
@@ -809,7 +858,8 @@
                     }
                 },
                 {
-                    "id": "inzovu",
+                    "campaign_id": "cmp_inzovu",
+                    "revision": 3,
                     "name": "Inzovu Coffee Co.",
                     "accent": "green",
                     "industry": "Agriculture",
@@ -851,23 +901,38 @@
                         "amount": "52000000"
                     },
                     "funded_pct": "88.1",
-                    "avg_monthly_revenue": {
-                        "currency": "RWF",
-                        "amount": "39000000"
-                    },
                     "left_to_fill": {
                         "currency": "RWF",
                         "amount": "6200000"
                     },
-                    "units_sold": 9160,
-                    "units_total": 10400,
-                    "units_left": 1240,
+                    "avg_monthly_revenue": {
+                        "currency": "RWF",
+                        "amount": "39000000"
+                    },
+                    "units": {
+                        "total": "10400",
+                        "available": "1240",
+                        "reserved": "0",
+                        "committed": "9160"
+                    },
+                    "unit_price": {
+                        "currency": "RWF",
+                        "amount": "5000"
+                    },
                     "investors": 982,
-                    "closes_at": "2026-10-01T09:00:00+02:00",
+                    "lifecycle": "live",
+                    "restriction": null,
+                    "clock": {
+                        "starts_at": "2026-09-05T09:00:00+02:00",
+                        "expires_at": "2026-10-01T09:00:00+02:00"
+                    },
+                    "listing_fee": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
                     "story": "Inzovu Coffee exports specialty Arabica to European roasters. The raise funds a new washing station and direct-trade relationships with 2,400 farmers.",
                     "rate_pct": "11.5",
                     "term_months": 3,
-                    "status": "open",
                     "links": {
                         "detail": {
                             "url": "/preview/investor-deal",
@@ -877,7 +942,8 @@
                 }
             ],
             "focus": {
-                "id": "greenleaf",
+                "campaign_id": "cmp_greenleaf",
+                "revision": 3,
                 "name": "GreenLeaf Agro",
                 "accent": "green",
                 "industry": "Agriculture",
@@ -919,23 +985,38 @@
                     "amount": "42000000"
                 },
                 "funded_pct": "78.1",
-                "avg_monthly_revenue": {
-                    "currency": "RWF",
-                    "amount": "32000000"
-                },
                 "left_to_fill": {
                     "currency": "RWF",
                     "amount": "9200000"
                 },
-                "units_sold": 6560,
-                "units_total": 8400,
-                "units_left": 1840,
+                "avg_monthly_revenue": {
+                    "currency": "RWF",
+                    "amount": "32000000"
+                },
+                "units": {
+                    "total": "8400",
+                    "available": "1840",
+                    "reserved": "0",
+                    "committed": "6560"
+                },
+                "unit_price": {
+                    "currency": "RWF",
+                    "amount": "5000"
+                },
                 "investors": 647,
-                "closes_at": "2026-10-05T09:00:00+02:00",
+                "lifecycle": "live",
+                "restriction": null,
+                "clock": {
+                    "starts_at": "2026-09-05T09:00:00+02:00",
+                    "expires_at": "2026-10-05T09:00:00+02:00"
+                },
+                "listing_fee": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
                 "story": "GreenLeaf Agro is a vertically integrated agriculture business supplying maize, beans and horticulture across the Eastern Province. Profitable for 6 consecutive years, the company is raising to expand cold-storage capacity and double export volumes.",
                 "rate_pct": "13.5",
                 "term_months": 6,
-                "status": "open",
                 "links": {
                     "detail": {
                         "url": "/preview/investor-deal",
@@ -949,16 +1030,10 @@
                         "amount": "32000000"
                     },
                     "ebitda": {
-                        "currency": "RWF",
-                        "amount": "96000000"
-                    },
-                    "existing_debt": {
-                        "currency": "RWF",
-                        "amount": "12000000"
-                    },
-                    "capacity": {
-                        "currency": "RWF",
-                        "amount": "46000000"
+                        "value": {
+                            "currency": "RWF",
+                            "amount": "96000000"
+                        }
                     }
                 },
                 "rationale": "Six years of profitable trading with margins above 20% and no missed repayments. Verified statements cover 12 months; existing debt is small against appraised capacity.",
@@ -971,45 +1046,20 @@
                     }
                 },
                 "about": {
-                    "company_code": "103847291",
-                    "registered_year": 2019,
-                    "years_operating": 7,
-                    "team_size": 84,
-                    "address": "KG 11 Ave, Gasabo, Kigali"
+                    "description": "Grows, cools and distributes fresh produce to Kigali retailers and hotels, with its own cold room in Gasabo.",
+                    "industry": "Agriculture",
+                    "district": "Gasabo"
                 },
                 "audit": {
                     "standard": "Field Flash Audit v2.0",
                     "partner": "Diane Uwase, CPA",
                     "licence": "ICPAR/P-2026/0481",
                     "verified_on": "2026-07-24T00:00:00+02:00",
-                    "cash_observed": {
-                        "currency": "RWF",
-                        "amount": "1250000"
-                    },
-                    "inventory_sample": 149,
-                    "variance_pct": "-2.0",
-                    "variance_within_tolerance": true,
                     "digest": "c41d7a9038b6e152aa09f3d1",
-                    "photos": [
-                        {
-                            "label": "Storefront",
-                            "geo": "-1.9441, 30.0619",
-                            "url": null
-                        },
-                        {
-                            "label": "POS / register",
-                            "geo": "-1.9441, 30.0619",
-                            "url": null
-                        },
-                        {
-                            "label": "Inventory sample",
-                            "geo": "-1.9442, 30.0620",
-                            "url": null
-                        }
-                    ],
-                    "report": {
-                        "url": "/preview/investor-deal",
-                        "method": "get"
+                    "reconciliation_statement": "Bank and mobile-money statements for July reconcile to the reported inflow, within the governed tolerance cited in the sealed report.",
+                    "tolerance": {
+                        "currency": "RWF",
+                        "amount": "50000"
                     }
                 },
                 "updates": [
@@ -1040,24 +1090,15 @@
                         "photos": [
                             {
                                 "url": null,
-                                "caption": "Warehouse stock",
-                                "required": true,
-                                "gps": "-1.9441, 30.0619",
-                                "captured_at": "2026-09-05T10:12:00+02:00"
+                                "caption": "Warehouse stock"
                             },
                             {
                                 "url": null,
-                                "caption": "POS register",
-                                "required": true,
-                                "gps": "-1.9441, 30.0619",
-                                "captured_at": "2026-09-05T10:20:00+02:00"
+                                "caption": "POS register"
                             },
                             {
                                 "url": null,
-                                "caption": "Cold room",
-                                "required": false,
-                                "gps": "-1.9442, 30.0620",
-                                "captured_at": "2026-09-05T10:31:00+02:00"
+                                "caption": "Cold room"
                             }
                         ]
                     },
@@ -1088,24 +1129,15 @@
                         "photos": [
                             {
                                 "url": null,
-                                "caption": "Warehouse stock",
-                                "required": true,
-                                "gps": "-1.9441, 30.0619",
-                                "captured_at": "2026-08-05T10:12:00+02:00"
+                                "caption": "Warehouse stock"
                             },
                             {
                                 "url": null,
-                                "caption": "POS register",
-                                "required": true,
-                                "gps": "-1.9441, 30.0619",
-                                "captured_at": "2026-08-05T10:20:00+02:00"
+                                "caption": "POS register"
                             },
                             {
                                 "url": null,
-                                "caption": "Cold room",
-                                "required": false,
-                                "gps": "-1.9442, 30.0620",
-                                "captured_at": "2026-08-05T10:31:00+02:00"
+                                "caption": "Cold room"
                             }
                         ]
                     },
@@ -1136,24 +1168,15 @@
                         "photos": [
                             {
                                 "url": null,
-                                "caption": "Warehouse stock",
-                                "required": true,
-                                "gps": "-1.9441, 30.0619",
-                                "captured_at": "2026-07-05T10:12:00+02:00"
+                                "caption": "Warehouse stock"
                             },
                             {
                                 "url": null,
-                                "caption": "POS register",
-                                "required": true,
-                                "gps": "-1.9441, 30.0619",
-                                "captured_at": "2026-07-05T10:20:00+02:00"
+                                "caption": "POS register"
                             },
                             {
                                 "url": null,
-                                "caption": "Cold room",
-                                "required": false,
-                                "gps": "-1.9442, 30.0620",
-                                "captured_at": "2026-07-05T10:31:00+02:00"
+                                "caption": "Cold room"
                             }
                         ]
                     },
@@ -1184,24 +1207,15 @@
                         "photos": [
                             {
                                 "url": null,
-                                "caption": "Warehouse stock",
-                                "required": true,
-                                "gps": "-1.9441, 30.0619",
-                                "captured_at": "2026-06-05T10:12:00+02:00"
+                                "caption": "Warehouse stock"
                             },
                             {
                                 "url": null,
-                                "caption": "POS register",
-                                "required": true,
-                                "gps": "-1.9441, 30.0619",
-                                "captured_at": "2026-06-05T10:20:00+02:00"
+                                "caption": "POS register"
                             },
                             {
                                 "url": null,
-                                "caption": "Cold room",
-                                "required": false,
-                                "gps": "-1.9442, 30.0620",
-                                "captured_at": "2026-06-05T10:31:00+02:00"
+                                "caption": "Cold room"
                             }
                         ]
                     }
@@ -1209,8 +1223,8 @@
                 "overdue_report": null
             },
             "quote": {
-                "deal_id": "greenleaf",
-                "units": 1,
+                "basis": "indicative",
+                "units": "1",
                 "unit_price": {
                     "currency": "RWF",
                     "amount": "5000"
@@ -1220,6 +1234,7 @@
                     "amount": "5000"
                 },
                 "rate_pct": "13.5",
+                "term_months": 6,
                 "expected_return": {
                     "currency": "RWF",
                     "amount": "675"
@@ -1228,11 +1243,23 @@
                     "currency": "RWF",
                     "amount": "54"
                 },
-                "get_back": {
+                "maturity_value": {
                     "currency": "RWF",
                     "amount": "5621"
                 },
-                "max_units": 200
+                "maturity_date": null,
+                "rights": null,
+                "revision": 7,
+                "capacity": {
+                    "max_units": "200",
+                    "binding": "raise_cap",
+                    "remaining": {
+                        "raise": {
+                            "currency": "RWF",
+                            "amount": "2500000"
+                        }
+                    }
+                }
             },
             "links": {
                 "deals": {
@@ -1260,11 +1287,7 @@
                     "method": "get"
                 },
                 "deposit": {
-                    "url": "/preview/investor-wallet",
-                    "method": "get"
-                },
-                "withdraw": {
-                    "url": "/preview/investor-wallet-withdraw",
+                    "url": "/preview/investor-wallet-deposit",
                     "method": "get"
                 },
                 "checkout": {

@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { AuditDrawer } from '@/components/investor/audit-drawer';
+import { AboutCard, EbitdaValue } from '@/components/investor/deals/deal-facts';
 import {
     FundingProgress,
     PhotosRow,
@@ -13,6 +14,7 @@ import {
     DealStatusNotice,
     OverdueReport,
 } from '@/components/investor/deals/deal-status';
+import { CapNote, canReserve } from '@/components/investor/deals/invest-bar';
 import { useQuotedUnits } from '@/components/investor/deals/use-quote';
 import { UpdateList, UpdateSheet } from '@/components/investor/monthly-updates';
 import {
@@ -25,7 +27,10 @@ import { useTranslation } from '@/hooks/use-translation';
 import { withQuery } from '@/lib/investor/links';
 import { formatAmount, formatRwf, formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { InvestorDealProps, MonthlyUpdate } from '@/types/investor';
+import type {
+    C3InvestorDealProps,
+    MonthlyUpdateSummary,
+} from '@/types/investor';
 
 const ROW = 'flex items-center justify-between py-[9px]';
 const ROW_LINE = 'border-b border-[#eef2f9] dark:border-rz-divider';
@@ -41,19 +46,24 @@ export function DealDetailPage({
     gate,
     quote,
     server_time: serverTime,
+    allowed_actions: allowed,
     links,
-}: Omit<InvestorDealProps, 'home'>) {
+}: Omit<C3InvestorDealProps, 'home'>) {
     const { t } = useTranslation();
-    const [update, setUpdate] = useState<MonthlyUpdate | null>(null);
-    const quoted = useQuotedUnits(quote?.units ?? 1, { deal: deal.id });
+    const [update, setUpdate] = useState<MonthlyUpdateSummary | null>(null);
+    const quoted = useQuotedUnits(Number(quote?.units ?? '1'), {
+        deal: deal.campaign_id,
+    });
     const rating = RATING_STYLE[deal.rating.band];
-    const current = quote !== null && quote.deal_id === deal.id ? quote : null;
-    const max = current?.max_units ?? 1;
+    const current = quote;
+    const max = Number(current?.capacity.max_units ?? '1');
     const checkout =
-        deal.status === 'open' &&
-        gate.status === 'eligible' &&
-        links.checkout !== null
-            ? withQuery(links.checkout, { deal: deal.id, units: quoted.units })
+        links.checkout !== null &&
+        canReserve({ deal, gate, allowed, quote: current })
+            ? withQuery(links.checkout, {
+                  deal: deal.campaign_id,
+                  units: quoted.units,
+              })
             : null;
     const canBuy = checkout !== null;
     const tile =
@@ -159,41 +169,25 @@ export function DealDetailPage({
                 }
             >
                 <div className="mt-2.5 grid grid-cols-2 gap-[9px]">
-                    {(
-                        [
-                            [
-                                'avg_monthly_revenue',
-                                'investor.deal.avg_monthly_revenue',
-                            ],
-                            ['ebitda', 'investor.deal.ebitda'],
-                            ['existing_debt', 'investor.deal.existing_debt'],
-                            ['capacity', 'investor.deal.capacity'],
-                        ] as const
-                    ).map(([key, label]) => (
-                        <div
-                            key={key}
-                            className="relative rounded-xl border border-rz-border bg-rz-surface px-3 py-[11px]"
-                        >
-                            {key === 'capacity' && (
-                                <span className="absolute top-[9px] right-[9px] rounded-[10px] bg-rz-accent-soft px-1.5 py-0.5 text-[10px] font-bold tracking-[.04em] text-rz-accent-app-text">
-                                    {t('investor.deal.rozine_tag')}
-                                </span>
+                    <div className="rounded-xl border border-rz-border bg-rz-surface px-3 py-[11px]">
+                        <p className="text-[10.5px] font-semibold tracking-[.02em] whitespace-nowrap text-rz-secondary uppercase">
+                            {t('investor.deal.avg_monthly_revenue')}
+                        </p>
+                        <p className="mt-[3px] text-base font-semibold whitespace-nowrap text-rz-ink">
+                            {formatRwfShort(
+                                deal.financials.avg_monthly_revenue,
                             )}
-                            <p className="text-[10.5px] font-semibold tracking-[.02em] whitespace-nowrap text-rz-secondary uppercase">
-                                {t(label)}
-                            </p>
-                            <p
-                                className={cn(
-                                    'mt-[3px] text-base font-semibold whitespace-nowrap',
-                                    key === 'capacity'
-                                        ? POSITIVE_TEXT
-                                        : 'text-rz-ink',
-                                )}
-                            >
-                                {formatRwfShort(deal.financials[key])}
-                            </p>
-                        </div>
-                    ))}
+                        </p>
+                    </div>
+                    <div className="rounded-xl border border-rz-border bg-rz-surface px-3 py-[11px]">
+                        <p className="text-[10.5px] font-semibold tracking-[.02em] whitespace-nowrap text-rz-secondary uppercase">
+                            {t('investor.deal.ebitda')}
+                        </p>
+                        <EbitdaValue
+                            ebitda={deal.financials.ebitda}
+                            className="mt-[3px] text-base font-semibold text-rz-ink"
+                        />
+                    </div>
                 </div>
             </Section>
 
@@ -340,44 +334,7 @@ export function DealDetailPage({
                 <p className="mt-[9px] text-[13px] leading-[1.55] text-rz-secondary">
                     {deal.story}
                 </p>
-                <dl className="mt-[11px] rounded-2xl border border-rz-border bg-rz-surface px-3.5 py-0.5">
-                    {(
-                        [
-                            [
-                                'investor.deal.registration',
-                                deal.about.company_code,
-                            ],
-                            [
-                                'investor.deal.registered',
-                                t('investor.deal.registered_value', {
-                                    year: deal.about.registered_year,
-                                    years: deal.about.years_operating,
-                                }),
-                            ],
-                            [
-                                'investor.deal.team_size',
-                                String(deal.about.team_size),
-                            ],
-                            ['investor.deal.industry', deal.industry],
-                            ['investor.deal.address', deal.about.address],
-                        ] as const
-                    ).map(([label, value], index) => (
-                        <div
-                            key={label}
-                            className={cn(
-                                'flex justify-between gap-3 py-[9px]',
-                                index < 4 && ROW_LINE,
-                            )}
-                        >
-                            <dt className="text-[13px] text-rz-secondary">
-                                {t(label)}
-                            </dt>
-                            <dd className="text-right text-[13px] font-semibold text-rz-ink">
-                                {value}
-                            </dd>
-                        </div>
-                    ))}
-                </dl>
+                <AboutCard about={deal.about} />
             </Section>
 
             {deal.audit !== null && (
@@ -434,14 +391,14 @@ export function DealDetailPage({
                                 {current === null
                                     ? '—'
                                     : t(
-                                          current.units === 1
+                                          current.units === '1'
                                               ? 'investor.deal.unit_times_one'
                                               : 'investor.deal.unit_times_other',
                                           {
                                               price: formatRwf(
                                                   current.unit_price,
                                               ),
-                                              count: current.units,
+                                              count: Number(current.units),
                                           },
                                       )}
                             </span>
@@ -486,7 +443,7 @@ export function DealDetailPage({
                             <span className="text-[15px] font-bold text-rz-accent-app-text tabular-nums">
                                 {current === null
                                     ? '—'
-                                    : formatRwf(current.get_back)}
+                                    : formatRwf(current.maturity_value)}
                             </span>
                         </div>
                     </div>
@@ -553,12 +510,19 @@ export function DealDetailPage({
                                 disabled
                                 className="flex h-14 min-w-0 flex-1 cursor-not-allowed items-center justify-center rounded-2xl bg-[#eef2f9] text-[15px] font-semibold whitespace-nowrap text-rz-secondary dark:bg-rz-surface-muted"
                             >
-                                {deal.status === 'sold_out'
-                                    ? t('investor.deals.fully_funded')
-                                    : t('investor.deals.invest')}
+                                {deal.lifecycle === 'live'
+                                    ? t('investor.deals.invest')
+                                    : t(
+                                          `investor.deal.lifecycle.${deal.lifecycle}`,
+                                      )}
                             </button>
                         )}
                     </div>
+                    <CapNote
+                        quote={current}
+                        units={quoted.units}
+                        className="mt-2"
+                    />
                 </section>
             </div>
         </div>

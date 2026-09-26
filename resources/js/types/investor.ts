@@ -1,5 +1,18 @@
 import type { Money } from './money';
 import type { RouteAction, RouteLink } from './routing';
+import type {
+    C3PreviewOutcome,
+    CampaignLifecycle,
+    CampaignRestriction,
+    Clock,
+    CoarseInFlight,
+    Ordinals,
+    Pagination,
+    ProviderOutcomeState,
+    Receipt,
+    UnitRights,
+    Units,
+} from './settlement';
 
 /**
  * Investor app page contracts (Phase 1B, MVP-INVESTOR-SCR-01..05, 08, 10, 11 and the Investor
@@ -802,4 +815,484 @@ export type InvestorVerifiedProps = {
     wallet: { available: Money };
     open_deals: number;
     links: { deals: RouteLink };
+};
+
+/* ------------------------------------------------------------------------------------------ */
+/* Checkpoint 3: investor-primary-v1 (C3 contract proposal v2 §2a–2d)                         */
+/* ------------------------------------------------------------------------------------------ */
+
+/*
+ * Additive and non-activatable. The Phase 1B shapes above stay untouched; the Investor pages read
+ * these instead, and are reviewed only through synthetic `preview/{fixture}` fixtures until the
+ * server Resources exist. Names that would collide with a Phase 1B shape carry a `C3` prefix.
+ */
+
+/** What every C3 Investor page carries (v2 §2). `server_time` is fresh on every response. */
+export type InvestorPageContract = {
+    contract_version: 'investor-primary-v1';
+    identity_context_revision: number;
+    server_time: string;
+    allowed_actions: InvestorAllowedAction[];
+};
+
+export type InvestorAllowedAction =
+    | 'wallet.deposit'
+    | 'primary.reserve'
+    | 'primary.confirm'
+    | 'primary.release'
+    | 'primary.cancel';
+
+/* Wallet (v2 §2a) ------------------------------------------------------------------------- */
+
+export type WalletBucket = 'available' | 'held' | 'committed';
+
+/**
+ * Ledger-derived balances. `total` is available + held + unissued committed, each counted once
+ * (H5); only `available` is spendable. Pending deposits sit outside `total`: they are not credited.
+ */
+export type WalletBalances = {
+    revision: number;
+    status: 'active' | 'restricted';
+    restriction: { code: 'RESTRICTION_ACTIVE'; since: string } | null;
+    total: Money;
+    breakdown: { available: Money; held: Money; committed: Money };
+    pending_deposits: Money;
+};
+
+/** Explicitly synthetic and versioned in fixtures; never frozen as live policy (H6). */
+export type DepositPolicy = {
+    version: string;
+    synthetic: boolean;
+    fee: Money;
+    minimum: Money | null;
+    maximum: Money | null;
+};
+
+export type DepositRefusal =
+    | 'VALIDATION_FAILED'
+    | 'DEPOSIT_METHOD_UNVERIFIED'
+    | 'POLICY_INPUT_REQUIRED';
+
+export type DepositQuote = {
+    amount: Money;
+    fee: Money;
+    credited: Money;
+    refusal: DepositRefusal | null;
+};
+
+/**
+ * A recorded deposit intent. The Investor sees no provider reference: `pending` and `unknown` both
+ * read "not yet confirmed", and nothing is credited until a verified success adds `credit_receipt`.
+ */
+export type DepositIntent = {
+    id: string;
+    request_id: string;
+    amount: Money;
+    method: FundingMethod;
+    created_at: string;
+    state: ProviderOutcomeState;
+    /** DEPOSIT_INTENT_RECORDED, immutable. */
+    intent_receipt: Receipt;
+    /** DEPOSIT_CREDITED, only after a verified success. */
+    credit_receipt: Receipt | null;
+    link: RouteLink;
+};
+
+/** A live checkout reservation holding wallet cash. */
+export type CheckoutHold = {
+    reservation_id: string;
+    deal_name: string;
+    amount: Money;
+    units: Units;
+    clock: Clock;
+    link: RouteLink;
+};
+
+/** Holds and internal transfers are kept apart from external cash movements (H5). */
+export type WalletEntry =
+    | {
+          id: string;
+          movement: 'external';
+          kind: 'deposit';
+          direction: 'in' | 'out';
+          amount: Money;
+          counterparty: string;
+          occurred_at: string;
+          link: RouteLink;
+      }
+    | {
+          id: string;
+          movement: 'internal';
+          kind: 'hold' | 'hold_release' | 'commitment' | 'commitment_refund';
+          from: WalletBucket;
+          to: WalletBucket;
+          amount: Money;
+          deal_name: string;
+          occurred_at: string;
+          link: RouteLink;
+      };
+
+export type WalletMovement = WalletEntry['movement'];
+
+export type C3InvestorWalletProps = InvestorPageContract & {
+    wallet: WalletBalances;
+    holds: CheckoutHold[];
+    /**
+     * Deposit only: withdrawal stays hidden until it has its own contract (H6). A null `policy`
+     * means deposit is not offered; a post would be refused `POLICY_INPUT_REQUIRED`.
+     */
+    funding: {
+        kind: 'deposit' | null;
+        policy: DepositPolicy | null;
+        methods: FundingMethod[];
+        picks: Money[];
+        quote: DepositQuote | null;
+    };
+    /** Pending and unknown first. */
+    deposits: DepositIntent[];
+    history: {
+        movement: WalletMovement;
+        filters: { key: WalletMovement; active: boolean; link: RouteLink }[];
+        items: WalletEntry[];
+        pagination: Pagination;
+    };
+    /** The opened receipt: a history entry with its receipt, or a deposit intent. */
+    receipt: (WalletEntry & { receipt: Receipt }) | DepositIntent | null;
+    /** C4 and Phase 2. */
+    earnings: null;
+    exports: null;
+    links: InvestorAppLinks & {
+        close: RouteLink;
+        deposit: RouteLink;
+        link_account: RouteLink;
+        /** The operation lookup; its url holds the literal `{request_id}` token. */
+        operation: RouteLink;
+    };
+    actions: { deposit: RouteAction };
+    preview_outcome?: C3PreviewOutcome<'wallet.deposit'>;
+};
+
+/* Deals and deal detail (v2 §2b) ---------------------------------------------------------- */
+
+export type CampaignUnits = {
+    total: Units;
+    available: Units;
+    reserved: Units;
+    committed: Units;
+};
+
+/**
+ * A captioned image the business published. Optional: a listing may have none, and `url` stays
+ * null while the file is unavailable. No coordinates, location text or assigned-Auditor originals.
+ */
+export type PublishedPhoto = { url: string | null; caption: string };
+
+export type C3DealCard = {
+    campaign_id: string;
+    revision: number;
+    name: string;
+    accent: BusinessAccent;
+    industry: string;
+    district: string;
+    rating: InvestorRating;
+    audited: boolean;
+    just_listed: boolean;
+    photos: PublishedPhoto[];
+    raised: Money;
+    target: Money;
+    /** Share of the target committed, engine-rounded to one decimal: "78.1". */
+    funded_pct: string;
+    left_to_fill: Money;
+    avg_monthly_revenue: Money;
+    units: CampaignUnits;
+    unit_price: Money;
+    investors: number;
+    lifecycle: CampaignLifecycle;
+    restriction: CampaignRestriction;
+    /** `[live_at, live_at + 30 days)` (MC-02), rendered against `server_time`. */
+    clock: Clock;
+    /** "0": the MVP listing-fee waiver (§11.1). */
+    listing_fee: Money;
+    story: string;
+    rate_pct: string;
+    term_months: number;
+    links: { detail: RouteLink };
+};
+
+/** Allowlisted aggregates only (H9). EBITDA is unavailable unless it was sourced as EBITDA. */
+export type C3DealFinancials = {
+    avg_monthly_revenue: Money;
+    ebitda:
+        | { value: Money }
+        | { value: null; unavailable: 'NOT_SOURCED_AS_EBITDA' };
+};
+
+/** The coarse approved description (H9): no address, team size or company code. */
+export type C3AboutBusiness = {
+    description: string;
+    industry: string;
+    district: string;
+};
+
+/**
+ * The sealed report as a factual summary (H9): no report export, photo location, cash observed
+ * or tolerance verdict. The reconciliation statement may cite the governed tolerance.
+ */
+export type AuditSummary = {
+    standard: string;
+    partner: string;
+    licence: string;
+    verified_on: string;
+    /** The sealed report's digest, as a reference. */
+    digest: string;
+    reconciliation_statement: string;
+    tolerance: Money | null;
+};
+
+export type MonthlyUpdateSummary = Omit<MonthlyUpdate, 'photos'> & {
+    photos: PublishedPhoto[];
+};
+
+export type C3DealDetail = C3DealCard & {
+    use_of_funds: UseOfFunds[];
+    financials: C3DealFinancials;
+    rationale: string;
+    track_record: TrackRecord | null;
+    about: C3AboutBusiness;
+    audit: AuditSummary | null;
+    updates: MonthlyUpdateSummary[];
+    overdue_report: { month: string } | null;
+};
+
+/** Which cap binds `max_units`, so a cap-hit state can name it. */
+/**
+ * What stops the investor taking more notes. Robert's #99 C3 answer replaced the per-transaction,
+ * per-note, per-business and aggregate caps with one single-investor cap per raise (confirmed on
+ * #96), so `raise_cap` is the only investor limit left.
+ */
+export type CapacityBinding =
+    | 'raise_cap'
+    | 'availability'
+    | 'restriction'
+    | 'connected_party';
+
+export type InvestorCapacity = {
+    max_units: Units;
+    binding: CapacityBinding;
+    /** What the Party may still commit to this raise under the single-investor cap. */
+    remaining: { raise: Money };
+};
+
+/**
+ * The server's quote. Indicative before a reservation; exact once ordinals are reserved, with the
+ * reserved units' component rights (H3). There is no maturity date before issue (H4).
+ */
+export type PrimaryQuote = {
+    basis: 'indicative' | 'reserved';
+    units: Units;
+    unit_price: Money;
+    amount: Money;
+    rate_pct: string;
+    term_months: number;
+    expected_return: Money;
+    payout_fee: Money;
+    maturity_value: Money;
+    maturity_date: null;
+    /** Set only when `basis` is `reserved`. */
+    rights: UnitRights | null;
+    revision: number;
+    capacity: InvestorCapacity;
+};
+
+export type C3InvestorDealsProps = InvestorPageContract & {
+    /** Unverified: the gate only, with `deals: []` and `focus: null` (H8). */
+    gate: InvestGate;
+    wallet: WalletSummary;
+    unread_notifications: number;
+    sorts: DealSort[];
+    industries: IndustryFilter[];
+    deals: C3DealCard[];
+    focus: C3DealDetail | null;
+    quote: PrimaryQuote | null;
+    links: InvestorAppLinks & {
+        deposit: RouteLink;
+        checkout: RouteLink | null;
+    };
+};
+
+/** The phone deal page; a wide screen shows the same deal in the Deals panel over `home`. */
+export type C3InvestorDealProps = InvestorPageContract & {
+    deal: C3DealDetail;
+    gate: InvestGate;
+    quote: PrimaryQuote | null;
+    home: C3InvestorDealsProps;
+    links: { back: RouteLink; checkout: RouteLink | null };
+};
+
+/* Reserve, confirm and commitment (v2 §2c) ------------------------------------------------ */
+
+/** Five minutes, or the campaign's expiry if sooner (§11.3). */
+export type Reservation = {
+    id: string;
+    revision: number;
+    campaign_id: string;
+    units: Units;
+    ordinals: Ordinals;
+    amount: Money;
+    /** The exact component rights of these ordinals. */
+    rights: UnitRights;
+    state: 'held' | 'confirmed' | 'released' | 'expired';
+    clock: Clock;
+};
+
+/** `confirmed` is raising and cancellable; `funded` has locked cancellation. Neither is a Holding (H2). */
+export type CommitmentState =
+    | 'confirmed'
+    | 'funded'
+    | 'issued'
+    | 'cancelled'
+    | 'expired'
+    | 'failed_closing';
+
+/** The coarse closing view of a funded commitment (H15): no provider or evidence reference. */
+export type CommitmentClosing =
+    | { stage: 'awaiting_disbursement' }
+    | { stage: 'in_flight'; provider: CoarseInFlight };
+
+export type Commitment = {
+    id: string;
+    revision: number;
+    campaign_id: string;
+    deal_name: string;
+    units: Units;
+    ordinals: Ordinals;
+    principal: Money;
+    /** Bound at confirmation; issue attaches dates and never recomputes them. */
+    rights: UnitRights;
+    state: CommitmentState;
+    cancelled_by: 'investor' | 'business' | null;
+    /** Funded only. */
+    closing: CommitmentClosing | null;
+    terms: {
+        rate_pct: string;
+        term_months: number;
+        payout_fee: Money;
+        policy_version: string;
+        disclosure_version: string;
+    };
+    /** PRIMARY_COMMITTED, immutable. */
+    confirmation: Receipt;
+    refund: Receipt | null;
+    holding: { id: string; link: RouteLink } | null;
+    allowed_actions: 'primary.cancel'[];
+    actions: { cancel: RouteAction | null };
+    link: RouteLink;
+};
+
+export type C3InvestorCheckoutProps = InvestorPageContract & {
+    deal: Pick<
+        C3DealCard,
+        | 'campaign_id'
+        | 'revision'
+        | 'name'
+        | 'accent'
+        | 'rate_pct'
+        | 'term_months'
+        | 'lifecycle'
+        | 'restriction'
+        | 'clock'
+        | 'unit_price'
+    >;
+    quote: PrimaryQuote;
+    quick_picks: { units: Units; amount: Money }[];
+    /** Primary checkout is paid from the available bucket only. */
+    wallet: { available: Money; sufficient: boolean; revision: number };
+    disclosure: { version: string; sha256: string; points: string[] };
+    reservation: Reservation | null;
+    commitment: Commitment | null;
+    refusal: { code: string; status: number } | null;
+    home: C3InvestorDealsProps | null;
+    /**
+     * The app links travel with the page, not only with `home`, so the shell keeps its navigation
+     * when there is no Deals home to draw beneath the sheet.
+     */
+    links: InvestorAppLinks & {
+        close: RouteLink;
+        deposit: RouteLink;
+        operation: RouteLink;
+    };
+    actions: {
+        reserve: RouteAction;
+        confirm: RouteAction | null;
+        release: RouteAction | null;
+    };
+    preview_outcome?: C3PreviewOutcome<InvestorAllowedAction>;
+};
+
+/**
+ * One commitment, opened from the portfolio's "Awaiting issue" section (`investor.commitments.show`).
+ * `commitment` is null with a scoped `refusal` when the Investor may no longer read it.
+ */
+export type C3InvestorCommitmentProps = InvestorPageContract & {
+    commitment: Commitment | null;
+    refusal: { code: string; status: number } | null;
+    links: InvestorAppLinks & { close: RouteLink; operation: RouteLink };
+    preview_outcome?: C3PreviewOutcome<'primary.cancel'>;
+};
+
+/* Settlement, issue and holdings (v2 §2d) ------------------------------------------------- */
+
+/** One Holding per commitment, issued only on a verified and reconciled disbursement success. */
+export type IssuedHolding = {
+    id: string;
+    revision: number;
+    note_id: string;
+    campaign_id: string;
+    units: Units;
+    ordinals: Ordinals;
+    principal: Money;
+    /** The same allocation as the commitment. */
+    rights: UnitRights;
+    /** The local recorded issue time (H17). */
+    issued_at: string;
+    /** The authenticated provider effective instant; never a callback's arrival or browser time. */
+    disbursement_effective_at: string;
+    /** Its Africa/Kigali date, which anchors the schedule (§11.4). */
+    effective_date: string;
+    terms: {
+        rate_pct: string;
+        term_months: number;
+        total_return: Money;
+        policy_version: string;
+        disclosure_version: string;
+    };
+    schedule: {
+        index: number;
+        due_on: string;
+        principal: Money;
+        return: Money;
+    }[];
+    /** HOLDING_ISSUED. */
+    issue_receipt: Receipt;
+    source: { commitment_id: string; disbursement_operation_id: string };
+};
+
+export type CommitmentSummary = Pick<
+    Commitment,
+    'id' | 'deal_name' | 'units' | 'principal' | 'state' | 'closing' | 'link'
+>;
+
+/** Commitments are `confirmed` or `funded` only, and never counted as holdings. */
+export type C3InvestorPortfolioProps = InvestorPortfolioProps &
+    InvestorPageContract & { commitments: CommitmentSummary[] };
+
+/** Servicing fields keep their C3 empty states; they are C4 facts. */
+export type C3HoldingDetail = Omit<HoldingDetail, 'updates'> & {
+    updates: MonthlyUpdateSummary[];
+    issue: IssuedHolding;
+};
+
+export type C3InvestorHoldingProps = InvestorPageContract & {
+    holding: C3HoldingDetail;
+    links: InvestorAppLinks & { back: RouteLink };
 };

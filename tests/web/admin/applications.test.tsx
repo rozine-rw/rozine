@@ -1,21 +1,34 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AdminApplications from '@/pages/admin/applications';
 import AdminLogin from '@/pages/admin/auth/login';
-import type { AdminApplicationsProps, ApplicationState } from '@/types/admin';
+import type {
+    ApplicationState,
+    C3AdminApplicationsProps,
+    StaffRelease,
+} from '@/types/admin';
 import approveFixture from '../../../resources/fixtures/ui/admin-applications-approve.json';
 import emptyFixture from '../../../resources/fixtures/ui/admin-applications-empty.json';
 import missingFixture from '../../../resources/fixtures/ui/admin-applications-missing-audit.json';
+import releaseBlockedFixture from '../../../resources/fixtures/ui/admin-applications-release-blocked.json';
+import releaseFixture from '../../../resources/fixtures/ui/admin-applications-release.json';
+import releasedFixture from '../../../resources/fixtures/ui/admin-applications-released.json';
 import reviewFixture from '../../../resources/fixtures/ui/admin-applications-review.json';
 import queueFixture from '../../../resources/fixtures/ui/admin-applications.json';
 import loginFixture from '../../../resources/fixtures/ui/admin-login.json';
 import { renderWithUser } from '../helpers/render-with-user';
-import { inertia, resetInertia } from './inertia-mock';
+import { answers, fails, inertia, resetInertia } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
 const props = (fixture: { props: unknown }) =>
-    structuredClone(fixture.props) as AdminApplicationsProps;
+    structuredClone(fixture.props) as C3AdminApplicationsProps;
 
 beforeEach(resetInertia);
 
@@ -197,11 +210,16 @@ describe('Applications queue', () => {
     it('says when a queue is empty and when the search matched nothing', () => {
         const fixture = props(emptyFixture);
 
-        render(<AdminApplications {...fixture} search="zzz" />);
+        render(<AdminApplications {...fixture} policy={[]} search="zzz" />);
 
         expect(
             screen.getByText('No applications in this queue.'),
         ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('region', {
+                name: 'Underwriting rules in effect',
+            }),
+        ).not.toBeInTheDocument();
         expect(screen.getByText('No matches on this page')).toBeInTheDocument();
         expect(
             screen.getByText(
@@ -429,5 +447,200 @@ describe('Underwriting review', () => {
         unmount();
         fireEvent.keyDown(window, { key: 'Escape' });
         expect(inertia.visits).toHaveLength(1);
+    });
+});
+
+/** The fixture's staff release, for tests that reshape it. */
+const releaseOf = (fixture: C3AdminApplicationsProps): StaffRelease => {
+    if (fixture.review?.release == null) {
+        throw new Error('the fixture carries a staff release');
+    }
+
+    return fixture.review.release;
+};
+
+describe('Staff release', () => {
+    it('has no release panel before an application is approved', () => {
+        render(<AdminApplications {...props(reviewFixture)} />);
+
+        expect(
+            screen.queryByRole('region', { name: 'Release for listing' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows every gate passed and releases with a reason through the operation command', async () => {
+        const next = {
+            url: '/preview/admin-applications-released',
+            method: 'get',
+        };
+
+        inertia.queue.push(
+            answers({
+                operation_id: '01k5zo0000000000000000000r',
+                status: 'completed',
+                code: 'APPLICATION_RELEASED',
+                data: { receipt: {}, current: null, next },
+                revision: 3,
+                policy_version: null,
+                recorded_at: '2026-09-25T10:00:02+02:00',
+                server_time: '2026-09-25T10:00:03+02:00',
+                allowed_actions: [],
+                field_errors: {},
+            }),
+        );
+        const { user } = renderWithUser(
+            <AdminApplications {...props(releaseFixture)} />,
+        );
+        const panel = screen.getByRole('region', {
+            name: 'Release for listing',
+        });
+
+        expect(panel).toHaveTextContent('Awaiting staff review');
+        const gates = within(panel).getByRole('list', {
+            name: 'Release checks',
+        });
+
+        expect(within(gates).getAllByText('Passed')).toHaveLength(3);
+        expect(gates).toHaveTextContent('Underwriting engine');
+        expect(gates).toHaveTextContent('Business authority');
+        expect(gates).toHaveTextContent('Listing audit report');
+        expect(panel).toHaveTextContent("it can't override a failed check");
+
+        await user.click(
+            within(panel).getByRole('button', { name: 'Release for listing' }),
+        );
+        await user.click(within(panel).getByRole('button', { name: 'Cancel' }));
+        await user.click(
+            within(panel).getByRole('button', { name: 'Release for listing' }),
+        );
+        const stage = within(panel).getByRole('form', {
+            name: 'Release this application',
+        });
+
+        expect(stage).toHaveTextContent(
+            'Nothing is listed or funded until it does.',
+        );
+        await user.type(within(stage).getByRole('textbox'), 'All gates pass.');
+        await user.click(
+            within(stage).getByRole('button', { name: 'Release' }),
+        );
+
+        await waitFor(() => expect(inertia.visits).toEqual([next]));
+        expect(inertia.calls).toEqual([
+            {
+                url: '/preview/admin-applications-released',
+                method: 'post',
+                body: {
+                    request_id: expect.any(String),
+                    application_id: 'APP-20250091',
+                    expected_revision: 2,
+                    reason: 'All gates pass.',
+                },
+            },
+        ]);
+    });
+
+    it('looks up an uncertain release and never resends it on its own', async () => {
+        inertia.queue.push(
+            fails(503),
+            fails(404, { code: 'OPERATION_NOT_FOUND' }),
+        );
+        const { user } = renderWithUser(
+            <AdminApplications {...props(releaseFixture)} />,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'Release for listing' }),
+        );
+        await user.type(screen.getByRole('textbox'), 'All gates pass.');
+        await user.click(screen.getByRole('button', { name: 'Release' }));
+
+        await screen.findByText('Nothing was recorded');
+        expect(inertia.calls).toHaveLength(2);
+        expect(inertia.calls[1]).toMatchObject({
+            method: 'get',
+            body: { command: 'application.release' },
+        });
+        expect(inertia.reload).toEqual([
+            expect.objectContaining({
+                only: ['review', 'applications', 'tabs', 'badges'],
+            }),
+        ]);
+        expect(screen.getByRole('button', { name: 'Release' })).toBeDisabled();
+    });
+
+    it('shows a failed gate as blocking, with no release offered', () => {
+        render(<AdminApplications {...props(releaseBlockedFixture)} />);
+        const panel = screen.getByRole('region', {
+            name: 'Release for listing',
+        });
+
+        expect(within(panel).getByText('Blocked')).toBeInTheDocument();
+        expect(
+            within(panel).getByText('MANDATE_UNVERIFIED'),
+        ).toBeInTheDocument();
+        expect(within(panel).getByRole('status')).toHaveTextContent(
+            'Release never overrides a failed check.',
+        );
+        expect(within(panel).queryByRole('button')).not.toBeInTheDocument();
+    });
+
+    it('never offers release over a failed gate, whatever the actions say', () => {
+        const fixture = props(releaseBlockedFixture);
+        const release = releaseOf(fixture);
+
+        release.allowed_actions = ['application.release'];
+        release.actions.release = {
+            url: '/preview/admin-applications-released',
+            method: 'post',
+        };
+        render(<AdminApplications {...fixture} />);
+
+        expect(
+            screen.queryByRole('button', { name: 'Release for listing' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('offers release only through allowed actions', () => {
+        const fixture = props(releaseFixture);
+
+        releaseOf(fixture).allowed_actions = [];
+        render(<AdminApplications {...fixture} />);
+
+        expect(
+            screen.queryByRole('button', { name: 'Release for listing' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows a released application with its receipt', () => {
+        render(<AdminApplications {...props(releasedFixture)} />);
+        const panel = screen.getByRole('region', {
+            name: 'Release for listing',
+        });
+
+        expect(panel).toHaveTextContent('Released');
+        expect(panel).toHaveTextContent('Release receipt');
+        expect(panel).toHaveTextContent('APPLICATION_RELEASED');
+        expect(panel).toHaveTextContent('RZ-REL-20250091');
+        expect(within(panel).queryByRole('button')).not.toBeInTheDocument();
+    });
+
+    it('shows a seeded refused release', () => {
+        const fixture = props(releaseFixture);
+
+        fixture.preview_outcome = {
+            kind: 'refused',
+            code: 'STAFF_PERMISSION_REQUIRED',
+            status: 403,
+        };
+        releaseOf(fixture).state = 'refused';
+        render(<AdminApplications {...fixture} />);
+
+        expect(screen.getByText('Refused')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                "Your staff permissions don't include this action.",
+            ),
+        ).toBeInTheDocument();
     });
 });
