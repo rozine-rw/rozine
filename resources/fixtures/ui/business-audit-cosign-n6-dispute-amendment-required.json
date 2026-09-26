@@ -103,6 +103,7 @@
                 ],
                 "outcome": "amendment_required",
                 "resolution_note": "Synthetic staff note. The refund slip supports the dispute; the auditor will amend finding SYN-F-02.",
+                "resolution_note_by": "staff",
                 "amendment": null
             }
         },

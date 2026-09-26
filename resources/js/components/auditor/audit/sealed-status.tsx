@@ -66,6 +66,11 @@ export function SealedStatus({
         stage.published_at !== null &&
         (stage.published_reason === 'auto_approved' ||
             stage.published_reason === 'staff_resolved');
+    /*
+     * Co-signed only when the server says `signed` and the publication was not automatic or by
+     * staff: a pending state, or a null `signed_at`, is never read as a signature.
+     */
+    const cosignedByBusiness = cosign.state === 'signed' && !withoutSignature;
 
     /*
      * Where the filing stands, from the server's publication and co-sign facts — never from the
@@ -114,8 +119,9 @@ export function SealedStatus({
         { key: 'sealed', done: true, when: stage.sealed_at },
         {
             key: 'cosigned',
-            done: cosign.state === 'signed',
-            when: cosign.signed_at,
+            done: cosignedByBusiness,
+            /* A signing time shows only for a co-signature the server records as signed. */
+            when: cosignedByBusiness ? cosign.signed_at : null,
         },
         {
             key: 'published',

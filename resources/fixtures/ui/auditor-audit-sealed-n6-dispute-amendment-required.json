@@ -85,7 +85,8 @@
                     }
                 ],
                 "outcome": "amendment_required",
-                "resolution_note": "Synthetic staff note. The refund slip supports the dispute; amend finding F-02."
+                "resolution_note": "Synthetic staff note. The refund slip supports the dispute; amend finding F-02.",
+                "resolution_note_by": "staff"
             },
             "policy_version": "monthly-review-2026-09-26",
             "delivered_at": "2026-10-03T16:45:00Z",

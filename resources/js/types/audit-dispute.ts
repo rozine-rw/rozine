@@ -59,6 +59,11 @@ export type AuditDispute = {
     supporting_text: string | null;
     proof_files: AuditDisputeProofFile[];
     outcome: AuditDisputeOutcome | null;
-    /** The attributed reason staff recorded with their outcome, shown as sent. */
+    /** The latest attributed review note — the CPA's uphold reason or staff's — shown as sent. */
     resolution_note: string | null;
+    /**
+     * Who recorded `resolution_note`: null on submission, `cpa` after the CPA upholds, `staff`
+     * after staff escalate or resolve. An amendment keeps the existing author.
+     */
+    resolution_note_by: 'cpa' | 'staff' | null;
 };
