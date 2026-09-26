@@ -36,6 +36,7 @@ import n6AutoApprovedFixture from '../../../resources/fixtures/ui/business-audit
 import n6AmendedFixture from '../../../resources/fixtures/ui/business-audit-cosign-n6-dispute-amended.json';
 import n6AmendmentRequiredFixture from '../../../resources/fixtures/ui/business-audit-cosign-n6-dispute-amendment-required.json';
 import n6EscalatedFixture from '../../../resources/fixtures/ui/business-audit-cosign-n6-dispute-escalated.json';
+import n6StaffEscalatedFixture from '../../../resources/fixtures/ui/business-audit-cosign-n6-dispute-staff-escalated.json';
 import n6UnderReviewFixture from '../../../resources/fixtures/ui/business-audit-cosign-n6-dispute-under-review.json';
 import n6UpheldFixture from '../../../resources/fixtures/ui/business-audit-cosign-n6-dispute-upheld.json';
 import n6OpenFixture from '../../../resources/fixtures/ui/business-audit-cosign-n6-open.json';
@@ -1454,7 +1455,7 @@ describe('Business audit co-sign — heading by publication and dispute state', 
 });
 
 describe('Business audit co-sign — who recorded the dispute note', () => {
-    it("labels the note of an escalated dispute with no outcome as the CPA's reason", () => {
+    it("labels a note the CPA recorded as the CPA's reason", () => {
         const page = props(n6EscalatedFixture);
 
         setup(page);
@@ -1469,6 +1470,7 @@ describe('Business audit co-sign — who recorded the dispute note', () => {
     it.each([
         ['amendment required', n6AmendmentRequiredFixture],
         ['upheld and published', n6UpheldFixture],
+        ['an unacted-on case they escalated', n6StaffEscalatedFixture],
     ])('labels the note staff recorded with %s as theirs', (_case, fixture) => {
         setup(props(fixture));
 
@@ -1476,7 +1478,7 @@ describe('Business audit co-sign — who recorded the dispute note', () => {
         expect(screen.queryByText("CPA's reason")).not.toBeInTheDocument();
     });
 
-    it('labels a note whose author the state does not say as a review note', () => {
+    it('labels a note sent with no author as a review note', () => {
         const page = props(n6AmendedFixture);
 
         page.cosign.dispute!.resolution_note = 'Synthetic note.';
@@ -1485,6 +1487,35 @@ describe('Business audit co-sign — who recorded the dispute note', () => {
         expect(screen.getByText('Review note')).toBeInTheDocument();
         expect(
             screen.queryByText(/Rozine staff note|CPA's reason/u),
+        ).not.toBeInTheDocument();
+    });
+
+    it('takes the author only from resolution_note_by, never from the outcome', () => {
+        const page = props(n6AmendmentRequiredFixture);
+
+        page.cosign.dispute!.resolution_note_by = 'cpa';
+        const first = setup(page);
+
+        expect(screen.getByText("CPA's reason")).toBeInTheDocument();
+        first.unmount();
+
+        const staffEscalated = props(n6StaffEscalatedFixture);
+
+        expect(staffEscalated.cosign.dispute).toMatchObject({
+            status: 'escalated',
+            outcome: null,
+            resolution_note_by: 'staff',
+        });
+        setup(staffEscalated);
+        expect(screen.getByText('Rozine staff note')).toBeInTheDocument();
+        expect(screen.queryByText("CPA's reason")).not.toBeInTheDocument();
+    });
+
+    it('shows no note and no label while the dispute has none', () => {
+        setup(props(n6UnderReviewFixture));
+
+        expect(
+            screen.queryByText(/Rozine staff note|CPA's reason|Review note/u),
         ).not.toBeInTheDocument();
     });
 

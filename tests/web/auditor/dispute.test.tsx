@@ -16,6 +16,7 @@ import autoApprovedFixture from '../../../resources/fixtures/ui/auditor-audit-se
 import amendedFixture from '../../../resources/fixtures/ui/auditor-audit-sealed-n6-dispute-amended.json';
 import amendmentRequiredFixture from '../../../resources/fixtures/ui/auditor-audit-sealed-n6-dispute-amendment-required.json';
 import escalatedFixture from '../../../resources/fixtures/ui/auditor-audit-sealed-n6-dispute-escalated.json';
+import staffEscalatedFixture from '../../../resources/fixtures/ui/auditor-audit-sealed-n6-dispute-staff-escalated.json';
 import underReviewFixture from '../../../resources/fixtures/ui/auditor-audit-sealed-n6-dispute-under-review.json';
 import upheldFixture from '../../../resources/fixtures/ui/auditor-audit-sealed-n6-dispute-upheld.json';
 import sealedPublished from '../../../resources/fixtures/ui/auditor-audit-sealed-published.json';
@@ -208,6 +209,7 @@ describe('Auditor sealed report — who recorded the dispute note', () => {
         expect(stageOf(page).dispute).toMatchObject({
             status: 'escalated',
             outcome: null,
+            resolution_note_by: 'cpa',
         });
         expect(
             within(panel()).getByText('Your reason for upholding'),
@@ -223,6 +225,7 @@ describe('Auditor sealed report — who recorded the dispute note', () => {
     it.each([
         ['amendment required', amendmentRequiredFixture],
         ['upheld and published', upheldFixture],
+        ['an unacted-on case they escalated', staffEscalatedFixture],
     ])('labels the note staff recorded with %s as theirs', (_case, fixture) => {
         render(<AuditorAudit {...props(fixture)} />);
 
@@ -234,7 +237,31 @@ describe('Auditor sealed report — who recorded the dispute note', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('labels a note whose author the state does not say as a review note', () => {
+    it('takes the author only from resolution_note_by, never from the outcome', () => {
+        const page = props(staffEscalatedFixture);
+
+        expect(stageOf(page).dispute).toMatchObject({
+            status: 'escalated',
+            outcome: null,
+            resolution_note_by: 'staff',
+        });
+        const view = render(<AuditorAudit {...page} />);
+
+        expect(
+            within(panel()).getByText('Rozine staff note'),
+        ).toBeInTheDocument();
+        view.unmount();
+
+        const upheld = props(upheldFixture);
+
+        stageOf(upheld).dispute!.resolution_note_by = 'cpa';
+        render(<AuditorAudit {...upheld} />);
+        expect(
+            within(panel()).getByText('Your reason for upholding'),
+        ).toBeInTheDocument();
+    });
+
+    it('labels a note sent with no author as a review note', () => {
         const page = props(amendedFixture);
 
         stageOf(page).dispute!.resolution_note = 'Synthetic note.';
@@ -271,6 +298,58 @@ describe('Auditor sealed report — who recorded the dispute note', () => {
 });
 
 describe('Auditor sealed report — publication under N6', () => {
+    /** The timeline's Business co-signature row. */
+    const cosignRow = () =>
+        within(screen.getByRole('list', { name: 'Filing progress' }))
+            .getAllByRole('listitem')
+            .find((row) => row.textContent?.includes('Business co-signature'))!;
+
+    it('never reads a pending co-signature with no signing time as signed in the timeline', () => {
+        const page = props(autoApprovedFixture);
+
+        render(<AuditorAudit {...page} />);
+
+        expect(stageOf(page).cosign.signed_at).toBeNull();
+        expect(cosignRow()).toHaveTextContent(
+            'Business co-signatureNot co-signed',
+        );
+        expect(cosignRow()).toHaveTextContent(
+            /^Business co-signatureNot co-signed$/u,
+        );
+    });
+
+    it('shows no co-sign time for automatic or staff publication, whatever else is sent', () => {
+        const page = props(upheldFixture);
+
+        stageOf(page).cosign = {
+            ...stageOf(page).cosign,
+            state: 'signed',
+            signed_at: '2026-10-05T09:00:00Z',
+        };
+        render(<AuditorAudit {...page} />);
+
+        expect(cosignRow()).toHaveTextContent(
+            'Business co-signatureNot co-signed',
+        );
+        expect(cosignRow()).toHaveTextContent(
+            /^Business co-signatureNot co-signed$/u,
+        );
+    });
+
+    it('shows no signing time for a co-signature that is not signed', () => {
+        const page = props(sealedMonthly);
+
+        stageOf(page).cosign = {
+            ...stageOf(page).cosign,
+            state: 'pending',
+            signed_at: '2026-10-03T09:20:00Z',
+        };
+        stageOf(page).published_at = null;
+        render(<AuditorAudit {...page} />);
+
+        expect(cosignRow()).toHaveTextContent('Business co-signatureWaiting');
+    });
+
     it('says a report published automatically after the 24-hour window was never co-signed', () => {
         const page = props(autoApprovedFixture);
 

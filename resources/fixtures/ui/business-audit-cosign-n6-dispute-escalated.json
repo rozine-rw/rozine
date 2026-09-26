@@ -80,6 +80,7 @@
                 "proof_files": [],
                 "outcome": null,
                 "resolution_note": "Synthetic CPA reason. The till roll shows the sale on 14 August and the refund slip is dated 16 August, so the finding stands.",
+                "resolution_note_by": "cpa",
                 "amendment": null
             }
         },

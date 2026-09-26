@@ -103,6 +103,7 @@
                 ],
                 "outcome": "amended",
                 "resolution_note": null,
+                "resolution_note_by": null,
                 "amendment": {
                     "report_id": "SYN-RPT-2026-08-N6-A1",
                     "link": {
