@@ -1,4 +1,8 @@
-import type { AuditDispute } from './audit-dispute';
+import type {
+    AuditDispute,
+    AuditPublicationPolicy,
+    AuditPublishedReason,
+} from './audit-dispute';
 import type { BusinessShellLinks } from './business';
 import type {
     OperationCommand,
@@ -73,11 +77,14 @@ export type AuditCosign = {
     overdue: boolean;
     /**
      * The persisted co-sign policy (N6). `monthly-review-2026-09-26` is the 24-hour sign-off or
-     * dispute window; any other value, or null, is a report sealed under an earlier policy, which
-     * keeps its original wording, deadline and publication history.
+     * dispute window; `audit-publication-legacy` is a Flash report or a monthly report sealed
+     * before it, which keeps its original wording, deadline and signature rules.
      */
-    policy_version: string | null;
-    /** When the sealed report reached this Business's app: the 24-hour window counts from here. */
+    policy_version: AuditPublicationPolicy;
+    /**
+     * When the sealed report reached this Business's app: the 24-hour window counts from here.
+     * Null under the legacy policy.
+     */
     delivered_at: string | null;
     /**
      * Why a published report was published: every required signature, automatic approval at the
@@ -91,10 +98,7 @@ export type AuditCosign = {
     dispute: BusinessAuditDispute | null;
 };
 
-export type AuditPublishedReason =
-    | 'signed'
-    | 'auto_approved'
-    | 'staff_resolved';
+export type { AuditPublicationPolicy, AuditPublishedReason };
 
 /** The Business projection of a dispute: the shared record and, once sealed, its amendment. */
 export type BusinessAuditDispute = AuditDispute & {

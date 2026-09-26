@@ -3,12 +3,12 @@
     "props": {
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
-        "server_time": "2026-10-03T17:00:00Z",
-        "allowed_actions": ["audit.amend"],
+        "server_time": "2026-10-04T18:00:00Z",
+        "allowed_actions": [],
         "audit": {
             "id": "mr_greenleaf",
             "kind": "monthly",
-            "business": "Kivu Coffee Roasters",
+            "business": "Kivu Coffee Roasters (synthetic)",
             "district": "Gasabo",
             "distance_km": "8.8",
             "month": "2026-09-01",
@@ -46,18 +46,18 @@
             "report_id": "rpt_01J9Q3W7K9V5D1",
             "key_id": "key_icpar_p2026_0481_v1",
             "cosign": {
-                "party": "Kivu Coffee Roasters",
-                "state": "signed",
-                "due_on": "2026-10-07",
-                "signed_at": "2026-10-03T09:20:00Z"
+                "party": "Kivu Coffee Roasters (synthetic)",
+                "state": "pending",
+                "due_on": "2026-10-04",
+                "signed_at": null
             },
-            "published_at": "2026-10-03T09:21:00Z",
-            "seal_status": "unavailable",
+            "published_at": "2026-10-04T16:45:00Z",
+            "seal_status": "valid",
             "amended_by": null,
             "dispute": null,
-            "policy_version": "audit-publication-legacy",
-            "delivered_at": null,
-            "published_reason": null
+            "policy_version": "monthly-review-2026-09-26",
+            "delivered_at": "2026-10-03T16:45:00Z",
+            "published_reason": "auto_approved"
         },
         "can_continue": true,
         "hint": null,
@@ -314,5 +314,6 @@
             "id": "asg_mr_greenleaf",
             "revision": 4
         }
-    }
+    },
+    "synthetic": true
 }

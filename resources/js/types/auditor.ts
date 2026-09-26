@@ -1,4 +1,8 @@
-import type { AuditDispute } from './audit-dispute';
+import type {
+    AuditDispute,
+    AuditPublicationPolicy,
+    AuditPublishedReason,
+} from './audit-dispute';
 import type { Money } from './money';
 import type { OperationCommand, OperationResource } from './operation';
 import type { RouteAction, RouteLink } from './routing';
@@ -995,6 +999,15 @@ export type SealedStage = SealedRecord & {
      * report is not disputed.
      */
     dispute: AuditDispute | null;
+    /** The persisted publication policy (N6); only `monthly-review-2026-09-26` is the 24-hour window. */
+    policy_version: AuditPublicationPolicy;
+    /** When the sealed report reached the Business's app; null under the legacy policy. */
+    delivered_at: string | null;
+    /**
+     * Why the report was published, once it is: a co-signature, automatic approval at the end of
+     * the window, or a staff resolution. Only `signed` means the Business co-signed.
+     */
+    published_reason: AuditPublishedReason | null;
 };
 
 /** A blocking conflict: work stopped, only the partner's receipt shown. */

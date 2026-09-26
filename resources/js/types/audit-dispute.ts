@@ -6,6 +6,24 @@ import type { RouteLink } from './routing';
  */
 
 /**
+ * The persisted publication policy a sealed report carries. Only `monthly-review-2026-09-26` is
+ * the 24-hour sign-off or dispute window; `audit-publication-legacy` is a Flash report or a monthly
+ * report sealed before it, which keeps its original deadline and signature rules.
+ */
+export type AuditPublicationPolicy =
+    | 'audit-publication-legacy'
+    | 'monthly-review-2026-09-26';
+
+/**
+ * Why a published report was published: every required signature, automatic approval at the end
+ * of the 24-hour window, or a staff resolution of a dispute. Only `signed` records a signature.
+ */
+export type AuditPublishedReason =
+    | 'signed'
+    | 'auto_approved'
+    | 'staff_resolved';
+
+/**
  * `under_review` — the assigned CPA reads the proof first; `escalated` — the CPA upheld the
  * findings or staff took an unacted-on case, so Rozine staff review it; `resolved` — staff upheld
  * and published it, or a sealed amendment replaced it. The review window stays paused until then.

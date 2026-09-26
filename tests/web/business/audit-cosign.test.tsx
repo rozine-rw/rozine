@@ -809,6 +809,14 @@ describe('Business audit co-sign — the co-signature', () => {
         ],
         [
             'REPORT_WINDOW_CLOSED',
+            "The 24-hour review window has closed, so this report can't be signed off or disputed any more. We've loaded it as it stands now.",
+        ],
+        [
+            'REPORT_REVIEW_CLOSED',
+            "This report is already disputed, with Rozine staff or published, so it can't be signed off or disputed again. We've loaded it as it stands now.",
+        ],
+        [
+            'SOME_NEW_REFUSAL',
             "This wasn't recorded. Check the report as it stands now and try again.",
         ],
     ])(
@@ -988,10 +996,11 @@ describe('Business audit co-sign — N6 review window copy', () => {
         expect(screen.queryByText(/Overdue/u)).not.toBeInTheDocument();
     });
 
-    it('keeps the by-the-7th wording for a report under any other policy, and Flash as it was', () => {
+    it('keeps the by-the-7th wording under the legacy policy, and Flash as it was', () => {
         const legacy = props(n6OpenFixture);
 
-        legacy.cosign.policy_version = 'monthly-cosign-2026-06';
+        legacy.cosign.policy_version = 'audit-publication-legacy';
+        legacy.cosign.delivered_at = null;
         const first = setup(legacy);
 
         expect(
@@ -1639,8 +1648,19 @@ describe('Business audit co-sign — N6 dispute sheet', () => {
             'MANDATE_STALE',
             "The company's signing mandate changed. Check who can sign now, then try again.",
         ],
-        ['AUDIT_REPORT_DISPUTE_WINDOW_CLOSED', null],
-        ['AUDIT_REPORT_ALREADY_DISPUTED', null],
+        [
+            'REPORT_WINDOW_CLOSED',
+            "The 24-hour review window has closed, so this report can't be signed off or disputed any more. We've loaded it as it stands now.",
+        ],
+        [
+            'REPORT_REVIEW_CLOSED',
+            "This report is already disputed, with Rozine staff or published, so it can't be signed off or disputed again. We've loaded it as it stands now.",
+        ],
+        [
+            'AUDIT_REPORT_AMENDED',
+            "The auditor has amended this report, so it can no longer be co-signed. The amended report will come to you for sign-off once it's sealed.",
+        ],
+        ['SOME_NEW_REFUSAL', null],
     ])(
         'reads a %s refusal afresh with its code carried across',
         async (code, reason) => {
@@ -1769,6 +1789,51 @@ describe('Business audit co-sign — N6 dispute sheet', () => {
 
         expect(sheet.getByText('Add at most 5 files.')).toBeInTheDocument();
         expect(sheet.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it('reads the closed-window and closed-review refusals in French and Kinyarwanda', async () => {
+        inertia.queue.push(fails(409, { code: 'REPORT_WINDOW_CLOSED' }));
+        const user = userEvent.setup();
+        const { unmount } = render(
+            <I18nContext value={{ locale: 'fr', catalog: catalogFor('fr') }}>
+                <BusinessAuditCosign {...props(n6OpenFixture)} />
+            </I18nContext>,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'Soumettre une contestation' }),
+        );
+        await user.type(screen.getByLabelText('Texte justificatif'), 'x');
+        await user.click(
+            screen.getByRole('button', { name: 'Soumettre la contestation' }),
+        );
+        expect(
+            await screen.findByText(
+                "La fenêtre d'examen de 24 heures est close : ce rapport ne peut plus être approuvé ni contesté. Nous l'avons rechargé tel qu'il est maintenant. (REPORT_WINDOW_CLOSED)",
+            ),
+        ).toBeInTheDocument();
+        unmount();
+        clearCarriedRefusal();
+
+        inertia.queue.push(fails(409, { code: 'REPORT_REVIEW_CLOSED' }));
+        render(
+            <I18nContext value={{ locale: 'rw', catalog: catalogFor('rw') }}>
+                <BusinessAuditCosign {...props(n6OpenFixture)} />
+            </I18nContext>,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'Tanga ubujurire' }),
+        );
+        await user.type(screen.getByLabelText('Inyandiko isobanura'), 'x');
+        await user.click(
+            screen.getByRole('button', { name: 'Ohereza ubujurire' }),
+        );
+        expect(
+            await screen.findByText(
+                'Iyi raporo yamaze kujuririrwa, iri kwa bakozi ba Rozine cyangwa yaratangajwe, bityo ntigishobora kwemezwa cyangwa kujuririrwa. Twayifunguye uko imeze ubu. (REPORT_REVIEW_CLOSED)',
+            ),
+        ).toBeInTheDocument();
     });
 
     it('reads the sheet in French and Kinyarwanda', async () => {

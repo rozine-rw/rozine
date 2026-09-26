@@ -3359,8 +3359,15 @@ const en = {
     'auditor.dispute_uphold.placeholder':
         'State, as facts, why the findings stand after reviewing the proof.',
     'auditor.dispute_uphold.submit': 'Send to Rozine staff',
+    'business.audit_cosign.refused.REPORT_WINDOW_CLOSED':
+        "The 24-hour review window has closed, so this report can't be signed off or disputed any more. We've loaded it as it stands now.",
+    'business.audit_cosign.refused.REPORT_REVIEW_CLOSED':
+        "This report is already disputed, with Rozine staff or published, so it can't be signed off or disputed again. We've loaded it as it stands now.",
+    'auditor.sealed.body_published_auto':
+        'Published automatically after the 24-hour window, on {date}. The business did not co-sign it.',
     'auditor.sealed.body_published_staff':
-        'Rozine staff upheld the findings and published the report to holders on {date}. The business did not co-sign it.',
+        'Published by Rozine staff on {date}. The business did not co-sign it.',
+    'auditor.sealed.cosign.not_signed': 'Not co-signed',
 } as const;
 
 export default en;

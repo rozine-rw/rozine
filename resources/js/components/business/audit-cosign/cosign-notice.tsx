@@ -10,6 +10,10 @@ const REFUSALS = [
     'MANDATE_STALE',
     /* An Auditor amendment withdrew this report from co-signing (delivery 3). */
     'AUDIT_REPORT_AMENDED',
+    /* N6: the 24-hour window has closed; the page is read afresh. */
+    'REPORT_WINDOW_CLOSED',
+    /* N6: already disputed, escalated or published; the page is read afresh. */
+    'REPORT_REVIEW_CLOSED',
     'ACTION_FORBIDDEN',
     'MANDATE_REQUIRED',
     'NOT_FOUND',

@@ -56,7 +56,7 @@
             "your_note": "",
             "due_at": null,
             "overdue": false,
-            "policy_version": null,
+            "policy_version": "audit-publication-legacy",
             "delivered_at": null,
             "published_reason": null,
             "dispute": null

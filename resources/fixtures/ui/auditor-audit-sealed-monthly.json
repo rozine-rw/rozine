@@ -54,7 +54,10 @@
             "published_at": "2026-10-03T09:21:00Z",
             "seal_status": "valid",
             "amended_by": null,
-            "dispute": null
+            "dispute": null,
+            "policy_version": "audit-publication-legacy",
+            "delivered_at": null,
+            "published_reason": null
         },
         "can_continue": true,
         "hint": null,

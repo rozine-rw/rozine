@@ -3468,8 +3468,15 @@ const fr: Catalog = {
     'auditor.dispute_uphold.placeholder':
         "Indiquez, en faits, pourquoi les constats restent valables après l'examen des justificatifs.",
     'auditor.dispute_uphold.submit': 'Transmettre au personnel Rozine',
+    'business.audit_cosign.refused.REPORT_WINDOW_CLOSED':
+        "La fenêtre d'examen de 24 heures est close : ce rapport ne peut plus être approuvé ni contesté. Nous l'avons rechargé tel qu'il est maintenant.",
+    'business.audit_cosign.refused.REPORT_REVIEW_CLOSED':
+        "Ce rapport est déjà contesté, examiné par le personnel Rozine ou publié : il ne peut plus être approuvé ni contesté. Nous l'avons rechargé tel qu'il est maintenant.",
+    'auditor.sealed.body_published_auto':
+        "Publié automatiquement après la fenêtre de 24 heures, le {date}. L'entreprise ne l'a pas cosigné.",
     'auditor.sealed.body_published_staff':
-        "Le personnel Rozine a maintenu les constats et publié le rapport aux porteurs le {date}. L'entreprise ne l'a pas cosigné.",
+        "Publié par le personnel Rozine le {date}. L'entreprise ne l'a pas cosigné.",
+    'auditor.sealed.cosign.not_signed': 'Non cosigné',
 };
 
 export default fr;

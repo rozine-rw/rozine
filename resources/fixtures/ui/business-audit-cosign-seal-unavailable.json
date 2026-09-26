@@ -71,7 +71,7 @@
             "your_note": "",
             "due_at": "2026-09-07T23:59:59+02:00",
             "overdue": false,
-            "policy_version": null,
+            "policy_version": "audit-publication-legacy",
             "delivered_at": null,
             "published_reason": null,
             "dispute": null

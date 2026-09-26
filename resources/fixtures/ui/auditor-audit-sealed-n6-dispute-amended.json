@@ -92,7 +92,10 @@
                 ],
                 "outcome": "amended",
                 "resolution_note": null
-            }
+            },
+            "policy_version": "monthly-review-2026-09-26",
+            "delivered_at": "2026-10-03T16:45:00Z",
+            "published_reason": null
         },
         "can_continue": true,
         "hint": null,

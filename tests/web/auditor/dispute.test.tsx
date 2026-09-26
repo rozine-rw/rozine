@@ -12,11 +12,13 @@ import { formatDate } from '@/lib/rozine/format';
 import AuditorAudit from '@/pages/auditor/audit';
 import type { AuditProcedureProps, SealedStage } from '@/types/auditor';
 import sealedMonthly from '../../../resources/fixtures/ui/auditor-audit-sealed-monthly.json';
+import autoApprovedFixture from '../../../resources/fixtures/ui/auditor-audit-sealed-n6-auto-approved.json';
 import amendedFixture from '../../../resources/fixtures/ui/auditor-audit-sealed-n6-dispute-amended.json';
 import amendmentRequiredFixture from '../../../resources/fixtures/ui/auditor-audit-sealed-n6-dispute-amendment-required.json';
 import escalatedFixture from '../../../resources/fixtures/ui/auditor-audit-sealed-n6-dispute-escalated.json';
 import underReviewFixture from '../../../resources/fixtures/ui/auditor-audit-sealed-n6-dispute-under-review.json';
 import upheldFixture from '../../../resources/fixtures/ui/auditor-audit-sealed-n6-dispute-upheld.json';
+import sealedPublished from '../../../resources/fixtures/ui/auditor-audit-sealed-published.json';
 import { renderWithUser } from '../helpers/render-with-user';
 import {
     answers,
@@ -182,15 +184,86 @@ describe('Auditor sealed report — the Business dispute', () => {
 
         render(<AuditorAudit {...page} />);
 
+        expect(stageOf(page).published_reason).toBe('staff_resolved');
         expect(sheet()).toHaveTextContent(
-            `Rozine staff upheld the findings and published the report to holders on ${formatDate(stageOf(page).published_at!, 'en')}. The business did not co-sign it.`,
+            `Published by Rozine staff on ${formatDate(stageOf(page).published_at!, 'en')}. The business did not co-sign it.`,
         );
-        expect(sheet()).not.toHaveTextContent(/co-signed;/u);
+        expect(sheet()).not.toHaveTextContent(/and co-signed/u);
+        expect(within(sheet()).getByText('Not co-signed')).toBeInTheDocument();
         expect(
             within(panel()).getByText('Outcome: findings upheld'),
         ).toBeInTheDocument();
         expect(
             within(panel()).getByText(stageOf(page).dispute!.resolution_note!),
+        ).toBeInTheDocument();
+    });
+});
+
+describe('Auditor sealed report — publication under N6', () => {
+    it('says a report published automatically after the 24-hour window was never co-signed', () => {
+        const page = props(autoApprovedFixture);
+
+        render(<AuditorAudit {...page} />);
+
+        expect(stageOf(page)).toMatchObject({
+            policy_version: 'monthly-review-2026-09-26',
+            published_reason: 'auto_approved',
+            cosign: { state: 'pending', signed_at: null },
+        });
+        expect(sheet()).toHaveTextContent(
+            `Published automatically after the 24-hour window, on ${formatDate(stageOf(page).published_at!, 'en')}. The business did not co-sign it.`,
+        );
+        expect(sheet()).not.toHaveTextContent(/and co-signed|Waiting/u);
+        expect(within(sheet()).getByText('Not co-signed')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('region', { name: 'Business dispute' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it.each([
+        ['a signature', 'signed'],
+        ['no reason under the legacy policy', null],
+    ] as const)(
+        'keeps the co-signed wording for a publication with %s',
+        (_case, reason) => {
+            const page = props(sealedPublished);
+
+            stageOf(page).published_reason = reason;
+            render(<AuditorAudit {...page} />);
+
+            expect(stageOf(page).policy_version).toBe(
+                'audit-publication-legacy',
+            );
+            expect(
+                screen.getByRole('dialog', { name: 'Huye Motors audit' }),
+            ).toHaveTextContent(
+                `Sealed and co-signed; published to holders on ${formatDate(stageOf(page).published_at!, 'en')}.`,
+            );
+            expect(screen.queryByText('Not co-signed')).not.toBeInTheDocument();
+        },
+    );
+
+    it('reads automatic and staff publication in French and Kinyarwanda', () => {
+        const { unmount } = render(
+            <I18nContext value={{ locale: 'fr', catalog: catalogFor('fr') }}>
+                <AuditorAudit {...props(autoApprovedFixture)} />
+            </I18nContext>,
+        );
+
+        expect(screen.getByText('Non cosigné')).toBeInTheDocument();
+        expect(
+            screen.getByText(/^Publié automatiquement après la fenêtre/u),
+        ).toBeInTheDocument();
+        unmount();
+
+        render(
+            <I18nContext value={{ locale: 'rw', catalog: catalogFor('rw') }}>
+                <AuditorAudit {...props(upheldFixture)} />
+            </I18nContext>,
+        );
+
+        expect(
+            screen.getByText(/^Byatangajwe n'abakozi ba Rozine ku wa/u),
         ).toBeInTheDocument();
     });
 

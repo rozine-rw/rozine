@@ -4,8 +4,10 @@ import { formatKigaliTime } from '@/components/auditor/clock';
 import { StatusPill, Tick } from '@/components/auditor/ui';
 import type { PillTone } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
+import type { MessageCode } from '@/lib/i18n/types';
 import { formatDate } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
+import type { AuditPublishedReason } from '@/types/audit-dispute';
 import type { CosignState, SealedStage } from '@/types/auditor';
 
 const COSIGN_TONE: Record<CosignState, PillTone> = {
@@ -13,6 +15,13 @@ const COSIGN_TONE: Record<CosignState, PillTone> = {
     signed: 'green',
     declined: 'red',
     overdue: 'red',
+};
+
+/** A published report's introduction by why it was published: only `signed` was co-signed. */
+const PUBLISHED_COPY: Record<AuditPublishedReason, MessageCode> = {
+    signed: 'auditor.sealed.body_published',
+    auto_approved: 'auditor.sealed.body_published_auto',
+    staff_resolved: 'auditor.sealed.body_published_staff',
 };
 
 type Stage = {
@@ -52,6 +61,11 @@ export function SealedStatus({
         { label: t('auditor.sealed.key_id'), value: stage.key_id },
     ];
     const { cosign } = stage;
+    /* Published automatically or by staff: the Business never co-signed, and is not waited on. */
+    const withoutSignature =
+        stage.published_at !== null &&
+        (stage.published_reason === 'auto_approved' ||
+            stage.published_reason === 'staff_resolved');
 
     /*
      * Where the filing stands, from the server's publication and co-sign facts — never from the
@@ -60,15 +74,10 @@ export function SealedStatus({
      */
     const intro = (): string => {
         if (stage.published_at !== null) {
-            /* Staff published it over an upheld dispute: nobody co-signed it. */
-            return t(
-                stage.dispute?.outcome === 'upheld'
-                    ? 'auditor.sealed.body_published_staff'
-                    : 'auditor.sealed.body_published',
-                {
-                    date: formatDate(stage.published_at, locale),
-                },
-            );
+            /* Only a co-signature is a co-signature: automatic and staff publication record none. */
+            return t(PUBLISHED_COPY[stage.published_reason ?? 'signed'], {
+                date: formatDate(stage.published_at, locale),
+            });
         }
 
         /* An unpublished report you amended is replaced by its amendment: nobody co-signs it. */
@@ -173,6 +182,10 @@ export function SealedStatus({
                                 {formatDate(item.when, locale)} ·{' '}
                                 {formatKigaliTime(item.when)}
                             </span>
+                        ) : item.key === 'cosigned' && withoutSignature ? (
+                            <StatusPill tone="neutral">
+                                {t('auditor.sealed.cosign.not_signed')}
+                            </StatusPill>
                         ) : item.key === 'cosigned' ? (
                             <StatusPill tone={COSIGN_TONE[cosign.state]}>
                                 {t(`auditor.sealed.cosign.${cosign.state}`)}

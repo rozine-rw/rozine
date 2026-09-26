@@ -3450,8 +3450,15 @@ const rw: Catalog = {
     'auditor.dispute_uphold.placeholder':
         "Vuga, mu buryo bw'ukuri, impamvu ibyagaragajwe bigumaho nyuma yo gusuzuma ibimenyetso.",
     'auditor.dispute_uphold.submit': 'Ohereza ku bakozi ba Rozine',
+    'business.audit_cosign.refused.REPORT_WINDOW_CLOSED':
+        "Igihe cyo gusuzuma cy'amasaha 24 cyarangiye, bityo iyi raporo ntigishobora kwemezwa cyangwa kujuririrwa. Twayifunguye uko imeze ubu.",
+    'business.audit_cosign.refused.REPORT_REVIEW_CLOSED':
+        'Iyi raporo yamaze kujuririrwa, iri kwa bakozi ba Rozine cyangwa yaratangajwe, bityo ntigishobora kwemezwa cyangwa kujuririrwa. Twayifunguye uko imeze ubu.',
+    'auditor.sealed.body_published_auto':
+        "Byatangajwe mu buryo bwikora nyuma y'amasaha 24, ku wa {date}. Ikigo nticyayisinyeho.",
     'auditor.sealed.body_published_staff':
-        'Abakozi ba Rozine bagumishijeho ibyagaragajwe kandi bageza raporo ku bashoramari ku wa {date}. Ikigo nticyayisinyeho.',
+        "Byatangajwe n'abakozi ba Rozine ku wa {date}. Ikigo nticyayisinyeho.",
+    'auditor.sealed.cosign.not_signed': 'Ntiyasinywe',
 };
 
 export default rw;
