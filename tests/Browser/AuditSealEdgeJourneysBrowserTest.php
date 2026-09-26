@@ -389,7 +389,7 @@ it('denies a replaced Auditor the report and its seal, with no stale action left
             if (await page.getByRole("heading", {name:"Sealed and filed"}).count() !== 0) throw new Error("A replaced Auditor sealed");
             await shot('.$journey->shot('stale-seal-phone').');
             const cold = await page.reload();
-            await page.getByRole("heading", {name:"Access needs to be checked", exact:true}).waitFor();
+            await page.getByRole("heading", {name:"We couldn\'t find that page", exact:true}).waitFor();
             for (const name of ["Preview findings", "Confirm with your authenticator", "Seal & submit to Rozine", "Save note"]) {
                 if (await page.getByRole("button", {name}).count() !== 0) throw new Error("Stale action offered: " + name);
             }
