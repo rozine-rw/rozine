@@ -8,6 +8,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { dashboard } from '@/routes';
 import { store } from '@/routes/identity/bookmarks';
 import { edit } from '@/routes/profile';
+import type { RouteLink } from '@/types';
 import type { EngagementSummary } from '@/types/auditor';
 import type { BusinessApplications } from '@/types/business';
 import type {
@@ -31,6 +32,11 @@ type Props = {
      * above, it is optional so a page rendered without it simply shows none.
      */
     engagement?: EngagementSummary | null;
+    /**
+     * The Auditor role's way into its work, as the Auditor shell's `links` carry them. Optional
+     * until the server sends them on the role home; a destination it does not send is not shown.
+     */
+    links?: { jobs: RouteLink | null; profile: RouteLink | null } | null;
 };
 
 export default function RoleHome({
@@ -39,6 +45,7 @@ export default function RoleHome({
     section,
     business_applications: businessApplications = null,
     engagement = null,
+    links = null,
 }: Props) {
     const { t } = useTranslation();
     const request = useHttp<SaveRoleBookmarkInput, { data: RoleBookmark }>();
@@ -115,6 +122,26 @@ export default function RoleHome({
                               )}
                     </p>
                     <EngagementBanner engagement={engagement} />
+                    {engagement !== null && (
+                        <nav
+                            aria-label={t('identity.home.auditor_nav')}
+                            className="flex flex-wrap gap-x-5 gap-y-2"
+                        >
+                            {links?.jobs != null && (
+                                <Link href={links.jobs}>
+                                    {t('auditor.nav.jobs')}
+                                </Link>
+                            )}
+                            {links?.profile != null && (
+                                <Link href={links.profile}>
+                                    {t('auditor.nav.profile')}
+                                </Link>
+                            )}
+                            <Link href={engagement.link}>
+                                {t('auditor.engagement.title')}
+                            </Link>
+                        </nav>
+                    )}
                     {businessApplications !== null && (
                         <BusinessApplicationEntries
                             applications={businessApplications}

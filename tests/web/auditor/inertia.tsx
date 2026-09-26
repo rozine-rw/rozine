@@ -52,7 +52,10 @@ export const inertia = {
     finishReload: [] as (() => void)[],
     /** The props a finished reload delivers; null delivers no page, as a failed reload would. */
     reloadProps: null as Record<string, unknown> | null,
+    /** The page URL `usePage` reports, query included. */
+    url: '/auditor/reports/fa_huye',
     reset() {
+        this.url = '/auditor/reports/fa_huye';
         this.posts = [];
         this.reloads = [];
         this.visits = [];
@@ -135,6 +138,8 @@ export const router = {
 };
 
 export const usePoll = () => inertia.poll;
+
+export const usePage = () => ({ url: inertia.url, props: {} });
 
 export function useHttp() {
     const body = useRef<() => unknown>(() => ({}));

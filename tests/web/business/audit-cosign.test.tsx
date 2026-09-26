@@ -203,6 +203,19 @@ beforeEach(() => {
 afterEach(() => clearCarriedRefusal());
 
 describe('Business audit co-sign — reading the sealed report', () => {
+    it('leaves out the Audit Partner note section when the report was sealed with no note', () => {
+        const page = props();
+
+        setup({ ...page, report: { ...page.report, auditor_note: '  ' } });
+
+        expect(
+            screen.queryByRole('heading', { name: "Audit Partner's note" }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('heading', { name: 'Factual findings' }),
+        ).toBeInTheDocument();
+    });
+
     it('shows the monthly report header, seal, note and factual findings, with no rating or figures', () => {
         const page = props();
 

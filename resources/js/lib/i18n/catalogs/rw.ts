@@ -35,12 +35,21 @@ const rw: Catalog = {
     'identity.home.staff_ready': 'Konti yawe y’umukozi yemerewe kwinjira hano.',
     'identity.home.back': 'Hitamo porogaramu',
     'identity.home.settings': 'Igenamiterere rya konti',
+    'identity.home.auditor_nav': "Akazi kawe k'igenzura",
     'identity.home.saving': 'Kubika aho ugeze…',
     'identity.home.failed':
         'Ntitwashoboye kubika aho ugeze. Subira aho uhitamo porogaramu urebe uburenganzira bwawe.',
     'identity.denied.title': 'Uburenganzira bugomba kugenzurwa',
     'identity.denied.body':
         'Konti yawe nticyemerewe gufungura uru rupapuro mu nshingano wahisemo. Hitamo porogaramu wongere kugenzura uburenganzira bwawe.',
+    'identity.denied.expired_offer.title': 'Iki cyifuzo cyarafunzwe',
+    'identity.denied.expired_offer.body':
+        'Igihe cyo kwemera uyu murimo cyarangiye, ntukiwufunguriwe. Hitamo porogaramu urebe imirimo yawe iriho.',
+    'errors.not_found.head_title': 'Ntibibonetse',
+    'errors.not_found.title': 'Ntitwabonye uru rupapuro',
+    'errors.not_found.body':
+        'Birashoboka ko ihuza ryanditswe nabi, cyangwa icyo ryerekezagaho kitakiboneka. Reba ihuza, cyangwa wongere utangirire kuri Rozine.',
+    'errors.not_found.home': 'Jya ku rupapuro rw’ibanze rwa Rozine',
     'environment.demo': 'Demo — si urubuga nyarwo',
     'environment.uat': 'UAT — si urubuga nyarwo',
     'environment.synthetic_only':
@@ -1514,7 +1523,7 @@ const rw: Catalog = {
     'auditor.sector.technology': 'Ikoranabuhanga',
     'auditor.sector.services': 'Serivisi',
     'auditor.jobs.head_title': 'Imirimo',
-    'auditor.jobs.title': 'Amagenzura yihuse',
+    'auditor.jobs.title': "Imirimo y'igenzura",
     'auditor.jobs.lead':
         'Igenzura ryo ku kibanza riri mu birometero {radius}. Uwemeye mbere afata dosiye. Buri igenzura ryihuse rigomba kurangira mu masaha {hours} nyuma yo koherezwa.',
     'auditor.jobs.map_label':
@@ -1528,6 +1537,7 @@ const rw: Catalog = {
     'auditor.jobs.km': 'km {distance}',
     'auditor.jobs.sector_unavailable': 'Urwego ntirubonetse',
     'auditor.jobs.kind_monthly': 'Isura rya buri kwezi',
+    'auditor.jobs.kind_flash': 'Igenzura ryihuse',
     'auditor.jobs.show_more': 'Erekana ibindi',
     'auditor.jobs.conflicts_link': 'Inyungu wagaragaje →',
     'auditor.jobs.page_empty':
@@ -1703,7 +1713,11 @@ const rw: Catalog = {
         "Ukuri kw'aho uri cyangwa intera n'aho ikigo cyanditse birenze amabwiriza. Komeza; ibikorwa by'igenzura bizabisuzuma.",
     'auditor.photos.title': "Amafoto y'ikibanza afite aho yafatiwe",
     'auditor.photos.lead':
-        'Bifatwa ako kanya muri porogaramu — gukura amafoto mu bubiko byahagaritswe kugira ngo hatabaho uburiganya. {required} birakenewe · {captured} byafashwe.',
+        'Bifatwa ako kanya muri porogaramu — gukura amafoto mu bubiko byahagaritswe kugira ngo hatabaho uburiganya. {captured} kuri {required} bikenewe byafashwe.',
+    'auditor.photos.extras': {
+        one: 'Hiyongereyeho ifoto {count} y’inyongera.',
+        other: 'Hiyongereyeho amafoto {count} y’inyongera.',
+    },
     'auditor.photos.grid': "Amafoto y'ikibanza",
     'auditor.photos.pending': 'Ntirafatwa',
     'auditor.photos.captured': 'Yafashwe',
@@ -1764,8 +1778,7 @@ const rw: Catalog = {
     'auditor.count.inventory': "Ibimenyetso by'ububiko",
     'auditor.count.stock': 'Byabonetse ku kibanza · ububiko (ibice)',
     'auditor.count.units': 'ibice',
-    'auditor.count.stock_hint':
-        'Ububiko bwatangajwe ibice {units} · urugero {tolerance}',
+    'auditor.count.stock_hint': 'Ububiko bwatangajwe: ibice {units}',
     'auditor.count.stock_no_baseline': 'Nta bubiko bwatangajwe kuri iki gihe.',
     'auditor.count.operational': 'Uko ikigo gikora',
     'auditor.count.status.active': 'Kirakora',
@@ -2968,6 +2981,7 @@ const rw: Catalog = {
     'auditor.sealed.amended_by':
         'Raporo {report} ikosora iyi; iyi raporo iguma uko yashyizweho kashe.',
     'auditor.sealed.open_amendment': 'Fungura ikosora',
+    'auditor.sealed.verify': 'Genzura kashe',
     'auditor.audit.amends':
         'Iyi ni ikosora rifitanye isano na raporo {report}. Iyo raporo iguma idahindutse.',
     'auditor.audit.open_original': "Fungura iy'umwimerere",

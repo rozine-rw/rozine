@@ -3,7 +3,10 @@ import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 type InertiaOptions = {
-    layout: (name: string) => unknown;
+    layout: (
+        name: string,
+        page?: { props: Record<string, unknown> },
+    ) => unknown;
     progress: { color: string };
     strictMode: boolean;
     title: (title: string) => string;
@@ -67,12 +70,23 @@ describe('application entry point', () => {
     it('configures fallback titles, layouts, progress, and providers', async () => {
         const options = await loadApplication('');
 
-        expect(options.title('Dashboard')).toBe('Dashboard - Laravel');
-        expect(options.title('')).toBe('Laravel');
+        expect(options.title('Dashboard')).toBe('Dashboard - Rozine');
+        expect(options.title('')).toBe('Rozine');
         expect(options.layout('home')).toBe(state.publicLayout);
         expect(options.layout('welcome')).toBe(state.publicLayout);
         expect(options.layout('pulse')).toBe(state.publicLayout);
         expect(options.layout('audit/verify-seal')).toBe(state.publicLayout);
+        /* The error page's not-found answer is public; its refusals keep the app layout. */
+        expect(
+            options.layout('identity/access-denied', {
+                props: { status: 404 },
+            }),
+        ).toBe(state.publicLayout);
+        expect(
+            options.layout('identity/access-denied', {
+                props: { status: 403 },
+            }),
+        ).toBe(state.appLayout);
         expect(options.layout('auth/login')).toBe(state.authLayout);
         expect(options.layout('settings/profile')).toEqual([
             state.appLayout,
@@ -92,8 +106,8 @@ describe('application entry point', () => {
         expect(screen.getByText('Toast outlet')).toBeInTheDocument();
     });
 
-    it('uses the configured application name', async () => {
-        const options = await loadApplication('Rozine');
+    it('titles every tab Rozine, whatever name the environment carries', async () => {
+        const options = await loadApplication('Laravel');
 
         expect(options.title('Dashboard')).toBe('Dashboard - Rozine');
         expect(options.title('')).toBe('Rozine');

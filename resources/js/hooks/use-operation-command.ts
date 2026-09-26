@@ -14,7 +14,8 @@ import type { OperationCommand, OperationResource } from '@/types/operation';
  * What a page tells its person about their last command, beyond "busy":
  * - `checking` — the answer was lost, so the recorded outcome is being looked up (an unknown
  *   outcome is client state only; the server never reports one);
- * - `unconfirmed` — the lookup could not be reached; nothing is resent until it answers;
+ * - `unconfirmed` — the lookup could not be reached, or gave no answer within its time limit;
+ *   nothing is resent until it answers;
  * - `pending` — the server recorded the command and is still working on it;
  * - `not_recorded` — the lookup found no result and the page's facts have been refreshed, so the
  *   identical command may be sent again;
@@ -33,6 +34,15 @@ export type CommandNotice =
  * overtaken, so a page reads its facts afresh rather than showing that snapshot as current.
  */
 export type Completion = { recovered: boolean };
+
+/**
+ * How long an operation lookup may go unanswered before the page stops saying "checking" and
+ * offers "Check again" instead. The lookup is cancelled, never the command resent.
+ */
+export const LOOKUP_TIMEOUT_MS = 20_000;
+
+/** What a request resolves to when its time limit passes first. */
+const TIMED_OUT = Symbol('timed out');
 
 type Attempt<R> =
     | { kind: 'resource'; resource: R }
@@ -68,6 +78,11 @@ type Options<C extends OperationCommand, R> = {
      * showing field errors. Direct answers and lookup replays alike.
      */
     refusals422?: ReadonlySet<string>;
+    /**
+     * How long, in milliseconds, the operation lookup may go unanswered before it is cancelled and
+     * the page offers "Check again" with the same held command. Defaults to `LOOKUP_TIMEOUT_MS`.
+     */
+    lookupTimeout?: number;
     /** A command a synthetic preview seeds as already sent, with what is known about it. */
     initial?: { held: C | null; notice: CommandNotice | null };
     /**
@@ -97,6 +112,7 @@ export function useOperationCommand<
     lookupNamesCommand = true,
     lookupQuery,
     refusals422,
+    lookupTimeout = LOOKUP_TIMEOUT_MS,
     initial,
     refresh,
     onCompleted,
@@ -110,11 +126,18 @@ export function useOperationCommand<
         initial?.notice ?? null,
     );
 
+    /**
+     * One request through `useHttp`. Given a `timeout`, a request still unanswered when it passes
+     * is cancelled and reads as unreachable; its answer, should one still arrive, is ignored.
+     */
     const request = async (
         route: RouteAction | RouteLink,
         body: Record<string, unknown>,
+        timeout?: number,
     ): Promise<Attempt<R>> => {
         let failure: Attempt<R> = { kind: 'unreachable' };
+        let cancel: () => void = () => undefined;
+        let timer: ReturnType<typeof setTimeout> | undefined;
         let fieldErrors: Record<string, unknown> = {};
         let validationCode: string | null = null;
         /*
@@ -135,7 +158,10 @@ export function useOperationCommand<
         http.transform(() => body);
 
         try {
-            const resource = (await http.submit(route, {
+            const submitted = http.submit(route, {
+                onCancelToken: (token) => {
+                    cancel = token.cancel;
+                },
                 onError: (errors) => {
                     fieldErrors = errors;
                 },
@@ -146,7 +172,25 @@ export function useOperationCommand<
                         code: readErrorCode(response.data),
                     };
                 },
-            })) as R | undefined;
+            }) as Promise<R | undefined>;
+            const resource =
+                timeout === undefined
+                    ? await submitted
+                    : await Promise.race([
+                          submitted,
+                          new Promise<typeof TIMED_OUT>((resolve) => {
+                              timer = setTimeout(
+                                  () => resolve(TIMED_OUT),
+                                  timeout,
+                              );
+                          }),
+                      ]);
+
+            if (resource === TIMED_OUT) {
+                cancel();
+
+                return { kind: 'unreachable' };
+            }
 
             /* A 422 resolves without a body: useHttp has put the field errors in `errors`. */
             return resource === undefined
@@ -155,6 +199,7 @@ export function useOperationCommand<
         } catch {
             return failure;
         } finally {
+            clearTimeout(timer);
             stopReading?.();
         }
     };
@@ -223,6 +268,7 @@ export function useOperationCommand<
             lookupNamesCommand
                 ? { ...lookupQuery, command: command.name }
                 : { ...lookupQuery },
+            lookupTimeout,
         );
 
         if (attempt.kind === 'resource') {
@@ -268,6 +314,10 @@ export function useOperationCommand<
             return;
         }
 
+        /*
+         * Unreachable, an uncertain status, or no answer in time: the command stays held with its
+         * `request_id`, and only a further lookup ("Check again") may settle it.
+         */
         setNotice({ kind: 'unconfirmed' });
     };
 
