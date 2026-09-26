@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
+import { useDisputeUphold } from '@/components/auditor/audit/dispute-uphold';
 import { STEP_FORM, useStepForm } from '@/components/auditor/audit/parts';
 import type { StepContext } from '@/components/auditor/audit/parts';
 import { useReturnControls } from '@/components/auditor/audit/return-controls';
@@ -222,6 +223,12 @@ function AuditSheet(props: AuditProcedureProps) {
         actions,
         preview: props.preview_outcome,
     });
+    const disputeUphold = useDisputeUphold({
+        stage,
+        business: audit.business,
+        reportRevision: audit.revision,
+        route: actions.dispute_uphold,
+    });
     const steps = blocked ? null : <StepBar steps={props.steps} />;
 
     const header =
@@ -360,6 +367,7 @@ function AuditSheet(props: AuditProcedureProps) {
                     ? null
                     : ((stage.step === 'seal' ? seal.nested : null) ??
                       returns.sheet ??
+                      disputeUphold.sheet ??
                       commands.sheet)
             }
         >
@@ -398,7 +406,11 @@ function AuditSheet(props: AuditProcedureProps) {
                 seal={seal.body}
                 sealed={
                     stage.step === 'sealed' && (
-                        <SealedStatus stage={stage} amend={amend} />
+                        <SealedStatus
+                            stage={stage}
+                            amend={amend}
+                            uphold={disputeUphold.uphold}
+                        />
                     )
                 }
                 returned={

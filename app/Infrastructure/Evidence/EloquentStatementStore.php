@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Evidence;
 
 use App\Application\Auditor\WithAcceptedAuditAssignment;
+use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\Contracts\StatementStore;
 use App\Application\Identity\Contracts\IdentityRepository;
@@ -40,6 +41,7 @@ final class EloquentStatementStore implements StatementStore
 {
     public function __construct(
         private WithBusinessAuthority $authority,
+        private BusinessAuthorityStore $businessAuthority,
         private WithAcceptedAuditAssignment $assignments,
         private IdentityRepository $identities,
         private OperationJournal $journal,
@@ -322,6 +324,33 @@ final class EloquentStatementStore implements StatementStore
                 return $this->assignments->withVerificationValidity($verification['payload']['assignment'],
                     fn (bool $retained): mixed => $operation($business, $identity, [...$verification, 'current' => $verification['current'] && $retained]));
             }, is_string($authorId) ? [$authorId] : []);
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(Business, Verification|null): TResult  $operation
+     * @return TResult
+     */
+    public function withSystemVerification(string $businessId, Closure $operation): mixed
+    {
+        $evidenceId = StatementEvidence::query()->where('business_id', $businessId)->value('id');
+        $authorId = StatementVerification::query()->where('statement_evidence_id', $evidenceId)->orderByDesc('revision')->value('actor_party_id');
+
+        return $this->businessAuthority->withAudit(null, null, $businessId, is_string($authorId) ? [$authorId] : [], true,
+            function (array $context) use ($businessId, $authorId, $operation): mixed {
+                $business = $context['business'];
+                $verification = $this->storedVerification($businessId, null, $business['revision']);
+                if ($verification !== null && $verification['payload']['assignment']['party_id'] !== $authorId) {
+                    throw new CommandRejection('VERSION_CONFLICT', revision: $verification['revision']);
+                }
+                if ($verification === null) {
+                    return $operation($business, null);
+                }
+
+                return $this->assignments->withVerificationValidity($verification['payload']['assignment'],
+                    fn (bool $valid): mixed => $operation($business, [...$verification, 'current' => $verification['current'] && $valid]));
+            });
     }
 
     /** @return Verification|null */

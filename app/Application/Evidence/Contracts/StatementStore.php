@@ -78,6 +78,16 @@ interface StatementStore
      */
     public function withBusinessVerification(int $userId, int $contextRevision, string $businessId, string $permission, ?int $mandateVersion, Closure $operation): mixed;
 
+    /**
+     * Holds current verified Business and source-authority locks for a system publication decision.
+     *
+     * @template TResult
+     *
+     * @param  Closure(Business, Verification|null): TResult  $operation
+     * @return TResult
+     */
+    public function withSystemVerification(string $businessId, Closure $operation): mixed;
+
     /** @return Verification|null */
     public function auditVerification(int $userId, int $contextRevision, string $assignmentId, ?string $verificationId): ?array;
 

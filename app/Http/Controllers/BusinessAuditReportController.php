@@ -42,7 +42,7 @@ class BusinessAuditReportController extends Controller
     public function operation(ShowAuditCosignOperationRequest $request, FindAuditCosignOperation $action): OperationResource
     {
         return $this->present($request, $action->handle((int) $request->user()?->getAuthIdentifier(),
-            (int) $request->validated('identity_context_revision'), (string) $request->route('request_id')));
+            (int) $request->validated('identity_context_revision'), (string) $request->route('request_id'), (string) $request->validated('command', 'report.cosign')));
     }
 
     /** @param array<string, mixed> $result */

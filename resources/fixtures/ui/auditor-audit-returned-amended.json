@@ -84,7 +84,8 @@
             "seal": null,
             "request_changes": null,
             "reject": null,
-            "amend": null
+            "amend": null,
+            "dispute_uphold": null
         },
         "outcome": null,
         "jobs": {

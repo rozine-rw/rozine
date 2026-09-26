@@ -126,7 +126,8 @@ it('uses one accepted instant for the publication window and all retained signat
     $this->travelTo(now('UTC')->startOfMonth()->addDays(6)->setTime(21, 59, 59, 999999));
     $fixture = Fixture::ready(kind: 'monthly');
     Fixture::seal($fixture);
-    $accepted = now('UTC')->toImmutable();
+    $accepted = AuditReportPublication::query()->firstOrFail()->due_at->subMicrosecond();
+    $this->travelTo($accepted);
     if ($closed) {
         $this->travelTo($accepted->addMicrosecond());
     }

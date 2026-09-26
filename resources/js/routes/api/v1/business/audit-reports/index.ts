@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 import operations from './operations'
+import disputes from './disputes'
 /**
 * @see \App\Http\Controllers\Api\V1\BusinessAuditReportController::show
 * @see app/Http/Controllers/Api/V1/BusinessAuditReportController.php:24
@@ -171,10 +172,85 @@ cosignForm.post = (args: { business: string | number, report: string | number } 
 
 cosign.form = cosignForm
 
+/**
+* @see \App\Http\Controllers\AuditDisputeController::dispute
+* @see app/Http/Controllers/AuditDisputeController.php:21
+* @route '/api/v1/business/{business}/audit-reports/{report}/dispute'
+*/
+export const dispute = (args: { business: string | number, report: string | number } | [business: string | number, report: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: dispute.url(args, options),
+    method: 'post',
+})
+
+dispute.definition = {
+    methods: ["post"],
+    url: '/api/v1/business/{business}/audit-reports/{report}/dispute',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\AuditDisputeController::dispute
+* @see app/Http/Controllers/AuditDisputeController.php:21
+* @route '/api/v1/business/{business}/audit-reports/{report}/dispute'
+*/
+dispute.url = (args: { business: string | number, report: string | number } | [business: string | number, report: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+            business: args[0],
+            report: args[1],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        business: args.business,
+        report: args.report,
+    }
+
+    return dispute.definition.url
+            .replace('{business}', parsedArgs.business.toString())
+            .replace('{report}', parsedArgs.report.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\AuditDisputeController::dispute
+* @see app/Http/Controllers/AuditDisputeController.php:21
+* @route '/api/v1/business/{business}/audit-reports/{report}/dispute'
+*/
+dispute.post = (args: { business: string | number, report: string | number } | [business: string | number, report: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: dispute.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\AuditDisputeController::dispute
+* @see app/Http/Controllers/AuditDisputeController.php:21
+* @route '/api/v1/business/{business}/audit-reports/{report}/dispute'
+*/
+const disputeForm = (args: { business: string | number, report: string | number } | [business: string | number, report: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: dispute.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\AuditDisputeController::dispute
+* @see app/Http/Controllers/AuditDisputeController.php:21
+* @route '/api/v1/business/{business}/audit-reports/{report}/dispute'
+*/
+disputeForm.post = (args: { business: string | number, report: string | number } | [business: string | number, report: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: dispute.url(args, options),
+    method: 'post',
+})
+
+dispute.form = disputeForm
+
 const auditReports = {
     operations: Object.assign(operations, operations),
     show: Object.assign(show, show),
     cosign: Object.assign(cosign, cosign),
+    dispute: Object.assign(dispute, dispute),
+    disputes: Object.assign(disputes, disputes),
 }
 
 export default auditReports

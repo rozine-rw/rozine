@@ -19,6 +19,7 @@ use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Auditor\AuditProcedure;
 use App\Domain\Auditor\AuditReportDecision;
+use App\Domain\Auditor\MonthlyReportReview;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
@@ -112,7 +113,8 @@ final class EloquentAuditReportStore implements AuditReportStore
                         $business = $this->businesses->withAudit($userId, $contextRevision, $record->business_id, [$assignment['party_id']], true, fn (array $context): array => $context['business']);
                         $payload = ['business' => $business, 'auditor_name' => $this->identities->accountName($userId), 'report' => $preview['payload'], 'digest' => $preview['digest'], 'sources' => $preview['sources'],
                             'assignment' => $assignment, 'sealed_revision' => $record->revision + 1, 'sealed_at' => $at,
-                            'author_party_id' => $assignment['party_id'], 'actor_user_id' => $userId, 'synthetic' => true];
+                            'author_party_id' => $assignment['party_id'], 'actor_user_id' => $userId, 'synthetic' => true,
+                            'publication_policy' => $record->kind === 'monthly' ? MonthlyReportReview::POLICY : MonthlyReportReview::LEGACY_POLICY];
                         $signature = $this->cryptography->sign($payload);
                         $proofId = $this->stepUpProofs->consume($userId, $assignment['party_id'], $contextRevision, $record->id, $record->revision, $preview['digest'], $proof);
                         $seal = new AuditReportSeal;
@@ -391,6 +393,7 @@ final class EloquentAuditReportStore implements AuditReportStore
                         if (! AuditReportDecision::amendable($record->status)) {
                             throw new CommandRejection('AUDIT_REPORT_NOT_AMENDABLE', revision: $record->revision);
                         }
+                        $this->publications->requireAmendable($record->id);
                         $existing = AuditReport::query()->where('amends_id', $record->id)->first();
                         if ($existing !== null) {
                             return $this->receipt('AUDIT_AMENDMENT_CREATED', $this->view($existing));
