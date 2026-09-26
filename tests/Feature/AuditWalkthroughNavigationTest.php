@@ -3,15 +3,18 @@
 declare(strict_types=1);
 
 use App\Application\Auditor\AmendAuditReport;
+use App\Application\Auditor\Contracts\AuditAssignmentStore;
 use App\Models\RoleMembership;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
+use Tests\Support\AuditAssignmentFixture;
 use Tests\Support\AuditorFixture;
 use Tests\Support\AuditSealingFixture as Fixture;
 use Tests\Support\BusinessApplicationFixture;
+use Tests\Support\BusinessAuthorityFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();
@@ -28,8 +31,9 @@ it('links authorized Auditor home to jobs and profile without exposing those lin
         ->assertInertia(fn (Assert $page): Assert => $page->where('links', null)->where('business_applications.entries.0.audit_report', null));
 });
 
-it('projects sealed jobs as awaiting co-sign and removes published jobs from active work', function (bool $api): void {
-    $fixture = Fixture::ready();
+it('projects sealed jobs as awaiting co-sign and removes published jobs from active work', function (bool $api, string $kind): void {
+    $this->travelTo(now('UTC')->startOfMonth()->addDays(4)->setTime(10, 0));
+    $fixture = Fixture::ready(kind: $kind);
     if ($api) {
         Sanctum::actingAs($fixture['user'], ['auditor:read']);
     } else {
@@ -50,11 +54,13 @@ it('projects sealed jobs as awaiting co-sign and removes published jobs from act
     $response->assertOk();
     $page = $api ? $response->json('data') : $response->viewData('page')['props'];
     expect($page['stage']['verification'])->toBe(['url' => ($api ? '/api/v1' : '').'/audit-seals/'.$fixture['report']->id, 'method' => 'get']);
+    $this->travel(25)->hours();
+    expect($read()['assigned'][0]['status'])->toBe('awaiting_cosign');
     Fixture::cosign($fixture);
     expect($read()['assigned'])->toBeEmpty();
     $this->travel(25)->hours();
     expect($read()['assigned'])->toBeEmpty();
-})->with([false, true]);
+})->with([false, true])->with(['flash', 'monthly']);
 
 it('links Business home only to its own latest unamended sealed report across transports', function (bool $api): void {
     $fixture = Fixture::ready();
@@ -106,4 +112,26 @@ it('renders route and model misses as a neutral browser 404 and preserves JSON r
     }
     $this->get('/api/v1/audit-seals/xyz')->assertNotFound()->assertHeader('Content-Type', 'application/json');
     $this->postJson('/unmatched-test-page')->assertNotFound()->assertJsonMissingPath('component');
+});
+
+it('excludes published assignments before pagination and restores a draft amendment to active work', function (): void {
+    $fixture = Fixture::ready();
+    Fixture::seal($fixture);
+    Fixture::cosign($fixture);
+    $active = [];
+    foreach (range(1, 2) as $number) {
+        $authority = BusinessAuthorityFixture::make();
+        $businessId = BusinessAuthorityFixture::configure($authority)['data']['business']['id'];
+        AuditAssignmentFixture::location($fixture['audit']['staff'], 'premises', $businessId);
+        AuditAssignmentFixture::independence($fixture['audit']['staff'], $businessId, $fixture['user']->party_id);
+        $other = ['staff' => $fixture['audit']['staff'], 'business' => $businessId, 'authority' => $authority, 'partners' => $fixture['audit']['partners']];
+        $active[] = AuditAssignmentFixture::request($other)->id;
+    }
+    $store = app(AuditAssignmentStore::class);
+    $first = $store->workIdentifiers($fixture['user']->id, 1, null, 1);
+    $second = $store->workIdentifiers($fixture['user']->id, 1, $first['next_cursor'], 1);
+    expect($first['ids'])->toBe([$active[1]])->and($second['ids'])->toBe([$active[0]])->and($second['next_cursor'])->toBeNull()
+        ->and($store->workIdentifiers($fixture['user']->id, 1, null, 2)['ids'])->toBe(array_reverse($active));
+    app(AmendAuditReport::class)->handle($fixture['user']->id, 1, $fixture['report']->id, $fixture['report']->refresh()->revision, (string) Str::uuid());
+    expect($store->workIdentifiers($fixture['user']->id, 1, null, 3)['ids'])->toContain($fixture['assignment']->id);
 });

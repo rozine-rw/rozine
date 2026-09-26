@@ -179,7 +179,15 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             if ($limit < 1 || $limit > AuditReadPolicy::MAX_PAGE_SIZE || ($before !== null && ! preg_match('/^[0-9a-hjkmnp-tv-z]{26}$/D', $before))) {
                 throw new CommandRejection('AUDIT_JOBS_PAGE_INVALID', 422);
             }
-            $query = AuditAssignment::query()->where('party_id', $partyId)->whereIn('status', ['offered', 'accepted'])->orderByDesc('id');
+            $query = AuditAssignment::query()->where('party_id', $partyId)->whereIn('status', ['offered', 'accepted'])
+                ->whereNotExists(fn (Query $reports): Query => $reports->selectRaw('1')->from('audit_reports as reports')
+                    ->join('audit_report_publications as publications', 'publications.audit_report_id', '=', 'reports.id')
+                    ->whereColumn('reports.assignment_id', 'audit_assignments.id')
+                    ->whereColumn('reports.assignment_revision', 'audit_assignments.revision')
+                    ->whereColumn('reports.author_party_id', 'audit_assignments.party_id')->where('publications.status', 'published')
+                    ->whereNotExists(fn (Query $children): Query => $children->selectRaw('1')->from('audit_reports as children')
+                        ->whereColumn('children.amends_id', 'reports.id')))
+                ->orderByDesc('id');
             if ($before !== null) {
                 $query->where('id', '<', $before);
             }
