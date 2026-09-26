@@ -3442,6 +3442,14 @@ const fr: Catalog = {
     'business.publish.published.disclosure': 'Information sur les frais',
     'business.publish.published.campaign': 'Voir la campagne',
     'business.publish.published.home': "Retour à l'accueil",
+    'business.campaign.state.live': 'En ligne',
+    'business.campaign.state.fully_reserved': 'Entièrement réservée',
+    'business.campaign.state.funded': 'Financée',
+    'business.campaign.state.disbursing': 'Versement en cours',
+    'business.campaign.state.issued': 'Titres émis',
+    'business.campaign.state.expired': 'Non remplie',
+    'business.campaign.state.cancelled': 'Annulée',
+    'business.campaign.state.failed_closing': 'Clôturée et remboursée',
     'business.campaign.lifecycle.live': 'Levée · en cours',
     'business.campaign.lifecycle.fully_reserved':
         'Levée · entièrement réservée',
@@ -3677,11 +3685,8 @@ const fr: Catalog = {
     },
     'investor.deal.cap.none':
         'Vous ne pouvez plus prendre de titres ici : {reason}.',
-    'investor.deal.cap.reason.transaction': 'votre limite par transaction',
-    'investor.deal.cap.reason.note': 'votre limite pour ce titre',
-    'investor.deal.cap.reason.business': 'votre limite pour cette entreprise',
-    'investor.deal.cap.reason.aggregate':
-        "votre limite globale d'investissement",
+    'investor.deal.cap.reason.raise_cap':
+        'votre plafond par investisseur pour cette levée',
     'investor.deal.cap.reason.availability':
         'ce sont tous les titres encore disponibles',
     'investor.deal.cap.reason.restriction': "une restriction s'applique",

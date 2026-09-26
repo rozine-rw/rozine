@@ -244,11 +244,13 @@ describe('Checkout: the indicative step', () => {
         );
 
         expect(
-            screen.queryByText(/limit for this business/u),
+            screen.queryByText(/limit for this raise/u),
         ).not.toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: 'One note more' }));
         expect(
-            screen.getByText('Up to 2 notes: your limit for this business.'),
+            screen.getByText(
+                'Up to 2 notes: your single-investor limit for this raise.',
+            ),
         ).toBeInTheDocument();
         expect(
             screen.getByRole('button', { name: 'One note more' }),
@@ -259,7 +261,7 @@ describe('Checkout: the indicative step', () => {
         render(<InvestorCheckout {...props(capHitFixture)} />);
         expect(
             screen.getByText(
-                "You can't take any more notes here: your overall investment limit.",
+                "You can't take any more notes here: your single-investor limit for this raise.",
             ),
         ).toBeInTheDocument();
         expect(

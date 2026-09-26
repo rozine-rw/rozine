@@ -1065,11 +1065,13 @@ export type C3DealDetail = C3DealCard & {
 };
 
 /** Which cap binds `max_units`, so a cap-hit state can name it. */
+/**
+ * What stops the investor taking more notes. Robert's #99 C3 answer replaced the per-transaction,
+ * per-note, per-business and aggregate caps with one single-investor cap per raise (confirmed on
+ * #96), so `raise_cap` is the only investor limit left.
+ */
 export type CapacityBinding =
-    | 'transaction'
-    | 'note'
-    | 'business'
-    | 'aggregate'
+    | 'raise_cap'
     | 'availability'
     | 'restriction'
     | 'connected_party';
@@ -1077,12 +1079,8 @@ export type CapacityBinding =
 export type InvestorCapacity = {
     max_units: Units;
     binding: CapacityBinding;
-    remaining: {
-        transaction: Money;
-        note: Money;
-        business: Money;
-        aggregate: Money;
-    };
+    /** What the Party may still commit to this raise under the single-investor cap. */
+    remaining: { raise: Money };
 };
 
 /**

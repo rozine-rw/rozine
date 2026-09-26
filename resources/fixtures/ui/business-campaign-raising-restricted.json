@@ -8,7 +8,8 @@
         "allowed_actions": [],
         "campaign": {
             "id": "CMP-2026-0118",
-            "revision": 12
+            "revision": 12,
+            "lifecycle": "live"
         },
         "home": {
             "business": {
@@ -233,7 +234,6 @@
         "note": {
             "id": "RNP-2026-0118",
             "title": "Cold-Chain Hub",
-            "status": "active",
             "progress": {
                 "phase": "raising",
                 "lifecycle": "live",

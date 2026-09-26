@@ -556,26 +556,29 @@ describe('A closed campaign', () => {
             'RWF 11.9M',
             '284',
             'This raise closed on 20 Sept 2026 before it was fully funded. RWF 11,900,000 went back to investors in full, without fee.',
+            "Didn't fill",
         ],
         [
             cancelledFixture,
             'RWF 6.4M',
             '151',
             'This raise was cancelled on 18 Sept 2026. RWF 6,400,000 went back to investors in full, without fee.',
+            'Cancelled',
         ],
         [
             failedClosingFixture,
             'RWF 18M',
             '402',
             "This raise couldn't close: a check before disbursement failed on 22 Sept 2026. RWF 18,000,000 went back to investors in full, without fee.",
+            'Closed and refunded',
         ],
     ])(
         'refunds every commitment without fee',
-        (fixture, tile, count, notice) => {
+        (fixture, tile, count, notice, state) => {
             renderWithUser(<BusinessCampaign {...props(fixture)} />);
             const view = within(campaignSheet());
 
-            expect(view.getByText('Failed')).toBeInTheDocument();
+            expect(view.getByText(state)).toHaveClass('text-rz-danger-text');
             expect(view.getByText('Refunded')).toBeInTheDocument();
             expect(view.getByText(tile)).toBeInTheDocument();
             expect(view.getByText(count)).toBeInTheDocument();

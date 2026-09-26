@@ -6,6 +6,7 @@ import type {
 import type { RouteAction, RouteLink } from './routing';
 import type {
     C3PreviewOutcome,
+    CampaignLifecycle,
     CampaignRestriction,
     Clock,
     CoarseInFlight,
@@ -1247,8 +1248,12 @@ export type BusinessCampaignProps = Omit<
     identity_context_revision: number;
     server_time: string;
     allowed_actions: 'campaign.cancel'[];
-    campaign: { id: string; revision: number };
-    note: Omit<BusinessNoteProps['note'], 'recent_investors' | 'progress'> & {
+    /** The campaign lifecycle (#96): never the 1B `NoteStatus`, so `fully_reserved` never reads as funded. */
+    campaign: { id: string; revision: number; lifecycle: CampaignLifecycle };
+    note: Omit<
+        BusinessNoteProps['note'],
+        'recent_investors' | 'progress' | 'status'
+    > & {
         progress: CampaignProgress;
     };
     links: { close: RouteLink; operation: RouteLink };

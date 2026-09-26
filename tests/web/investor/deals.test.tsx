@@ -852,11 +852,13 @@ describe('Deals in C3 states', () => {
         const quote = props.quote as NonNullable<C3InvestorDealsProps['quote']>;
 
         quote.capacity.max_units = '1';
-        quote.capacity.binding = 'business';
+        quote.capacity.binding = 'raise_cap';
         const { unmount } = render(<InvestorDeals {...props} />);
 
         expect(
-            screen.getByText('Up to 1 note: your limit for this business.'),
+            screen.getByText(
+                'Up to 1 note: your single-investor limit for this raise.',
+            ),
         ).toBeInTheDocument();
         unmount();
 

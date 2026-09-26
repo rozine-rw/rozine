@@ -245,23 +245,11 @@
             "revision": 7,
             "capacity": {
                 "max_units": "200",
-                "binding": "transaction",
+                "binding": "raise_cap",
                 "remaining": {
-                    "transaction": {
-                        "currency": "RWF",
-                        "amount": "1000000"
-                    },
-                    "note": {
+                    "raise": {
                         "currency": "RWF",
                         "amount": "2500000"
-                    },
-                    "business": {
-                        "currency": "RWF",
-                        "amount": "2500000"
-                    },
-                    "aggregate": {
-                        "currency": "RWF",
-                        "amount": "9000000"
                     }
                 }
             }
@@ -1189,23 +1177,11 @@
                 "revision": 7,
                 "capacity": {
                     "max_units": "200",
-                    "binding": "transaction",
+                    "binding": "raise_cap",
                     "remaining": {
-                        "transaction": {
-                            "currency": "RWF",
-                            "amount": "1000000"
-                        },
-                        "note": {
+                        "raise": {
                             "currency": "RWF",
                             "amount": "2500000"
-                        },
-                        "business": {
-                            "currency": "RWF",
-                            "amount": "2500000"
-                        },
-                        "aggregate": {
-                            "currency": "RWF",
-                            "amount": "9000000"
                         }
                     }
                 }

@@ -8,7 +8,8 @@
         "allowed_actions": [],
         "campaign": {
             "id": "01k6r3d9t4e1g5h0j3k7m2n8p4",
-            "revision": 1
+            "revision": 1,
+            "lifecycle": "live"
         },
         "home": {
             "business": {
@@ -241,7 +242,6 @@
         "note": {
             "id": "01k6r3d9t4e1g5h0j3k7m2n8p4",
             "title": "Cold-Chain Hub",
-            "status": "active",
             "progress": {
                 "phase": "raising",
                 "lifecycle": "live",

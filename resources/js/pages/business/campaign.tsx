@@ -13,6 +13,10 @@ import { useC3Command } from '@/hooks/use-c3-command';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import type { BusinessCampaignProps } from '@/types/business';
+import type { CampaignLifecycle } from '@/types/settlement';
+
+/** Lifecycles where the raise ended without the business receiving the money. */
+const CLOSED: CampaignLifecycle[] = ['expired', 'cancelled', 'failed_closing'];
 
 /** The props a poll of an in-flight closing reloads: fresh facts, authority and actions. */
 const POLLED = [
@@ -103,12 +107,14 @@ export default function BusinessCampaign({
                             {note.id} ·{' '}
                             <span
                                 className={cn(
-                                    note.status === 'failed'
+                                    CLOSED.includes(campaign.lifecycle)
                                         ? 'text-rz-danger-text'
                                         : 'text-rz-accent-app-text',
                                 )}
                             >
-                                {t(`business.note.status.${note.status}`)}
+                                {t(
+                                    `business.campaign.state.${campaign.lifecycle}`,
+                                )}
                             </span>
                         </p>
                     </div>

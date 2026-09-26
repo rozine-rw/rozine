@@ -3427,6 +3427,14 @@ const rw: Catalog = {
     'business.publish.published.disclosure': 'Itangazo ku mafaranga',
     'business.publish.published.campaign': 'Reba igikorwa cyo gukusanya',
     'business.publish.published.home': 'Subira ku Ahabanza',
+    'business.campaign.state.live': 'Irakora',
+    'business.campaign.state.fully_reserved': 'Yose yafashwe',
+    'business.campaign.state.funded': 'Yabonye amafaranga yose',
+    'business.campaign.state.disbursing': 'Amafaranga arimo koherezwa',
+    'business.campaign.state.issued': 'Impapuro zatanzwe',
+    'business.campaign.state.expired': 'Ntiyuzuye',
+    'business.campaign.state.cancelled': 'Yahagaritswe',
+    'business.campaign.state.failed_closing': 'Yafunzwe, amafaranga asubizwa',
     'business.campaign.lifecycle.live': 'Irakusanya · irakora',
     'business.campaign.lifecycle.fully_reserved': 'Irakusanya · yose yafashwe',
     'business.campaign.restriction.RESTRICTION_ACTIVE':
@@ -3657,10 +3665,8 @@ const rw: Catalog = {
     },
     'investor.deal.cap.none':
         'Ntushobora gufata izindi mpapuro hano: {reason}.',
-    'investor.deal.cap.reason.transaction': 'umupaka wawe kuri buri gikorwa',
-    'investor.deal.cap.reason.note': 'umupaka wawe kuri uru rupapuro',
-    'investor.deal.cap.reason.business': 'umupaka wawe kuri iki kigo',
-    'investor.deal.cap.reason.aggregate': "umupaka wawe rusange w'ishoramari",
+    'investor.deal.cap.reason.raise_cap':
+        "umupaka w'umushoramari umwe kuri iki gikorwa cyo gukusanya",
     'investor.deal.cap.reason.availability': 'izo ni zo mpapuro zose zisigaye',
     'investor.deal.cap.reason.restriction': 'hari ikumira rikurikizwa',
     'investor.deal.cap.reason.connected_party': "ufitanye isano n'iki kigo",

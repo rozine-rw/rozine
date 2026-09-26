@@ -3296,6 +3296,14 @@ const en = {
     'business.publish.published.disclosure': 'Fee disclosure',
     'business.publish.published.campaign': 'View campaign',
     'business.publish.published.home': 'Back to Home',
+    'business.campaign.state.live': 'Live',
+    'business.campaign.state.fully_reserved': 'Fully reserved',
+    'business.campaign.state.funded': 'Funded',
+    'business.campaign.state.disbursing': 'Paying out',
+    'business.campaign.state.issued': 'Notes issued',
+    'business.campaign.state.expired': "Didn't fill",
+    'business.campaign.state.cancelled': 'Cancelled',
+    'business.campaign.state.failed_closing': 'Closed and refunded',
     'business.campaign.lifecycle.live': 'Raising · live',
     'business.campaign.lifecycle.fully_reserved': 'Raising · fully reserved',
     'business.campaign.restriction.RESTRICTION_ACTIVE':
@@ -3521,10 +3529,8 @@ const en = {
         other: 'Up to {count} notes: {reason}.',
     },
     'investor.deal.cap.none': "You can't take any more notes here: {reason}.",
-    'investor.deal.cap.reason.transaction': 'your per-transaction limit',
-    'investor.deal.cap.reason.note': 'your limit for this note',
-    'investor.deal.cap.reason.business': 'your limit for this business',
-    'investor.deal.cap.reason.aggregate': 'your overall investment limit',
+    'investor.deal.cap.reason.raise_cap':
+        'your single-investor limit for this raise',
     'investor.deal.cap.reason.availability':
         "that's every note still available",
     'investor.deal.cap.reason.restriction': 'a restriction applies',
