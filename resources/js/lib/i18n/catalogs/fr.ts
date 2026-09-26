@@ -34,12 +34,21 @@ const fr: Catalog = {
         'Votre compte personnel est autorisé à ouvrir cet espace.',
     'identity.home.back': 'Choisir une application',
     'identity.home.settings': 'Paramètres du compte',
+    'identity.home.auditor_nav': "Votre travail d'audit",
     'identity.home.saving': 'Enregistrement de votre position…',
     'identity.home.failed':
         'Impossible de mettre à jour votre position. Revenez au lanceur pour vérifier votre accès.',
     'identity.denied.title': 'Votre accès doit être vérifié',
     'identity.denied.body':
         'Votre compte ne peut plus ouvrir cette page avec le rôle sélectionné. Choisissez une application pour actualiser votre accès.',
+    'identity.denied.expired_offer.title': 'Cette offre est close',
+    'identity.denied.expired_offer.body':
+        'Le délai pour accepter cette mission est dépassé : elle ne vous est plus ouverte. Choisissez une application pour voir vos missions en cours.',
+    'errors.not_found.head_title': 'Page introuvable',
+    'errors.not_found.title': 'Nous ne trouvons pas cette page',
+    'errors.not_found.body':
+        "Le lien est peut-être mal saisi, ou ce vers quoi il pointait n'est plus disponible. Vérifiez le lien ou recommencez depuis Rozine.",
+    'errors.not_found.home': "Aller à l'accueil de Rozine",
     'environment.demo': 'Démo — hors production',
     'environment.uat': 'UAT — hors production',
     'environment.synthetic_only':
@@ -1512,7 +1521,7 @@ const fr: Catalog = {
     'auditor.sector.technology': 'Technologie',
     'auditor.sector.services': 'Services',
     'auditor.jobs.head_title': 'Missions',
-    'auditor.jobs.title': 'Audits flash',
+    'auditor.jobs.title': "Missions d'audit",
     'auditor.jobs.lead':
         'Contrôles sur site ouverts dans un rayon de {radius} km. Le premier à accepter verrouille le dossier. Chaque audit flash est dû {hours} heures après son envoi.',
     'auditor.jobs.map_label':
@@ -1526,6 +1535,7 @@ const fr: Catalog = {
     'auditor.jobs.km': '{distance} km',
     'auditor.jobs.sector_unavailable': 'Secteur indisponible',
     'auditor.jobs.kind_monthly': 'Visite mensuelle',
+    'auditor.jobs.kind_flash': 'Audit flash',
     'auditor.jobs.show_more': 'Afficher plus',
     'auditor.jobs.conflicts_link': 'Vos conflits déclarés →',
     'auditor.jobs.page_empty':
@@ -1703,7 +1713,11 @@ const fr: Catalog = {
         "La précision de la position ou sa distance aux locaux enregistrés est hors politique. Continuez ; les opérations d'audit l'examinent.",
     'auditor.photos.title': 'Photos du site géolocalisées',
     'auditor.photos.lead':
-        "Prises en direct dans l'application — l'import depuis la galerie est désactivé pour éviter la fraude. {required} requises · {captured} prises.",
+        "Prises en direct dans l'application — l'import depuis la galerie est désactivé pour éviter la fraude. {captured} sur {required} requises prises.",
+    'auditor.photos.extras': {
+        one: 'Plus {count} photo supplémentaire.',
+        other: 'Plus {count} photos supplémentaires.',
+    },
     'auditor.photos.grid': 'Photos du site',
     'auditor.photos.pending': 'Pas encore prise',
     'auditor.photos.captured': 'Prise',
@@ -1763,8 +1777,7 @@ const fr: Catalog = {
     'auditor.count.inventory': "Preuves d'inventaire",
     'auditor.count.stock': 'Constaté sur site · stock (unités)',
     'auditor.count.units': 'unités',
-    'auditor.count.stock_hint':
-        'Stock déclaré {units} unités · tolérance {tolerance}',
+    'auditor.count.stock_hint': 'Stock déclaré : {units} unités',
     'auditor.count.stock_no_baseline':
         'Aucune base de stock déclarée pour cette période.',
     'auditor.count.operational': 'Statut opérationnel',
@@ -2978,6 +2991,7 @@ const fr: Catalog = {
     'auditor.sealed.amended_by':
         "Le rapport {report} modifie celui-ci ; ce rapport reste tel qu'il a été scellé.",
     'auditor.sealed.open_amendment': 'Ouvrir la modification',
+    'auditor.sealed.verify': 'Vérifier le sceau',
     'auditor.audit.amends':
         'Ceci est une modification liée du rapport {report}. Ce rapport reste inchangé.',
     'auditor.audit.open_original': "Ouvrir l'original",

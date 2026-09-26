@@ -181,7 +181,9 @@ it('does not reveal draft or unknown reports through either public transport', f
         if ($api) {
             $response->assertJsonPath('code', 'AUDIT_REPORT_NOT_FOUND');
         } else {
-            $response->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied'));
+            /* A logged-out visitor on the public check sees not-found copy, never account-access copy. */
+            $response->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied')
+                ->where('code', 'AUDIT_REPORT_NOT_FOUND')->where('status', 404)->where('auth.user', null));
         }
     }
 })->with([false, true]);

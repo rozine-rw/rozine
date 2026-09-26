@@ -9,6 +9,8 @@ import type { AssignedJob } from '@/types/auditor';
  * the ticking time left, and progress through the procedure's steps. Until the procedure publishes
  * its steps there is no step line or bar, never "Step 0 of 0". An overdue job or one reassigned to
  * this partner says so, without naming anyone else (MVP-AUDITOR-SCR-01-ST-02, SCR-02-ST-02).
+ * Each card says whether it is a Flash Audit or a monthly visit. Work awaiting the business's
+ * co-signature is finished on the partner's side, so its clock no longer counts down.
  */
 export function AssignedJobCard({
     job,
@@ -49,30 +51,33 @@ export function AssignedJobCard({
                             .join(' · ')}
                     </p>
                 </div>
-                <ClockChip
-                    serverTime={serverTime}
-                    dueAt={job.deadline.due_at}
-                />
+                {job.status !== 'awaiting_cosign' && (
+                    <ClockChip
+                        serverTime={serverTime}
+                        dueAt={job.deadline.due_at}
+                    />
+                )}
             </div>
-            {(job.status !== 'in_progress' || job.reassigned_from !== null) && (
-                <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                    {job.status === 'overdue' && (
-                        <StatusPill tone="red">
-                            {t('auditor.job.status.overdue')}
-                        </StatusPill>
-                    )}
-                    {job.status === 'awaiting_cosign' && (
-                        <StatusPill tone="blue">
-                            {t('auditor.job.status.awaiting_cosign')}
-                        </StatusPill>
-                    )}
-                    {job.reassigned_from !== null && (
-                        <StatusPill tone="amber">
-                            {t('auditor.job.reassigned')}
-                        </StatusPill>
-                    )}
-                </div>
-            )}
+            <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                <StatusPill tone={job.kind === 'monthly' ? 'blue' : 'amber'}>
+                    {t(`auditor.jobs.kind_${job.kind}`)}
+                </StatusPill>
+                {job.status === 'overdue' && (
+                    <StatusPill tone="red">
+                        {t('auditor.job.status.overdue')}
+                    </StatusPill>
+                )}
+                {job.status === 'awaiting_cosign' && (
+                    <StatusPill tone="blue">
+                        {t('auditor.job.status.awaiting_cosign')}
+                    </StatusPill>
+                )}
+                {job.reassigned_from !== null && (
+                    <StatusPill tone="amber">
+                        {t('auditor.job.reassigned')}
+                    </StatusPill>
+                )}
+            </div>
             {progress !== null && (
                 <div className="mt-[11px] h-1.5 overflow-hidden rounded-[4px] bg-[#eef2f8] dark:bg-rz-surface-muted">
                     <div

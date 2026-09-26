@@ -7,6 +7,7 @@ import {
     VarianceChip,
     groupDigits,
     onlyDigits,
+    usePreviewedFigure,
     useStepForm,
     useVariancePreview,
 } from '@/components/auditor/audit/parts';
@@ -181,8 +182,12 @@ export function StepLedger({
     const canUpload = uploadRoute === null ? null : center.idle;
     const declared = stage.reported_stock !== null;
     const canReconcile = declared && stage.ledger_ready;
+    const observed = usePreviewedFigure(
+        'observed_stock',
+        stage.observed_stock?.amount ?? null,
+    );
     const { form, submit, errors } = useStepForm(context, {
-        observed_stock: stage.observed_stock?.amount ?? '',
+        observed_stock: observed,
         reconciled: declared && stage.reconciled,
     });
     const file = useRef<HTMLInputElement>(null);
@@ -202,13 +207,20 @@ export function StepLedger({
 
     useVariancePreview({ observed_stock: form.data.observed_stock });
 
+    /*
+     * The re-check waits while a command is in flight or held for its lookup: a read sent before
+     * Review & seal is recorded could otherwise answer after the page has moved to the seal step,
+     * and put the Ledger step back on screen.
+     */
+    const polling = scanning && center.idle;
+
     useEffect(() => {
-        if (scanning) {
+        if (polling) {
             start();
         } else {
             stop();
         }
-    }, [scanning, start, stop]);
+    }, [polling, start, stop]);
 
     const pick = (documentId: string | null) => {
         replaces.current = documentId;

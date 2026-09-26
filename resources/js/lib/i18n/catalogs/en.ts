@@ -34,12 +34,21 @@ const en = {
         'Your staff account has permission to open this workspace.',
     'identity.home.back': 'Choose an app',
     'identity.home.settings': 'Account settings',
+    'identity.home.auditor_nav': 'Your audit work',
     'identity.home.saving': 'Saving your position…',
     'identity.home.failed':
         'We could not update your position. Return to the launcher to check your access.',
     'identity.denied.title': 'Access needs to be checked',
     'identity.denied.body':
         'Your account can no longer open this page in the selected role. Choose an app to refresh your access.',
+    'identity.denied.expired_offer.title': 'This offer has closed',
+    'identity.denied.expired_offer.body':
+        'The time to accept this job ran out, so it is no longer open to you. Choose an app to see your current work.',
+    'errors.not_found.head_title': 'Not found',
+    'errors.not_found.title': "We couldn't find that page",
+    'errors.not_found.body':
+        'The link may be mistyped, or what it pointed to is no longer available. Check the link, or start again from Rozine.',
+    'errors.not_found.home': 'Go to the Rozine home page',
     'environment.demo': 'Demo — not live',
     'environment.uat': 'UAT — not live',
     'environment.synthetic_only':
@@ -1476,7 +1485,7 @@ const en = {
     'auditor.sector.technology': 'Technology',
     'auditor.sector.services': 'Services',
     'auditor.jobs.head_title': 'Jobs',
-    'auditor.jobs.title': 'Flash Audits',
+    'auditor.jobs.title': 'Audit jobs',
     'auditor.jobs.lead':
         "Open field checks within {radius}km. First to accept locks the file. Each flash audit is due {hours} hours after it's sent out.",
     'auditor.jobs.map_label':
@@ -1490,6 +1499,7 @@ const en = {
     'auditor.jobs.km': '{distance}km',
     'auditor.jobs.sector_unavailable': 'Sector unavailable',
     'auditor.jobs.kind_monthly': 'Monthly visit',
+    'auditor.jobs.kind_flash': 'Flash audit',
     'auditor.jobs.show_more': 'Show more',
     'auditor.jobs.conflicts_link': 'Your declared conflicts →',
     'auditor.jobs.page_empty':
@@ -1662,7 +1672,11 @@ const en = {
         "The location's accuracy or its distance from the registered premises is outside policy. Carry on; Audit Operations reviews it.",
     'auditor.photos.title': 'Geo-tagged site photos',
     'auditor.photos.lead':
-        'Captured live in the capture app — gallery uploads are disabled to prevent spoofing. {required} required · {captured} captured.',
+        'Captured live in the capture app — gallery uploads are disabled to prevent spoofing. {captured} of {required} required captured.',
+    'auditor.photos.extras': {
+        one: 'Plus {count} extra photo.',
+        other: 'Plus {count} extra photos.',
+    },
     'auditor.photos.grid': 'Site photos',
     'auditor.photos.pending': 'Not captured yet',
     'auditor.photos.captured': 'Captured',
@@ -1722,8 +1736,7 @@ const en = {
     'auditor.count.inventory': 'Inventory proof',
     'auditor.count.stock': 'Observed on site · stock (units)',
     'auditor.count.units': 'units',
-    'auditor.count.stock_hint':
-        'Reported stock {units} units · tolerance {tolerance}',
+    'auditor.count.stock_hint': 'Reported stock: {units} units',
     'auditor.count.stock_no_baseline':
         'No reported stock baseline for this period.',
     'auditor.count.operational': 'Operational status',
@@ -2903,6 +2916,7 @@ const en = {
     'auditor.sealed.amended_by':
         'Report {report} amends this one; this report stays as sealed.',
     'auditor.sealed.open_amendment': 'Open the amendment',
+    'auditor.sealed.verify': 'Verify seal',
     'auditor.audit.amends':
         'This is a linked amendment of report {report}. That report remains unchanged.',
     'auditor.audit.open_original': 'Open the original',

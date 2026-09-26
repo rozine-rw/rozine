@@ -254,6 +254,10 @@ it('completes the isolated factual procedure and previews only the persisted rep
     $seal = $page();
     expect($seal['stage']['step'])->toBe('seal')->and($seal['can_continue'])->toBeFalse()->and($seal['stage']['note']['required'])->toBeTrue()
         ->and($seal['stage']['findings'])->not->toBeEmpty()->and($seal['actions']['seal'])->toBeNull();
+    /* Figures read with thousands separators: no run of four digits is shown ungrouped. */
+    foreach ($seal['stage']['findings'] as $finding) {
+        expect($finding['body'])->not->toMatch('/\d{4}/');
+    }
     $digest = $seal['stage']['digest'];
     expect($page(['observed_stock' => '0', 'cash' => '0', 'stock_units' => '0'])['stage']['digest'])->toBe($digest);
     $save('seal', ['note' => 'Factual differences observed and recorded.']);
