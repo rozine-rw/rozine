@@ -1334,6 +1334,183 @@ describe('Business audit co-sign — N6 dispute states', () => {
     });
 });
 
+describe('Business audit co-sign — heading by publication and dispute state', () => {
+    const CO_SIGN_WORDING = /Co-sign the audit report|before you co-sign/u;
+    const READ_LEAD =
+        'Your CPA sealed this report after the on-site audit. These are its factual findings.';
+
+    /** The heading, the lead and the tab title, with no co-sign wording anywhere in them. */
+    const expectHeading = (title: string) => {
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+            title,
+        );
+        expect(screen.getByText(READ_LEAD)).toBeInTheDocument();
+        expect(screen.getByTestId('head')).toHaveTextContent('Audit report');
+        expect(screen.queryByText(CO_SIGN_WORDING)).not.toBeInTheDocument();
+    };
+
+    it('keeps the co-sign heading and lead only while co-signing is open', () => {
+        setup(props(n6OpenFixture));
+
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+            'Co-sign the audit report',
+        );
+        expect(
+            screen.getByText(
+                'Your CPA sealed this report after the on-site audit. Read the factual findings before you co-sign.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByTestId('head')).toHaveTextContent(
+            'Co-sign audit report',
+        );
+    });
+
+    it.each([
+        [
+            'published by Rozine staff',
+            n6UpheldFixture,
+            'Audit report, published by Rozine staff',
+        ],
+        [
+            'published automatically',
+            n6AutoApprovedFixture,
+            'Audit report, published automatically after the 24-hour window',
+        ],
+        [
+            'co-signed and published',
+            n6SignedFixture,
+            'Audit report, co-signed and published',
+        ],
+        [
+            'published under the legacy policy',
+            publishedFixture,
+            'Audit report, co-signed and published',
+        ],
+        [
+            'disputed and under review',
+            n6UnderReviewFixture,
+            'Audit report, dispute under review',
+        ],
+        [
+            'disputed and with Rozine staff',
+            n6EscalatedFixture,
+            'Audit report, dispute under review',
+        ],
+        [
+            'waiting on a required amendment',
+            n6AmendmentRequiredFixture,
+            'Audit report, dispute under review',
+        ],
+        [
+            'amended after the dispute',
+            n6AmendedFixture,
+            'Audit report, amended after your dispute',
+        ],
+        ['not available to co-sign', unavailableFixture, 'Audit report'],
+    ])('heads a report %s by its state', (_case, fixture, title) => {
+        setup(props(fixture));
+
+        expectHeading(title);
+    });
+
+    it('heads a closed dispute without an outcome, or an upheld one not yet published, as closed', () => {
+        const closed = props(n6AmendedFixture);
+
+        closed.cosign.dispute!.outcome = null;
+        const first = setup(closed);
+
+        expectHeading('Audit report, dispute closed');
+        first.unmount();
+
+        const upheld = props(n6UpheldFixture);
+
+        upheld.report.published_at = null;
+        setup(upheld);
+        expectHeading('Audit report, dispute closed');
+    });
+
+    it('reads the heading in French and Kinyarwanda', () => {
+        const { unmount } = render(
+            <I18nContext value={{ locale: 'fr', catalog: catalogFor('fr') }}>
+                <BusinessAuditCosign {...props(n6UpheldFixture)} />
+            </I18nContext>,
+        );
+
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+            "Rapport d'audit, publié par le personnel Rozine",
+        );
+        unmount();
+
+        render(
+            <I18nContext value={{ locale: 'rw', catalog: catalogFor('rw') }}>
+                <BusinessAuditCosign {...props(n6AutoApprovedFixture)} />
+            </I18nContext>,
+        );
+
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+            "Raporo y'igenzura, yatangajwe mu buryo bwikora nyuma y'amasaha 24",
+        );
+    });
+});
+
+describe('Business audit co-sign — who recorded the dispute note', () => {
+    it("labels the note of an escalated dispute with no outcome as the CPA's reason", () => {
+        const page = props(n6EscalatedFixture);
+
+        setup(page);
+
+        expect(screen.getByText("CPA's reason")).toBeInTheDocument();
+        expect(
+            screen.getByText(page.cosign.dispute!.resolution_note!),
+        ).toBeInTheDocument();
+        expect(screen.queryByText('Rozine staff note')).not.toBeInTheDocument();
+    });
+
+    it.each([
+        ['amendment required', n6AmendmentRequiredFixture],
+        ['upheld and published', n6UpheldFixture],
+    ])('labels the note staff recorded with %s as theirs', (_case, fixture) => {
+        setup(props(fixture));
+
+        expect(screen.getByText('Rozine staff note')).toBeInTheDocument();
+        expect(screen.queryByText("CPA's reason")).not.toBeInTheDocument();
+    });
+
+    it('labels a note whose author the state does not say as a review note', () => {
+        const page = props(n6AmendedFixture);
+
+        page.cosign.dispute!.resolution_note = 'Synthetic note.';
+        setup(page);
+
+        expect(screen.getByText('Review note')).toBeInTheDocument();
+        expect(
+            screen.queryByText(/Rozine staff note|CPA's reason/u),
+        ).not.toBeInTheDocument();
+    });
+
+    it('reads the note labels in French and Kinyarwanda', () => {
+        const { unmount } = render(
+            <I18nContext value={{ locale: 'fr', catalog: catalogFor('fr') }}>
+                <BusinessAuditCosign {...props(n6EscalatedFixture)} />
+            </I18nContext>,
+        );
+
+        expect(screen.getByText('Motif du CPA')).toBeInTheDocument();
+        unmount();
+
+        const page = props(n6AmendedFixture);
+
+        page.cosign.dispute!.resolution_note = 'Synthetic note.';
+        render(
+            <I18nContext value={{ locale: 'rw', catalog: catalogFor('rw') }}>
+                <BusinessAuditCosign {...page} />
+            </I18nContext>,
+        );
+
+        expect(screen.getByText("Icyitonderwa cy'isuzuma")).toBeInTheDocument();
+    });
+});
+
 describe('Business audit co-sign — N6 dispute sheet', () => {
     const disputeButton = () =>
         screen.queryByRole('button', { name: 'Submit a dispute' });

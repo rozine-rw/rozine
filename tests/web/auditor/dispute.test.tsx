@@ -199,6 +199,77 @@ describe('Auditor sealed report — the Business dispute', () => {
     });
 });
 
+describe('Auditor sealed report — who recorded the dispute note', () => {
+    it('labels the note after your uphold as your reason, never as staff', () => {
+        const page = props(escalatedFixture);
+
+        render(<AuditorAudit {...page} />);
+
+        expect(stageOf(page).dispute).toMatchObject({
+            status: 'escalated',
+            outcome: null,
+        });
+        expect(
+            within(panel()).getByText('Your reason for upholding'),
+        ).toBeInTheDocument();
+        expect(
+            within(panel()).getByText(stageOf(page).dispute!.resolution_note!),
+        ).toBeInTheDocument();
+        expect(
+            within(panel()).queryByText('Rozine staff note'),
+        ).not.toBeInTheDocument();
+    });
+
+    it.each([
+        ['amendment required', amendmentRequiredFixture],
+        ['upheld and published', upheldFixture],
+    ])('labels the note staff recorded with %s as theirs', (_case, fixture) => {
+        render(<AuditorAudit {...props(fixture)} />);
+
+        expect(
+            within(panel()).getByText('Rozine staff note'),
+        ).toBeInTheDocument();
+        expect(
+            within(panel()).queryByText('Your reason for upholding'),
+        ).not.toBeInTheDocument();
+    });
+
+    it('labels a note whose author the state does not say as a review note', () => {
+        const page = props(amendedFixture);
+
+        stageOf(page).dispute!.resolution_note = 'Synthetic note.';
+        render(<AuditorAudit {...page} />);
+
+        expect(within(panel()).getByText('Review note')).toBeInTheDocument();
+        expect(
+            within(panel()).queryByText(
+                /Rozine staff note|Your reason for upholding/u,
+            ),
+        ).not.toBeInTheDocument();
+    });
+
+    it('reads the note labels in French and Kinyarwanda', () => {
+        const { unmount } = render(
+            <I18nContext value={{ locale: 'fr', catalog: catalogFor('fr') }}>
+                <AuditorAudit {...props(escalatedFixture)} />
+            </I18nContext>,
+        );
+
+        expect(screen.getByText('Votre motif de maintien')).toBeInTheDocument();
+        unmount();
+
+        render(
+            <I18nContext value={{ locale: 'rw', catalog: catalogFor('rw') }}>
+                <AuditorAudit {...props(escalatedFixture)} />
+            </I18nContext>,
+        );
+
+        expect(
+            screen.getByText('Impamvu yawe yo kugumishaho'),
+        ).toBeInTheDocument();
+    });
+});
+
 describe('Auditor sealed report — publication under N6', () => {
     it('says a report published automatically after the 24-hour window was never co-signed', () => {
         const page = props(autoApprovedFixture);

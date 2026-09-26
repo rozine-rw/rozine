@@ -3331,7 +3331,6 @@ const en = {
     'business.audit_cosign.disputed.submitted': 'Submitted {date}',
     'business.audit_cosign.disputed.supporting_text': 'Your supporting text',
     'business.audit_cosign.disputed.files': 'Your proof files',
-    'business.audit_cosign.disputed.resolution_note': 'Rozine staff note',
     'auditor.sealed.body_disputed':
         'The report is sealed. {party} disputed it, so its review window is paused and nothing is published while the dispute is open.',
     'auditor.sealed.dispute.title': 'Business dispute',
@@ -3351,7 +3350,6 @@ const en = {
         'Outcome: amendment required',
     'auditor.sealed.dispute.outcome.amended': 'Outcome: amended',
     'auditor.sealed.dispute.outcome.upheld': 'Outcome: findings upheld',
-    'auditor.sealed.dispute.resolution_note': 'Rozine staff note',
     'auditor.sealed.dispute.uphold': 'Uphold findings',
     'auditor.dispute_uphold.lead':
         "Your reason goes to Rozine staff, who review {business}'s dispute. Upholding does not publish the report.",
@@ -3368,6 +3366,28 @@ const en = {
     'auditor.sealed.body_published_staff':
         'Published by Rozine staff on {date}. The business did not co-sign it.',
     'auditor.sealed.cosign.not_signed': 'Not co-signed',
+    'business.audit_cosign.head_title_read': 'Audit report',
+    'business.audit_cosign.lead_read':
+        'Your CPA sealed this report after the on-site audit. These are its factual findings.',
+    'business.audit_cosign.heading.signed':
+        'Audit report, co-signed and published',
+    'business.audit_cosign.heading.auto_approved':
+        'Audit report, published automatically after the 24-hour window',
+    'business.audit_cosign.heading.staff_resolved':
+        'Audit report, published by Rozine staff',
+    'business.audit_cosign.heading.disputed':
+        'Audit report, dispute under review',
+    'business.audit_cosign.heading.amended':
+        'Audit report, amended after your dispute',
+    'business.audit_cosign.heading.dispute_closed':
+        'Audit report, dispute closed',
+    'business.audit_cosign.heading.unavailable': 'Audit report',
+    'business.audit_cosign.disputed.note.cpa': "CPA's reason",
+    'business.audit_cosign.disputed.note.staff': 'Rozine staff note',
+    'business.audit_cosign.disputed.note.unknown': 'Review note',
+    'auditor.sealed.dispute.note.cpa': 'Your reason for upholding',
+    'auditor.sealed.dispute.note.staff': 'Rozine staff note',
+    'auditor.sealed.dispute.note.unknown': 'Review note',
 } as const;
 
 export default en;

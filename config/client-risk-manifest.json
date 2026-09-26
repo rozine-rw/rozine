@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "c23394ed2395950021c0e8e7781ae7f1901e11210e0c40d3962486e71ebed5b0",
-    "coverageSetSha256": "6f37010204e7eaf91e335d9bf1dd979cd9e7373eba28c99806438b5cb8d1bbc5",
+    "sourceManifestSha256": "a5e839ca02fe9794cf434ea6a12e0bb17ba4bce758173bc2e4ea50ae81a6a813",
+    "coverageSetSha256": "df7abe23cab0aa17272822b4e94fde8a9bd16fbb617bd268a73294cd62e49a5e",
     "thresholds": {
         "critical": {
             "global": {
@@ -325,6 +325,7 @@
         "resources/js/lib/investor/use-wide.ts",
         "resources/js/lib/pass-card-image.ts",
         "resources/js/lib/pulse.ts",
+        "resources/js/lib/rozine/dispute-note.ts",
         "resources/js/lib/rozine/format.ts",
         "resources/js/lib/rozine/operation.ts",
         "resources/js/lib/utils.ts",

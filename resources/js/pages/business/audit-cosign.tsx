@@ -9,7 +9,10 @@ import { refusalRefreshes } from '@/components/business/apply/operation-outcome'
 import { CosignForm } from '@/components/business/audit-cosign/cosign-form';
 import { CosignNotice } from '@/components/business/audit-cosign/cosign-notice';
 import { CosignStatus } from '@/components/business/audit-cosign/cosign-status';
-import { DisputeRecord } from '@/components/business/audit-cosign/dispute-record';
+import {
+    DisputeRecord,
+    disputeState,
+} from '@/components/business/audit-cosign/dispute-record';
 import { DisputeSheet } from '@/components/business/audit-cosign/dispute-sheet';
 import type { DisputeDraft } from '@/components/business/audit-cosign/dispute-sheet';
 import {
@@ -59,6 +62,56 @@ const PUBLISHED_COPY: Record<AuditPublishedReason, MessageCode> = {
     signed: 'business.audit_cosign.yours.published',
     auto_approved: 'business.audit_cosign.yours.published_auto',
     staff_resolved: 'business.audit_cosign.yours.published_staff',
+};
+
+/** What the page is about now, from the server's publication, dispute and co-sign facts. */
+type Heading =
+    | 'open'
+    | 'signed'
+    | 'auto_approved'
+    | 'staff_resolved'
+    | 'disputed'
+    | 'amended'
+    | 'dispute_closed'
+    | 'unavailable';
+
+const HEADING_TITLE: Record<Heading, MessageCode> = {
+    open: 'business.audit_cosign.title',
+    signed: 'business.audit_cosign.heading.signed',
+    auto_approved: 'business.audit_cosign.heading.auto_approved',
+    staff_resolved: 'business.audit_cosign.heading.staff_resolved',
+    disputed: 'business.audit_cosign.heading.disputed',
+    amended: 'business.audit_cosign.heading.amended',
+    dispute_closed: 'business.audit_cosign.heading.dispute_closed',
+    unavailable: 'business.audit_cosign.heading.unavailable',
+};
+
+/**
+ * The co-sign heading and its "before you co-sign" lead stay only while co-signing the report is
+ * open: a published report is headed by how it was published, a disputed one by where the dispute
+ * stands, and one that cannot be co-signed plainly as an audit report.
+ */
+const pageHeading = ({
+    report,
+    cosign,
+}: BusinessAuditCosignPageProps): Heading => {
+    if (report.published_at !== null) {
+        return cosign.published_reason ?? 'signed';
+    }
+
+    if (cosign.dispute !== null) {
+        switch (disputeState(cosign.dispute)) {
+            case 'amended':
+                return 'amended';
+            case 'resolved':
+            case 'upheld':
+                return 'dispute_closed';
+            default:
+                return 'disputed';
+        }
+    }
+
+    return cosign.state === 'unavailable' ? 'unavailable' : 'open';
 };
 
 function StateCard({ icon, children }: { icon: IconName; children: string }) {
@@ -305,9 +358,15 @@ export default function BusinessAuditCosign(
         );
     }
 
+    const heading = pageHeading(props);
+
     return (
         <BusinessShell
-            title={t('business.audit_cosign.head_title')}
+            title={t(
+                heading === 'open'
+                    ? 'business.audit_cosign.head_title'
+                    : 'business.audit_cosign.head_title_read',
+            )}
             tab="reports"
             links={shellLinks}
             showTabBar={false}
@@ -330,11 +389,15 @@ export default function BusinessAuditCosign(
                             id="audit-cosign-title"
                             className="text-xl font-semibold text-rz-ink"
                         >
-                            {t('business.audit_cosign.title')}
+                            {t(HEADING_TITLE[heading])}
                         </h1>
                     </div>
                     <p className="mt-3 text-[12.5px] leading-[1.55] text-rz-secondary">
-                        {t('business.audit_cosign.lead')}
+                        {t(
+                            heading === 'open'
+                                ? 'business.audit_cosign.lead'
+                                : 'business.audit_cosign.lead_read',
+                        )}
                     </p>
                     <ReportSummary
                         businessName={props.business.name}
