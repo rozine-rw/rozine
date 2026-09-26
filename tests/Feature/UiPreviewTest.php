@@ -102,7 +102,7 @@ test('every C3 fixture is marked synthetic, and the preview route ignores the ma
     $fixture = c3PreviewFixtures()[$name];
 
     expect($fixture)->toHaveKey('synthetic')
-        ->and($fixture['synthetic'])->toBeTrue()
+        ->and($fixture['synthetic'] ?? null)->toBeTrue()
         ->and($fixture['props'])->not->toHaveKey('synthetic');
 
     $this->get("/preview/{$name}")
