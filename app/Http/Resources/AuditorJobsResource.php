@@ -31,9 +31,6 @@ class AuditorJobsResource extends JsonResource
                     'link' => self::link('auditor.jobs.show', ['assignment' => $job['id']]), 'actions' => self::actions($request, $job['id'])];
             } else {
                 $report = $record['work']['report'] ?? null;
-                if (($report['publication_status'] ?? null) === 'published') {
-                    continue;
-                }
                 $assigned[] = [...$job, 'step' => null, 'steps' => null,
                     'status' => ($report['status'] ?? null) === 'sealed' ? 'awaiting_cosign'
                         : ($job['deadline'] !== null && $job['deadline']['due_at'] <= now('UTC')->format('Y-m-d\TH:i:s\Z') ? 'overdue' : 'in_progress'),
