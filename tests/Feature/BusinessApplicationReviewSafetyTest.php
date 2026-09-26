@@ -52,12 +52,12 @@ it('withholds evaluation and submission for a legacy draft while linking the pen
         'payload' => $payload, 'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload))]);
     $legacy->forceFill(['current_quote_id' => $quoteId])->save();
     $fixture['application'] = $legacy;
-    $accepted = BusinessQuoteFixture::acceptance($fixture);
+    $accepted = [...$accepted, 'quote_id' => $quoteId, 'quote_revision' => 1];
     $owner = $fixture['audit']['authority']['users'][0];
     expect(BusinessQuoteFixture::evaluate($fixture, 1)['code'])->toBe('APPLICATION_PENDING_REVIEW')
         ->and(BusinessQuoteFixture::submit($fixture, $accepted)['code'])->toBe('APPLICATION_PENDING_REVIEW')
         ->and(app(SaveBusinessApplication::class)->handle($owner->id, 1, $fixture['audit']['business'], $legacy->id,
-            1, BusinessApplicationFixture::fields('12000000'), 'review', (string) Str::uuid())['code'])->toBe('APPLICATION_PENDING_REVIEW')
+            1, BusinessApplicationFixture::fields('12000000'), 'review', (string) Str::uuid())['code'])->toBe('QUOTE_STALE')
         ->and(app(BusinessApplicationStore::class)->page($owner->id, 1, $fixture['audit']['business'], $legacy->id)['allowed_actions'])->toBe(['application.save']);
     $home = app(ListBusinessApplications::class)->handle($owner->id, 1);
     expect($home['entries'][0]['application']['id'])->toBe($pendingId)->and($home['entries'][0]['allowed_actions'])->toBe([])
