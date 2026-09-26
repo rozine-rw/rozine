@@ -10,6 +10,7 @@ use App\Application\Auditor\WithCurrentAuditAssignment;
 use App\Application\Business\Contracts\BusinessApplicationStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\Contracts\BusinessCreditFactsStore;
+use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\WithBusinessStatementVerification;
 use App\Application\Identity\Contracts\IdentityAccessStore;
@@ -75,6 +76,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
         private UnderwritingObservationWindow $windows,
         private WithAcceptedAuditAssignment $acceptedAssignments,
         private AuditReportPublicationStore $reports,
+        private BusinessExposureStore $exposures,
     ) {}
 
     /** @return array<string, mixed> */
@@ -254,7 +256,8 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                             $now = now('UTC')->toImmutable();
                             $window = $this->observationWindow($verification, $credit, $now);
                             $calendar = $window['calendar'];
-                            $result = $this->calculate($draft['target'], $draft['term_months'], $verification, $credit, $acceptedPrincipal, $window);
+                            $commitments = $this->exposures->current($business['id']);
+                            $result = $this->calculate($draft['target'], $draft['term_months'], $verification, $credit, $acceptedPrincipal, $window, $commitments);
                             $prior = BusinessApplicationQuote::query()->where('business_application_id', $application->id)->orderByDesc('revision')->first();
                             $quote = new BusinessApplicationQuote;
                             $quote->id = (string) Str::ulid();
@@ -264,7 +267,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                                 'business_id' => $business['id'], 'mandate_version' => $business['mandate_version'],
                                 'draft' => $draft, 'accepted_principal' => $acceptedPrincipal,
                                 'evidence' => $this->evidenceBinding($verification), 'credit' => $this->creditBinding($credit),
-                                'credit_source_reference' => $credit['source_reference'] ?? null,
+                                'credit_source_reference' => $credit['source_reference'] ?? null, 'accepted_commitments' => $commitments,
                                 'policy_version' => FlatReturnPricing::POLICY_VERSION, 'calculation_version' => ApplicationUnderwriting::VERSION,
                                 'calendar' => $calendar, 'evidence_window' => $this->windowBinding($window), 'evaluated_at' => $now->format('Y-m-d\TH:i:s\Z'),
                                 'actor_user_id' => $userId, 'actor_party_id' => $partyId, 'result' => $result];
@@ -370,6 +373,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                                     $review['submission'] = $this->submissionProjection($application);
                                     $submission = new BusinessApplicationSubmission;
                                     $submission->id = (string) Str::ulid();
+                                    $review['submission']['exposure_reservation_id'] = $submission->id;
                                     $payload = ['submission_id' => $submission->id, 'application_id' => $application->id,
                                         'application_revision' => $application->revision, 'quote_id' => $quote->id,
                                         'binding_sha256' => $bindingHash, 'agreement' => $agreement,
@@ -379,6 +383,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
                                     $submission->forceFill(['business_application_id' => $application->id, 'business_application_quote_id' => $quote->id,
                                         'revision' => $application->revision, 'binding_sha256' => $bindingHash,
                                         'payload' => $payload, 'sha256' => hash('sha256', $this->json->encode($payload))])->save();
+                                    $this->exposures->reserve($business['id'], $submission->id);
                                     $application->current_submission_id = $submission->id;
                                 }
                                 $application->save();
@@ -642,9 +647,10 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
      * @param  Verification|null  $verification
      * @param  CreditSnapshot|null  $credit
      * @param  Selection  $window
+     * @param  list<array{id: string, principal: string}>  $commitments
      * @return array<string, mixed>
      */
-    private function calculate(string $requestedPrincipal, int $tenorMonths, ?array $verification, ?array $credit, ?string $acceptedPrincipal, array $window): array
+    private function calculate(string $requestedPrincipal, int $tenorMonths, ?array $verification, ?array $credit, ?string $acceptedPrincipal, array $window, array $commitments): array
     {
         if ($verification === null || ! $verification['current'] || ! $window['fresh']) {
             return ['eligible' => false, 'code' => 'UNDERWRITING_EVIDENCE_REQUIRED'];
@@ -652,7 +658,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
         $verified = $verification['payload'];
         try {
             return $this->underwriting->evaluate(['requested_principal' => $requestedPrincipal, 'tenor_months' => $tenorMonths,
-                'accepted_principal' => $acceptedPrincipal, 'months' => $window['months'], ...$window['calendar'],
+                'accepted_principal' => $acceptedPrincipal, 'accepted_commitments' => $commitments, 'months' => $window['months'], ...$window['calendar'],
                 'recurring_owner_draw' => $verified['review']['recurring_owner_draw'],
                 'obligations' => [...$verified['review']['obligations'], ...($credit['facts']['obligations'] ?? [])],
                 'history' => $credit['facts']['history'] ?? null, 'restriction_active' => $credit['facts']['restriction_active'] ?? false]);
@@ -685,6 +691,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
         if ($payload['draft'] !== $this->drafts->normalize($application->draft) || $payload['mandate_version'] !== $business['mandate_version']
             || $payload['evidence'] !== $this->evidenceBinding($verification) || $payload['credit'] !== $this->creditBinding($credit)
             || $payload['policy_version'] !== FlatReturnPricing::POLICY_VERSION || $payload['calculation_version'] !== ApplicationUnderwriting::VERSION
+            || ($payload['accepted_commitments'] ?? []) !== $this->exposures->current($business['id'])
             || $payload['calendar'] !== $window['calendar'] || ($payload['evidence_window'] ?? null) !== $this->windowBinding($window)) {
             return null;
         }

@@ -277,7 +277,7 @@ fi
 
 if selected business-boundary; then
   control business-boundary "bypassing the business adapter to write authority or application records must fail the protected rule"
-  for business_model in BusinessMandate BusinessApplication BusinessApplicationVersion BusinessCreditSnapshot BusinessApplicationQuote BusinessApplicationSignature BusinessApplicationSubmission; do
+  for business_model in BusinessMandate BusinessApplication BusinessApplicationVersion BusinessCreditSnapshot BusinessApplicationQuote BusinessApplicationSignature BusinessApplicationSubmission BusinessExposureReservation; do
   echo "    checking ${business_model}"
   plant app/Application/Business/NegativeControlBusinessWrite.php <<VIOLATION
 <?php

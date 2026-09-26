@@ -293,7 +293,11 @@ it('records one signature of two, replays a recorded refusal by lookup, then sub
         ->assertJsonPath('code', 'APPLICATION_SUBMITTED')->assertJsonPath('data.submission.note_id', null)->json();
     expect($submitted['data']['next'])->toBe(['url' => $path, 'method' => 'get']);
     $done = applyUiProps($second, $path);
-    applyUiSameShape($done, [...applyUiFixture('business-apply-submitted'), 'home' => null, 'shell_links' => $done['shell_links']]);
+    $shape = applyUiFixture('business-apply-submitted');
+    applyUiSameShape($done, [...$shape, 'home' => null, 'shell_links' => $done['shell_links'],
+        'submission' => [...$shape['submission'], 'exposure_reservation_id' => $submitted['data']['submission']['exposure_reservation_id']]]);
+    expect(Str::isUlid($done['submission']['exposure_reservation_id']))->toBeTrue()
+        ->and($done['submission']['exposure_reservation_id'])->toBe($submitted['data']['submission']['exposure_reservation_id']);
     expect($done['step'])->toBe('submitted')->and($done['allowed_actions'])->toBe([])
         ->and($done['submission']['application_id'])->toBe($ready['application']->id);
 });

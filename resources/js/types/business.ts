@@ -435,6 +435,8 @@ export type TimelineStage = {
 /** A submitted application. Submitting does not issue a note, so `note_id` stays null until one exists. */
 export type ApplicationSubmission = {
     application_id: string;
+    /** Absent on retained submissions made before C3 exposure reservation. */
+    exposure_reservation_id?: string;
     note_id: string | null;
     timeline: TimelineStage[];
 };
