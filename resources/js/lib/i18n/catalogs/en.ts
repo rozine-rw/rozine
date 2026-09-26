@@ -189,6 +189,9 @@ const en = {
     'business.today.approved.sub':
         'Pay the {fee} application fee to publish it to investors.',
     'business.today.approved.cta': 'Pay fee & publish',
+    'business.today.approved.sub_free':
+        "Publish it to investors. There's no listing fee.",
+    'business.today.approved.cta_free': 'Publish',
     'business.today.declined.kicker': 'Application declined',
     'business.today.declined.sub':
         'Outside your approved capacity — talk to us before resubmitting.',

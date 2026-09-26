@@ -193,6 +193,9 @@ const rw: Catalog = {
     'business.today.approved.sub':
         "Ishyura amafaranga y'ubusabe {fee} kugira ngo bugezwe ku bashoramari.",
     'business.today.approved.cta': 'Ishyura utangaze',
+    'business.today.approved.sub_free':
+        'Yitangaze ku bashoramari. Nta mafaranga yo gutangaza asabwa.',
+    'business.today.approved.cta_free': 'Tangaza',
     'business.today.declined.kicker': 'Ubusabe bwanzwe',
     'business.today.declined.sub':
         'Birenze ubushobozi bwawe bwemejwe — tuvugishe mbere yo kongera gusaba.',

@@ -193,6 +193,9 @@ const fr: Catalog = {
     'business.today.approved.sub':
         'Payez les frais de demande de {fee} pour la publier aux investisseurs.',
     'business.today.approved.cta': 'Payer et publier',
+    'business.today.approved.sub_free':
+        'Publiez-la auprès des investisseurs. Aucuns frais de publication.',
+    'business.today.approved.cta_free': 'Publier',
     'business.today.declined.kicker': 'Demande refusée',
     'business.today.declined.sub':
         'Au-delà de votre capacité approuvée — contactez-nous avant de soumettre à nouveau.',
