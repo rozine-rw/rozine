@@ -1,0 +1,352 @@
+{
+    "component": "auditor/audit",
+    "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
+        "server_time": "2026-10-04T09:00:00Z",
+        "allowed_actions": ["audit.amend"],
+        "audit": {
+            "id": "mr_greenleaf",
+            "kind": "monthly",
+            "business": "Kivu Coffee Roasters (synthetic)",
+            "district": "Gasabo",
+            "distance_km": "8.8",
+            "month": "2026-09-01",
+            "deadline": {
+                "due_at": "2026-10-07T21:59:59Z"
+            },
+            "revision": 3,
+            "reassigned_from": null,
+            "amends": null
+        },
+        "steps": [
+            {
+                "key": "statements",
+                "state": "done"
+            },
+            {
+                "key": "count",
+                "state": "done"
+            },
+            {
+                "key": "photos",
+                "state": "done"
+            },
+            {
+                "key": "seal",
+                "state": "done"
+            }
+        ],
+        "stage": {
+            "step": "sealed",
+            "sealed_at": "2026-10-03T16:40:00Z",
+            "digest": "sha256:9f2c4e71b0a85d3e6c1f47a2d9b83e05c6a1f24d7e98b3c05a6d1e2f47b8c9d0",
+            "licence": "ICPAR/P-2026/0481",
+            "signature_ref": "sig_01J9Q3W7M4X2T8",
+            "report_id": "rpt_01J9Q3W7K9V5D1",
+            "key_id": "key_icpar_p2026_0481_v1",
+            "cosign": {
+                "party": "Kivu Coffee Roasters (synthetic)",
+                "state": "declined",
+                "due_on": "2026-10-04",
+                "signed_at": null
+            },
+            "published_at": null,
+            "seal_status": "valid",
+            "amended_by": null,
+            "dispute": {
+                "id": "SYN-DSP-01",
+                "revision": 2,
+                "status": "escalated",
+                "submitted_at": "2026-10-03T20:10:00Z",
+                "supporting_text": "Synthetic fixture text. Finding F-02 counts refund slip 0142 as a sale; the refund slip and the till roll are attached.",
+                "proof_files": [
+                    {
+                        "id": "SYN-PRF-01",
+                        "name": "synthetic-refund-slip-0142.pdf",
+                        "mime_type": "application/pdf",
+                        "size_bytes": 248311,
+                        "sha256": "5d1be7e2c0a94f3b8e6d2a7c9f1b3e5d7a9c1e3f5b7d9a1c3e5f7b9d1a3c5e7f",
+                        "download": {
+                            "url": "/auditor/reports/rpt_01J9Q3W7K9V5D1/dispute/proofs/SYN-PRF-01",
+                            "method": "get"
+                        }
+                    },
+                    {
+                        "id": "SYN-PRF-02",
+                        "name": "synthetic-till-roll-14-aug.jpg",
+                        "mime_type": "image/jpeg",
+                        "size_bytes": 1874012,
+                        "sha256": "a3c5e7f9b1d3f5a7c9e1b3d5f7a9c1e3b5d7f9a1c3e5b7d9f1a3c5e7b9d1f3a5",
+                        "download": {
+                            "url": "/auditor/reports/rpt_01J9Q3W7K9V5D1/dispute/proofs/SYN-PRF-02",
+                            "method": "get"
+                        }
+                    }
+                ],
+                "outcome": "amendment_required",
+                "resolution_note": "Synthetic staff note. The refund slip supports the dispute; amend finding F-02.",
+                "resolution_note_by": "staff"
+            },
+            "policy_version": "monthly-review-2026-09-26",
+            "delivered_at": "2026-10-03T16:45:00Z",
+            "published_reason": null
+        },
+        "can_continue": true,
+        "hint": null,
+        "reason_options": null,
+        "links": {
+            "close": {
+                "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
+            "back": null,
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "save": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "conflict": {
+                "url": "/preview/auditor-jobs-conflict",
+                "method": "post"
+            },
+            "step_up": {
+                "url": "/preview/auditor-audit-seal-step-up",
+                "method": "post"
+            },
+            "seal": {
+                "url": "/preview/auditor-audit-sealed-monthly",
+                "method": "post"
+            },
+            "request_changes": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "reject": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "amend": {
+                "url": "/preview/auditor-audit-amendment",
+                "method": "post"
+            },
+            "dispute_uphold": null
+        },
+        "outcome": null,
+        "jobs": {
+            "engagement": null,
+            "contract_version": "auditor-filing-v1",
+            "identity_context_revision": 3,
+            "server_time": "2026-10-03T17:00:00Z",
+            "allowed_actions": [
+                "assignment.accept",
+                "assignment.decline",
+                "conflict.declare"
+            ],
+            "radius_km": 30,
+            "flash_hours": 24,
+            "eligible": [
+                {
+                    "id": "fa_huye",
+                    "revision": 2,
+                    "state": "offered",
+                    "kind": "flash",
+                    "business": "Huye Motors",
+                    "sector": "logistics",
+                    "district": "Gasabo",
+                    "offered_at": "2026-10-03T14:00:00Z",
+                    "distance_km": "11.2",
+                    "requested": {
+                        "currency": "RWF",
+                        "amount": "51200000"
+                    },
+                    "dscr": "1.02",
+                    "term_months": 6,
+                    "map": {
+                        "east_km": 8.4,
+                        "north_km": 7.1
+                    },
+                    "accept_by": "2026-10-03T17:40:00Z",
+                    "complete_by": "2026-10-04T14:00:00Z",
+                    "link": {
+                        "url": "/preview/auditor-file",
+                        "method": "get"
+                    },
+                    "actions": {
+                        "accept": {
+                            "url": "/preview/auditor-audit-review",
+                            "method": "post"
+                        },
+                        "decline": {
+                            "url": "/preview/auditor-jobs-declined",
+                            "method": "post"
+                        },
+                        "conflict": {
+                            "url": "/preview/auditor-jobs-conflict",
+                            "method": "post"
+                        }
+                    },
+                    "allowed_actions": [
+                        "assignment.accept",
+                        "assignment.decline",
+                        "conflict.declare"
+                    ],
+                    "deadline": null,
+                    "reassigned_from": null
+                }
+            ],
+            "assigned": [],
+            "monthly": {
+                "windows": [
+                    {
+                        "id": "mw_1",
+                        "note_title": "Cold-Chain Hub",
+                        "note_id": "RNP-2026-0118",
+                        "business": "GreenLeaf Agro",
+                        "month": "2026-09-01",
+                        "open": {
+                            "url": "/preview/auditor-audit-statements",
+                            "method": "post"
+                        }
+                    },
+                    {
+                        "id": "mw_2",
+                        "note_title": "Fleet Expansion",
+                        "note_id": "RNP-2026-0042",
+                        "business": "GreenLeaf Agro",
+                        "month": "2026-09-01",
+                        "open": {
+                            "url": "/preview/auditor-audit-statements",
+                            "method": "post"
+                        }
+                    },
+                    {
+                        "id": "mw_3",
+                        "note_title": "Builders Working Capital",
+                        "note_id": "RNP-2026-0077",
+                        "business": "Musanze Traders",
+                        "month": "2026-09-01",
+                        "open": {
+                            "url": "/preview/auditor-audit-statements",
+                            "method": "post"
+                        }
+                    },
+                    {
+                        "id": "mw_4",
+                        "note_title": "Works Inventory",
+                        "note_id": "RNP-2026-0091",
+                        "business": "Isoko Energy",
+                        "month": "2026-09-01",
+                        "open": {
+                            "url": "/preview/auditor-audit-statements",
+                            "method": "post"
+                        }
+                    }
+                ],
+                "reports": [
+                    {
+                        "id": "mr_1",
+                        "business": "Intare Supply",
+                        "sector": "retail",
+                        "note_title": "Motors Working Capital",
+                        "due_on": "2026-10-07",
+                        "status": "in_progress",
+                        "inflow": {
+                            "currency": "RWF",
+                            "amount": "162000000"
+                        },
+                        "outflow": {
+                            "currency": "RWF",
+                            "amount": "128400000"
+                        },
+                        "cover": "1.3",
+                        "link": {
+                            "url": "/preview/auditor-audit-count",
+                            "method": "get"
+                        }
+                    },
+                    {
+                        "id": "mr_2",
+                        "business": "Kivu Coffee Roasters",
+                        "sector": "agriculture",
+                        "note_title": "Harvest Stock",
+                        "due_on": "2026-10-07",
+                        "status": "awaiting_cosign",
+                        "inflow": {
+                            "currency": "RWF",
+                            "amount": "88500000"
+                        },
+                        "outflow": {
+                            "currency": "RWF",
+                            "amount": "71200000"
+                        },
+                        "cover": "1.4",
+                        "link": {
+                            "url": "/preview/auditor-audit-sealed-monthly",
+                            "method": "get"
+                        }
+                    }
+                ]
+            },
+            "outcome": null,
+            "links": {
+                "home": {
+                    "url": "/preview/auditor-home",
+                    "method": "get"
+                },
+                "jobs": {
+                    "url": "/preview/auditor-jobs",
+                    "method": "get"
+                },
+                "portfolio": {
+                    "url": "/preview/auditor-portfolio",
+                    "method": "get"
+                },
+                "profile": {
+                    "url": "/preview/auditor-profile",
+                    "method": "get"
+                },
+                "launcher": {
+                    "url": "/preview/launcher-auditor",
+                    "method": "get"
+                },
+                "operation": {
+                    "url": "/preview/auditor-operation-{request_id}",
+                    "method": "get"
+                }
+            },
+            "decline_options": [
+                {
+                    "code": "unavailable",
+                    "label": "Not available inside the clock",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "capacity",
+                    "label": "At capacity with active work",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "location",
+                    "label": "Cannot reach the site",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "other",
+                    "label": "Other reason",
+                    "requires_explanation": true
+                }
+            ]
+        },
+        "assignment": {
+            "id": "asg_mr_greenleaf",
+            "revision": 4
+        }
+    },
+    "synthetic": true
+}

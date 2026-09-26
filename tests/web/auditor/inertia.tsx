@@ -94,7 +94,8 @@ export const Link = ({
     children,
     ...props
 }: Omit<ComponentProps<'a'>, 'href'> & { href: { url: string } }) => (
-    <a href={href.url} {...props}>
+    /* Marked, so a test can tell an Inertia visit from a plain download anchor. */
+    <a href={href.url} data-inertia-link="" {...props}>
         {children}
     </a>
 );

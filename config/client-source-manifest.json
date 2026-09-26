@@ -185,6 +185,7 @@
     ],
     "declarationOnlyPaths": [
         "resources/js/types/admin.ts",
+        "resources/js/types/audit-dispute.ts",
         "resources/js/types/audit-seal.ts",
         "resources/js/types/auditor.ts",
         "resources/js/types/auth.ts",
@@ -230,6 +231,8 @@
         "resources/js/components/app-sidebar.tsx",
         "resources/js/components/appearance-tabs.tsx",
         "resources/js/components/auditor/assigned-job-card.tsx",
+        "resources/js/components/auditor/audit/dispute-panel.tsx",
+        "resources/js/components/auditor/audit/dispute-uphold.tsx",
         "resources/js/components/auditor/audit/evidence.tsx",
         "resources/js/components/auditor/audit/parts.tsx",
         "resources/js/components/auditor/audit/return-controls.tsx",
@@ -294,8 +297,10 @@
         "resources/js/components/business/audit-cosign/cosign-form.tsx",
         "resources/js/components/business/audit-cosign/cosign-notice.tsx",
         "resources/js/components/business/audit-cosign/cosign-status.tsx",
+        "resources/js/components/business/audit-cosign/dispute-record.tsx",
         "resources/js/components/business/audit-cosign/dispute-sheet.tsx",
         "resources/js/components/business/audit-cosign/report-summary.tsx",
+        "resources/js/components/business/audit-cosign/review-window.tsx",
         "resources/js/components/business/business-auth-frame.tsx",
         "resources/js/components/business/business-shell.tsx",
         "resources/js/components/business/detail-sheet.tsx",
@@ -406,6 +411,7 @@
         "resources/js/components/rozine/icon.tsx",
         "resources/js/components/rozine/logo.tsx",
         "resources/js/components/rozine/operation-notice.tsx",
+        "resources/js/components/rozine/proof-file-list.tsx",
         "resources/js/components/rozine/role-icon.tsx",
         "resources/js/components/rozine/toast.tsx",
         "resources/js/components/text-link.tsx",
@@ -474,6 +480,7 @@
         "resources/js/lib/investor/use-wide.ts",
         "resources/js/lib/pass-card-image.ts",
         "resources/js/lib/pulse.ts",
+        "resources/js/lib/rozine/dispute-note.ts",
         "resources/js/lib/rozine/format.ts",
         "resources/js/lib/rozine/operation.ts",
         "resources/js/lib/utils.ts",
@@ -538,10 +545,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 510,
+        "totalTrackedSources": 517,
         "generated": 160,
-        "declarationOnly": 16,
-        "authoredExecutable": 334
+        "declarationOnly": 17,
+        "authoredExecutable": 340
     },
-    "coverageSetSha256": "39365b3de673ae1e72d5a5e54e90fbdd677c0e754061dca62488646d005be2f3"
+    "coverageSetSha256": "df7abe23cab0aa17272822b4e94fde8a9bd16fbb617bd268a73294cd62e49a5e"
 }
