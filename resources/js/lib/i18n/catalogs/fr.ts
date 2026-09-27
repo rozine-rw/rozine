@@ -3540,6 +3540,12 @@ const fr: Catalog = {
         'Cette levée a été annulée le {date}. {amount} ont été intégralement rendus aux investisseurs, sans frais.',
     'business.campaign.closed.failed_closing':
         "Cette levée n'a pas pu être clôturée : une vérification avant décaissement a échoué le {date}. {amount} ont été intégralement rendus aux investisseurs, sans frais.",
+    'business.campaign.closed.expired_none':
+        "Cette levée s'est clôturée le {date} avant tout engagement d'investisseur : il n'y avait rien à rembourser.",
+    'business.campaign.closed.cancelled_none':
+        "Cette levée a été annulée le {date} avant tout engagement d'investisseur : il n'y avait rien à rembourser.",
+    'business.campaign.closed.failed_closing_none':
+        "Cette levée n'a pas pu se clôturer : une vérification avant versement a échoué le {date}. Aucun investisseur ne s'était engagé : il n'y avait rien à rembourser.",
     'business.campaign.cancel.open': 'Annuler cette levée',
     'business.campaign.cancel.cancelling': 'Annulation…',
     'business.campaign.cancel.title': 'Annuler cette levée ?',

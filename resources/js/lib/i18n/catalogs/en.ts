@@ -3392,6 +3392,12 @@ const en = {
         'This raise was cancelled on {date}. {amount} went back to investors in full, without fee.',
     'business.campaign.closed.failed_closing':
         "This raise couldn't close: a check before disbursement failed on {date}. {amount} went back to investors in full, without fee.",
+    'business.campaign.closed.expired_none':
+        'This raise closed on {date} before any investor committed, so there was nothing to refund.',
+    'business.campaign.closed.cancelled_none':
+        'This raise was cancelled on {date} before any investor committed, so there was nothing to refund.',
+    'business.campaign.closed.failed_closing_none':
+        "This raise couldn't close: a check before disbursement failed on {date}. No investor had committed, so there was nothing to refund.",
     'business.campaign.cancel.open': 'Cancel this raise',
     'business.campaign.cancel.cancelling': 'Cancelling…',
     'business.campaign.cancel.title': 'Cancel this raise?',
