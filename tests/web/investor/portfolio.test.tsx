@@ -400,6 +400,7 @@ describe('Commitments and issue (C3)', () => {
         );
         expect(record).toHaveTextContent('Effective date (Kigali)21 Sept 2026');
         expect(record).toHaveTextContent('RZ-HLD-2201');
+        expect(record).toHaveTextContent('Fee on earnings10.0% (Standard)');
 
         const schedule = within(record).getByRole('table');
 

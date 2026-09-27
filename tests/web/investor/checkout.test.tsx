@@ -16,6 +16,7 @@ import committedFixture from '../../../resources/fixtures/ui/investor-checkout-c
 import identityFixture from '../../../resources/fixtures/ui/investor-checkout-identity-required.json';
 import minimalFixture from '../../../resources/fixtures/ui/investor-checkout-live-minimal.json';
 import notRecordedFixture from '../../../resources/fixtures/ui/investor-checkout-not-recorded.json';
+import silverFixture from '../../../resources/fixtures/ui/investor-checkout-plus-silver.json';
 import expiredFixture from '../../../resources/fixtures/ui/investor-checkout-reservation-expired.json';
 import reservedFixture from '../../../resources/fixtures/ui/investor-checkout-reserved.json';
 import unconfirmedFixture from '../../../resources/fixtures/ui/investor-checkout-unconfirmed.json';
@@ -54,6 +55,20 @@ afterEach(() => {
 });
 
 describe('Checkout: the indicative step', () => {
+    it('shows the Plus tier and locked rate the server quoted, with its fee as a server fact', () => {
+        render(<InvestorCheckout {...props(silverFixture)} />);
+
+        const sheet = screen.getByRole('dialog', { name: 'Checkout' });
+
+        expect(sheet).toHaveTextContent(
+            'Fee on earnings · 6.5% (Silver)RWF 44',
+        );
+        expect(sheet).toHaveTextContent('Back over 6 monthsRWF 5,631');
+        expect(sheet).toHaveTextContent(
+            'Charged on your return only, never on your principal. This rate is fixed for this note.',
+        );
+    });
+
     it('shows the server’s indicative quote with no maturity date before issue, then offers Reserve', () => {
         render(<InvestorCheckout {...props()} />);
 
@@ -73,7 +88,16 @@ describe('Checkout: the indicative step', () => {
             'Indicative until you reserve: the exact rights of your notes are fixed when they are reserved.',
         );
         expect(within(sheet).getByText('+RWF 675')).toBeInTheDocument();
-        expect(sheet).toHaveTextContent('Back over 6 monthsRWF 5,621');
+        expect(sheet).toHaveTextContent(
+            'Fee on earnings · 10.0% (Standard)RWF 68',
+        );
+        expect(sheet).toHaveTextContent('Back over 6 monthsRWF 5,607');
+        expect(
+            within(sheet).getByText(
+                'Charged on your return only, never on your principal. This rate is fixed for this note.',
+            ),
+        ).toBeInTheDocument();
+        expect(sheet).not.toHaveTextContent('Repayment fee');
         expect(sheet).toHaveTextContent(
             'Maturity dateSet when notes are issued',
         );

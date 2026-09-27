@@ -2287,8 +2287,17 @@ const fr: Catalog = {
     'investor.checkout.units_each_one': "{count} titre · {price} l'unité",
     'investor.checkout.units_each_other': "{count} titres · {price} l'unité",
     'investor.checkout.expected_return': 'Rendement attendu ({rate} %)',
-    'investor.checkout.payout_fee':
-        'Frais de remboursement (1 % par versement)',
+    'investor.plus.fee': 'Frais sur les gains',
+    'investor.plus.fee_label': 'Frais sur les gains · {rate}',
+    'investor.plus.fee_rate': '{rate} % ({tier})',
+    'investor.plus.fee_note':
+        'Prélevés uniquement sur votre rendement, jamais sur votre capital. Ce taux est fixé pour ce titre.',
+    'investor.plus.tier.standard': 'Standard',
+    'investor.plus.tier.bronze': 'Bronze',
+    'investor.plus.tier.silver': 'Argent',
+    'investor.plus.tier.gold': 'Or',
+    'investor.plus.tier.platinum': 'Platine',
+    'investor.plus.tier.diamond': 'Diamant',
     'investor.checkout.maturity_value': "Valeur à l'échéance · {date}",
     'investor.checkout.pay_with': 'PAYER AVEC',
     'investor.checkout.wallet': 'Portefeuille',
@@ -4162,7 +4171,7 @@ const fr: Catalog = {
     'investor.servicing.payouts.fee_code.INVESTOR_REPAYMENT_FEE':
         'Frais de remboursement',
     'investor.servicing.payouts.fee_code.PLUS_EARNINGS_FEE':
-        'Frais Plus sur les gains',
+        'Frais sur les gains',
     'investor.servicing.payouts.net': 'Net sur votre portefeuille',
     'investor.servicing.payouts.receipt': 'Reçu {reference}',
     'investor.servicing.exit.title': 'Options de sortie',

@@ -171,6 +171,7 @@
         "resources/js/components/investor/portfolio/issue-record.tsx",
         "resources/js/components/investor/portfolio/portfolio-insights.tsx",
         "resources/js/components/investor/primary/commitment.tsx",
+        "resources/js/components/investor/primary/earnings-fee.tsx",
         "resources/js/components/investor/primary/rights.tsx",
         "resources/js/components/investor/profile/profile-parts.tsx",
         "resources/js/components/investor/wallet/funding.tsx",
