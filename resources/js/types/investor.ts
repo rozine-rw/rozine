@@ -7,6 +7,7 @@ import type {
     CampaignRestriction,
     Clock,
     CoarseInFlight,
+    EarningsFee,
     InstalmentStatus,
     KigaliDate,
     LateFeeStatus,
@@ -28,8 +29,9 @@ import type {
  * RWF 5,000 of principal per note unit (engineering contract §11.2), but even that arrives as
  * `unit_price` rather than being assumed.
  *
- * Secondary trading, "sell back to Rozine", Rozine Plus bands/automation, the watchlist, Investor
- * Academy and referral screens are outside the MVP and have no contract here.
+ * Secondary trading, "sell back to Rozine", Rozine Plus Auto-Deploy and a tier-ladder screen, the
+ * watchlist, Investor Academy and referral screens are outside the MVP and have no contract here.
+ * The Plus fee on earnings itself is carried by the C3 quote and terms (`EarningsFee`).
  */
 
 /* ------------------------------------------------------------------------------------------ */
@@ -1101,7 +1103,10 @@ export type PrimaryQuote = {
     rate_pct: string;
     term_months: number;
     expected_return: Money;
+    /** The server's total fee on earnings over the quoted return; never computed client-side. */
     payout_fee: Money;
+    /** The Plus tier and rate this quote applies; provisional (see `EarningsFee`). */
+    earnings_fee: EarningsFee;
     maturity_value: Money;
     maturity_date: null;
     /** Set only when `basis` is `reserved`. */
@@ -1182,7 +1187,10 @@ export type Commitment = {
     terms: {
         rate_pct: string;
         term_months: number;
+        /** The server's total fee on earnings over these units' return. */
         payout_fee: Money;
+        /** Locked at confirmation for the note's life; provisional (see `EarningsFee`). */
+        earnings_fee: EarningsFee;
         policy_version: string;
         disclosure_version: string;
     };
@@ -1269,6 +1277,8 @@ export type IssuedHolding = {
         rate_pct: string;
         term_months: number;
         total_return: Money;
+        /** The rate locked at commitment, carried unchanged; provisional (see `EarningsFee`). */
+        earnings_fee: EarningsFee;
         policy_version: string;
         disclosure_version: string;
     };

@@ -373,6 +373,12 @@
                         "currency": "RWF",
                         "amount": "108000"
                     },
+                    "earnings_fee": {
+                        "tier": "standard",
+                        "rate_bps": 1000,
+                        "basis": "return_only",
+                        "policy_version": "synthetic-plus-policy-0"
+                    },
                     "policy_version": "synthetic-primary-policy-0",
                     "disclosure_version": "disclosure-2026-05.2"
                 },

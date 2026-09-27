@@ -1,3 +1,4 @@
+import { earningsFeeRate } from '@/components/investor/primary/earnings-fee';
 import { formatOrdinals } from '@/components/investor/primary/rights';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate, formatDateTime, formatRwf } from '@/lib/rozine/format';
@@ -14,44 +15,48 @@ const HEADING = 'text-sm font-semibold text-rz-ink';
  */
 export function IssueRecord({ issue }: { issue: IssuedHolding }) {
     const { t, locale } = useTranslation();
-    const rows = [
+    const rows: [string, string][] = [
         [
-            'investor.primary.units',
+            t('investor.primary.units'),
             t('investor.primary.units_value', {
                 count: Number(issue.units),
                 ordinals: formatOrdinals(issue.ordinals),
             }),
         ],
-        ['investor.primary.principal', formatRwf(issue.principal)],
+        [t('investor.primary.principal'), formatRwf(issue.principal)],
         [
-            'investor.holding.issue.issued_at',
+            t('investor.holding.issue.issued_at'),
             formatDateTime(issue.issued_at, locale),
         ],
         [
-            'investor.holding.issue.effective_at',
+            t('investor.holding.issue.effective_at'),
             formatDateTime(issue.disbursement_effective_at, locale),
         ],
         [
-            'investor.holding.issue.effective_date',
+            t('investor.holding.issue.effective_date'),
             formatDate(issue.effective_date, locale),
         ],
         [
-            'investor.primary.terms',
+            t('investor.primary.terms'),
             t('investor.checkout.deal_line', {
                 rate: issue.terms.rate_pct,
                 count: issue.terms.term_months,
             }),
         ],
         [
-            'investor.primary.rights.total_return',
+            t('investor.primary.rights.total_return'),
             formatRwf(issue.terms.total_return),
         ],
+        [t('investor.plus.fee'), earningsFeeRate(t, issue.terms.earnings_fee)],
         [
-            'investor.primary.versions',
+            t('investor.primary.versions'),
             `${issue.terms.policy_version} · ${issue.terms.disclosure_version}`,
         ],
-        ['investor.primary.receipt.reference', issue.issue_receipt.reference],
-    ] as const;
+        [
+            t('investor.primary.receipt.reference'),
+            issue.issue_receipt.reference,
+        ],
+    ];
 
     return (
         <section aria-label={t('investor.holding.issue.title')}>
@@ -68,7 +73,7 @@ export function IssueRecord({ issue }: { issue: IssuedHolding }) {
                                 'border-b border-[#eef2f9] dark:border-rz-divider',
                         )}
                     >
-                        <dt className="text-rz-secondary">{t(label)}</dt>
+                        <dt className="text-rz-secondary">{label}</dt>
                         <dd className="text-right font-semibold break-words text-rz-ink">
                             {value}
                         </dd>

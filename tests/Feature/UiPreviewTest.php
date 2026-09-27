@@ -73,6 +73,34 @@ function c3PreviewCommandUrls(array $props): array
     return $urls;
 }
 
+/**
+ * Every quote, commitment term and issue term in a fixture's props: each node that carries a
+ * `payout_fee`, or an issue term's `total_return` beside its `rate_pct`.
+ *
+ * @param  array<mixed>  $props
+ * @return list<array<mixed>>
+ */
+function c3PreviewFeeTerms(array $props): array
+{
+    $terms = [];
+
+    $walk = static function (array $node) use (&$walk, &$terms): void {
+        if (array_key_exists('payout_fee', $node) || (array_key_exists('total_return', $node) && array_key_exists('rate_pct', $node))) {
+            $terms[] = $node;
+        }
+
+        foreach ($node as $child) {
+            if (is_array($child)) {
+                $walk($child);
+            }
+        }
+    };
+
+    $walk($props);
+
+    return $terms;
+}
+
 test('a UI fixture renders its page with exactly the fixture props', function () {
     $fixture = json_decode(
         (string) file_get_contents(resource_path('fixtures/ui/launcher-ready.json')),
@@ -139,6 +167,35 @@ test('C3 fixtures cover every surface in the scaffold, each with a live-minimal 
         'business-campaign-raising-restricted', 'business-campaign-funded-in-flight', 'business-campaign-disbursed',
         'business-campaign-cancelled', 'business-campaign-failed-closing',
     );
+});
+
+test('every investor quote and term carries the locked Plus fee on earnings, on the return only', function () {
+    /** Robert's #99 bands in basis points, keyed by tier (provisional wire shape, #96). */
+    $bands = ['standard' => 1000, 'bronze' => 800, 'silver' => 650, 'gold' => 550, 'platinum' => 500, 'diamond' => 400];
+    $seen = 0;
+
+    foreach (c3PreviewFixtures() as $name => $fixture) {
+        foreach (c3PreviewFeeTerms($fixture['props']) as $terms) {
+            /** @var array{tier: string, rate_bps: int, basis: string, policy_version: string} $fee */
+            $fee = $terms['earnings_fee'] ?? null;
+
+            expect($fee)->toBeArray($name)
+                ->and($fee['basis'])->toBe('return_only', $name)
+                ->and($bands)->toHaveKey($fee['tier'], message: $name)
+                ->and($fee['rate_bps'])->toBe($bands[$fee['tier']], $name)
+                ->and($fee['policy_version'])->toBeString();
+
+            $seen++;
+        }
+    }
+
+    expect($seen)->toBeGreaterThan(0);
+
+    /** @var array{earnings_fee: array{tier: string, rate_bps: int}} $silver */
+    $silver = c3PreviewFixtures()['investor-checkout-plus-silver']['props']['quote'];
+
+    expect($silver['earnings_fee']['tier'])->toBe('silver')
+        ->and($silver['earnings_fee']['rate_bps'])->toBe(650);
 });
 
 test('C4 fixtures cover every surface in the scaffold, each with a live-minimal shape', function () {

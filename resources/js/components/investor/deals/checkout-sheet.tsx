@@ -7,6 +7,10 @@ import { useTimeLeft } from '@/components/investor/deals/time-left';
 import { useQuotedUnits } from '@/components/investor/deals/use-quote';
 import { CommitmentCard } from '@/components/investor/primary/commitment';
 import {
+    EarningsFeeNote,
+    earningsFeeLabel,
+} from '@/components/investor/primary/earnings-fee';
+import {
     formatOrdinals,
     RightsTable,
 } from '@/components/investor/primary/rights';
@@ -267,52 +271,58 @@ export function CheckoutSheet({
     );
 
     const quoteRows = (
-        <dl
-            aria-busy={quoted.quoting || undefined}
-            className={cn(
-                'mt-[11px] rounded-2xl border border-rz-border bg-rz-surface px-3.5 py-0.5 transition-opacity',
-                quoted.quoting && 'opacity-60',
-            )}
-        >
-            <div className={cn(ROW, ROW_LINE)}>
-                <dt className="text-[12.5px] text-rz-secondary">
-                    {t('investor.checkout.expected_return', {
-                        rate: quote.rate_pct,
-                    })}
-                </dt>
-                <dd
-                    className={cn('text-[12.5px] font-semibold', POSITIVE_TEXT)}
-                >
-                    +{formatRwf(quote.expected_return)}
-                </dd>
-            </div>
-            <div className={cn(ROW, ROW_LINE)}>
-                <dt className="text-[12.5px] text-rz-secondary">
-                    {t('investor.checkout.payout_fee')}
-                </dt>
-                <dd className="text-[12.5px] font-semibold text-rz-ink">
-                    {formatRwf(quote.payout_fee)}
-                </dd>
-            </div>
-            <div className={cn(ROW, ROW_LINE)}>
-                <dt className="text-[12.5px] text-rz-secondary">
-                    {t('investor.checkout.c3.at_maturity', {
-                        count: quote.term_months,
-                    })}
-                </dt>
-                <dd className="text-[12.5px] font-semibold text-rz-ink">
-                    {formatRwf(quote.maturity_value)}
-                </dd>
-            </div>
-            <div className={ROW}>
-                <dt className="text-[12.5px] text-rz-secondary">
-                    {t('investor.checkout.maturity_date')}
-                </dt>
-                <dd className="text-[12.5px] font-semibold text-rz-secondary">
-                    {t('investor.primary.maturity_at_issue')}
-                </dd>
-            </div>
-        </dl>
+        <>
+            <dl
+                aria-busy={quoted.quoting || undefined}
+                className={cn(
+                    'mt-[11px] rounded-2xl border border-rz-border bg-rz-surface px-3.5 py-0.5 transition-opacity',
+                    quoted.quoting && 'opacity-60',
+                )}
+            >
+                <div className={cn(ROW, ROW_LINE)}>
+                    <dt className="text-[12.5px] text-rz-secondary">
+                        {t('investor.checkout.expected_return', {
+                            rate: quote.rate_pct,
+                        })}
+                    </dt>
+                    <dd
+                        className={cn(
+                            'text-[12.5px] font-semibold',
+                            POSITIVE_TEXT,
+                        )}
+                    >
+                        +{formatRwf(quote.expected_return)}
+                    </dd>
+                </div>
+                <div className={cn(ROW, ROW_LINE)}>
+                    <dt className="text-[12.5px] text-rz-secondary">
+                        {earningsFeeLabel(t, quote.earnings_fee)}
+                    </dt>
+                    <dd className="text-[12.5px] font-semibold text-rz-ink">
+                        {formatRwf(quote.payout_fee)}
+                    </dd>
+                </div>
+                <div className={cn(ROW, ROW_LINE)}>
+                    <dt className="text-[12.5px] text-rz-secondary">
+                        {t('investor.checkout.c3.at_maturity', {
+                            count: quote.term_months,
+                        })}
+                    </dt>
+                    <dd className="text-[12.5px] font-semibold text-rz-ink">
+                        {formatRwf(quote.maturity_value)}
+                    </dd>
+                </div>
+                <div className={ROW}>
+                    <dt className="text-[12.5px] text-rz-secondary">
+                        {t('investor.checkout.maturity_date')}
+                    </dt>
+                    <dd className="text-[12.5px] font-semibold text-rz-secondary">
+                        {t('investor.primary.maturity_at_issue')}
+                    </dd>
+                </div>
+            </dl>
+            <EarningsFeeNote className="mt-[7px] px-1" />
+        </>
     );
 
     const shortWallet = !wallet.sufficient && (
