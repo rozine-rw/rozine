@@ -116,7 +116,7 @@ test('every C3 fixture is marked synthetic, and the preview route ignores the ma
 test('C3 fixtures cover every surface in the scaffold, each with a live-minimal shape', function () {
     $names = array_keys(c3PreviewFixtures());
 
-    foreach (['investor-deals', 'investor-checkout', 'investor-commitment', 'investor-portfolio', 'investor-holding', 'investor-wallet', 'admin-disbursements', 'business-publish', 'business-campaign'] as $surface) {
+    foreach (['investor-deals', 'investor-checkout', 'investor-commitment', 'investor-portfolio', 'investor-holding', 'investor-wallet', 'admin-disbursements', 'admin-applications', 'business-publish', 'business-campaign'] as $surface) {
         expect($names)->toContain("{$surface}-live-minimal");
     }
 

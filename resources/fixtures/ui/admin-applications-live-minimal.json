@@ -1,0 +1,120 @@
+{
+    "component": "admin/applications",
+    "synthetic": true,
+    "props": {
+        "viewer": {
+            "id": "01k5zs0a1b2c3d4e5f6g7h8j9k",
+            "name": "Staff Member",
+            "email": "staff@example.test",
+            "initials": "SM",
+            "role": "approver"
+        },
+        "nav": {
+            "today": null,
+            "applications": {
+                "url": "/admin/applications",
+                "method": "get"
+            },
+            "disbursements": null,
+            "repayments": null,
+            "businesses": null,
+            "investors": null,
+            "auditors": null,
+            "staff": null,
+            "ledger": null,
+            "events": null,
+            "launcher": {
+                "url": "/dashboard",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": null,
+            "disbursements": null
+        },
+        "search": "",
+        "server_time": "2026-10-03T17:00:00Z",
+        "policy": [],
+        "tabs": [
+            {
+                "key": "pending",
+                "count": null,
+                "link": {
+                    "url": "/admin/applications?tab=pending",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "under_review",
+                "count": null,
+                "link": {
+                    "url": "/admin/applications?tab=under_review",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "escalated",
+                "count": null,
+                "link": {
+                    "url": "/admin/applications?tab=escalated",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "approved",
+                "count": null,
+                "link": {
+                    "url": "/admin/applications?tab=approved",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "rejected",
+                "count": null,
+                "link": {
+                    "url": "/admin/applications?tab=rejected",
+                    "method": "get"
+                }
+            }
+        ],
+        "active_tab": "approved",
+        "applications": [
+            {
+                "id": "APP-20250091",
+                "business": "Kigali Motors",
+                "note_title": "Kigali Expansion",
+                "sector": "Hospitality",
+                "requested": {
+                    "currency": "RWF",
+                    "amount": "50000000"
+                },
+                "term_months": 6,
+                "rate_pct": "12.9",
+                "capacity_used_pct": 63,
+                "rating": {
+                    "band": "stable",
+                    "score": "3.5"
+                },
+                "submitted_at": "2026-09-02T10:00:00+02:00",
+                "state": "approved",
+                "decision": {
+                    "code": "reject",
+                    "reason": "Requested exceeds CFADS debt capacity (max RWF 15M at DSCR 1.25)"
+                },
+                "link": {
+                    "url": "/admin/applications/APP-20250091",
+                    "method": "get"
+                },
+                "approve_link": null
+            }
+        ],
+        "review": null,
+        "stage": null,
+        "links": {
+            "operation": {
+                "url": "/admin/applications/operations/{request_id}",
+                "method": "get"
+            }
+        }
+    }
+}

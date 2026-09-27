@@ -15,6 +15,7 @@ import type {
 } from '@/types/admin';
 import approveFixture from '../../../resources/fixtures/ui/admin-applications-approve.json';
 import emptyFixture from '../../../resources/fixtures/ui/admin-applications-empty.json';
+import liveMinimalFixture from '../../../resources/fixtures/ui/admin-applications-live-minimal.json';
 import missingFixture from '../../../resources/fixtures/ui/admin-applications-missing-audit.json';
 import releaseBlockedFixture from '../../../resources/fixtures/ui/admin-applications-release-blocked.json';
 import releaseFixture from '../../../resources/fixtures/ui/admin-applications-release.json';
@@ -226,6 +227,80 @@ describe('Applications queue', () => {
                 'Nothing in Applications Queue matches “zzz”. This search only looks inside the current page.',
             ),
         ).toBeInTheDocument();
+    });
+});
+
+describe('The live-minimal queue', () => {
+    it('shows only the destinations the server serves, with no badges or tab counts', () => {
+        render(<AdminApplications {...props(liveMinimalFixture)} />);
+
+        const nav = screen.getByRole('navigation', {
+            name: 'Console navigation',
+        });
+
+        expect(within(nav).getAllByRole('link')).toHaveLength(1);
+        expect(
+            within(nav).getByRole('link', { name: /^Applications$/ }),
+        ).toHaveAttribute('href', '/admin/applications');
+        expect(
+            within(nav).getByRole('link', { name: 'Applications' }),
+        ).toHaveAttribute('aria-current', 'page');
+        expect(within(nav).getByText('Capital')).toBeInTheDocument();
+
+        for (const group of ['Accounts', 'Treasury', 'Console']) {
+            expect(within(nav).queryByText(group)).not.toBeInTheDocument();
+        }
+
+        expect(
+            screen.getByRole('link', { name: '← All apps' }),
+        ).toHaveAttribute('href', '/dashboard');
+        expect(
+            screen.queryByRole('region', {
+                name: 'Underwriting rules in effect',
+            }),
+        ).not.toBeInTheDocument();
+
+        const tabs = screen.getByRole('navigation', {
+            name: 'Application states',
+        });
+
+        expect(
+            within(tabs).getByRole('link', { name: 'Approved' }),
+        ).toHaveAttribute('aria-current', 'page');
+        expect(
+            within(tabs).getByRole('link', { name: 'Pending' }),
+        ).toHaveAttribute('href', '/admin/applications?tab=pending');
+
+        const row = screen.getAllByRole('row')[1];
+
+        expect(within(row).getByText('Kigali Motors')).toHaveAttribute(
+            'href',
+            '/admin/applications/APP-20250091',
+        );
+        expect(within(row).getByText('Approved')).toBeInTheDocument();
+    });
+
+    it('shows a badge the server states beside a null one', () => {
+        const page = props(liveMinimalFixture);
+
+        page.nav = {
+            ...page.nav,
+            disbursements: { url: '/admin/disbursements', method: 'get' },
+        };
+        page.badges = { applications: null, disbursements: 3 };
+        render(<AdminApplications {...page} />);
+
+        const nav = screen.getByRole('navigation', {
+            name: 'Console navigation',
+        });
+
+        expect(
+            within(nav).getByRole('link', { name: /^Applications$/ }),
+        ).toBeInTheDocument();
+        expect(
+            within(nav).getByRole('link', { name: /^Disbursements\s*3$/ }),
+        ).toHaveAttribute('href', '/admin/disbursements');
+        expect(within(nav).getByText('Treasury')).toBeInTheDocument();
     });
 });
 
