@@ -740,7 +740,7 @@ const fr: Catalog = {
     'admin.section.applications.subtitle':
         'Examiner et souscrire les nouvelles demandes de RNP',
     'admin.section.applications.search':
-        'Rechercher par entreprise ou identifiant…',
+        'Rechercher par intitulé du titre ou identifiant de la demande',
     'admin.section.disbursements.title': 'Décaissements',
     'admin.section.disbursements.subtitle':
         'Levées approuvées en attente de versement. Au-delà du seuil, deux personnes différentes doivent approuver chaque versement.',

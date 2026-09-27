@@ -756,7 +756,7 @@ describe('The live staff applications index (#147)', () => {
         ).not.toBeInTheDocument();
         expect(
             within(drawer).queryByRole('link', {
-                name: 'View business profile',
+                name: /business profile/u,
             }),
         ).not.toBeInTheDocument();
         expect(
