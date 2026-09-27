@@ -3300,6 +3300,16 @@ const rw: Catalog = {
         'Ibi ntibiraboneka: hari amabwiriza akenewe atarashyirwaho.',
     'settlement.refusal.DEPOSIT_METHOD_UNVERIFIED':
         'Iyo konti ntiragenzurwa ngo ikoreshwe mu kubitsa.',
+    'settlement.refusal.EXPOSURE_RESERVATION_REQUIRED':
+        "Nta bubiko bw'inguzanyo bwanditswe kuri iyi dosiye, bityo ntishobora gushyirwa ku rutonde.",
+    'settlement.refusal.SIGNATURES_REQUIRED':
+        'Abasinya bose basabwa ntibarasinya ku Isuzuma.',
+    'settlement.refusal.STAFF_RELEASE_REQUIRED':
+        'Abakozi ba Rozine ntibararekura iyi dosiye.',
+    'settlement.refusal.TERMS_CHANGED': 'Amabwiriza yarahindutse kuva wasinya.',
+    'settlement.refusal.FEE_DISCLOSURE_CHANGED':
+        'Ibisobanuro ku mafaranga yo gutangaza byarahindutse. Soma ibiriho mbere yo gutangaza.',
+    'settlement.refusal.QUOTE_STALE': 'Igiciro wahawe ntikigikurikizwa.',
     'settlement.refusal.APPLICATION_NOT_RELEASED':
         'Iyi dosiye ntiremererwa gushyirwa ku rutonde.',
     'settlement.refusal.DISBURSEMENT_IN_FLIGHT':
@@ -3396,6 +3406,19 @@ const rw: Catalog = {
         "Ububasha bwo gusinya bw'ikigo bwahindutse kuva wasinya.",
     'business.publish.cause.REPORT_NOT_CURRENT':
         "Raporo y'igenzura ntikiri iy'igihe.",
+    'business.publish.cause.EXPOSURE_RESERVATION_REQUIRED':
+        "Nta bubiko bw'inguzanyo bwanditswe kuri iyi dosiye, bityo ntishobora gushyirwa ku rutonde.",
+    'business.publish.cause.SIGNATURES_REQUIRED':
+        'Abasinya bose basabwa ntibarasinya ku Isuzuma.',
+    'business.publish.cause.STAFF_RELEASE_REQUIRED':
+        'Abakozi ba Rozine ntibararekura iyi dosiye.',
+    'business.publish.cause.TERMS_CHANGED':
+        'Amabwiriza yarahindutse kuva wasinya.',
+    'business.publish.cause.FEE_DISCLOSURE_CHANGED':
+        'Ibisobanuro ku mafaranga yo gutangaza byarahindutse. Soma ibiriho mbere yo gutangaza.',
+    'business.publish.cause.QUOTE_STALE': 'Igiciro wahawe ntikigikurikizwa.',
+    'business.publish.cause.RESTRICTION_ACTIVE':
+        'Hari ikumira rireba iki kigo.',
     'business.publish.cause.other': 'Igenzura rimwe ryo kurekura ntiryatsinze.',
     'business.publish.prerequisites': 'Mbere yo gutangaza',
     'business.publish.prerequisite.staff_release':

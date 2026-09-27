@@ -3315,6 +3315,17 @@ const fr: Catalog = {
         "Ce n'est pas encore disponible : une règle requise n'a pas été définie.",
     'settlement.refusal.DEPOSIT_METHOD_UNVERIFIED':
         "Ce compte n'est pas encore vérifié pour les dépôts.",
+    'settlement.refusal.EXPOSURE_RESERVATION_REQUIRED':
+        "Aucune réservation d'emprunt n'est enregistrée pour cette demande : elle ne peut pas être publiée.",
+    'settlement.refusal.SIGNATURES_REQUIRED':
+        "Tous les signataires requis n'ont pas signé à l'étape Revue.",
+    'settlement.refusal.STAFF_RELEASE_REQUIRED':
+        "L'équipe Rozine n'a pas encore autorisé cette demande.",
+    'settlement.refusal.TERMS_CHANGED':
+        'Les conditions ont changé depuis votre signature.',
+    'settlement.refusal.FEE_DISCLOSURE_CHANGED':
+        "L'information sur les frais de publication a changé. Lisez la version actuelle avant de publier.",
+    'settlement.refusal.QUOTE_STALE': "Votre offre n'est plus à jour.",
     'settlement.refusal.APPLICATION_NOT_RELEASED':
         "Cette demande n'a pas encore été autorisée à la publication.",
     'settlement.refusal.DISBURSEMENT_IN_FLIGHT':
@@ -3411,6 +3422,19 @@ const fr: Catalog = {
         "Le pouvoir de signature de l'entreprise a changé depuis votre signature.",
     'business.publish.cause.REPORT_NOT_CURRENT':
         "Le rapport d'audit n'est plus à jour.",
+    'business.publish.cause.EXPOSURE_RESERVATION_REQUIRED':
+        "Aucune réservation d'emprunt n'est enregistrée pour cette demande : elle ne peut pas être publiée.",
+    'business.publish.cause.SIGNATURES_REQUIRED':
+        "Tous les signataires requis n'ont pas signé à l'étape Revue.",
+    'business.publish.cause.STAFF_RELEASE_REQUIRED':
+        "L'équipe Rozine n'a pas encore autorisé cette demande.",
+    'business.publish.cause.TERMS_CHANGED':
+        'Les conditions ont changé depuis votre signature.',
+    'business.publish.cause.FEE_DISCLOSURE_CHANGED':
+        "L'information sur les frais de publication a changé. Lisez la version actuelle avant de publier.",
+    'business.publish.cause.QUOTE_STALE': "Votre offre n'est plus à jour.",
+    'business.publish.cause.RESTRICTION_ACTIVE':
+        "Une restriction s'applique à cette entreprise.",
     'business.publish.cause.other':
         "Une vérification de libération n'a pas abouti.",
     'business.publish.prerequisites': 'Avant de publier',
