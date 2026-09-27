@@ -171,7 +171,7 @@
                 "method": "get"
             },
             "operation": {
-                "url": "/investor/primary-operations/{request_id}",
+                "url": "/preview/investor/primary-operations/{request_id}",
                 "method": "get"
             }
         }

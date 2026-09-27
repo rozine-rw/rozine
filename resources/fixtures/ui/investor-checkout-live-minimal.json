@@ -115,13 +115,13 @@
                 "method": "get"
             },
             "operation": {
-                "url": "/investor/primary-operations/{request_id}",
+                "url": "/preview/investor/primary-operations/{request_id}",
                 "method": "get"
             }
         },
         "actions": {
             "reserve": {
-                "url": "/investor/deals/01k6r4m2n6p8q0r2s4t6v8w0x2/reservations",
+                "url": "/preview/investor/deals/01k6r4m2n6p8q0r2s4t6v8w0x2/reservations",
                 "method": "post"
             },
             "confirm": null,
