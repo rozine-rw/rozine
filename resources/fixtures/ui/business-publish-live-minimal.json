@@ -48,7 +48,7 @@
         "allowed_actions": [],
         "actions": {
             "publish": {
-                "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications/01k6p4c8s3d0f4g9h2j6k1m7n3/publish",
+                "url": "/preview/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications/01k6p4c8s3d0f4g9h2j6k1m7n3/publish",
                 "method": "post"
             }
         },
@@ -58,7 +58,7 @@
                 "method": "get"
             },
             "operation": {
-                "url": "/business/campaign-operations/{request_id}",
+                "url": "/preview/business/campaign-operations/{request_id}",
                 "method": "get"
             },
             "review": null

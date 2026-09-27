@@ -396,7 +396,8 @@ export function PillTabs({
     tabs: {
         key: string;
         label: string;
-        count: number;
+        /** Null when the server states no count: the tab shows its label alone. */
+        count: number | null;
         link: RouteLink;
         active: boolean;
     }[];
@@ -418,7 +419,13 @@ export function PillTabs({
                             : 'border-rz-hairline bg-rz-surface text-rz-slate',
                     )}
                 >
-                    {tab.label} <span className="opacity-70">{tab.count}</span>
+                    {tab.label}
+                    {tab.count !== null && (
+                        <>
+                            {' '}
+                            <span className="opacity-70">{tab.count}</span>
+                        </>
+                    )}
                 </Link>
             ))}
         </nav>

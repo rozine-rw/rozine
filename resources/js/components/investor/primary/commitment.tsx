@@ -1,5 +1,9 @@
 import { Link } from '@inertiajs/react';
 import {
+    EarningsFeeNote,
+    earningsFeeLabel,
+} from '@/components/investor/primary/earnings-fee';
+import {
     formatOrdinals,
     RightsTable,
 } from '@/components/investor/primary/rights';
@@ -128,32 +132,35 @@ function ReceiptRows({ title, receipt }: { title: string; receipt: Receipt }) {
  */
 export function CommitmentCard({ commitment }: { commitment: Commitment }) {
     const { t } = useTranslation();
-    const rows = [
+    const rows: [string, string][] = [
         [
-            'investor.primary.units',
+            t('investor.primary.units'),
             t('investor.primary.units_value', {
                 count: Number(commitment.units),
                 ordinals: formatOrdinals(commitment.ordinals),
             }),
         ],
-        ['investor.primary.principal', formatRwf(commitment.principal)],
+        [t('investor.primary.principal'), formatRwf(commitment.principal)],
         [
-            'investor.primary.terms',
+            t('investor.primary.terms'),
             t('investor.checkout.deal_line', {
                 rate: commitment.terms.rate_pct,
                 count: commitment.terms.term_months,
             }),
         ],
         [
-            'investor.checkout.payout_fee',
+            earningsFeeLabel(t, commitment.terms.earnings_fee),
             formatRwf(commitment.terms.payout_fee),
         ],
-        ['investor.primary.maturity', t('investor.primary.maturity_at_issue')],
         [
-            'investor.primary.versions',
+            t('investor.primary.maturity'),
+            t('investor.primary.maturity_at_issue'),
+        ],
+        [
+            t('investor.primary.versions'),
             `${commitment.terms.policy_version} · ${commitment.terms.disclosure_version}`,
         ],
-    ] as const;
+    ];
 
     return (
         <div>
@@ -183,13 +190,14 @@ export function CommitmentCard({ commitment }: { commitment: Commitment }) {
                                 'border-b border-[#eef2f9] dark:border-rz-divider',
                         )}
                     >
-                        <dt className="text-rz-secondary">{t(label)}</dt>
+                        <dt className="text-rz-secondary">{label}</dt>
                         <dd className="text-right font-semibold break-words text-rz-ink">
                             {value}
                         </dd>
                     </div>
                 ))}
             </dl>
+            <EarningsFeeNote className="mt-1.5" />
             <RightsTable rights={commitment.rights} className="mt-3" />
             <ReceiptRows
                 title={t('investor.primary.receipt.confirmation')}

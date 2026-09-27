@@ -108,13 +108,13 @@
                 "method": "get"
             },
             "operation": {
-                "url": "/investor/wallet-operations/{request_id}",
+                "url": "/preview/investor/wallet-operations/{request_id}",
                 "method": "get"
             }
         },
         "actions": {
             "deposit": {
-                "url": "/investor/wallet/deposits",
+                "url": "/preview/investor/wallet/deposits",
                 "method": "post"
             }
         }

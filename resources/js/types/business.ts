@@ -1250,7 +1250,7 @@ export type CampaignProgress =
 
 export type BusinessCampaignProps = Omit<
     BusinessNoteProps,
-    'note' | 'links'
+    'home' | 'note' | 'links'
 > & {
     contract_version: 'business-campaign-v1';
     identity_context_revision: number;
@@ -1265,6 +1265,14 @@ export type BusinessCampaignProps = Omit<
         progress: CampaignProgress;
     };
     links: { close: RouteLink; operation: RouteLink };
+    /**
+     * Home, drawn beneath the sheet on a wide screen; null when the server sends no Home (the
+     * live Business Home is the application directory, not the preview dashboard), in which case
+     * the sheet opens over an empty backdrop with no stand-in balances.
+     */
+    home: BusinessHomeProps | null;
+    /** The shell's navigation for this page, read instead of `home.links`. */
+    shell_links: BusinessShellLinks;
     actions: { cancel: RouteAction | null };
     preview_outcome?: C3PreviewOutcome<'campaign.cancel'>;
 };
