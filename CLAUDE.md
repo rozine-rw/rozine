@@ -120,7 +120,10 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Work is promoted `feat/*` → `dev` → `uat` → `main`. Branch new work off `dev`, never off `main`.
 - `uat` auto-deploys to staging.rozine.rw and `main` auto-deploys to rozine.rw, so a change reaching `main` is in production.
 - Never open a pull request from a feature branch straight to `main`, and never merge to `main` before the same commits have run on `uat`. "Ship it to main" means promote it through the chain, not retarget the PR.
-- Each hop is its own pull request, and each waits for its checks before merging.
+- Each hop is its own pull request.
+- **Into `dev`:** a PR merges once its fast checks are green (TypeScript/React quality gate, deployment-admission and PHP negative-control groups), its own tests pass locally, and it has had its one review at the exact head. It does not wait for the full PHP coverage gate or the PostgreSQL concurrency lane; those run on the `dev` push. `dev` deploys nowhere.
+- **If a `dev` push run fails,** the author of the breaking change fixes forward immediately, and nothing is promoted from `dev` while it is red.
+- **Into `uat` and `main`:** the PR waits for every check, and deployment admission still requires the complete non-TIA evidence for the exact candidate before staging or production deploys.
 
 - Laravel can be deployed using [Laravel Cloud](https://cloud.laravel.com/), which is the fastest way to deploy and scale production Laravel applications.
 
