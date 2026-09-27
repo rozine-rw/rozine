@@ -65,9 +65,17 @@ export default function BusinessPublish({
         allowed: allowed_actions,
         preview: preview_outcome,
     });
+    /** Leads back to Review only while the server reports the quote or terms as changed. */
+    const signAgain =
+        links.review !== null &&
+        prerequisites.some(
+            (step) =>
+                (step.key === 'quote_current' ||
+                    step.key === 'terms_current') &&
+                !step.met,
+        );
     const canPublish =
-        links.review === null &&
-        allowed_actions.includes('application.publish');
+        !signAgain && allowed_actions.includes('application.publish');
 
     const publish = () => {
         command.send('application.publish', {
@@ -252,7 +260,7 @@ export default function BusinessPublish({
 
                     <C3Notice command={command} className="mt-4" />
 
-                    {links.review !== null ? (
+                    {signAgain && links.review !== null ? (
                         <>
                             <p
                                 role="status"
