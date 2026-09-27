@@ -4,15 +4,29 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Business\ListStaffApplications;
 use App\Application\Business\ManageBusinessCampaigns;
+use App\Http\Requests\Business\ListStaffApplicationsRequest;
 use App\Http\Requests\Business\ReleaseApplicationRequest;
 use App\Http\Resources\OperationResource;
 use App\Http\Resources\StaffApplicationReleaseResource;
+use App\Http\Resources\StaffApplicationsResource;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class StaffApplicationReleaseController extends Controller
 {
     public function __construct(private ManageBusinessCampaigns $campaigns) {}
+
+    public function index(ListStaffApplicationsRequest $request, ListStaffApplications $action): StaffApplicationsResource|Response
+    {
+        $resource = new StaffApplicationsResource($action->handle((int) $request->user()?->getAuthIdentifier(),
+            (string) $request->validated('tab', 'pending'), trim((string) $request->validated('search', '')),
+            $request->validated('before'), (int) $request->validated('limit', 20), $request->validated('application')));
+
+        return $request->routeIs('api.*') ? $resource : Inertia::render('admin/applications', $resource->resolve($request));
+    }
 
     public function show(Request $request): StaffApplicationReleaseResource
     {

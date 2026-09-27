@@ -116,6 +116,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('v1/auditor')->name
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->group(function (): void {
     Route::get('v1/staff/application-operations/{request_id}', [StaffApplicationReleaseController::class, 'operation'])
         ->whereUuid('request_id')->name('api.v1.staff.applications.operations.show');
+    Route::get('v1/staff/applications', [StaffApplicationReleaseController::class, 'index'])->name('api.v1.staff.applications.index');
     Route::get('v1/staff/applications/{application}', [StaffApplicationReleaseController::class, 'show'])
         ->whereUlid('application')->name('api.v1.staff.applications.show');
     Route::post('v1/staff/applications/{application}/release', [StaffApplicationReleaseController::class, 'release'])
