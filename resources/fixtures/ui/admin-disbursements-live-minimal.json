@@ -131,27 +131,27 @@
             "allowed_actions": [],
             "actions": {
                 "authorize": {
-                    "url": "/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/authorize",
+                    "url": "/preview/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/authorize",
                     "method": "post"
                 },
                 "approve": {
-                    "url": "/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/approve",
+                    "url": "/preview/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/approve",
                     "method": "post"
                 },
                 "reject": {
-                    "url": "/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/reject",
+                    "url": "/preview/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/reject",
                     "method": "post"
                 },
                 "hold": {
-                    "url": "/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/hold",
+                    "url": "/preview/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/hold",
                     "method": "post"
                 },
                 "release_hold": {
-                    "url": "/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/release-hold",
+                    "url": "/preview/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/release-hold",
                     "method": "post"
                 },
                 "requery": {
-                    "url": "/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/requery",
+                    "url": "/preview/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/requery",
                     "method": "post"
                 }
             },
@@ -162,7 +162,7 @@
                 },
                 "ledger": null,
                 "operation": {
-                    "url": "/admin/disbursements/operations/{request_id}",
+                    "url": "/preview/admin/disbursements/operations/{request_id}",
                     "method": "get"
                 }
             }

@@ -65,7 +65,7 @@
                 "method": "get"
             },
             "operation": {
-                "url": "/business/campaign-operations/{request_id}",
+                "url": "/preview/business/campaign-operations/{request_id}",
                 "method": "get"
             }
         },

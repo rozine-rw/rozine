@@ -375,7 +375,7 @@ describe('Underwriting review', () => {
             await user.click(confirm);
             expect(inertia.posts).toEqual([
                 {
-                    url: `/admin/applications/APP-20250091/${action}`,
+                    url: `/preview/admin/applications/APP-20250091/${action}`,
                     data: { reason: 'Because.' },
                 },
             ]);

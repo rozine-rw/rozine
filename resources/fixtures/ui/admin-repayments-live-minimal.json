@@ -176,7 +176,7 @@
                 },
                 "ledger": null,
                 "operation": {
-                    "url": "/admin/repayments/operations/{request_id}",
+                    "url": "/preview/admin/repayments/operations/{request_id}",
                     "method": "get"
                 },
                 "business": null

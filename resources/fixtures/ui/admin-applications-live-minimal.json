@@ -112,7 +112,7 @@
         "stage": null,
         "links": {
             "operation": {
-                "url": "/admin/applications/operations/{request_id}",
+                "url": "/preview/admin/applications/operations/{request_id}",
                 "method": "get"
             }
         }
