@@ -105,6 +105,35 @@ describe('Publish before staff release', () => {
         ).not.toBeInTheDocument();
     });
 
+    it.each([
+        [
+            'EXPOSURE_RESERVATION_REQUIRED',
+            "No borrowing reservation is on record for this application, so it can't be listed.",
+        ],
+        [
+            'SIGNATURES_REQUIRED',
+            'Not every required signatory has signed at Review.',
+        ],
+        [
+            'STAFF_RELEASE_REQUIRED',
+            "Rozine staff haven't released this application yet.",
+        ],
+        ['TERMS_CHANGED', 'The terms changed since you signed.'],
+        [
+            'FEE_DISCLOSURE_CHANGED',
+            'The listing fee disclosure changed. Read the current one before you publish.',
+        ],
+        ['QUOTE_STALE', 'Your quote is no longer current.'],
+        ['RESTRICTION_ACTIVE', 'A restriction applies to this business.'],
+    ])('explains the S3-A cause %s', (cause, text) => {
+        const page = props(refusedFixture);
+
+        page.release.causes = [cause];
+        renderWithUser(<BusinessPublish {...page} />);
+
+        expect(within(sheet()).getByText(text)).toBeInTheDocument();
+    });
+
     it('shows a recorded not-released refusal from the server', () => {
         renderWithUser(<BusinessPublish {...props(notReleasedFixture)} />);
 

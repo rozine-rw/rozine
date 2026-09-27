@@ -3173,6 +3173,16 @@ const en = {
         "This isn't available yet: a required policy hasn't been set.",
     'settlement.refusal.DEPOSIT_METHOD_UNVERIFIED':
         "That account isn't verified for deposits yet.",
+    'settlement.refusal.EXPOSURE_RESERVATION_REQUIRED':
+        "No borrowing reservation is on record for this application, so it can't be listed.",
+    'settlement.refusal.SIGNATURES_REQUIRED':
+        'Not every required signatory has signed at Review.',
+    'settlement.refusal.STAFF_RELEASE_REQUIRED':
+        "Rozine staff haven't released this application yet.",
+    'settlement.refusal.TERMS_CHANGED': 'The terms changed since you signed.',
+    'settlement.refusal.FEE_DISCLOSURE_CHANGED':
+        'The listing fee disclosure changed. Read the current one before you publish.',
+    'settlement.refusal.QUOTE_STALE': 'Your quote is no longer current.',
     'settlement.refusal.APPLICATION_NOT_RELEASED':
         "This application hasn't been released for listing yet.",
     'settlement.refusal.DISBURSEMENT_IN_FLIGHT':
@@ -3266,6 +3276,19 @@ const en = {
         "The company's signing authority changed since you signed.",
     'business.publish.cause.REPORT_NOT_CURRENT':
         'The audit report is no longer current.',
+    'business.publish.cause.EXPOSURE_RESERVATION_REQUIRED':
+        "No borrowing reservation is on record for this application, so it can't be listed.",
+    'business.publish.cause.SIGNATURES_REQUIRED':
+        'Not every required signatory has signed at Review.',
+    'business.publish.cause.STAFF_RELEASE_REQUIRED':
+        "Rozine staff haven't released this application yet.",
+    'business.publish.cause.TERMS_CHANGED':
+        'The terms changed since you signed.',
+    'business.publish.cause.FEE_DISCLOSURE_CHANGED':
+        'The listing fee disclosure changed. Read the current one before you publish.',
+    'business.publish.cause.QUOTE_STALE': 'Your quote is no longer current.',
+    'business.publish.cause.RESTRICTION_ACTIVE':
+        'A restriction applies to this business.',
     'business.publish.cause.other': "A release check didn't pass.",
     'business.publish.prerequisites': 'Before you publish',
     'business.publish.prerequisite.staff_release':
