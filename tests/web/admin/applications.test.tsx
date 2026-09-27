@@ -733,11 +733,10 @@ describe('The live staff applications index (#147)', () => {
             within(rows[0]).queryByRole('progressbar'),
         ).not.toBeInTheDocument();
         expect(
-            within(rows[0]).getByText('Needs review').closest('[title]'),
-        ).toHaveAttribute(
-            'title',
-            'Current release review required: a retained quote is not a current approval. Check the release gates below.',
-        );
+            within(rows[0]).getByTitle(
+                'Current release review required: a retained quote is not a current approval. Check the release gates below.',
+            ),
+        ).toHaveTextContent('Needs review');
     });
 
     it('opens the review with only what the server sources', () => {
@@ -749,7 +748,9 @@ describe('The live staff applications index (#147)', () => {
                 'Current release review required: a retained quote is not a current approval. Check the release gates below.',
             ),
         ).toBeInTheDocument();
-        expect(drawer.querySelector('#review-audit-block')).toBeNull();
+        expect(
+            within(drawer).queryByText(/Listing audit (missing|in progress)/u),
+        ).not.toBeInTheDocument();
         expect(
             within(drawer).queryByRole('region', { name: 'Evidence factors' }),
         ).not.toBeInTheDocument();
