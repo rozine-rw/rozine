@@ -90,7 +90,7 @@ export function useC3Command<Name extends string>({
         initial: seedFromPreview(preview),
         refresh: () => reloadPreservingState(scope),
         onCompleted: (_sent, resource) => {
-            if (resource.data === null) {
+            if (resource.data === null || resource.data.next === null) {
                 void reloadPreservingState(scope);
 
                 return;

@@ -3335,6 +3335,10 @@ const fr: Catalog = {
     'settlement.refusal.FEE_DISCLOSURE_CHANGED':
         "L'information sur les frais de publication a changé. Lisez la version actuelle avant de publier.",
     'settlement.refusal.QUOTE_STALE': "Votre offre n'est plus à jour.",
+    'settlement.refusal.APPLICATION_ALREADY_RELEASED':
+        'Cette demande a déjà été autorisée.',
+    'settlement.refusal.LISTING_ALREADY_PUBLISHED':
+        'Cette offre est déjà publiée.',
     'settlement.refusal.APPLICATION_NOT_RELEASED':
         "Cette demande n'a pas encore été autorisée à la publication.",
     'settlement.refusal.DISBURSEMENT_IN_FLIGHT':

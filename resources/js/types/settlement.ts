@@ -79,7 +79,8 @@ export type C3OperationData<R, C> = {
     receipt: R;
     /** Freshly authorized; null when the actor may no longer read the record. */
     current: C | null;
-    next: RouteLink;
+    /** Where to go next; null when the receipt and `current` already describe the result (#96). */
+    next: RouteLink | null;
 };
 
 /**

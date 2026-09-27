@@ -196,6 +196,44 @@ describe('Publishing a released application', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('refreshes in place when the server names no next page', async () => {
+        inertia.queue.push(
+            answers({
+                ...operation({ code: 'LISTING_PUBLISHED' }),
+                data: { next: null },
+            }),
+        );
+        const { user } = renderWithUser(
+            <BusinessPublish {...props(releasedFixture)} />,
+        );
+
+        await user.click(
+            within(sheet()).getByRole('button', { name: 'Publish' }),
+        );
+
+        await waitFor(() => expect(inertia.reloads).toHaveLength(1));
+        expect(inertia.visits).toEqual([]);
+    });
+
+    it.each([
+        [
+            'APPLICATION_ALREADY_RELEASED',
+            'This application has already been released.',
+        ],
+        ['LISTING_ALREADY_PUBLISHED', 'This listing is already published.'],
+    ])('explains a %s refusal', async (code, text) => {
+        inertia.queue.push(fails(409, { code }));
+        const { user } = renderWithUser(
+            <BusinessPublish {...props(releasedFixture)} />,
+        );
+
+        await user.click(
+            within(sheet()).getByRole('button', { name: 'Publish' }),
+        );
+
+        expect(await within(sheet()).findByText(text)).toBeInTheDocument();
+    });
+
     it('shows the publish in flight', async () => {
         const { user } = renderWithUser(
             <BusinessPublish {...props(releasedFixture)} />,
