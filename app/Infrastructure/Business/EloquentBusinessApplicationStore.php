@@ -89,11 +89,12 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
      * @template TResult
      *
      * @param  Closure(array<string, mixed>): TResult  $operation
+     * @param  Closure(string): void|null  $passedGate
      * @return TResult
      */
-    public function withReleaseInput(string $businessId, string $applicationId, Closure $operation): mixed
+    public function withReleaseInput(string $businessId, string $applicationId, Closure $operation, ?Closure $passedGate = null): mixed
     {
-        return $this->statements->withSystemVerification($businessId, function (array $business, ?array $verification) use ($applicationId, $operation): mixed {
+        return $this->statements->withSystemVerification($businessId, function (array $business, ?array $verification) use ($applicationId, $operation, $passedGate): mixed {
             $application = $this->application($business['id'], $applicationId);
             if ($application->status !== 'submitted') {
                 throw new CommandRejection('APPLICATION_NOT_SUBMITTED', revision: $application->revision);
@@ -116,7 +117,10 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
                 throw new CommandRejection('AUTHORITY_CHANGED', revision: $application->revision);
             }
 
-            return $this->creditFacts->withCurrent($business['id'], function (?array $credit) use ($business, $verification, $application, $binding, $submitted, $reservation, $operation): mixed {
+            return $this->creditFacts->withCurrent($business['id'], function (?array $credit) use ($business, $verification, $application, $binding, $submitted, $reservation, $operation, $passedGate): mixed {
+                if ($credit['facts']['restriction_active'] ?? false) {
+                    throw new CommandRejection('RESTRICTION_ACTIVE', revision: $application->revision);
+                }
                 $quote = $this->currentQuote($application, $business, $verification, $credit, $reservation->id);
                 if ($quote === null) {
                     throw new CommandRejection('QUOTE_STALE', revision: $application->revision);
@@ -136,18 +140,49 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
                     throw new CommandRejection('ENGINE_GATE_FAILED', 422, $application->revision);
                 }
 
-                return $this->consents->handle(function (?array $release) use ($business, $verification, $application, $binding, $submitted, $reservation, $quote, $operation): mixed {
+                $passedGate?->__invoke('engine');
+
+                return $this->consents->handle(function (?array $release) use ($business, $verification, $application, $binding, $submitted, $reservation, $quote, $operation, $passedGate): mixed {
                     if ($release === null || $this->json->encode($release) !== $this->json->encode($submitted['agreement']['release'])) {
                         throw new CommandRejection('TERMS_CHANGED', revision: $application->revision);
                     }
 
+                    $passedGate?->__invoke('authority');
+
                     return $this->publishedReports->withPublishedApplication($business, $verification, $binding,
-                        fn (array $report): mixed => $operation(['business' => $business, 'application' => $this->snapshot($application),
-                            'binding' => $binding, 'reservation_id' => $reservation->id, 'principal' => $reservation->principal,
-                            'quote' => $this->projectQuote($quote), 'agreement_sha256' => $submitted['binding_sha256'],
-                            'review' => $submitted['review'], 'public_evidence' => $submitted['public_evidence'], 'report' => $report]));
+                        function (array $report) use ($business, $application, $binding, $reservation, $quote, $submitted, $operation, $passedGate): mixed {
+                            $passedGate?->__invoke('report');
+
+                            return $operation(['business' => $business, 'application' => $this->snapshot($application),
+                                'binding' => $binding, 'reservation_id' => $reservation->id, 'principal' => $reservation->principal,
+                                'quote' => $this->projectQuote($quote), 'agreement_sha256' => $submitted['binding_sha256'],
+                                'review' => $submitted['review'], 'public_evidence' => $submitted['public_evidence'], 'report' => $report]);
+                        });
                 });
             });
+        });
+    }
+
+    /** @return array{signatures_retained: bool, quote_current: bool, terms_current: bool} */
+    public function publicationPrerequisites(string $businessId, string $applicationId): array
+    {
+        return $this->statements->withSystemVerification($businessId, function (array $business, ?array $verification) use ($applicationId): array {
+            $application = $this->application($business['id'], $applicationId);
+            if ($application->status !== 'submitted') {
+                return ['signatures_retained' => false, 'quote_current' => false, 'terms_current' => false];
+            }
+            $binding = $this->auditBinding($application);
+            $submitted = $this->submittedSnapshot($application);
+            $quote = BusinessApplicationQuote::query()->findOrFail($binding['quote']['id']);
+            $signatures = $this->signatures($application, $quote, $submitted['binding_sha256']);
+            $retained = array_map(fn (BusinessApplicationSignature $signature): array => ['id' => $signature->id, 'sha256' => $signature->sha256], $signatures);
+
+            return ['signatures_retained' => $retained === $submitted['signatures']
+                && array_column($signatures, 'actor_party_id') === $business['mandate']['required_signatories'],
+                'quote_current' => $this->creditFacts->withCurrent($business['id'],
+                    fn (?array $credit): bool => $this->currentQuote($application, $business, $verification, $credit, $submitted['submission_id']) !== null),
+                'terms_current' => $this->consents->handle(fn (?array $release): bool => $release !== null
+                    && $this->json->encode($release) === $this->json->encode($submitted['agreement']['release']))];
         });
     }
 

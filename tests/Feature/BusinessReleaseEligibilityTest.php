@@ -39,5 +39,5 @@ it('refuses a fresh restriction after the acceptance and report publication', fu
     $facts['restriction_active'] = true;
     BusinessCreditFactsFixture::record($fixture['audit']['staff'], $fixture['audit']['business'], 1, facts: $facts);
     expect(fn () => app(AcceptedApplicationStore::class)->withReleaseInput($fixture['audit']['business'], $fixture['application']->id, fn (array $input): array => $input))
-        ->toThrow(CommandRejection::class, 'QUOTE_STALE');
+        ->toThrow(CommandRejection::class, 'RESTRICTION_ACTIVE');
 });

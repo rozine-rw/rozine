@@ -223,30 +223,46 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
     /** @return array<string, mixed> */
     private function page(BusinessApplication $application): array
     {
+        $submission = BusinessApplicationSubmission::query()->where('business_application_id', $application->id)->whereKey($application->current_submission_id)->first();
+        if ($submission !== null && $this->hash($submission->payload) !== $submission->sha256) {
+            throw new RuntimeException('APPLICATION_SUBMISSION_INTEGRITY_FAILED');
+        }
         $release = $this->releaseRecord($application);
         $campaign = BusinessCampaign::query()->where('business_application_id', $application->id)->first();
         $cause = null;
+        $gates = array_fill_keys(['engine', 'authority', 'report'], 'RELEASE_CHECK_NOT_COMPLETED');
+        $prerequisites = ['signatures_retained' => false, 'quote_current' => false, 'terms_current' => false];
         try {
             $this->accepted->withReleaseInput($application->business_id, $application->id, function (array $input) use ($release): void {
                 if ($release !== null && $this->json->encode($release->payload['binding']) !== $this->json->encode($this->binding($input))) {
                     throw new CommandRejection('STAFF_RELEASE_REQUIRED');
                 }
+            }, function (string $gate) use (&$gates): void {
+                $gates[$gate] = null;
             });
         } catch (CommandRejection $failure) {
             $cause = $failure->reason;
+            $gate = match ($cause) {
+                'REPORT_NOT_CURRENT' => 'report',
+                'AUTHORITY_CHANGED', 'SIGNATURES_REQUIRED', 'TERMS_CHANGED', 'STAFF_RELEASE_REQUIRED' => 'authority',
+                default => 'engine',
+            };
+            $gates[$gate] = $cause;
         } catch (IdentityViolation) {
             $cause = 'AUTHORITY_CHANGED';
+            $gates['authority'] = $cause;
         }
-        $submission = BusinessApplicationSubmission::query()->where('business_application_id', $application->id)->whereKey($application->current_submission_id)->first();
-        if ($submission !== null && $this->hash($submission->payload) !== $submission->sha256) {
-            throw new RuntimeException('APPLICATION_SUBMISSION_INTEGRITY_FAILED');
+        try {
+            $prerequisites = $this->accepted->publicationPrerequisites($application->business_id, $application->id);
+        } catch (IdentityViolation) {
+            $gates['authority'] = 'AUTHORITY_CHANGED';
         }
 
         return ['application' => ['id' => $application->id, 'business_id' => $application->business_id, 'revision' => $application->revision,
             'title' => $application->draft['title'], 'draft' => $application->draft], 'review' => $submission?->payload['review'],
             'public_evidence' => $submission?->payload['public_evidence'], 'submitted_at' => $submission?->payload['submitted_at'],
             'fee_disclosure' => ['version' => self::FEE_VERSION, 'text' => 'The listing fee is waived for the MVP. You pay RWF 0 to publish.'],
-            'cause' => $cause, 'release' => $release === null ? null : $this->receipt($release->id, $release->payload, 'APPLICATION_RELEASED'),
+            'cause' => $cause, 'gates' => $gates, 'prerequisites' => $prerequisites, 'release' => $release === null ? null : $this->receipt($release->id, $release->payload, 'APPLICATION_RELEASED'),
             'listing' => $campaign === null ? null : ['id' => $campaign->id, 'receipt' => $this->receipt($campaign->id, $this->campaignPayload($campaign), 'LISTING_PUBLISHED')]];
     }
 

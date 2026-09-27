@@ -57,8 +57,8 @@ it('rechecks current credit after staff release and retains the release receipt'
     $facts = BusinessCreditFactsFixture::facts();
     $facts['restriction_active'] = true;
     BusinessCreditFactsFixture::record($this->fixture['audit']['staff'], $this->fixture['audit']['business'], 1, facts: $facts);
-    expect(($this->publish)()['code'])->toBe('QUOTE_STALE')->and(($this->release)($request))->toBe($released)
-        ->and($this->store->staffPage($this->fixture['audit']['staff']->id, $this->fixture['application']->id)['cause'])->toBe('QUOTE_STALE')
+    expect(($this->publish)()['code'])->toBe('RESTRICTION_ACTIVE')->and(($this->release)($request))->toBe($released)
+        ->and($this->store->staffPage($this->fixture['audit']['staff']->id, $this->fixture['application']->id)['cause'])->toBe('RESTRICTION_ACTIVE')
         ->and(BusinessCampaign::query()->count())->toBe(0);
 });
 
