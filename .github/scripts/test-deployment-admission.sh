@@ -38,7 +38,9 @@ while [ $# -gt 0 ]; do
 done
 case "$path" in
   *git/ref/heads/*) body="$(cat "$FIXTURES/ref.json")" ;;
-  *actions/workflows/*) body="$(cat "$FIXTURES/runs.json")" ;;
+  *actions/workflows/*)
+    [[ "$path" == *'event=push&branch=main&per_page=100'* ]] || exit 64
+    body="$(cat "$FIXTURES/runs.json")" ;;
   *actions/runs/*/jobs*) body="$(cat "$FIXTURES/jobs.json")" ;;
   *commits/*/pulls) body="$(cat "$FIXTURES/pulls.json")" ;;
   *pulls/*/reviews*) body="$(cat "$FIXTURES/reviews.json")" ;;
@@ -52,7 +54,11 @@ chmod +x "${WORKDIR}/bin/gh"
 fixtures() { FIXTURES="${WORKDIR}/fx"; rm -rf "${FIXTURES}"; mkdir -p "${FIXTURES}"; export FIXTURES; }
 
 write_ref()  { echo "{\"object\":{\"sha\":\"$1\"}}" > "${FIXTURES}/ref.json"; }
-write_runs() { echo "{\"workflow_runs\":[{\"id\":99,\"status\":\"$1\",\"conclusion\":$2,\"created_at\":\"2026-09-06T10:00:00Z\"}]}" > "${FIXTURES}/runs.json"; }
+write_runs() {
+  cat > "${FIXTURES}/runs.json" <<JSON
+{"workflow_runs":[{"id":99,"status":"$1","conclusion":$2,"created_at":"2026-09-06T10:00:00Z","event":"push","head_branch":"main","head_sha":"${GOOD_SHA}"}]}
+JSON
+}
 write_jobs() {
   echo "{\"jobs\":[{\"name\":\"PHP 8.5 quality gate\",\"conclusion\":\"$1\"},
                    {\"name\":\"TypeScript/React quality gate\",\"conclusion\":\"$2\"},
@@ -122,6 +128,26 @@ check "refuses an in-progress evidence run" refuse "timed out"
 
 baseline; echo '{"workflow_runs":[]}' > "${FIXTURES}/runs.json"
 check "refuses a candidate with no evidence run at all" refuse "timed out"
+
+baseline
+jq '.workflow_runs[0].event = "pull_request"' "${FIXTURES}/runs.json" > "${FIXTURES}/changed.json"
+mv "${FIXTURES}/changed.json" "${FIXTURES}/runs.json"
+check "refuses PR evidence whose API head SHA is not its tested merge" refuse "timed out"
+
+baseline
+jq '.workflow_runs[0].head_branch = "dev"' "${FIXTURES}/runs.json" > "${FIXTURES}/changed.json"
+mv "${FIXTURES}/changed.json" "${FIXTURES}/runs.json"
+check "refuses push evidence from another branch" refuse "timed out"
+
+baseline
+jq --arg sha "${OLD_SHA}" '.workflow_runs[0].head_sha = $sha' "${FIXTURES}/runs.json" > "${FIXTURES}/changed.json"
+mv "${FIXTURES}/changed.json" "${FIXTURES}/runs.json"
+check "refuses push evidence for another candidate" refuse "timed out"
+
+baseline
+jq '.workflow_runs += [(.workflow_runs[0] | .id = 100 | .event = "pull_request" | .created_at = "2026-09-06T12:00:00Z")]' "${FIXTURES}/runs.json" > "${FIXTURES}/changed.json"
+mv "${FIXTURES}/changed.json" "${FIXTURES}/runs.json"
+check "keeps exact push evidence when a newer PR run exists" admit "run 99 succeeded"
 
 baseline; write_jobs skipped success
 check "refuses a skipped required job inside a green run" refuse "'PHP 8.5 quality gate' is 'skipped'"

@@ -11,8 +11,37 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: tests-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  plan:
+    name: Select CI scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    outputs:
+      full: ${{ steps.scope.outputs.full }}
+      source_run: ${{ steps.scope.outputs.source_run }}
+    steps:
+      - name: Checkout proposed merge or pushed commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Reuse only successful evidence for an identical dev tree
+        id: scope
+        env:
+          GH_TOKEN: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' && github.token || '' }}
+        run: python3 .github/scripts/select-ci-mode.py
+
   ci:
+    needs: plan
+    if: ${{ needs.plan.outputs.full == 'true' }}
     name: PHP ${{ matrix.php-version }} quality gate
     runs-on: ubuntu-latest
 
@@ -43,7 +72,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
 
       - name: Provision isolated PostgreSQL databases
         env:
@@ -117,6 +146,8 @@ jobs:
           retention-days: 30
 
   web:
+    needs: plan
+    if: ${{ needs.plan.outputs.full == 'true' }}
     name: TypeScript/React quality gate
     runs-on: ubuntu-latest
 
@@ -126,7 +157,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
 
       - name: Setup PHP for Wayfinder generation
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
@@ -163,7 +194,7 @@ jobs:
       - name: Resolve immutable coverage comparison
         env:
           EVENT_NAME: ${{ github.event_name }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          HEAD_SHA: ${{ github.sha }}
           PR_TARGET_SHA: ${{ github.event.pull_request.base.sha }}
           PUSH_TARGET_SHA: ${{ github.event.before }}
         run: |
@@ -209,6 +240,8 @@ jobs:
           retention-days: 30
 
   concurrency:
+    needs: plan
+    if: ${{ needs.plan.outputs.full == 'true' }}
     name: PostgreSQL concurrency lane
     runs-on: ubuntu-latest
 
@@ -232,7 +265,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
 
       - name: Provision isolated PostgreSQL databases
         env:
@@ -309,9 +342,16 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
-  negative-controls:
-    name: PHP gate negative controls
+  negative-control-groups:
+    needs: plan
+    if: ${{ needs.plan.outputs.full == 'true' }}
+    name: PHP negative controls (${{ matrix.group }})
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [architecture, business, auditor, coverage]
 
     services:
       postgres:
@@ -333,7 +373,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
 
       - name: Provision isolated PostgreSQL databases
         env:
@@ -348,10 +388,9 @@ jobs:
         with:
           php-version: '8.5'
           tools: composer:v2
-          # The coverage control needs a driver; without one it skips, and a
-          # skipped control is not evidence that the coverage gate can go red.
+          # Only the isolated coverage probe needs instrumentation.
           extensions: pdo_pgsql, pgsql, pcntl, posix
-          coverage: xdebug
+          coverage: ${{ matrix.group == 'coverage' && 'xdebug' || 'none' }}
 
       - name: Install PHP dependencies from lock file
         run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
@@ -362,8 +401,10 @@ jobs:
       - name: Generate application key
         run: php artisan key:generate
 
-      - name: Prove each PHP gate rejects the violation it exists to catch
-        run: bash scripts/quality/verify-negative-controls.sh
+      - name: Prove this group rejects the violations it exists to catch
+        env:
+          CONTROL_GROUP: ${{ matrix.group }}
+        run: bash scripts/quality/verify-negative-controls.sh --group "$CONTROL_GROUP"
 
       - name: Confirm no planted violation survived the run
         run: |
@@ -373,7 +414,26 @@ jobs:
             exit 1
           fi
 
+  negative-controls:
+    name: PHP gate negative controls
+    needs: [plan, negative-control-groups]
+    if: ${{ always() && needs.plan.outputs.full == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Require every isolated control group to succeed
+        env:
+          GROUP_RESULT: ${{ needs.negative-control-groups.result }}
+        run: bash scripts/quality/require-php-controls.sh "$GROUP_RESULT"
+
   admission:
+    needs: plan
+    if: ${{ needs.plan.outputs.full == 'true' }}
     name: Deployment admission negative controls
     runs-on: ubuntu-latest
 
@@ -382,7 +442,126 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
 
       - name: Prove the D-68 gate refuses every unevidenced candidate
         run: bash .github/scripts/test-deployment-admission.sh
+
+  tested-tree:
+    name: Record tested PR tree
+    needs: [ci, web, concurrency, negative-controls, admission]
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tested merge commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Record immutable evidence after every full gate succeeds
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          mkdir -p ci-evidence
+          jq -n --arg repository "$GITHUB_REPOSITORY" --arg pull_number "$PR_NUMBER" \
+            --arg head_sha "$PR_HEAD" --arg tested_sha "$(git rev-parse HEAD)" \
+            --arg tree_sha "$(git rev-parse 'HEAD^{tree}')" \
+            --arg run_id "$GITHUB_RUN_ID" --arg run_attempt "$GITHUB_RUN_ATTEMPT" \
+            '{schema: 1, repository: $repository, pull_number: $pull_number,
+              head_sha: $head_sha, tested_sha: $tested_sha, tree_sha: $tree_sha,
+              run_id: $run_id, run_attempt: $run_attempt}' > ci-evidence/tested-tree.json
+      - name: Save the successful PR tree for dev integration
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: tested-pr-tree-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ci-evidence/tested-tree.json
+          if-no-files-found: error
+          retention-days: 30
+
+  dev-smoke:
+    name: Dev post-merge smoke
+    needs: plan
+    if: ${{ needs.plan.outputs.full == 'false' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Provision isolated PostgreSQL databases
+        env:
+          PGHOST: 127.0.0.1
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: postgres
+        run: psql -X -v ON_ERROR_STOP=1 -f .github/scripts/prepare-test-databases.sql
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+          extensions: pdo_pgsql, pgsql, pcntl, posix
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.15.0'
+          cache: npm
+
+      - name: Pin npm
+        run: |
+          npm install --global npm@10.9.8
+          test "$(npm --version)" = "10.9.8"
+
+      - name: Install Node dependencies from lock file
+        run: npm ci
+
+      - name: Install PHP dependencies from lock file
+        run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Copy environment file
+        run: cp .env.example .env
+
+      - name: Generate application key
+        run: php artisan key:generate
+
+      - name: Run database migrations
+        env:
+          DB_PASSWORD: rozine
+        run: php artisan migrate --force
+
+      - name: Build production assets
+        run: npm run build
+
+      - name: Check application boot, authentication and role homes
+        run: php artisan test --compact --no-tia tests/Feature/ExampleTest.php tests/Feature/DashboardTest.php tests/Feature/RoleHomeAndBookmarkTest.php
+
+      - name: Confirm generated client routes match the server
+        run: npm run generated:check
+
+      - name: Record reused full-suite evidence
+        env:
+          SOURCE_RUN: ${{ needs.plan.outputs.source_run }}
+        run: echo "Full checks passed for this exact file tree in PR run $SOURCE_RUN. Post-merge build and smoke checks passed." >> "$GITHUB_STEP_SUMMARY"
