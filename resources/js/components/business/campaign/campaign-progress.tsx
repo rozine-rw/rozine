@@ -370,6 +370,9 @@ function Closed({
     progress: Phase<'expired' | 'cancelled' | 'failed_closing'>;
 }) {
     const { t, locale } = useTranslation();
+    /* A raise that closed before anyone committed has nothing to refund, and says so. */
+    const nobody =
+        progress.investors === 0 && progress.committed_refunded.amount === '0';
 
     return (
         <>
@@ -384,10 +387,13 @@ function Closed({
                 />
             </div>
             <Notice tone="amber">
-                {t(`business.campaign.closed.${progress.phase}`, {
-                    date: formatDate(progress.closed_at, locale),
-                    amount: formatRwf(progress.committed_refunded),
-                })}
+                {t(
+                    `business.campaign.closed.${progress.phase}${nobody ? '_none' : ''}`,
+                    {
+                        date: formatDate(progress.closed_at, locale),
+                        amount: formatRwf(progress.committed_refunded),
+                    },
+                )}
             </Notice>
         </>
     );

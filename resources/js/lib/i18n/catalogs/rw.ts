@@ -3523,6 +3523,12 @@ const rw: Catalog = {
         'Iki gikorwa cyo gukusanya cyahagaritswe ku wa {date}. {amount} byasubijwe abashoramari byose, nta kiguzi.',
     'business.campaign.closed.failed_closing':
         'Iki gikorwa cyo gukusanya ntikyashoboye kurangira: igenzura ryo mbere yo kohereza amafaranga ryananiranye ku wa {date}. {amount} byasubijwe abashoramari byose, nta kiguzi.',
+    'business.campaign.closed.expired_none':
+        'Iki gikorwa cyo gukusanya cyafunzwe ku wa {date} nta mushoramari urashyiramo amafaranga, bityo nta cyo gusubizwa cyari gihari.',
+    'business.campaign.closed.cancelled_none':
+        'Iki gikorwa cyo gukusanya cyahagaritswe ku wa {date} nta mushoramari urashyiramo amafaranga, bityo nta cyo gusubizwa cyari gihari.',
+    'business.campaign.closed.failed_closing_none':
+        'Iki gikorwa ntikyashoboye gufungwa: igenzura mbere yo kohereza amafaranga ryananiranye ku wa {date}. Nta mushoramari wari washyizemo amafaranga, bityo nta cyo gusubizwa cyari gihari.',
     'business.campaign.cancel.open': 'Hagarika iki gikorwa cyo gukusanya',
     'business.campaign.cancel.cancelling': 'Birahagarikwa…',
     'business.campaign.cancel.title': 'Uhagarike iki gikorwa cyo gukusanya?',

@@ -24,6 +24,7 @@ import type {
 } from '@/types/business';
 import cancelRefusedFixture from '../../../resources/fixtures/ui/business-campaign-cancel-refused.json';
 import cancelUnconfirmedFixture from '../../../resources/fixtures/ui/business-campaign-cancel-unconfirmed.json';
+import cancelledEmptyFixture from '../../../resources/fixtures/ui/business-campaign-cancelled-empty.json';
 import cancelledFixture from '../../../resources/fixtures/ui/business-campaign-cancelled.json';
 import disbursedFixture from '../../../resources/fixtures/ui/business-campaign-disbursed.json';
 import expiredFixture from '../../../resources/fixtures/ui/business-campaign-expired.json';
@@ -597,6 +598,34 @@ describe('A closed campaign', () => {
             ).not.toBeInTheDocument();
         },
     );
+});
+
+describe('A raise closed before anyone committed', () => {
+    it.each([
+        [
+            'cancelled',
+            'This raise was cancelled on 18 Sept 2026 before any investor committed, so there was nothing to refund.',
+        ],
+        [
+            'expired',
+            'This raise closed on 18 Sept 2026 before any investor committed, so there was nothing to refund.',
+        ],
+        [
+            'failed_closing',
+            "This raise couldn't close: a check before disbursement failed on 18 Sept 2026. No investor had committed, so there was nothing to refund.",
+        ],
+    ] as const)('says there was nothing to refund when %s', (phase, notice) => {
+        const page = props(cancelledEmptyFixture);
+
+        (page.note.progress as { phase: string }).phase = phase;
+        renderWithUser(<BusinessCampaign {...page} />);
+        const view = within(campaignSheet());
+
+        expect(view.getByRole('status')).toHaveTextContent(notice);
+        expect(
+            view.queryByText(/went back to investors/u),
+        ).not.toBeInTheDocument();
+    });
 });
 
 describe('The live-minimal campaign', () => {
