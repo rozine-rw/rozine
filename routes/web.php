@@ -135,6 +135,7 @@ require __DIR__.'/preview.php';
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->group(function (): void {
     Route::get('admin/application-operations/{request_id}', [StaffApplicationReleaseController::class, 'operation'])
         ->whereUuid('request_id')->name('staff.applications.operations.show');
+    Route::get('admin/applications', [StaffApplicationReleaseController::class, 'index'])->name('staff.applications.index');
     Route::get('admin/applications/{application}', [StaffApplicationReleaseController::class, 'show'])
         ->whereUlid('application')->name('staff.applications.show');
     Route::post('admin/applications/{application}/release', [StaffApplicationReleaseController::class, 'release'])
