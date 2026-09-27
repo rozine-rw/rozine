@@ -7,11 +7,6 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PROBE="$(mktemp -d "${ROOT}/storage/framework/cache/coverage-control.XXXXXX")"
 trap 'rm -rf "${PROBE}"' EXIT
 
-php -d pcov.enabled=1 -r 'require $argv[1]."/vendor/autoload.php"; exit(\Pest\Support\Coverage::isAvailable() ? 0 : 1);' "${ROOT}" || {
-  echo 'coverage control requires an active coverage driver' >&2
-  exit 1
-}
-
 php /dev/stdin "${ROOT}" "${PROBE}" <<'PHP'
 <?php
 
@@ -32,7 +27,8 @@ if ($source === null || $directories->length !== 1 || trim($directories->item(0)
 $composer = json_decode(file_get_contents($root.'/composer.json'), true, flags: JSON_THROW_ON_ERROR);
 $commands = $composer['scripts']['test:php:coverage'];
 $gate = array_values(array_filter($commands, fn (string $command): bool => str_contains($command, 'vendor/bin/pest')));
-if (count($gate) !== 1 || ! str_contains($gate[0], '--coverage --min=100') || ! str_contains($gate[0], '--no-tia')) {
+if ($gate !== ['@php vendor/bin/pest --ci --no-tia --coverage --min=100 --coverage-clover=coverage/php/clover.xml --compact']
+    || $composer['scripts']['ci:check:php'] !== ['@ci:check:php:static', '@test:php:coverage']) {
     throw new RuntimeException('The authoritative Pest gate must retain full non-TIA coverage with --min=100.');
 }
 mkdir($probe.'/app/Support', 0700, true);
@@ -49,6 +45,11 @@ $suite->appendChild($config->createElement('directory', 'tests'));
 $phpunit->appendChild($config->importNode($source, true));
 $config->save($probe.'/phpunit.xml');
 PHP
+
+php -d pcov.enabled=1 -r 'require $argv[1]."/vendor/autoload.php"; exit(\Pest\Support\Coverage::isAvailable() ? 0 : 1);' "${ROOT}" || {
+  echo 'coverage control requires an active coverage driver' >&2
+  exit 1
+}
 
 cat > "${PROBE}/app/Support/Covered.php" <<'PHP'
 <?php

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 
@@ -63,3 +64,29 @@ it('proves the coverage control or fails closed when a driver is unavailable', f
             ->and($process->getErrorOutput())->toContain('coverage control requires an active coverage driver');
     }
 });
+
+it('rejects coverage command bypasses and a disconnected authoritative gate', function (string $change): void {
+    $root = dirname(__DIR__, 2);
+    $temporary = sys_get_temp_dir().'/rozine-coverage-config-'.bin2hex(random_bytes(8));
+    mkdir($temporary.'/scripts/quality', 0700, true);
+    mkdir($temporary.'/storage/framework/cache', 0700, true);
+    copy($root.'/scripts/quality/verify-php-coverage-control.sh', $temporary.'/scripts/quality/verify-php-coverage-control.sh');
+    copy($root.'/phpunit.xml', $temporary.'/phpunit.xml');
+    $composer = (new Filesystem)->json($root.'/composer.json');
+    if ($change === 'suppressed failure') {
+        $composer['scripts']['test:php:coverage'][1] .= ' || true';
+    } elseif ($change === 'weaker threshold') {
+        $composer['scripts']['test:php:coverage'][1] = str_replace('--min=100', '--min=90', $composer['scripts']['test:php:coverage'][1]);
+    } else {
+        $composer['scripts']['ci:check:php'] = ['@ci:check:php:static'];
+    }
+    file_put_contents($temporary.'/composer.json', json_encode($composer, JSON_THROW_ON_ERROR));
+    try {
+        $process = new Process(['bash', 'scripts/quality/verify-php-coverage-control.sh'], $temporary);
+        $process->run();
+        expect($process->isSuccessful())->toBeFalse()
+            ->and($process->getOutput().$process->getErrorOutput())->toContain('The authoritative Pest gate must retain full non-TIA coverage with --min=100.');
+    } finally {
+        (new Filesystem)->deleteDirectory($temporary);
+    }
+})->with(['suppressed failure', 'weaker threshold', 'disconnected command']);

@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: tests-${{ github.event.pull_request.number || github.ref }}
+  group: tests-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
       - name: Reuse only successful evidence for an identical dev tree
         id: scope
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' && github.token || '' }}
         run: python3 .github/scripts/select-ci-mode.py
 
   ci:

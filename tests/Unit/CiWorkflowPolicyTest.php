@@ -25,6 +25,8 @@ beforeEach(function (): void {
         'runs' => [['workflow_runs' => [['id' => 99, 'run_attempt' => 2, 'status' => 'completed',
             'conclusion' => 'success', 'event' => 'pull_request', 'head_sha' => str_repeat('a', 40)]]]],
         'jobs' => array_map(fn (array $chunk): array => ['jobs' => array_map(fn (string $name): array => ['name' => $name, 'conclusion' => 'success'], $chunk)], array_chunk($names, 3)),
+        'commit' => ['sha' => str_repeat('b', 40), 'tree' => ['sha' => trim($tree->getOutput())],
+            'parents' => [['sha' => str_repeat('d', 40)], ['sha' => str_repeat('a', 40)]]],
         'evidence' => ['schema' => 1, 'repository' => 'rozine-rw/rozine', 'pull_number' => '42',
             'head_sha' => str_repeat('a', 40), 'tested_sha' => str_repeat('b', 40),
             'tree_sha' => trim($tree->getOutput()), 'run_id' => '99', 'run_attempt' => '2'],
@@ -45,8 +47,11 @@ if args[:2] == ['run', 'download']:
     destination = Path(args[args.index('--dir') + 1]) / 'tested-tree.json'
     destination.write_text('invalid' if fixtures.get('malformed_artifact') else json.dumps(fixtures['evidence']))
 else:
-    assert '--paginate' in args and '--slurp' in args
     endpoint = args[-1]
+    if '/git/commits/' in endpoint:
+        print(json.dumps(fixtures['commit']))
+        sys.exit(0)
+    assert '--paginate' in args and '--slurp' in args
     if '/commits/' in endpoint:
         key = 'pulls'
     elif '/actions/workflows/tests.yml/runs?' in endpoint:
@@ -109,6 +114,10 @@ it('falls back to full checks when evidence is incomplete or does not match', fu
         'wrong repo' => $this->fixtures['evidence']['repository'] = 'other/repo',
         'missing artifact' => $this->fixtures['missing_artifact'] = true,
         'malformed artifact' => $this->fixtures['malformed_artifact'] = true,
+        'forged artifact tree' => $this->fixtures['commit']['tree']['sha'] = str_repeat('c', 40),
+        'wrong merge parent' => $this->fixtures['commit']['parents'][1]['sha'] = str_repeat('c', 40),
+        'not a merge' => $this->fixtures['commit']['parents'] = [],
+        'non-object artifact' => $this->fixtures['evidence'] = [],
         'API unavailable' => $this->fixtures['api_error'] = true,
         default => throw new InvalidArgumentException('Unknown CI policy scenario: '.$case),
     };
@@ -116,7 +125,7 @@ it('falls back to full checks when evidence is incomplete or does not match', fu
 })->with(['direct push', 'unmerged PR', 'wrong branch', 'wrong merge', 'missing run', 'failed run',
     'running', 'wrong run head', 'push run', 'missing job', 'skipped job', 'cancelled group',
     'different tree', 'wrong attempt', 'wrong PR', 'wrong head', 'wrong repo', 'missing artifact',
-    'malformed artifact', 'API unavailable']);
+    'malformed artifact', 'forged artifact tree', 'wrong merge parent', 'not a merge', 'non-object artifact', 'API unavailable']);
 
 it('does not reuse an earlier successful run when the latest run failed', function (): void {
     $latest = $this->fixtures['runs'][0]['workflow_runs'][0];
@@ -128,7 +137,9 @@ it('does not reuse an earlier successful run when the latest run failed', functi
 
 it('tests immutable proposed merges and preserves deployment gates', function (): void {
     $workflow = Yaml::parseFile($this->root.'/.github/workflows/tests.yml');
-    expect($workflow['on']['push']['branches'])->toBe(['dev', 'uat', 'main']);
+    expect($workflow['on']['push']['branches'])->toBe(['dev', 'uat', 'main'])
+        ->and($workflow['concurrency']['group'])->toBe('tests-${{ github.event.pull_request.number || github.run_id }}')
+        ->and($workflow['jobs']['plan']['steps'][1]['env']['GH_TOKEN'])->toBe("\${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' && github.token || '' }}");
     foreach ($workflow['jobs'] as $job) {
         foreach ($job['steps'] as $step) {
             if (str_starts_with($step['uses'] ?? '', 'actions/checkout@')) {

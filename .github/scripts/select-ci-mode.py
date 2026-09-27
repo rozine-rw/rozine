@@ -59,6 +59,20 @@ def reusable_run():
         command("gh", "run", "download", str(run_id), "--repo", repository,
                 "--name", f"tested-pr-tree-{run_id}-{attempt}", "--dir", directory)
         evidence = json.loads((Path(directory) / "tested-tree.json").read_text())
+    if not isinstance(evidence, dict):
+        raise ValueError("PR evidence must be a JSON object")
+    tested = evidence.get("tested_sha", "")
+    if not isinstance(tested, str) or not re.fullmatch(r"[0-9a-f]{40}", tested):
+        raise ValueError("PR evidence has no immutable tested commit")
+    commit = json.loads(command("gh", "api", f"repos/{repository}/git/commits/{tested}"))
+    if not isinstance(commit, dict) or commit.get("sha") != tested:
+        raise ValueError("tested commit is unavailable from the repository")
+    parents = commit["parents"]
+    if len(parents) != 2 or parents[1]["sha"] != head:
+        raise ValueError("tested commit is not a proposed merge of this PR head")
+    candidate_tree = command("git", "rev-parse", "HEAD^{tree}")
+    if commit["tree"]["sha"] != candidate_tree:
+        raise ValueError("GitHub's tested commit tree differs from the dev tree")
     expected = {
         "schema": 1,
         "repository": repository,
@@ -66,9 +80,9 @@ def reusable_run():
         "head_sha": head,
         "run_id": str(run_id),
         "run_attempt": str(attempt),
-        "tree_sha": command("git", "rev-parse", "HEAD^{tree}"),
+        "tree_sha": candidate_tree,
     }
-    if any(evidence.get(key) != value for key, value in expected.items()) or not re.fullmatch(r"[0-9a-f]{40}", evidence.get("tested_sha", "")):
+    if any(evidence.get(key) != value for key, value in expected.items()):
         raise ValueError("PR evidence does not identify this exact merged tree")
     return run_id
 
@@ -78,7 +92,7 @@ def main():
     if os.environ.get("GITHUB_EVENT_NAME") == "push" and os.environ.get("GITHUB_REF") == "refs/heads/dev":
         try:
             source_run = reusable_run()
-        except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError) as error:
+        except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError, IndexError) as error:
             print(f"Full checks required: {error}")
     full = "true" if source_run is None else "false"
     with open(os.environ["GITHUB_OUTPUT"], "a") as output:

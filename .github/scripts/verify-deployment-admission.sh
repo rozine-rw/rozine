@@ -83,8 +83,8 @@ run_conclusion=""
 
 while :; do
   run_json="$(gh api \
-    "repos/${GITHUB_REPOSITORY}/actions/workflows/${EVIDENCE_WORKFLOW}/runs?head_sha=${CANDIDATE_SHA}&per_page=100" \
-    --jq '[.workflow_runs[] | {id, status, conclusion, created_at}] | sort_by(.created_at) | last // empty')"
+    "repos/${GITHUB_REPOSITORY}/actions/workflows/${EVIDENCE_WORKFLOW}/runs?head_sha=${CANDIDATE_SHA}&event=push&branch=${TARGET_BRANCH}&per_page=100" \
+    --jq "[.workflow_runs[] | select(.event == \"push\" and .head_branch == \"${TARGET_BRANCH}\" and .head_sha == \"${CANDIDATE_SHA}\") | {id, status, conclusion, created_at}] | sort_by(.created_at) | last // empty")"
 
   if [ -z "${run_json}" ]; then
     status_line="no run yet"
