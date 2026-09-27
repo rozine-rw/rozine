@@ -200,6 +200,22 @@ describe('Publishing a released application', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('still offers Publish when every prerequisite is met, even if a Review link is sent', () => {
+        const page = props(releasedFixture);
+
+        page.links.review = {
+            url: '/preview/business-apply-review',
+            method: 'get',
+        };
+        renderWithUser(<BusinessPublish {...page} />);
+        const view = within(sheet());
+
+        expect(view.getByRole('button', { name: 'Publish' })).toBeEnabled();
+        expect(
+            view.queryByRole('link', { name: 'Review and sign again' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('refreshes in place when the server names no next page', async () => {
         inertia.queue.push(
             answers({
