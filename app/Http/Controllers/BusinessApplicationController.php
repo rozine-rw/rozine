@@ -97,6 +97,10 @@ class BusinessApplicationController extends Controller
         $result = $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
             (string) $request->validated('command'), (string) $request->route('request_id'));
 
+        if ($request->validated('command') === 'campaign.cancel') {
+            return $publications->presentCancellation($request, $result);
+        }
+
         return $request->validated('command') === 'application.publish' ? $publications->present($request, $result) : $this->present($request, $result);
     }
 

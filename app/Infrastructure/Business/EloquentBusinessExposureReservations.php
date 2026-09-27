@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Business;
 
 use App\Application\Business\Contracts\BusinessExposureStore;
+use App\Application\Business\Contracts\CampaignClosureEvidence;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Underwriting\ExactFinancialValue;
@@ -20,7 +21,7 @@ use RuntimeException;
 /** @phpstan-import-type Commitment from \App\Domain\Underwriting\AcceptedExposure */
 final class EloquentBusinessExposureReservations implements BusinessExposureStore
 {
-    public function __construct(private CanonicalJson $json) {}
+    public function __construct(private CanonicalJson $json, private CampaignClosureEvidence $closures) {}
 
     /**
      * Internal source read; the enclosing application command retains the Business lock
@@ -33,8 +34,10 @@ final class EloquentBusinessExposureReservations implements BusinessExposureStor
         return DB::transaction(function () use ($businessId): array {
             BusinessProfile::query()->lockForUpdate()->findOrFail($businessId);
 
+            $released = $this->closures->released($businessId);
+
             return array_values(BusinessExposureReservation::query()->where('business_id', $businessId)->orderBy('id')->get()
-                ->map(function (BusinessExposureReservation $record): array {
+                ->map(function (BusinessExposureReservation $record) use ($released): ?array {
                     $payload = $record->payload;
                     if (! hash_equals($record->sha256, hash('sha256', $this->json->encode($payload)))
                         || $payload['reservation_id'] !== $record->id || $payload['business_id'] !== $record->business_id
@@ -44,8 +47,17 @@ final class EloquentBusinessExposureReservations implements BusinessExposureStor
                         throw new RuntimeException('BUSINESS_EXPOSURE_INTEGRITY_FAILED');
                     }
 
+                    $principalReleased = $released[$record->id] ?? null;
+                    if ($principalReleased !== null) {
+                        if ($principalReleased !== $record->principal) {
+                            throw new RuntimeException('CAMPAIGN_CLOSURE_INTEGRITY_FAILED');
+                        }
+
+                        return null;
+                    }
+
                     return ['id' => $record->id, 'principal' => $record->principal];
-                })->all());
+                })->filter()->all());
         });
     }
 

@@ -146,4 +146,6 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
         ->whereUlid(['business', 'application'])->name('business.applications.publish');
     Route::get('business/{business}/campaigns/{campaign}', [BusinessPublicationController::class, 'campaign'])
         ->whereUlid(['business', 'campaign'])->name('business.campaigns.show');
+    Route::post('business/{business}/campaigns/{campaign}/cancel', [BusinessPublicationController::class, 'cancel'])
+        ->whereUlid(['business', 'campaign'])->name('business.campaigns.cancel');
 });

@@ -26,4 +26,12 @@ interface BusinessCampaignStore
 
     /** @return array<string, mixed> */
     public function findPublication(int $userId, int $contextRevision, string $requestId): array;
+
+    /** @return array<string, mixed> */
+    public function cancel(int $userId, int $contextRevision, string $businessId, string $campaignId, int $expectedRevision, ?string $reason, string $requestId): array;
+
+    /** @return array<string, mixed> */
+    public function findCancellation(int $userId, int $contextRevision, string $requestId): array;
+
+    public function expireDue(int $limit): int;
 }

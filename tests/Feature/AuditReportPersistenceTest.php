@@ -204,6 +204,8 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $monthlyReview = require database_path('migrations/2026_09_26_103442_add_monthly_audit_review_policy.php');
     $exposure = require database_path('migrations/2026_09_26_190340_create_business_exposure_reservations_table.php');
     $campaigns = require database_path('migrations/2026_09_27_054238_create_business_application_releases_and_campaigns.php');
+    $closures = require database_path('migrations/2026_09_27_230946_create_business_campaign_closures_table.php');
+    $closures->down();
     $campaigns->down();
     $exposure->down();
     $monthlyReview->down();
@@ -230,6 +232,7 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $monthlyReview->up();
     $exposure->up();
     $campaigns->up();
+    $closures->up();
     expect(Schema::hasTable('audit_reports'))->toBeTrue()->and(Schema::hasTable('audit_report_versions'))->toBeTrue()
         ->and($fixture['application']->refresh()->getRawOriginal())->toBe($before);
 });

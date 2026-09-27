@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessCampaignStore;
+use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessApplicationSignature;
 use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessCampaign;
+use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessExposureReservation;
 use App\Models\CommandOperation;
 use Illuminate\Database\QueryException;
@@ -130,3 +132,42 @@ it('releases and publishes only once when concurrent staff and Business requests
         ->and(CommandOperation::query()->where('command', 'application.release')->count())->toBe($sameRequest ? 1 : 2)
         ->and(CommandOperation::query()->where('command', 'application.publish')->count())->toBe($sameRequest ? 1 : 2);
 })->with([false, true]);
+
+it('serializes cancellation expiry and retries against a single exposure release', function (string $race): void {
+    $this->freezeSecond();
+    $fixture = AuditSealingFixture::ready();
+    AuditSealingFixture::seal($fixture);
+    AuditSealingFixture::cosign($fixture);
+    $store = app(BusinessCampaignStore::class);
+    $user = $fixture['audit']['authority']['users'][0];
+    $business = $fixture['audit']['business'];
+    $store->release($fixture['audit']['staff']->id, $fixture['application']->id, 0, 'Reviewed.', (string) Str::uuid());
+    $store->publish($user->id, 1, $business, $fixture['application']->id,
+        $fixture['application']->refresh()->revision, 'listing-fee-waiver-1', (string) Str::uuid());
+    $campaign = BusinessCampaign::query()->sole();
+    $request = (string) Str::uuid();
+    $cancel = fn (string $id): Closure => function () use ($user, $business, $campaign, $id): void {
+        $this->travelTo($campaign->expires_at->subSecond());
+        expect(app(BusinessCampaignStore::class)->cancel($user->id, 1, $business, $campaign->id, 1, null, $id)['code'])
+            ->toBeIn(['CAMPAIGN_CANCELLED', 'VERSION_CONFLICT']);
+    };
+    $expire = function () use ($campaign): void {
+        $this->travelTo($campaign->expires_at);
+        expect(app(BusinessCampaignStore::class)->expireDue(100))->toBeIn([0, 1]);
+    };
+    $operations = match ($race) {
+        'same-request' => [$cancel($request), $cancel($request)],
+        'distinct-requests' => [$cancel($request), $cancel((string) Str::uuid())],
+        'cancel-expire' => [$cancel($request), $expire],
+        'two-sweeps' => [$expire, $expire],
+        default => throw new InvalidArgumentException('Unknown race.'),
+    };
+    DB::disconnect();
+    expect(exposureContenders($operations))->toBe([0, 0])
+        ->and(BusinessCampaignClosure::query()->count())->toBe(1)
+        ->and(BusinessExposureReservation::query()->count())->toBe(1)
+        ->and(app(BusinessExposureStore::class)->current($business))->toBe([]);
+    if ($race === 'same-request') {
+        expect(CommandOperation::query()->where('command', 'campaign.cancel')->count())->toBe(1);
+    }
+})->with(['same-request', 'distinct-requests', 'cancel-expire', 'two-sweeps']);
