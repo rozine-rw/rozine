@@ -203,3 +203,18 @@ it('stops at the requested expiry batch size', function (): void {
         ->and($this->store->expireDue(1))->toBe(1)->and(BusinessCampaignClosure::query()->count())->toBe(2)
         ->and($this->store->expireDue(1))->toBe(0);
 });
+
+it('refuses to record a closure receipt if its original exposure no longer matches', function (): void {
+    $reservation = BusinessExposureReservation::query()->sole();
+    $payload = [...$reservation->payload, 'principal' => '3000000'];
+    DB::statement('ALTER TABLE business_exposure_reservations DISABLE TRIGGER business_exposure_reservations_protected');
+    try {
+        $reservation->forceFill(['principal' => '3000000', 'payload' => $payload,
+            'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload))])->save();
+    } finally {
+        DB::statement('ALTER TABLE business_exposure_reservations ENABLE TRIGGER business_exposure_reservations_protected');
+    }
+    expect(fn () => ($this->cancel)())->toThrow(RuntimeException::class, 'CAMPAIGN_EXPOSURE_INTEGRITY_FAILED')
+        ->and(BusinessCampaignClosure::query()->count())->toBe(0)
+        ->and(CommandOperation::query()->where('command', 'campaign.cancel')->count())->toBe(0);
+});

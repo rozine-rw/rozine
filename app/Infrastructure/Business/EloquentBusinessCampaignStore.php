@@ -7,6 +7,7 @@ namespace App\Infrastructure\Business;
 use App\Application\Business\Contracts\AcceptedApplicationStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\Contracts\BusinessCampaignStore;
+use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Business\Contracts\CampaignClosureEvidence;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Identity\AuthorizeStaffPermission;
@@ -33,7 +34,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
 
     public function __construct(private AcceptedApplicationStore $accepted, private BusinessAuthorityStore $businesses,
         private WithBusinessAuthority $authority, private AuthorizeStaffPermission $staff, private IdentityRepository $identities,
-        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures) {}
+        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures) {}
 
     /** @return array<string, mixed> */
     public function release(int $userId, string $applicationId, int $expectedRevision, string $reason, string $requestId): array
@@ -308,6 +309,10 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
      */
     private function close(BusinessCampaign $campaign, string $phase, ?int $userId, ?string $partyId, ?string $operationId, ?string $requestId, ?string $reason): BusinessCampaignClosure
     {
+        $reservation = array_find($this->exposures->current($campaign->business_id), fn (array $entry): bool => $entry['id'] === $campaign->exposure_reservation_id);
+        if ($reservation === null || $reservation['principal'] !== $campaign->principal) {
+            throw new RuntimeException('CAMPAIGN_EXPOSURE_INTEGRITY_FAILED');
+        }
         $closure = new BusinessCampaignClosure;
         $closure->id = (string) Str::ulid();
         $recordedAt = now('UTC')->toImmutable()->startOfSecond();
