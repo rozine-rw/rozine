@@ -65,6 +65,12 @@ describe('Commitment', () => {
         expect(page).toHaveTextContent('PrincipalRWF 30,000');
         expect(page).toHaveTextContent('Terms13.5% return · 6 months');
         expect(page).toHaveTextContent(
+            'Fee on earnings · 10.0% (Standard)RWF 405',
+        );
+        expect(page).toHaveTextContent(
+            'Charged on your return only, never on your principal. This rate is fixed for this note.',
+        );
+        expect(page).toHaveTextContent(
             'Maturity dateSet when notes are issued',
         );
         expect(page).toHaveTextContent(

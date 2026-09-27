@@ -2282,8 +2282,17 @@ const rw: Catalog = {
     'investor.checkout.units_each_other':
         'Impapuro {count} · {price} buri rumwe',
     'investor.checkout.expected_return': 'Inyungu iteganyijwe ({rate}%)',
-    'investor.checkout.payout_fee':
-        'Ikiguzi cyo kwishyura (1% kuri buri kwishyurwa)',
+    'investor.plus.fee': 'Amafaranga ku nyungu',
+    'investor.plus.fee_label': 'Amafaranga ku nyungu · {rate}',
+    'investor.plus.fee_rate': '{rate}% ({tier})',
+    'investor.plus.fee_note':
+        'Akatwa ku nyungu zawe gusa, ntabwo akatwa ku gishoro cyawe. Iki gipimo ntigihinduka kuri uru rupapuro.',
+    'investor.plus.tier.standard': 'Isanzwe',
+    'investor.plus.tier.bronze': 'Umuringa',
+    'investor.plus.tier.silver': 'Ifeza',
+    'investor.plus.tier.gold': 'Zahabu',
+    'investor.plus.tier.platinum': 'Platine',
+    'investor.plus.tier.diamond': 'Diyama',
     'investor.checkout.maturity_value': 'Agaciro ku iherezo · {date}',
     'investor.checkout.pay_with': 'ISHYURA UKORESHEJE',
     'investor.checkout.wallet': 'Ikofi',
@@ -3310,6 +3319,10 @@ const rw: Catalog = {
     'settlement.refusal.FEE_DISCLOSURE_CHANGED':
         'Ibisobanuro ku mafaranga yo gutangaza byarahindutse. Soma ibiriho mbere yo gutangaza.',
     'settlement.refusal.QUOTE_STALE': 'Igiciro wahawe ntikigikurikizwa.',
+    'settlement.refusal.APPLICATION_ALREADY_RELEASED':
+        'Iyi dosiye yamaze kurekurwa.',
+    'settlement.refusal.LISTING_ALREADY_PUBLISHED':
+        'Iki gitangazwa cyamaze gushyirwa ahagaragara.',
     'settlement.refusal.APPLICATION_NOT_RELEASED':
         'Iyi dosiye ntiremererwa gushyirwa ku rutonde.',
     'settlement.refusal.DISBURSEMENT_IN_FLIGHT':
@@ -3419,6 +3432,8 @@ const rw: Catalog = {
     'business.publish.cause.QUOTE_STALE': 'Igiciro wahawe ntikigikurikizwa.',
     'business.publish.cause.RESTRICTION_ACTIVE':
         'Hari ikumira rireba iki kigo.',
+    'business.publish.cause.RELEASE_CHECK_NOT_COMPLETED':
+        'Igenzura rimwe ryo kurekura ntiryarangiye, bityo dosiye ntirashobora kurekurwa.',
     'business.publish.cause.other': 'Igenzura rimwe ryo kurekura ntiryatsinze.',
     'business.publish.prerequisites': 'Mbere yo gutangaza',
     'business.publish.prerequisite.staff_release':
@@ -4137,7 +4152,7 @@ const rw: Catalog = {
     'investor.servicing.payouts.fee_code.INVESTOR_REPAYMENT_FEE':
         'Amafaranga yo kwishyura',
     'investor.servicing.payouts.fee_code.PLUS_EARNINGS_FEE':
-        'Amafaranga ya Plus ku nyungu',
+        'Amafaranga ku nyungu',
     'investor.servicing.payouts.net': 'Ayageze ku gikapu cyawe',
     'investor.servicing.payouts.receipt': 'Inyemezabwishyu {reference}',
     'investor.servicing.exit.title': 'Uburyo bwo gusohoka',

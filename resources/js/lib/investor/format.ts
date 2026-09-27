@@ -1,5 +1,6 @@
 import { formatRwf } from '@/lib/rozine/format';
 import type { Money } from '@/types';
+import type { Bps } from '@/types/settlement';
 
 /**
  * Investor display formatting, exactly as the Investor design writes figures. Presentation only:
@@ -62,3 +63,6 @@ export const intlTag = (locale: string): string =>
 /** A signed one-decimal percentage from the server ("13.3", "-2.0") with its sign: "+13.3%". */
 export const formatSignedPct = (pct: string): string =>
     pct.startsWith('-') ? `${pct}%` : `+${pct}%`;
+
+/** A server rate in basis points as a one-decimal percentage: 1000 → "10.0", 650 → "6.5". */
+export const formatBpsPct = (bps: Bps): string => (bps / 100).toFixed(1);

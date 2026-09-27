@@ -104,7 +104,13 @@
                 "term_months": 6,
                 "payout_fee": {
                     "currency": "RWF",
-                    "amount": "341"
+                    "amount": "405"
+                },
+                "earnings_fee": {
+                    "tier": "standard",
+                    "rate_bps": 1000,
+                    "basis": "return_only",
+                    "policy_version": "synthetic-plus-policy-0"
                 },
                 "policy_version": "synthetic-primary-policy-0",
                 "disclosure_version": "disclosure-2026-09.1"
@@ -171,7 +177,7 @@
                 "method": "get"
             },
             "operation": {
-                "url": "/investor/primary-operations/{request_id}",
+                "url": "/preview/investor/primary-operations/{request_id}",
                 "method": "get"
             }
         }

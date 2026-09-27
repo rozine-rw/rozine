@@ -406,6 +406,7 @@
         "resources/js/components/investor/portfolio/issue-record.tsx",
         "resources/js/components/investor/portfolio/portfolio-insights.tsx",
         "resources/js/components/investor/primary/commitment.tsx",
+        "resources/js/components/investor/primary/earnings-fee.tsx",
         "resources/js/components/investor/primary/rights.tsx",
         "resources/js/components/investor/profile/profile-parts.tsx",
         "resources/js/components/investor/tokens.ts",
@@ -583,10 +584,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 552,
+        "totalTrackedSources": 553,
         "generated": 175,
         "declarationOnly": 18,
-        "authoredExecutable": 359
+        "authoredExecutable": 360
     },
-    "coverageSetSha256": "b929152c69a632db74074e4dfcf5ee8b41eaccbbe537a37512144ba748212d84"
+    "coverageSetSha256": "0895cb5a7b2e677428588af27d7b538b1596ec09e6ae7a22b3cd2070d96d37fb"
 }

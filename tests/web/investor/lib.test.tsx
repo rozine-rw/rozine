@@ -2,6 +2,7 @@ import { act, render, renderHook, screen } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import {
+    formatBpsPct,
     formatCompact,
     formatCompactBare,
     formatSigned,
@@ -39,6 +40,8 @@ describe('Investor formatting', () => {
         expect(isNegative(rwf('0'))).toBe(false);
         expect(formatSignedPct('13.3')).toBe('+13.3%');
         expect(formatSignedPct('-2.0')).toBe('-2.0%');
+        expect(formatBpsPct(1000)).toBe('10.0');
+        expect(formatBpsPct(650)).toBe('6.5');
         expect(intlTag('en')).toBe('en-GB');
         expect(intlTag('fr')).toBe('fr');
     });

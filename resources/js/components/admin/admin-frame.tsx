@@ -7,7 +7,7 @@ import { LogoLockup } from '@/components/rozine/logo';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
-import type { AdminSection, AdminShellProps } from '@/types/admin';
+import type { AdminFrameShellProps, AdminSection } from '@/types/admin';
 
 /** The design's 16px sidebar glyphs (S5233–5257), drawn in `currentColor` at stroke 1.8. */
 const GLYPHS: Record<AdminSection, ReactNode> = {
@@ -109,7 +109,7 @@ const GROUPS: {
     { group: 'console', items: ['staff', 'events'] },
 ];
 
-type AdminFrameProps = AdminShellProps & {
+type AdminFrameProps = AdminFrameShellProps & {
     section: AdminSection;
     /** A drawer over the content column. */
     overlay?: ReactNode;
@@ -155,73 +155,88 @@ export function AdminFrame({
                 aria-label={t('admin.nav.label')}
                 className="rz-scroll min-h-0 flex-1 overflow-y-auto px-3 pt-3.5 pb-[22px]"
             >
-                {GROUPS.map(({ group, items }) => (
-                    <div key={group ?? 'home'}>
-                        {group !== null && (
-                            <div className="px-3 pt-5 pb-[7px] text-[9.5px] font-extrabold tracking-[.15em] text-rz-group uppercase">
-                                {t(`admin.nav.group.${group}`)}
-                            </div>
-                        )}
-                        {items.map((key) => {
-                            const active = key === section;
-                            const badge =
-                                key === 'applications' ||
-                                key === 'disbursements'
-                                    ? badges[key]
-                                    : 0;
+                {GROUPS.map(({ group, items }) => {
+                    /* A live Resource sends only the destinations it serves; a group with none is left out. */
+                    const served = items.flatMap((key) => {
+                        const href = nav[key];
 
-                            return (
-                                <Link
-                                    key={key}
-                                    href={nav[key]}
-                                    aria-current={active ? 'page' : undefined}
-                                    className={cn(
-                                        'relative mb-[3px] flex w-full items-center gap-[11px] rounded-[11px] py-2.5 pr-3 pl-[13px] text-left text-[13.5px] transition-[background,color] duration-100',
-                                        active
-                                            ? 'bg-[linear-gradient(90deg,rgba(30,58,255,.13),rgba(91,43,217,.07))] font-bold text-[#1e3aff] dark:bg-[linear-gradient(90deg,rgba(30,58,255,.32),rgba(30,58,255,.12))] dark:text-white'
-                                            : 'font-medium text-[#8c97ad] hover:bg-[rgba(30,58,255,.04)] dark:text-[#93a1bd]',
-                                    )}
-                                >
-                                    <span
+                        return href === null ? [] : [{ key, href }];
+                    });
+
+                    if (served.length === 0) {
+                        return null;
+                    }
+
+                    return (
+                        <div key={group ?? 'home'}>
+                            {group !== null && (
+                                <div className="px-3 pt-5 pb-[7px] text-[9.5px] font-extrabold tracking-[.15em] text-rz-group uppercase">
+                                    {t(`admin.nav.group.${group}`)}
+                                </div>
+                            )}
+                            {served.map(({ key, href }) => {
+                                const active = key === section;
+                                const badge =
+                                    key === 'applications' ||
+                                    key === 'disbursements'
+                                        ? (badges[key] ?? 0)
+                                        : 0;
+
+                                return (
+                                    <Link
+                                        key={key}
+                                        href={href}
+                                        aria-current={
+                                            active ? 'page' : undefined
+                                        }
                                         className={cn(
-                                            'absolute top-2 bottom-2 left-0 w-[3px] rounded-[3px]',
-                                            active &&
-                                                'bg-[#1e3aff] dark:bg-[#5b74ff]',
-                                        )}
-                                    />
-                                    <span
-                                        className={cn(
-                                            'flex w-[18px] justify-center',
+                                            'relative mb-[3px] flex w-full items-center gap-[11px] rounded-[11px] py-2.5 pr-3 pl-[13px] text-left text-[13.5px] transition-[background,color] duration-100',
                                             active
-                                                ? 'text-[#1e3aff] dark:text-[#99a3ff]'
-                                                : 'text-[#8c97ad] dark:text-[#6b7a99]',
+                                                ? 'bg-[linear-gradient(90deg,rgba(30,58,255,.13),rgba(91,43,217,.07))] font-bold text-[#1e3aff] dark:bg-[linear-gradient(90deg,rgba(30,58,255,.32),rgba(30,58,255,.12))] dark:text-white'
+                                                : 'font-medium text-[#8c97ad] hover:bg-[rgba(30,58,255,.04)] dark:text-[#93a1bd]',
                                         )}
                                     >
-                                        <svg
-                                            width="16"
-                                            height="16"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="1.8"
-                                            aria-hidden
+                                        <span
+                                            className={cn(
+                                                'absolute top-2 bottom-2 left-0 w-[3px] rounded-[3px]',
+                                                active &&
+                                                    'bg-[#1e3aff] dark:bg-[#5b74ff]',
+                                            )}
+                                        />
+                                        <span
+                                            className={cn(
+                                                'flex w-[18px] justify-center',
+                                                active
+                                                    ? 'text-[#1e3aff] dark:text-[#99a3ff]'
+                                                    : 'text-[#8c97ad] dark:text-[#6b7a99]',
+                                            )}
                                         >
-                                            {GLYPHS[key]}
-                                        </svg>
-                                    </span>
-                                    <span className="min-w-0 flex-1 truncate">
-                                        {t(`admin.nav.${key}`)}
-                                    </span>
-                                    {badge > 0 && (
-                                        <span className="rounded-[20px] bg-[#1e3aff] px-[7px] py-0.5 text-[10px] font-semibold text-white dark:bg-[#3d57ff]">
-                                            {badge}
+                                            <svg
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="1.8"
+                                                aria-hidden
+                                            >
+                                                {GLYPHS[key]}
+                                            </svg>
                                         </span>
-                                    )}
-                                </Link>
-                            );
-                        })}
-                    </div>
-                ))}
+                                        <span className="min-w-0 flex-1 truncate">
+                                            {t(`admin.nav.${key}`)}
+                                        </span>
+                                        {badge > 0 && (
+                                            <span className="rounded-[20px] bg-[#1e3aff] px-[7px] py-0.5 text-[10px] font-semibold text-white dark:bg-[#3d57ff]">
+                                                {badge}
+                                            </span>
+                                        )}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    );
+                })}
             </nav>
             <Link
                 href={nav.launcher}

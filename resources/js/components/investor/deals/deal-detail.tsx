@@ -17,6 +17,7 @@ import {
 import { CapNote, canReserve } from '@/components/investor/deals/invest-bar';
 import { useQuotedUnits } from '@/components/investor/deals/use-quote';
 import { UpdateList, UpdateSheet } from '@/components/investor/monthly-updates';
+import { earningsFeeLabel } from '@/components/investor/primary/earnings-fee';
 import {
     ACCENT_FILL,
     accentBanner,
@@ -428,7 +429,9 @@ export function DealDetailPage({
                         </div>
                         <div className="mt-[7px] flex items-center justify-between">
                             <span className="text-xs text-rz-slate">
-                                {t('investor.checkout.payout_fee')}
+                                {current === null
+                                    ? t('investor.plus.fee')
+                                    : earningsFeeLabel(t, current.earnings_fee)}
                             </span>
                             <span className="text-xs font-semibold text-rz-ink tabular-nums">
                                 {current === null

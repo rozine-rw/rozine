@@ -22,6 +22,7 @@ const RELEASE_CAUSES = [
     'FEE_DISCLOSURE_CHANGED',
     'QUOTE_STALE',
     'RESTRICTION_ACTIVE',
+    'RELEASE_CHECK_NOT_COMPLETED',
 ] as const;
 
 type ReleaseCause = (typeof RELEASE_CAUSES)[number];

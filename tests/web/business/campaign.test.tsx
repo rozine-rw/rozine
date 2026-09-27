@@ -616,6 +616,51 @@ describe('The live-minimal campaign', () => {
             view.queryByRole('button', { name: 'Cancel this raise' }),
         ).not.toBeInTheDocument();
     });
+
+    it('opens over an empty backdrop without Home, with the shell from shell_links', () => {
+        const page = props(liveMinimalFixture);
+
+        expect(page.home).toBeNull();
+        renderWithUser(<BusinessCampaign {...page} />);
+
+        expect(campaignSheet()).toBeInTheDocument();
+        expect(screen.queryByText('GreenLeaf Agro')).not.toBeInTheDocument();
+
+        const nav = screen.getByRole('navigation', { name: 'App navigation' });
+
+        expect(within(nav).getByRole('link', { name: 'Home' })).toHaveAttribute(
+            'href',
+            '/business',
+        );
+        expect(
+            within(nav).queryByRole('link', { name: 'Reports' }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(nav).queryByRole('link', { name: 'Profile' }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Launcher' })).toHaveAttribute(
+            'href',
+            '/dashboard',
+        );
+    });
+
+    it('draws Home beneath the sheet but reads its navigation from shell_links', () => {
+        const page = props(liveFixture);
+
+        page.shell_links = { ...page.shell_links, profile: null };
+        renderWithUser(<BusinessCampaign {...page} />);
+
+        expect(screen.getAllByText('GreenLeaf Agro').length).toBeGreaterThan(0);
+
+        const nav = screen.getByRole('navigation', { name: 'App navigation' });
+
+        expect(
+            within(nav).getByRole('link', { name: 'Reports' }),
+        ).toHaveAttribute('href', '/preview/business-reports');
+        expect(
+            within(nav).queryByRole('link', { name: 'Profile' }),
+        ).not.toBeInTheDocument();
+    });
 });
 
 const v2Props = (fixture: { props: unknown }) =>

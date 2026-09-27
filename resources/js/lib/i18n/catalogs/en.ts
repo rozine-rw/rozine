@@ -2225,7 +2225,17 @@ const en = {
     'investor.checkout.units_each_one': '{count} note · {price} each',
     'investor.checkout.units_each_other': '{count} notes · {price} each',
     'investor.checkout.expected_return': 'Expected return ({rate}%)',
-    'investor.checkout.payout_fee': 'Repayment fee (1% per payout)',
+    'investor.plus.fee': 'Fee on earnings',
+    'investor.plus.fee_label': 'Fee on earnings · {rate}',
+    'investor.plus.fee_rate': '{rate}% ({tier})',
+    'investor.plus.fee_note':
+        'Charged on your return only, never on your principal. This rate is fixed for this note.',
+    'investor.plus.tier.standard': 'Standard',
+    'investor.plus.tier.bronze': 'Bronze',
+    'investor.plus.tier.silver': 'Silver',
+    'investor.plus.tier.gold': 'Gold',
+    'investor.plus.tier.platinum': 'Platinum',
+    'investor.plus.tier.diamond': 'Diamond',
     'investor.checkout.maturity_value': 'Maturity value · {date}',
     'investor.checkout.pay_with': 'PAY WITH',
     'investor.checkout.wallet': 'Wallet',
@@ -3183,6 +3193,10 @@ const en = {
     'settlement.refusal.FEE_DISCLOSURE_CHANGED':
         'The listing fee disclosure changed. Read the current one before you publish.',
     'settlement.refusal.QUOTE_STALE': 'Your quote is no longer current.',
+    'settlement.refusal.APPLICATION_ALREADY_RELEASED':
+        'This application has already been released.',
+    'settlement.refusal.LISTING_ALREADY_PUBLISHED':
+        'This listing is already published.',
     'settlement.refusal.APPLICATION_NOT_RELEASED':
         "This application hasn't been released for listing yet.",
     'settlement.refusal.DISBURSEMENT_IN_FLIGHT':
@@ -3289,6 +3303,8 @@ const en = {
     'business.publish.cause.QUOTE_STALE': 'Your quote is no longer current.',
     'business.publish.cause.RESTRICTION_ACTIVE':
         'A restriction applies to this business.',
+    'business.publish.cause.RELEASE_CHECK_NOT_COMPLETED':
+        "A release check couldn't be completed, so the application can't be released yet.",
     'business.publish.cause.other': "A release check didn't pass.",
     'business.publish.prerequisites': 'Before you publish',
     'business.publish.prerequisite.staff_release':
@@ -4032,8 +4048,7 @@ const en = {
     'investor.servicing.payouts.fee': '{name} ({rate}%)',
     'investor.servicing.payouts.fee_code.INVESTOR_REPAYMENT_FEE':
         'Repayment fee',
-    'investor.servicing.payouts.fee_code.PLUS_EARNINGS_FEE':
-        'Plus earnings fee',
+    'investor.servicing.payouts.fee_code.PLUS_EARNINGS_FEE': 'Fee on earnings',
     'investor.servicing.payouts.net': 'Net to your wallet',
     'investor.servicing.payouts.receipt': 'Receipt {reference}',
     'investor.servicing.exit.title': 'Exit options',

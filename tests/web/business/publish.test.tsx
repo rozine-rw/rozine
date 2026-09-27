@@ -125,6 +125,10 @@ describe('Publish before staff release', () => {
         ],
         ['QUOTE_STALE', 'Your quote is no longer current.'],
         ['RESTRICTION_ACTIVE', 'A restriction applies to this business.'],
+        [
+            'RELEASE_CHECK_NOT_COMPLETED',
+            "A release check couldn't be completed, so the application can't be released yet.",
+        ],
     ])('explains the S3-A cause %s', (cause, text) => {
         const page = props(refusedFixture);
 
@@ -194,6 +198,44 @@ describe('Publishing a released application', () => {
         expect(
             screen.queryByText('Listed for investors'),
         ).not.toBeInTheDocument();
+    });
+
+    it('refreshes in place when the server names no next page', async () => {
+        inertia.queue.push(
+            answers({
+                ...operation({ code: 'LISTING_PUBLISHED' }),
+                data: { next: null },
+            }),
+        );
+        const { user } = renderWithUser(
+            <BusinessPublish {...props(releasedFixture)} />,
+        );
+
+        await user.click(
+            within(sheet()).getByRole('button', { name: 'Publish' }),
+        );
+
+        await waitFor(() => expect(inertia.reloads).toHaveLength(1));
+        expect(inertia.visits).toEqual([]);
+    });
+
+    it.each([
+        [
+            'APPLICATION_ALREADY_RELEASED',
+            'This application has already been released.',
+        ],
+        ['LISTING_ALREADY_PUBLISHED', 'This listing is already published.'],
+    ])('explains a %s refusal', async (code, text) => {
+        inertia.queue.push(fails(409, { code }));
+        const { user } = renderWithUser(
+            <BusinessPublish {...props(releasedFixture)} />,
+        );
+
+        await user.click(
+            within(sheet()).getByRole('button', { name: 'Publish' }),
+        );
+
+        expect(await within(sheet()).findByText(text)).toBeInTheDocument();
     });
 
     it('shows the publish in flight', async () => {
