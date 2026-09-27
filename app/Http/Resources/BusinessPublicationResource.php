@@ -37,7 +37,8 @@ class BusinessPublicationResource extends JsonResource
             'allowed_actions' => $allowed ? ['application.publish'] : [],
             'actions' => ['publish' => ['url' => route($prefix.'business.applications.publish', $parameters, false), 'method' => 'post']],
             'links' => ['close' => $home, 'operation' => self::lookup($request, $page['identity_context_revision']),
-                'review' => ['url' => route($prefix.'business.applications.show', $parameters, false), 'method' => 'get']],
+                'review' => $page['prerequisites']['quote_current'] && $page['prerequisites']['terms_current']
+                    ? null : ['url' => route($prefix.'business.applications.show', $parameters, false), 'method' => 'get']],
             'home' => null, 'shell_links' => ['home' => $home, 'launcher' => ['url' => route('dashboard', [], false), 'method' => 'get'], 'reports' => null, 'profile' => null]];
     }
 

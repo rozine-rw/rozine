@@ -36,10 +36,12 @@ class BusinessPublicationController extends Controller
         return $this->present($request, $result);
     }
 
-    public function campaign(ShowApplicationRequest $request): BusinessCampaignResource
+    public function campaign(ShowApplicationRequest $request): Response|BusinessCampaignResource
     {
-        return new BusinessCampaignResource($this->campaigns->campaign((int) $request->user()?->getAuthIdentifier(), $this->context($request),
+        $resource = new BusinessCampaignResource($this->campaigns->campaign((int) $request->user()?->getAuthIdentifier(), $this->context($request),
             (string) $request->route('business'), (string) $request->route('campaign')));
+
+        return $request->routeIs('api.*') ? $resource : Inertia::render('business/campaign', $resource->resolve($request));
     }
 
     /** @param array<string, mixed> $result */

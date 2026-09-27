@@ -38,21 +38,33 @@ it('serves the same authorized release and publication receipts on web and API',
     }
     $url = route($prefix.'business.applications.publish.show', $parameters);
     if ($api) {
-        $this->getJson($url)->assertOk()->assertJsonPath('data.allowed_actions', ['application.publish']);
+        $this->getJson($url)->assertOk()->assertJsonPath('data.allowed_actions', ['application.publish'])->assertJsonPath('data.links.review', null);
     } else {
-        $this->get($url)->assertOk()->assertInertia(fn (Assert $page) => $page->component('business/publish')->where('allowed_actions', ['application.publish'])->where('home', null));
+        $this->get($url)->assertOk()->assertInertia(fn (Assert $page) => $page->component('business/publish')->where('allowed_actions', ['application.publish'])->where('links.review', null)->where('home', null));
     }
     $payload = ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'application_id' => $fixture['application']->id,
         'expected_application_revision' => $fixture['application']->refresh()->revision, 'fee_disclosure_version' => 'listing-fee-waiver-1'];
     $result = $this->postJson(route($prefix.'business.applications.publish', $parameters), $payload)
-        ->assertOk()->assertJsonPath('code', 'LISTING_PUBLISHED')->assertJsonPath('data.receipt.amount.amount', '0')->assertJsonPath('data.current.allowed_actions', []);
+        ->assertOk()->assertJsonPath('code', 'LISTING_PUBLISHED')->assertJsonPath('data.receipt.amount.amount', '0')->assertJsonPath('data.current.allowed_actions', [])->assertJsonPath('data.current.links.review', null);
     expect($result->json('data.receipt.operation_id'))->toBe($result->json('operation_id'));
     $this->travel(2)->seconds();
     $this->getJson($result->json('data.receipt.link.url'))->assertOk()->assertJsonPath('data.receipt', $result->json('data.receipt'))
         ->assertJsonPath('recorded_at', $result->json('recorded_at'));
-    $this->getJson($result->json('data.next.url'))->assertOk()->assertJsonPath('data.campaign.lifecycle', 'live')
-        ->assertJsonPath('data.note.progress.committed.amount', '0')->assertJsonPath('data.note.progress.remaining.amount', '10800000')
-        ->assertJsonMissingPath('data.actor_user_id')->assertJsonMissingPath('data.binding');
+    $campaignUrl = $result->json('data.next.url');
+    if ($api) {
+        $this->getJson($campaignUrl)->assertOk()->assertJsonPath('data.campaign.lifecycle', 'live')
+            ->assertJsonPath('data.note.progress.committed.amount', '0')->assertJsonPath('data.note.progress.remaining.amount', '10800000')
+            ->assertJsonMissingPath('data.actor_user_id')->assertJsonMissingPath('data.binding');
+    } else {
+        $campaignPage = $this->get($campaignUrl)->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('business/campaign')
+            ->where('contract_version', 'business-campaign-v1')->where('campaign.lifecycle', 'live')->where('home', null)
+            ->where('shell_links.home.url', route('business.home', [], false))
+            ->where('note.progress.committed.amount', '0')->where('note.progress.remaining.amount', '10800000')
+            ->where('allowed_actions', [])->where('actions.cancel', null)->missing('actor_user_id')->missing('binding'));
+        $this->get($campaignUrl, ['X-Inertia' => 'true', 'X-Inertia-Version' => $campaignPage->inertiaPage()['version']])->assertOk()->assertHeader('X-Inertia', 'true')
+            ->assertJsonPath('component', 'business/campaign')->assertJsonPath('props.campaign.lifecycle', 'live')
+            ->assertJsonPath('props.note.progress.remaining.amount', '10800000')->assertJsonMissingPath('data');
+    }
     $this->postJson(route($prefix.'business.applications.publish', $parameters), $payload)->assertOk()->assertJsonPath('data.receipt', $result->json('data.receipt'));
     expect(BusinessCampaign::query()->count())->toBe(1);
 })->with([false, true]);

@@ -72,7 +72,8 @@ it('keeps independent publication facts after a released or published applicatio
         ->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('business/publish')
         ->where('release.state', 'released')->where('release.causes', [$cause])->where('allowed_actions', [])
         ->where('prerequisites.0.met', true)->where('prerequisites.1.met', true)
-        ->where('prerequisites.2.met', ! in_array($change, ['credit', 'restriction'], true))->where('prerequisites.3.met', $change !== 'terms'));
+        ->where('prerequisites.2.met', ! in_array($change, ['credit', 'restriction'], true))->where('prerequisites.3.met', $change !== 'terms')
+        ->where('links.review', $change === 'report' ? null : ['url' => route('business.applications.show', $parameters, false), 'method' => 'get']));
     $staff = $this->actingAs($this->fixture['audit']['staff'])->getJson(route('staff.applications.show', $parameters))
         ->assertOk()->assertJsonPath('data.release.state', 'released')->assertJsonPath('data.release.allowed_actions', []);
     $gate = $change === 'report' ? 2 : ($change === 'terms' ? 1 : 0);
