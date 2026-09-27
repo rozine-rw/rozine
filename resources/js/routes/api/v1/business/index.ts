@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 import auditReports from './audit-reports'
 import applications from './applications'
+import campaigns from './campaigns'
 /**
 * @see \App\Http\Controllers\Api\V1\BusinessApplicationController::index
 * @see app/Http/Controllers/Api/V1/BusinessApplicationController.php:34
@@ -86,6 +87,7 @@ const business = {
     auditReports: Object.assign(auditReports, auditReports),
     index: Object.assign(index, index),
     applications: Object.assign(applications, applications),
+    campaigns: Object.assign(campaigns, campaigns),
 }
 
 export default business

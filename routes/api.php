@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\V1\StaffAccessController;
 use App\Http\Controllers\AuditDisputeController;
 use App\Http\Controllers\AuditOperationsController;
 use App\Http\Controllers\AuditSealVerificationController;
+use App\Http\Controllers\BusinessPublicationController;
+use App\Http\Controllers\StaffApplicationReleaseController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -109,4 +111,19 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('v1/auditor')->name
         ->where('certificate', '[0-9a-z]{26}')->name('accreditation.certificates.show');
     Route::post('availability', [AuditorProfileController::class, 'availability'])->name('availability.update');
     Route::get('operations/{request_id}', [AuditorProfileController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
+});
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->group(function (): void {
+    Route::get('v1/staff/application-operations/{request_id}', [StaffApplicationReleaseController::class, 'operation'])
+        ->whereUuid('request_id')->name('api.v1.staff.applications.operations.show');
+    Route::get('v1/staff/applications/{application}', [StaffApplicationReleaseController::class, 'show'])
+        ->whereUlid('application')->name('api.v1.staff.applications.show');
+    Route::post('v1/staff/applications/{application}/release', [StaffApplicationReleaseController::class, 'release'])
+        ->whereUlid('application')->name('api.v1.staff.applications.release');
+    Route::get('v1/business/{business}/applications/{application}/publish', [BusinessPublicationController::class, 'show'])
+        ->whereUlid(['business', 'application'])->name('api.v1.business.applications.publish.show');
+    Route::post('v1/business/{business}/applications/{application}/publish', [BusinessPublicationController::class, 'publish'])
+        ->whereUlid(['business', 'application'])->name('api.v1.business.applications.publish');
+    Route::get('v1/business/{business}/campaigns/{campaign}', [BusinessPublicationController::class, 'campaign'])
+        ->whereUlid(['business', 'campaign'])->name('api.v1.business.campaigns.show');
 });

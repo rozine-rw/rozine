@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace App\Infrastructure\Business;
 
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
+use App\Application\Auditor\Contracts\PublishedApplicationReport;
 use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Auditor\WithCurrentAuditAssignment;
+use App\Application\Business\Contracts\AcceptedApplicationStore;
 use App\Application\Business\Contracts\BusinessApplicationStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\Contracts\BusinessCreditFactsStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Business\WithBusinessAuthority;
+use App\Application\Evidence\Contracts\StatementStore;
 use App\Application\Evidence\WithBusinessStatementVerification;
 use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\Contracts\IdentityRepository;
@@ -35,6 +38,7 @@ use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationSignature;
 use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessApplicationVersion;
+use App\Models\BusinessExposureReservation;
 use Closure;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -55,7 +59,7 @@ use RuntimeException;
  * @phpstan-import-type AuditBinding from BusinessApplicationStore
  * @phpstan-import-type AcceptedAssignment from \App\Application\Auditor\Contracts\AuditAssignmentStore
  */
-final class EloquentBusinessApplicationStore implements BusinessApplicationStore
+final class EloquentBusinessApplicationStore implements AcceptedApplicationStore, BusinessApplicationStore
 {
     public function __construct(
         private WithBusinessAuthority $authority,
@@ -77,7 +81,75 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
         private WithAcceptedAuditAssignment $acceptedAssignments,
         private AuditReportPublicationStore $reports,
         private BusinessExposureStore $exposures,
+        private StatementStore $statements,
+        private PublishedApplicationReport $publishedReports,
     ) {}
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(array<string, mixed>): TResult  $operation
+     * @return TResult
+     */
+    public function withReleaseInput(string $businessId, string $applicationId, Closure $operation): mixed
+    {
+        return $this->statements->withSystemVerification($businessId, function (array $business, ?array $verification) use ($applicationId, $operation): mixed {
+            $application = $this->application($business['id'], $applicationId);
+            if ($application->status !== 'submitted') {
+                throw new CommandRejection('APPLICATION_NOT_SUBMITTED', revision: $application->revision);
+            }
+            $binding = $this->auditBinding($application);
+            $submitted = $this->submittedSnapshot($application);
+            $reservation = BusinessExposureReservation::query()->where('business_id', $business['id'])
+                ->where('business_application_id', $application->id)->whereKey($submitted['submission_id'])->first();
+            if ($reservation === null) {
+                throw new CommandRejection('EXPOSURE_RESERVATION_REQUIRED', revision: $application->revision);
+            }
+            $this->exposures->current($business['id']);
+            if (($reservation->payload['submission_sha256'] ?? null) !== $binding['submission']['sha256']
+                || ($reservation->payload['quote_sha256'] ?? null) !== $binding['quote']['sha256']
+                || ($reservation->payload['quote_id'] ?? null) !== $binding['quote']['id']) {
+                throw new RuntimeException('BUSINESS_EXPOSURE_INTEGRITY_FAILED');
+            }
+            if ($submitted['agreement']['mandate_version'] !== $business['mandate_version']
+                || $this->json->encode($submitted['agreement']['mandate']) !== $this->json->encode($business['mandate'])) {
+                throw new CommandRejection('AUTHORITY_CHANGED', revision: $application->revision);
+            }
+
+            return $this->creditFacts->withCurrent($business['id'], function (?array $credit) use ($business, $verification, $application, $binding, $submitted, $reservation, $operation): mixed {
+                $quote = $this->currentQuote($application, $business, $verification, $credit, $reservation->id);
+                if ($quote === null) {
+                    throw new CommandRejection('QUOTE_STALE', revision: $application->revision);
+                }
+                $signatures = $this->signatures($application, $quote, $submitted['binding_sha256']);
+                $retained = array_map(fn (BusinessApplicationSignature $signature): array => ['id' => $signature->id, 'sha256' => $signature->sha256], $signatures);
+                if ($retained !== $submitted['signatures']
+                    || array_column($signatures, 'actor_party_id') !== $business['mandate']['required_signatories']) {
+                    throw new CommandRejection('SIGNATURES_REQUIRED', revision: $application->revision);
+                }
+                $window = $this->observationWindow($verification, $credit, now('UTC')->toImmutable());
+                $principal = $quote->payload['result']['capacity']['offer']['principal']['amount'];
+                $result = $this->calculate($application->draft['target'], $application->draft['term_months'], $verification, $credit,
+                    $quote->payload['accepted_principal'], $window, $quote->payload['accepted_commitments']);
+                if (! $result['eligible'] || $this->json->encode($result) !== $this->json->encode($quote->payload['result'])
+                    || $principal !== $reservation->principal) {
+                    throw new CommandRejection('ENGINE_GATE_FAILED', 422, $application->revision);
+                }
+
+                return $this->consents->handle(function (?array $release) use ($business, $verification, $application, $binding, $submitted, $reservation, $quote, $operation): mixed {
+                    if ($release === null || $this->json->encode($release) !== $this->json->encode($submitted['agreement']['release'])) {
+                        throw new CommandRejection('TERMS_CHANGED', revision: $application->revision);
+                    }
+
+                    return $this->publishedReports->withPublishedApplication($business, $verification, $binding,
+                        fn (array $report): mixed => $operation(['business' => $business, 'application' => $this->snapshot($application),
+                            'binding' => $binding, 'reservation_id' => $reservation->id, 'principal' => $reservation->principal,
+                            'quote' => $this->projectQuote($quote), 'agreement_sha256' => $submitted['binding_sha256'],
+                            'review' => $submitted['review'], 'public_evidence' => $submitted['public_evidence'], 'report' => $report]));
+                });
+            });
+        });
+    }
 
     /** @return array<string, mixed> */
     public function index(int $userId, int $contextRevision, ?string $before = null, int $limit = 20): array
@@ -674,7 +746,7 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
      * @param  Verification|null  $verification
      * @param  CreditSnapshot|null  $credit
      */
-    private function currentQuote(BusinessApplication $application, array $business, ?array $verification, ?array $credit): ?BusinessApplicationQuote
+    private function currentQuote(BusinessApplication $application, array $business, ?array $verification, ?array $credit, ?string $excludedReservationId = null): ?BusinessApplicationQuote
     {
         if ($application->current_quote_id === null) {
             return null;
@@ -691,7 +763,8 @@ final class EloquentBusinessApplicationStore implements BusinessApplicationStore
         if ($payload['draft'] !== $this->drafts->normalize($application->draft) || $payload['mandate_version'] !== $business['mandate_version']
             || $payload['evidence'] !== $this->evidenceBinding($verification) || $payload['credit'] !== $this->creditBinding($credit)
             || $payload['policy_version'] !== FlatReturnPricing::POLICY_VERSION || $payload['calculation_version'] !== ApplicationUnderwriting::VERSION
-            || ($payload['accepted_commitments'] ?? []) !== $this->exposures->current($business['id'])
+            || ($payload['accepted_commitments'] ?? []) !== array_values(array_filter($this->exposures->current($business['id']),
+                fn (array $commitment): bool => $commitment['id'] !== $excludedReservationId))
             || $payload['calendar'] !== $window['calendar'] || ($payload['evidence_window'] ?? null) !== $this->windowBinding($window)) {
             return null;
         }

@@ -8,6 +8,7 @@ use App\Application\Auditor\Contracts\AuditAssignmentStore;
 use App\Application\Auditor\Contracts\AuditReportCryptography;
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Application\Auditor\Contracts\AuditSourceFactsStore;
+use App\Application\Auditor\Contracts\PublishedApplicationReport;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\Contracts\StatementStore;
@@ -35,9 +36,10 @@ use Illuminate\Support\Str;
 /**
  * @phpstan-import-type Business from \App\Application\Business\Contracts\BusinessAuthorityStore
  * @phpstan-import-type AccessSnapshot from \App\Domain\Identity\ActiveRolePolicy
+ * @phpstan-import-type AuditBinding from \App\Application\Business\Contracts\BusinessApplicationStore
  * @phpstan-import-type Verification from \App\Application\Evidence\Contracts\StatementStore
  */
-final class EloquentAuditReportPublicationStore implements AuditReportPublicationStore
+final class EloquentAuditReportPublicationStore implements AuditReportPublicationStore, PublishedApplicationReport
 {
     public function __construct(private WithBusinessStatementVerification $evidence, private WithBusinessAuthority $authority,
         private IdentityRepository $identities, private AuditAssignmentStore $assignments, private AuditReportCryptography $cryptography,
@@ -60,6 +62,41 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
             $this->event($publication, 'report.delivered', 'system', null, null,
                 ['delivered_at' => $payload['sealed_at'], 'due_at' => $publication->due_at?->toIso8601String()], 1);
         }
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  Business  $business
+     * @param  Verification|null  $verification
+     * @param  AuditBinding  $binding
+     * @param  Closure(array{id: string, revision: int, digest: string}): TResult  $operation
+     * @return TResult
+     */
+    public function withPublishedApplication(array $business, ?array $verification, array $binding, Closure $operation): mixed
+    {
+        $report = AuditReport::query()->where('business_id', $business['id'])->where('application_id', $binding['application']['id'])
+            ->where('submission_id', $binding['submission']['id'])->where('quote_id', $binding['quote']['id'])
+            ->where('status', 'sealed')->orderByDesc('id')->sharedLock()->first();
+        $publication = $report === null ? null : AuditReportPublication::query()->where('audit_report_id', $report->id)->lockForUpdate()->first();
+        if ($publication === null || $publication->status !== 'published' || $publication->published_at === null
+            || $this->json->encode($report->binding['application']) !== $this->json->encode($binding)) {
+            throw new CommandRejection('REPORT_NOT_CURRENT');
+        }
+        $seal = $this->seal($publication);
+        if (! hash_equals($report->binding_sha256, hash('sha256', $this->json->encode($report->binding)))
+            || $seal->payload['report']['binding_sha256'] !== $report->binding_sha256) {
+            throw new CommandRejection('REPORT_NOT_CURRENT');
+        }
+
+        return $this->withCurrentEvidence($publication, $seal, $business, $verification,
+            function (bool $current) use ($publication, $operation): mixed {
+                if (! $current) {
+                    throw new CommandRejection('REPORT_NOT_CURRENT');
+                }
+
+                return $operation(['id' => $publication->audit_report_id, 'revision' => $publication->revision, 'digest' => $publication->digest]);
+            });
     }
 
     /** @return array{id: string, kind: string, status: string}|null */

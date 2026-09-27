@@ -92,12 +92,12 @@ class BusinessApplicationController extends Controller
         return $this->present($request, $result);
     }
 
-    public function operation(ShowApplicationOperationRequest $request, FindBusinessOperation $action): OperationResource
+    public function operation(ShowApplicationOperationRequest $request, FindBusinessOperation $action, BusinessPublicationController $publications): OperationResource
     {
         $result = $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
             (string) $request->validated('command'), (string) $request->route('request_id'));
 
-        return $this->present($request, $result);
+        return $request->validated('command') === 'application.publish' ? $publications->present($request, $result) : $this->present($request, $result);
     }
 
     /** @param array<string, mixed> $result */

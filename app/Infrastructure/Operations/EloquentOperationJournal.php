@@ -20,7 +20,7 @@ final class EloquentOperationJournal implements OperationJournal
     /**
      * @param  array<string, mixed>  $permittedInput
      * @param  Closure(string, string): void  $authorize
-     * @param  Closure(): OperationResult  $operation
+     * @param  Closure(string): OperationResult  $operation
      * @return array<string, mixed>
      */
     public function execute(string $actorKey, int $actorUserId, string $command, string $requestId, string $targetType, string $targetId, array $permittedInput, Closure $authorize, Closure $operation): array
@@ -46,7 +46,7 @@ final class EloquentOperationJournal implements OperationJournal
 
             $operationId = strtolower((string) Str::ulid());
             try {
-                $outcome = DB::transaction($operation);
+                $outcome = DB::transaction(fn (): OperationResult => $operation($operationId));
                 $result = [
                     'operation_id' => $operationId, 'status' => 'completed', 'code' => $outcome->code,
                     'data' => $outcome->data, 'revision' => $outcome->revision, 'policy_version' => $outcome->policyVersion,

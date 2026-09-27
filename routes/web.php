@@ -11,12 +11,14 @@ use App\Http\Controllers\AuditorProfileController;
 use App\Http\Controllers\AuditSealVerificationController;
 use App\Http\Controllers\BusinessApplicationController;
 use App\Http\Controllers\BusinessAuditReportController;
+use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IdentityManagementController;
 use App\Http\Controllers\PulseController;
 use App\Http\Controllers\RoleBookmarkController;
 use App\Http\Controllers\RoleHomeController;
 use App\Http\Controllers\SiteController;
+use App\Http\Controllers\StaffApplicationReleaseController;
 use App\Http\Controllers\StaffHomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -129,3 +131,18 @@ Route::middleware(['auth', 'throttle:60,1'])->prefix('identity')->name('identity
 require __DIR__.'/settings.php';
 
 require __DIR__.'/preview.php';
+
+Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->group(function (): void {
+    Route::get('admin/application-operations/{request_id}', [StaffApplicationReleaseController::class, 'operation'])
+        ->whereUuid('request_id')->name('staff.applications.operations.show');
+    Route::get('admin/applications/{application}', [StaffApplicationReleaseController::class, 'show'])
+        ->whereUlid('application')->name('staff.applications.show');
+    Route::post('admin/applications/{application}/release', [StaffApplicationReleaseController::class, 'release'])
+        ->whereUlid('application')->name('staff.applications.release');
+    Route::get('business/{business}/applications/{application}/publish', [BusinessPublicationController::class, 'show'])
+        ->whereUlid(['business', 'application'])->name('business.applications.publish.show');
+    Route::post('business/{business}/applications/{application}/publish', [BusinessPublicationController::class, 'publish'])
+        ->whereUlid(['business', 'application'])->name('business.applications.publish');
+    Route::get('business/{business}/campaigns/{campaign}', [BusinessPublicationController::class, 'campaign'])
+        ->whereUlid(['business', 'campaign'])->name('business.campaigns.show');
+});

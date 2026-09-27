@@ -32,9 +32,11 @@ use App\Models\AuditSourceSnapshot;
 use App\Models\AuditStepUpProof;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationQuote;
+use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessApplicationSignature;
 use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessApplicationVersion;
+use App\Models\BusinessCampaign;
 use App\Models\BusinessCreditSnapshot;
 use App\Models\BusinessExposureReservation;
 use App\Models\BusinessMandate;
@@ -210,11 +212,13 @@ it('has concrete targets for the business authority boundary', function (): void
         ->and(class_exists(BusinessApplicationSignature::class))->toBeTrue()
         ->and(class_exists(BusinessApplicationSubmission::class))->toBeTrue()
         ->and(class_exists(BusinessExposureReservation::class))->toBeTrue()
+        ->and(class_exists(BusinessApplicationRelease::class))->toBeTrue()
+        ->and(class_exists(BusinessCampaign::class))->toBeTrue()
         ->and(class_exists(BusinessCreditSnapshot::class))->toBeTrue();
 })->group('arch');
 
 arch('business authority records are only accessed by their adapter')
-    ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion', 'App\Models\BusinessCreditSnapshot', 'App\Models\BusinessApplicationQuote', 'App\Models\BusinessApplicationSignature', 'App\Models\BusinessApplicationSubmission', 'App\Models\BusinessExposureReservation'])
+    ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion', 'App\Models\BusinessCreditSnapshot', 'App\Models\BusinessApplicationQuote', 'App\Models\BusinessApplicationSignature', 'App\Models\BusinessApplicationSubmission', 'App\Models\BusinessExposureReservation', 'App\Models\BusinessApplicationRelease', 'App\Models\BusinessCampaign'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Models', 'Database\Factories']);
 
 it('has concrete targets for the immutable statement evidence boundary', function (): void {
@@ -306,3 +310,15 @@ it('keeps every audit signing JOSE namespace reference inside the adapter or syn
     }
     expect($violations)->toBe([]);
 })->group('arch');
+
+arch('accepted application input is private to the campaign adapter')
+    ->expect('App\\Application\\Business\\Contracts\\AcceptedApplicationStore')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Providers\\AppServiceProvider']);
+
+arch('release report input is private to the protected Business and Auditor adapters')
+    ->expect('App\\Application\\Auditor\\Contracts\\PublishedApplicationReport')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Infrastructure\\Auditor', 'App\\Providers\\AppServiceProvider']);
+
+arch('accepted exposure is private to the Business adapter')
+    ->expect('App\\Application\\Business\\Contracts\\BusinessExposureStore')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Providers\\AppServiceProvider']);
