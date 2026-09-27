@@ -3193,6 +3193,10 @@ const en = {
     'settlement.refusal.FEE_DISCLOSURE_CHANGED':
         'The listing fee disclosure changed. Read the current one before you publish.',
     'settlement.refusal.QUOTE_STALE': 'Your quote is no longer current.',
+    'settlement.refusal.APPLICATION_ALREADY_RELEASED':
+        'This application has already been released.',
+    'settlement.refusal.LISTING_ALREADY_PUBLISHED':
+        'This listing is already published.',
     'settlement.refusal.APPLICATION_NOT_RELEASED':
         "This application hasn't been released for listing yet.",
     'settlement.refusal.DISBURSEMENT_IN_FLIGHT':
@@ -3299,6 +3303,8 @@ const en = {
     'business.publish.cause.QUOTE_STALE': 'Your quote is no longer current.',
     'business.publish.cause.RESTRICTION_ACTIVE':
         'A restriction applies to this business.',
+    'business.publish.cause.RELEASE_CHECK_NOT_COMPLETED':
+        "A release check couldn't be completed, so the application can't be released yet.",
     'business.publish.cause.other': "A release check didn't pass.",
     'business.publish.prerequisites': 'Before you publish',
     'business.publish.prerequisite.staff_release':

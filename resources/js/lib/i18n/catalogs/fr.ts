@@ -3335,6 +3335,10 @@ const fr: Catalog = {
     'settlement.refusal.FEE_DISCLOSURE_CHANGED':
         "L'information sur les frais de publication a changé. Lisez la version actuelle avant de publier.",
     'settlement.refusal.QUOTE_STALE': "Votre offre n'est plus à jour.",
+    'settlement.refusal.APPLICATION_ALREADY_RELEASED':
+        'Cette demande a déjà été autorisée.',
+    'settlement.refusal.LISTING_ALREADY_PUBLISHED':
+        'Cette offre est déjà publiée.',
     'settlement.refusal.APPLICATION_NOT_RELEASED':
         "Cette demande n'a pas encore été autorisée à la publication.",
     'settlement.refusal.DISBURSEMENT_IN_FLIGHT':
@@ -3444,6 +3448,8 @@ const fr: Catalog = {
     'business.publish.cause.QUOTE_STALE': "Votre offre n'est plus à jour.",
     'business.publish.cause.RESTRICTION_ACTIVE':
         "Une restriction s'applique à cette entreprise.",
+    'business.publish.cause.RELEASE_CHECK_NOT_COMPLETED':
+        "Une vérification d'autorisation n'a pas pu être menée à terme : la demande ne peut pas encore être autorisée.",
     'business.publish.cause.other':
         "Une vérification de libération n'a pas abouti.",
     'business.publish.prerequisites': 'Avant de publier',

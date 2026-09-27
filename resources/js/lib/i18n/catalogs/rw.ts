@@ -3319,6 +3319,10 @@ const rw: Catalog = {
     'settlement.refusal.FEE_DISCLOSURE_CHANGED':
         'Ibisobanuro ku mafaranga yo gutangaza byarahindutse. Soma ibiriho mbere yo gutangaza.',
     'settlement.refusal.QUOTE_STALE': 'Igiciro wahawe ntikigikurikizwa.',
+    'settlement.refusal.APPLICATION_ALREADY_RELEASED':
+        'Iyi dosiye yamaze kurekurwa.',
+    'settlement.refusal.LISTING_ALREADY_PUBLISHED':
+        'Iki gitangazwa cyamaze gushyirwa ahagaragara.',
     'settlement.refusal.APPLICATION_NOT_RELEASED':
         'Iyi dosiye ntiremererwa gushyirwa ku rutonde.',
     'settlement.refusal.DISBURSEMENT_IN_FLIGHT':
@@ -3428,6 +3432,8 @@ const rw: Catalog = {
     'business.publish.cause.QUOTE_STALE': 'Igiciro wahawe ntikigikurikizwa.',
     'business.publish.cause.RESTRICTION_ACTIVE':
         'Hari ikumira rireba iki kigo.',
+    'business.publish.cause.RELEASE_CHECK_NOT_COMPLETED':
+        'Igenzura rimwe ryo kurekura ntiryarangiye, bityo dosiye ntirashobora kurekurwa.',
     'business.publish.cause.other': 'Igenzura rimwe ryo kurekura ntiryatsinze.',
     'business.publish.prerequisites': 'Mbere yo gutangaza',
     'business.publish.prerequisite.staff_release':
