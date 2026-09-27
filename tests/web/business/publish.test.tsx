@@ -125,6 +125,10 @@ describe('Publish before staff release', () => {
         ],
         ['QUOTE_STALE', 'Your quote is no longer current.'],
         ['RESTRICTION_ACTIVE', 'A restriction applies to this business.'],
+        [
+            'RELEASE_CHECK_NOT_COMPLETED',
+            "A release check couldn't be completed, so the application can't be released yet.",
+        ],
     ])('explains the S3-A cause %s', (cause, text) => {
         const page = props(refusedFixture);
 

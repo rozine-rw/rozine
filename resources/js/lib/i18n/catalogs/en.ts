@@ -3303,6 +3303,8 @@ const en = {
     'business.publish.cause.QUOTE_STALE': 'Your quote is no longer current.',
     'business.publish.cause.RESTRICTION_ACTIVE':
         'A restriction applies to this business.',
+    'business.publish.cause.RELEASE_CHECK_NOT_COMPLETED':
+        "A release check couldn't be completed, so the application can't be released yet.",
     'business.publish.cause.other': "A release check didn't pass.",
     'business.publish.prerequisites': 'Before you publish',
     'business.publish.prerequisite.staff_release':

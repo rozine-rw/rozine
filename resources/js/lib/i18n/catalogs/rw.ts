@@ -3432,6 +3432,8 @@ const rw: Catalog = {
     'business.publish.cause.QUOTE_STALE': 'Igiciro wahawe ntikigikurikizwa.',
     'business.publish.cause.RESTRICTION_ACTIVE':
         'Hari ikumira rireba iki kigo.',
+    'business.publish.cause.RELEASE_CHECK_NOT_COMPLETED':
+        'Igenzura rimwe ryo kurekura ntiryarangiye, bityo dosiye ntirashobora kurekurwa.',
     'business.publish.cause.other': 'Igenzura rimwe ryo kurekura ntiryatsinze.',
     'business.publish.prerequisites': 'Mbere yo gutangaza',
     'business.publish.prerequisite.staff_release':

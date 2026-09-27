@@ -3448,6 +3448,8 @@ const fr: Catalog = {
     'business.publish.cause.QUOTE_STALE': "Votre offre n'est plus à jour.",
     'business.publish.cause.RESTRICTION_ACTIVE':
         "Une restriction s'applique à cette entreprise.",
+    'business.publish.cause.RELEASE_CHECK_NOT_COMPLETED':
+        "Une vérification d'autorisation n'a pas pu être menée à terme : la demande ne peut pas encore être autorisée.",
     'business.publish.cause.other':
         "Une vérification de libération n'a pas abouti.",
     'business.publish.prerequisites': 'Avant de publier',
