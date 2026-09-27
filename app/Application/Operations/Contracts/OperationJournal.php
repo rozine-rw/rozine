@@ -16,7 +16,7 @@ interface OperationJournal
     /**
      * @param  array<string, mixed>  $permittedInput
      * @param  Closure(string, string): void  $authorize
-     * @param  Closure(): OperationResult  $operation
+     * @param  Closure(string): OperationResult  $operation
      * @return array<string, mixed>
      */
     public function execute(

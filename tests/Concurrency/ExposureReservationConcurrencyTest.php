@@ -2,14 +2,18 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\BusinessCampaignStore;
+use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessApplicationSignature;
 use App\Models\BusinessApplicationSubmission;
+use App\Models\BusinessCampaign;
 use App\Models\BusinessExposureReservation;
 use App\Models\CommandOperation;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Tests\Support\AuditSealingFixture;
 use Tests\Support\BusinessQuoteFixture;
 
 /**
@@ -99,3 +103,30 @@ it('holds the Business exposure lock through the final reservation write', funct
     }
     expect(BusinessExposureReservation::query()->count())->toBe(1);
 });
+
+it('releases and publishes only once when concurrent staff and Business requests race', function (bool $sameRequest): void {
+    $fixture = AuditSealingFixture::ready();
+    AuditSealingFixture::seal($fixture);
+    AuditSealingFixture::cosign($fixture);
+    $releaseRequest = (string) Str::uuid();
+    $release = fn (string $id): Closure => function () use ($fixture, $id): void {
+        expect(app(BusinessCampaignStore::class)->release($fixture['audit']['staff']->id,
+            $fixture['application']->id, 0, 'Verified the current release gates.', $id)['code'])->toBeIn(['APPLICATION_RELEASED', 'VERSION_CONFLICT']);
+    };
+    DB::disconnect();
+    expect(exposureContenders([$release($releaseRequest), $release($sameRequest ? $releaseRequest : (string) Str::uuid())]))->toBe([0, 0]);
+    $revision = $fixture['application']->refresh()->revision;
+    $publishRequest = (string) Str::uuid();
+    $publish = fn (string $id): Closure => function () use ($fixture, $id, $revision): void {
+        expect(app(BusinessCampaignStore::class)->publish($fixture['audit']['authority']['users'][0]->id,
+            1, $fixture['audit']['business'], $fixture['application']->id, $revision, 'listing-fee-waiver-1', $id)['code'])
+            ->toBeIn(['LISTING_PUBLISHED', 'LISTING_ALREADY_PUBLISHED']);
+    };
+    DB::disconnect();
+    expect(exposureContenders([$publish($publishRequest), $publish($sameRequest ? $publishRequest : (string) Str::uuid())]))->toBe([0, 0])
+        ->and(BusinessApplicationRelease::query()->count())->toBe(1)
+        ->and(BusinessCampaign::query()->count())->toBe(1)
+        ->and(BusinessExposureReservation::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'application.release')->count())->toBe($sameRequest ? 1 : 2)
+        ->and(CommandOperation::query()->where('command', 'application.publish')->count())->toBe($sameRequest ? 1 : 2);
+})->with([false, true]);

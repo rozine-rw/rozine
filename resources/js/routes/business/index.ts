@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 import auditReports from './audit-reports'
 import applications from './applications'
+import campaigns from './campaigns'
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
 * @see app/Http/Controllers/RoleHomeController.php:20
@@ -86,6 +87,7 @@ const business = {
     auditReports: Object.assign(auditReports, auditReports),
     home: Object.assign(home, home),
     applications: Object.assign(applications, applications),
+    campaigns: Object.assign(campaigns, campaigns),
 }
 
 export default business

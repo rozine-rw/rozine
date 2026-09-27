@@ -391,6 +391,79 @@ submitForm.post = (args: { business: string | number, application: string | numb
 
 submit.form = submitForm
 
+/**
+* @see \App\Http\Controllers\BusinessPublicationController::publish
+* @see app/Http/Controllers/BusinessPublicationController.php:30
+* @route '/api/v1/business/{business}/applications/{application}/publish'
+*/
+export const publish = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: publish.url(args, options),
+    method: 'post',
+})
+
+publish.definition = {
+    methods: ["post"],
+    url: '/api/v1/business/{business}/applications/{application}/publish',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\BusinessPublicationController::publish
+* @see app/Http/Controllers/BusinessPublicationController.php:30
+* @route '/api/v1/business/{business}/applications/{application}/publish'
+*/
+publish.url = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+            business: args[0],
+            application: args[1],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        business: args.business,
+        application: args.application,
+    }
+
+    return publish.definition.url
+            .replace('{business}', parsedArgs.business.toString())
+            .replace('{application}', parsedArgs.application.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\BusinessPublicationController::publish
+* @see app/Http/Controllers/BusinessPublicationController.php:30
+* @route '/api/v1/business/{business}/applications/{application}/publish'
+*/
+publish.post = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: publish.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessPublicationController::publish
+* @see app/Http/Controllers/BusinessPublicationController.php:30
+* @route '/api/v1/business/{business}/applications/{application}/publish'
+*/
+const publishForm = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: publish.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessPublicationController::publish
+* @see app/Http/Controllers/BusinessPublicationController.php:30
+* @route '/api/v1/business/{business}/applications/{application}/publish'
+*/
+publishForm.post = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: publish.url(args, options),
+    method: 'post',
+})
+
+publish.form = publishForm
+
 const applications = {
     operations: Object.assign(operations, operations),
     create: Object.assign(create, create),
@@ -398,6 +471,7 @@ const applications = {
     save: Object.assign(save, save),
     evaluate: Object.assign(evaluate, evaluate),
     submit: Object.assign(submit, submit),
+    publish: Object.assign(publish, publish),
 }
 
 export default applications

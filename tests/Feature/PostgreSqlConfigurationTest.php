@@ -77,6 +77,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $proofLineage = require database_path('migrations/2026_09_25_154051_enforce_audit_seal_proof_and_publication_lineage.php');
     $monthlyReview = require database_path('migrations/2026_09_26_103442_add_monthly_audit_review_policy.php');
     $exposure = require database_path('migrations/2026_09_26_190340_create_business_exposure_reservations_table.php');
+    $campaigns = require database_path('migrations/2026_09_27_054238_create_business_application_releases_and_campaigns.php');
+    $campaigns->down();
     $exposure->down();
     $monthlyReview->down();
     $proofLineage->down();
@@ -151,6 +153,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $proofLineage->up();
     $monthlyReview->up();
     $exposure->up();
+    $campaigns->up();
 
     expect(Schema::hasTable('parties'))->toBeTrue()
         ->and(Schema::hasTable('role_memberships'))->toBeTrue()

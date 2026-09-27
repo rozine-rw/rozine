@@ -458,3 +458,12 @@ Only the final required `application.submit` signature writes the reservation, i
 Underwriting version `application-underwriting-2` includes accepted commitments in its private replay inputs. Exact principal is counted once by economic ID across source obligations and reservations; conflicts fail closed. An unissued commitment does not manufacture a repayment calendar or future interest exposure. Quotes pin the current reservation set, and final acceptance checks it while current source, authority and Business locks are held. Old draft quotes require reevaluation; retained submitted terms and receipts stay unchanged.
 
 This foundation does not enable staff release, campaign publication, ledger funding or provider payment. Those follow in the ordered C3 slices and consume the retained commitment; there is no production credit-source override or historical acceptance migration in this change.
+
+
+### S3-A staff release and publication continuation
+
+`BusinessCampaignStore` is the actor-facing release/publication/read/operation port. Its Business adapter retains the Business lock, current dedicated staff `applications.review` authority or current required-signatory authority, and the operation journal. Existing mandate `application.sign` authority permits publication of the completed all-signatory acceptance; it does not create another acceptance or reservation.
+
+`AcceptedApplicationStore` is an internal Business-only source port. It holds current verified entity/mandate, statement, credit and consent authority, verifies retained submission/signature/quote hashes, excludes only this application's own accepted reservation when re-running the quote, and enters `PublishedApplicationReport` for the current cryptographic seal, publication state and source lineage. Neither port is a controller shortcut. `BusinessApplicationRelease` and `BusinessCampaign` join the protected Business model set; immutable encrypted snapshots and composite parent keys bind publication to one release and one accepted reservation. The journal supplies its operation ID to the effect callback so receipts retain the same recorded identity across command responses and page reloads.
+
+This continuation is local implementation under validation. Campaign cancellation/expiry, funded progress and the complete staff/UI integration remain separate unchecked work.

@@ -123,8 +123,11 @@ it('enforces the principal grid and parent ownership even for direct database in
 it('does not silently backfill pre-C3 submissions when the reservation migration runs', function (): void {
     $legacy = BusinessApplicationSubmission::factory()->create();
     $migration = require database_path('migrations/2026_09_26_190340_create_business_exposure_reservations_table.php');
+    $campaigns = require database_path('migrations/2026_09_27_054238_create_business_application_releases_and_campaigns.php');
+    $campaigns->down();
     $migration->down();
     $migration->up();
+    $campaigns->up();
     expect(BusinessApplicationSubmission::query()->find($legacy->id))->not->toBeNull()
         ->and(BusinessExposureReservation::query()->count())->toBe(0);
 });

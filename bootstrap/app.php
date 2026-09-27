@@ -39,7 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->dontFlash(['code', 'step_up', 'proof']);
         $exceptions->render(function (IdentityViolation $exception, Request $request) {
             if (! $request->expectsJson() && $request->routeIs('investor.home', 'business.home', 'auditor.home', 'auditor.profile',
-                'auditor.jobs.index', 'auditor.jobs.show', 'auditor.conflicts.index', 'auditor.conflicts.show', 'auditor.reports.show', 'auditor.engagement.show', 'business.applications.show', 'business.audit-reports.show', 'staff.audit.show', 'staff.audit.operations.show', 'admin.home', 'identity.roles.resume')) {
+                'auditor.jobs.index', 'auditor.jobs.show', 'auditor.conflicts.index', 'auditor.conflicts.show', 'auditor.reports.show', 'auditor.engagement.show', 'business.applications.show', 'business.applications.publish.show', 'business.campaigns.show', 'staff.applications.show', 'staff.applications.operations.show', 'business.audit-reports.show', 'staff.audit.show', 'staff.audit.operations.show', 'admin.home', 'identity.roles.resume')) {
                 return Inertia::render('identity/access-denied', ['code' => $exception->reason, 'status' => $exception->status])
                     ->toResponse($request)->setStatusCode($exception->status);
             }
