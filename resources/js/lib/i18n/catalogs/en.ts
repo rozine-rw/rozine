@@ -919,6 +919,10 @@ const en = {
     'admin.applications.col.decision': 'Decision · Actions',
     'admin.applications.terms': '{term}mo · {rate}% flat',
     'admin.applications.capacity_used': 'Capacity used',
+    'admin.applications.capacity_unavailable': 'Not available',
+    'admin.applications.older': 'Older applications',
+    'admin.decision.reason_code.CURRENT_RELEASE_REVIEW_REQUIRED':
+        'Current release review required: a retained quote is not a current approval. Check the release gates below.',
     'admin.applications.decision.approve': 'Auto-approve',
     'admin.applications.decision.reject': 'Flag: reject',
     'admin.applications.decision.audit': 'Route to audit',

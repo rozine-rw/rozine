@@ -946,6 +946,10 @@ const rw: Catalog = {
     'admin.applications.col.decision': 'Icyemezo · Ibikorwa',
     'admin.applications.terms': 'Amezi {term} · {rate}% rimwe',
     'admin.applications.capacity_used': 'Ubushobozi bwakoreshejwe',
+    'admin.applications.capacity_unavailable': 'Ntibiboneka',
+    'admin.applications.older': 'Ubusabe bwa kera',
+    'admin.decision.reason_code.CURRENT_RELEASE_REVIEW_REQUIRED':
+        'Hakenewe isuzuma ryo kurekura riri gukorwa: igiciro cyabitswe si icyemezo kiriho. Reba amagenzura yo kurekura ari hepfo.',
     'admin.applications.decision.approve': 'Kwemeza byikora',
     'admin.applications.decision.reject': 'Ikimenyetso: kwanga',
     'admin.applications.decision.audit': 'Ohereza mu igenzura',

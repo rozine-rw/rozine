@@ -945,6 +945,10 @@ const fr: Catalog = {
     'admin.applications.col.decision': 'Décision · Actions',
     'admin.applications.terms': '{term} mois · {rate} % fixe',
     'admin.applications.capacity_used': 'Capacité utilisée',
+    'admin.applications.capacity_unavailable': 'Non disponible',
+    'admin.applications.older': 'Demandes plus anciennes',
+    'admin.decision.reason_code.CURRENT_RELEASE_REVIEW_REQUIRED':
+        "Revue d'autorisation actuelle requise : une offre conservée n'est pas une approbation en cours. Vérifiez les contrôles d'autorisation ci-dessous.",
     'admin.applications.decision.approve': 'Approbation auto',
     'admin.applications.decision.reject': 'Signal : refus',
     'admin.applications.decision.audit': "Orienter vers l'audit",

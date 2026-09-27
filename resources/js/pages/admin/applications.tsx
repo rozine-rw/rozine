@@ -3,6 +3,7 @@ import { AdminFrame } from '@/components/admin/admin-frame';
 import {
     ApplicationStateChip,
     DECISION_TONE,
+    useDecisionReason,
 } from '@/components/admin/applications/application-status';
 import { ReviewDrawer } from '@/components/admin/applications/review-drawer';
 import { avatarColor, initialOf } from '@/components/admin/format';
@@ -14,6 +15,7 @@ import {
     PolicyPeek,
     ROW_RULE,
     RatingPill,
+    ShowMoreLink,
     TABLE_HEAD,
     TableCard,
     useRelativeLabel,
@@ -36,6 +38,9 @@ const BAND_FILL = {
 
 const RESOLVED = new Set(['approved', 'rejected']);
 
+/** The live index searches by `search` and starts from the first page, with no drawer open. */
+const SEARCH_QUERY = { param: 'search', clears: ['before', 'application'] };
+
 function QueueRow({
     row,
     ago,
@@ -44,6 +49,7 @@ function QueueRow({
     ago: (iso: string) => string;
 }) {
     const { t } = useTranslation();
+    const decisionReason = useDecisionReason();
     const actionable = !RESOLVED.has(row.state);
 
     return (
@@ -88,31 +94,37 @@ function QueueRow({
                     })}
                 </div>
             </div>
-            <div role="cell" className="flex items-center gap-[7px]">
-                <div
-                    role="progressbar"
-                    aria-label={t('admin.applications.capacity_used')}
-                    aria-valuenow={row.capacity_used_pct}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    className="h-1.5 max-w-[70px] flex-1 overflow-hidden rounded-[3px] bg-[#e8edf5] dark:bg-rz-surface-muted"
-                >
-                    <div
-                        className={cn(
-                            'h-full rounded-[3px]',
-                            row.rating === null
-                                ? 'bg-[#69748a]'
-                                : BAND_FILL[row.rating.band],
-                        )}
-                        style={{
-                            width: `${Math.min(100, row.capacity_used_pct)}%`,
-                        }}
-                    />
-                </div>
-                <span className="text-[11px] text-rz-muted">
-                    {row.capacity_used_pct}%
+            {row.capacity_used_pct === null ? (
+                <span role="cell" className="text-[11px] text-rz-faint">
+                    {t('admin.applications.capacity_unavailable')}
                 </span>
-            </div>
+            ) : (
+                <div role="cell" className="flex items-center gap-[7px]">
+                    <div
+                        role="progressbar"
+                        aria-label={t('admin.applications.capacity_used')}
+                        aria-valuenow={row.capacity_used_pct}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        className="h-1.5 max-w-[70px] flex-1 overflow-hidden rounded-[3px] bg-[#e8edf5] dark:bg-rz-surface-muted"
+                    >
+                        <div
+                            className={cn(
+                                'h-full rounded-[3px]',
+                                row.rating === null
+                                    ? 'bg-[#69748a]'
+                                    : BAND_FILL[row.rating.band],
+                            )}
+                            style={{
+                                width: `${Math.min(100, row.capacity_used_pct)}%`,
+                            }}
+                        />
+                    </div>
+                    <span className="text-[11px] text-rz-muted">
+                        {row.capacity_used_pct}%
+                    </span>
+                </div>
+            )}
             <span role="cell">
                 <RatingPill rating={row.rating} />
             </span>
@@ -126,7 +138,7 @@ function QueueRow({
                 {actionable ? (
                     <>
                         <span
-                            title={row.decision.reason}
+                            title={decisionReason(row.decision)}
                             className={cn(
                                 'rounded-[7px] px-[9px] py-1 text-[10.5px] font-bold',
                                 DECISION_TONE[row.decision.code].chip,
@@ -181,12 +193,16 @@ function QueueRow({
  */
 export default function AdminApplications(props: C3AdminApplicationsProps) {
     const { t } = useTranslation();
+    const next = props.pagination?.next ?? null;
     const ago = useRelativeLabel(props.server_time);
 
     return (
         <AdminFrame
             section="applications"
             {...props}
+            searchQuery={
+                props.pagination === undefined ? undefined : SEARCH_QUERY
+            }
             overlay={
                 props.review && (
                     <ReviewDrawer
@@ -218,6 +234,13 @@ export default function AdminApplications(props: C3AdminApplicationsProps) {
             <TableCard
                 label={t('admin.applications.table')}
                 minWidth="min-w-[900px]"
+                footer={
+                    next !== null && (
+                        <ShowMoreLink link={next}>
+                            {t('admin.applications.older')}
+                        </ShowMoreLink>
+                    )
+                }
             >
                 <div role="row" className={cn(GRID, TABLE_HEAD, 'py-[13px]')}>
                     <HeadCell>{t('admin.applications.col.business')}</HeadCell>

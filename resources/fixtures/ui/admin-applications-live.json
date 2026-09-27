@@ -1,0 +1,210 @@
+{
+    "component": "admin/applications",
+    "synthetic": true,
+    "props": {
+        "contract_version": "staff-applications-v1",
+        "server_time": "2026-09-27T12:00:00+02:00",
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": null,
+            "applications": {
+                "url": "/admin/applications",
+                "method": "get"
+            },
+            "disbursements": null,
+            "repayments": null,
+            "businesses": null,
+            "investors": null,
+            "auditors": null,
+            "staff": null,
+            "ledger": null,
+            "events": null,
+            "launcher": {
+                "url": "/dashboard",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 2,
+            "disbursements": null
+        },
+        "policy": [],
+        "search": "",
+        "active_tab": "pending",
+        "tabs": [
+            {
+                "key": "pending",
+                "count": 2,
+                "link": {
+                    "url": "/admin/applications?tab=pending&search=&limit=20",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "approved",
+                "count": 0,
+                "link": {
+                    "url": "/admin/applications?tab=approved&search=&limit=20",
+                    "method": "get"
+                }
+            }
+        ],
+        "applications": [
+            {
+                "id": "01K6Q9R3S5T7V9W1X3Y5Z7A9B1",
+                "business": "Kigali Motors",
+                "sector": "Hospitality",
+                "note_title": "Kigali Expansion",
+                "requested": {
+                    "currency": "RWF",
+                    "amount": "50000000"
+                },
+                "term_months": 6,
+                "rate_pct": "12.9",
+                "capacity_used_pct": null,
+                "rating": {
+                    "band": "stable",
+                    "score": "3.5"
+                },
+                "submitted_at": "2026-09-26T10:00:00+02:00",
+                "state": "submitted",
+                "decision": {
+                    "code": "review",
+                    "reason": "",
+                    "reason_code": "CURRENT_RELEASE_REVIEW_REQUIRED"
+                },
+                "link": {
+                    "url": "/admin/applications?tab=pending&search=&limit=20&application=01K6Q9R3S5T7V9W1X3Y5Z7A9B1",
+                    "method": "get"
+                },
+                "approve_link": null
+            },
+            {
+                "id": "01K6Q9R3S5T7V9W1X3Y5Z7A9A0",
+                "business": "Umucyo Foods",
+                "sector": "Agriculture",
+                "note_title": "Cold-Chain Hub",
+                "requested": {
+                    "currency": "RWF",
+                    "amount": "18000000"
+                },
+                "term_months": 6,
+                "rate_pct": "12.9",
+                "capacity_used_pct": null,
+                "rating": {
+                    "band": "stable",
+                    "score": "3.5"
+                },
+                "submitted_at": "2026-09-26T10:00:00+02:00",
+                "state": "submitted",
+                "decision": {
+                    "code": "review",
+                    "reason": "",
+                    "reason_code": "CURRENT_RELEASE_REVIEW_REQUIRED"
+                },
+                "link": {
+                    "url": "/admin/applications?tab=pending&search=&limit=20&application=01K6Q9R3S5T7V9W1X3Y5Z7A9A0",
+                    "method": "get"
+                },
+                "approve_link": null
+            }
+        ],
+        "review": {
+            "id": "01K6Q9R3S5T7V9W1X3Y5Z7A9B1",
+            "business": "Kigali Motors",
+            "sector": "Hospitality",
+            "note_title": "Kigali Expansion",
+            "requested": {
+                "currency": "RWF",
+                "amount": "50000000"
+            },
+            "term_months": 6,
+            "rate_pct": "12.9",
+            "capacity_used_pct": null,
+            "rating": {
+                "band": "stable",
+                "score": "3.5"
+            },
+            "submitted_at": "2026-09-26T10:00:00+02:00",
+            "state": "submitted",
+            "decision": {
+                "code": "review",
+                "reason": "",
+                "reason_code": "CURRENT_RELEASE_REVIEW_REQUIRED"
+            },
+            "capacity": {
+                "used_pct": null,
+                "approved": {
+                    "currency": "RWF",
+                    "amount": "45000000"
+                },
+                "active_notes": null,
+                "outstanding": null
+            },
+            "use_of_funds": "Inventory, Equipment",
+            "factors": [],
+            "audit": {
+                "state": null,
+                "sealed_at": null
+            },
+            "reviewer": null,
+            "trail": [],
+            "links": {
+                "close": {
+                    "url": "/admin/applications?tab=pending&search=&limit=20",
+                    "method": "get"
+                },
+                "business": null
+            },
+            "actions": {},
+            "release": {
+                "revision": 0,
+                "state": "awaiting_staff_review",
+                "gates": [
+                    {
+                        "key": "engine",
+                        "state": "passed",
+                        "cause": null
+                    },
+                    {
+                        "key": "authority",
+                        "state": "passed",
+                        "cause": null
+                    },
+                    {
+                        "key": "report",
+                        "state": "passed",
+                        "cause": null
+                    }
+                ],
+                "allowed_actions": [],
+                "actions": {
+                    "release": {
+                        "url": "/preview/admin/applications/01K6Q9R3S5T7V9W1X3Y5Z7A9B1/release",
+                        "method": "post"
+                    }
+                },
+                "receipt": null
+            }
+        },
+        "stage": null,
+        "pagination": {
+            "next": {
+                "url": "/admin/applications?tab=pending&search=&limit=20&before=01K6Q9R3S5T7V9W1X3Y5Z7A9A0",
+                "method": "get"
+            }
+        },
+        "links": {
+            "operation": {
+                "url": "/preview/admin/application-operations/{request_id}",
+                "method": "get"
+            }
+        }
+    }
+}

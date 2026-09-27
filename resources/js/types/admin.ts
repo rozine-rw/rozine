@@ -271,6 +271,11 @@ export type ApplicationTab =
 export type EngineDecision = {
     code: 'approve' | 'reject' | 'audit' | 'review';
     reason: string;
+    /**
+     * A stable code for the reason, localized in place of `reason` when present, e.g.
+     * `CURRENT_RELEASE_REVIEW_REQUIRED`: a retained quote is never shown as current approval.
+     */
+    reason_code?: string | null;
 };
 
 export type ApplicationRow = {
@@ -282,7 +287,8 @@ export type ApplicationRow = {
     term_months: number;
     /** Flat total return over the term, one decimal: "12.1". Not an APR. */
     rate_pct: string;
-    capacity_used_pct: number;
+    /** Null while the server does not project capacity usage; shown as unavailable, never 0. */
+    capacity_used_pct: number | null;
     rating: Rating | null;
     submitted_at: string;
     state: ApplicationState;
@@ -312,24 +318,27 @@ export type ApplicationReview = {
     rating: Rating | null;
     term_months: number;
     rate_pct: string;
+    /** Only `approved` is always sourced; the others are null until the server projects them. */
     capacity: {
-        used_pct: number;
+        used_pct: number | null;
         approved: Money;
-        active_notes: number;
-        outstanding: Money;
+        active_notes: number | null;
+        outstanding: Money | null;
     };
     /** The engine's evidence, each on 0–100. Read-only. */
     factors: { key: EvidenceFactorKey; value: number }[];
     /** Listing audit evidence; anything but sealed blocks approval (SCR-02-ST-02). */
     audit: {
-        state: 'sealed' | 'pending' | 'missing';
+        /** Null when the release gates are the authority; no audit banner is inferred then. */
+        state: 'sealed' | 'pending' | 'missing' | null;
         sealed_at: string | null;
     };
     use_of_funds: string;
     submitted_at: string;
     reviewer: string | null;
     trail: TrailEntry[];
-    links: { close: RouteLink; business: RouteLink };
+    /** `business` is null until a live staff Business page exists. */
+    links: { close: RouteLink; business: RouteLink | null };
     actions: Partial<Record<ReviewAction, RouteAction>>;
 };
 
@@ -854,6 +863,8 @@ export type C3AdminApplicationsProps = Omit<
 > & {
     review: C3ApplicationReview | null;
     links: { operation: RouteLink };
+    /** The live index pages by cursor (`staff-applications-v1`); previews may omit it. */
+    pagination?: Pagination;
     preview_outcome?: C3PreviewOutcome<'application.release'>;
 };
 

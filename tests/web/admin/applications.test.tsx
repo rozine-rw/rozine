@@ -16,6 +16,7 @@ import type {
 import approveFixture from '../../../resources/fixtures/ui/admin-applications-approve.json';
 import emptyFixture from '../../../resources/fixtures/ui/admin-applications-empty.json';
 import liveMinimalFixture from '../../../resources/fixtures/ui/admin-applications-live-minimal.json';
+import liveFixture from '../../../resources/fixtures/ui/admin-applications-live.json';
 import missingFixture from '../../../resources/fixtures/ui/admin-applications-missing-audit.json';
 import releaseBlockedFixture from '../../../resources/fixtures/ui/admin-applications-release-blocked.json';
 import releaseFixture from '../../../resources/fixtures/ui/admin-applications-release.json';
@@ -717,5 +718,102 @@ describe('Staff release', () => {
                 "Your staff permissions don't include this action.",
             ),
         ).toBeInTheDocument();
+    });
+});
+
+describe('The live staff applications index (#147)', () => {
+    it('shows unavailable capacity and the localized release-review reason, never an invented figure', () => {
+        render(<AdminApplications {...props(liveFixture)} />);
+
+        const rows = screen.getAllByRole('row').slice(1);
+
+        expect(rows).toHaveLength(2);
+        expect(within(rows[0]).getByText('Not available')).toBeInTheDocument();
+        expect(
+            within(rows[0]).queryByRole('progressbar'),
+        ).not.toBeInTheDocument();
+        expect(
+            within(rows[0]).getByText('Needs review').closest('[title]'),
+        ).toHaveAttribute(
+            'title',
+            'Current release review required: a retained quote is not a current approval. Check the release gates below.',
+        );
+    });
+
+    it('opens the review with only what the server sources', () => {
+        render(<AdminApplications {...props(liveFixture)} />);
+        const drawer = screen.getByRole('dialog');
+
+        expect(
+            within(drawer).getByText(
+                'Current release review required: a retained quote is not a current approval. Check the release gates below.',
+            ),
+        ).toBeInTheDocument();
+        expect(drawer.querySelector('#review-audit-block')).toBeNull();
+        expect(
+            within(drawer).queryByRole('region', { name: 'Evidence factors' }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(drawer).queryByRole('link', {
+                name: 'View business profile',
+            }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(drawer).getAllByText('Not available').length,
+        ).toBeGreaterThan(0);
+        expect(
+            within(drawer).queryByText(/active note/u),
+        ).not.toBeInTheDocument();
+        expect(
+            within(drawer).getByRole('region', { name: 'Release for listing' }),
+        ).toBeInTheDocument();
+    });
+
+    it('pages to older applications from the server cursor', () => {
+        const page = props(liveFixture);
+
+        const { unmount } = render(<AdminApplications {...page} />);
+
+        expect(
+            screen.getByRole('link', { name: /Older applications/u }),
+        ).toHaveAttribute(
+            'href',
+            '/admin/applications?tab=pending&search=&limit=20&before=01K6Q9R3S5T7V9W1X3Y5Z7A9A0',
+        );
+        unmount();
+
+        page.pagination = { next: null };
+        render(<AdminApplications {...page} />);
+        expect(
+            screen.queryByRole('link', { name: /Older applications/u }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('searches with `search`, starting again from the first page with no drawer', async () => {
+        const { user } = renderWithUser(
+            <AdminApplications {...props(liveFixture)} />,
+        );
+
+        await user.type(screen.getByRole('searchbox'), 'Cold-Chain{Enter}');
+
+        expect(inertia.reload).toEqual([
+            {
+                data: {
+                    search: 'Cold-Chain',
+                    before: undefined,
+                    application: undefined,
+                },
+            },
+        ]);
+    });
+
+    it('keeps the preview search on `q` when no pagination is sent', async () => {
+        const { user } = renderWithUser(
+            <AdminApplications {...props(queueFixture)} />,
+        );
+
+        await user.type(screen.getByRole('searchbox'), 'Kigali{Enter}');
+
+        expect(inertia.reload).toEqual([{ data: { q: 'Kigali' } }]);
     });
 });
