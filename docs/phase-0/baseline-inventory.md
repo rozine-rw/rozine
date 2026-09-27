@@ -1253,7 +1253,7 @@ The ADR-0001 layering as it stands. `tests/Architecture` enforces the dependency
 | `deploy-prod.yml` | Deploy (production) | push, workflow_dispatch, admission, deploy | — |
 | `deploy-uat.yml` | Deploy (staging) | push, workflow_dispatch, admission, deploy | — |
 | `deployment-admission.yml` | Deployment admission | workflow_call, admit | Verify deployment evidence |
-| `tests.yml` | tests | push, pull_request, ci, web, concurrency, negative-controls, admission | PHP ${{ matrix.php-version }} quality gate; TypeScript/React quality gate; PostgreSQL concurrency lane; PHP gate negative controls; Deployment admission negative controls |
+| `tests.yml` | tests | push, pull_request, plan, ci, web, concurrency, negative-control-groups, negative-controls, admission, tested-tree, dev-smoke | Select CI scope; PHP ${{ matrix.php-version }} quality gate; TypeScript/React quality gate; PostgreSQL concurrency lane; PHP negative controls (${{ matrix.group }}); PHP gate negative controls; Deployment admission negative controls; Record tested PR tree; Dev post-merge smoke |
 | `tia-baseline.yml` | TIA Baseline | push, schedule, workflow_dispatch, baseline | refresh Pest TIA baseline |
 
 ## Deployment targets
