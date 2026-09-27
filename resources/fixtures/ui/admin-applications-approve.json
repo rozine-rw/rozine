@@ -241,23 +241,23 @@
             },
             "actions": {
                 "take": {
-                    "url": "/admin/applications/APP-20250091/take",
+                    "url": "/preview/admin/applications/APP-20250091/take",
                     "method": "post"
                 },
                 "approve": {
-                    "url": "/admin/applications/APP-20250091/approve",
+                    "url": "/preview/admin/applications/APP-20250091/approve",
                     "method": "post"
                 },
                 "reject": {
-                    "url": "/admin/applications/APP-20250091/reject",
+                    "url": "/preview/admin/applications/APP-20250091/reject",
                     "method": "post"
                 },
                 "info": {
-                    "url": "/admin/applications/APP-20250091/info",
+                    "url": "/preview/admin/applications/APP-20250091/info",
                     "method": "post"
                 },
                 "escalate": {
-                    "url": "/admin/applications/APP-20250091/escalate",
+                    "url": "/preview/admin/applications/APP-20250091/escalate",
                     "method": "post"
                 }
             },

@@ -56,6 +56,16 @@ export type AdminShellProps = {
     server_time: string;
 };
 
+/**
+ * The frame as a live staff Resource may send it (#96): only the destinations the server serves
+ * and only the queue sizes it knows. A null section hides that sidebar item and a null badge shows
+ * none; the launcher is always sent. Every full `AdminShellProps` is also one of these.
+ */
+export type AdminFrameShellProps = Omit<AdminShellProps, 'nav' | 'badges'> & {
+    nav: Record<AdminSection, RouteLink | null> & { launcher: RouteLink };
+    badges: { applications: number | null; disbursements: number | null };
+};
+
 export type Rating = BusinessRating;
 
 /** A figure as the server states it; the console only formats it. */
@@ -323,9 +333,10 @@ export type ApplicationReview = {
     actions: Partial<Record<ReviewAction, RouteAction>>;
 };
 
-export type AdminApplicationsProps = AdminShellProps & {
+export type AdminApplicationsProps = AdminFrameShellProps & {
     policy: PolicyItem[];
-    tabs: { key: ApplicationTab; count: number; link: RouteLink }[];
+    /** A null count is one the server does not state; the tab shows its label alone. */
+    tabs: { key: ApplicationTab; count: number | null; link: RouteLink }[];
     active_tab: ApplicationTab;
     applications: ApplicationRow[];
     review: ApplicationReview | null;

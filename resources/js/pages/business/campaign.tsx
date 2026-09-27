@@ -4,7 +4,7 @@ import { BusinessShell } from '@/components/business/business-shell';
 import { CampaignProgress } from '@/components/business/campaign/campaign-progress';
 import { CancelSheet } from '@/components/business/campaign/cancel-sheet';
 import { DetailSheet } from '@/components/business/detail-sheet';
-import { HomeBody } from '@/components/business/home/home-body';
+import { BlankBody, HomeBody } from '@/components/business/home/home-body';
 import { PerformanceTrend } from '@/components/business/note/performance-trend';
 import { PhotoStrip } from '@/components/business/note/photo-strip';
 import { C3Notice } from '@/components/rozine/c3-notice';
@@ -39,6 +39,7 @@ const POLLED = [
  */
 export default function BusinessCampaign({
     home,
+    shell_links,
     note,
     links,
     actions,
@@ -159,14 +160,18 @@ export default function BusinessCampaign({
         <BusinessShell
             title={note.title}
             tab="home"
-            links={home.links}
+            links={shell_links}
             showTabBar={false}
         >
-            <HomeBody
-                {...home}
-                backdrop
-                overlay={{ column: 'right', content: sheet }}
-            />
+            {home === null ? (
+                <BlankBody overlay={{ column: 'right', content: sheet }} />
+            ) : (
+                <HomeBody
+                    {...home}
+                    backdrop
+                    overlay={{ column: 'right', content: sheet }}
+                />
+            )}
         </BusinessShell>
     );
 }
