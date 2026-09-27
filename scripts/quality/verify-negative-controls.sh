@@ -14,6 +14,8 @@
 #
 # Usage: bash scripts/quality/verify-negative-controls.sh [control ...]
 #        with no arguments every control runs.
+#        --group architecture|business|auditor|coverage selects an isolated CI group.
+#        Never run groups concurrently in the same checkout: they plant source files.
 
 set -uo pipefail
 
@@ -68,6 +70,31 @@ report() {
 
 ALL_CONTROLS=(strict-types domain-purity transport-boundary identity-boundary operation-boundary business-boundary evidence-boundary auditor-boundary audit-signing-boundary adapter-leak php-coverage phpstan-tests)
 
+controls_for_group() {
+  case "$1" in
+    architecture) printf '%s\n' strict-types domain-purity transport-boundary adapter-leak ;;
+    business) printf '%s\n' identity-boundary operation-boundary business-boundary evidence-boundary ;;
+    auditor) printf '%s\n' auditor-boundary audit-signing-boundary ;;
+    coverage) printf '%s\n' php-coverage phpstan-tests ;;
+    *) echo "unknown control group '$1'" >&2; return 64 ;;
+  esac
+}
+
+if [ "${1:-}" = --list-controls ]; then
+  printf '%s\n' "${ALL_CONTROLS[@]}"
+  exit 0
+fi
+if [ "${1:-}" = --list-group ]; then
+  controls_for_group "${2:-}"
+  exit $?
+fi
+if [ "${1:-}" = --group ]; then
+  group_controls="$(controls_for_group "${2:-}")" || exit 64
+  REQUESTED_GROUP=()
+  while IFS= read -r name; do REQUESTED_GROUP+=("${name}"); done <<< "${group_controls}"
+  set -- "${REQUESTED_GROUP[@]}"
+fi
+
 selected() {
   local wanted="$1" name
   for name in "${REQUESTED[@]}"; do
@@ -108,18 +135,27 @@ echo "--> precondition: the gates are green before anything is planted"
 ARCHITECTURE_GREEN=false
 STATIC_GREEN=false
 
-if gate_is_green "${LOG_DIR}/pre-arch.log" vendor/bin/pest --ci --no-tia --testsuite=Architecture --compact; then
-  ARCHITECTURE_GREEN=true
-  echo "    architecture suite green"
-else
-  echo "    architecture suite is already red; its controls cannot be attributed and will be skipped"
+ARCHITECTURE_REQUIRED=false
+for requested in "${REQUESTED[@]}"; do
+  case "${requested}" in php-coverage|phpstan-tests) ;; *) ARCHITECTURE_REQUIRED=true ;; esac
+done
+
+if [ "${ARCHITECTURE_REQUIRED}" = true ]; then
+  if gate_is_green "${LOG_DIR}/pre-arch.log" vendor/bin/pest --ci --no-tia --testsuite=Architecture --compact; then
+    ARCHITECTURE_GREEN=true
+    echo "    architecture suite green"
+  else
+    echo "    architecture suite is already red; its controls cannot be attributed and will be skipped"
+  fi
 fi
 
-if gate_is_green "${LOG_DIR}/pre-static.log" vendor/bin/phpstan analyse --no-progress --error-format=raw; then
-  STATIC_GREEN=true
-  echo "    static analysis green"
-else
-  echo "    static analysis is not green on a clean tree; its control cannot be attributed and will be skipped"
+if selected phpstan-tests; then
+  if gate_is_green "${LOG_DIR}/pre-static.log" vendor/bin/phpstan analyse --no-progress --error-format=raw; then
+    STATIC_GREEN=true
+    echo "    static analysis green"
+  else
+    echo "    static analysis is not green on a clean tree; its control cannot be attributed and will be skipped"
+  fi
 fi
 echo
 
@@ -471,32 +507,10 @@ fi
 if selected php-coverage; then
   control php-coverage "an uncovered first-party line must fail the 100% coverage gate"
 
-  if ! php -r 'exit(extension_loaded("xdebug") || extension_loaded("pcov") ? 0 : 1);'; then
-    report php-coverage skip "no coverage driver on this runtime; the hosted PHP lane is the authority"
+  if bash scripts/quality/verify-php-coverage-control.sh; then
+    report php-coverage pass "the isolated coverage gate rejected the uncovered file and recovered"
   else
-    plant app/Support/NegativeControlUncovered.php <<'VIOLATION'
-<?php
-
-declare(strict_types=1);
-
-namespace App\Support;
-
-final class NegativeControlUncovered
-{
-    public function neverCalled(): string
-    {
-        return 'no test reaches this line';
-    }
-}
-VIOLATION
-
-    if gate_fails "${LOG_DIR}/coverage.log" vendor/bin/pest --ci --no-tia --coverage --min=100 --compact; then
-      report php-coverage pass "the coverage gate rejected it"
-    else
-      report php-coverage fail "the coverage gate reported 100% with an unreached file present"
-    fi
-    rm -f app/Support/NegativeControlUncovered.php
-    rmdir app/Support 2>/dev/null || true
+    report php-coverage fail "the coverage control did not prove green/red/green"
   fi
 fi
 
@@ -539,14 +553,24 @@ fi
 # Every violation is gone; the gates must be green again.
 # ---------------------------------------------------------------------------
 echo "--> teardown: every violation is removed and the suite is green again"
-if vendor/bin/pest --ci --no-tia --testsuite=Architecture --compact > "${LOG_DIR}/teardown.log" 2>&1; then
-  report teardown pass "architecture suite green"
-else
-  report teardown fail "a planted violation was left behind"
-  cat "${LOG_DIR}/teardown.log"
+if [ "${ARCHITECTURE_REQUIRED}" = true ]; then
+  if vendor/bin/pest --ci --no-tia --testsuite=Architecture --compact > "${LOG_DIR}/teardown.log" 2>&1; then
+    report teardown pass "architecture suite green"
+  else
+    report teardown fail "a planted violation was left behind"
+    cat "${LOG_DIR}/teardown.log"
+  fi
+fi
+if selected phpstan-tests; then
+  if gate_is_green "${LOG_DIR}/teardown-static.log" vendor/bin/phpstan analyse --no-progress --error-format=raw; then
+    report teardown pass "static analysis green"
+  else
+    report teardown fail "static analysis did not recover"
+    cat "${LOG_DIR}/teardown-static.log"
+  fi
 fi
 
-echo "${pass} caught, ${fail} not caught, ${skipped} skipped"
+echo "${pass} caught, ${fail} not caught, ${skipped} skipped (${SECONDS}s)"
 
 # A run that executed no control is not a pass. Without this the harness
 # reports success for having done nothing, which is worse than no harness.
@@ -555,4 +579,4 @@ if [ "${ran}" -ne "${#REQUESTED[@]}" ]; then
   exit 1
 fi
 
-[ "${fail}" -eq 0 ]
+[ "${fail}" -eq 0 ] && [ "${skipped}" -eq 0 ]

@@ -309,9 +309,14 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
-  negative-controls:
-    name: PHP gate negative controls
+  negative-control-groups:
+    name: PHP negative controls (${{ matrix.group }})
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [architecture, business, auditor, coverage]
 
     services:
       postgres:
@@ -348,10 +353,9 @@ jobs:
         with:
           php-version: '8.5'
           tools: composer:v2
-          # The coverage control needs a driver; without one it skips, and a
-          # skipped control is not evidence that the coverage gate can go red.
+          # Only the isolated coverage probe needs instrumentation.
           extensions: pdo_pgsql, pgsql, pcntl, posix
-          coverage: xdebug
+          coverage: ${{ matrix.group == 'coverage' && 'xdebug' || 'none' }}
 
       - name: Install PHP dependencies from lock file
         run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
@@ -362,8 +366,10 @@ jobs:
       - name: Generate application key
         run: php artisan key:generate
 
-      - name: Prove each PHP gate rejects the violation it exists to catch
-        run: bash scripts/quality/verify-negative-controls.sh
+      - name: Prove this group rejects the violations it exists to catch
+        env:
+          CONTROL_GROUP: ${{ matrix.group }}
+        run: bash scripts/quality/verify-negative-controls.sh --group "$CONTROL_GROUP"
 
       - name: Confirm no planted violation survived the run
         run: |
@@ -372,6 +378,23 @@ jobs:
             git status --porcelain
             exit 1
           fi
+
+  negative-controls:
+    name: PHP gate negative controls
+    needs: negative-control-groups
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Require every isolated control group to succeed
+        env:
+          GROUP_RESULT: ${{ needs.negative-control-groups.result }}
+        run: bash scripts/quality/require-php-controls.sh "$GROUP_RESULT"
 
   admission:
     name: Deployment admission negative controls
