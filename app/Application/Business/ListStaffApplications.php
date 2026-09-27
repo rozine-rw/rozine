@@ -19,6 +19,8 @@ final class ListStaffApplications
     public function handle(int $userId, string $tab, string $search, ?string $before, int $limit, ?string $applicationId): array
     {
         $this->staff->check($userId, 'applications.review');
+        $applicationId = $applicationId === null ? null : strtolower($applicationId);
+        $before = $before === null ? null : strtolower($before);
         $page = $this->queue->page($tab, $search, $before, $limit, $applicationId);
         $release = $applicationId === null ? null : $this->campaigns->staffPage($userId, $applicationId);
         $access = $this->access->staffAccess($userId, true, false);

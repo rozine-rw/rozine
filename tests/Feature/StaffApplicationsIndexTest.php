@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessCampaignStore;
+use App\Application\Business\SaveBusinessApplication;
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Models\BusinessApplication;
@@ -112,6 +113,52 @@ it('paginates submitted applications without exposing drafts and preserves filte
     foreach ([$draft['application']->id, (string) Str::ulid()] as $hidden) {
         $this->getJson(route('api.v1.staff.applications.index', ['application' => $hidden]))->assertNotFound();
     }
+});
+
+it('treats SQL pattern characters in queue searches as literal text', function (string $search, string $matchingTitle, string $otherTitle): void {
+    $fixtures = [];
+    foreach ([$matchingTitle, $otherTitle] as $title) {
+        $fixture = BusinessQuoteFixture::ready();
+        $application = $fixture['application'];
+        $owner = $fixture['audit']['authority']['users'][0];
+        $fields = [...$application->draft, 'title' => $title];
+        app(SaveBusinessApplication::class)->handle($owner->id, 1, $fixture['audit']['business'], $application->id,
+            $application->revision, $fields, 'raise', (string) Str::uuid());
+        BusinessQuoteFixture::evaluate($fixture, $application->refresh()->revision);
+        app(SaveBusinessApplication::class)->handle($owner->id, 1, $fixture['audit']['business'], $application->id,
+            $application->refresh()->revision, $fields, 'review', (string) Str::uuid());
+        BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
+        $fixtures[] = $fixture;
+    }
+    $id = $fixtures[0]['application']->id;
+    $this->actingAs($fixtures[0]['audit']['staff'])->getJson(route('api.v1.staff.applications.index', ['search' => $search]))
+        ->assertOk()->assertJsonCount(1, 'data.applications')->assertJsonPath('data.applications.0.id', $id)
+        ->assertJsonPath('data.tabs.0.count', 1)->assertJsonPath('data.tabs.1.count', 0)->assertJsonPath('data.search', $search);
+})->with([
+    'percent' => ['100%', 'Equipment at 100% capacity', 'Equipment at 1000 capacity'],
+    'underscore' => ['a_b', 'Equipment a_b purchase', 'Equipment axb purchase'],
+    'backslash' => ['a\\b', 'Equipment a\\b purchase', 'Equipment ab purchase'],
+]);
+
+it('accepts either ULID case for search selection and pagination', function (): void {
+    $first = BusinessQuoteFixture::ready();
+    BusinessQuoteFixture::submit($first, BusinessQuoteFixture::acceptance($first));
+    $second = BusinessQuoteFixture::ready();
+    BusinessQuoteFixture::submit($second, BusinessQuoteFixture::acceptance($second));
+    $id = $first['application']->id;
+    $this->actingAs($first['audit']['staff']);
+    foreach ([strtolower($id), strtoupper($id)] as $input) {
+        $this->getJson(route('api.v1.staff.applications.index', ['search' => $input, 'application' => $input]))->assertOk()
+            ->assertJsonCount(1, 'data.applications')->assertJsonPath('data.applications.0.id', $id)
+            ->assertJsonPath('data.review.id', $id)->assertJsonStructure(['data' => ['review' => ['release' => ['state', 'gates']]]]);
+        $this->get(route('staff.applications.index', ['application' => $input]))->assertOk()
+            ->assertInertia(fn (Assert $page): Assert => $page->where('review.id', $id));
+    }
+    $cursor = strtoupper($second['application']->id);
+    $page = $this->getJson(route('api.v1.staff.applications.index', ['before' => $cursor, 'limit' => 1, 'application' => strtoupper($id)]))
+        ->assertOk()->assertJsonCount(1, 'data.applications')->assertJsonPath('data.applications.0.id', $id)
+        ->assertJsonPath('data.pagination.next', null);
+    $this->getJson($page->json('data.review.links.close.url'))->assertOk()->assertJsonPath('data.applications.0.id', $id);
 });
 
 it('validates bounded queue queries', function (array $query, string $field): void {

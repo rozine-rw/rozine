@@ -22,7 +22,8 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
     {
         $base = BusinessApplication::query()->where('status', 'submitted')->whereNotNull('current_submission_id');
         if ($search !== '') {
-            $base->where(fn (Builder $query): Builder => $query->whereLike('draft->title', '%'.$search.'%')->orWhere('id', $search));
+            $pattern = '%'.addcslashes($search, '%_\\').'%';
+            $base->where(fn (Builder $query): Builder => $query->whereLike('draft->title', $pattern)->orWhere('id', strtolower($search)));
         }
         $released = BusinessApplicationRelease::query()->selectRaw('1')
             ->whereColumn('business_application_id', 'business_applications.id')->whereColumn('business_id', 'business_applications.business_id');
