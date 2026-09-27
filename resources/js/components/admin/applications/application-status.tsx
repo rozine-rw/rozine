@@ -63,3 +63,23 @@ export const DECISION_TONE: Record<
         text: 'text-[#c2661f] dark:text-[#f0a060]',
     },
 };
+
+/** Reason codes the console explains itself; any other code falls back to the server's text. */
+const REASON_CODES = ['CURRENT_RELEASE_REVIEW_REQUIRED'] as const;
+
+type ReasonCode = (typeof REASON_CODES)[number];
+
+const isReasonCode = (code: string): code is ReasonCode =>
+    (REASON_CODES as readonly string[]).includes(code);
+
+/** The decision's reason as staff read it: a known `reason_code` localized, else the text. */
+export function useDecisionReason(): (decision: EngineDecision) => string {
+    const { t } = useTranslation();
+
+    return (decision) =>
+        decision.reason_code !== undefined &&
+        decision.reason_code !== null &&
+        isReasonCode(decision.reason_code)
+            ? t(`admin.decision.reason_code.${decision.reason_code}`)
+            : decision.reason;
+}

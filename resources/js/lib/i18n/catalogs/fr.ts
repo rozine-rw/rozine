@@ -740,7 +740,7 @@ const fr: Catalog = {
     'admin.section.applications.subtitle':
         'Examiner et souscrire les nouvelles demandes de RNP',
     'admin.section.applications.search':
-        'Rechercher par entreprise ou identifiant…',
+        'Rechercher par intitulé du titre ou identifiant de la demande',
     'admin.section.disbursements.title': 'Décaissements',
     'admin.section.disbursements.subtitle':
         'Levées approuvées en attente de versement. Au-delà du seuil, deux personnes différentes doivent approuver chaque versement.',
@@ -945,6 +945,10 @@ const fr: Catalog = {
     'admin.applications.col.decision': 'Décision · Actions',
     'admin.applications.terms': '{term} mois · {rate} % fixe',
     'admin.applications.capacity_used': 'Capacité utilisée',
+    'admin.applications.capacity_unavailable': 'Non disponible',
+    'admin.applications.older': 'Demandes plus anciennes',
+    'admin.decision.reason_code.CURRENT_RELEASE_REVIEW_REQUIRED':
+        "Revue d'autorisation actuelle requise : une offre conservée n'est pas une approbation en cours. Vérifiez les contrôles d'autorisation ci-dessous.",
     'admin.applications.decision.approve': 'Approbation auto',
     'admin.applications.decision.reject': 'Signal : refus',
     'admin.applications.decision.audit': "Orienter vers l'audit",

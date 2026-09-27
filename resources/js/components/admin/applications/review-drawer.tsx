@@ -3,6 +3,7 @@ import { useState } from 'react';
 import {
     ApplicationStateChip,
     DECISION_TONE,
+    useDecisionReason,
 } from '@/components/admin/applications/application-status';
 import { ReleasePanel } from '@/components/admin/applications/release-panel';
 import { Drawer, DrawerClose } from '@/components/admin/drawer';
@@ -87,6 +88,9 @@ export function ReviewDrawer({
             : null,
     );
     const decision = DECISION_TONE[review.decision.code];
+    const decisionReason = useDecisionReason();
+    const usedPct = review.capacity.used_pct;
+    /* A null audit state means the release gates below are the authority: no banner is inferred. */
     const auditGap =
         review.audit.state === 'sealed' ? null : review.audit.state;
     const blocked = auditGap !== null;
@@ -154,7 +158,7 @@ export function ReviewDrawer({
                                 EXPLAIN,
                             )}
                         >
-                            {review.decision.reason}
+                            {decisionReason(review.decision)}
                         </p>
                     </div>
 
@@ -287,33 +291,43 @@ export function ReviewDrawer({
                             <span className="text-[12.5px] font-semibold text-rz-slate">
                                 {t('admin.review.capacity_title')}
                             </span>
-                            <span
-                                className={cn(
-                                    'text-[12.5px] font-bold',
-                                    capacityText(review.capacity.used_pct),
-                                )}
-                            >
-                                {review.capacity.used_pct}%
-                            </span>
+                            {usedPct === null ? (
+                                <span className={cn('text-[12.5px]', CAPTION)}>
+                                    {t(
+                                        'admin.applications.capacity_unavailable',
+                                    )}
+                                </span>
+                            ) : (
+                                <span
+                                    className={cn(
+                                        'text-[12.5px] font-bold',
+                                        capacityText(usedPct),
+                                    )}
+                                >
+                                    {usedPct}%
+                                </span>
+                            )}
                         </div>
-                        <div
-                            role="progressbar"
-                            aria-label={t('admin.review.capacity_title')}
-                            aria-valuenow={review.capacity.used_pct}
-                            aria-valuemin={0}
-                            aria-valuemax={100}
-                            className="mt-[9px] h-2 overflow-hidden rounded-[5px] bg-[#e8edf5] dark:bg-rz-surface-muted"
-                        >
+                        {usedPct !== null && (
                             <div
-                                className={cn(
-                                    'h-full rounded-[5px]',
-                                    capacityFill(review.capacity.used_pct),
-                                )}
-                                style={{
-                                    width: `${Math.max(4, Math.min(100, review.capacity.used_pct))}%`,
-                                }}
-                            />
-                        </div>
+                                role="progressbar"
+                                aria-label={t('admin.review.capacity_title')}
+                                aria-valuenow={usedPct}
+                                aria-valuemin={0}
+                                aria-valuemax={100}
+                                className="mt-[9px] h-2 overflow-hidden rounded-[5px] bg-[#e8edf5] dark:bg-rz-surface-muted"
+                            >
+                                <div
+                                    className={cn(
+                                        'h-full rounded-[5px]',
+                                        capacityFill(usedPct),
+                                    )}
+                                    style={{
+                                        width: `${Math.max(4, Math.min(100, usedPct))}%`,
+                                    }}
+                                />
+                            </div>
+                        )}
                         <div
                             className={cn(
                                 'mt-[9px] flex flex-wrap justify-between gap-1 text-[11.5px]',
@@ -327,56 +341,68 @@ export function ReviewDrawer({
                                     ),
                                 })}
                             </span>
-                            <span>
-                                {t('admin.review.capacity_existing', {
-                                    count: review.capacity.active_notes,
-                                    amount: formatRwfShort(
-                                        review.capacity.outstanding,
-                                    ),
-                                })}
-                            </span>
+                            {review.capacity.active_notes !== null &&
+                                review.capacity.outstanding !== null && (
+                                    <span>
+                                        {t('admin.review.capacity_existing', {
+                                            count: review.capacity.active_notes,
+                                            amount: formatRwfShort(
+                                                review.capacity.outstanding,
+                                            ),
+                                        })}
+                                    </span>
+                                )}
                         </div>
                     </div>
 
-                    <section
-                        aria-label={t('admin.review.factors_title')}
-                        className={cn(TILE, 'mt-4 px-[17px] py-[15px]')}
-                    >
-                        <div className="mb-3 flex items-baseline justify-between gap-2">
-                            <h3 className="text-[12.5px] font-bold text-rz-slate">
-                                {t('admin.review.factors_title')}
-                            </h3>
-                            <span className={cn('text-[11px]', CAPTION)}>
-                                {t('admin.review.factors_caption')}
-                            </span>
-                        </div>
-                        {review.factors.map((factor) => (
-                            <div
-                                key={factor.key}
-                                className="mb-[11px] last:mb-0"
-                            >
-                                <div className="mb-1 flex justify-between">
-                                    <span
-                                        className={cn('text-[12px]', EXPLAIN)}
-                                    >
-                                        {t(`admin.review.factor.${factor.key}`)}
-                                    </span>
-                                    <span className="text-[12px] font-bold text-rz-ink">
-                                        {factor.value}
-                                    </span>
-                                </div>
-                                <div className="h-1.5 overflow-hidden rounded-[3px] bg-[#eef2f8] dark:bg-rz-surface-muted">
-                                    <div
-                                        className={cn(
-                                            'h-full rounded-[3px]',
-                                            FACTOR_FILL[factor.key],
-                                        )}
-                                        style={{ width: `${factor.value}%` }}
-                                    />
-                                </div>
+                    {review.factors.length > 0 && (
+                        <section
+                            aria-label={t('admin.review.factors_title')}
+                            className={cn(TILE, 'mt-4 px-[17px] py-[15px]')}
+                        >
+                            <div className="mb-3 flex items-baseline justify-between gap-2">
+                                <h3 className="text-[12.5px] font-bold text-rz-slate">
+                                    {t('admin.review.factors_title')}
+                                </h3>
+                                <span className={cn('text-[11px]', CAPTION)}>
+                                    {t('admin.review.factors_caption')}
+                                </span>
                             </div>
-                        ))}
-                    </section>
+                            {review.factors.map((factor) => (
+                                <div
+                                    key={factor.key}
+                                    className="mb-[11px] last:mb-0"
+                                >
+                                    <div className="mb-1 flex justify-between">
+                                        <span
+                                            className={cn(
+                                                'text-[12px]',
+                                                EXPLAIN,
+                                            )}
+                                        >
+                                            {t(
+                                                `admin.review.factor.${factor.key}`,
+                                            )}
+                                        </span>
+                                        <span className="text-[12px] font-bold text-rz-ink">
+                                            {factor.value}
+                                        </span>
+                                    </div>
+                                    <div className="h-1.5 overflow-hidden rounded-[3px] bg-[#eef2f8] dark:bg-rz-surface-muted">
+                                        <div
+                                            className={cn(
+                                                'h-full rounded-[3px]',
+                                                FACTOR_FILL[factor.key],
+                                            )}
+                                            style={{
+                                                width: `${factor.value}%`,
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </section>
+                    )}
 
                     <div className={cn(TILE, 'mt-4 px-[17px] py-[15px]')}>
                         <div
@@ -411,12 +437,14 @@ export function ReviewDrawer({
                         </div>
                     </div>
 
-                    <Link
-                        href={review.links.business}
-                        className="mt-3.5 block w-full rounded-[11px] border border-rz-hairline bg-rz-surface p-[11px] text-center text-[13px] font-bold text-rz-accent-app-text"
-                    >
-                        {t('admin.review.business_profile')}
-                    </Link>
+                    {review.links.business !== null && (
+                        <Link
+                            href={review.links.business}
+                            className="mt-3.5 block w-full rounded-[11px] border border-rz-hairline bg-rz-surface p-[11px] text-center text-[13px] font-bold text-rz-accent-app-text"
+                        >
+                            {t('admin.review.business_profile')}
+                        </Link>
+                    )}
 
                     {review.release !== null && (
                         <ReleasePanel

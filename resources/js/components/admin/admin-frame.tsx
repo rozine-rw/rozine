@@ -111,6 +111,11 @@ const GROUPS: {
 
 type AdminFrameProps = AdminFrameShellProps & {
     section: AdminSection;
+    /**
+     * How the page search reaches the server: the query parameter it fills (`q` by default) and
+     * the parameters a new search clears, such as a paging cursor or an open drawer.
+     */
+    searchQuery?: { param: string; clears: string[] };
     /** A drawer over the content column. */
     overlay?: ReactNode;
     children: ReactNode;
@@ -128,6 +133,7 @@ export function AdminFrame({
     nav,
     badges,
     search,
+    searchQuery,
     overlay,
     children,
 }: AdminFrameProps) {
@@ -140,7 +146,18 @@ export function AdminFrame({
         event.preventDefault();
         const q = new FormData(event.currentTarget).get('q');
 
-        router.reload({ data: { q } });
+        if (searchQuery === undefined) {
+            router.reload({ data: { q } });
+
+            return;
+        }
+
+        router.reload({
+            data: Object.fromEntries([
+                [searchQuery.param, q],
+                ...searchQuery.clears.map((key) => [key, undefined]),
+            ]),
+        });
     };
 
     const sidebar = (
