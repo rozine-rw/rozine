@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "ea58f024303d086f6c02e0a72a241ab9c0ae49c9c43ad5798a40eba2c5b3cde3",
-    "coverageSetSha256": "b929152c69a632db74074e4dfcf5ee8b41eaccbbe537a37512144ba748212d84",
+    "sourceManifestSha256": "9889b1fe9c3e9c1878b0d3b09d40960a50d6677d0d622c642e47005ca0628b31",
+    "coverageSetSha256": "0895cb5a7b2e677428588af27d7b538b1596ec09e6ae7a22b3cd2070d96d37fb",
     "thresholds": {
         "critical": {
             "global": {
@@ -232,6 +232,7 @@
         "resources/js/components/investor/portfolio/issue-record.tsx",
         "resources/js/components/investor/portfolio/portfolio-insights.tsx",
         "resources/js/components/investor/primary/commitment.tsx",
+        "resources/js/components/investor/primary/earnings-fee.tsx",
         "resources/js/components/investor/primary/rights.tsx",
         "resources/js/components/investor/profile/profile-parts.tsx",
         "resources/js/components/investor/tokens.ts",

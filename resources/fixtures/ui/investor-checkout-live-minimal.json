@@ -43,11 +43,17 @@
             },
             "payout_fee": {
                 "currency": "RWF",
-                "amount": "54"
+                "amount": "68"
+            },
+            "earnings_fee": {
+                "tier": "standard",
+                "rate_bps": 1000,
+                "basis": "return_only",
+                "policy_version": "synthetic-plus-policy-0"
             },
             "maturity_value": {
                 "currency": "RWF",
-                "amount": "5621"
+                "amount": "5607"
             },
             "maturity_date": null,
             "rights": null,

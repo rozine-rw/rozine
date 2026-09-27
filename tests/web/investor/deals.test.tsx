@@ -97,7 +97,7 @@ describe('Deals on a phone', () => {
         expect(bar).toHaveTextContent('of 1,840 left');
         expect(bar).toHaveTextContent('RWF5,000');
         expect(bar).toHaveTextContent('13.5%');
-        expect(bar).toHaveTextContent('RWF5,621');
+        expect(bar).toHaveTextContent('RWF5,607');
         expect(
             within(bar).getByRole('link', { name: 'Invest' }),
         ).toHaveAttribute(
@@ -504,8 +504,11 @@ describe('Deal detail on a phone', () => {
 
         expect(card).toHaveTextContent('RWF 5,000 × 1 note');
         expect(card).toHaveTextContent('+RWF 675');
-        expect(card).toHaveTextContent('Repayment fee (1% per payout)RWF 54');
-        expect(card).toHaveTextContent('RWF 5,621');
+        expect(card).toHaveTextContent(
+            'Fee on earnings · 10.0% (Standard)RWF 68',
+        );
+        expect(card).toHaveTextContent('RWF 5,607');
+        expect(card).not.toHaveTextContent('1%');
         expect(
             within(card).getByRole('button', { name: 'One note fewer' }),
         ).toBeDisabled();
@@ -603,9 +606,10 @@ describe('Deal detail on a phone', () => {
         expect(
             screen.getByRole('button', { name: 'Fully reserved' }),
         ).toBeDisabled();
-        expect(
-            screen.getByRole('region', { name: 'YOUR INVESTMENT' }),
-        ).toHaveTextContent('—');
+        const card = screen.getByRole('region', { name: 'YOUR INVESTMENT' });
+
+        expect(card).toHaveTextContent('—');
+        expect(card).toHaveTextContent('Fee on earnings—');
     });
 
     it('handles a deal with no audit, record, photos, reports, and an overdue report', async () => {

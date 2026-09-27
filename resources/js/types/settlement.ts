@@ -79,7 +79,8 @@ export type C3OperationData<R, C> = {
     receipt: R;
     /** Freshly authorized; null when the actor may no longer read the record. */
     current: C | null;
-    next: RouteLink;
+    /** Where to go next; null when the receipt and `current` already describe the result (#96). */
+    next: RouteLink | null;
 };
 
 /**
@@ -121,6 +122,36 @@ export type Ordinals = { first: Units; last: Units }[];
 export type UnitRights = {
     total_return: Money;
     instalments: { index: number; principal: Money; return: Money }[];
+};
+
+/**
+ * A Rozine Plus tier, from the Investor's currently active deployed capital (Robert's #99 policy).
+ * Bands are lower-inclusive and upper-exclusive, in RWF: Standard below 1M; Bronze [1M, 5M);
+ * Silver [5M, 30M); Gold [30M, 100M); Platinum [100M, 250M); Diamond from 250M. The server picks
+ * the tier; the client never derives it from a balance.
+ */
+export type PlusTier =
+    | 'standard'
+    | 'bronze'
+    | 'silver'
+    | 'gold'
+    | 'platinum'
+    | 'diamond';
+
+/**
+ * The Plus fee on earnings, which replaces the 1% investor repayment fee. It applies to the return
+ * portion of each payout only, never to principal, and its rate is locked at commitment for the
+ * note's life. A tier or rate that changes between reserve and confirm is refused with
+ * `DISCLOSURE_STALE` (409) and must be reconfirmed.
+ *
+ * Provisional: the shape follows Hussain's acceptance on #96; the policy is Robert's #99 answer.
+ */
+export type EarningsFee = {
+    tier: PlusTier;
+    /** The locked rate: `1000` is 10.0%. */
+    rate_bps: Bps;
+    basis: 'return_only';
+    policy_version: string;
 };
 
 /* ------------------------------------------------------------------------------------------ */
