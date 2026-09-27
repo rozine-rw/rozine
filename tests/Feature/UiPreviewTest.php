@@ -176,14 +176,16 @@ test('every investor quote and term carries the locked Plus fee on earnings, on 
 
     foreach (c3PreviewFixtures() as $name => $fixture) {
         foreach (c3PreviewFeeTerms($fixture['props']) as $terms) {
-            /** @var array{tier: string, rate_bps: int, basis: string, policy_version: string} $fee */
-            $fee = $terms['earnings_fee'] ?? null;
+            expect($terms)->toHaveKey('earnings_fee', message: $name);
+
+            $fee = $terms['earnings_fee'];
 
             expect($fee)->toBeArray($name)
+                ->toHaveKeys(['tier', 'rate_bps', 'basis', 'policy_version'])
                 ->and($fee['basis'])->toBe('return_only', $name)
+                ->and($fee['policy_version'])->toBeString()
                 ->and($bands)->toHaveKey($fee['tier'], message: $name)
-                ->and($fee['rate_bps'])->toBe($bands[$fee['tier']], $name)
-                ->and($fee['policy_version'])->toBeString();
+                ->and($fee['rate_bps'])->toBe($bands[$fee['tier']], $name);
 
             $seen++;
         }
