@@ -24,8 +24,8 @@ it('assigns every PHP control to exactly one isolated workflow group', function 
         ->and($groups['strategy']['fail-fast'])->toBeFalse();
     $required = $workflow['jobs']['negative-controls'];
     expect($required['name'])->toBe('PHP gate negative controls')
-        ->and($required['needs'])->toBe('negative-control-groups')
-        ->and($required['if'])->toBe('${{ always() }}')
+        ->and($required['needs'])->toBe(['plan', 'negative-control-groups'])
+        ->and($required['if'])->toBe("\${{ always() && needs.plan.outputs.full == 'true' }}")
         ->and($required['steps'][1]['env']['GROUP_RESULT'])->toBe('${{ needs.negative-control-groups.result }}')
         ->and($required['steps'][1]['run'])->toBe('bash scripts/quality/require-php-controls.sh "$GROUP_RESULT"');
 });
