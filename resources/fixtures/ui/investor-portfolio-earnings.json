@@ -106,7 +106,7 @@
                 "health": "healthy",
                 "value": {
                     "currency": "RWF",
-                    "amount": "223333"
+                    "amount": "890000"
                 },
                 "invested": {
                     "currency": "RWF",
@@ -135,7 +135,7 @@
                 "health": "healthy",
                 "value": {
                     "currency": "RWF",
-                    "amount": "586800"
+                    "amount": "946800"
                 },
                 "invested": {
                     "currency": "RWF",
@@ -164,7 +164,7 @@
                 "health": "arrears",
                 "value": {
                     "currency": "RWF",
-                    "amount": "338834"
+                    "amount": "497168"
                 },
                 "invested": {
                     "currency": "RWF",
@@ -193,7 +193,7 @@
                 "health": "healthy",
                 "value": {
                     "currency": "RWF",
-                    "amount": "395834"
+                    "amount": "1029168"
                 },
                 "invested": {
                     "currency": "RWF",
@@ -222,7 +222,7 @@
                 "health": "healthy",
                 "value": {
                     "currency": "RWF",
-                    "amount": "204000"
+                    "amount": "654000"
                 },
                 "invested": {
                     "currency": "RWF",
@@ -251,7 +251,7 @@
                 "health": "watch",
                 "value": {
                     "currency": "RWF",
-                    "amount": "317250"
+                    "amount": "467250"
                 },
                 "invested": {
                     "currency": "RWF",

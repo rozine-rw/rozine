@@ -49,7 +49,7 @@ describe('Portfolio', () => {
         const total = screen.getByRole('region', { name: 'TOTAL VALUE' });
 
         expect(total).toHaveTextContent('6 businesses');
-        expect(total).toHaveTextContent('RWF 2,066,051');
+        expect(total).toHaveTextContent('RWF 4,484,386');
         expect(total).toHaveTextContent('RWF 4.2M');
         expect(total).toHaveTextContent('+RWF 309K');
         expect(total).toHaveTextContent('Next: RWF 701K · Oct ’26');

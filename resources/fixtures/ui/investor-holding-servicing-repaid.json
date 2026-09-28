@@ -15,7 +15,7 @@
             "health": "matured",
             "value": {
                 "currency": "RWF",
-                "amount": "4050"
+                "amount": "34050"
             },
             "invested": {
                 "currency": "RWF",
@@ -1077,7 +1077,10 @@
                     "revision": 27,
                     "evaluated_at": "2027-03-22T09:00:00+02:00",
                     "eligible": false,
-                    "causes": ["FEATURE_DISABLED", "NO_AVAILABLE_UNITS"],
+                    "causes": [
+                        "FEATURE_DISABLED",
+                        "NO_AVAILABLE_UNITS"
+                    ],
                     "next_record_date": null,
                     "price_band": null
                 }

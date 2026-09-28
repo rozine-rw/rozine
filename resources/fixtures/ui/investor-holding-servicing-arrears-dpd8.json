@@ -15,7 +15,7 @@
             "health": "arrears",
             "value": {
                 "currency": "RWF",
-                "amount": "21350"
+                "amount": "31350"
             },
             "invested": {
                 "currency": "RWF",
@@ -783,7 +783,10 @@
                     "revision": 13,
                     "evaluated_at": "2026-12-29T09:00:00+02:00",
                     "eligible": false,
-                    "causes": ["FEATURE_DISABLED", "ARREARS"],
+                    "causes": [
+                        "FEATURE_DISABLED",
+                        "ARREARS"
+                    ],
                     "next_record_date": "2027-01-21",
                     "price_band": null
                 }

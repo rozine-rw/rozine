@@ -29,8 +29,9 @@ import type {
  *   13.5%), split over the schedule with any extra shilling on the earliest instalments.
  * - "Expected profit" is that total return, gross; "Total at maturity" is principal plus return
  *   less the fee on earnings over the return (the quote's `maturity_value`).
- * - `value` is principal outstanding plus return received (HoldingSummary), so `gain` is the
- *   return received and `gain_pct` is that over the amount invested.
+ * - `value` is what was invested plus the return received (HoldingSummary): principal repaid
+ *   stays counted. So `gain` is `value − invested`, the return received, and `gain_pct` is that
+ *   over the amount invested.
  * - A campaign's raised, target and left-to-fill are its committed, total and available units at
  *   the unit price, and `funded_pct` is raised over target to one decimal.
  */
@@ -288,9 +289,9 @@ function checkFigures(
     );
     expectEqual(
         problems,
-        `${at}.value (outstanding + return received)`,
+        `${at}.value (invested + return received)`,
         n(holding.value),
-        principal - principalPaid + returnPaid,
+        principal + returnPaid,
     );
     expectEqual(
         problems,
@@ -748,7 +749,6 @@ describe('Investor portfolio fixtures', () => {
         portfolios.forEach(({ name, props }) => {
             (props.holdings as HoldingSummary[]).forEach((holding, index) => {
                 const at = `${name} holdings[${index}] (${holding.id})`;
-                const outstanding = n(holding.value) - n(holding.gain);
 
                 expectEqual(
                     problems,
@@ -765,18 +765,19 @@ describe('Investor portfolio fixtures', () => {
                     holding.gain_pct,
                     percent(n(holding.gain), n(holding.invested)),
                 );
-                expectTrue(
+                expectEqual(
                     problems,
-                    `${at}: value − gain is the principal outstanding, within what was invested`,
-                    outstanding >= 0 && outstanding <= n(holding.invested),
+                    `${at}: value − gain is what was invested`,
+                    n(holding.value) - n(holding.gain),
+                    n(holding.invested),
                 );
 
                 if (holding.health === 'matured') {
                     expectEqual(
                         problems,
-                        `${at}: a matured note has no principal outstanding`,
-                        [holding.payments_made, outstanding],
-                        [holding.payments_total, 0],
+                        `${at}: a matured note has made every payment`,
+                        holding.payments_made,
+                        holding.payments_total,
                     );
                 }
 
@@ -865,9 +866,7 @@ describe('Investor portfolio fixtures', () => {
 
             if (earnings !== undefined) {
                 const { realised } = earnings;
-                const outstanding = sum(
-                    list.map((holding) => n(holding.value) - n(holding.gain)),
-                );
+                const outstanding = n(earnings.outstanding_principal);
 
                 expectEqual(
                     problems,
@@ -875,11 +874,10 @@ describe('Investor portfolio fixtures', () => {
                     n(earnings.invested),
                     sum(list.map((holding) => n(holding.invested))),
                 );
-                expectEqual(
+                expectTrue(
                     problems,
-                    `${name} earnings.outstanding_principal`,
-                    n(earnings.outstanding_principal),
-                    outstanding,
+                    `${name} earnings.outstanding_principal is within what was invested`,
+                    outstanding >= 0 && outstanding <= n(earnings.invested),
                 );
                 expectEqual(
                     problems,

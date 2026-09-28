@@ -15,7 +15,7 @@
             "health": "healthy",
             "value": {
                 "currency": "RWF",
-                "amount": "21350"
+                "amount": "31350"
             },
             "invested": {
                 "currency": "RWF",
@@ -711,7 +711,9 @@
                     "revision": 11,
                     "evaluated_at": "2026-12-21T15:00:00+02:00",
                     "eligible": false,
-                    "causes": ["FEATURE_DISABLED"],
+                    "causes": [
+                        "FEATURE_DISABLED"
+                    ],
                     "next_record_date": "2027-01-21",
                     "price_band": null
                 }
