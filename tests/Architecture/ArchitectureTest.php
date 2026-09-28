@@ -387,3 +387,7 @@ arch('the deposit provider is reached only through the wallet actions and adapte
 arch('synthetic signing and fixtures stay inside the local wallet hook')
     ->expect(['App\Application\Wallet\Contracts\SyntheticEventSigner', 'App\Application\Wallet\Contracts\SyntheticWalletFixtures'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Wallet', 'App\Providers\AppServiceProvider', 'App\Console\Commands\PrepareSyntheticWallet']);
+
+arch('funding cash evidence stays behind the wallet and Primary adapters')
+    ->expect('App\\Application\\Wallet\\Contracts\\PrimaryCommittedCash')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Wallet', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);
