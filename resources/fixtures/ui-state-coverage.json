@@ -372,18 +372,17 @@
     },
     "MVP-INVESTOR-SCR-09-ST-01": {
         "name": "not eligible",
-        "disposition": "missing",
-        "note": "The screen has no page yet."
+        "fixtures": ["investor-profile-automation"]
     },
     "MVP-INVESTOR-SCR-09-ST-02": {
         "name": "paused",
-        "disposition": "missing",
-        "note": "The screen has no page yet."
+        "disposition": "deferred",
+        "note": "Auto-Deploy cannot run in the MVP (D-61, C-29); a paused or capped mandate would be a fabricated live outcome."
     },
     "MVP-INVESTOR-SCR-09-ST-03": {
         "name": "cap reached",
-        "disposition": "missing",
-        "note": "The screen has no page yet."
+        "disposition": "deferred",
+        "note": "Auto-Deploy cannot run in the MVP (D-61, C-29); a paused or capped mandate would be a fabricated live outcome."
     },
     "MVP-INVESTOR-SCR-10-ST-01": {
         "name": "no history yet",
