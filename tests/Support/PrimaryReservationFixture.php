@@ -8,12 +8,15 @@ use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Primary\ReservedCheckout;
+use App\Application\Wallet\LockedWallet;
+use App\Application\Wallet\PostingSource;
 use App\Domain\Operations\OperationResult;
 use App\Domain\Primary\PrimaryTerms;
 use App\Domain\Primary\UnitRights;
 use App\Models\BusinessCampaign;
 use App\Models\InvestorFundingMethod;
 use App\Models\Party;
+use App\Models\PrimaryReservationRecord;
 use App\Models\User;
 use Brick\Math\BigInteger;
 use Brick\Math\RoundingMode;
@@ -22,6 +25,17 @@ use Illuminate\Support\Str;
 /** Synthetic admission is deliberately explicit; it is not production eligibility or fee policy. */
 final class PrimaryReservationFixture
 {
+    /** A real retained source for isolated wallet-port tests; no synthetic cash is added. */
+    public static function postingSource(LockedWallet $wallet, string $principal): PostingSource
+    {
+        $units = BigInteger::of($principal)->dividedBy(5000)->toInt();
+        $root = PrimaryReservationRecord::factory()->withInitialVersion(false)->create([
+            'party_id' => $wallet->partyId, 'units' => $units, 'principal' => $principal,
+        ]);
+
+        return new PostingSource('primary_reservation', $root->id, $root->origin_operation_id);
+    }
+
     public static function campaign(): BusinessCampaign
     {
         $fixture = AuditSealingFixture::ready();

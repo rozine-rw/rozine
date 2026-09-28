@@ -5,8 +5,14 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Wallet\Contracts\WalletPostings;
+use App\Application\Wallet\PostingSource;
+use App\Domain\Wallet\WalletMoney;
 use App\Models\BusinessCampaign;
 use App\Models\CommandOperation;
+use App\Models\LedgerAccount;
+use App\Models\LedgerEntry;
+use App\Models\LedgerLine;
 use App\Models\Party;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
@@ -41,11 +47,29 @@ class PrimaryReservationRecordFactory extends Factory
             'expires_at' => fn (array $a) => min(CarbonImmutable::parse($a['created_at'])->addSeconds(300), BusinessCampaign::query()->whereKey($a['business_campaign_id'])->firstOrFail()->expires_at)];
     }
 
-    public function withInitialVersion(): static
+    public function withInitialVersion(bool $withHold = true): static
     {
-        return $this->afterCreating(function (PrimaryReservationRecord $reservation): void {
+        return $this->afterCreating(function (PrimaryReservationRecord $reservation) use ($withHold): void {
             PrimaryReservationVersion::factory()->create(['primary_reservation_id' => $reservation->id, 'revision' => 1,
                 'operation_id' => $reservation->origin_operation_id, 'previous_sha256' => null, 'created_at' => $reservation->created_at]);
+            if ($withHold) {
+                $this->retainSyntheticHold($reservation);
+            }
         });
+    }
+
+    /** Synthetic schema evidence only; the real reserve integration uses a settled deposit. */
+    private function retainSyntheticHold(PrimaryReservationRecord $reservation): void
+    {
+        $postings = app(WalletPostings::class);
+        $wallet = $postings->lockForParty($reservation->party_id);
+        $available = LedgerAccount::query()->where('wallet_id', $wallet->walletId)->where('kind', 'investor_available')->first()
+            ?? LedgerAccount::factory()->create(['wallet_id' => $wallet->walletId]);
+        $clearing = LedgerAccount::query()->where('kind', 'deposit_clearing')->first()
+            ?? LedgerAccount::factory()->system()->create();
+        $deposit = LedgerEntry::factory()->create(['wallet_id' => $wallet->walletId]);
+        LedgerLine::factory()->create(['entry_id' => $deposit->id, 'account_id' => $clearing->id, 'direction' => 'debit', 'amount' => $reservation->principal]);
+        LedgerLine::factory()->create(['entry_id' => $deposit->id, 'account_id' => $available->id, 'direction' => 'credit', 'amount' => $reservation->principal]);
+        $postings->hold($wallet, WalletMoney::of($reservation->principal), new PostingSource('primary_reservation', $reservation->id, $reservation->origin_operation_id));
     }
 }

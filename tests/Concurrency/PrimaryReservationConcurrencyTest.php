@@ -125,7 +125,7 @@ it('takes trigger locks in Business campaign reservation order while another tra
         $backend = trim((string) fgets($channels[0]));
         expect(ctype_digit($backend))->toBeTrue();
         DB::beginTransaction();
-        DB::table($blockedTable)->where('id', $targets[$blockedTable])->lockForUpdate()->first();
+        DB::table($blockedTable)->where('id', $targets[$blockedTable])->lock('FOR NO KEY UPDATE')->first();
         fwrite($channels[0], "go\n");
         $deadline = hrtime(true) + 3_000_000_000;
         $blocked = false;
@@ -148,7 +148,10 @@ it('takes trigger locks in Business campaign reservation order while another tra
             expect(fn () => $observer->transaction(fn () => $observer->table('business_profiles')->where('id', $campaign->business_id)->lock('FOR UPDATE NOWAIT')->first()))
                 ->toThrow(QueryException::class, 'could not obtain lock');
         }
-        if ($isVersion) {
+        if ($blockedTable === 'primary_reservations') {
+            expect(fn () => $observer->transaction(fn () => $observer->table('business_campaigns')->where('id', $campaign->id)->lock('FOR UPDATE NOWAIT')->first()))
+                ->toThrow(QueryException::class, 'could not obtain lock');
+        } elseif ($isVersion) {
             expect($observer->transaction(fn () => $observer->table('primary_reservations')->where('id', $reservation->id)->lock('FOR UPDATE NOWAIT')->first())?->id)
                 ->toBe($reservation->id, 'The reservation must still be unlocked while waiting for either parent.');
         }
@@ -164,5 +167,11 @@ it('takes trigger locks in Business campaign reservation order while another tra
         }
     }
     expect(pcntl_wifexited($childStatus) ? pcntl_wexitstatus($childStatus) : -1)->toBe(0);
-})->with(['primary_reservation_valid', 'primary_campaign_capacity', 'primary_reservation_version_valid', 'primary_campaign_open', 'primary_ordinals_unique'])
-    ->with(['business_profiles', 'business_campaigns']);
+})->with([
+    ['primary_reservation_valid', 'business_profiles'], ['primary_reservation_valid', 'business_campaigns'],
+    ['primary_campaign_capacity', 'business_profiles'], ['primary_campaign_capacity', 'business_campaigns'],
+    ['primary_reservation_version_valid', 'business_profiles'], ['primary_reservation_version_valid', 'business_campaigns'],
+    ['primary_campaign_open', 'business_profiles'], ['primary_campaign_open', 'business_campaigns'],
+    ['primary_ordinals_unique', 'business_profiles'], ['primary_ordinals_unique', 'business_campaigns'],
+    ['primary_reservation_version_valid', 'primary_reservations'],
+]);

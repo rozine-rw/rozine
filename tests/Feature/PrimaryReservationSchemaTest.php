@@ -197,6 +197,8 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $capacity = require database_path('migrations/2026_09_28_151253_enforce_primary_campaign_capacity_and_closure.php');
     $commands = require database_path('migrations/2026_09_28_152823_bind_primary_evidence_to_command_actors.php');
     $ordinals = require database_path('migrations/2026_09_28_154941_enforce_primary_ordinal_exclusion.php');
+    $walletBindings = require database_path('migrations/2026_09_28_161335_bind_primary_reservations_to_wallet_holds.php');
+    $walletBindings->down();
     $ordinals->down();
     $commands->down();
     $capacity->down();
@@ -206,6 +208,7 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $capacity->up();
     $commands->up();
     $ordinals->up();
+    $walletBindings->up();
     PrimaryReservationRecord::factory()->withInitialVersion()->create();
     primarySchemaFlush();
     expect(fn () => $migration->down())->toThrow(QueryException::class, 'forward migration');

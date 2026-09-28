@@ -9,9 +9,11 @@ use App\Domain\Wallet\WalletMoney;
 use App\Domain\Wallet\WalletViolation;
 use App\Models\LedgerEntry;
 use App\Models\LedgerLine;
+use App\Models\PrimaryReservationRecord;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\PrimaryReservationFixture;
 
 /**
  * Runs each contender in its own forked process and connection. Exit 0 is success, 2 is the
@@ -63,15 +65,19 @@ it('refuses a posting outside the caller\'s transaction', function (): void {
 it('never overdraws available when two holds race on one wallet', function (): void {
     $fixture = InvestorWalletFixture::ready();
     InvestorWalletFixture::settle(InvestorWalletFixture::deposit($fixture, '50000')['data']['intent_id']);
-    $hold = fn (): Closure => function () use ($fixture): void {
-        DB::transaction(function () use ($fixture): void {
+    $contenders = array_map(fn (): array => PrimaryReservationRecord::factory()->raw([
+        'id' => strtolower((string) Str::ulid()), 'party_id' => $fixture['party']->id, 'units' => 6, 'principal' => '30000',
+    ]), range(1, 2));
+    $hold = fn (array $attributes): Closure => function () use ($fixture, $attributes): void {
+        DB::transaction(function () use ($fixture, $attributes): void {
+            $root = PrimaryReservationRecord::factory()->withInitialVersion(false)->create($attributes);
             $postings = app(WalletPostings::class);
-            $postings->hold($postings->lockForParty($fixture['party']->id), WalletMoney::of('30000'),
-                new PostingSource('primary_reservation', strtolower((string) Str::ulid()), strtolower((string) Str::ulid())));
+            $wallet = $postings->lockForParty($fixture['party']->id);
+            $postings->hold($wallet, WalletMoney::of('30000'), new PostingSource('primary_reservation', $root->id, $root->origin_operation_id));
         });
     };
 
-    expect(walletContenders([$hold(), $hold()]))->toBe([0, 2])
+    expect(walletContenders(array_map($hold, $contenders)))->toBe([0, 2])
         ->and(LedgerEntry::query()->where('kind', 'primary_hold')->count())->toBe(1)
         ->and(LedgerLine::query()->whereIn('entry_id', LedgerEntry::query()->where('kind', 'primary_hold')->select('id'))->where('direction', 'debit')->sum('amount'))
         ->toBe('30000');
@@ -80,10 +86,13 @@ it('never overdraws available when two holds race on one wallet', function (): v
 it('posts one commit when the same hold is committed and released at once', function (): void {
     $fixture = InvestorWalletFixture::ready();
     InvestorWalletFixture::settle(InvestorWalletFixture::deposit($fixture, '50000')['data']['intent_id']);
-    $source = new PostingSource('primary_reservation', strtolower((string) Str::ulid()), strtolower((string) Str::ulid()));
-    DB::transaction(function () use ($fixture, $source): void {
+    $source = DB::transaction(function () use ($fixture): PostingSource {
         $postings = app(WalletPostings::class);
-        $postings->hold($postings->lockForParty($fixture['party']->id), WalletMoney::of('20000'), $source);
+        $wallet = $postings->lockForParty($fixture['party']->id);
+        $source = PrimaryReservationFixture::postingSource($wallet, '20000');
+        $postings->hold($wallet, WalletMoney::of('20000'), $source);
+
+        return $source;
     });
     $end = fn (string $movement): Closure => function () use ($fixture, $source, $movement): void {
         DB::transaction(function () use ($fixture, $source, $movement): void {

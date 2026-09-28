@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\Contracts\PrimaryReservations;
+use App\Application\Wallet\Contracts\WalletPostings;
+use App\Application\Wallet\PostingSource;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
+use App\Domain\Wallet\WalletMoney;
 use App\Models\BusinessCampaign;
 use App\Models\CommandOperation;
 use App\Models\LedgerEntry;
@@ -199,3 +202,23 @@ it('keeps unit identities unique for simultaneous writers with older snapshots',
         DB::statement('ALTER TABLE primary_reservations ENABLE TRIGGER primary_ordinals_unique');
     }
 })->with(['READ COMMITTED', 'REPEATABLE READ']);
+
+it('rejects incomplete reservation cash bindings at the real outer commit atomically', function (string $case): void {
+    $this->freezeSecond();
+    $investor = PrimaryReservationFixture::investor('50000');
+    $foreign = $case === 'party' ? PrimaryReservationFixture::investor('50000') : $investor;
+    expect(fn () => DB::transaction(function () use ($investor, $foreign, $case): void {
+        $root = $case === 'orphan' ? null : PrimaryReservationRecord::factory()->withInitialVersion(false)->create(['party_id' => $investor['party']->id]);
+        if ($case !== 'missing') {
+            $postings = app(WalletPostings::class);
+            $postings->hold($postings->lockForParty($foreign['party']->id), WalletMoney::of($case === 'amount' ? '5001' : '5000'),
+                new PostingSource('primary_reservation', $root->id ?? strtolower((string) Str::ulid()),
+                    $case === 'operation' ? strtolower((string) Str::ulid()) : ($root->origin_operation_id ?? strtolower((string) Str::ulid()))));
+        }
+    }))->toThrow(PDOException::class, 'Primary');
+    expect(PrimaryReservationRecord::query()->count())->toBe(0)->and(PrimaryReservationVersion::query()->count())->toBe(0)
+        ->and(DB::table('primary_ordinal_claims')->count())->toBe(0)
+        ->and(LedgerEntry::query()->where('kind', 'primary_hold')->count())->toBe(0);
+    DB::transaction(fn () => PrimaryReservationRecord::factory()->withInitialVersion()->create());
+    expect(PrimaryReservationRecord::query()->count())->toBe(1);
+})->with(['missing', 'orphan', 'party', 'operation', 'amount']);
