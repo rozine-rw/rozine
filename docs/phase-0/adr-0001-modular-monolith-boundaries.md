@@ -504,3 +504,22 @@ This is the first ledger module, so the protected-module delivery gate applies i
 - No live provider, PSP, banking arrangement, fee waiver or deposit limit is introduced.
 
 This is local implementation under validation; hosted CI, non-author review and real-provider acceptance remain separate.
+
+### S3-D disbursement, staff step-up and synthetic payouts
+
+The frozen namespaces and entry points are:
+
+- `App\Domain\Disbursement` holds the pure rules: the `DisbursementState` event fold and its segregation guards, the MC-08 `PayoutOutcome` classification (including key conflicts and unverifiable observations), `Reconciliation` with RWF 0 tolerance, the Kigali `IssueSchedule`, the JCS `IntentDigest`, `DisbursementReason` and `DisbursementViolation`.
+- `App\Application\Disbursement` holds the entry points `ManageDisbursements` (queue, detail, commands, the staff step-up exchange, lookup and requery), `DispatchDisbursements` (the outbox worker), `ReconcileDisbursements`, `RecordPayoutEvent`, `OpenFundedDisbursements` and `SyntheticDisbursementGuard`, and the ports `DisbursementStore`, `FundedCampaigns` (S3-C), `PayoutDestinations` (the Business-owned verified destination), `StaffConnections` (the staff-person connection source), `PayoutProvider`, `SyntheticDisbursementFixtures` and `SyntheticPayoutScripts`.
+- `App\Infrastructure\Disbursement` holds `EloquentDisbursementStore`, the synthetic sources and provider, and the unavailable adapters. Each is reached only through its container binding; outside local/testing with live money off, every funding, destination, connection and provider port is its unavailable adapter.
+- Transports are `StaffDisbursementController` (web `staff.disbursements.*` and `api.v1.staff.disbursements.*` under `staff:disbursements:read` and `staff:disbursements:manage`), the worker `disbursements:dispatch`, the scheduled `disbursements:reconcile` and the hidden local hook `local:disbursement`.
+
+**Protected records.** `Disbursement`, `DisbursementEvent`, `DisbursementStepUpProof`, `DisbursementStepUpMarker`, `DisbursementIntent`, `DisbursementDispatch`, `DisbursementProviderCall`, `DisbursementProviderEvent`, `DisbursementReconciliation` and `DisbursementClosing` are accessible only from the disbursement adapters, models and factories. The proposed `PrimaryHolding` is accessible from no adapter until the S3-C integration constraint exists. The `disbursement-boundary` negative control in the `business` group plants a bypass write against each protected record.
+
+**Authority and lock order.** Business (through `FundedCampaigns::lockBusiness`) → staff users in ascending id (`AuthorizeStaffPermission::handle` for the actor, `::currentlyHolds` for the recorded maker or checker) → campaign (`lockFunded`) → disbursement → step-up proof → reservations and commitments → wallets → ledger. The worker takes the recorded maker and checker in place of an actor; the reconciler takes no staff lock, so a sent, verified payout settles regardless of later staff changes. Superadmin views only; two distinct currently authorized staff are required for every amount.
+
+**PostgreSQL enforcement.** Every table is append-only apart from one consumption of a step-up proof before it expires. The database folds the event log itself, so it refuses a skipped state, a maker approving or rejecting their own authorization, a hold released by its placer, an intent not bound to the authorized amount, destination and commitments, a second send without idempotent sends, a resend after any observation, a reconciliation over a blocking observation and a second closing. Rollback is refused once rows exist.
+
+**Delivery and synthetic scope.** Approve records the intent and its queued outbox row with its journal receipt, and dispatch runs only after the outermost commit; the worker, the reconciler and the provider refuse an open transaction. The synthetic sources, provider and hooks exist only on local and testing with live money off. No live provider, verified destination source, staff connection source or funding adapter is introduced.
+
+This is local implementation under validation; hosted CI, non-author review and the S3-C integration remain separate.
