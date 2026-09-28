@@ -39,6 +39,7 @@ use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Application\Wallet\Contracts\DepositProvider;
@@ -79,6 +80,7 @@ use App\Infrastructure\Identity\EloquentIdentityRepository;
 use App\Infrastructure\Identity\FortifyAuthenticator;
 use App\Infrastructure\Operations\EloquentOperationJournal;
 use App\Infrastructure\Operations\JcsCanonicalJson;
+use App\Infrastructure\Primary\EloquentPrimaryCheckout;
 use App\Infrastructure\Primary\EloquentPrimaryReservations;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
 use App\Infrastructure\Wallet\EloquentSyntheticWalletFixtures;
@@ -147,6 +149,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AuditLedgerEvidence::class, EloquentAuditLedgerEvidence::class);
         $this->app->bind(WalletStore::class, EloquentWalletStore::class);
         $this->app->bind(WalletPostings::class, EloquentWalletPostings::class);
+        $this->app->bind(PrimaryCheckout::class, EloquentPrimaryCheckout::class);
         $this->app->bind(PrimaryReservations::class, EloquentPrimaryReservations::class);
         // The synthetic provider exists only on local and testing with live money off; everywhere
         // else nothing can be sent, verified or signed, because no live provider exists yet.

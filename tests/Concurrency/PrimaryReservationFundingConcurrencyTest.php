@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Wallet\Contracts\WalletPostings;
+use App\Application\Wallet\GetInvestorWallet;
 use App\Application\Wallet\PostingSource;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
@@ -236,4 +237,18 @@ it('refuses a rejected reserve receipt at outer commit even with valid cash and 
     expect(PrimaryReservationRecord::query()->count())->toBe(0)->and(PrimaryReservationVersion::query()->count())->toBe(0)
         ->and(LedgerEntry::query()->where('kind', 'primary_hold')->count())->toBe(0)
         ->and(DB::table('primary_ordinal_claims')->count())->toBe(0);
+});
+
+it('refuses unbound commitment-source holds through the real port without freezing available cash', function (): void {
+    $this->freezeSecond();
+    $investor = PrimaryReservationFixture::investor('50000');
+    expect(fn () => DB::transaction(function () use ($investor): void {
+        $wallets = app(WalletPostings::class);
+        $wallets->hold($wallets->lockForParty($investor['party']->id), WalletMoney::of('30000'),
+            new PostingSource('primary_commitment', strtolower((string) Str::ulid()), strtolower((string) Str::ulid())));
+    }))->toThrow(QueryException::class, 'primary_commitment_source_unavailable');
+    expect(LedgerEntry::query()->where('kind', 'primary_hold')->count())->toBe(0)
+        ->and(PrimaryReservationRecord::query()->count())->toBe(0)
+        ->and(app(GetInvestorWallet::class)->handle($investor['user']->id, 1)['wallet']['breakdown'])
+        ->toMatchArray(['available' => ['currency' => 'RWF', 'amount' => '50000'], 'held' => ['currency' => 'RWF', 'amount' => '0']]);
 });

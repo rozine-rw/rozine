@@ -28,8 +28,7 @@ final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
     public function __construct(private PublishedCampaignEvidence $publications, private CampaignClosureEvidence $closures,
         private BusinessExposureStore $exposures, private CanonicalJson $json) {}
 
-    /** @return CampaignInput */
-    public function lock(string $campaignId): array
+    public function lockBusiness(string $campaignId): void
     {
         if (DB::transactionLevel() === 0) {
             throw new LogicException('PRIMARY_TRANSACTION_REQUIRED');
@@ -37,7 +36,13 @@ final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
         $candidate = BusinessCampaign::query()->whereKey($campaignId)->first()
             ?? throw new CommandRejection('CAMPAIGN_NOT_FOUND', 404);
         BusinessProfile::query()->whereKey($candidate->business_id)->lockForUpdate()->firstOrFail();
-        $campaign = BusinessCampaign::query()->whereKey($candidate->id)->lockForUpdate()->firstOrFail();
+    }
+
+    /** @return CampaignInput */
+    public function lock(string $campaignId): array
+    {
+        $this->lockBusiness($campaignId);
+        $campaign = BusinessCampaign::query()->whereKey($campaignId)->lockForUpdate()->firstOrFail();
         $payload = $this->publications->find($campaign->id);
         if ($this->closures->find($campaign->id) !== null || now()->lt($campaign->live_at) || now()->gte($campaign->expires_at)) {
             throw new CommandRejection('CAMPAIGN_CLOSED');

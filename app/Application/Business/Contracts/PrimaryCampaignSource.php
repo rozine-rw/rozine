@@ -15,6 +15,13 @@ use DateTimeImmutable;
 interface PrimaryCampaignSource
 {
     /**
+     * Acquires only the owning Business lock before caller User/Party authority.
+     * Requires an outer transaction and must precede any actor, campaign or wallet lock.
+     * Publication availability is deliberately checked by lock(), after journal replay.
+     */
+    public function lockBusiness(string $campaignId): void;
+
+    /**
      * Requires the caller's transaction. Retains Business then campaign locks
      * until the outer commit or rollback, provided the acquiring savepoint is
      * released successfully. Rolling it back releases its locks; callers must

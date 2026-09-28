@@ -56,7 +56,7 @@ it('refuses dangling foreign mispriced or misidentified holds in both directions
         };
         app(WalletPostings::class)->hold($foreign, WalletMoney::of($amount), $source);
         flushHoldBinding();
-    }))->toThrow(QueryException::class, 'Primary');
+    }))->toThrow(QueryException::class, $case === 'type' ? 'primary_commitment_source_unavailable' : 'Primary');
     expect(PrimaryReservationRecord::query()->count())->toBe(0)
         ->and(LedgerEntry::query()->where('kind', 'primary_hold')->count())->toBe(0);
 })->with(['dangling', 'source', 'type', 'party', 'operation', 'partial', 'excessive']);
