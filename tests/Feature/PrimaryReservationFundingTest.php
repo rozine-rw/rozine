@@ -152,6 +152,7 @@ it('refuses corrupt retained allocations even if the damaged payload has a fresh
         'count' => $payload['ordinals'] = [['first' => '1', 'last' => '3']],
         'rights' => $payload['rights']['total_return']['amount'] = '1',
         'digest' => $payload['party_id'] = 'damaged',
+        'projection' => $root->forceFill(['ordinal_ranges' => '{[3,5)}']),
         default => throw new InvalidArgumentException('Unknown damage fixture.'),
     };
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
@@ -166,4 +167,4 @@ it('refuses corrupt retained allocations even if the damaged payload has a fresh
     }
     expect(fn () => PrimaryReservationFixture::reserve($this->campaign, $this->investor, '1'))->toThrow(RuntimeException::class, 'RESERVATION_INTEGRITY_FAILED')
         ->and(PrimaryReservationRecord::query()->count())->toBe(1);
-})->with(['missing', 'shape', 'invalid', 'count', 'rights', 'digest']);
+})->with(['missing', 'shape', 'invalid', 'count', 'rights', 'digest', 'projection']);

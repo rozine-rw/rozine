@@ -76,8 +76,8 @@ it('takes trigger locks in Business campaign reservation order while another tra
     $campaign = DB::table('business_campaigns')->where('id', $reservation->business_campaign_id)->first();
     $isVersion = in_array($trigger, ['primary_campaign_open', 'primary_reservation_version_valid'], true);
     $table = $isVersion ? 'primary_reservation_versions' : 'primary_reservations';
-    $triggers = $isVersion ? ['primary_campaign_open', 'primary_reservation_version_valid'] : ['primary_campaign_capacity', 'primary_reservation_valid'];
-    $sibling = array_values(array_diff($triggers, [$trigger]))[0];
+    $triggers = $isVersion ? ['primary_campaign_open', 'primary_reservation_version_valid'] : ['primary_campaign_capacity', 'primary_reservation_valid', 'primary_ordinals_unique'];
+    $siblings = array_values(array_diff($triggers, [$trigger]));
     $values = $isVersion
         ? PrimaryReservationVersion::factory()->make(['primary_reservation_id' => $reservation->id])->getAttributes()
         : PrimaryReservationRecord::factory()->make(['business_campaign_id' => $campaign->id])->getAttributes();
@@ -89,11 +89,15 @@ it('takes trigger locks in Business campaign reservation order while another tra
     }
     stream_set_timeout($channels[0], 8);
     stream_set_timeout($channels[1], 8);
-    DB::statement('ALTER TABLE '.$table.' DISABLE TRIGGER '.$sibling);
+    foreach ($siblings as $sibling) {
+        DB::statement('ALTER TABLE '.$table.' DISABLE TRIGGER '.$sibling);
+    }
     DB::disconnect();
     $pid = pcntl_fork();
     if ($pid === -1) {
-        DB::statement('ALTER TABLE '.$table.' ENABLE TRIGGER '.$sibling);
+        foreach ($siblings as $sibling) {
+            DB::statement('ALTER TABLE '.$table.' ENABLE TRIGGER '.$sibling);
+        }
         throw new RuntimeException('Could not fork the trigger contender.');
     }
     if ($pid === 0) {
@@ -155,8 +159,10 @@ it('takes trigger locks in Business campaign reservation order while another tra
         }
         fclose($channels[0]);
         DB::purge('primary_order_observer');
-        DB::statement('ALTER TABLE '.$table.' ENABLE TRIGGER '.$sibling);
+        foreach ($siblings as $sibling) {
+            DB::statement('ALTER TABLE '.$table.' ENABLE TRIGGER '.$sibling);
+        }
     }
     expect(pcntl_wifexited($childStatus) ? pcntl_wexitstatus($childStatus) : -1)->toBe(0);
-})->with(['primary_reservation_valid', 'primary_campaign_capacity', 'primary_reservation_version_valid', 'primary_campaign_open'])
+})->with(['primary_reservation_valid', 'primary_campaign_capacity', 'primary_reservation_version_valid', 'primary_campaign_open', 'primary_ordinals_unique'])
     ->with(['business_profiles', 'business_campaigns']);

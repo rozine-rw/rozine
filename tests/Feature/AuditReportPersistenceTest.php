@@ -208,6 +208,8 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $primary = require database_path('migrations/2026_09_28_143756_create_primary_reservation_records.php');
     $primaryCapacity = require database_path('migrations/2026_09_28_151253_enforce_primary_campaign_capacity_and_closure.php');
     $primaryCommands = require database_path('migrations/2026_09_28_152823_bind_primary_evidence_to_command_actors.php');
+    $primaryOrdinals = require database_path('migrations/2026_09_28_154941_enforce_primary_ordinal_exclusion.php');
+    $primaryOrdinals->down();
     $primaryCommands->down();
     $primaryCapacity->down();
     $primary->down();
@@ -242,6 +244,7 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $primary->up();
     $primaryCapacity->up();
     $primaryCommands->up();
+    $primaryOrdinals->up();
     expect(Schema::hasTable('audit_reports'))->toBeTrue()->and(Schema::hasTable('audit_report_versions'))->toBeTrue()
         ->and($fixture['application']->refresh()->getRawOriginal())->toBe($before);
 });

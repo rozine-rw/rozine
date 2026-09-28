@@ -953,6 +953,16 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `primary_commitments_operation_id_unique` on (operation_id) — unique; `primary_commitments_pkey` on (id) — unique; `primary_commitments_primary_reservation_id_unique` on (primary_reservation_id) — unique; `primary_commitments_primary_reservation_version_id_unique` on (primary_reservation_version_id) — unique
 
+### `primary_ordinal_claims`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `business_campaign_id` | `bpchar` | no | — |
+| `ordinal` | `int4` | no | — |
+| `primary_reservation_id` | `bpchar` | no | — |
+
+**Indexes:** `primary_claim_reservation` on (primary_reservation_id); `primary_ordinal_claims_pkey` on (business_campaign_id, ordinal) — unique
+
 ### `primary_reservation_versions`
 
 | Column | Type | Nullable | Default |
@@ -984,8 +994,9 @@ facts that would differ between machines, so they are excluded deliberately.
 | `sha256` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
 | `expires_at` | `timestamptz` | no | — |
+| `ordinal_ranges` | `int8multirange` | no | — |
 
-**Indexes:** `primary_campaign_reservations` on (business_campaign_id, id); `primary_party_reservations` on (party_id, id); `primary_reservation_expiry` on (expires_at, id); `primary_reservations_origin_operation_id_unique` on (origin_operation_id) — unique; `primary_reservations_pkey` on (id) — unique
+**Indexes:** `primary_campaign_reservations` on (business_campaign_id, id); `primary_ordinal_intersection` on (ordinal_ranges); `primary_party_reservations` on (party_id, id); `primary_reservation_expiry` on (expires_at, id); `primary_reservations_origin_operation_id_unique` on (origin_operation_id) — unique; `primary_reservations_pkey` on (id) — unique
 
 ### `pulse_signups`
 
@@ -1356,6 +1367,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_28_143756_create_primary_reservation_records.php |
 | 2026_09_28_151253_enforce_primary_campaign_capacity_and_closure.php |
 | 2026_09_28_152823_bind_primary_evidence_to_command_actors.php |
+| 2026_09_28_154941_enforce_primary_ordinal_exclusion.php |
 
 ## Routes
 

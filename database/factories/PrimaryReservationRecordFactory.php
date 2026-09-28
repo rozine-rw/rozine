@@ -13,6 +13,7 @@ use App\Models\PrimaryReservationVersion;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\DB;
 
 /** @extends Factory<PrimaryReservationRecord> */
 class PrimaryReservationRecordFactory extends Factory
@@ -28,6 +29,12 @@ class PrimaryReservationRecordFactory extends Factory
                 'command' => 'primary.reserve', 'target_type' => 'campaign', 'target_id' => $a['business_campaign_id'],
             ])->id,
             'units' => 1, 'principal' => '5000',
+            'ordinal_ranges' => function (array $a): string {
+                $first = (int) DB::table('primary_reservations')->where('business_campaign_id', $a['business_campaign_id'])
+                    ->selectRaw('COALESCE(MAX(upper(ordinal_ranges)), 1) AS first')->value('first');
+
+                return '{['.$first.','.($first + max(1, (int) $a['units'])).')}';
+            },
             'payload' => ['source' => 'unsupported-fixture'],
             'sha256' => fn (array $a): string => hash('sha256', app(CanonicalJson::class)->encode($a['payload'])),
             'created_at' => now()->startOfSecond(),

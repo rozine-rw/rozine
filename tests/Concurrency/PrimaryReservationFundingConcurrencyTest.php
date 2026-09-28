@@ -131,3 +131,71 @@ it('rolls cash and inventory back when a mismatched journal command reaches the 
         ->and(LedgerEntry::query()->where('kind', 'primary_hold')->count())->toBe(0);
     expect(PrimaryReservationFixture::reserve($campaign, $investor, '1')['code'])->toBe('RESERVATION_HELD');
 });
+
+it('keeps unit identities unique for simultaneous writers with older snapshots', function (string $isolation): void {
+    $this->freezeSecond();
+    $campaign = BusinessCampaign::factory()->create();
+    $contenders = array_map(fn (): array => PrimaryReservationRecord::factory()->raw([
+        'business_campaign_id' => $campaign->id, 'ordinal_ranges' => '{[1,4)}', 'units' => 3, 'principal' => '15000',
+    ]), range(1, 2));
+    DB::statement('ALTER TABLE primary_reservations DISABLE TRIGGER primary_ordinals_unique');
+    $children = [];
+    DB::disconnect();
+    try {
+        foreach ($contenders as $attributes) {
+            $channels = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+            if ($channels === false) {
+                throw new RuntimeException('Could not create the ordinal contender barrier.');
+            }
+            stream_set_timeout($channels[0], 8);
+            stream_set_timeout($channels[1], 8);
+            $pid = pcntl_fork();
+            if ($pid === -1) {
+                throw new RuntimeException('Could not fork the ordinal contender.');
+            }
+            if ($pid === 0) {
+                fclose($channels[0]);
+                DB::purge();
+                try {
+                    DB::statement("SET lock_timeout = '5s'");
+                    DB::beginTransaction();
+                    DB::statement('SET TRANSACTION ISOLATION LEVEL '.$isolation);
+                    PrimaryReservationRecord::query()->count();
+                    fwrite($channels[1], "ready\n");
+                    if (fgets($channels[1]) !== "go\n") {
+                        exit(3);
+                    }
+                    PrimaryReservationRecord::factory()->withInitialVersion()->create($attributes);
+                    DB::commit();
+                    exit(0);
+                } catch (QueryException $exception) {
+                    exit(str_contains($exception->getMessage(), 'primary_ordinal_claims_pkey') ? 2 : 3);
+                } catch (Throwable) {
+                    exit(4);
+                }
+            }
+            fclose($channels[1]);
+            $children[$pid] = $channels[0];
+        }
+        foreach ($children as $channel) {
+            expect(fgets($channel))->toBe("ready\n");
+        }
+        foreach ($children as $channel) {
+            fwrite($channel, "go\n");
+        }
+        $results = [];
+        foreach ($children as $pid => $channel) {
+            pcntl_waitpid($pid, $status);
+            $results[] = pcntl_wifexited($status) ? pcntl_wexitstatus($status) : -1;
+        }
+        sort($results);
+        expect($results)->toBe([0, 2])->and(PrimaryReservationRecord::query()->count())->toBe(1)
+            ->and(DB::table('primary_ordinal_claims')->orderBy('ordinal')->pluck('ordinal')->all())->toBe([1, 2, 3]);
+    } finally {
+        foreach ($children as $pid => $channel) {
+            fclose($channel);
+            pcntl_waitpid($pid, $status);
+        }
+        DB::statement('ALTER TABLE primary_reservations ENABLE TRIGGER primary_ordinals_unique');
+    }
+})->with(['READ COMMITTED', 'REPEATABLE READ']);

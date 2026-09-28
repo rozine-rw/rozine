@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $origin_operation_id
  * @property string $publication_sha256
  * @property string $principal
+ * @property string $ordinal_ranges
  * @property int $units
  * @property CarbonImmutable $expires_at
  * @property array<string, mixed> $payload
@@ -37,7 +38,7 @@ class PrimaryReservationRecord extends Model
     protected $guarded = ['*'];
 
     /** @var list<string> */
-    protected $hidden = ['payload'];
+    protected $hidden = ['payload', 'ordinal_ranges'];
 
     /** @return array<string, string> */
     protected function casts(): array

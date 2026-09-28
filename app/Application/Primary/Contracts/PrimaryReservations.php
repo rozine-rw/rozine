@@ -26,7 +26,8 @@ interface PrimaryReservations
      *
      * Reservation creation conservatively counts every retained allocation, including timed-out
      * holds. Reusing allocations requires verified release/refund integration and a forward
-     * migration of the capacity trigger; application-only release cannot recycle inventory.
+     * migration of the capacity trigger and retained unit claims; application-only release
+     * cannot recycle inventory.
      *
      * @param  Closure(UnitRights, array<string, mixed>): PrimaryTerms  $admit
      */

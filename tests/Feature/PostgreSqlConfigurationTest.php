@@ -82,6 +82,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $primary = require database_path('migrations/2026_09_28_143756_create_primary_reservation_records.php');
     $primaryCapacity = require database_path('migrations/2026_09_28_151253_enforce_primary_campaign_capacity_and_closure.php');
     $primaryCommands = require database_path('migrations/2026_09_28_152823_bind_primary_evidence_to_command_actors.php');
+    $primaryOrdinals = require database_path('migrations/2026_09_28_154941_enforce_primary_ordinal_exclusion.php');
+    $primaryOrdinals->down();
     $primaryCommands->down();
     $primaryCapacity->down();
     $primary->down();
@@ -187,6 +189,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $primary->up();
     $primaryCapacity->up();
     $primaryCommands->up();
+    $primaryOrdinals->up();
 
     expect(Schema::hasTable('parties'))->toBeTrue()
         ->and(Schema::hasTable('role_memberships'))->toBeTrue()

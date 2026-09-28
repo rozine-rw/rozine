@@ -196,6 +196,8 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $migration = require database_path('migrations/2026_09_28_143756_create_primary_reservation_records.php');
     $capacity = require database_path('migrations/2026_09_28_151253_enforce_primary_campaign_capacity_and_closure.php');
     $commands = require database_path('migrations/2026_09_28_152823_bind_primary_evidence_to_command_actors.php');
+    $ordinals = require database_path('migrations/2026_09_28_154941_enforce_primary_ordinal_exclusion.php');
+    $ordinals->down();
     $commands->down();
     $capacity->down();
     $migration->down();
@@ -203,11 +205,13 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $migration->up();
     $capacity->up();
     $commands->up();
+    $ordinals->up();
     PrimaryReservationRecord::factory()->withInitialVersion()->create();
     primarySchemaFlush();
     expect(fn () => $migration->down())->toThrow(QueryException::class, 'forward migration');
     expect(fn () => $capacity->down())->toThrow(QueryException::class, 'forward migration');
     expect(fn () => $commands->down())->toThrow(QueryException::class, 'forward migration');
+    expect(fn () => $ordinals->down())->toThrow(QueryException::class, 'forward migration');
     expect(Schema::hasTable('primary_reservations'))->toBeTrue();
 });
 
@@ -263,6 +267,8 @@ it('rejects held and confirmed revisions after campaign closure while allowing c
 
 it('refuses to install a capacity guard over already oversubscribed evidence', function (): void {
     DB::statement('DROP TRIGGER primary_campaign_capacity ON primary_reservations');
+    DB::statement('DROP TRIGGER primary_ordinals_unique ON primary_reservations');
+    DB::statement('DROP TRIGGER primary_ordinal_evidence ON primary_reservations');
     $root = PrimaryReservationRecord::factory()->withInitialVersion()->create(['units' => 600, 'principal' => '3000000']);
     PrimaryReservationRecord::factory()->withInitialVersion()->create(['business_campaign_id' => $root->business_campaign_id, 'units' => 600, 'principal' => '3000000']);
     $capacity = require database_path('migrations/2026_09_28_151253_enforce_primary_campaign_capacity_and_closure.php');

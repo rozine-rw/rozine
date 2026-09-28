@@ -52,6 +52,11 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                         $partyUnits = $partyUnits->plus($ordinals->count);
                     }
                 }
+                try {
+                    UnitOrdinals::fromRanges($campaign['units'], $occupied);
+                } catch (PrimaryViolation $exception) {
+                    throw new RuntimeException('RESERVATION_INTEGRITY_FAILED', previous: $exception);
+                }
                 if ($partyUnits->plus($quantity)->multipliedBy(2)->isGreaterThan($campaign['units'])) {
                     throw new CommandRejection('INVESTOR_CAMPAIGN_CAP_EXCEEDED', 422);
                 }
@@ -65,7 +70,7 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                 $source = new PostingSource('primary_reservation', $id, $originOperationId);
                 $root = new PrimaryReservationRecord;
                 $root->forceFill(['id' => $id, 'business_campaign_id' => $campaign['id'], 'publication_sha256' => $campaign['publication_sha256'],
-                    'party_id' => $partyId, 'origin_operation_id' => $originOperationId, 'units' => $quantity->toInt(), 'principal' => (string) $rights->principal,
+                    'party_id' => $partyId, 'origin_operation_id' => $originOperationId, 'units' => $quantity->toInt(), 'principal' => (string) $rights->principal, 'ordinal_ranges' => $this->ordinalRanges($rights->ordinals),
                     'created_at' => $reservation->window->startsAt, 'expires_at' => $reservation->window->expiresAt]);
                 $payload = $this->rootPayload($root, $campaign, $rights);
                 $root->forceFill(['payload' => $payload, 'sha256' => $this->digest($payload)])->save();
@@ -103,13 +108,18 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
         } catch (PrimaryViolation $exception) {
             throw new RuntimeException('RESERVATION_INTEGRITY_FAILED', previous: $exception);
         }
-        if ($record->publication_sha256 !== $campaign['publication_sha256'] || (string) $ordinals->count !== (string) $record->units
+        if ($record->ordinal_ranges !== $this->ordinalRanges($ordinals) || $record->publication_sha256 !== $campaign['publication_sha256'] || (string) $ordinals->count !== (string) $record->units
             || (string) $rights->principal !== $record->principal || ! hash_equals($record->sha256, $this->digest($payload))
             || $this->json->encode($payload) !== $this->json->encode($this->rootPayload($record, $campaign, $rights))) {
             throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
         }
 
         return $ordinals;
+    }
+
+    private function ordinalRanges(UnitOrdinals $ordinals): string
+    {
+        return '{'.implode(',', array_map(fn (array $range): string => '['.$range['first'].','.BigInteger::of($range['last'])->plus(1).')', $ordinals->ranges)).'}';
     }
 
     /**
