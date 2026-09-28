@@ -304,6 +304,24 @@ test('forced seed and reset commands stop before database access', function (str
     expect($original->table('users')->where('id', $user->id)->value('email'))->toBe($user->email);
 })->with(['production', 'uat', 'demo'])->with(['db:seed', 'db:wipe', 'migrate:fresh', 'migrate:refresh', 'migrate:reset', 'migrate:rollback']);
 
+test('the synthetic wallet seed, event hook and worker stop outside local and testing', function (string $environment, string $command) {
+    isolatedConfiguration($environment);
+    if ($environment === 'production') {
+        config(['database.connections.pgsql.database' => 'rozine', 'database.connections.pgsql.username' => 'rozine']);
+    }
+
+    expect(fn () => Event::dispatch(new CommandStarting($command, new ArrayInput(['command' => $command]), new BufferedOutput)))
+        ->toThrow(LogicException::class, 'ISOLATION_SYNTHETIC_WALLET_DENIED');
+})->with(['production', 'uat', 'demo'])->with(['local:wallet', 'wallet:dispatch-deposits']);
+
+test('the synthetic wallet commands also stop on testing once live money is switched on', function () {
+    config(['isolation.live_money_enabled' => true]);
+
+    expect(fn () => app(EnvironmentIsolation::class)->guardCommand('wallet:dispatch-deposits'))->toThrow(LogicException::class, 'ISOLATION_SYNTHETIC_WALLET_DENIED');
+    config(['isolation.live_money_enabled' => false]);
+    expect(fn () => app(EnvironmentIsolation::class)->guardCommand('local:wallet'))->not->toThrow(LogicException::class);
+});
+
 test('the seeder itself rejects direct invocation outside an enabled demo or development', function () {
     $user = User::factory()->create();
     app()->detectEnvironment(fn (): string => 'production');

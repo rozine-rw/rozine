@@ -38,6 +38,12 @@ use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
+use App\Application\Wallet\Contracts\DepositProvider;
+use App\Application\Wallet\Contracts\SyntheticEventSigner;
+use App\Application\Wallet\Contracts\SyntheticWalletFixtures;
+use App\Application\Wallet\Contracts\WalletPostings;
+use App\Application\Wallet\Contracts\WalletStore;
+use App\Application\Wallet\SyntheticWalletGuard;
 use App\Infrastructure\Auditor\EloquentAuditAssignmentStore;
 use App\Infrastructure\Auditor\EloquentAuditEngagementStore;
 use App\Infrastructure\Auditor\EloquentAuditLedgerEvidence;
@@ -69,6 +75,11 @@ use App\Infrastructure\Identity\FortifyAuthenticator;
 use App\Infrastructure\Operations\EloquentOperationJournal;
 use App\Infrastructure\Operations\JcsCanonicalJson;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
+use App\Infrastructure\Wallet\EloquentSyntheticWalletFixtures;
+use App\Infrastructure\Wallet\EloquentWalletPostings;
+use App\Infrastructure\Wallet\EloquentWalletStore;
+use App\Infrastructure\Wallet\SyntheticDepositProvider;
+use App\Infrastructure\Wallet\UnavailableDepositProvider;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Console\Seeds\SeedCommand;
@@ -126,6 +137,15 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(StatementExtractionQueue::class, EloquentStatementExtractionQueue::class);
         $this->app->bind(AuditLedgerExtractionQueue::class, EloquentAuditLedgerExtractionQueue::class);
         $this->app->bind(AuditLedgerEvidence::class, EloquentAuditLedgerEvidence::class);
+        $this->app->bind(WalletStore::class, EloquentWalletStore::class);
+        $this->app->bind(WalletPostings::class, EloquentWalletPostings::class);
+        // The synthetic provider exists only on local and testing with live money off; everywhere
+        // else nothing can be sent, verified or signed, because no live provider exists yet.
+        $synthetic = fn (): DepositProvider&SyntheticEventSigner => $this->app->make(SyntheticWalletGuard::class)->allowed()
+            ? $this->app->make(SyntheticDepositProvider::class) : $this->app->make(UnavailableDepositProvider::class);
+        $this->app->bind(DepositProvider::class, $synthetic);
+        $this->app->bind(SyntheticEventSigner::class, $synthetic);
+        $this->app->bind(SyntheticWalletFixtures::class, EloquentSyntheticWalletFixtures::class);
     }
 
     /**
