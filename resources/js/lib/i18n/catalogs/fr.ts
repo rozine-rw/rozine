@@ -410,7 +410,7 @@ const fr: Catalog = {
     'business.apply.review.application_fee_when':
         "Unique, facturés à l'approbation.",
     'business.apply.review.fee_note':
-        'Aucuns frais sur le montant levé, et rien au-delà du taux annoncé. Facturés une fois la note approuvée, avant sa mise en ligne.',
+        'Aucuns frais sur le montant levé. Facturés une fois la note approuvée, avant sa mise en ligne.',
     'business.apply.review.binding':
         "Votre signature engage légalement l'entreprise aux obligations divulguées. L'identifiant de la demande est attribué à la soumission.",
     'business.apply.submitted.title': 'Votre demande a été soumise',
@@ -2985,6 +2985,19 @@ const fr: Catalog = {
     'business.apply.review.reduced':
         'Vous avez choisi {principal} sur les {offered} proposés.',
     'business.apply.review.use_full': "Reprendre l'offre complète",
+    'business.apply.raise.instalment_fee': '+ {fee} de frais de service',
+    'business.apply.review.service_fee':
+        'Frais de service ({rate} % de chaque remboursement)',
+    'business.apply.review.projected': 'Prévisionnel',
+    'business.apply.review.total_payable': 'Total à payer (prévisionnel)',
+    'business.apply.review.fee_projection_note':
+        'Frais de service prévisionnels : {rate} % de chaque remboursement, prélevés sur les montants effectivement remboursés (capital et intérêts, hors frais et pénalités). Ces montants supposent que chaque échéance est payée en totalité à la date prévue.',
+    'business.apply.review.fee_note_service_fee':
+        'Aucuns frais sur le montant levé. Facturés une fois la note approuvée, avant sa mise en ligne. Les frais de service sur chaque remboursement figurent avec votre offre ci-dessus.',
+    'business.apply.review.fee_unavailable':
+        'Conditions de frais indisponibles — vous ne pouvez pas encore signer',
+    'business.apply.review.fee_unavailable_body':
+        "Rozine n'a pas encore publié les conditions des frais de service pour cette offre : elle ne peut donc pas encore être acceptée. Votre brouillon et votre offre restent enregistrés.",
 
     'business.apply.recalculating': 'Recalcul…',
     'auditor.capture.unavailable':
@@ -3513,6 +3526,10 @@ const fr: Catalog = {
     'business.publish.published.disclosure': 'Information sur les frais',
     'business.publish.published.campaign': 'Voir la campagne',
     'business.publish.published.home': "Retour à l'accueil",
+    'business.publish.fee_unavailable':
+        'Conditions de frais indisponibles — vous ne pouvez pas encore publier',
+    'business.publish.fee_unavailable_body':
+        "Rozine n'a pas encore publié les conditions des frais de service pour cette levée : elle ne peut donc pas encore être mise en ligne. Rien n'a été publié.",
     'business.campaign.state.live': 'En ligne',
     'business.campaign.state.fully_reserved': 'Entièrement réservée',
     'business.campaign.state.funded': 'Financée',

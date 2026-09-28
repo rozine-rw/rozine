@@ -328,6 +328,7 @@
         "resources/js/components/business/apply/operation-outcome.ts",
         "resources/js/components/business/apply/outcome-banner.tsx",
         "resources/js/components/business/apply/pending-review.tsx",
+        "resources/js/components/business/apply/service-fee.tsx",
         "resources/js/components/business/apply/step-business.tsx",
         "resources/js/components/business/apply/step-heading.tsx",
         "resources/js/components/business/apply/step-raise.tsx",
@@ -610,10 +611,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 579,
+        "totalTrackedSources": 580,
         "generated": 191,
         "declarationOnly": 18,
-        "authoredExecutable": 370
+        "authoredExecutable": 371
     },
-    "coverageSetSha256": "15bb272f3fdcb18dd20e9a8dfd280ac6a7d0236596b0829331f6353b52b2fee7"
+    "coverageSetSha256": "d5ec3334d44b186afcd654c693e0094d87e9421a748a9e6a0b6a83a2a2bdf662"
 }

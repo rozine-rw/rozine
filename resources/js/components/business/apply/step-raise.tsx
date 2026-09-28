@@ -1,5 +1,11 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+import {
+    instalmentFee,
+    readFeeTerms,
+    ServiceFeeNote,
+    ServiceFeeRows,
+} from '@/components/business/apply/service-fee';
 import { StepHeading } from '@/components/business/apply/step-heading';
 import { ErrorBanner, FieldError } from '@/components/rozine/form';
 import { Icon } from '@/components/rozine/icon';
@@ -10,9 +16,11 @@ import { cn } from '@/lib/utils';
 import type {
     ApplicationQuote,
     ScheduleInstalment,
+    ServiceFeeDisclosure,
     TermMonths,
     UseOfFunds,
 } from '@/types/business';
+import type { Money } from '@/types/money';
 
 type ReadyQuote = Extract<ApplicationQuote, { status: 'ready' }>;
 
@@ -611,6 +619,9 @@ function Economics({
 }) {
     const { t } = useTranslation();
     const dash = '—';
+    /* Raise binds nothing: an absent or unavailable fee simply shows no fee line here. */
+    const fees = quote ? readFeeTerms(quote, quote.schedule, false) : null;
+    const shownFee = fees?.state === 'shown' ? fees : null;
 
     return (
         <div
@@ -668,7 +679,19 @@ function Economics({
                         {quote ? formatRwf(quote.total) : dash}
                     </span>
                 </div>
-                {quote && <InstalmentSchedule schedule={quote.schedule} />}
+                {shownFee && (
+                    <ServiceFeeRows
+                        fee={shownFee.fee}
+                        totalPayable={shownFee.totalPayable}
+                    />
+                )}
+                {quote && (
+                    <InstalmentSchedule
+                        schedule={quote.schedule}
+                        fee={shownFee?.fee}
+                    />
+                )}
+                {shownFee && <ServiceFeeNote fee={shownFee.fee} />}
                 {quote?.reserve && (
                     <div className="mt-1 flex flex-col gap-[9px] border-t border-[#dbe7ff] pt-[11px] dark:border-rz-divider">
                         <div className="flex items-baseline justify-between gap-3">
@@ -691,11 +714,16 @@ function Economics({
     );
 }
 
-/** Every instalment as the server scheduled it; the last one carries any residual. */
+/**
+ * Every instalment as the server scheduled it; the last one carries any residual. With the
+ * server's service-fee projection, each instalment also shows its own projected fee.
+ */
 export function InstalmentSchedule({
     schedule,
+    fee = null,
 }: {
     schedule: ScheduleInstalment[];
+    fee?: ServiceFeeDisclosure | null;
 }) {
     const { t } = useTranslation();
     const last = schedule.at(-1)?.instalment;
@@ -725,12 +753,45 @@ export function InstalmentSchedule({
                                 { n: row.instalment },
                             )}
                         </span>
-                        <span className="text-[13px] font-semibold whitespace-nowrap text-rz-ink">
-                            {formatRwf(row.amount)}
-                        </span>
+                        <FeeAwareAmount
+                            amount={row.amount}
+                            fee={fee && instalmentFee(fee, row.instalment)}
+                        />
                     </li>
                 ))}
             </ol>
         </div>
+    );
+}
+
+/** An instalment's amount, with its projected service fee beneath it when the server sent one. */
+function FeeAwareAmount({
+    amount,
+    fee,
+}: {
+    amount: Money;
+    fee: Money | null | undefined;
+}) {
+    const { t } = useTranslation();
+
+    if (!fee) {
+        return (
+            <span className="text-[13px] font-semibold whitespace-nowrap text-rz-ink">
+                {formatRwf(amount)}
+            </span>
+        );
+    }
+
+    return (
+        <span className="shrink-0 text-right">
+            <span className="block text-[13px] font-semibold whitespace-nowrap text-rz-ink">
+                {formatRwf(amount)}
+            </span>
+            <span className="mt-px block text-[11px] whitespace-nowrap text-rz-secondary">
+                {t('business.apply.raise.instalment_fee', {
+                    fee: formatRwf(fee),
+                })}
+            </span>
+        </span>
     );
 }

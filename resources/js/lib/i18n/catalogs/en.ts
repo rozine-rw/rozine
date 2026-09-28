@@ -398,7 +398,7 @@ const en = {
     'business.apply.review.application_fee_when':
         'One-time, charged when approved.',
     'business.apply.review.fee_note':
-        'No fee on the amount you raise, and nothing on top of your quoted rate. Charged once your note is approved, before it goes live.',
+        'No fee on the amount you raise. Charged once your note is approved, before it goes live.',
     'business.apply.review.binding':
         'Your signature legally binds the business to the disclosed obligations. Your application ID is issued on submission.',
     'business.apply.submitted.title': 'Your application has been submitted',
@@ -2912,6 +2912,19 @@ const en = {
     'business.apply.review.reduced':
         'You chose {principal} of the {offered} offered.',
     'business.apply.review.use_full': 'Use the full offer',
+    'business.apply.raise.instalment_fee': '+ {fee} service fee',
+    'business.apply.review.service_fee':
+        'Service fee ({rate}% of each repayment)',
+    'business.apply.review.projected': 'Projected',
+    'business.apply.review.total_payable': 'Total payable (projected)',
+    'business.apply.review.fee_projection_note':
+        'Projected service fee: {rate}% of each repayment, charged on amounts actually repaid (principal and interest, excluding fees and penalties). These figures assume every instalment is paid in full on schedule.',
+    'business.apply.review.fee_note_service_fee':
+        'No fee on the amount you raise. Charged once your note is approved, before it goes live. The service fee on each repayment is shown with your offer above.',
+    'business.apply.review.fee_unavailable':
+        "Fee terms unavailable — you can't sign yet",
+    'business.apply.review.fee_unavailable_body':
+        "Rozine hasn't published the service-fee terms for this offer, so it can't be accepted yet. Your draft and your offer stay saved.",
     'business.apply.recalculating': 'Recalculating…',
     'auditor.capture.unavailable':
         "The capture app isn't available for this assignment yet, so photos and the check-in can't be taken. There's no way to capture them on the web.",
@@ -3367,6 +3380,10 @@ const en = {
     'business.publish.published.disclosure': 'Fee disclosure',
     'business.publish.published.campaign': 'View campaign',
     'business.publish.published.home': 'Back to Home',
+    'business.publish.fee_unavailable':
+        "Fee terms unavailable — you can't publish yet",
+    'business.publish.fee_unavailable_body':
+        "Rozine hasn't published the service-fee terms for this raise, so it can't go live yet. Nothing has been published.",
     'business.campaign.state.live': 'Live',
     'business.campaign.state.fully_reserved': 'Fully reserved',
     'business.campaign.state.funded': 'Funded',
