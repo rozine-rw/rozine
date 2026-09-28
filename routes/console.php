@@ -17,3 +17,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('campaigns:expire')->everyMinute()->withoutOverlapping(5);
+
+Schedule::command('changes:prune')->daily()->withoutOverlapping(60);

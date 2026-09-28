@@ -8,6 +8,7 @@ use App\Domain\Operations\ChangeScope;
 use App\Models\BusinessProfile;
 use App\Models\Party;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
 /*
@@ -139,3 +140,20 @@ it('expires a cursor past its lifetime or from the future', function (): void {
         ->and($cursor->expired(1_000_000 - 301, 86_400))->toBeTrue()
         ->and($cursor->expired(1_000_000 - 300, 86_400))->toBeFalse();
 });
+
+it('prunes only through the guarded command, never below the cursor lifetime', function (string $hours, int $status, string $output): void {
+    $party = feedParty();
+    recordChange(ChangeScope::party($party), 'wallet', 'w1', 1);
+    recordChange(ChangeScope::party($party), 'wallet', 'w1', 2);
+    DB::statement('ALTER TABLE change_feed DISABLE TRIGGER change_feed_protected');
+    DB::update("UPDATE change_feed SET created_at = now() - interval '72 hours'");
+    DB::statement('ALTER TABLE change_feed ENABLE TRIGGER change_feed_protected');
+
+    expect(Artisan::call('changes:prune', ['--hours' => $hours]))->toBe($status)
+        ->and(Artisan::output())->toContain($output);
+})->with([
+    'default retention' => ['48', 0, 'Pruned 1 changes.'],
+    'the minimum' => ['24', 0, 'Pruned 1 changes.'],
+    'below the cursor lifetime' => ['23', 2, 'from 24 to 8760 hours'],
+    'not a number' => ['soon', 2, 'from 24 to 8760 hours'],
+]);
