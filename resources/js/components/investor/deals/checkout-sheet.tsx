@@ -130,7 +130,17 @@ export function CheckoutSheet({
         'wallet',
         'refusal',
     ]);
-    const [acknowledged, setAcknowledged] = useState(false);
+    /*
+     * The acknowledgement belongs to the disclosure it was given for. A refresh keeps this sheet's
+     * state, so a new version or digest (after DISCLOSURE_STALE, say) must be acknowledged again.
+     */
+    const [acknowledgedDisclosure, setAcknowledgedDisclosure] = useState<
+        string | null
+    >(null);
+    const disclosureKey = `${disclosure.version}:${disclosure.sha256}`;
+    const acknowledged = acknowledgedDisclosure === disclosureKey;
+    const setAcknowledged = (checked: boolean) =>
+        setAcknowledgedDisclosure(checked ? disclosureKey : null);
     const command = useC3Command<InvestorAllowedAction>({
         actions: {
             'primary.reserve': actions.reserve,
