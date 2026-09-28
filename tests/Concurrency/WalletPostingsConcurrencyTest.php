@@ -15,6 +15,10 @@ use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 
+beforeEach(function (): void {
+    $this->freezeSecond();
+});
+
 /**
  * Runs each contender in its own forked process and connection. Exit 0 is success, 2 is the
  * expected refusal and 1 anything else.

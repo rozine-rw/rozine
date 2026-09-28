@@ -21,6 +21,10 @@ use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 
+beforeEach(function (): void {
+    $this->freezeSecond();
+});
+
 function postingId(): string
 {
     return strtolower((string) Str::ulid());
