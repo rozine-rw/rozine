@@ -55,9 +55,10 @@ interface WalletPostings
 
     /**
      * committed → the system `disbursement_settlement` account, for exactly the committed amount, on
-     * a verified and reconciled disbursement success. Like commit and refund it names the lifecycle's
-     * single source (the one its hold opened, the reservation in S3-C) and follows that source's
-     * commit on the same wallet and originating operation; the issuing closing is its separate cause. Issue and
+     * a verified and reconciled disbursement success. It names the lifecycle's single source, the
+     * `primary_reservation` its hold opened (anything else refuses `WALLET_POSTING_SOURCE_INVALID`),
+     * and follows that source's commit on the same wallet and originating operation; the issuing
+     * closing is its separate cause. Issue and
      * refund end a commitment once between them: after either, the other refuses
      * `WALLET_POSTING_STATE_INVALID`. A retry with another cause refuses `WALLET_POSTING_CONFLICT`.
      */

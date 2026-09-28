@@ -11,8 +11,10 @@ use Illuminate\Support\Facades\DB;
  * Investor's committed bucket to the system `disbursement_settlement` account, for exactly the
  * amount it committed. Issue and refund are mutually exclusive terminals of the same commitment.
  * Like every primary movement it keeps the lifecycle's single source identity, the one its hold
- * opened (S3-C uses the reservation, #96 5869267382): its anchor is that source's commit on the same
- * wallet and originating operation. The entry adds its own cause: the disbursement closing that
+ * opened: S3-C's retained reservation (#96 5869267382). An issue names only a `primary_reservation`
+ * source, so it never overlaps #175's separate `primary_commitment_source_unavailable` guard, which
+ * this migration neither drops nor replaces. Its anchor is that source's commit on the same wallet
+ * and originating operation. The entry adds its own cause: the disbursement closing that
  * issued it, which must exist as an `issued` closing when the entry commits (binding it to the same
  * campaign and commitment needs the S3-C commitment records and is an integration gate). #172's per-source anchor and bucket-shape checks are
  * unchanged for every other kind; issue is added to them, never exempted.
@@ -34,7 +36,7 @@ return new class extends Migration
                 OR (kind IN ('primary_hold', 'primary_commit', 'primary_release', 'primary_refund')
                     AND source_type IN ('primary_reservation', 'primary_commitment') AND origin_operation_id IS NOT NULL
                     AND cause_type IS NULL AND cause_id IS NULL)
-                OR (kind = 'primary_issue' AND source_type IN ('primary_reservation', 'primary_commitment') AND origin_operation_id IS NOT NULL
+                OR (kind = 'primary_issue' AND source_type = 'primary_reservation' AND origin_operation_id IS NOT NULL
                     AND COALESCE(cause_type = 'disbursement_closing' AND cause_id ~ '^[0-9a-hjkmnp-tv-z]{26}$', false)));
 
             CREATE OR REPLACE FUNCTION protect_primary_posting() RETURNS trigger LANGUAGE plpgsql AS $$

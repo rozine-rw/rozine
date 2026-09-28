@@ -63,6 +63,10 @@ final class EloquentWalletPostings implements WalletPostings
 
     public function issue(LockedWallet $wallet, WalletMoney $amount, PostingSource $source, PostingCause $cause): PostingReceipt
     {
+        if ($source->type !== 'primary_reservation') {
+            throw new WalletViolation('WALLET_POSTING_SOURCE_INVALID');
+        }
+
         return $this->post('primary_issue', $wallet, $amount, $source, $cause);
     }
 

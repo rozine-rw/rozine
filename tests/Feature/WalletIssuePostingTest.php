@@ -36,19 +36,19 @@ function issueId(): string
 
 /**
  * A wallet with RWF 20,000 committed of 50,000, under one lifecycle source as S3-C keeps it: the
- * reservation its hold opened (#96 5869267382), unless a commitment source is asked for.
+ * reservation its hold opened (#96 5869267382).
  *
  * @return array{user: User, wallet: LockedWallet, source: PostingSource}
  */
-function committedWallet(string $sourceType = 'primary_reservation'): array
+function committedWallet(): array
 {
     $fixture = InvestorWalletFixture::ready();
     InvestorWalletFixture::settle(InvestorWalletFixture::deposit($fixture, '50000')['data']['intent_id']);
     $postings = app(WalletPostings::class);
 
-    return DB::transaction(function () use ($fixture, $postings, $sourceType): array {
+    return DB::transaction(function () use ($fixture, $postings): array {
         $wallet = $postings->lockForParty($fixture['party']->id);
-        $source = $sourceType === 'primary_reservation' ? PrimarySourceFixture::reservation($wallet, '20000') : new PostingSource($sourceType, issueId(), issueId());
+        $source = PrimarySourceFixture::reservation($wallet, '20000');
         $postings->hold($wallet, WalletMoney::of('20000'), $source);
         $postings->commit($wallet, WalletMoney::of('20000'), $source);
 
@@ -116,14 +116,14 @@ it('issues exactly the committed amount to settlement, keeping the origin and re
         ->and(settlementBalance())->toBe('20000');
 });
 
-it('issues a commitment-sourced lifecycle the same way', function (): void {
-    ['user' => $user, 'wallet' => $wallet, 'source' => $source] = committedWallet('primary_commitment');
+it('issues only under a reservation source, never a commitment source', function (): void {
+    ['wallet' => $wallet] = committedWallet();
     $cause = new PostingCause('disbursement_closing', DisbursementFixture::issuedClosing());
-    $receipt = DB::transaction(fn () => app(WalletPostings::class)->issue($wallet, WalletMoney::of('20000'), $source, $cause));
-    expect([$receipt->kind, $receipt->sourceType, $receipt->sourceId])->toBe(['primary_issue', 'primary_commitment', $source->id])
-        ->and(issueBuckets($user))->toBe(['30000', '0', '0', '30000']);
+    expect(fn () => DB::transaction(fn () => app(WalletPostings::class)->issue($wallet, WalletMoney::of('20000'),
+        new PostingSource('primary_commitment', issueId(), issueId()), $cause)))->toThrow(WalletViolation::class, 'WALLET_POSTING_SOURCE_INVALID')
+        ->and(DB::selectOne("SELECT pg_get_constraintdef(oid) AS def FROM pg_constraint WHERE conname = 'ledger_entry_source'")->def)
+        ->toContain("(kind)::text = 'primary_issue'::text) AND ((source_type)::text = 'primary_reservation'::text)");
 });
-
 it('refuses an issue after a refund, before a commit, or under another source than its commit', function (): void {
     ['wallet' => $wallet, 'source' => $source] = committedWallet();
     $postings = app(WalletPostings::class);
@@ -141,7 +141,7 @@ it('refuses an issue after a refund, before a commit, or under another source th
     expect(fn () => DB::transaction(fn () => $postings->issue($other, WalletMoney::of('20000'), new PostingSource('primary_reservation', issueId(), $committed->originOperationId), $cause)))
         ->toThrow(WalletViolation::class, 'WALLET_POSTING_STATE_INVALID')
         ->and(fn () => DB::transaction(fn () => $postings->issue($other, WalletMoney::of('20000'), new PostingSource('primary_commitment', $committed->id, $committed->originOperationId), $cause)))
-        ->toThrow(WalletViolation::class, 'WALLET_POSTING_STATE_INVALID')
+        ->toThrow(WalletViolation::class, 'WALLET_POSTING_SOURCE_INVALID')
         ->and(fn () => DB::transaction(fn () => $postings->issue($other, WalletMoney::of('20000'), new PostingSource('primary_reservation', $committed->id, issueId()), $cause)))
         ->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT')
         ->and(fn () => rawIssuePosting($other, 'primary_issue', new PostingSource('primary_commitment', $committed->id, $committed->originOperationId),
