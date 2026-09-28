@@ -167,6 +167,8 @@ const rw: Catalog = {
     'common.currency.rwf': 'RWF',
     'app.nav.label': 'Kugenda muri porogaramu',
     'app.nav.launcher': 'Aho porogaramu ziri',
+    'app.connectivity.offline':
+        'Nta murandasi ufite. Ibyo ubona bishobora kuba bitagezweho, kandi nta kintu gishobora koherezwa kugeza ongeye kubona umurandasi.',
     'business.nav.home': 'Ahabanza',
     'business.nav.reports': 'Raporo',
     'business.nav.profile': 'Umwirondoro',

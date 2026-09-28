@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { InfoTip } from '@/components/admin/ui';
+import { ConnectivityNotice } from '@/components/rozine/connectivity-notice';
 import { IconGradients } from '@/components/rozine/icon';
 import { LogoLockup } from '@/components/rozine/logo';
 import { useTranslation } from '@/hooks/use-translation';
@@ -271,6 +272,7 @@ export function AdminFrame({
         >
             <Head title={title} />
             <IconGradients />
+            <ConnectivityNotice />
             <div className="relative lg:mx-auto lg:flex lg:h-svh lg:min-h-[640px] lg:max-w-[var(--rz-desktop-max)] lg:overflow-hidden lg:bg-rz-page-console">
                 <aside className="hidden h-full w-[216px] shrink-0 flex-col border-r border-[#e8eef7] bg-[linear-gradient(190deg,#ffffff_0%,#f3f6fd_55%,#eef3fc_100%)] lg:flex dark:border-[#0c1830] dark:bg-[linear-gradient(185deg,#0e1b34,#0a1428_60%,#0b1730)]">
                     {sidebar}

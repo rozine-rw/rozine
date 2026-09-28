@@ -1,8 +1,10 @@
 import { Link } from '@inertiajs/react';
 import type { ReactNode } from 'react';
+import { ConnectivityNotice } from '@/components/rozine/connectivity-notice';
 import { IconGradients } from '@/components/rozine/icon';
 import { LogoLockup } from '@/components/rozine/logo';
 import { useTranslation } from '@/hooks/use-translation';
+import type { MessageCode } from '@/lib/i18n/types';
 import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
 
@@ -23,6 +25,8 @@ type AppFrameProps = {
     launcher: RouteLink;
     /** The phone tab bar only shows on tab screens; detail screens hide it, as the design does. */
     showTabBar?: boolean;
+    /** A page's own wording for the offline notice, in place of the app-wide one. */
+    offlineMessage?: MessageCode;
     children: ReactNode;
 };
 
@@ -52,6 +56,7 @@ export function AppFrame({
     active,
     launcher,
     showTabBar = true,
+    offlineMessage,
     children,
 }: AppFrameProps) {
     const { t } = useTranslation();
@@ -64,6 +69,7 @@ export function AppFrame({
             <IconGradients
                 app={audience === 'business' ? 'business' : undefined}
             />
+            <ConnectivityNotice message={offlineMessage} />
             <div className="lg:mx-auto lg:flex lg:h-svh lg:min-h-[640px] lg:max-w-[var(--rz-desktop-max)] lg:p-7">
                 <aside className="hidden w-[182px] shrink-0 flex-col rounded-l-[20px] border-r border-rz-border bg-rz-surface px-3 py-[18px] lg:flex">
                     <div className="flex items-center gap-[11px] px-2 pt-1 pb-[22px]">

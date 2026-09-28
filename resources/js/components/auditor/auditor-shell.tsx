@@ -6,6 +6,7 @@ import { useAuditorRefresh } from '@/components/auditor/refresh';
 import type { AuditorRefresh } from '@/components/auditor/refresh';
 import { AppFrame } from '@/components/rozine/app-frame';
 import { useTranslation } from '@/hooks/use-translation';
+import type { MessageCode } from '@/lib/i18n/types';
 import type { AuditorAppLinks } from '@/types/auditor';
 
 export type AuditorTab = 'home' | 'jobs' | 'portfolio' | 'profile';
@@ -125,6 +126,8 @@ type AuditorShellProps = {
     showTabBar?: boolean;
     /** What the page reads in the background, and the deadlines it reads again at. */
     refresh?: AuditorRefresh;
+    /** The page's own wording for the offline notice, such as the audit's capture-app note. */
+    offlineMessage?: MessageCode;
     children: ReactNode;
 };
 
@@ -148,6 +151,7 @@ export function AuditorShell({
     openJobs,
     showTabBar,
     refresh = {},
+    offlineMessage,
     children,
 }: AuditorShellProps) {
     const { t } = useTranslation();
@@ -202,6 +206,7 @@ export function AuditorShell({
             active={tab}
             launcher={links.launcher}
             showTabBar={showTabBar}
+            offlineMessage={offlineMessage}
         >
             <Head title={title} />
             <AuditorKeyframes />

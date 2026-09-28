@@ -163,6 +163,8 @@ const en = {
     'common.currency.rwf': 'RWF',
     'app.nav.label': 'App navigation',
     'app.nav.launcher': 'Launcher',
+    'app.connectivity.offline':
+        "You're offline. What you see may be out of date, and nothing can be sent until you're back online.",
     'business.nav.home': 'Home',
     'business.nav.reports': 'Reports',
     'business.nav.profile': 'Profile',
