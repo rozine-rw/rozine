@@ -4358,6 +4358,79 @@ const fr: Catalog = {
     'admin.repayments.trail': 'Historique du remboursement',
     'admin.repayments.requery_body':
         "Cela interroge le prestataire sur le même encaissement entrant. Cela n'encaisse jamais l'argent une seconde fois.",
+    'admin.nav.book': 'Portefeuille',
+    'admin.nav.exceptions': 'Exceptions',
+    'admin.section.book.title': 'Portefeuille',
+    'admin.section.book.subtitle':
+        'Chaque titre en cours et sa santé, tels que le système central enregistre leur service. Lecture seule.',
+    'admin.section.book.search':
+        'Rechercher par entreprise, titre ou identifiant…',
+    'admin.section.exceptions.title': 'Exceptions',
+    'admin.section.exceptions.subtitle':
+        "Arriérés, suspensions et écarts, chacun daté et attribué jusqu'à sa résolution. Lecture seule.",
+    'admin.section.exceptions.search':
+        'Rechercher par entreprise ou référence…',
+    'admin.book.title': 'Titres en cours',
+    'admin.book.caption':
+        'État du service et jours de retard tels que le système central les enregistre. Rien ici ne modifie un titre.',
+    'admin.book.table': 'Titres en cours',
+    'admin.book.filter': 'Filtrer par état du service',
+    'admin.book.stats.live_notes': 'Titres en cours',
+    'admin.book.stats.principal_outstanding': 'Capital restant dû',
+    'admin.book.stats.due_today': "Dus aujourd'hui",
+    'admin.book.stats.overdue': 'En retard',
+    'admin.book.chip.all': 'Tous',
+    'admin.book.col.note_id': 'ID du titre',
+    'admin.book.col.note': 'Entreprise · titre',
+    'admin.book.col.principal': 'Capital restant dû',
+    'admin.book.col.next_due': 'Prochaine échéance',
+    'admin.book.col.dpd': 'Jours de retard',
+    'admin.book.col.health': 'Santé',
+    'admin.book.nothing_due': 'Aucune échéance',
+    'admin.book.open_named': 'Ouvrir {note}',
+    'admin.book.more': 'Plus de titres',
+    'admin.book.empty_title': 'Aucun titre en cours',
+    'admin.book.empty_body':
+        'Un titre apparaît ici dès que sa levée est versée et que le service commence.',
+    'admin.book.filtered_title': 'Aucun titre ne correspond à ce filtre',
+    'admin.book.filtered_body':
+        'Choisissez Tous pour voir tout le portefeuille.',
+    'admin.exceptions.title': 'Exceptions ouvertes',
+    'admin.exceptions.caption':
+        "Chaque exception reste ici, datée, jusqu'à sa résolution. L'attribution, l'escalade et les remèdes ne sont pas encore disponibles.",
+    'admin.exceptions.table': 'Exceptions ouvertes',
+    'admin.exceptions.filter': 'Filtrer par type',
+    'admin.exceptions.count.open': {
+        one: '{count} ouverte',
+        other: '{count} ouvertes',
+    },
+    'admin.exceptions.count.unassigned': {
+        one: '{count} non attribuée',
+        other: '{count} non attribuées',
+    },
+    'admin.exceptions.chip.all': 'Toutes',
+    'admin.exceptions.kind.arrears': 'Arriérés',
+    'admin.exceptions.kind.halt': 'Suspension',
+    'admin.exceptions.kind.variance': 'Écart',
+    'admin.exceptions.col.reference': 'Référence',
+    'admin.exceptions.col.kind': 'Type',
+    'admin.exceptions.col.subject': 'Exception',
+    'admin.exceptions.col.amount': 'Montant',
+    'admin.exceptions.col.owner': 'Âge · responsable',
+    'admin.exceptions.col.open': 'Dossier',
+    'admin.exceptions.age': {
+        one: 'Ouverte depuis {count} jour',
+        other: 'Ouverte depuis {count} jours',
+    },
+    'admin.exceptions.dpd': '{count} j de retard',
+    'admin.exceptions.open_named': 'Ouvrir {reference}',
+    'admin.exceptions.more': 'Exceptions plus anciennes',
+    'admin.exceptions.empty_title': 'Aucune exception ouverte',
+    'admin.exceptions.empty_body':
+        'Les arriérés, suspensions et écarts apparaissent ici quand le système central en ouvre un.',
+    'admin.exceptions.filtered_title': 'Aucune exception de ce type',
+    'admin.exceptions.filtered_body':
+        'Choisissez Toutes pour voir chaque exception ouverte.',
 };
 
 export default fr;

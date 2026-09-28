@@ -1,0 +1,212 @@
+{
+    "component": "admin/exceptions",
+    "synthetic": true,
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "repayments": {
+                "url": "/preview/admin-repayments",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "book": {
+                "url": "/preview/admin-book",
+                "method": "get"
+            },
+            "exceptions": {
+                "url": "/preview/admin-exceptions",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2027-01-23T10:00:00+02:00",
+        "contract_version": "staff-exceptions-v1",
+        "staff_access_version": "staff-access-v1",
+        "allowed_actions": [],
+        "counts": {
+            "open": 4,
+            "unassigned": 1
+        },
+        "chips": [
+            {
+                "key": "all",
+                "count": 4,
+                "link": {
+                    "url": "/preview/admin-exceptions",
+                    "method": "get"
+                },
+                "active": true
+            },
+            {
+                "key": "arrears",
+                "count": 2,
+                "link": {
+                    "url": "/preview/admin-exceptions",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "halt",
+                "count": 1,
+                "link": {
+                    "url": "/preview/admin-exceptions",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "variance",
+                "count": 1,
+                "link": {
+                    "url": "/preview/admin-exceptions",
+                    "method": "get"
+                },
+                "active": false
+            }
+        ],
+        "exceptions": [
+            {
+                "id": "exc_0412",
+                "kind": "arrears",
+                "reference": "ARR-2026-0412",
+                "business": "Ubuki Crafts",
+                "note_title": "Loom Expansion",
+                "description": "Instalment due 16 Dec 2026 unpaid",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "2340000"
+                },
+                "dpd": 38,
+                "opened_at": "2026-12-17T00:05:00+02:00",
+                "age_days": 37,
+                "owner": {
+                    "actor": "Grace Kalisa",
+                    "at": "2026-12-18T09:30:00+02:00",
+                    "reason": "Called the owner; recovery plan requested."
+                },
+                "link": {
+                    "url": "/preview/admin-book",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "exc_0431",
+                "kind": "arrears",
+                "reference": "ARR-2027-0431",
+                "business": "Isoko Energy",
+                "note_title": "Solar Kiosks",
+                "description": "Instalment due 14 Jan 2027 unpaid",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "1265000"
+                },
+                "dpd": 9,
+                "opened_at": "2027-01-15T00:05:00+02:00",
+                "age_days": 8,
+                "owner": {
+                    "actor": "A. Diane",
+                    "at": "2027-01-15T10:12:00+02:00",
+                    "reason": "Following up with the business on the short receipt."
+                },
+                "link": {
+                    "url": "/preview/admin-book",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "exc_0437",
+                "kind": "variance",
+                "reference": "RPY-2026-0303",
+                "business": "Isoko Energy",
+                "note_title": "Solar Kiosks",
+                "description": "Inbound receipt RWF 115,000 short of the instalment",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "115000"
+                },
+                "dpd": null,
+                "opened_at": "2027-01-22T16:05:33+02:00",
+                "age_days": 0,
+                "owner": null,
+                "link": {
+                    "url": "/preview/admin-repayments-exception-mismatch",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "exc_0355",
+                "kind": "halt",
+                "reference": "FRZ-2026-0355",
+                "business": "Rugali Freight",
+                "note_title": null,
+                "description": "Account frozen: provider fraud alert FA-2291 on the payout destination",
+                "amount": null,
+                "dpd": null,
+                "opened_at": "2026-09-18T10:20:00+02:00",
+                "age_days": 127,
+                "owner": {
+                    "actor": "Grace Kalisa",
+                    "at": "2026-09-18T10:20:00+02:00",
+                    "reason": "Provider fraud alert FA-2291 on the payout destination."
+                },
+                "link": {
+                    "url": "/preview/admin-businesses-frozen",
+                    "method": "get"
+                }
+            }
+        ],
+        "pagination": {
+            "next": null
+        }
+    }
+}

@@ -1,14 +1,14 @@
 import { TONAL } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
-import type { AdminSection } from '@/types/admin';
+import type { AdminFrameSection } from '@/types/admin';
 
 /** "No matches on this page" (design T184–190): the top-bar search found nothing here. */
 export function SearchEmpty({
     section,
     term,
 }: {
-    section: AdminSection;
+    section: AdminFrameSection;
     term: string;
 }) {
     const { t } = useTranslation();

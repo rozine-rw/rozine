@@ -44,10 +44,23 @@ export type StaffViewer = {
     role: StaffRole;
 };
 
+/**
+ * Phase 2 screens a server may add to the frame (MVP-ADMIN-SCR-05/06). They are optional nav
+ * entries rather than `AdminSection` members, so no existing page has to send them: the sidebar
+ * shows one only when its link is sent.
+ */
+export type AdminOptionalSection = 'book' | 'exceptions';
+
+/** Every section the frame can mark as current. */
+export type AdminFrameSection = AdminSection | AdminOptionalSection;
+
 /** What every console page receives for its frame. */
 export type AdminShellProps = {
     viewer: StaffViewer;
-    nav: Record<AdminSection, RouteLink> & { launcher: RouteLink };
+    nav: Record<AdminSection, RouteLink> &
+        Partial<Record<AdminOptionalSection, RouteLink | null>> & {
+            launcher: RouteLink;
+        };
     /** Live queue sizes for the sidebar badges; zero shows no badge. */
     badges: { applications: number; disbursements: number };
     /** The page-scoped top-bar search, as the server applied it. */
@@ -62,7 +75,10 @@ export type AdminShellProps = {
  * none; the launcher is always sent. Every full `AdminShellProps` is also one of these.
  */
 export type AdminFrameShellProps = Omit<AdminShellProps, 'nav' | 'badges'> & {
-    nav: Record<AdminSection, RouteLink | null> & { launcher: RouteLink };
+    nav: Record<AdminSection, RouteLink | null> &
+        Partial<Record<AdminOptionalSection, RouteLink | null>> & {
+            launcher: RouteLink;
+        };
     badges: { applications: number | null; disbursements: number | null };
 };
 
@@ -995,4 +1011,108 @@ export type AdminRepaymentsProps = AdminShellProps &
         pagination: Pagination;
         repayment: RepaymentDetail | null;
         preview_outcome?: C3PreviewOutcome<RepaymentAllowedAction>;
+    };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Phase 2: Book (MVP-ADMIN-SCR-05) and Exceptions (MVP-ADMIN-SCR-06), read-only proposal      */
+/* ------------------------------------------------------------------------------------------ */
+
+/*
+ * Additive and non-activatable, under `staff-access-v1` like the C3/C4 staff pages. Nothing returns
+ * these shapes yet: both pages are reviewed through synthetic `preview/{fixture}` fixtures only.
+ * Both screens are read-only with links: assigning, escalating, halting or remedying waits on the
+ * unsigned D-25/28/54 escalation policy and its approvals, so no command and no allowed action
+ * exists here. There is no book-level exposure or concentration policy either (the #99 50%
+ * single-investor per-raise cap is enforced at purchase), so no breach or window state is sent.
+ */
+
+/** No command exists on either screen yet; `allowed_actions` is always empty. */
+export type StaffBookPageContract = {
+    contract_version: 'staff-book-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: never[];
+};
+
+export type StaffExceptionsPageContract = {
+    contract_version: 'staff-exceptions-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: never[];
+};
+
+export type BookStatKey =
+    | 'live_notes'
+    | 'principal_outstanding'
+    | 'due_today'
+    | 'overdue';
+
+/** A server-counted filter over the book; `all` is every live note. */
+export type BookChip = {
+    key: 'all' | ServicingState;
+    count: number;
+    link: RouteLink;
+    active: boolean;
+};
+
+/**
+ * One live note and its health: its servicing state and DPD as the core records them (MC-03).
+ * `next_due` is the oldest unpaid instalment, null when nothing is scheduled.
+ */
+export type BookNoteRow = {
+    id: string;
+    note_id: string;
+    business: string;
+    note_title: string;
+    principal_outstanding: Money;
+    next_due: { on: KigaliDate; amount: Money } | null;
+    servicing: ServicingState;
+    /** Null while nothing is unpaid. */
+    dpd: number | null;
+    link: RouteLink;
+};
+
+export type AdminBookProps = AdminShellProps &
+    StaffBookPageContract & {
+        stats: { key: BookStatKey; value: StatValue }[];
+        chips: BookChip[];
+        notes: BookNoteRow[];
+        pagination: Pagination;
+    };
+
+export type ExceptionKind = 'arrears' | 'halt' | 'variance';
+
+/** A server-counted filter over the open exceptions; `all` is every open one. */
+export type ExceptionChip = {
+    key: 'all' | ExceptionKind;
+    count: number;
+    link: RouteLink;
+    active: boolean;
+};
+
+/**
+ * An open exception, shaped like a reconciliation break: aged and owned, never hidden (AC-05).
+ * `amount` is the arrears overdue or the variance gap, null for a halt; `dpd` is arrears only.
+ */
+export type ExceptionItem = {
+    id: string;
+    kind: ExceptionKind;
+    reference: string;
+    business: string;
+    note_title: string | null;
+    description: string;
+    amount: Money | null;
+    dpd: number | null;
+    opened_at: string;
+    age_days: number;
+    owner: Attribution | null;
+    link: RouteLink;
+};
+
+export type AdminExceptionsProps = AdminShellProps &
+    StaffExceptionsPageContract & {
+        counts: { open: number; unassigned: number };
+        chips: ExceptionChip[];
+        exceptions: ExceptionItem[];
+        pagination: Pagination;
     };

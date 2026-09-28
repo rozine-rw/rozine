@@ -9,10 +9,13 @@ import { useReconnectRefresh } from '@/hooks/use-reconnect-refresh';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
-import type { AdminFrameShellProps, AdminSection } from '@/types/admin';
+import type { AdminFrameSection, AdminFrameShellProps } from '@/types/admin';
 
-/** The design's 16px sidebar glyphs (S5233–5257), drawn in `currentColor` at stroke 1.8. */
-const GLYPHS: Record<AdminSection, ReactNode> = {
+/**
+ * The design's 16px sidebar glyphs (S5233–5257), drawn in `currentColor` at stroke 1.8. Book and
+ * Exceptions have no design glyph; theirs follow the same grid and stroke.
+ */
+const GLYPHS: Record<AdminFrameSection, ReactNode> = {
     today: (
         <>
             <rect x="3" y="3" width="8" height="8" rx="2" />
@@ -69,6 +72,18 @@ const GLYPHS: Record<AdminSection, ReactNode> = {
             />
         </>
     ),
+    book: (
+        <>
+            <rect x="4" y="4" width="16" height="16" rx="2.5" />
+            <path d="M8 15v-3M12 15V9M16 15v-5" strokeLinecap="round" />
+        </>
+    ),
+    exceptions: (
+        <>
+            <path d="M12 4 21 19H3Z" strokeLinejoin="round" />
+            <path d="M12 10v4M12 16.5v.5" strokeLinecap="round" />
+        </>
+    ),
     ledger: (
         <path
             d="M12 3v18M8 7h6a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h7"
@@ -97,22 +112,26 @@ const GLYPHS: Record<AdminSection, ReactNode> = {
  * The console's MVP navigation. The design's other sections (Notes, markets, Reports, Risk,
  * Compliance, Payments, Ratings, Deferrals, Plus, Finance revenue/RAMP, Messaging, Academies,
  * App Control, Engines, Policies, System Health) are post-MVP or Phase 2 screens and are left out
- * rather than shipped as dead links. Ratings in particular can never exist: no staff account may
+ * rather than shipped as dead links. Book and Exceptions are Phase 2 and optional: they show only
+ * when the server sends their link. Ratings in particular can never exist: no staff account may
  * set a rating (MVP-ADMIN-AC-04).
  */
 const GROUPS: {
     group: 'accounts' | 'capital' | 'treasury' | 'console' | null;
-    items: AdminSection[];
+    items: AdminFrameSection[];
 }[] = [
     { group: null, items: ['today'] },
     { group: 'accounts', items: ['businesses', 'investors', 'auditors'] },
-    { group: 'capital', items: ['applications'] },
-    { group: 'treasury', items: ['disbursements', 'repayments', 'ledger'] },
+    { group: 'capital', items: ['applications', 'book'] },
+    {
+        group: 'treasury',
+        items: ['disbursements', 'repayments', 'exceptions', 'ledger'],
+    },
     { group: 'console', items: ['staff', 'events'] },
 ];
 
 type AdminFrameProps = AdminFrameShellProps & {
-    section: AdminSection;
+    section: AdminFrameSection;
     /**
      * How the page search reaches the server: the query parameter it fills (`q` by default) and
      * the parameters a new search clears, such as a paging cursor or an open drawer.
@@ -176,11 +195,16 @@ export function AdminFrame({
                 className="rz-scroll min-h-0 flex-1 overflow-y-auto px-3 pt-3.5 pb-[22px]"
             >
                 {GROUPS.map(({ group, items }) => {
-                    /* A live Resource sends only the destinations it serves; a group with none is left out. */
+                    /*
+                     * A live Resource sends only the destinations it serves, and an optional
+                     * section may be absent altogether; a group with none is left out.
+                     */
                     const served = items.flatMap((key) => {
                         const href = nav[key];
 
-                        return href === null ? [] : [{ key, href }];
+                        return href === null || href === undefined
+                            ? []
+                            : [{ key, href }];
                     });
 
                     if (served.length === 0) {
