@@ -773,14 +773,37 @@ export type C3DisbursementRow = {
 };
 
 /**
- * The staff step-up an approval needs. It has its own staff route and purpose, not the Auditor
- * seal's; that route, its proof exchange and its codes are still to be settled, so `route` is
- * null until they exist. A listed route alone does not offer approval: the drawer withholds it
- * until it can send the bound `step_up_proof` the approve payload needs.
+ * The staff step-up an approval needs (#96 answer 5). It has its own staff route and purpose, not
+ * the Auditor seal's. The server lists `route` only once S3-D publishes that exchange; while it is
+ * null, approval is withheld. With a route, the drawer exchanges an authenticator code for a
+ * `DisbursementStepUpProof` and sends it as `step_up_proof` on approve.
  */
 export type DisbursementStepUp = {
     purpose: 'disbursement.approve';
     route: RouteAction | null;
+};
+
+/**
+ * PROVISIONAL until S3-D publishes the staff step-up DTO. The body the drawer sends to
+ * `step_up.route`, mirroring the Auditor seal exchange: the route-bound disbursement is the
+ * record, so no disbursement id is sent, and the server binds the proof to the staff principal,
+ * revision, exact amount, verified destination and intent digest.
+ */
+export type DisbursementStepUpRequest = {
+    request_id: string;
+    expected_revision: number;
+    intent_digest: string;
+    code: string;
+};
+
+/**
+ * PROVISIONAL until S3-D publishes the staff step-up DTO. What the exchange answers, in the seal
+ * exchange's shape: an opaque, single-use proof and when it expires. It lives only in the
+ * drawer's transient state, never in the operation journal, the lookup or storage.
+ */
+export type DisbursementStepUpProof = {
+    proof: string;
+    expires_at: string;
 };
 
 export type C3DisbursementDetail = C3DisbursementRow & {

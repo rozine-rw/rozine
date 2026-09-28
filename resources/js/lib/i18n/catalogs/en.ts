@@ -3239,6 +3239,10 @@ const en = {
         "A different staff member must do this: you can't check your own action.",
     'settlement.refusal.STEP_UP_REQUIRED':
         'A fresh step-up confirmation is required first.',
+    'settlement.refusal.STEP_UP_INVALID':
+        "That confirmation didn't go through. Enter a new code from your authenticator.",
+    'settlement.refusal.STEP_UP_EXPIRED':
+        'That confirmation expired. Enter a new code from your authenticator.',
     'settlement.refusal.MANDATE_REQUIRED':
         "This needs someone authorised under the business's mandate.",
     'settlement.refusal.STAFF_ACCESS_REQUIRED': 'Staff access is required.',
@@ -3462,6 +3466,19 @@ const en = {
     'admin.disbursements.binding.digest': 'Intent digest',
     'admin.disbursements.step_up.unavailable':
         "Approval needs a fresh step-up confirmation bound to these details. That confirmation isn't available yet, so approval can't be given here.",
+    'admin.disbursements.step_up.title': "Confirm it's you",
+    'admin.disbursements.step_up.lead':
+        "Enter the six-digit code from your authenticator app. The confirmation is bound to this revision, exact amount, destination and intent digest, and it's used once.",
+    'admin.disbursements.step_up.code_label': 'Six-digit authenticator code',
+    'admin.disbursements.step_up.verify': 'Confirm code',
+    'admin.disbursements.step_up.ready':
+        "Confirmed until {time}. It's used once, for this approval, and still needs your reason.",
+    'admin.disbursements.step_up.wrong_code':
+        "That code didn't match. Enter the current code from your authenticator.",
+    'admin.disbursements.step_up.lost':
+        "Rozine couldn't be reached to check your code. Nothing was approved — enter a new code for a fresh confirmation.",
+    'admin.disbursements.step_up.changed':
+        'The details this approval binds changed, so your confirmation was cleared. Check them, then enter a new code.',
     'admin.disbursements.intent.title': 'Payment intent',
     'admin.disbursements.intent.not_payment':
         'Intent recorded — not a payment. The payment worker sends it only after its own recheck.',
@@ -3519,7 +3536,7 @@ const en = {
         'e.g. The business confirmed its new MoMo number.',
     'admin.disbursements.stage.requery.title': 'Ask the provider again',
     'admin.disbursements.stage.requery.body':
-        'This asks the provider about the same operation. It never sends the payment again.',
+        "This asks the provider about the same operation. It never sends the payment again, and it doesn't mark anything reconciled: the answer goes to reconciliation like any other.",
     'admin.disbursements.stage.requery.cta': 'Ask the provider',
     'admin.disbursements.stage.requery.placeholder':
         "e.g. The provider's status page shows the outage is over.",

@@ -186,9 +186,9 @@ export function PrecheckPanel({
 }
 
 /**
- * What an approval binds, and the fresh step-up it needs (H11). The step-up has its own staff
- * route and proof exchange, still to be settled: until the drawer can obtain a bound proof,
- * approval is not available here, whatever route the server lists.
+ * What an approval binds, and the fresh step-up it needs (H11, #96 answer 5). The step-up has its
+ * own staff route and proof exchange: while the props list no route, approval is not available
+ * here, and the note says so.
  */
 export function BindingPanel({
     disbursement,
@@ -227,14 +227,15 @@ export function BindingPanel({
                     </Facts>
                 )}
             </div>
-            {(disbursement.state === 'awaiting_second_approver' ||
-                disbursement.allowed_actions.includes(
-                    'disbursement.approve',
-                )) && (
-                <Note tone="warn" id={STEP_UP_NOTE}>
-                    {t('admin.disbursements.step_up.unavailable')}
-                </Note>
-            )}
+            {disbursement.step_up.route === null &&
+                (disbursement.state === 'awaiting_second_approver' ||
+                    disbursement.allowed_actions.includes(
+                        'disbursement.approve',
+                    )) && (
+                    <Note tone="warn" id={STEP_UP_NOTE}>
+                        {t('admin.disbursements.step_up.unavailable')}
+                    </Note>
+                )}
         </Block>
     );
 }
