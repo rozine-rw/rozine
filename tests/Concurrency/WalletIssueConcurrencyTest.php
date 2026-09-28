@@ -11,6 +11,7 @@ use App\Models\LedgerAccount;
 use App\Models\LedgerEntry;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Tests\Support\DisbursementFixture;
 use Tests\Support\InvestorWalletFixture;
 
 /*
@@ -71,12 +72,13 @@ function committedReservation(): array
 
 it('ends a commitment once when an issue and a refund race', function (): void {
     ['fixture' => $fixture, 'source' => $source] = committedReservation();
-    $end = fn (string $movement): Closure => function () use ($fixture, $source, $movement): void {
-        DB::transaction(function () use ($fixture, $source, $movement): void {
+    $closing = DisbursementFixture::issuedClosing();
+    $end = fn (string $movement): Closure => function () use ($fixture, $source, $movement, $closing): void {
+        DB::transaction(function () use ($fixture, $source, $movement, $closing): void {
             $postings = app(WalletPostings::class);
             $wallet = $postings->lockForParty($fixture['party']->id);
             $movement === 'issue'
-                ? $postings->issue($wallet, WalletMoney::of('20000'), $source, new PostingCause('disbursement_closing', strtolower((string) Str::ulid())))
+                ? $postings->issue($wallet, WalletMoney::of('20000'), $source, new PostingCause('disbursement_closing', $closing))
                 : $postings->refund($wallet, WalletMoney::of('20000'), $source);
         });
     };
@@ -92,11 +94,12 @@ it('ends a commitment once when an issue and a refund race', function (): void {
 
 it('discards a nested issue and the settlement account it created when the outer transaction rolls back', function (): void {
     ['fixture' => $fixture, 'source' => $source] = committedReservation();
-    expect(fn () => DB::transaction(function () use ($fixture, $source): void {
-        DB::transaction(function () use ($fixture, $source): void {
+    $closing = DisbursementFixture::issuedClosing();
+    expect(fn () => DB::transaction(function () use ($fixture, $source, $closing): void {
+        DB::transaction(function () use ($fixture, $source, $closing): void {
             $postings = app(WalletPostings::class);
             $postings->issue($postings->lockForParty($fixture['party']->id), WalletMoney::of('20000'), $source,
-                new PostingCause('disbursement_closing', strtolower((string) Str::ulid())));
+                new PostingCause('disbursement_closing', $closing));
         });
         throw new RuntimeException('Roll back the reconciliation transaction.');
     }))->toThrow(RuntimeException::class, 'Roll back the reconciliation transaction.');

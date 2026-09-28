@@ -14,6 +14,9 @@ namespace App\Domain\Disbursement;
  *   exact amount, destination) is `unverifiable`: retained, and it blocks.
  * - From `pending` or `unknown` a new state is `applied`; a repeat of the current state is a
  *   `duplicate`.
+ * - A non-final observation after a final one is `stale`: a lagging query or an out-of-order
+ *   webhook. It is retained as evidence but can never downgrade a verified final, so it blocks
+ *   nothing.
  * - A failure after a success is `after_final`: it opens an exception and never reverses anything.
  * - A success after a failure is a `conflict` that blocks any refund.
  */
@@ -21,9 +24,9 @@ final readonly class PayoutOutcome
 {
     public const array STATES = ['pending', 'unknown', 'succeeded', 'failed'];
 
-    public const array DISPOSITIONS = ['applied', 'duplicate', 'after_final', 'conflict', 'key_conflict', 'unverifiable'];
+    public const array DISPOSITIONS = ['applied', 'duplicate', 'stale', 'after_final', 'conflict', 'key_conflict', 'unverifiable'];
 
-    /** @param 'applied'|'duplicate'|'after_final'|'conflict'|'key_conflict'|'unverifiable' $disposition */
+    /** @param 'applied'|'duplicate'|'stale'|'after_final'|'conflict'|'key_conflict'|'unverifiable' $disposition */
     private function __construct(public string $disposition, public string $state) {}
 
     public static function transition(string $current, string $event): self
@@ -37,7 +40,10 @@ final readonly class PayoutOutcome
         if (! self::isFinal($current)) {
             return new self('applied', $event);
         }
-        if ($current === 'failed' && $event === 'succeeded') {
+        if (! self::isFinal($event)) {
+            return new self('stale', $current);
+        }
+        if ($current === 'failed') {
             return new self('conflict', $current);
         }
 

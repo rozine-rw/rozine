@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Disbursement\RecordPayoutEvent;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\GetInvestorWallet;
 use App\Application\Wallet\LockedWallet;
@@ -10,6 +11,7 @@ use App\Application\Wallet\PostingSource;
 use App\Domain\Wallet\PrimaryPosting;
 use App\Domain\Wallet\WalletMoney;
 use App\Domain\Wallet\WalletViolation;
+use App\Models\DisbursementClosing;
 use App\Models\LedgerAccount;
 use App\Models\LedgerEntry;
 use App\Models\LedgerLine;
@@ -17,6 +19,7 @@ use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Tests\Support\DisbursementFixture;
 use Tests\Support\InvestorWalletFixture;
 
 /*
@@ -91,7 +94,8 @@ function rawIssuePosting(LockedWallet $wallet, string $kind, PostingSource $sour
 
 it('issues exactly the committed amount to settlement, keeping the origin and recording the closing cause', function (): void {
     ['user' => $user, 'wallet' => $wallet, 'source' => $source] = committedWallet();
-    $cause = new PostingCause('disbursement_closing', issueId());
+    $cause = new PostingCause('disbursement_closing', DisbursementFixture::issuedClosing());
+    $other = new PostingCause('disbursement_closing', DisbursementFixture::issuedClosing());
     $receipt = DB::transaction(fn () => app(WalletPostings::class)->issue($wallet, WalletMoney::of('20000'), $source, $cause));
 
     expect([$receipt->kind, $receipt->amount, $receipt->originOperationId, $receipt->causeType, $receipt->causeId, $receipt->replayed])
@@ -102,7 +106,7 @@ it('issues exactly the committed amount to settlement, keeping the origin and re
 
     $replay = DB::transaction(fn () => app(WalletPostings::class)->issue($wallet, WalletMoney::of('20000'), $source, $cause));
     expect([$replay->entryId, $replay->replayed])->toBe([$receipt->entryId, true])
-        ->and(fn () => DB::transaction(fn () => app(WalletPostings::class)->issue($wallet, WalletMoney::of('20000'), $source, new PostingCause('disbursement_closing', issueId()))))
+        ->and(fn () => DB::transaction(fn () => app(WalletPostings::class)->issue($wallet, WalletMoney::of('20000'), $source, $other)))
         ->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT')
         ->and(fn () => DB::transaction(fn () => app(WalletPostings::class)->issue($wallet, WalletMoney::of('19999'), $source, $cause)))
         ->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT')
@@ -113,7 +117,8 @@ it('issues exactly the committed amount to settlement, keeping the origin and re
 
 it('issues a commitment-sourced lifecycle the same way', function (): void {
     ['user' => $user, 'wallet' => $wallet, 'source' => $source] = committedWallet('primary_commitment');
-    $receipt = DB::transaction(fn () => app(WalletPostings::class)->issue($wallet, WalletMoney::of('20000'), $source, new PostingCause('disbursement_closing', issueId())));
+    $cause = new PostingCause('disbursement_closing', DisbursementFixture::issuedClosing());
+    $receipt = DB::transaction(fn () => app(WalletPostings::class)->issue($wallet, WalletMoney::of('20000'), $source, $cause));
     expect([$receipt->kind, $receipt->sourceType, $receipt->sourceId])->toBe(['primary_issue', 'primary_commitment', $source->id])
         ->and(issueBuckets($user))->toBe(['30000', '0', '0', '30000']);
 });
@@ -121,7 +126,7 @@ it('issues a commitment-sourced lifecycle the same way', function (): void {
 it('refuses an issue after a refund, before a commit, or under another source than its commit', function (): void {
     ['wallet' => $wallet, 'source' => $source] = committedWallet();
     $postings = app(WalletPostings::class);
-    $cause = new PostingCause('disbursement_closing', issueId());
+    $cause = new PostingCause('disbursement_closing', DisbursementFixture::issuedClosing());
     DB::transaction(fn () => $postings->refund($wallet, WalletMoney::of('20000'), $source));
     expect(fn () => DB::transaction(fn () => $postings->issue($wallet, WalletMoney::of('20000'), $source, $cause)))
         ->toThrow(WalletViolation::class, 'WALLET_POSTING_STATE_INVALID');
@@ -139,10 +144,10 @@ it('refuses an issue after a refund, before a commit, or under another source th
         ->and(fn () => DB::transaction(fn () => $postings->issue($other, WalletMoney::of('20000'), new PostingSource('primary_reservation', $committed->id, issueId()), $cause)))
         ->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT')
         ->and(fn () => rawIssuePosting($other, 'primary_issue', new PostingSource('primary_commitment', $committed->id, $committed->originOperationId),
-            [['investor_committed', 'debit', '20000'], ['disbursement_settlement', 'credit', '20000']], issueId()))
+            [['investor_committed', 'debit', '20000'], ['disbursement_settlement', 'credit', '20000']], DisbursementFixture::issuedClosing()))
         ->toThrow(QueryException::class, 'must follow its open hold or commit')
         ->and(fn () => rawIssuePosting($other, 'primary_issue', new PostingSource('primary_reservation', $committed->id, issueId()),
-            [['investor_committed', 'debit', '20000'], ['disbursement_settlement', 'credit', '20000']], issueId()))
+            [['investor_committed', 'debit', '20000'], ['disbursement_settlement', 'credit', '20000']], DisbursementFixture::issuedClosing()))
         ->toThrow(QueryException::class, 'must follow its open hold or commit')
         ->and(LedgerEntry::query()->where('source_id', $committed->id)->where('kind', 'primary_issue')->count())->toBe(0)
         ->and(fn () => new PostingCause('refund_request', issueId()))->toThrow(WalletViolation::class, 'WALLET_POSTING_CAUSE_INVALID')
@@ -164,7 +169,7 @@ it('refuses raw issue postings that are partial, excessive, misrouted or uncause
 
         return [$account, $direction, $amount];
     }, explode(',', $lines));
-    $cause = $cause === 'cause' ? issueId() : $cause;
+    $cause = $cause === 'cause' ? DisbursementFixture::issuedClosing() : $cause;
     expect(fn () => rawIssuePosting($wallet, 'primary_issue', $source, $parsed, $cause))
         ->toThrow(QueryException::class, $message)
         ->and(LedgerEntry::query()->where('source_id', $source->id)->where('kind', 'primary_issue')->count())->toBe(0);
@@ -177,20 +182,21 @@ it('refuses raw issue postings that are partial, excessive, misrouted or uncause
     'deposit clearing instead of settlement' => ['investor_committed:debit:20000,deposit_clearing:credit:20000', 'cause', 'must move one amount from its source bucket'],
     'no cause' => ['investor_committed:debit:20000,disbursement_settlement:credit:20000', null, 'ledger_entry_source'],
     'malformed cause' => ['investor_committed:debit:20000,disbursement_settlement:credit:20000', 'closing-1', 'ledger_entry_source'],
+    'fabricated closing' => ['investor_committed:debit:20000,disbursement_settlement:credit:20000', '01k00000000000000000000000', 'must name an issued disbursement closing'],
 ]);
 
 it('refuses a raw refund after an issue and a raw issue after a refund, but keeps a raw commit then issue valid', function (): void {
     ['user' => $user, 'wallet' => $wallet, 'source' => $source] = committedWallet();
-    rawIssuePosting($wallet, 'primary_issue', $source, [['investor_committed', 'debit', '20000'], ['disbursement_settlement', 'credit', '20000']], issueId());
+    rawIssuePosting($wallet, 'primary_issue', $source, [['investor_committed', 'debit', '20000'], ['disbursement_settlement', 'credit', '20000']], DisbursementFixture::issuedClosing());
     expect(issueBuckets($user))->toBe(['30000', '0', '0', '30000'])
         ->and(fn () => rawIssuePosting($wallet, 'primary_refund', $source, [['investor_committed', 'debit', '20000'], ['investor_available', 'credit', '20000']], null))
         ->toThrow(QueryException::class, 'issued or refunded, never both')
-        ->and(fn () => rawIssuePosting($wallet, 'primary_issue', $source, [['investor_committed', 'debit', '20000'], ['disbursement_settlement', 'credit', '20000']], issueId()))
+        ->and(fn () => rawIssuePosting($wallet, 'primary_issue', $source, [['investor_committed', 'debit', '20000'], ['disbursement_settlement', 'credit', '20000']], DisbursementFixture::issuedClosing()))
         ->toThrow(QueryException::class);
 
     ['wallet' => $other, 'source' => $refunded] = committedWallet();
     rawIssuePosting($other, 'primary_refund', $refunded, [['investor_committed', 'debit', '20000'], ['investor_available', 'credit', '20000']], null);
-    expect(fn () => rawIssuePosting($other, 'primary_issue', $refunded, [['investor_committed', 'debit', '20000'], ['disbursement_settlement', 'credit', '20000']], issueId()))
+    expect(fn () => rawIssuePosting($other, 'primary_issue', $refunded, [['investor_committed', 'debit', '20000'], ['disbursement_settlement', 'credit', '20000']], DisbursementFixture::issuedClosing()))
         ->toThrow(QueryException::class, 'issued or refunded, never both')
         ->and(fn () => rawIssuePosting($other, 'primary_hold', new PostingSource('primary_reservation', issueId(), issueId()),
             [['investor_available', 'debit', '1000'], ['investor_held', 'credit', '1000']], issueId()))
@@ -204,6 +210,17 @@ it('refuses to roll the extension back once an issue is recorded, and restores t
     $migration->up();
 
     ['wallet' => $wallet, 'source' => $source] = committedWallet();
-    DB::transaction(fn () => app(WalletPostings::class)->issue($wallet, WalletMoney::of('20000'), $source, new PostingCause('disbursement_closing', issueId())));
+    $cause = new PostingCause('disbursement_closing', DisbursementFixture::issuedClosing());
+    DB::transaction(fn () => app(WalletPostings::class)->issue($wallet, WalletMoney::of('20000'), $source, $cause));
     expect(fn () => $migration->down())->toThrow(QueryException::class, 'Recorded issue postings require a forward migration');
+});
+
+it('refuses an issue whose cause is a failed closing rather than an issued one', function (): void {
+    ['wallet' => $wallet, 'source' => $source] = committedWallet();
+    DisbursementFixture::funded();
+    ['intent' => $intent] = DisbursementFixture::approved();
+    app(RecordPayoutEvent::class)->handle(DisbursementFixture::provider()->callback($intent->id, 'failed'));
+    $refund = DisbursementClosing::query()->where('kind', 'failed_closing')->sole()->id;
+    expect(fn () => rawIssuePosting($wallet, 'primary_issue', $source, [['investor_committed', 'debit', '20000'], ['disbursement_settlement', 'credit', '20000']], $refund))
+        ->toThrow(QueryException::class, 'must name an issued disbursement closing');
 });

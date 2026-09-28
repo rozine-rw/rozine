@@ -226,6 +226,8 @@ it('refuses raw concurrent closings and a raw refund closing after an issue', fu
         ->and(fn () => $raw('worker_recheck')())->toThrow(QueryException::class);
 });
 
+// PROVISIONAL (#96 5874488658): this probes the synthetic source's advisory Business lock. A probe
+// on the real S3-C Business row lock must replace it before joint activation.
 it('takes the Business lock before the disbursement row on the issue path', function (): void {
     ['disbursement' => $disbursement, 'intent' => $intent, 'campaign' => $campaign] = DisbursementFixture::approved();
     $message = DisbursementFixture::provider()->callback($intent->id, 'succeeded');

@@ -112,12 +112,16 @@ it('leaves an intent queued and unsent while any pre-send input is lapsed or una
     if ($case === 'destination rotated') {
         return;
     }
-    match ($case) {
-        'maker revoked' => app(ConfigureStaffAccess::class)->handle($maker->id, true, 'Back.', (string) Str::uuid(), ['treasury']),
-        'checker revoked' => app(ConfigureStaffAccess::class)->handle($checker->id, true, 'Back.', (string) Str::uuid(), ['approver']),
-        'connection unavailable' => DisbursementFixture::sources()->setConnection(null, 'available'),
-        default => DisbursementFixture::sources()->scriptRecheck($campaignId, 'passed'),
-    };
+    if (in_array($case, ['maker revoked', 'checker revoked'], true)) {
+        // A restored role does not revive an act made before the gap (#96 answer 4): still unsent.
+        app(ConfigureStaffAccess::class)->handle(($case === 'maker revoked' ? $maker : $checker)->id, true, 'Back.', (string) Str::uuid(),
+            [$case === 'maker revoked' ? 'treasury' : 'approver']);
+        expect(app(DispatchDisbursements::class)->handle())->toBe(['claimed' => 0, 'sent' => 0])->and(sends($intent))->toBe(0);
+
+        return;
+    }
+    $case === 'connection unavailable' ? DisbursementFixture::sources()->setConnection(null, 'available')
+        : DisbursementFixture::sources()->scriptRecheck($campaignId, 'passed');
     expect(app(DispatchDisbursements::class)->handle())->toBe(['claimed' => 1, 'sent' => 1])->and(phases($intent))->toBe(['queued', 'claimed', 'sent']);
 })->with(['maker revoked', 'checker revoked', 'connection unavailable', 'destination rotated', 'recheck unavailable']);
 

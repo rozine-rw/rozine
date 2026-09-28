@@ -19,10 +19,11 @@ it('follows the MC-08 payout outcome matrix', function (string $current, string 
     'unknown → failed is applied' => ['unknown', 'failed', 'applied', 'failed', false],
     'succeeded → succeeded never applies twice' => ['succeeded', 'succeeded', 'duplicate', 'succeeded', false],
     'succeeded → failed opens an exception, never a reversal' => ['succeeded', 'failed', 'after_final', 'succeeded', true],
-    'succeeded → unknown is after final' => ['succeeded', 'unknown', 'after_final', 'succeeded', true],
+    'succeeded → unknown is stale evidence that blocks nothing' => ['succeeded', 'unknown', 'stale', 'succeeded', false],
+    'succeeded → pending is stale evidence' => ['succeeded', 'pending', 'stale', 'succeeded', false],
     'failed → succeeded is a conflict that blocks the refund' => ['failed', 'succeeded', 'conflict', 'failed', true],
     'failed → failed repeats' => ['failed', 'failed', 'duplicate', 'failed', false],
-    'failed → pending is after final' => ['failed', 'pending', 'after_final', 'failed', true],
+    'failed → pending is stale evidence' => ['failed', 'pending', 'stale', 'failed', false],
 ]);
 
 it('classifies an event identity replay, a key collision and an unmatched observation', function (): void {
@@ -72,6 +73,7 @@ it('decides a reconciliation only from an unblocked applied final observation', 
     'nothing observed' => [[], 'open', [], false],
     'pending then unknown' => [[['state' => 'pending', 'disposition' => 'applied'], ['state' => 'unknown', 'disposition' => 'applied']], 'open', [], false],
     'one matching success' => [[['state' => 'succeeded', 'disposition' => 'applied']], 'matched_success', [], true],
+    'success then a lagging unknown' => [[['state' => 'succeeded', 'disposition' => 'applied'], ['state' => 'unknown', 'disposition' => 'stale']], 'matched_success', [], true],
     'success with a duplicate' => [[['state' => 'succeeded', 'disposition' => 'applied'], ['state' => 'succeeded', 'disposition' => 'duplicate']], 'matched_success', [], true],
     'one matching failure' => [[['state' => 'failed', 'disposition' => 'applied']], 'matched_failure', [], true],
     'failure then late success' => [[['state' => 'failed', 'disposition' => 'applied'], ['state' => 'failed', 'disposition' => 'conflict']], 'exception', ['conflict'], false],

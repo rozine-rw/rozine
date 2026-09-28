@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\DB;
  * amount it committed. Issue and refund are mutually exclusive terminals of the same commitment.
  * Like every primary movement it keeps the lifecycle's single source identity, the one its hold
  * opened (S3-C uses the reservation, #96 5869267382): its anchor is that source's commit on the same
- * wallet and originating operation. The entry adds its own cause: the
- * disbursement closing that issued it. #172's per-source anchor and bucket-shape checks are
+ * wallet and originating operation. The entry adds its own cause: the disbursement closing that
+ * issued it, which must exist as an `issued` closing when the entry commits (binding it to the same
+ * campaign and commitment needs the S3-C commitment records and is an integration gate). #172's per-source anchor and bucket-shape checks are
  * unchanged for every other kind; issue is added to them, never exempted.
  */
 return new class extends Migration
@@ -104,6 +105,10 @@ return new class extends Migration
                         IF anchor_amount IS NULL OR anchor_amount <> moved THEN
                             RAISE EXCEPTION 'Primary posting % must move exactly its source anchor amount % (moved %)', checked_entry, anchor_amount, moved USING ERRCODE = '23514';
                         END IF;
+                    END IF;
+                    IF entry.kind = 'primary_issue' AND NOT EXISTS (SELECT 1 FROM disbursement_closings closing
+                            WHERE closing.id = entry.cause_id AND closing.kind = 'issued') THEN
+                        RAISE EXCEPTION 'Primary issue % must name an issued disbursement closing as its cause', checked_entry USING ERRCODE = '23514';
                     END IF;
                     IF entry.kind IN ('primary_refund', 'primary_issue') AND EXISTS (SELECT 1 FROM ledger_entries other
                             WHERE other.source_type = entry.source_type AND other.source_id = entry.source_id

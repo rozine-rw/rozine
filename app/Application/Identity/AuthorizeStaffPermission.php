@@ -47,6 +47,16 @@ final class AuthorizeStaffPermission
     }
 
     /**
+     * Whether the staff member has held this permission without a gap since the instant their
+     * recorded act (an authorization or an approval) was made. A revoked and later restored role
+     * does not revive the earlier act. It locks their account row unless told not to.
+     */
+    public function continuouslyHeldSince(int $userId, string $permission, string $since, bool $lock = true): bool
+    {
+        return $this->access->staffPermissionContinuousSince($userId, $permission, $since, $lock);
+    }
+
+    /**
      * @template TResult
      *
      * @param  Closure(): TResult  $operation

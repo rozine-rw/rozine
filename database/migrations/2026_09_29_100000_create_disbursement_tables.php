@@ -193,7 +193,7 @@ return new class extends Migration
                 OR (kind = 'query' AND source IN ('reconcile', 'requery') AND ((source = 'requery') = (operation_id IS NOT NULL))));
             ALTER TABLE disbursement_provider_events ADD CONSTRAINT disbursement_provider_event_facts CHECK (
                 source IN ('callback', 'query', 'requery') AND state IN ('pending', 'unknown', 'succeeded', 'failed')
-                AND disposition IN ('applied', 'duplicate', 'after_final', 'conflict', 'key_conflict', 'unverifiable')
+                AND disposition IN ('applied', 'duplicate', 'stale', 'after_final', 'conflict', 'key_conflict', 'unverifiable')
                 AND (amount IS NULL OR amount >= 0) AND (currency IS NULL OR currency ~ '^[A-Z]{3}$')
                 AND jsonb_typeof(mismatches) = 'array' AND ((disposition = 'unverifiable') = (jsonb_array_length(mismatches) > 0)));
             CREATE UNIQUE INDEX disbursement_provider_events_identity ON disbursement_provider_events (provider, provider_event_id)

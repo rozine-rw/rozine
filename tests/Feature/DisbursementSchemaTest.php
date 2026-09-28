@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use App\Models\Disbursement;
+use App\Models\Party;
 use App\Models\PrimaryHolding;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Tests\Support\DisbursementFixture;
 
 /*
  * The database enforces the disbursement rules on its own: raw SQL cannot skip a state, approve
@@ -371,4 +373,14 @@ it('refuses to roll back the schema once a disbursement exists', function (): vo
     $holdings->up();
     $migration = require database_path('migrations/2026_09_29_100000_create_disbursement_tables.php');
     expect(fn () => $migration->down())->toThrow(QueryException::class, 'Recorded disbursements require a forward migration');
+});
+
+it('keeps staff accounts and marketplace Parties disjoint and staff accounts undeletable', function (): void {
+    $staff = DisbursementFixture::staff(['treasury']);
+    $party = Party::factory()->create();
+    refusedBySchema(fn () => DB::table('users')->where('id', $staff->id)->update(['party_id' => $party->id]));
+    refusedBySchema(fn () => DB::table('staff_accounts')->where('user_id', $staff->id)->delete());
+    $member = User::factory()->create();
+    DB::table('users')->where('id', $member->id)->update(['party_id' => $party->id]);
+    expect(DB::table('users')->where('id', $member->id)->value('party_id'))->toBe($party->id);
 });

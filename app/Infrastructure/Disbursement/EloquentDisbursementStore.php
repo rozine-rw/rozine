@@ -99,7 +99,7 @@ final class EloquentDisbursementStore implements DisbursementStore
         $this->staff->check($userId, $permission);
         $disbursement = $this->disbursement($disbursementId);
         $before = $this->state($disbursement);
-        $others = in_array($command, ['authorize', 'approve'], true) && $before->makerUserId !== null ? [$before->makerUserId => 'disbursements.authorize'] : [];
+        $others = in_array($command, ['authorize', 'approve'], true) && $before->makerUserId !== null ? $this->makerAuthority($disbursement, $before) : [];
         $input = $this->input($expectedRevision, $reason);
 
         return $this->serialized(function () use ($userId, $disbursement, $command, $permission, $others, $before, $input, $expectedRevision, $reason, $requestId, $stepUpProof): array {
@@ -121,7 +121,7 @@ final class EloquentDisbursementStore implements DisbursementStore
         $this->staff->check($userId, 'disbursements.approve');
         $disbursement = $this->disbursement($disbursementId);
         $before = $this->state($disbursement);
-        $others = $before->makerUserId === null ? [] : [$before->makerUserId => 'disbursements.authorize'];
+        $others = $before->makerUserId === null ? [] : $this->makerAuthority($disbursement, $before);
 
         return $this->serialized(function () use ($userId, $disbursement, $before, $others, $expectedRevision, $intentDigest, $code): array {
             $this->funding->lockBusiness($disbursement->business_id);
@@ -383,6 +383,11 @@ final class EloquentDisbursementStore implements DisbursementStore
         if (! $decision->terminal()) {
             return 'open';
         }
+        // An authenticated outcome can arrive while the send is still being recorded; it closes
+        // once the dispatch is recorded, on the next reconciliation.
+        if ($this->state($disbursement)->state !== 'dispatched') {
+            return 'awaiting_dispatch';
+        }
         $final = $observations->first(fn (DisbursementProviderEvent $event): bool => $event->disposition === 'applied'
             && PayoutOutcome::isFinal($event->state)) ?? throw new DisbursementViolation('RECONCILIATION_FINAL_MISSING');
         $reconciliation = new DisbursementReconciliation;
@@ -412,6 +417,8 @@ final class EloquentDisbursementStore implements DisbursementStore
         int $expectedRevision, string $reason, string $requestId, string $operationId, ?string $stepUpProof): OperationResult
     {
         $campaign = in_array($command, ['authorize', 'approve'], true) ? $this->funding->lockFunded($disbursement->business_campaign_id) : null;
+        // Connection and destination sources are read before the disbursement lock, never under it.
+        $facts = $campaign === null ? null : $this->sourceFacts($disbursement, $campaign, $command === 'approve' ? [$userId, (int) $before->makerUserId] : [$userId]);
         $this->lock($disbursement);
         $state = $this->state($disbursement);
         if ($state->makerUserId !== $before->makerUserId) {
@@ -420,17 +427,17 @@ final class EloquentDisbursementStore implements DisbursementStore
         $state->assertAllows($command, $userId, $makerCurrent);
         $this->assertRevision($state, $expectedRevision);
         $recordedReason = $this->reason($reason, $state);
-        if ($campaign !== null && $command === 'approve') {
-            return $this->approve($userId, $disbursement, $campaign, $state, $recordedReason, $requestId, $operationId, $stepUpProof);
+        if ($campaign !== null && $facts !== null && $command === 'approve') {
+            return $this->approve($userId, $disbursement, $campaign, $facts, $state, $recordedReason, $requestId, $operationId, $stepUpProof);
         }
         [$kind, $code] = self::STAFF_EVENTS[$command];
         $binding = null;
         $destination = null;
         $payload = ['reason' => $recordedReason];
-        if ($campaign !== null) {
-            $this->assertConnections($disbursement, $campaign, [$userId], $state);
+        if ($campaign !== null && $facts !== null) {
+            $this->assertConnections($facts['connections'], $state);
             $this->assertFunding($disbursement, $campaign, $state);
-            $verified = $this->currentDestination($disbursement, $state);
+            $verified = $this->currentDestination($facts['destination'], $state);
             $recheck = $this->funding->recheck($campaign);
             if ($recheck->outcome === 'unavailable') {
                 throw new CommandRejection('POLICY_INPUT_REQUIRED', revision: $state->revision, data: ['causes' => $recheck->causes]);
@@ -452,16 +459,17 @@ final class EloquentDisbursementStore implements DisbursementStore
             'receipt' => $this->receipt($event->id, $operationId, $requestId, $code, $event->created_at->toIso8601String(), $disbursement, $state->revision + 1)], $state->revision + 1);
     }
 
-    private function approve(int $userId, Disbursement $disbursement, FundedCampaign $campaign, DisbursementState $state, string $reason,
+    /** @param array{connections: array<int, string>, destination: VerifiedDestination|null} $facts */
+    private function approve(int $userId, Disbursement $disbursement, FundedCampaign $campaign, array $facts, DisbursementState $state, string $reason,
         string $requestId, string $operationId, ?string $stepUpProof): OperationResult
     {
         if ($stepUpProof === null || $stepUpProof === '') {
             throw new CommandRejection('STEP_UP_REQUIRED', 403, $state->revision);
         }
-        $this->assertConnections($disbursement, $campaign, [$userId, (int) $state->makerUserId], $state);
+        $this->assertConnections($facts['connections'], $state);
         $this->assertFunding($disbursement, $campaign, $state);
         $authorized = $this->authorization($disbursement);
-        $destination = $this->currentDestination($disbursement, $state);
+        $destination = $this->currentDestination($facts['destination'], $state);
         if (! hash_equals((string) $authorized->destination_sha256, $destination->digest())) {
             throw new CommandRejection('DIGEST_STALE', revision: $state->revision);
         }
@@ -520,9 +528,13 @@ final class EloquentDisbursementStore implements DisbursementStore
             return $this->serialized(function () use ($intent, $disbursement, $recovery): ?PayoutInstruction {
                 $this->funding->lockBusiness($disbursement->business_id);
 
-                return $this->withStaff(null, null, [$intent->maker_user_id => 'disbursements.authorize', $intent->checker_user_id => 'disbursements.approve'],
+                $authorizedAt = $this->authorization($disbursement)->created_at->format('Y-m-d\TH:i:s.uP');
+
+                return $this->withStaff(null, null, [$intent->maker_user_id => ['disbursements.authorize', $authorizedAt],
+                    $intent->checker_user_id => ['disbursements.approve', $intent->created_at->format('Y-m-d\TH:i:s.uP')]],
                     function (array $current) use ($intent, $disbursement, $recovery): ?PayoutInstruction {
                         $campaign = $this->funding->lockFunded($disbursement->business_campaign_id);
+                        $facts = $this->sourceFacts($disbursement, $campaign, [$intent->maker_user_id, $intent->checker_user_id]);
                         $this->lock($disbursement);
                         DisbursementIntent::query()->whereKey($intent->id)->lockForUpdate()->sole();
                         $state = $this->state($disbursement);
@@ -531,7 +543,7 @@ final class EloquentDisbursementStore implements DisbursementStore
                                 && ! DisbursementProviderEvent::query()->where('intent_id', $intent->id)->exists()
                             : $state->state === 'queued' && array_intersect(['claimed', 'recheck_failed'], $phases) === [];
                         if (! $eligible || ! $current[$intent->maker_user_id] || ! $current[$intent->checker_user_id]
-                            || ! $this->presendFactsCurrent($disbursement, $intent, $campaign)) {
+                            || ! $this->presendFactsCurrent($disbursement, $intent, $campaign, $facts)) {
                             return null;
                         }
                         $recheck = $this->funding->recheck($campaign);
@@ -561,30 +573,50 @@ final class EloquentDisbursementStore implements DisbursementStore
         }
     }
 
-    /** The worker's own pre-send facts: current connections, the same funding and the same verified destination. */
-    private function presendFactsCurrent(Disbursement $disbursement, DisbursementIntent $intent, FundedCampaign $campaign): bool
+    /**
+     * The worker's own pre-send facts: current connections, the same funding and the same verified destination.
+     *
+     * @param  array{connections: array<int, string>, destination: VerifiedDestination|null}  $facts
+     */
+    private function presendFactsCurrent(Disbursement $disbursement, DisbursementIntent $intent, FundedCampaign $campaign, array $facts): bool
     {
-        foreach ([$intent->maker_user_id, $intent->checker_user_id] as $staffUserId) {
-            if ($this->connections->connection($staffUserId, $disbursement->business_id, $campaign->partyIds()) !== 'unconnected') {
-                return false;
-            }
-        }
-        $destination = $this->verifiedDestination($disbursement);
+        $destination = $facts['destination'];
 
-        return $this->fundingMatches($disbursement, $campaign) && $destination !== null && hash_equals($intent->destination_sha256, $destination->digest());
+        return array_diff(array_values($facts['connections']), ['unconnected']) === [] && $this->fundingMatches($disbursement, $campaign)
+            && $destination !== null && hash_equals($intent->destination_sha256, $destination->digest());
+    }
+
+    /**
+     * The staff connection and payout destination facts for one locked campaign, read after the
+     * Business and campaign locks and before the disbursement lock (#96 5874488658), so no source
+     * that may lock Business, User or Party rows is ever called under a disbursement or intent lock.
+     *
+     * @param  list<int>  $staffUserIds
+     * @return array{connections: array<int, string>, destination: VerifiedDestination|null}
+     */
+    private function sourceFacts(Disbursement $disbursement, FundedCampaign $campaign, array $staffUserIds): array
+    {
+        $connections = [];
+        foreach (array_unique($staffUserIds) as $staffUserId) {
+            $connections[$staffUserId] = $this->connections->connection($staffUserId, $disbursement->business_id, $campaign->partyIds());
+        }
+
+        return ['connections' => $connections, 'destination' => $this->verifiedDestination($disbursement)];
     }
 
     /** Records an authenticated observation against its locked intent; an exact replay adds nothing. */
     private function recordObservation(DisbursementIntent $intent, VerifiedPayoutEvent $event, string $source): string
     {
         DisbursementIntent::query()->whereKey($intent->id)->lockForUpdate()->sole();
+        // An exact replay of anything already recorded, a key conflict included, adds nothing.
+        if (DisbursementProviderEvent::query()->where('provider', $event->provider)->where('provider_event_id', $event->eventId)
+            ->where('content_sha256', $event->contentSha256)->exists()) {
+            return 'duplicate';
+        }
         $recorded = DisbursementProviderEvent::query()->where('provider', $event->provider)->where('provider_event_id', $event->eventId)
             ->where('disposition', '<>', 'key_conflict')->first();
         $mismatches = Reconciliation::mismatches($this->intentFacts($intent, true), $this->eventFacts($event));
         $outcome = PayoutOutcome::observe($this->providerState($intent), $event->state, $recorded?->content_sha256, $event->contentSha256, $mismatches);
-        if ($recorded !== null && $outcome->disposition === 'duplicate') {
-            return 'duplicate';
-        }
         (new DisbursementProviderEvent)->forceFill(['intent_id' => $intent->id, 'provider' => $event->provider, 'provider_event_id' => $event->eventId,
             'content_sha256' => $event->contentSha256, 'source' => $source, 'state' => $event->state, 'amount' => $this->digits($event->amount),
             'currency' => $event->currency !== null && preg_match('/^[A-Z]{3}$/D', $event->currency) === 1 ? $event->currency : null,
@@ -647,7 +679,7 @@ final class EloquentDisbursementStore implements DisbursementStore
      *
      * @template TResult
      *
-     * @param  array<int, string>  $others  user id => permission
+     * @param  array<int, array{0: string, 1: string}>  $others  user id => [permission, the instant it must have been held since]
      * @param  Closure(array<int, bool>): TResult  $then
      * @return TResult
      */
@@ -668,13 +700,13 @@ final class EloquentDisbursementStore implements DisbursementStore
             if ($id === $actorId && $permission !== null) {
                 return $this->staff->handle($id, $permission, function () use (&$run, &$current, $id, $index, $others): mixed {
                     if (isset($others[$id])) {
-                        $current[$id] = $this->staff->currentlyHolds($id, $others[$id]);
+                        $current[$id] = $this->staff->continuouslyHeldSince($id, $others[$id][0], $others[$id][1]);
                     }
 
                     return $run($index + 1);
                 });
             }
-            $current[$id] = $this->staff->currentlyHolds($id, $others[$id]);
+            $current[$id] = $this->staff->continuouslyHeldSince($id, $others[$id][0], $others[$id][1]);
 
             return $run($index + 1);
         };
@@ -682,11 +714,21 @@ final class EloquentDisbursementStore implements DisbursementStore
         return $run(0);
     }
 
-    /** @param list<int> $staffUserIds */
-    private function assertConnections(Disbursement $disbursement, FundedCampaign $campaign, array $staffUserIds, DisbursementState $state): void
+    /**
+     * The recorded maker, and the instant their authorization was recorded: it counts only while
+     * they have held authorize authority without a gap since then (#96 answer 4).
+     *
+     * @return array<int, array{0: string, 1: string}>
+     */
+    private function makerAuthority(Disbursement $disbursement, DisbursementState $state): array
     {
-        foreach (array_unique($staffUserIds) as $staffUserId) {
-            $connection = $this->connections->connection($staffUserId, $disbursement->business_id, $campaign->partyIds());
+        return [(int) $state->makerUserId => ['disbursements.authorize', $this->authorization($disbursement)->created_at->format('Y-m-d\TH:i:s.uP')]];
+    }
+
+    /** @param array<int, string> $connections staff user id => connection */
+    private function assertConnections(array $connections, DisbursementState $state): void
+    {
+        foreach ($connections as $connection) {
             if ($connection === 'connected') {
                 throw new CommandRejection('ACTION_FORBIDDEN', 403, $state->revision, data: ['causes' => ['connected_staff']]);
             }
@@ -710,9 +752,9 @@ final class EloquentDisbursementStore implements DisbursementStore
             && $campaign->termMonths === $disbursement->term_months && hash_equals($disbursement->commitments_digest, $campaign->commitmentsDigest());
     }
 
-    private function currentDestination(Disbursement $disbursement, DisbursementState $state): VerifiedDestination
+    private function currentDestination(?VerifiedDestination $destination, DisbursementState $state): VerifiedDestination
     {
-        return $this->verifiedDestination($disbursement)
+        return $destination
             ?? throw new CommandRejection('POLICY_INPUT_REQUIRED', revision: $state->revision, data: ['causes' => ['verified_payout_destination']]);
     }
 
@@ -809,7 +851,8 @@ final class EloquentDisbursementStore implements DisbursementStore
             : ['actor' => (string) ($names[$event->actor_user_id] ?? 'System'), 'at' => $event->created_at->toIso8601String(), 'reason' => $event->payload['reason'] ?? null];
         $last = fn (string $kind): ?DisbursementEvent => $events->last(fn (DisbursementEvent $event): bool => $event->kind === $kind);
         $authorized = $state->makerUserId === null ? null : $last('authorized');
-        $makerCurrent = $state->makerUserId === null || in_array('disbursements.authorize', $this->staff->permissions($state->makerUserId), true);
+        $makerCurrent = $state->makerUserId === null || ($authorized !== null && $this->staff->continuouslyHeldSince($state->makerUserId, 'disbursements.authorize',
+            $authorized->created_at->format('Y-m-d\TH:i:s.uP'), false));
         $dispatched = $intent !== null && $this->dispatched($intent);
         $allowed = [];
         foreach (DisbursementState::COMMANDS as $command) {

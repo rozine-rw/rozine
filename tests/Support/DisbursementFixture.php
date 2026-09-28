@@ -9,8 +9,10 @@ use App\Application\Disbursement\Contracts\SyntheticPayoutScripts;
 use App\Application\Disbursement\FundedCampaign;
 use App\Application\Disbursement\ManageDisbursements;
 use App\Application\Disbursement\OpenFundedDisbursements;
+use App\Application\Disbursement\RecordPayoutEvent;
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Models\Disbursement;
+use App\Models\DisbursementClosing;
 use App\Models\DisbursementIntent;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -102,5 +104,14 @@ final class DisbursementFixture
 
         return ['campaign' => $campaign, 'disbursement' => $disbursement, 'maker' => $maker, 'checker' => $checker,
             'intent' => DisbursementIntent::query()->where('disbursement_id', $disbursement->id)->sole(), 'approval' => $approval];
+    }
+
+    /** A real issued disbursement closing, as the cause an issue posting must name. */
+    public static function issuedClosing(): string
+    {
+        ['intent' => $intent] = self::approved();
+        app(RecordPayoutEvent::class)->handle(self::provider()->callback($intent->id, 'succeeded'));
+
+        return DisbursementClosing::query()->where('intent_id', $intent->id)->where('kind', 'issued')->sole()->id;
     }
 }
