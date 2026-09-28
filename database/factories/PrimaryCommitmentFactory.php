@@ -14,7 +14,7 @@ class PrimaryCommitmentFactory extends Factory
     /** @return array<string, mixed> */
     public function definition(): array
     {
-        return ['primary_reservation_version_id' => PrimaryReservationVersion::factory()->confirmed(),
+        return ['primary_reservation_version_id' => PrimaryReservationVersion::factory()->confirmed()->withCashMovement(),
             'primary_reservation_id' => fn (array $a): string => PrimaryReservationVersion::query()->whereKey($a['primary_reservation_version_id'])->firstOrFail()->primary_reservation_id,
             'operation_id' => fn (array $a): ?string => PrimaryReservationVersion::query()->whereKey($a['primary_reservation_version_id'])->firstOrFail()->operation_id,
             'confirmed_at' => fn (array $a) => PrimaryReservationVersion::query()->whereKey($a['primary_reservation_version_id'])->firstOrFail()->created_at,

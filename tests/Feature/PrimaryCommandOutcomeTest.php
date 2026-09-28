@@ -34,7 +34,10 @@ function retainPrimaryOutcome(string $state, array $result): void
     }
     $root = PrimaryReservationRecord::factory()->withInitialVersion()->create();
     $version = PrimaryReservationVersion::factory()->make(['primary_reservation_id' => $root->id, 'state' => $state]);
-    $version->forceFill(['operation_id' => primaryOperationWithResult($version->operation_id, $result)])->save();
+    $version = PrimaryReservationVersion::factory()->withCashMovement()->create([
+        ...$version->only(['primary_reservation_id', 'state', 'created_at']),
+        'operation_id' => primaryOperationWithResult($version->operation_id, $result),
+    ]);
     if ($state === 'confirmed') {
         PrimaryCommitment::factory()->create(['primary_reservation_version_id' => $version->id]);
     }
@@ -68,7 +71,7 @@ it('allows an expiry observation to retain the rejected confirmation or release 
     $operation = CommandOperation::factory()->create([...$origin->only(['actor_key', 'actor_user_id']),
         'command' => $command, 'target_type' => 'primary_reservation', 'target_id' => $root->id,
         'result' => ['status' => 'rejected', 'code' => 'RESERVATION_EXPIRED']]);
-    PrimaryReservationVersion::factory()->create(['primary_reservation_id' => $root->id, 'state' => 'expired',
+    PrimaryReservationVersion::factory()->withCashMovement()->create(['primary_reservation_id' => $root->id, 'state' => 'expired',
         'created_at' => $root->expires_at, 'operation_id' => $operation->id]);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     expect(PrimaryReservationVersion::query()->where('state', 'expired')->sole()->operation_id)->toBe($operation->id);

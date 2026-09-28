@@ -9,7 +9,10 @@ use App\Domain\Wallet\WalletMoney;
 use App\Domain\Wallet\WalletViolation;
 use App\Models\LedgerEntry;
 use App\Models\LedgerLine;
+use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
+use App\Models\PrimaryReservationVersion;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
@@ -41,6 +44,8 @@ function walletContenders(array $operations): array
                 exit(0);
             } catch (CommandRejection $rejection) {
                 exit($rejection->reason === 'INSUFFICIENT_AVAILABLE_FUNDS' ? 2 : 1);
+            } catch (QueryException $exception) {
+                exit($exception->getCode() === '23514' ? 2 : 1);
             } catch (Throwable) {
                 exit(1);
             }
@@ -87,7 +92,7 @@ it('never overdraws available when two holds race on one wallet', function (): v
         ->toBe('30000');
 });
 
-it('posts one commit when the same hold is committed and released at once', function (): void {
+it('retains one matching terminal version and cash when commit and release race', function (): void {
     $fixture = InvestorWalletFixture::ready();
     InvestorWalletFixture::settle(InvestorWalletFixture::deposit($fixture, '50000')['data']['intent_id']);
     $source = DB::transaction(function () use ($fixture): PostingSource {
@@ -100,11 +105,15 @@ it('posts one commit when the same hold is committed and released at once', func
     });
     $end = fn (string $movement): Closure => function () use ($fixture, $source, $movement): void {
         DB::transaction(function () use ($fixture, $source, $movement): void {
+            PrimaryReservationFixture::terminalVersion($source, $movement === 'commit' ? 'confirmed' : 'released');
             $postings = app(WalletPostings::class);
             $postings->{$movement}($postings->lockForParty($fixture['party']->id), WalletMoney::of('20000'), $source);
         });
     };
 
-    expect(walletContenders([$end('commit'), $end('release')]))->toBe([0, 1])
-        ->and(LedgerEntry::query()->where('source_id', $source->id)->whereIn('kind', ['primary_commit', 'primary_release'])->count())->toBe(1);
+    expect(walletContenders([$end('commit'), $end('release')]))->toBe([0, 2]);
+    $terminal = LedgerEntry::query()->where('source_id', $source->id)->whereIn('kind', ['primary_commit', 'primary_release'])->sole();
+    expect(PrimaryReservationVersion::query()->where('primary_reservation_id', $source->id)->orderBy('revision')->pluck('state')->all())
+        ->toBe(['held', $terminal->kind === 'primary_commit' ? 'confirmed' : 'released'])
+        ->and(PrimaryCommitment::query()->where('primary_reservation_id', $source->id)->count())->toBe($terminal->kind === 'primary_commit' ? 1 : 0);
 });

@@ -417,6 +417,18 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $primaryCapacity = require database_path('migrations/2026_09_28_151253_enforce_primary_campaign_capacity_and_closure.php');
     $primaryCommands = require database_path('migrations/2026_09_28_152823_bind_primary_evidence_to_command_actors.php');
     $primaryOrdinals = require database_path('migrations/2026_09_28_154941_enforce_primary_ordinal_exclusion.php');
+    $primaryWalletBindings = require database_path('migrations/2026_09_28_161335_bind_primary_reservations_to_wallet_holds.php');
+    $primaryOutcomes = require database_path('migrations/2026_09_28_163057_require_completed_primary_command_outcomes.php');
+    $primarySourceGuard = require database_path('migrations/2026_09_28_165949_reject_unbound_primary_commitment_sources.php');
+    $primaryTerminalCash = require database_path('migrations/2026_09_28_175455_bind_primary_terminal_versions_to_cash_movements.php');
+    $primaryGuardQuery = "SELECT tgname, pg_get_triggerdef(t.oid) AS definition FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid WHERE NOT t.tgisinternal AND c.relname IN ('primary_reservations', 'primary_reservation_versions', 'primary_commitments', 'ledger_entries') ORDER BY tgname";
+    $primaryGuards = DB::select($primaryGuardQuery);
+    expect(array_column($primaryGuards, 'tgname'))->toContain('primary_reservation_wallet_bound', 'primary_reservation_outcome_bound',
+        'primary_version_outcome_bound', 'primary_version_cash_bound', 'ledger_primary_terminal_bound', 'primary_expiry_outcome_bound');
+    $primaryTerminalCash->down();
+    $primarySourceGuard->down();
+    $primaryOutcomes->down();
+    $primaryWalletBindings->down();
     $primaryOrdinals->down();
     $primaryCommands->down();
     $primaryCapacity->down();
@@ -457,6 +469,12 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $primaryCapacity->up();
     $primaryCommands->up();
     $primaryOrdinals->up();
+    $primaryWalletBindings->up();
+    $primaryOutcomes->up();
+    $primarySourceGuard->up();
+    $primaryTerminalCash->up();
+    expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards);
+    expect(DB::selectOne("SELECT count(*) AS total FROM pg_constraint WHERE conname = 'primary_commitment_source_unavailable'")->total)->toBe(1);
 });
 
 it('automatically reoffers expired jobs with system history and without impersonating a staff user', function (): void {

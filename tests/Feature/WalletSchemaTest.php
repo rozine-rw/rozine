@@ -225,13 +225,13 @@ it('refuses to roll back wallet migrations once records exist', function (string
 ]);
 
 it('rolls wallet migrations back and forward while no records exist', function (): void {
-    foreach (['2026_09_28_165949_reject_unbound_primary_commitment_sources', '2026_09_28_161335_bind_primary_reservations_to_wallet_holds', '2026_09_28_140000_bind_primary_postings_to_their_source_anchor', '2026_09_28_112902_add_primary_postings_to_wallet_ledger', '2026_09_28_112500_seal_ledger_entries_once_validated', '2026_09_28_104821_create_wallet_deposit_intent_and_outcome_tables',
+    foreach (['2026_09_28_175455_bind_primary_terminal_versions_to_cash_movements', '2026_09_28_165949_reject_unbound_primary_commitment_sources', '2026_09_28_161335_bind_primary_reservations_to_wallet_holds', '2026_09_28_140000_bind_primary_postings_to_their_source_anchor', '2026_09_28_112902_add_primary_postings_to_wallet_ledger', '2026_09_28_112500_seal_ledger_entries_once_validated', '2026_09_28_104821_create_wallet_deposit_intent_and_outcome_tables',
         '2026_09_28_104819_create_wallet_deposit_policy_method_and_restriction_tables', '2026_09_28_104818_create_investor_wallet_ledger_tables'] as $migration) {
         (require database_path('migrations/'.$migration.'.php'))->down();
     }
     expect(Schema::hasTable('investor_wallets'))->toBeFalse()->and(Schema::hasTable('wallet_deposit_intents'))->toBeFalse();
     foreach (['2026_09_28_104818_create_investor_wallet_ledger_tables', '2026_09_28_104819_create_wallet_deposit_policy_method_and_restriction_tables',
-        '2026_09_28_104821_create_wallet_deposit_intent_and_outcome_tables', '2026_09_28_112500_seal_ledger_entries_once_validated', '2026_09_28_112902_add_primary_postings_to_wallet_ledger', '2026_09_28_140000_bind_primary_postings_to_their_source_anchor', '2026_09_28_161335_bind_primary_reservations_to_wallet_holds', '2026_09_28_165949_reject_unbound_primary_commitment_sources'] as $migration) {
+        '2026_09_28_104821_create_wallet_deposit_intent_and_outcome_tables', '2026_09_28_112500_seal_ledger_entries_once_validated', '2026_09_28_112902_add_primary_postings_to_wallet_ledger', '2026_09_28_140000_bind_primary_postings_to_their_source_anchor', '2026_09_28_161335_bind_primary_reservations_to_wallet_holds', '2026_09_28_165949_reject_unbound_primary_commitment_sources', '2026_09_28_175455_bind_primary_terminal_versions_to_cash_movements'] as $migration) {
         (require database_path('migrations/'.$migration.'.php'))->up();
     }
     expect(Schema::hasTable('wallet_deposit_credits'))->toBeTrue()

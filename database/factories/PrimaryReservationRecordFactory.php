@@ -43,7 +43,7 @@ class PrimaryReservationRecordFactory extends Factory
             },
             'payload' => ['source' => 'unsupported-fixture'],
             'sha256' => fn (array $a): string => hash('sha256', app(CanonicalJson::class)->encode($a['payload'])),
-            'created_at' => now()->startOfSecond(),
+            'created_at' => fn () => now()->startOfSecond(),
             'expires_at' => fn (array $a) => min(CarbonImmutable::parse($a['created_at'])->addSeconds(300), BusinessCampaign::query()->whereKey($a['business_campaign_id'])->firstOrFail()->expires_at)];
     }
 

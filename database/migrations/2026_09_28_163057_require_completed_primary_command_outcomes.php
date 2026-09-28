@@ -12,7 +12,7 @@ return new class extends Migration
     {
         DB::transaction(function (): void {
             DB::unprepared(<<<'SQL'
-                LOCK TABLE primary_reservations, primary_reservation_versions, command_operations IN ACCESS EXCLUSIVE MODE;
+                LOCK TABLE primary_reservations, primary_reservation_versions IN ACCESS EXCLUSIVE MODE;
                 DO $$
                 BEGIN
                     IF EXISTS (

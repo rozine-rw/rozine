@@ -62,6 +62,7 @@ it('holds, commits and refunds exactly, keeping each bucket once in the total', 
         ->toBe(['primary_hold', $wallet->walletId, 'primary_reservation', $source->id, $source->originOperationId, '20000', false])
         ->and(postingBuckets($user))->toBe(['30000', '20000', '0', '50000']);
 
+    PrimaryReservationFixture::terminalVersion($source, 'confirmed');
     $commit = $postings->commit($wallet, postingMoney('20000'), $source);
     expect($commit->kind)->toBe('primary_commit')->and($commit->entryId)->not->toBe($hold->entryId)
         ->and(postingBuckets($user))->toBe(['30000', '0', '20000', '50000']);
@@ -77,6 +78,7 @@ it('releases a hold back to available and ends its lifecycle', function (): void
     $postings = app(WalletPostings::class);
     $source = PrimaryReservationFixture::postingSource($wallet, '20000');
     $postings->hold($wallet, postingMoney('20000'), $source);
+    PrimaryReservationFixture::terminalVersion($source, 'released');
     $release = $postings->release($wallet, postingMoney('20000'), $source);
 
     expect($release->kind)->toBe('primary_release')->and(postingBuckets($user))->toBe(['50000', '0', '0', '50000'])
@@ -110,6 +112,7 @@ it('returns the original posting for an identical retry and refuses any changed 
         ->and(fn () => $postings->hold($other, postingMoney('20000'), $source))->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT')
         ->and(fn () => $postings->hold($wallet, postingMoney('20000'), new PostingSource('primary_reservation', $source->id, postingId())))
         ->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT');
+    PrimaryReservationFixture::terminalVersion($source, 'confirmed');
     $commit = $postings->commit($wallet, postingMoney('20000'), $source);
     expect($postings->commit($wallet, postingMoney('20000'), $source)->entryId)->toBe($commit->entryId)
         ->and(LedgerEntry::query()->where('source_id', $source->id)->count())->toBe(2);
@@ -129,6 +132,7 @@ it('lets no other operation, wallet or amount consume a hold', function (): void
         ->and(fn () => $postings->commit($wallet, postingMoney('19999'), $source))->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT')
         ->and(fn () => $postings->commit($wallet, postingMoney('20000'), new PostingSource('primary_commitment', $source->id, $source->originOperationId)))
         ->toThrow(WalletViolation::class, 'WALLET_POSTING_STATE_INVALID');
+    PrimaryReservationFixture::terminalVersion($source, 'confirmed');
     $postings->commit($wallet, postingMoney('20000'), $source);
     expect(fn () => $postings->refund($wallet, postingMoney('20001'), $source))->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT')
         ->and(fn () => $postings->release($wallet, postingMoney('20000'), $source))->toThrow(WalletViolation::class, 'WALLET_POSTING_STATE_INVALID')
@@ -225,6 +229,7 @@ it('binds each raw primary movement to its own source anchor amount and bucket s
     $postings->hold($wallet, postingMoney('5000'), $held);
     $postings->hold($wallet, postingMoney('5000'), $other);
     $postings->hold($wallet, postingMoney('5000'), $committed);
+    PrimaryReservationFixture::terminalVersion($committed, 'confirmed');
     $postings->commit($wallet, postingMoney('5000'), $committed);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     DB::statement('SET CONSTRAINTS ALL DEFERRED');
@@ -252,6 +257,7 @@ it('keeps a raw same-transaction hold, commit and refund valid at the database b
     $source = PrimaryReservationFixture::postingSource($wallet, '10000');
     DB::transaction(function () use ($wallet, $source): void {
         rawPrimaryPosting($wallet, 'primary_hold', $source, [['investor_available', 'debit', '10000'], ['investor_held', 'credit', '10000']]);
+        PrimaryReservationFixture::terminalVersion($source, 'confirmed');
         rawPrimaryPosting($wallet, 'primary_commit', $source, [['investor_held', 'debit', '10000'], ['investor_committed', 'credit', '10000']]);
         rawPrimaryPosting($wallet, 'primary_refund', $source, [['investor_committed', 'debit', '10000'], ['investor_available', 'credit', '10000']]);
     });

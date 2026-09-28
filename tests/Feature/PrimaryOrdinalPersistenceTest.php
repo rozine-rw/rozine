@@ -129,7 +129,7 @@ it('treats a cross reservation overlap as an integrity failure even when both pa
 
 it('retains all claims until a verified forward release migration exists', function (): void {
     $root = PrimaryReservationRecord::factory()->withInitialVersion()->create();
-    PrimaryReservationVersion::factory()->create(['primary_reservation_id' => $root->id, 'state' => 'released']);
+    PrimaryReservationVersion::factory()->withCashMovement()->create(['primary_reservation_id' => $root->id, 'state' => 'released']);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     expect(fn () => DB::transaction(fn () => PrimaryReservationRecord::factory()->withInitialVersion()->create([
         'business_campaign_id' => $root->business_campaign_id, 'ordinal_ranges' => '{[1,2)}',

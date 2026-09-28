@@ -15,6 +15,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\PrimaryReservationFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();
@@ -114,6 +115,7 @@ it('keeps the retained original hold binding across later wallet movements', fun
     $postings = app(WalletPostings::class);
     $postings->hold($wallet, WalletMoney::of('5000'), $source);
     flushHoldBinding();
+    PrimaryReservationFixture::terminalVersion($source, $terminal === 'release' ? 'released' : 'confirmed');
     if ($terminal === 'refund') {
         $postings->commit($wallet, WalletMoney::of('5000'), $source);
     }
@@ -135,6 +137,8 @@ it('validates retained holds on installation and refuses to drop protection afte
 });
 
 it('aborts installation atomically over incomplete or mismatched historical evidence', function (string $case): void {
+    $terminalCash = require database_path('migrations/2026_09_28_175455_bind_primary_terminal_versions_to_cash_movements.php');
+    $terminalCash->down();
     $migration = require database_path('migrations/2026_09_28_161335_bind_primary_reservations_to_wallet_holds.php');
     $migration->down();
     $wallet = holdBindingWallet();

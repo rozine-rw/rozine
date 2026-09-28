@@ -10,7 +10,9 @@ use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -119,26 +121,26 @@ it('rejects gaps stale hashes and backwards or terminal revision transitions', f
         'deadline_requote' => ['created_at' => $reservation->expires_at],
         default => throw new InvalidArgumentException('Unknown case.'),
     };
-    expect(fn () => DB::transaction(fn () => PrimaryReservationVersion::factory()->create([
+    expect(fn () => DB::transaction(fn () => PrimaryReservationVersion::factory()->withCashMovement()->create([
         'primary_reservation_id' => $reservation->id, 'previous_sha256' => $first->sha256, ...$attributes])))
         ->toThrow(QueryException::class);
 })->with(['gap', 'duplicate', 'negative', 'hash', 'backwards', 'unknown', 'missing_operation', 'early_expiry', 'deadline_confirm', 'deadline_requote']);
 
 it('cannot change a terminal reservation again', function (string $state): void {
     $reservation = PrimaryReservationRecord::factory()->withInitialVersion()->create();
-    $version = PrimaryReservationVersion::factory()->create(['primary_reservation_id' => $reservation->id, 'state' => $state,
+    $version = PrimaryReservationVersion::factory()->withCashMovement()->create(['primary_reservation_id' => $reservation->id, 'state' => $state,
         'created_at' => $state === 'expired' ? $reservation->expires_at : $reservation->created_at]);
     if ($state === 'confirmed') {
         PrimaryCommitment::factory()->create(['primary_reservation_version_id' => $version->id]);
     }
     primarySchemaFlush();
-    expect(fn () => DB::transaction(fn () => PrimaryReservationVersion::factory()->create(['primary_reservation_id' => $reservation->id,
+    expect(fn () => DB::transaction(fn () => PrimaryReservationVersion::factory()->withCashMovement()->create(['primary_reservation_id' => $reservation->id,
         'revision' => 3, 'state' => 'held', 'created_at' => $version->created_at])))->toThrow(QueryException::class);
 })->with(['released', 'expired', 'confirmed']);
 
 it('allows a system expiry exactly at the deadline without inventing a user operation', function (): void {
     $reservation = PrimaryReservationRecord::factory()->withInitialVersion()->create();
-    PrimaryReservationVersion::factory()->create(['primary_reservation_id' => $reservation->id, 'state' => 'expired',
+    PrimaryReservationVersion::factory()->withCashMovement()->create(['primary_reservation_id' => $reservation->id, 'state' => 'expired',
         'created_at' => $reservation->expires_at, 'operation_id' => null]);
     primarySchemaFlush();
     expect(PrimaryReservationVersion::query()->where('state', 'expired')->sole()->operation_id)->toBeNull();
@@ -146,14 +148,14 @@ it('allows a system expiry exactly at the deadline without inventing a user oper
 
 it('requires a commitment for confirmation in the same transaction', function (): void {
     expect(fn () => DB::transaction(function (): void {
-        PrimaryReservationVersion::factory()->confirmed()->create();
+        PrimaryReservationVersion::factory()->confirmed()->withCashMovement()->create();
         primarySchemaFlush();
     }))->toThrow(QueryException::class, 'requires a commitment');
     expect(PrimaryReservationVersion::query()->count())->toBe(0);
 });
 
 it('refuses commitment reparenting operation or confirmation time substitution', function (string $case): void {
-    $confirmation = PrimaryReservationVersion::factory()->confirmed()->create();
+    $confirmation = PrimaryReservationVersion::factory()->confirmed()->withCashMovement()->create();
     $other = PrimaryReservationRecord::factory()->withInitialVersion()->create();
     $values = match ($case) {
         'parent' => ['primary_reservation_id' => $other->id],
@@ -199,6 +201,8 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $ordinals = require database_path('migrations/2026_09_28_154941_enforce_primary_ordinal_exclusion.php');
     $walletBindings = require database_path('migrations/2026_09_28_161335_bind_primary_reservations_to_wallet_holds.php');
     $outcomes = require database_path('migrations/2026_09_28_163057_require_completed_primary_command_outcomes.php');
+    $terminalCash = require database_path('migrations/2026_09_28_175455_bind_primary_terminal_versions_to_cash_movements.php');
+    $terminalCash->down();
     $outcomes->down();
     $walletBindings->down();
     $ordinals->down();
@@ -212,6 +216,7 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $ordinals->up();
     $walletBindings->up();
     $outcomes->up();
+    $terminalCash->up();
     PrimaryReservationRecord::factory()->withInitialVersion()->create();
     primarySchemaFlush();
     expect(fn () => $migration->down())->toThrow(QueryException::class, 'forward migration');
@@ -230,7 +235,7 @@ it('requires the first revision to match the original hold identity and instant'
         'instant' => ['created_at' => $reservation->created_at->addMicrosecond()],
         default => throw new InvalidArgumentException('Unknown case.'),
     };
-    expect(fn () => DB::transaction(fn () => PrimaryReservationVersion::factory()->create([
+    expect(fn () => DB::transaction(fn () => PrimaryReservationVersion::factory()->withCashMovement()->create([
         'primary_reservation_id' => $reservation->id, 'revision' => 1, 'operation_id' => $reservation->origin_operation_id,
         'previous_sha256' => null, 'created_at' => $reservation->created_at, ...$changes])))->toThrow(QueryException::class);
 })->with(['state', 'operation', 'previous', 'instant']);
@@ -238,7 +243,7 @@ it('requires the first revision to match the original hold identity and instant'
 it('preserves earlier disclosure versions when a live hold is requoted', function (): void {
     $reservation = PrimaryReservationRecord::factory()->withInitialVersion()->create();
     $original = PrimaryReservationVersion::query()->sole();
-    $version = PrimaryReservationVersion::factory()->create(['primary_reservation_id' => $reservation->id,
+    $version = PrimaryReservationVersion::factory()->withCashMovement()->create(['primary_reservation_id' => $reservation->id,
         'payload' => ['source' => 'replacement-fixture'], 'created_at' => $reservation->expires_at->subMicrosecond()]);
     primarySchemaFlush();
     expect($original->refresh()->payload)->toBe(['source' => 'unsupported-fixture'])
@@ -253,7 +258,7 @@ it('bounds total retained allocations even through direct database writes', func
         'business_campaign_id' => $root->business_campaign_id, 'units' => 1, 'principal' => '5000',
     ])))->toThrow(QueryException::class, 'published campaign capacity');
     $this->travel(5)->minutes();
-    PrimaryReservationVersion::factory()->create(['primary_reservation_id' => $root->id, 'state' => 'expired', 'operation_id' => null, 'created_at' => now()]);
+    PrimaryReservationVersion::factory()->withCashMovement()->create(['primary_reservation_id' => $root->id, 'state' => 'expired', 'operation_id' => null, 'created_at' => now()]);
     expect(fn () => DB::transaction(fn () => PrimaryReservationRecord::factory()->withInitialVersion()->create([
         'business_campaign_id' => $root->business_campaign_id,
     ])))->toThrow(QueryException::class, 'published campaign capacity');
@@ -262,7 +267,7 @@ it('bounds total retained allocations even through direct database writes', func
 it('rejects held and confirmed revisions after campaign closure while allowing cash-unwinding states', function (string $state): void {
     $root = PrimaryReservationRecord::factory()->withInitialVersion()->create();
     BusinessCampaignClosure::factory()->create(['business_campaign_id' => $root->business_campaign_id, 'closed_at' => now()]);
-    $write = fn () => PrimaryReservationVersion::factory()->create(['primary_reservation_id' => $root->id, 'state' => $state]);
+    $write = fn () => PrimaryReservationVersion::factory()->withCashMovement()->create(['primary_reservation_id' => $root->id, 'state' => $state]);
     if (in_array($state, ['held', 'confirmed'], true)) {
         expect(fn () => DB::transaction($write))->toThrow(QueryException::class, 'closed campaign');
     } else {
@@ -279,4 +284,19 @@ it('refuses to install a capacity guard over already oversubscribed evidence', f
     PrimaryReservationRecord::factory()->withInitialVersion()->create(['business_campaign_id' => $root->business_campaign_id, 'units' => 600, 'principal' => '3000000']);
     $capacity = require database_path('migrations/2026_09_28_151253_enforce_primary_campaign_capacity_and_closure.php');
     expect(fn () => DB::transaction(fn () => $capacity->up()))->toThrow(QueryException::class, 'Existing Primary allocations exceed');
+});
+
+it('creates the reservation after its campaign when the factory clock crosses a second boundary', function (): void {
+    $base = CarbonImmutable::now()->startOfSecond();
+    $calls = 0;
+    Carbon::setTestNow(function () use ($base, &$calls): Carbon {
+        return Carbon::instance($calls++ === 0 ? $base->addMicroseconds(999999) : $base->addSecond());
+    });
+    try {
+        $root = PrimaryReservationRecord::factory()->withInitialVersion()->create();
+        expect($root->created_at->greaterThanOrEqualTo(BusinessCampaign::query()->findOrFail($root->business_campaign_id)->live_at))->toBeTrue();
+        primarySchemaFlush();
+    } finally {
+        Carbon::setTestNow();
+    }
 });

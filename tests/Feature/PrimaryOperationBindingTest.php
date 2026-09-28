@@ -39,7 +39,7 @@ function wrongPrimaryOperation(string $field): array
 it('refuses a reservation linked to another actor command or target at commit', function (string $field): void {
     $root = PrimaryReservationRecord::factory()->make();
     $origin = CommandOperation::query()->whereKey($root->origin_operation_id)->sole();
-    $substitute = CommandOperation::factory()->create([...$origin->only(['actor_key', 'actor_user_id', 'command', 'target_type', 'target_id']), ...wrongPrimaryOperation($field)]);
+    $substitute = CommandOperation::factory()->create([...$origin->only(['actor_key', 'actor_user_id', 'command', 'target_type', 'target_id', 'result']), ...wrongPrimaryOperation($field)]);
     expect(fn () => DB::transaction(function () use ($root, $substitute): void {
         $root->forceFill(['origin_operation_id' => $substitute->id])->save();
         PrimaryReservationVersion::factory()->create(['primary_reservation_id' => $root->id, 'revision' => 1,
@@ -54,9 +54,11 @@ it('binds every actor driven revision and commitment to the same Party and reser
     $version = PrimaryReservationVersion::factory()->make(['primary_reservation_id' => $root->id,
         'state' => $state, 'created_at' => $state === 'expired' ? $root->expires_at : now()]);
     $operation = CommandOperation::query()->whereKey($version->operation_id)->sole();
-    $substitute = CommandOperation::factory()->create([...$operation->only(['actor_key', 'actor_user_id', 'command', 'target_type', 'target_id']), ...wrongPrimaryOperation($field)]);
+    $substitute = CommandOperation::factory()->create([...$operation->only(['actor_key', 'actor_user_id', 'command', 'target_type', 'target_id', 'result']), ...wrongPrimaryOperation($field)]);
     expect(fn () => DB::transaction(function () use ($version, $substitute, $state): void {
-        $version->forceFill(['operation_id' => $substitute->id])->save();
+        $version = PrimaryReservationVersion::factory()->withCashMovement()->create([
+            ...$version->only(['primary_reservation_id', 'state', 'created_at']), 'operation_id' => $substitute->id,
+        ]);
         if ($state === 'confirmed') {
             PrimaryCommitment::factory()->create(['primary_reservation_version_id' => $version->id]);
         }
@@ -71,7 +73,9 @@ it('does not confuse a reserve operation with a later confirmation or release', 
     $operation = CommandOperation::query()->whereKey($version->operation_id)->sole();
     $substitute = CommandOperation::factory()->create([...$operation->only(['actor_key', 'actor_user_id', 'target_type', 'target_id']), 'command' => $command]);
     expect(fn () => DB::transaction(function () use ($version, $substitute, $state): void {
-        $version->forceFill(['operation_id' => $substitute->id])->save();
+        $version = PrimaryReservationVersion::factory()->withCashMovement()->create([
+            ...$version->only(['primary_reservation_id', 'state', 'created_at']), 'operation_id' => $substitute->id,
+        ]);
         if ($state === 'confirmed') {
             PrimaryCommitment::factory()->create(['primary_reservation_version_id' => $version->id]);
         }
@@ -84,7 +88,7 @@ it('allows the journal operation to be inserted after its confirmation evidence'
     $origin = CommandOperation::query()->whereKey($root->origin_operation_id)->sole();
     $operation = CommandOperation::factory()->make(['id' => strtolower((string) Str::ulid()), 'actor_key' => $origin->actor_key,
         'actor_user_id' => $origin->actor_user_id, 'command' => 'primary.confirm', 'target_type' => 'primary_reservation', 'target_id' => $root->id]);
-    $version = PrimaryReservationVersion::factory()->confirmed()->create(['primary_reservation_id' => $root->id, 'operation_id' => $operation->id]);
+    $version = PrimaryReservationVersion::factory()->confirmed()->withCashMovement()->create(['primary_reservation_id' => $root->id, 'operation_id' => $operation->id]);
     PrimaryCommitment::factory()->create(['primary_reservation_version_id' => $version->id]);
     $operation->save();
     flushPrimaryOperationBindings();
@@ -95,8 +99,9 @@ it('retains the confirmation attempt that observes an expired hold', function ()
     $root = PrimaryReservationRecord::factory()->withInitialVersion()->create();
     $origin = CommandOperation::query()->whereKey($root->origin_operation_id)->sole();
     $operation = CommandOperation::factory()->create(['actor_key' => $origin->actor_key, 'actor_user_id' => $origin->actor_user_id,
-        'command' => 'primary.confirm', 'target_type' => 'primary_reservation', 'target_id' => $root->id]);
-    PrimaryReservationVersion::factory()->create(['primary_reservation_id' => $root->id, 'state' => 'expired',
+        'command' => 'primary.confirm', 'target_type' => 'primary_reservation', 'target_id' => $root->id,
+        'result' => ['status' => 'rejected', 'code' => 'RESERVATION_EXPIRED']]);
+    PrimaryReservationVersion::factory()->withCashMovement()->create(['primary_reservation_id' => $root->id, 'state' => 'expired',
         'created_at' => $root->expires_at, 'operation_id' => $operation->id]);
     flushPrimaryOperationBindings();
     expect(PrimaryReservationVersion::query()->where('state', 'expired')->sole()->operation_id)->toBe($operation->id);

@@ -21,7 +21,7 @@ it('allows only one terminal revision when two independent PostgreSQL transactio
         if ($pid === 0) {
             DB::purge();
             try {
-                DB::transaction(fn () => PrimaryReservationVersion::factory()->create([
+                DB::transaction(fn () => PrimaryReservationVersion::factory()->withCashMovement()->create([
                     'primary_reservation_id' => $reservation->id, 'revision' => 2, 'state' => 'released',
                 ]));
                 exit(0);

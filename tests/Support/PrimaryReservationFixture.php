@@ -16,7 +16,9 @@ use App\Domain\Primary\UnitRights;
 use App\Models\BusinessCampaign;
 use App\Models\InvestorFundingMethod;
 use App\Models\Party;
+use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
+use App\Models\PrimaryReservationVersion;
 use App\Models\User;
 use Brick\Math\BigInteger;
 use Brick\Math\RoundingMode;
@@ -34,6 +36,19 @@ final class PrimaryReservationFixture
         ]);
 
         return new PostingSource('primary_reservation', $root->id, $root->origin_operation_id);
+    }
+
+    /** Retains the matching synthetic domain cause before a wallet-port terminal posting. */
+    public static function terminalVersion(PostingSource $source, string $state): PrimaryReservationVersion
+    {
+        $root = PrimaryReservationRecord::query()->whereKey($source->id)->sole();
+        $version = PrimaryReservationVersion::factory()->create(['primary_reservation_id' => $root->id,
+            'state' => $state, 'created_at' => $state === 'expired' ? $root->expires_at : now()->startOfSecond()]);
+        if ($state === 'confirmed') {
+            PrimaryCommitment::factory()->create(['primary_reservation_version_id' => $version->id]);
+        }
+
+        return $version;
     }
 
     public static function campaign(): BusinessCampaign
