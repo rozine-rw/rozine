@@ -222,3 +222,18 @@ it('rejects incomplete reservation cash bindings at the real outer commit atomic
     DB::transaction(fn () => PrimaryReservationRecord::factory()->withInitialVersion()->create());
     expect(PrimaryReservationRecord::query()->count())->toBe(1);
 })->with(['missing', 'orphan', 'party', 'operation', 'amount']);
+
+it('refuses a rejected reserve receipt at outer commit even with valid cash and unit claims', function (): void {
+    $this->freezeSecond();
+    $root = PrimaryReservationRecord::factory()->make();
+    $origin = CommandOperation::query()->whereKey($root->origin_operation_id)->sole();
+    expect(fn () => DB::transaction(function () use ($root, $origin): void {
+        $operation = CommandOperation::factory()->create([...$origin->only(['actor_key', 'actor_user_id', 'command', 'target_type', 'target_id']),
+            'result' => ['status' => 'rejected', 'code' => 'SYNTHETIC_REFUSAL']]);
+        PrimaryReservationRecord::factory()->withInitialVersion()->create([...$root->only(['business_campaign_id', 'party_id']),
+            'origin_operation_id' => $operation->id]);
+    }))->toThrow(PDOException::class, 'completed command outcome');
+    expect(PrimaryReservationRecord::query()->count())->toBe(0)->and(PrimaryReservationVersion::query()->count())->toBe(0)
+        ->and(LedgerEntry::query()->where('kind', 'primary_hold')->count())->toBe(0)
+        ->and(DB::table('primary_ordinal_claims')->count())->toBe(0);
+});

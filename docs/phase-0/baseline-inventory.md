@@ -1369,6 +1369,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_28_152823_bind_primary_evidence_to_command_actors.php |
 | 2026_09_28_154941_enforce_primary_ordinal_exclusion.php |
 | 2026_09_28_161335_bind_primary_reservations_to_wallet_holds.php |
+| 2026_09_28_163057_require_completed_primary_command_outcomes.php |
 
 ## Routes
 
