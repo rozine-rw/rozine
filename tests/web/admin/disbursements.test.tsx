@@ -280,6 +280,14 @@ describe('Disbursement drawer', () => {
         );
 
         await waitFor(() => expect(inertia.visits).toEqual([next]));
+        expect(
+            within(drawer()).getByText('Ready to authorize'),
+        ).toBeInTheDocument();
+        expect(
+            within(drawer()).getByText(
+                'Nobody has authorized this release yet.',
+            ),
+        ).toBeInTheDocument();
         expect(inertia.calls).toEqual([
             {
                 url: '/preview/admin-disbursements-awaiting-second',
@@ -366,41 +374,27 @@ describe('Disbursement drawer', () => {
         );
     });
 
-    it('lets a checker approve once a step-up route exists, recording an intent rather than a payment', async () => {
+    it('keeps approval withheld even when a step-up route is listed, since no bound proof can be sent yet', () => {
         const fixture = props(awaitingFixture);
 
         opened(fixture).step_up = {
             purpose: 'disbursement.approve',
             route: { url: '/preview/step-up', method: 'post' },
         };
-        const { user } = renderWithUser(<AdminDisbursements {...fixture} />);
+        render(<AdminDisbursements {...fixture} />);
+        const approve = screen.getByRole('button', {
+            name: 'Approve release',
+        });
 
+        expect(approve).toBeDisabled();
+        expect(approve).toHaveAccessibleDescription(
+            /That confirmation isn't available yet, so approval can't be given here./,
+        );
+        fireEvent.click(approve);
         expect(
-            screen.getByText(
-                'Approval asks for a fresh step-up confirmation bound to these details.',
-            ),
-        ).toBeInTheDocument();
-        await user.click(
-            screen.getByRole('button', { name: 'Approve release' }),
-        );
-        const stage = screen.getByRole('form', {
-            name: 'Approve this release',
-        });
-
-        expect(stage).toHaveTextContent(
-            "This records the payment intent; it isn't a payment.",
-        );
-        await user.type(within(stage).getByRole('textbox'), 'Checked.');
-        await user.click(
-            within(stage).getByRole('button', {
-                name: 'Approve and record intent',
-            }),
-        );
-
-        expect(inertia.calls[0]).toMatchObject({
-            url: '/preview/admin-disbursements-queued',
-            body: { expected_revision: 4, reason: 'Checked.' },
-        });
+            screen.queryByRole('form', { name: 'Approve this release' }),
+        ).not.toBeInTheDocument();
+        expect(inertia.calls).toEqual([]);
     });
 
     it('never lets the maker approve their own authorization', () => {
@@ -612,6 +606,115 @@ describe('Disbursement drawer', () => {
         expect(issue).toHaveTextContent('24 Sept 2026');
     });
 
+    it.each([
+        ['authorize', readyFixture, 'Authorize release', 'Authorize', 3],
+        ['hold', readyFixture, 'Hold', 'Hold release', 3],
+        ['reject', awaitingFixture, 'Reject', 'Reject release', 4],
+        ['release_hold', onHoldFixture, 'Release hold', 'Release hold', 5],
+        [
+            'requery',
+            dispatchedUnknownFixture,
+            'Ask the provider again',
+            'Ask the provider',
+            7,
+        ],
+    ])(
+        'sends %s only with a written reason, to its own route, carrying the revision it read',
+        async (key, fixture, open, cta, revision) => {
+            const page = props(fixture);
+            const disbursement = opened(page);
+            const { user } = renderWithUser(<AdminDisbursements {...page} />);
+
+            await user.click(
+                within(drawer()).getByRole('button', { name: open }),
+            );
+            const submit = within(drawer()).getByRole('button', {
+                name: cta,
+            });
+
+            expect(submit).toBeDisabled();
+            await user.type(screen.getByRole('textbox'), '   ');
+            expect(submit).toBeDisabled();
+            await user.type(screen.getByRole('textbox'), 'Checked.');
+            await user.click(submit);
+
+            expect(inertia.calls).toEqual([
+                {
+                    url: disbursement.actions[
+                        key as keyof typeof disbursement.actions
+                    ]?.url,
+                    method: 'post',
+                    body: {
+                        request_id: expect.any(String),
+                        disbursement_id: disbursement.id,
+                        expected_revision: revision,
+                        reason: '   Checked.',
+                    },
+                },
+            ]);
+        },
+    );
+
+    it.each([
+        ['queued', queuedFixture],
+        ['dispatched and pending', dispatchedPendingFixture],
+        ['dispatched and unknown', dispatchedUnknownFixture],
+        ['a verified failure not yet reconciled', failureFixture],
+        ['a reconciliation exception', exceptionFixture],
+        ['a failed closing', failedClosingFixture],
+    ])('issues nothing while %s', (_label, fixture) => {
+        render(<AdminDisbursements {...props(fixture)} />);
+
+        expect(
+            screen.queryByRole('region', { name: 'Issue' }),
+        ).not.toBeInTheDocument();
+        expect(drawer()).not.toHaveTextContent(/Holdings issued|Paid ·/);
+    });
+
+    it('renders a live payload, with no preview seed and no preview URL, and sends to the live route', async () => {
+        const live = JSON.parse(
+            JSON.stringify(liveFixture.props).replaceAll('/preview/', '/'),
+        ) as C3AdminDisbursementsProps;
+        const disbursement = opened(live);
+
+        disbursement.allowed_actions = ['disbursement.authorize'];
+        live.allowed_actions = ['disbursement.authorize'];
+        inertia.queue.push(
+            fails(503),
+            fails(404, { code: 'OPERATION_NOT_FOUND' }),
+        );
+        const { user } = renderWithUser(<AdminDisbursements {...live} />);
+
+        expect(live).not.toHaveProperty('preview_outcome');
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+        for (const link of screen.queryAllByRole('link')) {
+            expect(link.getAttribute('href')).not.toMatch(/^\/preview\//);
+        }
+
+        await user.click(
+            screen.getByRole('button', { name: 'Authorize release' }),
+        );
+        await user.type(screen.getByRole('textbox'), 'Funded.');
+        await user.click(screen.getByRole('button', { name: 'Authorize' }));
+
+        await screen.findByText('Nothing was recorded');
+        const sent = inertia.calls[0].body as { request_id: string };
+
+        expect(inertia.calls).toEqual([
+            {
+                url: '/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/authorize',
+                method: 'post',
+                body: expect.objectContaining({ reason: 'Funded.' }),
+            },
+            {
+                url: `/admin/disbursements/operations/${sent.request_id}`,
+                method: 'get',
+                body: { command: 'disbursement.authorize' },
+            },
+        ]);
+    });
+
     it('renders the live-minimal contract with nothing offered', () => {
         render(
             <AdminDisbursements
@@ -670,6 +773,58 @@ describe('Disbursement commands', () => {
         await waitFor(() => expect(inertia.visits).toEqual([next]));
         expect(inertia.calls).toHaveLength(3);
         expect(inertia.calls[2]).toEqual(inertia.calls[0]);
+    });
+
+    it('looks up a lost requery answer under the same key, and never asks the provider twice on its own', async () => {
+        inertia.queue.push(
+            fails(503, { code: 'RETRYABLE_CONTENTION' }),
+            fails(502),
+            answers(
+                completed('PROVIDER_QUERY_RECORDED', {
+                    receipt: {},
+                    current: null,
+                    next,
+                }),
+            ),
+        );
+        const { user } = renderWithUser(
+            <AdminDisbursements {...props(dispatchedUnknownFixture)} />,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'Ask the provider again' }),
+        );
+        await user.type(screen.getByRole('textbox'), 'Provider silent.');
+        await user.click(
+            screen.getByRole('button', { name: 'Ask the provider' }),
+        );
+
+        await screen.findByText('Not yet confirmed');
+        expect(
+            screen.getByRole('button', { name: 'Ask the provider' }),
+        ).toBeDisabled();
+        const sent = inertia.calls[0].body as { request_id: string };
+
+        await user.click(screen.getByRole('button', { name: 'Check again' }));
+        await waitFor(() => expect(inertia.visits).toEqual([next]));
+
+        expect(inertia.calls.map(({ method }) => method)).toEqual([
+            'post',
+            'get',
+            'get',
+        ]);
+
+        for (const lookup of inertia.calls.slice(1)) {
+            expect(lookup).toEqual({
+                url: `/preview/admin-disbursements-operation-${sent.request_id}`,
+                method: 'get',
+                body: { command: 'disbursement.requery' },
+            });
+        }
+
+        expect(
+            screen.getByRole('region', { name: 'Provider outcome' }),
+        ).toHaveTextContent('Unknown:');
     });
 
     it('holds an unreachable outcome as not yet confirmed until checked again', async () => {

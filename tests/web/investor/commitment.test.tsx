@@ -255,7 +255,9 @@ describe('Commitment', () => {
         render(<InvestorCommitment {...data} />);
         expect(screen.getByText('Closed — refunded')).toBeInTheDocument();
         expect(
-            screen.getByText(/A final check before payout didn't pass/u),
+            screen.getByText(
+                "The payout to the business didn't go ahead. Your principal was refunded in full, with no fee.",
+            ),
         ).toBeInTheDocument();
     });
 

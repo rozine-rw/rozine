@@ -187,7 +187,8 @@ export function PrecheckPanel({
 
 /**
  * What an approval binds, and the fresh step-up it needs (H11). The step-up has its own staff
- * route, still to be settled: until the server sends one, approval is not available.
+ * route and proof exchange, still to be settled: until the drawer can obtain a bound proof,
+ * approval is not available here, whatever route the server lists.
  */
 export function BindingPanel({
     disbursement,
@@ -230,13 +231,8 @@ export function BindingPanel({
                 disbursement.allowed_actions.includes(
                     'disbursement.approve',
                 )) && (
-                <Note
-                    tone={disbursement.step_up.route === null ? 'warn' : 'info'}
-                    id={STEP_UP_NOTE}
-                >
-                    {disbursement.step_up.route === null
-                        ? t('admin.disbursements.step_up.unavailable')
-                        : t('admin.disbursements.step_up.required')}
+                <Note tone="warn" id={STEP_UP_NOTE}>
+                    {t('admin.disbursements.step_up.unavailable')}
                 </Note>
             )}
         </Block>

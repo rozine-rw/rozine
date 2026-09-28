@@ -102,8 +102,11 @@ const unsettled = (disbursement: C3DisbursementDetail): boolean =>
 
 /**
  * Why a command the viewer might expect is withheld: approve for the maker (no self-approval) or
- * while the step-up it needs has no route yet, and hold release for the staff member who placed
- * the hold. The server withholds all three too; this only explains it.
+ * for anyone while the drawer can't obtain the fresh step-up proof it must carry (v2 §2e: approve
+ * adds `step_up_proof` bound to `approval_binding`), and hold release for the staff member who
+ * placed the hold. Until the staff step-up exchange is settled (S-D delivery 3), a step-up route
+ * alone is not enough: approving without a proof would send an unbound approval. The server
+ * withholds or refuses all three too; this only explains it.
  */
 const withheld = (
     disbursement: C3DisbursementDetail,
@@ -117,10 +120,7 @@ const withheld = (
             return 'disbursement-maker-note';
         }
 
-        if (
-            disbursement.allowed_actions.includes('disbursement.approve') &&
-            disbursement.step_up.route === null
-        ) {
+        if (disbursement.allowed_actions.includes('disbursement.approve')) {
             return STEP_UP_NOTE;
         }
     }

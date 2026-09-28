@@ -966,6 +966,19 @@ describe('Deals in every closed lifecycle', () => {
     );
 });
 
+describe('A failed closing', () => {
+    it('names no cause, since a failed check and a verified, reconciled payout failure both end here', () => {
+        render(<InvestorDeal {...deal(failedClosingFixture)} />);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            "The payout to the business didn't go ahead, so every commitment was refunded in full.",
+        );
+        expect(screen.getByRole('status')).not.toHaveTextContent(
+            /check|provider/iu,
+        );
+    });
+});
+
 describe('A deck with nothing open to reserve', () => {
     const line =
         'Every open raise is fully reserved or closed right now. New raises appear here as they go live.';

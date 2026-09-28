@@ -579,7 +579,7 @@ describe('A closed campaign', () => {
             failedClosingFixture,
             'RWF 18M',
             '402',
-            "This raise couldn't close: a check before disbursement failed on 22 Sept 2026. RWF 18,000,000 went back to investors in full, without fee.",
+            'This raise closed on 22 Sept 2026 without paying out. RWF 18,000,000 went back to investors in full, without fee.',
             'Closed and refunded',
         ],
     ])(
@@ -600,6 +600,16 @@ describe('A closed campaign', () => {
     );
 });
 
+describe('A failed closing', () => {
+    it('names no cause, since a failed check and a verified, reconciled payout failure both end here', () => {
+        renderWithUser(<BusinessCampaign {...props(failedClosingFixture)} />);
+        const status = within(campaignSheet()).getByRole('status');
+
+        expect(status).toHaveTextContent('without paying out');
+        expect(status).not.toHaveTextContent(/check|provider/iu);
+    });
+});
+
 describe('A raise closed before anyone committed', () => {
     it.each([
         [
@@ -612,7 +622,7 @@ describe('A raise closed before anyone committed', () => {
         ],
         [
             'failed_closing',
-            "This raise couldn't close: a check before disbursement failed on 18 Sept 2026. No investor had committed, so there was nothing to refund.",
+            'This raise closed on 18 Sept 2026 without paying out. No investor had committed, so there was nothing to refund.',
         ],
     ] as const)('says there was nothing to refund when %s', (phase, notice) => {
         const page = props(cancelledEmptyFixture);

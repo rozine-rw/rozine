@@ -3413,13 +3413,13 @@ const en = {
     'business.campaign.closed.cancelled':
         'This raise was cancelled on {date}. {amount} went back to investors in full, without fee.',
     'business.campaign.closed.failed_closing':
-        "This raise couldn't close: a check before disbursement failed on {date}. {amount} went back to investors in full, without fee.",
+        'This raise closed on {date} without paying out. {amount} went back to investors in full, without fee.',
     'business.campaign.closed.expired_none':
         'This raise closed on {date} before any investor committed, so there was nothing to refund.',
     'business.campaign.closed.cancelled_none':
         'This raise was cancelled on {date} before any investor committed, so there was nothing to refund.',
     'business.campaign.closed.failed_closing_none':
-        "This raise couldn't close: a check before disbursement failed on {date}. No investor had committed, so there was nothing to refund.",
+        'This raise closed on {date} without paying out. No investor had committed, so there was nothing to refund.',
     'business.campaign.cancel.open': 'Cancel this raise',
     'business.campaign.cancel.cancelling': 'Cancelling…',
     'business.campaign.cancel.title': 'Cancel this raise?',
@@ -3462,8 +3462,6 @@ const en = {
     'admin.disbursements.binding.digest': 'Intent digest',
     'admin.disbursements.step_up.unavailable':
         "Approval needs a fresh step-up confirmation bound to these details. That confirmation isn't available yet, so approval can't be given here.",
-    'admin.disbursements.step_up.required':
-        'Approval asks for a fresh step-up confirmation bound to these details.',
     'admin.disbursements.intent.title': 'Payment intent',
     'admin.disbursements.intent.not_payment':
         'Intent recorded — not a payment. The payment worker sends it only after its own recheck.',
@@ -3590,7 +3588,7 @@ const en = {
     'investor.deal.notice.failed_closing.title':
         'This raise closed without paying out',
     'investor.deal.notice.failed_closing.body':
-        "A final check before payment didn't pass, so every commitment was refunded in full.",
+        "The payout to the business didn't go ahead, so every commitment was refunded in full.",
     'investor.deals.gated_title': 'Verify to see open deals',
     'investor.deals.gated_body':
         'Deals and their businesses are shown to verified investors only.',
@@ -3658,7 +3656,7 @@ const en = {
     'investor.primary.status_body.expired':
         "The raise didn't fill in time. Your principal was refunded in full, with no fee.",
     'investor.primary.status_body.failed_closing':
-        "A final check before payout didn't pass. Your principal was refunded in full, with no fee.",
+        "The payout to the business didn't go ahead. Your principal was refunded in full, with no fee.",
     'investor.primary.cancelled_by.investor': 'you',
     'investor.primary.cancelled_by.business': 'the business',
     'investor.primary.cancelled_by.none': 'Rozine',
