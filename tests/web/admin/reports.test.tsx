@@ -87,6 +87,25 @@ describe('Reports', () => {
         expect(screen.queryByRole('note')).not.toBeInTheDocument();
     });
 
+    it('says a closed pack has no download without blaming the period', () => {
+        const page = props(reportsFixture);
+
+        page.packs = page.packs.map((pack) =>
+            pack.status === 'incomplete' ? pack : { ...pack, link: null },
+        );
+        render(<AdminReports {...page} />);
+
+        expect(screen.getAllByText('Download not available')).toHaveLength(
+            page.packs.length,
+        );
+        expect(
+            screen.queryByText('When the period closes'),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: /^Download/u }),
+        ).not.toBeInTheDocument();
+    });
+
     it('tells a search that matched no pack apart from none yet', () => {
         const page = props(incompleteFixture);
 

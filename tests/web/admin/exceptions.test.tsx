@@ -88,6 +88,17 @@ describe('Exceptions', () => {
 
         expect(statement).toHaveTextContent('Variance');
         expect(statement).toHaveTextContent('Bank settlement account');
+        expect(statement).not.toHaveTextContent('Bank settlement account ·');
+        expect(
+            exceptionsFixture.props.exceptions.find(
+                (item) => item.reference === 'STM-2027-0122',
+            )?.subject,
+        ).toEqual({ kind: 'account', label: 'Bank settlement account' });
+        expect(
+            exceptionsFixture.props.exceptions.find(
+                (item) => item.reference === 'ARR-2026-0412',
+            )?.subject,
+        ).toEqual({ kind: 'business', label: 'Ubuki Crafts' });
         expect(statement).toHaveTextContent('RWF 3,100');
         expect(
             screen.getByRole('link', { name: 'Open STM-2027-0122' }),

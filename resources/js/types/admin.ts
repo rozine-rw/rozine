@@ -1107,8 +1107,8 @@ export type ExceptionItem = {
     id: string;
     kind: ExceptionKind;
     reference: string;
-    /** The subject's display name: the business, or the account for a statement variance. */
-    business: string;
+    /** What the exception is about; an account subject (a statement variance) has no note. */
+    subject: { kind: 'business' | 'account'; label: string };
     note_title: string | null;
     description: string;
     amount: Money | null;
@@ -1243,18 +1243,23 @@ export type ReportPackKind = 'regulator' | 'board' | 'export';
  * A pack for one period, as the server names it. `complete` is final as of `as_of`; `incomplete`
  * is a period that has not closed, so nothing can be downloaded yet; `moving` is a snapshot as of
  * `as_of` whose figures can still change, with the server's note on what is pending. `link`
- * downloads the pack or its snapshot, null when there is nothing to download.
+ * retrieves exactly the pack or snapshot stated at `as_of` (never a fresh recomputation), and is
+ * always null while the period is incomplete; a complete or moving pack may also have none.
  */
 export type ReportPack = {
     id: string;
     kind: ReportPackKind;
     label: string;
     period: { start: KigaliDate; end: KigaliDate };
-    link: RouteLink | null;
 } & (
-    | { status: 'complete'; as_of: string }
-    | { status: 'incomplete'; as_of: null }
-    | { status: 'moving'; as_of: string; pending: string }
+    | { status: 'complete'; as_of: string; link: RouteLink | null }
+    | { status: 'incomplete'; as_of: null; link: null }
+    | {
+          status: 'moving';
+          as_of: string;
+          pending: string;
+          link: RouteLink | null;
+      }
 );
 
 export type AdminReportsProps = AdminFrameShellProps &

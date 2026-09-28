@@ -76,7 +76,9 @@ function Row({ pack }: { pack: ReportPack }) {
             <div role="cell" className="flex justify-end">
                 {pack.link === null ? (
                     <span className="text-right text-[11.5px] font-medium text-rz-muted">
-                        {t('admin.reports.not_ready')}
+                        {pack.status === 'incomplete'
+                            ? t('admin.reports.not_ready')
+                            : t('admin.reports.unavailable')}
                     </span>
                 ) : (
                     <a

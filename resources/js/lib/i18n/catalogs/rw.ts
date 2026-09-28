@@ -4479,6 +4479,7 @@ const rw: Catalog = {
     'admin.reports.snapshot': 'Ifoto y’igihe',
     'admin.reports.pending': 'Bitegerejwe:',
     'admin.reports.not_ready': 'Igihe nikimara gufungwa',
+    'admin.reports.unavailable': 'Ntibishoboka kumanura ubu',
     'admin.reports.download': 'Kuramo',
     'admin.reports.download_snapshot': 'Kuramo ifoto y’igihe',
     'admin.reports.download_named': 'Kuramo {label}',

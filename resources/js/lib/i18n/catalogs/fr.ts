@@ -4507,6 +4507,7 @@ const fr: Catalog = {
     'admin.reports.snapshot': 'Instantané',
     'admin.reports.pending': 'En attente :',
     'admin.reports.not_ready': 'À la clôture de la période',
+    'admin.reports.unavailable': 'Téléchargement indisponible',
     'admin.reports.download': 'Télécharger',
     'admin.reports.download_snapshot': 'Télécharger l’instantané',
     'admin.reports.download_named': 'Télécharger {label}',

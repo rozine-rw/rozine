@@ -4369,6 +4369,7 @@ const en = {
     'admin.reports.snapshot': 'Snapshot',
     'admin.reports.pending': 'Pending:',
     'admin.reports.not_ready': 'When the period closes',
+    'admin.reports.unavailable': 'Download not available',
     'admin.reports.download': 'Download',
     'admin.reports.download_snapshot': 'Download snapshot',
     'admin.reports.download_named': 'Download {label}',
