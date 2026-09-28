@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Disbursement;
+use App\Models\PrimaryHolding;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -349,8 +350,11 @@ it('issues a proposed Holding only from its campaign\'s issued closing and withi
     refusedBySchema(fn () => $holding(['effective_date' => '2027-02-01']));
     refusedBySchema(fn () => $holding(['units' => 700, 'principal' => '3500000']));
     $holding();
-    $holding();
+    $holding(['payload' => encrypt(json_encode(['source' => 'synthetic']), false)]);
     refusedBySchema(fn () => $holding(['units' => 1, 'principal' => '5000']));
+    $read = PrimaryHolding::query()->where('payload', '<>', 'x')->sole();
+    expect([$read->principal, $read->ordinals, $read->effective_date->format('Y-m-d'), $read->payload])
+        ->toEqual(['1500000', [['first' => 1, 'last' => 300]], '2027-01-31', ['source' => 'synthetic']]);
     refusedBySchema(fn () => DB::table('primary_holdings')->update(['units' => 1]));
     refusedBySchema(fn () => DB::table('primary_holdings')->delete());
 
