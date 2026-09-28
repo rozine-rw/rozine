@@ -207,6 +207,7 @@ export function AuditorShell({
             launcher={links.launcher}
             showTabBar={showTabBar}
             offlineMessage={offlineMessage}
+            refreshOnReconnect={false}
         >
             <Head title={title} />
             <AuditorKeyframes />

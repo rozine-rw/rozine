@@ -503,6 +503,7 @@
         "resources/js/hooks/use-mobile.tsx",
         "resources/js/hooks/use-online.ts",
         "resources/js/hooks/use-operation-command.ts",
+        "resources/js/hooks/use-reconnect-refresh.ts",
         "resources/js/hooks/use-translation.ts",
         "resources/js/hooks/use-two-factor-auth.ts",
         "resources/js/layouts/app-layout.tsx",
@@ -597,10 +598,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 566,
+        "totalTrackedSources": 567,
         "generated": 185,
         "declarationOnly": 18,
-        "authoredExecutable": 363
+        "authoredExecutable": 364
     },
-    "coverageSetSha256": "4d9d487faa267dd8c63a3a5d6e0a71108edf644afe716256c1f79bc9c71cd8e0"
+    "coverageSetSha256": "103455c3ba066209f298de3c84912849b47ffc5730d091a116fb1348a0bbf437"
 }

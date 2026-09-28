@@ -5,6 +5,7 @@ import { InfoTip } from '@/components/admin/ui';
 import { ConnectivityNotice } from '@/components/rozine/connectivity-notice';
 import { IconGradients } from '@/components/rozine/icon';
 import { LogoLockup } from '@/components/rozine/logo';
+import { useReconnectRefresh } from '@/hooks/use-reconnect-refresh';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
@@ -141,6 +142,7 @@ export function AdminFrame({
     const { t } = useTranslation();
     const [menuOpen, setMenuOpen] = useState(false);
     const [accountOpen, setAccountOpen] = useState(false);
+    useReconnectRefresh();
     const title = t(`admin.section.${section}.title`);
 
     const submitSearch = (event: FormEvent<HTMLFormElement>) => {
