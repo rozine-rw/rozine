@@ -867,9 +867,7 @@
                     "revision": 15,
                     "evaluated_at": "2027-01-05T09:00:00+02:00",
                     "eligible": false,
-                    "causes": [
-                        "FEATURE_DISABLED"
-                    ],
+                    "causes": ["FEATURE_DISABLED"],
                     "next_record_date": "2027-01-21",
                     "price_band": null
                 }

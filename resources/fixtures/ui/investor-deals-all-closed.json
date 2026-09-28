@@ -500,7 +500,7 @@
                 },
                 "units": {
                     "total": "3600",
-                    "available": "0",
+                    "available": "2420",
                     "reserved": "0",
                     "committed": "1180"
                 },
@@ -583,7 +583,7 @@
                 },
                 "units": {
                     "total": "10400",
-                    "available": "0",
+                    "available": "1240",
                     "reserved": "0",
                     "committed": "9160"
                 },
