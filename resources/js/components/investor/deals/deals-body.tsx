@@ -22,6 +22,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { withQuery } from '@/lib/investor/links';
 import { useFitScale } from '@/lib/investor/use-fit-scale';
 import { useWide } from '@/lib/investor/use-wide';
+import { cn } from '@/lib/utils';
 import type { C3InvestorDealsProps, InvestGate } from '@/types/investor';
 
 type DealsBodyProps = C3InvestorDealsProps & {
@@ -78,6 +79,26 @@ function EmptyDeals({ gate }: { gate: InvestGate }) {
 }
 
 /**
+ * "All sold out" (crosswalk I-01-ST-02): the deck has deals but none can be reserved, so one calm
+ * line says so above the cards instead of hiding them.
+ */
+function AllClosedNote({ className }: { className: string }) {
+    const { t } = useTranslation();
+
+    return (
+        <p
+            role="status"
+            className={cn(
+                'text-center text-xs leading-normal text-rz-secondary',
+                className,
+            )}
+        >
+            {t('investor.deals.all_closed')}
+        </p>
+    );
+}
+
+/**
  * Deals (MVP-INVESTOR-SCR-01). Phone (design L529–692): wallet and bell, the performance chips,
  * the fanned deck, the industry tabs and the invest bar. Desktop (L134–528): the same on a scaled
  * canvas, with the focused deal's detail panel beside the deck.
@@ -93,6 +114,10 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
     );
     const [index, setIndex] = useState(start);
     const current = props.deals.length > 0 ? props.deals[index] : null;
+    /* Only read beside a deck: an empty list has its own "no deals open" state. */
+    const allClosed = !props.deals.some(
+        (deal) => deal.lifecycle === 'live' && deal.restriction === null,
+    );
     const quoted = useQuotedUnits(Number(props.quote?.units ?? '1'), {
         deal: current?.campaign_id ?? '',
     });
@@ -159,6 +184,9 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                     <EmptyDeals gate={props.gate} />
                 ) : (
                     <>
+                        {allClosed && (
+                            <AllClosedNote className="px-[22px] pt-2.5" />
+                        )}
                         <PhoneDeck
                             deals={props.deals}
                             index={index}
@@ -200,6 +228,9 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                                 <EmptyDeals gate={props.gate} />
                             ) : (
                                 <>
+                                    {allClosed && (
+                                        <AllClosedNote className="mt-3" />
+                                    )}
                                     <DeskDeck
                                         deals={props.deals}
                                         index={index}

@@ -2189,6 +2189,8 @@ const fr: Catalog = {
     'investor.deals.empty_title': "Aucune offre ouverte pour l'instant",
     'investor.deals.empty_body':
         'Les nouvelles levées apparaissent ici une fois auditées et publiées.',
+    'investor.deals.all_closed':
+        "Toutes les levées ouvertes sont entièrement réservées ou clôturées pour l'instant. Les nouvelles levées apparaissent ici dès leur ouverture.",
     'investor.deals.invest_bar': 'Investir dans {name}',
     'investor.deals.notes_quantity': 'Nombre de titres',
     'investor.deals.notes_suffix': 'TITRES',

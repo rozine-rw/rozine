@@ -14,9 +14,15 @@ import type {
     C3InvestorDealProps,
     C3InvestorDealsProps,
 } from '@/types/investor';
+import cancelledFixture from '../../../resources/fixtures/ui/investor-deal-cancelled.json';
+import expiredFixture from '../../../resources/fixtures/ui/investor-deal-expired.json';
+import failedClosingFixture from '../../../resources/fixtures/ui/investor-deal-failed-closing.json';
 import fullyReservedFixture from '../../../resources/fixtures/ui/investor-deal-fully-reserved.json';
+import fundedFixture from '../../../resources/fixtures/ui/investor-deal-funded.json';
+import issuedFixture from '../../../resources/fixtures/ui/investor-deal-issued.json';
 import photosUnavailableFixture from '../../../resources/fixtures/ui/investor-deal-photos-unavailable.json';
 import dealFixture from '../../../resources/fixtures/ui/investor-deal.json';
+import allClosedFixture from '../../../resources/fixtures/ui/investor-deals-all-closed.json';
 import disbursingFixture from '../../../resources/fixtures/ui/investor-deals-disbursing.json';
 import emptyFixture from '../../../resources/fixtures/ui/investor-deals-empty.json';
 import gatedFixture from '../../../resources/fixtures/ui/investor-deals-gated.json';
@@ -897,5 +903,119 @@ describe('Deals in C3 states', () => {
         render(<InvestorDeals {...deals(minimalFixture)} />);
 
         expect(screen.getByText('No deals open right now')).toBeInTheDocument();
+    });
+});
+
+describe('Deals in every closed lifecycle', () => {
+    it.each([
+        ['funded', fundedFixture, 'Fully funded', 'Fully funded'],
+        ['issued', issuedFixture, 'This raise has closed', 'Notes issued'],
+        [
+            'expired',
+            expiredFixture,
+            "This raise didn't fill in time",
+            "Didn't fill",
+        ],
+        [
+            'cancelled',
+            cancelledFixture,
+            'The business cancelled this raise',
+            'Cancelled',
+        ],
+        [
+            'failed_closing',
+            failedClosingFixture,
+            'This raise closed without paying out',
+            'Closed and refunded',
+        ],
+    ] as const)(
+        'names a %s raise and offers no way to invest, on a phone and a wide screen',
+        (lifecycle, fixture, title, label) => {
+            const props = deal(fixture);
+
+            expect(props.deal.lifecycle).toBe(lifecycle);
+            expect(props.allowed_actions).not.toContain('primary.reserve');
+
+            const { unmount } = render(<InvestorDeal {...props} />);
+
+            expect(screen.getByRole('status')).toHaveTextContent(title);
+            expect(screen.getByRole('button', { name: label })).toBeDisabled();
+            expect(
+                screen.queryByRole('link', { name: 'Invest' }),
+            ).not.toBeInTheDocument();
+            expect(
+                screen.queryByRole('button', { name: 'Invest' }),
+            ).not.toBeInTheDocument();
+            unmount();
+
+            setWide(true);
+            render(<InvestorDeal {...deal(fixture)} />);
+
+            expect(
+                within(screen.getByRole('main')).getAllByRole('status')[0],
+            ).toHaveTextContent(title);
+            expect(screen.getByRole('button', { name: label })).toBeDisabled();
+            expect(
+                screen.queryByRole('link', { name: 'Invest' }),
+            ).not.toBeInTheDocument();
+        },
+    );
+});
+
+describe('A deck with nothing open to reserve', () => {
+    const line =
+        'Every open raise is fully reserved or closed right now. New raises appear here as they go live.';
+
+    it('says so in one line on a phone, keeping every card', () => {
+        render(<InvestorDeals {...deals(allClosedFixture)} />);
+
+        expect(screen.getByRole('status')).toHaveTextContent(line);
+        expect(
+            screen.getByRole('article', { name: 'GreenLeaf Agro' }),
+        ).toHaveTextContent('Fully reserved');
+        expect(
+            screen.getByRole('button', { name: 'Fully reserved' }),
+        ).toBeDisabled();
+        expect(
+            screen.queryByRole('link', { name: 'Invest' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('says so beside the deck on a wide screen', () => {
+        setWide(true);
+        render(<InvestorDeals {...deals(allClosedFixture)} />);
+
+        expect(screen.getByText(line)).toHaveAttribute('role', 'status');
+        expect(
+            screen.getByRole('button', { name: 'Fully reserved' }),
+        ).toBeDisabled();
+    });
+
+    it('counts a live but restricted raise as closed to new reservations', () => {
+        const props = deals(allClosedFixture);
+
+        props.deals[1].lifecycle = 'live';
+        props.deals[1].restriction = {
+            code: 'RESTRICTION_ACTIVE',
+            since: '2026-09-20T00:00:00+02:00',
+        };
+        render(<InvestorDeals {...props} />);
+
+        expect(screen.getByText(line)).toBeInTheDocument();
+    });
+
+    it('stays quiet once any raise is live and unrestricted', () => {
+        const props = deals(allClosedFixture);
+
+        props.deals[1].lifecycle = 'live';
+        const { unmount } = render(<InvestorDeals {...props} />);
+
+        expect(screen.queryByText(line)).not.toBeInTheDocument();
+        unmount();
+
+        setWide(true);
+        render(<InvestorDeals {...deals(restrictedFixture)} />);
+
+        expect(screen.queryByText(line)).not.toBeInTheDocument();
     });
 });

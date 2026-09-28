@@ -2182,6 +2182,8 @@ const rw: Catalog = {
     'investor.deals.empty_title': 'Nta mahirwe afunguye ubu',
     'investor.deals.empty_body':
         'Ishoramari rishya rigaragara hano rimaze kugenzurwa no gushyirwa ku rutonde.',
+    'investor.deals.all_closed':
+        'Ishoramari ryose ryafashwe ryose cyangwa ryafunzwe muri iki gihe. Ishoramari rishya rigaragara hano iyo ritangiye.',
     'investor.deals.invest_bar': 'Shora muri {name}',
     'investor.deals.notes_quantity': "Umubare w'impapuro",
     'investor.deals.notes_suffix': 'IMPAPURO',
