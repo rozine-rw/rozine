@@ -167,6 +167,11 @@ const rw: Catalog = {
     'common.currency.rwf': 'RWF',
     'app.nav.label': 'Kugenda muri porogaramu',
     'app.nav.launcher': 'Aho porogaramu ziri',
+    'app.read_failure.server':
+        'Rozine ntiyashoboye gufungura iyi paji ubu. Ibyo wamaze kohereza ntibyagizweho ingaruka.',
+    'app.read_failure.network':
+        'Ntibyashobotse kugera kuri Rozine. Reba umurandasi wawe, hanyuma wongere ugerageze.',
+    'app.read_failure.retry': 'Ongera ugerageze',
     'app.connectivity.offline':
         'Nta murandasi ufite. Ibyo ubona bishobora kuba bitagezweho, kandi nta kintu gishobora koherezwa kugeza ongeye kubona umurandasi.',
     'business.nav.home': 'Ahabanza',
@@ -2182,6 +2187,8 @@ const rw: Catalog = {
     'investor.deals.empty_title': 'Nta mahirwe afunguye ubu',
     'investor.deals.empty_body':
         'Ishoramari rishya rigaragara hano rimaze kugenzurwa no gushyirwa ku rutonde.',
+    'investor.deals.all_closed':
+        'Ishoramari ryose ryafashwe ryose cyangwa ryafunzwe muri iki gihe. Ishoramari rishya rigaragara hano iyo ritangiye.',
     'investor.deals.invest_bar': 'Shora muri {name}',
     'investor.deals.notes_quantity': "Umubare w'impapuro",
     'investor.deals.notes_suffix': 'IMPAPURO',
@@ -2213,6 +2220,7 @@ const rw: Catalog = {
     'investor.deal.notice.withdrawn.body':
         'Ikigo cyarikuyeho mbere yo kuzura. Amafaranga yari yiyemejwe asubizwa yose nta kiguzi.',
     'investor.deal.funding_progress': 'Aho ishoramari rigeze',
+    'investor.deal.loading': "Birimo gufungura ibisobanuro by'umushinga",
     'investor.deal.raised': 'BYAKUSANYIJWE',
     'investor.deal.target': 'INTEGO',
     'investor.deal.time_left': 'IGIHE GISIGAYE',
@@ -2829,6 +2837,7 @@ const rw: Catalog = {
     'investor.profile.member_since': 'Umunyamuryango kuva {date}',
     'investor.profile.item.linked': 'Konti zahujwe',
     'investor.profile.item.statements': "Inyandiko z'imari",
+    'investor.profile.item.automation': 'Auto-Deploy',
     'investor.profile.item.verification': "Igenzura ry'umwirondoro",
     'investor.profile.item.terms': "Amabwiriza n'Amategeko",
     'investor.profile.item.privacy': 'Itangazo ku Ibanga',
@@ -2853,6 +2862,14 @@ const rw: Catalog = {
     'investor.profile.linked.submit': 'Huza konti',
     'investor.profile.linked.footnote':
         'Rozine ikora igikorwa kimwe cyo kugenzura. Ubwishyu bugera gusa kuri konti iri mu izina ryawe.',
+    'investor.profile.automation.gated_title': 'Auto-Deploy ntiraboneka',
+    'investor.profile.automation.gated_body':
+        "Ikeneye kwemezwa ku bijyanye n'igicuruzwa, amafaranga n'amategeko mbere y'uko Rozine ishora imari mu izina ryawe.",
+    'investor.profile.automation.intro':
+        'Auto-Deploy yakwemerera Rozine kugufatira impapuro mu bikorwa bishya byo gukusanya imari, ukurikije amategeko ushyizeho. Kugeza yemejwe, buri shoramari urihitamo ukaryemeza ubwawe.',
+    'investor.profile.automation.nothing_runs':
+        'Nta kintu cya Auto-Deploy cyashyizweho, gikora cyangwa cyishyuzwa kuri konti yawe.',
+    'investor.profile.automation.next': 'Hitamo umushinga ubwawe',
     'investor.profile.statements.intro':
         "Kuramo inyandiko z'ishoramari n'incamake z'imisoro. Buri imwe ikorwa hashingiwe ku mateka yemejwe y'ibikorwa byawe.",
     'investor.profile.statements.year': "UMWAKA W'IMISORO {year}",

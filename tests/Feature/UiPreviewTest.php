@@ -150,6 +150,8 @@ test('C3 fixtures cover every surface in the scaffold, each with a live-minimal 
 
     expect($names)->toContain(
         'investor-deals-gated', 'investor-deals-restricted', 'investor-deals-disbursing',
+        'investor-deals-all-closed', 'investor-deal-funded', 'investor-deal-issued', 'investor-deal-expired',
+        'investor-deal-cancelled', 'investor-deal-failed-closing',
         'investor-checkout-reserved', 'investor-checkout-reservation-expired', 'investor-checkout-cap-hit',
         'investor-checkout-units-unavailable', 'investor-checkout-unconfirmed', 'investor-checkout-not-recorded',
         'investor-checkout-identity-required', 'investor-commitment-confirmed', 'investor-commitment-funded-awaiting',

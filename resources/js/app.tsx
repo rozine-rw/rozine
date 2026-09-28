@@ -1,5 +1,6 @@
 import { createInertiaApp } from '@inertiajs/react';
 import I18nProvider from '@/components/i18n-provider';
+import { ReadFailureNotice } from '@/components/rozine/read-failure-notice';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
@@ -48,6 +49,7 @@ createInertiaApp({
             <I18nProvider locale={document.documentElement.lang}>
                 <TooltipProvider delayDuration={0}>
                     {app}
+                    <ReadFailureNotice />
                     <Toaster />
                 </TooltipProvider>
             </I18nProvider>

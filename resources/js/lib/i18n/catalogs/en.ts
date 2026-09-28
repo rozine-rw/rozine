@@ -163,6 +163,11 @@ const en = {
     'common.currency.rwf': 'RWF',
     'app.nav.label': 'App navigation',
     'app.nav.launcher': 'Launcher',
+    'app.read_failure.server':
+        "Rozine couldn't load this just now. Anything you already sent is unaffected.",
+    'app.read_failure.network':
+        "Couldn't reach Rozine. Check your connection, then try again.",
+    'app.read_failure.retry': 'Try again',
     'app.connectivity.offline':
         "You're offline. What you see may be out of date, and nothing can be sent until you're back online.",
     'business.nav.home': 'Home',
@@ -2129,6 +2134,8 @@ const en = {
     'investor.deals.empty_title': 'No deals open right now',
     'investor.deals.empty_body':
         'New raises appear here once they pass audit and are listed.',
+    'investor.deals.all_closed':
+        'Every open raise is fully reserved or closed right now. New raises appear here as they go live.',
     'investor.deals.invest_bar': 'Invest in {name}',
     'investor.deals.notes_quantity': 'Number of notes',
     'investor.deals.notes_suffix': 'NOTES',
@@ -2160,6 +2167,7 @@ const en = {
     'investor.deal.notice.withdrawn.body':
         'The business withdrew it before funding. Any committed money is returned in full, without a fee.',
     'investor.deal.funding_progress': 'Funding progress',
+    'investor.deal.loading': 'Loading deal details',
     'investor.deal.raised': 'RAISED',
     'investor.deal.target': 'TARGET',
     'investor.deal.time_left': 'TIME LEFT',
@@ -2769,6 +2777,7 @@ const en = {
     'investor.profile.member_since': 'Member since {date}',
     'investor.profile.item.linked': 'Linked accounts',
     'investor.profile.item.statements': 'Statements',
+    'investor.profile.item.automation': 'Auto-Deploy',
     'investor.profile.item.verification': 'Identity verification',
     'investor.profile.item.terms': 'Terms & Conditions',
     'investor.profile.item.privacy': 'Privacy Note',
@@ -2793,6 +2802,15 @@ const en = {
     'investor.profile.linked.submit': 'Link account',
     'investor.profile.linked.footnote':
         'Rozine sends a one-off verification debit. Payouts only ever reach an account in your own name.',
+    'investor.profile.automation.gated_title':
+        "Auto-Deploy isn't available yet",
+    'investor.profile.automation.gated_body':
+        'It needs product, fee and legal approval before Rozine can invest on your behalf.',
+    'investor.profile.automation.intro':
+        'Auto-Deploy would let Rozine reserve notes in new raises for you, within rules you set. Until it is approved, every investment is one you choose and confirm yourself.',
+    'investor.profile.automation.nothing_runs':
+        'Nothing is set up, running or charged for Auto-Deploy on your account.',
+    'investor.profile.automation.next': 'Choose a deal yourself',
     'investor.profile.statements.intro':
         'Download portfolio statements and tax summaries. Each is generated from your verified transaction history.',
     'investor.profile.statements.year': 'TAX YEAR {year}',

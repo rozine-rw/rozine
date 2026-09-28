@@ -7,6 +7,8 @@ import coverage from '../../../resources/fixtures/ui-state-coverage.json';
  * The Phase 2 screen/state evidence matrix, kept honest: every named MVP state in the crosswalk
  * must map to at least one preview fixture, or carry an explicit disposition explaining why not.
  * A new state in the crosswalk, a renamed fixture or an undocumented gap fails this test.
+ * `deferred` marks a state that belongs to an out-of-MVP deferral (e.g. D-61) and must not be
+ * fabricated as a live outcome.
  */
 
 type Entry =
@@ -17,7 +19,8 @@ type Entry =
               | 'missing'
               | 'partial'
               | 'tested-without-fixture'
-              | 'phase-3';
+              | 'phase-3'
+              | 'deferred';
           note: string;
       };
 
@@ -69,6 +72,7 @@ describe('The screen-state evidence matrix', () => {
                             'partial',
                             'tested-without-fixture',
                             'phase-3',
+                            'deferred',
                         ].includes(entry.disposition)),
             )
             .map(([id]) => id);

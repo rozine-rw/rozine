@@ -167,6 +167,11 @@ const fr: Catalog = {
     'common.currency.rwf': 'RWF',
     'app.nav.label': "Navigation de l'application",
     'app.nav.launcher': 'Lanceur',
+    'app.read_failure.server':
+        "Rozine n'a pas pu charger cette page pour l'instant. Ce que vous avez déjà envoyé n'est pas affecté.",
+    'app.read_failure.network':
+        'Impossible de joindre Rozine. Vérifiez votre connexion, puis réessayez.',
+    'app.read_failure.retry': 'Réessayer',
     'app.connectivity.offline':
         "Vous êtes hors ligne. Ce qui s'affiche peut ne plus être à jour, et rien ne peut être envoyé avant le retour de la connexion.",
     'business.nav.home': 'Accueil',
@@ -2189,6 +2194,8 @@ const fr: Catalog = {
     'investor.deals.empty_title': "Aucune offre ouverte pour l'instant",
     'investor.deals.empty_body':
         'Les nouvelles levées apparaissent ici une fois auditées et publiées.',
+    'investor.deals.all_closed':
+        "Toutes les levées ouvertes sont entièrement réservées ou clôturées pour l'instant. Les nouvelles levées apparaissent ici dès leur ouverture.",
     'investor.deals.invest_bar': 'Investir dans {name}',
     'investor.deals.notes_quantity': 'Nombre de titres',
     'investor.deals.notes_suffix': 'TITRES',
@@ -2221,6 +2228,7 @@ const fr: Catalog = {
     'investor.deal.notice.withdrawn.body':
         "L'entreprise l'a retirée avant le financement. Tout montant engagé est remboursé intégralement, sans frais.",
     'investor.deal.funding_progress': 'Progression du financement',
+    'investor.deal.loading': "Chargement des détails de l'opportunité",
     'investor.deal.raised': 'LEVÉ',
     'investor.deal.target': 'OBJECTIF',
     'investor.deal.time_left': 'TEMPS RESTANT',
@@ -2838,6 +2846,7 @@ const fr: Catalog = {
     'investor.profile.member_since': 'Membre depuis {date}',
     'investor.profile.item.linked': 'Comptes liés',
     'investor.profile.item.statements': 'Relevés',
+    'investor.profile.item.automation': 'Auto-Deploy',
     'investor.profile.item.verification': "Vérification d'identité",
     'investor.profile.item.terms': 'Conditions générales',
     'investor.profile.item.privacy': 'Note de confidentialité',
@@ -2862,6 +2871,15 @@ const fr: Catalog = {
     'investor.profile.linked.submit': 'Lier le compte',
     'investor.profile.linked.footnote':
         "Rozine effectue un débit de vérification unique. Les versements n'arrivent que sur un compte à votre nom.",
+    'investor.profile.automation.gated_title':
+        "Auto-Deploy n'est pas encore disponible",
+    'investor.profile.automation.gated_body':
+        'Il doit être approuvé sur le produit, les frais et le plan juridique avant que Rozine puisse investir pour vous.',
+    'investor.profile.automation.intro':
+        'Auto-Deploy permettrait à Rozine de réserver des titres dans de nouvelles levées pour vous, selon des règles que vous fixez. En attendant son approbation, chaque investissement est choisi et confirmé par vous.',
+    'investor.profile.automation.nothing_runs':
+        "Rien n'est configuré, actif ou facturé pour Auto-Deploy sur votre compte.",
+    'investor.profile.automation.next': 'Choisir une opportunité vous-même',
     'investor.profile.statements.intro':
         'Téléchargez vos relevés de portefeuille et récapitulatifs fiscaux. Chacun est généré à partir de votre historique vérifié.',
     'investor.profile.statements.year': 'ANNÉE FISCALE {year}',

@@ -270,7 +270,6 @@ function checkFigures(
     const principal = n(holding.invested);
     const totalReturn = n(terms.total_return);
     const returnPaid = sum(paid.map((row) => n(row.return)));
-    const principalPaid = sum(paid.map((row) => n(row.principal)));
     const today = serverDay(fixture);
 
     expectEqual(

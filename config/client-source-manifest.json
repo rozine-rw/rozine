@@ -457,6 +457,7 @@
         "resources/js/components/rozine/logo.tsx",
         "resources/js/components/rozine/operation-notice.tsx",
         "resources/js/components/rozine/proof-file-list.tsx",
+        "resources/js/components/rozine/read-failure-notice.tsx",
         "resources/js/components/rozine/role-icon.tsx",
         "resources/js/components/rozine/toast.tsx",
         "resources/js/components/text-link.tsx",
@@ -597,10 +598,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 566,
+        "totalTrackedSources": 567,
         "generated": 185,
         "declarationOnly": 18,
-        "authoredExecutable": 363
+        "authoredExecutable": 364
     },
-    "coverageSetSha256": "bacbb35e0ad596009c7567665f84f06250da46f859ed0c32c6739d8c5c2059e7"
+    "coverageSetSha256": "103455c3ba066209f298de3c84912849b47ffc5730d091a116fb1348a0bbf437"
 }

@@ -2,7 +2,7 @@ import {
     PhotoStrip,
     RatingGlassBadge,
 } from '@/components/investor/deals/deal-bits';
-import { useTimeLeft } from '@/components/investor/deals/time-left';
+import { raiseOpen, useTimeLeft } from '@/components/investor/deals/time-left';
 import { ACCENT_FILL } from '@/components/investor/tokens';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCount, formatRwf, formatRwfShort } from '@/lib/rozine/format';
@@ -10,7 +10,8 @@ import type { C3DealCard } from '@/types/investor';
 
 /**
  * The wide-screen deal card (design L205–241), the Deals deck's own markup: a 196px photo banner,
- * raised against target, funding, time left, investors, a three-line pitch and what is left.
+ * raised against target, funding, time left, investors, a three-line pitch and what is left. A
+ * closed raise shows no countdown: its state reads under "Left to fill".
  */
 export function DeskCard({
     deal,
@@ -116,29 +117,33 @@ export function DeskCard({
                     </span>
                 </div>
                 <div className="mt-[9px] flex items-center justify-between">
-                    <span className="inline-flex items-center gap-[5px] text-[12.5px] font-semibold text-rz-ink tabular-nums">
-                        <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            aria-hidden
-                            className="size-[13px]"
-                        >
-                            <circle
-                                cx="12"
-                                cy="13"
-                                r="8"
-                                stroke="#c2661f"
-                                strokeWidth="1.8"
-                            />
-                            <path
-                                d="M12 9v4l2.5 2M9 3h6"
-                                stroke="#c2661f"
-                                strokeWidth="1.8"
-                                strokeLinecap="round"
-                            />
-                        </svg>
-                        {clock.label}
-                    </span>
+                    {!raiseOpen(deal.lifecycle) ? (
+                        <span />
+                    ) : (
+                        <span className="inline-flex items-center gap-[5px] text-[12.5px] font-semibold text-rz-ink tabular-nums">
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                aria-hidden
+                                className="size-[13px]"
+                            >
+                                <circle
+                                    cx="12"
+                                    cy="13"
+                                    r="8"
+                                    stroke="#c2661f"
+                                    strokeWidth="1.8"
+                                />
+                                <path
+                                    d="M12 9v4l2.5 2M9 3h6"
+                                    stroke="#c2661f"
+                                    strokeWidth="1.8"
+                                    strokeLinecap="round"
+                                />
+                            </svg>
+                            {clock.label}
+                        </span>
+                    )}
                     <span className="text-[12.5px] text-rz-secondary">
                         <span className="font-bold text-rz-ink">
                             {formatCount(deal.investors)}
