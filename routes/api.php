@@ -18,6 +18,7 @@ use App\Http\Controllers\AuditSealVerificationController;
 use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\StaffApplicationReleaseController;
+use App\Http\Controllers\StaffDisbursementController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -63,6 +64,17 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('v1/identity')->nam
     Route::get('roles/{role}', [IdentityManagementController::class, 'role'])->name('roles.show');
     Route::get('bookmarks/{role}', [RoleBookmarkController::class, 'show'])->name('bookmarks.show');
     Route::post('bookmarks', [RoleBookmarkController::class, 'store'])->name('bookmarks.store');
+});
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/disbursements')->name('api.v1.staff.disbursements.')->group(function (): void {
+    Route::get('/', [StaffDisbursementController::class, 'index'])->name('index');
+    Route::get('operations/{request_id}', [StaffDisbursementController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
+    Route::get('{disbursement}', [StaffDisbursementController::class, 'show'])->whereUlid('disbursement')->name('show');
+    Route::post('{disbursement}/step-up', [StaffDisbursementController::class, 'stepUp'])->whereUlid('disbursement')
+        ->middleware('throttle:disbursement-step-up')->name('step-up');
+    foreach (['authorize' => 'authorize', 'approve' => 'approve', 'reject' => 'reject', 'hold' => 'hold', 'release-hold' => 'release_hold', 'requery' => 'requery'] as $path => $command) {
+        Route::post('{disbursement}/'.$path, [StaffDisbursementController::class, 'command'])->whereUlid('disbursement')->defaults('command', $command)->name($path);
+    }
 });
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/audit-assignments')->name('api.v1.staff.audit.')->group(function (): void {
