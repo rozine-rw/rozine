@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Application\Business\Contracts\PrimaryCampaignSource;
+use App\Application\Primary\Contracts\CampaignCommitments;
 use App\Models\BusinessCampaign;
+use App\Models\PrimaryCommitment;
 use Illuminate\Support\Facades\DB;
 
 /** @param list<int> $bindings */
@@ -105,3 +107,43 @@ it('installs Primary cash guards without deadlocking a campaign read waiting for
         ->and($results)->toBe([0, 0]);
 })->with(['2026_09_28_161335_bind_primary_reservations_to_wallet_holds.php',
     '2026_09_28_175455_bind_primary_terminal_versions_to_cash_movements.php']);
+
+it('installs confirmation receipt guards while commitment readers pass an in-flight writer', function (): void {
+    $migration = require database_path('migrations/2026_09_28_195022_bind_primary_confirmation_receipts_to_commitments.php');
+    $migration->down();
+    $campaign = BusinessCampaign::factory()->create();
+    DB::disconnect();
+    [$migrationPid, $migrationChannel, $migrationBackend] = forkPrimaryMigrationContender(fn () => $migration->up());
+    [$readerPid, $readerChannel] = forkPrimaryMigrationContender(function () use ($campaign): void {
+        if (app(CampaignCommitments::class)->anyForCampaign($campaign->id)) {
+            throw new RuntimeException('Unexpected campaign commitment.');
+        }
+    });
+    DB::purge();
+    try {
+        DB::beginTransaction();
+        PrimaryCommitment::factory()->create();
+        fwrite($migrationChannel, "go\n");
+        $queued = waitForPrimaryMigrationLock("SELECT EXISTS (SELECT 1 FROM pg_locks WHERE pid = ? AND relation = 'primary_commitments'::regclass
+            AND mode = 'ShareRowExclusiveLock' AND NOT granted) AS ok", [$migrationBackend], 1.0);
+        fwrite($readerChannel, "go\n");
+        pcntl_waitpid($readerPid, $readerStatus);
+        DB::commit();
+        pcntl_waitpid($migrationPid, $migrationStatus);
+    } finally {
+        if (DB::transactionLevel() > 0) {
+            DB::rollBack();
+        }
+        fclose($migrationChannel);
+        fclose($readerChannel);
+        pcntl_waitpid($readerPid, $status);
+        pcntl_waitpid($migrationPid, $status);
+        DB::purge();
+        if ((int) DB::selectOne("SELECT count(*) AS total FROM pg_trigger WHERE tgname = 'primary_commitment_receipt_bound'")->total === 0) {
+            $migration->up();
+        }
+    }
+    expect($queued)->toBeTrue()->and(pcntl_wifexited($readerStatus))->toBeTrue()
+        ->and(pcntl_wexitstatus($readerStatus))->toBe(0)->and(pcntl_wifexited($migrationStatus))->toBeTrue()
+        ->and(pcntl_wexitstatus($migrationStatus))->toBe(0);
+});

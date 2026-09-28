@@ -21,11 +21,20 @@ final readonly class EloquentPrimaryCommittedCash implements PrimaryCommittedCas
         if (DB::transactionLevel() < 1) {
             throw new WalletViolation('WALLET_POSTING_TRANSACTION_REQUIRED');
         }
+        if (DB::scalar("SELECT current_setting('transaction_isolation')") !== 'read committed') {
+            throw new WalletViolation('PRIMARY_CASH_ISOLATION_REQUIRED');
+        }
         if ($source->type !== 'primary_reservation') {
             throw new WalletViolation('WALLET_POSTING_SOURCE_INVALID');
         }
-        InvestorWallet::query()->whereKey($wallet->walletId)->where('party_id', $wallet->partyId)->where('currency', 'RWF')->lockForUpdate()->first()
-            ?? throw new WalletViolation('WALLET_POSTING_WALLET_INVALID');
+        $walletQuery = InvestorWallet::query()->whereKey($wallet->walletId)->where('party_id', $wallet->partyId)->where('currency', 'RWF');
+        if (! $walletQuery->exists()) {
+            throw new WalletViolation('WALLET_POSTING_WALLET_INVALID');
+        }
+        if (LedgerEntry::query()->where('source_type', $source->type)->where('source_id', $source->id)->where('wallet_id', '!=', $wallet->walletId)->exists()) {
+            throw new WalletViolation('WALLET_POSTING_CONFLICT');
+        }
+        $walletQuery->lockForUpdate()->firstOrFail();
         $entries = LedgerEntry::query()->where('source_type', $source->type)->where('source_id', $source->id)->orderBy('kind')->get();
         if ($entries->pluck('kind')->all() !== ['primary_commit', 'primary_hold']) {
             throw new WalletViolation('PRIMARY_COMMITTED_CASH_REQUIRED');

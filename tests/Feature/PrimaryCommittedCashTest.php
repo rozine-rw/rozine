@@ -12,6 +12,7 @@ use App\Models\InvestorWallet;
 use App\Models\LedgerEntry;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\PrimaryReservationFixture;
@@ -92,3 +93,54 @@ it('refuses an incomplete commit inside the caller transaction before deferred c
     expect(fn () => $this->cash->requireCommitted($wallet, WalletMoney::of('5000'), $source))
         ->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT');
 });
+
+it('committedAt is the commit time, not the hold time', function (): void {
+    $root = PrimaryReservationRecord::factory()->withInitialVersion()->create(['party_id' => $this->root->party_id]);
+    $source = new PostingSource('primary_reservation', $root->id, $root->origin_operation_id);
+    $this->travel(40)->seconds();
+    PrimaryReservationFixture::terminalVersion($source, 'confirmed');
+    app(WalletPostings::class)->commit($this->wallet, WalletMoney::of('5000'), $source);
+    $hold = LedgerEntry::query()->where('source_id', $root->id)->where('kind', 'primary_hold')->sole();
+    $commit = LedgerEntry::query()->where('source_id', $root->id)->where('kind', 'primary_commit')->sole();
+    $evidence = $this->cash->requireCommitted($this->wallet, WalletMoney::of('5000'), $source);
+    expect($hold->created_at->equalTo($commit->created_at))->toBeFalse()
+        ->and($evidence->committedAt)->toEqual($commit->created_at->toDateTimeImmutable())
+        ->and([$evidence->holdEntryId, $evidence->commitEntryId])->toBe([$hold->id, $commit->id]);
+});
+
+it('an entry whose header wallet matches but whose lines post to another wallet is refused', function (): void {
+    $other = PrimaryReservationRecord::factory()->withInitialVersion()->create();
+    $otherWallet = app(WalletPostings::class)->lockForParty($other->party_id);
+    $otherHeld = DB::table('ledger_accounts')->where('wallet_id', $otherWallet->walletId)->where('kind', 'investor_held')->value('id');
+    $commitId = LedgerEntry::query()->where('source_id', $this->root->id)->where('kind', 'primary_commit')->value('id');
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('ALTER TABLE ledger_lines DISABLE TRIGGER USER');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    DB::table('ledger_lines')->where('entry_id', $commitId)->where('direction', 'debit')->update(['account_id' => $otherHeld]);
+    expect(fn () => $this->cash->requireCommitted($this->wallet, WalletMoney::of('5000'), $this->source))
+        ->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT');
+});
+
+it('refuses a foreign source before acquiring any supplied wallet lock', function (): void {
+    $other = InvestorWallet::factory()->create();
+    $statements = [];
+    DB::listen(function (QueryExecuted $query) use (&$statements): void {
+        $statements[] = $query->sql;
+    });
+    expect(fn () => $this->cash->requireCommitted(new LockedWallet($other->id, $other->party_id), WalletMoney::of('5000'), $this->source))
+        ->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT');
+    expect(array_filter($statements, fn (string $sql): bool => str_contains($sql, 'for update')))->toBe([]);
+});
+
+it('refuses simulated issue and unknown movements until the settlement schema is integrated', function (string $kind): void {
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('ALTER TABLE ledger_entries DROP CONSTRAINT ledger_entry_source');
+    DB::statement('ALTER TABLE ledger_entries DISABLE TRIGGER USER');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    DB::table('ledger_entries')->insert(['id' => strtolower((string) Str::ulid()), 'wallet_id' => $this->wallet->walletId,
+        'kind' => $kind, 'source_type' => 'primary_reservation', 'source_id' => $this->source->id,
+        'origin_operation_id' => $this->source->originOperationId, 'currency' => 'RWF', 'payload' => '{}',
+        'sha256' => str_repeat('0', 64), 'created_at' => now()]);
+    expect(fn () => $this->cash->requireCommitted($this->wallet, WalletMoney::of('5000'), $this->source))
+        ->toThrow(WalletViolation::class, 'PRIMARY_COMMITTED_CASH_REQUIRED');
+})->with(['primary_issue', 'primary_adjustment']);

@@ -24,7 +24,7 @@ function retainConfirmationReceipt(string $mutation = ''): PrimaryCommitment
         'revision' => 2, 'data' => ['reservation_id' => $root->id, 'commitment_id' => $commitmentId, 'amount' => $root->principal]];
     if ($mutation !== '') {
         $value = match ($mutation) {
-            'code' => 'RESERVATION_REQUOTED', 'revision' => 1, 'revision_type' => '2',
+            'status' => 'rejected', 'code' => 'RESERVATION_REQUOTED', 'revision' => 1, 'revision_type' => '2',
             'data.amount' => '10000', 'amount_type' => 5000, 'missing_commitment' => null,
             default => strtolower((string) Str::ulid()),
         };
@@ -49,7 +49,7 @@ it('refuses completed receipts that disagree with retained confirmation identity
         DB::statement('SET CONSTRAINTS primary_commitment_receipt_bound IMMEDIATE');
     }))->toThrow(QueryException::class, 'receipt must identify the retained purchase');
     expect(PrimaryCommitment::query()->count())->toBe(0)->and(PrimaryReservationRecord::query()->count())->toBe(0);
-})->with(['code', 'operation_id', 'revision', 'revision_type', 'data.reservation_id', 'data.commitment_id', 'missing_commitment', 'data.amount', 'amount_type']);
+})->with(['status', 'code', 'operation_id', 'revision', 'revision_type', 'data.reservation_id', 'data.commitment_id', 'missing_commitment', 'data.amount', 'amount_type']);
 
 it('accepts exact receipts inserted after evidence and preserves receipt immutability', function (): void {
     $commitment = retainConfirmationReceipt();
@@ -82,4 +82,15 @@ it('round trips an empty guard and installs over valid receipts but refuses roll
     DB::statement('SET CONSTRAINTS ALL DEFERRED');
     $migration->up();
     expect(fn () => $migration->down())->toThrow(QueryException::class, 'forward migration');
+});
+
+it('does not let another valid commitment satisfy a mismatched receipt', function (): void {
+    $valid = retainConfirmationReceipt();
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    expect(fn () => DB::transaction(function (): void {
+        retainConfirmationReceipt('data.amount');
+        DB::statement('SET CONSTRAINTS primary_commitment_receipt_bound IMMEDIATE');
+    }))->toThrow(QueryException::class, 'receipt must identify the retained purchase');
+    expect(PrimaryCommitment::query()->sole()->id)->toBe($valid->id);
 });

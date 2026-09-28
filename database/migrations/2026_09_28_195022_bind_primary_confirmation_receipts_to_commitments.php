@@ -12,7 +12,7 @@ return new class extends Migration
     {
         DB::transaction(function (): void {
             DB::unprepared(<<<'SQL'
-                LOCK TABLE primary_reservations, primary_reservation_versions, primary_commitments IN ACCESS EXCLUSIVE MODE;
+                LOCK TABLE primary_commitments IN SHARE ROW EXCLUSIVE MODE;
                 CREATE OR REPLACE FUNCTION check_primary_confirmation_receipt(commitment_id varchar) RETURNS void LANGUAGE plpgsql AS $$
                 BEGIN
                     IF NOT EXISTS (
@@ -55,7 +55,7 @@ return new class extends Migration
     {
         DB::transaction(function (): void {
             DB::unprepared(<<<'SQL'
-                LOCK TABLE primary_reservations, primary_reservation_versions, primary_commitments IN ACCESS EXCLUSIVE MODE;
+                LOCK TABLE primary_commitments IN SHARE ROW EXCLUSIVE MODE;
                 DO $$ BEGIN
                     IF EXISTS (SELECT 1 FROM primary_commitments) THEN
                         RAISE EXCEPTION 'Retained Primary confirmation receipts require a forward migration' USING ERRCODE = '23514';

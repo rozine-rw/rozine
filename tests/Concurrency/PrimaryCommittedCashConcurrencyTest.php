@@ -110,3 +110,15 @@ it('serializes funding cash evidence with refund in either arrival order', funct
     expect(fn () => DB::transaction(fn () => app(PrimaryCommittedCash::class)->requireCommitted($wallet, WalletMoney::of('5000'), $source)))
         ->toThrow(WalletViolation::class, 'PRIMARY_COMMITTED_CASH_REQUIRED');
 })->with(['refund first' => true, 'funding read first' => false]);
+
+it('refuses snapshot isolation before counting retained cash', function (string $isolation): void {
+    [$wallet, $source] = retainedFundingCash();
+    try {
+        DB::beginTransaction();
+        DB::statement('SET TRANSACTION ISOLATION LEVEL '.$isolation);
+        expect(fn () => app(PrimaryCommittedCash::class)->requireCommitted($wallet, WalletMoney::of('5000'), $source))
+            ->toThrow(WalletViolation::class, 'PRIMARY_CASH_ISOLATION_REQUIRED');
+    } finally {
+        DB::rollBack();
+    }
+})->with(['REPEATABLE READ', 'SERIALIZABLE']);
