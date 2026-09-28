@@ -35,18 +35,18 @@ describe('Exceptions', () => {
         expect(
             within(nav()).getByRole('link', { name: 'Book' }),
         ).not.toHaveAttribute('aria-current');
-        expect(screen.getByText('4 open')).toBeInTheDocument();
-        expect(screen.getByText('1 unassigned')).toBeInTheDocument();
+        expect(screen.getByText('5 open')).toBeInTheDocument();
+        expect(screen.getByText('2 unassigned')).toBeInTheDocument();
 
         const filter = screen.getByRole('navigation', {
             name: 'Filter by kind',
         });
 
         expect(
-            within(filter).getByRole('link', { name: /^All\s*4$/ }),
+            within(filter).getByRole('link', { name: /^All\s*5$/ }),
         ).toHaveAttribute('aria-current', 'page');
         expect(
-            within(filter).getByRole('link', { name: /^Arrears\s*2$/ }),
+            within(filter).getByRole('link', { name: /^Arrears\s*3$/ }),
         ).toBeInTheDocument();
 
         expect(rowOf('ARR-2026-0412')).toHaveTextContent('Arrears');
@@ -57,6 +57,17 @@ describe('Exceptions', () => {
         expect(rowOf('ARR-2026-0412')).toHaveTextContent('RWF 2,340,000');
         expect(rowOf('ARR-2026-0412')).toHaveTextContent('Open 37 days');
         expect(rowOf('ARR-2026-0412')).toHaveTextContent('Owner: Grace Kalisa');
+
+        /* The Book's overdue GreenLeaf note, its payment still being requeried. */
+        const unconfirmed = rowOf('ARR-2027-0433');
+
+        expect(unconfirmed).toHaveTextContent(
+            'GreenLeaf Agro · Warehouse Robotics',
+        );
+        expect(unconfirmed).toHaveTextContent('2 DPD');
+        expect(unconfirmed).toHaveTextContent('RWF 4,833,334');
+        expect(unconfirmed).toHaveTextContent('Open 1 day');
+        expect(unconfirmed).toHaveTextContent('Unassigned');
 
         const variance = rowOf('RPY-2026-0303');
 

@@ -73,13 +73,13 @@
         "staff_access_version": "staff-access-v1",
         "allowed_actions": [],
         "counts": {
-            "open": 4,
-            "unassigned": 1
+            "open": 5,
+            "unassigned": 2
         },
         "chips": [
             {
                 "key": "all",
-                "count": 4,
+                "count": 5,
                 "link": {
                     "url": "/preview/admin-exceptions",
                     "method": "get"
@@ -88,7 +88,7 @@
             },
             {
                 "key": "arrears",
-                "count": 2,
+                "count": 3,
                 "link": {
                     "url": "/preview/admin-exceptions",
                     "method": "get"
@@ -160,6 +160,26 @@
                 },
                 "link": {
                     "url": "/preview/admin-book",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "exc_0433",
+                "kind": "arrears",
+                "reference": "ARR-2027-0433",
+                "business": "GreenLeaf Agro",
+                "note_title": "Warehouse Robotics",
+                "description": "Instalment due 21 Jan 2027 not confirmed; the provider requery is still open",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "4833334"
+                },
+                "dpd": 2,
+                "opened_at": "2027-01-22T00:05:00+02:00",
+                "age_days": 1,
+                "owner": null,
+                "link": {
+                    "url": "/preview/admin-repayments-requery-unknown",
                     "method": "get"
                 }
             },
