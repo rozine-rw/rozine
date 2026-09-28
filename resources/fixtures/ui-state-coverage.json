@@ -111,7 +111,7 @@
     "MVP-AUDITOR-SCR-03-ST-02": {
         "name": "offline, unsynced",
         "disposition": "partial",
-        "note": "`useOnline` banner in `pages/auditor/audit.tsx:75`. Test: \"says when the browser drops offline and returns\". No fixture. No durable local progress or visible sync queue."
+        "note": "The web labels offline on every Auditor screen (#156, `auditor-audit-photos-offline`). Durable unsynced capture is the D-04 native companion, deferred to UAT with real users."
     },
     "MVP-AUDITOR-SCR-04-ST-01": {
         "name": "no signal",
@@ -273,8 +273,7 @@
     },
     "MVP-INVESTOR-SCR-01-ST-02": {
         "name": "all sold out",
-        "disposition": "partial",
-        "note": "Only a single sold-out card is tested (\"marks a sold-out card\"). No all-sold-out fixture."
+        "fixtures": ["investor-deals-all-closed"]
     },
     "MVP-INVESTOR-SCR-01-ST-03": {
         "name": "gated",
@@ -289,13 +288,11 @@
     },
     "MVP-INVESTOR-SCR-02-ST-02": {
         "name": "frozen",
-        "disposition": "missing",
-        "note": "`DealStatus` includes `'frozen'` (`types/investor.ts:93`), but no component renders it."
+        "fixtures": ["investor-deals-restricted"]
     },
     "MVP-INVESTOR-SCR-02-ST-03": {
         "name": "withdrawn",
-        "disposition": "partial",
-        "note": "`'withdrawn'` is typed but not rendered. A \"cancelled raise\" test exists."
+        "fixtures": ["investor-deal-cancelled"]
     },
     "MVP-INVESTOR-SCR-03-ST-01": {
         "name": "below minimum",
