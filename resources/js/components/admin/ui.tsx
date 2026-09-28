@@ -503,12 +503,15 @@ export function TableCard({
     label,
     minWidth,
     children,
+    empty,
     footer,
     className,
 }: {
     label: string;
     minWidth: string;
     children: ReactNode;
+    /** An empty state, set outside the horizontal scroller so it stays centred on a phone. */
+    empty?: ReactNode;
     footer?: ReactNode;
     className?: string;
 }) {
@@ -530,6 +533,7 @@ export function TableCard({
                     {children}
                 </div>
             </div>
+            {empty}
             {footer}
         </div>
     );

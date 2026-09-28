@@ -123,6 +123,14 @@ export default function AdminRepayments(props: AdminRepaymentsProps) {
             <TableCard
                 label={t('admin.repayments.table')}
                 minWidth="min-w-[960px]"
+                empty={
+                    props.repayments.length === 0 && (
+                        <EmptyState
+                            title={t('admin.repayments.empty_title')}
+                            body={t('admin.repayments.empty_body')}
+                        />
+                    )
+                }
                 footer={
                     props.pagination.next !== null && (
                         <ShowMoreLink link={props.pagination.next}>
@@ -145,12 +153,6 @@ export default function AdminRepayments(props: AdminRepaymentsProps) {
                 {props.repayments.map((row) => (
                     <Row key={row.id} row={row} />
                 ))}
-                {props.repayments.length === 0 && (
-                    <EmptyState
-                        title={t('admin.repayments.empty_title')}
-                        body={t('admin.repayments.empty_body')}
-                    />
-                )}
             </TableCard>
         </AdminFrame>
     );

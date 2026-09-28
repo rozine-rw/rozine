@@ -234,6 +234,11 @@ export default function AdminApplications(props: C3AdminApplicationsProps) {
             <TableCard
                 label={t('admin.applications.table')}
                 minWidth="min-w-[900px]"
+                empty={
+                    props.applications.length === 0 && (
+                        <EmptyState title={t('admin.applications.empty')} />
+                    )
+                }
                 footer={
                     next !== null && (
                         <ShowMoreLink link={next}>
@@ -256,9 +261,6 @@ export default function AdminApplications(props: C3AdminApplicationsProps) {
                 {props.applications.map((row) => (
                     <QueueRow key={row.id} row={row} ago={ago} />
                 ))}
-                {props.applications.length === 0 && (
-                    <EmptyState title={t('admin.applications.empty')} />
-                )}
             </TableCard>
         </AdminFrame>
     );

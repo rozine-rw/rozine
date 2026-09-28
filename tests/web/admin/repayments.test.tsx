@@ -94,6 +94,10 @@ describe('Repayments queue', () => {
         );
 
         expect(screen.getByText('No repayments yet')).toBeInTheDocument();
+        /* Outside the table's horizontal scroller, so it stays centred on a phone. */
+        expect(
+            within(screen.getByRole('table')).queryByText('No repayments yet'),
+        ).not.toBeInTheDocument();
         expect(screen.getByText(/Kivu/)).toBeInTheDocument();
         expect(screen.queryByText(/due today/)).not.toBeInTheDocument();
         expect(

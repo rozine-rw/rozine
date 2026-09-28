@@ -217,6 +217,12 @@ describe('Applications queue', () => {
         expect(
             screen.getByText('No applications in this queue.'),
         ).toBeInTheDocument();
+        /* Outside the table's horizontal scroller, so it stays centred on a phone. */
+        expect(
+            within(screen.getByRole('table')).queryByText(
+                'No applications in this queue.',
+            ),
+        ).not.toBeInTheDocument();
         expect(
             screen.queryByRole('region', {
                 name: 'Underwriting rules in effect',

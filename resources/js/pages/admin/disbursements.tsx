@@ -141,6 +141,14 @@ export default function AdminDisbursements(props: C3AdminDisbursementsProps) {
             <TableCard
                 label={t('admin.disbursements.table')}
                 minWidth="min-w-[900px]"
+                empty={
+                    props.disbursements.length === 0 && (
+                        <EmptyState
+                            title={t('admin.disbursements.empty_title')}
+                            body={t('admin.disbursements.empty_body')}
+                        />
+                    )
+                }
                 footer={
                     props.pagination.next !== null && (
                         <ShowMoreLink link={props.pagination.next}>
@@ -166,12 +174,6 @@ export default function AdminDisbursements(props: C3AdminDisbursementsProps) {
                 {props.disbursements.map((row) => (
                     <Row key={row.id} row={row} />
                 ))}
-                {props.disbursements.length === 0 && (
-                    <EmptyState
-                        title={t('admin.disbursements.empty_title')}
-                        body={t('admin.disbursements.empty_body')}
-                    />
-                )}
             </TableCard>
         </AdminFrame>
     );

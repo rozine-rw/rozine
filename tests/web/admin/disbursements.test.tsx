@@ -169,6 +169,12 @@ describe('Disbursements queue', () => {
         expect(
             screen.getByText('All disbursements released'),
         ).toBeInTheDocument();
+        /* Outside the table's horizontal scroller, so it stays centred on a phone. */
+        expect(
+            within(screen.getByRole('table')).queryByText(
+                'All disbursements released',
+            ),
+        ).not.toBeInTheDocument();
         expect(screen.getByText('No matches on this page')).toBeInTheDocument();
         expect(
             screen.getByRole('link', { name: 'Older disbursements' }),
