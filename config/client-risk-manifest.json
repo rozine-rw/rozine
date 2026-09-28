@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "771cc3262f9382d666edfd4d5e8051a3085e900dc137dafb6e8d2a2653019772",
-    "coverageSetSha256": "4fc6d987379deb4f8d362f3654c2a2854301c480db6e8f24c414a6ab3acc4c96",
+    "sourceManifestSha256": "353745e6ace3f067a6f7e9ebffd12f92cf07ce3c51631dd729cc2b6d4c35250c",
+    "coverageSetSha256": "4d9d487faa267dd8c63a3a5d6e0a71108edf644afe716256c1f79bc9c71cd8e0",
     "thresholds": {
         "critical": {
             "global": {
@@ -273,6 +273,7 @@
         "resources/js/components/rozine/logo.tsx",
         "resources/js/components/rozine/operation-notice.tsx",
         "resources/js/components/rozine/proof-file-list.tsx",
+        "resources/js/components/rozine/read-failure-notice.tsx",
         "resources/js/components/rozine/role-icon.tsx",
         "resources/js/components/rozine/toast.tsx",
         "resources/js/components/text-link.tsx",
