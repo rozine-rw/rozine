@@ -12,6 +12,8 @@ import {
 } from '@/components/business/apply/operation-outcome';
 import { OutcomeBanner } from '@/components/business/apply/outcome-banner';
 import { PendingReview } from '@/components/business/apply/pending-review';
+import { readFeeTerms } from '@/components/business/apply/service-fee';
+import type { FeeTermsState } from '@/components/business/apply/service-fee';
 import { StepBusiness } from '@/components/business/apply/step-business';
 import { StepRaise } from '@/components/business/apply/step-raise';
 import type { RaiseFields } from '@/components/business/apply/step-raise';
@@ -113,6 +115,18 @@ export default function BusinessApply(props: BusinessApplyProps) {
         );
     const canSign =
         agreementAvailable && allowedActions.includes('application.submit');
+    /*
+     * The borrower service-fee terms (C4 gate 6). Explicitly unavailable terms disable binding
+     * acceptance; absent terms leave live acceptance as it is, except in a synthetic preview of
+     * the proposed rule that absence blocks too.
+     */
+    const feeTerms: FeeTermsState = readyQuote
+        ? readFeeTerms(
+              readyQuote,
+              readyQuote.schedule,
+              props.preview_fee_terms_required === true,
+          )
+        : { state: 'absent' };
 
     const revision = useRef(props.application.revision);
     const savedKey = useRef(
@@ -376,6 +390,7 @@ export default function BusinessApply(props: BusinessApplyProps) {
 
     const reviewReady =
         readyQuote !== null &&
+        feeTerms.state !== 'unavailable' &&
         review.accept_offer &&
         acceptance.disclosures.every((disclosure) =>
             review.disclosures.includes(disclosure.key),
@@ -582,6 +597,7 @@ export default function BusinessApply(props: BusinessApplyProps) {
                         agreementAvailable={agreementAvailable}
                         pendingReview={pendingReview}
                         reduce={reduce}
+                        feeTerms={feeTerms}
                         fields={review}
                         errors={errors}
                         onChange={(field, value) =>

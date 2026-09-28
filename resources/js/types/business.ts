@@ -5,6 +5,7 @@ import type {
 } from './operation';
 import type { RouteAction, RouteLink } from './routing';
 import type {
+    Bps,
     C3PreviewOutcome,
     CampaignLifecycle,
     CampaignRestriction,
@@ -364,12 +365,42 @@ export type ScheduleInstalment = {
 };
 
 /**
+ * The borrower service fee as a server-owned projection (C4 gate 6, agreed shape on
+ * rozine-rw/rozine#96). Charged on each amount actually repaid — principal and contractual
+ * return, never fees or penalties — so the schedule and total here project the scheduled
+ * repayments only. The client never derives any of these figures. PROVISIONAL: the rounding
+ * policy is not yet approved, so only synthetic fixtures carry this block today.
+ */
+export type ServiceFeeDisclosure = {
+    rate_bps: Bps;
+    basis: 'repaid_principal_and_contractual_return';
+    timing: 'on_repayment';
+    projection_basis: 'scheduled_repayments';
+    /** The selected rounding policy; null while none is approved, which blocks acceptance. */
+    rounding: { rule: string; version: string } | null;
+    /** The projected fee for each scheduled instalment, keyed by the quote's instalment number. */
+    schedule: ScheduleInstalment[];
+    total: Money;
+    policy_version: string;
+};
+
+/**
+ * The fee terms a binding surface shows beside its figures. `service_fee` is absent while the
+ * server predates gate 6, and null (or a null rounding) when the fee policy is unavailable;
+ * `total_payable` is the contractual total plus the projected fee, as the server states it.
+ */
+export type ServiceFeeTerms = {
+    service_fee?: ServiceFeeDisclosure | null;
+    total_payable?: Money | null;
+};
+
+/**
  * The server's immutable quote, created by `application.evaluate` and only read on a page load.
  * Every figure is the engine's; the page shows it, never recomputes it. A refusal carries a
  * stable code and the server's own explanation, and no numeric offer at all.
  */
 export type ApplicationQuote =
-    | {
+    | ({
           status: 'ready';
           quote_id: string;
           quote_revision: number;
@@ -405,7 +436,7 @@ export type ApplicationQuote =
               /** The exact term premium, never a rounded coefficient. */
               term_premium: Ratio;
           };
-      }
+      } & ServiceFeeTerms)
     | {
           status: 'refused';
           code: QuoteDenialCode;
@@ -554,6 +585,12 @@ export type BusinessApplyProps = {
         submit: RouteAction;
     };
     preview_outcome?: ApplyPreviewOutcome;
+    /**
+     * Supplied only by local/testing synthetic fixture previews: treats an absent `service_fee`
+     * as unavailable, the proposed gate 6 rule awaiting its decision. The server never sends it,
+     * so live acceptance is unchanged until that decision is recorded.
+     */
+    preview_fee_terms_required?: true;
     /**
      * Another submitted application of this business still under review, which blocks this
      * draft's evaluation and submission (one at a time in C2); null otherwise.
@@ -1197,7 +1234,13 @@ export type C3BusinessPublishProps = {
     /** The shell's navigation for this page, read instead of `home.links`. */
     shell_links: BusinessShellLinks;
     preview_outcome?: C3PreviewOutcome<'application.publish'>;
-};
+    /**
+     * Supplied only by local/testing synthetic fixture previews: treats an absent `service_fee`
+     * as unavailable, the proposed gate 6 rule awaiting its decision. The server never sends it,
+     * so live acceptance is unchanged until that decision is recorded.
+     */
+    preview_fee_terms_required?: true;
+} & ServiceFeeTerms;
 
 /** The coarse closing view (H15): no provider or evidence reference. */
 export type BusinessClosing =

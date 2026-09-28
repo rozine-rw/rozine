@@ -2972,6 +2972,20 @@ const rw: Catalog = {
     'business.apply.review.reduced':
         'Wahisemo {principal} kuri {offered} wahawe.',
     'business.apply.review.use_full': 'Fata ayo wahawe yose',
+    'business.apply.raise.instalment_fee': "+ {fee} y'amafaranga ya serivisi",
+    'business.apply.review.service_fee':
+        'Amafaranga ya serivisi ({rate}% bya buri bwishyu)',
+    'business.apply.review.projected': 'Biteganyijwe',
+    'business.apply.review.total_payable':
+        'Igiteranyo cyo kwishyura (biteganyijwe)',
+    'business.apply.review.fee_projection_note':
+        "Amafaranga ya serivisi ateganyijwe: {rate}% bya buri bwishyu, acibwa ku mafaranga yishyuwe koko (igishoro n'inyungu, hatarimo andi mafaranga n'amande). Iyi mibare ifata ko buri cyiciro cyishyurwa cyose ku gihe cyateganyijwe.",
+    'business.apply.review.fee_note_service_fee':
+        "Nta mafaranga ku gishoro ubona. Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa. Amafaranga ya serivisi kuri buri bwishyu agaragara hamwe n'icyifuzo cyawe hejuru.",
+    'business.apply.review.fee_unavailable':
+        "Amategeko y'amafaranga ntaraboneka — ntushobora gusinya ubu",
+    'business.apply.review.fee_unavailable_body':
+        "Rozine ntiratangaza amategeko y'amafaranga ya serivisi kuri iki cyifuzo, bityo ntikiremerwa. Umushinga wawe n'icyifuzo cyawe biguma bibitswe.",
 
     'business.apply.recalculating': 'Turimo kubara…',
     'auditor.capture.unavailable':
@@ -3494,6 +3508,10 @@ const rw: Catalog = {
     'business.publish.published.disclosure': 'Itangazo ku mafaranga',
     'business.publish.published.campaign': 'Reba igikorwa cyo gukusanya',
     'business.publish.published.home': 'Subira ku Ahabanza',
+    'business.publish.fee_unavailable':
+        "Amategeko y'amafaranga ntaraboneka — ntushobora gutangaza ubu",
+    'business.publish.fee_unavailable_body':
+        "Rozine ntiratangaza amategeko y'amafaranga ya serivisi kuri iyi nkunga, bityo ntirashobora gutangazwa. Nta kintu cyatangajwe.",
     'business.campaign.state.live': 'Irakora',
     'business.campaign.state.fully_reserved': 'Yose yafashwe',
     'business.campaign.state.funded': 'Yabonye amafaranga yose',
