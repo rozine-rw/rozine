@@ -108,7 +108,9 @@ final class SyntheticPayoutProvider implements PayoutProvider, SyntheticPayoutSc
     {
         $this->guard->assertAllowed();
 
-        return $this->sign([...self::observation(DisbursementIntent::query()->findOrFail($intentId), $state), ...$overrides]);
+        $intent = DisbursementIntent::query()->find($intentId) ?? throw new CommandRejection('PROVIDER_EVENT_UNMATCHED', 422);
+
+        return $this->sign([...self::observation($intent, $state), ...$overrides]);
     }
 
     /**
