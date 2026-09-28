@@ -4363,8 +4363,7 @@ const fr: Catalog = {
     'admin.section.book.title': 'Portefeuille',
     'admin.section.book.subtitle':
         'Chaque titre en cours et sa santé, tels que le système central enregistre leur service. Lecture seule.',
-    'admin.section.book.search':
-        'Rechercher par entreprise, titre ou identifiant…',
+    'admin.section.book.search': 'Rechercher par entreprise ou titre…',
     'admin.section.exceptions.title': 'Exceptions',
     'admin.section.exceptions.subtitle':
         "Arriérés, suspensions et écarts, chacun daté et attribué jusqu'à sa résolution. Lecture seule.",

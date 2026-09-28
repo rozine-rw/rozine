@@ -138,11 +138,26 @@ export default function AdminBook(props: AdminBookProps) {
                 label={t('admin.book.table')}
                 minWidth="min-w-[900px]"
                 footer={
-                    props.pagination.next !== null && (
-                        <ShowMoreLink link={props.pagination.next}>
-                            {t('admin.book.more')}
-                        </ShowMoreLink>
-                    )
+                    <>
+                        {/* Outside the table's scroller, so it stays centred on a phone. */}
+                        {props.notes.length === 0 &&
+                            (filtered ? (
+                                <EmptyState
+                                    title={t('admin.book.filtered_title')}
+                                    body={t('admin.book.filtered_body')}
+                                />
+                            ) : (
+                                <EmptyState
+                                    title={t('admin.book.empty_title')}
+                                    body={t('admin.book.empty_body')}
+                                />
+                            ))}
+                        {props.pagination.next !== null && (
+                            <ShowMoreLink link={props.pagination.next}>
+                                {t('admin.book.more')}
+                            </ShowMoreLink>
+                        )}
+                    </>
                 }
             >
                 <div role="row" className={cn(GRID, TABLE_HEAD, 'py-[13px]')}>
@@ -156,18 +171,6 @@ export default function AdminBook(props: AdminBookProps) {
                 {props.notes.map((row) => (
                     <Row key={row.id} row={row} />
                 ))}
-                {props.notes.length === 0 &&
-                    (filtered ? (
-                        <EmptyState
-                            title={t('admin.book.filtered_title')}
-                            body={t('admin.book.filtered_body')}
-                        />
-                    ) : (
-                        <EmptyState
-                            title={t('admin.book.empty_title')}
-                            body={t('admin.book.empty_body')}
-                        />
-                    ))}
             </TableCard>
         </AdminFrame>
     );

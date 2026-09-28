@@ -4230,12 +4230,11 @@ const en = {
     'admin.section.book.title': 'Book',
     'admin.section.book.subtitle':
         'Every live note and its health, as the core records its servicing. Read-only.',
-    'admin.section.book.search': 'Search the book by business, note or ID…',
+    'admin.section.book.search': 'Search by business or note…',
     'admin.section.exceptions.title': 'Exceptions',
     'admin.section.exceptions.subtitle':
         'Arrears, halts and variances, each aged and owned until it is resolved. Read-only.',
-    'admin.section.exceptions.search':
-        'Search exceptions by business or reference…',
+    'admin.section.exceptions.search': 'Search by business or reference…',
     'admin.book.title': 'Live notes',
     'admin.book.caption':
         'Servicing state and days past due as the core records them. Nothing here changes a note.',

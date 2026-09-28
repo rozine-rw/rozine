@@ -60,7 +60,10 @@ function Row({ item }: { item: ExceptionItem }) {
             </span>
             <span
                 role="cell"
-                className={cn('text-[12.5px] font-bold', TONE_TEXT.red)}
+                className={cn(
+                    'text-[12.5px] font-bold',
+                    item.amount === null ? 'text-rz-body' : TONE_TEXT.red,
+                )}
             >
                 {item.amount === null ? '—' : formatRwf(item.amount)}
             </span>
@@ -155,11 +158,26 @@ export default function AdminExceptions(props: AdminExceptionsProps) {
                 label={t('admin.exceptions.table')}
                 minWidth="min-w-[920px]"
                 footer={
-                    props.pagination.next !== null && (
-                        <ShowMoreLink link={props.pagination.next}>
-                            {t('admin.exceptions.more')}
-                        </ShowMoreLink>
-                    )
+                    <>
+                        {/* Outside the table's scroller, so it stays centred on a phone. */}
+                        {props.exceptions.length === 0 &&
+                            (filtered ? (
+                                <EmptyState
+                                    title={t('admin.exceptions.filtered_title')}
+                                    body={t('admin.exceptions.filtered_body')}
+                                />
+                            ) : (
+                                <EmptyState
+                                    title={t('admin.exceptions.empty_title')}
+                                    body={t('admin.exceptions.empty_body')}
+                                />
+                            ))}
+                        {props.pagination.next !== null && (
+                            <ShowMoreLink link={props.pagination.next}>
+                                {t('admin.exceptions.more')}
+                            </ShowMoreLink>
+                        )}
+                    </>
                 }
             >
                 <div role="row" className={cn(GRID, TABLE_HEAD, 'py-[13px]')}>
@@ -173,18 +191,6 @@ export default function AdminExceptions(props: AdminExceptionsProps) {
                 {props.exceptions.map((item) => (
                     <Row key={item.id} item={item} />
                 ))}
-                {props.exceptions.length === 0 &&
-                    (filtered ? (
-                        <EmptyState
-                            title={t('admin.exceptions.filtered_title')}
-                            body={t('admin.exceptions.filtered_body')}
-                        />
-                    ) : (
-                        <EmptyState
-                            title={t('admin.exceptions.empty_title')}
-                            body={t('admin.exceptions.empty_body')}
-                        />
-                    ))}
             </TableCard>
         </AdminFrame>
     );
