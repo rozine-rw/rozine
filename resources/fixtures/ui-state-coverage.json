@@ -173,8 +173,7 @@
     },
     "MVP-BUSINESS-SCR-01-ST-01": {
         "name": "no deal yet",
-        "disposition": "tested-without-fixture",
-        "note": "`home.test.tsx` \"reads a pending rating, no live raise…\""
+        "fixtures": ["business-home-no-deal"]
     },
     "MVP-BUSINESS-SCR-01-ST-02": {
         "name": "frozen",
@@ -329,13 +328,11 @@
     },
     "MVP-INVESTOR-SCR-05-ST-02": {
         "name": "frozen",
-        "disposition": "tested-without-fixture",
-        "note": "`portfolio.test.tsx` \"discloses … a freeze\""
+        "fixtures": ["investor-holding-frozen"]
     },
     "MVP-INVESTOR-SCR-05-ST-03": {
         "name": "defaulted",
-        "disposition": "tested-without-fixture",
-        "note": "`portfolio.test.tsx:281`"
+        "fixtures": ["investor-holding-defaulted"]
     },
     "MVP-INVESTOR-SCR-06-ST-01": {
         "name": "empty book",
@@ -387,8 +384,7 @@
     },
     "MVP-INVESTOR-SCR-10-ST-01": {
         "name": "no history yet",
-        "disposition": "tested-without-fixture",
-        "note": "`profile.test.tsx` \"explains an open year and an empty history\""
+        "fixtures": ["investor-profile-statements-empty"]
     },
     "MVP-INVESTOR-SCR-10-ST-02": {
         "name": "period incomplete",
@@ -400,7 +396,6 @@
     },
     "MVP-INVESTOR-SCR-11-ST-02": {
         "name": "document expired",
-        "disposition": "tested-without-fixture",
-        "note": "`profile.test.tsx:215`"
+        "fixtures": ["investor-profile-kyc-expired"]
     }
 }

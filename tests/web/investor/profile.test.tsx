@@ -3,7 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import InvestorProfile from '@/pages/investor/profile';
 import type { InvestorProfileProps } from '@/types/investor';
+import expiredFixture from '../../../resources/fixtures/ui/investor-profile-kyc-expired.json';
 import linkedFixture from '../../../resources/fixtures/ui/investor-profile-linked.json';
+import emptyStatementsFixture from '../../../resources/fixtures/ui/investor-profile-statements-empty.json';
 import statementsFixture from '../../../resources/fixtures/ui/investor-profile-statements.json';
 import unverifiedFixture from '../../../resources/fixtures/ui/investor-profile-unverified.json';
 import profileFixture from '../../../resources/fixtures/ui/investor-profile.json';
@@ -205,10 +207,9 @@ describe('Profile', () => {
         ).toBeInTheDocument();
         unmount();
 
-        statements.annual = null;
-        statements.monthly = [];
-        render(<InvestorProfile {...props} />);
+        render(<InvestorProfile {...profile(emptyStatementsFixture)} />);
         expect(screen.getByText(/No statements yet/u)).toBeInTheDocument();
+        expect(screen.queryByText('PDF statement')).not.toBeInTheDocument();
     });
 
     it('shows each verification state', () => {
@@ -230,6 +231,13 @@ describe('Profile', () => {
             expect(screen.getByText('Institution')).toBeInTheDocument();
             unmount();
         });
+    });
+
+    it('reads an expired identity document from the server', () => {
+        render(<InvestorProfile {...profile(expiredFixture)} />);
+
+        expect(screen.getByText('Document expired')).toBeInTheDocument();
+        expect(screen.queryByText('✓ KYC Verified')).not.toBeInTheDocument();
     });
 
     it('keeps the menu beside the open sub-page on a wide screen', () => {

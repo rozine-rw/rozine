@@ -3,6 +3,7 @@ import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vite-plus/test';
 import BusinessHome from '@/pages/business/home';
 import type { BusinessHomeProps, BusinessTodo } from '@/types/business';
+import noDealFixture from '../../../resources/fixtures/ui/business-home-no-deal.json';
 import homeFixture from '../../../resources/fixtures/ui/business-home.json';
 import { renderWithUser } from '../helpers/render-with-user';
 
@@ -108,14 +109,7 @@ describe('Business Home', () => {
 
     it('reads a pending rating, no live raise, no headroom and a quiet bell', () => {
         render(
-            <BusinessHome
-                {...fixture}
-                rating={null}
-                live_raise={null}
-                headroom={null}
-                unread_notifications={0}
-                capital={{ ...fixture.capital, on_time_pct: null }}
-            />,
+            <BusinessHome {...(noDealFixture.props as BusinessHomeProps)} />,
         );
 
         expect(screen.getByText('Pending audit')).toBeInTheDocument();

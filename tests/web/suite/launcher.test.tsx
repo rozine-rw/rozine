@@ -5,8 +5,12 @@ import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { LogoLockup, LogoMark } from '@/components/rozine/logo';
 import Launcher from '@/pages/dashboard';
 import type { IdentityCode, IdentityContext } from '@/types';
+import mfaBlockedFixture from '../../../resources/fixtures/ui/launcher-auditor-mfa-blocked.json';
 import auditorFixture from '../../../resources/fixtures/ui/launcher-auditor.json';
+import lostMembershipFixture from '../../../resources/fixtures/ui/launcher-lost-membership.json';
 import readyFixture from '../../../resources/fixtures/ui/launcher-ready.json';
+import selectedFixture from '../../../resources/fixtures/ui/launcher-selected.json';
+import staleSwitchFixture from '../../../resources/fixtures/ui/launcher-stale-switch.json';
 import pendingFixture from '../../../resources/fixtures/ui/launcher-verification-pending.json';
 
 const mocks = vi.hoisted(() => ({
@@ -404,6 +408,72 @@ describe('Suite launcher', () => {
             ).toHaveAttribute('href', href);
         },
     );
+});
+
+describe('Suite launcher preview states', () => {
+    it('resumes the already selected Business app from its fixture without switching', async () => {
+        render(<Launcher identity={identityFrom(selectedFixture)} />);
+
+        expect(screen.getAllByRole('listitem')).toHaveLength(2);
+        await userEvent.click(screen.getByRole('button', { name: 'Business' }));
+        expect(mocks.command.submit).not.toHaveBeenCalled();
+        expect(mocks.visit).toHaveBeenCalledWith(
+            expect.objectContaining({ url: '/identity/roles/business/resume' }),
+        );
+    });
+
+    it('sends a switch from the stale fixture at its revision and recovers from the conflict', async () => {
+        mocks.command.submit.mockImplementation(async (_route, options) => {
+            options.onHttpException({
+                status: 409,
+                data: JSON.stringify({ code: 'ACTIVE_ROLE_REVISION_CONFLICT' }),
+            });
+
+            throw new Error('ACTIVE_ROLE_REVISION_CONFLICT');
+        });
+        render(<Launcher identity={identityFrom(staleSwitchFixture)} />);
+
+        await userEvent.click(screen.getByRole('button', { name: 'Business' }));
+        expect(mocks.command.transform.mock.calls[0][0]()).toMatchObject({
+            role: 'business',
+            expected_revision: 4,
+        });
+        expect(await screen.findByRole('alert')).toBeInTheDocument();
+        expect(screen.queryByRole('list')).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Refresh access' }),
+        ).toHaveAttribute('href', '/dashboard');
+        expect(mocks.visit).not.toHaveBeenCalled();
+    });
+
+    it('explains a lost membership with no apps and a support path', () => {
+        render(<Launcher identity={identityFrom(lostMembershipFixture)} />);
+
+        expect(screen.queryByRole('list')).not.toBeInTheDocument();
+
+        const notice = screen.getByRole('status');
+
+        expect(notice).toHaveTextContent('No apps yet');
+        expect(
+            within(notice).getByRole('link', {
+                name: 'Contact Rozine support →',
+            }),
+        ).toHaveAttribute('href', 'mailto:hello@rozine.rw');
+    });
+
+    it('holds the Auditor app closed until two-factor authentication is set up', () => {
+        render(<Launcher identity={identityFrom(mfaBlockedFixture)} />);
+
+        expect(screen.getByRole('button', { name: 'Auditor' })).toBeDisabled();
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Set up two-factor authentication to open the Auditor app.',
+        );
+        expect(
+            screen.getByRole('link', {
+                name: 'Set up two-factor authentication',
+            }),
+        ).toHaveAttribute('href', '/settings/security');
+    });
 });
 
 describe('Rozine logo', () => {

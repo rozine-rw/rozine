@@ -8,6 +8,8 @@ import type {
     C3InvestorPortfolioProps,
 } from '@/types/investor';
 import arrearsFixture from '../../../resources/fixtures/ui/investor-holding-arrears.json';
+import defaultedFixture from '../../../resources/fixtures/ui/investor-holding-defaulted.json';
+import frozenFixture from '../../../resources/fixtures/ui/investor-holding-frozen.json';
 import issuedFixture from '../../../resources/fixtures/ui/investor-holding-issued.json';
 import holdingMinimalFixture from '../../../resources/fixtures/ui/investor-holding-live-minimal.json';
 import maturedFixture from '../../../resources/fixtures/ui/investor-holding-matured.json';
@@ -16,6 +18,7 @@ import holdingFixture from '../../../resources/fixtures/ui/investor-holding.json
 import awaitingFixture from '../../../resources/fixtures/ui/investor-portfolio-awaiting-issue.json';
 import emptyFixture from '../../../resources/fixtures/ui/investor-portfolio-empty.json';
 import portfolioMinimalFixture from '../../../resources/fixtures/ui/investor-portfolio-live-minimal.json';
+import portfolioMaturedFixture from '../../../resources/fixtures/ui/investor-portfolio-matured.json';
 import portfolioFixture from '../../../resources/fixtures/ui/investor-portfolio.json';
 import { resetInertia, setWide } from './inertia-mock';
 
@@ -174,6 +177,32 @@ describe('Portfolio', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('lists a fully repaid note on the matured tab, with no awaiting commitments', () => {
+        render(<InvestorPortfolio {...portfolio(portfolioMaturedFixture)} />);
+
+        const tabs = screen.getByRole('navigation', { name: 'Holdings' });
+
+        expect(
+            within(tabs).getByRole('link', { name: 'Matured' }),
+        ).toHaveAttribute('aria-current', 'page');
+        expect(
+            within(tabs).getByRole('link', { name: 'Active' }),
+        ).not.toHaveAttribute('aria-current');
+
+        const cards = screen.getAllByRole('link', { name: /Details/u });
+
+        expect(cards).toHaveLength(1);
+        expect(cards[0]).toHaveTextContent('Karongi Freight');
+        expect(cards[0]).toHaveTextContent('Matured');
+        expect(cards[0]).toHaveAttribute(
+            'href',
+            '/preview/investor-holding-matured',
+        );
+        expect(
+            screen.queryByRole('region', { name: 'Awaiting issue' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows a falling holding in red', () => {
         const props = portfolio();
 
@@ -278,24 +307,8 @@ describe('Holding detail', () => {
         ).not.toBeInTheDocument();
         unmount();
 
-        const defaulted = holding(arrearsFixture);
-
-        defaulted.holding.health = 'defaulted';
-        defaulted.holding.on_time = { made: 3, on_time: 1, late: 2 };
-        defaulted.holding.months_left = 2;
-        defaulted.holding.rating_change = {
-            from: { band: 'stable', score: '3.1' },
-            to: { band: 'distressed', score: '2.4' },
-            reasons: [{ label: 'Audit finding', delta: '+0.1' }],
-        };
-        defaulted.holding.recovery_plan = {
-            state: 'off_track',
-            reason: 'Missed catch-up',
-            money_arrives: '2027-01-31T00:00:00+02:00',
-            deferred: { currency: 'RWF', amount: '80000' },
-        };
         const { unmount: unmountSecond } = render(
-            <InvestorHolding {...defaulted} />,
+            <InvestorHolding {...holding(defaultedFixture)} />,
         );
 
         expect(screen.getByText('Payments defaulted')).toBeInTheDocument();
@@ -305,14 +318,8 @@ describe('Holding detail', () => {
         expect(screen.getByText('Off track')).toBeInTheDocument();
         unmountSecond();
 
-        const frozen = holding();
-
-        frozen.holding.health = 'frozen';
-        frozen.holding.next_payment = null;
-        frozen.holding.on_time = { made: 5, on_time: 4, late: 1 };
-        frozen.holding.photos = [];
         const { unmount: unmountThird } = render(
-            <InvestorHolding {...frozen} />,
+            <InvestorHolding {...holding(frozenFixture)} />,
         );
 
         expect(screen.getByRole('status')).toHaveTextContent(
