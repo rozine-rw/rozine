@@ -1371,6 +1371,11 @@ describe('Disbursement approval step-up', () => {
             "That confirmation didn't go through. Enter a new code from your authenticator.",
         ],
         [
+            'a throttled attempt with no code',
+            fails(429),
+            'This request was refused. Refresh and try again.',
+        ],
+        [
             'a wrong code with the server’s words',
             invalid({ code: 'That code has already been used.' }),
             'That code has already been used.',
