@@ -8,12 +8,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 
+/** Existing campaign publications are immutable; only their read/DDL barrier is needed during the locked reservation audit. */
 return new class extends Migration
 {
     public function up(): void
     {
         DB::transaction(function (): void {
-            DB::statement('LOCK TABLE business_profiles, business_campaigns, primary_reservations IN ACCESS EXCLUSIVE MODE');
+            DB::statement('LOCK TABLE business_profiles, primary_reservations IN ACCESS EXCLUSIVE MODE');
+            DB::statement('LOCK TABLE business_campaigns IN ACCESS SHARE MODE');
             DB::statement('ALTER TABLE primary_reservations ADD COLUMN ordinal_ranges int8multirange');
             DB::statement('ALTER TABLE primary_reservations DISABLE TRIGGER primary_reservations_immutable');
             DB::statement('SET CONSTRAINTS primary_reservation_operation IMMEDIATE');
