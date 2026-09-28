@@ -75,6 +75,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                             $release->forceFill(['business_id' => $application->business_id, 'business_application_id' => $application->id,
                                 'exposure_reservation_id' => $input['reservation_id'], 'actor_user_id' => $userId,
                                 'payload' => $payload, 'sha256' => $this->hash($payload)])->save();
+                            $this->changes->record(ChangeScope::staffQueue('applications'), 'staff_queue', 'applications');
 
                             return new OperationResult('APPLICATION_RELEASED', ['application_id' => $application->id, 'business_id' => $application->business_id,
                                 'receipt' => $this->receipt($release->id, $payload, 'APPLICATION_RELEASED')], 1);

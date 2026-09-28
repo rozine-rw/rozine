@@ -106,3 +106,26 @@ it('emits a Business campaign change once when its campaign expires', function (
         ->and(app(BusinessCampaignStore::class)->expireDue(100))->toBe(0)
         ->and(campaignRows())->toBe([$live['business'].'|campaign|'.$live['campaign']->id.'@2']);
 });
+
+it('emits a staff queue change when an application is submitted and when staff release it', function (): void {
+    $this->freezeSecond();
+    $fixture = AuditSealingFixture::ready();
+    $queue = 'applications|staff_queue|applications';
+
+    expect(feedRows())->toBe([$queue.'@1']);
+
+    AuditSealingFixture::seal($fixture);
+    AuditSealingFixture::cosign($fixture);
+    $cursor = app(ReadChanges::class)->cursor($fixture['audit']['staff']->id);
+    $release = fn (int $revision, string $request): array => app(BusinessCampaignStore::class)->release($fixture['audit']['staff']->id, $fixture['application']->id, $revision, 'Reviewed.', $request);
+
+    expect($release(1, (string) Str::uuid())['code'])->toBe('VERSION_CONFLICT');
+
+    $request = (string) Str::uuid();
+    $released = $release(0, $request);
+
+    expect($released['code'])->toBe('APPLICATION_RELEASED')->and($release(0, $request))->toBe($released)
+        ->and(feedRows())->toBe([$queue.'@1', $queue.'@2'])
+        ->and(app(ReadChanges::class)->handle($fixture['audit']['staff']->id, ['staff_queue'], $cursor)['changes'])
+        ->toBe([['topic' => 'staff_queue', 'subject' => 'applications', 'revision' => 2]]);
+});

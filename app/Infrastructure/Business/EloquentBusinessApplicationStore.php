@@ -20,12 +20,14 @@ use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Identity\WithCurrentConsent;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Business\ApplicationAcceptance;
 use App\Domain\Business\ApplicationDraft;
 use App\Domain\Business\ApplicationEvidence;
 use App\Domain\Identity\ConsentDocuments;
 use App\Domain\Identity\IdentityViolation;
+use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Domain\Underwriting\ApplicationUnderwriting;
@@ -83,6 +85,7 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
         private BusinessExposureStore $exposures,
         private StatementStore $statements,
         private PublishedApplicationReport $publishedReports,
+        private ChangeFeed $changes,
     ) {}
 
     /**
@@ -492,6 +495,7 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
                                         'payload' => $payload, 'sha256' => hash('sha256', $this->json->encode($payload))])->save();
                                     $this->exposures->reserve($business['id'], $submission->id);
                                     $application->current_submission_id = $submission->id;
+                                    $this->changes->record(ChangeScope::staffQueue('applications'), 'staff_queue', 'applications');
                                 }
                                 $application->save();
                                 $this->recordVersion($application, $userId, $partyId, $business['mandate_version']);
