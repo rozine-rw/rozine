@@ -133,18 +133,13 @@ try {
         if ($executed === false || $executed === []) {
             throw new RuntimeException('Shard '.$shard.' has no executed tests.');
         }
-        $junit = new DOMDocument;
-        if (! $junit->load($path.'/junit.xml', LIBXML_NONET)) {
-            throw new RuntimeException('Invalid shard JUnit evidence.');
-        }
-        $results = new DOMXPath($junit);
-        if ($results->evaluate('count(//failure | //error | //skipped)') !== 0.0
-            || $results->evaluate('count(//testcase)') !== (float) count($executed)) {
-            throw new RuntimeException('Unsuccessful or incomplete shard JUnit evidence.');
-        }
         $shardIds = [];
         foreach ($executed as $record) {
-            $id = json_decode($record, true, flags: JSON_THROW_ON_ERROR);
+            $event = json_decode($record, true, flags: JSON_THROW_ON_ERROR);
+            if (! is_array($event) || ($event['status'] ?? '') !== 'passed') {
+                throw new RuntimeException('A test did not pass.');
+            }
+            $id = $event['id'] ?? null;
             if (! is_string($id) || $id === '' || isset($seen[$id])) {
                 throw new RuntimeException('Duplicate or invalid executed test identity.');
             }

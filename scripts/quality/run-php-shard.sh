@@ -9,4 +9,5 @@ php scripts/quality/php-shard-evidence.php record "$ROOT" "$OUTPUT" "$1"
 export PHP_SHARD_TEST_IDS="$OUTPUT/executed-tests.jsonl"
 php vendor/bin/pest --bootstrap=scripts/quality/php-shard-bootstrap.php --ci --no-tia --shard="$1/4" \
   --coverage-php="$OUTPUT/coverage.php" --log-junit="$OUTPUT/junit.xml" \
+  --log-events-text="$OUTPUT/events.log" \
   --fail-on-empty-test-suite --fail-on-skipped --fail-on-incomplete --fail-on-risky --compact

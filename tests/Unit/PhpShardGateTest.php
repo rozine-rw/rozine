@@ -79,6 +79,10 @@ class Shard'.$index.'Test extends PHPUnit\\Framework\\TestCase {
             ->and($green->getExitCode())->toBe(0)
             ->and(file_get_contents($temporary.'/evidence/tested-sha.txt'))->toBe(str_repeat('a', 40)."\n");
 
+        // Binary-input dataset names can make diagnostic JUnit XML invalid UTF-8.
+        file_put_contents($temporary.'/evidence/shard-1/junit.xml', "invalid XML \xff");
+        expect($merge()->getExitCode())->toBe(0);
+
         foreach (['failure', 'cancelled', 'skipped', '', 'unknown'] as $result) {
             expect($merge($result)->getExitCode())->toBe(1);
         }
@@ -110,9 +114,9 @@ class Shard'.$index.'Test extends PHPUnit\\Framework\\TestCase {
             } elseif ($scenario === 'unexpected test') {
                 file_put_contents($shard.'/executed-tests.jsonl', '"unknown"'."\n");
             } elseif ($scenario === 'failed test' || $scenario === 'skipped test') {
-                $junit = str_replace('</testcase>', '<failure/></testcase>', (string) file_get_contents($shard.'/junit.xml'));
-                $junit = preg_replace('~(<testcase[^>]+?)/>~', '$1><'.($scenario === 'failed test' ? 'failure' : 'skipped').'/></testcase>', $junit);
-                file_put_contents($shard.'/junit.xml', $junit);
+                $event = json_decode(trim((string) file_get_contents($shard.'/executed-tests.jsonl')), true, flags: JSON_THROW_ON_ERROR);
+                $event['status'] = $scenario === 'failed test' ? 'failed' : 'skipped';
+                file_put_contents($shard.'/executed-tests.jsonl', json_encode($event, JSON_THROW_ON_ERROR)."\n");
             } elseif ($scenario === 'empty catalog') {
                 file_put_contents($temporary.'/all.xml', '<testSuite/>');
             } elseif ($scenario === 'extra shard') {
