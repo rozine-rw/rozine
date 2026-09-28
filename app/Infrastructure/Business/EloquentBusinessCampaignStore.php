@@ -16,6 +16,7 @@ use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\Contracts\CampaignCommitments;
+use App\Application\Primary\Contracts\CampaignReservationSummary;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
@@ -25,6 +26,9 @@ use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessProfile;
+use Brick\Math\BigDecimal;
+use Brick\Math\BigInteger;
+use Brick\Math\RoundingMode;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +42,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
 
     public function __construct(private AcceptedApplicationStore $accepted, private BusinessAuthorityStore $businesses,
         private WithBusinessAuthority $authority, private AuthorizeStaffPermission $staff, private IdentityRepository $identities,
-        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications, private CampaignCommitments $commitments) {}
+        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications, private CampaignCommitments $commitments, private CampaignReservationSummary $reservations) {}
 
     /** @return array<string, mixed> */
     public function release(int $userId, string $applicationId, int $expectedRevision, string $reason, string $requestId): array
@@ -173,15 +177,39 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             return ['identity_context_revision' => $contextRevision, 'business_id' => $businessId, 'id' => $campaign->id, 'revision' => $closure === null ? 1 : 2,
                 'lifecycle' => $closure['phase'] ?? 'live', 'can_cancel' => $canCancel,
                 'title' => $payload['title'], 'principal' => $payload['principal'], 'quote' => $payload['quote'],
-                'progress' => $closure === null ? ['phase' => 'raising', 'lifecycle' => 'live', 'restriction' => null,
-                    'committed' => ['currency' => 'RWF', 'amount' => '0'], 'reserved' => ['currency' => 'RWF', 'amount' => '0'],
-                    'remaining' => ['currency' => 'RWF', 'amount' => $payload['principal']],
-                    'units' => ['total' => $payload['quote']['units'], 'available' => $payload['quote']['units'], 'reserved' => '0', 'committed' => '0'],
-                    'investors' => 0, 'funded_pct' => '0.0', 'clock' => ['starts_at' => $payload['recorded_at'], 'expires_at' => $payload['expires_at']]]
+                'progress' => $closure === null ? $this->raisingProgress($campaign->id, $payload)
                     : ['phase' => $closure['phase'], 'committed_refunded' => $closure['committed_refunded'],
                         'investors' => 0, 'closed_at' => $closure['closed_at']],
                 'receipt' => $this->receipt($campaign->id, $payload, 'LISTING_PUBLISHED')];
         });
+    }
+
+    /**
+     * Retained raise progress only; this does not perform or certify funding/settlement.
+     * Returned and overdue claims remain unavailable until ordinal recycling exists.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function raisingProgress(string $campaignId, array $payload): array
+    {
+        $summary = $this->reservations->read($campaignId, now('UTC')->toDateTimeImmutable());
+        $remaining = BigInteger::of($payload['principal'])->minus($summary['committed_principal']);
+        $available = BigInteger::of($payload['quote']['units'])->minus($summary['occupied_units']);
+        if ($remaining->isNegative() || $available->isNegative()) {
+            throw new RuntimeException('RESERVATION_SUMMARY_INTEGRITY_FAILED');
+        }
+
+        return ['phase' => 'raising', 'lifecycle' => 'live', 'restriction' => null,
+            'committed' => ['currency' => 'RWF', 'amount' => $summary['committed_principal']],
+            'reserved' => ['currency' => 'RWF', 'amount' => $summary['held_principal']],
+            'remaining' => ['currency' => 'RWF', 'amount' => (string) $remaining],
+            'units' => ['total' => $payload['quote']['units'], 'available' => (string) $available,
+                'reserved' => $summary['held_units'], 'committed' => $summary['committed_units']],
+            'investors' => $summary['investors'],
+            'funded_pct' => (string) BigDecimal::of($summary['committed_principal'])->multipliedBy(100)
+                ->dividedBy($payload['principal'], 1, RoundingMode::Down),
+            'clock' => ['starts_at' => $payload['recorded_at'], 'expires_at' => $payload['expires_at']]];
     }
 
     /** @return array<string, mixed> */
