@@ -30,4 +30,18 @@ interface PrimaryCheckout
      * @return array<string, mixed>
      */
     public function findReservation(int $userId, int $contextRevision, string $campaignId, string $requestId): array;
+
+    /**
+     * Reuses reserve's current authority and lock order. A changed disclosure produces
+     * RESERVATION_REQUOTED without committing cash; acknowledge that returned revision
+     * in a fresh command. Successful operation replays never re-run admission.
+     *
+     * @param  Closure(UnitRights, array<string, mixed>): PrimaryTerms  $admit
+     * @return array<string, mixed>
+     */
+    public function confirm(int $userId, int $contextRevision, string $campaignId, string $reservationId, int $expectedRevision,
+        string $disclosureVersion, string $disclosureSha256, string $requestId, Closure $admit): array;
+
+    /** @return array<string, mixed> */
+    public function findConfirmation(int $userId, int $contextRevision, string $campaignId, string $reservationId, string $requestId): array;
 }

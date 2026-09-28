@@ -11,6 +11,7 @@ use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
+use App\Models\PrimaryReservationRecord;
 use Closure;
 use Illuminate\Support\Facades\DB;
 
@@ -47,6 +48,49 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
                     }
                 });
         });
+    }
+
+    public function confirm(int $userId, int $contextRevision, string $campaignId, string $reservationId, int $expectedRevision,
+        string $disclosureVersion, string $disclosureSha256, string $requestId, Closure $admit): array
+    {
+        return $this->withInvestor($userId, $contextRevision, $campaignId,
+            function (array $identity) use ($userId, $contextRevision, $campaignId, $reservationId, $expectedRevision, $disclosureVersion, $disclosureSha256, $requestId, $admit): array {
+                $partyId = (string) $identity['party']['id'];
+                $root = $this->reservationTarget($campaignId, $reservationId, $partyId);
+
+                return $this->journal->execute('party:'.$partyId, $userId, 'primary.confirm', $requestId, 'primary_reservation', $root->id,
+                    ['identity_context_revision' => $contextRevision, 'campaign_id' => $root->business_campaign_id, 'expected_revision' => $expectedRevision,
+                        'disclosure_version' => $disclosureVersion, 'disclosure_sha256' => $disclosureSha256],
+                    function (): void {}, function (string $operationId) use ($root, $partyId, $expectedRevision, $disclosureVersion, $disclosureSha256, $admit): OperationResult {
+                        $result = $this->reservations->confirm($root->business_campaign_id, $root->id, $partyId, $operationId, $expectedRevision, $disclosureVersion, $disclosureSha256, $admit);
+
+                        return new OperationResult($result->commitmentId === null ? 'RESERVATION_REQUOTED' : 'RESERVATION_CONFIRMED',
+                            ['reservation_id' => $result->id, 'commitment_id' => $result->commitmentId, 'entry_id' => $result->posting?->entryId,
+                                'amount' => (string) $result->reservation->rights->principal, 'terms' => $result->reservation->terms->toArray(),
+                                'disclosure_sha256' => $result->reservation->terms->disclosureSha256,
+                                'expires_at' => $result->reservation->window->expiresAt->format('Y-m-d\TH:i:s.u\Z')], $result->revision);
+                    });
+            });
+    }
+
+    public function findConfirmation(int $userId, int $contextRevision, string $campaignId, string $reservationId, string $requestId): array
+    {
+        return $this->withInvestor($userId, $contextRevision, $campaignId, function (array $identity) use ($campaignId, $reservationId, $requestId): array {
+            $root = $this->reservationTarget($campaignId, $reservationId, (string) $identity['party']['id']);
+
+            return $this->journal->find('party:'.$identity['party']['id'], 'primary.confirm', $requestId,
+                function (string $type, string $id) use ($root): void {
+                    if ($type !== 'primary_reservation' || $id !== $root->id) {
+                        throw new CommandRejection('OPERATION_NOT_FOUND', 404);
+                    }
+                });
+        });
+    }
+
+    private function reservationTarget(string $campaignId, string $reservationId, string $partyId): PrimaryReservationRecord
+    {
+        return PrimaryReservationRecord::query()->whereKey($reservationId)->where('business_campaign_id', $campaignId)->where('party_id', $partyId)->first()
+            ?? throw new CommandRejection('RESERVATION_NOT_FOUND', 404);
     }
 
     /**

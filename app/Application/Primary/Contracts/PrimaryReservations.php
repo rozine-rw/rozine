@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Primary\Contracts;
 
+use App\Application\Primary\ReservationConfirmation;
 use App\Application\Primary\ReservedCheckout;
 use App\Domain\Primary\PrimaryTerms;
 use App\Domain\Primary\UnitRights;
@@ -32,4 +33,16 @@ interface PrimaryReservations
      * @param  Closure(UnitRights, array<string, mixed>): PrimaryTerms  $admit
      */
     public function reserve(string $campaignId, string $partyId, string $originOperationId, string $units, Closure $admit): ReservedCheckout;
+
+    /**
+     * Same transaction, authority, admission and lock requirements as reserve().
+     * Changed fees/disclosures append a held revision, requiring a new acknowledgement;
+     * they never extend the deadline or move cash. Matching current acknowledgement
+     * atomically creates the commitment and moves the original hold to committed.
+     * Expired holds refuse here; release and inventory recycling remain separate work.
+     *
+     * @param  Closure(UnitRights, array<string, mixed>): PrimaryTerms  $admit
+     */
+    public function confirm(string $campaignId, string $reservationId, string $partyId, string $operationId,
+        int $expectedRevision, string $disclosureVersion, string $disclosureSha256, Closure $admit): ReservationConfirmation;
 }

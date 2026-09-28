@@ -7,16 +7,19 @@ namespace App\Infrastructure\Primary;
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Primary\Contracts\PrimaryReservations;
+use App\Application\Primary\ReservationConfirmation;
 use App\Application\Primary\ReservedCheckout;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\PostingSource;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Primary\PrimaryReservation;
+use App\Domain\Primary\PrimaryTerms;
 use App\Domain\Primary\PrimaryViolation;
 use App\Domain\Primary\ReservationWindow;
 use App\Domain\Primary\UnitOrdinals;
 use App\Domain\Primary\UnitRights;
 use App\Domain\Wallet\WalletMoney;
+use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use Brick\Math\BigInteger;
@@ -46,7 +49,7 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                 $partyUnits = BigInteger::zero();
                 $records = PrimaryReservationRecord::query()->where('business_campaign_id', $campaign['id'])->orderBy('id')->lockForUpdate()->get();
                 foreach ($records as $record) {
-                    $ordinals = $this->retainedOrdinals($record, $campaign);
+                    $ordinals = $this->retainedRights($record, $campaign)->ordinals;
                     $occupied = [...$occupied, ...$ordinals->ranges];
                     if ($record->party_id === $partyId) {
                         $partyUnits = $partyUnits->plus($ordinals->count);
@@ -74,12 +77,7 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                     'created_at' => $reservation->window->startsAt, 'expires_at' => $reservation->window->expiresAt]);
                 $payload = $this->rootPayload($root, $campaign, $rights);
                 $root->forceFill(['payload' => $payload, 'sha256' => $this->digest($payload)])->save();
-                $version = ['contract' => 'primary-reservation-version-1', 'reservation_id' => $id, 'reservation_sha256' => $root->sha256,
-                    'revision' => 1, 'state' => 'held', 'operation_id' => $originOperationId, 'previous_sha256' => null,
-                    'terms' => $terms->toArray(), 'disclosure_sha256' => $terms->disclosureSha256, 'recorded_at' => $this->instant($reservation->window->startsAt)];
-                (new PrimaryReservationVersion)->forceFill(['primary_reservation_id' => $id, 'revision' => 1, 'state' => 'held',
-                    'operation_id' => $originOperationId, 'previous_sha256' => null, 'payload' => $version, 'sha256' => $this->digest($version),
-                    'created_at' => $reservation->window->startsAt])->save();
+                $this->appendVersion($root, $reservation, $originOperationId, null, $reservation->window->startsAt);
                 $hold = $this->wallets->hold($this->wallets->lockForParty($partyId), WalletMoney::of((string) $rights->principal), $source);
 
                 return new ReservedCheckout($id, $campaign['id'], $partyId, $originOperationId, $reservation, $hold);
@@ -89,8 +87,136 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
         }
     }
 
+    public function confirm(string $campaignId, string $reservationId, string $partyId, string $operationId,
+        int $expectedRevision, string $disclosureVersion, string $disclosureSha256, Closure $admit): ReservationConfirmation
+    {
+        if (DB::transactionLevel() === 0) {
+            throw new CommandRejection('PRIMARY_TRANSACTION_REQUIRED');
+        }
+        try {
+            return DB::transaction(function () use ($campaignId, $reservationId, $partyId, $operationId, $expectedRevision, $disclosureVersion, $disclosureSha256, $admit): ReservationConfirmation {
+                $campaign = $this->campaigns->lock($campaignId);
+                $root = PrimaryReservationRecord::query()->where('business_campaign_id', $campaign['id'])->where('party_id', $partyId)
+                    ->whereKey($reservationId)->lockForUpdate()->first() ?? throw new CommandRejection('RESERVATION_NOT_FOUND', 404);
+                [$reservation, $previous] = $this->retainedReservation($root, $campaign);
+                if ($previous->revision !== $expectedRevision) {
+                    throw new CommandRejection('VERSION_CONFLICT', 409, $previous->revision);
+                }
+                if ($reservation->state !== 'held') {
+                    throw new CommandRejection('RESERVATION_NOT_HELD', 409, $previous->revision);
+                }
+                $reservation->window->requireOpen(now('UTC')->toDateTimeImmutable());
+                $terms = $admit($reservation->rights, $campaign);
+                if ($terms->policyVersion !== $campaign['policy_version'] || $terms->ratePercent !== $campaign['rate_pct'] || $terms->termMonths !== $campaign['term_months']) {
+                    throw new PrimaryViolation('INVALID_PRIMARY_TERMS');
+                }
+                $terms->requireRights($reservation->rights);
+                $at = now('UTC')->toDateTimeImmutable();
+                if ($terms->disclosureSha256 !== $reservation->terms->disclosureSha256) {
+                    $requote = $reservation->requote($at, $terms);
+                    $version = $this->appendVersion($root, $requote, $operationId, $previous, $at);
+
+                    return new ReservationConfirmation($root->id, $version->revision, $requote, null, null);
+                }
+                $confirmed = $reservation->confirm($at, $terms, $disclosureVersion, $disclosureSha256);
+                $version = $this->appendVersion($root, $confirmed, $operationId, $previous, $at);
+                $commitment = new PrimaryCommitment;
+                $commitment->forceFill(['primary_reservation_id' => $root->id, 'primary_reservation_version_id' => $version->id,
+                    'operation_id' => $operationId, 'confirmed_at' => $at, 'created_at' => $at])->save();
+                $posting = $this->wallets->commit($this->wallets->lockForParty($partyId), WalletMoney::of($root->principal),
+                    new PostingSource('primary_reservation', $root->id, $root->origin_operation_id));
+
+                return new ReservationConfirmation($root->id, $version->revision, $confirmed, $commitment->id, $posting);
+            });
+        } catch (PrimaryViolation $exception) {
+            throw new CommandRejection($exception->reasonCode);
+        }
+    }
+
+    /**
+     * Replays immutable evidence, verifying every projection, digest and domain transition.
+     *
+     * @param  CampaignInput  $campaign
+     * @return array{PrimaryReservation, PrimaryReservationVersion}
+     */
+    private function retainedReservation(PrimaryReservationRecord $root, array $campaign): array
+    {
+        $rights = $this->retainedRights($root, $campaign);
+        $previous = null;
+        $reservation = null;
+        try {
+            $window = ReservationWindow::open($root->created_at->toDateTimeImmutable(), $campaign['expires_at']);
+            if ($window->expiresAt != $root->expires_at->toDateTimeImmutable()) {
+                throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+            }
+            foreach (PrimaryReservationVersion::query()->where('primary_reservation_id', $root->id)->orderBy('revision')->get() as $version) {
+                $payload = $version->payload;
+                $disclosed = $payload['terms'] ?? null;
+                if (! is_array($disclosed) || ! is_string($disclosed['rate_pct'] ?? null) || ! is_int($disclosed['term_months'] ?? null)
+                    || ! is_string($disclosed['policy_version'] ?? null) || ! is_string($disclosed['disclosure_version'] ?? null)
+                    || ! is_array($disclosed['payout_fee'] ?? null) || ! is_string($disclosed['payout_fee']['amount'] ?? null)) {
+                    throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+                }
+                $terms = PrimaryTerms::disclosed($disclosed['rate_pct'], $disclosed['term_months'], $disclosed['policy_version'],
+                    $disclosed['disclosure_version'], $disclosed['earnings_fee'] ?? null, $disclosed['payout_fee']['amount'], $rights);
+                $terms->requireRights($rights);
+                $at = $version->created_at->toDateTimeImmutable();
+                if ($previous === null) {
+                    if ($version->state !== 'held' || $version->operation_id !== $root->origin_operation_id || $at != $window->startsAt) {
+                        throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+                    }
+                    $reservation = PrimaryReservation::hold($rights, $terms, $window);
+                } else {
+                    if ($reservation->state !== 'held' || $at < $previous->created_at->toDateTimeImmutable()) {
+                        throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+                    }
+                    $reservation = match ($version->state) {
+                        'held' => $reservation->requote($at, $terms),
+                        'confirmed' => $reservation->confirm($at, $terms, $terms->disclosureVersion, $terms->disclosureSha256),
+                        'released', 'expired' => $reservation->release($at),
+                        default => throw new RuntimeException('RESERVATION_INTEGRITY_FAILED'),
+                    };
+                }
+                if ($version->state !== $reservation->state || $version->revision !== ($previous === null ? 0 : $previous->revision) + 1 || $version->previous_sha256 !== $previous?->sha256
+                    || $terms->policyVersion !== $campaign['policy_version'] || $terms->ratePercent !== $campaign['rate_pct'] || $terms->termMonths !== $campaign['term_months']
+                    || ! hash_equals($version->sha256, $this->digest($payload))
+                    || $this->json->encode($payload) !== $this->json->encode($this->versionPayload($root, $reservation, $version->operation_id, $previous, $at))) {
+                    throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+                }
+                $previous = $version;
+            }
+        } catch (PrimaryViolation $exception) {
+            throw new RuntimeException('RESERVATION_INTEGRITY_FAILED', previous: $exception);
+        }
+        if ($reservation === null) {
+            throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+        }
+
+        return [$reservation, $previous];
+    }
+
+    private function appendVersion(PrimaryReservationRecord $root, PrimaryReservation $reservation, string $operationId,
+        ?PrimaryReservationVersion $previous, DateTimeImmutable $at): PrimaryReservationVersion
+    {
+        $payload = $this->versionPayload($root, $reservation, $operationId, $previous, $at);
+        $version = new PrimaryReservationVersion;
+        $version->forceFill(['primary_reservation_id' => $root->id, 'revision' => $payload['revision'], 'state' => $reservation->state,
+            'operation_id' => $operationId, 'previous_sha256' => $previous?->sha256, 'payload' => $payload, 'sha256' => $this->digest($payload), 'created_at' => $at])->save();
+
+        return $version;
+    }
+
+    /** @return array<string, mixed> */
+    private function versionPayload(PrimaryReservationRecord $root, PrimaryReservation $reservation, ?string $operationId,
+        ?PrimaryReservationVersion $previous, DateTimeImmutable $at): array
+    {
+        return ['contract' => 'primary-reservation-version-1', 'reservation_id' => $root->id, 'reservation_sha256' => $root->sha256,
+            'revision' => ($previous === null ? 0 : $previous->revision) + 1, 'state' => $reservation->state, 'operation_id' => $operationId, 'previous_sha256' => $previous?->sha256,
+            'terms' => $reservation->terms->toArray(), 'disclosure_sha256' => $reservation->terms->disclosureSha256, 'recorded_at' => $this->instant($at)];
+    }
+
     /** @param CampaignInput $campaign */
-    private function retainedOrdinals(PrimaryReservationRecord $record, array $campaign): UnitOrdinals
+    private function retainedRights(PrimaryReservationRecord $record, array $campaign): UnitRights
     {
         $payload = $record->payload;
         $ranges = $payload['ordinals'] ?? null;
@@ -114,7 +240,7 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
             throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
         }
 
-        return $ordinals;
+        return $rights;
     }
 
     private function ordinalRanges(UnitOrdinals $ordinals): string
