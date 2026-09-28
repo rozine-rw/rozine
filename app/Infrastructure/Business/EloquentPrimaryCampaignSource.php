@@ -14,6 +14,7 @@ use App\Domain\Underwriting\LoanSchedule;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessCampaign;
+use App\Models\BusinessExposureReservation;
 use App\Models\BusinessProfile;
 use Brick\Math\BigInteger;
 use Brick\Math\BigRational;
@@ -55,7 +56,11 @@ final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
             throw new RuntimeException('APPLICATION_RELEASE_INTEGRITY_FAILED');
         }
         $exposure = array_find($this->exposures->current($campaign->business_id), fn (array $item): bool => $item['id'] === $campaign->exposure_reservation_id);
-        if ($exposure === null || $exposure['principal'] !== $campaign->principal) {
+        $reservation = BusinessExposureReservation::query()->whereKey($campaign->exposure_reservation_id)->firstOrFail();
+        $quoteBinding = $payload['binding']['application']['quote'] ?? [];
+        if ($exposure === null || $exposure['principal'] !== $campaign->principal
+            || ($reservation->payload['quote_id'] ?? null) !== ($quoteBinding['id'] ?? null)
+            || ($reservation->payload['quote_sha256'] ?? null) !== ($quoteBinding['sha256'] ?? null)) {
             throw new RuntimeException('BUSINESS_EXPOSURE_INTEGRITY_FAILED');
         }
 

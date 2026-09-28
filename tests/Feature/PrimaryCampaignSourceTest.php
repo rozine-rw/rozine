@@ -12,6 +12,7 @@ use App\Domain\Primary\UnitRights;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessCampaign;
+use App\Models\BusinessExposureReservation;
 use App\Models\CommandOperation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -32,7 +33,7 @@ beforeEach(function (): void {
 });
 
 /** @param array<string, mixed> $payload */
-function corruptPrimarySource(BusinessCampaign|BusinessApplicationRelease|BusinessApplicationQuote $record, array $payload, bool $rehash = true): void
+function corruptPrimarySource(BusinessCampaign|BusinessApplicationRelease|BusinessApplicationQuote|BusinessExposureReservation $record, array $payload, bool $rehash = true): void
 {
     $table = $record->getTable();
     DB::statement('ALTER TABLE '.$table.' DISABLE TRIGGER USER');
@@ -155,3 +156,23 @@ it('does not return release reasons mandates evidence or operation receipts to P
         'rate_pct', 'term_months', 'policy_version', 'payments', 'live_at', 'expires_at',
     ]);
 });
+
+it('takes the Business lock before the campaign lock', function (): void {
+    DB::enableQueryLog();
+    try {
+        $this->source->lock($this->campaign->id);
+        $locks = array_values(array_filter(array_column(DB::getQueryLog(), 'query'), fn (string $query): bool => str_contains($query, 'for update')));
+        expect($locks[0])->toContain('"business_profiles"')->and($locks[1])->toContain('"business_campaigns"');
+    } finally {
+        DB::disableQueryLog();
+        DB::flushQueryLog();
+    }
+});
+
+it('rejects exposure evidence bound to a different quote even when its digest is valid', function (string $field): void {
+    $reservation = BusinessExposureReservation::query()->whereKey($this->campaign->exposure_reservation_id)->firstOrFail();
+    $payload = $reservation->payload;
+    $payload[$field] = $field === 'quote_id' ? (string) Str::ulid() : str_repeat('0', 64);
+    corruptPrimarySource($reservation, $payload);
+    expect(fn () => $this->source->lock($this->campaign->id))->toThrow(RuntimeException::class, 'BUSINESS_EXPOSURE_INTEGRITY_FAILED');
+})->with(['quote_id', 'quote_sha256']);

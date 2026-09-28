@@ -574,7 +574,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `sha256` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
 
-**Indexes:** `business_campaigns_business_application_id_unique` on (business_application_id) — unique; `business_campaigns_business_application_release_id_unique` on (business_application_release_id) — unique; `business_campaigns_exposure_reservation_id_unique` on (exposure_reservation_id) — unique; `business_campaigns_pkey` on (id) — unique; `campaign_closure_parent` on (id, business_id, exposure_reservation_id, principal) — unique; `campaign_expiry_sweep` on (expires_at, id)
+**Indexes:** `business_campaigns_business_application_id_unique` on (business_application_id) — unique; `business_campaigns_business_application_release_id_unique` on (business_application_release_id) — unique; `business_campaigns_exposure_reservation_id_unique` on (exposure_reservation_id) — unique; `business_campaigns_pkey` on (id) — unique; `campaign_closure_parent` on (id, business_id, exposure_reservation_id, principal) — unique; `campaign_expiry_sweep` on (expires_at, id); `primary_publication_parent` on (id, sha256) — unique
 
 ### `business_credit_snapshots`
 
@@ -837,6 +837,53 @@ facts that would differ between machines, so they are excluded deliberately.
 | `updated_at` | `timestamp` | yes | — |
 
 **Indexes:** `personal_access_tokens_expires_at_index` on (expires_at); `personal_access_tokens_pkey` on (id) — unique; `personal_access_tokens_token_unique` on (token) — unique; `personal_access_tokens_tokenable_type_tokenable_id_index` on (tokenable_type, tokenable_id)
+
+### `primary_commitments`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `primary_reservation_id` | `bpchar` | no | — |
+| `primary_reservation_version_id` | `bpchar` | no | — |
+| `operation_id` | `bpchar` | no | — |
+| `confirmed_at` | `timestamptz` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `primary_commitments_operation_id_unique` on (operation_id) — unique; `primary_commitments_pkey` on (id) — unique; `primary_commitments_primary_reservation_id_unique` on (primary_reservation_id) — unique; `primary_commitments_primary_reservation_version_id_unique` on (primary_reservation_version_id) — unique
+
+### `primary_reservation_versions`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `primary_reservation_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `state` | `varchar` | no | — |
+| `operation_id` | `bpchar` | yes | — |
+| `payload` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `previous_sha256` | `bpchar` | yes | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `primary_confirmation_parent` on (id, primary_reservation_id) — unique; `primary_reservation_revision` on (primary_reservation_id, revision) — unique; `primary_reservation_versions_operation_id_unique` on (operation_id) — unique; `primary_reservation_versions_pkey` on (id) — unique
+
+### `primary_reservations`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `business_campaign_id` | `bpchar` | no | — |
+| `publication_sha256` | `bpchar` | no | — |
+| `party_id` | `bpchar` | no | — |
+| `origin_operation_id` | `bpchar` | no | — |
+| `units` | `int4` | no | — |
+| `principal` | `numeric` | no | — |
+| `payload` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+| `expires_at` | `timestamptz` | no | — |
+
+**Indexes:** `primary_campaign_reservations` on (business_campaign_id, id); `primary_party_reservations` on (party_id, id); `primary_reservation_expiry` on (expires_at, id); `primary_reservations_origin_operation_id_unique` on (origin_operation_id) — unique; `primary_reservations_pkey` on (id) — unique
 
 ### `pulse_signups`
 
@@ -1125,6 +1172,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_26_190340_create_business_exposure_reservations_table.php |
 | 2026_09_27_054238_create_business_application_releases_and_campaigns.php |
 | 2026_09_27_230946_create_business_campaign_closures_table.php |
+| 2026_09_28_143756_create_primary_reservation_records.php |
 
 ## Routes
 
@@ -1313,7 +1361,7 @@ The ADR-0001 layering as it stands. `tests/Architecture` enforces the dependency
 | HTTP — requests | `app/Http/Requests` | 50 | `Auditor\AcceptEngagementTermsRequest`, `Auditor\AmendAuditReportRequest`, `Auditor\AuditorCommandRequest`, `Auditor\ConfirmAuditStepUpRequest`, `Auditor\DecideAuditReportRequest`, `Auditor\ListAuditJobsRequest`, `Auditor\ResolveAuditAssignmentRequest`, `Auditor\ResolveAuditDisputeRequest`, `Auditor\RespondToAssignmentRequest`, `Auditor\SaveAuditReportStepRequest`, `Auditor\SealAuditReportRequest`, `Auditor\ShowAuditReportOperationRequest`, `Auditor\ShowAuditReportRequest`, `Auditor\ShowAuditResolutionOperationRequest`, `Auditor\ShowAuditorOperationRequest`, `Auditor\StartAuditReportRequest`, `Auditor\SubmitAccreditationRequest`, `Auditor\UpdateAvailabilityRequest`, `Auditor\UpholdAuditDisputeRequest`, `Auditor\WithdrawAccreditationRequest`, `Business\BusinessCommandRequest`, `Business\CancelCampaignRequest`, `Business\CosignAuditReportRequest`, `Business\CreateApplicationRequest`, `Business\DisputeAuditReportRequest`, `Business\EvaluateApplicationRequest`, `Business\ListApplicationsRequest`, `Business\ListStaffApplicationsRequest`, `Business\PublishApplicationRequest`, `Business\ReleaseApplicationRequest`, `Business\SaveApplicationRequest`, `Business\ShowApplicationOperationRequest`, `Business\ShowApplicationRequest`, `Business\ShowAuditCosignOperationRequest`, `Business\ShowAuditReportRequest`, `Business\SubmitApplicationRequest`, `Identity\ChangeMembershipRequest`, `Identity\ResolvePersonRequest`, `Identity\SaveRoleBookmarkRequest`, `Identity\SelectActiveRoleRequest`, `Pulse\PreviewBusinessRequest`, `Pulse\PreviewInvestorRequest`, `Pulse\StoreBusinessSignupRequest`, `Pulse\StoreInvestorPledgeRequest`, `Settings\PasswordUpdateRequest`, `Settings\ProfileDeleteRequest`, `Settings\ProfileUpdateRequest`, `Settings\TwoFactorAuthenticationRequest`, `Site\StoreSiteBusinessRequest`, `Site\StoreSiteInvestorRequest` |
 | HTTP — resources | `app/Http/Resources` | 29 | `AuditDisputeResource`, `AuditOperationsResource`, `AuditorAccreditationResource`, `AuditorConflictsResource`, `AuditorEngagementResource`, `AuditorEngagementSummaryResource`, `AuditorFileResource`, `AuditorJobsResource`, `AuditorProcedureResource`, `AuditorProfileResource`, `BusinessApplicationResource`, `BusinessApplicationsResource`, `BusinessAuditReportResource`, `BusinessCampaignResource`, `BusinessPublicationResource`, `IdentityContextResource`, `IdentityMutationResource`, `OperationResource`, `PulseBusinessPreviewResource`, `PulseBusinessSignupReceiptResource`, `PulseInvestorPreviewResource`, `PulseInvestorSignupReceiptResource`, `PulseListingResource`, `PulsePageResource`, `PulsePolicyResource`, `RoleBookmarkResource`, `StaffAccessResource`, `StaffApplicationReleaseResource`, `StaffApplicationsResource` |
 | HTTP — middleware | `app/Http/Middleware` | 3 | `HandleAppearance`, `HandleInertiaRequests`, `SetLocale` |
-| Models | `app/Models` | 54 | `AuditAssignment`, `AuditAssignmentVersion`, `AuditConflictDeclaration`, `AuditDisputeProof`, `AuditEngagementAcceptance`, `AuditEngagementRelease`, `AuditLedgerExtraction`, `AuditLedgerOriginal`, `AuditLocation`, `AuditLocationVersion`, `AuditPublicationEvent`, `AuditReport`, `AuditReportPublication`, `AuditReportSeal`, `AuditReportSignature`, `AuditReportVersion`, `AuditSigningKey`, `AuditSigningKeyRevocation`, `AuditSourceSnapshot`, `AuditStepUpProof`, `AuditorCertificate`, `AuditorIndependenceReview`, `AuditorIndependenceVersion`, `AuditorProfile`, `AuditorProfileVersion`, `BusinessApplication`, `BusinessApplicationQuote`, `BusinessApplicationRelease`, `BusinessApplicationSignature`, `BusinessApplicationSubmission`, `BusinessApplicationVersion`, `BusinessCampaign`, `BusinessCampaignClosure`, `BusinessCreditSnapshot`, `BusinessExposureReservation`, `BusinessMandate`, `BusinessProfile`, `CommandOperation`, `ConsentRelease`, `IdentityAuditEvent`, `IdentityOperator`, `Party`, `PulseSignup`, `RoleBookmark`, `RoleMembership`, `StaffAccount`, `StatementEvidence`, `StatementExtraction`, `StatementOriginal`, `StatementTranscription`, `StatementVerification`, `User`, `VerifiedOrganizationIdentity`, `VerifiedPersonIdentity` |
+| Models | `app/Models` | 57 | `AuditAssignment`, `AuditAssignmentVersion`, `AuditConflictDeclaration`, `AuditDisputeProof`, `AuditEngagementAcceptance`, `AuditEngagementRelease`, `AuditLedgerExtraction`, `AuditLedgerOriginal`, `AuditLocation`, `AuditLocationVersion`, `AuditPublicationEvent`, `AuditReport`, `AuditReportPublication`, `AuditReportSeal`, `AuditReportSignature`, `AuditReportVersion`, `AuditSigningKey`, `AuditSigningKeyRevocation`, `AuditSourceSnapshot`, `AuditStepUpProof`, `AuditorCertificate`, `AuditorIndependenceReview`, `AuditorIndependenceVersion`, `AuditorProfile`, `AuditorProfileVersion`, `BusinessApplication`, `BusinessApplicationQuote`, `BusinessApplicationRelease`, `BusinessApplicationSignature`, `BusinessApplicationSubmission`, `BusinessApplicationVersion`, `BusinessCampaign`, `BusinessCampaignClosure`, `BusinessCreditSnapshot`, `BusinessExposureReservation`, `BusinessMandate`, `BusinessProfile`, `CommandOperation`, `ConsentRelease`, `IdentityAuditEvent`, `IdentityOperator`, `Party`, `PrimaryCommitment`, `PrimaryReservationRecord`, `PrimaryReservationVersion`, `PulseSignup`, `RoleBookmark`, `RoleMembership`, `StaffAccount`, `StatementEvidence`, `StatementExtraction`, `StatementOriginal`, `StatementTranscription`, `StatementVerification`, `User`, `VerifiedOrganizationIdentity`, `VerifiedPersonIdentity` |
 | Console commands | `app/Console/Commands` | 11 | `AdvanceAuditOffers`, `AdvanceMonthlyReviews`, `CaptureBaselineInventory`, `CheckEnvironmentIsolation`, `ConfigureIdentityOperatorCommand`, `ConfigureStaffAccessCommand`, `ExpireBusinessCampaigns`, `ExtractPendingStatements`, `PrepareCheckpointTwo`, `RecordAuditEngagementTermsCommand`, `ResetDemo` |
 
 ## CI gates

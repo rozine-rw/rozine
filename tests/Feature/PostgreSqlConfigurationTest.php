@@ -79,6 +79,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $exposure = require database_path('migrations/2026_09_26_190340_create_business_exposure_reservations_table.php');
     $campaigns = require database_path('migrations/2026_09_27_054238_create_business_application_releases_and_campaigns.php');
     $closures = require database_path('migrations/2026_09_27_230946_create_business_campaign_closures_table.php');
+    $primary = require database_path('migrations/2026_09_28_143756_create_primary_reservation_records.php');
+    $primary->down();
     $closures->down();
     $campaigns->down();
     $exposure->down();
@@ -157,6 +159,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $exposure->up();
     $campaigns->up();
     $closures->up();
+    $primary->up();
 
     expect(Schema::hasTable('parties'))->toBeTrue()
         ->and(Schema::hasTable('role_memberships'))->toBeTrue()

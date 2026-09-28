@@ -16,7 +16,9 @@ interface PrimaryCampaignSource
 {
     /**
      * Requires the caller's transaction. Retains Business then campaign locks
-     * until the outer commit, before Primary reservations, wallets and ledger.
+     * until the outer commit or rollback, provided the acquiring savepoint is
+     * released successfully. Rolling it back releases its locks; callers must
+     * reacquire and revalidate before continuing. Primary and wallet locks follow.
      * Refuses a closed publication; never recalculates its accepted pricing.
      *
      * @return CampaignInput
