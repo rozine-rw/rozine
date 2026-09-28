@@ -154,7 +154,7 @@ export default class Home extends Component<SiteProps, SiteState> {
         this._rzMask();
         cancelAnimationFrame(this._rzFrame);
         this._rzFrame = requestAnimationFrame(() => this._rzMask());
-        this._rzTimers.forEach((timer) => clearTimeout(timer));
+        this._rzTimers.forEach(clearTimeout);
         this._rzTimers = [
             setTimeout(() => this._rzMask(), 400),
             setTimeout(() => this._rzMask(), 1200),
@@ -175,7 +175,7 @@ export default class Home extends Component<SiteProps, SiteState> {
         cancelAnimationFrame(this._raf);
         clearTimeout(this._sm);
         cancelAnimationFrame(this._rzFrame);
-        this._rzTimers.forEach((timer) => clearTimeout(timer));
+        this._rzTimers.forEach(clearTimeout);
         this._rzRO?.disconnect();
         this._rzRO = undefined;
         window.removeEventListener('resize', this._rzResize);
