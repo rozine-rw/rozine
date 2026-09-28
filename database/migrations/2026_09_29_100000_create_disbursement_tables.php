@@ -207,7 +207,7 @@ return new class extends Migration
                 AND ((decision = 'exception') = (jsonb_array_length(causes) > 0)));
             CREATE UNIQUE INDEX disbursement_reconciliations_terminal ON disbursement_reconciliations (intent_id)
                 WHERE decision IN ('matched_success', 'matched_failure');
-            ALTER TABLE disbursement_closings ADD CONSTRAINT disbursement_closing_facts CHECK (
+            ALTER TABLE disbursement_closings ADD CONSTRAINT disbursement_closing_facts CHECK (COALESCE(
                 jsonb_typeof(causes) = 'array' AND (
                     (kind = 'issued' AND cause = 'reconciled_success' AND intent_id IS NOT NULL AND reconciliation_id IS NOT NULL
                         AND effective_at IS NOT NULL AND effective_date IS NOT NULL AND jsonb_typeof(due_dates) = 'array'
@@ -217,7 +217,7 @@ return new class extends Migration
                             AND jsonb_array_length(causes) > 0)
                         OR (cause = 'worker_recheck' AND intent_id IS NOT NULL AND reconciliation_id IS NULL AND operation_id IS NULL
                             AND jsonb_array_length(causes) > 0)
-                        OR (cause = 'reconciled_failure' AND intent_id IS NOT NULL AND reconciliation_id IS NOT NULL AND operation_id IS NULL)))));
+                        OR (cause = 'reconciled_failure' AND intent_id IS NOT NULL AND reconciliation_id IS NOT NULL AND operation_id IS NULL)))), false));
             ALTER TABLE disbursement_closings ADD CONSTRAINT disbursement_closing_operation FOREIGN KEY (operation_id)
                 REFERENCES command_operations (id) ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED;
 

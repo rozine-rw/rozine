@@ -286,6 +286,7 @@ it('closes a disbursement once: no double issue and no refund after issue', func
     refusedBySchema(fn () => schemaClosing($id, 'issued', 'reconciled_success', ['intent_id' => $chain['intent'], 'reconciliation_id' => $reconciliation,
         'effective_at' => '2027-02-01T08:00:00Z']));
     refusedBySchema(fn () => schemaClosing($id, 'failed_closing', 'reconciled_failure', ['intent_id' => $chain['intent'], 'reconciliation_id' => $reconciliation]));
+    refusedBySchema(fn () => schemaClosing($id, 'issued', 'reconciled_success', ['intent_id' => $chain['intent'], 'reconciliation_id' => $reconciliation, 'due_dates' => null]));
     refusedBySchema(fn () => schemaEvent($id, 4, 'succeeded', null));
     schemaClosing($id, 'issued', 'reconciled_success', ['intent_id' => $chain['intent'], 'reconciliation_id' => $reconciliation]);
     schemaEvent($id, 4, 'succeeded', null);
