@@ -467,3 +467,40 @@ This foundation does not enable staff release, campaign publication, ledger fund
 `AcceptedApplicationStore` is an internal Business-only source port. It holds current verified entity/mandate, statement, credit and consent authority, verifies retained submission/signature/quote hashes, excludes only this application's own accepted reservation when re-running the quote, and enters `PublishedApplicationReport` for the current cryptographic seal, publication state and source lineage. Neither port is a controller shortcut. `BusinessApplicationRelease` and `BusinessCampaign` join the protected Business model set; immutable encrypted snapshots and composite parent keys bind publication to one release and one accepted reservation. The journal supplies its operation ID to the effect callback so receipts retain the same recorded identity across command responses and page reloads.
 
 This continuation is local implementation under validation. Campaign cancellation/expiry, funded progress and the complete staff/UI integration remain separate unchecked work.
+
+### S3-B Investor wallet, balanced journal and synthetic deposits
+
+This is the first ledger module, so the protected-module delivery gate applies in this change. The frozen namespaces and entry points are:
+
+- `App\Domain\Wallet` holds the pure rules: exact `WalletMoney`, the balanced `JournalEntry`/`JournalLine`, the MC-08 `DepositOutcome` transitions, `DepositPolicyTerms`, `WalletBalance`, `AccountRestriction`, the `PrimaryPosting` lifecycle and `WalletViolation`.
+- `App\Application\Wallet` holds the actor and worker entry points:
+  - `RecordDepositIntent` (`wallet.deposit`), `GetInvestorWallet` and `FindWalletOperation`;
+  - `ApplyProviderOutcome` (verified provider events), `DispatchDepositIntents` (the outbox worker) and `SyntheticWalletGuard`;
+  - the ports `WalletStore`, `WalletPostings` (S3-C primary postings), `DepositProvider`, `SyntheticEventSigner` and `SyntheticWalletFixtures`.
+- `App\Infrastructure\Wallet` holds the only persistence and provider adapters: `EloquentWalletStore`, `EloquentWalletPostings`, `SyntheticDepositProvider`, `UnavailableDepositProvider` and `EloquentSyntheticWalletFixtures`. Each is reached only through its container binding.
+- Transports are `InvestorWalletController` (web `investor.wallet*` and `api.v1.investor.wallet*` under `investor:read` and `investor:command`), the outbox worker `wallet:dispatch-deposits`, and the hidden local hook `local:wallet`.
+
+**Protected records.** `InvestorWallet`, `LedgerAccount`, `LedgerEntry`, `LedgerLine`, `DepositPolicy`, `InvestorFundingMethod`, `InvestorAccountRestriction`, `WalletDepositIntent`, `WalletDepositDispatch`, `WalletProviderEvent` and `WalletDepositCredit` are accessible only from the wallet adapters, model relationships and factories.
+
+**Other architecture rules.**
+- `DepositProvider` is reachable only from the wallet actions, the wallet adapters and the provider binding.
+- The synthetic signer and fixtures are reachable only from the wallet adapters, the binding and `local:wallet`.
+- A concrete-target test asserts that every symbol exists.
+- The `wallet-boundary` negative control, in the existing `business` group, plants a bypass write against each protected model. It requires the rule to fail, then a clean teardown.
+
+**PostgreSQL enforcement.**
+- Wallets, accounts, entries, lines, policies, cases, intents, dispatch phases, provider events and credits cannot be updated or deleted. The one exception is a funding method's one-way revocation.
+- Every entry balances at commit, and every line insert queues its own check of its entry.
+- A validated entry is sealed for the rest of its transaction, and an entry from an earlier transaction accepts no lines.
+- No Investor bucket may be negative at commit.
+- Policies, methods and cases are synthetic by constraint. A withdrawn policy version means no policy.
+- A provider event identity keeps one original. A changed body under that identity is recorded as a key conflict, and only one final outcome is ever applied per intent.
+- Primary postings follow hold → commit/release → refund on the same wallet, under the same originating operation.
+- Rollback is refused once rows exist.
+
+**Delivery and synthetic scope.**
+- The deposit intent, its dispatch outbox row and its journal receipt commit together. The provider is called only after commit, outside every lock.
+- The synthetic provider, its policies and its hooks exist only on local and testing with `live_money_enabled` false. Everywhere else the unavailable adapter is bound and no policy applies.
+- No live provider, PSP, banking arrangement, fee waiver or deposit limit is introduced.
+
+This is local implementation under validation; hosted CI, non-author review and real-provider acceptance remain separate.

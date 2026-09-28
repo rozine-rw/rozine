@@ -6,6 +6,16 @@ use App\Application\Auditor\Contracts\AuditReportCryptography;
 use App\Application\Auditor\Contracts\AuditStepUp;
 use App\Application\Identity\Contracts\Authenticator;
 use App\Application\Identity\RegisterIdentity;
+use App\Application\Wallet\ApplyProviderOutcome;
+use App\Application\Wallet\Contracts\DepositProvider;
+use App\Application\Wallet\Contracts\SyntheticEventSigner;
+use App\Application\Wallet\Contracts\SyntheticWalletFixtures;
+use App\Application\Wallet\Contracts\WalletPostings;
+use App\Application\Wallet\Contracts\WalletStore;
+use App\Application\Wallet\DispatchDepositIntents;
+use App\Application\Wallet\FindWalletOperation;
+use App\Application\Wallet\GetInvestorWallet;
+use App\Application\Wallet\RecordDepositIntent;
 use App\Http\Controllers\Controller;
 use App\Models\AuditAssignment;
 use App\Models\AuditAssignmentVersion;
@@ -44,6 +54,13 @@ use App\Models\BusinessMandate;
 use App\Models\BusinessProfile;
 use App\Models\CommandOperation;
 use App\Models\ConsentRelease;
+use App\Models\DepositPolicy;
+use App\Models\InvestorAccountRestriction;
+use App\Models\InvestorFundingMethod;
+use App\Models\InvestorWallet;
+use App\Models\LedgerAccount;
+use App\Models\LedgerEntry;
+use App\Models\LedgerLine;
 use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\StatementEvidence;
@@ -52,6 +69,10 @@ use App\Models\StatementOriginal;
 use App\Models\StatementTranscription;
 use App\Models\StatementVerification;
 use App\Models\VerifiedOrganizationIdentity;
+use App\Models\WalletDepositCredit;
+use App\Models\WalletDepositDispatch;
+use App\Models\WalletDepositIntent;
+use App\Models\WalletProviderEvent;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Jose\Component\Core\JWK;
@@ -328,3 +349,26 @@ arch('accepted exposure is private to the Business adapter')
 arch('campaign closure evidence is private to the Business adapter')
     ->expect('App\\Application\\Business\\Contracts\\CampaignClosureEvidence')
     ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Providers\\AppServiceProvider']);
+
+it('has concrete targets for the wallet ledger boundary', function (): void {
+    foreach ([InvestorWallet::class, LedgerAccount::class, LedgerEntry::class, LedgerLine::class, DepositPolicy::class, InvestorFundingMethod::class,
+        InvestorAccountRestriction::class, WalletDepositIntent::class, WalletDepositDispatch::class, WalletProviderEvent::class, WalletDepositCredit::class,
+        WalletStore::class, WalletPostings::class, DepositProvider::class, SyntheticEventSigner::class, SyntheticWalletFixtures::class,
+        RecordDepositIntent::class, GetInvestorWallet::class, FindWalletOperation::class, ApplyProviderOutcome::class, DispatchDepositIntents::class] as $target) {
+        expect(class_exists($target) || interface_exists($target))->toBeTrue($target);
+    }
+})->group('arch');
+
+arch('wallet ledger records are only accessed by their adapter')
+    ->expect(['App\Models\InvestorWallet', 'App\Models\LedgerAccount', 'App\Models\LedgerEntry', 'App\Models\LedgerLine', 'App\Models\DepositPolicy',
+        'App\Models\InvestorFundingMethod', 'App\Models\InvestorAccountRestriction', 'App\Models\WalletDepositIntent', 'App\Models\WalletDepositDispatch',
+        'App\Models\WalletProviderEvent', 'App\Models\WalletDepositCredit'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Wallet', 'App\Models', 'Database\Factories']);
+
+arch('the deposit provider is reached only through the wallet actions and adapters')
+    ->expect('App\Application\Wallet\Contracts\DepositProvider')
+    ->toOnlyBeUsedIn(['App\Application\Wallet', 'App\Infrastructure\Wallet', 'App\Providers\AppServiceProvider']);
+
+arch('synthetic signing and fixtures stay inside the local wallet hook')
+    ->expect(['App\Application\Wallet\Contracts\SyntheticEventSigner', 'App\Application\Wallet\Contracts\SyntheticWalletFixtures'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Wallet', 'App\Providers\AppServiceProvider', 'App\Console\Commands\PrepareSyntheticWallet']);
