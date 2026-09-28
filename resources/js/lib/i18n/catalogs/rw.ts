@@ -406,7 +406,7 @@ const rw: Catalog = {
     'business.apply.review.application_fee_when':
         'Rimwe gusa, yishyurwa nibyemezwa.',
     'business.apply.review.fee_note':
-        "Nta mafaranga ku gishoro ubona, nta n'ikirenga ku gipimo cyatanzwe. Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa.",
+        'Nta mafaranga ku gishoro ubona. Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa.',
     'business.apply.review.binding':
         "Umukono wawe utegeka ubucuruzi mu mategeko kubahiriza inshingano zatangajwe. Nimero y'ubusabe itangwa iyo bwoherejwe.",
     'business.apply.submitted.title': 'Ubusabe bwawe bwoherejwe',

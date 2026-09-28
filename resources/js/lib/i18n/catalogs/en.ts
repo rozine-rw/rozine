@@ -398,7 +398,7 @@ const en = {
     'business.apply.review.application_fee_when':
         'One-time, charged when approved.',
     'business.apply.review.fee_note':
-        'No fee on the amount you raise, and nothing on top of your quoted rate. Charged once your note is approved, before it goes live.',
+        'No fee on the amount you raise. Charged once your note is approved, before it goes live.',
     'business.apply.review.binding':
         'Your signature legally binds the business to the disclosed obligations. Your application ID is issued on submission.',
     'business.apply.submitted.title': 'Your application has been submitted',

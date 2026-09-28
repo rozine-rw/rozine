@@ -45,10 +45,39 @@ const ACCEPT = /^I accept this offer/u;
 const UNAVAILABLE = "Fee terms unavailable — you can't sign yet";
 const NOTE =
     'Projected service fee: 2% of each repayment, charged on amounts actually repaid (principal and interest, excluding fees and penalties). These figures assume every instalment is paid in full on schedule.';
+/** The application-fee note wherever no service fee is shown: it claims nothing about other fees. */
+const NEUTRAL_FEE_NOTE =
+    'No fee on the amount you raise. Charged once your note is approved, before it goes live.';
+/** The retired claim, untrue under §11.4 whether or not the server sends the fee yet. */
+const NOTHING_ON_TOP = /nothing on top of your quoted rate/iu;
 /** A zero amount standing in for a missing fee input: "RWF 0" not followed by a digit or comma. */
 const ZERO = /RWF 0(?![\d,])/u;
 
 beforeEach(() => inertia.reset());
+
+describe('Service fee — the Due on approval note', () => {
+    it.each([
+        ['present', feeStep, false],
+        ['absent, as on dev today', reviewStep, true],
+        ['absent, in the absence-rule preview', feeAbsentStep, true],
+        ['explicitly unavailable', feeUnavailableStep, true],
+    ])(
+        'never claims nothing is added on top of the rate when the fee is %s',
+        (_case, fixture: { props: unknown }, neutral) => {
+            renderWithUser(<BusinessApply {...applyProps(fixture)} />);
+
+            expect(screen.queryByText(NOTHING_ON_TOP)).not.toBeInTheDocument();
+
+            if (neutral) {
+                expect(screen.getByText(NEUTRAL_FEE_NOTE)).toBeInTheDocument();
+            } else {
+                expect(
+                    screen.queryByText(NEUTRAL_FEE_NOTE),
+                ).not.toBeInTheDocument();
+            }
+        },
+    );
+});
 
 describe('Service fee — present', () => {
     it('shows the projected fee, the per-instalment fees and the total payable verbatim from the server', () => {
@@ -278,11 +307,7 @@ describe('Service fee — absent', () => {
             expect(
                 within(offerCard()).queryByText(ZERO),
             ).not.toBeInTheDocument();
-            expect(
-                screen.getByText(
-                    'No fee on the amount you raise, and nothing on top of your quoted rate. Charged once your note is approved, before it goes live.',
-                ),
-            ).toBeInTheDocument();
+            expect(screen.getByText(NEUTRAL_FEE_NOTE)).toBeInTheDocument();
         },
     );
 });

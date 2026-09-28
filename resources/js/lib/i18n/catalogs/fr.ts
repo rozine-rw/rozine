@@ -410,7 +410,7 @@ const fr: Catalog = {
     'business.apply.review.application_fee_when':
         "Unique, facturés à l'approbation.",
     'business.apply.review.fee_note':
-        'Aucuns frais sur le montant levé, et rien au-delà du taux annoncé. Facturés une fois la note approuvée, avant sa mise en ligne.',
+        'Aucuns frais sur le montant levé. Facturés une fois la note approuvée, avant sa mise en ligne.',
     'business.apply.review.binding':
         "Votre signature engage légalement l'entreprise aux obligations divulguées. L'identifiant de la demande est attribué à la soumission.",
     'business.apply.submitted.title': 'Votre demande a été soumise',
