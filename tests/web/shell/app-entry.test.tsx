@@ -28,6 +28,10 @@ vi.mock('@inertiajs/react', () => ({
     },
 }));
 
+vi.mock('@/components/rozine/read-failure-notice', () => ({
+    ReadFailureNotice: () => <span>Read failure outlet</span>,
+}));
+
 vi.mock('@/components/ui/sonner', () => ({
     Toaster: () => <span>Toast outlet</span>,
 }));
@@ -104,6 +108,7 @@ describe('application entry point', () => {
             screen.getByRole('region', { name: 'Tooltip provider' }),
         ).toHaveTextContent('Application page');
         expect(screen.getByText('Toast outlet')).toBeInTheDocument();
+        expect(screen.getByText('Read failure outlet')).toBeInTheDocument();
     });
 
     it('titles every tab Rozine, whatever name the environment carries', async () => {

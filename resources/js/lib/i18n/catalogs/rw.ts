@@ -167,6 +167,11 @@ const rw: Catalog = {
     'common.currency.rwf': 'RWF',
     'app.nav.label': 'Kugenda muri porogaramu',
     'app.nav.launcher': 'Aho porogaramu ziri',
+    'app.read_failure.server':
+        'Rozine ntiyashoboye gufungura iyi paji ubu. Ibyo wamaze kohereza ntibyagizweho ingaruka.',
+    'app.read_failure.network':
+        'Ntibyashobotse kugera kuri Rozine. Reba umurandasi wawe, hanyuma wongere ugerageze.',
+    'app.read_failure.retry': 'Ongera ugerageze',
     'app.connectivity.offline':
         'Nta murandasi ufite. Ibyo ubona bishobora kuba bitagezweho, kandi nta kintu gishobora koherezwa kugeza ongeye kubona umurandasi.',
     'business.nav.home': 'Ahabanza',

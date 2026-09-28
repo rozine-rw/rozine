@@ -167,6 +167,11 @@ const fr: Catalog = {
     'common.currency.rwf': 'RWF',
     'app.nav.label': "Navigation de l'application",
     'app.nav.launcher': 'Lanceur',
+    'app.read_failure.server':
+        "Rozine n'a pas pu charger cette page pour l'instant. Ce que vous avez déjà envoyé n'est pas affecté.",
+    'app.read_failure.network':
+        'Impossible de joindre Rozine. Vérifiez votre connexion, puis réessayez.',
+    'app.read_failure.retry': 'Réessayer',
     'app.connectivity.offline':
         "Vous êtes hors ligne. Ce qui s'affiche peut ne plus être à jour, et rien ne peut être envoyé avant le retour de la connexion.",
     'business.nav.home': 'Accueil',
