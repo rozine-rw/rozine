@@ -863,7 +863,11 @@ export type C3DisbursementDetail = C3DisbursementRow & {
     };
 };
 
-export type C3AdminDisbursementsProps = AdminShellProps &
+/**
+ * The live staff Resource sends the frame as `AdminFrameShellProps` (#96): only the sections the
+ * server serves, and a null badge where it knows no count. Every full fixture shell is one too.
+ */
+export type C3AdminDisbursementsProps = AdminFrameShellProps &
     StaffDisbursementPageContract & {
         disbursements: C3DisbursementRow[];
         pagination: Pagination;
