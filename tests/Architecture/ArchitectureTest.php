@@ -372,3 +372,38 @@ arch('the deposit provider is reached only through the wallet actions and adapte
 arch('synthetic signing and fixtures stay inside the local wallet hook')
     ->expect(['App\Application\Wallet\Contracts\SyntheticEventSigner', 'App\Application\Wallet\Contracts\SyntheticWalletFixtures'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Wallet', 'App\Providers\AppServiceProvider', 'App\Console\Commands\PrepareSyntheticWallet']);
+
+it('has concrete targets for the disbursement boundary', function (): void {
+    foreach (['App\Models\Disbursement', 'App\Models\DisbursementEvent', 'App\Models\DisbursementStepUpProof', 'App\Models\DisbursementStepUpMarker',
+        'App\Models\DisbursementIntent', 'App\Models\DisbursementDispatch', 'App\Models\DisbursementProviderCall', 'App\Models\DisbursementProviderEvent',
+        'App\Models\DisbursementReconciliation', 'App\Models\DisbursementClosing', 'App\Models\PrimaryHolding',
+        'App\Application\Disbursement\Contracts\DisbursementStore', 'App\Application\Disbursement\Contracts\FundedCampaigns',
+        'App\Application\Disbursement\Contracts\PayoutDestinations', 'App\Application\Disbursement\Contracts\StaffConnections',
+        'App\Application\Disbursement\Contracts\PayoutProvider', 'App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures',
+        'App\Application\Disbursement\Contracts\SyntheticPayoutScripts'] as $target) {
+        expect(class_exists($target) || interface_exists($target))->toBeTrue($target);
+    }
+})->group('arch');
+
+arch('disbursement records are only accessed by the disbursement adapters')
+    ->expect(['App\Models\Disbursement', 'App\Models\DisbursementEvent', 'App\Models\DisbursementStepUpProof', 'App\Models\DisbursementStepUpMarker',
+        'App\Models\DisbursementIntent', 'App\Models\DisbursementDispatch', 'App\Models\DisbursementProviderCall', 'App\Models\DisbursementProviderEvent',
+        'App\Models\DisbursementReconciliation', 'App\Models\DisbursementClosing'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Models', 'Database\Factories']);
+
+arch('proposed Holdings stay unwritten until the S3-C adapter owns them')
+    ->expect('App\Models\PrimaryHolding')
+    ->toOnlyBeUsedIn(['App\Models', 'Database\Factories']);
+
+arch('funding, destination and staff connection sources are reached only through the disbursement adapter')
+    ->expect(['App\Application\Disbursement\Contracts\FundedCampaigns', 'App\Application\Disbursement\Contracts\PayoutDestinations',
+        'App\Application\Disbursement\Contracts\StaffConnections'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider']);
+
+arch('the payout provider is reached only through the disbursement actions and adapters')
+    ->expect('App\Application\Disbursement\Contracts\PayoutProvider')
+    ->toOnlyBeUsedIn(['App\Application\Disbursement', 'App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider']);
+
+arch('synthetic disbursement fixtures stay inside the local disbursement hook')
+    ->expect(['App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures', 'App\Application\Disbursement\Contracts\SyntheticPayoutScripts'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider', 'App\Console\Commands\PrepareSyntheticDisbursement']);
