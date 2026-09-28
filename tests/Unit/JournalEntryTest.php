@@ -22,8 +22,9 @@ it('posts a zero-fee deposit credit as one clearing debit and one available cred
 it('splits a synthetic nonzero fee so the gross clearing debit equals the net credit plus the fee credit', function (): void {
     $entry = JournalEntry::depositCredit(WalletMoney::of('5000'), WalletMoney::of('150'));
     expect(journalLines($entry))->toBe([['deposit_clearing', 'debit', '5000'], ['investor_available', 'credit', '4850'], ['deposit_fee_revenue', 'credit', '150']])
-        ->and(fn () => JournalEntry::depositCredit(WalletMoney::of('150'), WalletMoney::of('150')))->toThrow(WalletViolation::class, 'JOURNAL_LINE_INVALID')
-        ->and(fn () => JournalEntry::depositCredit(WalletMoney::of('100'), WalletMoney::of('150')))->toThrow(WalletViolation::class, 'WALLET_MONEY_NEGATIVE');
+        ->and(fn () => JournalEntry::depositCredit(WalletMoney::of('150'), WalletMoney::of('150')))->toThrow(WalletViolation::class, 'DEPOSIT_NET_NOT_POSITIVE')
+        ->and(fn () => JournalEntry::depositCredit(WalletMoney::of('100'), WalletMoney::of('150')))->toThrow(WalletViolation::class, 'DEPOSIT_NET_NOT_POSITIVE')
+        ->and(fn () => JournalEntry::depositCredit(WalletMoney::zero(), WalletMoney::zero()))->toThrow(WalletViolation::class, 'DEPOSIT_NET_NOT_POSITIVE');
 });
 
 it('cannot be built unbalanced, one-sided, empty or with an invalid line', function (): void {

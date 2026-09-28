@@ -37,5 +37,7 @@ it('bounds deposits by an explicit versioned policy and credits the amount less 
         ->and($open->boundsError(WalletMoney::of('999999999999')))->toBeNull()
         ->and($charged->credited(WalletMoney::of('5000'))->amount())->toBe('4850')
         ->and((new DepositPolicyTerms('synthetic-edge', true, WalletMoney::of('150'), null, null))->boundsError(WalletMoney::of('150')))
+        ->toBe('Deposit more than the RWF 150 fee.')
+        ->and((new DepositPolicyTerms('synthetic-edge', true, WalletMoney::of('150'), null, null))->boundsError(WalletMoney::of('149')))
         ->toBe('Deposit more than the RWF 150 fee.');
 });

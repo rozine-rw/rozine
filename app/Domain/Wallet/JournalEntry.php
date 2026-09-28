@@ -35,10 +35,14 @@ final readonly class JournalEntry
 
     /**
      * A verified deposit success: the gross amount leaves provider clearing, the net lands in the
-     * Investor's available balance and any fee in fee revenue. A zero fee posts no fee line.
+     * Investor's available balance and any fee in fee revenue. A zero fee posts no fee line, and
+     * a fee that would leave nothing (or less than nothing) to credit is refused outright.
      */
     public static function depositCredit(WalletMoney $gross, WalletMoney $fee): self
     {
+        if ($gross->compareTo($fee) <= 0) {
+            throw new WalletViolation('DEPOSIT_NET_NOT_POSITIVE');
+        }
         $lines = [new JournalLine('deposit_clearing', 'debit', $gross), new JournalLine('investor_available', 'credit', $gross->minus($fee))];
         if (! $fee->isZero()) {
             $lines[] = new JournalLine('deposit_fee_revenue', 'credit', $fee);
