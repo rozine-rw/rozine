@@ -3382,6 +3382,8 @@ const rw: Catalog = {
         'Aboneka ni yo yonyine ishobora gukoreshwa. Afashwe ari mu kwishyura gukomeje; ayiyemejwe ategereje gutangwa.',
     'investor.wallet.c3.restricted':
         'Hari ikumira rikurikizwa kuva ku wa {date}. Kubitsa biracyashoboka.',
+    'investor.wallet.c3.restricted_paused':
+        'Hari ikumira rikurikizwa kuva ku wa {date}. Kubitsa bihagaritswe igihe cyose rigikurikizwa.',
     'investor.wallet.c3.no_pending': 'Nta kubitsa gutegereje',
     'investor.wallet.c3.pending_deposits':
         '{amount} ntibiremezwa — ntibiri mu giteranyo',
