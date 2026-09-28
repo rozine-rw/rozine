@@ -10,8 +10,9 @@ use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * The pages that read the checkpoint 3 contracts (C3 proposal v2) and the checkpoint 4 contracts
- * (C4 proposal v1), whose fixtures are all synthetic and non-activatable.
+ * The pages that read the checkpoint 3 contracts (C3 proposal v2), the checkpoint 4 contracts
+ * (C4 proposal v1) and the Phase 2 Admin proposals (Book, Exceptions), whose fixtures are all
+ * synthetic and non-activatable.
  *
  * @return list<string>
  */
@@ -22,6 +23,7 @@ function c3PreviewComponents(): array
         'investor/portfolio', 'investor/holding', 'investor/wallet',
         'admin/disbursements', 'admin/applications', 'admin/repayments',
         'business/publish', 'business/campaign',
+        'admin/book', 'admin/exceptions',
     ];
 }
 
@@ -278,6 +280,30 @@ test('no C3 fixture posts anywhere real', function (string $name) {
         expect($fixture['props']['allowed_actions'] ?? [])->toBe([]);
     }
 })->with(fn () => array_keys(c3PreviewFixtures()));
+
+test('the Phase 2 Book and Exceptions previews are read-only, with every link inside the preview', function (string $name) {
+    $fixture = c3PreviewFixtures()[$name];
+    $urls = [];
+
+    $walk = static function (array $node) use (&$walk, &$urls): void {
+        if (isset($node['url']) && is_string($node['url'])) {
+            $urls[] = $node['url'];
+        }
+
+        foreach ($node as $child) {
+            if (is_array($child)) {
+                $walk($child);
+            }
+        }
+    };
+
+    $walk($fixture['props']);
+
+    expect(c3PreviewCommandUrls($fixture['props']))->toBe([], $name)
+        ->and($fixture['props']['allowed_actions'])->toBe([], $name)
+        ->and($urls)->not->toBeEmpty()
+        ->and(array_filter($urls, static fn (string $url): bool => ! str_starts_with($url, '/preview/')))->toBe([], $name);
+})->with(['admin-book', 'admin-book-empty', 'admin-exceptions', 'admin-exceptions-empty']);
 
 test('an unknown fixture is not found', function () {
     $this->get('/preview/no-such-fixture')->assertNotFound();

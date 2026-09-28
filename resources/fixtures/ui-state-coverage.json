@@ -35,23 +35,21 @@
     },
     "MVP-ADMIN-SCR-05-ST-01": {
         "name": "none live",
-        "disposition": "missing",
-        "note": "The screen has no page yet."
+        "fixtures": ["admin-book-empty"]
     },
     "MVP-ADMIN-SCR-05-ST-02": {
         "name": "concentration cap breached",
-        "disposition": "missing",
-        "note": "The screen has no page yet."
+        "disposition": "deferred",
+        "note": "No approved book-level exposure or concentration policy exists (crosswalk G: approved exposure policy and actual triggers). The #99 50% single-investor per-raise cap is enforced at purchase, not on the Book, so a breach here would be a fabricated state."
     },
     "MVP-ADMIN-SCR-06-ST-01": {
         "name": "none open",
-        "disposition": "missing",
-        "note": "The screen has no page yet."
+        "fixtures": ["admin-exceptions-empty"]
     },
     "MVP-ADMIN-SCR-06-ST-02": {
         "name": "one past escalation window",
-        "disposition": "missing",
-        "note": "The screen has no page yet."
+        "disposition": "deferred",
+        "note": "The D-25/28/54 escalation windows are unsigned, so no exception can be past one; the screen shows age and owner only and offers no escalate command."
     },
     "MVP-ADMIN-SCR-07-ST-01": {
         "name": "district uncovered",

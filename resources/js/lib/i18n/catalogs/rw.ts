@@ -4330,6 +4330,78 @@ const rw: Catalog = {
     'admin.repayments.trail': "Amateka y'ubwishyu",
     'admin.repayments.requery_body':
         'Ibi bibaza umutanga serivisi ku bwishyu bumwe bwinjiye. Ntibyongera gukusanya amafaranga.',
+    'admin.nav.book': 'Inyandiko zikora',
+    'admin.nav.exceptions': 'Ibidasanzwe',
+    'admin.section.book.title': 'Inyandiko zikora',
+    'admin.section.book.subtitle':
+        'Buri nyandiko ikora n’uko ihagaze, nk’uko sisitemu nkuru ibyandika. Gusoma gusa.',
+    'admin.section.book.search':
+        'Shakisha ukoresheje ubucuruzi, inyandiko cyangwa nimero…',
+    'admin.section.exceptions.title': 'Ibidasanzwe',
+    'admin.section.exceptions.subtitle':
+        'Ibirarane, ibyahagaritswe n’ibinyuranyo, buri kimwe gifite igihe kimaze n’ugikurikirana kugeza gikemutse. Gusoma gusa.',
+    'admin.section.exceptions.search':
+        'Shakisha ukoresheje ubucuruzi cyangwa indango…',
+    'admin.book.title': 'Inyandiko zikora',
+    'admin.book.caption':
+        'Uko kwishyura guhagaze n’iminsi y’ubukererwe nk’uko sisitemu nkuru ibyandika. Nta kintu hano gihindura inyandiko.',
+    'admin.book.table': 'Inyandiko zikora',
+    'admin.book.filter': 'Tandukanya ukurikije uko kwishyura guhagaze',
+    'admin.book.stats.live_notes': 'Inyandiko zikora',
+    'admin.book.stats.principal_outstanding': 'Igishoro gisigaye',
+    'admin.book.stats.due_today': 'Bigomba uyu munsi',
+    'admin.book.stats.overdue': 'Byarengeje igihe',
+    'admin.book.chip.all': 'Byose',
+    'admin.book.col.note_id': 'Nimero y’inyandiko',
+    'admin.book.col.note': 'Ubucuruzi · inyandiko',
+    'admin.book.col.principal': 'Igishoro gisigaye',
+    'admin.book.col.next_due': 'Igihe gikurikira',
+    'admin.book.col.dpd': 'Iminsi y’ubukererwe',
+    'admin.book.col.health': 'Uko ihagaze',
+    'admin.book.nothing_due': 'Nta cyateganyijwe',
+    'admin.book.open_named': 'Fungura {note}',
+    'admin.book.more': 'Izindi nyandiko',
+    'admin.book.empty_title': 'Nta nyandiko ikora',
+    'admin.book.empty_body':
+        'Inyandiko igaragara hano iyo amafaranga yayo amaze gutangwa no kwishyura bigatangira.',
+    'admin.book.filtered_title': 'Nta nyandiko ihuye n’iri tandukanya',
+    'admin.book.filtered_body': 'Hitamo Byose urebe inyandiko zose.',
+    'admin.exceptions.title': 'Ibidasanzwe bifunguye',
+    'admin.exceptions.caption':
+        'Buri kidasanzwe kiguma hano, gifite igihe kimaze, kugeza gikemutse. Kugena ugikurikirana, kukizamura no kugikemura ntibiraboneka.',
+    'admin.exceptions.table': 'Ibidasanzwe bifunguye',
+    'admin.exceptions.filter': 'Tandukanya ukurikije ubwoko',
+    'admin.exceptions.count.open': {
+        one: '{count} gifunguye',
+        other: '{count} bifunguye',
+    },
+    'admin.exceptions.count.unassigned': {
+        one: '{count} nta ugikurikirana',
+        other: '{count} nta ubikurikirana',
+    },
+    'admin.exceptions.chip.all': 'Byose',
+    'admin.exceptions.kind.arrears': 'Ibirarane',
+    'admin.exceptions.kind.halt': 'Byahagaritswe',
+    'admin.exceptions.kind.variance': 'Ikinyuranyo',
+    'admin.exceptions.col.reference': 'Indango',
+    'admin.exceptions.col.kind': 'Ubwoko',
+    'admin.exceptions.col.subject': 'Ikidasanzwe',
+    'admin.exceptions.col.amount': 'Amafaranga',
+    'admin.exceptions.col.owner': 'Igihe · ugikurikirana',
+    'admin.exceptions.col.open': 'Dosiye',
+    'admin.exceptions.age': {
+        one: 'Kimaze umunsi {count}',
+        other: 'Kimaze iminsi {count}',
+    },
+    'admin.exceptions.dpd': 'Iminsi {count} y’ubukererwe',
+    'admin.exceptions.open_named': 'Fungura {reference}',
+    'admin.exceptions.more': 'Ibidasanzwe bya kera',
+    'admin.exceptions.empty_title': 'Nta kidasanzwe gifunguye',
+    'admin.exceptions.empty_body':
+        'Ibirarane, ibyahagaritswe n’ibinyuranyo bigaragara hano iyo sisitemu nkuru ifunguye kimwe.',
+    'admin.exceptions.filtered_title': 'Nta kidasanzwe cy’ubu bwoko',
+    'admin.exceptions.filtered_body':
+        'Hitamo Byose urebe ibidasanzwe byose bifunguye.',
 };
 
 export default rw;
