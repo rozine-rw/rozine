@@ -65,6 +65,7 @@ export default function BusinessPublish({
     preview_fee_terms_required,
     service_fee,
     total_payable,
+    expected_schedule,
 }: C3BusinessPublishProps) {
     const { t, locale } = useTranslation();
     const command = useC3Command<'application.publish'>({
@@ -84,13 +85,14 @@ export default function BusinessPublish({
                 !step.met,
         );
     /*
-     * The borrower service-fee terms (C4 gate 6), as the server states them. Explicitly
-     * unavailable terms withhold Publish; absent terms leave it as it is, except in a synthetic
+     * The borrower service-fee terms (C4 gate 6), retained from the signed quote and checked
+     * against its own instalments, never against the fee list. Explicitly unavailable terms
+     * withhold Publish; absent terms leave it as it is, except in a synthetic
      * preview of the proposed rule that absence blocks too.
      */
     const feeTerms = readFeeTerms(
         { service_fee, total_payable },
-        [],
+        expected_schedule,
         preview_fee_terms_required === true,
     );
     const feeUnavailable = feeTerms.state === 'unavailable';

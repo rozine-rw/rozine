@@ -394,6 +394,9 @@ export type ServiceFeeTerms = {
     total_payable?: Money | null;
 };
 
+/** One instalment the retained signed quote scheduled, by identity only. */
+export type ExpectedInstalment = { instalment: number };
+
 /**
  * The server's immutable quote, created by `application.evaluate` and only read on a page load.
  * Every figure is the engine's; the page shows it, never recomputes it. A refusal carries a
@@ -1240,6 +1243,12 @@ export type C3BusinessPublishProps = {
      * so live acceptance is unchanged until that decision is recorded.
      */
     preview_fee_terms_required?: true;
+    /**
+     * PROVISIONAL (proposed on #96 for C4 gate 6): the instalment identities of the retained
+     * signed quote, so Publish can check that the retained fee schedule projects exactly one fee
+     * for each. Without it the fee terms can't be checked and read as unavailable.
+     */
+    expected_schedule?: ExpectedInstalment[] | null;
 } & ServiceFeeTerms;
 
 /** The coarse closing view (H15): no provider or evidence reference. */

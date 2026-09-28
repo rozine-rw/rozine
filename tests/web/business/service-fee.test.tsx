@@ -14,6 +14,7 @@ import feeAbsentStep from '../../../resources/fixtures/ui/business-apply-review-
 import feeUnavailableStep from '../../../resources/fixtures/ui/business-apply-review-service-fee-unavailable.json';
 import feeStep from '../../../resources/fixtures/ui/business-apply-review-service-fee.json';
 import reviewStep from '../../../resources/fixtures/ui/business-apply-review.json';
+import publishFeeIncompleteFixture from '../../../resources/fixtures/ui/business-publish-service-fee-incomplete.json';
 import publishFeeUnavailableFixture from '../../../resources/fixtures/ui/business-publish-service-fee-unavailable.json';
 import publishFeeFixture from '../../../resources/fixtures/ui/business-publish-service-fee.json';
 import { inertia } from '../auditor/inertia';
@@ -212,6 +213,25 @@ describe('Service fee — policy explicitly unavailable', () => {
                 });
             },
         ],
+        [
+            'one instalment projected twice in place of another',
+            (quote) => {
+                const fee = readyQuote(applyProps(feeStep))
+                    .service_fee as ServiceFeeDisclosure;
+
+                Object.assign(quote, {
+                    service_fee: {
+                        ...fee,
+                        schedule: [
+                            ...fee.schedule.slice(0, 5),
+                            fee.schedule[0],
+                        ],
+                    },
+                    total_payable: readyQuote(applyProps(feeStep))
+                        .total_payable,
+                });
+            },
+        ],
     ];
 
     it.each(unavailableVariants)(
@@ -329,8 +349,82 @@ describe('Service fee — Publish', () => {
         expect(view.getByRole('button', { name: 'Publish' })).toBeEnabled();
     });
 
+    /** The Publish fixture with its retained fee schedule or expected instalments varied. */
+    const publishWith = (
+        vary: (page: C3BusinessPublishProps, fee: ServiceFeeDisclosure) => void,
+    ): C3BusinessPublishProps => {
+        const page = publishProps(publishFeeFixture);
+
+        vary(page, page.service_fee as ServiceFeeDisclosure);
+
+        return page;
+    };
+
+    it('reads the incomplete fixture as the signed six instalments with only five fees', () => {
+        const page = publishProps(publishFeeIncompleteFixture);
+        const fee = page.service_fee as ServiceFeeDisclosure;
+
+        expect(page.expected_schedule).toHaveLength(6);
+        expect(fee.schedule.map((line) => line.instalment)).toEqual([
+            1, 2, 3, 4, 5,
+        ]);
+        /* Rounding and totals are kept, so only completeness can refuse it. */
+        expect(fee.rounding).not.toBeNull();
+        expect(page.total_payable).toEqual({
+            currency: 'RWF',
+            amount: '12238776',
+        });
+    });
+
     it.each([
         ['explicitly unavailable', publishProps(publishFeeUnavailableFixture)],
+        [
+            'missing the last instalment’s fee',
+            publishProps(publishFeeIncompleteFixture),
+        ],
+        [
+            'an empty fee schedule',
+            publishWith((_page, fee) => {
+                fee.schedule = [];
+            }),
+        ],
+        [
+            'an empty fee schedule with no expected instalments either',
+            publishWith((page, fee) => {
+                fee.schedule = [];
+                page.expected_schedule = [];
+            }),
+        ],
+        [
+            'without the signed quote’s expected instalments',
+            publishWith((page) => {
+                delete page.expected_schedule;
+            }),
+        ],
+        [
+            'projecting one instalment twice in place of another',
+            publishWith((_page, fee) => {
+                fee.schedule = [...fee.schedule.slice(0, 5), fee.schedule[0]];
+            }),
+        ],
+        [
+            'projecting an instalment the signed quote doesn’t have',
+            publishWith((_page, fee) => {
+                fee.schedule = [
+                    ...fee.schedule,
+                    { ...fee.schedule[0], instalment: 7 },
+                ];
+            }),
+        ],
+        [
+            'checked against an expected schedule that repeats an instalment',
+            publishWith((page) => {
+                page.expected_schedule = [
+                    ...(page.expected_schedule ?? []).slice(0, 5),
+                    { instalment: 1 },
+                ];
+            }),
+        ],
         [
             'absent in the preview of the proposed absence rule',
             (() => {

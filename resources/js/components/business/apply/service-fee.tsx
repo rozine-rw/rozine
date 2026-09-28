@@ -3,7 +3,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
-    ScheduleInstalment,
+    ExpectedInstalment,
     ServiceFeeDisclosure,
     ServiceFeeTerms,
 } from '@/types/business';
@@ -29,14 +29,42 @@ export const instalmentFee = (
     fee.schedule.find((line) => line.instalment === instalment)?.amount;
 
 /**
+ * Whether the fee schedule projects exactly one fee for every expected instalment, and nothing
+ * else. `expected` is the retained quote's own instalment identities, never the fee list itself,
+ * so a short, empty or duplicated fee schedule can't vouch for its own completeness. No expected
+ * schedule at all can't be checked, so it never passes.
+ */
+const coversEveryInstalment = (
+    fee: ServiceFeeDisclosure,
+    expected: ExpectedInstalment[] | null | undefined,
+): boolean => {
+    if (!expected || expected.length === 0) {
+        return false;
+    }
+
+    const wanted = new Set(expected.map((row) => row.instalment));
+
+    return (
+        wanted.size === expected.length &&
+        fee.schedule.length === wanted.size &&
+        [...wanted].every(
+            (instalment) =>
+                fee.schedule.filter((line) => line.instalment === instalment)
+                    .length === 1,
+        )
+    );
+};
+
+/**
  * Reads the fee terms exactly as the server sent them; no figure is ever derived here. A null
- * block, a null rounding policy, a missing total payable or a scheduled instalment with no
- * projected fee all read as unavailable, never as zero. An absent block is unavailable only where
- * `absentBlocks` asks for it (the synthetic fixture previews of the proposed rule).
+ * block, a null rounding policy, a missing total payable, or a fee schedule that doesn't give
+ * every expected instalment exactly one projected fee all read as unavailable, never as zero. An
+ * absent block is unavailable only where `absentBlocks` asks for it (the synthetic fixture
+ * previews of the proposed rule).
  */
 export function readFeeTerms(
     terms: ServiceFeeTerms,
-    schedule: ScheduleInstalment[],
+    expected: ExpectedInstalment[] | null | undefined,
     absentBlocks: boolean,
 ): FeeTermsState {
     const fee = terms.service_fee;
@@ -51,11 +79,7 @@ export function readFeeTerms(
         return { state: 'unavailable' };
     }
 
-    const covered = schedule.every(
-        (row) => instalmentFee(fee, row.instalment) !== undefined,
-    );
-
-    return covered
+    return coversEveryInstalment(fee, expected)
         ? { state: 'shown', fee, totalPayable }
         : { state: 'unavailable' };
 }

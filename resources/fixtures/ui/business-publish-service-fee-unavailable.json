@@ -303,6 +303,26 @@
             }
         },
         "service_fee": null,
-        "total_payable": null
+        "total_payable": null,
+        "expected_schedule": [
+            {
+                "instalment": 1
+            },
+            {
+                "instalment": 2
+            },
+            {
+                "instalment": 3
+            },
+            {
+                "instalment": 4
+            },
+            {
+                "instalment": 5
+            },
+            {
+                "instalment": 6
+            }
+        ]
     }
 }

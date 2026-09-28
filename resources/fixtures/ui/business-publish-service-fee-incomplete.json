@@ -1,7 +1,7 @@
 {
     "component": "business/publish",
     "synthetic": true,
-    "provisional": "C4 gate 6 borrower service fee: provisional wire shape (rozine-rw/rozine#96). The rounding policy is NOT approved; these figures are illustrative only.",
+    "provisional": "C4 gate 6 borrower service fee: provisional wire shape (rozine-rw/rozine#96). The rounding policy is NOT approved; these figures are illustrative only. This fixture drops the last instalment's projected fee while keeping the rounding and totals, so Publish must refuse it.",
     "props": {
         "contract_version": "business-campaign-v1",
         "identity_context_revision": 4,
@@ -342,13 +342,6 @@
                 },
                 {
                     "instalment": 5,
-                    "amount": {
-                        "currency": "RWF",
-                        "amount": "39996"
-                    }
-                },
-                {
-                    "instalment": 6,
                     "amount": {
                         "currency": "RWF",
                         "amount": "39996"
