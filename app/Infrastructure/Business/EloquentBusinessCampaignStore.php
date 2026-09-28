@@ -13,8 +13,10 @@ use App\Application\Business\WithBusinessAuthority;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Identity\IdentityViolation;
+use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\BusinessApplication;
@@ -34,7 +36,8 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
 
     public function __construct(private AcceptedApplicationStore $accepted, private BusinessAuthorityStore $businesses,
         private WithBusinessAuthority $authority, private AuthorizeStaffPermission $staff, private IdentityRepository $identities,
-        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures) {}
+        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures,
+        private ChangeFeed $changes) {}
 
     /** @return array<string, mixed> */
     public function release(int $userId, string $applicationId, int $expectedRevision, string $reason, string $requestId): array
@@ -329,6 +332,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         $closure->forceFill(['business_campaign_id' => $campaign->id, 'business_id' => $campaign->business_id,
             'exposure_reservation_id' => $campaign->exposure_reservation_id, 'principal' => $campaign->principal,
             'phase' => $phase, 'actor_user_id' => $userId, 'closed_at' => $closedAt, 'payload' => $payload, 'sha256' => $this->hash($payload)])->save();
+        $this->changes->record(ChangeScope::business($campaign->business_id), 'campaign', $campaign->id, 2);
 
         return $closure;
     }
