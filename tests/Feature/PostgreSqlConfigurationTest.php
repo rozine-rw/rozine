@@ -79,6 +79,16 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $exposure = require database_path('migrations/2026_09_26_190340_create_business_exposure_reservations_table.php');
     $campaigns = require database_path('migrations/2026_09_27_054238_create_business_application_releases_and_campaigns.php');
     $closures = require database_path('migrations/2026_09_27_230946_create_business_campaign_closures_table.php');
+    $walletLedger = require database_path('migrations/2026_09_28_104818_create_investor_wallet_ledger_tables.php');
+    $walletInputs = require database_path('migrations/2026_09_28_104819_create_wallet_deposit_policy_method_and_restriction_tables.php');
+    $walletDeposits = require database_path('migrations/2026_09_28_104821_create_wallet_deposit_intent_and_outcome_tables.php');
+    $ledgerSeal = require database_path('migrations/2026_09_28_112500_seal_ledger_entries_once_validated.php');
+    $ledgerSeal->down();
+    $walletDeposits->down();
+    $walletInputs->down();
+    $walletLedger->down();
+    expect(Schema::hasTable('investor_wallets'))->toBeFalse()->and(Schema::hasTable('ledger_lines'))->toBeFalse()
+        ->and(Schema::hasTable('deposit_policies'))->toBeFalse()->and(Schema::hasTable('wallet_deposit_intents'))->toBeFalse();
     $closures->down();
     $campaigns->down();
     $exposure->down();
@@ -157,6 +167,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $exposure->up();
     $campaigns->up();
     $closures->up();
+    $walletLedger->up();
+    $walletInputs->up();
+    $walletDeposits->up();
+    $ledgerSeal->up();
 
     expect(Schema::hasTable('parties'))->toBeTrue()
         ->and(Schema::hasTable('role_memberships'))->toBeTrue()
@@ -188,5 +202,9 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasColumn('audit_reports', 'engagement_acceptance_id'))->toBeTrue()
         ->and(Schema::hasColumn('statement_verifications', 'engagement_acceptance_id'))->toBeTrue()
         ->and(Schema::hasTable('audit_source_snapshots'))->toBeTrue()
-        ->and(Schema::hasColumn('business_applications', 'current_quote_id'))->toBeTrue();
+        ->and(Schema::hasColumn('business_applications', 'current_quote_id'))->toBeTrue()
+        ->and(Schema::hasTable('investor_wallets'))->toBeTrue()
+        ->and(Schema::hasTable('ledger_lines'))->toBeTrue()
+        ->and(Schema::hasTable('investor_funding_methods'))->toBeTrue()
+        ->and(Schema::hasTable('wallet_deposit_credits'))->toBeTrue();
 });
