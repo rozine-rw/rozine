@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "018ec1bfd5f436d64310ede12a91c9dc36e4d40540cdafd95a5bbb13f5dd88bf",
-    "coverageSetSha256": "0895cb5a7b2e677428588af27d7b538b1596ec09e6ae7a22b3cd2070d96d37fb",
+    "sourceManifestSha256": "771cc3262f9382d666edfd4d5e8051a3085e900dc137dafb6e8d2a2653019772",
+    "coverageSetSha256": "4fc6d987379deb4f8d362f3654c2a2854301c480db6e8f24c414a6ab3acc4c96",
     "thresholds": {
         "critical": {
             "global": {
@@ -266,6 +266,7 @@
         "resources/js/components/rozine/app-frame.tsx",
         "resources/js/components/rozine/c3-notice.tsx",
         "resources/js/components/rozine/column-sheet.tsx",
+        "resources/js/components/rozine/connectivity-notice.tsx",
         "resources/js/components/rozine/form.tsx",
         "resources/js/components/rozine/icon-shapes.ts",
         "resources/js/components/rozine/icon.tsx",
@@ -315,6 +316,7 @@
         "resources/js/hooks/use-initials.tsx",
         "resources/js/hooks/use-mobile-navigation.ts",
         "resources/js/hooks/use-mobile.tsx",
+        "resources/js/hooks/use-online.ts",
         "resources/js/hooks/use-operation-command.ts",
         "resources/js/hooks/use-translation.ts",
         "resources/js/hooks/use-two-factor-auth.ts",

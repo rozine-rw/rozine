@@ -1,5 +1,4 @@
 import { Link } from '@inertiajs/react';
-import { useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
 import { useDisputeUphold } from '@/components/auditor/audit/dispute-uphold';
 import { STEP_FORM, useStepForm } from '@/components/auditor/audit/parts';
@@ -61,25 +60,6 @@ const CONTINUE: Record<
     statements: 'auditor.audit.start_count',
     count: 'auditor.audit.to_photos',
 };
-
-const subscribe = (callback: () => void) => {
-    window.addEventListener('online', callback);
-    window.addEventListener('offline', callback);
-
-    return () => {
-        window.removeEventListener('online', callback);
-        window.removeEventListener('offline', callback);
-    };
-};
-
-/** Whether the browser is online, so a dropped connection is said out loud (SCR-03-ST-02). */
-function useOnline(): boolean {
-    return useSyncExternalStore(
-        subscribe,
-        () => navigator.onLine,
-        () => true,
-    );
-}
 
 /** The review step records only that the partner read the file and moved on. */
 function StepReview({
@@ -169,7 +149,6 @@ const NO_SEAL: SealStage = {
 /** The procedure's sheet, inside the page's command center. */
 function AuditSheet(props: AuditProcedureProps) {
     const { t, locale } = useTranslation();
-    const online = useOnline();
     const center = useAuditorCommands();
     const { audit, links, actions } = props;
     /* A blocking conflict recorded here withdraws the procedure at once, before any reload. */
@@ -371,14 +350,6 @@ function AuditSheet(props: AuditProcedureProps) {
                       commands.sheet)
             }
         >
-            {!online && (
-                <div
-                    role="status"
-                    className="mb-3.5 rounded-xl border border-[#f2d69a] bg-rz-surface px-3.5 py-3 text-[11.5px] leading-[1.5] text-[#8a6d2b] dark:border-[rgba(240,160,96,.3)] dark:text-[#e3b56a]"
-                >
-                    {t('auditor.audit.offline')}
-                </div>
-            )}
             <AuditorCommandNotice
                 placement="page"
                 shown={SHOWN_FIELDS[stage.step] ?? []}
@@ -454,6 +425,7 @@ export default function AuditorAudit(props: AuditProcedureProps) {
                 links={props.jobs.links}
                 openJobs={openOffers(props.jobs)}
                 showTabBar={false}
+                offlineMessage="auditor.audit.offline"
             >
                 <JobsBody
                     {...props.jobs}

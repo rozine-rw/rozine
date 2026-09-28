@@ -167,6 +167,8 @@ const fr: Catalog = {
     'common.currency.rwf': 'RWF',
     'app.nav.label': "Navigation de l'application",
     'app.nav.launcher': 'Lanceur',
+    'app.connectivity.offline':
+        "Vous êtes hors ligne. Ce qui s'affiche peut ne plus être à jour, et rien ne peut être envoyé avant le retour de la connexion.",
     'business.nav.home': 'Accueil',
     'business.nav.reports': 'Rapports',
     'business.nav.profile': 'Profil',
