@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\BusinessCampaign;
+use App\Models\BusinessCampaignClosure;
 use App\Models\CommandOperation;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
@@ -188,12 +189,16 @@ it('rolls back all Primary records when the surrounding command fails', function
 
 it('reverses an empty schema but refuses rollback after reservation evidence exists', function (): void {
     $migration = require database_path('migrations/2026_09_28_143756_create_primary_reservation_records.php');
+    $capacity = require database_path('migrations/2026_09_28_151253_enforce_primary_campaign_capacity_and_closure.php');
+    $capacity->down();
     $migration->down();
     expect(Schema::hasTable('primary_reservations'))->toBeFalse();
     $migration->up();
+    $capacity->up();
     PrimaryReservationRecord::factory()->withInitialVersion()->create();
     primarySchemaFlush();
     expect(fn () => $migration->down())->toThrow(QueryException::class, 'forward migration');
+    expect(fn () => $capacity->down())->toThrow(QueryException::class, 'forward migration');
     expect(Schema::hasTable('primary_reservations'))->toBeTrue();
 });
 
@@ -221,4 +226,36 @@ it('preserves earlier disclosure versions when a live hold is requoted', functio
         ->and($version->payload)->toBe(['source' => 'replacement-fixture'])
         ->and($version->previous_sha256)->toBe($original->sha256)
         ->and($reservation->refresh()->expires_at->diffInSeconds($reservation->created_at, absolute: true))->toBe(300.0);
+});
+
+it('bounds total retained allocations even through direct database writes', function (): void {
+    $root = PrimaryReservationRecord::factory()->withInitialVersion()->create(['units' => 600, 'principal' => '3000000']);
+    expect(fn () => DB::transaction(fn () => PrimaryReservationRecord::factory()->withInitialVersion()->create([
+        'business_campaign_id' => $root->business_campaign_id, 'units' => 1, 'principal' => '5000',
+    ])))->toThrow(QueryException::class, 'published campaign capacity');
+    $this->travel(5)->minutes();
+    PrimaryReservationVersion::factory()->create(['primary_reservation_id' => $root->id, 'state' => 'expired', 'operation_id' => null, 'created_at' => now()]);
+    expect(fn () => DB::transaction(fn () => PrimaryReservationRecord::factory()->withInitialVersion()->create([
+        'business_campaign_id' => $root->business_campaign_id,
+    ])))->toThrow(QueryException::class, 'published campaign capacity');
+});
+
+it('rejects held and confirmed revisions after campaign closure while allowing cash-unwinding states', function (string $state): void {
+    $root = PrimaryReservationRecord::factory()->withInitialVersion()->create();
+    BusinessCampaignClosure::factory()->create(['business_campaign_id' => $root->business_campaign_id, 'closed_at' => now()]);
+    $write = fn () => PrimaryReservationVersion::factory()->create(['primary_reservation_id' => $root->id, 'state' => $state]);
+    if (in_array($state, ['held', 'confirmed'], true)) {
+        expect(fn () => DB::transaction($write))->toThrow(QueryException::class, 'closed campaign');
+    } else {
+        expect($write()->state)->toBe('released');
+        primarySchemaFlush();
+    }
+})->with(['held', 'confirmed', 'released']);
+
+it('refuses to install a capacity guard over already oversubscribed evidence', function (): void {
+    DB::statement('DROP TRIGGER primary_campaign_capacity ON primary_reservations');
+    $root = PrimaryReservationRecord::factory()->withInitialVersion()->create(['units' => 600, 'principal' => '3000000']);
+    PrimaryReservationRecord::factory()->withInitialVersion()->create(['business_campaign_id' => $root->business_campaign_id, 'units' => 600, 'principal' => '3000000']);
+    $capacity = require database_path('migrations/2026_09_28_151253_enforce_primary_campaign_capacity_and_closure.php');
+    expect(fn () => DB::transaction(fn () => $capacity->up()))->toThrow(QueryException::class, 'Existing Primary allocations exceed');
 });
