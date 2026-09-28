@@ -589,6 +589,63 @@ describe('Wallet (C3)', () => {
         );
     });
 
+    it('hides destinations with no live route rather than sending the Investor elsewhere', () => {
+        const live = () => {
+            const props = wallet(minimalFixture);
+
+            props.links = {
+                ...props.links,
+                deals: null,
+                portfolio: null,
+                profile: null,
+                notifications: null,
+                link_account: null,
+                launcher: { url: '/dashboard', method: 'get' },
+                operation: {
+                    url: '/investor/wallet-operations/{request_id}',
+                    method: 'get',
+                },
+            };
+            props.actions.deposit.url = '/investor/wallet/deposits';
+
+            return props;
+        };
+        const hrefs = () =>
+            screen
+                .getAllByRole('link')
+                .map((link) => link.getAttribute('href') ?? '');
+
+        const { unmount } = render(<InvestorWallet {...live()} />);
+
+        expect(
+            screen.queryByRole('link', { name: 'Back' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: 'Link an account' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByText('No payout account linked yet.'),
+        ).toBeInTheDocument();
+        expect(hrefs().filter((href) => href.includes('/preview/'))).toEqual(
+            [],
+        );
+        unmount();
+
+        setWide(true);
+        render(<InvestorWallet {...live()} />);
+
+        for (const name of ['Deals', 'Portfolio', 'Profile']) {
+            expect(
+                screen.queryByRole('link', { name }),
+            ).not.toBeInTheDocument();
+        }
+
+        expect(hrefs()).toContain('/dashboard');
+        expect(hrefs().filter((href) => href.includes('/preview/'))).toEqual(
+            [],
+        );
+    });
+
     describe('S3-B binding contract', () => {
         const RELOADED = [
             'wallet',

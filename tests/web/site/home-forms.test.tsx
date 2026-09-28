@@ -517,6 +517,7 @@ describe('keeping the glass layer in step with the page', () => {
 
         expect(remeasure).toHaveBeenCalledTimes(2);
 
+        site.componentWillUnmount();
         delete (window as { ResizeObserver?: unknown }).ResizeObserver;
     });
 });

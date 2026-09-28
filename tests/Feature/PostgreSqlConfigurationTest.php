@@ -81,6 +81,21 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $closures = require database_path('migrations/2026_09_27_230946_create_business_campaign_closures_table.php');
     $primary = require database_path('migrations/2026_09_28_143756_create_primary_reservation_records.php');
     $primary->down();
+    $walletLedger = require database_path('migrations/2026_09_28_104818_create_investor_wallet_ledger_tables.php');
+    $walletInputs = require database_path('migrations/2026_09_28_104819_create_wallet_deposit_policy_method_and_restriction_tables.php');
+    $walletDeposits = require database_path('migrations/2026_09_28_104821_create_wallet_deposit_intent_and_outcome_tables.php');
+    $ledgerSeal = require database_path('migrations/2026_09_28_112500_seal_ledger_entries_once_validated.php');
+    $primaryPostings = require database_path('migrations/2026_09_28_112902_add_primary_postings_to_wallet_ledger.php');
+    $postingAnchors = require database_path('migrations/2026_09_28_140000_bind_primary_postings_to_their_source_anchor.php');
+    $postingAnchors->down();
+    $primaryPostings->down();
+    expect(Schema::hasColumn('ledger_entries', 'origin_operation_id'))->toBeFalse();
+    $ledgerSeal->down();
+    $walletDeposits->down();
+    $walletInputs->down();
+    $walletLedger->down();
+    expect(Schema::hasTable('investor_wallets'))->toBeFalse()->and(Schema::hasTable('ledger_lines'))->toBeFalse()
+        ->and(Schema::hasTable('deposit_policies'))->toBeFalse()->and(Schema::hasTable('wallet_deposit_intents'))->toBeFalse();
     $closures->down();
     $campaigns->down();
     $exposure->down();
@@ -159,6 +174,12 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $exposure->up();
     $campaigns->up();
     $closures->up();
+    $walletLedger->up();
+    $walletInputs->up();
+    $walletDeposits->up();
+    $ledgerSeal->up();
+    $primaryPostings->up();
+    $postingAnchors->up();
     $primary->up();
 
     expect(Schema::hasTable('parties'))->toBeTrue()
@@ -191,5 +212,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasColumn('audit_reports', 'engagement_acceptance_id'))->toBeTrue()
         ->and(Schema::hasColumn('statement_verifications', 'engagement_acceptance_id'))->toBeTrue()
         ->and(Schema::hasTable('audit_source_snapshots'))->toBeTrue()
-        ->and(Schema::hasColumn('business_applications', 'current_quote_id'))->toBeTrue();
+        ->and(Schema::hasColumn('business_applications', 'current_quote_id'))->toBeTrue()
+        ->and(Schema::hasTable('investor_wallets'))->toBeTrue()
+        ->and(Schema::hasTable('ledger_lines'))->toBeTrue()
+        ->and(Schema::hasTable('investor_funding_methods'))->toBeTrue()
+        ->and(Schema::hasTable('wallet_deposit_credits'))->toBeTrue()
+        ->and(Schema::hasColumn('ledger_entries', 'origin_operation_id'))->toBeTrue();
 });

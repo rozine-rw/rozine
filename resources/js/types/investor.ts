@@ -969,6 +969,20 @@ export type WalletEntry =
 
 export type WalletMovement = WalletEntry['movement'];
 
+/**
+ * The shell links a live C3 page may narrow (S3-B, #96 5868306136): a destination with no live
+ * route yet is null and hidden, never pointed at an unrelated page. Wallet and the launcher always
+ * exist. The Phase 1B `InvestorAppLinks` shape still fits, so populated links keep working.
+ */
+export type C3InvestorShellLinks = {
+    deals: RouteLink | null;
+    portfolio: RouteLink | null;
+    profile: RouteLink | null;
+    wallet: RouteLink;
+    notifications: RouteLink | null;
+    launcher: RouteLink;
+};
+
 export type C3InvestorWalletProps = InvestorPageContract & {
     wallet: WalletBalances;
     holds: CheckoutHold[];
@@ -996,10 +1010,11 @@ export type C3InvestorWalletProps = InvestorPageContract & {
     /** C4 and Phase 2. */
     earnings: null;
     exports: null;
-    links: InvestorAppLinks & {
+    links: C3InvestorShellLinks & {
         close: RouteLink;
         deposit: RouteLink;
-        link_account: RouteLink;
+        /** Null until linking an account has a live route; the prompt then names no destination. */
+        link_account: RouteLink | null;
         /** The operation lookup; its url holds the literal `{request_id}` token. */
         operation: RouteLink;
     };

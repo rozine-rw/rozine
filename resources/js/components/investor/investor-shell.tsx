@@ -2,7 +2,7 @@ import { Head } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { AppFrame } from '@/components/rozine/app-frame';
 import { useTranslation } from '@/hooks/use-translation';
-import type { InvestorAppLinks } from '@/types/investor';
+import type { C3InvestorShellLinks } from '@/types/investor';
 
 export type InvestorTab = 'deals' | 'portfolio' | 'profile';
 
@@ -38,7 +38,8 @@ type InvestorShellProps = {
     title: string;
     /** The tab to mark current; Wallet has no tab of its own, as in the design. */
     tab: InvestorTab | null;
-    links: InvestorAppLinks;
+    /** Phase 1B links, or a C3 page's narrowed links: a null destination is hidden, never faked. */
+    links: C3InvestorShellLinks;
     showTabBar?: boolean;
     children: ReactNode;
 };
@@ -57,12 +58,20 @@ export function InvestorShell({
     children,
 }: InvestorShellProps) {
     const { t } = useTranslation();
-    const nav = (['deals', 'portfolio', 'profile'] as const).map((key) => ({
-        key,
-        label: t(`investor.nav.${key}`),
-        href: links[key],
-        glyph: GLYPHS[key],
-    }));
+    const nav = (['deals', 'portfolio', 'profile'] as const).flatMap((key) => {
+        const href = links[key];
+
+        return href === null
+            ? []
+            : [
+                  {
+                      key,
+                      label: t(`investor.nav.${key}`),
+                      href,
+                      glyph: GLYPHS[key],
+                  },
+              ];
+    });
 
     return (
         <AppFrame
