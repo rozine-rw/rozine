@@ -151,7 +151,7 @@
                 "payments_made": 2,
                 "payments_total": 5,
                 "link": {
-                    "url": "/preview/investor-holding",
+                    "url": "/preview/investor-holding-musanze",
                     "method": "get"
                 }
             },
@@ -209,7 +209,7 @@
                 "payments_made": 4,
                 "payments_total": 6,
                 "link": {
-                    "url": "/preview/investor-holding",
+                    "url": "/preview/investor-holding-intare",
                     "method": "get"
                 }
             },
@@ -238,7 +238,7 @@
                 "payments_made": 3,
                 "payments_total": 4,
                 "link": {
-                    "url": "/preview/investor-holding",
+                    "url": "/preview/investor-holding-karongi",
                     "method": "get"
                 }
             },
@@ -274,7 +274,7 @@
         ],
         "payouts": [
             {
-                "month": "2026-10-03T00:00:00+02:00",
+                "month": "2026-10-01T00:00:00+02:00",
                 "amount": {
                     "currency": "RWF",
                     "amount": "700857"
@@ -316,7 +316,7 @@
                 ]
             },
             {
-                "month": "2026-11-03T00:00:00+02:00",
+                "month": "2026-11-01T00:00:00+02:00",
                 "amount": {
                     "currency": "RWF",
                     "amount": "716024"
@@ -350,7 +350,7 @@
                 ]
             },
             {
-                "month": "2026-12-03T00:00:00+02:00",
+                "month": "2026-12-01T00:00:00+02:00",
                 "amount": {
                     "currency": "RWF",
                     "amount": "203400"

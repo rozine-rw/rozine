@@ -418,14 +418,22 @@ export type PortfolioTotals = {
     value: Money;
     invested: Money;
     gain: Money;
+    /** The gross return received so far in server_time's calendar month (Kigali), as `gain` is. */
     this_month: Money;
-    /** Scheduled, not yet paid: labelled as a projection. */
+    /** Scheduled, not yet paid: labelled as a projection. The first three `payouts` months. */
     projected_3m: Money;
+    /** The first `payouts` month and its amount. */
     next_payout: { amount: Money; month: string } | null;
+    /** `projected_3m` over its three months, half-up: the projection's monthly average. */
     avg_monthly: Money;
 };
 
+/**
+ * One calendar month of the scheduled payouts of the notes still paying (healthy or watch), each
+ * unpaid instalment in the month it falls due, or where a declared on-track plan moves it.
+ */
 export type PayoutMonth = {
+    /** The first of the month, Kigali midnight. */
     month: string;
     amount: Money;
     /** Bar height as a share of the tallest month, 0–100, from the server. */

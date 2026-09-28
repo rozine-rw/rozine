@@ -7,6 +7,7 @@ import type {
     Commitment,
     HoldingHealth,
     HoldingSummary,
+    InvestorPortfolioProps,
     InvestorRating,
     PayoutMonth,
     PortfolioEarnings,
@@ -22,7 +23,7 @@ import type {
 /*
  * The Investor preview fixtures, kept internally coherent. Every figure is a server fact, so the
  * pages never do this arithmetic; a fixture that contradicts itself would show the reviewer a
- * screen the server could never send. Each invariant below is pure arithmetic over one fixture,
+ * screen the server could never send. Each invariant below is pure arithmetic over the fixtures,
  * derived from the contract types and the figures the pages label:
  *
  * - A note's total return is its principal times `rate_pct` (the quote's RWF 5,000 → RWF 675 at
@@ -36,6 +37,13 @@ import type {
  *   invested.
  * - A campaign's raised, target and left-to-fill are its committed, total and available units at
  *   the unit price, and `funded_pct` is raised over target to one decimal.
+ * - Every portfolio card opens its own note: a holding fixture with the same id, name and figures.
+ *   At one server_time no business is both active and matured.
+ * - The payouts are the scheduled instalments of the active notes still paying (healthy or watch),
+ *   each in the calendar month it falls due, or where an on-track plan moves the deferred one.
+ *   `projected_3m` is the first three months and `next_payout` the first; `avg_monthly` is
+ *   `projected_3m` over three months; `this_month` is the gross return received in server_time's
+ *   month. A matured tab carries the same totals and payouts as the active tab it links to.
  */
 
 type Fixture = { name: string; props: Record<string, unknown> };
@@ -741,6 +749,9 @@ const SUMMARY_FIELDS = [
     'matures_on',
     'payments_made',
     'payments_total',
+    'accent',
+    'industry',
+    'district',
 ] as const;
 
 describe('Investor portfolio fixtures', () => {
@@ -783,6 +794,18 @@ describe('Investor portfolio fixtures', () => {
                 }
 
                 const detail = holdingFixtures.get(holding.link.url);
+
+                expectTrue(
+                    problems,
+                    `${at}.link ${holding.link.url} opens a holding fixture`,
+                    detail !== undefined,
+                );
+                expectEqual(
+                    problems,
+                    `${at}: the note it opens (id, name)`,
+                    detail === undefined ? null : [detail.id, detail.name],
+                    [holding.id, holding.name],
+                );
 
                 if (detail?.id === holding.id) {
                     SUMMARY_FIELDS.forEach((field) =>
@@ -905,6 +928,247 @@ describe('Investor portfolio fixtures', () => {
                     `${name} earnings.projected.next_3m`,
                     n(earnings.projected.next_3m),
                     next3m,
+                );
+            }
+        });
+
+        expect(problems).toEqual([]);
+    });
+});
+
+/** Where a portfolio's active holdings live: its own list, or the active tab it links to. */
+function activeCards(fixture: Fixture): HoldingSummary[] {
+    if (fixture.props.tab === 'active') {
+        return fixture.props.holdings as HoldingSummary[];
+    }
+
+    const tabs = fixture.props.tabs as InvestorPortfolioProps['tabs'];
+    const url = tabs.find((tab) => tab.key === 'active')?.link.url;
+    const active = portfolios.find((other) => `/preview/${other.name}` === url);
+
+    return (active?.props.holdings as HoldingSummary[] | undefined) ?? [];
+}
+
+type Landing = { card: HoldingSummary; on: string; amount: number };
+
+/** The unpaid instalments of every active note still paying, on the day each lands. */
+function landings(cards: HoldingSummary[]): Landing[] {
+    return cards.flatMap((card) => {
+        const detail = holdingFixtures.get(card.link.url);
+
+        if (
+            detail === undefined ||
+            !['healthy', 'watch'].includes(detail.health)
+        ) {
+            return [];
+        }
+
+        const plan = detail.recovery_plan;
+
+        return detail.issue.schedule
+            .slice(detail.payments_made)
+            .map((row, offset) => ({
+                card,
+                on:
+                    offset === 0 && plan?.state === 'on_track'
+                        ? day(plan.money_arrives)
+                        : row.due_on,
+                amount: gross(row),
+            }));
+    });
+}
+
+/** The payouts those landings add up to, a calendar month at a time, the largest payer first. */
+function expectedPayouts(cards: HoldingSummary[]): PayoutMonth[] {
+    const months = new Map<string, Map<HoldingSummary, number>>();
+
+    landings(cards).forEach(({ card, on, amount }) => {
+        const payers = months.get(on.slice(0, 7)) ?? new Map();
+
+        payers.set(card, (payers.get(card) ?? 0) + amount);
+        months.set(on.slice(0, 7), payers);
+    });
+
+    const rows = [...months.entries()]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([month, payers]) => ({
+            month,
+            total: sum([...payers.values()]),
+            payers: [...payers.entries()].sort(
+                ([a, x], [b, y]) => y - x || a.name.localeCompare(b.name),
+            ),
+        }));
+    const peak = Math.max(0, ...rows.map((row) => row.total));
+
+    return rows.map(({ month, total, payers }) => ({
+        month: `${month}-01T00:00:00+02:00`,
+        amount: { currency: 'RWF', amount: String(total) },
+        bar_pct: roundRatio(total * 100, peak),
+        payers: payers.map(([card, amount]) => ({
+            name: card.name,
+            accent: card.accent,
+            amount: { currency: 'RWF', amount: String(amount) },
+        })),
+    }));
+}
+
+/** Gross return received so far in server_time's calendar month, across the active notes. */
+function returnThisMonth(fixture: Fixture, cards: HoldingSummary[]): number {
+    const month = serverDay(fixture).slice(0, 7);
+
+    return sum(
+        cards.flatMap((card) => {
+            const detail = holdingFixtures.get(card.link.url);
+
+            return (detail?.issue.schedule ?? [])
+                .slice(0, detail?.payments_made ?? 0)
+                .filter((row) => row.due_on.startsWith(month))
+                .map((row) => n(row.return));
+        }),
+    );
+}
+
+describe('Investor portfolio fixtures against the notes they list', () => {
+    it('never show a business as both active and matured at one server_time', () => {
+        const states = new Map<string, Set<string>>();
+        const record = (time: string, name: string, health: string) => {
+            const key = `${time} ${name}`;
+
+            states.set(
+                key,
+                (states.get(key) ?? new Set()).add(
+                    health === 'matured' ? 'matured' : 'active',
+                ),
+            );
+        };
+
+        holdings.forEach((fixture) => {
+            const holding = holdingOf(fixture);
+
+            record(serverDay(fixture), holding.name, holding.health);
+        });
+        portfolios.forEach((fixture) =>
+            (fixture.props.holdings as HoldingSummary[]).forEach((card) =>
+                record(serverDay(fixture), card.name, card.health),
+            ),
+        );
+
+        expect(
+            [...states.entries()]
+                .filter(([, seen]) => seen.size > 1)
+                .map(([key]) => key),
+        ).toEqual([]);
+    });
+
+    it('schedule payouts and totals from the active notes’ own schedules', () => {
+        const problems: Problems = [];
+
+        portfolios.forEach((fixture) => {
+            const { name, props } = fixture;
+            const cards = activeCards(fixture);
+            const payouts = props.payouts as PayoutMonth[];
+            const expected = expectedPayouts(cards);
+            const projected = sum(
+                expected.slice(0, 3).map((month) => n(month.amount)),
+            );
+
+            expectEqual(problems, `${name} payouts`, payouts, expected);
+
+            const totals = props.totals as PortfolioTotals | undefined;
+
+            if (totals !== undefined) {
+                expectEqual(
+                    problems,
+                    `${name} totals.next_payout`,
+                    totals.next_payout,
+                    expected[0] === undefined
+                        ? null
+                        : {
+                              amount: expected[0].amount,
+                              month: expected[0].month,
+                          },
+                );
+                expectEqual(
+                    problems,
+                    `${name} totals.projected_3m`,
+                    n(totals.projected_3m),
+                    projected,
+                );
+                expectEqual(
+                    problems,
+                    `${name} totals.avg_monthly (projected_3m over three months)`,
+                    n(totals.avg_monthly),
+                    roundRatio(projected, 3),
+                );
+                expectEqual(
+                    problems,
+                    `${name} totals.this_month (return received this month)`,
+                    n(totals.this_month),
+                    returnThisMonth(fixture, cards),
+                );
+            }
+
+            if (props.tab === 'matured') {
+                const url = (props.tabs as InvestorPortfolioProps['tabs']).find(
+                    (tab) => tab.key === 'active',
+                )?.link.url;
+                const active = portfolios.find(
+                    (other) => `/preview/${other.name}` === url,
+                );
+
+                expectEqual(
+                    problems,
+                    `${name} totals and payouts (as ${url})`,
+                    [props.totals, props.payouts],
+                    [active?.props.totals, active?.props.payouts],
+                );
+            }
+
+            const earnings = props.earnings as PortfolioEarnings | undefined;
+
+            if (earnings !== undefined) {
+                const first = landings(cards).sort((a, b) =>
+                    a.on.localeCompare(b.on),
+                )[0]?.on;
+                const unpaid = cards.flatMap((card) => {
+                    const detail = holdingFixtures.get(card.link.url);
+
+                    return (detail?.issue.schedule ?? []).slice(
+                        detail?.payments_made ?? 0,
+                    );
+                });
+
+                expectEqual(
+                    problems,
+                    `${name} earnings.next_payout (the next day a note pays)`,
+                    earnings.next_payout,
+                    first === undefined
+                        ? null
+                        : {
+                              due_on: first,
+                              projected: {
+                                  currency: 'RWF',
+                                  amount: String(
+                                      sum(
+                                          landings(cards)
+                                              .filter(({ on }) => on === first)
+                                              .map(({ amount }) => amount),
+                                      ),
+                                  ),
+                              },
+                          },
+                );
+                expectEqual(
+                    problems,
+                    `${name} earnings.outstanding_principal (unpaid principal)`,
+                    n(earnings.outstanding_principal),
+                    sum(unpaid.map((row) => n(row.principal))),
+                );
+                expectEqual(
+                    problems,
+                    `${name} earnings.projected.remaining_return (unpaid return)`,
+                    n(earnings.projected.remaining_return),
+                    sum(unpaid.map((row) => n(row.return))),
                 );
             }
         });

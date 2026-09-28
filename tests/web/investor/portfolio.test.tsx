@@ -53,6 +53,8 @@ describe('Portfolio', () => {
         expect(total).toHaveTextContent('RWF 4.2M');
         expect(total).toHaveTextContent('+RWF 309K');
         expect(total).toHaveTextContent('Next: RWF 701K · Oct ’26');
+        expect(total).toHaveTextContent('THIS MONTH+RWF 96K');
+        expect(total).toHaveTextContent('AVG / MORWF 540K');
 
         const tabs = screen.getByRole('navigation', { name: 'Holdings' });
 
@@ -192,7 +194,7 @@ describe('Portfolio', () => {
         const cards = screen.getAllByRole('link', { name: /Details/u });
 
         expect(cards).toHaveLength(1);
-        expect(cards[0]).toHaveTextContent('Karongi Freight');
+        expect(cards[0]).toHaveTextContent('Bugesera Haulage');
         expect(cards[0]).toHaveTextContent('Matured');
         expect(cards[0]).toHaveAttribute(
             'href',
