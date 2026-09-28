@@ -3325,6 +3325,8 @@ const rw: Catalog = {
         'Izo mpapuro ntizikiboneka. Hitamo nke cyangwa wongere ugerageze nyuma.',
     'settlement.refusal.COMMITMENT_LOCKED':
         'Imari yose yabonetse, ibi ntibigishobora guhagarikwa.',
+    'settlement.refusal.CAMPAIGN_SETTLEMENT_REQUIRED':
+        'Abashoramari bamaze kwiyemeza muri iki gikorwa cyo gukusanya, bityo ntigishobora guhagarikwa hano. Ibyo biyemeje bigomba kubanza gukemurwa.',
     'settlement.refusal.NOTE_INELIGIBLE': 'Uru rupapuro ntirwemerewe ubu.',
     'settlement.refusal.DISCLOSURE_STALE':
         'Amakuru yo kumenyesha yahindutse. Soma ayariho ubu wongere uyemeze.',
