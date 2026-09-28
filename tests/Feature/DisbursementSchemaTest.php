@@ -124,7 +124,7 @@ function refusedBySchema(Closure $write, array $codes = ['23514', '23505']): voi
 
         return;
     }
-    test()->fail('The database accepted a write it must refuse.');
+    throw new RuntimeException('The database accepted a write it must refuse.');
 }
 
 it('refuses to change or delete any disbursement record', function (): void {
