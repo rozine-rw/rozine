@@ -22,12 +22,12 @@ function primaryOperationWithResult(string $original, array $result): string
 }
 
 /** @param array<string, mixed> $result */
-function retainPrimaryOutcome(string $state, array $result): void
+function retainPrimaryOutcome(string $state, ?array $result): void
 {
     if ($state === 'root') {
         $root = PrimaryReservationRecord::factory()->make();
         PrimaryReservationRecord::factory()->withInitialVersion()->create([
-            ...$root->only(['business_campaign_id', 'party_id']), 'origin_operation_id' => primaryOperationWithResult($root->origin_operation_id, $result),
+            ...$root->only(['business_campaign_id', 'party_id']), 'origin_operation_id' => primaryOperationWithResult($root->origin_operation_id, $result ?? ['status' => 'completed']),
         ]);
 
         return;
@@ -36,7 +36,7 @@ function retainPrimaryOutcome(string $state, array $result): void
     $version = PrimaryReservationVersion::factory()->make(['primary_reservation_id' => $root->id, 'state' => $state]);
     $version = PrimaryReservationVersion::factory()->withCashMovement()->create([
         ...$version->only(['primary_reservation_id', 'state', 'created_at']),
-        'operation_id' => primaryOperationWithResult($version->operation_id, $result),
+        'operation_id' => $result === null ? $version->operation_id : primaryOperationWithResult($version->operation_id, $result),
     ]);
     if ($state === 'confirmed') {
         PrimaryCommitment::factory()->create(['primary_reservation_version_id' => $version->id]);
@@ -57,7 +57,7 @@ it('requires a completed receipt for roots requotes confirmations and releases',
 ]);
 
 it('accepts completed evidence and preserves immutable receipts', function (string $state): void {
-    retainPrimaryOutcome($state, ['status' => 'completed', 'code' => 'SYNTHETIC_PRIMARY_RESULT']);
+    retainPrimaryOutcome($state, null);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     DB::statement('SET CONSTRAINTS ALL DEFERRED');
     expect(PrimaryReservationRecord::query()->count())->toBe(1);
@@ -79,6 +79,7 @@ it('allows an expiry observation to retain the rejected confirmation or release 
 
 it('audits old outcome bindings atomically and refuses to remove protection with retained history', function (string $state): void {
     $migration = require database_path('migrations/2026_09_28_163057_require_completed_primary_command_outcomes.php');
+    (require database_path('migrations/2026_09_28_195022_bind_primary_confirmation_receipts_to_commitments.php'))->down();
     $migration->down();
     retainPrimaryOutcome($state, ['status' => 'rejected']);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
@@ -92,7 +93,7 @@ it('audits old outcome bindings atomically and refuses to remove protection with
 it('can install over matching completed history but cannot roll it back', function (): void {
     $migration = require database_path('migrations/2026_09_28_163057_require_completed_primary_command_outcomes.php');
     $migration->down();
-    retainPrimaryOutcome('confirmed', ['status' => 'completed']);
+    retainPrimaryOutcome('confirmed', null);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     DB::statement('SET CONSTRAINTS ALL DEFERRED');
     $migration->up();

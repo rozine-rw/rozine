@@ -89,8 +89,10 @@ it('allows the journal operation to be inserted after its confirmation evidence'
     $operation = CommandOperation::factory()->make(['id' => strtolower((string) Str::ulid()), 'actor_key' => $origin->actor_key,
         'actor_user_id' => $origin->actor_user_id, 'command' => 'primary.confirm', 'target_type' => 'primary_reservation', 'target_id' => $root->id]);
     $version = PrimaryReservationVersion::factory()->confirmed()->withCashMovement()->create(['primary_reservation_id' => $root->id, 'operation_id' => $operation->id]);
-    PrimaryCommitment::factory()->create(['primary_reservation_version_id' => $version->id]);
-    $operation->save();
+    $commitment = PrimaryCommitment::factory()->create(['primary_reservation_version_id' => $version->id]);
+    $operation->forceFill(['result' => ['status' => 'completed', 'code' => 'RESERVATION_CONFIRMED',
+        'operation_id' => $operation->id, 'revision' => $version->revision,
+        'data' => ['reservation_id' => $root->id, 'commitment_id' => $commitment->id, 'amount' => $root->principal]]])->save();
     flushPrimaryOperationBindings();
     expect(PrimaryCommitment::query()->sole()->operation_id)->toBe($operation->id);
 });

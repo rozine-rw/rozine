@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Models\CommandOperation;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationVersion;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /** @extends Factory<PrimaryCommitment> */
 class PrimaryCommitmentFactory extends Factory
@@ -17,6 +19,7 @@ class PrimaryCommitmentFactory extends Factory
         return ['primary_reservation_version_id' => PrimaryReservationVersion::factory()->confirmed()->withCashMovement(),
             'primary_reservation_id' => fn (array $a): string => PrimaryReservationVersion::query()->whereKey($a['primary_reservation_version_id'])->firstOrFail()->primary_reservation_id,
             'operation_id' => fn (array $a): ?string => PrimaryReservationVersion::query()->whereKey($a['primary_reservation_version_id'])->firstOrFail()->operation_id,
+            'id' => fn (array $a): string => CommandOperation::query()->whereKey($a['operation_id'])->first()?->result['data']['commitment_id'] ?? strtolower((string) Str::ulid()),
             'confirmed_at' => fn (array $a) => PrimaryReservationVersion::query()->whereKey($a['primary_reservation_version_id'])->firstOrFail()->created_at,
             'created_at' => now()->startOfSecond()];
     }
