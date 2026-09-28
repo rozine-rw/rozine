@@ -9,8 +9,6 @@ use App\Application\Disbursement\ReconcileDisbursements;
 use App\Application\Disbursement\RecordPayoutEvent;
 use App\Application\Disbursement\VerifiedPayoutEvent;
 use App\Application\Identity\ConfigureStaffAccess;
-use App\Domain\Disbursement\DisbursementViolation;
-use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
 use App\Models\CommandOperation;
 use App\Models\DisbursementClosing;
 use App\Models\DisbursementDispatch;
@@ -254,10 +252,4 @@ it('takes the Business lock before the disbursement row on the issue path', func
         ->and(file_get_contents($probe))->toBe('free')
         ->and(DisbursementClosing::query()->sole()->kind)->toBe('issued');
     unlink($probe);
-});
-
-it('refuses a synthetic funding lock outside the caller\'s transaction', function (): void {
-    $sources = app(SyntheticDisbursementSources::class);
-    $campaign = $sources->fund([1]);
-    expect(fn () => $sources->lockBusiness($campaign->businessId))->toThrow(DisbursementViolation::class, 'FUNDING_TRANSACTION_REQUIRED');
 });

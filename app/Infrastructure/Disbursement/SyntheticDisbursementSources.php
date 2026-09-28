@@ -218,7 +218,8 @@ final class SyntheticDisbursementSources implements FundedCampaigns, PayoutDesti
     private function assertTransaction(): void
     {
         $this->guard->assertAllowed();
-        if (DB::transactionLevel() < 1) {
+        // A transaction the caller opened, not merely an enclosing test transaction.
+        if (app('db.transactions')->callbackApplicableTransactions()->isEmpty()) {
             throw new DisbursementViolation('FUNDING_TRANSACTION_REQUIRED');
         }
     }

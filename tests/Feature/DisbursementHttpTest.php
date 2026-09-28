@@ -191,3 +191,14 @@ it('prepares synthetic scenarios and runs the worker and reconciler from the con
     expect(console('disbursements:dispatch'))->toMatchArray([0 => 1]);
     expect(console('local:disbursement', ['--seed' => true]))->toMatchArray([0 => 1]);
 });
+
+it('links a failed closing\'s refund receipt to the approval that closed it', function (): void {
+    ['disbursement' => $disbursement, 'maker' => $maker, 'checker' => $checker] = authorizedDisbursement();
+    DisbursementFixture::sources()->scriptRecheck($disbursement->business_campaign_id, 'failed', ['mandate']);
+    $key = (string) Str::uuid();
+    DisbursementFixture::command($checker, $disbursement, 'approve', 1, DisbursementFixture::stepUp($checker, $disbursement)['proof'], $key);
+    $this->actingAs($maker)->get(route('staff.disbursements.show', ['disbursement' => $disbursement->id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('disbursement.state', 'failed_closing')
+            ->where('disbursement.refund.receipt.code', 'COMMITMENTS_REFUNDED')->where('disbursement.refund.receipt.request_id', $key)
+            ->where('disbursement.refund.receipt.link.url', route('staff.disbursements.operations.show', ['request_id' => $key, 'command' => 'disbursement.approve'], false)));
+});

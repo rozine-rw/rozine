@@ -231,7 +231,7 @@ it('keeps the funding port invariants and its synthetic source exclusive and tra
     $sources = app(SyntheticDisbursementSources::class);
     $campaign = $sources->fund([1]);
     $issue = new IssueInstruction(strtolower((string) Str::ulid()), 'd', 'o', '2027-01-31T08:00:00+00:00', '2027-01-31', ['2027-02-28'], '2027-01-31T09:00:00+00:00');
-    expect(fn () => $sources->lockFunded(strtolower((string) Str::ulid())))->toThrow(CommandRejection::class, 'FUNDING_SOURCE_UNAVAILABLE');
+    expect(fn () => DB::transaction(fn () => $sources->lockFunded(strtolower((string) Str::ulid()))))->toThrow(CommandRejection::class, 'FUNDING_SOURCE_UNAVAILABLE');
     DB::transaction(fn () => $sources->issue($campaign, $issue));
     DB::transaction(fn () => $sources->issue($campaign, $issue));
     expect($sources->effects($campaign->campaignId))->toHaveCount(1)
@@ -251,4 +251,11 @@ it('never offers a provider call inside a transaction from the synthetic provide
         $intent->destination_sha256, $intent->environment);
     expect(fn () => DB::transaction(fn () => app(PayoutProvider::class)->send($instruction)))->toThrow(LogicException::class, 'DISBURSEMENT_PROVIDER_TRANSACTION_OPEN')
         ->and(DisbursementIntent::query()->count())->toBe(1);
+});
+
+it('refuses a synthetic funding lock outside the caller\'s transaction', function (): void {
+    $sources = app(SyntheticDisbursementSources::class);
+    $campaign = $sources->fund([1]);
+    expect(fn () => $sources->lockBusiness($campaign->businessId))->toThrow(DisbursementViolation::class, 'FUNDING_TRANSACTION_REQUIRED');
+    DB::transaction(fn () => $sources->lockBusiness($campaign->businessId));
 });
