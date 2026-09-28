@@ -7,6 +7,7 @@ namespace App\Application\Wallet;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Wallet\Contracts\DepositProvider;
 use App\Application\Wallet\Contracts\WalletStore;
+use LogicException;
 use Throwable;
 
 /**
@@ -24,6 +25,9 @@ final class DispatchDepositIntents
     public function handle(?string $intentId = null, int $limit = 50): array
     {
         $this->guard->assertAllowed();
+        if ($this->store->transactionOpen()) {
+            throw new LogicException('WALLET_DISPATCH_TRANSACTION_OPEN: a provider is called only after the outermost commit.');
+        }
         $instructions = $this->store->claimDispatches($intentId, $limit, $this->provider->idempotentSends(), $this->isolation->profile());
         $acknowledged = 0;
         foreach ($instructions as $instruction) {

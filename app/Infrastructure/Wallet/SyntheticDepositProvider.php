@@ -13,6 +13,7 @@ use App\Application\Wallet\VerifiedDepositEvent;
 use App\Domain\Operations\CommandRejection;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Config\Repository;
+use LogicException;
 use Throwable;
 
 /**
@@ -39,6 +40,9 @@ final class SyntheticDepositProvider implements DepositProvider, SyntheticEventS
     public function initiate(DepositInstruction $instruction): bool
     {
         $this->guard->assertAllowed();
+        if (app('db.transactions')->callbackApplicableTransactions()->isNotEmpty()) {
+            throw new LogicException('WALLET_DISPATCH_TRANSACTION_OPEN: a provider is called only after the outermost commit.');
+        }
 
         return true;
     }

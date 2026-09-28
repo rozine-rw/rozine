@@ -6,6 +6,7 @@ namespace App\Application\Wallet\Contracts;
 
 use App\Application\Wallet\DepositInstruction;
 use App\Application\Wallet\VerifiedDepositEvent;
+use Closure;
 
 /**
  * The Investor wallet port. The Party always comes from the authenticated user's current investor
@@ -55,4 +56,13 @@ interface WalletStore
 
     /** Records whether the provider acknowledged a claimed dispatch. The first outcome stands. */
     public function recordDispatch(string $intentId, bool $acknowledged): void;
+
+    /**
+     * Runs the callback once the caller's outermost transaction commits; a rollback discards it.
+     * With no transaction open it runs now.
+     */
+    public function afterCommit(Closure $callback): void;
+
+    /** Whether a caller's database transaction is open, so no provider may be called yet. */
+    public function transactionOpen(): bool;
 }

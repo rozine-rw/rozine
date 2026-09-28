@@ -19,6 +19,7 @@ use App\Models\WalletDepositDispatch;
 use App\Models\WalletDepositIntent;
 use App\Models\WalletProviderEvent;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
 
@@ -200,4 +201,12 @@ it('refuses the worker and the dispatcher where synthetic support is not allowed
     config(['isolation.live_money_enabled' => true]);
     expect(fn () => Artisan::call('wallet:dispatch-deposits'))->toThrow(LogicException::class, 'WALLET_SYNTHETIC_ONLY')
         ->and(fn () => app(DispatchDepositIntents::class)->handle())->toThrow(LogicException::class, 'WALLET_SYNTHETIC_ONLY');
+});
+
+it('refuses to dispatch or call the provider inside an open transaction', function (): void {
+    ['intent' => $intent] = walletIntent();
+    expect(fn () => DB::transaction(fn () => app(DispatchDepositIntents::class)->handle()))
+        ->toThrow(LogicException::class, 'WALLET_DISPATCH_TRANSACTION_OPEN')
+        ->and(fn () => DB::transaction(fn () => app(DepositProvider::class)->initiate(new DepositInstruction($intent->id, $intent->operation_id,
+            $intent->provider_reference, $intent->amount, 'RWF', 'testing'))))->toThrow(LogicException::class, 'WALLET_DISPATCH_TRANSACTION_OPEN');
 });

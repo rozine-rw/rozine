@@ -30,6 +30,7 @@ use App\Models\WalletDepositCredit;
 use App\Models\WalletDepositDispatch;
 use App\Models\WalletDepositIntent;
 use App\Models\WalletProviderEvent;
+use Closure;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -308,6 +309,16 @@ final class EloquentWalletStore implements WalletStore
     private function method(InvestorFundingMethod $method): array
     {
         return ['id' => $method->id, 'kind' => $method->kind, 'label' => $method->label, 'masked' => $method->masked];
+    }
+
+    public function afterCommit(Closure $callback): void
+    {
+        DB::afterCommit($callback);
+    }
+
+    public function transactionOpen(): bool
+    {
+        return app('db.transactions')->callbackApplicableTransactions()->isNotEmpty();
     }
 
     /** The Party's wallet, created on first use, locked for the rest of the transaction. */
