@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\DB;
  * The online propagation beacon (S4-E): an append-only feed saying only *what changed* for one
  * audience. Each row is written in its effect's own transaction and carries that transaction's
  * id, so a reader can advance past a transaction only once it has finished.
+ *
+ * The audience ids deliberately carry no foreign key: a key would take a KEY SHARE lock on the
+ * Party or Business at the end of an effect that locked its wallet first, inverting the lock
+ * order `withActiveRole` (user → Party → wallet) relies on. Callers pass server-derived ids only.
  */
 return new class extends Migration
 {
@@ -18,8 +22,8 @@ return new class extends Migration
             CREATE TABLE change_feed (
                 id bigserial PRIMARY KEY,
                 created_xid xid8 NOT NULL,
-                party_id char(26) NULL REFERENCES parties (id) ON DELETE RESTRICT,
-                business_id char(26) NULL REFERENCES business_profiles (id) ON DELETE RESTRICT,
+                party_id char(26) NULL,
+                business_id char(26) NULL,
                 staff_queue varchar(40) NULL,
                 topic varchar(40) NOT NULL,
                 subject varchar(64) NOT NULL,
