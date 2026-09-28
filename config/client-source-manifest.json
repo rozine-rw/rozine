@@ -58,6 +58,7 @@
         "resources/js/actions/App/Http/Controllers/Settings/index.ts",
         "resources/js/actions/App/Http/Controllers/SiteController.ts",
         "resources/js/actions/App/Http/Controllers/StaffApplicationReleaseController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffDisbursementController.ts",
         "resources/js/actions/App/Http/Controllers/StaffHomeController.ts",
         "resources/js/actions/App/Http/Controllers/index.ts",
         "resources/js/actions/App/Http/index.ts",
@@ -146,6 +147,8 @@
         "resources/js/routes/api/v1/staff/audit/disputes/proofs/index.ts",
         "resources/js/routes/api/v1/staff/audit/index.ts",
         "resources/js/routes/api/v1/staff/audit/operations/index.ts",
+        "resources/js/routes/api/v1/staff/disbursements/index.ts",
+        "resources/js/routes/api/v1/staff/disbursements/operations/index.ts",
         "resources/js/routes/api/v1/staff/index.ts",
         "resources/js/routes/appearance/index.ts",
         "resources/js/routes/audit/index.ts",
@@ -207,6 +210,8 @@
         "resources/js/routes/staff/audit/disputes/proofs/index.ts",
         "resources/js/routes/staff/audit/index.ts",
         "resources/js/routes/staff/audit/operations/index.ts",
+        "resources/js/routes/staff/disbursements/index.ts",
+        "resources/js/routes/staff/disbursements/operations/index.ts",
         "resources/js/routes/staff/index.ts",
         "resources/js/routes/storage/index.ts",
         "resources/js/routes/storage/local/index.ts",
@@ -610,8 +615,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 579,
-        "generated": 191,
+        "totalTrackedSources": 584,
+        "generated": 196,
         "declarationOnly": 18,
         "authoredExecutable": 370
     },
