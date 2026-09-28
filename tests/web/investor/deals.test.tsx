@@ -941,6 +941,9 @@ describe('Deals in every closed lifecycle', () => {
             expect(screen.getByRole('status')).toHaveTextContent(title);
             expect(screen.getByRole('button', { name: label })).toBeDisabled();
             expect(
+                screen.getByText('TIME LEFT').nextElementSibling,
+            ).toHaveTextContent('—');
+            expect(
                 screen.queryByRole('link', { name: 'Invest' }),
             ).not.toBeInTheDocument();
             expect(

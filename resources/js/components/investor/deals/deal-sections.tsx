@@ -130,7 +130,10 @@ export function Section({
     );
 }
 
-/** Funding progress with the live badge (phone L783–798, desk L385–393). */
+/**
+ * Funding progress with the live badge (phone L783–798, desk L385–393). A raise that is no longer
+ * live has no time left, so its clock reads as a dash rather than counting down to a closed date.
+ */
 export function FundingProgress({
     deal,
     serverTime,
@@ -218,7 +221,9 @@ export function FundingProgress({
                 </div>
                 <div className="text-right">
                     <p className={label}>{t('investor.deal.time_left')}</p>
-                    <p className={cn(value, 'tabular-nums')}>{clock.label}</p>
+                    <p className={cn(value, 'tabular-nums')}>
+                        {deal.lifecycle === 'live' ? clock.label : '—'}
+                    </p>
                 </div>
             </div>
             <div
