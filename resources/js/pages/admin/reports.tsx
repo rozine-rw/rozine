@@ -92,10 +92,11 @@ function Row({ pack }: { pack: ReportPack }) {
                     </a>
                 )}
             </div>
+            {/* Pinned to the visible width on a phone, so the note reads without scrolling. */}
             {pack.status === 'moving' && (
                 <p
                     role="note"
-                    className="col-span-full rounded-[10px] border border-[#f6e6cc] bg-[rgba(210,120,45,.06)] px-3 py-2 text-[11.5px] font-medium text-rz-body dark:border-rz-border"
+                    className="col-span-full rounded-[10px] border border-[#f6e6cc] bg-[rgba(210,120,45,.06)] px-3 py-2 text-[11.5px] font-medium text-rz-body max-lg:sticky max-lg:left-5 max-lg:w-[calc(100vw-74px)] dark:border-rz-border"
                 >
                     <span className={cn('font-bold', TONE_TEXT.amber)}>
                         {t('admin.reports.pending')}

@@ -65,13 +65,13 @@ describe('Partner coverage', () => {
         const rubavu = rowOf('Rubavu');
 
         expect(rubavu).toHaveTextContent('Western Province');
-        expect(rubavu).toHaveTextContent(/^Rubavu.*02Uncovered—$/u);
+        expect(rubavu).toHaveTextContent(/^Rubavu.*Uncovered02—$/u);
         expect(
             screen.queryByRole('link', { name: 'Audit Partners in Rubavu' }),
         ).not.toBeInTheDocument();
 
         /* A partner is active, but the server still calls the district uncovered. */
-        expect(rowOf('Musanze')).toHaveTextContent(/13Uncovered/u);
+        expect(rowOf('Musanze')).toHaveTextContent(/Uncovered13/u);
         expect(
             screen.getByRole('link', { name: 'Audit Partners in Musanze' }),
         ).toBeInTheDocument();

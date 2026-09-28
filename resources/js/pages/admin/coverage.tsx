@@ -15,10 +15,21 @@ import {
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCount } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { AdminCoverageProps, CoverageDistrict } from '@/types/admin';
+import type {
+    AdminCoverageProps,
+    CoverageDistrict,
+    CoverageStatKey,
+} from '@/types/admin';
 
 const GRID =
-    'grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,.9fr)_minmax(0,1fr)_minmax(110px,.8fr)] gap-3 px-5';
+    'grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,.9fr)_minmax(110px,.8fr)] gap-3 px-5';
+
+/** Each tile keeps its accent whatever the order: uncovered reads in the red accent. */
+const STAT_ACCENT: Record<CoverageStatKey, number> = {
+    districts: 0,
+    uncovered: 7,
+    audits_open: 2,
+};
 
 function Row({ row }: { row: CoverageDistrict }) {
     const { t } = useTranslation();
@@ -34,16 +45,17 @@ function Row({ row }: { row: CoverageDistrict }) {
                     {row.province}
                 </span>
             </span>
+            {/* The verdict comes second, so a phone shows it without scrolling. */}
+            <span role="cell">
+                <Chip tone={row.capacity === 'covered' ? 'green' : 'red'}>
+                    {t(`admin.coverage.capacity.${row.capacity}`)}
+                </Chip>
+            </span>
             <span role="cell" className="text-[12.5px] font-bold text-rz-ink">
                 {formatCount(row.active_partners)}
             </span>
             <span role="cell" className="text-[12.5px] font-bold text-rz-ink">
                 {formatCount(row.audits_open)}
-            </span>
-            <span role="cell">
-                <Chip tone={row.capacity === 'covered' ? 'green' : 'red'}>
-                    {t(`admin.coverage.capacity.${row.capacity}`)}
-                </Chip>
             </span>
             <div role="cell" className="flex justify-end">
                 {row.link === null ? (
@@ -78,10 +90,10 @@ export default function AdminCoverage(props: AdminCoverageProps) {
         <AdminFrame section="coverage" {...props}>
             {props.stats.length > 0 && (
                 <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
-                    {props.stats.map((stat, index) => (
+                    {props.stats.map((stat) => (
                         <KpiTile
                             key={stat.key}
-                            index={index}
+                            index={STAT_ACCENT[stat.key]}
                             label={t(`admin.coverage.stats.${stat.key}`)}
                             value={format(stat.value)}
                         />
@@ -111,9 +123,9 @@ export default function AdminCoverage(props: AdminCoverageProps) {
             >
                 <div role="row" className={cn(GRID, TABLE_HEAD, 'py-[13px]')}>
                     <HeadCell>{t('admin.coverage.col.district')}</HeadCell>
+                    <HeadCell>{t('admin.coverage.col.capacity')}</HeadCell>
                     <HeadCell>{t('admin.coverage.col.partners')}</HeadCell>
                     <HeadCell>{t('admin.coverage.col.audits')}</HeadCell>
-                    <HeadCell>{t('admin.coverage.col.capacity')}</HeadCell>
                     <HeadCell end>{t('admin.coverage.col.open')}</HeadCell>
                 </div>
                 {props.districts.map((row) => (
