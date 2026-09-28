@@ -1,3 +1,4 @@
+import type * as InertiaCore from '@inertiajs/core';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
@@ -31,8 +32,46 @@ import {
     resetInertia,
     setWide,
 } from './inertia-mock';
+import type { Responder } from './inertia-mock';
+
+/* The transport's response reader the command hook registers while a request is out. */
+const transport = vi.hoisted(() => ({
+    onResponse: null as
+        | null
+        | ((response: {
+              status: number;
+              data: string;
+              headers: Record<string, string>;
+          }) => unknown),
+}));
+
+vi.mock('@inertiajs/core', async (importOriginal) => ({
+    ...(await importOriginal<typeof InertiaCore>()),
+    http: {
+        onResponse: (handler: typeof transport.onResponse) => {
+            transport.onResponse = handler;
+
+            return () => {
+                transport.onResponse = null;
+            };
+        },
+    },
+}));
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
+
+/** A recorded 422 with its domain code, as useHttp hands it over: no body, no field errors. */
+const refused422 =
+    (code: string): Responder =>
+    () => {
+        transport.onResponse?.({
+            status: 422,
+            data: JSON.stringify({ code }),
+            headers: {},
+        });
+
+        return Promise.resolve(undefined);
+    };
 
 vi.setConfig({ testTimeout: 30_000 });
 
@@ -547,5 +586,269 @@ describe('Checkout: committed', () => {
         expect(
             screen.getByText("Reserving isn't available right now."),
         ).toBeInTheDocument();
+    });
+});
+
+describe('Checkout: refusals the server records', () => {
+    it.each([
+        [
+            'EXPOSURE_LIMIT',
+            refused422('EXPOSURE_LIMIT'),
+            'This would take you over one of your investment limits.',
+            1,
+        ],
+        [
+            'INSUFFICIENT_AVAILABLE_FUNDS',
+            refused422('INSUFFICIENT_AVAILABLE_FUNDS'),
+            "Your available balance doesn't cover this amount.",
+            1,
+        ],
+        [
+            'RESTRICTION_ACTIVE',
+            fails(403, { code: 'RESTRICTION_ACTIVE' }),
+            "A restriction is in place, so this isn't available right now.",
+            0,
+        ],
+    ])(
+        'states a %s refusal of reserve as a whole, never resending or retrying it',
+        async (_code, respond, text, refreshes) => {
+            render(<InvestorCheckout {...props()} />);
+
+            inertia.queue.push(respond);
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Reserve · RWF 5,000' }),
+            );
+
+            expect(await screen.findByText(text)).toBeInTheDocument();
+            expect(inertia.calls).toHaveLength(1);
+            expect(
+                screen.queryByRole('button', {
+                    name: 'Send the same request again',
+                }),
+            ).not.toBeInTheDocument();
+            expect(inertia.reload).toHaveBeenCalledTimes(refreshes);
+            expect(inertia.visit).not.toHaveBeenCalled();
+            expect(
+                screen.queryByRole('dialog', { name: 'Confirm your notes' }),
+            ).not.toBeInTheDocument();
+        },
+    );
+
+    it.each([
+        [
+            'CAMPAIGN_CLOSED',
+            fails(409, { code: 'CAMPAIGN_CLOSED' }),
+            'This raise is no longer open.',
+        ],
+        [
+            'EXPOSURE_LIMIT',
+            refused422('EXPOSURE_LIMIT'),
+            'This would take you over one of your investment limits.',
+        ],
+        [
+            'INSUFFICIENT_AVAILABLE_FUNDS',
+            refused422('INSUFFICIENT_AVAILABLE_FUNDS'),
+            "Your available balance doesn't cover this amount.",
+        ],
+    ])(
+        'states a %s refusal of confirm and reads the reservation afresh, drawing no commitment',
+        async (_code, respond, text) => {
+            const user = userEvent.setup();
+
+            render(<InvestorCheckout {...props(reservedFixture)} />);
+            inertia.queue.push(respond);
+            await user.click(screen.getByRole('checkbox'));
+            await user.click(
+                screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+            );
+
+            expect(await screen.findByText(text)).toBeInTheDocument();
+            expect(inertia.calls).toHaveLength(1);
+            expect(inertia.reload).toHaveBeenCalledTimes(1);
+            expect(inertia.visit).not.toHaveBeenCalled();
+            expect(
+                screen.queryByRole('dialog', { name: 'Committed' }),
+            ).not.toBeInTheDocument();
+        },
+    );
+
+    it('leaves the hold’s expiry to the server: a confirm after the clock ends is refused, not assumed', async () => {
+        vi.useFakeTimers({ now: new Date('2026-09-23T07:00:00Z') });
+        render(<InvestorCheckout {...props(reservedFixture)} />);
+
+        act(() => vi.advanceTimersByTime(290_000));
+        expect(screen.getByRole('timer')).toHaveTextContent(
+            'Your hold has ended — these notes may have been released',
+        );
+
+        inertia.queue.push(fails(409, { code: 'RESERVATION_EXPIRED' }));
+        fireEvent.click(screen.getByRole('checkbox'));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+        );
+        await flush();
+
+        expect(
+            screen.getByText(
+                'Your 5-minute hold ended and its notes were released. Reserve again to continue.',
+            ),
+        ).toBeInTheDocument();
+        expect(inertia.reload).toHaveBeenCalledTimes(1);
+        expect(inertia.visit).not.toHaveBeenCalled();
+    });
+
+    it('asks for the acknowledgement again once a refresh brings a new disclosure', async () => {
+        const user = userEvent.setup();
+        const { rerender } = render(
+            <InvestorCheckout {...props(reservedFixture)} />,
+        );
+
+        inertia.queue.push(fails(409, { code: 'DISCLOSURE_STALE' }));
+        await user.click(screen.getByRole('checkbox'));
+        await user.click(
+            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+        );
+        expect(
+            await screen.findByText(
+                'The disclosure changed. Read the current version and acknowledge it again.',
+            ),
+        ).toBeInTheDocument();
+        expect(inertia.reload).toHaveBeenCalledTimes(1);
+
+        const fresh = props(reservedFixture);
+
+        fresh.disclosure = {
+            ...fresh.disclosure,
+            version: 'disclosure-2026-10.1',
+            sha256: 'a'.repeat(64),
+        };
+        rerender(<InvestorCheckout {...fresh} />);
+
+        expect(screen.getByRole('checkbox')).not.toBeChecked();
+        expect(
+            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+        ).toBeDisabled();
+
+        await user.click(screen.getByRole('checkbox'));
+        await user.click(
+            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+        );
+
+        const [first, second] = inertia.calls.map(
+            (call) => call.body as Record<string, unknown>,
+        );
+
+        expect(second).toMatchObject({
+            disclosure_version: 'disclosure-2026-10.1',
+            disclosure_sha256: 'a'.repeat(64),
+            acknowledged: true,
+        });
+        expect(second.request_id).not.toBe(first.request_id);
+    });
+});
+
+describe('Checkout: the server clock and lost answers', () => {
+    it('anchors the hold on server_time, whatever the browser clock says', () => {
+        vi.useFakeTimers({ now: new Date('2026-09-23T09:30:00Z') });
+        render(<InvestorCheckout {...props(reservedFixture)} />);
+
+        const timer = screen.getByRole('timer');
+
+        expect(timer).toHaveTextContent('Held for you · 04:50 left to confirm');
+        act(() => vi.advanceTimersByTime(30_000));
+        expect(timer).toHaveTextContent('04:20');
+    });
+
+    it('looks a lost confirm up by its own request and follows the server, drawing nothing itself', async () => {
+        const user = userEvent.setup();
+
+        render(<InvestorCheckout {...props(reservedFixture)} />);
+        inertia.queue.push(fails(503, { code: 'RETRYABLE_CONTENTION' }));
+        inertia.queue.push(
+            answers({
+                status: 'completed',
+                code: 'PRIMARY_COMMITTED',
+                data: {
+                    receipt: { code: 'PRIMARY_COMMITTED' },
+                    current: null,
+                    next: {
+                        url: '/preview/investor-checkout-committed',
+                        method: 'get',
+                    },
+                },
+            }),
+        );
+        await user.click(screen.getByRole('checkbox'));
+        await user.click(
+            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+        );
+
+        await vi.waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith({
+                url: '/preview/investor-checkout-committed',
+                method: 'get',
+            }),
+        );
+
+        const sent = inertia.calls[0].body as { request_id: string };
+
+        expect(inertia.calls).toHaveLength(2);
+        expect(inertia.calls[1]).toEqual({
+            url: `/preview/investor-primary-operation-${sent.request_id}`,
+            method: 'get',
+            body: { identity_context_revision: 5, command: 'primary.confirm' },
+        });
+        expect(
+            screen.queryByRole('dialog', { name: 'Committed' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('dialog', { name: 'Confirm your notes' }),
+        ).toHaveTextContent('Held from AvailableRWF 30,000');
+    });
+
+    it('looks a lost release up, then resends it only by hand and with the same request', async () => {
+        finishReloads();
+        const user = userEvent.setup();
+
+        render(<InvestorCheckout {...props(reservedFixture)} />);
+        inertia.queue.push(fails(503, { code: 'RETRYABLE_CONTENTION' }));
+        inertia.queue.push(fails(404, { code: 'OPERATION_NOT_FOUND' }));
+        await user.click(
+            screen.getByRole('button', { name: 'Release these notes' }),
+        );
+
+        expect(
+            await screen.findByText('Nothing was recorded'),
+        ).toBeInTheDocument();
+        expect(inertia.calls).toHaveLength(2);
+        expect(inertia.calls[1]).toMatchObject({
+            method: 'get',
+            body: { identity_context_revision: 5, command: 'primary.release' },
+        });
+        expect(inertia.reload).toHaveBeenCalledTimes(1);
+
+        inertia.queue.push(
+            answers({
+                status: 'completed',
+                code: 'PRIMARY_RESERVATION_RELEASED',
+                data: {
+                    receipt: { code: 'PRIMARY_RESERVATION_RELEASED' },
+                    current: null,
+                    next: { url: '/preview/investor-checkout', method: 'get' },
+                },
+            }),
+        );
+        await user.click(
+            screen.getByRole('button', { name: 'Send the same request again' }),
+        );
+
+        expect(inertia.calls).toHaveLength(3);
+        expect(inertia.calls[2]).toEqual(inertia.calls[0]);
+        await vi.waitFor(() =>
+            expect(inertia.visit).toHaveBeenCalledWith({
+                url: '/preview/investor-checkout',
+                method: 'get',
+            }),
+        );
     });
 });

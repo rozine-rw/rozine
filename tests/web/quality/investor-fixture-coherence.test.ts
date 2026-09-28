@@ -1507,3 +1507,50 @@ describe('Investor deal, checkout and commitment fixtures', () => {
         expect(problems).toEqual([]);
     });
 });
+
+describe('Investor primary purchase live-minimal shapes', () => {
+    const PURCHASE_LIVE = [
+        'investor-deals-live-minimal',
+        'investor-checkout-live-minimal',
+        'investor-commitment-live-minimal',
+        'investor-portfolio-live-minimal',
+        'investor-holding-live-minimal',
+    ];
+    const source = path.resolve(__dirname, '../../../resources/js');
+    const files = (directoryPath: string): string[] =>
+        readdirSync(path.join(source, directoryPath)).map((file) =>
+            path.join(directoryPath, file),
+        );
+
+    it('carry no preview seed and offer no action, as a live payload would', () => {
+        const live = [...deals, ...portfolios, ...holdings].filter(({ name }) =>
+            PURCHASE_LIVE.includes(name),
+        );
+
+        expect(live.map(({ name }) => name).sort()).toEqual(
+            [...PURCHASE_LIVE].sort(),
+        );
+        live.forEach(({ name, props }) => {
+            expect(props, name).not.toHaveProperty('preview_outcome');
+            expect(props.allowed_actions, name).toEqual([]);
+        });
+    });
+
+    it('take every URL from the page props: the purchase UI names no preview route', () => {
+        const scanned = [
+            ...['deals', 'deal', 'checkout', 'commitment', 'portfolio'].map(
+                (page) => `pages/investor/${page}.tsx`,
+            ),
+            ...files('components/investor/deals'),
+            ...files('components/investor/portfolio'),
+            ...files('components/investor/primary'),
+            'hooks/use-c3-command.ts',
+        ];
+        const naming = scanned.filter((file) =>
+            readFileSync(path.join(source, file), 'utf8').includes('/preview'),
+        );
+
+        expect(scanned.length).toBeGreaterThan(20);
+        expect(naming).toEqual([]);
+    });
+});

@@ -23,7 +23,7 @@ import unknownFixture from '../../../resources/fixtures/ui/investor-commitment-f
 import issuedFixture from '../../../resources/fixtures/ui/investor-commitment-issued.json';
 import minimalFixture from '../../../resources/fixtures/ui/investor-commitment-live-minimal.json';
 import lostFixture from '../../../resources/fixtures/ui/investor-commitment-visibility-lost.json';
-import { answers, inertia, resetInertia, setWide } from './inertia-mock';
+import { answers, fails, inertia, resetInertia, setWide } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
@@ -146,6 +146,43 @@ describe('Commitment', () => {
             url: '/preview/investor-commitment-cancelled',
             method: 'get',
         });
+    });
+
+    it('states a cancel lost to full funding and reads the locked commitment afresh', async () => {
+        const user = userEvent.setup();
+        const { rerender } = render(<InvestorCommitment {...props()} />);
+
+        inertia.queue.push(fails(409, { code: 'COMMITMENT_LOCKED' }));
+        await user.click(
+            screen.getByRole('button', { name: 'Cancel commitment' }),
+        );
+        await user.click(
+            screen.getByRole('button', { name: 'Yes, cancel and refund' }),
+        );
+
+        expect(
+            await screen.findByText(
+                'The raise is fully funded, so this can no longer be cancelled.',
+            ),
+        ).toBeInTheDocument();
+        expect(inertia.calls).toHaveLength(1);
+        expect(inertia.reload).toHaveBeenCalledWith(
+            expect.objectContaining({
+                only: ['commitment', 'allowed_actions'],
+            }),
+        );
+        expect(inertia.visit).not.toHaveBeenCalled();
+        expect(
+            screen.queryByRole('region', { name: 'REFUND RECEIPT' }),
+        ).not.toBeInTheDocument();
+
+        rerender(<InvestorCommitment {...props(awaitingFixture)} />);
+        expect(
+            screen.getByText('Fully funded — awaiting payout'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Cancel commitment' }),
+        ).not.toBeInTheDocument();
     });
 
     it('offers no cancel once the server stops listing it', () => {
