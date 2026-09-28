@@ -20,6 +20,12 @@ export type Units = string;
  * `recorded_at` never change across lookups or replays, even after a provider advances; the fresh
  * state of the record lives beside it under `current`.
  */
+/**
+ * An immutable receipt. `receipt_id` is the receipt's own identity; `operation_id` and `request_id`
+ * name the command that caused it. A separately receipted asynchronous effect keeps its causing
+ * command: `DEPOSIT_CREDITED` carries the originating `wallet.deposit` operation and request, under
+ * a `receipt_id` of its own, and never rewrites that command's `DEPOSIT_INTENT_RECORDED` result.
+ */
 export type Receipt = {
     receipt_id: string;
     operation_id: string;

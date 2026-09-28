@@ -14,6 +14,7 @@ use App\Http\Controllers\BusinessAuditReportController;
 use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IdentityManagementController;
+use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\PulseController;
 use App\Http\Controllers\RoleBookmarkController;
 use App\Http\Controllers\RoleHomeController;
@@ -59,6 +60,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('auditor', RoleHomeController::class)->name('auditor.home');
     Route::get('admin', StaffHomeController::class)->name('admin.home');
     Route::get('auditor/profile', [AuditorProfileController::class, 'show'])->name('auditor.profile');
+});
+
+Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('investor')->name('investor.')->group(function (): void {
+    Route::get('wallet', [InvestorWalletController::class, 'show'])->name('wallet');
+    Route::post('wallet/deposits', [InvestorWalletController::class, 'deposit'])->name('wallet.deposit');
+    Route::get('wallet-operations/{request_id}', [InvestorWalletController::class, 'operation'])->whereUuid('request_id')->name('wallet.operations.show');
 });
 
 Route::middleware(['auth', 'throttle:60,1'])->prefix('auditor')->name('auditor.')->group(function (): void {

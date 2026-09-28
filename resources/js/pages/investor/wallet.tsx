@@ -65,13 +65,18 @@ export default function InvestorWallet(props: C3InvestorWalletProps) {
             )}
             {props.funding.methods.length === 0 && (
                 <p className="mt-2.5 text-center text-xs text-rz-secondary">
-                    {t('investor.wallet.no_methods')}{' '}
-                    <Link
-                        href={props.links.link_account}
-                        className="font-semibold text-rz-accent-app-text"
-                    >
-                        {t('investor.wallet.link_account')}
-                    </Link>
+                    {t('investor.wallet.no_methods')}
+                    {props.links.link_account !== null && (
+                        <>
+                            {' '}
+                            <Link
+                                href={props.links.link_account}
+                                className="font-semibold text-rz-accent-app-text"
+                            >
+                                {t('investor.wallet.link_account')}
+                            </Link>
+                        </>
+                    )}
                 </p>
             )}
             <HoldsList holds={props.holds} serverTime={props.server_time} />
@@ -115,13 +120,15 @@ export default function InvestorWallet(props: C3InvestorWalletProps) {
             ) : (
                 <div className="px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-10">
                     <div className="flex items-center gap-[11px]">
-                        <Link
-                            href={props.links.deals}
-                            aria-label={t('investor.common.back')}
-                            className="flex size-[34px] items-center justify-center rounded-[10px] border border-rz-border bg-rz-surface text-base text-rz-ink"
-                        >
-                            <span aria-hidden>←</span>
-                        </Link>
+                        {props.links.deals !== null && (
+                            <Link
+                                href={props.links.deals}
+                                aria-label={t('investor.common.back')}
+                                className="flex size-[34px] items-center justify-center rounded-[10px] border border-rz-border bg-rz-surface text-base text-rz-ink"
+                            >
+                                <span aria-hidden>←</span>
+                            </Link>
+                        )}
                         <h1 className="text-[17px] font-semibold text-rz-ink">
                             {t('investor.wallet.title')}
                         </h1>

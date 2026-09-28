@@ -68,12 +68,12 @@ report() {
   echo
 }
 
-ALL_CONTROLS=(strict-types domain-purity transport-boundary identity-boundary operation-boundary business-boundary evidence-boundary auditor-boundary audit-signing-boundary adapter-leak php-coverage phpstan-tests)
+ALL_CONTROLS=(strict-types domain-purity transport-boundary identity-boundary operation-boundary business-boundary evidence-boundary wallet-boundary auditor-boundary audit-signing-boundary adapter-leak php-coverage phpstan-tests)
 
 controls_for_group() {
   case "$1" in
     architecture) printf '%s\n' strict-types domain-purity transport-boundary adapter-leak ;;
-    business) printf '%s\n' identity-boundary operation-boundary business-boundary evidence-boundary ;;
+    business) printf '%s\n' identity-boundary operation-boundary business-boundary evidence-boundary wallet-boundary ;;
     auditor) printf '%s\n' auditor-boundary audit-signing-boundary ;;
     coverage) printf '%s\n' php-coverage phpstan-tests ;;
     *) echo "unknown control group '$1'" >&2; return 64 ;;
@@ -374,6 +374,39 @@ VIOLATION
     cat "${LOG_DIR}/evidence.log"
   fi
   rm -f app/Application/Evidence/NegativeControlEvidenceWrite.php
+  done
+fi
+
+if selected wallet-boundary; then
+  control wallet-boundary "bypassing the wallet adapter to write ledger, deposit or provider records must fail the protected rule"
+  for wallet_model in InvestorWallet LedgerAccount LedgerEntry LedgerLine DepositPolicy InvestorFundingMethod InvestorAccountRestriction WalletDepositIntent WalletDepositDispatch WalletProviderEvent WalletDepositCredit; do
+  echo "    checking ${wallet_model}"
+  plant app/Application/Wallet/NegativeControlWalletWrite.php <<VIOLATION
+<?php
+
+declare(strict_types=1);
+
+namespace App\\Application\\Wallet;
+
+use App\\Models\\${wallet_model};
+
+final class NegativeControlWalletWrite
+{
+    public function handle(): ${wallet_model}
+    {
+        return ${wallet_model}::query()->create([]);
+    }
+}
+VIOLATION
+  if [ "${ARCHITECTURE_GREEN}" != true ]; then
+    report wallet-boundary fail "the architecture suite must be green beforehand"
+  elif gate_fails "${LOG_DIR}/wallet.log" vendor/bin/pest --ci --no-tia tests/Architecture/ArchitectureTest.php --filter='wallet ledger records are only accessed' --compact; then
+    report wallet-boundary pass "the wallet ledger boundary rejected it"
+  else
+    report wallet-boundary fail "the wallet ledger boundary accepted an external write"
+    cat "${LOG_DIR}/wallet.log"
+  fi
+  rm -f app/Application/Wallet/NegativeControlWalletWrite.php
   done
 fi
 
