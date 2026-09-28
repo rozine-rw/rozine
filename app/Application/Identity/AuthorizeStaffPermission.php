@@ -22,6 +22,31 @@ final class AuthorizeStaffPermission
     }
 
     /**
+     * The staff member's current permissions without locking, for read-only projections such as
+     * `allowed_actions`; empty when they may not open the console at all. Never authority for an
+     * effect: commands use `handle` or `currentlyHolds`.
+     *
+     * @return list<string>
+     */
+    public function permissions(int $userId): array
+    {
+        /** @var list<string> $allowed */
+        $allowed = $this->access->staffAccess($userId, false, false)['allowed_actions'];
+
+        return $allowed;
+    }
+
+    /**
+     * Locks another recorded staff member's account row (a maker or checker, in the caller's lock
+     * order) and reports whether they still hold this permission, with current MFA and an enabled
+     * staff account. It refuses nothing itself: the caller decides what a lapsed authority means.
+     */
+    public function currentlyHolds(int $userId, string $permission): bool
+    {
+        return in_array($permission, $this->access->staffAccess($userId, false, true)['allowed_actions'], true);
+    }
+
+    /**
      * @template TResult
      *
      * @param  Closure(): TResult  $operation
