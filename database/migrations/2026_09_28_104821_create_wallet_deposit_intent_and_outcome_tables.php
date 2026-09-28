@@ -63,7 +63,7 @@ return new class extends Migration
             $table->timestampTz('observed_at');
             $table->string('disposition', 16);
             $table->text('evidence');
-            $table->timestampTz('created_at');
+            $table->timestampTz('created_at', 6);
             $table->unique(['provider', 'provider_event_id', 'content_sha256'], 'wallet_provider_events_content');
             $table->index(['intent_id', 'id']);
         });

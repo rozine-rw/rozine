@@ -7,12 +7,14 @@ namespace App\Application\Wallet;
 use App\Application\Wallet\Contracts\WalletStore;
 
 /**
- * `wallet.deposit`: records the intent, its receipt and its dispatch outbox row in one transaction.
- * Nothing is credited here; only a verified provider success can credit, later and once.
+ * `wallet.deposit`: records the intent, its receipt and its dispatch outbox row in one transaction,
+ * then, once that has committed, dispatches it. Nothing is credited here; only a verified provider
+ * success can credit, later and once. If the dispatch is lost, the outbox row remains for the
+ * worker and the recorded result remains for the operation lookup.
  */
 final class RecordDepositIntent
 {
-    public function __construct(private WalletStore $store) {}
+    public function __construct(private WalletStore $store, private DispatchDepositIntents $dispatch, private SyntheticWalletGuard $guard) {}
 
     /**
      * @param  array{currency: string, amount: string}  $amount
@@ -20,6 +22,11 @@ final class RecordDepositIntent
      */
     public function handle(int $userId, int $contextRevision, string $requestId, array $amount, string $methodId): array
     {
-        return $this->store->deposit($userId, $contextRevision, $requestId, $amount, $methodId);
+        $result = $this->store->deposit($userId, $contextRevision, $requestId, $amount, $methodId);
+        if ($result['status'] === 'completed' && $this->guard->allowed()) {
+            $this->dispatch->handle($result['data']['intent_id']);
+        }
+
+        return $result;
     }
 }

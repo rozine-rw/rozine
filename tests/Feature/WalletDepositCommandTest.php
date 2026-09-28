@@ -18,7 +18,7 @@ use App\Models\WalletDepositIntent;
 use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
 
-it('records an immutable intent receipt and its dispatch outbox row without crediting anything', function (): void {
+it('records an immutable intent receipt and its outbox row, dispatches after commit and credits nothing', function (): void {
     $fixture = InvestorWalletFixture::ready();
     $request = (string) Str::uuid();
     $result = InvestorWalletFixture::deposit($fixture, '50000', $request);
@@ -33,7 +33,7 @@ it('records an immutable intent receipt and its dispatch outbox row without cred
         ->and($intent->operation_id)->toBe($operation->id)->and($intent->party_id)->toBe($fixture['party']->id)
         ->and([$intent->amount, $intent->fee, $intent->credited, $intent->provider])->toBe(['50000', '0', '50000', 'synthetic'])
         ->and($operation->target_type)->toBe('investor_wallet')->and($operation->target_id)->toBe($intent->wallet_id)
-        ->and(WalletDepositDispatch::query()->where('intent_id', $intent->id)->pluck('phase')->all())->toBe(['queued'])
+        ->and(WalletDepositDispatch::query()->where('intent_id', $intent->id)->orderBy('id')->pluck('phase')->all())->toBe(['queued', 'claimed', 'acknowledged'])
         ->and(LedgerEntry::query()->count())->toBe(0)->and(LedgerLine::query()->count())->toBe(0)->and(WalletDepositCredit::query()->count())->toBe(0)
         ->and(json_encode($result))->not->toContain($intent->provider_reference);
 });
@@ -45,7 +45,7 @@ it('replays the same key and body and refuses a changed body under the same key'
     expect(InvestorWalletFixture::deposit($fixture, '50000', strtoupper($request)))->toBe($first)
         ->and(fn () => InvestorWalletFixture::deposit($fixture, '60000', $request))->toThrow(CommandRejection::class, 'IDEMPOTENCY_CONFLICT')
         ->and(WalletDepositIntent::query()->count())->toBe(1)
-        ->and(WalletDepositDispatch::query()->count())->toBe(1);
+        ->and(WalletDepositDispatch::query()->count())->toBe(3);
 });
 
 it('refuses without an applicable versioned policy and journals the refusal', function (Closure $policy): void {
