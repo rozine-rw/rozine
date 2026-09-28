@@ -149,7 +149,10 @@ it('checks the half-open hold deadline both before and after current admission',
         return PrimaryReservationFixture::terms($rights, $campaign);
     };
     expect(($this->confirm)(admit: $admit)['code'])->toBe('RESERVATION_EXPIRED')
-        ->and(PrimaryReservationVersion::query()->count())->toBe(1)->and(PrimaryCommitment::query()->count())->toBe(0);
+        ->and(PrimaryReservationVersion::query()->count())->toBe(2)->and(PrimaryCommitment::query()->count())->toBe(0)
+        ->and(PrimaryReservationVersion::query()->orderByDesc('revision')->value('state'))->toBe('expired')
+        ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(1);
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 })->with([false, true]);
 
 it('does not append a requote after admission reaches the deadline', function (): void {
@@ -157,7 +160,10 @@ it('does not append a requote after admission reaches the deadline', function ()
         $this->travelTo($this->root->expires_at);
 
         return revisedPrimaryDisclosure($rights, $campaign);
-    })['code'])->toBe('RESERVATION_EXPIRED')->and(PrimaryReservationVersion::query()->count())->toBe(1);
+    })['code'])->toBe('RESERVATION_EXPIRED')->and(PrimaryReservationVersion::query()->count())->toBe(2)
+        ->and(PrimaryReservationVersion::query()->orderByDesc('revision')->value('state'))->toBe('expired')
+        ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(1);
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 });
 
 it('admits a matching acknowledgement immediately before the deadline', function (): void {
@@ -278,7 +284,8 @@ it('reads retained release and expiry evidence as terminal without recommitting 
     }
     $operation = CommandOperation::factory()->create(['actor_key' => 'party:'.$this->root->party_id,
         'actor_user_id' => $this->investor['user']->id, 'command' => 'primary.release',
-        'target_type' => 'primary_reservation', 'target_id' => $this->root->id, 'result' => ['status' => 'completed']]);
+        'target_type' => 'primary_reservation', 'target_id' => $this->root->id,
+        'result' => $state === 'expired' ? ['status' => 'rejected', 'code' => 'RESERVATION_EXPIRED'] : ['status' => 'completed']]);
     $payload = [...$this->version->payload, 'revision' => 2, 'state' => $state, 'operation_id' => $operation->id,
         'previous_sha256' => $this->version->sha256, 'recorded_at' => now('UTC')->format('Y-m-d\TH:i:s.u\Z')];
     (new PrimaryReservationVersion)->forceFill(['primary_reservation_id' => $this->root->id, 'revision' => 2,
@@ -289,4 +296,5 @@ it('reads retained release and expiry evidence as terminal without recommitting 
         new PostingSource('primary_reservation', $this->root->id, $this->root->origin_operation_id));
     expect(($this->confirm)(revision: 2)['code'])->toBe('RESERVATION_NOT_HELD')
         ->and(PrimaryCommitment::query()->count())->toBe(0)->and(LedgerEntry::query()->where('kind', 'primary_commit')->count())->toBe(0);
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 })->with(['released', 'expired']);

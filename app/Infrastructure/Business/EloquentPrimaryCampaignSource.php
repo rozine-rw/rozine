@@ -41,10 +41,22 @@ final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
     /** @return CampaignInput */
     public function lock(string $campaignId): array
     {
+        return $this->lockedInput($campaignId, true);
+    }
+
+    public function lockRetained(string $campaignId): array
+    {
+        return $this->lockedInput($campaignId, false);
+    }
+
+    /** @return CampaignInput */
+    private function lockedInput(string $campaignId, bool $requireOpen): array
+    {
         $this->lockBusiness($campaignId);
         $campaign = BusinessCampaign::query()->whereKey($campaignId)->lockForUpdate()->firstOrFail();
         $payload = $this->publications->find($campaign->id);
-        if ($this->closures->find($campaign->id) !== null || now()->lt($campaign->live_at) || now()->gte($campaign->expires_at)) {
+        $closure = $this->closures->find($campaign->id);
+        if ($requireOpen && ($closure !== null || now()->lt($campaign->live_at) || now()->gte($campaign->expires_at))) {
             throw new CommandRejection('CAMPAIGN_CLOSED');
         }
         $release = BusinessApplicationRelease::query()->whereKey($campaign->business_application_release_id)->firstOrFail();
@@ -63,7 +75,8 @@ final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
         $exposure = array_find($this->exposures->current($campaign->business_id), fn (array $item): bool => $item['id'] === $campaign->exposure_reservation_id);
         $reservation = BusinessExposureReservation::query()->whereKey($campaign->exposure_reservation_id)->firstOrFail();
         $quoteBinding = $payload['binding']['application']['quote'] ?? [];
-        if ($exposure === null || $exposure['principal'] !== $campaign->principal
+        $retainedPrincipal = $exposure['principal'] ?? ($closure['principal_released'] ?? null);
+        if ($retainedPrincipal !== $campaign->principal
             || ($reservation->payload['quote_id'] ?? null) !== ($quoteBinding['id'] ?? null)
             || ($reservation->payload['quote_sha256'] ?? null) !== ($quoteBinding['sha256'] ?? null)) {
             throw new RuntimeException('BUSINESS_EXPOSURE_INTEGRITY_FAILED');

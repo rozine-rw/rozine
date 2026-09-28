@@ -31,4 +31,13 @@ interface PrimaryCampaignSource
      * @return CampaignInput
      */
     public function lock(string $campaignId): array;
+
+    /**
+     * Same locks and immutable evidence checks as lock(), including validated exposure history,
+     * but permits a closed or elapsed publication. This is recovery input for returning held
+     * cash, never permission to reserve or confirm another purchase.
+     *
+     * @return CampaignInput
+     */
+    public function lockRetained(string $campaignId): array;
 }

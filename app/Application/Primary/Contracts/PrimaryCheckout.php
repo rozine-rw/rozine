@@ -44,4 +44,15 @@ interface PrimaryCheckout
 
     /** @return array<string, mixed> */
     public function findConfirmation(int $userId, int $contextRevision, string $campaignId, string $reservationId, string $requestId): array;
+
+    /**
+     * Returns held cash under current Investor authority, even after publication closes.
+     * An elapsed hold records a rejected expiry receipt and releases cash atomically.
+     *
+     * @return array<string, mixed>
+     */
+    public function release(int $userId, int $contextRevision, string $campaignId, string $reservationId, int $expectedRevision, string $requestId): array;
+
+    /** @return array<string, mixed> */
+    public function findRelease(int $userId, int $contextRevision, string $campaignId, string $reservationId, string $requestId): array;
 }

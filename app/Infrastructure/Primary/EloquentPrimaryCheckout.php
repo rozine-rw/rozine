@@ -58,7 +58,7 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
                 $partyId = (string) $identity['party']['id'];
                 $root = $this->reservationTarget($campaignId, $reservationId, $partyId);
 
-                return $this->journal->execute('party:'.$partyId, $userId, 'primary.confirm', $requestId, 'primary_reservation', $root->id,
+                $result = $this->journal->execute('party:'.$partyId, $userId, 'primary.confirm', $requestId, 'primary_reservation', $root->id,
                     ['identity_context_revision' => $contextRevision, 'campaign_id' => $root->business_campaign_id, 'expected_revision' => $expectedRevision,
                         'disclosure_version' => $disclosureVersion, 'disclosure_sha256' => $disclosureSha256],
                     function (): void {}, function (string $operationId) use ($root, $partyId, $expectedRevision, $disclosureVersion, $disclosureSha256, $admit): OperationResult {
@@ -70,6 +70,9 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
                                 'disclosure_sha256' => $result->reservation->terms->disclosureSha256,
                                 'expires_at' => $result->reservation->window->expiresAt->format('Y-m-d\TH:i:s.u\Z')], $result->revision);
                     });
+                $this->expireRejected($root, $result);
+
+                return $result;
             });
     }
 
@@ -85,6 +88,54 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
                     }
                 });
         });
+    }
+
+    public function release(int $userId, int $contextRevision, string $campaignId, string $reservationId, int $expectedRevision, string $requestId): array
+    {
+        return $this->withInvestor($userId, $contextRevision, $campaignId,
+            function (array $identity) use ($userId, $contextRevision, $campaignId, $reservationId, $expectedRevision, $requestId): array {
+                $partyId = (string) $identity['party']['id'];
+                $root = $this->reservationTarget($campaignId, $reservationId, $partyId);
+                $result = $this->journal->execute('party:'.$partyId, $userId, 'primary.release', $requestId, 'primary_reservation', $root->id,
+                    ['identity_context_revision' => $contextRevision, 'campaign_id' => $root->business_campaign_id, 'expected_revision' => $expectedRevision],
+                    function (): void {}, function (string $operationId) use ($root, $partyId, $expectedRevision): OperationResult {
+                        $released = $this->reservations->release($root->business_campaign_id, $root->id, $partyId, $operationId, $expectedRevision);
+
+                        return new OperationResult('RESERVATION_RELEASED', ['reservation_id' => $released->id, 'entry_id' => $released->posting->entryId,
+                            'origin_operation_id' => $root->origin_operation_id, 'amount' => $released->posting->amount], $released->revision);
+                    });
+                $this->expireRejected($root, $result);
+
+                return $result;
+            });
+    }
+
+    public function findRelease(int $userId, int $contextRevision, string $campaignId, string $reservationId, string $requestId): array
+    {
+        return $this->withInvestor($userId, $contextRevision, $campaignId, function (array $identity) use ($campaignId, $reservationId, $requestId): array {
+            $root = $this->reservationTarget($campaignId, $reservationId, (string) $identity['party']['id']);
+
+            return $this->journal->find('party:'.$identity['party']['id'], 'primary.release', $requestId,
+                function (string $type, string $id) use ($root): void {
+                    if ($type !== 'primary_reservation' || $id !== $root->id) {
+                        throw new CommandRejection('OPERATION_NOT_FOUND', 404);
+                    }
+                });
+        });
+    }
+
+    /**
+     * The journal rolls back a rejected operation's savepoint. The enclosing Business and
+     * authority transaction therefore records expiry only after the rejected receipt exists;
+     * a failure to return the cash rolls back that receipt and all terminal evidence together.
+     *
+     * @param  array<string, mixed>  $result
+     */
+    private function expireRejected(PrimaryReservationRecord $root, array $result): void
+    {
+        if ($result['status'] === 'rejected' && $result['code'] === 'RESERVATION_EXPIRED') {
+            $this->reservations->expire($root->business_campaign_id, $root->id, $result['operation_id']);
+        }
     }
 
     private function reservationTarget(string $campaignId, string $reservationId, string $partyId): PrimaryReservationRecord

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Primary\Contracts;
 
 use App\Application\Primary\ReservationConfirmation;
+use App\Application\Primary\ReservationRelease;
 use App\Application\Primary\ReservedCheckout;
 use App\Domain\Primary\PrimaryTerms;
 use App\Domain\Primary\UnitRights;
@@ -39,10 +40,27 @@ interface PrimaryReservations
      * Changed fees/disclosures append a held revision, requiring a new acknowledgement;
      * they never extend the deadline or move cash. Matching current acknowledgement
      * atomically creates the commitment and moves the original hold to committed.
-     * Expired holds refuse here; release and inventory recycling remain separate work.
+     * Expired holds refuse here; the caller records the refusal, then expires the hold in
+     * the same outer transaction. Inventory recycling remains separate work.
      *
      * @param  Closure(UnitRights, array<string, mixed>): PrimaryTerms  $admit
      */
     public function confirm(string $campaignId, string $reservationId, string $partyId, string $operationId,
         int $expectedRevision, string $disclosureVersion, string $disclosureSha256, Closure $admit): ReservationConfirmation;
+
+    /**
+     * Requires current caller authority, its outer transaction and journal operation.
+     * A release returns the original held principal without new admission. A confirmed
+     * commitment refuses; a released hold is idempotent. Expiry refuses for the caller
+     * to retain its rejected receipt before invoking expire() in the outer transaction.
+     */
+    public function release(string $campaignId, string $reservationId, string $partyId, string $operationId, int $expectedRevision): ReservationRelease;
+
+    /**
+     * Requires an outer transaction. Returns null for not-yet-due or terminal holds.
+     * The system expiry path supplies no actor operation. Actor-driven expiry supplies
+     * only its retained rejected RESERVATION_EXPIRED receipt. Neither recycles ordinals
+     * nor refunds a confirmed commitment. Business → campaign → root → wallet → ledger.
+     */
+    public function expire(string $campaignId, string $reservationId, ?string $operationId = null): ?ReservationRelease;
 }

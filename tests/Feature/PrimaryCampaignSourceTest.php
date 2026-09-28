@@ -176,3 +176,14 @@ it('rejects exposure evidence bound to a different quote even when its digest is
     corruptPrimarySource($reservation, $payload);
     expect(fn () => $this->source->lock($this->campaign->id))->toThrow(RuntimeException::class, 'BUSINESS_EXPOSURE_INTEGRITY_FAILED');
 })->with(['quote_id', 'quote_sha256']);
+
+it('verifies retained publication and released exposure after closure for recovery only', function (): void {
+    $original = $this->source->lock($this->campaign->id);
+    $this->campaigns->cancel($this->fixture['audit']['authority']['users'][0]->id, 1, $this->campaign->business_id,
+        $this->campaign->id, 1, 'Cancelled.', (string) Str::uuid());
+    expect($this->source->lockRetained($this->campaign->id))->toEqual($original)
+        ->and(fn () => $this->source->lock($this->campaign->id))->toThrow(CommandRejection::class, 'CAMPAIGN_CLOSED');
+    $exposure = BusinessExposureReservation::query()->whereKey($this->campaign->exposure_reservation_id)->sole();
+    corruptPrimarySource($exposure, [...$exposure->payload, 'principal' => '1']);
+    expect(fn () => $this->source->lockRetained($this->campaign->id))->toThrow(RuntimeException::class, 'BUSINESS_EXPOSURE_INTEGRITY_FAILED');
+});

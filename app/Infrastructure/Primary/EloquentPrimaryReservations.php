@@ -8,6 +8,7 @@ use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Primary\ReservationConfirmation;
+use App\Application\Primary\ReservationRelease;
 use App\Application\Primary\ReservedCheckout;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\PostingSource;
@@ -95,7 +96,7 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
         }
         try {
             return DB::transaction(function () use ($campaignId, $reservationId, $partyId, $operationId, $expectedRevision, $disclosureVersion, $disclosureSha256, $admit): ReservationConfirmation {
-                $campaign = $this->campaigns->lock($campaignId);
+                $campaign = $this->campaigns->lockRetained($campaignId);
                 $root = PrimaryReservationRecord::query()->where('business_campaign_id', $campaign['id'])->where('party_id', $partyId)
                     ->whereKey($reservationId)->lockForUpdate()->first() ?? throw new CommandRejection('RESERVATION_NOT_FOUND', 404);
                 [$reservation, $previous] = $this->retainedReservation($root, $campaign);
@@ -106,6 +107,7 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                     throw new CommandRejection('RESERVATION_NOT_HELD', 409, $previous->revision);
                 }
                 $reservation->window->requireOpen(now('UTC')->toDateTimeImmutable());
+                $this->campaigns->lock($campaignId);
                 $terms = $admit($reservation->rights, $campaign);
                 if ($terms->policyVersion !== $campaign['policy_version'] || $terms->ratePercent !== $campaign['rate_pct'] || $terms->termMonths !== $campaign['term_months']) {
                     throw new PrimaryViolation('INVALID_PRIMARY_TERMS');
@@ -131,6 +133,65 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
         } catch (PrimaryViolation $exception) {
             throw new CommandRejection($exception->reasonCode);
         }
+    }
+
+    public function release(string $campaignId, string $reservationId, string $partyId, string $operationId, int $expectedRevision): ReservationRelease
+    {
+        if (DB::transactionLevel() === 0) {
+            throw new CommandRejection('PRIMARY_TRANSACTION_REQUIRED');
+        }
+        try {
+            return DB::transaction(function () use ($campaignId, $reservationId, $partyId, $operationId, $expectedRevision): ReservationRelease {
+                $campaign = $this->campaigns->lockRetained($campaignId);
+                $root = PrimaryReservationRecord::query()->where('business_campaign_id', $campaign['id'])->where('party_id', $partyId)
+                    ->whereKey($reservationId)->lockForUpdate()->first() ?? throw new CommandRejection('RESERVATION_NOT_FOUND', 404);
+                [$reservation, $previous] = $this->retainedReservation($root, $campaign);
+                if ($previous->revision !== $expectedRevision) {
+                    throw new CommandRejection('VERSION_CONFLICT', 409, $previous->revision);
+                }
+                $at = now('UTC')->toDateTimeImmutable();
+                $released = $reservation->release($at);
+                if ($released->state === 'expired') {
+                    throw new CommandRejection('RESERVATION_EXPIRED', 409, $previous->revision + ($reservation->state === 'held' ? 1 : 0),
+                        data: ['reservation_id' => $root->id, 'amount' => $root->principal]);
+                }
+
+                return $this->releaseCash($root, $released, $previous, $operationId, $at);
+            });
+        } catch (PrimaryViolation $exception) {
+            throw new CommandRejection($exception->reasonCode);
+        }
+    }
+
+    public function expire(string $campaignId, string $reservationId, ?string $operationId = null): ?ReservationRelease
+    {
+        if (DB::transactionLevel() === 0) {
+            throw new CommandRejection('PRIMARY_TRANSACTION_REQUIRED');
+        }
+
+        return DB::transaction(function () use ($campaignId, $reservationId, $operationId): ?ReservationRelease {
+            $campaign = $this->campaigns->lockRetained($campaignId);
+            $root = PrimaryReservationRecord::query()->where('business_campaign_id', $campaign['id'])->whereKey($reservationId)->lockForUpdate()->first()
+                ?? throw new CommandRejection('RESERVATION_NOT_FOUND', 404);
+            [$reservation, $previous] = $this->retainedReservation($root, $campaign);
+            $at = now('UTC')->toDateTimeImmutable();
+            if ($reservation->state !== 'held' || ! $reservation->window->isExpired($at)) {
+                return null;
+            }
+
+            return $this->releaseCash($root, $reservation->release($at), $previous, $operationId, $at);
+        });
+    }
+
+    private function releaseCash(PrimaryReservationRecord $root, PrimaryReservation $released, PrimaryReservationVersion $previous,
+        ?string $operationId, DateTimeImmutable $at): ReservationRelease
+    {
+        $version = $previous->state === 'held'
+            ? $this->appendVersion($root, $released, $operationId, $previous, $at) : $previous;
+        $posting = $this->wallets->release($this->wallets->lockForParty($root->party_id), WalletMoney::of($root->principal),
+            new PostingSource('primary_reservation', $root->id, $root->origin_operation_id));
+
+        return new ReservationRelease($root->id, $version->revision, $released, $posting);
     }
 
     /**
@@ -195,7 +256,7 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
         return [$reservation, $previous];
     }
 
-    private function appendVersion(PrimaryReservationRecord $root, PrimaryReservation $reservation, string $operationId,
+    private function appendVersion(PrimaryReservationRecord $root, PrimaryReservation $reservation, ?string $operationId,
         ?PrimaryReservationVersion $previous, DateTimeImmutable $at): PrimaryReservationVersion
     {
         $payload = $this->versionPayload($root, $reservation, $operationId, $previous, $at);
