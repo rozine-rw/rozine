@@ -5,9 +5,11 @@ declare(strict_types=1);
 use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
 use App\Models\CommandOperation;
+use App\Models\Party;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
+use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -80,8 +82,11 @@ it('requires initial reservation evidence before the outer commit', function ():
 });
 
 it('requires a matching operation while allowing journal insertion after the reservation', function (): void {
-    $operation = CommandOperation::factory()->make(['id' => strtolower((string) Str::ulid())]);
-    PrimaryReservationRecord::factory()->withInitialVersion()->create(['origin_operation_id' => $operation->id]);
+    $campaign = BusinessCampaign::factory()->create();
+    $user = User::factory()->create(['party_id' => Party::factory()]);
+    $operation = CommandOperation::factory()->make(['id' => strtolower((string) Str::ulid()), 'actor_key' => 'party:'.$user->party_id,
+        'actor_user_id' => $user->id, 'command' => 'primary.reserve', 'target_type' => 'campaign', 'target_id' => $campaign->id]);
+    PrimaryReservationRecord::factory()->withInitialVersion()->create(['business_campaign_id' => $campaign->id, 'party_id' => $user->party_id, 'origin_operation_id' => $operation->id]);
     $operation->save();
     primarySchemaFlush();
     expect(PrimaryReservationRecord::query()->sole()->origin_operation_id)->toBe($operation->id);
@@ -190,15 +195,19 @@ it('rolls back all Primary records when the surrounding command fails', function
 it('reverses an empty schema but refuses rollback after reservation evidence exists', function (): void {
     $migration = require database_path('migrations/2026_09_28_143756_create_primary_reservation_records.php');
     $capacity = require database_path('migrations/2026_09_28_151253_enforce_primary_campaign_capacity_and_closure.php');
+    $commands = require database_path('migrations/2026_09_28_152823_bind_primary_evidence_to_command_actors.php');
+    $commands->down();
     $capacity->down();
     $migration->down();
     expect(Schema::hasTable('primary_reservations'))->toBeFalse();
     $migration->up();
     $capacity->up();
+    $commands->up();
     PrimaryReservationRecord::factory()->withInitialVersion()->create();
     primarySchemaFlush();
     expect(fn () => $migration->down())->toThrow(QueryException::class, 'forward migration');
     expect(fn () => $capacity->down())->toThrow(QueryException::class, 'forward migration');
+    expect(fn () => $commands->down())->toThrow(QueryException::class, 'forward migration');
     expect(Schema::hasTable('primary_reservations'))->toBeTrue();
 });
 

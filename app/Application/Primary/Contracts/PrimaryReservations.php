@@ -14,8 +14,9 @@ interface PrimaryReservations
 {
     /**
      * Requires the caller's transaction, journal operation and authorized canonical Party.
-     * Authority locks must already be retained. Successful journal replay precedes this call.
-     * Takes Business → campaign → reservations in stable id order → wallet/ledger locks.
+     * Activation requires a verified caller authority/Business lock order; authority evidence
+     * stays locked through commit. Successful journal replay precedes this call. This port takes
+     * Business → campaign → reservations in stable id order → wallet/ledger locks.
      * All new evidence and cash movements roll back together, even if the caller catches a refusal.
      *
      * The required server-side admission callback checks current eligibility, connected parties,
@@ -24,7 +25,8 @@ interface PrimaryReservations
      * effects. The campaign input is retained publication evidence, not current eligibility.
      *
      * Reservation creation conservatively counts every retained allocation, including timed-out
-     * holds. Reusing allocations requires the future verified release/refund lifecycle integration.
+     * holds. Reusing allocations requires verified release/refund integration and a forward
+     * migration of the capacity trigger; application-only release cannot recycle inventory.
      *
      * @param  Closure(UnitRights, array<string, mixed>): PrimaryTerms  $admit
      */

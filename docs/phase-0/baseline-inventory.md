@@ -1355,6 +1355,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_28_140000_bind_primary_postings_to_their_source_anchor.php |
 | 2026_09_28_143756_create_primary_reservation_records.php |
 | 2026_09_28_151253_enforce_primary_campaign_capacity_and_closure.php |
+| 2026_09_28_152823_bind_primary_evidence_to_command_actors.php |
 
 ## Routes
 

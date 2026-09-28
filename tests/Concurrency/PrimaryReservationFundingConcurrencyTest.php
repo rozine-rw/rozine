@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Domain\Operations\CommandRejection;
+use App\Domain\Operations\OperationResult;
 use App\Models\BusinessCampaign;
 use App\Models\CommandOperation;
 use App\Models\LedgerEntry;
@@ -11,6 +13,7 @@ use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 
@@ -81,9 +84,12 @@ it('allows exactly one of two independent contenders to reserve the last availab
 it('enforces the campaign aggregate for racing raw persistence writers too', function (): void {
     $this->freezeSecond();
     $campaign = BusinessCampaign::factory()->create();
+    $contenders = array_map(fn (): array => PrimaryReservationRecord::factory()->raw([
+        'business_campaign_id' => $campaign->id, 'units' => 600, 'principal' => '3000000',
+    ]), range(1, 2));
     $children = [];
     DB::disconnect();
-    for ($i = 0; $i < 2; $i++) {
+    foreach ($contenders as $attributes) {
         $pid = pcntl_fork();
         if ($pid === -1) {
             throw new RuntimeException('Could not fork raw reservation contender.');
@@ -91,9 +97,7 @@ it('enforces the campaign aggregate for racing raw persistence writers too', fun
         if ($pid === 0) {
             DB::purge();
             try {
-                DB::transaction(fn () => PrimaryReservationRecord::factory()->withInitialVersion()->create([
-                    'business_campaign_id' => $campaign->id, 'units' => 600, 'principal' => '3000000',
-                ]));
+                DB::transaction(fn () => PrimaryReservationRecord::factory()->withInitialVersion()->create($attributes));
                 exit(0);
             } catch (QueryException $exception) {
                 exit(str_contains($exception->getMessage(), 'published campaign capacity') ? 2 : 3);
@@ -110,4 +114,20 @@ it('enforces the campaign aggregate for racing raw persistence writers too', fun
     }
     sort($results);
     expect($results)->toBe([0, 2])->and(PrimaryReservationRecord::query()->sum('principal'))->toEqual(3000000);
+});
+
+it('rolls cash and inventory back when a mismatched journal command reaches the outer commit', function (): void {
+    $this->freezeSecond();
+    InvestorWalletFixture::policy(maximum: null);
+    $campaign = PrimaryReservationFixture::campaign();
+    $investor = PrimaryReservationFixture::investor('5000');
+    expect(fn () => app(OperationJournal::class)->execute('party:'.$investor['party']->id,
+        $investor['user']->id, 'wallet.deposit', (string) Str::uuid(), 'campaign', $campaign->id, ['units' => '1'],
+        function (): void {},
+        fn (string $operation): OperationResult => PrimaryReservationFixture::outcome(
+            app(PrimaryReservations::class)->reserve($campaign->id, $investor['party']->id, $operation, '1', PrimaryReservationFixture::terms(...))
+        )))->toThrow(PDOException::class, 'Party command and target binding');
+    expect(PrimaryReservationRecord::query()->count())->toBe(0)->and(PrimaryReservationVersion::query()->count())->toBe(0)
+        ->and(LedgerEntry::query()->where('kind', 'primary_hold')->count())->toBe(0);
+    expect(PrimaryReservationFixture::reserve($campaign, $investor, '1')['code'])->toBe('RESERVATION_HELD');
 });

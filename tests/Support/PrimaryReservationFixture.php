@@ -62,7 +62,7 @@ final class PrimaryReservationFixture
      */
     public static function reserve(BusinessCampaign $campaign, array $investor, string $units, ?string $requestId = null): array
     {
-        return app(OperationJournal::class)->execute('party:'.$investor['party']->id, $investor['user']->id, 'fixture.reserve',
+        return app(OperationJournal::class)->execute('party:'.$investor['party']->id, $investor['user']->id, 'primary.reserve',
             $requestId ?? (string) Str::uuid(), 'campaign', $campaign->id, ['units' => $units],
             function (): void {},
             function (string $operation) use ($campaign, $investor, $units): OperationResult {
