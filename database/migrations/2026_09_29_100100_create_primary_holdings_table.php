@@ -13,6 +13,16 @@ use Illuminate\Support\Facades\Schema;
  * `FundedCampaigns` adapter that owns Primary effects does, inside the reconciliation transaction.
  * A Holding binds one commitment once, keeps its purchased ordinals, rights and terms, and takes
  * its effective instant and Kigali date from the issued closing, never from a callback's arrival.
+ *
+ * UNACTIVATED (#96 5872328809): nothing inserts Holdings yet. The fail-closed `FundedCampaigns`
+ * port owns the write, and the synthetic test adapter records issue without touching this table.
+ * TODO(S3-C integration): reference `primary_commitments.id` and require the Holding's Party,
+ * campaign, units, principal, ordinals, rights and terms to equal the retained reservation and its
+ * confirmed revision, with negative cases for each, before any adapter writes here.
+ *
+ * Lock order: the trigger locks only the issued closing row, never the disbursement, so it cannot
+ * be the first lock of an issue. The reconciliation transaction reaches it after Business → campaign
+ * → disbursement (and the closing it just inserted, already its own), then Primary, then wallets.
  */
 return new class extends Migration
 {
@@ -53,8 +63,8 @@ return new class extends Migration
                 IF TG_OP <> 'INSERT' THEN
                     RAISE EXCEPTION 'Holdings are immutable' USING ERRCODE = '23514';
                 END IF;
-                SELECT * INTO closing FROM disbursement_closings WHERE id = NEW.disbursement_closing_id;
-                SELECT * INTO parent FROM disbursements WHERE id = closing.disbursement_id FOR UPDATE;
+                SELECT * INTO closing FROM disbursement_closings WHERE id = NEW.disbursement_closing_id FOR UPDATE;
+                SELECT * INTO parent FROM disbursements WHERE id = closing.disbursement_id;
                 SELECT COALESCE(sum(principal), 0) INTO issued FROM primary_holdings WHERE disbursement_closing_id = NEW.disbursement_closing_id;
                 IF closing.kind IS DISTINCT FROM 'issued' OR parent.business_campaign_id <> NEW.business_campaign_id
                     OR NEW.disbursement_effective_at <> closing.effective_at OR NEW.effective_date <> closing.effective_date
