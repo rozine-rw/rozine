@@ -7,14 +7,19 @@ use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\GetInvestorWallet;
+use App\Application\Wallet\PostingSource;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
+use App\Domain\Primary\PrimaryTerms;
+use App\Domain\Primary\UnitRights;
+use App\Domain\Wallet\WalletMoney;
 use App\Models\BusinessCampaign;
 use App\Models\CommandOperation;
 use App\Models\LedgerEntry;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
@@ -77,7 +82,8 @@ it('records an actor expiry refusal and its cash release atomically at and after
         });
     $result = $perform();
     $version = PrimaryReservationVersion::query()->orderByDesc('revision')->firstOrFail();
-    expect($result)->toMatchArray(['status' => 'rejected', 'code' => 'RESERVATION_EXPIRED'])
+    expect($result)->toMatchArray(['status' => 'rejected', 'code' => 'RESERVATION_EXPIRED', 'revision' => 2,
+        'data' => ['reservation_id' => $this->root->id, 'amount' => $this->root->principal]])
         ->and($version->state)->toBe('expired')->and($version->operation_id)->toBe($result['operation_id'])
         ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(1)
         ->and(PrimaryCommitment::query()->count())->toBe(0)->and($perform())->toBe($result)
@@ -182,3 +188,70 @@ it('returns retained held cash after an actual campaign cancellation', function 
         ->and(LedgerEntry::query()->where('kind', 'primary_release')->sole()->source_id)->toBe($this->root->id);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 })->with([false, true]);
+
+it('refuses a preexisting cash release from held on every release and expiry path', function (string $path): void {
+    if ($path !== 'release') {
+        $this->travelTo($this->root->expires_at);
+    }
+    expect(fn () => DB::transaction(function () use ($path): void {
+        $wallets = app(WalletPostings::class);
+        $wallets->release($wallets->lockForParty($this->root->party_id), WalletMoney::of($this->root->principal),
+            new PostingSource('primary_reservation', $this->root->id, $this->root->origin_operation_id));
+        match ($path) {
+            'release', 'expired release' => ($this->release)(),
+            'system expiry' => app(PrimaryReservations::class)->expire($this->campaign->id, $this->root->id),
+            'expired confirm' => $this->checkout->confirm($this->investor['user']->id, 1, $this->campaign->id, $this->root->id, 1,
+                'unused', 'unused', (string) Str::uuid(), PrimaryReservationFixture::terms(...)),
+            default => throw new InvalidArgumentException('Unknown release path.'),
+        };
+    }))->toThrow(RuntimeException::class, 'RESERVATION_INTEGRITY_FAILED')
+        ->and(PrimaryReservationVersion::query()->count())->toBe(1)
+        ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(0)
+        ->and(CommandOperation::query()->whereIn('command', ['primary.release', 'primary.confirm'])->count())->toBe(0);
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+})->with(['release', 'expired release', 'system expiry', 'expired confirm']);
+
+it('retains the same expiry receipt facts when a hold expires during confirmation admission', function (): void {
+    $key = (string) Str::uuid();
+    /** @param array<string, mixed> $campaign */
+    $admit = function (UnitRights $rights, array $campaign): PrimaryTerms {
+        $this->travelTo($this->root->expires_at);
+
+        return PrimaryReservationFixture::terms($rights, $campaign);
+    };
+    $perform = fn (): array => $this->checkout->confirm($this->investor['user']->id, 1, $this->campaign->id, $this->root->id, 1,
+        $this->version->payload['terms']['disclosure_version'], $this->version->payload['disclosure_sha256'], $key, $admit);
+    $result = $perform();
+    expect($result)->toMatchArray(['status' => 'rejected', 'code' => 'RESERVATION_EXPIRED', 'revision' => 2,
+        'data' => ['reservation_id' => $this->root->id, 'amount' => $this->root->principal]])
+        ->and($perform())->toBe($result)
+        ->and(PrimaryReservationVersion::query()->orderByDesc('revision')->firstOrFail()->state)->toBe('expired')
+        ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(1);
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+});
+
+it('refuses confirmation on a cancelled campaign before admission can requote it', function (): void {
+    expect(app(BusinessCampaignStore::class)->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id,
+        $this->campaign->id, 1, null, (string) Str::uuid())['code'])->toBe('CAMPAIGN_CANCELLED');
+    $result = $this->checkout->confirm($this->investor['user']->id, 1, $this->campaign->id, $this->root->id, 1,
+        $this->version->payload['terms']['disclosure_version'], $this->version->payload['disclosure_sha256'], (string) Str::uuid(),
+        function (): never {
+            throw new RuntimeException('Closed campaign reached admission.');
+        });
+    expect($result['code'])->toBe('CAMPAIGN_CLOSED')
+        ->and(PrimaryReservationVersion::query()->count())->toBe(1)
+        ->and(LedgerEntry::query()->whereIn('kind', ['primary_release', 'primary_commit'])->count())->toBe(0);
+});
+
+it('takes the reservation lock before the wallet lock when releasing cash', function (): void {
+    $locks = [];
+    DB::listen(function (QueryExecuted $query) use (&$locks): void {
+        if (str_contains($query->sql, 'for update')) {
+            $locks[] = $query->sql;
+        }
+    });
+    expect(($this->release)()['code'])->toBe('RESERVATION_RELEASED');
+    $reservation = array_find_key($locks, fn (string $sql): bool => str_contains($sql, 'from "primary_reservations"'));
+    $wallet = array_find_key($locks, fn (string $sql): bool => str_contains($sql, 'from "investor_wallets"'));
+    expect($reservation)->toBeInt()->and($wallet)->toBeInt()->and($reservation)->toBeLessThan($wallet);
+});

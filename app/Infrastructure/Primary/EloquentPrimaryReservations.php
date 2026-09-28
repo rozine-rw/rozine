@@ -106,33 +106,41 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                 if ($reservation->state !== 'held') {
                     throw new CommandRejection('RESERVATION_NOT_HELD', 409, $previous->revision);
                 }
-                $reservation->window->requireOpen(now('UTC')->toDateTimeImmutable());
-                $this->campaigns->lock($campaignId);
-                $terms = $admit($reservation->rights, $campaign);
-                if ($terms->policyVersion !== $campaign['policy_version'] || $terms->ratePercent !== $campaign['rate_pct'] || $terms->termMonths !== $campaign['term_months']) {
-                    throw new PrimaryViolation('INVALID_PRIMARY_TERMS');
-                }
-                $terms->requireRights($reservation->rights);
-                $at = now('UTC')->toDateTimeImmutable();
-                if ($terms->disclosureSha256 !== $reservation->terms->disclosureSha256) {
-                    $requote = $reservation->requote($at, $terms);
-                    $version = $this->appendVersion($root, $requote, $operationId, $previous, $at);
+                try {
+                    $reservation->window->requireOpen(now('UTC')->toDateTimeImmutable());
+                    $this->campaigns->lock($campaignId);
+                    $terms = $admit($reservation->rights, $campaign);
+                    if ($terms->policyVersion !== $campaign['policy_version'] || $terms->ratePercent !== $campaign['rate_pct'] || $terms->termMonths !== $campaign['term_months']) {
+                        throw new PrimaryViolation('INVALID_PRIMARY_TERMS');
+                    }
+                    $terms->requireRights($reservation->rights);
+                    $at = now('UTC')->toDateTimeImmutable();
+                    if ($terms->disclosureSha256 !== $reservation->terms->disclosureSha256) {
+                        $requote = $reservation->requote($at, $terms);
+                        $version = $this->appendVersion($root, $requote, $operationId, $previous, $at);
 
-                    return new ReservationConfirmation($root->id, $version->revision, $requote, null, null);
-                }
-                $confirmed = $reservation->confirm($at, $terms, $disclosureVersion, $disclosureSha256);
-                $version = $this->appendVersion($root, $confirmed, $operationId, $previous, $at);
-                $commitment = new PrimaryCommitment;
-                $commitment->forceFill(['primary_reservation_id' => $root->id, 'primary_reservation_version_id' => $version->id,
-                    'operation_id' => $operationId, 'confirmed_at' => $at, 'created_at' => $at])->save();
-                $posting = $this->wallets->commit($this->wallets->lockForParty($partyId), WalletMoney::of($root->principal),
-                    new PostingSource('primary_reservation', $root->id, $root->origin_operation_id));
+                        return new ReservationConfirmation($root->id, $version->revision, $requote, null, null);
+                    }
+                    $confirmed = $reservation->confirm($at, $terms, $disclosureVersion, $disclosureSha256);
+                    $version = $this->appendVersion($root, $confirmed, $operationId, $previous, $at);
+                    $commitment = new PrimaryCommitment;
+                    $commitment->forceFill(['primary_reservation_id' => $root->id, 'primary_reservation_version_id' => $version->id,
+                        'operation_id' => $operationId, 'confirmed_at' => $at, 'created_at' => $at])->save();
+                    $posting = $this->wallets->commit($this->wallets->lockForParty($partyId), WalletMoney::of($root->principal),
+                        new PostingSource('primary_reservation', $root->id, $root->origin_operation_id));
 
-                if ($posting->replayed) {
-                    throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
-                }
+                    if ($posting->replayed) {
+                        throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+                    }
 
-                return new ReservationConfirmation($root->id, $version->revision, $confirmed, $commitment->id, $posting);
+                    return new ReservationConfirmation($root->id, $version->revision, $confirmed, $commitment->id, $posting);
+                } catch (PrimaryViolation $exception) {
+                    if ($exception->reasonCode === 'RESERVATION_EXPIRED') {
+                        throw new CommandRejection('RESERVATION_EXPIRED', 409, $previous->revision + 1,
+                            data: ['reservation_id' => $root->id, 'amount' => $root->principal]);
+                    }
+                    throw $exception;
+                }
             });
         } catch (PrimaryViolation $exception) {
             throw new CommandRejection($exception->reasonCode);
@@ -194,6 +202,9 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
             ? $this->appendVersion($root, $released, $operationId, $previous, $at) : $previous;
         $posting = $this->wallets->release($this->wallets->lockForParty($root->party_id), WalletMoney::of($root->principal),
             new PostingSource('primary_reservation', $root->id, $root->origin_operation_id));
+        if ($previous->state === 'held' && $posting->replayed) {
+            throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+        }
 
         return new ReservationRelease($root->id, $version->revision, $released, $posting);
     }
