@@ -18,6 +18,7 @@ beforeEach(function (): void {
 
 function flushPrimaryOperationBindings(): void
 {
+    DB::statement('SET CONSTRAINTS primary_reservation_command_bound, primary_version_command_bound IMMEDIATE');
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     DB::statement('SET CONSTRAINTS ALL DEFERRED');
 }

@@ -29,6 +29,7 @@ it('refuses an expiry receipt that does not report the rejected expiry', functio
     expect(fn () => DB::transaction(function () use ($root, $receipt): void {
         PrimaryReservationVersion::factory()->withCashMovement()->create(['primary_reservation_id' => $root->id,
             'state' => 'expired', 'created_at' => $root->expires_at, 'operation_id' => $receipt->id]);
+        DB::statement('SET CONSTRAINTS primary_expiry_outcome_bound IMMEDIATE');
         DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     }))->toThrow(QueryException::class, 'rejected RESERVATION_EXPIRED outcome');
     expect(PrimaryReservationVersion::query()->pluck('state')->all())->toBe(['held']);
