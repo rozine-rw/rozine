@@ -50,6 +50,11 @@ const rw: Catalog = {
     'errors.not_found.body':
         'Birashoboka ko ihuza ryanditswe nabi, cyangwa icyo ryerekezagaho kitakiboneka. Reba ihuza, cyangwa wongere utangirire kuri Rozine.',
     'errors.not_found.home': 'Jya ku rupapuro rw’ibanze rwa Rozine',
+    'errors.unavailable.head_title': 'Ntibiboneka by’agateganyo',
+    'errors.unavailable.title': 'Rozine ntiyashoboye gufungura iyi paji',
+    'errors.unavailable.body':
+        'Habaye ikibazo ku ruhande rwacu. Ibyo wamaze kohereza ntibyagizweho ingaruka. Tegereza gato, hanyuma wongere ugerageze.',
+    'errors.unavailable.retry': 'Ongera ugerageze',
     'environment.demo': 'Demo — si urubuga nyarwo',
     'environment.uat': 'UAT — si urubuga nyarwo',
     'environment.synthetic_only':
