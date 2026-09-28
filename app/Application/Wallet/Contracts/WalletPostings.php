@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Wallet\Contracts;
 
 use App\Application\Wallet\LockedWallet;
+use App\Application\Wallet\PostingCause;
 use App\Application\Wallet\PostingReceipt;
 use App\Application\Wallet\PostingSource;
 use App\Domain\Wallet\WalletMoney;
@@ -48,4 +49,13 @@ interface WalletPostings
 
     /** committed → available (pre-funding cancellation or unfunded expiry), for exactly the committed amount. */
     public function refund(LockedWallet $wallet, WalletMoney $amount, PostingSource $source): PostingReceipt;
+
+    /**
+     * committed → the system `disbursement_settlement` account, for exactly the committed amount of
+     * a `primary_commitment` source, on a verified and reconciled disbursement success. It keeps the
+     * commitment's originating operation and records the issuing closing as its cause. Issue and
+     * refund end a commitment once between them: after either, the other refuses
+     * `WALLET_POSTING_STATE_INVALID`. A retry with another cause refuses `WALLET_POSTING_CONFLICT`.
+     */
+    public function issue(LockedWallet $wallet, WalletMoney $amount, PostingSource $source, PostingCause $cause): PostingReceipt;
 }

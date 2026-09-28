@@ -7,6 +7,7 @@ namespace App\Infrastructure\Wallet;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\LockedWallet;
+use App\Application\Wallet\PostingCause;
 use App\Application\Wallet\PostingReceipt;
 use App\Application\Wallet\PostingSource;
 use App\Domain\Operations\CommandRejection;
@@ -60,7 +61,16 @@ final class EloquentWalletPostings implements WalletPostings
         return $this->post('primary_refund', $wallet, $amount, $source);
     }
 
-    private function post(string $kind, LockedWallet $wallet, WalletMoney $amount, PostingSource $source): PostingReceipt
+    public function issue(LockedWallet $wallet, WalletMoney $amount, PostingSource $source, PostingCause $cause): PostingReceipt
+    {
+        if ($source->type !== 'primary_commitment') {
+            throw new WalletViolation('WALLET_POSTING_SOURCE_INVALID');
+        }
+
+        return $this->post('primary_issue', $wallet, $amount, $source, $cause);
+    }
+
+    private function post(string $kind, LockedWallet $wallet, WalletMoney $amount, PostingSource $source, ?PostingCause $cause = null): PostingReceipt
     {
         $this->assertTransaction();
         InvestorWallet::query()->whereKey($wallet->walletId)->where('party_id', $wallet->partyId)->lockForUpdate()->first()
@@ -68,7 +78,7 @@ final class EloquentWalletPostings implements WalletPostings
         $recorded = LedgerEntry::query()->where('source_type', $source->type)->where('source_id', $source->id)->get()->keyBy('kind');
         $previous = $recorded->get($kind);
         if ($previous !== null) {
-            if (! $this->matches($previous, $wallet, $amount, $source)) {
+            if (! $this->matches($previous, $wallet, $amount, $source) || $previous->cause_id !== $cause?->id) {
                 throw new WalletViolation('WALLET_POSTING_CONFLICT');
             }
 
@@ -84,10 +94,10 @@ final class EloquentWalletPostings implements WalletPostings
             throw $kind === 'primary_hold' ? new CommandRejection('INSUFFICIENT_AVAILABLE_FUNDS', 422) : new WalletViolation('WALLET_BUCKET_NEGATIVE');
         }
 
-        return $this->receipt($this->record($journal, $wallet, $source), false);
+        return $this->receipt($this->record($journal, $wallet, $source, $cause), false);
     }
 
-    private function record(JournalEntry $journal, LockedWallet $wallet, PostingSource $source): LedgerEntry
+    private function record(JournalEntry $journal, LockedWallet $wallet, PostingSource $source, ?PostingCause $cause): LedgerEntry
     {
         $recordedAt = now('UTC')->toImmutable()->startOfSecond();
         $entry = new LedgerEntry;
@@ -95,8 +105,11 @@ final class EloquentWalletPostings implements WalletPostings
         $lines = array_map(fn ($line): array => ['account' => $line->account, 'direction' => $line->direction, 'amount' => $line->amount->amount()], $journal->lines);
         $payload = ['entry_id' => $entry->id, 'wallet_id' => $wallet->walletId, 'kind' => $journal->kind, 'source_type' => $source->type, 'source_id' => $source->id,
             'origin_operation_id' => $source->originOperationId, 'lines' => $lines, 'recorded_at' => $recordedAt->toIso8601String()];
+        if ($cause !== null) {
+            $payload['cause'] = ['type' => $cause->type, 'id' => $cause->id];
+        }
         $entry->forceFill(['wallet_id' => $wallet->walletId, 'kind' => $journal->kind, 'source_type' => $source->type, 'source_id' => $source->id,
-            'origin_operation_id' => $source->originOperationId, 'currency' => 'RWF', 'payload' => $payload,
+            'origin_operation_id' => $source->originOperationId, 'cause_type' => $cause?->type, 'cause_id' => $cause?->id, 'currency' => 'RWF', 'payload' => $payload,
             'sha256' => hash('sha256', $this->json->encode($payload)), 'created_at' => $recordedAt])->save();
         foreach ($journal->lines as $line) {
             (new LedgerLine)->forceFill(['entry_id' => $entry->id, 'account_id' => $this->account($line->account, $wallet->walletId),
@@ -118,7 +131,7 @@ final class EloquentWalletPostings implements WalletPostings
     private function receipt(LedgerEntry $entry, bool $replayed): PostingReceipt
     {
         return new PostingReceipt($entry->id, $entry->kind, $entry->wallet_id, $entry->source_type, $entry->source_id, (string) $entry->origin_operation_id,
-            $this->amountOf($entry), (string) $entry->payload['recorded_at'], $replayed);
+            $this->amountOf($entry), (string) $entry->payload['recorded_at'], $replayed, $entry->cause_type, $entry->cause_id);
     }
 
     private function amountOf(LedgerEntry $entry): string
@@ -139,6 +152,12 @@ final class EloquentWalletPostings implements WalletPostings
 
     private function account(string $kind, string $walletId): string
     {
+        if ($kind === 'disbursement_settlement') {
+            DB::insert("INSERT INTO ledger_accounts (id, wallet_id, kind, currency, created_at) VALUES (?, NULL, ?, 'RWF', now())
+                ON CONFLICT (kind) WHERE wallet_id IS NULL DO NOTHING", [strtolower((string) Str::ulid()), $kind]);
+
+            return (string) DB::table('ledger_accounts')->whereNull('wallet_id')->where('kind', $kind)->value('id');
+        }
         DB::insert("INSERT INTO ledger_accounts (id, wallet_id, kind, currency, created_at) VALUES (?, ?, ?, 'RWF', now())
             ON CONFLICT (wallet_id, kind) WHERE wallet_id IS NOT NULL DO NOTHING", [strtolower((string) Str::ulid()), $walletId, $kind]);
 
