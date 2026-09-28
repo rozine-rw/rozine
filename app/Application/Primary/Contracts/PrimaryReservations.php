@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Primary\Contracts;
 
+use App\Application\Primary\PrimaryFundingCandidate;
 use App\Application\Primary\ReservationConfirmation;
 use App\Application\Primary\ReservationRelease;
 use App\Application\Primary\ReservedCheckout;
@@ -55,6 +56,15 @@ interface PrimaryReservations
      * to retain its rejected receipt before invoking expire() in the outer transaction.
      */
     public function release(string $campaignId, string $reservationId, string $partyId, string $operationId, int $expectedRevision): ReservationRelease;
+
+    /**
+     * Requires the caller transaction and Business-first authority order. Locks the open
+     * campaign, all reservation roots then commitments by id, and all wallets by Party id.
+     * Verifies complete retained rights and original committed cash without posting or
+     * declaring funding. Returned/issued cash refuses. The caller must keep these locks
+     * while checking current eligibility/policy/destination and recording any funding.
+     */
+    public function lockFundingCandidate(string $campaignId): PrimaryFundingCandidate;
 
     /**
      * Examines at most limit overdue, nonterminal candidates in deadline/id order.

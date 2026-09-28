@@ -7,9 +7,11 @@ namespace App\Infrastructure\Primary;
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Primary\Contracts\PrimaryReservations;
+use App\Application\Primary\PrimaryFundingCandidate;
 use App\Application\Primary\ReservationConfirmation;
 use App\Application\Primary\ReservationRelease;
 use App\Application\Primary\ReservedCheckout;
+use App\Application\Wallet\Contracts\PrimaryCommittedCash;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\PostingSource;
 use App\Domain\Operations\CommandRejection;
@@ -35,7 +37,7 @@ use RuntimeException;
 /** @phpstan-import-type CampaignInput from PrimaryCampaignSource */
 final readonly class EloquentPrimaryReservations implements PrimaryReservations
 {
-    public function __construct(private PrimaryCampaignSource $campaigns, private WalletPostings $wallets, private CanonicalJson $json) {}
+    public function __construct(private PrimaryCampaignSource $campaigns, private WalletPostings $wallets, private CanonicalJson $json, private PrimaryCommittedCash $cash) {}
 
     public function reserve(string $campaignId, string $partyId, string $originOperationId, string $units, Closure $admit): ReservedCheckout
     {
@@ -174,6 +176,58 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
         } catch (PrimaryViolation $exception) {
             throw new CommandRejection($exception->reasonCode);
         }
+    }
+
+    public function lockFundingCandidate(string $campaignId): PrimaryFundingCandidate
+    {
+        if (DB::transactionLevel() === 0) {
+            throw new CommandRejection('PRIMARY_TRANSACTION_REQUIRED');
+        }
+
+        return DB::transaction(function () use ($campaignId): PrimaryFundingCandidate {
+            $campaign = $this->campaigns->lock($campaignId);
+            $roots = PrimaryReservationRecord::query()->where('business_campaign_id', $campaignId)->orderBy('id')->lockForUpdate()->get();
+            $commitments = PrimaryCommitment::query()->whereIn('primary_reservation_id', $roots->modelKeys())
+                ->orderBy('id')->lockForUpdate()->get()->keyBy('primary_reservation_id');
+            $ranges = [];
+            $principal = BigInteger::zero();
+            $retained = [];
+            foreach ($roots as $root) {
+                [$reservation, $version] = $this->retainedReservation($root, $campaign);
+                if ($reservation->state !== 'confirmed') {
+                    throw new CommandRejection('CAMPAIGN_NOT_FULLY_COMMITTED');
+                }
+                $commitment = $commitments->get($root->id);
+                if ($commitment === null || $commitment->primary_reservation_version_id !== $version->id
+                    || $commitment->operation_id !== $version->operation_id || ! $commitment->confirmed_at->equalTo($version->created_at)) {
+                    throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+                }
+                $ranges = [...$ranges, ...$reservation->rights->ordinals->ranges];
+                $principal = $principal->plus($reservation->rights->principal);
+                $retained[$root->id] = ['commitment_id' => $commitment->id, 'reservation' => $reservation];
+            }
+            $ordinals = UnitOrdinals::fromRanges($campaign['units'], $ranges);
+            if (! $ordinals->count->isEqualTo($campaign['units']) || ! $principal->isEqualTo($campaign['principal'])) {
+                throw new CommandRejection('CAMPAIGN_NOT_FULLY_COMMITTED');
+            }
+            $partyIds = $roots->pluck('party_id')->unique()->sort()->values();
+            $wallets = [];
+            foreach ($partyIds as $partyId) {
+                $wallets[$partyId] = $this->wallets->lockForParty($partyId);
+            }
+            $purchases = [];
+            foreach ($roots as $root) {
+                $purchases[] = [...$retained[$root->id], 'reservation_id' => $root->id, 'party_id' => $root->party_id,
+                    'cash' => $this->cash->requireCommitted($wallets[$root->party_id], WalletMoney::of($root->principal),
+                        new PostingSource('primary_reservation', $root->id, $root->origin_operation_id))];
+            }
+
+            if (now('UTC')->gte($campaign['expires_at'])) {
+                throw new CommandRejection('CAMPAIGN_CLOSED');
+            }
+
+            return new PrimaryFundingCandidate($campaign['id'], $campaign['publication_sha256'], $campaign['principal'], $purchases);
+        });
     }
 
     public function expireDue(int $limit): int
