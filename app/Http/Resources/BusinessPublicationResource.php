@@ -43,11 +43,11 @@ class BusinessPublicationResource extends JsonResource
     }
 
     /** @return array{url: string, method: string} */
-    public static function lookup(Request $request, int $contextRevision, ?string $requestId = null): array
+    public static function lookup(Request $request, int $contextRevision, ?string $requestId = null, string $command = 'application.publish'): array
     {
         $placeholder = '00000000-0000-0000-0000-000000000000';
         $url = route(($request->routeIs('api.*') ? 'api.v1.' : '').'business.applications.operations.show',
-            ['request_id' => $requestId ?? $placeholder, 'command' => 'application.publish', 'identity_context_revision' => $contextRevision], false);
+            ['request_id' => $requestId ?? $placeholder, 'command' => $command, 'identity_context_revision' => $contextRevision], false);
 
         return ['url' => $requestId === null ? str_replace($placeholder, '{request_id}', $url) : $url, 'method' => 'get'];
     }

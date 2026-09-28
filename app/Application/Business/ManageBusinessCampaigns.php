@@ -45,4 +45,15 @@ final class ManageBusinessCampaigns
     {
         return $this->store->findRelease($userId, $requestId);
     }
+
+    /** @return array<string, mixed> */
+    public function cancel(int $userId, int $contextRevision, string $businessId, string $campaignId, int $revision, ?string $reason, string $requestId): array
+    {
+        return $this->store->cancel($userId, $contextRevision, $businessId, $campaignId, $revision, $reason, $requestId);
+    }
+
+    public function expireDue(int $limit): int
+    {
+        return $this->store->expireDue($limit);
+    }
 }

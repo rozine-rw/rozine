@@ -60,7 +60,7 @@ it('serves the same authorized release and publication receipts on web and API',
             ->where('contract_version', 'business-campaign-v1')->where('campaign.lifecycle', 'live')->where('home', null)
             ->where('shell_links.home.url', route('business.home', [], false))
             ->where('note.progress.committed.amount', '0')->where('note.progress.remaining.amount', '10800000')
-            ->where('allowed_actions', [])->where('actions.cancel', null)->missing('actor_user_id')->missing('binding'));
+            ->where('allowed_actions', ['campaign.cancel'])->where('actions.cancel.method', 'post')->missing('actor_user_id')->missing('binding'));
         $this->get($campaignUrl, ['X-Inertia' => 'true', 'X-Inertia-Version' => $campaignPage->inertiaPage()['version']])->assertOk()->assertHeader('X-Inertia', 'true')
             ->assertJsonPath('component', 'business/campaign')->assertJsonPath('props.campaign.lifecycle', 'live')
             ->assertJsonPath('props.note.progress.remaining.amount', '10800000')->assertJsonMissingPath('data');

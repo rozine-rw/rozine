@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Business\ManageBusinessCampaigns;
 use App\Application\Identity\AuthorizeActiveRole;
+use App\Http\Requests\Business\CancelCampaignRequest;
 use App\Http\Requests\Business\PublishApplicationRequest;
 use App\Http\Requests\Business\ShowApplicationRequest;
 use App\Http\Resources\BusinessCampaignResource;
@@ -42,6 +43,32 @@ class BusinessPublicationController extends Controller
             (string) $request->route('business'), (string) $request->route('campaign')));
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('business/campaign', $resource->resolve($request));
+    }
+
+    public function cancel(CancelCampaignRequest $request): OperationResource
+    {
+        $result = $this->campaigns->cancel((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
+            (string) $request->route('business'), (string) $request->route('campaign'), (int) $request->validated('expected_campaign_revision'),
+            $request->validated('reason'), (string) $request->validated('request_id'));
+
+        return $this->presentCancellation($request, $result);
+    }
+
+    /** @param array<string, mixed> $result */
+    public function presentCancellation(Request $request, array $result): OperationResource
+    {
+        $data = $result['data'];
+        $current = null;
+        if (isset($data['campaign_id'], $data['business_id'])) {
+            $current = (new BusinessCampaignResource($this->campaigns->campaign((int) $request->user()?->getAuthIdentifier(), $request->integer('identity_context_revision'),
+                $data['business_id'], $data['campaign_id'])))->resolve($request);
+        }
+        if (isset($data['receipt'])) {
+            $data['receipt']['link'] = BusinessPublicationResource::lookup($request, $request->integer('identity_context_revision'), $data['receipt']['request_id'], 'campaign.cancel');
+        }
+
+        return new OperationResource([...$result, 'data' => ['receipt' => $data['receipt'] ?? null, 'current' => $current, 'next' => null],
+            'allowed_actions' => $current['allowed_actions'] ?? []]);
     }
 
     /** @param array<string, mixed> $result */

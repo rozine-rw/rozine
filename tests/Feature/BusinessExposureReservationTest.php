@@ -124,10 +124,13 @@ it('does not silently backfill pre-C3 submissions when the reservation migration
     $legacy = BusinessApplicationSubmission::factory()->create();
     $migration = require database_path('migrations/2026_09_26_190340_create_business_exposure_reservations_table.php');
     $campaigns = require database_path('migrations/2026_09_27_054238_create_business_application_releases_and_campaigns.php');
+    $closures = require database_path('migrations/2026_09_27_230946_create_business_campaign_closures_table.php');
+    $closures->down();
     $campaigns->down();
     $migration->down();
     $migration->up();
     $campaigns->up();
+    $closures->up();
     expect(BusinessApplicationSubmission::query()->find($legacy->id))->not->toBeNull()
         ->and(BusinessExposureReservation::query()->count())->toBe(0);
 });

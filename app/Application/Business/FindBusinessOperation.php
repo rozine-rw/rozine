@@ -18,6 +18,10 @@ final class FindBusinessOperation
             return $this->campaigns->findPublication($userId, $contextRevision, $requestId);
         }
 
+        if ($command === 'campaign.cancel') {
+            return $this->campaigns->findCancellation($userId, $contextRevision, $requestId);
+        }
+
         return $this->store->findOperation($userId, $contextRevision, $command, $requestId);
     }
 }

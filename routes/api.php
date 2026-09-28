@@ -127,4 +127,6 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
         ->whereUlid(['business', 'application'])->name('api.v1.business.applications.publish');
     Route::get('v1/business/{business}/campaigns/{campaign}', [BusinessPublicationController::class, 'campaign'])
         ->whereUlid(['business', 'campaign'])->name('api.v1.business.campaigns.show');
+    Route::post('v1/business/{business}/campaigns/{campaign}/cancel', [BusinessPublicationController::class, 'cancel'])
+        ->whereUlid(['business', 'campaign'])->name('api.v1.business.campaigns.cancel');
 });

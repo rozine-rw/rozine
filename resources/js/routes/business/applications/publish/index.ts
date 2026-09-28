@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::show
-* @see app/Http/Controllers/BusinessPublicationController.php:22
+* @see app/Http/Controllers/BusinessPublicationController.php:23
 * @route '/business/{business}/applications/{application}/publish'
 */
 export const show = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::show
-* @see app/Http/Controllers/BusinessPublicationController.php:22
+* @see app/Http/Controllers/BusinessPublicationController.php:23
 * @route '/business/{business}/applications/{application}/publish'
 */
 show.url = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions) => {
@@ -42,7 +42,7 @@ show.url = (args: { business: string | number, application: string | number } | 
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::show
-* @see app/Http/Controllers/BusinessPublicationController.php:22
+* @see app/Http/Controllers/BusinessPublicationController.php:23
 * @route '/business/{business}/applications/{application}/publish'
 */
 show.get = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -52,7 +52,7 @@ show.get = (args: { business: string | number, application: string | number } | 
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::show
-* @see app/Http/Controllers/BusinessPublicationController.php:22
+* @see app/Http/Controllers/BusinessPublicationController.php:23
 * @route '/business/{business}/applications/{application}/publish'
 */
 show.head = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -62,7 +62,7 @@ show.head = (args: { business: string | number, application: string | number } |
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::show
-* @see app/Http/Controllers/BusinessPublicationController.php:22
+* @see app/Http/Controllers/BusinessPublicationController.php:23
 * @route '/business/{business}/applications/{application}/publish'
 */
 const showForm = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -72,7 +72,7 @@ const showForm = (args: { business: string | number, application: string | numbe
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::show
-* @see app/Http/Controllers/BusinessPublicationController.php:22
+* @see app/Http/Controllers/BusinessPublicationController.php:23
 * @route '/business/{business}/applications/{application}/publish'
 */
 showForm.get = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ showForm.get = (args: { business: string | number, application: string | number 
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::show
-* @see app/Http/Controllers/BusinessPublicationController.php:22
+* @see app/Http/Controllers/BusinessPublicationController.php:23
 * @route '/business/{business}/applications/{application}/publish'
 */
 showForm.head = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

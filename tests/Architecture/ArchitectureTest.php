@@ -37,6 +37,7 @@ use App\Models\BusinessApplicationSignature;
 use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessApplicationVersion;
 use App\Models\BusinessCampaign;
+use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessCreditSnapshot;
 use App\Models\BusinessExposureReservation;
 use App\Models\BusinessMandate;
@@ -214,11 +215,12 @@ it('has concrete targets for the business authority boundary', function (): void
         ->and(class_exists(BusinessExposureReservation::class))->toBeTrue()
         ->and(class_exists(BusinessApplicationRelease::class))->toBeTrue()
         ->and(class_exists(BusinessCampaign::class))->toBeTrue()
+        ->and(class_exists(BusinessCampaignClosure::class))->toBeTrue()
         ->and(class_exists(BusinessCreditSnapshot::class))->toBeTrue();
 })->group('arch');
 
 arch('business authority records are only accessed by their adapter')
-    ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion', 'App\Models\BusinessCreditSnapshot', 'App\Models\BusinessApplicationQuote', 'App\Models\BusinessApplicationSignature', 'App\Models\BusinessApplicationSubmission', 'App\Models\BusinessExposureReservation', 'App\Models\BusinessApplicationRelease', 'App\Models\BusinessCampaign'])
+    ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion', 'App\Models\BusinessCreditSnapshot', 'App\Models\BusinessApplicationQuote', 'App\Models\BusinessApplicationSignature', 'App\Models\BusinessApplicationSubmission', 'App\Models\BusinessExposureReservation', 'App\Models\BusinessApplicationRelease', 'App\Models\BusinessCampaign', 'App\Models\BusinessCampaignClosure'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Models', 'Database\Factories']);
 
 it('has concrete targets for the immutable statement evidence boundary', function (): void {
@@ -321,4 +323,8 @@ arch('release report input is private to the protected Business and Auditor adap
 
 arch('accepted exposure is private to the Business adapter')
     ->expect('App\\Application\\Business\\Contracts\\BusinessExposureStore')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Providers\\AppServiceProvider']);
+
+arch('campaign closure evidence is private to the Business adapter')
+    ->expect('App\\Application\\Business\\Contracts\\CampaignClosureEvidence')
     ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Providers\\AppServiceProvider']);
