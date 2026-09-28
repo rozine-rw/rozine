@@ -49,12 +49,15 @@ const BUCKETS = ['available', 'held', 'committed'] as const;
 /**
  * The blue balance card (design L2846–2860), in C3's ledger terms (H5): the total, then its
  * breakdown, where only "available" is spendable. Pending deposits are listed beneath and are not
- * part of the total: nothing is credited before a verified success.
+ * part of the total: nothing is credited before a verified success. A restriction says whether
+ * deposits still work from `depositOffered` (the page's `allowed_actions`), never on its own.
  */
 export function BalanceCard({
     wallet,
+    depositOffered,
 }: {
     wallet: C3InvestorWalletProps['wallet'];
+    depositOffered: boolean;
 }) {
     const { t, locale } = useTranslation();
 
@@ -103,9 +106,14 @@ export function BalanceCard({
                     role="status"
                     className="relative mt-2 rounded-[10px] bg-white/[.14] px-2.5 py-1.5 text-[11px] text-white"
                 >
-                    {t('investor.wallet.c3.restricted', {
-                        date: formatDate(wallet.restriction.since, locale),
-                    })}
+                    {t(
+                        depositOffered
+                            ? 'investor.wallet.c3.restricted'
+                            : 'investor.wallet.c3.restricted_paused',
+                        {
+                            date: formatDate(wallet.restriction.since, locale),
+                        },
+                    )}
                 </p>
             )}
             <div className="relative mt-3 flex items-center justify-between border-t border-white/[.16] pt-[11px]">
@@ -144,8 +152,10 @@ type DepositPanelProps = Pick<
 /**
  * The deposit panel (design L2880–2923; withdrawal stays hidden until it has its own contract, H6).
  * The fee and what is credited come from the server's quote under a versioned deposit policy; a
- * synthetic policy says so. With no policy the panel explains that deposits aren't offered. Deposit
- * records an intent only: nothing is credited until the provider's success is verified.
+ * synthetic policy says so. The form shows only under a policy, with a linked method, while
+ * `allowed_actions` offers `wallet.deposit` (S3-B fact 1); otherwise the panel explains that
+ * deposits aren't offered, keeping any held command's notice. Deposit records an intent only:
+ * nothing is credited until the provider's success is verified.
  */
 export function DepositPanel({
     funding,
@@ -196,19 +206,28 @@ export function DepositPanel({
         wide ? 'mt-[11px] p-3.5' : 'mt-2.5 p-[15px]',
     );
 
-    if (funding.policy === null) {
+    const offered = allowed.includes('wallet.deposit');
+
+    if (funding.policy === null || funding.methods.length === 0 || !offered) {
         return (
             <section
                 aria-label={t('investor.wallet.panel.deposit')}
                 className={frame}
             >
                 {header}
+                <C3Notice command={command} className="mt-2" />
                 <p
                     role="status"
                     className="mt-2 flex items-start gap-2.5 text-xs leading-[1.55] text-rz-secondary"
                 >
                     <Icon name="info" />
-                    <span>{t('investor.wallet.c3.no_policy')}</span>
+                    <span>
+                        {t(
+                            funding.policy === null
+                                ? 'investor.wallet.c3.no_policy'
+                                : 'investor.wallet.c3.deposit_unavailable',
+                        )}
+                    </span>
                 </p>
             </section>
         );
@@ -231,10 +250,8 @@ export function DepositPanel({
         }, FUNDING_DEBOUNCE_MS);
     };
 
-    const offered = allowed.includes('wallet.deposit');
     const refusal = quote?.refusal ?? null;
     const ready =
-        offered &&
         quote !== null &&
         refusal === null &&
         amount !== '' &&
@@ -393,25 +410,16 @@ export function DepositPanel({
                     {command.errors.amount}
                 </p>
             )}
-            {offered ? (
-                <button
-                    type="submit"
-                    disabled={!ready}
-                    aria-busy={command.busy || undefined}
-                    className="mt-[13px] h-[50px] w-full shrink-0 rounded-xl bg-rz-accent-fill text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                    {command.busy
-                        ? t('investor.wallet.processing')
-                        : t('investor.wallet.confirm.deposit')}
-                </button>
-            ) : (
-                <p
-                    role="status"
-                    className="mt-3 text-center text-[11.5px] text-rz-secondary"
-                >
-                    {t('investor.wallet.c3.deposit_unavailable')}
-                </p>
-            )}
+            <button
+                type="submit"
+                disabled={!ready}
+                aria-busy={command.busy || undefined}
+                className="mt-[13px] h-[50px] w-full shrink-0 rounded-xl bg-rz-accent-fill text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            >
+                {command.busy
+                    ? t('investor.wallet.processing')
+                    : t('investor.wallet.confirm.deposit')}
+            </button>
             <p className="mt-2 text-center text-[10.5px] leading-[1.4] text-rz-secondary">
                 {t('investor.wallet.c3.intent_only')}
             </p>

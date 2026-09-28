@@ -31,6 +31,7 @@ import {
     fails,
     finishReloads,
     inertia,
+    offline,
     resetInertia,
     setWide,
 } from './inertia-mock';
@@ -567,5 +568,250 @@ describe('Wallet (C3)', () => {
             'href',
             '/investor/wallet?kind=deposit',
         );
+    });
+
+    describe('S3-B binding contract', () => {
+        const RELOADED = [
+            'wallet',
+            'funding',
+            'deposits',
+            'history',
+            'allowed_actions',
+        ];
+        const requestId = (index: number) =>
+            (inertia.calls[index].body as { request_id: string }).request_id;
+
+        it('keeps pending deposits outside the total, drawing the server’s figures as sent', () => {
+            render(<InvestorWallet {...wallet(pendingFixture)} />);
+
+            const balance = screen.getByRole('region', {
+                name: 'Wallet total',
+            });
+
+            expect(balance).toHaveTextContent('RWF 1,733,485');
+            expect(balance).not.toHaveTextContent('RWF 1,933,485');
+            expect(balance).toHaveTextContent('AvailableRWF 1,253,485');
+            expect(balance).toHaveTextContent(
+                'RWF 200,000 not yet confirmed — not in the total',
+            );
+        });
+
+        it('offers no form without a linked method, even under a policy', () => {
+            const props = wallet(depositFixture);
+
+            props.funding.methods = [];
+            render(<InvestorWallet {...props} />);
+
+            expect(
+                screen.queryByRole('form', { name: 'Add money' }),
+            ).not.toBeInTheDocument();
+            expect(
+                screen.getByRole('region', { name: 'Add money' }),
+            ).toHaveTextContent("Deposit isn't available to you right now.");
+            expect(screen.queryByLabelText('AMOUNT')).not.toBeInTheDocument();
+            expect(
+                screen.getByRole('link', { name: 'Link an account' }),
+            ).toBeInTheDocument();
+        });
+
+        it('names a restriction that withholds deposit, and offers no form', () => {
+            const props = wallet(restrictedFixture);
+
+            props.allowed_actions = [];
+            props.funding = structuredClone(wallet(depositFixture).funding);
+            render(<InvestorWallet {...props} />);
+
+            expect(
+                screen.getByRole('region', { name: 'Wallet total' }),
+            ).toHaveTextContent(
+                'A restriction has applied since 25 Sept 2026. Deposits are paused while it applies.',
+            );
+            expect(screen.getByText('Restricted')).toBeInTheDocument();
+            expect(
+                screen.queryByRole('form', { name: 'Add money' }),
+            ).not.toBeInTheDocument();
+            expect(
+                screen.getByRole('region', { name: 'Add money' }),
+            ).toHaveTextContent("Deposit isn't available to you right now.");
+            expect(
+                screen.queryByRole('button', { name: 'Confirm deposit' }),
+            ).not.toBeInTheDocument();
+        });
+
+        it('never renders a provider reference the server might leak', () => {
+            const props = wallet(unknownFixture);
+            const leak = { provider_reference: 'MTN-TXN-884213' };
+
+            Object.assign(props.deposits[0], leak);
+            Object.assign(props.deposits[0].intent_receipt, leak);
+            Object.assign(props.receipt as object, leak);
+            Object.assign(
+                (props.receipt as { intent_receipt: object }).intent_receipt,
+                leak,
+            );
+            const { container } = render(<InvestorWallet {...props} />);
+
+            expect(container).not.toHaveTextContent('MTN-TXN-884213');
+            expect(document.body).not.toHaveTextContent('MTN-TXN-884213');
+        });
+
+        it('reloads exactly the wallet facts when a recorded intent carries no next page', async () => {
+            finishReloads();
+            render(<InvestorWallet {...wallet(depositFixture)} />);
+
+            inertia.queue.push(
+                answers({
+                    status: 'completed',
+                    code: 'DEPOSIT_INTENT_RECORDED',
+                    data: {
+                        receipt: { code: 'DEPOSIT_INTENT_RECORDED' },
+                        current: null,
+                        next: null,
+                    },
+                }),
+            );
+            fireEvent.submit(screen.getByRole('form', { name: 'Add money' }));
+            await act(async () => {
+                await Promise.resolve();
+            });
+
+            expect(Object.keys(inertia.calls[0].body as object).sort()).toEqual(
+                [
+                    'amount',
+                    'identity_context_revision',
+                    'method_id',
+                    'request_id',
+                ],
+            );
+            expect(inertia.visit).not.toHaveBeenCalled();
+            expect(inertia.reload).toHaveBeenCalledTimes(1);
+            expect(inertia.reload).toHaveBeenCalledWith(
+                expect.objectContaining({ only: RELOADED }),
+            );
+            expect(
+                screen.getByRole('region', { name: 'Wallet total' }),
+            ).toHaveTextContent('RWF 1,733,485');
+        });
+
+        it('recovers a lost answer by looking up the same request_id, sending no second intent', async () => {
+            render(<InvestorWallet {...wallet(depositFixture)} />);
+
+            inertia.queue.push(offline());
+            inertia.queue.push(
+                answers({
+                    status: 'completed',
+                    code: 'DEPOSIT_INTENT_RECORDED',
+                    data: {
+                        receipt: { code: 'DEPOSIT_INTENT_RECORDED' },
+                        current: null,
+                        next: {
+                            url: '/preview/investor-wallet-deposit-pending',
+                            method: 'get',
+                        },
+                    },
+                }),
+            );
+            fireEvent.submit(screen.getByRole('form', { name: 'Add money' }));
+            await act(async () => {
+                await Promise.resolve();
+            });
+
+            expect(inertia.calls).toHaveLength(2);
+            expect(inertia.calls[1]).toEqual({
+                url: `/preview/investor-wallet-operation-${requestId(0)}`,
+                method: 'get',
+                body: {
+                    identity_context_revision: 5,
+                    command: 'wallet.deposit',
+                },
+            });
+            expect(
+                inertia.calls.filter((call) => call.method === 'post'),
+            ).toHaveLength(1);
+            expect(inertia.visit).toHaveBeenCalledWith({
+                url: '/preview/investor-wallet-deposit-pending',
+                method: 'get',
+            });
+        });
+
+        it('treats IDEMPOTENCY_CONFLICT as final: no refresh, no lookup and no same-key retry', async () => {
+            render(<InvestorWallet {...wallet(depositFixture)} />);
+
+            inertia.queue.push(fails(409, { code: 'IDEMPOTENCY_CONFLICT' }));
+            fireEvent.submit(screen.getByRole('form', { name: 'Add money' }));
+
+            expect(
+                await screen.findByText(
+                    'This request was already used for something else. Start again from the current details.',
+                ),
+            ).toBeInTheDocument();
+            expect(inertia.calls).toHaveLength(1);
+            expect(inertia.reload).not.toHaveBeenCalled();
+            expect(
+                screen.queryByRole('button', {
+                    name: 'Send the same request again',
+                }),
+            ).not.toBeInTheDocument();
+            expect(
+                screen.queryByRole('button', { name: 'Check again' }),
+            ).not.toBeInTheDocument();
+
+            inertia.queue.push(fails(409, { code: 'VERSION_CONFLICT' }));
+            fireEvent.submit(screen.getByRole('form', { name: 'Add money' }));
+            await act(async () => {
+                await Promise.resolve();
+            });
+            expect(requestId(1)).not.toBe(requestId(0));
+        });
+
+        it('withdraws the same-key retry when the refreshed facts no longer allow deposit', async () => {
+            const props = wallet(depositFixture);
+            const { rerender } = render(<InvestorWallet {...props} />);
+
+            inertia.reload.mockImplementation(
+                (options: { onFinish: () => void }) => {
+                    rerender(
+                        <InvestorWallet {...props} allowed_actions={[]} />,
+                    );
+                    options.onFinish();
+                },
+            );
+            inertia.queue.push(fails(503, { code: 'RETRYABLE_CONTENTION' }));
+            inertia.queue.push(fails(404, { code: 'OPERATION_NOT_FOUND' }));
+            fireEvent.submit(screen.getByRole('form', { name: 'Add money' }));
+
+            expect(
+                await screen.findByText(
+                    'Nothing was recorded, and this action is no longer available with the current details.',
+                ),
+            ).toBeInTheDocument();
+            expect(inertia.reload).toHaveBeenCalledWith(
+                expect.objectContaining({ only: RELOADED }),
+            );
+            expect(
+                screen.queryByRole('button', {
+                    name: 'Send the same request again',
+                }),
+            ).not.toBeInTheDocument();
+            expect(
+                screen.queryByRole('form', { name: 'Add money' }),
+            ).not.toBeInTheDocument();
+            expect(inertia.calls).toHaveLength(2);
+        });
+
+        it('keeps the live-minimal shape free of a preview outcome and seeds no notice', () => {
+            const props = wallet(minimalFixture);
+
+            expect(props).not.toHaveProperty('preview_outcome');
+            props.funding.kind = 'deposit';
+            render(<InvestorWallet {...props} />);
+
+            const panel = screen.getByRole('region', { name: 'Add money' });
+
+            expect(panel).toHaveTextContent(
+                "Deposits aren't available yet: no deposit policy has been set.",
+            );
+            expect(within(panel).queryByRole('button')).not.toBeInTheDocument();
+        });
     });
 });

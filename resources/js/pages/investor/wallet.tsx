@@ -36,7 +36,12 @@ export default function InvestorWallet(props: C3InvestorWalletProps) {
 
     const left = (
         <>
-            <BalanceCard wallet={props.wallet} />
+            <BalanceCard
+                wallet={props.wallet}
+                depositOffered={props.allowed_actions.includes(
+                    'wallet.deposit',
+                )}
+            />
             {kind === null ? (
                 <Link
                     href={props.links.deposit}
