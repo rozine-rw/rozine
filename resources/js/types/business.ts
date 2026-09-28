@@ -1264,7 +1264,12 @@ export type BusinessCampaignProps = Omit<
     > & {
         progress: CampaignProgress;
     };
-    links: { close: RouteLink; operation: RouteLink };
+    links: {
+        close: RouteLink;
+        operation: RouteLink;
+        /** The change beacon (S4-E), with its render-time cursor; null in previews. */
+        changes?: RouteLink | null;
+    };
     /**
      * Home, drawn beneath the sheet on a wide screen; null when the server sends no Home (the
      * live Business Home is the application directory, not the preview dashboard), in which case

@@ -110,7 +110,8 @@
             "operation": {
                 "url": "/preview/investor/wallet-operations/{request_id}",
                 "method": "get"
-            }
+            },
+            "changes": null
         },
         "actions": {
             "deposit": {

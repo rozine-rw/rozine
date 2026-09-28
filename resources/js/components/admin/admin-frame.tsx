@@ -5,6 +5,8 @@ import { InfoTip } from '@/components/admin/ui';
 import { ConnectivityNotice } from '@/components/rozine/connectivity-notice';
 import { IconGradients } from '@/components/rozine/icon';
 import { LogoLockup } from '@/components/rozine/logo';
+import { useChangeBeacon } from '@/hooks/use-change-beacon';
+import type { ChangeBeacon } from '@/hooks/use-change-beacon';
 import { useReconnectRefresh } from '@/hooks/use-reconnect-refresh';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
@@ -176,6 +178,8 @@ type AdminFrameProps = AdminFrameShellProps & {
     searchQuery?: { param: string; clears: string[] };
     /** A drawer over the content column. */
     overlay?: ReactNode;
+    /** The live page's change beacon; a preview passes none, so nothing polls. */
+    beacon?: ChangeBeacon;
     children: ReactNode;
 };
 
@@ -193,9 +197,11 @@ export function AdminFrame({
     search,
     searchQuery,
     overlay,
+    beacon,
     children,
 }: AdminFrameProps) {
     const { t } = useTranslation();
+    useChangeBeacon(beacon);
     const [menuOpen, setMenuOpen] = useState(false);
     const [accountOpen, setAccountOpen] = useState(false);
     useReconnectRefresh();

@@ -24,6 +24,8 @@ class BusinessCampaignResource extends JsonResource
             'note' => ['id' => $page['id'], 'title' => $page['title'], 'photos' => [], 'performance' => null, 'progress' => $page['progress']],
             'allowed_actions' => $canCancel ? ['campaign.cancel'] : [], 'actions' => ['cancel' => $canCancel
                 ? ['url' => route(($request->routeIs('api.*') ? 'api.v1.' : '').'business.campaigns.cancel', ['business' => $page['business_id'], 'campaign' => $page['id']], false), 'method' => 'post'] : null],
-            'links' => ['close' => $home, 'operation' => BusinessPublicationResource::lookup($request, $page['identity_context_revision'], command: 'campaign.cancel')]];
+            'links' => ['close' => $home, 'operation' => BusinessPublicationResource::lookup($request, $page['identity_context_revision'], command: 'campaign.cancel'),
+                'changes' => isset($page['changes_cursor']) ? ['url' => route(($request->routeIs('api.*') ? 'api.v1.' : '').'changes.index',
+                    ['topics' => 'campaign', 'after' => (string) $page['changes_cursor']], false), 'method' => 'get'] : null]];
     }
 }

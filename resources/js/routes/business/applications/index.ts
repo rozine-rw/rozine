@@ -393,7 +393,7 @@ submit.form = submitForm
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::publish
-* @see app/Http/Controllers/BusinessPublicationController.php:31
+* @see app/Http/Controllers/BusinessPublicationController.php:32
 * @route '/business/{business}/applications/{application}/publish'
 */
 export const publish = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -408,7 +408,7 @@ publish.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::publish
-* @see app/Http/Controllers/BusinessPublicationController.php:31
+* @see app/Http/Controllers/BusinessPublicationController.php:32
 * @route '/business/{business}/applications/{application}/publish'
 */
 publish.url = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions) => {
@@ -434,7 +434,7 @@ publish.url = (args: { business: string | number, application: string | number }
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::publish
-* @see app/Http/Controllers/BusinessPublicationController.php:31
+* @see app/Http/Controllers/BusinessPublicationController.php:32
 * @route '/business/{business}/applications/{application}/publish'
 */
 publish.post = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -444,7 +444,7 @@ publish.post = (args: { business: string | number, application: string | number 
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::publish
-* @see app/Http/Controllers/BusinessPublicationController.php:31
+* @see app/Http/Controllers/BusinessPublicationController.php:32
 * @route '/business/{business}/applications/{application}/publish'
 */
 const publishForm = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -454,7 +454,7 @@ const publishForm = (args: { business: string | number, application: string | nu
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::publish
-* @see app/Http/Controllers/BusinessPublicationController.php:31
+* @see app/Http/Controllers/BusinessPublicationController.php:32
 * @route '/business/{business}/applications/{application}/publish'
 */
 publishForm.post = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

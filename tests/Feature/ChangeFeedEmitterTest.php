@@ -9,6 +9,7 @@ use App\Models\InvestorWallet;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditSealingFixture;
 use Tests\Support\InvestorWalletFixture;
 
@@ -45,8 +46,8 @@ function campaignRows(): array
 /** @return list<string> */
 function feedRows(): array
 {
-    return DB::table('change_feed')->orderBy('id')->get()
-        ->map(fn (object $row): string => ($row->party_id ?? $row->business_id ?? $row->staff_queue).'|'.$row->topic.'|'.$row->subject.'@'.$row->revision)->all();
+    return array_values(DB::table('change_feed')->orderBy('id')->get()
+        ->map(fn (object $row): string => ($row->party_id ?? $row->business_id ?? $row->staff_queue).'|'.$row->topic.'|'.$row->subject.'@'.$row->revision)->all());
 }
 
 it('emits a wallet change when a deposit is recorded and each time its provider outcome applies', function (): void {
@@ -128,4 +129,36 @@ it('emits a staff queue change when an application is submitted and when staff r
         ->and(feedRows())->toBe([$queue.'@1', $queue.'@2'])
         ->and(app(ReadChanges::class)->handle($fixture['audit']['staff']->id, ['staff_queue'], $cursor)['changes'])
         ->toBe([['topic' => 'staff_queue', 'subject' => 'applications', 'revision' => 2]]);
+});
+
+it('gives each live page its beacon link at the render-time cursor, and none over a staff token', function (): void {
+    $this->freezeSecond();
+    $this->withoutVite();
+    $live = liveCampaign();
+    $wallet = InvestorWalletFixture::ready();
+    $pages = [
+        [$wallet['user'], route('investor.wallet'), '/changes?topics=wallet&after='],
+        [$live['user'], route('business.campaigns.show', ['business' => $live['business'], 'campaign' => $live['campaign']->id]), '/changes?topics=campaign&after='],
+        [$live['staff'], route('staff.applications.index'), '/admin/changes?topics=staff_queue&after='],
+    ];
+    $links = [];
+    foreach ($pages as [$user, $url, $prefix]) {
+        $links[] = $link = $this->actingAs($user)->get($url)->assertOk()->viewData('page')['props']['links']['changes'];
+        expect($link['method'])->toBe('get')->and($link['url'])->toStartWith($prefix);
+    }
+    InvestorWalletFixture::deposit($wallet);
+    app(BusinessCampaignStore::class)->cancel($live['user']->id, 1, $live['business'], $live['campaign']->id, 1, null, (string) Str::uuid());
+
+    expect($this->actingAs($wallet['user'])->getJson($links[0]['url'])->assertOk()->json('changes.0.topic'))->toBe('wallet')
+        ->and($this->actingAs($live['user'])->getJson($links[1]['url'])->assertOk()->json('changes'))
+        ->toBe([['topic' => 'campaign', 'subject' => $live['campaign']->id, 'revision' => 2]])
+        ->and($this->actingAs($live['staff'])->getJson($links[2]['url'])->assertOk()->json('changes'))->toBe([]);
+
+    Sanctum::actingAs($wallet['user'], ['investor:read']);
+    expect($this->getJson(route('api.v1.investor.wallet'))->json('data.links.changes.url'))->toStartWith('/api/v1/changes?topics=wallet&after=');
+    Sanctum::actingAs($live['user'], ['business:read']);
+    expect($this->getJson(route('api.v1.business.campaigns.show', ['business' => $live['business'], 'campaign' => $live['campaign']->id]))
+        ->json('data.links.changes.url'))->toStartWith('/api/v1/changes?topics=campaign&after=');
+    Sanctum::actingAs($live['staff'], ['staff:applications:read']);
+    expect($this->getJson(route('api.v1.staff.applications.index'))->json('data.links'))->toHaveKey('changes', null);
 });

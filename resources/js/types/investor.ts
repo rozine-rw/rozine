@@ -1017,6 +1017,8 @@ export type C3InvestorWalletProps = InvestorPageContract & {
         link_account: RouteLink | null;
         /** The operation lookup; its url holds the literal `{request_id}` token. */
         operation: RouteLink;
+        /** The change beacon (S4-E), with its render-time cursor; null in previews. */
+        changes?: RouteLink | null;
     };
     actions: { deposit: RouteAction };
     preview_outcome?: C3PreviewOutcome<'wallet.deposit'>;

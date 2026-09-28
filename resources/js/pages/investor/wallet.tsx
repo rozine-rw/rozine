@@ -23,6 +23,16 @@ import type { C3InvestorWalletProps } from '@/types/investor';
  * earnings and exports are hidden in C3. Deposit intents still `pending` or `unknown` are polled,
  * boundedly, for fresh facts. The design's Rozine Plus upsell is outside the MVP.
  */
+/** What a wallet change reloads: the wallet's facts and actions, never the deposit form. */
+const BEACON_RELOADS = [
+    'server_time',
+    'allowed_actions',
+    'wallet',
+    'deposits',
+    'history',
+    'receipt',
+];
+
 export default function InvestorWallet(props: C3InvestorWalletProps) {
     const { t } = useTranslation();
     const wide = useWide();
@@ -100,6 +110,10 @@ export default function InvestorWallet(props: C3InvestorWalletProps) {
             tab={null}
             links={props.links}
             showTabBar={false}
+            beacon={{
+                link: props.links.changes,
+                reloads: { wallet: { only: BEACON_RELOADS } },
+            }}
         >
             {wide ? (
                 <div className="flex h-full min-h-0 flex-col px-[30px] pt-3 pb-3.5">

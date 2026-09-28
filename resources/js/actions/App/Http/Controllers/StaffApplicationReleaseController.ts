@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::operation
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:44
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:47
 * @route '/api/v1/staff/application-operations/{request_id}'
 */
 const operationd171ffd321fab1386f6df9102f1c736a = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ operationd171ffd321fab1386f6df9102f1c736a.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::operation
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:44
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:47
 * @route '/api/v1/staff/application-operations/{request_id}'
 */
 operationd171ffd321fab1386f6df9102f1c736a.url = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ operationd171ffd321fab1386f6df9102f1c736a.url = (args: { request_id: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::operation
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:44
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:47
 * @route '/api/v1/staff/application-operations/{request_id}'
 */
 operationd171ffd321fab1386f6df9102f1c736a.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ operationd171ffd321fab1386f6df9102f1c736a.get = (args: { request_id: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::operation
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:44
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:47
 * @route '/api/v1/staff/application-operations/{request_id}'
 */
 operationd171ffd321fab1386f6df9102f1c736a.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ operationd171ffd321fab1386f6df9102f1c736a.head = (args: { request_id: string | n
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::operation
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:44
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:47
 * @route '/api/v1/staff/application-operations/{request_id}'
 */
 const operationd171ffd321fab1386f6df9102f1c736aForm = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ const operationd171ffd321fab1386f6df9102f1c736aForm = (args: { request_id: strin
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::operation
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:44
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:47
 * @route '/api/v1/staff/application-operations/{request_id}'
 */
 operationd171ffd321fab1386f6df9102f1c736aForm.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ operationd171ffd321fab1386f6df9102f1c736aForm.get = (args: { request_id: string 
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::operation
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:44
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:47
 * @route '/api/v1/staff/application-operations/{request_id}'
 */
 operationd171ffd321fab1386f6df9102f1c736aForm.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -99,7 +99,7 @@ operationd171ffd321fab1386f6df9102f1c736aForm.head = (args: { request_id: string
 operationd171ffd321fab1386f6df9102f1c736a.form = operationd171ffd321fab1386f6df9102f1c736aForm
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::operation
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:44
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:47
 * @route '/admin/application-operations/{request_id}'
 */
 const operationca9e2d8a5704d565ac878482d2a3b8c9 = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -114,7 +114,7 @@ operationca9e2d8a5704d565ac878482d2a3b8c9.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::operation
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:44
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:47
 * @route '/admin/application-operations/{request_id}'
 */
 operationca9e2d8a5704d565ac878482d2a3b8c9.url = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -141,7 +141,7 @@ operationca9e2d8a5704d565ac878482d2a3b8c9.url = (args: { request_id: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::operation
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:44
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:47
 * @route '/admin/application-operations/{request_id}'
 */
 operationca9e2d8a5704d565ac878482d2a3b8c9.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -151,7 +151,7 @@ operationca9e2d8a5704d565ac878482d2a3b8c9.get = (args: { request_id: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::operation
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:44
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:47
 * @route '/admin/application-operations/{request_id}'
 */
 operationca9e2d8a5704d565ac878482d2a3b8c9.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -161,7 +161,7 @@ operationca9e2d8a5704d565ac878482d2a3b8c9.head = (args: { request_id: string | n
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::operation
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:44
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:47
 * @route '/admin/application-operations/{request_id}'
 */
 const operationca9e2d8a5704d565ac878482d2a3b8c9Form = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -171,7 +171,7 @@ const operationca9e2d8a5704d565ac878482d2a3b8c9Form = (args: { request_id: strin
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::operation
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:44
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:47
 * @route '/admin/application-operations/{request_id}'
 */
 operationca9e2d8a5704d565ac878482d2a3b8c9Form.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -181,7 +181,7 @@ operationca9e2d8a5704d565ac878482d2a3b8c9Form.get = (args: { request_id: string 
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::operation
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:44
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:47
 * @route '/admin/application-operations/{request_id}'
 */
 operationca9e2d8a5704d565ac878482d2a3b8c9Form.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -208,7 +208,7 @@ export const operation = {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/api/v1/staff/applications'
 */
 const index756f07527b4cca5e78a1d6fb220fba74 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -223,7 +223,7 @@ index756f07527b4cca5e78a1d6fb220fba74.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/api/v1/staff/applications'
 */
 index756f07527b4cca5e78a1d6fb220fba74.url = (options?: RouteQueryOptions) => {
@@ -232,7 +232,7 @@ index756f07527b4cca5e78a1d6fb220fba74.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/api/v1/staff/applications'
 */
 index756f07527b4cca5e78a1d6fb220fba74.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -242,7 +242,7 @@ index756f07527b4cca5e78a1d6fb220fba74.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/api/v1/staff/applications'
 */
 index756f07527b4cca5e78a1d6fb220fba74.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -252,7 +252,7 @@ index756f07527b4cca5e78a1d6fb220fba74.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/api/v1/staff/applications'
 */
 const index756f07527b4cca5e78a1d6fb220fba74Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -262,7 +262,7 @@ const index756f07527b4cca5e78a1d6fb220fba74Form = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/api/v1/staff/applications'
 */
 index756f07527b4cca5e78a1d6fb220fba74Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -272,7 +272,7 @@ index756f07527b4cca5e78a1d6fb220fba74Form.get = (options?: RouteQueryOptions): R
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/api/v1/staff/applications'
 */
 index756f07527b4cca5e78a1d6fb220fba74Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -288,7 +288,7 @@ index756f07527b4cca5e78a1d6fb220fba74Form.head = (options?: RouteQueryOptions): 
 index756f07527b4cca5e78a1d6fb220fba74.form = index756f07527b4cca5e78a1d6fb220fba74Form
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/admin/applications'
 */
 const index671f81e7531403dc53b140c56cc77a26 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -303,7 +303,7 @@ index671f81e7531403dc53b140c56cc77a26.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/admin/applications'
 */
 index671f81e7531403dc53b140c56cc77a26.url = (options?: RouteQueryOptions) => {
@@ -312,7 +312,7 @@ index671f81e7531403dc53b140c56cc77a26.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/admin/applications'
 */
 index671f81e7531403dc53b140c56cc77a26.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -322,7 +322,7 @@ index671f81e7531403dc53b140c56cc77a26.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/admin/applications'
 */
 index671f81e7531403dc53b140c56cc77a26.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -332,7 +332,7 @@ index671f81e7531403dc53b140c56cc77a26.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/admin/applications'
 */
 const index671f81e7531403dc53b140c56cc77a26Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -342,7 +342,7 @@ const index671f81e7531403dc53b140c56cc77a26Form = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/admin/applications'
 */
 index671f81e7531403dc53b140c56cc77a26Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -352,7 +352,7 @@ index671f81e7531403dc53b140c56cc77a26Form.get = (options?: RouteQueryOptions): R
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/admin/applications'
 */
 index671f81e7531403dc53b140c56cc77a26Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -379,7 +379,7 @@ export const index = {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/api/v1/staff/applications/{application}'
 */
 const show5ec96efb90040ae8058ef12ca818bbee = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -394,7 +394,7 @@ show5ec96efb90040ae8058ef12ca818bbee.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/api/v1/staff/applications/{application}'
 */
 show5ec96efb90040ae8058ef12ca818bbee.url = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -421,7 +421,7 @@ show5ec96efb90040ae8058ef12ca818bbee.url = (args: { application: string | number
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/api/v1/staff/applications/{application}'
 */
 show5ec96efb90040ae8058ef12ca818bbee.get = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -431,7 +431,7 @@ show5ec96efb90040ae8058ef12ca818bbee.get = (args: { application: string | number
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/api/v1/staff/applications/{application}'
 */
 show5ec96efb90040ae8058ef12ca818bbee.head = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -441,7 +441,7 @@ show5ec96efb90040ae8058ef12ca818bbee.head = (args: { application: string | numbe
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/api/v1/staff/applications/{application}'
 */
 const show5ec96efb90040ae8058ef12ca818bbeeForm = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -451,7 +451,7 @@ const show5ec96efb90040ae8058ef12ca818bbeeForm = (args: { application: string | 
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/api/v1/staff/applications/{application}'
 */
 show5ec96efb90040ae8058ef12ca818bbeeForm.get = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -461,7 +461,7 @@ show5ec96efb90040ae8058ef12ca818bbeeForm.get = (args: { application: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/api/v1/staff/applications/{application}'
 */
 show5ec96efb90040ae8058ef12ca818bbeeForm.head = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -477,7 +477,7 @@ show5ec96efb90040ae8058ef12ca818bbeeForm.head = (args: { application: string | n
 show5ec96efb90040ae8058ef12ca818bbee.form = show5ec96efb90040ae8058ef12ca818bbeeForm
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/admin/applications/{application}'
 */
 const showb1e797ef20f36746feab1af8bdfc047b = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -492,7 +492,7 @@ showb1e797ef20f36746feab1af8bdfc047b.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/admin/applications/{application}'
 */
 showb1e797ef20f36746feab1af8bdfc047b.url = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -519,7 +519,7 @@ showb1e797ef20f36746feab1af8bdfc047b.url = (args: { application: string | number
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/admin/applications/{application}'
 */
 showb1e797ef20f36746feab1af8bdfc047b.get = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -529,7 +529,7 @@ showb1e797ef20f36746feab1af8bdfc047b.get = (args: { application: string | number
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/admin/applications/{application}'
 */
 showb1e797ef20f36746feab1af8bdfc047b.head = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -539,7 +539,7 @@ showb1e797ef20f36746feab1af8bdfc047b.head = (args: { application: string | numbe
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/admin/applications/{application}'
 */
 const showb1e797ef20f36746feab1af8bdfc047bForm = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -549,7 +549,7 @@ const showb1e797ef20f36746feab1af8bdfc047bForm = (args: { application: string | 
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/admin/applications/{application}'
 */
 showb1e797ef20f36746feab1af8bdfc047bForm.get = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -559,7 +559,7 @@ showb1e797ef20f36746feab1af8bdfc047bForm.get = (args: { application: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/admin/applications/{application}'
 */
 showb1e797ef20f36746feab1af8bdfc047bForm.head = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -586,7 +586,7 @@ export const show = {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::release
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:38
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:41
 * @route '/api/v1/staff/applications/{application}/release'
 */
 const release2bbc93740ebad828f5f3202531380e3b = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -601,7 +601,7 @@ release2bbc93740ebad828f5f3202531380e3b.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::release
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:38
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:41
 * @route '/api/v1/staff/applications/{application}/release'
 */
 release2bbc93740ebad828f5f3202531380e3b.url = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -628,7 +628,7 @@ release2bbc93740ebad828f5f3202531380e3b.url = (args: { application: string | num
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::release
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:38
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:41
 * @route '/api/v1/staff/applications/{application}/release'
 */
 release2bbc93740ebad828f5f3202531380e3b.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -638,7 +638,7 @@ release2bbc93740ebad828f5f3202531380e3b.post = (args: { application: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::release
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:38
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:41
 * @route '/api/v1/staff/applications/{application}/release'
 */
 const release2bbc93740ebad828f5f3202531380e3bForm = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -648,7 +648,7 @@ const release2bbc93740ebad828f5f3202531380e3bForm = (args: { application: string
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::release
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:38
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:41
 * @route '/api/v1/staff/applications/{application}/release'
 */
 release2bbc93740ebad828f5f3202531380e3bForm.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -659,7 +659,7 @@ release2bbc93740ebad828f5f3202531380e3bForm.post = (args: { application: string 
 release2bbc93740ebad828f5f3202531380e3b.form = release2bbc93740ebad828f5f3202531380e3bForm
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::release
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:38
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:41
 * @route '/admin/applications/{application}/release'
 */
 const release20bcb0c907d03decd4aa999995604681 = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -674,7 +674,7 @@ release20bcb0c907d03decd4aa999995604681.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::release
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:38
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:41
 * @route '/admin/applications/{application}/release'
 */
 release20bcb0c907d03decd4aa999995604681.url = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -701,7 +701,7 @@ release20bcb0c907d03decd4aa999995604681.url = (args: { application: string | num
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::release
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:38
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:41
 * @route '/admin/applications/{application}/release'
 */
 release20bcb0c907d03decd4aa999995604681.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -711,7 +711,7 @@ release20bcb0c907d03decd4aa999995604681.post = (args: { application: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::release
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:38
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:41
 * @route '/admin/applications/{application}/release'
 */
 const release20bcb0c907d03decd4aa999995604681Form = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -721,7 +721,7 @@ const release20bcb0c907d03decd4aa999995604681Form = (args: { application: string
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::release
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:38
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:41
 * @route '/admin/applications/{application}/release'
 */
 release20bcb0c907d03decd4aa999995604681Form.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
