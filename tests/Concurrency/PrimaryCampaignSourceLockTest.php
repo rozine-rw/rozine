@@ -13,6 +13,7 @@ use Tests\Support\AuditSealingFixture;
 it('refuses to return an unlocked source outside the caller transaction', function (): void {
     expect(DB::transactionLevel())->toBe(0);
     expect(fn () => app(PrimaryCampaignSource::class)->lock((string) Str::ulid()))->toThrow(LogicException::class, 'PRIMARY_TRANSACTION_REQUIRED');
+    expect(fn () => app(PrimaryCampaignSource::class)->rejectKnownConnections((string) Str::ulid(), []))->toThrow(LogicException::class, 'PRIMARY_TRANSACTION_REQUIRED');
 });
 
 it('retains both Business and campaign locks through the callers outer transaction', function (): void {

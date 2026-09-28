@@ -48,6 +48,7 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
         try {
             return DB::transaction(function () use ($campaignId, $partyId, $originOperationId, $units, $admit): ReservedCheckout {
                 $campaign = $this->campaigns->lock($campaignId);
+                $this->campaigns->rejectKnownConnections($campaign['business_id'], [$partyId]);
                 $quantity = UnitOrdinals::quantity($units);
                 $occupied = [];
                 $partyUnits = BigInteger::zero();
@@ -112,6 +113,7 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                 try {
                     $reservation->window->requireOpen(now('UTC')->toDateTimeImmutable());
                     $this->campaigns->lock($campaignId);
+                    $this->campaigns->rejectKnownConnections($campaign['business_id'], [$partyId]);
                     $terms = $admit($reservation->rights, $campaign);
                     if ($terms->policyVersion !== $campaign['policy_version'] || $terms->ratePercent !== $campaign['rate_pct'] || $terms->termMonths !== $campaign['term_months']) {
                         throw new PrimaryViolation('INVALID_PRIMARY_TERMS');
@@ -210,7 +212,8 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
             if (! $ordinals->count->isEqualTo($campaign['units']) || ! $principal->isEqualTo($campaign['principal'])) {
                 throw new CommandRejection('CAMPAIGN_NOT_FULLY_COMMITTED');
             }
-            $partyIds = $roots->pluck('party_id')->unique()->sort()->values();
+            $partyIds = $roots->map(fn (PrimaryReservationRecord $root): string => $root->party_id)->unique()->sort()->values();
+            $this->campaigns->rejectKnownConnections($campaign['business_id'], array_values($partyIds->all()));
             $wallets = [];
             foreach ($partyIds as $partyId) {
                 $wallets[$partyId] = $this->wallets->lockForParty($partyId);

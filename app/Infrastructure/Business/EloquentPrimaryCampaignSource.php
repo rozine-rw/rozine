@@ -9,12 +9,14 @@ use App\Application\Business\Contracts\CampaignClosureEvidence;
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Business\Contracts\PublishedCampaignEvidence;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Domain\Business\MandateAuthority;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Underwriting\LoanSchedule;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessExposureReservation;
+use App\Models\BusinessMandate;
 use App\Models\BusinessProfile;
 use Brick\Math\BigInteger;
 use Brick\Math\BigRational;
@@ -26,7 +28,7 @@ use RuntimeException;
 final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
 {
     public function __construct(private PublishedCampaignEvidence $publications, private CampaignClosureEvidence $closures,
-        private BusinessExposureStore $exposures, private CanonicalJson $json) {}
+        private BusinessExposureStore $exposures, private CanonicalJson $json, private MandateAuthority $mandates) {}
 
     public function lockBusiness(string $campaignId): void
     {
@@ -36,6 +38,26 @@ final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
         $candidate = BusinessCampaign::query()->whereKey($campaignId)->first()
             ?? throw new CommandRejection('CAMPAIGN_NOT_FOUND', 404);
         BusinessProfile::query()->whereKey($candidate->business_id)->lockForUpdate()->firstOrFail();
+    }
+
+    public function rejectKnownConnections(string $businessId, array $partyIds): void
+    {
+        if (DB::transactionLevel() === 0) {
+            throw new LogicException('PRIMARY_TRANSACTION_REQUIRED');
+        }
+        $business = BusinessProfile::query()->whereKey($businessId)->lockForUpdate()->first()
+            ?? throw new CommandRejection('BUSINESS_NOT_FOUND', 404);
+        $mandate = BusinessMandate::query()->where('business_id', $business->id)->where('version', $business->mandate_version)->first()
+            ?? throw new CommandRejection('MANDATE_REQUIRED', 403);
+        $terms = $this->mandates->normalize($business->entity_kind, $business->entity_party_id, $mandate->terms);
+        $now = now('UTC')->format('Y-m-d\TH:i:s\Z');
+        if ($terms['status'] !== 'active' || $terms['effective_at'] > $now
+            || ($terms['expires_at'] !== null && $terms['expires_at'] <= $now)) {
+            throw new CommandRejection('MANDATE_REQUIRED', 403);
+        }
+        if (array_intersect(array_map(strtolower(...), $partyIds), [$business->entity_party_id, ...array_column($terms['people'], 'party_id')]) !== []) {
+            throw new CommandRejection('CONNECTED_BUSINESS_INVESTMENT_PROHIBITED', 403);
+        }
     }
 
     /** @return CampaignInput */
