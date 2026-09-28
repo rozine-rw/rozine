@@ -112,6 +112,7 @@ export default function AdminDisbursements(props: C3AdminDisbursementsProps) {
                         key={props.disbursement.id}
                         disbursement={props.disbursement}
                         viewer={props.viewer}
+                        serverTime={props.server_time}
                         preview={props.preview_outcome}
                     />
                 )

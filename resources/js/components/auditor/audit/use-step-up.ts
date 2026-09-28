@@ -34,20 +34,21 @@ export type StepUpRequest = {
  * report revision and digest. The code travels in this one request and nowhere else — not the
  * command journal, a retry, storage or the URL — and the request body is dropped as soon as the
  * answer arrives. It confirms who is sealing; it says nothing about the capture devices. The
- * route comes with each request, from a stage that enables the step-up.
+ * route comes with each request, from a stage that enables the step-up. The staff disbursement
+ * approval reuses it with its own request body, route and purpose, never the Auditor's.
  */
-export function useStepUp() {
+export function useStepUp<Request extends { code: string } = StepUpRequest>() {
     const http = useHttp<Record<string, never>, StepUpProof>();
     const [checking, setChecking] = useState(false);
 
     const verify = async (
         route: RouteAction,
-        request: StepUpRequest,
+        request: Request,
     ): Promise<StepUpResult> => {
         let failure: StepUpResult = { kind: 'unreachable' };
         let message: string | null = null;
         /* Dropped once the answer arrives, so nothing keeps the code after its request. */
-        let pending: StepUpRequest | null = request;
+        let pending: Request | null = request;
 
         setChecking(true);
         http.transform(() => ({ ...pending }));

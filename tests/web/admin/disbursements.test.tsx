@@ -39,7 +39,14 @@ import failureFixture from '../../../resources/fixtures/ui/admin-disbursements-v
 import lostFixture from '../../../resources/fixtures/ui/admin-disbursements-visibility-lost.json';
 import queueFixture from '../../../resources/fixtures/ui/admin-disbursements.json';
 import { renderWithUser } from '../helpers/render-with-user';
-import { answers, fails, inertia, invalid, resetInertia } from './inertia-mock';
+import {
+    answers,
+    fails,
+    inertia,
+    invalid,
+    offline,
+    resetInertia,
+} from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
@@ -74,6 +81,31 @@ const next = {
     url: '/preview/admin-disbursements-awaiting-second',
     method: 'get',
 };
+
+/** A staff step-up route, as S3-D will list it in `step_up.route`; synthetic here. */
+const STEP_UP_ROUTE = {
+    url: '/preview/admin-disbursements-step-up',
+    method: 'post',
+} as const;
+
+const DIGEST =
+    'sha256:4f1c9a0e7b2d58c36e91f0a4d7b3c2e815a96f0d2b4c7e1a3f58d09c6b2e7a41';
+
+/** The awaiting disbursement with a step-up route listed, so approval can be given. */
+const approvable = (): C3AdminDisbursementsProps => {
+    const fixture = props(awaitingFixture);
+
+    opened(fixture).step_up = {
+        purpose: 'disbursement.approve',
+        route: STEP_UP_ROUTE,
+    };
+
+    return fixture;
+};
+
+/** The step-up exchange's answer, in the seal exchange's `{proof, expires_at}` shape. */
+const proofOf = (proof: string, expiresAt = '2026-09-25T10:05:00+02:00') =>
+    answers({ proof, expires_at: expiresAt });
 
 beforeEach(resetInertia);
 
@@ -294,7 +326,6 @@ describe('Disbursement drawer', () => {
                 method: 'post',
                 body: {
                     request_id: expect.any(String),
-                    disbursement_id: '01k5za1m7q3r8t2v6w9x4y0b1c',
                     expected_revision: 3,
                     reason: 'Funded.',
                 },
@@ -374,21 +405,23 @@ describe('Disbursement drawer', () => {
         );
     });
 
-    it('keeps approval withheld even when a step-up route is listed, since no bound proof can be sent yet', () => {
+    it('withholds approval while nothing binds yet, even with a step-up route listed', () => {
         const fixture = props(awaitingFixture);
 
         opened(fixture).step_up = {
             purpose: 'disbursement.approve',
-            route: { url: '/preview/step-up', method: 'post' },
+            route: STEP_UP_ROUTE,
         };
+        opened(fixture).approval_binding = null;
         render(<AdminDisbursements {...fixture} />);
         const approve = screen.getByRole('button', {
             name: 'Approve release',
         });
 
         expect(approve).toBeDisabled();
-        expect(approve).toHaveAccessibleDescription(
-            /That confirmation isn't available yet, so approval can't be given here./,
+        expect(approve).toHaveAttribute(
+            'aria-describedby',
+            'disbursement-step-up',
         );
         fireEvent.click(approve);
         expect(
@@ -522,7 +555,7 @@ describe('Disbursement drawer', () => {
         expect(
             screen.getByRole('form', { name: 'Ask the provider again' }),
         ).toHaveTextContent(
-            'This asks the provider about the same operation. It never sends the payment again.',
+            'This asks the provider about the same operation. It never sends the payment again,',
         );
         unmount();
 
@@ -646,7 +679,6 @@ describe('Disbursement drawer', () => {
                     method: 'post',
                     body: {
                         request_id: expect.any(String),
-                        disbursement_id: disbursement.id,
                         expected_revision: revision,
                         reason: '   Checked.',
                     },
@@ -980,6 +1012,548 @@ describe('Disbursement commands', () => {
             ),
         ).toBeInTheDocument();
     });
+});
+
+describe('Disbursement approval step-up', () => {
+    const openApproval = async (
+        user: ReturnType<typeof renderWithUser>['user'],
+    ) => {
+        await user.click(
+            within(drawer()).getByRole('button', { name: 'Approve release' }),
+        );
+    };
+
+    const stepUp = async (
+        user: ReturnType<typeof renderWithUser>['user'],
+        code = '123456',
+    ) => {
+        await user.type(
+            screen.getByRole('textbox', {
+                name: 'Six-digit authenticator code',
+            }),
+            code,
+        );
+        await user.click(screen.getByRole('button', { name: 'Confirm code' }));
+    };
+
+    const approveWith = async (
+        user: ReturnType<typeof renderWithUser>['user'],
+        reason = 'Totals and destination match.',
+    ) => {
+        const stage = screen.getByRole('form', {
+            name: 'Approve this release',
+        });
+
+        const field = within(stage).getByRole<HTMLTextAreaElement>('textbox');
+
+        if (field.value === '') {
+            await user.type(field, reason);
+        }
+
+        await user.click(
+            within(stage).getByRole('button', {
+                name: 'Approve and record intent',
+            }),
+        );
+    };
+
+    it('exchanges a code for a bound proof and sends it once, as step_up_proof, on approve', async () => {
+        const fixture = approvable();
+        const disbursement = opened(fixture);
+
+        inertia.queue.push(
+            proofOf('opaque-proof-1'),
+            answers(
+                completed('DISBURSEMENT_INTENT_RECORDED', {
+                    receipt: {},
+                    current: null,
+                    next,
+                }),
+            ),
+        );
+        const { user } = renderWithUser(<AdminDisbursements {...fixture} />);
+
+        expect(
+            screen.queryByText(/That confirmation isn't available yet/),
+        ).not.toBeInTheDocument();
+        await openApproval(user);
+
+        const stage = screen.getByRole('form', {
+            name: 'Approve this release',
+        });
+        const submit = within(stage).getByRole('button', {
+            name: 'Approve and record intent',
+        });
+
+        await user.type(within(stage).getByRole('textbox'), 'Checked.');
+        expect(submit).toBeDisabled();
+        expect(
+            screen.getByRole('button', { name: 'Confirm code' }),
+        ).toBeDisabled();
+
+        await stepUp(user);
+        expect(
+            await screen.findByText(
+                /Confirmed until .*It's used once, for this approval/,
+            ),
+        ).toBeInTheDocument();
+        expect(inertia.calls).toEqual([
+            {
+                url: STEP_UP_ROUTE.url,
+                method: 'post',
+                body: {
+                    request_id: expect.any(String),
+                    expected_revision: 4,
+                    intent_digest: DIGEST,
+                    code: '123456',
+                },
+            },
+        ]);
+        expect(submit).toBeEnabled();
+
+        await user.click(submit);
+        await waitFor(() => expect(inertia.visits).toEqual([next]));
+
+        expect(inertia.calls[1]).toEqual({
+            url: disbursement.actions.approve?.url,
+            method: 'post',
+            body: {
+                request_id: expect.any(String),
+                expected_revision: 4,
+                reason: 'Checked.',
+                step_up_proof: 'opaque-proof-1',
+            },
+        });
+        expect(inertia.calls).toHaveLength(2);
+        expect(screen.queryByText(/Confirmed until/)).not.toBeInTheDocument();
+    });
+
+    it.each([
+        [
+            'a new revision',
+            (detail: C3DisbursementDetail) => {
+                detail.revision = 5;
+            },
+        ],
+        [
+            'a new amount',
+            (detail: C3DisbursementDetail) => {
+                detail.approval_binding = {
+                    ...(detail.approval_binding as NonNullable<
+                        C3DisbursementDetail['approval_binding']
+                    >),
+                    amount: { currency: 'RWF', amount: '24000000' },
+                };
+            },
+        ],
+        [
+            'a new destination',
+            (detail: C3DisbursementDetail) => {
+                detail.approval_binding = {
+                    ...(detail.approval_binding as NonNullable<
+                        C3DisbursementDetail['approval_binding']
+                    >),
+                    destination: 'MTN MoMo ••• 4410',
+                };
+            },
+        ],
+    ])(
+        'clears a held proof when a reload brings %s',
+        async (_label, reshape) => {
+            inertia.queue.push(proofOf('opaque-proof-1'));
+            const { user, rerender } = renderWithUser(
+                <AdminDisbursements {...approvable()} />,
+            );
+
+            await openApproval(user);
+            await stepUp(user);
+            await screen.findByText(/Confirmed until/);
+
+            const fresh = approvable();
+
+            reshape(opened(fresh));
+            rerender(<AdminDisbursements {...fresh} />);
+
+            expect(
+                await screen.findByText(
+                    'The details this approval binds changed, so your confirmation was cleared. Check them, then enter a new code.',
+                ),
+            ).toBeInTheDocument();
+            expect(
+                screen.queryByText(/Confirmed until/),
+            ).not.toBeInTheDocument();
+            await user.type(
+                within(
+                    screen.getByRole('form', { name: 'Approve this release' }),
+                ).getByRole('textbox'),
+                'Checked.',
+            );
+            expect(
+                screen.getByRole('button', {
+                    name: 'Approve and record intent',
+                }),
+            ).toBeDisabled();
+            expect(inertia.calls).toHaveLength(1);
+        },
+    );
+
+    it('clears a held proof when it expires against server_time, whatever the browser clock says', async () => {
+        /* The browser clock is hours ahead of the server's; only server_time decides. */
+        vi.useFakeTimers({ now: new Date('2026-09-25T20:00:00Z') });
+        inertia.queue.push(proofOf('opaque-proof-1'));
+        render(<AdminDisbursements {...approvable()} />);
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Approve release' }),
+        );
+        fireEvent.change(
+            screen.getByRole('textbox', {
+                name: 'Six-digit authenticator code',
+            }),
+            { target: { value: '123456' } },
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Confirm code' }));
+        await act(async () => {
+            await Promise.resolve();
+            await Promise.resolve();
+        });
+
+        expect(screen.getByText(/Confirmed until/)).toBeInTheDocument();
+        act(() => vi.advanceTimersByTime(299_000));
+        expect(screen.getByText(/Confirmed until/)).toBeInTheDocument();
+
+        act(() => vi.advanceTimersByTime(1_000));
+        expect(screen.queryByText(/Confirmed until/)).not.toBeInTheDocument();
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'That confirmation expired. Enter a new code from your authenticator.',
+        );
+        fireEvent.change(
+            within(
+                screen.getByRole('form', { name: 'Approve this release' }),
+            ).getByRole('textbox'),
+            { target: { value: 'Checked.' } },
+        );
+        expect(
+            screen.getByRole('button', { name: 'Approve and record intent' }),
+        ).toBeDisabled();
+    });
+
+    it('asks for a fresh step-up after STEP_UP_EXPIRED, then approves with a new request and a new proof', async () => {
+        const fixture = approvable();
+
+        inertia.queue.push(
+            proofOf('opaque-proof-1'),
+            fails(409, { code: 'STEP_UP_EXPIRED' }),
+            proofOf('opaque-proof-2'),
+            answers(
+                completed('DISBURSEMENT_INTENT_RECORDED', {
+                    receipt: {},
+                    current: null,
+                    next,
+                }),
+            ),
+        );
+        const { user } = renderWithUser(<AdminDisbursements {...fixture} />);
+
+        await openApproval(user);
+        await stepUp(user, '111111');
+        await screen.findByText(/Confirmed until/);
+        await approveWith(user);
+
+        expect(
+            await screen.findByText(
+                'That confirmation expired. Enter a new code from your authenticator.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Approve and record intent' }),
+        ).toBeDisabled();
+
+        await stepUp(user, '222222');
+        await screen.findByText(/Confirmed until/);
+        await approveWith(user);
+        await waitFor(() => expect(inertia.visits).toEqual([next]));
+
+        const [firstStepUp, firstApprove, secondStepUp, secondApprove] =
+            inertia.calls.map((call) => call.body as Record<string, unknown>);
+
+        expect(inertia.calls.map(({ url }) => url)).toEqual([
+            STEP_UP_ROUTE.url,
+            opened(fixture).actions.approve?.url,
+            STEP_UP_ROUTE.url,
+            opened(fixture).actions.approve?.url,
+        ]);
+        expect(firstApprove.step_up_proof).toBe('opaque-proof-1');
+        expect(secondApprove.step_up_proof).toBe('opaque-proof-2');
+        expect(secondApprove.request_id).not.toBe(firstApprove.request_id);
+        expect(secondStepUp.request_id).not.toBe(firstStepUp.request_id);
+        expect(secondStepUp.code).toBe('222222');
+    });
+
+    it('looks a lost approve up by its own request, and the lookup never carries the proof', async () => {
+        inertia.queue.push(
+            proofOf('opaque-proof-1'),
+            fails(503, { code: 'RETRYABLE_CONTENTION' }),
+            fails(502),
+            answers(
+                completed('DISBURSEMENT_INTENT_RECORDED', {
+                    receipt: {},
+                    current: null,
+                    next,
+                }),
+            ),
+        );
+        const { user } = renderWithUser(
+            <AdminDisbursements {...approvable()} />,
+        );
+
+        await openApproval(user);
+        await stepUp(user);
+        await screen.findByText(/Confirmed until/);
+        await approveWith(user);
+
+        await screen.findByText('Not yet confirmed');
+        expect(
+            screen.getByRole('button', { name: 'Approve and record intent' }),
+        ).toBeDisabled();
+        await user.type(
+            screen.getByRole('textbox', {
+                name: 'Six-digit authenticator code',
+            }),
+            '654321',
+        );
+        expect(
+            screen.getByRole('button', { name: 'Confirm code' }),
+        ).toBeDisabled();
+
+        await user.click(screen.getByRole('button', { name: 'Check again' }));
+        await waitFor(() => expect(inertia.visits).toEqual([next]));
+
+        const sent = inertia.calls[1].body as { request_id: string };
+
+        expect(inertia.calls.map(({ method }) => method)).toEqual([
+            'post',
+            'post',
+            'get',
+            'get',
+        ]);
+
+        for (const lookup of inertia.calls.slice(2)) {
+            expect(lookup).toEqual({
+                url: `/preview/admin-disbursements-operation-${sent.request_id}`,
+                method: 'get',
+                body: { command: 'disbursement.approve' },
+            });
+            expect(JSON.stringify(lookup)).not.toContain('opaque-proof-1');
+        }
+
+        expect(
+            inertia.calls.filter((call) =>
+                JSON.stringify(call.body).includes('opaque-proof-1'),
+            ),
+        ).toHaveLength(1);
+    });
+
+    it.each([
+        [
+            'a lost answer',
+            offline(),
+            "Rozine couldn't be reached to check your code.",
+        ],
+        [
+            'an uncertain status',
+            fails(503),
+            "Rozine couldn't be reached to check your code.",
+        ],
+        [
+            'STEP_UP_INVALID',
+            fails(403, { code: 'STEP_UP_INVALID' }),
+            "That confirmation didn't go through. Enter a new code from your authenticator.",
+        ],
+        [
+            'a wrong code with the server’s words',
+            invalid({ code: 'That code has already been used.' }),
+            'That code has already been used.',
+        ],
+        [
+            'a wrong code without them',
+            invalid({}),
+            "That code didn't match. Enter the current code from your authenticator.",
+        ],
+    ])(
+        'asks for a fresh step-up after %s, never resending the code',
+        async (_label, respond, text) => {
+            inertia.queue.push(respond);
+            const { user } = renderWithUser(
+                <AdminDisbursements {...approvable()} />,
+            );
+
+            await openApproval(user);
+            await stepUp(user, '123456');
+
+            expect(await screen.findByRole('alert')).toHaveTextContent(text);
+            expect(inertia.calls).toHaveLength(1);
+            expect(
+                screen.getByRole('textbox', {
+                    name: 'Six-digit authenticator code',
+                }),
+            ).toHaveValue('');
+            expect(
+                screen.getByRole('button', {
+                    name: 'Approve and record intent',
+                }),
+            ).toBeDisabled();
+
+            inertia.queue.push(proofOf('opaque-proof-2'));
+            await stepUp(user, '777777');
+            await screen.findByText(/Confirmed until/);
+
+            const [first, second] = inertia.calls.map(
+                (call) => call.body as Record<string, unknown>,
+            );
+
+            expect(second.code).toBe('777777');
+            expect(second.request_id).not.toBe(first.request_id);
+        },
+    );
+
+    it('drops a proof that arrives after the binding changed, and shows the check in progress', async () => {
+        let answer: (value: unknown) => void = () => undefined;
+
+        inertia.queue.push(
+            () =>
+                new Promise((resolve) => {
+                    answer = resolve;
+                }),
+        );
+        const { user, rerender } = renderWithUser(
+            <AdminDisbursements {...approvable()} />,
+        );
+
+        await openApproval(user);
+        await stepUp(user);
+        expect(
+            screen.getByRole('button', { name: 'Confirm code' }),
+        ).toHaveAttribute('aria-busy', 'true');
+
+        const fresh = approvable();
+
+        opened(fresh).revision = 5;
+        rerender(<AdminDisbursements {...fresh} />);
+        await act(async () => {
+            answer({
+                proof: 'late-proof',
+                expires_at: '2026-09-25T10:05:00+02:00',
+            });
+            await Promise.resolve();
+        });
+
+        expect(
+            await screen.findByText(
+                'The details this approval binds changed, so your confirmation was cleared. Check them, then enter a new code.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.queryByText(/Confirmed until/)).not.toBeInTheDocument();
+    });
+});
+
+describe('Disbursement requery', () => {
+    it.each([
+        ['a verified failure not yet reconciled', failureFixture, 7],
+        ['an unresolved reconciliation exception', exceptionFixture, 7],
+    ])(
+        'offers requery for %s, as another observation of the same operation, never as reconciling it',
+        async (_label, fixture, revision) => {
+            const page = props(fixture);
+            const disbursement = opened(page);
+
+            inertia.queue.push(
+                answers(
+                    completed('PROVIDER_QUERY_RECORDED', {
+                        receipt: {},
+                        current: null,
+                        next,
+                    }),
+                ),
+            );
+            const { user } = renderWithUser(<AdminDisbursements {...page} />);
+
+            expect(
+                within(drawer())
+                    .getAllByRole('button')
+                    .map((button) => button.textContent)
+                    .filter((label) => label !== ''),
+            ).toEqual(['Ask the provider again']);
+            await user.click(
+                screen.getByRole('button', { name: 'Ask the provider again' }),
+            );
+            const stage = screen.getByRole('form', {
+                name: 'Ask the provider again',
+            });
+
+            expect(stage).toHaveTextContent(
+                "It never sends the payment again, and it doesn't mark anything reconciled",
+            );
+            expect(drawer()).not.toHaveTextContent(
+                /mark(ed)? (as )?reconciled/i,
+            );
+            await user.type(within(stage).getByRole('textbox'), 'Recheck.');
+            await user.click(
+                within(stage).getByRole('button', { name: 'Ask the provider' }),
+            );
+            await waitFor(() => expect(inertia.visits).toEqual([next]));
+
+            expect(inertia.calls).toEqual([
+                {
+                    url: disbursement.actions.requery?.url,
+                    method: 'post',
+                    body: {
+                        request_id: expect.any(String),
+                        expected_revision: revision,
+                        reason: 'Recheck.',
+                    },
+                },
+            ]);
+        },
+    );
+
+    it.each([
+        ['a verified failure', failureFixture],
+        ['an exception', exceptionFixture],
+        ['a reconciled success', succeededFixture],
+    ])(
+        'offers no requery for %s unless the server lists it and its route',
+        (_label, fixture) => {
+            const unlisted = props(fixture);
+
+            opened(unlisted).allowed_actions = [];
+            opened(unlisted).actions.requery = {
+                url: '/preview/admin-disbursements-dispatched-unknown',
+                method: 'post',
+            };
+            const { unmount } = render(<AdminDisbursements {...unlisted} />);
+
+            expect(
+                screen.queryByRole('button', {
+                    name: 'Ask the provider again',
+                }),
+            ).not.toBeInTheDocument();
+            unmount();
+
+            const routeless = props(fixture);
+
+            opened(routeless).allowed_actions = ['disbursement.requery'];
+            delete opened(routeless).actions.requery;
+            render(<AdminDisbursements {...routeless} />);
+
+            expect(
+                screen.queryByRole('button', {
+                    name: 'Ask the provider again',
+                }),
+            ).not.toBeInTheDocument();
+            expect(inertia.calls).toEqual([]);
+        },
+    );
 });
 
 describe('Bounded polling', () => {
