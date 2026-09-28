@@ -163,6 +163,11 @@ const en = {
     'common.currency.rwf': 'RWF',
     'app.nav.label': 'App navigation',
     'app.nav.launcher': 'Launcher',
+    'app.read_failure.server':
+        "Rozine couldn't load this just now. Anything you already sent is unaffected.",
+    'app.read_failure.network':
+        "Couldn't reach Rozine. Check your connection, then try again.",
+    'app.read_failure.retry': 'Try again',
     'app.connectivity.offline':
         "You're offline. What you see may be out of date, and nothing can be sent until you're back online.",
     'business.nav.home': 'Home',
