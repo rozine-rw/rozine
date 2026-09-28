@@ -13,6 +13,7 @@ use App\Application\Disbursement\RecheckResult;
 use App\Application\Disbursement\ReconcileDisbursements;
 use App\Application\Disbursement\RecordPayoutEvent;
 use App\Application\Disbursement\VerifiedDestination;
+use App\Infrastructure\Disbursement\EloquentDisbursementStore;
 use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
 use App\Models\Disbursement;
 use Illuminate\Database\Events\QueryExecuted;
@@ -172,4 +173,39 @@ it('detects a source called under a disbursement lock, so its silence means some
         app(StaffConnections::class)->connection(1, $disbursement->business_id, []);
     });
     expect($probe->violations)->toBe(['connection under a disbursement lock without the Business lock', 'connection under a disbursement lock']);
+});
+
+it('takes the one provider event identity lock before the identity lookup on every observation path', function (): void {
+    ['disbursement' => $disbursement, 'intent' => $intent] = DisbursementFixture::approved();
+    $treasury = DisbursementFixture::staff(['treasury']);
+    $key = EloquentDisbursementStore::providerEventLockKey('synthetic', 'observed-everywhere');
+    $trace = [];
+    DB::listen(function (QueryExecuted $query) use (&$trace, $key): void {
+        if (str_contains($query->sql, 'pg_advisory_xact_lock') && in_array($key, $query->bindings, true)) {
+            $trace[] = 'identity-lock';
+        } elseif (str_contains($query->sql, 'from "disbursement_provider_events"') && str_contains($query->sql, '"disposition" <>')) {
+            $trace[] = 'identity-lookup';
+        }
+    });
+    $observe = function (string $path) use (&$trace, $intent, $disbursement, $treasury): array {
+        $trace = [];
+        match ($path) {
+            'callback' => app(RecordPayoutEvent::class)->handle(DisbursementFixture::provider()->callback($intent->id, 'pending',
+                ['event_id' => 'observed-everywhere', 'observed_at' => '2026-09-28T10:00:00+00:00'])),
+            'query' => (function () use ($intent): void {
+                DisbursementFixture::provider()->scriptQuery($intent->id, 'pending', ['event_id' => 'observed-everywhere', 'observed_at' => '2026-09-28T10:01:00+00:00']);
+                app(ReconcileDisbursements::class)->handle();
+            })(),
+            default => (function () use ($intent, $treasury, $disbursement): void {
+                DisbursementFixture::provider()->scriptQuery($intent->id, 'pending', ['event_id' => 'observed-everywhere', 'observed_at' => '2026-09-28T10:02:00+00:00']);
+                DisbursementFixture::command($treasury, $disbursement, 'requery', 3);
+            })(),
+        };
+
+        return $trace;
+    };
+
+    expect($observe('callback'))->toBe(['identity-lock', 'identity-lookup'])
+        ->and($observe('query'))->toBe(['identity-lock', 'identity-lookup'])
+        ->and($observe('requery'))->toBe(['identity-lock', 'identity-lookup']);
 });

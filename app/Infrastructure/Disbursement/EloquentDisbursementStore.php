@@ -45,7 +45,6 @@ use Closure;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Database\DeadlockException;
 use Illuminate\Database\QueryException;
-use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Throwable;
@@ -608,28 +607,34 @@ final class EloquentDisbursementStore implements DisbursementStore
     /** Records an authenticated observation against its locked intent; an exact replay adds nothing. */
     /**
      * Records an authenticated observation against its locked intent; an exact replay adds nothing.
-     *
-     * A provider event identity is global, but only this intent is locked, so another intent's
-     * transaction may record the same identity first (#96 5876182472). Its insert then waits for
-     * that winner and raises a uniqueness violation on the identity or content index; only that
-     * insert rolls back (its own savepoint), and the observation is classified again against the
-     * winner's committed row: a duplicate or a retained key conflict, never a lost one. Any other
-     * database error propagates. No extra lock is taken, so the lock order is unchanged.
+     * Every observation path (callback, scheduled query and staff requery) comes through here.
      */
     private function recordObservation(DisbursementIntent $intent, VerifiedPayoutEvent $event, string $source): string
     {
         DisbursementIntent::query()->whereKey($intent->id)->lockForUpdate()->sole();
-        for ($attempt = 1; ; $attempt++) {
-            try {
-                return $this->classifyAndRecord($intent, $event, $source);
-            } catch (UniqueConstraintViolationException $exception) {
-                $identity = str_contains($exception->getMessage(), 'disbursement_provider_events_identity')
-                    || str_contains($exception->getMessage(), 'disbursement_provider_events_content');
-                if (! $identity || $attempt > 1) {
-                    throw $exception;
-                }
-            }
-        }
+        $this->lockProviderEventIdentity($event->provider, $event->eventId);
+
+        return $this->classifyAndRecord($intent, $event, $source);
+    }
+
+    /**
+     * Serializes one provider event identity across intents (#96 5876182472, 5876362074). The
+     * identity is global while the intent lock is not, so two observations of the same
+     * `(provider, provider_event_id)` for different intents would otherwise both read it absent.
+     *
+     * Lock order: this transaction-scoped advisory lock is the LEAF lock of every observation
+     * path. It is taken after the disbursement and intent rows (and, for requery, after the
+     * Business and staff locks), and nothing is locked after it: the holder only reads events and
+     * inserts one. A waiter therefore never holds anything the holder needs, so it adds no cycle.
+     */
+    private function lockProviderEventIdentity(string $provider, string $eventId): void
+    {
+        DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [self::providerEventLockKey($provider, $eventId)]);
+    }
+
+    public static function providerEventLockKey(string $provider, string $eventId): string
+    {
+        return 'disbursement-provider-event:'.hash('sha256', $provider."\0".$eventId);
     }
 
     private function classifyAndRecord(DisbursementIntent $intent, VerifiedPayoutEvent $event, string $source): string
@@ -652,8 +657,7 @@ final class EloquentDisbursementStore implements DisbursementStore
             'destination_sha256' => $event->destinationSha256 !== null && preg_match('/^[0-9a-f]{64}$/D', $event->destinationSha256) === 1 ? $event->destinationSha256 : null,
             'observed_at' => $event->observedAt, 'effective_at' => $event->effectiveAt, 'disposition' => $outcome->disposition,
             'mismatches' => $outcome->disposition === 'unverifiable' ? $mismatches : [], 'evidence' => $event->evidence, 'created_at' => now('UTC')]);
-        // Only the insert sits in its own savepoint, so a raced insert rolls back alone.
-        DB::transaction(fn (): bool => $record->save());
+        $record->save();
 
         return $outcome->disposition;
     }
