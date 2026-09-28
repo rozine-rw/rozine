@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "462a96df97e9827075db380ebddee59949a27eb5bdbd09cd535a6b4d9ba1ad10",
-    "coverageSetSha256": "103455c3ba066209f298de3c84912849b47ffc5730d091a116fb1348a0bbf437",
+    "sourceManifestSha256": "3d584cc3aea7f95d783f52d8dff4f70ec9570b84ab789fe07ce790bc4cfabc64",
+    "coverageSetSha256": "daa54e712a8cbb86eaf8e05adb524c1bb83e90c0c06f0c2589245f1d20ce12be",
     "thresholds": {
         "critical": {
             "global": {
@@ -352,8 +352,10 @@
         "resources/js/lib/utils.ts",
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/auth/login.tsx",
+        "resources/js/pages/admin/book.tsx",
         "resources/js/pages/admin/disbursements.tsx",
         "resources/js/pages/admin/events.tsx",
+        "resources/js/pages/admin/exceptions.tsx",
         "resources/js/pages/admin/ledger.tsx",
         "resources/js/pages/admin/parties.tsx",
         "resources/js/pages/admin/repayments.tsx",

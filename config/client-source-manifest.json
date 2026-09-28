@@ -536,8 +536,10 @@
         "resources/js/lib/utils.ts",
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/auth/login.tsx",
+        "resources/js/pages/admin/book.tsx",
         "resources/js/pages/admin/disbursements.tsx",
         "resources/js/pages/admin/events.tsx",
+        "resources/js/pages/admin/exceptions.tsx",
         "resources/js/pages/admin/ledger.tsx",
         "resources/js/pages/admin/parties.tsx",
         "resources/js/pages/admin/repayments.tsx",
@@ -598,10 +600,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 567,
+        "totalTrackedSources": 569,
         "generated": 185,
         "declarationOnly": 18,
-        "authoredExecutable": 364
+        "authoredExecutable": 366
     },
-    "coverageSetSha256": "103455c3ba066209f298de3c84912849b47ffc5730d091a116fb1348a0bbf437"
+    "coverageSetSha256": "daa54e712a8cbb86eaf8e05adb524c1bb83e90c0c06f0c2589245f1d20ce12be"
 }
