@@ -16,6 +16,7 @@ use App\Http\Controllers\AuditDisputeController;
 use App\Http\Controllers\AuditOperationsController;
 use App\Http\Controllers\AuditSealVerificationController;
 use App\Http\Controllers\BusinessPublicationController;
+use App\Http\Controllers\ChangeFeedController;
 use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\StaffApplicationReleaseController;
 use Illuminate\Http\Request;
@@ -136,4 +137,8 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::get('wallet', [InvestorWalletController::class, 'show'])->name('wallet');
     Route::post('wallet/deposits', [InvestorWalletController::class, 'deposit'])->name('wallet.deposit');
     Route::get('wallet-operations/{request_id}', [InvestorWalletController::class, 'operation'])->whereUuid('request_id')->name('wallet.operations.show');
+});
+
+Route::middleware(['auth:sanctum', 'throttle:changes', 'cache.headers:private;no_store'])->group(function (): void {
+    Route::get('v1/changes', [ChangeFeedController::class, 'index'])->name('api.v1.changes.index');
 });

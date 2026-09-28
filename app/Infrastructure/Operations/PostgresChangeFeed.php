@@ -43,9 +43,12 @@ final class PostgresChangeFeed implements ChangeFeed
             $scope->kind === ChangeScope::STAFF_QUEUE ? $scope->id : null, $topic, $subject, $revision]);
     }
 
-    public function horizon(): int
+    public function horizon(): array
     {
-        return (int) DB::scalar('SELECT pg_snapshot_xmin(pg_current_snapshot())::text');
+        /** @var object{xmin: string, after_id: string} $horizon */
+        $horizon = DB::selectOne('SELECT pg_snapshot_xmin(pg_current_snapshot())::text AS xmin, coalesce(max(id), 0)::text AS after_id FROM change_feed');
+
+        return ['xmin' => (int) $horizon->xmin, 'after_id' => (int) $horizon->after_id];
     }
 
     public function read(array $audiences, ChangeCursor $after, int $limit): array
@@ -59,6 +62,7 @@ final class PostgresChangeFeed implements ChangeFeed
         }
         // A transaction sees its own uncommitted changes; they are delivered once, by id.
         $own = $snapshot->own === null ? ['', []] : [' OR (created_xid = ?::xid8 AND id > ?)', [$snapshot->own, $after->afterId]];
+        /** @var list<object{id: int, topic: string, subject: string, revision: int}> $rows */
         $rows = DB::select("SELECT id, topic, subject, revision FROM change_feed WHERE ({$scope})
             AND ((created_xid >= ?::xid8 AND created_xid < ?::xid8){$own[0]}) ORDER BY id LIMIT ?",
             [...$scopeBindings, (string) $after->xmin, (string) $xmin, ...$own[1], $limit + 1]);
@@ -110,11 +114,15 @@ final class PostgresChangeFeed implements ChangeFeed
         }
         $subjects = implode(' OR ', array_fill(0, count($changes), '(topic = ? AND subject = ?)'));
         $ownDelivered = $own === null ? ['', []] : [' OR (created_xid = ?::xid8 AND id <= ?)', [$own, $after->afterId]];
-        $delivered = collect(DB::select("SELECT topic, subject, max(revision) AS revision FROM change_feed WHERE ({$scope}) AND ({$subjects})
+        /** @var list<object{topic: string, subject: string, revision: int}> $rows */
+        $rows = DB::select("SELECT topic, subject, max(revision) AS revision FROM change_feed WHERE ({$scope}) AND ({$subjects})
             AND (created_xid < ?::xid8{$ownDelivered[0]}) GROUP BY topic, subject",
             [...$scopeBindings, ...array_merge(...array_map(fn (array $change): array => [$change['topic'], $change['subject']], $changes)),
-                (string) $after->xmin, ...$ownDelivered[1]]))
-            ->mapWithKeys(fn (object $row): array => [$row->topic.'|'.$row->subject => (int) $row->revision]);
+                (string) $after->xmin, ...$ownDelivered[1]]);
+        $delivered = [];
+        foreach ($rows as $row) {
+            $delivered[$row->topic.'|'.$row->subject] = (int) $row->revision;
+        }
 
         return array_values(array_filter($changes,
             fn (array $change): bool => $change['revision'] > ($delivered[$change['topic'].'|'.$change['subject']] ?? 0)));

@@ -158,6 +158,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureHead();
+        RateLimiter::for('changes', fn (Request $request): Limit => Limit::perMinute(30)->by('changes:'.$request->user()?->getAuthIdentifier()));
         RateLimiter::for('audit-step-up', fn (Request $request): array => [
             Limit::perMinute(5)->by('account:'.$request->user()?->getAuthIdentifier()),
             Limit::perMinute(20)->by('ip:'.$request->ip()),

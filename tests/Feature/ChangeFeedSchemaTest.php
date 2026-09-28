@@ -67,14 +67,15 @@ it('keeps each change to exactly one audience that matches its topic', function 
     'a zero revision' => ["INSERT INTO change_feed (party_id, topic, subject, revision) VALUES (:party, 'wallet', 'w1', 0)"],
 ]);
 
-it('refuses to change or delete a recorded change', function (string $sql): void {
+it('refuses to change or delete a recorded change', function (Closure $change): void {
+    /** @var Closure(): bool $change */
     recordChange(ChangeScope::party(feedParty()), 'wallet', 'w1');
 
-    expect(fn () => DB::transaction(fn () => DB::unprepared($sql)))->toThrow(QueryException::class, 'Change feed rows are append-only');
+    expect(fn () => DB::transaction($change))->toThrow(QueryException::class, 'Change feed rows are append-only');
 })->with([
-    'update' => ['UPDATE change_feed SET revision = 2'],
-    'delete' => ['DELETE FROM change_feed'],
-    'delete a young row even when pruning' => ["SET LOCAL rozine.change_feed_prune = 'on'; DELETE FROM change_feed"],
+    'update' => [fn () => DB::unprepared('UPDATE change_feed SET revision = 2')],
+    'delete' => [fn () => DB::unprepared('DELETE FROM change_feed')],
+    'delete a young row even when pruning' => [fn () => DB::unprepared("SET LOCAL rozine.change_feed_prune = 'on'; DELETE FROM change_feed")],
 ]);
 
 it('refuses a change outside a transaction or outside its audience', function (Closure $record, string $message): void {

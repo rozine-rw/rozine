@@ -22,8 +22,13 @@ interface ChangeFeed
      */
     public function record(ChangeScope $scope, string $topic, string $subject, ?int $revision = null): void;
 
-    /** The snapshot horizon a fresh cursor starts from: every change below it is already visible. */
-    public function horizon(): int;
+    /**
+     * Where a fresh cursor starts: the snapshot horizon, below which every change is already
+     * visible, and the highest feed id visible now.
+     *
+     * @return array{xmin: int, after_id: int}
+     */
+    public function horizon(): array;
 
     /**
      * The changes committed since `$after` for the given audiences only: the latest revision per
