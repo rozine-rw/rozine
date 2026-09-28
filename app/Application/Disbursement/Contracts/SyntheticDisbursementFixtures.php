@@ -31,7 +31,11 @@ interface SyntheticDisbursementFixtures
     /** @param 'verified'|'revoked'|'expired'|'rotated' $state */
     public function setDestination(string $businessId, string $state): void;
 
-    /** @param 'connected'|'unconnected'|'unavailable' $state */
+    /**
+     * One staff member's connection, or with no user the whole source: `unavailable` or `available`.
+     *
+     * @param  'connected'|'unconnected'|'unavailable'|'available'  $state
+     */
     public function setConnection(?int $userId, string $state): void;
 
     /**

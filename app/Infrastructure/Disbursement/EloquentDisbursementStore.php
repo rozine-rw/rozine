@@ -285,7 +285,8 @@ final class EloquentDisbursementStore implements DisbursementStore
             ->where('created_at', '<', now('UTC')->subMinutes(5))->when($intentId !== null, fn ($query) => $query->where('intent_id', $intentId))
             ->orderBy('id')->limit($limit)->pluck('intent_id')->all();
         foreach ($interrupted as $claimedIntent) {
-            $instruction = $idempotentSends ? $this->claimOne((string) $claimedIntent, true) : null;
+            $recoverable = $idempotentSends && DisbursementIntent::query()->whereKey($claimedIntent)->where('idempotent_sends', true)->exists();
+            $instruction = $recoverable ? $this->claimOne((string) $claimedIntent, true) : null;
             if ($instruction === null) {
                 $this->recordDispatch((string) $claimedIntent, false);
 
@@ -382,8 +383,7 @@ final class EloquentDisbursementStore implements DisbursementStore
         if ($decision->terminal() && $closing === null && ! $this->fundingMatches($disbursement, $campaign)) {
             $causes = ['funding_changed'];
         }
-        if ($causes !== [] || ($decision->terminal() && $closing !== null)) {
-            $causes = $causes === [] ? ['after_closing'] : $causes;
+        if ($causes !== []) {
             $latest = DisbursementReconciliation::query()->where('intent_id', $intent->id)->where('decision', 'exception')->orderByDesc('id')->first();
             if ($latest === null || $latest->causes !== $causes || $latest->comparison['observations'] !== $observations->count()) {
                 (new DisbursementReconciliation)->forceFill(['intent_id' => $intent->id, 'decision' => 'exception', 'causes' => $causes,
@@ -392,8 +392,11 @@ final class EloquentDisbursementStore implements DisbursementStore
 
             return $closing === null ? 'exception' : 'closed';
         }
+        if ($closing !== null) {
+            return 'closed';
+        }
         if (! $decision->terminal()) {
-            return $closing === null ? 'open' : 'closed';
+            return 'open';
         }
         $final = $observations->first(fn (DisbursementProviderEvent $event): bool => $event->disposition === 'applied'
             && PayoutOutcome::isFinal($event->state)) ?? throw new DisbursementViolation('RECONCILIATION_FINAL_MISSING');
