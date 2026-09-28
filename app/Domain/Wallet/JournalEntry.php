@@ -50,4 +50,15 @@ final readonly class JournalEntry
 
         return new self('deposit_credit', $lines);
     }
+
+    /**
+     * A primary purchase movement between the Investor's own buckets: the source bucket is
+     * debited and the destination credited by the same amount, so the total never changes.
+     */
+    public static function primary(string $kind, WalletMoney $amount): self
+    {
+        [$from, $to] = PrimaryPosting::MOVEMENTS[$kind] ?? throw new WalletViolation('WALLET_POSTING_KIND_INVALID');
+
+        return new self($kind, [new JournalLine($from, 'debit', $amount), new JournalLine($to, 'credit', $amount)]);
+    }
 }

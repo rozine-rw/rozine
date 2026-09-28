@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $kind
  * @property string $source_type
  * @property string $source_id
+ * @property string|null $origin_operation_id
  * @property string $currency
  * @property string $sha256
  * @property array<string, mixed> $payload

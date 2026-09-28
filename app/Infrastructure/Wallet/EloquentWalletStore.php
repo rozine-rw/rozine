@@ -411,7 +411,7 @@ final class EloquentWalletStore implements WalletStore
             'source_id' => $intent->id, 'operation_id' => $intent->operation_id, 'request_id' => $intent->request_id, 'provider_event_id' => $event->id,
             'policy_version' => $payload['policy_version'], 'lines' => $lines, 'recorded_at' => $recordedAt->toIso8601String()];
         $entry->forceFill(['wallet_id' => $intent->wallet_id, 'kind' => $journal->kind, 'source_type' => 'wallet_deposit_intent', 'source_id' => $intent->id,
-            'currency' => 'RWF', 'payload' => $entryPayload, 'sha256' => hash('sha256', $this->json->encode($entryPayload)), 'created_at' => $recordedAt])->save();
+            'origin_operation_id' => $intent->operation_id, 'currency' => 'RWF', 'payload' => $entryPayload, 'sha256' => hash('sha256', $this->json->encode($entryPayload)), 'created_at' => $recordedAt])->save();
         foreach ($journal->lines as $line) {
             (new LedgerLine)->forceFill(['entry_id' => $entry->id, 'account_id' => $this->account($line->account, $intent->wallet_id),
                 'direction' => $line->direction, 'amount' => $line->amount->amount(), 'created_at' => $recordedAt])->save();

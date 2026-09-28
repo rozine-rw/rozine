@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Wallet\JournalEntry;
 use App\Domain\Wallet\JournalLine;
+use App\Domain\Wallet\PrimaryPosting;
 use App\Domain\Wallet\WalletMoney;
 use App\Domain\Wallet\WalletViolation;
 
@@ -39,3 +40,38 @@ it('cannot be built unbalanced, one-sided, empty or with an invalid line', funct
         ->and(fn () => new JournalLine('deposit_clearing', 'across', WalletMoney::of('10')))->toThrow(WalletViolation::class, 'JOURNAL_LINE_INVALID')
         ->and(fn () => new JournalLine('deposit_clearing', 'debit', WalletMoney::zero()))->toThrow(WalletViolation::class, 'JOURNAL_LINE_INVALID');
 });
+
+it('moves primary purchase money between the Investor buckets as one balanced entry', function (string $kind, string $from, string $to): void {
+    expect(journalLines(JournalEntry::primary($kind, WalletMoney::of('25000'))))->toBe([[$from, 'debit', '25000'], [$to, 'credit', '25000']]);
+})->with([
+    ['primary_hold', 'investor_available', 'investor_held'],
+    ['primary_commit', 'investor_held', 'investor_committed'],
+    ['primary_release', 'investor_held', 'investor_available'],
+    ['primary_refund', 'investor_committed', 'investor_available'],
+]);
+
+it('refuses unknown or empty primary movements', function (): void {
+    expect(fn () => JournalEntry::primary('primary_transfer', WalletMoney::of('1')))->toThrow(WalletViolation::class, 'WALLET_POSTING_KIND_INVALID')
+        ->and(fn () => JournalEntry::primary('primary_hold', WalletMoney::zero()))->toThrow(WalletViolation::class, 'JOURNAL_LINE_INVALID');
+});
+
+it('allows each primary movement only in its lifecycle order', function (string $kind, string $recorded, bool $allowed): void {
+    $check = fn () => PrimaryPosting::assertAllowed($kind, array_values(array_filter(explode(',', $recorded))));
+    $allowed ? expect($check)->not->toThrow(WalletViolation::class)
+        : expect($check)->toThrow(WalletViolation::class, $kind === 'primary_move' ? 'WALLET_POSTING_KIND_INVALID' : 'WALLET_POSTING_STATE_INVALID');
+})->with([
+    'hold opens' => ['primary_hold', '', true],
+    'hold twice' => ['primary_hold', 'primary_hold', false],
+    'commit a hold' => ['primary_commit', 'primary_hold', true],
+    'release a hold' => ['primary_release', 'primary_hold', true],
+    'commit without a hold' => ['primary_commit', '', false],
+    'release without a hold' => ['primary_release', '', false],
+    'commit after release' => ['primary_commit', 'primary_hold,primary_release', false],
+    'release after commit' => ['primary_release', 'primary_hold,primary_commit', false],
+    'commit twice' => ['primary_commit', 'primary_hold,primary_commit', false],
+    'refund a commit' => ['primary_refund', 'primary_hold,primary_commit', true],
+    'refund a released hold' => ['primary_refund', 'primary_hold,primary_release', false],
+    'refund a hold' => ['primary_refund', 'primary_hold', false],
+    'refund twice' => ['primary_refund', 'primary_hold,primary_commit,primary_refund', false],
+    'unknown' => ['primary_move', '', false],
+]);
