@@ -47,7 +47,10 @@ interface WalletPostings
     /** held → available (release, expiry or cancel before commit), for exactly the held amount. */
     public function release(LockedWallet $wallet, WalletMoney $amount, PostingSource $source): PostingReceipt;
 
-    /** committed → available (pre-funding cancellation or unfunded expiry), for exactly the committed amount. */
+    /**
+     * committed → available, fee-free, for exactly the committed amount: pre-funding cancellation,
+     * unfunded expiry, or the agreed funded failed closing (§11.3). It is never a payout.
+     */
     public function refund(LockedWallet $wallet, WalletMoney $amount, PostingSource $source): PostingReceipt;
 
     /**
