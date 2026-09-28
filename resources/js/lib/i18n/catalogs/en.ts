@@ -3256,8 +3256,8 @@ const en = {
         'Only Available can be spent. Held is in a live checkout; Committed awaits issue.',
     'investor.wallet.c3.restricted':
         'A restriction has applied since {date}. Deposits still work.',
-    'investor.wallet.c3.restricted_paused':
-        'A restriction has applied since {date}. Deposits are paused while it applies.',
+    'investor.wallet.c3.restricted_unavailable':
+        'A restriction has applied since {date}. Deposits are not currently available.',
     'investor.wallet.c3.no_pending': 'No deposits waiting',
     'investor.wallet.c3.pending_deposits':
         '{amount} not yet confirmed — not in the total',

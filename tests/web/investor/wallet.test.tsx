@@ -457,6 +457,25 @@ describe('Wallet (C3)', () => {
         expect(screen.getByText('Restricted')).toBeInTheDocument();
     });
 
+    it('keeps the deposit form for a restricted but otherwise eligible Investor (§11.4)', () => {
+        const props = wallet(restrictedFixture);
+
+        props.funding = structuredClone(wallet(depositFixture).funding);
+        render(<InvestorWallet {...props} />);
+
+        expect(props.allowed_actions).toContain('wallet.deposit');
+        expect(screen.getByText('Restricted')).toBeInTheDocument();
+        expect(
+            screen.getByRole('region', { name: 'Wallet total' }),
+        ).toHaveTextContent('Deposits still work.');
+        expect(
+            screen.getByRole('form', { name: 'Add money' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Confirm deposit' }),
+        ).toBeEnabled();
+    });
+
     it('explains a missing deposit policy instead of offering a form', () => {
         render(<InvestorWallet {...wallet(missingFixture)} />);
 
@@ -614,7 +633,7 @@ describe('Wallet (C3)', () => {
             ).toBeInTheDocument();
         });
 
-        it('names a restriction that withholds deposit, and offers no form', () => {
+        it('names a restriction neutrally when the server withholds deposit, and offers no form', () => {
             const props = wallet(restrictedFixture);
 
             props.allowed_actions = [];
@@ -624,7 +643,7 @@ describe('Wallet (C3)', () => {
             expect(
                 screen.getByRole('region', { name: 'Wallet total' }),
             ).toHaveTextContent(
-                'A restriction has applied since 25 Sept 2026. Deposits are paused while it applies.',
+                'A restriction has applied since 25 Sept 2026. Deposits are not currently available.',
             );
             expect(screen.getByText('Restricted')).toBeInTheDocument();
             expect(
