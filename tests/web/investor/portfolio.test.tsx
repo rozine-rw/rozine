@@ -49,10 +49,10 @@ describe('Portfolio', () => {
         const total = screen.getByRole('region', { name: 'TOTAL VALUE' });
 
         expect(total).toHaveTextContent('6 businesses');
-        expect(total).toHaveTextContent('RWF 4,458,462');
+        expect(total).toHaveTextContent('RWF 2,066,051');
         expect(total).toHaveTextContent('RWF 4.2M');
-        expect(total).toHaveTextContent('+RWF 283K');
-        expect(total).toHaveTextContent('Next: RWF 859K · Oct ’26');
+        expect(total).toHaveTextContent('+RWF 309K');
+        expect(total).toHaveTextContent('Next: RWF 701K · Oct ’26');
 
         const tabs = screen.getByRole('navigation', { name: 'Holdings' });
 
@@ -67,9 +67,9 @@ describe('Portfolio', () => {
 
         expect(cards()).toHaveLength(3);
         expect(cards()[0]).toHaveTextContent('GreenLeaf Agro');
-        expect(cards()[0]).toHaveTextContent('+10.3%');
+        expect(cards()[0]).toHaveTextContent('+11.3%');
         expect(cards()[0]).toHaveTextContent('Invested RWF 800,000');
-        expect(cards()[0]).toHaveTextContent('Matures Nov 2026 · 5/6 payments');
+        expect(cards()[0]).toHaveTextContent('Matures Oct 2026 · 5/6 payments');
         expect(cards()[2]).toHaveTextContent('In arrears');
 
         await user.click(
@@ -92,7 +92,7 @@ describe('Portfolio', () => {
             within(payouts).getByText('October 2026', { selector: 'span' }),
         ).toBeInTheDocument();
         expect(
-            within(payouts).getByText('5 businesses pay this month'),
+            within(payouts).getByText('4 businesses pay this month'),
         ).toBeInTheDocument();
         await user.click(
             within(payouts).getByRole('radio', { name: 'December 2026' }),
@@ -243,11 +243,11 @@ describe('Holding detail', () => {
             '/preview/investor-portfolio',
         );
         expect(screen.getByText('800,000')).toBeInTheDocument();
-        expect(screen.getByText('98,922')).toBeInTheDocument();
+        expect(screen.getByText('108,000')).toBeInTheDocument();
         expect(screen.getByText('13.5% yield')).toBeInTheDocument();
-        expect(screen.getByText('898,922')).toBeInTheDocument();
+        expect(screen.getByText('897,200')).toBeInTheDocument();
         expect(screen.getByText('5/6 payments')).toBeInTheDocument();
-        expect(screen.getAllByText('RWF 149,820')).toHaveLength(2);
+        expect(screen.getAllByText('RWF 151,333')).toHaveLength(2);
         expect(screen.getByText('5/5')).toBeInTheDocument();
         expect(screen.getByText('All on time')).toBeInTheDocument();
         expect(screen.getByText('1 month left')).toBeInTheDocument();
@@ -289,6 +289,10 @@ describe('Holding detail', () => {
             screen.getByText(/Your principal remains a claim on the business/u),
         ).toBeInTheDocument();
         expect(screen.getByText('Paused')).toBeInTheDocument();
+        expect(screen.getByText('Off track')).toBeInTheDocument();
+        expect(
+            screen.getByText('Grid outage halted production'),
+        ).toBeInTheDocument();
     });
 
     it('discloses a declared recovery plan, a default, a freeze and a matured note', () => {
@@ -301,7 +305,9 @@ describe('Holding detail', () => {
         expect(
             screen.getByText('Harvest delayed by late rains'),
         ).toBeInTheDocument();
-        expect(screen.getByText('RWF 154,000')).toBeInTheDocument();
+        expect(
+            screen.getAllByRole('definition').map((row) => row.textContent),
+        ).toContain('RWF 167,250');
         expect(
             screen.queryByText(/Extra paid to you/u),
         ).not.toBeInTheDocument();
@@ -313,9 +319,11 @@ describe('Holding detail', () => {
 
         expect(screen.getByText('Payments defaulted')).toBeInTheDocument();
         expect(screen.getByText('2 payments late')).toBeInTheDocument();
-        expect(screen.getByText('2 months left')).toBeInTheDocument();
-        expect(screen.getByText('+0.1')).not.toHaveClass('text-rz-danger-text');
-        expect(screen.getByText('Off track')).toBeInTheDocument();
+        expect(screen.getByText('4 months left')).toBeInTheDocument();
+        expect(screen.getByText('-0.4')).toHaveClass('text-rz-danger-text');
+        expect(
+            screen.queryByText('One payment deferred'),
+        ).not.toBeInTheDocument();
         unmountSecond();
 
         const { unmount: unmountThird } = render(
@@ -332,6 +340,7 @@ describe('Holding detail', () => {
         render(<InvestorHolding {...holding(maturedFixture)} />);
         expect(screen.getAllByText('Matured')).toHaveLength(1);
         expect(screen.getByText('Fully repaid')).toBeInTheDocument();
+        expect(screen.getByText('+0.4')).not.toHaveClass('text-rz-danger-text');
     });
 
     it('lays a holding out in two columns on a wide screen', () => {

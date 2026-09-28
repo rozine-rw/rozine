@@ -29,7 +29,7 @@
             "businesses": 6,
             "value": {
                 "currency": "RWF",
-                "amount": "4458462"
+                "amount": "2066051"
             },
             "invested": {
                 "currency": "RWF",
@@ -37,7 +37,7 @@
             },
             "gain": {
                 "currency": "RWF",
-                "amount": "283462"
+                "amount": "309386"
             },
             "this_month": {
                 "currency": "RWF",
@@ -45,12 +45,12 @@
             },
             "projected_3m": {
                 "currency": "RWF",
-                "amount": "1602973"
+                "amount": "1620281"
             },
             "next_payout": {
                 "amount": {
                     "currency": "RWF",
-                    "amount": "859319"
+                    "amount": "700857"
                 },
                 "month": "2026-10-03T00:00:00+02:00"
             },
@@ -69,7 +69,7 @@
                 "health": "matured",
                 "value": {
                     "currency": "RWF",
-                    "amount": "665280"
+                    "amount": "72000"
                 },
                 "invested": {
                     "currency": "RWF",
@@ -77,11 +77,11 @@
                 },
                 "gain": {
                     "currency": "RWF",
-                    "amount": "65280"
+                    "amount": "72000"
                 },
-                "gain_pct": "10.9",
+                "gain_pct": "12.0",
                 "repaid_pct": 100,
-                "matures_on": "2026-10-31T00:00:00+02:00",
+                "matures_on": "2026-09-15T00:00:00+02:00",
                 "payments_made": 4,
                 "payments_total": 4,
                 "link": {
@@ -95,15 +95,16 @@
                 "month": "2026-10-03T00:00:00+02:00",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "859319"
+                    "amount": "700857"
                 },
+                "bar_pct": 98,
                 "payers": [
                     {
                         "name": "Musanze Traders",
                         "accent": "blue",
                         "amount": {
                             "currency": "RWF",
-                            "amount": "200475"
+                            "amount": "203400"
                         }
                     },
                     {
@@ -111,7 +112,7 @@
                         "accent": "purple",
                         "amount": {
                             "currency": "RWF",
-                            "amount": "177127"
+                            "amount": "178124"
                         }
                     },
                     {
@@ -119,15 +120,7 @@
                         "accent": "teal",
                         "amount": {
                             "currency": "RWF",
-                            "amount": "166320"
-                        }
-                    },
-                    {
-                        "name": "Kivu Coffee",
-                        "accent": "green",
-                        "amount": {
-                            "currency": "RWF",
-                            "amount": "165577"
+                            "amount": "168000"
                         }
                     },
                     {
@@ -135,25 +128,33 @@
                         "accent": "green",
                         "amount": {
                             "currency": "RWF",
-                            "amount": "149820"
+                            "amount": "151333"
                         }
                     }
-                ],
-                "bar_pct": 100
+                ]
             },
             {
                 "month": "2026-11-03T00:00:00+02:00",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "543179"
+                    "amount": "716024"
                 },
+                "bar_pct": 100,
                 "payers": [
+                    {
+                        "name": "Kivu Coffee",
+                        "accent": "green",
+                        "amount": {
+                            "currency": "RWF",
+                            "amount": "334500"
+                        }
+                    },
                     {
                         "name": "Musanze Traders",
                         "accent": "blue",
                         "amount": {
                             "currency": "RWF",
-                            "amount": "200475"
+                            "amount": "203400"
                         }
                     },
                     {
@@ -161,37 +162,28 @@
                         "accent": "purple",
                         "amount": {
                             "currency": "RWF",
-                            "amount": "177127"
-                        }
-                    },
-                    {
-                        "name": "Kivu Coffee",
-                        "accent": "green",
-                        "amount": {
-                            "currency": "RWF",
-                            "amount": "165577"
+                            "amount": "178124"
                         }
                     }
-                ],
-                "bar_pct": 63
+                ]
             },
             {
                 "month": "2026-12-03T00:00:00+02:00",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "200475"
+                    "amount": "203400"
                 },
+                "bar_pct": 28,
                 "payers": [
                     {
                         "name": "Musanze Traders",
                         "accent": "blue",
                         "amount": {
                             "currency": "RWF",
-                            "amount": "200475"
+                            "amount": "203400"
                         }
                     }
-                ],
-                "bar_pct": 23
+                ]
             }
         ],
         "industries": [

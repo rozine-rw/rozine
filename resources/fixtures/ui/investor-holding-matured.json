@@ -15,7 +15,7 @@
             "health": "matured",
             "value": {
                 "currency": "RWF",
-                "amount": "665280"
+                "amount": "72000"
             },
             "invested": {
                 "currency": "RWF",
@@ -23,15 +23,15 @@
             },
             "gain": {
                 "currency": "RWF",
-                "amount": "65280"
+                "amount": "72000"
             },
-            "gain_pct": "10.9",
+            "gain_pct": "12.0",
             "repaid_pct": 100,
-            "matures_on": "2026-10-31T00:00:00+02:00",
+            "matures_on": "2026-09-15T00:00:00+02:00",
             "payments_made": 4,
             "payments_total": 4,
             "link": {
-                "url": "/preview/investor-holding",
+                "url": "/preview/investor-holding-matured",
                 "method": "get"
             },
             "rating": {
@@ -41,15 +41,15 @@
             "rate_pct": "12.0",
             "expected_profit": {
                 "currency": "RWF",
-                "amount": "65280"
+                "amount": "72000"
             },
             "maturity_value": {
                 "currency": "RWF",
-                "amount": "665280"
+                "amount": "664800"
             },
             "received": {
                 "currency": "RWF",
-                "amount": "665280"
+                "amount": "664800"
             },
             "next_payment": null,
             "on_time": {
@@ -59,7 +59,26 @@
             },
             "months_left": 0,
             "investors": 301,
-            "rating_change": null,
+            "rating_change": {
+                "from": {
+                    "band": "stable",
+                    "score": "3.8"
+                },
+                "to": {
+                    "band": "strong",
+                    "score": "4.4"
+                },
+                "reasons": [
+                    {
+                        "label": "Every payment on time",
+                        "delta": "+0.4"
+                    },
+                    {
+                        "label": "Audited revenue above plan",
+                        "delta": "+0.2"
+                    }
+                ]
+            },
             "recovery_plan": null,
             "arrears": null,
             "photos": [
@@ -172,7 +191,7 @@
                         "currency": "RWF",
                         "amount": "30900000"
                     },
-                    "business_note": "Sales held steady through the season; the cold-storage expansion is on schedule and the monthly coupon was paid on the 3rd.",
+                    "business_note": "Sales held steady through the season; the cold-storage expansion is on schedule and the monthly coupon was paid on its due date.",
                     "auditor": {
                         "name": "Diane Uwase, CPA",
                         "licence": "ICPAR/P-2026/0481",
@@ -211,7 +230,7 @@
                         "currency": "RWF",
                         "amount": "30600000"
                     },
-                    "business_note": "Sales held steady through the season; the cold-storage expansion is on schedule and the monthly coupon was paid on the 3rd.",
+                    "business_note": "Sales held steady through the season; the cold-storage expansion is on schedule and the monthly coupon was paid on its due date.",
                     "auditor": {
                         "name": "Diane Uwase, CPA",
                         "licence": "ICPAR/P-2026/0481",
@@ -235,104 +254,82 @@
                 }
             ],
             "issue": {
-                "id": "h-greenleaf-c3",
+                "id": "h-karongi",
                 "revision": 1,
-                "note_id": "note_greenleaf_2026",
-                "campaign_id": "cmp_greenleaf",
-                "units": "160",
+                "note_id": "note_karongi_2026_05",
+                "campaign_id": "cmp_karongi_2026_05",
+                "units": "120",
                 "ordinals": [
                     {
-                        "first": "1041",
-                        "last": "1200"
+                        "first": "481",
+                        "last": "600"
                     }
                 ],
                 "principal": {
                     "currency": "RWF",
-                    "amount": "800000"
+                    "amount": "600000"
                 },
                 "rights": {
                     "total_return": {
                         "currency": "RWF",
-                        "amount": "4050"
+                        "amount": "72000"
                     },
                     "instalments": [
                         {
                             "index": 1,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "5000"
+                                "amount": "150000"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "675"
+                                "amount": "18000"
                             }
                         },
                         {
                             "index": 2,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "5000"
+                                "amount": "150000"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "675"
+                                "amount": "18000"
                             }
                         },
                         {
                             "index": 3,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "5000"
+                                "amount": "150000"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "675"
+                                "amount": "18000"
                             }
                         },
                         {
                             "index": 4,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "5000"
+                                "amount": "150000"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "675"
-                            }
-                        },
-                        {
-                            "index": 5,
-                            "principal": {
-                                "currency": "RWF",
-                                "amount": "5000"
-                            },
-                            "return": {
-                                "currency": "RWF",
-                                "amount": "675"
-                            }
-                        },
-                        {
-                            "index": 6,
-                            "principal": {
-                                "currency": "RWF",
-                                "amount": "5000"
-                            },
-                            "return": {
-                                "currency": "RWF",
-                                "amount": "675"
+                                "amount": "18000"
                             }
                         }
                     ]
                 },
-                "issued_at": "2026-05-29T15:20:04+02:00",
-                "disbursement_effective_at": "2026-05-29T15:18:41+02:00",
-                "effective_date": "2026-05-29",
+                "issued_at": "2026-05-15T15:20:04+02:00",
+                "disbursement_effective_at": "2026-05-15T15:18:41+02:00",
+                "effective_date": "2026-05-15",
                 "terms": {
-                    "rate_pct": "13.5",
-                    "term_months": 6,
+                    "rate_pct": "12.0",
+                    "term_months": 4,
                     "total_return": {
                         "currency": "RWF",
-                        "amount": "108000"
+                        "amount": "72000"
                     },
                     "earnings_fee": {
                         "tier": "standard",
@@ -346,10 +343,10 @@
                 "schedule": [
                     {
                         "index": 1,
-                        "due_on": "2026-06-30",
+                        "due_on": "2026-06-15",
                         "principal": {
                             "currency": "RWF",
-                            "amount": "133334"
+                            "amount": "150000"
                         },
                         "return": {
                             "currency": "RWF",
@@ -358,10 +355,10 @@
                     },
                     {
                         "index": 2,
-                        "due_on": "2026-07-29",
+                        "due_on": "2026-07-15",
                         "principal": {
                             "currency": "RWF",
-                            "amount": "133334"
+                            "amount": "150000"
                         },
                         "return": {
                             "currency": "RWF",
@@ -370,10 +367,10 @@
                     },
                     {
                         "index": 3,
-                        "due_on": "2026-08-29",
+                        "due_on": "2026-08-15",
                         "principal": {
                             "currency": "RWF",
-                            "amount": "133333"
+                            "amount": "150000"
                         },
                         "return": {
                             "currency": "RWF",
@@ -382,34 +379,10 @@
                     },
                     {
                         "index": 4,
-                        "due_on": "2026-09-29",
+                        "due_on": "2026-09-15",
                         "principal": {
                             "currency": "RWF",
-                            "amount": "133333"
-                        },
-                        "return": {
-                            "currency": "RWF",
-                            "amount": "18000"
-                        }
-                    },
-                    {
-                        "index": 5,
-                        "due_on": "2026-10-29",
-                        "principal": {
-                            "currency": "RWF",
-                            "amount": "133333"
-                        },
-                        "return": {
-                            "currency": "RWF",
-                            "amount": "18000"
-                        }
-                    },
-                    {
-                        "index": 6,
-                        "due_on": "2026-11-29",
-                        "principal": {
-                            "currency": "RWF",
-                            "amount": "133333"
+                            "amount": "150000"
                         },
                         "return": {
                             "currency": "RWF",
@@ -422,18 +395,18 @@
                     "operation_id": "op_hld1",
                     "request_id": "7f1c2a90-0000-4000-8000-00000000hld1",
                     "code": "HOLDING_ISSUED",
-                    "recorded_at": "2026-05-29T15:20:04+02:00",
+                    "recorded_at": "2026-05-15T15:20:04+02:00",
                     "amount": {
                         "currency": "RWF",
-                        "amount": "800000"
+                        "amount": "600000"
                     },
-                    "units": "160",
-                    "reference": "RZ-HLD-2201",
+                    "units": "120",
+                    "reference": "RZ-HLD-2203",
                     "revision": 1,
                     "policy_version": "synthetic-primary-policy-0",
                     "disclosure_version": "disclosure-2026-05.2",
                     "link": {
-                        "url": "/preview/investor-holding",
+                        "url": "/preview/investor-holding-matured",
                         "method": "get"
                     }
                 },

@@ -15,7 +15,7 @@
             "health": "watch",
             "value": {
                 "currency": "RWF",
-                "amount": "465577"
+                "amount": "317250"
             },
             "invested": {
                 "currency": "RWF",
@@ -23,15 +23,15 @@
             },
             "gain": {
                 "currency": "RWF",
-                "amount": "15577"
+                "amount": "17250"
             },
-            "gain_pct": "3.5",
+            "gain_pct": "3.8",
             "repaid_pct": 33,
-            "matures_on": "2026-12-31T00:00:00+02:00",
+            "matures_on": "2026-11-03T00:00:00+02:00",
             "payments_made": 1,
             "payments_total": 3,
             "link": {
-                "url": "/preview/investor-holding",
+                "url": "/preview/investor-holding-plan",
                 "method": "get"
             },
             "rating": {
@@ -41,22 +41,22 @@
             "rate_pct": "11.5",
             "expected_profit": {
                 "currency": "RWF",
-                "amount": "46731"
+                "amount": "51750"
             },
             "maturity_value": {
                 "currency": "RWF",
-                "amount": "496731"
+                "amount": "496575"
             },
             "received": {
                 "currency": "RWF",
-                "amount": "165577"
+                "amount": "165525"
             },
             "next_payment": {
                 "amount": {
                     "currency": "RWF",
-                    "amount": "165577"
+                    "amount": "167250"
                 },
-                "due_on": "2026-10-03T00:00:00+02:00"
+                "due_on": "2026-11-03T00:00:00+02:00"
             },
             "on_time": {
                 "made": 1,
@@ -69,10 +69,10 @@
             "recovery_plan": {
                 "state": "on_track",
                 "reason": "Harvest delayed by late rains",
-                "money_arrives": "2026-12-31T00:00:00+02:00",
+                "money_arrives": "2026-11-03T00:00:00+02:00",
                 "deferred": {
                     "currency": "RWF",
-                    "amount": "154000"
+                    "amount": "167250"
                 }
             },
             "arrears": null,
@@ -94,11 +94,11 @@
                 {
                     "id": "h-kivu-2026-08",
                     "month": "2026-08-01T00:00:00+02:00",
-                    "status": "healthy",
-                    "summary": "On plan · coupon repaid on time",
+                    "status": "watch",
+                    "summary": "Watchlist · harvest delayed, one payment deferred",
                     "net": {
                         "currency": "RWF",
-                        "amount": "3100000"
+                        "amount": "-850000"
                     },
                     "inflow": {
                         "currency": "RWF",
@@ -106,9 +106,9 @@
                     },
                     "outflow": {
                         "currency": "RWF",
-                        "amount": "31500000"
+                        "amount": "35450000"
                     },
-                    "business_note": "Sales held steady through the season; the cold-storage expansion is on schedule and the monthly coupon was paid on the 3rd.",
+                    "business_note": "Late rains pushed the harvest back by a month. The October payment is deferred to November under the approved plan; the September coupon was paid.",
                     "auditor": {
                         "name": "Diane Uwase, CPA",
                         "licence": "ICPAR/P-2026/0481",
@@ -186,7 +186,7 @@
                         "currency": "RWF",
                         "amount": "30900000"
                     },
-                    "business_note": "Sales held steady through the season; the cold-storage expansion is on schedule and the monthly coupon was paid on the 3rd.",
+                    "business_note": "Sales held steady through the season; the cold-storage expansion is on schedule and the monthly coupon was paid on its due date.",
                     "auditor": {
                         "name": "Diane Uwase, CPA",
                         "licence": "ICPAR/P-2026/0481",
@@ -225,7 +225,7 @@
                         "currency": "RWF",
                         "amount": "30600000"
                     },
-                    "business_note": "Sales held steady through the season; the cold-storage expansion is on schedule and the monthly coupon was paid on the 3rd.",
+                    "business_note": "Sales held steady through the season; the cold-storage expansion is on schedule and the monthly coupon was paid on its due date.",
                     "auditor": {
                         "name": "Diane Uwase, CPA",
                         "licence": "ICPAR/P-2026/0481",
@@ -249,104 +249,71 @@
                 }
             ],
             "issue": {
-                "id": "h-greenleaf-c3",
+                "id": "h-kivu",
                 "revision": 1,
-                "note_id": "note_greenleaf_2026",
-                "campaign_id": "cmp_greenleaf",
-                "units": "160",
+                "note_id": "note_kivu_2026_08",
+                "campaign_id": "cmp_kivu_2026_08",
+                "units": "90",
                 "ordinals": [
                     {
-                        "first": "1041",
-                        "last": "1200"
+                        "first": "211",
+                        "last": "300"
                     }
                 ],
                 "principal": {
                     "currency": "RWF",
-                    "amount": "800000"
+                    "amount": "450000"
                 },
                 "rights": {
                     "total_return": {
                         "currency": "RWF",
-                        "amount": "4050"
+                        "amount": "51750"
                     },
                     "instalments": [
                         {
                             "index": 1,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "5000"
+                                "amount": "150000"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "675"
+                                "amount": "17250"
                             }
                         },
                         {
                             "index": 2,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "5000"
+                                "amount": "150000"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "675"
+                                "amount": "17250"
                             }
                         },
                         {
                             "index": 3,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "5000"
+                                "amount": "150000"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "675"
-                            }
-                        },
-                        {
-                            "index": 4,
-                            "principal": {
-                                "currency": "RWF",
-                                "amount": "5000"
-                            },
-                            "return": {
-                                "currency": "RWF",
-                                "amount": "675"
-                            }
-                        },
-                        {
-                            "index": 5,
-                            "principal": {
-                                "currency": "RWF",
-                                "amount": "5000"
-                            },
-                            "return": {
-                                "currency": "RWF",
-                                "amount": "675"
-                            }
-                        },
-                        {
-                            "index": 6,
-                            "principal": {
-                                "currency": "RWF",
-                                "amount": "5000"
-                            },
-                            "return": {
-                                "currency": "RWF",
-                                "amount": "675"
+                                "amount": "17250"
                             }
                         }
                     ]
                 },
-                "issued_at": "2026-05-29T15:20:04+02:00",
-                "disbursement_effective_at": "2026-05-29T15:18:41+02:00",
-                "effective_date": "2026-05-29",
+                "issued_at": "2026-08-03T15:20:04+02:00",
+                "disbursement_effective_at": "2026-08-03T15:18:41+02:00",
+                "effective_date": "2026-08-03",
                 "terms": {
-                    "rate_pct": "13.5",
-                    "term_months": 6,
+                    "rate_pct": "11.5",
+                    "term_months": 3,
                     "total_return": {
                         "currency": "RWF",
-                        "amount": "108000"
+                        "amount": "51750"
                     },
                     "earnings_fee": {
                         "tier": "standard",
@@ -360,74 +327,38 @@
                 "schedule": [
                     {
                         "index": 1,
-                        "due_on": "2026-06-30",
+                        "due_on": "2026-09-03",
                         "principal": {
                             "currency": "RWF",
-                            "amount": "133334"
+                            "amount": "150000"
                         },
                         "return": {
                             "currency": "RWF",
-                            "amount": "18000"
+                            "amount": "17250"
                         }
                     },
                     {
                         "index": 2,
-                        "due_on": "2026-07-29",
+                        "due_on": "2026-10-03",
                         "principal": {
                             "currency": "RWF",
-                            "amount": "133334"
+                            "amount": "150000"
                         },
                         "return": {
                             "currency": "RWF",
-                            "amount": "18000"
+                            "amount": "17250"
                         }
                     },
                     {
                         "index": 3,
-                        "due_on": "2026-08-29",
+                        "due_on": "2026-11-03",
                         "principal": {
                             "currency": "RWF",
-                            "amount": "133333"
+                            "amount": "150000"
                         },
                         "return": {
                             "currency": "RWF",
-                            "amount": "18000"
-                        }
-                    },
-                    {
-                        "index": 4,
-                        "due_on": "2026-09-29",
-                        "principal": {
-                            "currency": "RWF",
-                            "amount": "133333"
-                        },
-                        "return": {
-                            "currency": "RWF",
-                            "amount": "18000"
-                        }
-                    },
-                    {
-                        "index": 5,
-                        "due_on": "2026-10-29",
-                        "principal": {
-                            "currency": "RWF",
-                            "amount": "133333"
-                        },
-                        "return": {
-                            "currency": "RWF",
-                            "amount": "18000"
-                        }
-                    },
-                    {
-                        "index": 6,
-                        "due_on": "2026-11-29",
-                        "principal": {
-                            "currency": "RWF",
-                            "amount": "133333"
-                        },
-                        "return": {
-                            "currency": "RWF",
-                            "amount": "18000"
+                            "amount": "17250"
                         }
                     }
                 ],
@@ -436,18 +367,18 @@
                     "operation_id": "op_hld1",
                     "request_id": "7f1c2a90-0000-4000-8000-00000000hld1",
                     "code": "HOLDING_ISSUED",
-                    "recorded_at": "2026-05-29T15:20:04+02:00",
+                    "recorded_at": "2026-08-03T15:20:04+02:00",
                     "amount": {
                         "currency": "RWF",
-                        "amount": "800000"
+                        "amount": "450000"
                     },
-                    "units": "160",
-                    "reference": "RZ-HLD-2201",
+                    "units": "90",
+                    "reference": "RZ-HLD-2204",
                     "revision": 1,
                     "policy_version": "synthetic-primary-policy-0",
                     "disclosure_version": "disclosure-2026-05.2",
                     "link": {
-                        "url": "/preview/investor-holding",
+                        "url": "/preview/investor-holding-plan",
                         "method": "get"
                     }
                 },

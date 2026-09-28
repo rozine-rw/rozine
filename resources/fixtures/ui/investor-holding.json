@@ -15,7 +15,7 @@
             "health": "healthy",
             "value": {
                 "currency": "RWF",
-                "amount": "882435"
+                "amount": "223333"
             },
             "invested": {
                 "currency": "RWF",
@@ -23,11 +23,11 @@
             },
             "gain": {
                 "currency": "RWF",
-                "amount": "82435"
+                "amount": "90000"
             },
-            "gain_pct": "10.3",
+            "gain_pct": "11.3",
             "repaid_pct": 83,
-            "matures_on": "2026-11-30T00:00:00+02:00",
+            "matures_on": "2026-10-03T00:00:00+02:00",
             "payments_made": 5,
             "payments_total": 6,
             "link": {
@@ -41,20 +41,20 @@
             "rate_pct": "13.5",
             "expected_profit": {
                 "currency": "RWF",
-                "amount": "98922"
+                "amount": "108000"
             },
             "maturity_value": {
                 "currency": "RWF",
-                "amount": "898922"
+                "amount": "897200"
             },
             "received": {
                 "currency": "RWF",
-                "amount": "749102"
+                "amount": "747667"
             },
             "next_payment": {
                 "amount": {
                     "currency": "RWF",
-                    "amount": "149820"
+                    "amount": "151333"
                 },
                 "due_on": "2026-10-03T00:00:00+02:00"
             },
@@ -241,10 +241,10 @@
                 }
             ],
             "issue": {
-                "id": "h-greenleaf-c3",
+                "id": "h-greenleaf",
                 "revision": 1,
-                "note_id": "note_greenleaf_2026",
-                "campaign_id": "cmp_greenleaf",
+                "note_id": "note_greenleaf_2026_04",
+                "campaign_id": "cmp_greenleaf_2026_04",
                 "units": "160",
                 "ordinals": [
                     {
@@ -259,80 +259,80 @@
                 "rights": {
                     "total_return": {
                         "currency": "RWF",
-                        "amount": "4050"
+                        "amount": "108000"
                     },
                     "instalments": [
                         {
                             "index": 1,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "5000"
+                                "amount": "133334"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "675"
+                                "amount": "18000"
                             }
                         },
                         {
                             "index": 2,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "5000"
+                                "amount": "133334"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "675"
+                                "amount": "18000"
                             }
                         },
                         {
                             "index": 3,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "5000"
+                                "amount": "133333"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "675"
+                                "amount": "18000"
                             }
                         },
                         {
                             "index": 4,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "5000"
+                                "amount": "133333"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "675"
+                                "amount": "18000"
                             }
                         },
                         {
                             "index": 5,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "5000"
+                                "amount": "133333"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "675"
+                                "amount": "18000"
                             }
                         },
                         {
                             "index": 6,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "5000"
+                                "amount": "133333"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "675"
+                                "amount": "18000"
                             }
                         }
                     ]
                 },
-                "issued_at": "2026-05-29T15:20:04+02:00",
-                "disbursement_effective_at": "2026-05-29T15:18:41+02:00",
-                "effective_date": "2026-05-29",
+                "issued_at": "2026-04-03T15:20:04+02:00",
+                "disbursement_effective_at": "2026-04-03T15:18:41+02:00",
+                "effective_date": "2026-04-03",
                 "terms": {
                     "rate_pct": "13.5",
                     "term_months": 6,
@@ -352,7 +352,7 @@
                 "schedule": [
                     {
                         "index": 1,
-                        "due_on": "2026-06-30",
+                        "due_on": "2026-05-03",
                         "principal": {
                             "currency": "RWF",
                             "amount": "133334"
@@ -364,7 +364,7 @@
                     },
                     {
                         "index": 2,
-                        "due_on": "2026-07-29",
+                        "due_on": "2026-06-03",
                         "principal": {
                             "currency": "RWF",
                             "amount": "133334"
@@ -376,7 +376,7 @@
                     },
                     {
                         "index": 3,
-                        "due_on": "2026-08-29",
+                        "due_on": "2026-07-03",
                         "principal": {
                             "currency": "RWF",
                             "amount": "133333"
@@ -388,7 +388,7 @@
                     },
                     {
                         "index": 4,
-                        "due_on": "2026-09-29",
+                        "due_on": "2026-08-03",
                         "principal": {
                             "currency": "RWF",
                             "amount": "133333"
@@ -400,7 +400,7 @@
                     },
                     {
                         "index": 5,
-                        "due_on": "2026-10-29",
+                        "due_on": "2026-09-03",
                         "principal": {
                             "currency": "RWF",
                             "amount": "133333"
@@ -412,7 +412,7 @@
                     },
                     {
                         "index": 6,
-                        "due_on": "2026-11-29",
+                        "due_on": "2026-10-03",
                         "principal": {
                             "currency": "RWF",
                             "amount": "133333"
@@ -428,7 +428,7 @@
                     "operation_id": "op_hld1",
                     "request_id": "7f1c2a90-0000-4000-8000-00000000hld1",
                     "code": "HOLDING_ISSUED",
-                    "recorded_at": "2026-05-29T15:20:04+02:00",
+                    "recorded_at": "2026-04-03T15:20:04+02:00",
                     "amount": {
                         "currency": "RWF",
                         "amount": "800000"

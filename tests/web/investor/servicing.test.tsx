@@ -323,19 +323,19 @@ describe('Portfolio earnings (investor-servicing-v1)', () => {
 
         expect(card).toHaveTextContent('InvestedBasisRWF 4,175,000');
         expect(card).toHaveTextContent(
-            'Principal outstandingBasisRWF 2,320,000',
+            'Principal outstandingBasisRWF 1,756,665',
         );
-        expect(card).toHaveTextContent('Principal backRWF 1,855,000');
-        expect(card).toHaveTextContent('ReturnRWF 251,240');
+        expect(card).toHaveTextContent('Principal backRWF 2,418,335');
+        expect(card).toHaveTextContent('ReturnRWF 309,386');
         expect(card).toHaveTextContent('Late feesRWF 3,120');
-        expect(card).toHaveTextContent('Rozine feesRWF 21,062');
-        expect(card).toHaveTextContent('Net returnBasisRWF 233,298');
+        expect(card).toHaveTextContent('Rozine feesRWF 30,937');
+        expect(card).toHaveTextContent('Net returnBasisRWF 281,569');
         expect(card).toHaveTextContent('This month, netRWF 96,856');
         expect(card).toHaveTextContent('Monthly average, netRWF 528,987');
         expect(card).toHaveTextContent('ProjectedScheduled, not guaranteed');
-        expect(card).toHaveTextContent('Return still scheduledRWF 316,450');
-        expect(card).toHaveTextContent('Next 3 monthsRWF 1,602,973');
-        expect(card).toHaveTextContent('Next payout RWF 859,319 · 3 Oct 2026');
+        expect(card).toHaveTextContent('Return still scheduledRWF 224,614');
+        expect(card).toHaveTextContent('Next 3 monthsRWF 1,620,281');
+        expect(card).toHaveTextContent('Next payout RWF 151,333 · 3 Oct 2026');
         expect(
             within(card).getByRole('link', { name: 'Basis for Invested' }),
         ).toHaveAttribute('href', '/preview/investor-wallet');
