@@ -12,7 +12,7 @@ return new class extends Migration
     {
         DB::transaction(function (): void {
             DB::unprepared(<<<'SQL'
-                LOCK TABLE business_profiles, business_campaigns, primary_reservations,
+                LOCK TABLE business_profiles, primary_reservations,
                     investor_wallets, ledger_accounts, ledger_entries, ledger_lines IN ACCESS EXCLUSIVE MODE;
 
                 CREATE OR REPLACE FUNCTION check_primary_hold_binding(reservation_id varchar) RETURNS void LANGUAGE plpgsql AS $$

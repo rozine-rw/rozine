@@ -34,6 +34,9 @@ it('refuses an expiry receipt that does not report the rejected expiry', functio
     expect(PrimaryReservationVersion::query()->pluck('state')->all())->toBe(['held']);
 })->with(['primary.confirm', 'primary.release'])->with([
     'completed' => [['status' => 'completed', 'code' => 'RESERVATION_CONFIRMED']],
+    'completed expiry' => [['status' => 'completed', 'code' => 'RESERVATION_EXPIRED']],
+    'pending expiry' => [['status' => 'pending', 'code' => 'RESERVATION_EXPIRED']],
+    'uppercase expiry' => [['status' => 'REJECTED', 'code' => 'RESERVATION_EXPIRED']],
     'missing' => [[]], 'pending' => [['status' => 'pending']],
     'null' => [['status' => null]], 'non-string' => [['status' => true]],
     'wrong refusal' => [['status' => 'rejected', 'code' => 'INSUFFICIENT_AVAILABLE_FUNDS']],

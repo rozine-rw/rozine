@@ -128,6 +128,10 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                 $posting = $this->wallets->commit($this->wallets->lockForParty($partyId), WalletMoney::of($root->principal),
                     new PostingSource('primary_reservation', $root->id, $root->origin_operation_id));
 
+                if ($posting->replayed) {
+                    throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+                }
+
                 return new ReservationConfirmation($root->id, $version->revision, $confirmed, $commitment->id, $posting);
             });
         } catch (PrimaryViolation $exception) {

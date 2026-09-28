@@ -133,8 +133,12 @@ it('does not silently backfill pre-C3 submissions when the reservation migration
     $primaryOutcomes = require database_path('migrations/2026_09_28_163057_require_completed_primary_command_outcomes.php');
     $primarySourceGuard = require database_path('migrations/2026_09_28_165949_reject_unbound_primary_commitment_sources.php');
     $primaryTerminalCash = require database_path('migrations/2026_09_28_175455_bind_primary_terminal_versions_to_cash_movements.php');
-    $primaryGuardQuery = "SELECT tgname, pg_get_triggerdef(t.oid) AS definition FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid WHERE NOT t.tgisinternal AND c.relname IN ('primary_reservations', 'primary_reservation_versions', 'primary_commitments', 'ledger_entries') ORDER BY tgname";
+    $primaryGuardQuery = "SELECT tgname, pg_get_triggerdef(t.oid) AS definition, pg_get_functiondef(t.tgfoid) AS body FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid WHERE NOT t.tgisinternal AND c.relname IN ('primary_reservations', 'primary_reservation_versions', 'primary_commitments', 'ledger_entries') ORDER BY tgname";
     $primaryGuards = DB::select($primaryGuardQuery);
+    $functionQuery = "SELECT p.proname, pg_get_function_identity_arguments(p.oid) AS arguments, pg_get_functiondef(p.oid) AS definition FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = current_schema() AND p.prokind = 'f' AND (p.proname LIKE '%primary%' OR p.proname = 'ledger_entry_balance_check') ORDER BY p.proname, arguments";
+    $functions = DB::select($functionQuery);
+    $constraintQuery = "SELECT conname, pg_get_constraintdef(oid) AS definition FROM pg_constraint WHERE conrelid IN ('primary_reservations'::regclass, 'primary_reservation_versions'::regclass, 'primary_commitments'::regclass, 'ledger_entries'::regclass) ORDER BY conname";
+    $constraints = DB::select($constraintQuery);
     expect(array_column($primaryGuards, 'tgname'))->toContain('primary_reservation_wallet_bound', 'primary_reservation_outcome_bound',
         'primary_version_outcome_bound', 'primary_version_cash_bound', 'ledger_primary_terminal_bound', 'primary_expiry_outcome_bound');
     $primaryTerminalCash->down();
@@ -159,7 +163,8 @@ it('does not silently backfill pre-C3 submissions when the reservation migration
     $primaryOutcomes->up();
     $primarySourceGuard->up();
     $primaryTerminalCash->up();
-    expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards);
+    expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
+        ->and(DB::select($functionQuery))->toEqual($functions)->and(DB::select($constraintQuery))->toEqual($constraints);
     expect(DB::selectOne("SELECT count(*) AS total FROM pg_constraint WHERE conname = 'primary_commitment_source_unavailable'")->total)->toBe(1);
     expect(BusinessApplicationSubmission::query()->find($legacy->id))->not->toBeNull()
         ->and(BusinessExposureReservation::query()->count())->toBe(0);

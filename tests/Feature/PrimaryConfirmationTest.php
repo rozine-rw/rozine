@@ -20,6 +20,8 @@ use App\Models\LedgerEntry;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
+use Brick\Math\BigInteger;
+use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
@@ -298,3 +300,45 @@ it('reads retained release and expiry evidence as terminal without recommitting 
         ->and(PrimaryCommitment::query()->count())->toBe(0)->and(LedgerEntry::query()->where('kind', 'primary_commit')->count())->toBe(0);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 })->with(['released', 'expired']);
+
+it('refuses an existing commit posting instead of claiming it as a new confirmation', function (): void {
+    expect(fn () => DB::transaction(function (): void {
+        $wallets = app(WalletPostings::class);
+        $wallets->commit($wallets->lockForParty($this->root->party_id), WalletMoney::of($this->root->principal),
+            new PostingSource('primary_reservation', $this->root->id, $this->root->origin_operation_id));
+        ($this->confirm)();
+    }))->toThrow(RuntimeException::class, 'RESERVATION_INTEGRITY_FAILED')
+        ->and(PrimaryReservationVersion::query()->count())->toBe(1)->and(PrimaryCommitment::query()->count())->toBe(0)
+        ->and(LedgerEntry::query()->where('kind', 'primary_commit')->count())->toBe(0)
+        ->and(CommandOperation::query()->where('command', 'primary.confirm')->count())->toBe(0);
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+});
+
+it('requotes changed fees even when the disclosure version stays the same', function (): void {
+    $changedFees = function (UnitRights $rights, array $campaign): PrimaryTerms {
+        $terms = PrimaryReservationFixture::terms($rights, $campaign);
+        $fee = BigInteger::zero();
+        foreach ($rights->instalments as $instalment) {
+            $fee = $fee->plus(BigInteger::of($instalment['return'])->multipliedBy(800)->dividedBy(10000, RoundingMode::HalfUp));
+        }
+
+        return PrimaryTerms::disclosed($terms->ratePercent, $terms->termMonths, $terms->policyVersion, $terms->disclosureVersion,
+            [...$terms->earningsFee, 'tier' => 'bronze', 'rate_bps' => 800], (string) $fee, $rights);
+    };
+    $requote = ($this->confirm)(admit: $changedFees);
+    expect($requote['code'])->toBe('RESERVATION_REQUOTED')
+        ->and($requote['data']['terms']['disclosure_version'])->toBe($this->version->payload['terms']['disclosure_version'])
+        ->and($requote['data']['disclosure_sha256'])->not->toBe($this->version->payload['disclosure_sha256'])
+        ->and(PrimaryCommitment::query()->count())->toBe(0)
+        ->and(($this->confirm)(revision: 2, admit: $changedFees)['code'])->toBe('DISCLOSURE_STALE')
+        ->and(($this->confirm)(revision: 2, hash: $requote['data']['disclosure_sha256'], admit: $changedFees)['code'])->toBe('RESERVATION_CONFIRMED');
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+});
+
+it('binds the disclosure version and digest individually in the confirmation replay fingerprint', function (string $field): void {
+    $key = (string) Str::uuid();
+    ($this->confirm)($key);
+    expect(fn () => ($this->confirm)($key, version: $field === 'version' ? 'changed-version' : null,
+        hash: $field === 'hash' ? str_repeat('0', 64) : null))->toThrow(CommandRejection::class, 'IDEMPOTENCY_CONFLICT')
+        ->and(PrimaryCommitment::query()->count())->toBe(1)->and(LedgerEntry::query()->where('kind', 'primary_commit')->count())->toBe(1);
+})->with(['version', 'hash']);
