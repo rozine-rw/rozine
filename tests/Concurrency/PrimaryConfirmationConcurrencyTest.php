@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\BusinessCampaignStore;
+use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Domain\Operations\CommandRejection;
+use App\Models\BusinessCampaignClosure;
 use App\Models\CommandOperation;
 use App\Models\InvestorWallet;
 use App\Models\LedgerEntry;
@@ -153,4 +156,75 @@ it('rolls the journal commitment version and cash movement back with the caller 
         ->and(LedgerEntry::query()->where('kind', 'primary_commit')->count())->toBe(0)
         ->and(CommandOperation::query()->where('command', 'primary.confirm')->count())->toBe(0);
     expect($confirm()['code'])->toBe('RESERVATION_CONFIRMED');
+});
+
+it('makes a waiting cancellation observe committed investor funds before releasing exposure', function (): void {
+    $this->freezeSecond();
+    InvestorWalletFixture::policy(maximum: null);
+    $campaign = PrimaryReservationFixture::campaign();
+    $investor = PrimaryReservationFixture::investor();
+    app(PrimaryCheckout::class)->reserve($investor['user']->id, 1, $campaign->id, '1', (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+    $root = PrimaryReservationRecord::query()->sole();
+    $version = PrimaryReservationVersion::query()->sole();
+    $channels = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+    if ($channels === false) {
+        throw new RuntimeException('Could not create cancellation barrier.');
+    }
+    stream_set_timeout($channels[0], 8);
+    stream_set_timeout($channels[1], 8);
+    DB::disconnect();
+    $pid = pcntl_fork();
+    if ($pid === -1) {
+        throw new RuntimeException('Could not fork cancellation contender.');
+    }
+    if ($pid === 0) {
+        fclose($channels[0]);
+        DB::purge();
+        try {
+            DB::statement("SET lock_timeout = '5s'");
+            fwrite($channels[1], DB::selectOne('SELECT pg_backend_pid() AS pid')->pid."\n");
+            if (fgets($channels[1]) !== "go\n") {
+                exit(3);
+            }
+            $result = app(BusinessCampaignStore::class)->cancel($campaign->actor_user_id, 1, $campaign->business_id,
+                $campaign->id, 1, 'Cancellation waiting for confirmation.', (string) Str::uuid());
+            exit($result['code'] === 'CAMPAIGN_SETTLEMENT_REQUIRED' ? 0 : 2);
+        } catch (Throwable) {
+            exit(4);
+        }
+    }
+    fclose($channels[1]);
+    try {
+        $backend = (int) trim((string) fgets($channels[0]));
+        expect($backend)->toBeGreaterThan(0);
+        DB::beginTransaction();
+        $confirmed = app(PrimaryCheckout::class)->confirm($investor['user']->id, 1, $campaign->id, $root->id, 1,
+            $version->payload['terms']['disclosure_version'], $version->payload['disclosure_sha256'], (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+        expect($confirmed['code'])->toBe('RESERVATION_CONFIRMED');
+        fwrite($channels[0], "go\n");
+        $deadline = hrtime(true) + 3_000_000_000;
+        $blocked = false;
+        while (hrtime(true) < $deadline) {
+            $blocked = DB::selectOne('SELECT pg_backend_pid() = ANY(pg_blocking_pids(?)) AS blocked', [$backend])->blocked;
+            if ($blocked) {
+                break;
+            }
+            usleep(10_000);
+        }
+        expect($blocked)->toBeTrue('Cancellation must wait for the confirming Business transaction.');
+        DB::commit();
+    } finally {
+        if (DB::transactionLevel() > 0) {
+            DB::rollBack();
+        }
+        fclose($channels[0]);
+        pcntl_waitpid($pid, $status);
+    }
+    expect(pcntl_wifexited($status) ? pcntl_wexitstatus($status) : -1)->toBe(0)
+        ->and(CommandOperation::query()->where('command', 'campaign.cancel')->sole()->result['code'])->toBe('CAMPAIGN_SETTLEMENT_REQUIRED')
+        ->and(BusinessCampaignClosure::query()->count())->toBe(0)
+        ->and(PrimaryCommitment::query()->count())->toBe(1)
+        ->and(LedgerEntry::query()->where('kind', 'primary_commit')->count())->toBe(1)
+        ->and(LedgerEntry::query()->where('kind', 'primary_refund')->count())->toBe(0)
+        ->and(app(BusinessExposureStore::class)->current($campaign->business_id))->toBe([['id' => $campaign->exposure_reservation_id, 'principal' => $campaign->principal]]);
 });

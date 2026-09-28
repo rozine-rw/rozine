@@ -358,6 +358,10 @@ arch('full publication evidence remains private to the Business adapter')
     ->expect('App\Application\Business\Contracts\PublishedCampaignEvidence')
     ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Providers\AppServiceProvider']);
 
+arch('campaign commitment evidence stays private to the Business and Primary adapters')
+    ->expect('App\\Application\\Primary\\Contracts\\CampaignCommitments')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);
+
 arch('Primary reservation and commitment records remain inside their persistence boundary')
     ->expect(['App\\Models\\PrimaryReservationRecord', 'App\\Models\\PrimaryReservationVersion', 'App\\Models\\PrimaryCommitment'])
     ->toOnlyBeUsedIn(['App\\Infrastructure\\Primary', 'App\\Models', 'Database\\Factories']);

@@ -15,6 +15,7 @@ use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Application\Primary\Contracts\CampaignCommitments;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
@@ -35,7 +36,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
 
     public function __construct(private AcceptedApplicationStore $accepted, private BusinessAuthorityStore $businesses,
         private WithBusinessAuthority $authority, private AuthorizeStaffPermission $staff, private IdentityRepository $identities,
-        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications) {}
+        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications, private CampaignCommitments $commitments) {}
 
     /** @return array<string, mixed> */
     public function release(int $userId, string $applicationId, int $expectedRevision, string $reason, string $requestId): array
@@ -163,7 +164,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             $payload = $this->publications->find($campaign->id);
             $closure = $this->closures->find($campaign->id);
             $person = array_find($business['mandate']['people'], fn (array $person): bool => $person['party_id'] === $identity['party']['id']);
-            $canCancel = $closure === null && now()->lt($campaign->expires_at)
+            $canCancel = $closure === null && now()->lt($campaign->expires_at) && ! $this->commitments->anyForCampaign($campaign->id)
                 && in_array('application.sign', $person['permissions'] ?? [], true)
                 && in_array($identity['party']['id'], $business['mandate']['required_signatories'], true);
 
@@ -305,8 +306,8 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
     }
 
     /**
-     * The current campaign model has no investor commitments. Future funding must
-     * settle its ledger in this same transaction before a closure can release exposure.
+     * Legacy closure releases exposure only for a campaign with no confirmed commitments.
+     * Funded cancellation and expiry must settle refunds in this same transaction first.
      */
     private function close(BusinessCampaign $campaign, string $phase, ?int $userId, ?string $partyId, ?string $operationId, ?string $requestId, ?string $reason): BusinessCampaignClosure
     {
@@ -319,6 +320,10 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         $recordedAt = now('UTC')->toImmutable()->startOfSecond();
         if ($phase === 'cancelled' && $recordedAt->gte($campaign->expires_at)) {
             throw new CommandRejection('CAMPAIGN_CLOSED', revision: 1, data: ['campaign_id' => $campaign->id, 'business_id' => $campaign->business_id]);
+        }
+        if ($this->commitments->anyForCampaign($campaign->id)) {
+            throw new CommandRejection('CAMPAIGN_SETTLEMENT_REQUIRED', revision: 1,
+                data: ['campaign_id' => $campaign->id, 'business_id' => $campaign->business_id]);
         }
         $closedAt = $phase === 'expired' ? $campaign->expires_at : $recordedAt;
         $payload = ['closure_id' => $closure->id, 'campaign_id' => $campaign->id, 'campaign_sha256' => $campaign->sha256,
