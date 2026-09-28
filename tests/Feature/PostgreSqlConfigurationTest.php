@@ -85,6 +85,9 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $ledgerSeal = require database_path('migrations/2026_09_28_112500_seal_ledger_entries_once_validated.php');
     $primaryPostings = require database_path('migrations/2026_09_28_112902_add_primary_postings_to_wallet_ledger.php');
     $postingAnchors = require database_path('migrations/2026_09_28_140000_bind_primary_postings_to_their_source_anchor.php');
+    $changeFeed = require database_path('migrations/2026_09_28_180000_create_change_feed_table.php');
+    $changeFeed->down();
+    expect(Schema::hasTable('change_feed'))->toBeFalse();
     $postingAnchors->down();
     $primaryPostings->down();
     expect(Schema::hasColumn('ledger_entries', 'origin_operation_id'))->toBeFalse();
@@ -178,6 +181,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $ledgerSeal->up();
     $primaryPostings->up();
     $postingAnchors->up();
+    $changeFeed->up();
 
     expect(Schema::hasTable('parties'))->toBeTrue()
         ->and(Schema::hasTable('role_memberships'))->toBeTrue()
@@ -214,5 +218,6 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasTable('ledger_lines'))->toBeTrue()
         ->and(Schema::hasTable('investor_funding_methods'))->toBeTrue()
         ->and(Schema::hasTable('wallet_deposit_credits'))->toBeTrue()
-        ->and(Schema::hasColumn('ledger_entries', 'origin_operation_id'))->toBeTrue();
+        ->and(Schema::hasColumn('ledger_entries', 'origin_operation_id'))->toBeTrue()
+        ->and(Schema::hasTable('change_feed'))->toBeTrue();
 });
