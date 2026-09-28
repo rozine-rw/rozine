@@ -1102,7 +1102,6 @@ describe('Disbursement approval step-up', () => {
                 url: STEP_UP_ROUTE.url,
                 method: 'post',
                 body: {
-                    request_id: expect.any(String),
                     expected_revision: 4,
                     intent_digest: DIGEST,
                     code: '123456',
