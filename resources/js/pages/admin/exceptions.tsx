@@ -50,8 +50,8 @@ function Row({ item }: { item: ExceptionItem }) {
                 className="text-[12.5px] font-semibold text-rz-ink"
             >
                 {item.note_title === null
-                    ? item.business
-                    : `${item.business} · ${item.note_title}`}
+                    ? item.subject.label
+                    : `${item.subject.label} · ${item.note_title}`}
                 <span className="mt-0.5 block text-[11px] font-medium text-rz-muted">
                     {item.description}
                     {item.dpd !== null &&

@@ -1,5 +1,5 @@
 {
-    "component": "admin/book",
+    "component": "admin/reports",
     "synthetic": true,
     "props": {
         "viewer": {
@@ -81,83 +81,56 @@
         },
         "search": "",
         "server_time": "2027-01-23T10:00:00+02:00",
-        "contract_version": "staff-book-v1",
+        "contract_version": "staff-reports-v1",
         "staff_access_version": "staff-access-v1",
         "allowed_actions": [],
-        "stats": [
+        "packs": [
             {
-                "key": "live_notes",
-                "value": {
-                    "kind": "count",
-                    "value": 0
-                }
+                "id": "rpt_reg_2026q4",
+                "kind": "regulator",
+                "label": "Regulator pack · Q4 2026",
+                "period": {
+                    "start": "2026-10-01",
+                    "end": "2026-12-31"
+                },
+                "link": {
+                    "url": "/preview/admin-reports",
+                    "method": "get"
+                },
+                "status": "complete",
+                "as_of": "2027-01-06T09:00:00+02:00"
             },
             {
-                "key": "principal_outstanding",
-                "value": {
-                    "kind": "money",
-                    "value": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    }
-                }
+                "id": "rpt_board_2026_12",
+                "kind": "board",
+                "label": "Board pack · December 2026",
+                "period": {
+                    "start": "2026-12-01",
+                    "end": "2026-12-31"
+                },
+                "link": {
+                    "url": "/preview/admin-reports",
+                    "method": "get"
+                },
+                "status": "complete",
+                "as_of": "2027-01-05T17:30:00+02:00"
             },
             {
-                "key": "due_today",
-                "value": {
-                    "kind": "count",
-                    "value": 0
-                }
-            },
-            {
-                "key": "overdue",
-                "value": {
-                    "kind": "count",
-                    "value": 0
-                }
+                "id": "rpt_ledger_2027w03",
+                "kind": "export",
+                "label": "Ledger export · 16–22 Jan 2027",
+                "period": {
+                    "start": "2027-01-16",
+                    "end": "2027-01-22"
+                },
+                "link": {
+                    "url": "/preview/admin-reports",
+                    "method": "get"
+                },
+                "status": "moving",
+                "as_of": "2027-01-23T06:00:00+02:00",
+                "pending": "The 22 Jan 2027 day close has an open break of RWF 3,100 (STM-2027-0122). Totals can still change until it is explained."
             }
-        ],
-        "chips": [
-            {
-                "key": "all",
-                "count": 0,
-                "link": {
-                    "url": "/preview/admin-book",
-                    "method": "get"
-                },
-                "active": true
-            },
-            {
-                "key": "current",
-                "count": 0,
-                "link": {
-                    "url": "/preview/admin-book",
-                    "method": "get"
-                },
-                "active": false
-            },
-            {
-                "key": "due_today",
-                "count": 0,
-                "link": {
-                    "url": "/preview/admin-book",
-                    "method": "get"
-                },
-                "active": false
-            },
-            {
-                "key": "overdue",
-                "count": 0,
-                "link": {
-                    "url": "/preview/admin-book",
-                    "method": "get"
-                },
-                "active": false
-            }
-        ],
-        "notes": [],
-        "pagination": {
-            "next": null
-        }
+        ]
     }
 }

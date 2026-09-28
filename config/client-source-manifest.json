@@ -537,12 +537,15 @@
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/auth/login.tsx",
         "resources/js/pages/admin/book.tsx",
+        "resources/js/pages/admin/coverage.tsx",
         "resources/js/pages/admin/disbursements.tsx",
         "resources/js/pages/admin/events.tsx",
         "resources/js/pages/admin/exceptions.tsx",
         "resources/js/pages/admin/ledger.tsx",
         "resources/js/pages/admin/parties.tsx",
+        "resources/js/pages/admin/reconciliation.tsx",
         "resources/js/pages/admin/repayments.tsx",
+        "resources/js/pages/admin/reports.tsx",
         "resources/js/pages/admin/today.tsx",
         "resources/js/pages/audit/verify-seal.tsx",
         "resources/js/pages/auditor/audit.tsx",
@@ -600,10 +603,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 569,
+        "totalTrackedSources": 572,
         "generated": 185,
         "declarationOnly": 18,
-        "authoredExecutable": 366
+        "authoredExecutable": 369
     },
-    "coverageSetSha256": "daa54e712a8cbb86eaf8e05adb524c1bb83e90c0c06f0c2589245f1d20ce12be"
+    "coverageSetSha256": "83d3d7fddaf5a154d491af348a7a2644c6e2d7170aede386299f0a2aca07365a"
 }

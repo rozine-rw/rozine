@@ -1,5 +1,5 @@
 {
-    "component": "admin/book",
+    "component": "admin/reconciliation",
     "synthetic": true,
     "props": {
         "viewer": {
@@ -81,83 +81,50 @@
         },
         "search": "",
         "server_time": "2027-01-23T10:00:00+02:00",
-        "contract_version": "staff-book-v1",
+        "contract_version": "staff-reconciliation-v1",
         "staff_access_version": "staff-access-v1",
         "allowed_actions": [],
-        "stats": [
+        "day_close": {
+            "business_date": "2027-01-22",
+            "state": "not_reconciled"
+        },
+        "accounts": [
             {
-                "key": "live_notes",
-                "value": {
-                    "kind": "count",
-                    "value": 0
+                "id": "acct_momo",
+                "label": "Mobile money collections account",
+                "as_of": "2027-01-22T23:59:59+02:00",
+                "ledger": {
+                    "currency": "RWF",
+                    "amount": "48215600"
+                },
+                "statement": null,
+                "difference": null,
+                "feed": {
+                    "state": "unavailable",
+                    "since": "2027-01-22T21:10:00+02:00"
                 }
             },
             {
-                "key": "principal_outstanding",
-                "value": {
-                    "kind": "money",
-                    "value": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    }
-                }
-            },
-            {
-                "key": "due_today",
-                "value": {
-                    "kind": "count",
-                    "value": 0
-                }
-            },
-            {
-                "key": "overdue",
-                "value": {
-                    "kind": "count",
-                    "value": 0
+                "id": "acct_bank",
+                "label": "Bank settlement account",
+                "as_of": "2027-01-22T23:59:59+02:00",
+                "ledger": {
+                    "currency": "RWF",
+                    "amount": "126476900"
+                },
+                "statement": {
+                    "currency": "RWF",
+                    "amount": "126476900"
+                },
+                "difference": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "feed": {
+                    "state": "available"
                 }
             }
         ],
-        "chips": [
-            {
-                "key": "all",
-                "count": 0,
-                "link": {
-                    "url": "/preview/admin-book",
-                    "method": "get"
-                },
-                "active": true
-            },
-            {
-                "key": "current",
-                "count": 0,
-                "link": {
-                    "url": "/preview/admin-book",
-                    "method": "get"
-                },
-                "active": false
-            },
-            {
-                "key": "due_today",
-                "count": 0,
-                "link": {
-                    "url": "/preview/admin-book",
-                    "method": "get"
-                },
-                "active": false
-            },
-            {
-                "key": "overdue",
-                "count": 0,
-                "link": {
-                    "url": "/preview/admin-book",
-                    "method": "get"
-                },
-                "active": false
-            }
-        ],
-        "notes": [],
-        "pagination": {
-            "next": null
-        }
+        "breaks": []
     }
 }

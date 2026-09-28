@@ -58,6 +58,18 @@
                 "url": "/preview/admin-exceptions",
                 "method": "get"
             },
+            "reconciliation": {
+                "url": "/preview/admin-reconciliation",
+                "method": "get"
+            },
+            "coverage": {
+                "url": "/preview/admin-coverage",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/admin-reports",
+                "method": "get"
+            },
             "launcher": {
                 "url": "/preview/launcher-ready",
                 "method": "get"
@@ -73,13 +85,13 @@
         "staff_access_version": "staff-access-v1",
         "allowed_actions": [],
         "counts": {
-            "open": 5,
-            "unassigned": 2
+            "open": 6,
+            "unassigned": 3
         },
         "chips": [
             {
                 "key": "all",
-                "count": 5,
+                "count": 6,
                 "link": {
                     "url": "/preview/admin-exceptions",
                     "method": "get"
@@ -106,7 +118,7 @@
             },
             {
                 "key": "variance",
-                "count": 1,
+                "count": 2,
                 "link": {
                     "url": "/preview/admin-exceptions",
                     "method": "get"
@@ -119,7 +131,10 @@
                 "id": "exc_0412",
                 "kind": "arrears",
                 "reference": "ARR-2026-0412",
-                "business": "Ubuki Crafts",
+                "subject": {
+                    "kind": "business",
+                    "label": "Ubuki Crafts"
+                },
                 "note_title": "Loom Expansion",
                 "description": "Instalment due 16 Dec 2026 unpaid",
                 "amount": {
@@ -143,7 +158,10 @@
                 "id": "exc_0431",
                 "kind": "arrears",
                 "reference": "ARR-2027-0431",
-                "business": "Isoko Energy",
+                "subject": {
+                    "kind": "business",
+                    "label": "Isoko Energy"
+                },
                 "note_title": "Solar Kiosks",
                 "description": "Instalment due 14 Jan 2027 unpaid",
                 "amount": {
@@ -167,7 +185,10 @@
                 "id": "exc_0433",
                 "kind": "arrears",
                 "reference": "ARR-2027-0433",
-                "business": "GreenLeaf Agro",
+                "subject": {
+                    "kind": "business",
+                    "label": "GreenLeaf Agro"
+                },
                 "note_title": "Warehouse Robotics",
                 "description": "Instalment due 21 Jan 2027 not confirmed; the provider requery is still open",
                 "amount": {
@@ -187,7 +208,10 @@
                 "id": "exc_0437",
                 "kind": "variance",
                 "reference": "RPY-2026-0303",
-                "business": "Isoko Energy",
+                "subject": {
+                    "kind": "business",
+                    "label": "Isoko Energy"
+                },
                 "note_title": "Solar Kiosks",
                 "description": "Inbound receipt RWF 115,000 short of the instalment",
                 "amount": {
@@ -204,10 +228,36 @@
                 }
             },
             {
+                "id": "exc_0439",
+                "kind": "variance",
+                "reference": "STM-2027-0122",
+                "subject": {
+                    "kind": "account",
+                    "label": "Bank settlement account"
+                },
+                "note_title": null,
+                "description": "Bank charge on the 22 Jan 2027 statement with no ledger entry",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "3100"
+                },
+                "dpd": null,
+                "opened_at": "2027-01-22T08:15:00+02:00",
+                "age_days": 1,
+                "owner": null,
+                "link": {
+                    "url": "/preview/admin-reconciliation",
+                    "method": "get"
+                }
+            },
+            {
                 "id": "exc_0355",
                 "kind": "halt",
                 "reference": "FRZ-2026-0355",
-                "business": "Rugali Freight",
+                "subject": {
+                    "kind": "business",
+                    "label": "Rugali Freight"
+                },
                 "note_title": null,
                 "description": "Account frozen: provider fraud alert FA-2291 on the payout destination",
                 "amount": null,
