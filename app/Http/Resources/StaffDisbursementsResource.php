@@ -77,7 +77,7 @@ class StaffDisbursementsResource extends JsonResource
         }
         $refund = $detail['refund'];
         if ($refund !== null) {
-            $refund['receipt']['link'] = $refund['receipt']['request_id'] === '' ? $close : self::lookup($request, $refund['receipt']['request_id'], 'disbursement.approve');
+            $refund['receipt']['link'] = self::lookup($request, $refund['receipt']['request_id'], 'disbursement.approve');
         }
         unset($detail['step_up_allowed']);
 

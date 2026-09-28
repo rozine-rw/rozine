@@ -43,6 +43,7 @@ use App\Models\DisbursementStepUpProof;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\Config\Repository;
+use Illuminate\Database\DeadlockException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -163,11 +164,7 @@ final class EloquentDisbursementStore implements DisbursementStore
                 }
             });
         } catch (CommandRejection $rejection) {
-            if ($rejection->reason !== 'OPERATION_NOT_FOUND') {
-                throw $rejection;
-            }
-
-            return null;
+            return $rejection->reason === 'OPERATION_NOT_FOUND' ? null : throw $rejection;
         }
     }
 
@@ -177,7 +174,7 @@ final class EloquentDisbursementStore implements DisbursementStore
         $disbursement = $this->disbursement($disbursementId);
         $state = $this->state($disbursement);
         $intent = DisbursementIntent::query()->where('disbursement_id', $disbursement->id)->first();
-        if (! $state->allows('requery', $userId) || $intent === null || DisbursementClosing::query()->where('disbursement_id', $disbursement->id)->exists()) {
+        if (! $state->allows('requery', $userId) || $intent === null) {
             throw new CommandRejection('DISBURSEMENT_STATE_INVALID', revision: $state->revision);
         }
 
@@ -201,10 +198,8 @@ final class EloquentDisbursementStore implements DisbursementStore
                     $state->assertAllows('requery', $userId);
                     $this->assertRevision($state, $expectedRevision);
                     $recordedReason = $this->reason($reason, $state);
+                    // A dispatched state has no closing yet: closing moves it on, so requery refuses first.
                     $intent = DisbursementIntent::query()->where('disbursement_id', $disbursement->id)->sole();
-                    if (DisbursementClosing::query()->where('disbursement_id', $disbursement->id)->exists()) {
-                        throw new CommandRejection('DISBURSEMENT_STATE_INVALID', revision: $state->revision);
-                    }
                     $call = new DisbursementProviderCall;
                     $call->forceFill(['intent_id' => $intent->id, 'kind' => 'query', 'source' => 'requery', 'operation_id' => $operationId, 'created_at' => now('UTC')])->save();
                     $disposition = $observed === null ? null : $this->recordObservation($intent, $observed, 'requery');
@@ -223,11 +218,8 @@ final class EloquentDisbursementStore implements DisbursementStore
         $permission = self::PERMISSIONS[$name] ?? throw new CommandRejection('OPERATION_NOT_FOUND', 404);
         $this->staff->check($userId, $permission);
 
-        return $this->journal->find('staff:'.$userId, $command, $requestId, function (string $type, string $id): void {
-            if ($type !== 'disbursement' || ! Disbursement::query()->whereKey($id)->exists()) {
-                throw new CommandRejection('OPERATION_NOT_FOUND', 404);
-            }
-        });
+        // The journal only finds this staff member's own disbursement commands, which are never removed.
+        return $this->journal->find('staff:'.$userId, $command, $requestId, function (): void {});
     }
 
     public function transactionOpen(): bool
@@ -240,12 +232,7 @@ final class EloquentDisbursementStore implements DisbursementStore
         $opened = 0;
         $known = 0;
         foreach ($this->funding->funded(null, $limit) as $reference) {
-            if (Disbursement::query()->where('business_campaign_id', $reference->campaignId)->exists()) {
-                $known++;
-
-                continue;
-            }
-            $opened += $this->serialized(function () use ($reference): int {
+            $new = $this->serialized(function () use ($reference): int {
                 $this->funding->lockBusiness($reference->businessId);
                 $campaign = $this->funding->lockFunded($reference->campaignId);
                 if (Disbursement::query()->where('business_campaign_id', $campaign->campaignId)->exists()) {
@@ -263,6 +250,8 @@ final class EloquentDisbursementStore implements DisbursementStore
 
                 return 1;
             });
+            $opened += $new;
+            $known += 1 - $new;
         }
 
         return ['opened' => $opened, 'known' => $known];
@@ -363,11 +352,7 @@ final class EloquentDisbursementStore implements DisbursementStore
                 return $this->settle($disbursement, $intent, $campaign);
             });
         } catch (CommandRejection $rejection) {
-            if ($rejection->reason !== 'FUNDING_SOURCE_UNAVAILABLE') {
-                throw $rejection;
-            }
-
-            return 'funding_unavailable';
+            return $rejection->reason === 'FUNDING_SOURCE_UNAVAILABLE' ? 'funding_unavailable' : throw $rejection;
         }
     }
 
@@ -572,11 +557,7 @@ final class EloquentDisbursementStore implements DisbursementStore
                     });
             });
         } catch (CommandRejection $rejection) {
-            if ($rejection->reason !== 'FUNDING_SOURCE_UNAVAILABLE') {
-                throw $rejection;
-            }
-
-            return null;
+            return $rejection->reason === 'FUNDING_SOURCE_UNAVAILABLE' ? null : throw $rejection;
         }
     }
 
@@ -861,7 +842,7 @@ final class EloquentDisbursementStore implements DisbursementStore
             'issue' => $closing?->kind === 'issued' ? ['holdings' => $disbursement->commitment_count, 'issued_at' => $closing->created_at->toIso8601String(),
                 'effective_date' => $closing->effective_date?->format('Y-m-d')] : null,
             'refund' => $closing?->kind === 'failed_closing' ? ['commitments' => $disbursement->commitment_count, 'total' => ['currency' => 'RWF', 'amount' => $disbursement->amount],
-                'receipt' => $this->receipt($closing->id, (string) ($closing->operation_id ?? ($intent === null ? $closing->id : $intent->operation_id)), $intent === null ? '' : $intent->request_id,
+                'receipt' => $this->receipt($closing->id, (string) ($closing->operation_id ?? $intent?->operation_id), (string) ($closing->operation_id === null ? $intent?->request_id : $last('failed_closing')?->request_id),
                     'COMMITMENTS_REFUNDED', $closing->created_at->toIso8601String(), $disbursement, $state->revision)] : null,
             'trail' => $events->reverse()->values()->map(fn (DisbursementEvent $event): array => ['id' => $event->id, 'at' => $event->created_at->toIso8601String(),
                 'actor' => (string) ($event->actor_user_id === null ? 'System' : ($names[$event->actor_user_id] ?? 'Staff')),
@@ -1034,11 +1015,10 @@ final class EloquentDisbursementStore implements DisbursementStore
     {
         try {
             return DB::transaction($operation, 3);
+        } catch (DeadlockException) {
+            throw new CommandRejection('RETRYABLE_CONTENTION', 503);
         } catch (QueryException $exception) {
-            if (in_array($exception->getCode(), ['40001', '40P01'], true)) {
-                throw new CommandRejection('RETRYABLE_CONTENTION', 503);
-            }
-            throw $exception;
+            throw in_array((string) $exception->getCode(), ['40001', '40P01'], true) ? new CommandRejection('RETRYABLE_CONTENTION', 503) : $exception;
         }
     }
 }
