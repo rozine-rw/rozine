@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\DB;
  * disbursement success each commitment's committed principal moves, as one balanced entry, from the
  * Investor's committed bucket to the system `disbursement_settlement` account, for exactly the
  * amount it committed. Issue and refund are mutually exclusive terminals of the same commitment.
- * The entry keeps the commitment's immutable originating operation and adds its own cause: the
+ * Like every primary movement it keeps the lifecycle's single source identity, the one its hold
+ * opened (S3-C uses the reservation, #96 5869267382): its anchor is that source's commit on the same
+ * wallet and originating operation. The entry adds its own cause: the
  * disbursement closing that issued it. #172's per-source anchor and bucket-shape checks are
  * unchanged for every other kind; issue is added to them, never exempted.
  */
@@ -31,7 +33,7 @@ return new class extends Migration
                 OR (kind IN ('primary_hold', 'primary_commit', 'primary_release', 'primary_refund')
                     AND source_type IN ('primary_reservation', 'primary_commitment') AND origin_operation_id IS NOT NULL
                     AND cause_type IS NULL AND cause_id IS NULL)
-                OR (kind = 'primary_issue' AND source_type = 'primary_commitment' AND origin_operation_id IS NOT NULL
+                OR (kind = 'primary_issue' AND source_type IN ('primary_reservation', 'primary_commitment') AND origin_operation_id IS NOT NULL
                     AND COALESCE(cause_type = 'disbursement_closing' AND cause_id ~ '^[0-9a-hjkmnp-tv-z]{26}$', false)));
 
             CREATE OR REPLACE FUNCTION protect_primary_posting() RETURNS trigger LANGUAGE plpgsql AS $$

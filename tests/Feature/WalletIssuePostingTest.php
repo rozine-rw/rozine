@@ -30,16 +30,21 @@ function issueId(): string
     return strtolower((string) Str::ulid());
 }
 
-/** @return array{user: User, wallet: LockedWallet, source: PostingSource} a wallet with RWF 20,000 committed of 50,000 */
-function committedWallet(): array
+/**
+ * A wallet with RWF 20,000 committed of 50,000, under one lifecycle source as S3-C keeps it: the
+ * reservation its hold opened (#96 5869267382), unless a commitment source is asked for.
+ *
+ * @return array{user: User, wallet: LockedWallet, source: PostingSource}
+ */
+function committedWallet(string $sourceType = 'primary_reservation'): array
 {
     $fixture = InvestorWalletFixture::ready();
     InvestorWalletFixture::settle(InvestorWalletFixture::deposit($fixture, '50000')['data']['intent_id']);
     $postings = app(WalletPostings::class);
 
-    return DB::transaction(function () use ($fixture, $postings): array {
+    return DB::transaction(function () use ($fixture, $postings, $sourceType): array {
         $wallet = $postings->lockForParty($fixture['party']->id);
-        $source = new PostingSource('primary_commitment', issueId(), issueId());
+        $source = new PostingSource($sourceType, issueId(), issueId());
         $postings->hold($wallet, WalletMoney::of('20000'), $source);
         $postings->commit($wallet, WalletMoney::of('20000'), $source);
 
@@ -106,7 +111,14 @@ it('issues exactly the committed amount to settlement, keeping the origin and re
         ->and(settlementBalance())->toBe('20000');
 });
 
-it('refuses an issue after a refund, before a commit, of a reservation, or outside a transaction', function (): void {
+it('issues a commitment-sourced lifecycle the same way', function (): void {
+    ['user' => $user, 'wallet' => $wallet, 'source' => $source] = committedWallet('primary_commitment');
+    $receipt = DB::transaction(fn () => app(WalletPostings::class)->issue($wallet, WalletMoney::of('20000'), $source, new PostingCause('disbursement_closing', issueId())));
+    expect([$receipt->kind, $receipt->sourceType, $receipt->sourceId])->toBe(['primary_issue', 'primary_commitment', $source->id])
+        ->and(issueBuckets($user))->toBe(['30000', '0', '0', '30000']);
+});
+
+it('refuses an issue after a refund, before a commit, or under another source than its commit', function (): void {
     ['wallet' => $wallet, 'source' => $source] = committedWallet();
     $postings = app(WalletPostings::class);
     $cause = new PostingCause('disbursement_closing', issueId());
@@ -114,12 +126,25 @@ it('refuses an issue after a refund, before a commit, of a reservation, or outsi
     expect(fn () => DB::transaction(fn () => $postings->issue($wallet, WalletMoney::of('20000'), $source, $cause)))
         ->toThrow(WalletViolation::class, 'WALLET_POSTING_STATE_INVALID');
 
-    $held = new PostingSource('primary_commitment', issueId(), issueId());
+    $held = new PostingSource('primary_reservation', issueId(), issueId());
     DB::transaction(fn () => $postings->hold($wallet, WalletMoney::of('1000'), $held));
     expect(fn () => DB::transaction(fn () => $postings->issue($wallet, WalletMoney::of('1000'), $held, $cause)))
+        ->toThrow(WalletViolation::class, 'WALLET_POSTING_STATE_INVALID');
+
+    ['wallet' => $other, 'source' => $committed] = committedWallet();
+    expect(fn () => DB::transaction(fn () => $postings->issue($other, WalletMoney::of('20000'), new PostingSource('primary_reservation', issueId(), $committed->originOperationId), $cause)))
         ->toThrow(WalletViolation::class, 'WALLET_POSTING_STATE_INVALID')
-        ->and(fn () => DB::transaction(fn () => $postings->issue($wallet, WalletMoney::of('1000'), new PostingSource('primary_reservation', issueId(), issueId()), $cause)))
-        ->toThrow(WalletViolation::class, 'WALLET_POSTING_SOURCE_INVALID')
+        ->and(fn () => DB::transaction(fn () => $postings->issue($other, WalletMoney::of('20000'), new PostingSource('primary_commitment', $committed->id, $committed->originOperationId), $cause)))
+        ->toThrow(WalletViolation::class, 'WALLET_POSTING_STATE_INVALID')
+        ->and(fn () => DB::transaction(fn () => $postings->issue($other, WalletMoney::of('20000'), new PostingSource('primary_reservation', $committed->id, issueId()), $cause)))
+        ->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT')
+        ->and(fn () => rawIssuePosting($other, 'primary_issue', new PostingSource('primary_commitment', $committed->id, $committed->originOperationId),
+            [['investor_committed', 'debit', '20000'], ['disbursement_settlement', 'credit', '20000']], issueId()))
+        ->toThrow(QueryException::class, 'must follow its open hold or commit')
+        ->and(fn () => rawIssuePosting($other, 'primary_issue', new PostingSource('primary_reservation', $committed->id, issueId()),
+            [['investor_committed', 'debit', '20000'], ['disbursement_settlement', 'credit', '20000']], issueId()))
+        ->toThrow(QueryException::class, 'must follow its open hold or commit')
+        ->and(LedgerEntry::query()->where('source_id', $committed->id)->where('kind', 'primary_issue')->count())->toBe(0)
         ->and(fn () => new PostingCause('refund_request', issueId()))->toThrow(WalletViolation::class, 'WALLET_POSTING_CAUSE_INVALID')
         ->and(fn () => new PostingCause('disbursement_closing', 'not-a-ulid'))->toThrow(WalletViolation::class, 'WALLET_POSTING_CAUSE_INVALID');
 });
@@ -167,7 +192,7 @@ it('refuses a raw refund after an issue and a raw issue after a refund, but keep
     rawIssuePosting($other, 'primary_refund', $refunded, [['investor_committed', 'debit', '20000'], ['investor_available', 'credit', '20000']], null);
     expect(fn () => rawIssuePosting($other, 'primary_issue', $refunded, [['investor_committed', 'debit', '20000'], ['disbursement_settlement', 'credit', '20000']], issueId()))
         ->toThrow(QueryException::class, 'issued or refunded, never both')
-        ->and(fn () => rawIssuePosting($other, 'primary_hold', new PostingSource('primary_commitment', issueId(), issueId()),
+        ->and(fn () => rawIssuePosting($other, 'primary_hold', new PostingSource('primary_reservation', issueId(), issueId()),
             [['investor_available', 'debit', '1000'], ['investor_held', 'credit', '1000']], issueId()))
         ->toThrow(QueryException::class, 'ledger_entry_source');
 });

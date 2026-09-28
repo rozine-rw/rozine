@@ -51,9 +51,10 @@ interface WalletPostings
     public function refund(LockedWallet $wallet, WalletMoney $amount, PostingSource $source): PostingReceipt;
 
     /**
-     * committed → the system `disbursement_settlement` account, for exactly the committed amount of
-     * a `primary_commitment` source, on a verified and reconciled disbursement success. It keeps the
-     * commitment's originating operation and records the issuing closing as its cause. Issue and
+     * committed → the system `disbursement_settlement` account, for exactly the committed amount, on
+     * a verified and reconciled disbursement success. Like commit and refund it names the lifecycle's
+     * single source (the one its hold opened, the reservation in S3-C) and follows that source's
+     * commit on the same wallet and originating operation; the issuing closing is its separate cause. Issue and
      * refund end a commitment once between them: after either, the other refuses
      * `WALLET_POSTING_STATE_INVALID`. A retry with another cause refuses `WALLET_POSTING_CONFLICT`.
      */
