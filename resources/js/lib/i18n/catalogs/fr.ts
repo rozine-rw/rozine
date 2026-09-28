@@ -3561,13 +3561,13 @@ const fr: Catalog = {
     'business.campaign.closed.cancelled':
         'Cette levée a été annulée le {date}. {amount} ont été intégralement rendus aux investisseurs, sans frais.',
     'business.campaign.closed.failed_closing':
-        "Cette levée n'a pas pu être clôturée : une vérification avant décaissement a échoué le {date}. {amount} ont été intégralement rendus aux investisseurs, sans frais.",
+        "Cette levée s'est clôturée le {date} sans versement. {amount} ont été intégralement rendus aux investisseurs, sans frais.",
     'business.campaign.closed.expired_none':
         "Cette levée s'est clôturée le {date} avant tout engagement d'investisseur : il n'y avait rien à rembourser.",
     'business.campaign.closed.cancelled_none':
         "Cette levée a été annulée le {date} avant tout engagement d'investisseur : il n'y avait rien à rembourser.",
     'business.campaign.closed.failed_closing_none':
-        "Cette levée n'a pas pu se clôturer : une vérification avant versement a échoué le {date}. Aucun investisseur ne s'était engagé : il n'y avait rien à rembourser.",
+        "Cette levée s'est clôturée le {date} sans versement. Aucun investisseur ne s'était engagé : il n'y avait rien à rembourser.",
     'business.campaign.cancel.open': 'Annuler cette levée',
     'business.campaign.cancel.cancelling': 'Annulation…',
     'business.campaign.cancel.title': 'Annuler cette levée ?',
@@ -3611,8 +3611,6 @@ const fr: Catalog = {
     'admin.disbursements.binding.digest': "Empreinte de l'intention",
     'admin.disbursements.step_up.unavailable':
         "L'approbation exige une nouvelle confirmation renforcée liée à ces détails. Cette confirmation n'est pas encore disponible : l'approbation ne peut donc pas être donnée ici.",
-    'admin.disbursements.step_up.required':
-        "L'approbation demande une nouvelle confirmation renforcée liée à ces détails.",
     'admin.disbursements.intent.title': 'Intention de paiement',
     'admin.disbursements.intent.not_payment':
         "Intention enregistrée — ce n'est pas un paiement. Le service de paiement ne l'envoie qu'après sa propre revérification.",
@@ -3744,7 +3742,7 @@ const fr: Catalog = {
     'investor.deal.notice.failed_closing.title':
         "Cette levée s'est clôturée sans versement",
     'investor.deal.notice.failed_closing.body':
-        "Une dernière vérification avant paiement n'a pas abouti : chaque engagement a été remboursé intégralement.",
+        "Le versement à l'entreprise n'a pas eu lieu : chaque engagement a été remboursé intégralement.",
     'investor.deals.gated_title':
         'Vérifiez votre identité pour voir les offres',
     'investor.deals.gated_body':
@@ -3815,7 +3813,7 @@ const fr: Catalog = {
     'investor.primary.status_body.expired':
         "La levée n'a pas été remplie à temps. Votre capital a été remboursé intégralement, sans frais.",
     'investor.primary.status_body.failed_closing':
-        "Une dernière vérification avant versement n'a pas abouti. Votre capital a été remboursé intégralement, sans frais.",
+        "Le versement à l'entreprise n'a pas eu lieu. Votre capital a été remboursé intégralement, sans frais.",
     'investor.primary.cancelled_by.investor': 'vous',
     'investor.primary.cancelled_by.business': "l'entreprise",
     'investor.primary.cancelled_by.none': 'Rozine',

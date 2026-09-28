@@ -3543,13 +3543,13 @@ const rw: Catalog = {
     'business.campaign.closed.cancelled':
         'Iki gikorwa cyo gukusanya cyahagaritswe ku wa {date}. {amount} byasubijwe abashoramari byose, nta kiguzi.',
     'business.campaign.closed.failed_closing':
-        'Iki gikorwa cyo gukusanya ntikyashoboye kurangira: igenzura ryo mbere yo kohereza amafaranga ryananiranye ku wa {date}. {amount} byasubijwe abashoramari byose, nta kiguzi.',
+        'Iki gikorwa cyo gukusanya cyarangiye ku wa {date} nta mafaranga yoherejwe. {amount} byasubijwe abashoramari byose, nta kiguzi.',
     'business.campaign.closed.expired_none':
         'Iki gikorwa cyo gukusanya cyafunzwe ku wa {date} nta mushoramari urashyiramo amafaranga, bityo nta cyo gusubizwa cyari gihari.',
     'business.campaign.closed.cancelled_none':
         'Iki gikorwa cyo gukusanya cyahagaritswe ku wa {date} nta mushoramari urashyiramo amafaranga, bityo nta cyo gusubizwa cyari gihari.',
     'business.campaign.closed.failed_closing_none':
-        'Iki gikorwa ntikyashoboye gufungwa: igenzura mbere yo kohereza amafaranga ryananiranye ku wa {date}. Nta mushoramari wari washyizemo amafaranga, bityo nta cyo gusubizwa cyari gihari.',
+        'Iki gikorwa cyo gukusanya cyarangiye ku wa {date} nta mafaranga yoherejwe. Nta mushoramari wari washyizemo amafaranga, bityo nta cyo gusubizwa cyari gihari.',
     'business.campaign.cancel.open': 'Hagarika iki gikorwa cyo gukusanya',
     'business.campaign.cancel.cancelling': 'Birahagarikwa…',
     'business.campaign.cancel.title': 'Uhagarike iki gikorwa cyo gukusanya?',
@@ -3593,8 +3593,6 @@ const rw: Catalog = {
     'admin.disbursements.binding.digest': "Igikumwe cy'icyifuzo",
     'admin.disbursements.step_up.unavailable':
         "Kwemeza bisaba kwemeza kongerewe umutekano gushya guhujwe n'aya makuru. Uko kwemeza ntikuraboneka, bityo ntushobora kwemeza hano.",
-    'admin.disbursements.step_up.required':
-        "Kwemeza bisaba kwemeza kongerewe umutekano gushya guhujwe n'aya makuru.",
     'admin.disbursements.intent.title': 'Icyifuzo cyo kwishyura',
     'admin.disbursements.intent.not_payment':
         'Icyifuzo cyanditswe — si ukwishyura. Serivisi yishyura iracyohereza gusa nyuma yo kongera kugenzura.',
@@ -3722,7 +3720,7 @@ const rw: Catalog = {
     'investor.deal.notice.failed_closing.title':
         'Iki gikorwa cyarangiye nta bwishyu bubaye',
     'investor.deal.notice.failed_closing.body':
-        'Igenzura rya nyuma mbere yo kwishyura ntiryatsinze, buri cyiyemezo cyasubijwe cyose.',
+        'Amafaranga ntiyoherejwe, bityo buri cyiyemezo cyasubijwe cyose.',
     'investor.deals.gated_title':
         'Genzura umwirondoro kugira ngo ubone amahirwe afunguye',
     'investor.deals.gated_body':
@@ -3789,7 +3787,7 @@ const rw: Catalog = {
     'investor.primary.status_body.expired':
         'Igikorwa ntikyuzuye mu gihe. Igishoro cyawe cyasubijwe cyose, nta kiguzi.',
     'investor.primary.status_body.failed_closing':
-        'Igenzura rya nyuma mbere yo kwishyura ntiryatsinze. Igishoro cyawe cyasubijwe cyose, nta kiguzi.',
+        'Amafaranga ntiyoherejwe. Igishoro cyawe cyasubijwe cyose, nta kiguzi.',
     'investor.primary.cancelled_by.investor': 'wowe',
     'investor.primary.cancelled_by.business': 'ikigo',
     'investor.primary.cancelled_by.none': 'Rozine',

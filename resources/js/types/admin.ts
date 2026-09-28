@@ -774,7 +774,9 @@ export type C3DisbursementRow = {
 
 /**
  * The staff step-up an approval needs. It has its own staff route and purpose, not the Auditor
- * seal's; that route and its codes are still to be settled, so `route` is null until they exist.
+ * seal's; that route, its proof exchange and its codes are still to be settled, so `route` is
+ * null until they exist. A listed route alone does not offer approval: the drawer withholds it
+ * until it can send the bound `step_up_proof` the approve payload needs.
  */
 export type DisbursementStepUp = {
     purpose: 'disbursement.approve';
