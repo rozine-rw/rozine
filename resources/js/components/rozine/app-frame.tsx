@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { ConnectivityNotice } from '@/components/rozine/connectivity-notice';
 import { IconGradients } from '@/components/rozine/icon';
 import { LogoLockup } from '@/components/rozine/logo';
+import { useReconnectRefresh } from '@/hooks/use-reconnect-refresh';
 import { useTranslation } from '@/hooks/use-translation';
 import type { MessageCode } from '@/lib/i18n/types';
 import { cn } from '@/lib/utils';
@@ -27,6 +28,8 @@ type AppFrameProps = {
     showTabBar?: boolean;
     /** A page's own wording for the offline notice, in place of the app-wide one. */
     offlineMessage?: MessageCode;
+    /** False where the app already reads its facts again on reconnect, as the Auditor does. */
+    refreshOnReconnect?: boolean;
     children: ReactNode;
 };
 
@@ -57,9 +60,12 @@ export function AppFrame({
     launcher,
     showTabBar = true,
     offlineMessage,
+    refreshOnReconnect = true,
     children,
 }: AppFrameProps) {
     const { t } = useTranslation();
+
+    useReconnectRefresh(refreshOnReconnect);
 
     return (
         <div
