@@ -12,9 +12,12 @@ final readonly class UnitRights
 {
     public const UNIT_PRINCIPAL = '5000';
 
-    /** @param list<array{index: int, principal: string, return: string}> $instalments */
+    /**
+     * @param  list<array{index: int, principal: string, return: string}>  $instalments
+     * @param  list<string>  $campaignPayments
+     */
     private function __construct(public UnitOrdinals $ordinals, public BigInteger $principal,
-        public BigInteger $contractualReturn, public array $instalments, public BigInteger $campaignPrincipal, public BigInteger $campaignReturn) {}
+        public BigInteger $contractualReturn, public array $instalments, public BigInteger $campaignPrincipal, public BigInteger $campaignReturn, public array $campaignPayments) {}
 
     /**
      * No pricing, eligibility or due-date calculation occurs here. The caller
@@ -49,7 +52,7 @@ final readonly class UnitRights
             $instalments[] = ['index' => $index + 1, 'principal' => (string) $unitPrincipal, 'return' => (string) $unitReturn];
         }
 
-        return new self($ordinals, $ordinals->count->multipliedBy(self::UNIT_PRINCIPAL), $totalReturn, $instalments, $principal, $campaignReturn);
+        return new self($ordinals, $ordinals->count->multipliedBy(self::UNIT_PRINCIPAL), $totalReturn, $instalments, $principal, $campaignReturn, $payments);
     }
 
     /** @return array{0: BigInteger, 1: BigInteger} */

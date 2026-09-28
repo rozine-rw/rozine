@@ -37,14 +37,13 @@ final readonly class PrimaryReservation
     /** A fresh fee disclosure keeps the original rights and never extends the hold. */
     public function requote(DateTimeImmutable $at, PrimaryTerms $terms): self
     {
+        $this->window->requireOpen($at);
         if ($this->state !== 'held') {
             throw new PrimaryViolation('RESERVATION_NOT_HELD');
         }
-        $this->window->requireOpen($at);
         if ($terms->ratePercent !== $this->terms->ratePercent || $terms->termMonths !== $this->terms->termMonths) {
             throw new PrimaryViolation('NOTE_INELIGIBLE');
         }
-        $terms->requireFreshDisclosure($this->terms);
         $terms->requireRights($this->rights);
 
         return new self($this->rights, $terms, $this->window, 'held');
