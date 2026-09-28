@@ -231,9 +231,11 @@ jobs:
         run: composer ci:check:php:static
 
       - name: Enumerate the complete non-TIA test catalog
+        env:
+          PHP_SHARD_CATALOG: coverage/php/expected-tests.json
         run: |
           mkdir -p coverage/php
-          php vendor/bin/pest --ci --no-tia --list-tests-xml=coverage/php/expected-tests.xml
+          php vendor/bin/pest --bootstrap=scripts/quality/php-shard-bootstrap.php --ci --no-tia --list-tests > /dev/null
 
       - name: Download this run's four shard artifacts
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -250,7 +252,7 @@ jobs:
       - name: Require complete test execution and 100% combined coverage
         env:
           SHARD_RESULT: ${{ needs.php-shards.result }}
-        run: php scripts/quality/php-shard-evidence.php merge "$PWD" coverage/php coverage/php/expected-tests.xml "$SHARD_RESULT"
+        run: php scripts/quality/php-shard-evidence.php merge "$PWD" coverage/php coverage/php/expected-tests.json "$SHARD_RESULT"
 
       - name: Confirm the baseline inventory still describes the code
         env:
@@ -509,7 +511,7 @@ jobs:
         with:
           php-version: '8.5'
           tools: composer:v2
-          # Only the isolated coverage probe needs instrumentation.
+          # Only the isolated coverage probes need instrumentation.
           extensions: pdo_pgsql, pgsql, pcntl, posix
           coverage: ${{ matrix.group == 'coverage' && 'xdebug' || 'none' }}
 
@@ -521,6 +523,10 @@ jobs:
 
       - name: Generate application key
         run: php artisan key:generate
+
+      - name: Prove the sharded coverage gate fails closed
+        if: ${{ matrix.group == 'coverage' }}
+        run: php vendor/bin/pest --ci --no-tia tests/Unit/PhpShardGateTest.php --compact
 
       - name: Prove this group rejects the violations it exists to catch
         env:

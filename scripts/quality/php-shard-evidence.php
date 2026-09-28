@@ -55,13 +55,20 @@ function shardSourceHashes(string $root): array
 /** @return list<string> */
 function shardExpectedTests(string $catalog): array
 {
-    $document = new DOMDocument;
-    if (! $document->load($catalog, LIBXML_NONET)) {
+    $json = file_get_contents($catalog);
+    if ($json === false) {
         throw new RuntimeException('Cannot read the complete test catalog.');
     }
+    $encoded = json_decode($json, true, flags: JSON_THROW_ON_ERROR);
+    if (! is_array($encoded) || ! array_is_list($encoded)) {
+        throw new RuntimeException('Invalid test catalog.');
+    }
     $ids = [];
-    foreach ($document->getElementsByTagName('testMethod') as $test) {
-        $ids[] = $test->getAttribute('id');
+    foreach ($encoded as $id) {
+        if (! is_string($id) || ($decoded = base64_decode($id, true)) === false || base64_encode($decoded) !== $id) {
+            throw new RuntimeException('Invalid encoded test identity.');
+        }
+        $ids[] = $decoded;
     }
     sort($ids);
     if ($ids === [] || in_array('', $ids, true) || count(array_unique($ids)) !== count($ids)) {
@@ -139,8 +146,9 @@ try {
             if (! is_array($event) || ($event['status'] ?? '') !== 'passed') {
                 throw new RuntimeException('A test did not pass.');
             }
-            $id = $event['id'] ?? null;
-            if (! is_string($id) || $id === '' || isset($seen[$id])) {
+            $encodedId = $event['id'] ?? null;
+            $id = is_string($encodedId) ? base64_decode($encodedId, true) : false;
+            if ($id === false || $id === '' || base64_encode($id) !== $encodedId || isset($seen[$id])) {
                 throw new RuntimeException('Duplicate or invalid executed test identity.');
             }
             $seen[$id] = true;
