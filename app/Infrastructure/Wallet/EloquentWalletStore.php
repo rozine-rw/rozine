@@ -6,12 +6,14 @@ namespace App\Infrastructure\Wallet;
 
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Wallet\Contracts\DepositProvider;
 use App\Application\Wallet\Contracts\WalletStore;
 use App\Application\Wallet\DepositInstruction;
 use App\Application\Wallet\SyntheticWalletGuard;
 use App\Application\Wallet\VerifiedDepositEvent;
+use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Domain\Wallet\AccountRestriction;
@@ -46,7 +48,7 @@ use RuntimeException;
 final class EloquentWalletStore implements WalletStore
 {
     public function __construct(private AuthorizeActiveRole $authority, private OperationJournal $journal, private CanonicalJson $json,
-        private DepositProvider $provider, private SyntheticWalletGuard $guard) {}
+        private DepositProvider $provider, private SyntheticWalletGuard $guard, private ChangeFeed $changes) {}
 
     /**
      * @param  array{currency: string, amount: string}  $amount
@@ -74,6 +76,7 @@ final class EloquentWalletStore implements WalletStore
                             throw new CommandRejection('VALIDATION_FAILED', 422, fieldErrors: ['amount' => [(string) $error]], data: $data);
                         }
                         $intent = $this->recordIntent($wallet, $method, $policy, $money, $operationId, $requestId, $userId);
+                        $this->changes->record(ChangeScope::party($partyId), 'wallet', $wallet->id);
 
                         return new OperationResult('DEPOSIT_INTENT_RECORDED', [...$data, 'intent_id' => $intent->id,
                             'receipt' => $this->intentReceipt($intent)], 1, policyVersion: $policy['terms']->version);
@@ -131,7 +134,7 @@ final class EloquentWalletStore implements WalletStore
             $walletId = WalletDepositIntent::query()->where('provider', $event->provider)
                 ->where('provider_reference_sha256', hash('sha256', $event->providerReference))->value('wallet_id')
                 ?? throw new CommandRejection('DEPOSIT_REFERENCE_UNKNOWN', 404);
-            InvestorWallet::query()->whereKey($walletId)->lockForUpdate()->sole();
+            $wallet = InvestorWallet::query()->whereKey($walletId)->lockForUpdate()->sole();
             $intent = WalletDepositIntent::query()->where('provider_reference_sha256', hash('sha256', $event->providerReference))->lockForUpdate()->sole();
             $this->intentPayload($intent);
             $existing = WalletProviderEvent::query()->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->get();
@@ -154,6 +157,9 @@ final class EloquentWalletStore implements WalletStore
             $credited = $disposition === 'applied' && $outcome->credits();
             if ($credited) {
                 $this->postCredit($intent, $record);
+            }
+            if ($disposition === 'applied') {
+                $this->changes->record(ChangeScope::party($wallet->party_id), 'wallet', $wallet->id);
             }
 
             return ['disposition' => $disposition, 'state' => $disposition === 'applied' ? $outcome->state : $current, 'credited' => $credited, 'replayed' => false];
