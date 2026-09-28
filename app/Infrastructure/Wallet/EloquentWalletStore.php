@@ -416,8 +416,10 @@ final class EloquentWalletStore implements WalletStore
             (new LedgerLine)->forceFill(['entry_id' => $entry->id, 'account_id' => $this->account($line->account, $intent->wallet_id),
                 'direction' => $line->direction, 'amount' => $line->amount->amount(), 'created_at' => $recordedAt])->save();
         }
-        DB::statement('SET CONSTRAINTS ledger_entries_balanced IMMEDIATE');
-        DB::statement('SET CONSTRAINTS ledger_entries_balanced DEFERRED');
+        // Surface an unbalanced entry here rather than at commit; the check seals the entry, and
+        // any other entry this transaction writes is still checked at commit.
+        DB::statement('SET CONSTRAINTS ledger_entries_balanced, ledger_lines_entry_balanced IMMEDIATE');
+        DB::statement('SET CONSTRAINTS ledger_entries_balanced, ledger_lines_entry_balanced DEFERRED');
         $credit = new WalletDepositCredit;
         $credit->id = strtolower((string) Str::ulid());
         $creditPayload = ['receipt_id' => $credit->id, 'intent_id' => $intent->id, 'wallet_id' => $intent->wallet_id, 'ledger_entry_id' => $entry->id,

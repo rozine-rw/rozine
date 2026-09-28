@@ -79,6 +79,26 @@ it('rejects non-positive lines, foreign wallet accounts and non-RWF or unsupport
     walletSchemaRejects(fn () => InvestorWallet::factory()->create(['currency' => 'USD']), 'investor_wallet_currency');
 });
 
+it('seals an entry once its balance is validated, so no later line joins it in the same transaction', function (): void {
+    $balanced = walletSchemaBalancedEntry();
+    walletSchemaRejects(fn () => LedgerLine::factory()->create(['entry_id' => $balanced['entry']->id, 'account_id' => $balanced['clearing']->id,
+        'direction' => 'debit', 'amount' => '100']), 'its balance was already validated in this transaction');
+    walletSchemaRejects(function () use ($balanced): void {
+        LedgerLine::factory()->create(['entry_id' => $balanced['entry']->id, 'account_id' => $balanced['clearing']->id, 'direction' => 'debit', 'amount' => '100']);
+        LedgerLine::factory()->create(['entry_id' => $balanced['entry']->id, 'account_id' => $balanced['available']->id, 'direction' => 'credit', 'amount' => '100']);
+    }, 'its balance was already validated in this transaction');
+    walletSchemaRejects(function (): void {
+        $entry = LedgerEntry::factory()->create();
+        $clearing = LedgerAccount::query()->where('kind', 'deposit_clearing')->sole();
+        $available = LedgerAccount::factory()->create(['wallet_id' => $entry->wallet_id]);
+        LedgerLine::factory()->create(['entry_id' => $entry->id, 'account_id' => $clearing->id, 'direction' => 'debit', 'amount' => '5000']);
+        LedgerLine::factory()->create(['entry_id' => $entry->id, 'account_id' => $available->id, 'direction' => 'credit', 'amount' => '5000']);
+        DB::statement('SET CONSTRAINTS ledger_lines_entry_balanced IMMEDIATE');
+        LedgerLine::factory()->create(['entry_id' => $entry->id, 'account_id' => $clearing->id, 'direction' => 'debit', 'amount' => '1']);
+    }, 'its balance was already validated in this transaction');
+    expect(LedgerLine::query()->where('entry_id', $balanced['entry']->id)->count())->toBe(2);
+});
+
 it('posts each source once', function (): void {
     $balanced = walletSchemaBalancedEntry();
     walletSchemaRejects(fn () => LedgerEntry::factory()->create(['source_id' => $balanced['entry']->source_id]), 'ledger_entries_kind_source_type_source_id_unique');
@@ -203,13 +223,13 @@ it('refuses to roll back wallet migrations once records exist', function (string
 ]);
 
 it('rolls wallet migrations back and forward while no records exist', function (): void {
-    foreach (['2026_09_28_104821_create_wallet_deposit_intent_and_outcome_tables', '2026_09_28_104819_create_wallet_deposit_policy_method_and_restriction_tables',
-        '2026_09_28_104818_create_investor_wallet_ledger_tables'] as $migration) {
+    foreach (['2026_09_28_112500_seal_ledger_entries_once_validated', '2026_09_28_104821_create_wallet_deposit_intent_and_outcome_tables',
+        '2026_09_28_104819_create_wallet_deposit_policy_method_and_restriction_tables', '2026_09_28_104818_create_investor_wallet_ledger_tables'] as $migration) {
         (require database_path('migrations/'.$migration.'.php'))->down();
     }
     expect(Schema::hasTable('investor_wallets'))->toBeFalse()->and(Schema::hasTable('wallet_deposit_intents'))->toBeFalse();
     foreach (['2026_09_28_104818_create_investor_wallet_ledger_tables', '2026_09_28_104819_create_wallet_deposit_policy_method_and_restriction_tables',
-        '2026_09_28_104821_create_wallet_deposit_intent_and_outcome_tables'] as $migration) {
+        '2026_09_28_104821_create_wallet_deposit_intent_and_outcome_tables', '2026_09_28_112500_seal_ledger_entries_once_validated'] as $migration) {
         (require database_path('migrations/'.$migration.'.php'))->up();
     }
     expect(Schema::hasTable('wallet_deposit_credits'))->toBeTrue();

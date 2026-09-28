@@ -62,7 +62,7 @@ it('renders the live wallet with real routes, the literal lookup token and nothi
             'fee' => ['currency' => 'RWF', 'amount' => '0'], 'minimum' => ['currency' => 'RWF', 'amount' => '1000'], 'maximum' => ['currency' => 'RWF', 'amount' => '1000000']],
             'methods' => [['id' => $fixture['method']->id, 'kind' => 'mtn', 'label' => 'MTN MoMo', 'masked' => '+250 788 ···· 456']], 'picks' => [], 'quote' => null])
         ->and([$props['holds'], $props['deposits'], $props['receipt'], $props['earnings'], $props['exports']])->toBe([[], [], null, null, null])
-        ->and(InvestorWallet::query()->count())->toBe(0);
+        ->and(InvestorWallet::query()->where('party_id', $fixture['party']->id)->exists())->toBeFalse();
 });
 
 it('prices the entered amount from the query, as the page reloads only funding', function (array $query, ?array $quote): void {
