@@ -62,6 +62,7 @@ it('accepts exact receipts inserted after evidence and preserves receipt immutab
 
 it('validates historical receipts atomically without rewriting evidence', function (): void {
     $migration = require database_path('migrations/2026_09_28_195022_bind_primary_confirmation_receipts_to_commitments.php');
+    (require database_path('migrations/2026_09_28_212446_bind_primary_confirmation_operations_to_purchases.php'))->down();
     $migration->down();
     retainConfirmationReceipt('code');
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');

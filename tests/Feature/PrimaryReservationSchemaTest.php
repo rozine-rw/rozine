@@ -149,7 +149,7 @@ it('allows a system expiry exactly at the deadline without inventing a user oper
 it('requires a commitment for confirmation in the same transaction', function (): void {
     expect(fn () => DB::transaction(function (): void {
         PrimaryReservationVersion::factory()->confirmed()->withCashMovement()->create();
-        primarySchemaFlush();
+        DB::statement('SET CONSTRAINTS primary_confirmation_evidence IMMEDIATE');
     }))->toThrow(QueryException::class, 'requires a commitment');
     expect(PrimaryReservationVersion::query()->count())->toBe(0);
 });
@@ -203,6 +203,8 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $outcomes = require database_path('migrations/2026_09_28_163057_require_completed_primary_command_outcomes.php');
     $terminalCash = require database_path('migrations/2026_09_28_175455_bind_primary_terminal_versions_to_cash_movements.php');
     $confirmationReceipts = require database_path('migrations/2026_09_28_195022_bind_primary_confirmation_receipts_to_commitments.php');
+    $confirmationOperations = require database_path('migrations/2026_09_28_212446_bind_primary_confirmation_operations_to_purchases.php');
+    $confirmationOperations->down();
     $confirmationReceipts->down();
     $terminalCash->down();
     $outcomes->down();
@@ -220,6 +222,7 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $outcomes->up();
     $terminalCash->up();
     $confirmationReceipts->up();
+    $confirmationOperations->up();
     PrimaryReservationRecord::factory()->withInitialVersion()->create();
     primarySchemaFlush();
     expect(fn () => $migration->down())->toThrow(QueryException::class, 'forward migration');

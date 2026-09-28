@@ -1373,6 +1373,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_28_165949_reject_unbound_primary_commitment_sources.php |
 | 2026_09_28_175455_bind_primary_terminal_versions_to_cash_movements.php |
 | 2026_09_28_195022_bind_primary_confirmation_receipts_to_commitments.php |
+| 2026_09_28_212446_bind_primary_confirmation_operations_to_purchases.php |
 
 ## Routes
 

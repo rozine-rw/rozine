@@ -58,7 +58,8 @@ function forkPrimaryOrdinalMigrationContender(Closure $work): array
 it('installs ordinal guards without deadlocking campaign readers or writers waiting for their Business', function (bool $writer): void {
     $chain = ['2026_09_28_154941_enforce_primary_ordinal_exclusion', '2026_09_28_161335_bind_primary_reservations_to_wallet_holds',
         '2026_09_28_163057_require_completed_primary_command_outcomes', '2026_09_28_165949_reject_unbound_primary_commitment_sources',
-        '2026_09_28_175455_bind_primary_terminal_versions_to_cash_movements', '2026_09_28_195022_bind_primary_confirmation_receipts_to_commitments'];
+        '2026_09_28_175455_bind_primary_terminal_versions_to_cash_movements', '2026_09_28_195022_bind_primary_confirmation_receipts_to_commitments',
+        '2026_09_28_212446_bind_primary_confirmation_operations_to_purchases'];
     $migrations = array_map(fn (string $name) => require database_path('migrations/'.$name.'.php'), $chain);
     $campaign = BusinessCampaign::factory()->create();
     foreach (array_reverse($migrations) as $migration) {

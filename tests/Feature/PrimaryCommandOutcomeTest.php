@@ -33,11 +33,16 @@ function retainPrimaryOutcome(string $state, ?array $result): void
         return;
     }
     $root = PrimaryReservationRecord::factory()->withInitialVersion()->create();
-    $version = PrimaryReservationVersion::factory()->make(['primary_reservation_id' => $root->id, 'state' => $state]);
-    $version = PrimaryReservationVersion::factory()->withCashMovement()->create([
-        ...$version->only(['primary_reservation_id', 'state', 'created_at']),
-        'operation_id' => $result === null ? $version->operation_id : primaryOperationWithResult($version->operation_id, $result),
-    ]);
+    $attributes = ['primary_reservation_id' => $root->id, 'state' => $state];
+    if ($result !== null) {
+        $origin = CommandOperation::query()->whereKey($root->origin_operation_id)->sole();
+        $attributes['operation_id'] = CommandOperation::factory()->create([
+            ...$origin->only(['actor_key', 'actor_user_id']),
+            'command' => $state === 'released' ? 'primary.release' : 'primary.confirm',
+            'target_type' => 'primary_reservation', 'target_id' => $root->id, 'result' => $result,
+        ])->id;
+    }
+    $version = PrimaryReservationVersion::factory()->withCashMovement()->create($attributes);
     if ($state === 'confirmed') {
         PrimaryCommitment::factory()->create(['primary_reservation_version_id' => $version->id]);
     }
@@ -79,6 +84,7 @@ it('allows an expiry observation to retain the rejected confirmation or release 
 
 it('audits old outcome bindings atomically and refuses to remove protection with retained history', function (string $state): void {
     $migration = require database_path('migrations/2026_09_28_163057_require_completed_primary_command_outcomes.php');
+    (require database_path('migrations/2026_09_28_212446_bind_primary_confirmation_operations_to_purchases.php'))->down();
     (require database_path('migrations/2026_09_28_195022_bind_primary_confirmation_receipts_to_commitments.php'))->down();
     $migration->down();
     retainPrimaryOutcome($state, ['status' => 'rejected']);

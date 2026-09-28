@@ -142,6 +142,8 @@ it('does not silently backfill pre-C3 submissions when the reservation migration
     expect(array_column($primaryGuards, 'tgname'))->toContain('primary_reservation_wallet_bound', 'primary_reservation_outcome_bound',
         'primary_version_outcome_bound', 'primary_version_cash_bound', 'ledger_primary_terminal_bound', 'primary_expiry_outcome_bound');
     $confirmationReceipts = require database_path('migrations/2026_09_28_195022_bind_primary_confirmation_receipts_to_commitments.php');
+    $confirmationOperations = require database_path('migrations/2026_09_28_212446_bind_primary_confirmation_operations_to_purchases.php');
+    $confirmationOperations->down();
     $confirmationReceipts->down();
     $primaryTerminalCash->down();
     $primarySourceGuard->down();
@@ -166,6 +168,7 @@ it('does not silently backfill pre-C3 submissions when the reservation migration
     $primarySourceGuard->up();
     $primaryTerminalCash->up();
     $confirmationReceipts->up();
+    $confirmationOperations->up();
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
         ->and(DB::select($functionQuery))->toEqual($functions)->and(DB::select($constraintQuery))->toEqual($constraints);
     expect(DB::selectOne("SELECT count(*) AS total FROM pg_constraint WHERE conname = 'primary_commitment_source_unavailable'")->total)->toBe(1);
