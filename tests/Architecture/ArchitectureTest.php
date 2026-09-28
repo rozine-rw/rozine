@@ -362,6 +362,10 @@ arch('campaign commitment evidence stays private to the Business and Primary ada
     ->expect('App\\Application\\Primary\\Contracts\\CampaignCommitments')
     ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);
 
+arch('campaign reservation aggregates remain private to the Business and Primary adapters')
+    ->expect('App\\Application\\Primary\\Contracts\\CampaignReservationSummary')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);
+
 arch('Primary reservation and commitment records remain inside their persistence boundary')
     ->expect(['App\\Models\\PrimaryReservationRecord', 'App\\Models\\PrimaryReservationVersion', 'App\\Models\\PrimaryCommitment'])
     ->toOnlyBeUsedIn(['App\\Infrastructure\\Primary', 'App\\Models', 'Database\\Factories']);
