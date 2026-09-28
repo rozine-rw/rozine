@@ -25,10 +25,10 @@ final readonly class PrimaryReservation
     /** The operation journal handles original successful replays before this transition. */
     public function confirm(DateTimeImmutable $at, PrimaryTerms $currentTerms, string $acknowledgedVersion, string $acknowledgedSha256): self
     {
+        $this->window->requireOpen($at);
         if ($this->state !== 'held') {
             throw new PrimaryViolation('RESERVATION_NOT_HELD');
         }
-        $this->window->requireOpen($at);
         $this->terms->requireAcknowledged($currentTerms, $acknowledgedVersion, $acknowledgedSha256);
 
         return new self($this->rights, $this->terms, $this->window, 'confirmed');
@@ -42,8 +42,9 @@ final readonly class PrimaryReservation
         }
         $this->window->requireOpen($at);
         if ($terms->ratePercent !== $this->terms->ratePercent || $terms->termMonths !== $this->terms->termMonths) {
-            throw new PrimaryViolation('DISCLOSURE_STALE');
+            throw new PrimaryViolation('NOTE_INELIGIBLE');
         }
+        $terms->requireFreshDisclosure($this->terms);
         $terms->requireRights($this->rights);
 
         return new self($this->rights, $terms, $this->window, 'held');

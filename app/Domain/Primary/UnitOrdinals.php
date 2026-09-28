@@ -64,7 +64,7 @@ final readonly class UnitOrdinals
         $requested = self::quantity($quantity);
         $used = self::fromRanges($totalUnits, $occupied);
         if ($requested->isGreaterThan($used->totalUnits->minus($used->count))) {
-            throw new PrimaryViolation('INSUFFICIENT_UNITS');
+            throw new PrimaryViolation('UNITS_UNAVAILABLE');
         }
         $remaining = $requested;
         $cursor = BigInteger::one();

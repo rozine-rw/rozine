@@ -16,7 +16,7 @@ function primaryDisclosedTerms(array $overrides = []): PrimaryTerms
         'ratePercent' => '10.0', 'termMonths' => 3, 'policyVersion' => 'synthetic-primary-1',
         'disclosureVersion' => 'synthetic-disclosure-1', 'disclosureSha256' => str_repeat('a', 64),
         'earningsFee' => ['tier' => 'standard', 'rate_bps' => 1000, 'basis' => 'return_only', 'policy_version' => 'synthetic-earnings-1'],
-        'payoutFee' => '50',
+        'payoutFee' => '51',
     ], $overrides);
 
     return PrimaryTerms::disclosed(...$inputs);
@@ -38,7 +38,7 @@ it('freezes the acknowledged terms and exact rights at confirmation without modi
         ->and($confirmed->rights)->toBe($held->rights)->and($confirmed->terms)->toBe($held->terms)
         ->and($confirmed->window)->toBe($held->window)
         ->and($confirmed->terms->toArray())->toBe([
-            'rate_pct' => '10.0', 'term_months' => 3, 'payout_fee' => ['currency' => 'RWF', 'amount' => '50'],
+            'rate_pct' => '10.0', 'term_months' => 3, 'payout_fee' => ['currency' => 'RWF', 'amount' => '51'],
             'earnings_fee' => ['tier' => 'standard', 'rate_bps' => 1000, 'basis' => 'return_only', 'policy_version' => 'synthetic-earnings-1'],
             'policy_version' => 'synthetic-primary-1', 'disclosure_version' => 'synthetic-disclosure-1',
         ]);
@@ -59,7 +59,7 @@ it('rejects any changed disclosed economic or policy input even under an unchang
     [['policyVersion' => 'synthetic-primary-2']],
     [['disclosureVersion' => 'synthetic-disclosure-2']],
     [['disclosureSha256' => str_repeat('b', 64)]],
-    [['payoutFee' => '40']],
+    [['payoutFee' => '39']],
     [['earningsFee' => ['tier' => 'bronze', 'rate_bps' => 800, 'basis' => 'return_only', 'policy_version' => 'synthetic-earnings-1']]],
     [['earningsFee' => ['tier' => 'standard', 'rate_bps' => 1000, 'basis' => 'return_only', 'policy_version' => 'synthetic-earnings-2']]],
 ]);
@@ -86,7 +86,7 @@ it('refuses first confirmation at expiry and returns a distinct expired release 
     expect($expired->state)->toBe('expired')->and($expired->release($deadline))->toBe($expired)
         ->and($expired->rights)->toBe($held->rights);
     expect(fn () => $expired->confirm($deadline, primaryDisclosedTerms(), 'synthetic-disclosure-1', str_repeat('a', 64)))
-        ->toThrow(PrimaryViolation::class, 'RESERVATION_NOT_HELD');
+        ->toThrow(PrimaryViolation::class, 'RESERVATION_EXPIRED');
 });
 
 it('makes a released reservation terminal even before the clock expires', function (): void {
@@ -130,18 +130,19 @@ it('binds quoted fees and tenor to the reserved rights', function (): void {
         expect(fn () => PrimaryReservation::hold($held->rights, primaryDisclosedTerms($change), $held->window))
             ->toThrow(PrimaryViolation::class, 'INVALID_PRIMARY_TERMS');
     }
-    expect(PrimaryReservation::hold($held->rights, primaryDisclosedTerms(['payoutFee' => '0',
-        'earningsFee' => ['tier' => 'standard', 'rate_bps' => 0, 'basis' => 'return_only', 'policy_version' => 'explicit-synthetic-zero']]), $held->window)->terms->payoutFee)->toBe('0');
+    expect(fn () => primaryDisclosedTerms(['payoutFee' => '0',
+        'earningsFee' => ['tier' => 'standard', 'rate_bps' => 0, 'basis' => 'return_only', 'policy_version' => 'unapproved-zero']]))
+        ->toThrow(PrimaryViolation::class, 'INVALID_PRIMARY_TERMS');
 });
 
 it('requires a fresh acknowledgement after requoting fees without extending or reallocating the reservation', function (): void {
     $at = new DateTimeImmutable('2026-09-28T10:04:00Z');
     $held = heldPrimaryReservation();
-    $terms = primaryDisclosedTerms(['disclosureVersion' => 'synthetic-disclosure-2', 'disclosureSha256' => str_repeat('b', 64), 'payoutFee' => '40',
+    $terms = primaryDisclosedTerms(['disclosureVersion' => 'synthetic-disclosure-2', 'disclosureSha256' => str_repeat('b', 64), 'payoutFee' => '39',
         'earningsFee' => ['tier' => 'bronze', 'rate_bps' => 800, 'basis' => 'return_only', 'policy_version' => 'synthetic-earnings-1']]);
     $requote = $held->requote($at, $terms);
     expect($requote->rights)->toBe($held->rights)->and($requote->window)->toBe($held->window)
-        ->and($held->terms->payoutFee)->toBe('50')->and($requote->terms->payoutFee)->toBe('40');
+        ->and($held->terms->payoutFee)->toBe('51')->and($requote->terms->payoutFee)->toBe('39');
     expect(fn () => $requote->confirm($at, $terms, 'synthetic-disclosure-1', str_repeat('a', 64)))
         ->toThrow(PrimaryViolation::class, 'DISCLOSURE_STALE');
     $confirmed = $requote->confirm($at, $terms, 'synthetic-disclosure-2', str_repeat('b', 64));
@@ -153,5 +154,98 @@ it('requires a fresh acknowledgement after requoting fees without extending or r
 
 it('never uses a fee requote to replace the purchased campaign rate or tenor', function (array $change): void {
     expect(fn () => heldPrimaryReservation()->requote(new DateTimeImmutable('2026-09-28T10:01:00Z'), primaryDisclosedTerms($change)))
-        ->toThrow(PrimaryViolation::class, 'DISCLOSURE_STALE');
+        ->toThrow(PrimaryViolation::class, 'NOTE_INELIGIBLE');
 })->with([[['ratePercent' => '10.1']], [['termMonths' => 4]]]);
+
+it('rejects changed fees under a reused disclosure digest even if only the version is changed', function (string $version): void {
+    $at = new DateTimeImmutable('2026-09-28T10:02:00Z');
+    $bronze = primaryDisclosedTerms(['disclosureVersion' => $version, 'payoutFee' => '39',
+        'earningsFee' => ['tier' => 'bronze', 'rate_bps' => 800, 'basis' => 'return_only', 'policy_version' => 'synthetic-earnings-1']]);
+    expect(fn () => heldPrimaryReservation()->requote($at, $bronze)->confirm($at, $bronze, $version, str_repeat('a', 64)))
+        ->toThrow(PrimaryViolation::class, 'DISCLOSURE_STALE');
+})->with(['synthetic-disclosure-1', 'synthetic-disclosure-2']);
+
+it('rejects a fee quote that does not match the sum of rounded return-only instalment fees', function (): void {
+    $held = heldPrimaryReservation();
+    $diamond = primaryDisclosedTerms(['payoutFee' => '500',
+        'earningsFee' => ['tier' => 'diamond', 'rate_bps' => 400, 'basis' => 'return_only', 'policy_version' => 'synthetic-earnings-1']]);
+    expect(fn () => PrimaryReservation::hold($held->rights, $diamond, $held->window))
+        ->toThrow(PrimaryViolation::class, 'INVALID_PRIMARY_TERMS');
+});
+
+it('rejects a tier whose rate differs from the approved Plus ladder', function (): void {
+    expect(fn () => primaryDisclosedTerms(['earningsFee' => ['tier' => 'diamond', 'rate_bps' => 1000, 'basis' => 'return_only', 'policy_version' => 'synthetic-earnings-1']]))
+        ->toThrow(PrimaryViolation::class, 'INVALID_PRIMARY_TERMS');
+});
+
+it('rejects unit rights from a different campaign rate before holding money', function (): void {
+    $rights = UnitRights::allocate('10000', ['3834', '3834', '3832'], UnitOrdinals::reserve('2', [], '1'));
+    expect(fn () => PrimaryReservation::hold($rights, primaryDisclosedTerms(['payoutFee' => '75']), heldPrimaryReservation()->window))
+        ->toThrow(PrimaryViolation::class, 'INVALID_PRIMARY_TERMS');
+});
+
+it('reports the same expiration refusal before and after expiry processing', function (): void {
+    $held = heldPrimaryReservation();
+    $at = new DateTimeImmutable('2026-09-28T10:05:00Z');
+    expect(fn () => $held->release($at)->confirm($at, primaryDisclosedTerms(), 'synthetic-disclosure-1', str_repeat('a', 64)))
+        ->toThrow(PrimaryViolation::class, 'RESERVATION_EXPIRED');
+});
+
+it('rejects missing or malformed fee fields with a domain refusal', function (mixed $fee): void {
+    expect(fn () => primaryDisclosedTerms(['earningsFee' => $fee]))->toThrow(PrimaryViolation::class);
+})->with([
+    [[]],
+    [['tier' => 'standard', 'rate_bps' => 1000, 'basis' => 'return_only']],
+    [['tier' => 'standard', 'rate_bps' => 1000, 'basis' => 'return_only', 'policy_version' => 42]],
+    [['tier' => 'standard', 'rate_bps' => '1000', 'basis' => 'return_only', 'policy_version' => 'synthetic-1']],
+    [['tier' => null, 'rate_bps' => 1000, 'basis' => 'return_only', 'policy_version' => 'synthetic-1']],
+    ['not-an-array'],
+]);
+
+it('accepts every approved tier with the sum of separately rounded return-only payout fees', function (string $tier, int $basisPoints, string $fee): void {
+    $held = heldPrimaryReservation();
+    $terms = primaryDisclosedTerms(['payoutFee' => $fee,
+        'earningsFee' => ['tier' => $tier, 'rate_bps' => $basisPoints, 'basis' => 'return_only', 'policy_version' => 'synthetic-earnings-1']]);
+    $reservation = PrimaryReservation::hold($held->rights, $terms, $held->window);
+    expect(array_column($reservation->rights->instalments, 'return'))->toBe(['167', '167', '166'])
+        ->and((string) $terms->scheduledPayoutFee($held->rights))->toBe($fee)
+        ->and($reservation->terms->payoutFee)->toBe($fee);
+})->with([
+    ['standard', 1000, '51'], ['bronze', 800, '39'], ['silver', 650, '33'],
+    ['gold', 550, '27'], ['platinum', 500, '24'], ['diamond', 400, '21'],
+]);
+
+it('rounds each half-franc return fee up without charging principal', function (): void {
+    $rights = UnitRights::allocate('5000', ['1832', '1832', '1836'], UnitOrdinals::reserve('1', [], '1'));
+    $terms = primaryDisclosedTerms(['payoutFee' => '51']);
+    $reservation = PrimaryReservation::hold($rights, $terms, heldPrimaryReservation()->window);
+    expect(array_column($rights->instalments, 'return'))->toBe(['165', '165', '170'])
+        ->and((string) $rights->principal)->toBe('5000')
+        ->and($reservation->terms->payoutFee)->toBe('51');
+});
+
+it('keeps fee arithmetic exact above native integer precision', function (): void {
+    $rights = UnitRights::allocate('300000000000000000000', ['110000000000000000000', '110000000000000000000', '110000000000000000000'],
+        UnitOrdinals::reserve('60000000000000000', [], '60000000000000000'));
+    $terms = primaryDisclosedTerms(['payoutFee' => '3000000000000000000']);
+    expect(PrimaryReservation::hold($rights, $terms, heldPrimaryReservation()->window)->terms->payoutFee)->toBe('3000000000000000000');
+});
+
+it('rejects aggregate rounding or zero fees when the scheduled payout fees differ', function (string $fee): void {
+    $held = heldPrimaryReservation();
+    expect(fn () => PrimaryReservation::hold($held->rights, primaryDisclosedTerms(['payoutFee' => $fee]), $held->window))
+        ->toThrow(PrimaryViolation::class, 'INVALID_PRIMARY_TERMS');
+})->with(['50', '0']);
+
+it('allows an unchanged requote and still binds a changed policy to a fresh digest', function (): void {
+    $held = heldPrimaryReservation();
+    $at = new DateTimeImmutable('2026-09-28T10:01:00Z');
+    expect($held->requote($at, primaryDisclosedTerms())->terms->toArray())->toBe($held->terms->toArray());
+    expect(fn () => $held->requote($at, primaryDisclosedTerms(['policyVersion' => 'synthetic-primary-2'])))
+        ->toThrow(PrimaryViolation::class, 'DISCLOSURE_STALE');
+    $terms = primaryDisclosedTerms(['policyVersion' => 'synthetic-primary-2', 'disclosureSha256' => str_repeat('c', 64)]);
+    $requote = $held->requote($at, $terms);
+    expect(fn () => $requote->confirm($at, $terms, 'synthetic-disclosure-1', str_repeat('a', 64)))
+        ->toThrow(PrimaryViolation::class, 'DISCLOSURE_STALE');
+    expect($requote->confirm($at, $terms, 'synthetic-disclosure-1', str_repeat('c', 64))->state)->toBe('confirmed');
+});

@@ -13,7 +13,7 @@ it('reserves exactly the requested quantity across gaps without overlapping occu
         ->and((string) $selection->count)->toBe('6')
         ->and(UnitOrdinals::reserve('12', [...$occupied, ...$selection->ranges], '1')->ranges)->toBe([['first' => '12', 'last' => '12']]);
     expect(fn () => UnitOrdinals::reserve('12', [...$occupied, ...$selection->ranges], '2'))
-        ->toThrow(PrimaryViolation::class, 'INSUFFICIENT_UNITS');
+        ->toThrow(PrimaryViolation::class, 'UNITS_UNAVAILABLE');
 });
 
 it('canonicalizes adjacent ranges and rejects duplicate ownership', function (): void {
@@ -30,7 +30,7 @@ it('reuses released identities without changing surviving reservation identities
     expect($second->ranges)->toBe([['first' => '4', 'last' => '5']])
         ->and($afterRelease->ranges)->toBe([['first' => '1', 'last' => '3'], ['first' => '6', 'last' => '6']]);
     expect(fn () => UnitOrdinals::reserve('8', [['first' => '1', 'last' => '8']], '1'))
-        ->toThrow(PrimaryViolation::class, 'INSUFFICIENT_UNITS');
+        ->toThrow(PrimaryViolation::class, 'UNITS_UNAVAILABLE');
 });
 
 it('keeps ordinal arithmetic exact beyond native integer and javascript limits', function (): void {

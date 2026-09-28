@@ -14,7 +14,7 @@ final readonly class UnitRights
 
     /** @param list<array{index: int, principal: string, return: string}> $instalments */
     private function __construct(public UnitOrdinals $ordinals, public BigInteger $principal,
-        public BigInteger $contractualReturn, public array $instalments) {}
+        public BigInteger $contractualReturn, public array $instalments, public BigInteger $campaignPrincipal, public BigInteger $campaignReturn) {}
 
     /**
      * No pricing, eligibility or due-date calculation occurs here. The caller
@@ -34,6 +34,7 @@ final readonly class UnitRights
         $principalCursor = BigInteger::one();
         $returnCursor = BigInteger::one();
         $totalReturn = BigInteger::zero();
+        $campaignReturn = BigInteger::zero();
         $instalments = [];
         foreach ($payments as $index => $payment) {
             $principalComponent = $index === $tenor - 1 ? $principal->minus($regularPrincipal->multipliedBy($tenor - 1)) : $regularPrincipal;
@@ -41,13 +42,14 @@ final readonly class UnitRights
             if ($returnComponent->isNegative()) {
                 throw new PrimaryViolation('INVALID_UNIT_SCHEDULE');
             }
+            $campaignReturn = $campaignReturn->plus($returnComponent);
             [$unitPrincipal, $principalCursor] = self::component($principalComponent, $ordinals, $principalCursor);
             [$unitReturn, $returnCursor] = self::component($returnComponent, $ordinals, $returnCursor);
             $totalReturn = $totalReturn->plus($unitReturn);
             $instalments[] = ['index' => $index + 1, 'principal' => (string) $unitPrincipal, 'return' => (string) $unitReturn];
         }
 
-        return new self($ordinals, $ordinals->count->multipliedBy(self::UNIT_PRINCIPAL), $totalReturn, $instalments);
+        return new self($ordinals, $ordinals->count->multipliedBy(self::UNIT_PRINCIPAL), $totalReturn, $instalments, $principal, $campaignReturn);
     }
 
     /** @return array{0: BigInteger, 1: BigInteger} */
