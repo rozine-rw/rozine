@@ -53,7 +53,7 @@ final readonly class PayoutOutcome
     /**
      * Classifies an authenticated observation against what is already recorded.
      *
-     * @param  string|null  $recordedContentSha256  the content hash already recorded under this event identity, if any
+     * @param  string|null  $recordedContentSha256  the content hash of the observation that claims this event identity, if any
      * @param  list<string>  $mismatches  the intent facts this observation contradicts (see Reconciliation::mismatches)
      */
     public static function observe(string $current, string $event, ?string $recordedContentSha256, string $contentSha256, array $mismatches): self
@@ -61,11 +61,13 @@ final readonly class PayoutOutcome
         if (! in_array($current, self::STATES, true) || ! in_array($event, self::STATES, true)) {
             throw new DisbursementViolation('PAYOUT_OUTCOME_STATE_INVALID');
         }
-        if ($recordedContentSha256 !== null) {
-            return hash_equals($recordedContentSha256, $contentSha256) ? new self('duplicate', $current) : new self('key_conflict', $current);
-        }
+        // Evidence that does not match this intent is refused first: it never claims, or conflicts
+        // with, an identity that belongs to another intent.
         if ($mismatches !== []) {
             return new self('unverifiable', $current);
+        }
+        if ($recordedContentSha256 !== null) {
+            return hash_equals($recordedContentSha256, $contentSha256) ? new self('duplicate', $current) : new self('key_conflict', $current);
         }
 
         return self::transition($current, $event);

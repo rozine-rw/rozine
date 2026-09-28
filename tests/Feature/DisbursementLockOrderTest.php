@@ -183,7 +183,7 @@ it('takes the one provider event identity lock before the identity lookup on eve
     DB::listen(function (QueryExecuted $query) use (&$trace, $key): void {
         if (str_contains($query->sql, 'pg_advisory_xact_lock') && in_array($key, $query->bindings, true)) {
             $trace[] = 'identity-lock';
-        } elseif (str_contains($query->sql, 'from "disbursement_provider_events"') && str_contains($query->sql, '"disposition" <>')) {
+        } elseif (str_contains($query->sql, 'from "disbursement_provider_events"') && str_contains($query->sql, '"disposition" not in')) {
             $trace[] = 'identity-lookup';
         }
     });

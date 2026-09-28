@@ -831,7 +831,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `evidence` | `text` | no | — |
 | `created_at` | `timestamptz` | no | — |
 
-**Indexes:** `disbursement_provider_events_content` on (provider, provider_event_id, content_sha256) — unique; `disbursement_provider_events_final` on (intent_id) — unique; `disbursement_provider_events_identity` on (provider, provider_event_id) — unique; `disbursement_provider_events_intent_id_id_index` on (intent_id, id); `disbursement_provider_events_pkey` on (id) — unique
+**Indexes:** `disbursement_provider_events_content` on (provider, provider_event_id, content_sha256, intent_id) — unique; `disbursement_provider_events_final` on (intent_id) — unique; `disbursement_provider_events_identity` on (provider, provider_event_id) — unique; `disbursement_provider_events_intent_id_id_index` on (intent_id, id); `disbursement_provider_events_pkey` on (id) — unique
 
 ### `disbursement_reconciliations`
 

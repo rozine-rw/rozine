@@ -63,9 +63,12 @@ function schemaCall(string $intentId, string $kind, string $source, ?string $ope
 function schemaObservation(string $intentId, string $state, string $disposition, array $overrides = []): string
 {
     $id = schemaId();
+    $intent = DB::table('disbursement_intents')->where('id', $intentId)->first();
     DB::table('disbursement_provider_events')->insert([...['id' => $id, 'intent_id' => $intentId, 'provider' => 'synthetic',
         'provider_event_id' => 'evt-'.$id, 'content_sha256' => hash('sha256', $id), 'source' => 'callback', 'state' => $state,
-        'amount' => '3000000', 'currency' => 'RWF', 'environment' => 'testing', 'observed_at' => now(),
+        'amount' => $intent === null ? '3000000' : $intent->amount, 'currency' => 'RWF', 'environment' => 'testing', 'observed_at' => now(),
+        'observed_operation_id' => $intent?->operation_id, 'provider_reference_sha256' => $intent?->provider_reference_sha256,
+        'destination_sha256' => $intent?->destination_sha256,
         'effective_at' => $state === 'succeeded' ? '2027-01-31T08:00:00Z' : null, 'disposition' => $disposition,
         'mismatches' => $disposition === 'unverifiable' ? '["amount"]' : '[]', 'evidence' => 'x', 'created_at' => now()], ...$overrides]);
 
@@ -383,4 +386,24 @@ it('keeps staff accounts and marketplace Parties disjoint and staff accounts und
     $member = User::factory()->create();
     DB::table('users')->where('id', $member->id)->update(['party_id' => $party->id]);
     expect(DB::table('users')->where('id', $member->id)->value('party_id'))->toBe($party->id);
+});
+
+it('lets only an observation that matches its intent claim a provider event identity, once', function (): void {
+    $matching = schemaDispatched();
+    $other = schemaDispatched();
+    $claim = schemaObservation($matching['intent'], 'succeeded', 'applied', ['provider_event_id' => 'claimed-event', 'content_sha256' => str_repeat('c', 64)]);
+    $facts = (array) DB::table('disbursement_provider_events')->where('id', $claim)->first(['observed_operation_id', 'provider_reference_sha256', 'destination_sha256']);
+
+    // The matching intent's facts recorded against another intent can only be refused evidence.
+    refusedBySchema(fn () => schemaObservation($other['intent'], 'succeeded', 'applied', ['provider_event_id' => 'other-event', ...$facts]));
+    refusedBySchema(fn () => schemaObservation($other['intent'], 'succeeded', 'key_conflict', ['provider_event_id' => 'claimed-event', ...$facts]));
+    refusedBySchema(fn () => schemaObservation($matching['intent'], 'succeeded', 'applied', ['amount' => '1']));
+    // A second claim of the same identity, even by a matching observation of another intent.
+    refusedBySchema(fn () => schemaObservation($other['intent'], 'pending', 'applied', ['provider_event_id' => 'claimed-event']));
+    // The same content twice for one intent.
+    refusedBySchema(fn () => schemaObservation($matching['intent'], 'succeeded', 'key_conflict', ['provider_event_id' => 'claimed-event', 'content_sha256' => str_repeat('c', 64)]));
+    // Refused evidence of the same content for another intent is retained and claims nothing.
+    schemaObservation($other['intent'], 'succeeded', 'unverifiable', ['provider_event_id' => 'claimed-event', 'content_sha256' => str_repeat('c', 64), ...$facts]);
+    expect(DB::table('disbursement_provider_events')->where('provider_event_id', 'claimed-event')->orderBy('id')->pluck('disposition')->all())
+        ->toBe(['applied', 'unverifiable']);
 });

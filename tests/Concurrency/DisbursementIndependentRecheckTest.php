@@ -40,7 +40,7 @@ function identityContenders(array $contenders): array
             DB::purge();
             app('cache')->purge('database');
             DB::listen(function (QueryExecuted $query) use ($barrier, $index): void {
-                if (! str_contains($query->sql, 'from "disbursement_provider_events"') || ! str_contains($query->sql, '"disposition" <>')) {
+                if (! str_contains($query->sql, 'from "disbursement_provider_events"') || ! str_contains($query->sql, '"disposition" not in')) {
                     return;
                 }
                 file_put_contents($barrier.'.ready-'.$index, 'ready');
@@ -92,7 +92,7 @@ it('retains simultaneous provider key collisions across different payout intents
         ->and(DisbursementProviderEvent::query()->where('provider_event_id', 'shared-provider-event')->count())->toBe(2);
 });
 
-it('treats the same event content observed for two different intents at once as one observation and a duplicate', function (): void {
+it('retains the same event content observed for two different intents at once, refused for the one it does not match', function (): void {
     ['intent' => $first] = DisbursementFixture::approved();
     ['intent' => $second] = DisbursementFixture::approved();
     $message = DisbursementFixture::provider()->callback($first->id, 'succeeded', ['event_id' => 'replayed-provider-event']);
@@ -103,11 +103,11 @@ it('treats the same event content observed for two different intents at once as 
         fn () => observeCallback($message),
         fn () => app(DisbursementStore::class)->observe($event, 'query', $second->id)['disposition'],
     ]);
-    // Whichever records it first keeps the one row (applied for its own intent, or unverifiable for
-    // the other intent it does not match); the second is an exact replay and adds nothing.
-    expect($outcome['statuses'])->toBe([0, 0])
-        ->and($outcome['results'])->toBeIn([['applied', 'duplicate'], ['duplicate', 'unverifiable']])
-        ->and(DisbursementProviderEvent::query()->where('provider_event_id', 'replayed-provider-event')->count())->toBe(1);
+    // Whichever arrives first, the matching intent's observation is applied and the other intent keeps
+    // its copy as refused evidence (#96 P2b): neither suppresses the other.
+    expect($outcome)->toBe(['statuses' => [0, 0], 'results' => ['applied', 'unverifiable']])
+        ->and(DisbursementProviderEvent::query()->where('provider_event_id', 'replayed-provider-event')->where('intent_id', $first->id)->value('disposition'))->toBe('applied')
+        ->and(DisbursementProviderEvent::query()->where('provider_event_id', 'replayed-provider-event')->count())->toBe(2);
 });
 
 it('retains a key collision between a callback and a staff requery for different intents at once', function (): void {

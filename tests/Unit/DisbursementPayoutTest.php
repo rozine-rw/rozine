@@ -31,10 +31,13 @@ it('classifies an event identity replay, a key collision and an unmatched observ
     $collision = PayoutOutcome::observe('pending', 'succeeded', str_repeat('a', 64), str_repeat('b', 64), []);
     $unmatched = PayoutOutcome::observe('pending', 'succeeded', null, str_repeat('b', 64), ['amount']);
     $applied = PayoutOutcome::observe('pending', 'succeeded', null, str_repeat('b', 64), []);
+    $wrongIntent = PayoutOutcome::observe('pending', 'succeeded', str_repeat('a', 64), str_repeat('a', 64), ['provider_reference']);
     expect([$same->disposition, $same->state, $same->blocks()])->toBe(['duplicate', 'pending', false])
         ->and([$collision->disposition, $collision->blocks()])->toBe(['key_conflict', true])
         ->and([$unmatched->disposition, $unmatched->state, $unmatched->blocks()])->toBe(['unverifiable', 'pending', true])
-        ->and([$applied->disposition, $applied->state])->toBe(['applied', 'succeeded']);
+        ->and([$applied->disposition, $applied->state])->toBe(['applied', 'succeeded'])
+        // Evidence for another intent is refused first: it never counts as that identity's replay or conflict.
+        ->and([$wrongIntent->disposition, $wrongIntent->blocks()])->toBe(['unverifiable', true]);
 });
 
 it('rejects states outside the payout contract', function (): void {

@@ -639,13 +639,15 @@ final class EloquentDisbursementStore implements DisbursementStore
 
     private function classifyAndRecord(DisbursementIntent $intent, VerifiedPayoutEvent $event, string $source): string
     {
-        // An exact replay of anything already recorded, a key conflict included, adds nothing.
-        if (DisbursementProviderEvent::query()->where('provider', $event->provider)->where('provider_event_id', $event->eventId)
-            ->where('content_sha256', $event->contentSha256)->exists()) {
+        // An exact replay of anything already recorded FOR THIS INTENT, a conflict included, adds
+        // nothing. The same content recorded against another intent never suppresses this one.
+        if (DisbursementProviderEvent::query()->where('intent_id', $intent->id)->where('provider', $event->provider)
+            ->where('provider_event_id', $event->eventId)->where('content_sha256', $event->contentSha256)->exists()) {
             return 'duplicate';
         }
+        // The observation that claims this identity: the first that matched its own intent.
         $recorded = DisbursementProviderEvent::query()->where('provider', $event->provider)->where('provider_event_id', $event->eventId)
-            ->where('disposition', '<>', 'key_conflict')->first();
+            ->whereNotIn('disposition', ['key_conflict', 'unverifiable'])->first();
         $mismatches = Reconciliation::mismatches($this->intentFacts($intent, true), $this->eventFacts($event));
         $outcome = PayoutOutcome::observe($this->providerState($intent), $event->state, $recorded?->content_sha256, $event->contentSha256, $mismatches);
         $record = (new DisbursementProviderEvent)->forceFill(['intent_id' => $intent->id, 'provider' => $event->provider, 'provider_event_id' => $event->eventId,

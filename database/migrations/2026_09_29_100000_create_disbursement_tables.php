@@ -132,7 +132,7 @@ return new class extends Migration
             $table->jsonb('mismatches');
             $table->text('evidence');
             $table->timestampTz('created_at', 6);
-            $table->unique(['provider', 'provider_event_id', 'content_sha256'], 'disbursement_provider_events_content');
+            $table->unique(['provider', 'provider_event_id', 'content_sha256', 'intent_id'], 'disbursement_provider_events_content');
             $table->index(['intent_id', 'id']);
         });
         Schema::create('disbursement_reconciliations', function (Blueprint $table): void {
@@ -196,8 +196,10 @@ return new class extends Migration
                 AND disposition IN ('applied', 'duplicate', 'stale', 'after_final', 'conflict', 'key_conflict', 'unverifiable')
                 AND (amount IS NULL OR amount >= 0) AND (currency IS NULL OR currency ~ '^[A-Z]{3}$')
                 AND jsonb_typeof(mismatches) = 'array' AND ((disposition = 'unverifiable') = (jsonb_array_length(mismatches) > 0)));
+            -- One observation claims a provider event identity: the first that matches its own intent.
+            -- A key conflict and wrong-intent (unverifiable) evidence are retained but claim nothing.
             CREATE UNIQUE INDEX disbursement_provider_events_identity ON disbursement_provider_events (provider, provider_event_id)
-                WHERE disposition <> 'key_conflict';
+                WHERE disposition NOT IN ('key_conflict', 'unverifiable');
             CREATE UNIQUE INDEX disbursement_provider_events_final ON disbursement_provider_events (intent_id)
                 WHERE disposition = 'applied' AND state IN ('succeeded', 'failed');
             ALTER TABLE disbursement_reconciliations ADD CONSTRAINT disbursement_reconciliation_facts CHECK (
@@ -399,6 +401,26 @@ return new class extends Migration
             CREATE TRIGGER disbursement_provider_events_immutable BEFORE UPDATE OR DELETE ON disbursement_provider_events
                 FOR EACH ROW EXECUTE FUNCTION reject_disbursement_mutation();
 
+            -- Only refused (unverifiable) evidence may disagree with the intent it is recorded against,
+            -- so a claimed identity, and any outcome that could settle, always belongs to its own intent.
+            CREATE OR REPLACE FUNCTION protect_disbursement_provider_event() RETURNS trigger LANGUAGE plpgsql AS $$
+            DECLARE
+                intent disbursement_intents%ROWTYPE;
+            BEGIN
+                SELECT * INTO intent FROM disbursement_intents WHERE id = NEW.intent_id;
+                IF NEW.disposition <> 'unverifiable' AND (NEW.provider IS DISTINCT FROM intent.provider
+                    OR NEW.observed_operation_id IS DISTINCT FROM intent.operation_id
+                    OR NEW.provider_reference_sha256 IS DISTINCT FROM intent.provider_reference_sha256
+                    OR NEW.amount IS DISTINCT FROM intent.amount OR NEW.currency IS DISTINCT FROM intent.currency
+                    OR NEW.environment IS DISTINCT FROM intent.environment OR NEW.destination_sha256 IS DISTINCT FROM intent.destination_sha256) THEN
+                    RAISE EXCEPTION 'A provider observation that does not match its intent can only be retained as unverifiable' USING ERRCODE = '23514';
+                END IF;
+                RETURN NEW;
+            END;
+            $$;
+            CREATE TRIGGER disbursement_provider_events_bound BEFORE INSERT ON disbursement_provider_events
+                FOR EACH ROW EXECUTE FUNCTION protect_disbursement_provider_event();
+
             CREATE OR REPLACE FUNCTION protect_disbursement_reconciliation() RETURNS trigger LANGUAGE plpgsql AS $$
             BEGIN
                 IF TG_OP <> 'INSERT' THEN
@@ -478,6 +500,7 @@ return new class extends Migration
                 Schema::drop($table);
             }
             DB::unprepared('DROP FUNCTION protect_disbursement_closing(); DROP FUNCTION protect_disbursement_reconciliation();
+                DROP FUNCTION protect_disbursement_provider_event();
                 DROP FUNCTION protect_disbursement_provider_call(); DROP FUNCTION protect_disbursement_dispatch();
                 DROP FUNCTION protect_disbursement_intent(); DROP FUNCTION protect_disbursement_step_up_proof();
                 DROP FUNCTION protect_disbursement_event(); DROP FUNCTION protect_disbursement();
