@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Disbursement\Contracts\DisbursementStore;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutProvider;
 use App\Application\Disbursement\DispatchDisbursements;
@@ -23,6 +24,8 @@ use App\Models\DisbursementProviderCall;
 use App\Models\DisbursementProviderEvent;
 use App\Models\LedgerEntry;
 use App\Models\User;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
@@ -194,4 +197,47 @@ it('V1: refuses a proof minted for another disbursement at the same revision', f
 
     expect(DisbursementFixture::command($checker, $second, 'approve', 1, $proof)['code'])->toBe('STEP_UP_INVALID')
         ->and(DisbursementIntent::query()->count())->toBe(0);
+});
+
+/**
+ * Inserts rows for another intent under the same provider event identity when the identity lookup
+ * runs, as a concurrent winner's commit would (#96 5876182472).
+ *
+ * @param  list<array{0: string, 1: string}>  $contents  one [content hash, disposition] per lookup to race
+ */
+function raceProviderIdentity(DisbursementIntent $other, string $eventId, array $contents): void
+{
+    DB::listen(function (QueryExecuted $query) use ($other, $eventId, &$contents): void {
+        if ($contents === [] || ! str_contains($query->sql, 'from "disbursement_provider_events"') || ! str_contains($query->sql, '"disposition" <>')) {
+            return;
+        }
+        [$content, $disposition] = array_shift($contents);
+        DB::table('disbursement_provider_events')->insert(['id' => strtolower((string) Str::ulid()), 'intent_id' => $other->id, 'provider' => 'synthetic',
+            'provider_event_id' => $eventId, 'content_sha256' => $content, 'source' => 'callback', 'state' => 'pending', 'observed_at' => now(),
+            'disposition' => $disposition, 'mismatches' => '[]', 'evidence' => encrypt(json_encode([]), false), 'created_at' => now()]);
+    });
+}
+
+it('P2: reclassifies an observation whose event identity another intent recorded first as a retained key conflict', function (): void {
+    ['intent' => $first] = DisbursementFixture::approved();
+    ['intent' => $second] = DisbursementFixture::approved();
+    raceProviderIdentity($first, 'raced-event', [[str_repeat('f', 64), 'applied']]);
+
+    $recorded = app(RecordPayoutEvent::class)->handle(DisbursementFixture::provider()->callback($second->id, 'succeeded', ['event_id' => 'raced-event']));
+
+    expect($recorded['disposition'])->toBe('key_conflict')
+        ->and(DisbursementProviderEvent::query()->where('provider_event_id', 'raced-event')->orderBy('id')->pluck('disposition')->all())
+        ->toBe(['applied', 'key_conflict'])
+        ->and(DisbursementClosing::query()->where('intent_id', $second->id)->exists())->toBeFalse();
+});
+
+it('P2: retries a raced identity only once and then lets the database error stand', function (): void {
+    ['intent' => $first] = DisbursementFixture::approved();
+    ['intent' => $second] = DisbursementFixture::approved();
+    $message = DisbursementFixture::provider()->callback($second->id, 'succeeded', ['event_id' => 'raced-twice']);
+    $event = app(PayoutProvider::class)->verify($message);
+    raceProviderIdentity($first, 'raced-twice', [[str_repeat('f', 64), 'applied'], [$event->contentSha256, 'key_conflict']]);
+
+    expect(fn () => app(DisbursementStore::class)->observe($event, 'callback'))
+        ->toThrow(UniqueConstraintViolationException::class, 'disbursement_provider_events_content');
 });

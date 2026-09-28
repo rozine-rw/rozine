@@ -45,6 +45,7 @@ use Closure;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Database\DeadlockException;
 use Illuminate\Database\QueryException;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Throwable;
@@ -605,9 +606,34 @@ final class EloquentDisbursementStore implements DisbursementStore
     }
 
     /** Records an authenticated observation against its locked intent; an exact replay adds nothing. */
+    /**
+     * Records an authenticated observation against its locked intent; an exact replay adds nothing.
+     *
+     * A provider event identity is global, but only this intent is locked, so another intent's
+     * transaction may record the same identity first (#96 5876182472). Its insert then waits for
+     * that winner and raises a uniqueness violation on the identity or content index; only that
+     * insert rolls back (its own savepoint), and the observation is classified again against the
+     * winner's committed row: a duplicate or a retained key conflict, never a lost one. Any other
+     * database error propagates. No extra lock is taken, so the lock order is unchanged.
+     */
     private function recordObservation(DisbursementIntent $intent, VerifiedPayoutEvent $event, string $source): string
     {
         DisbursementIntent::query()->whereKey($intent->id)->lockForUpdate()->sole();
+        for ($attempt = 1; ; $attempt++) {
+            try {
+                return $this->classifyAndRecord($intent, $event, $source);
+            } catch (UniqueConstraintViolationException $exception) {
+                $identity = str_contains($exception->getMessage(), 'disbursement_provider_events_identity')
+                    || str_contains($exception->getMessage(), 'disbursement_provider_events_content');
+                if (! $identity || $attempt > 1) {
+                    throw $exception;
+                }
+            }
+        }
+    }
+
+    private function classifyAndRecord(DisbursementIntent $intent, VerifiedPayoutEvent $event, string $source): string
+    {
         // An exact replay of anything already recorded, a key conflict included, adds nothing.
         if (DisbursementProviderEvent::query()->where('provider', $event->provider)->where('provider_event_id', $event->eventId)
             ->where('content_sha256', $event->contentSha256)->exists()) {
@@ -617,7 +643,7 @@ final class EloquentDisbursementStore implements DisbursementStore
             ->where('disposition', '<>', 'key_conflict')->first();
         $mismatches = Reconciliation::mismatches($this->intentFacts($intent, true), $this->eventFacts($event));
         $outcome = PayoutOutcome::observe($this->providerState($intent), $event->state, $recorded?->content_sha256, $event->contentSha256, $mismatches);
-        (new DisbursementProviderEvent)->forceFill(['intent_id' => $intent->id, 'provider' => $event->provider, 'provider_event_id' => $event->eventId,
+        $record = (new DisbursementProviderEvent)->forceFill(['intent_id' => $intent->id, 'provider' => $event->provider, 'provider_event_id' => $event->eventId,
             'content_sha256' => $event->contentSha256, 'source' => $source, 'state' => $event->state, 'amount' => $this->digits($event->amount),
             'currency' => $event->currency !== null && preg_match('/^[A-Z]{3}$/D', $event->currency) === 1 ? $event->currency : null,
             'environment' => $event->environment === null ? null : substr($event->environment, 0, 20),
@@ -625,7 +651,9 @@ final class EloquentDisbursementStore implements DisbursementStore
             'provider_reference_sha256' => $event->providerReference === null ? null : hash('sha256', $event->providerReference),
             'destination_sha256' => $event->destinationSha256 !== null && preg_match('/^[0-9a-f]{64}$/D', $event->destinationSha256) === 1 ? $event->destinationSha256 : null,
             'observed_at' => $event->observedAt, 'effective_at' => $event->effectiveAt, 'disposition' => $outcome->disposition,
-            'mismatches' => $outcome->disposition === 'unverifiable' ? $mismatches : [], 'evidence' => $event->evidence, 'created_at' => now('UTC')])->save();
+            'mismatches' => $outcome->disposition === 'unverifiable' ? $mismatches : [], 'evidence' => $event->evidence, 'created_at' => now('UTC')]);
+        // Only the insert sits in its own savepoint, so a raced insert rolls back alone.
+        DB::transaction(fn (): bool => $record->save());
 
         return $outcome->disposition;
     }
