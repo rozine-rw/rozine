@@ -29,9 +29,11 @@ import type {
  *   13.5%), split over the schedule with any extra shilling on the earliest instalments.
  * - "Expected profit" is that total return, gross; "Total at maturity" is principal plus return
  *   less the fee on earnings over the return (the quote's `maturity_value`).
- * - `value` is what was invested plus the return received (HoldingSummary): principal repaid
- *   stays counted. So `gain` is `value − invested`, the return received, and `gain_pct` is that
- *   over the amount invested.
+ * - `value` is a cumulative performance figure (HoldingSummary): what was invested plus the gross
+ *   return received so far, not the outstanding asset value or a spendable balance. Principal
+ *   repaid is not earnings and is not counted as a gain. So `gain` is `value − invested`, the
+ *   gross return received before the fee on earnings, and `gain_pct` is that over the amount
+ *   invested.
  * - A campaign's raised, target and left-to-fill are its committed, total and available units at
  *   the unit price, and `funded_pct` is raised over target to one decimal.
  */

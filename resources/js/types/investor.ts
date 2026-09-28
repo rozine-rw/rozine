@@ -390,12 +390,17 @@ export type HoldingSummary = {
     district: string;
     health: HoldingHealth;
     /**
-     * What was invested plus the return received so far: principal repaid stays counted, so value
-     * never falls as a note amortises. Realised, not projected; `gain` is `value − invested`.
+     * Cumulative performance figure: what was invested plus the gross return received so far. It
+     * is not the current outstanding asset value or a spendable balance. Principal repaid is not
+     * earnings and is not counted as a gain; this figure makes no promise against actual credit
+     * losses. `gain` is `value − invested`.
      */
     value: Money;
     invested: Money;
-    /** Signed: `value − invested`, the return received so far. */
+    /**
+     * Signed: `value − invested`, the gross return received so far, before the fee on earnings.
+     * The net earnings figure is C4 `PortfolioEarnings.realised.net_return`.
+     */
     gain: Money;
     /** Signed, one decimal: "13.3". */
     gain_pct: string;
@@ -407,6 +412,7 @@ export type HoldingSummary = {
     link: RouteLink;
 };
 
+/** Legacy: C4 `PortfolioEarnings` replaces these totals once the server sends credited payouts. */
 export type PortfolioTotals = {
     businesses: number;
     value: Money;
