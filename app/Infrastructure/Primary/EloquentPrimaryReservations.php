@@ -27,6 +27,7 @@ use Brick\Math\BigInteger;
 use Closure;
 use DateTimeImmutable;
 use DateTimeZone;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -173,6 +174,28 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
         } catch (PrimaryViolation $exception) {
             throw new CommandRejection($exception->reasonCode);
         }
+    }
+
+    public function expireDue(int $limit): int
+    {
+        if ($limit < 1 || $limit > 1000) {
+            throw new CommandRejection('INVALID_SWEEP_LIMIT');
+        }
+        $cutoff = now('UTC')->format('Y-m-d H:i:s.uP');
+        $candidates = PrimaryReservationRecord::query()->where('expires_at', '<=', $cutoff)
+            ->whereNotExists(function (Builder $query): void {
+                $query->selectRaw('1')->from('primary_reservation_versions')
+                    ->whereColumn('primary_reservation_id', 'primary_reservations.id')
+                    ->whereIn('state', ['confirmed', 'released', 'expired']);
+            })->orderBy('expires_at')->orderBy('id')->limit($limit)->get();
+        $expired = 0;
+        foreach ($candidates as $candidate) {
+            if (DB::transaction(fn (): ?ReservationRelease => $this->expire($candidate->business_campaign_id, $candidate->id), 3) !== null) {
+                $expired++;
+            }
+        }
+
+        return $expired;
     }
 
     public function expire(string $campaignId, string $reservationId, ?string $operationId = null): ?ReservationRelease

@@ -57,6 +57,14 @@ interface PrimaryReservations
     public function release(string $campaignId, string $reservationId, string $partyId, string $operationId, int $expectedRevision): ReservationRelease;
 
     /**
+     * Examines at most limit overdue, nonterminal candidates in deadline/id order.
+     * Each candidate uses its own transaction and the expire() lock order. Returns
+     * the number newly expired; concurrent terminal transitions are harmless skips.
+     * Integrity failures stop the sweep; earlier committed expiries remain retained.
+     */
+    public function expireDue(int $limit): int;
+
+    /**
      * Requires an outer transaction. Returns null for not-yet-due or terminal holds.
      * The system expiry path supplies no actor operation. Actor-driven expiry supplies
      * only its retained rejected RESERVATION_EXPIRED receipt. Neither recycles ordinals
