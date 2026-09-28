@@ -35,15 +35,15 @@ describe('Exceptions', () => {
         expect(
             within(nav()).getByRole('link', { name: 'Book' }),
         ).not.toHaveAttribute('aria-current');
-        expect(screen.getByText('5 open')).toBeInTheDocument();
-        expect(screen.getByText('2 unassigned')).toBeInTheDocument();
+        expect(screen.getByText('6 open')).toBeInTheDocument();
+        expect(screen.getByText('3 unassigned')).toBeInTheDocument();
 
         const filter = screen.getByRole('navigation', {
             name: 'Filter by kind',
         });
 
         expect(
-            within(filter).getByRole('link', { name: /^All\s*5$/ }),
+            within(filter).getByRole('link', { name: /^All\s*6$/ }),
         ).toHaveAttribute('aria-current', 'page');
         expect(
             within(filter).getByRole('link', { name: /^Arrears\s*3$/ }),
@@ -82,6 +82,16 @@ describe('Exceptions', () => {
             'href',
             '/preview/admin-repayments-exception-mismatch',
         );
+
+        /* The Reconciliation page's open statement break, as a variance. */
+        const statement = rowOf('STM-2027-0122');
+
+        expect(statement).toHaveTextContent('Variance');
+        expect(statement).toHaveTextContent('Bank settlement account');
+        expect(statement).toHaveTextContent('RWF 3,100');
+        expect(
+            screen.getByRole('link', { name: 'Open STM-2027-0122' }),
+        ).toHaveAttribute('href', '/preview/admin-reconciliation');
 
         const halt = rowOf('FRZ-2026-0355');
 

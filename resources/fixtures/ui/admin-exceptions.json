@@ -85,13 +85,13 @@
         "staff_access_version": "staff-access-v1",
         "allowed_actions": [],
         "counts": {
-            "open": 5,
-            "unassigned": 2
+            "open": 6,
+            "unassigned": 3
         },
         "chips": [
             {
                 "key": "all",
-                "count": 5,
+                "count": 6,
                 "link": {
                     "url": "/preview/admin-exceptions",
                     "method": "get"
@@ -118,7 +118,7 @@
             },
             {
                 "key": "variance",
-                "count": 1,
+                "count": 2,
                 "link": {
                     "url": "/preview/admin-exceptions",
                     "method": "get"
@@ -212,6 +212,26 @@
                 "owner": null,
                 "link": {
                     "url": "/preview/admin-repayments-exception-mismatch",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "exc_0439",
+                "kind": "variance",
+                "reference": "STM-2027-0122",
+                "business": "Bank settlement account",
+                "note_title": null,
+                "description": "Bank charge on the 22 Jan 2027 statement with no ledger entry",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "3100"
+                },
+                "dpd": null,
+                "opened_at": "2027-01-22T08:15:00+02:00",
+                "age_days": 1,
+                "owner": null,
+                "link": {
+                    "url": "/preview/admin-reconciliation",
                     "method": "get"
                 }
             },

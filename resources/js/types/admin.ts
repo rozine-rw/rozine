@@ -1107,6 +1107,7 @@ export type ExceptionItem = {
     id: string;
     kind: ExceptionKind;
     reference: string;
+    /** The subject's display name: the business, or the account for a statement variance. */
     business: string;
     note_title: string | null;
     description: string;

@@ -96,7 +96,7 @@
                 "key": "uncovered",
                 "value": {
                     "kind": "count",
-                    "value": 20
+                    "value": 19
                 }
             },
             {
@@ -249,7 +249,7 @@
                 "province": "Northern Province",
                 "active_partners": 1,
                 "audits_open": 3,
-                "capacity": "uncovered",
+                "capacity": "covered",
                 "link": {
                     "url": "/preview/admin-auditors",
                     "method": "get"

@@ -44,12 +44,12 @@ describe('Partner coverage', () => {
             screen.getByText('Districts', { selector: 'span' }),
         ).toBeInTheDocument();
         expect(screen.getByText('30')).toBeInTheDocument();
-        expect(screen.getByText('20')).toBeInTheDocument();
+        expect(screen.getByText('19')).toBeInTheDocument();
         expect(screen.getByText('25')).toBeInTheDocument();
         expect(page.districts).toHaveLength(30);
         expect(
             page.districts.filter((row) => row.capacity === 'uncovered'),
-        ).toHaveLength(20);
+        ).toHaveLength(19);
         expect(
             page.districts.reduce((sum, row) => sum + row.audits_open, 0),
         ).toBe(25);
@@ -70,8 +70,7 @@ describe('Partner coverage', () => {
             screen.queryByRole('link', { name: 'Audit Partners in Rubavu' }),
         ).not.toBeInTheDocument();
 
-        /* A partner is active, but the server still calls the district uncovered. */
-        expect(rowOf('Musanze')).toHaveTextContent(/Uncovered13/u);
+        expect(rowOf('Musanze')).toHaveTextContent(/Covered13/u);
         expect(
             screen.getByRole('link', { name: 'Audit Partners in Musanze' }),
         ).toBeInTheDocument();
@@ -80,6 +79,21 @@ describe('Partner coverage', () => {
                 name: /dispatch|assign|suspend/i,
             }),
         ).toEqual([]);
+    });
+
+    it('shows the server’s verdict even where a partner is active', () => {
+        const page = props(coverageFixture);
+        const musanze = page.districts.find(
+            (district) => district.district === 'Musanze',
+        );
+
+        musanze!.capacity = 'uncovered';
+        render(<AdminCoverage {...page} />);
+
+        expect(rowOf('Musanze')).toHaveTextContent(/Uncovered13/u);
+        expect(
+            screen.getByRole('link', { name: 'Audit Partners in Musanze' }),
+        ).toBeInTheDocument();
     });
 
     it('tells a search that matched no district apart from none reported', () => {
