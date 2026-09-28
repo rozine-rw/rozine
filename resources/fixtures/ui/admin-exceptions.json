@@ -58,6 +58,18 @@
                 "url": "/preview/admin-exceptions",
                 "method": "get"
             },
+            "reconciliation": {
+                "url": "/preview/admin-reconciliation",
+                "method": "get"
+            },
+            "coverage": {
+                "url": "/preview/admin-coverage",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/admin-reports",
+                "method": "get"
+            },
             "launcher": {
                 "url": "/preview/launcher-ready",
                 "method": "get"

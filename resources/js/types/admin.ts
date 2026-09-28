@@ -45,11 +45,16 @@ export type StaffViewer = {
 };
 
 /**
- * Phase 2 screens a server may add to the frame (MVP-ADMIN-SCR-05/06). They are optional nav
- * entries rather than `AdminSection` members, so no existing page has to send them: the sidebar
+ * Phase 2 screens a server may add to the frame (MVP-ADMIN-SCR-04/05/06/07/10). They are optional
+ * nav entries rather than `AdminSection` members, so no existing page has to send them: the sidebar
  * shows one only when its link is sent.
  */
-export type AdminOptionalSection = 'book' | 'exceptions';
+export type AdminOptionalSection =
+    | 'book'
+    | 'exceptions'
+    | 'reconciliation'
+    | 'coverage'
+    | 'reports';
 
 /** Every section the frame can mark as current. */
 export type AdminFrameSection = AdminSection | AdminOptionalSection;
@@ -1119,4 +1124,139 @@ export type AdminExceptionsProps = AdminFrameShellProps &
         chips: ExceptionChip[];
         exceptions: ExceptionItem[];
         pagination: Pagination;
+    };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Phase 2: Reconciliation (MVP-ADMIN-SCR-04), Partner coverage (MVP-ADMIN-SCR-07) and Reports */
+/* (MVP-ADMIN-SCR-10), read-only proposal                                                      */
+/* ------------------------------------------------------------------------------------------ */
+
+/*
+ * Additive and non-activatable, under `staff-access-v1` like the Book and Exceptions proposals.
+ * Nothing returns these shapes yet: the pages are reviewed through synthetic `preview/{fixture}`
+ * fixtures only, and none offers a command.
+ *
+ * The account topology is undecided (plan D-21), so Reconciliation knows no account kinds, no
+ * reserve bucket and no float: the server names every account it reconciles. Partner coverage
+ * carries no radius or eligibility rule: the server decides whether a district is covered. Reports
+ * lists packs and their readiness only; no pack's contents are defined here.
+ */
+
+/** No command exists on these screens yet; `allowed_actions` is always empty. */
+export type StaffReconciliationPageContract = {
+    contract_version: 'staff-reconciliation-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: never[];
+};
+
+export type StaffCoveragePageContract = {
+    contract_version: 'staff-coverage-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: never[];
+};
+
+export type StaffReportsPageContract = {
+    contract_version: 'staff-reports-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: never[];
+};
+
+/** Whether the provider or bank statement feed for an account is reaching the core. */
+export type StatementFeed =
+    | { state: 'available' }
+    | { state: 'unavailable'; since: string };
+
+/**
+ * One account the core reconciles, as the server names it. The three balances sit side by side as
+ * of `as_of`: the ledger's, the provider or bank statement's, and their difference (ledger minus
+ * statement), each stated by the server. While the feed is unavailable no statement balance is
+ * known, so `statement` and `difference` are null.
+ */
+export type ReconciliationAccount = {
+    id: string;
+    label: string;
+    as_of: string;
+    ledger: Money;
+    statement: Money | null;
+    difference: Money | null;
+    feed: StatementFeed;
+};
+
+/**
+ * The close of the last business day (MVP-ADMIN-AC-05: yesterday reconciles before today opens).
+ * A day with an unexplained break cannot close, so `open_break` stays until every break is
+ * explained; `not_reconciled` is a day the core has not been able to reconcile yet.
+ */
+export type ReconciliationDayClose = { business_date: KigaliDate } & (
+    | { state: 'reconciled'; reconciled_at: string }
+    | { state: 'open_break' }
+    | { state: 'not_reconciled' }
+);
+
+/**
+ * An open break, in the Today shape without its commands, tied to the account it sits on and
+ * linking to its record. Assigning and escalating wait on the unsigned D-25/28/54 policy.
+ */
+export type ReconciliationBreakRecord = Omit<ReconciliationBreak, 'actions'> & {
+    account_id: string;
+    link: RouteLink;
+};
+
+export type AdminReconciliationProps = AdminFrameShellProps &
+    StaffReconciliationPageContract & {
+        day_close: ReconciliationDayClose;
+        accounts: ReconciliationAccount[];
+        breaks: ReconciliationBreakRecord[];
+    };
+
+export type CoverageStatKey = 'districts' | 'uncovered' | 'audits_open';
+
+/**
+ * One district and the server's counts: Audit Partners active there and audits open there
+ * (including any still waiting for a partner). `capacity` is the server's verdict; the console
+ * applies no radius, capacity or eligibility rule of its own. `link` opens the district's Audit
+ * Partners, null when none is active.
+ */
+export type CoverageDistrict = {
+    id: string;
+    district: string;
+    province: string;
+    active_partners: number;
+    audits_open: number;
+    capacity: 'covered' | 'uncovered';
+    link: RouteLink | null;
+};
+
+export type AdminCoverageProps = AdminFrameShellProps &
+    StaffCoveragePageContract & {
+        stats: { key: CoverageStatKey; value: StatValue }[];
+        districts: CoverageDistrict[];
+    };
+
+export type ReportPackKind = 'regulator' | 'board' | 'export';
+
+/**
+ * A pack for one period, as the server names it. `complete` is final as of `as_of`; `incomplete`
+ * is a period that has not closed, so nothing can be downloaded yet; `moving` is a snapshot as of
+ * `as_of` whose figures can still change, with the server's note on what is pending. `link`
+ * downloads the pack or its snapshot, null when there is nothing to download.
+ */
+export type ReportPack = {
+    id: string;
+    kind: ReportPackKind;
+    label: string;
+    period: { start: KigaliDate; end: KigaliDate };
+    link: RouteLink | null;
+} & (
+    | { status: 'complete'; as_of: string }
+    | { status: 'incomplete'; as_of: null }
+    | { status: 'moving'; as_of: string; pending: string }
+);
+
+export type AdminReportsProps = AdminFrameShellProps &
+    StaffReportsPageContract & {
+        packs: ReportPack[];
     };

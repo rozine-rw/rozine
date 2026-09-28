@@ -12,8 +12,8 @@ import { logout } from '@/routes';
 import type { AdminFrameSection, AdminFrameShellProps } from '@/types/admin';
 
 /**
- * The design's 16px sidebar glyphs (S5233–5257), drawn in `currentColor` at stroke 1.8. Book and
- * Exceptions have no design glyph; theirs follow the same grid and stroke.
+ * The design's 16px sidebar glyphs (S5233–5257), drawn in `currentColor` at stroke 1.8. The Phase 2
+ * sections have no design glyph; theirs follow the same grid and stroke.
  */
 const GLYPHS: Record<AdminFrameSection, ReactNode> = {
     today: (
@@ -84,6 +84,34 @@ const GLYPHS: Record<AdminFrameSection, ReactNode> = {
             <path d="M12 10v4M12 16.5v.5" strokeLinecap="round" />
         </>
     ),
+    reconciliation: (
+        <>
+            <path d="M12 4v16M5 20h14" strokeLinecap="round" />
+            <path
+                d="M4 8h16M6.5 8 4 14h5ZM17.5 8 15 14h5Z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </>
+    ),
+    coverage: (
+        <>
+            <path
+                d="M12 21s6-5.6 6-10.5a6 6 0 0 0-12 0C6 15.4 12 21 12 21Z"
+                strokeLinejoin="round"
+            />
+            <circle cx="12" cy="10.5" r="2.2" />
+        </>
+    ),
+    reports: (
+        <>
+            <path d="M6 3h8l4 4v14H6Z" strokeLinejoin="round" />
+            <path
+                d="M14 3v4h4M9 17v-3M12 17v-5M15 17v-2"
+                strokeLinecap="round"
+            />
+        </>
+    ),
     ledger: (
         <path
             d="M12 3v18M8 7h6a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h7"
@@ -112,8 +140,8 @@ const GLYPHS: Record<AdminFrameSection, ReactNode> = {
  * The console's MVP navigation. The design's other sections (Notes, markets, Reports, Risk,
  * Compliance, Payments, Ratings, Deferrals, Plus, Finance revenue/RAMP, Messaging, Academies,
  * App Control, Engines, Policies, System Health) are post-MVP or Phase 2 screens and are left out
- * rather than shipped as dead links. Book and Exceptions are Phase 2 and optional: they show only
- * when the server sends their link. Ratings in particular can never exist: no staff account may
+ * rather than shipped as dead links. Book, Exceptions, Reconciliation, Partner coverage and Reports
+ * are Phase 2 and optional: they show only when the server sends their link. Ratings in particular can never exist: no staff account may
  * set a rating (MVP-ADMIN-AC-04).
  */
 const GROUPS: {
@@ -121,13 +149,22 @@ const GROUPS: {
     items: AdminFrameSection[];
 }[] = [
     { group: null, items: ['today'] },
-    { group: 'accounts', items: ['businesses', 'investors', 'auditors'] },
+    {
+        group: 'accounts',
+        items: ['businesses', 'investors', 'auditors', 'coverage'],
+    },
     { group: 'capital', items: ['applications', 'book'] },
     {
         group: 'treasury',
-        items: ['disbursements', 'repayments', 'exceptions', 'ledger'],
+        items: [
+            'disbursements',
+            'repayments',
+            'reconciliation',
+            'exceptions',
+            'ledger',
+        ],
     },
-    { group: 'console', items: ['staff', 'events'] },
+    { group: 'console', items: ['staff', 'events', 'reports'] },
 ];
 
 type AdminFrameProps = AdminFrameShellProps & {

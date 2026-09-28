@@ -4402,6 +4402,108 @@ const rw: Catalog = {
     'admin.exceptions.filtered_title': 'Nta kidasanzwe cy’ubu bwoko',
     'admin.exceptions.filtered_body':
         'Hitamo Byose urebe ibidasanzwe byose bifunguye.',
+    'admin.nav.reconciliation': 'Guhuza konti',
+    'admin.nav.coverage': 'Aho abafatanyabikorwa bakorera',
+    'admin.nav.reports': 'Raporo',
+    'admin.section.reconciliation.title': 'Guhuza konti',
+    'admin.section.reconciliation.subtitle':
+        'Igitabo cy’imari, raporo ya konti n’ikinyuranyo cya buri konti biri iruhande rumwe, n’icyuho cyose kugeza gisobanuwe. Gusoma gusa.',
+    'admin.section.reconciliation.search':
+        'Shakisha ukoresheje konti cyangwa indango…',
+    'admin.section.coverage.title': 'Aho abafatanyabikorwa bakorera',
+    'admin.section.coverage.subtitle':
+        'Abafatanyabikorwa b’igenzura n’igenzura rifunguye muri buri karere, n’uko akarere gafite ugakorera. Gusoma gusa.',
+    'admin.section.coverage.search':
+        'Shakisha ukoresheje akarere cyangwa intara…',
+    'admin.section.reports.title': 'Raporo',
+    'admin.section.reports.subtitle':
+        'Raporo z’ugenzura, iz’inama y’ubuyobozi n’ibyoherezwa, buri kimwe ku gihe cyacyo kandi nk’uko imibare yacyo irangiye. Gusoma gusa.',
+    'admin.section.reports.search': 'Shakisha ukoresheje raporo cyangwa igihe…',
+    'admin.reconciliation.day_close.label': 'Gufunga umunsi',
+    'admin.reconciliation.day_close.title': 'Gufunga umunsi · {date}',
+    'admin.reconciliation.day_close.state.reconciled': 'Byahujwe',
+    'admin.reconciliation.day_close.state.open_break': 'Icyuho gifunguye',
+    'admin.reconciliation.day_close.state.not_reconciled': 'Ntibirahuzwa',
+    'admin.reconciliation.day_close.body.reconciled':
+        'Konti zose zahujwe; umunsi wafunzwe {time}.',
+    'admin.reconciliation.day_close.body.open_break':
+        'Umunsi ntushobora gufungwa hari icyuho kidasobanuwe. Buri cyuho kiguma hepfo, gifite igihe kimaze, kugeza gisobanuwe.',
+    'admin.reconciliation.day_close.body.not_reconciled':
+        'Sisitemu nkuru ntirahuza uyu munsi, bityo ntushobora gufungwa.',
+    'admin.reconciliation.accounts.title': 'Amafaranga ari kuri konti',
+    'admin.reconciliation.accounts.caption':
+        'Igitabo cy’imari, raporo ya konti n’ikinyuranyo cya buri konti, nk’uko sisitemu nkuru ibigaragaza.',
+    'admin.reconciliation.accounts.table': 'Amafaranga ari kuri konti',
+    'admin.reconciliation.accounts.empty_title': 'Nta konti yatanzwe',
+    'admin.reconciliation.accounts.empty_body':
+        'Konti igaragara hano iyo sisitemu nkuru imaze kuyihuza.',
+    'admin.reconciliation.col.account': 'Konti',
+    'admin.reconciliation.col.ledger': 'Igitabo cy’imari',
+    'admin.reconciliation.col.statement': 'Raporo ya konti',
+    'admin.reconciliation.col.difference': 'Ikinyuranyo',
+    'admin.reconciliation.col.feed': 'Iyakirwa rya raporo',
+    'admin.reconciliation.col.reference': 'Indango',
+    'admin.reconciliation.col.break': 'Icyuho',
+    'admin.reconciliation.col.gap': 'Ingano',
+    'admin.reconciliation.col.owner': 'Igihe · ugikurikirana',
+    'admin.reconciliation.col.record': 'Dosiye',
+    'admin.reconciliation.as_of': 'Kugeza {time}',
+    'admin.reconciliation.no_statement': 'Nta raporo',
+    'admin.reconciliation.feed.available': 'Iraboneka',
+    'admin.reconciliation.feed.unavailable': 'Ntiboneka',
+    'admin.reconciliation.feed.since': 'Kuva {time}',
+    'admin.reconciliation.breaks.title': 'Ibyuho bifunguye',
+    'admin.reconciliation.breaks.caption':
+        'Buri cyuho kiguma hano, gifite igihe kimaze, kugeza gisobanuwe. Kugena ugikurikirana no kukizamura ntibiraboneka.',
+    'admin.reconciliation.breaks.table': 'Ibyuho bifunguye',
+    'admin.reconciliation.breaks.empty_title': 'Nta cyuho gifunguye',
+    'admin.reconciliation.breaks.empty_body':
+        'Icyuho kigaragara hano iyo raporo ya konti n’igitabo cy’imari bidahuye.',
+    'admin.reconciliation.open_named': 'Fungura {reference}',
+    'admin.reports.title': 'Raporo',
+    'admin.reports.caption':
+        'Buri raporo ku gihe cyayo, n’uko imibare yayo irangiye. Nta kintu hano gihindura umubare.',
+    'admin.reports.table': 'Raporo',
+    'admin.reports.col.pack': 'Raporo',
+    'admin.reports.col.period': 'Igihe',
+    'admin.reports.col.status': 'Uko ihagaze',
+    'admin.reports.col.as_of': 'Kugeza',
+    'admin.reports.col.download': 'Gukuramo',
+    'admin.reports.kind.regulator': 'Ugenzura',
+    'admin.reports.kind.board': 'Inama y’ubuyobozi',
+    'admin.reports.kind.export': 'Icyoherezwa',
+    'admin.reports.status.complete': 'Irarangiye',
+    'admin.reports.status.incomplete': 'Igihe ntikirafungwa',
+    'admin.reports.status.moving': 'Imibare iracyahinduka',
+    'admin.reports.period': '{start} – {end}',
+    'admin.reports.snapshot': 'Ifoto y’igihe',
+    'admin.reports.pending': 'Bitegerejwe:',
+    'admin.reports.not_ready': 'Igihe nikimara gufungwa',
+    'admin.reports.download': 'Kuramo',
+    'admin.reports.download_snapshot': 'Kuramo ifoto y’igihe',
+    'admin.reports.download_named': 'Kuramo {label}',
+    'admin.reports.empty_title': 'Nta raporo iraboneka',
+    'admin.reports.empty_body':
+        'Raporo igaragara hano iyo igihe cyayo gitangiye.',
+    'admin.coverage.title': 'Uturere',
+    'admin.coverage.caption':
+        'Abafatanyabikorwa b’igenzura bakora n’igenzura rifunguye muri buri karere, n’icyemezo cya sisitemu nkuru ku kuba gafite ugakorera.',
+    'admin.coverage.table': 'Aho abafatanyabikorwa bakorera mu turere',
+    'admin.coverage.stats.districts': 'Uturere',
+    'admin.coverage.stats.uncovered': 'Tudafite ugakorera',
+    'admin.coverage.stats.audits_open': 'Igenzura rifunguye',
+    'admin.coverage.col.district': 'Akarere',
+    'admin.coverage.col.partners': 'Abafatanyabikorwa b’igenzura bakora',
+    'admin.coverage.col.audits': 'Igenzura rifunguye',
+    'admin.coverage.col.capacity': 'Uko gakorerwa',
+    'admin.coverage.col.open': 'Abafatanyabikorwa',
+    'admin.coverage.capacity.covered': 'Gafite ugakorera',
+    'admin.coverage.capacity.uncovered': 'Nta ugakorera',
+    'admin.coverage.open': 'Reba',
+    'admin.coverage.open_named': 'Abafatanyabikorwa b’igenzura muri {district}',
+    'admin.coverage.empty_title': 'Nta karere katanzwe',
+    'admin.coverage.empty_body':
+        'Uturere tugaragara hano iyo sisitemu nkuru itangiye gukurikirana aho abafatanyabikorwa b’igenzura bakorera.',
 };
 
 export default rw;

@@ -1,5 +1,5 @@
 {
-    "component": "admin/book",
+    "component": "admin/reports",
     "synthetic": true,
     "props": {
         "viewer": {
@@ -81,83 +81,34 @@
         },
         "search": "",
         "server_time": "2027-01-23T10:00:00+02:00",
-        "contract_version": "staff-book-v1",
+        "contract_version": "staff-reports-v1",
         "staff_access_version": "staff-access-v1",
         "allowed_actions": [],
-        "stats": [
+        "packs": [
             {
-                "key": "live_notes",
-                "value": {
-                    "kind": "count",
-                    "value": 0
-                }
+                "id": "rpt_board_2027_01",
+                "kind": "board",
+                "label": "Board pack · January 2027",
+                "period": {
+                    "start": "2027-01-01",
+                    "end": "2027-01-31"
+                },
+                "link": null,
+                "status": "incomplete",
+                "as_of": null
             },
             {
-                "key": "principal_outstanding",
-                "value": {
-                    "kind": "money",
-                    "value": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    }
-                }
-            },
-            {
-                "key": "due_today",
-                "value": {
-                    "kind": "count",
-                    "value": 0
-                }
-            },
-            {
-                "key": "overdue",
-                "value": {
-                    "kind": "count",
-                    "value": 0
-                }
+                "id": "rpt_reg_2027q1",
+                "kind": "regulator",
+                "label": "Regulator pack · Q1 2027",
+                "period": {
+                    "start": "2027-01-01",
+                    "end": "2027-03-31"
+                },
+                "link": null,
+                "status": "incomplete",
+                "as_of": null
             }
-        ],
-        "chips": [
-            {
-                "key": "all",
-                "count": 0,
-                "link": {
-                    "url": "/preview/admin-book",
-                    "method": "get"
-                },
-                "active": true
-            },
-            {
-                "key": "current",
-                "count": 0,
-                "link": {
-                    "url": "/preview/admin-book",
-                    "method": "get"
-                },
-                "active": false
-            },
-            {
-                "key": "due_today",
-                "count": 0,
-                "link": {
-                    "url": "/preview/admin-book",
-                    "method": "get"
-                },
-                "active": false
-            },
-            {
-                "key": "overdue",
-                "count": 0,
-                "link": {
-                    "url": "/preview/admin-book",
-                    "method": "get"
-                },
-                "active": false
-            }
-        ],
-        "notes": [],
-        "pagination": {
-            "next": null
-        }
+        ]
     }
 }

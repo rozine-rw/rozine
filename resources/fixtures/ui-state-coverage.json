@@ -25,13 +25,14 @@
     },
     "MVP-ADMIN-SCR-04-ST-01": {
         "name": "out of balance",
-        "disposition": "partial",
-        "note": "`admin-repayments-exception-mismatch` and the ledger's unbalanced entry. There is no three-balance screen."
+        "fixtures": [
+            "admin-reconciliation",
+            "admin-repayments-exception-mismatch"
+        ]
     },
     "MVP-ADMIN-SCR-04-ST-02": {
         "name": "feed unavailable",
-        "disposition": "missing",
-        "note": "Nothing covers it."
+        "fixtures": ["admin-reconciliation-feed-unavailable"]
     },
     "MVP-ADMIN-SCR-05-ST-01": {
         "name": "none live",
@@ -53,8 +54,7 @@
     },
     "MVP-ADMIN-SCR-07-ST-01": {
         "name": "district uncovered",
-        "disposition": "missing",
-        "note": "No coverage view."
+        "fixtures": ["admin-coverage"]
     },
     "MVP-ADMIN-SCR-07-ST-02": {
         "name": "licence expired",
@@ -78,13 +78,11 @@
     },
     "MVP-ADMIN-SCR-10-ST-01": {
         "name": "period incomplete",
-        "disposition": "missing",
-        "note": "The screen has no page yet."
+        "fixtures": ["admin-reports-incomplete"]
     },
     "MVP-ADMIN-SCR-10-ST-02": {
         "name": "figures still moving",
-        "disposition": "missing",
-        "note": "The screen has no page yet."
+        "fixtures": ["admin-reports"]
     },
     "MVP-AUDITOR-SCR-01-ST-01": {
         "name": "none assigned",
