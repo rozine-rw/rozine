@@ -18,6 +18,7 @@ use App\Domain\Wallet\AccountRestriction;
 use App\Domain\Wallet\DepositOutcome;
 use App\Domain\Wallet\DepositPolicyTerms;
 use App\Domain\Wallet\JournalEntry;
+use App\Domain\Wallet\WalletBalance;
 use App\Domain\Wallet\WalletMoney;
 use App\Models\DepositPolicy;
 use App\Models\InvestorAccountRestriction;
@@ -63,7 +64,7 @@ final class EloquentWalletStore implements WalletStore
                         $data = ['wallet_id' => $wallet->id];
                         $policy = $this->applicablePolicy() ?? throw new CommandRejection('POLICY_INPUT_REQUIRED', data: $data);
                         $method = $this->verifiedMethods($partyId)->firstWhere('id', $methodId) ?? throw new CommandRejection('DEPOSIT_METHOD_UNVERIFIED', data: $data);
-                        if ($this->currentRestriction($partyId)?->blocksDeposit() === true) {
+                        if ($this->depositBlocked($partyId)) {
                             throw new CommandRejection('RESTRICTION_ACTIVE', data: $data);
                         }
                         $money = $amount['currency'] === 'RWF' ? WalletMoney::fromInput($amount['amount']) : null;
@@ -77,6 +78,35 @@ final class EloquentWalletStore implements WalletStore
                             'receipt' => $this->intentReceipt($intent)], 1, policyVersion: $policy['terms']->version);
                     });
             });
+    }
+
+    /**
+     * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, before?: string|null, receipt?: string|null}  $query
+     * @return array<string, mixed>
+     */
+    public function page(int $userId, ?int $contextRevision, array $query): array
+    {
+        return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity) use ($query): array {
+            $partyId = (string) $identity['party']['id'];
+            $wallet = InvestorWallet::query()->where('party_id', $partyId)->first();
+            $policy = $this->applicablePolicy();
+            $methods = $this->verifiedMethods($partyId);
+            $cases = $this->currentCases($partyId);
+            $canDeposit = $policy !== null && $methods->isNotEmpty() && ! $this->depositBlocked($partyId);
+            $deposits = $wallet === null ? [] : $this->deposits($wallet);
+            $movement = ($query['movement'] ?? null) === 'internal' ? 'internal' : 'external';
+            $history = $wallet === null || $movement === 'internal' ? ['items' => [], 'next_before' => null] : $this->history($wallet, $query['before'] ?? null);
+
+            return ['identity_context_revision' => $identity['context_revision'], 'allowed_actions' => $canDeposit ? ['wallet.deposit'] : [],
+                'wallet' => $this->balances($wallet, $cases->first()?->effective_at->toIso8601String()),
+                'funding' => ['kind' => ($query['kind'] ?? null) === 'deposit' ? 'deposit' : null, 'policy' => $policy === null ? null : [
+                    'version' => $policy['terms']->version, 'synthetic' => $policy['terms']->synthetic, 'fee' => $policy['terms']->fee->money(),
+                    'minimum' => $policy['terms']->minimum?->money(), 'maximum' => $policy['terms']->maximum?->money()],
+                    'methods' => $methods->map(fn (InvestorFundingMethod $method): array => $this->method($method))->values()->all(), 'picks' => [],
+                    'quote' => $this->quote($policy, $methods->isNotEmpty(), $query['kind'] ?? null, $query['amount'] ?? null)],
+                'deposits' => $deposits, 'history' => ['movement' => $movement, ...$history],
+                'receipt' => $wallet === null ? null : $this->openedReceipt($wallet, $query['receipt'] ?? null)];
+        });
     }
 
     /** @return array<string, mixed> */
@@ -158,6 +188,128 @@ final class EloquentWalletStore implements WalletStore
             [strtolower((string) Str::ulid()), $intentId, $acknowledged ? 'acknowledged' : 'unacknowledged']);
     }
 
+    /**
+     * Ledger-derived buckets. Pending deposits are the recorded intents with no final outcome yet,
+     * outside the total because nothing has been credited for them.
+     *
+     * @return array<string, mixed>
+     */
+    private function balances(?InvestorWallet $wallet, ?string $restrictedSince): array
+    {
+        $sums = $wallet === null ? collect() : DB::table('ledger_lines')->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_lines.account_id')
+            ->where('ledger_accounts.wallet_id', $wallet->id)->groupBy('ledger_accounts.kind', 'ledger_lines.direction')
+            ->selectRaw('ledger_accounts.kind AS kind, ledger_lines.direction AS direction, sum(ledger_lines.amount)::text AS total')->get()
+            ->mapWithKeys(fn (object $row): array => [$row->kind.'.'.$row->direction => (string) $row->total]);
+        $bucket = fn (string $kind): WalletMoney => WalletBalance::bucket(WalletMoney::of($sums['investor_'.$kind.'.credit'] ?? '0'), WalletMoney::of($sums['investor_'.$kind.'.debit'] ?? '0'));
+        $final = WalletProviderEvent::query()->where('disposition', 'applied')->whereIn('state', ['succeeded', 'failed'])->select('intent_id');
+        $pending = $wallet === null ? '0' : (string) WalletDepositIntent::query()->where('wallet_id', $wallet->id)->whereNotIn('id', $final)
+            ->selectRaw('coalesce(sum(amount), 0)::text AS pending')->value('pending');
+        $balance = new WalletBalance($bucket('available'), $bucket('held'), $bucket('committed'), WalletMoney::of($pending));
+
+        return ['revision' => $wallet === null ? 0 : LedgerEntry::query()->where('wallet_id', $wallet->id)->count(),
+            'status' => $restrictedSince === null ? 'active' : 'restricted',
+            'restriction' => $restrictedSince === null ? null : ['code' => 'RESTRICTION_ACTIVE', 'since' => $restrictedSince],
+            'total' => $balance->total()->money(), 'breakdown' => ['available' => $balance->available->money(), 'held' => $balance->held->money(),
+                'committed' => $balance->committed->money()], 'pending_deposits' => $balance->pendingDeposits->money()];
+    }
+
+    /**
+     * The server's reading of an entered amount under the applicable policy. No policy, no quote:
+     * an absent policy is never priced as a zero fee.
+     *
+     * @param  Policy|null  $policy
+     * @return array<string, mixed>|null
+     */
+    private function quote(?array $policy, bool $hasMethod, ?string $kind, ?string $amount): ?array
+    {
+        if ($kind !== 'deposit' || $amount === null || $amount === '' || $policy === null) {
+            return null;
+        }
+        $terms = $policy['terms'];
+        $money = WalletMoney::fromInput(ltrim($amount, '0'));
+        if ($money === null) {
+            return ['amount' => WalletMoney::zero()->money(), 'fee' => $terms->fee->money(), 'credited' => WalletMoney::zero()->money(), 'refusal' => 'VALIDATION_FAILED'];
+        }
+        $refusal = ! $hasMethod ? 'DEPOSIT_METHOD_UNVERIFIED' : ($terms->boundsError($money) === null ? null : 'VALIDATION_FAILED');
+
+        return ['amount' => $money->money(), 'fee' => $terms->fee->money(),
+            'credited' => ($money->compareTo($terms->fee) > 0 ? $terms->credited($money) : WalletMoney::zero())->money(), 'refusal' => $refusal];
+    }
+
+    /**
+     * The latest deposits, pending and unknown first, each with its immutable intent receipt and,
+     * only after a verified success, its separate credit receipt. No provider fact is included.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function deposits(InvestorWallet $wallet, ?string $only = null): array
+    {
+        $intents = WalletDepositIntent::query()->where('wallet_id', $wallet->id)->when($only !== null, fn ($query) => $query->whereKey($only))
+            ->orderByDesc('id')->limit(20)->get();
+        $credits = WalletDepositCredit::query()->whereIn('intent_id', $intents->pluck('id'))->get()->keyBy('intent_id');
+        $methods = InvestorFundingMethod::query()->whereIn('id', $intents->pluck('method_id'))->get()->keyBy('id');
+        $deposits = $intents->map(function (WalletDepositIntent $intent) use ($credits, $methods): array {
+            $credit = $credits->get($intent->id);
+
+            return ['id' => $intent->id, 'request_id' => $intent->request_id, 'amount' => WalletMoney::of($intent->amount)->money(),
+                'method' => $this->method($methods->get($intent->method_id) ?? throw new RuntimeException('WALLET_DEPOSIT_INTEGRITY_FAILED')), 'created_at' => $this->intentPayload($intent)['recorded_at'],
+                'state' => $this->currentState($intent->id), 'intent_receipt' => $this->intentReceipt($intent),
+                'credit_receipt' => $credit === null ? null : $this->creditReceipt($credit)];
+        });
+
+        return array_values($deposits->sortBy(fn (array $deposit): int => DepositOutcome::isFinal($deposit['state']) ? 1 : 0)->values()->all());
+    }
+
+    /**
+     * External cash movements: each credited deposit, newest first, twenty to a page.
+     *
+     * @return array{items: list<array<string, mixed>>, next_before: string|null}
+     */
+    private function history(InvestorWallet $wallet, ?string $before): array
+    {
+        $credits = WalletDepositCredit::query()->where('wallet_id', $wallet->id)->when($before !== null, fn ($query) => $query->where('id', '<', $before))
+            ->orderByDesc('id')->limit(21)->get();
+        $page = $credits->take(20);
+
+        return ['items' => array_values($page->map(fn (WalletDepositCredit $credit): array => $this->historyEntry($credit))->all()),
+            'next_before' => $credits->count() > 20 ? $page->last()?->id : null];
+    }
+
+    /** @return array<string, mixed> */
+    private function historyEntry(WalletDepositCredit $credit): array
+    {
+        $intent = WalletDepositIntent::query()->whereKey($credit->intent_id)->sole();
+
+        return ['id' => $credit->id, 'movement' => 'external', 'kind' => 'deposit', 'direction' => 'in', 'amount' => WalletMoney::of($credit->amount)->money(),
+            'counterparty' => InvestorFundingMethod::query()->whereKey($intent->method_id)->sole()->label, 'occurred_at' => $this->creditReceipt($credit)['recorded_at']];
+    }
+
+    /**
+     * The receipt the page was asked to open, if it is this wallet's: a deposit intent, or a credited
+     * deposit's history entry with its credit receipt. Anyone else's id opens nothing.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function openedReceipt(InvestorWallet $wallet, ?string $id): ?array
+    {
+        if ($id === null) {
+            return null;
+        }
+        $deposit = $this->deposits($wallet, strtolower($id));
+        if ($deposit !== []) {
+            return ['type' => 'deposit', 'deposit' => $deposit[0]];
+        }
+        $credit = WalletDepositCredit::query()->where('wallet_id', $wallet->id)->whereKey(strtolower($id))->first();
+
+        return $credit === null ? null : ['type' => 'entry', 'entry' => $this->historyEntry($credit), 'receipt' => $this->creditReceipt($credit)];
+    }
+
+    /** @return array{id: string, kind: string, label: string, masked: string} */
+    private function method(InvestorFundingMethod $method): array
+    {
+        return ['id' => $method->id, 'kind' => $method->kind, 'label' => $method->label, 'masked' => $method->masked];
+    }
+
     /** The Party's wallet, created on first use, locked for the rest of the transaction. */
     private function lockWallet(string $partyId): InvestorWallet
     {
@@ -192,16 +344,21 @@ final class EloquentWalletStore implements WalletStore
     }
 
     /**
-     * The current applicable account case, if any: in effect and not expired. When several apply,
-     * one that covers deposits wins, then the earliest.
+     * The current applicable account cases: in effect and not expired, earliest first. A case that
+     * has expired, or has not started, is not a restriction at all.
+     *
+     * @return Collection<int, InvestorAccountRestriction>
      */
-    private function currentRestriction(string $partyId): ?AccountRestriction
+    private function currentCases(string $partyId): Collection
     {
-        $cases = InvestorAccountRestriction::query()->where('party_id', $partyId)->where('effective_at', '<=', now())
-            ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))->orderBy('effective_at')->orderBy('id')->get()
-            ->map(fn (InvestorAccountRestriction $case): AccountRestriction => new AccountRestriction($case->cause, $case->scope));
+        return InvestorAccountRestriction::query()->where('party_id', $partyId)->where('effective_at', '<=', now())
+            ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))->orderBy('effective_at')->orderBy('id')->get();
+    }
 
-        return $cases->first(fn (AccountRestriction $case): bool => $case->blocksDeposit()) ?? $cases->first();
+    /** Whether any current case's recorded scope covers deposits. The 11.4 hold never does. */
+    private function depositBlocked(string $partyId): bool
+    {
+        return $this->currentCases($partyId)->contains(fn (InvestorAccountRestriction $case): bool => (new AccountRestriction($case->cause, $case->scope))->blocksDeposit());
     }
 
     /** @param Policy $policy */
@@ -300,6 +457,26 @@ final class EloquentWalletStore implements WalletStore
         }
 
         return $payload;
+    }
+
+    /**
+     * DEPOSIT_CREDITED: its own receipt identity, with the originating command's operation and
+     * request. The ledger entry and provider event behind it stay internal.
+     *
+     * @return array<string, mixed>
+     */
+    private function creditReceipt(WalletDepositCredit $credit): array
+    {
+        $payload = $credit->payload;
+        $columns = ['receipt_id' => $credit->id, 'intent_id' => $credit->intent_id, 'wallet_id' => $credit->wallet_id, 'ledger_entry_id' => $credit->ledger_entry_id,
+            'provider_event_id' => $credit->provider_event_id, 'operation_id' => $credit->operation_id, 'request_id' => $credit->request_id, 'amount' => $credit->amount];
+        if (! hash_equals($credit->sha256, hash('sha256', $this->json->encode($payload))) || array_intersect_key($payload, $columns) !== $columns) {
+            throw new RuntimeException('WALLET_CREDIT_INTEGRITY_FAILED');
+        }
+
+        return ['receipt_id' => $credit->id, 'operation_id' => $credit->operation_id, 'request_id' => $credit->request_id, 'code' => 'DEPOSIT_CREDITED',
+            'recorded_at' => $payload['recorded_at'], 'amount' => WalletMoney::of($credit->amount)->money(), 'units' => null,
+            'reference' => 'RZC-'.strtoupper(substr($credit->id, -10)), 'revision' => 1, 'policy_version' => $payload['policy_version'], 'disclosure_version' => null];
     }
 
     /**

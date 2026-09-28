@@ -14,6 +14,15 @@ use App\Application\Wallet\VerifiedDepositEvent;
 interface WalletStore
 {
     /**
+     * The caller's wallet facts: ledger-derived buckets, the applicable policy and verified methods,
+     * the quote for `amount`, recent deposits with their receipts, history and an opened receipt.
+     *
+     * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, before?: string|null, receipt?: string|null}  $query
+     * @return array<string, mixed>
+     */
+    public function page(int $userId, ?int $contextRevision, array $query): array;
+
+    /**
      * Records a deposit intent and its dispatch outbox row, or journals the refusal. Never credits.
      *
      * @param  array{currency: string, amount: string}  $amount

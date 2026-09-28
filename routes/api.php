@@ -16,6 +16,7 @@ use App\Http\Controllers\AuditDisputeController;
 use App\Http\Controllers\AuditOperationsController;
 use App\Http\Controllers\AuditSealVerificationController;
 use App\Http\Controllers\BusinessPublicationController;
+use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\StaffApplicationReleaseController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -129,4 +130,10 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
         ->whereUlid(['business', 'campaign'])->name('api.v1.business.campaigns.show');
     Route::post('v1/business/{business}/campaigns/{campaign}/cancel', [BusinessPublicationController::class, 'cancel'])
         ->whereUlid(['business', 'campaign'])->name('api.v1.business.campaigns.cancel');
+});
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/investor')->name('api.v1.investor.')->group(function (): void {
+    Route::get('wallet', [InvestorWalletController::class, 'show'])->name('wallet');
+    Route::post('wallet/deposits', [InvestorWalletController::class, 'deposit'])->name('wallet.deposit');
+    Route::get('wallet-operations/{request_id}', [InvestorWalletController::class, 'operation'])->whereUuid('request_id')->name('wallet.operations.show');
 });
