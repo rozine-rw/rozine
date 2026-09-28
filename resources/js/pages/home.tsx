@@ -37,6 +37,13 @@ export default class Home extends Component<SiteProps, SiteState> {
 
     private _rzRO?: ResizeObserver;
 
+    /** The glass mask's follow-up measurements, released on unmount so none fires after it. */
+    private _rzFrame = 0;
+
+    private _rzTimers: ReturnType<typeof setTimeout>[] = [];
+
+    private readonly _rzResize = () => this._rzMask();
+
     state: SiteState = Object.assign(
         {
             page: 'inv',
@@ -145,16 +152,20 @@ export default class Home extends Component<SiteProps, SiteState> {
     }
     _rzWatch() {
         this._rzMask();
-        requestAnimationFrame(() => this._rzMask());
-        setTimeout(() => this._rzMask(), 400);
-        setTimeout(() => this._rzMask(), 1200);
+        cancelAnimationFrame(this._rzFrame);
+        this._rzFrame = requestAnimationFrame(() => this._rzMask());
+        this._rzTimers.forEach(clearTimeout);
+        this._rzTimers = [
+            setTimeout(() => this._rzMask(), 400),
+            setTimeout(() => this._rzMask(), 1200),
+        ];
 
         if (!this._rzRO && window.ResizeObserver) {
             this._rzRO = new ResizeObserver(() => this._rzMask());
             this._rzRO.observe(document.body);
         }
 
-        window.addEventListener('resize', () => this._rzMask());
+        window.addEventListener('resize', this._rzResize);
     }
 
     componentDidUpdate() {
@@ -163,6 +174,11 @@ export default class Home extends Component<SiteProps, SiteState> {
     componentWillUnmount() {
         cancelAnimationFrame(this._raf);
         clearTimeout(this._sm);
+        cancelAnimationFrame(this._rzFrame);
+        this._rzTimers.forEach(clearTimeout);
+        this._rzRO?.disconnect();
+        this._rzRO = undefined;
+        window.removeEventListener('resize', this._rzResize);
     }
     chargeFor(dep: number) {
         const B = [

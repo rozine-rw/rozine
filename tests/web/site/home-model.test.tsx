@@ -197,6 +197,46 @@ describe('the glass layer that inverts over the blue bands', () => {
 
         expect(observe).toHaveBeenCalled();
 
+        site.componentWillUnmount();
+        delete (window as { ResizeObserver?: unknown }).ResizeObserver;
+    });
+});
+
+describe('the site leaves nothing running once it unmounts', () => {
+    it('cancels the glass mask follow-ups, its observer and its resize listener', () => {
+        vi.useFakeTimers();
+        const disconnect = vi.fn();
+
+        window.ResizeObserver = class {
+            observe = vi.fn();
+
+            unobserve = vi.fn();
+
+            disconnect = disconnect;
+        } as unknown as typeof ResizeObserver;
+
+        const added = vi.spyOn(window, 'addEventListener');
+        const removed = vi.spyOn(window, 'removeEventListener');
+        const remeasure = vi.spyOn(Home.prototype, '_rzMask');
+        const { unmount } = render(<Home />);
+        const resize = added.mock.calls.find(
+            ([type]) => type === 'resize',
+        )?.[1];
+
+        remeasure.mockClear();
+        unmount();
+        /* Past the 400 ms and 1200 ms follow-ups and the animation frame. */
+        vi.advanceTimersByTime(2_000);
+
+        expect(remeasure).not.toHaveBeenCalled();
+        expect(disconnect).toHaveBeenCalled();
+        expect(resize).toBeDefined();
+        expect(removed).toHaveBeenCalledWith('resize', resize);
+
+        remeasure.mockRestore();
+        added.mockRestore();
+        removed.mockRestore();
+        vi.useRealTimers();
         delete (window as { ResizeObserver?: unknown }).ResizeObserver;
     });
 });
