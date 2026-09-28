@@ -3381,6 +3381,10 @@ const fr: Catalog = {
         'Un autre membre du personnel doit le faire : vous ne pouvez pas valider votre propre action.',
     'settlement.refusal.STEP_UP_REQUIRED':
         "Une nouvelle confirmation renforcée est d'abord requise.",
+    'settlement.refusal.STEP_UP_INVALID':
+        "Cette confirmation n'a pas abouti. Saisissez un nouveau code de votre authentificateur.",
+    'settlement.refusal.STEP_UP_EXPIRED':
+        'Cette confirmation a expiré. Saisissez un nouveau code de votre authentificateur.',
     'settlement.refusal.MANDATE_REQUIRED':
         "Cela nécessite une personne habilitée par le mandat de l'entreprise.",
     'settlement.refusal.STAFF_ACCESS_REQUIRED':
@@ -3611,6 +3615,20 @@ const fr: Catalog = {
     'admin.disbursements.binding.digest': "Empreinte de l'intention",
     'admin.disbursements.step_up.unavailable':
         "L'approbation exige une nouvelle confirmation renforcée liée à ces détails. Cette confirmation n'est pas encore disponible : l'approbation ne peut donc pas être donnée ici.",
+    'admin.disbursements.step_up.title': "Confirmez que c'est bien vous",
+    'admin.disbursements.step_up.lead':
+        "Saisissez le code à six chiffres de votre application d'authentification. La confirmation est liée à cette révision, au montant exact, à la destination et à l'empreinte de l'intention, et ne sert qu'une fois.",
+    'admin.disbursements.step_up.code_label':
+        "Code d'authentification à six chiffres",
+    'admin.disbursements.step_up.verify': 'Confirmer le code',
+    'admin.disbursements.step_up.ready':
+        "Confirmé jusqu'à {time}. La confirmation ne sert qu'une fois, pour cette approbation, et exige encore votre motif.",
+    'admin.disbursements.step_up.wrong_code':
+        'Ce code ne correspond pas. Saisissez le code actuel de votre authentificateur.',
+    'admin.disbursements.step_up.lost':
+        "Impossible de joindre Rozine pour vérifier votre code. Rien n'a été approuvé — saisissez un nouveau code pour une nouvelle confirmation.",
+    'admin.disbursements.step_up.changed':
+        'Les détails liés à cette approbation ont changé : votre confirmation a donc été effacée. Vérifiez-les, puis saisissez un nouveau code.',
     'admin.disbursements.intent.title': 'Intention de paiement',
     'admin.disbursements.intent.not_payment':
         "Intention enregistrée — ce n'est pas un paiement. Le service de paiement ne l'envoie qu'après sa propre revérification.",
@@ -3670,7 +3688,7 @@ const fr: Catalog = {
     'admin.disbursements.stage.requery.title':
         'Interroger à nouveau le prestataire',
     'admin.disbursements.stage.requery.body':
-        "Cela interroge le prestataire sur la même opération. Le paiement n'est jamais renvoyé.",
+        "Cela interroge le prestataire sur la même opération. Le paiement n'est jamais renvoyé, et rien n'est marqué comme rapproché : la réponse passe par le rapprochement comme toute autre.",
     'admin.disbursements.stage.requery.cta': 'Interroger le prestataire',
     'admin.disbursements.stage.requery.placeholder':
         "ex. La page d'état du prestataire indique que la panne est terminée.",

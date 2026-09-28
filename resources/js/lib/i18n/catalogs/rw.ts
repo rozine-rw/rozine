@@ -3364,6 +3364,10 @@ const rw: Catalog = {
         'Undi mukozi agomba kubikora: ntushobora kwemeza igikorwa cyawe bwite.',
     'settlement.refusal.STEP_UP_REQUIRED':
         'Hakenewe kubanza kwemeza bundi bushya mu buryo bukomeye.',
+    'settlement.refusal.STEP_UP_INVALID':
+        "Iryo yemeza ntiryakunze. Andika kode nshya yo muri porogaramu yawe y'umutekano.",
+    'settlement.refusal.STEP_UP_EXPIRED':
+        "Iryo yemeza ryarangiye. Andika kode nshya yo muri porogaramu yawe y'umutekano.",
     'settlement.refusal.MANDATE_REQUIRED':
         "Ibi bikeneye umuntu wemerewe n'ububasha bw'ikigo.",
     'settlement.refusal.STAFF_ACCESS_REQUIRED':
@@ -3593,6 +3597,20 @@ const rw: Catalog = {
     'admin.disbursements.binding.digest': "Igikumwe cy'icyifuzo",
     'admin.disbursements.step_up.unavailable':
         "Kwemeza bisaba kwemeza kongerewe umutekano gushya guhujwe n'aya makuru. Uko kwemeza ntikuraboneka, bityo ntushobora kwemeza hano.",
+    'admin.disbursements.step_up.title': 'Emeza ko ari wowe',
+    'admin.disbursements.step_up.lead':
+        "Andika kode y'imibare itandatu iri muri porogaramu yawe y'umutekano. Iri yemeza rihujwe n'iri vugurura, amafaranga nyayo, aho yoherezwa n'incamake y'icyifuzo, kandi rikoreshwa rimwe gusa.",
+    'admin.disbursements.step_up.code_label':
+        "Kode y'umutekano y'imibare itandatu",
+    'admin.disbursements.step_up.verify': 'Emeza kode',
+    'admin.disbursements.step_up.ready':
+        'Byemejwe kugeza {time}. Rikoreshwa rimwe gusa, kuri uku kwemeza, kandi riracyasaba impamvu yawe.',
+    'admin.disbursements.step_up.wrong_code':
+        "Iyo kode ntihuye. Andika kode iriho ubu muri porogaramu yawe y'umutekano.",
+    'admin.disbursements.step_up.lost':
+        'Ntibyashobotse kugera kuri Rozine ngo igenzure kode yawe. Nta cyemejwe — andika kode nshya kugira ngo wemeze bundi bushya.',
+    'admin.disbursements.step_up.changed':
+        'Amakuru uku kwemeza guhujwe na yo yahindutse, bityo iyemeza ryawe ryasibwe. Yagenzure, hanyuma wandike kode nshya.',
     'admin.disbursements.intent.title': 'Icyifuzo cyo kwishyura',
     'admin.disbursements.intent.not_payment':
         'Icyifuzo cyanditswe — si ukwishyura. Serivisi yishyura iracyohereza gusa nyuma yo kongera kugenzura.',
@@ -3650,7 +3668,7 @@ const rw: Catalog = {
         'urugero: Ikigo cyemeje nimero yacyo nshya ya MoMo.',
     'admin.disbursements.stage.requery.title': 'Ongera ubaze utanga serivisi',
     'admin.disbursements.stage.requery.body':
-        'Ibi bibaza utanga serivisi ku gikorwa kimwe. Ntibyongera kohereza ukwishyura.',
+        'Ibi bibaza utanga serivisi ku gikorwa kimwe. Ntibyongera kohereza ukwishyura, kandi nta cyo byemeza ko cyahujwe: igisubizo kinyura mu guhuza nk’ikindi cyose.',
     'admin.disbursements.stage.requery.cta': 'Baza utanga serivisi',
     'admin.disbursements.stage.requery.placeholder':
         "urugero: Urupapuro rw'utanga serivisi rugaragaza ko ikibazo cyarangiye.",

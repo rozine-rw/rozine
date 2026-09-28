@@ -1,5 +1,9 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
+import {
+    ApprovalStepUpEntry,
+    useApprovalStepUp,
+} from '@/components/admin/disbursements/approval-step-up';
 import { CommandStage } from '@/components/admin/disbursements/command-stage';
 import type { CommandTone } from '@/components/admin/disbursements/command-stage';
 import { DisbursementStateChip } from '@/components/admin/disbursements/disbursement-status';
@@ -103,9 +107,8 @@ const unsettled = (disbursement: C3DisbursementDetail): boolean =>
 /**
  * Why a command the viewer might expect is withheld: approve for the maker (no self-approval) or
  * for anyone while the drawer can't obtain the fresh step-up proof it must carry (v2 §2e: approve
- * adds `step_up_proof` bound to `approval_binding`), and hold release for the staff member who
- * placed the hold. Until the staff step-up exchange is settled (S-D delivery 3), a step-up route
- * alone is not enough: approving without a proof would send an unbound approval. The server
+ * adds `step_up_proof` bound to `approval_binding`) because the props list no staff step-up route
+ * or nothing binds yet, and hold release for the staff member who placed the hold. The server
  * withholds or refuses all three too; this only explains it.
  */
 const withheld = (
@@ -120,7 +123,11 @@ const withheld = (
             return 'disbursement-maker-note';
         }
 
-        if (disbursement.allowed_actions.includes('disbursement.approve')) {
+        if (
+            disbursement.allowed_actions.includes('disbursement.approve') &&
+            (disbursement.step_up.route === null ||
+                disbursement.approval_binding === null)
+        ) {
             return STEP_UP_NOTE;
         }
     }
@@ -142,14 +149,19 @@ const withheld = (
  * the provider's outcome and its reconciliation, any hold, and what issue or failed closing
  * recorded. Every command comes from `allowed_actions` only, carries a written reason and goes
  * through the shared operation command: an uncertain answer is looked up, never resent on its own.
+ * The route names the disbursement, so no body carries its id (#96 answer 3): each body is
+ * `{request_id, expected_revision, reason}`, and approve adds the step-up's `step_up_proof`.
  */
 export function DisbursementDrawer({
     disbursement,
     viewer,
+    serverTime,
     preview,
 }: {
     disbursement: C3DisbursementDetail;
     viewer: StaffViewer;
+    /** The page's `server_time`, which a held step-up proof's expiry is read against. */
+    serverTime: string;
     preview?: C3PreviewOutcome<DisbursementAllowedAction>;
 }) {
     const { t } = useTranslation();
@@ -166,6 +178,7 @@ export function DisbursementDrawer({
         preview,
         only: DISBURSEMENT_RELOAD,
     });
+    const approval = useApprovalStepUp({ disbursement, serverTime });
     const poll = useBoundedPoll(unsettled(disbursement), DISBURSEMENT_RELOAD);
     const waiting = disbursement.state === 'awaiting_second_approver';
     const buttons = COMMANDS.flatMap(
@@ -185,11 +198,13 @@ export function DisbursementDrawer({
 
     const send = (key: DisbursementCommandKey, reason: string) => {
         command.send(commandName(key), {
-            disbursement_id: disbursement.id,
             expected_revision: disbursement.revision,
             reason,
+            ...(key === 'approve' ? { step_up_proof: approval.take() } : {}),
         });
     };
+    const stepUpRoute = disbursement.step_up.route;
+    const needsProof = stage?.key === 'approve' && approval.proof === null;
 
     return (
         <Drawer
@@ -335,6 +350,14 @@ export function DisbursementDrawer({
                     </div>
                 )}
 
+                {stage?.key === 'approve' && stepUpRoute !== null && (
+                    <ApprovalStepUpEntry
+                        stepUp={approval}
+                        route={stepUpRoute}
+                        locked={command.busy || command.unresolved}
+                    />
+                )}
+
                 {stage !== null && (
                     <CommandStage
                         key={stage.key}
@@ -352,7 +375,7 @@ export function DisbursementDrawer({
                         tone={stage.tone}
                         viewer={viewer}
                         busy={command.busy}
-                        locked={command.unresolved}
+                        locked={command.unresolved || needsProof}
                         error={command.errors.reason}
                         onSubmit={(reason) => send(stage.key, reason)}
                         onCancel={() => setStage(null)}

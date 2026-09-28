@@ -747,6 +747,316 @@ describe('Checkout: refusals the server records', () => {
     });
 });
 
+describe('Checkout: Hussain’s contract answers (#96)', () => {
+    const DIGEST_2 = 'a'.repeat(64);
+
+    /** The reserved step after DISCLOSURE_STALE: a new disclosure identity and a Silver quote. */
+    const refreshedDisclosure = () => {
+        const fresh = props(reservedFixture);
+
+        fresh.disclosure = {
+            ...fresh.disclosure,
+            version: 'disclosure-2026-10.1',
+            sha256: DIGEST_2,
+        };
+        fresh.quote = {
+            ...fresh.quote,
+            earnings_fee: {
+                ...fresh.quote.earnings_fee,
+                tier: 'silver',
+                rate_bps: 650,
+            },
+        };
+
+        return fresh;
+    };
+
+    const confirmBodies = () =>
+        inertia.calls
+            .filter((call) => call.method === 'post')
+            .map((call) => call.body as Record<string, unknown>);
+
+    it('after a DISCLOSURE_STALE refusal, never retries the refused request: a new acknowledgement sends a new request with the fresh identity', async () => {
+        const user = userEvent.setup();
+        const { rerender } = render(
+            <InvestorCheckout {...props(reservedFixture)} />,
+        );
+
+        inertia.queue.push(fails(409, { code: 'DISCLOSURE_STALE' }));
+        await user.click(screen.getByRole('checkbox'));
+        await user.click(
+            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+        );
+        await screen.findByText(
+            'The disclosure changed. Read the current version and acknowledge it again.',
+        );
+        expect(
+            screen.queryByRole('button', {
+                name: 'Send the same request again',
+            }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Check again' }),
+        ).not.toBeInTheDocument();
+
+        rerender(<InvestorCheckout {...refreshedDisclosure()} />);
+        expect(
+            screen.getByRole('dialog', { name: 'Confirm your notes' }),
+        ).toHaveTextContent('Fee on earnings · 6.5% (Silver)');
+        expect(screen.getByRole('checkbox')).not.toBeChecked();
+
+        await user.click(screen.getByRole('checkbox'));
+        await user.click(
+            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+        );
+
+        const [stale, fresh] = confirmBodies();
+
+        expect(inertia.calls).toHaveLength(2);
+        expect(stale).toMatchObject({
+            disclosure_version: 'disclosure-2026-09.1',
+        });
+        expect(fresh).toMatchObject({
+            reservation_id: stale.reservation_id,
+            disclosure_version: 'disclosure-2026-10.1',
+            disclosure_sha256: DIGEST_2,
+            acknowledged: true,
+        });
+        expect(fresh.request_id).not.toBe(stale.request_id);
+    });
+
+    it('treats a DISCLOSURE_STALE the lookup replays as definitive: the stale request is never sent again', async () => {
+        const user = userEvent.setup();
+        const { rerender } = render(
+            <InvestorCheckout {...props(reservedFixture)} />,
+        );
+
+        inertia.queue.push(
+            fails(503, { code: 'RETRYABLE_CONTENTION' }),
+            fails(409, { code: 'DISCLOSURE_STALE' }),
+        );
+        await user.click(screen.getByRole('checkbox'));
+        await user.click(
+            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+        );
+        await screen.findByText(
+            'The disclosure changed. Read the current version and acknowledge it again.',
+        );
+
+        const staleId = (inertia.calls[0].body as { request_id: string })
+            .request_id;
+
+        expect(inertia.calls[1]).toMatchObject({
+            url: `/preview/investor-primary-operation-${staleId}`,
+            method: 'get',
+        });
+        expect(inertia.reload).toHaveBeenCalledTimes(1);
+
+        rerender(<InvestorCheckout {...refreshedDisclosure()} />);
+        await user.click(screen.getByRole('checkbox'));
+        await user.click(
+            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+        );
+
+        expect(inertia.calls).toHaveLength(3);
+        expect(inertia.calls[2].body).toMatchObject({
+            disclosure_version: 'disclosure-2026-10.1',
+            disclosure_sha256: DIGEST_2,
+        });
+        expect(
+            (inertia.calls[2].body as { request_id: string }).request_id,
+        ).not.toBe(staleId);
+    });
+
+    it('shows the recorded RESERVATION_EXPIRED a lookup returns as the expired state, with no commitment', async () => {
+        const user = userEvent.setup();
+        const { rerender } = render(
+            <InvestorCheckout {...props(reservedFixture)} />,
+        );
+
+        inertia.queue.push(
+            fails(503, { code: 'RETRYABLE_CONTENTION' }),
+            fails(409, { code: 'RESERVATION_EXPIRED' }),
+        );
+        await user.click(screen.getByRole('checkbox'));
+        await user.click(
+            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+        );
+
+        expect(
+            await screen.findByText(
+                'Your 5-minute hold ended and its notes were released. Reserve again to continue.',
+            ),
+        ).toBeInTheDocument();
+        expect(inertia.calls.map(({ method }) => method)).toEqual([
+            'post',
+            'get',
+        ]);
+        expect(inertia.reload).toHaveBeenCalledTimes(1);
+        expect(inertia.visit).not.toHaveBeenCalled();
+        expect(
+            screen.queryByRole('button', {
+                name: 'Send the same request again',
+            }),
+        ).not.toBeInTheDocument();
+
+        rerender(<InvestorCheckout {...props(expiredFixture)} />);
+        expect(
+            screen.queryByRole('dialog', { name: 'Committed' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Reserve · RWF 5,000' }),
+        ).toBeEnabled();
+    });
+
+    it('shows a direct RESERVATION_EXPIRED as the expired state too, with no commitment', async () => {
+        const user = userEvent.setup();
+        const { rerender } = render(
+            <InvestorCheckout {...props(reservedFixture)} />,
+        );
+
+        inertia.queue.push(fails(409, { code: 'RESERVATION_EXPIRED' }));
+        await user.click(screen.getByRole('checkbox'));
+        await user.click(
+            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+        );
+        await screen.findByText(
+            'Your 5-minute hold ended and its notes were released. Reserve again to continue.',
+        );
+        expect(inertia.calls).toHaveLength(1);
+
+        rerender(<InvestorCheckout {...props(expiredFixture)} />);
+        expect(
+            screen.queryByRole('dialog', { name: 'Committed' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('dialog', { name: 'Checkout' }),
+        ).toBeInTheDocument();
+    });
+
+    it('follows a PRIMARY_COMMITTED lookup after the hold clock ends: the same request committed before expiry', async () => {
+        vi.useFakeTimers({ now: new Date('2026-09-23T07:00:00Z') });
+        render(<InvestorCheckout {...props(reservedFixture)} />);
+
+        inertia.queue.push(
+            fails(503, { code: 'RETRYABLE_CONTENTION' }),
+            answers({
+                status: 'completed',
+                code: 'PRIMARY_COMMITTED',
+                data: {
+                    receipt: { code: 'PRIMARY_COMMITTED' },
+                    current: null,
+                    next: {
+                        url: '/preview/investor-checkout-committed',
+                        method: 'get',
+                    },
+                },
+            }),
+        );
+        fireEvent.click(screen.getByRole('checkbox'));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+        );
+        /* The answer is lost, and the browser's hold clock runs out before the lookup answers. */
+        act(() => vi.advanceTimersByTime(300_000));
+        await flush();
+        await flush();
+
+        expect(inertia.visit).toHaveBeenCalledWith({
+            url: '/preview/investor-checkout-committed',
+            method: 'get',
+        });
+        expect(
+            screen.queryByText(
+                'Your 5-minute hold ended and its notes were released. Reserve again to continue.',
+            ),
+        ).not.toBeInTheDocument();
+        expect(inertia.calls[1].body).toEqual({
+            identity_context_revision: 5,
+            command: 'primary.confirm',
+        });
+    });
+
+    it('treats a never-recorded confirm as OPERATION_NOT_FOUND and resends the identical request only by hand', async () => {
+        finishReloads();
+        const user = userEvent.setup();
+
+        render(<InvestorCheckout {...props(reservedFixture)} />);
+        inertia.queue.push(
+            fails(503, { code: 'RETRYABLE_CONTENTION' }),
+            fails(404, { code: 'OPERATION_NOT_FOUND' }),
+        );
+        await user.click(screen.getByRole('checkbox'));
+        await user.click(
+            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+        );
+
+        expect(
+            await screen.findByText('Nothing was recorded'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(/Your 5-minute hold ended/),
+        ).not.toBeInTheDocument();
+        expect(inertia.calls).toHaveLength(2);
+
+        inertia.queue.push(
+            answers({
+                status: 'completed',
+                code: 'PRIMARY_COMMITTED',
+                data: {
+                    receipt: { code: 'PRIMARY_COMMITTED' },
+                    current: null,
+                    next: {
+                        url: '/preview/investor-checkout-committed',
+                        method: 'get',
+                    },
+                },
+            }),
+        );
+        await user.click(
+            screen.getByRole('button', { name: 'Send the same request again' }),
+        );
+
+        expect(inertia.calls).toHaveLength(3);
+        expect(inertia.calls[2]).toEqual(inertia.calls[0]);
+        await vi.waitFor(() => expect(inertia.visit).toHaveBeenCalledTimes(1));
+    });
+
+    it('offers no retry of a never-recorded confirm once the refreshed facts no longer allow it', async () => {
+        finishReloads();
+        const user = userEvent.setup();
+        const { rerender } = render(
+            <InvestorCheckout {...props(reservedFixture)} />,
+        );
+
+        inertia.queue.push(
+            fails(503, { code: 'RETRYABLE_CONTENTION' }),
+            fails(404, { code: 'OPERATION_NOT_FOUND' }),
+        );
+        await user.click(screen.getByRole('checkbox'));
+        await user.click(
+            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+        );
+        await screen.findByText('Nothing was recorded');
+
+        rerender(<InvestorCheckout {...props(expiredFixture)} />);
+        expect(
+            screen.queryByRole('button', {
+                name: 'Send the same request again',
+            }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Nothing was recorded, and this action is no longer available with the current details.',
+            ),
+        ).toBeInTheDocument();
+        expect(inertia.calls).toHaveLength(2);
+        expect(
+            screen.queryByRole('dialog', { name: 'Committed' }),
+        ).not.toBeInTheDocument();
+    });
+});
+
 describe('Checkout: the server clock and lost answers', () => {
     it('anchors the hold on server_time, whatever the browser clock says', () => {
         vi.useFakeTimers({ now: new Date('2026-09-23T09:30:00Z') });
