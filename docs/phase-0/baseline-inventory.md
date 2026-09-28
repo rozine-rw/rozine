@@ -1306,6 +1306,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_28_112500_seal_ledger_entries_once_validated.php |
 | 2026_09_28_112902_add_primary_postings_to_wallet_ledger.php |
 | 2026_09_28_140000_bind_primary_postings_to_their_source_anchor.php |
+| 2026_09_28_175521_bind_deposit_credits_to_their_intent_amounts.php |
 
 ## Routes
 

@@ -18,6 +18,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Tests\Support\InvestorWalletFixture;
 
 /** Runs the change in its own savepoint and fires deferred checks, as a commit would. */
 function walletSchemaRejects(Closure $change, string $message): void
@@ -28,10 +29,15 @@ function walletSchemaRejects(Closure $change, string $message): void
     }))->toThrow(QueryException::class, $message);
 }
 
-/** @return array{entry: LedgerEntry, clearing: LedgerAccount, available: LedgerAccount} */
+/**
+ * A validated deposit credit entry: bound by its receipt to an applied success and posting exactly its intent's amount.
+ *
+ * @return array{entry: LedgerEntry, clearing: LedgerAccount, available: LedgerAccount}
+ */
 function walletSchemaBalancedEntry(string $amount = '5000'): array
 {
-    $entry = LedgerEntry::factory()->create();
+    $credit = WalletDepositCredit::factory()->create(['intent_id' => WalletDepositIntent::factory()->state(['amount' => $amount, 'credited' => $amount])]);
+    $entry = LedgerEntry::query()->findOrFail($credit->ledger_entry_id);
     $clearing = LedgerAccount::factory()->system()->create();
     $available = LedgerAccount::factory()->create(['wallet_id' => $entry->wallet_id]);
     LedgerLine::factory()->create(['entry_id' => $entry->id, 'account_id' => $clearing->id, 'direction' => 'debit', 'amount' => $amount]);
@@ -225,14 +231,65 @@ it('refuses to roll back wallet migrations once records exist', function (string
 ]);
 
 it('rolls wallet migrations back and forward while no records exist', function (): void {
-    foreach (['2026_09_28_140000_bind_primary_postings_to_their_source_anchor', '2026_09_28_112902_add_primary_postings_to_wallet_ledger', '2026_09_28_112500_seal_ledger_entries_once_validated', '2026_09_28_104821_create_wallet_deposit_intent_and_outcome_tables',
+    foreach (['2026_09_28_175521_bind_deposit_credits_to_their_intent_amounts', '2026_09_28_140000_bind_primary_postings_to_their_source_anchor', '2026_09_28_112902_add_primary_postings_to_wallet_ledger', '2026_09_28_112500_seal_ledger_entries_once_validated', '2026_09_28_104821_create_wallet_deposit_intent_and_outcome_tables',
         '2026_09_28_104819_create_wallet_deposit_policy_method_and_restriction_tables', '2026_09_28_104818_create_investor_wallet_ledger_tables'] as $migration) {
         (require database_path('migrations/'.$migration.'.php'))->down();
     }
     expect(Schema::hasTable('investor_wallets'))->toBeFalse()->and(Schema::hasTable('wallet_deposit_intents'))->toBeFalse();
     foreach (['2026_09_28_104818_create_investor_wallet_ledger_tables', '2026_09_28_104819_create_wallet_deposit_policy_method_and_restriction_tables',
-        '2026_09_28_104821_create_wallet_deposit_intent_and_outcome_tables', '2026_09_28_112500_seal_ledger_entries_once_validated', '2026_09_28_112902_add_primary_postings_to_wallet_ledger', '2026_09_28_140000_bind_primary_postings_to_their_source_anchor'] as $migration) {
+        '2026_09_28_104821_create_wallet_deposit_intent_and_outcome_tables', '2026_09_28_112500_seal_ledger_entries_once_validated', '2026_09_28_112902_add_primary_postings_to_wallet_ledger', '2026_09_28_140000_bind_primary_postings_to_their_source_anchor',
+        '2026_09_28_175521_bind_deposit_credits_to_their_intent_amounts'] as $migration) {
         (require database_path('migrations/'.$migration.'.php'))->up();
     }
-    expect(Schema::hasTable('wallet_deposit_credits'))->toBeTrue();
+    expect(Schema::hasTable('wallet_deposit_credits'))->toBeTrue()->and(walletSchemaDepositBindingObjects())->toBe(5);
+});
+
+/** How many of the deposit credit binding's three functions and two triggers exist. */
+function walletSchemaDepositBindingObjects(): int
+{
+    return (int) DB::scalar("SELECT (SELECT count(*) FROM pg_proc WHERE proname IN ('deposit_credit_entry_check', 'assert_deposit_credit_entry_bound',
+        'assert_deposit_credit_line_entry_bound')) + (SELECT count(*) FROM pg_trigger WHERE tgname IN ('ledger_entries_deposit_credit_bound',
+        'ledger_lines_entry_deposit_credit_bound'))");
+}
+
+/** Balanced clearing-to-available lines for an entry, with no check flushed. */
+function walletSchemaDepositLines(LedgerEntry $entry, string $amount): void
+{
+    $clearing = LedgerAccount::query()->whereNull('wallet_id')->where('kind', 'deposit_clearing')->first() ?? LedgerAccount::factory()->system()->create();
+    $available = LedgerAccount::factory()->create(['wallet_id' => $entry->wallet_id]);
+    LedgerLine::factory()->create(['entry_id' => $entry->id, 'account_id' => $clearing->id, 'direction' => 'debit', 'amount' => $amount]);
+    LedgerLine::factory()->create(['entry_id' => $entry->id, 'account_id' => $available->id, 'direction' => 'credit', 'amount' => $amount]);
+}
+
+it('refuses to bind deposit credits over bad retained history and installs none of the binding', function (Closure $history, string $message): void {
+    $migration = require database_path('migrations/2026_09_28_175521_bind_deposit_credits_to_their_intent_amounts.php');
+    $migration->down();
+    $history();
+
+    expect(walletSchemaDepositBindingObjects())->toBe(0)
+        ->and(fn () => $migration->up())->toThrow(QueryException::class, $message)
+        ->and(walletSchemaDepositBindingObjects())->toBe(0);
+})->with([
+    'an entry for an unrecorded intent' => [fn () => walletSchemaDepositLines(LedgerEntry::factory()->create(), '5000'), 'must settle a recorded deposit intent'],
+    'an entry no receipt binds' => [function (): void {
+        $intent = WalletDepositIntent::factory()->create();
+        walletSchemaDepositLines(LedgerEntry::factory()->create(['wallet_id' => $intent->wallet_id, 'source_id' => $intent->id]), '5000');
+    }, 'must be bound to one applied success of its intent'],
+    'a bound entry that moves more than its intent' => [fn () => walletSchemaDepositLines(LedgerEntry::query()->findOrFail(WalletDepositCredit::factory()->create()->ledger_entry_id), '6000'),
+        'must debit clearing by its intent gross 5000 (debited 6000)'],
+]);
+
+it('binds deposit credits over good retained history while holding exclusive locks on every table it audits', function (): void {
+    $intentId = (string) InvestorWalletFixture::deposit(InvestorWalletFixture::ready('500'))['data']['intent_id'];
+    InvestorWalletFixture::settle($intentId);
+    $migration = require database_path('migrations/2026_09_28_175521_bind_deposit_credits_to_their_intent_amounts.php');
+    $migration->down();
+    $migration->up();
+    $locked = (int) DB::scalar("SELECT count(DISTINCT class.relname) FROM pg_locks lock JOIN pg_class class ON class.oid = lock.relation
+        WHERE lock.pid = pg_backend_pid() AND lock.mode = 'ExclusiveLock' AND lock.granted AND class.relname IN ('investor_wallets', 'wallet_deposit_intents',
+        'wallet_provider_events', 'ledger_entries', 'ledger_accounts', 'ledger_lines', 'wallet_deposit_credits')");
+
+    expect(walletSchemaDepositBindingObjects())->toBe(5)
+        ->and($locked)->toBe(7)
+        ->and(WalletDepositCredit::query()->where('intent_id', $intentId)->count())->toBe(1);
 });
