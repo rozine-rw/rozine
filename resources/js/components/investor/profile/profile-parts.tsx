@@ -1,6 +1,7 @@
 import { Form, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { InfoNotice } from '@/components/investor/deals/deal-status';
 import { POSITIVE_TEXT } from '@/components/investor/tokens';
 import { MethodMark } from '@/components/investor/wallet/funding';
 import { Icon } from '@/components/rozine/icon';
@@ -75,7 +76,13 @@ export function IdentityCard({
 }
 
 type MenuItem = {
-    key: 'linked' | 'statements' | 'verification' | 'terms' | 'privacy';
+    key:
+        | 'linked'
+        | 'statements'
+        | 'automation'
+        | 'verification'
+        | 'terms'
+        | 'privacy';
     icon: IconName;
     href: RouteLink;
     active: boolean;
@@ -110,6 +117,16 @@ export function ProfileMenu({
             href: links.statements,
             active: section === 'statements',
         },
+        ...(links.automation === undefined
+            ? []
+            : [
+                  {
+                      key: 'automation' as const,
+                      icon: 'repeat' as const,
+                      href: links.automation,
+                      active: section === 'automation',
+                  },
+              ]),
         {
             key: 'verification',
             icon: 'shield',
@@ -157,6 +174,36 @@ export function ProfileMenu({
                 </Link>
             ))}
         </nav>
+    );
+}
+
+/**
+ * Auto-Deploy (MVP-INVESTOR-SCR-09) as an honest gated explainer (D-61, C-29): it names the missing
+ * approval and the next step, and offers nothing to switch on, pause or configure.
+ */
+export function AutomationExplainer({ deals }: { deals: RouteLink }) {
+    const { t } = useTranslation();
+
+    return (
+        <>
+            <InfoNotice
+                title={t('investor.profile.automation.gated_title')}
+                body={t('investor.profile.automation.gated_body')}
+                className="mt-4"
+            />
+            <p className="text-[13px] leading-[1.55] text-rz-secondary">
+                {t('investor.profile.automation.intro')}
+            </p>
+            <p className="mt-3 text-[13px] leading-[1.55] text-rz-secondary">
+                {t('investor.profile.automation.nothing_runs')}
+            </p>
+            <Link
+                href={deals}
+                className="mt-5 flex h-12 w-full items-center justify-center rounded-xl bg-rz-accent-fill text-[14.5px] font-semibold text-white"
+            >
+                {t('investor.profile.automation.next')}
+            </Link>
+        </>
     );
 }
 

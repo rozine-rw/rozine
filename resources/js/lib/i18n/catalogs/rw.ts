@@ -2829,6 +2829,7 @@ const rw: Catalog = {
     'investor.profile.member_since': 'Umunyamuryango kuva {date}',
     'investor.profile.item.linked': 'Konti zahujwe',
     'investor.profile.item.statements': "Inyandiko z'imari",
+    'investor.profile.item.automation': 'Auto-Deploy',
     'investor.profile.item.verification': "Igenzura ry'umwirondoro",
     'investor.profile.item.terms': "Amabwiriza n'Amategeko",
     'investor.profile.item.privacy': 'Itangazo ku Ibanga',
@@ -2853,6 +2854,14 @@ const rw: Catalog = {
     'investor.profile.linked.submit': 'Huza konti',
     'investor.profile.linked.footnote':
         'Rozine ikora igikorwa kimwe cyo kugenzura. Ubwishyu bugera gusa kuri konti iri mu izina ryawe.',
+    'investor.profile.automation.gated_title': 'Auto-Deploy ntiraboneka',
+    'investor.profile.automation.gated_body':
+        "Ikeneye kwemezwa ku bijyanye n'igicuruzwa, amafaranga n'amategeko mbere y'uko Rozine ishora imari mu izina ryawe.",
+    'investor.profile.automation.intro':
+        'Auto-Deploy yakwemerera Rozine kugufatira impapuro mu bikorwa bishya byo gukusanya imari, ukurikije amategeko ushyizeho. Kugeza yemejwe, buri shoramari urihitamo ukaryemeza ubwawe.',
+    'investor.profile.automation.nothing_runs':
+        'Nta kintu cya Auto-Deploy cyashyizweho, gikora cyangwa cyishyuzwa kuri konti yawe.',
+    'investor.profile.automation.next': 'Hitamo umushinga ubwawe',
     'investor.profile.statements.intro':
         "Kuramo inyandiko z'ishoramari n'incamake z'imisoro. Buri imwe ikorwa hashingiwe ku mateka yemejwe y'ibikorwa byawe.",
     'investor.profile.statements.year': "UMWAKA W'IMISORO {year}",

@@ -2838,6 +2838,7 @@ const fr: Catalog = {
     'investor.profile.member_since': 'Membre depuis {date}',
     'investor.profile.item.linked': 'Comptes liés',
     'investor.profile.item.statements': 'Relevés',
+    'investor.profile.item.automation': 'Auto-Deploy',
     'investor.profile.item.verification': "Vérification d'identité",
     'investor.profile.item.terms': 'Conditions générales',
     'investor.profile.item.privacy': 'Note de confidentialité',
@@ -2862,6 +2863,15 @@ const fr: Catalog = {
     'investor.profile.linked.submit': 'Lier le compte',
     'investor.profile.linked.footnote':
         "Rozine effectue un débit de vérification unique. Les versements n'arrivent que sur un compte à votre nom.",
+    'investor.profile.automation.gated_title':
+        "Auto-Deploy n'est pas encore disponible",
+    'investor.profile.automation.gated_body':
+        'Il doit être approuvé sur le produit, les frais et le plan juridique avant que Rozine puisse investir pour vous.',
+    'investor.profile.automation.intro':
+        'Auto-Deploy permettrait à Rozine de réserver des titres dans de nouvelles levées pour vous, selon des règles que vous fixez. En attendant son approbation, chaque investissement est choisi et confirmé par vous.',
+    'investor.profile.automation.nothing_runs':
+        "Rien n'est configuré, actif ou facturé pour Auto-Deploy sur votre compte.",
+    'investor.profile.automation.next': 'Choisir une opportunité vous-même',
     'investor.profile.statements.intro':
         'Téléchargez vos relevés de portefeuille et récapitulatifs fiscaux. Chacun est généré à partir de votre historique vérifié.',
     'investor.profile.statements.year': 'ANNÉE FISCALE {year}',

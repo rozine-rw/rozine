@@ -1,5 +1,6 @@
 import { InvestorShell } from '@/components/investor/investor-shell';
 import {
+    AutomationExplainer,
     IdentityCard,
     LinkedAccounts,
     ProfileMenu,
@@ -15,7 +16,8 @@ import type { InvestorProfileProps } from '@/types/investor';
  * Profile (MVP-INVESTOR-SCR-11, design L2726–2834) with its linked-accounts (wallet readiness,
  * L3856–3923) and statements (MVP-INVESTOR-SCR-10, L3992–4012) sub-pages. A phone shows the menu
  * and opens each sub-page full screen; a wide screen keeps the menu beside the open sub-page, with
- * linked accounts as the resting one.
+ * linked accounts as the resting one. Auto-Deploy (MVP-INVESTOR-SCR-09) is a gated explainer
+ * sub-page, listed only when the server links it.
  */
 export default function InvestorProfile(props: InvestorProfileProps) {
     const { t } = useTranslation();
@@ -53,6 +55,9 @@ export default function InvestorProfile(props: InvestorProfileProps) {
                 )}
                 {sub === 'statements' && props.statements !== null && (
                     <Statements statements={props.statements} />
+                )}
+                {sub === 'automation' && (
+                    <AutomationExplainer deals={props.links.deals} />
                 )}
             </>
         );

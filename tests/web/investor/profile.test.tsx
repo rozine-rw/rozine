@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import InvestorProfile from '@/pages/investor/profile';
 import type { InvestorProfileProps } from '@/types/investor';
+import automationFixture from '../../../resources/fixtures/ui/investor-profile-automation.json';
 import linkedFixture from '../../../resources/fixtures/ui/investor-profile-linked.json';
 import statementsFixture from '../../../resources/fixtures/ui/investor-profile-statements.json';
 import unverifiedFixture from '../../../resources/fixtures/ui/investor-profile-unverified.json';
@@ -230,6 +231,58 @@ describe('Profile', () => {
             expect(screen.getByText('Institution')).toBeInTheDocument();
             unmount();
         });
+    });
+
+    it('explains Auto-Deploy as gated, with the missing approval and a next step, and nothing to switch on', () => {
+        render(<InvestorProfile {...profile(automationFixture)} />);
+
+        expect(
+            screen.getByRole('heading', { name: 'Auto-Deploy' }),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('status')).toHaveTextContent(
+            "Auto-Deploy isn't available yet",
+        );
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'product, fee and legal approval',
+        );
+        expect(
+            screen.getByText(/Nothing is set up, running or charged/u),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Choose a deal yourself' }),
+        ).toHaveAttribute('href', '/preview/investor-deals');
+        expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute(
+            'href',
+            '/preview/investor-profile',
+        );
+        expect(screen.queryByRole('button')).not.toBeInTheDocument();
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+        expect(screen.queryByRole('switch')).not.toBeInTheDocument();
+        expect(screen.queryByText(/%/u)).not.toBeInTheDocument();
+    });
+
+    it('lists Auto-Deploy in the menu only when the server links it', () => {
+        setWide(true);
+        const { unmount } = render(
+            <InvestorProfile {...profile(automationFixture)} />,
+        );
+        const menu = screen.getByRole('navigation', { name: 'Profile menu' });
+
+        expect(within(menu).getAllByRole('link')).toHaveLength(6);
+        expect(
+            within(menu).getByRole('link', { name: /Auto-Deploy/u }),
+        ).toHaveAttribute('aria-current', 'page');
+        expect(
+            within(menu).getByRole('link', { name: /Auto-Deploy/u }),
+        ).toHaveAttribute('href', '/preview/investor-profile-automation');
+        unmount();
+
+        render(<InvestorProfile {...profile()} />);
+        expect(
+            within(
+                screen.getByRole('navigation', { name: 'Profile menu' }),
+            ).queryByRole('link', { name: /Auto-Deploy/u }),
+        ).not.toBeInTheDocument();
     });
 
     it('keeps the menu beside the open sub-page on a wide screen', () => {

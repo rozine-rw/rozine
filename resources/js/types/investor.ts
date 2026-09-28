@@ -632,7 +632,15 @@ export type InvestorType = 'individual' | 'institution';
 
 export type KycState = 'verified' | 'pending' | 'unverified' | 'expired';
 
-export type ProfileSection = 'overview' | 'linked' | 'statements';
+/**
+ * `automation` (MVP-INVESTOR-SCR-09) is a gated explainer only: Auto-Deploy cannot run in the MVP
+ * (D-61, C-29), so it carries no mandate, tier or outcome data.
+ */
+export type ProfileSection =
+    | 'overview'
+    | 'linked'
+    | 'statements'
+    | 'automation';
 
 export type LinkedAccount = FundingMethod & {
     verified: boolean;
@@ -669,6 +677,8 @@ export type InvestorProfileProps = {
         overview: RouteLink;
         linked: RouteLink;
         statements: RouteLink;
+        /** Present only when the server offers the gated Auto-Deploy explainer. */
+        automation?: RouteLink;
         verification: RouteLink;
         terms: RouteLink;
         privacy: RouteLink;
