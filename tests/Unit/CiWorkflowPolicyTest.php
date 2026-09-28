@@ -147,7 +147,7 @@ it('tests immutable proposed merges and preserves deployment gates', function ()
             }
         }
     }
-    foreach (['ci', 'web', 'concurrency', 'negative-control-groups', 'admission'] as $name) {
+    foreach (['php-shards', 'web', 'concurrency', 'negative-control-groups', 'admission'] as $name) {
         expect($workflow['jobs'][$name]['needs'])->toBe('plan')
             ->and($workflow['jobs'][$name]['if'])->toBe("\${{ needs.plan.outputs.full == 'true' }}");
     }
