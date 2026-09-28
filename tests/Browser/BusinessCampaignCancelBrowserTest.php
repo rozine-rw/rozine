@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 use Tests\Support\AuditSealingFixture;
 use Tests\Support\BrowserJourney;
@@ -129,7 +130,7 @@ it('shows a raise the expiry sweep closed at its deadline as expired, with nothi
         /* The sweep runs after the retained deadline; it closes the raise at that deadline, once. */
         $campaign = BusinessCampaign::query()->sole();
         $this->travelTo($campaign->expires_at->addSecond());
-        $this->artisan('campaigns:expire', ['--limit' => 100])->assertSuccessful();
+        expect(Artisan::call('campaigns:expire', ['--limit' => 100]))->toBe(0);
         $this->travelBack();
 
         $journey->code('ce1', '
