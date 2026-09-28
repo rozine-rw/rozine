@@ -109,7 +109,7 @@ export function BalanceCard({
                     {t(
                         depositOffered
                             ? 'investor.wallet.c3.restricted'
-                            : 'investor.wallet.c3.restricted_paused',
+                            : 'investor.wallet.c3.restricted_unavailable',
                         {
                             date: formatDate(wallet.restriction.since, locale),
                         },

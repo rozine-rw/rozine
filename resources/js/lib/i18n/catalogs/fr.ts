@@ -3401,8 +3401,8 @@ const fr: Catalog = {
         "Seul le disponible peut être dépensé. Le réservé est dans un paiement en cours ; l'engagé attend l'émission.",
     'investor.wallet.c3.restricted':
         "Une restriction s'applique depuis le {date}. Les dépôts restent possibles.",
-    'investor.wallet.c3.restricted_paused':
-        "Une restriction s'applique depuis le {date}. Les dépôts sont suspendus tant qu'elle s'applique.",
+    'investor.wallet.c3.restricted_unavailable':
+        "Une restriction s'applique depuis le {date}. Les dépôts ne sont pas disponibles pour le moment.",
     'investor.wallet.c3.no_pending': 'Aucun dépôt en attente',
     'investor.wallet.c3.pending_deposits':
         '{amount} pas encore confirmé — hors du total',
