@@ -112,7 +112,7 @@ it('rechecks closure after the expiry candidate is selected', function (): void 
     $event = 'eloquent.retrieved: '.BusinessCampaign::class;
     $advanced = false;
     Event::listen($event, function (BusinessCampaign $campaign) use (&$advanced): void {
-        if (! $advanced && ! array_key_exists('expires_at', $campaign->getAttributes())) {
+        if (! $advanced && ! array_key_exists('principal', $campaign->getAttributes())) {
             $advanced = true;
             expect($this->store->expireDue(100))->toBe(1);
         }

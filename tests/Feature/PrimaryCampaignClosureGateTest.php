@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
+use App\Application\Primary\Contracts\CampaignCommitments;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Domain\Operations\CommandRejection;
 use App\Models\BusinessCampaignClosure;
@@ -11,8 +12,11 @@ use App\Models\LedgerEntry;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
+use Illuminate\Log\Events\MessageLogged;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
 use Tests\Support\InvestorWalletFixture;
@@ -40,7 +44,8 @@ it('refuses and replays cancellation until confirmed commitments can be settled 
     $cancel = fn (): array => $this->campaigns->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id,
         $this->campaign->id, 1, 'Cancel after confirmation.', $request);
     $result = $cancel();
-    expect($result)->toMatchArray(['status' => 'rejected', 'code' => 'CAMPAIGN_SETTLEMENT_REQUIRED', 'revision' => 1])
+    expect($result)->toMatchArray(['status' => 'rejected', 'code' => 'CAMPAIGN_SETTLEMENT_REQUIRED', 'revision' => 1,
+        'data' => ['campaign_id' => $this->campaign->id, 'business_id' => $this->campaign->business_id]])
         ->and($cancel())->toBe($result)
         ->and($this->campaigns->findCancellation($this->campaign->actor_user_id, 1, $request))->toBe($result)
         ->and($this->campaigns->campaign($this->campaign->actor_user_id, 1, $this->campaign->business_id, $this->campaign->id)['can_cancel'])->toBeFalse()
@@ -51,13 +56,18 @@ it('refuses and replays cancellation until confirmed commitments can be settled 
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 });
 
-it('fails the legacy expiry sweep closed instead of releasing committed campaign exposure', function (): void {
+it('reports deferred settlement without releasing committed campaign exposure', function (): void {
     $this->travelTo($this->campaign->expires_at);
-    expect(fn () => $this->campaigns->expireDue(100))->toThrow(CommandRejection::class, 'CAMPAIGN_SETTLEMENT_REQUIRED')
+    Event::fake([MessageLogged::class]);
+    expect($this->campaigns->expireDue(100))->toBe(0)
         ->and(BusinessCampaignClosure::query()->count())->toBe(0)
         ->and(PrimaryCommitment::query()->count())->toBe(1)
         ->and(LedgerEntry::query()->orderBy('id')->get()->toArray())->toBe($this->cash)
         ->and(app(BusinessExposureStore::class)->current($this->campaign->business_id))->toBe($this->exposure);
+    Event::assertDispatchedTimes(MessageLogged::class, 1);
+    Event::assertDispatched(MessageLogged::class, fn (MessageLogged $event): bool => $event->level === 'notice'
+        && $event->message === 'Campaign expiry deferred until commitments are settled.'
+        && $event->context === ['campaign_id' => $this->campaign->id, 'business_id' => $this->campaign->business_id, 'code' => 'CAMPAIGN_SETTLEMENT_REQUIRED']);
 });
 
 it('keeps investor-free closure available for a different campaign', function (): void {
@@ -70,4 +80,59 @@ it('keeps investor-free closure available for a different campaign', function ()
         ->and(PrimaryCommitment::query()->count())->toBe(1)
         ->and(app(BusinessExposureStore::class)->current($this->campaign->business_id))->toBe($this->exposure)
         ->and(app(BusinessExposureStore::class)->current($other->business_id))->toBe([]);
+});
+
+it('advances past committed campaigns without consuming the closure limit or skipping later businesses', function (int $delay): void {
+    $this->travel($delay)->seconds();
+    Cache::forget('fortify.2fa_codes.'.md5((new Google2FA)->getCurrentOtp('JBSWY3DPEHPK3PXP')));
+    $second = PrimaryReservationFixture::campaign();
+    Cache::forget('fortify.2fa_codes.'.md5((new Google2FA)->getCurrentOtp('JBSWY3DPEHPK3PXP')));
+    $third = PrimaryReservationFixture::campaign();
+    $cash = LedgerEntry::query()->orderBy('id')->get()->toArray();
+    $this->travelTo($third->expires_at);
+    Event::fake([MessageLogged::class]);
+    expect(Artisan::call('campaigns:expire', ['--limit' => 1]))->toBe(0)
+        ->and(Artisan::output())->toContain('Expired 1 campaigns.')
+        ->and(BusinessCampaignClosure::query()->sole()->business_campaign_id)->toBe($second->id)
+        ->and(app(BusinessExposureStore::class)->current($second->business_id))->toBe([])
+        ->and(app(BusinessExposureStore::class)->current($third->business_id))->toHaveCount(1)
+        ->and($this->campaigns->expireDue(2))->toBe(1)
+        ->and(BusinessCampaignClosure::query()->count())->toBe(2)
+        ->and(app(BusinessExposureStore::class)->current($third->business_id))->toBe([])
+        ->and($this->campaigns->expireDue(1))->toBe(0)
+        ->and(PrimaryCommitment::query()->count())->toBe(1)
+        ->and(LedgerEntry::query()->orderBy('id')->get()->toArray())->toBe($cash)
+        ->and(app(BusinessExposureStore::class)->current($this->campaign->business_id))->toBe($this->exposure);
+    Event::assertDispatchedTimes(MessageLogged::class, 3);
+    Event::assertDispatched(MessageLogged::class, fn (MessageLogged $event): bool => $event->level === 'notice'
+        && $event->message === 'Campaign expiry deferred until commitments are settled.'
+        && $event->context === ['campaign_id' => $this->campaign->id, 'business_id' => $this->campaign->business_id, 'code' => 'CAMPAIGN_SETTLEMENT_REQUIRED']);
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+})->with([0, 1]);
+
+it('propagates unrelated command refusals during expiry', function (): void {
+    $this->travelTo($this->campaign->expires_at);
+    $commitments = new class implements CampaignCommitments
+    {
+        public function anyForCampaign(string $campaignId): bool
+        {
+            throw new CommandRejection('UNRELATED_REFUSAL');
+        }
+    };
+    app()->instance(CampaignCommitments::class, $commitments);
+    expect(fn () => app(BusinessCampaignStore::class)->expireDue(1))->toThrow(CommandRejection::class, 'UNRELATED_REFUSAL')
+        ->and(BusinessCampaignClosure::query()->count())->toBe(0)
+        ->and(LedgerEntry::query()->orderBy('id')->get()->toArray())->toBe($this->cash)
+        ->and(app(BusinessExposureStore::class)->current($this->campaign->business_id))->toBe($this->exposure);
+});
+
+it('retains the closed campaign refusal after the deadline even with commitments', function (): void {
+    $this->travelTo($this->campaign->expires_at);
+    $result = $this->campaigns->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id,
+        $this->campaign->id, 1, null, (string) Str::uuid());
+    expect($result)->toMatchArray(['status' => 'rejected', 'code' => 'CAMPAIGN_CLOSED', 'revision' => 1,
+        'data' => ['campaign_id' => $this->campaign->id, 'business_id' => $this->campaign->business_id]])
+        ->and(BusinessCampaignClosure::query()->count())->toBe(0)
+        ->and(LedgerEntry::query()->orderBy('id')->get()->toArray())->toBe($this->cash)
+        ->and(app(BusinessExposureStore::class)->current($this->campaign->business_id))->toBe($this->exposure);
 });

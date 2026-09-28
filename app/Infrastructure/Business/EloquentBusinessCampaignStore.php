@@ -26,7 +26,9 @@ use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessProfile;
 use Closure;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -284,22 +286,43 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         if ($limit < 1 || $limit > 1000) {
             throw new CommandRejection('INVALID_SWEEP_LIMIT', 422);
         }
-        $due = BusinessCampaign::query()->where('expires_at', '<=', now())
-            ->whereNotIn('id', BusinessCampaignClosure::query()->select('business_campaign_id'))
-            ->orderBy('expires_at')->orderBy('id')->limit($limit)->get(['id', 'business_id']);
+        $cutoff = now();
+        $cursor = null;
         $expired = 0;
-        foreach ($due as $candidate) {
-            $expired += DB::transaction(function () use ($candidate): int {
-                BusinessProfile::query()->whereKey($candidate->business_id)->lockForUpdate()->firstOrFail();
-                $campaign = BusinessCampaign::query()->whereKey($candidate->id)->lockForUpdate()->firstOrFail();
-                $this->publications->find($campaign->id);
-                if ($this->closures->find($campaign->id) !== null || now()->lt($campaign->expires_at)) {
-                    return 0;
-                }
-                $this->close($campaign, 'expired', null, null, null, null, null);
+        while ($expired < $limit) {
+            $query = BusinessCampaign::query()->where('expires_at', '<=', $cutoff)
+                ->whereNotIn('id', BusinessCampaignClosure::query()->select('business_campaign_id'));
+            if ($cursor !== null) {
+                $query->where(fn (Builder $query): Builder => $query->where('expires_at', '>', $cursor->expires_at)
+                    ->orWhere(fn (Builder $query): Builder => $query->where('expires_at', $cursor->expires_at)->where('id', '>', $cursor->id)));
+            }
+            $due = $query->orderBy('expires_at')->orderBy('id')->limit($limit - $expired)->get(['id', 'business_id', 'expires_at']);
+            if ($due->isEmpty()) {
+                break;
+            }
+            foreach ($due as $candidate) {
+                $cursor = $candidate;
+                try {
+                    $expired += DB::transaction(function () use ($candidate): int {
+                        BusinessProfile::query()->whereKey($candidate->business_id)->lockForUpdate()->firstOrFail();
+                        $campaign = BusinessCampaign::query()->whereKey($candidate->id)->lockForUpdate()->firstOrFail();
+                        $this->publications->find($campaign->id);
+                        if ($this->closures->find($campaign->id) !== null || now()->lt($campaign->expires_at)) {
+                            return 0;
+                        }
+                        $this->close($campaign, 'expired', null, null, null, null, null);
 
-                return 1;
-            }, 3);
+                        return 1;
+                    }, 3);
+                } catch (CommandRejection $exception) {
+                    if ($exception->reason !== 'CAMPAIGN_SETTLEMENT_REQUIRED') {
+                        throw $exception;
+                    }
+                    Log::notice('Campaign expiry deferred until commitments are settled.', [
+                        'campaign_id' => $candidate->id, 'business_id' => $candidate->business_id, 'code' => $exception->reason,
+                    ]);
+                }
+            }
         }
 
         return $expired;
