@@ -14,6 +14,7 @@ use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\User;
 use App\Models\WalletDepositIntent;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
@@ -23,10 +24,10 @@ use Illuminate\Support\Str;
 final class InvestorWalletFixture
 {
     /** @return array{user: User, party: Party} */
-    public static function investor(?string $email = null): array
+    public static function investor(?string $email = null, ?string $password = null): array
     {
         $party = Party::factory()->verified()->create();
-        $user = User::factory()->for($party)->create($email === null ? [] : ['email' => $email]);
+        $user = User::factory()->for($party)->create(array_filter(['email' => $email, 'password' => $password === null ? null : Hash::make($password)]));
         RoleMembership::factory()->for($party)->active()->create(['role' => 'investor']);
         app(SelectActiveRole::class)->handle($user->id, 'investor', 0, (string) Str::uuid());
 

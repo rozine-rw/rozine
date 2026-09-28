@@ -40,6 +40,7 @@ use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Application\Wallet\Contracts\DepositProvider;
 use App\Application\Wallet\Contracts\SyntheticEventSigner;
+use App\Application\Wallet\Contracts\SyntheticWalletFixtures;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\Contracts\WalletStore;
 use App\Application\Wallet\SyntheticWalletGuard;
@@ -74,6 +75,7 @@ use App\Infrastructure\Identity\FortifyAuthenticator;
 use App\Infrastructure\Operations\EloquentOperationJournal;
 use App\Infrastructure\Operations\JcsCanonicalJson;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
+use App\Infrastructure\Wallet\EloquentSyntheticWalletFixtures;
 use App\Infrastructure\Wallet\EloquentWalletPostings;
 use App\Infrastructure\Wallet\EloquentWalletStore;
 use App\Infrastructure\Wallet\SyntheticDepositProvider;
@@ -143,6 +145,7 @@ class AppServiceProvider extends ServiceProvider
             ? $this->app->make(SyntheticDepositProvider::class) : $this->app->make(UnavailableDepositProvider::class);
         $this->app->bind(DepositProvider::class, $synthetic);
         $this->app->bind(SyntheticEventSigner::class, $synthetic);
+        $this->app->bind(SyntheticWalletFixtures::class, EloquentSyntheticWalletFixtures::class);
     }
 
     /**
