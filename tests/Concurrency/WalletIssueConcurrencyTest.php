@@ -45,7 +45,8 @@ function issueContenders(array $operations): array
     $statuses = [];
     foreach ($pids as $pid) {
         pcntl_waitpid($pid, $status);
-        $statuses[] = pcntl_wifexited($status) ? pcntl_wexitstatus($status) : throw new RuntimeException('Issue contender did not exit normally.');
+        $exit = pcntl_wifexited($status) ? pcntl_wexitstatus($status) : false;
+        $statuses[] = $exit === false ? throw new RuntimeException('Issue contender did not exit normally.') : $exit;
     }
     sort($statuses);
 
