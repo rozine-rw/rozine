@@ -99,6 +99,31 @@ function AllClosedNote({ className }: { className: string }) {
 }
 
 /**
+ * The detail panel while the card in front has no detail yet: another card's detail is never
+ * shown beside it, so the panel pulses until the focused deal's facts arrive.
+ */
+function DealPanelLoading() {
+    const { t } = useTranslation();
+
+    return (
+        <div
+            role="status"
+            aria-busy="true"
+            aria-label={t('investor.deal.loading')}
+            className="flex min-w-[300px] flex-[0_1_400px] flex-col gap-3 rounded-[20px] border border-rz-border bg-rz-surface p-[18px] shadow-[0_10px_30px_-18px_rgba(20,45,95,.25)]"
+        >
+            <div className="grid grid-cols-3 gap-2.5">
+                <div className="h-[62px] animate-pulse rounded-xl bg-rz-surface-sunken" />
+                <div className="h-[62px] animate-pulse rounded-xl bg-rz-surface-sunken" />
+                <div className="h-[62px] animate-pulse rounded-xl bg-rz-surface-sunken" />
+            </div>
+            <div className="h-[150px] animate-pulse rounded-2xl bg-rz-surface-sunken" />
+            <div className="h-[120px] animate-pulse rounded-2xl bg-rz-surface-sunken" />
+        </div>
+    );
+}
+
+/**
  * Deals (MVP-INVESTOR-SCR-01). Phone (design L529–692): wallet and bell, the performance chips,
  * the fanned deck, the industry tabs and the invest bar. Desktop (L134–528): the same on a scaled
  * canvas, with the focused deal's detail panel beside the deck.
@@ -220,6 +245,12 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                         wallet={props.wallet}
                         unread={props.unread_notifications}
                         links={props.links}
+                        status={
+                            current !== null &&
+                            allClosed && (
+                                <AllClosedNote className="min-w-0 flex-1 px-2 text-left" />
+                            )
+                        }
                     />
                     <div className="flex min-h-0 flex-1 items-stretch gap-[26px]">
                         <div className="relative flex min-h-0 min-w-0 flex-[0_0_508px] flex-col">
@@ -228,9 +259,6 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                                 <EmptyDeals gate={props.gate} />
                             ) : (
                                 <>
-                                    {allClosed && (
-                                        <AllClosedNote className="mt-3" />
-                                    )}
                                     <DeskDeck
                                         deals={props.deals}
                                         index={index}
@@ -246,13 +274,17 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                             {bar('desk')}
                             {overlay}
                         </div>
-                        {props.focus !== null && (
-                            <DealPanel
-                                key={props.focus.campaign_id}
-                                deal={props.focus}
-                                serverTime={props.server_time}
-                            />
-                        )}
+                        {props.focus !== null &&
+                            (props.focus.campaign_id ===
+                            current?.campaign_id ? (
+                                <DealPanel
+                                    key={props.focus.campaign_id}
+                                    deal={props.focus}
+                                    serverTime={props.server_time}
+                                />
+                            ) : (
+                                <DealPanelLoading />
+                            ))}
                     </div>
                 </div>
             </div>

@@ -2223,6 +2223,7 @@ const fr: Catalog = {
     'investor.deal.notice.withdrawn.body':
         "L'entreprise l'a retirée avant le financement. Tout montant engagé est remboursé intégralement, sans frais.",
     'investor.deal.funding_progress': 'Progression du financement',
+    'investor.deal.loading': "Chargement des détails de l'opportunité",
     'investor.deal.raised': 'LEVÉ',
     'investor.deal.target': 'OBJECTIF',
     'investor.deal.time_left': 'TEMPS RESTANT',

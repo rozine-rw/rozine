@@ -2215,6 +2215,7 @@ const rw: Catalog = {
     'investor.deal.notice.withdrawn.body':
         'Ikigo cyarikuyeho mbere yo kuzura. Amafaranga yari yiyemejwe asubizwa yose nta kiguzi.',
     'investor.deal.funding_progress': 'Aho ishoramari rigeze',
+    'investor.deal.loading': "Birimo gufungura ibisobanuro by'umushinga",
     'investor.deal.raised': 'BYAKUSANYIJWE',
     'investor.deal.target': 'INTEGO',
     'investor.deal.time_left': 'IGIHE GISIGAYE',

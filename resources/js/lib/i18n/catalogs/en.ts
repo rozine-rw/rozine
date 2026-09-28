@@ -2162,6 +2162,7 @@ const en = {
     'investor.deal.notice.withdrawn.body':
         'The business withdrew it before funding. Any committed money is returned in full, without a fee.',
     'investor.deal.funding_progress': 'Funding progress',
+    'investor.deal.loading': 'Loading deal details',
     'investor.deal.raised': 'RAISED',
     'investor.deal.target': 'TARGET',
     'investor.deal.time_left': 'TIME LEFT',

@@ -940,9 +940,10 @@ describe('Deals in every closed lifecycle', () => {
 
             expect(screen.getByRole('status')).toHaveTextContent(title);
             expect(screen.getByRole('button', { name: label })).toBeDisabled();
+            expect(screen.getByText('TIME LEFT')).toBeInTheDocument();
             expect(
-                screen.getByText('TIME LEFT').nextElementSibling,
-            ).toHaveTextContent('—');
+                screen.queryAllByText(/^\d+ days?$|^\d\d:\d\d:\d\d$/u),
+            ).toHaveLength(0);
             expect(
                 screen.queryByRole('link', { name: 'Invest' }),
             ).not.toBeInTheDocument();
@@ -984,14 +985,61 @@ describe('A deck with nothing open to reserve', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('says so beside the deck on a wide screen', () => {
+    it('says so in the top bar on a wide screen, so the deck keeps its height', async () => {
+        const user = userEvent.setup();
+
         setWide(true);
         render(<InvestorDeals {...deals(allClosedFixture)} />);
 
         expect(screen.getByText(line)).toHaveAttribute('role', 'status');
         expect(
+            within(
+                screen.getByRole('article', { name: 'GreenLeaf Agro' }),
+            ).queryByText(line),
+        ).not.toBeInTheDocument();
+        expect(
             screen.getByRole('button', { name: 'Fully reserved' }),
         ).toBeDisabled();
+        expect(screen.getByText(/of [\d,]+ left/u)).toBeInTheDocument();
+
+        /* A funded raise in front: no countdown, no live pulse, no notes left to pick, and never
+         * the previous deal's detail beside it while its own is on the way. */
+        await user.click(screen.getByRole('button', { name: 'Next deal' }));
+
+        const sebeya = screen.getByRole('article', {
+            name: 'Sebeya Logistics',
+        });
+
+        expect(
+            within(sebeya).queryByText(/^\d\d:\d\d:\d\d$|^\d+ days?$/u),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText(/of \d+ left/u)).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Fully funded' }),
+        ).toBeDisabled();
+        expect(
+            screen.getByRole('status', { name: 'Loading deal details' }),
+        ).toHaveAttribute('aria-busy', 'true');
+        expect(
+            screen.queryByText('Every note is reserved right now'),
+        ).not.toBeInTheDocument();
+    });
+
+    it('drops the countdown and live pulse from a closed card on a phone', () => {
+        const props = deals(allClosedFixture);
+
+        props.focus = null;
+        props.deals = [props.deals[1], ...props.deals.slice(2)];
+        render(<InvestorDeals {...props} />);
+
+        const sebeya = screen.getByRole('article', {
+            name: 'Sebeya Logistics',
+        });
+
+        expect(
+            within(sebeya).queryByText(/^\d\d:\d\d:\d\d$|^\d+ days?$/u),
+        ).not.toBeInTheDocument();
+        expect(within(sebeya).getByText('Fully funded')).toBeInTheDocument();
     });
 
     it('counts a live but restricted raise as closed to new reservations', () => {

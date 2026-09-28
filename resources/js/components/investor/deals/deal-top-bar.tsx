@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import type { ReactNode } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCompact } from '@/lib/investor/format';
 import { formatDayMonth, formatRwf } from '@/lib/rozine/format';
@@ -157,7 +158,15 @@ export function PhoneTopBar({ wallet, unread, links }: DealTopBarProps) {
  * Wide-screen top bar (design L140–194): balance card with deposit, and the bell. Withdrawal stays
  * hidden until it has its own contract (C3 v2, H6).
  */
-export function DeskTopBar({ wallet, unread, links }: DealTopBarProps) {
+export function DeskTopBar({
+    wallet,
+    unread,
+    links,
+    status,
+}: DealTopBarProps & {
+    /** A deck-wide status line, set in the bar so the deck keeps its full height. */
+    status?: ReactNode;
+}) {
     const { t, locale } = useTranslation();
     const payout = nextPayoutLabel(wallet, locale);
 
@@ -202,6 +211,7 @@ export function DeskTopBar({ wallet, unread, links }: DealTopBarProps) {
                     </svg>
                 </Link>
             </div>
+            {status}
             <Bell unread={unread} href={links.notifications} size="desk" />
         </div>
     );

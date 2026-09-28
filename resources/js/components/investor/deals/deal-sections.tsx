@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { PhotoFill } from '@/components/investor/deals/deal-bits';
-import { useTimeLeft } from '@/components/investor/deals/time-left';
+import { raiseOpen, useTimeLeft } from '@/components/investor/deals/time-left';
 import { POSITIVE_TEXT, RATING_STYLE } from '@/components/investor/tokens';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCount, formatRwfShort } from '@/lib/rozine/format';
@@ -131,8 +131,8 @@ export function Section({
 }
 
 /**
- * Funding progress with the live badge (phone L783–798, desk L385–393). A raise that is no longer
- * live has no time left, so its clock reads as a dash rather than counting down to a closed date.
+ * Funding progress with the live badge (phone L783–798, desk L385–393). A closed raise has no time
+ * left, so its clock reads as a dash rather than counting down to a closed date.
  */
 export function FundingProgress({
     deal,
@@ -222,7 +222,7 @@ export function FundingProgress({
                 <div className="text-right">
                     <p className={label}>{t('investor.deal.time_left')}</p>
                     <p className={cn(value, 'tabular-nums')}>
-                        {deal.lifecycle === 'live' ? clock.label : '—'}
+                        {raiseOpen(deal.lifecycle) ? clock.label : '—'}
                     </p>
                 </div>
             </div>
