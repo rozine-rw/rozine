@@ -9,6 +9,7 @@ use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Business\Contracts\CampaignClosureEvidence;
+use App\Application\Business\Contracts\PublishedCampaignEvidence;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityRepository;
@@ -34,7 +35,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
 
     public function __construct(private AcceptedApplicationStore $accepted, private BusinessAuthorityStore $businesses,
         private WithBusinessAuthority $authority, private AuthorizeStaffPermission $staff, private IdentityRepository $identities,
-        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures) {}
+        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications) {}
 
     /** @return array<string, mixed> */
     public function release(int $userId, string $applicationId, int $expectedRevision, string $reason, string $requestId): array
@@ -159,7 +160,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null, function (array $business, array $identity) use ($businessId, $campaignId, $contextRevision): array {
             $campaign = BusinessCampaign::query()->where('business_id', $businessId)->whereKey($campaignId)->first()
                 ?? throw new CommandRejection('CAMPAIGN_NOT_FOUND', 404);
-            $payload = $this->campaignPayload($campaign);
+            $payload = $this->publications->find($campaign->id);
             $closure = $this->closures->find($campaign->id);
             $person = array_find($business['mandate']['people'], fn (array $person): bool => $person['party_id'] === $identity['party']['id']);
             $canCancel = $closure === null && now()->lt($campaign->expires_at)
@@ -235,7 +236,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
 
                 return $this->journal->execute('party:'.$partyId, $userId, 'campaign.cancel', $requestId, 'campaign', $campaign->id, $input,
                     function (): void {}, function (string $operationId) use ($campaign, $expectedRevision, $reason, $requestId, $userId, $partyId): OperationResult {
-                        $this->campaignPayload($campaign);
+                        $this->publications->find($campaign->id);
                         $closure = $this->closures->find($campaign->id);
                         $revision = $closure === null ? 1 : 2;
                         $data = ['campaign_id' => $campaign->id, 'business_id' => $campaign->business_id];
@@ -290,7 +291,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             $expired += DB::transaction(function () use ($candidate): int {
                 BusinessProfile::query()->whereKey($candidate->business_id)->lockForUpdate()->firstOrFail();
                 $campaign = BusinessCampaign::query()->whereKey($candidate->id)->lockForUpdate()->firstOrFail();
-                $this->campaignPayload($campaign);
+                $this->publications->find($campaign->id);
                 if ($this->closures->find($campaign->id) !== null || now()->lt($campaign->expires_at)) {
                     return 0;
                 }
@@ -395,7 +396,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             'public_evidence' => $submission?->payload['public_evidence'], 'submitted_at' => $submission?->payload['submitted_at'],
             'fee_disclosure' => ['version' => self::FEE_VERSION, 'text' => 'The listing fee is waived for the MVP. You pay RWF 0 to publish.'],
             'cause' => $cause, 'gates' => $gates, 'prerequisites' => $prerequisites, 'release' => $release === null ? null : $this->receipt($release->id, $release->payload, 'APPLICATION_RELEASED'),
-            'listing' => $campaign === null ? null : ['id' => $campaign->id, 'receipt' => $this->receipt($campaign->id, $this->campaignPayload($campaign), 'LISTING_PUBLISHED')]];
+            'listing' => $campaign === null ? null : ['id' => $campaign->id, 'receipt' => $this->receipt($campaign->id, $this->publications->find($campaign->id), 'LISTING_PUBLISHED')]];
     }
 
     private function releaseRecord(BusinessApplication $application): ?BusinessApplicationRelease
@@ -409,21 +410,6 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         }
 
         return $release;
-    }
-
-    /** @return array<string, mixed> */
-    private function campaignPayload(BusinessCampaign $campaign): array
-    {
-        $payload = $campaign->payload;
-        if ($this->hash($payload) !== $campaign->sha256 || $payload['campaign_id'] !== $campaign->id
-            || $payload['business_id'] !== $campaign->business_id || $payload['application_id'] !== $campaign->business_application_id
-            || $payload['release_id'] !== $campaign->business_application_release_id || $payload['exposure_reservation_id'] !== $campaign->exposure_reservation_id
-            || $payload['principal'] !== $campaign->principal || $payload['actor_user_id'] !== $campaign->actor_user_id
-            || $payload['recorded_at'] !== $campaign->live_at->toIso8601String() || $payload['expires_at'] !== $campaign->expires_at->toIso8601String()) {
-            throw new RuntimeException('CAMPAIGN_INTEGRITY_FAILED');
-        }
-
-        return $payload;
     }
 
     /** @param array<string, mixed> $input

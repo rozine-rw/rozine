@@ -328,3 +328,11 @@ arch('accepted exposure is private to the Business adapter')
 arch('campaign closure evidence is private to the Business adapter')
     ->expect('App\\Application\\Business\\Contracts\\CampaignClosureEvidence')
     ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Providers\\AppServiceProvider']);
+
+arch('retained campaign inputs are private to the Business and Primary adapters')
+    ->expect('App\Application\Business\Contracts\PrimaryCampaignSource')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Infrastructure\Primary', 'App\Providers\AppServiceProvider']);
+
+arch('full publication evidence remains private to the Business adapter')
+    ->expect('App\Application\Business\Contracts\PublishedCampaignEvidence')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Providers\AppServiceProvider']);
