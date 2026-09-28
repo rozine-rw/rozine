@@ -1067,12 +1067,16 @@ export type BookNoteRow = {
     principal_outstanding: Money;
     next_due: { on: KigaliDate; amount: Money } | null;
     servicing: ServicingState;
-    /** Null while nothing is unpaid. */
+    /**
+     * Days past due, counted by the server against Kigali contractual dates: null while no
+     * instalment is due or overdue (so `next_due` can be set with a null DPD), 0 on its due
+     * date, positive when overdue.
+     */
     dpd: number | null;
     link: RouteLink;
 };
 
-export type AdminBookProps = AdminShellProps &
+export type AdminBookProps = AdminFrameShellProps &
     StaffBookPageContract & {
         stats: { key: BookStatKey; value: StatValue }[];
         chips: BookChip[];
@@ -1109,7 +1113,7 @@ export type ExceptionItem = {
     link: RouteLink;
 };
 
-export type AdminExceptionsProps = AdminShellProps &
+export type AdminExceptionsProps = AdminFrameShellProps &
     StaffExceptionsPageContract & {
         counts: { open: number; unassigned: number };
         chips: ExceptionChip[];

@@ -100,6 +100,37 @@ describe('Exceptions', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('renders when the server sends no legacy links or queue sizes', () => {
+        const fixture = props(exceptionsFixture);
+
+        fixture.nav = {
+            ...fixture.nav,
+            today: null,
+            applications: null,
+            disbursements: null,
+            repayments: null,
+            businesses: null,
+            investors: null,
+            auditors: null,
+            staff: null,
+            ledger: null,
+            events: null,
+            book: null,
+        };
+        fixture.badges = { applications: null, disbursements: null };
+        render(<AdminExceptions {...fixture} />);
+
+        expect(
+            within(nav()).getByRole('link', { name: 'Exceptions' }),
+        ).toHaveAttribute('aria-current', 'page');
+        expect(
+            within(nav()).queryByRole('link', { name: /Applications/u }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(nav()).queryByRole('link', { name: 'Book' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows one day in the singular and offers a further page', () => {
         const page = props(exceptionsFixture);
 

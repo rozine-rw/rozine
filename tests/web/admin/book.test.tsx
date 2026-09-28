@@ -82,6 +82,37 @@ describe('Book', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('renders when the server sends no legacy links or queue sizes', () => {
+        const fixture = props(bookFixture);
+
+        fixture.nav = {
+            ...fixture.nav,
+            today: null,
+            applications: null,
+            disbursements: null,
+            repayments: null,
+            businesses: null,
+            investors: null,
+            auditors: null,
+            staff: null,
+            ledger: null,
+            events: null,
+            exceptions: null,
+        };
+        fixture.badges = { applications: null, disbursements: null };
+        render(<AdminBook {...fixture} />);
+
+        expect(
+            within(nav()).getByRole('link', { name: 'Book' }),
+        ).toHaveAttribute('aria-current', 'page');
+        expect(
+            within(nav()).queryByRole('link', { name: /Applications/u }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(nav()).queryByRole('link', { name: 'Exceptions' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('says when nothing is scheduled, and offers a further page', () => {
         const page = props(bookFixture);
 
