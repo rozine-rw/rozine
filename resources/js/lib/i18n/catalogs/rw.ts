@@ -2187,6 +2187,8 @@ const rw: Catalog = {
     'investor.deals.empty_title': 'Nta mahirwe afunguye ubu',
     'investor.deals.empty_body':
         'Ishoramari rishya rigaragara hano rimaze kugenzurwa no gushyirwa ku rutonde.',
+    'investor.deals.all_closed':
+        'Ishoramari ryose ryafashwe ryose cyangwa ryafunzwe muri iki gihe. Ishoramari rishya rigaragara hano iyo ritangiye.',
     'investor.deals.invest_bar': 'Shora muri {name}',
     'investor.deals.notes_quantity': "Umubare w'impapuro",
     'investor.deals.notes_suffix': 'IMPAPURO',
@@ -2218,6 +2220,7 @@ const rw: Catalog = {
     'investor.deal.notice.withdrawn.body':
         'Ikigo cyarikuyeho mbere yo kuzura. Amafaranga yari yiyemejwe asubizwa yose nta kiguzi.',
     'investor.deal.funding_progress': 'Aho ishoramari rigeze',
+    'investor.deal.loading': "Birimo gufungura ibisobanuro by'umushinga",
     'investor.deal.raised': 'BYAKUSANYIJWE',
     'investor.deal.target': 'INTEGO',
     'investor.deal.time_left': 'IGIHE GISIGAYE',

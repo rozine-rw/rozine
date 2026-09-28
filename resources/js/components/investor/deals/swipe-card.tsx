@@ -6,7 +6,11 @@ import {
     RatingGlassBadge,
     VerifiedRosette,
 } from '@/components/investor/deals/deal-bits';
-import { TONE_TEXT, useTimeLeft } from '@/components/investor/deals/time-left';
+import {
+    raiseOpen,
+    TONE_TEXT,
+    useTimeLeft,
+} from '@/components/investor/deals/time-left';
 import { ACCENT_FILL } from '@/components/investor/tokens';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
@@ -129,17 +133,23 @@ export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
                         </span>
                     </div>
                     <div className="mt-2 flex items-center justify-between gap-2 whitespace-nowrap">
-                        <span
-                            className={cn(
-                                'inline-flex items-center gap-[3px] text-[11px] font-semibold tabular-nums',
-                                TONE_TEXT[clock.tone],
-                            )}
-                        >
-                            <Icon name="stopwatch" />
-                            {clock.label}
-                        </span>
+                        {!raiseOpen(deal.lifecycle) ? (
+                            <span />
+                        ) : (
+                            <span
+                                className={cn(
+                                    'inline-flex items-center gap-[3px] text-[11px] font-semibold tabular-nums',
+                                    TONE_TEXT[clock.tone],
+                                )}
+                            >
+                                <Icon name="stopwatch" />
+                                {clock.label}
+                            </span>
+                        )}
                         <span className="flex items-center gap-1">
-                            <span className="size-1.5 shrink-0 animate-[rz-live_1.8s_ease-out_infinite] rounded-full bg-[#17795a]" />
+                            {raiseOpen(deal.lifecycle) && (
+                                <span className="size-1.5 shrink-0 animate-[rz-live_1.8s_ease-out_infinite] rounded-full bg-[#17795a]" />
+                            )}
                             <span className="text-[11px] font-bold text-rz-ink">
                                 {formatCount(deal.investors)}
                             </span>

@@ -2194,6 +2194,8 @@ const fr: Catalog = {
     'investor.deals.empty_title': "Aucune offre ouverte pour l'instant",
     'investor.deals.empty_body':
         'Les nouvelles levées apparaissent ici une fois auditées et publiées.',
+    'investor.deals.all_closed':
+        "Toutes les levées ouvertes sont entièrement réservées ou clôturées pour l'instant. Les nouvelles levées apparaissent ici dès leur ouverture.",
     'investor.deals.invest_bar': 'Investir dans {name}',
     'investor.deals.notes_quantity': 'Nombre de titres',
     'investor.deals.notes_suffix': 'TITRES',
@@ -2226,6 +2228,7 @@ const fr: Catalog = {
     'investor.deal.notice.withdrawn.body':
         "L'entreprise l'a retirée avant le financement. Tout montant engagé est remboursé intégralement, sans frais.",
     'investor.deal.funding_progress': 'Progression du financement',
+    'investor.deal.loading': "Chargement des détails de l'opportunité",
     'investor.deal.raised': 'LEVÉ',
     'investor.deal.target': 'OBJECTIF',
     'investor.deal.time_left': 'TEMPS RESTANT',

@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
+import { raiseOpen } from '@/components/investor/deals/time-left';
 import { POSITIVE_TEXT } from '@/components/investor/tokens';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatAmount, formatCount } from '@/lib/rozine/format';
@@ -175,7 +176,12 @@ export function InvestBar({
                         phone ? 'gap-2' : 'gap-[9px]',
                     )}
                 >
-                    <label className="flex shrink-0 items-center overflow-hidden rounded-[10px] border border-[#dfe6f2] bg-rz-surface dark:border-rz-border">
+                    <label
+                        className={cn(
+                            'flex shrink-0 items-center overflow-hidden rounded-[10px] border border-[#dfe6f2] bg-rz-surface dark:border-rz-border',
+                            soldOut && 'opacity-50',
+                        )}
+                    >
                         <input
                             value={draft ?? String(units)}
                             onChange={(event) => setDraft(event.target.value)}
@@ -208,16 +214,20 @@ export function InvestBar({
                             {t('investor.deals.notes_suffix')}
                         </span>
                     </label>
-                    <span
-                        className={cn(
-                            'truncate whitespace-nowrap text-[#9aa3b4] dark:text-rz-faint',
-                            phone ? 'text-[11px]' : 'text-[11.5px]',
-                        )}
-                    >
-                        {t('investor.deals.of_left', {
-                            count: formatCount(Number(deal.units.available)),
-                        })}
-                    </span>
+                    {raiseOpen(deal.lifecycle) && (
+                        <span
+                            className={cn(
+                                'truncate whitespace-nowrap text-[#9aa3b4] dark:text-rz-faint',
+                                phone ? 'text-[11px]' : 'text-[11.5px]',
+                            )}
+                        >
+                            {t('investor.deals.of_left', {
+                                count: formatCount(
+                                    Number(deal.units.available),
+                                ),
+                            })}
+                        </span>
+                    )}
                 </div>
                 <div
                     className={cn(
@@ -317,7 +327,7 @@ export function InvestBar({
                     disabled={soldOut}
                     aria-label={t('investor.deals.notes_quantity')}
                     onChange={(event) => onUnits(Number(event.target.value))}
-                    className={RANGE_CLASS}
+                    className={cn(RANGE_CLASS, soldOut && 'opacity-40')}
                 />
                 {gate.status === 'verification_required' ? (
                     <Link href={gate.link} className={investClass}>

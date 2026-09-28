@@ -1,6 +1,15 @@
 import { useTranslation } from '@/hooks/use-translation';
 import { timeLeft, useServerNow } from '@/lib/investor/server-clock';
 import type { TimeLeft } from '@/lib/investor/server-clock';
+import type { CampaignLifecycle } from '@/types/settlement';
+
+/**
+ * Whether a raise is still open against its clock. A fully reserved raise is: lapsed checkouts
+ * return notes to it until it closes. Every later lifecycle has no time left to count down.
+ */
+export function raiseOpen(lifecycle: CampaignLifecycle): boolean {
+    return lifecycle === 'live' || lifecycle === 'fully_reserved';
+}
 
 export type TimeLeftTone = 'urgent' | 'near' | 'calm';
 
