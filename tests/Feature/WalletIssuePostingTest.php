@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\PrimarySourceFixture;
 
 /*
  * The S3-D wallet extension for Hussain's review (#96 5871859618): a verified disbursement moves
@@ -47,7 +48,7 @@ function committedWallet(string $sourceType = 'primary_reservation'): array
 
     return DB::transaction(function () use ($fixture, $postings, $sourceType): array {
         $wallet = $postings->lockForParty($fixture['party']->id);
-        $source = new PostingSource($sourceType, issueId(), issueId());
+        $source = $sourceType === 'primary_reservation' ? PrimarySourceFixture::reservation($wallet, '20000') : new PostingSource($sourceType, issueId(), issueId());
         $postings->hold($wallet, WalletMoney::of('20000'), $source);
         $postings->commit($wallet, WalletMoney::of('20000'), $source);
 
@@ -131,9 +132,9 @@ it('refuses an issue after a refund, before a commit, or under another source th
     expect(fn () => DB::transaction(fn () => $postings->issue($wallet, WalletMoney::of('20000'), $source, $cause)))
         ->toThrow(WalletViolation::class, 'WALLET_POSTING_STATE_INVALID');
 
-    $held = new PostingSource('primary_reservation', issueId(), issueId());
-    DB::transaction(fn () => $postings->hold($wallet, WalletMoney::of('1000'), $held));
-    expect(fn () => DB::transaction(fn () => $postings->issue($wallet, WalletMoney::of('1000'), $held, $cause)))
+    $held = PrimarySourceFixture::reservation($wallet, '5000');
+    DB::transaction(fn () => $postings->hold($wallet, WalletMoney::of('5000'), $held));
+    expect(fn () => DB::transaction(fn () => $postings->issue($wallet, WalletMoney::of('5000'), $held, $cause)))
         ->toThrow(WalletViolation::class, 'WALLET_POSTING_STATE_INVALID');
 
     ['wallet' => $other, 'source' => $committed] = committedWallet();
@@ -170,8 +171,15 @@ it('refuses raw issue postings that are partial, excessive, misrouted or uncause
         return [$account, $direction, $amount];
     }, explode(',', $lines));
     $cause = $cause === 'cause' ? DisbursementFixture::issuedClosing() : $cause;
-    expect(fn () => rawIssuePosting($wallet, 'primary_issue', $source, $parsed, $cause))
-        ->toThrow(QueryException::class, $message)
+    // Once S3-C binds reservations (#175), its own exact-principal check may refuse first.
+    $refusal = null;
+    try {
+        rawIssuePosting($wallet, 'primary_issue', $source, $parsed, $cause);
+    } catch (QueryException $exception) {
+        $refusal = $exception->getMessage();
+    }
+    expect($refusal)->not->toBeNull()
+        ->and(str_contains((string) $refusal, $message) || str_contains((string) $refusal, 'must bind the reservation Party origin and exact principal'))->toBeTrue((string) $refusal)
         ->and(LedgerEntry::query()->where('source_id', $source->id)->where('kind', 'primary_issue')->count())->toBe(0);
 })->with([
     'partial issue' => ['investor_committed:debit:10000,disbursement_settlement:credit:10000', 'cause', 'must move exactly its source anchor amount'],

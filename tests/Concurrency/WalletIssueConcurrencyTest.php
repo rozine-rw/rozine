@@ -10,9 +10,9 @@ use App\Domain\Wallet\WalletMoney;
 use App\Models\LedgerAccount;
 use App\Models\LedgerEntry;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\PrimarySourceFixture;
 
 /*
  * Real-commit regressions for the S3-D wallet extension that Hussain ran against it (#96
@@ -59,12 +59,15 @@ function committedReservation(): array
 {
     $fixture = InvestorWalletFixture::ready();
     InvestorWalletFixture::settle(InvestorWalletFixture::deposit($fixture, '50000')['data']['intent_id']);
-    $source = new PostingSource('primary_reservation', strtolower((string) Str::ulid()), strtolower((string) Str::ulid()));
-    DB::transaction(function () use ($fixture, $source): void {
-        $postings = app(WalletPostings::class);
+    $postings = app(WalletPostings::class);
+    // The retained reservation and its hold commit together, as S3-C records them.
+    $source = DB::transaction(function () use ($fixture, $postings): PostingSource {
         $wallet = $postings->lockForParty($fixture['party']->id);
+        $source = PrimarySourceFixture::reservation($wallet, '20000');
         $postings->hold($wallet, WalletMoney::of('20000'), $source);
         $postings->commit($wallet, WalletMoney::of('20000'), $source);
+
+        return $source;
     });
 
     return ['fixture' => $fixture, 'source' => $source];

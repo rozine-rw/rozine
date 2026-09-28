@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\PrimarySourceFixture;
 
 /*
  * Regressions from the adversarial pre-review of #176 at ef065d99 (F1–F5, V1). Each asserts the
@@ -114,14 +115,19 @@ it('F4: refuses a primary_issue whose cause is not an issued disbursement closin
     $postings = app(WalletPostings::class);
     $id = fn (): string => strtolower((string) Str::ulid());
 
-    expect(fn () => DB::transaction(function () use ($postings, $fixture, $id): void {
+    $source = DB::transaction(function () use ($postings, $fixture): PostingSource {
         $wallet = $postings->lockForParty($fixture['party']->id);
-        $source = new PostingSource('primary_reservation', $id(), $id());
+        $source = PrimarySourceFixture::reservation($wallet, '20000');
         $postings->hold($wallet, WalletMoney::of('20000'), $source);
         $postings->commit($wallet, WalletMoney::of('20000'), $source);
-        $postings->issue($wallet, WalletMoney::of('20000'), $source, new PostingCause('disbursement_closing', $id()));  // no such closing
+
+        return $source;
+    });
+
+    expect(fn () => DB::transaction(function () use ($postings, $fixture, $id, $source): void {
+        $postings->issue($postings->lockForParty($fixture['party']->id), WalletMoney::of('20000'), $source, new PostingCause('disbursement_closing', $id()));  // no such closing
         DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
-    }))->toThrow(PDOException::class);
+    }))->toThrow(PDOException::class, 'must name an issued disbursement closing');
     expect(LedgerEntry::query()->where('kind', 'primary_issue')->count())->toBe(0);
 });
 
