@@ -7,78 +7,65 @@
         "server_time": "2026-09-23T09:00:00+02:00",
         "allowed_actions": [],
         "holding": {
-            "id": "h-bugesera",
-            "name": "Bugesera Haulage",
-            "accent": "teal",
-            "industry": "Logistics",
-            "district": "Bugesera",
-            "health": "matured",
+            "id": "h-intare",
+            "name": "Intare Supply",
+            "accent": "purple",
+            "industry": "Hospitality",
+            "district": "Nyarugenge",
+            "health": "healthy",
             "value": {
                 "currency": "RWF",
-                "amount": "672000"
+                "amount": "1029168"
             },
             "invested": {
                 "currency": "RWF",
-                "amount": "600000"
+                "amount": "950000"
             },
             "gain": {
                 "currency": "RWF",
-                "amount": "72000"
+                "amount": "79168"
             },
-            "gain_pct": "12.0",
-            "repaid_pct": 100,
-            "matures_on": "2026-08-15T00:00:00+02:00",
+            "gain_pct": "8.3",
+            "repaid_pct": 67,
+            "matures_on": "2026-11-10T00:00:00+02:00",
             "payments_made": 4,
-            "payments_total": 4,
+            "payments_total": 6,
             "link": {
-                "url": "/preview/investor-holding-matured",
+                "url": "/preview/investor-holding-intare",
                 "method": "get"
             },
             "rating": {
-                "band": "strong",
-                "score": "4.4"
+                "band": "stable",
+                "score": "3.7"
             },
-            "rate_pct": "12.0",
+            "rate_pct": "12.5",
             "expected_profit": {
                 "currency": "RWF",
-                "amount": "72000"
+                "amount": "118750"
             },
             "maturity_value": {
                 "currency": "RWF",
-                "amount": "664800"
+                "amount": "1056875"
             },
             "received": {
                 "currency": "RWF",
-                "amount": "664800"
+                "amount": "704586"
             },
-            "next_payment": null,
+            "next_payment": {
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "178124"
+                },
+                "due_on": "2026-10-10T00:00:00+02:00"
+            },
             "on_time": {
                 "made": 4,
                 "on_time": 4,
                 "late": 0
             },
-            "months_left": 0,
-            "investors": 301,
-            "rating_change": {
-                "from": {
-                    "band": "stable",
-                    "score": "3.8"
-                },
-                "to": {
-                    "band": "strong",
-                    "score": "4.4"
-                },
-                "reasons": [
-                    {
-                        "label": "Every payment on time",
-                        "delta": "+0.4"
-                    },
-                    {
-                        "label": "Audited revenue above plan",
-                        "delta": "+0.2"
-                    }
-                ]
-            },
+            "months_left": 2,
+            "investors": 388,
+            "rating_change": null,
             "recovery_plan": null,
             "arrears": null,
             "photos": [
@@ -97,23 +84,23 @@
             ],
             "updates": [
                 {
-                    "id": "h-bugesera-2026-08",
+                    "id": "h-intare-2026-08",
                     "month": "2026-08-01T00:00:00+02:00",
                     "status": "healthy",
                     "summary": "On plan · coupon repaid on time",
                     "net": {
                         "currency": "RWF",
-                        "amount": "3100000"
+                        "amount": "1900000"
                     },
                     "inflow": {
                         "currency": "RWF",
-                        "amount": "34600000"
+                        "amount": "21800000"
                     },
                     "outflow": {
                         "currency": "RWF",
-                        "amount": "31500000"
+                        "amount": "19900000"
                     },
-                    "business_note": "Hauling contracts with the Bugesera cooperatives ran to plan; the monthly coupon was paid on its due date.",
+                    "business_note": "Supply contracts with the lakeside hotels renewed on schedule, and the monthly coupon was paid on its due date.",
                     "auditor": {
                         "name": "Diane Uwase, CPA",
                         "licence": "ICPAR/P-2026/0481",
@@ -123,36 +110,36 @@
                     "photos": [
                         {
                             "url": null,
-                            "caption": "Warehouse stock"
+                            "caption": "Dry store"
                         },
                         {
                             "url": null,
-                            "caption": "POS register"
+                            "caption": "Invoice book"
                         },
                         {
                             "url": null,
-                            "caption": "Cold room"
+                            "caption": "Delivery van"
                         }
                     ]
                 },
                 {
-                    "id": "h-bugesera-2026-07",
+                    "id": "h-intare-2026-07",
                     "month": "2026-07-01T00:00:00+02:00",
-                    "status": "watch",
-                    "summary": "Watchlist · margin under plan for one month",
+                    "status": "healthy",
+                    "summary": "On plan · coupon repaid on time",
                     "net": {
                         "currency": "RWF",
-                        "amount": "-250000"
+                        "amount": "1900000"
                     },
                     "inflow": {
                         "currency": "RWF",
-                        "amount": "34300000"
+                        "amount": "21500000"
                     },
                     "outflow": {
                         "currency": "RWF",
-                        "amount": "34550000"
+                        "amount": "19600000"
                     },
-                    "business_note": "A washed-out feeder road idled two trucks for part of the month. Contracts for next month are already booked and cover the shortfall.",
+                    "business_note": "Supply contracts with the lakeside hotels renewed on schedule, and the monthly coupon was paid on its due date.",
                     "auditor": {
                         "name": "Diane Uwase, CPA",
                         "licence": "ICPAR/P-2026/0481",
@@ -162,36 +149,36 @@
                     "photos": [
                         {
                             "url": null,
-                            "caption": "Warehouse stock"
+                            "caption": "Dry store"
                         },
                         {
                             "url": null,
-                            "caption": "POS register"
+                            "caption": "Invoice book"
                         },
                         {
                             "url": null,
-                            "caption": "Cold room"
+                            "caption": "Delivery van"
                         }
                     ]
                 },
                 {
-                    "id": "h-bugesera-2026-06",
+                    "id": "h-intare-2026-06",
                     "month": "2026-06-01T00:00:00+02:00",
                     "status": "healthy",
                     "summary": "On plan · coupon repaid on time",
                     "net": {
                         "currency": "RWF",
-                        "amount": "3100000"
+                        "amount": "1900000"
                     },
                     "inflow": {
                         "currency": "RWF",
-                        "amount": "34000000"
+                        "amount": "21200000"
                     },
                     "outflow": {
                         "currency": "RWF",
-                        "amount": "30900000"
+                        "amount": "19300000"
                     },
-                    "business_note": "Hauling contracts with the Bugesera cooperatives ran to plan; the monthly coupon was paid on its due date.",
+                    "business_note": "Supply contracts with the lakeside hotels renewed on schedule, and the monthly coupon was paid on its due date.",
                     "auditor": {
                         "name": "Diane Uwase, CPA",
                         "licence": "ICPAR/P-2026/0481",
@@ -201,36 +188,36 @@
                     "photos": [
                         {
                             "url": null,
-                            "caption": "Warehouse stock"
+                            "caption": "Dry store"
                         },
                         {
                             "url": null,
-                            "caption": "POS register"
+                            "caption": "Invoice book"
                         },
                         {
                             "url": null,
-                            "caption": "Cold room"
+                            "caption": "Delivery van"
                         }
                     ]
                 },
                 {
-                    "id": "h-bugesera-2026-05",
+                    "id": "h-intare-2026-05",
                     "month": "2026-05-01T00:00:00+02:00",
                     "status": "healthy",
                     "summary": "On plan · coupon repaid on time",
                     "net": {
                         "currency": "RWF",
-                        "amount": "3100000"
+                        "amount": "1900000"
                     },
                     "inflow": {
                         "currency": "RWF",
-                        "amount": "33700000"
+                        "amount": "20900000"
                     },
                     "outflow": {
                         "currency": "RWF",
-                        "amount": "30600000"
+                        "amount": "19000000"
                     },
-                    "business_note": "Hauling contracts with the Bugesera cooperatives ran to plan; the monthly coupon was paid on its due date.",
+                    "business_note": "Supply contracts with the lakeside hotels renewed on schedule, and the monthly coupon was paid on its due date.",
                     "auditor": {
                         "name": "Diane Uwase, CPA",
                         "licence": "ICPAR/P-2026/0481",
@@ -240,96 +227,118 @@
                     "photos": [
                         {
                             "url": null,
-                            "caption": "Warehouse stock"
+                            "caption": "Dry store"
                         },
                         {
                             "url": null,
-                            "caption": "POS register"
+                            "caption": "Invoice book"
                         },
                         {
                             "url": null,
-                            "caption": "Cold room"
+                            "caption": "Delivery van"
                         }
                     ]
                 }
             ],
             "issue": {
-                "id": "h-bugesera",
+                "id": "h-intare",
                 "revision": 1,
-                "note_id": "note_bugesera_2026_04",
-                "campaign_id": "cmp_bugesera_2026_04",
-                "units": "120",
+                "note_id": "note_intare_2026_05",
+                "campaign_id": "cmp_intare_2026_05",
+                "units": "190",
                 "ordinals": [
                     {
-                        "first": "1601",
-                        "last": "1720"
+                        "first": "761",
+                        "last": "950"
                     }
                 ],
                 "principal": {
                     "currency": "RWF",
-                    "amount": "600000"
+                    "amount": "950000"
                 },
                 "rights": {
                     "total_return": {
                         "currency": "RWF",
-                        "amount": "72000"
+                        "amount": "118750"
                     },
                     "instalments": [
                         {
                             "index": 1,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "150000"
+                                "amount": "158334"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "18000"
+                                "amount": "19792"
                             }
                         },
                         {
                             "index": 2,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "150000"
+                                "amount": "158334"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "18000"
+                                "amount": "19792"
                             }
                         },
                         {
                             "index": 3,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "150000"
+                                "amount": "158333"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "18000"
+                                "amount": "19792"
                             }
                         },
                         {
                             "index": 4,
                             "principal": {
                                 "currency": "RWF",
-                                "amount": "150000"
+                                "amount": "158333"
                             },
                             "return": {
                                 "currency": "RWF",
-                                "amount": "18000"
+                                "amount": "19792"
+                            }
+                        },
+                        {
+                            "index": 5,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "158333"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "19791"
+                            }
+                        },
+                        {
+                            "index": 6,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "158333"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "19791"
                             }
                         }
                     ]
                 },
-                "issued_at": "2026-04-15T15:20:04+02:00",
-                "disbursement_effective_at": "2026-04-15T15:18:41+02:00",
-                "effective_date": "2026-04-15",
+                "issued_at": "2026-05-10T15:20:04+02:00",
+                "disbursement_effective_at": "2026-05-10T15:18:41+02:00",
+                "effective_date": "2026-05-10",
                 "terms": {
-                    "rate_pct": "12.0",
-                    "term_months": 4,
+                    "rate_pct": "12.5",
+                    "term_months": 6,
                     "total_return": {
                         "currency": "RWF",
-                        "amount": "72000"
+                        "amount": "118750"
                     },
                     "earnings_fee": {
                         "tier": "standard",
@@ -343,76 +352,100 @@
                 "schedule": [
                     {
                         "index": 1,
-                        "due_on": "2026-05-15",
+                        "due_on": "2026-06-10",
                         "principal": {
                             "currency": "RWF",
-                            "amount": "150000"
+                            "amount": "158334"
                         },
                         "return": {
                             "currency": "RWF",
-                            "amount": "18000"
+                            "amount": "19792"
                         }
                     },
                     {
                         "index": 2,
-                        "due_on": "2026-06-15",
+                        "due_on": "2026-07-10",
                         "principal": {
                             "currency": "RWF",
-                            "amount": "150000"
+                            "amount": "158334"
                         },
                         "return": {
                             "currency": "RWF",
-                            "amount": "18000"
+                            "amount": "19792"
                         }
                     },
                     {
                         "index": 3,
-                        "due_on": "2026-07-15",
+                        "due_on": "2026-08-10",
                         "principal": {
                             "currency": "RWF",
-                            "amount": "150000"
+                            "amount": "158333"
                         },
                         "return": {
                             "currency": "RWF",
-                            "amount": "18000"
+                            "amount": "19792"
                         }
                     },
                     {
                         "index": 4,
-                        "due_on": "2026-08-15",
+                        "due_on": "2026-09-10",
                         "principal": {
                             "currency": "RWF",
-                            "amount": "150000"
+                            "amount": "158333"
                         },
                         "return": {
                             "currency": "RWF",
-                            "amount": "18000"
+                            "amount": "19792"
+                        }
+                    },
+                    {
+                        "index": 5,
+                        "due_on": "2026-10-10",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "158333"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "19791"
+                        }
+                    },
+                    {
+                        "index": 6,
+                        "due_on": "2026-11-10",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "158333"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "19791"
                         }
                     }
                 ],
                 "issue_receipt": {
-                    "receipt_id": "rcp_hld3",
-                    "operation_id": "op_hld3",
-                    "request_id": "7f1c2a90-0000-4000-8000-00000000hld3",
+                    "receipt_id": "rcp_hld6",
+                    "operation_id": "op_hld6",
+                    "request_id": "7f1c2a90-0000-4000-8000-00000000hld6",
                     "code": "HOLDING_ISSUED",
-                    "recorded_at": "2026-04-15T15:20:04+02:00",
+                    "recorded_at": "2026-05-10T15:20:04+02:00",
                     "amount": {
                         "currency": "RWF",
-                        "amount": "600000"
+                        "amount": "950000"
                     },
-                    "units": "120",
-                    "reference": "RZ-HLD-2203",
+                    "units": "190",
+                    "reference": "RZ-HLD-2206",
                     "revision": 1,
                     "policy_version": "synthetic-primary-policy-0",
                     "disclosure_version": "disclosure-2026-05.2",
                     "link": {
-                        "url": "/preview/investor-holding-matured",
+                        "url": "/preview/investor-holding-intare",
                         "method": "get"
                     }
                 },
                 "source": {
-                    "commitment_id": "cmt0_01k4b5",
-                    "disbursement_operation_id": "op_dsb_01k4b6"
+                    "commitment_id": "cmt0_01k4i5",
+                    "disbursement_operation_id": "op_dsb_01k4i6"
                 }
             }
         },

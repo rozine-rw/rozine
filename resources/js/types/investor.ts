@@ -390,12 +390,17 @@ export type HoldingSummary = {
     district: string;
     health: HoldingHealth;
     /**
-     * What was invested plus the return received so far: principal repaid stays counted, so value
-     * never falls as a note amortises. Realised, not projected; `gain` is `value − invested`.
+     * Cumulative performance figure: what was invested plus the gross return received so far. It
+     * is not the current outstanding asset value or a spendable balance. Principal repaid is not
+     * earnings and is not counted as a gain; this figure makes no promise against actual credit
+     * losses. `gain` is `value − invested`.
      */
     value: Money;
     invested: Money;
-    /** Signed: `value − invested`, the return received so far. */
+    /**
+     * Signed: `value − invested`, the gross return received so far, before the fee on earnings.
+     * The net earnings figure is C4 `PortfolioEarnings.realised.net_return`.
+     */
     gain: Money;
     /** Signed, one decimal: "13.3". */
     gain_pct: string;
@@ -407,19 +412,28 @@ export type HoldingSummary = {
     link: RouteLink;
 };
 
+/** Legacy: C4 `PortfolioEarnings` replaces these totals once the server sends credited payouts. */
 export type PortfolioTotals = {
     businesses: number;
     value: Money;
     invested: Money;
     gain: Money;
+    /** The gross return received so far in server_time's calendar month (Kigali), as `gain` is. */
     this_month: Money;
-    /** Scheduled, not yet paid: labelled as a projection. */
+    /** Scheduled, not yet paid: labelled as a projection. The first three `payouts` months. */
     projected_3m: Money;
+    /** The first `payouts` month and its amount. */
     next_payout: { amount: Money; month: string } | null;
+    /** `projected_3m` over its three months, half-up: the projection's monthly average. */
     avg_monthly: Money;
 };
 
+/**
+ * One calendar month of the scheduled payouts of the notes still paying (healthy or watch), each
+ * unpaid instalment in the month it falls due, or where a declared on-track plan moves it.
+ */
 export type PayoutMonth = {
+    /** The first of the month, Kigali midnight. */
     month: string;
     amount: Money;
     /** Bar height as a share of the tallest month, 0–100, from the server. */

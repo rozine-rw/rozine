@@ -41,7 +41,7 @@
             },
             "this_month": {
                 "currency": "RWF",
-                "amount": "97834"
+                "amount": "96442"
             },
             "projected_3m": {
                 "currency": "RWF",
@@ -52,20 +52,20 @@
                     "currency": "RWF",
                     "amount": "700857"
                 },
-                "month": "2026-10-03T00:00:00+02:00"
+                "month": "2026-10-01T00:00:00+02:00"
             },
             "avg_monthly": {
                 "currency": "RWF",
-                "amount": "534324"
+                "amount": "540094"
             }
         },
         "holdings": [
             {
-                "id": "h-karongi",
-                "name": "Karongi Freight",
+                "id": "h-bugesera",
+                "name": "Bugesera Haulage",
                 "accent": "teal",
                 "industry": "Logistics",
-                "district": "Karongi",
+                "district": "Bugesera",
                 "health": "matured",
                 "value": {
                     "currency": "RWF",
@@ -81,7 +81,7 @@
                 },
                 "gain_pct": "12.0",
                 "repaid_pct": 100,
-                "matures_on": "2026-09-15T00:00:00+02:00",
+                "matures_on": "2026-08-15T00:00:00+02:00",
                 "payments_made": 4,
                 "payments_total": 4,
                 "link": {
@@ -92,7 +92,7 @@
         ],
         "payouts": [
             {
-                "month": "2026-10-03T00:00:00+02:00",
+                "month": "2026-10-01T00:00:00+02:00",
                 "amount": {
                     "currency": "RWF",
                     "amount": "700857"
@@ -134,7 +134,7 @@
                 ]
             },
             {
-                "month": "2026-11-03T00:00:00+02:00",
+                "month": "2026-11-01T00:00:00+02:00",
                 "amount": {
                     "currency": "RWF",
                     "amount": "716024"
@@ -168,7 +168,7 @@
                 ]
             },
             {
-                "month": "2026-12-03T00:00:00+02:00",
+                "month": "2026-12-01T00:00:00+02:00",
                 "amount": {
                     "currency": "RWF",
                     "amount": "203400"
