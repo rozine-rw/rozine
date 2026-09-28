@@ -32,16 +32,16 @@
             },
             "outstanding_principal": {
                 "currency": "RWF",
-                "amount": "2320000"
+                "amount": "1756665"
             },
             "realised": {
                 "principal": {
                     "currency": "RWF",
-                    "amount": "1855000"
+                    "amount": "2418335"
                 },
                 "return": {
                     "currency": "RWF",
-                    "amount": "251240"
+                    "amount": "309386"
                 },
                 "late_fees": {
                     "currency": "RWF",
@@ -49,21 +49,21 @@
                 },
                 "fees": {
                     "currency": "RWF",
-                    "amount": "21062"
+                    "amount": "30937"
                 },
                 "net_return": {
                     "currency": "RWF",
-                    "amount": "233298"
+                    "amount": "281569"
                 }
             },
             "projected": {
                 "remaining_return": {
                     "currency": "RWF",
-                    "amount": "316450"
+                    "amount": "224614"
                 },
                 "next_3m": {
                     "currency": "RWF",
-                    "amount": "1602973"
+                    "amount": "1620281"
                 }
             },
             "this_month_net": {
@@ -78,7 +78,7 @@
                 "due_on": "2026-10-03",
                 "projected": {
                     "currency": "RWF",
-                    "amount": "859319"
+                    "amount": "151333"
                 }
             }
         },
@@ -106,7 +106,7 @@
                 "health": "healthy",
                 "value": {
                     "currency": "RWF",
-                    "amount": "882435"
+                    "amount": "890000"
                 },
                 "invested": {
                     "currency": "RWF",
@@ -114,11 +114,11 @@
                 },
                 "gain": {
                     "currency": "RWF",
-                    "amount": "82435"
+                    "amount": "90000"
                 },
-                "gain_pct": "10.3",
+                "gain_pct": "11.3",
                 "repaid_pct": 83,
-                "matures_on": "2026-11-30T00:00:00+02:00",
+                "matures_on": "2026-10-03T00:00:00+02:00",
                 "payments_made": 5,
                 "payments_total": 6,
                 "link": {
@@ -135,7 +135,7 @@
                 "health": "healthy",
                 "value": {
                     "currency": "RWF",
-                    "amount": "940950"
+                    "amount": "946800"
                 },
                 "invested": {
                     "currency": "RWF",
@@ -143,11 +143,11 @@
                 },
                 "gain": {
                     "currency": "RWF",
-                    "amount": "40950"
+                    "amount": "46800"
                 },
-                "gain_pct": "4.5",
+                "gain_pct": "5.2",
                 "repaid_pct": 40,
-                "matures_on": "2027-02-28T00:00:00+02:00",
+                "matures_on": "2026-12-20T00:00:00+02:00",
                 "payments_made": 2,
                 "payments_total": 5,
                 "link": {
@@ -164,7 +164,7 @@
                 "health": "arrears",
                 "value": {
                     "currency": "RWF",
-                    "amount": "495362"
+                    "amount": "497168"
                 },
                 "invested": {
                     "currency": "RWF",
@@ -172,15 +172,15 @@
                 },
                 "gain": {
                     "currency": "RWF",
-                    "amount": "20362"
+                    "amount": "22168"
                 },
-                "gain_pct": "4.3",
+                "gain_pct": "4.7",
                 "repaid_pct": 33,
-                "matures_on": "2027-03-31T00:00:00+02:00",
+                "matures_on": "2026-11-12T00:00:00+02:00",
                 "payments_made": 2,
                 "payments_total": 6,
                 "link": {
-                    "url": "/preview/investor-holding",
+                    "url": "/preview/investor-holding-arrears",
                     "method": "get"
                 }
             },
@@ -193,7 +193,7 @@
                 "health": "healthy",
                 "value": {
                     "currency": "RWF",
-                    "amount": "1025178"
+                    "amount": "1029168"
                 },
                 "invested": {
                     "currency": "RWF",
@@ -201,11 +201,11 @@
                 },
                 "gain": {
                     "currency": "RWF",
-                    "amount": "75178"
+                    "amount": "79168"
                 },
-                "gain_pct": "7.9",
+                "gain_pct": "8.3",
                 "repaid_pct": 67,
-                "matures_on": "2026-12-31T00:00:00+02:00",
+                "matures_on": "2026-11-10T00:00:00+02:00",
                 "payments_made": 4,
                 "payments_total": 6,
                 "link": {
@@ -222,7 +222,7 @@
                 "health": "healthy",
                 "value": {
                     "currency": "RWF",
-                    "amount": "648960"
+                    "amount": "654000"
                 },
                 "invested": {
                     "currency": "RWF",
@@ -230,11 +230,11 @@
                 },
                 "gain": {
                     "currency": "RWF",
-                    "amount": "48960"
+                    "amount": "54000"
                 },
-                "gain_pct": "8.2",
+                "gain_pct": "9.0",
                 "repaid_pct": 75,
-                "matures_on": "2026-10-31T00:00:00+02:00",
+                "matures_on": "2026-10-05T00:00:00+02:00",
                 "payments_made": 3,
                 "payments_total": 4,
                 "link": {
@@ -251,7 +251,7 @@
                 "health": "watch",
                 "value": {
                     "currency": "RWF",
-                    "amount": "465577"
+                    "amount": "467250"
                 },
                 "invested": {
                     "currency": "RWF",
@@ -259,15 +259,15 @@
                 },
                 "gain": {
                     "currency": "RWF",
-                    "amount": "15577"
+                    "amount": "17250"
                 },
-                "gain_pct": "3.5",
+                "gain_pct": "3.8",
                 "repaid_pct": 33,
-                "matures_on": "2026-12-31T00:00:00+02:00",
+                "matures_on": "2026-11-03T00:00:00+02:00",
                 "payments_made": 1,
                 "payments_total": 3,
                 "link": {
-                    "url": "/preview/investor-holding",
+                    "url": "/preview/investor-holding-plan",
                     "method": "get"
                 }
             }
@@ -277,15 +277,16 @@
                 "month": "2026-10-03T00:00:00+02:00",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "859319"
+                    "amount": "700857"
                 },
+                "bar_pct": 98,
                 "payers": [
                     {
                         "name": "Musanze Traders",
                         "accent": "blue",
                         "amount": {
                             "currency": "RWF",
-                            "amount": "200475"
+                            "amount": "203400"
                         }
                     },
                     {
@@ -293,7 +294,7 @@
                         "accent": "purple",
                         "amount": {
                             "currency": "RWF",
-                            "amount": "177127"
+                            "amount": "178124"
                         }
                     },
                     {
@@ -301,15 +302,7 @@
                         "accent": "teal",
                         "amount": {
                             "currency": "RWF",
-                            "amount": "166320"
-                        }
-                    },
-                    {
-                        "name": "Kivu Coffee",
-                        "accent": "green",
-                        "amount": {
-                            "currency": "RWF",
-                            "amount": "165577"
+                            "amount": "168000"
                         }
                     },
                     {
@@ -317,25 +310,33 @@
                         "accent": "green",
                         "amount": {
                             "currency": "RWF",
-                            "amount": "149820"
+                            "amount": "151333"
                         }
                     }
-                ],
-                "bar_pct": 100
+                ]
             },
             {
                 "month": "2026-11-03T00:00:00+02:00",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "543179"
+                    "amount": "716024"
                 },
+                "bar_pct": 100,
                 "payers": [
+                    {
+                        "name": "Kivu Coffee",
+                        "accent": "green",
+                        "amount": {
+                            "currency": "RWF",
+                            "amount": "334500"
+                        }
+                    },
                     {
                         "name": "Musanze Traders",
                         "accent": "blue",
                         "amount": {
                             "currency": "RWF",
-                            "amount": "200475"
+                            "amount": "203400"
                         }
                     },
                     {
@@ -343,37 +344,28 @@
                         "accent": "purple",
                         "amount": {
                             "currency": "RWF",
-                            "amount": "177127"
-                        }
-                    },
-                    {
-                        "name": "Kivu Coffee",
-                        "accent": "green",
-                        "amount": {
-                            "currency": "RWF",
-                            "amount": "165577"
+                            "amount": "178124"
                         }
                     }
-                ],
-                "bar_pct": 63
+                ]
             },
             {
                 "month": "2026-12-03T00:00:00+02:00",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "200475"
+                    "amount": "203400"
                 },
+                "bar_pct": 28,
                 "payers": [
                     {
                         "name": "Musanze Traders",
                         "accent": "blue",
                         "amount": {
                             "currency": "RWF",
-                            "amount": "200475"
+                            "amount": "203400"
                         }
                     }
-                ],
-                "bar_pct": 23
+                ]
             }
         ],
         "industries": [

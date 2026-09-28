@@ -2,9 +2,12 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AuditorPortfolio from '@/pages/auditor/portfolio';
 import type { AuditorPortfolioProps } from '@/types/auditor';
+import awaitingFixture from '../../../resources/fixtures/ui/auditor-portfolio-awaiting.json';
 import conflictFixture from '../../../resources/fixtures/ui/auditor-portfolio-conflict.json';
 import emptyFixture from '../../../resources/fixtures/ui/auditor-portfolio-empty.json';
 import lateFixture from '../../../resources/fixtures/ui/auditor-portfolio-late.json';
+import publishedFixture from '../../../resources/fixtures/ui/auditor-portfolio-published.json';
+import rejectedFixture from '../../../resources/fixtures/ui/auditor-portfolio-rejected.json';
 import scopedFixture from '../../../resources/fixtures/ui/auditor-portfolio-scoped.json';
 import portfolioFixture from '../../../resources/fixtures/ui/auditor-portfolio.json';
 import { renderWithUser } from '../helpers/render-with-user';
@@ -111,6 +114,72 @@ describe('Auditor Portfolio', () => {
             3,
         );
         expect(screen.getAllByText('Awaiting co-sign')).toHaveLength(2);
+    });
+
+    it.each([
+        {
+            fixture: awaitingFixture,
+            filter: 'Awaiting co-sign',
+            shown: ['Huye Motors'],
+        },
+        {
+            fixture: publishedFixture,
+            filter: 'Published',
+            shown: ['Kivu Coffee Roasters', 'Intare Supply'],
+        },
+        {
+            fixture: rejectedFixture,
+            filter: 'Rejected',
+            shown: ['Isoko Energy'],
+        },
+    ])(
+        'lists only the $filter reports the server filtered',
+        ({ fixture, filter, shown }) => {
+            render(<AuditorPortfolio {...props(fixture)} />);
+
+            const filters = screen.getByRole('navigation', {
+                name: 'Filter reports',
+            });
+
+            expect(
+                within(filters).getByRole('link', {
+                    name: new RegExp(`^${filter}`, 'u'),
+                }),
+            ).toHaveAttribute('aria-current', 'true');
+            expect(
+                within(filters).getByRole('link', { name: /^All/u }),
+            ).not.toHaveAttribute('aria-current');
+            expect(screen.getByText('5 total')).toBeInTheDocument();
+
+            for (const business of [
+                'Kivu Coffee Roasters',
+                'Huye Motors',
+                'Musanze Traders',
+                'Isoko Energy',
+                'Intare Supply',
+            ]) {
+                const report = screen.queryByRole('link', {
+                    name: new RegExp(business, 'u'),
+                });
+
+                if (shown.includes(business)) {
+                    expect(report).toHaveTextContent(filter);
+                } else {
+                    expect(report).not.toBeInTheDocument();
+                }
+            }
+        },
+    );
+
+    it('keeps the rejection reason and the linked amendment on a rejected report', () => {
+        render(<AuditorPortfolio {...props(rejectedFixture)} />);
+
+        expect(
+            screen.getByText(/cash count sheet attached is for July/u),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Start a linked amendment →' }),
+        ).toHaveAttribute('href', '/preview/auditor-audit-count');
     });
 
     it('filters on the server and offers a way back when nothing matches', () => {

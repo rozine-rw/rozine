@@ -12,7 +12,7 @@
             "accent": "green",
             "industry": "Agriculture",
             "district": "Gasabo",
-            "health": "healthy",
+            "health": "frozen",
             "value": {
                 "currency": "RWF",
                 "amount": "890000"
@@ -31,7 +31,7 @@
             "payments_made": 5,
             "payments_total": 6,
             "link": {
-                "url": "/preview/investor-holding",
+                "url": "/preview/investor-holding-frozen",
                 "method": "get"
             },
             "rating": {
@@ -51,37 +51,18 @@
                 "currency": "RWF",
                 "amount": "747667"
             },
-            "next_payment": {
-                "amount": {
-                    "currency": "RWF",
-                    "amount": "151333"
-                },
-                "due_on": "2026-10-03T00:00:00+02:00"
-            },
+            "next_payment": null,
             "on_time": {
                 "made": 5,
-                "on_time": 5,
-                "late": 0
+                "on_time": 4,
+                "late": 1
             },
             "months_left": 1,
             "investors": 647,
             "rating_change": null,
             "recovery_plan": null,
             "arrears": null,
-            "photos": [
-                {
-                    "url": null,
-                    "caption": "Storefront"
-                },
-                {
-                    "url": null,
-                    "caption": "Operations"
-                },
-                {
-                    "url": null,
-                    "caption": "Warehouse"
-                }
-            ],
+            "photos": [],
             "updates": [
                 {
                     "id": "h-greenleaf-2026-08",
@@ -439,7 +420,7 @@
                     "policy_version": "synthetic-primary-policy-0",
                     "disclosure_version": "disclosure-2026-05.2",
                     "link": {
-                        "url": "/preview/investor-holding",
+                        "url": "/preview/investor-holding-frozen",
                         "method": "get"
                     }
                 },

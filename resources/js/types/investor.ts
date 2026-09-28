@@ -389,10 +389,13 @@ export type HoldingSummary = {
     industry: string;
     district: string;
     health: HoldingHealth;
-    /** Principal outstanding plus return received so far — realised, not projected. */
+    /**
+     * What was invested plus the return received so far: principal repaid stays counted, so value
+     * never falls as a note amortises. Realised, not projected; `gain` is `value − invested`.
+     */
     value: Money;
     invested: Money;
-    /** Signed. */
+    /** Signed: `value − invested`, the return received so far. */
     gain: Money;
     /** Signed, one decimal: "13.3". */
     gain_pct: string;

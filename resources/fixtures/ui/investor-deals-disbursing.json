@@ -151,7 +151,7 @@
                 ],
                 "raised": {
                     "currency": "RWF",
-                    "amount": "32800000"
+                    "amount": "42000000"
                 },
                 "target": {
                     "currency": "RWF",
@@ -650,7 +650,7 @@
             ],
             "raised": {
                 "currency": "RWF",
-                "amount": "32800000"
+                "amount": "42000000"
             },
             "target": {
                 "currency": "RWF",

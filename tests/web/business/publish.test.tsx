@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import BusinessPublish from '@/pages/business/publish';
 import type { C3BusinessPublishProps } from '@/types/business';
 import liveMinimalFixture from '../../../resources/fixtures/ui/business-publish-live-minimal.json';
+import noReservationFixture from '../../../resources/fixtures/ui/business-publish-no-reservation.json';
 import notReleasedFixture from '../../../resources/fixtures/ui/business-publish-not-released.json';
 import publishedFixture from '../../../resources/fixtures/ui/business-publish-published.json';
 import refusedFixture from '../../../resources/fixtures/ui/business-publish-refused.json';
@@ -136,6 +137,21 @@ describe('Publish before staff release', () => {
         renderWithUser(<BusinessPublish {...page} />);
 
         expect(within(sheet()).getByText(text)).toBeInTheDocument();
+    });
+
+    it('refuses a listing with no borrowing reservation on record, with nothing to publish', () => {
+        renderWithUser(<BusinessPublish {...props(noReservationFixture)} />);
+        const view = within(sheet());
+
+        expect(view.getByText('Not released for listing')).toBeInTheDocument();
+        expect(
+            view.getByText(
+                "No borrowing reservation is on record for this application, so it can't be listed.",
+            ),
+        ).toBeInTheDocument();
+        expect(
+            view.queryByRole('button', { name: 'Publish' }),
+        ).not.toBeInTheDocument();
     });
 
     it('shows a recorded not-released refusal from the server', () => {

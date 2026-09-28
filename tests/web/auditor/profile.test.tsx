@@ -12,6 +12,7 @@ import availabilityFixture from '../../../resources/fixtures/ui/auditor-profile-
 import expiredFixture from '../../../resources/fixtures/ui/auditor-profile-expired.json';
 import firstTimePendingFixture from '../../../resources/fixtures/ui/auditor-profile-first-time-pending.json';
 import firstTimeFixture from '../../../resources/fixtures/ui/auditor-profile-first-time.json';
+import pausedFixture from '../../../resources/fixtures/ui/auditor-profile-paused.json';
 import pendingFixture from '../../../resources/fixtures/ui/auditor-profile-pending.json';
 import profileFixture from '../../../resources/fixtures/ui/auditor-profile.json';
 import { renderWithUser } from '../helpers/render-with-user';
@@ -510,16 +511,12 @@ describe('Auditor Profile', () => {
     });
 
     it('reads a paused partner', () => {
-        const base = props(availabilityFixture);
-
-        render(
-            <AuditorProfile
-                {...base}
-                availability={{ ...base.availability, accepting: false }}
-            />,
-        );
+        render(<AuditorProfile {...props(pausedFixture)} />);
 
         expect(screen.getByText('Paused')).toBeInTheDocument();
+        expect(
+            screen.getByRole('switch', { name: 'Accepting audits' }),
+        ).not.toBeChecked();
         expect(
             screen.getByText(
                 'No new jobs are offered. Accepted jobs still run their clock.',
