@@ -3340,6 +3340,8 @@ const fr: Catalog = {
         'Ces titres ne sont plus disponibles. Choisissez-en moins ou réessayez plus tard.',
     'settlement.refusal.COMMITMENT_LOCKED':
         'La levée est entièrement financée : cela ne peut plus être annulé.',
+    'settlement.refusal.CAMPAIGN_SETTLEMENT_REQUIRED':
+        "Des investisseurs se sont déjà engagés dans cette levée : elle ne peut donc pas être annulée ici. Leurs engagements doivent d'abord être réglés.",
     'settlement.refusal.NOTE_INELIGIBLE':
         "Ce titre n'est pas éligible pour le moment.",
     'settlement.refusal.DISCLOSURE_STALE':
