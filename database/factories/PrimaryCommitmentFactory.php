@@ -21,6 +21,6 @@ class PrimaryCommitmentFactory extends Factory
             'operation_id' => fn (array $a): ?string => PrimaryReservationVersion::query()->whereKey($a['primary_reservation_version_id'])->firstOrFail()->operation_id,
             'id' => fn (array $a): string => CommandOperation::query()->whereKey($a['operation_id'])->first()?->result['data']['commitment_id'] ?? strtolower((string) Str::ulid()),
             'confirmed_at' => fn (array $a) => PrimaryReservationVersion::query()->whereKey($a['primary_reservation_version_id'])->firstOrFail()->created_at,
-            'created_at' => now()->startOfSecond()];
+            'created_at' => fn () => now()->startOfSecond()];
     }
 }

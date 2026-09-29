@@ -306,3 +306,21 @@ it('creates the reservation after its campaign when the factory clock crosses a 
         Carbon::setTestNow();
     }
 });
+
+it('creates the commitment after its confirmation when the factory clock crosses a second boundary', function (): void {
+    $base = CarbonImmutable::now()->startOfSecond();
+    $calls = 0;
+    Carbon::setTestNow(function () use ($base, &$calls): Carbon {
+        return Carbon::instance($calls++ === 0 ? $base->addMicroseconds(999999) : $base->addSecond());
+    });
+    try {
+        $commitment = PrimaryCommitment::factory()->create();
+        $confirmation = PrimaryReservationVersion::query()->findOrFail($commitment->primary_reservation_version_id);
+        expect($calls)->toBeGreaterThan(1)
+            ->and($commitment->confirmed_at->equalTo($confirmation->created_at))->toBeTrue()
+            ->and($commitment->created_at->greaterThanOrEqualTo($confirmation->created_at))->toBeTrue();
+        primarySchemaFlush();
+    } finally {
+        Carbon::setTestNow();
+    }
+});
