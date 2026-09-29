@@ -287,6 +287,17 @@ describe('a business asking to borrow', () => {
 });
 
 describe('the card a signup can keep', () => {
+    /**
+     * The note a saved card leaves behind wipes itself after 2.2 seconds, so
+     * hold the clock still for the whole group. Awaiting the button already
+     * settles the download; what these tests cannot afford is real time
+     * passing while React re-renders the page, because the note would be
+     * gone by the time the assertion reads it.
+     */
+    beforeEach(() => {
+        vi.useFakeTimers();
+    });
+
     it('hands the investor the card they are looking at', async () => {
         const site = mountSite();
 
@@ -350,8 +361,6 @@ describe('the card a signup can keep', () => {
     });
 
     it('clears the note a moment after the card is saved', async () => {
-        vi.useFakeTimers();
-
         const site = mountSite();
 
         act(() => {
@@ -402,8 +411,6 @@ describe('the card a signup can keep', () => {
     });
 
     it('clears a business note a moment later too', async () => {
-        vi.useFakeTimers();
-
         const site = mountSite();
 
         act(() => {
