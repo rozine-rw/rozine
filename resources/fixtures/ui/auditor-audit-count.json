@@ -1,0 +1,295 @@
+{
+    "component": "auditor/audit",
+    "props": {
+        "server_time": "2026-10-03T17:00:00Z",
+        "audit": {
+            "id": "mr_greenleaf",
+            "kind": "monthly",
+            "business": "GreenLeaf Agro",
+            "district": "Gasabo",
+            "distance_km": "8.8",
+            "month": "2026-09-01",
+            "deadline": {
+                "due_at": "2026-10-07T21:59:59Z"
+            },
+            "revision": 3,
+            "reassigned_from": null
+        },
+        "steps": [
+            {
+                "key": "statements",
+                "state": "done"
+            },
+            {
+                "key": "count",
+                "state": "current"
+            },
+            {
+                "key": "photos",
+                "state": "todo"
+            },
+            {
+                "key": "seal",
+                "state": "todo"
+            }
+        ],
+        "stage": {
+            "step": "count",
+            "financial_proofs": [
+                {
+                    "key": "bank",
+                    "label": "Bank statement",
+                    "hint": "PDF attachment or high-res scan",
+                    "seen": true
+                },
+                {
+                    "key": "momo",
+                    "label": "Mobile-money log",
+                    "hint": "MoMo transaction export",
+                    "seen": true
+                },
+                {
+                    "key": "cash",
+                    "label": "Cash count sheet",
+                    "hint": "Signed physical count",
+                    "seen": false
+                },
+                {
+                    "key": "po",
+                    "label": "POs & delivery receipts",
+                    "hint": "Verified purchase orders",
+                    "seen": false
+                }
+            ],
+            "cash": {
+                "observed": {
+                    "currency": "RWF",
+                    "amount": "1184000"
+                },
+                "statement": {
+                    "currency": "RWF",
+                    "amount": "1210000"
+                },
+                "variance": {
+                    "pct": "-2.1",
+                    "within": false
+                }
+            },
+            "tolerance": "RWF 0",
+            "period": {
+                "from": "2026-09-01",
+                "to": "2026-09-30"
+            },
+            "account_ref": "BK ····4417 · MoMo 078···212",
+            "sector": {
+                "label": "FMCG / Perishables",
+                "definition": "Stock counted in saleable units: sealed crates in the cold room and on the shop floor."
+            },
+            "inventory_proofs": [
+                {
+                    "key": "photo",
+                    "label": "Cold-room count photo",
+                    "hint": "Taken in the capture app",
+                    "seen": true
+                },
+                {
+                    "key": "delivery",
+                    "label": "Supplier delivery notes",
+                    "hint": "Notes for the month",
+                    "seen": false
+                }
+            ],
+            "stock": {
+                "observed_units": "184",
+                "reported_units": "190",
+                "variance": {
+                    "pct": "-3.2",
+                    "within": false
+                }
+            },
+            "operational_status": "active"
+        },
+        "can_continue": false,
+        "hint": "Tick every proof artefact you inspected.",
+        "links": {
+            "close": {
+                "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
+            "back": {
+                "url": "/preview/auditor-jobs",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "save": {
+                "url": "/preview/auditor-jobs",
+                "method": "post"
+            },
+            "conflict": {
+                "url": "/preview/auditor-jobs-conflict",
+                "method": "post"
+            }
+        },
+        "outcome": null,
+        "jobs": {
+            "server_time": "2026-10-03T17:00:00Z",
+            "radius_km": 30,
+            "flash_hours": 24,
+            "eligible": [
+                {
+                    "id": "fa_huye",
+                    "business": "Huye Motors",
+                    "sector": "logistics",
+                    "district": "Gasabo",
+                    "offered_at": "2026-10-03T14:00:00Z",
+                    "distance_km": "11.2",
+                    "requested": {
+                        "currency": "RWF",
+                        "amount": "51200000"
+                    },
+                    "dscr": "1.02",
+                    "term_months": 6,
+                    "map": {
+                        "east_km": 8.4,
+                        "north_km": 7.1
+                    },
+                    "link": {
+                        "url": "/preview/auditor-file",
+                        "method": "get"
+                    },
+                    "actions": {
+                        "accept": {
+                            "url": "/preview/auditor-audit-review",
+                            "method": "post"
+                        },
+                        "decline": {
+                            "url": "/preview/auditor-jobs-declined",
+                            "method": "post"
+                        },
+                        "conflict": {
+                            "url": "/preview/auditor-jobs-conflict",
+                            "method": "post"
+                        }
+                    }
+                }
+            ],
+            "assigned": [],
+            "monthly": {
+                "windows": [
+                    {
+                        "id": "mw_1",
+                        "note_title": "Cold-Chain Hub",
+                        "note_id": "RNP-2026-0118",
+                        "business": "GreenLeaf Agro",
+                        "month": "2026-09-01",
+                        "open": {
+                            "url": "/preview/auditor-audit-statements",
+                            "method": "post"
+                        }
+                    },
+                    {
+                        "id": "mw_2",
+                        "note_title": "Fleet Expansion",
+                        "note_id": "RNP-2026-0042",
+                        "business": "GreenLeaf Agro",
+                        "month": "2026-09-01",
+                        "open": {
+                            "url": "/preview/auditor-audit-statements",
+                            "method": "post"
+                        }
+                    },
+                    {
+                        "id": "mw_3",
+                        "note_title": "Builders Working Capital",
+                        "note_id": "RNP-2026-0077",
+                        "business": "Musanze Traders",
+                        "month": "2026-09-01",
+                        "open": {
+                            "url": "/preview/auditor-audit-statements",
+                            "method": "post"
+                        }
+                    },
+                    {
+                        "id": "mw_4",
+                        "note_title": "Works Inventory",
+                        "note_id": "RNP-2026-0091",
+                        "business": "Isoko Energy",
+                        "month": "2026-09-01",
+                        "open": {
+                            "url": "/preview/auditor-audit-statements",
+                            "method": "post"
+                        }
+                    }
+                ],
+                "reports": [
+                    {
+                        "id": "mr_1",
+                        "business": "Intare Supply",
+                        "sector": "retail",
+                        "note_title": "Motors Working Capital",
+                        "due_on": "2026-10-07",
+                        "status": "in_progress",
+                        "inflow": {
+                            "currency": "RWF",
+                            "amount": "162000000"
+                        },
+                        "outflow": {
+                            "currency": "RWF",
+                            "amount": "128400000"
+                        },
+                        "cover": "1.3",
+                        "link": {
+                            "url": "/preview/auditor-audit-count",
+                            "method": "get"
+                        }
+                    },
+                    {
+                        "id": "mr_2",
+                        "business": "Kivu Coffee Roasters",
+                        "sector": "agriculture",
+                        "note_title": "Harvest Stock",
+                        "due_on": "2026-10-07",
+                        "status": "awaiting_cosign",
+                        "inflow": {
+                            "currency": "RWF",
+                            "amount": "88500000"
+                        },
+                        "outflow": {
+                            "currency": "RWF",
+                            "amount": "71200000"
+                        },
+                        "cover": "1.4",
+                        "link": {
+                            "url": "/preview/auditor-audit-sealed-monthly",
+                            "method": "get"
+                        }
+                    }
+                ]
+            },
+            "outcome": null,
+            "links": {
+                "home": {
+                    "url": "/preview/auditor-home",
+                    "method": "get"
+                },
+                "jobs": {
+                    "url": "/preview/auditor-jobs",
+                    "method": "get"
+                },
+                "portfolio": {
+                    "url": "/preview/auditor-portfolio",
+                    "method": "get"
+                },
+                "profile": {
+                    "url": "/preview/auditor-profile",
+                    "method": "get"
+                },
+                "launcher": {
+                    "url": "/preview/launcher-auditor",
+                    "method": "get"
+                }
+            }
+        }
+    }
+}

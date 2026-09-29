@@ -1,0 +1,72 @@
+{
+    "component": "auditor/profile",
+    "props": {
+        "server_time": "2026-10-03T17:00:00Z",
+        "section": "availability",
+        "auditor": {
+            "name": "Diane Uwase, CPA",
+            "firm": "Uwase & Co.",
+            "accreditation": "ICPAR · CPA",
+            "avatar_url": null,
+            "since_year": 2019
+        },
+        "quality_score": 99,
+        "on_time_pct": 96,
+        "jobs_done": 9,
+        "accreditation": {
+            "licence": "ICPAR/P-2026/0481",
+            "expires_on": "2027-03-31",
+            "days_left": 179,
+            "status": "active",
+            "renewal": {
+                "status": "none",
+                "submit": {
+                    "url": "/preview/auditor-profile-pending",
+                    "method": "post"
+                }
+            }
+        },
+        "availability": {
+            "accepting": true,
+            "radius_km": 30,
+            "max_active": 3,
+            "toggle": {
+                "url": "/preview/auditor-profile",
+                "method": "post"
+            }
+        },
+        "open_jobs": 1,
+        "links": {
+            "home": {
+                "url": "/preview/auditor-home",
+                "method": "get"
+            },
+            "jobs": {
+                "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/auditor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/auditor-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-auditor",
+                "method": "get"
+            },
+            "sections": {
+                "accreditation": {
+                    "url": "/preview/auditor-profile",
+                    "method": "get"
+                },
+                "availability": {
+                    "url": "/preview/auditor-profile-availability",
+                    "method": "get"
+                }
+            }
+        }
+    }
+}
