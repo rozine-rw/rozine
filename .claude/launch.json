@@ -4,14 +4,66 @@
         {
             "name": "rozine",
             "runtimeExecutable": "composer",
-            "runtimeArgs": ["run", "dev"],
+            "runtimeArgs": [
+                "run",
+                "dev"
+            ],
             "port": 8000
         },
         {
             "name": "d04-spike",
             "runtimeExecutable": "php",
-            "runtimeArgs": ["-S", "127.0.0.1:8099", "-t", "docs/phase-0/d-04-pwa-assurance/harness"],
+            "runtimeArgs": [
+                "-S",
+                "127.0.0.1:8099",
+                "-t",
+                "docs/phase-0/d-04-pwa-assurance/harness"
+            ],
             "port": 8099
+        },
+        {
+            "name": "rozine-dev-local",
+            "runtimeExecutable": "php",
+            "runtimeArgs": [
+                "/Users/engineersticity/Documents/projects/rozine/artisan",
+                "serve",
+                "--host=127.0.0.1",
+                "--port=8126"
+            ],
+            "port": 8126
+        },
+        {
+            "name": "adm-branch",
+            "runtimeExecutable": "php",
+            "runtimeArgs": [
+                "/private/tmp/claude-501/-Users-engineersticity-Documents-projects-rozine--claude-worktrees-rozine-mvp-handover-f8c717/39184b4e-2867-4960-913f-072766a49b6e/scratchpad/adm/artisan",
+                "serve",
+                "--host=127.0.0.1",
+                "--port=8127"
+            ],
+            "port": 8127
+        },
+        {
+            "name": "deals-branch",
+            "runtimeExecutable": "php",
+            "runtimeArgs": [
+                "/private/tmp/claude-501/-Users-engineersticity-Documents-projects-rozine--claude-worktrees-rozine-mvp-handover-f8c717/39184b4e-2867-4960-913f-072766a49b6e/scratchpad/deals/artisan",
+                "serve",
+                "--host=127.0.0.1",
+                "--port=8128"
+            ],
+            "port": 8128
+        },
+        {
+            "name": "states-branch",
+            "runtimeExecutable": "php",
+            "runtimeArgs": [
+                "/private/tmp/claude-501/-Users-engineersticity-Documents-projects-rozine--claude-worktrees-rozine-mvp-handover-f8c717/39184b4e-2867-4960-913f-072766a49b6e/scratchpad/states/artisan",
+                "serve",
+                "--host=127.0.0.1",
+                "--port=8129"
+            ],
+            "port": 8129
         }
     ]
 }
