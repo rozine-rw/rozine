@@ -3551,12 +3551,12 @@ const fr: Catalog = {
     'business.campaign.committed': 'Engagé',
     'business.campaign.reserved': 'Réservé',
     'business.campaign.reserved_note':
-        'Les notes réservées sont bloquées dans des paiements en cours et ne sont pas encore engagées ; une réservation non confirmée est libérée après 5 minutes.',
+        "Notes bloquées dans le paiement d'un investisseur. Elles ne sont pas encore confirmées.",
     'business.campaign.units':
         '{committed} notes engagées sur {total} · {reserved} réservées · {available} disponibles',
     'business.campaign.closes': 'Clôture le {date}',
     'business.campaign.fully_reserved':
-        'Chaque note est réservée dans un paiement en cours. Les réservations non confirmées sous 5 minutes sont remises en vente.',
+        'Chaque note disponible est actuellement bloquée dans un paiement. Les nouveaux investisseurs ne peuvent pas réserver tant que les réservations ne sont pas confirmées ou terminées.',
     'business.campaign.funded':
         'Entièrement financée le {date}. La levée ne peut plus être annulée.',
     'business.campaign.closing_title': 'Décaissement',
@@ -3595,7 +3595,7 @@ const fr: Catalog = {
     'business.campaign.cancel.cancelling': 'Annulation…',
     'business.campaign.cancel.title': 'Annuler cette levée ?',
     'business.campaign.cancel.body':
-        "Chaque engagement est intégralement rendu à l'investisseur, sans frais, et la levée est définitivement close. Cette action est irréversible.",
+        'Les réservations non confirmées sont intégralement libérées pour les investisseurs, et la levée est définitivement close. Cette action est irréversible.',
     'business.campaign.cancel.reason': 'Motif (facultatif)',
     'business.campaign.cancel.confirm': 'Annuler la levée',
     'business.campaign.cancel.keep': 'Continuer la levée',

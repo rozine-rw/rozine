@@ -110,6 +110,13 @@ describe('A raising campaign', () => {
             ),
         ).toBeInTheDocument();
         expect(view.getByText('Closes 2 Oct 2026 · 09:00')).toBeInTheDocument();
+        expect(
+            view.getByText(
+                "Notes held in an investor's checkout. They aren't confirmed yet.",
+            ),
+        ).toBeInTheDocument();
+        expect(sheet).not.toHaveTextContent(/released after 5 minutes/i);
+        expect(sheet).not.toHaveTextContent(/back on sale/i);
         expect(view.queryByRole('alert')).not.toBeInTheDocument();
 
         for (const text of IDENTITIES) {
@@ -189,8 +196,10 @@ describe('A raising campaign', () => {
 
         expect(view.getByText('Raising · fully reserved')).toBeInTheDocument();
         expect(view.getByRole('status')).toHaveTextContent(
-            'Every note is reserved in a live checkout.',
+            "Every available note is currently held in a checkout. New investors can't reserve until holds are confirmed or end.",
         );
+        expect(campaignSheet()).not.toHaveTextContent(/back on sale/i);
+        expect(campaignSheet()).not.toHaveTextContent(/5 minutes/i);
         expect(
             view.getByText(
                 '16,200 of 18,000 notes committed · 1,800 reserved · 0 available',
@@ -266,8 +275,10 @@ describe('Cancelling a raise', () => {
         });
 
         expect(dialog).toHaveTextContent(
-            "Every investor's commitment goes back to them in full, without fee",
+            'Any unconfirmed holds are released to investors in full, and the raise closes for good.',
         );
+        expect(dialog).not.toHaveTextContent(/commitment goes back/i);
+        expect(dialog).not.toHaveTextContent(/without fee/i);
 
         await user.type(
             within(dialog).getByLabelText('Reason (optional)'),

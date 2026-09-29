@@ -3404,12 +3404,12 @@ const en = {
     'business.campaign.committed': 'Committed',
     'business.campaign.reserved': 'Reserved',
     'business.campaign.reserved_note':
-        "Reserved notes are held in investors' live checkouts and aren't committed yet; an unconfirmed hold is released after 5 minutes.",
+        "Notes held in an investor's checkout. They aren't confirmed yet.",
     'business.campaign.units':
         '{committed} of {total} notes committed · {reserved} reserved · {available} available',
     'business.campaign.closes': 'Closes {date}',
     'business.campaign.fully_reserved':
-        "Every note is reserved in a live checkout. Holds that aren't confirmed within 5 minutes go back on sale.",
+        "Every available note is currently held in a checkout. New investors can't reserve until holds are confirmed or end.",
     'business.campaign.funded':
         'Fully funded on {date}. The raise can no longer be cancelled.',
     'business.campaign.closing_title': 'Disbursement',
@@ -3447,7 +3447,7 @@ const en = {
     'business.campaign.cancel.cancelling': 'Cancelling…',
     'business.campaign.cancel.title': 'Cancel this raise?',
     'business.campaign.cancel.body':
-        "Every investor's commitment goes back to them in full, without fee, and the raise closes for good. This can't be undone.",
+        "Any unconfirmed holds are released to investors in full, and the raise closes for good. This can't be undone.",
     'business.campaign.cancel.reason': 'Reason (optional)',
     'business.campaign.cancel.confirm': 'Cancel raise',
     'business.campaign.cancel.keep': 'Keep raising',
