@@ -3605,7 +3605,7 @@ const en = {
     'investor.deal.notice.fully_reserved.title':
         'Every note is reserved right now',
     'investor.deal.notice.fully_reserved.body':
-        'Checkouts hold notes for up to 5 minutes. Any that lapse come back to this raise.',
+        "Every available note is currently held in other investors' checkouts. Check back later.",
     'investor.deal.notice.funded.title': 'Fully funded',
     'investor.deal.notice.funded.body':
         'Commitments are locked while the funds are paid to the business. Notes are issued once that payment is confirmed.',

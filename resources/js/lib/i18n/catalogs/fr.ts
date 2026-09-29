@@ -3758,7 +3758,7 @@ const fr: Catalog = {
     'investor.deal.notice.fully_reserved.title':
         'Tous les titres sont réservés pour le moment',
     'investor.deal.notice.fully_reserved.body':
-        "Les paiements réservent des titres jusqu'à 5 minutes. Ceux qui expirent reviennent dans cette levée.",
+        "Tous les titres disponibles sont actuellement réservés dans les paiements d'autres investisseurs. Revenez plus tard.",
     'investor.deal.notice.funded.title': 'Entièrement financé',
     'investor.deal.notice.funded.body':
         "Les engagements sont verrouillés pendant le versement à l'entreprise. Les titres sont émis une fois ce paiement confirmé.",

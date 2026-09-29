@@ -3738,7 +3738,7 @@ const rw: Catalog = {
     'investor.deal.lifecycle.failed_closing': 'Byafunzwe, amafaranga asubizwa',
     'investor.deal.notice.fully_reserved.title': 'Impapuro zose zafashwe ubu',
     'investor.deal.notice.fully_reserved.body':
-        'Kwishyura bifata impapuro kugeza ku minota 5. Izo igihe cyazo kirangiye zigaruka muri iki gikorwa.',
+        "Impapuro zose zihari ubu zafashwe mu kwishyura kw'abandi bashoramari. Uzongere urebe nyuma.",
     'investor.deal.notice.funded.title': 'Imari yose yabonetse',
     'investor.deal.notice.funded.body':
         'Ibyiyemejwe birafunze mu gihe amafaranga yoherezwa ku kigo. Impapuro zitangwa ubwo bwishyu bumaze kwemezwa.',
