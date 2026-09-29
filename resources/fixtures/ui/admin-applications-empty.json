@@ -1,0 +1,124 @@
+{
+    "component": "admin/applications",
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2026-09-23T17:40:00+02:00",
+        "policy": [
+            {
+                "key": "target_dscr",
+                "value": "1.50×"
+            },
+            {
+                "key": "listing_audit",
+                "value": "Required on every deal"
+            },
+            {
+                "key": "audit_routing",
+                "value": "Request DSCR ≥ 1.25× · below rejects"
+            },
+            {
+                "key": "rate_band",
+                "value": "10–15%"
+            }
+        ],
+        "tabs": [
+            {
+                "key": "pending",
+                "count": 1,
+                "link": {
+                    "url": "/preview/admin-applications",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "under_review",
+                "count": 5,
+                "link": {
+                    "url": "/preview/admin-applications",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "escalated",
+                "count": 2,
+                "link": {
+                    "url": "/preview/admin-applications",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "approved",
+                "count": 9,
+                "link": {
+                    "url": "/preview/admin-applications",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "rejected",
+                "count": 4,
+                "link": {
+                    "url": "/preview/admin-applications-empty",
+                    "method": "get"
+                }
+            }
+        ],
+        "active_tab": "rejected",
+        "applications": [],
+        "review": null,
+        "stage": null
+    }
+}

@@ -1,0 +1,175 @@
+{
+    "component": "admin/parties",
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2026-09-23T17:40:00+02:00",
+        "kind": "staff",
+        "policy": [],
+        "stats": [
+            {
+                "key": "operators",
+                "value": {
+                    "kind": "count",
+                    "value": 4
+                }
+            },
+            {
+                "key": "approvers",
+                "value": {
+                    "kind": "count",
+                    "value": 3
+                }
+            },
+            {
+                "key": "frozen_accounts",
+                "value": {
+                    "kind": "count",
+                    "value": 1
+                }
+            }
+        ],
+        "chips": [
+            {
+                "key": "all",
+                "count": 4,
+                "link": {
+                    "url": "/preview/admin-staff",
+                    "method": "get"
+                },
+                "active": true
+            },
+            {
+                "key": "active",
+                "count": 3,
+                "link": {
+                    "url": "/preview/admin-staff",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "frozen",
+                "count": 1,
+                "link": {
+                    "url": "/preview/admin-staff",
+                    "method": "get"
+                },
+                "active": false
+            }
+        ],
+        "filters": [],
+        "shown": 4,
+        "total": 4,
+        "directory": {
+            "kind": "staff",
+            "rows": [
+                {
+                    "id": "stf_01",
+                    "name": "A. Diane",
+                    "email": "ops@rozine.rw",
+                    "initials": "AD",
+                    "role": "approver",
+                    "frozen": false,
+                    "you": true,
+                    "link": {
+                        "url": "/preview/admin-staff",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "stf_02",
+                    "name": "Eric Ndoli",
+                    "email": "eric@rozine.rw",
+                    "initials": "EN",
+                    "role": "approver",
+                    "frozen": false,
+                    "you": false,
+                    "link": {
+                        "url": "/preview/admin-staff",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "stf_03",
+                    "name": "Grace Kalisa",
+                    "email": "grace@rozine.rw",
+                    "initials": "GK",
+                    "role": "analyst",
+                    "frozen": false,
+                    "you": false,
+                    "link": {
+                        "url": "/preview/admin-staff",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "stf_04",
+                    "name": "Jean-Paul M.",
+                    "email": "jp@rozine.rw",
+                    "initials": "JP",
+                    "role": "approver",
+                    "frozen": true,
+                    "you": false,
+                    "link": {
+                        "url": "/preview/admin-staff",
+                        "method": "get"
+                    }
+                }
+            ]
+        },
+        "party": null
+    }
+}

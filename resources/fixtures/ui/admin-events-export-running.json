@@ -1,0 +1,232 @@
+{
+    "component": "admin/events",
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2026-09-23T17:40:00+02:00",
+        "events": [
+            {
+                "id": "evt_8",
+                "at": "2026-09-23T19:37:23+02:00",
+                "actor": "admin@rozine",
+                "action": {
+                    "code": "application.approved",
+                    "label": "Approved RNP",
+                    "tone": "green"
+                },
+                "target": "RNP-2026-0118",
+                "source": "41.74.2.10",
+                "reason": "Evidence complete; DSCR 1.62 on the final offer.",
+                "changes": [
+                    {
+                        "field": "state",
+                        "before": "under_review",
+                        "after": "approved"
+                    }
+                ]
+            },
+            {
+                "id": "evt_7",
+                "at": "2026-09-23T19:14:23+02:00",
+                "actor": "compliance@rozine",
+                "action": {
+                    "code": "kyc.verified",
+                    "label": "KYC verified",
+                    "tone": "green"
+                },
+                "target": "INV-38441",
+                "source": "41.74.2.18",
+                "reason": "NID and selfie matched.",
+                "changes": [
+                    {
+                        "field": "kyc",
+                        "before": "pending",
+                        "after": "verified"
+                    }
+                ]
+            },
+            {
+                "id": "evt_6",
+                "at": "2026-09-23T18:51:23+02:00",
+                "actor": "risk@rozine",
+                "action": {
+                    "code": "note.flagged",
+                    "label": "Flagged note",
+                    "tone": "amber"
+                },
+                "target": "RNP-2024-0009",
+                "source": "41.74.2.22",
+                "reason": "Second late instalment.",
+                "changes": []
+            },
+            {
+                "id": "evt_5",
+                "at": "2026-09-23T18:28:23+02:00",
+                "actor": "admin@rozine",
+                "action": {
+                    "code": "application.rejected",
+                    "label": "Rejected application",
+                    "tone": "red"
+                },
+                "target": "APP-08770",
+                "source": "41.74.2.10",
+                "reason": "Requested amount exceeds approved capacity.",
+                "changes": [
+                    {
+                        "field": "state",
+                        "before": "submitted",
+                        "after": "rejected"
+                    },
+                    {
+                        "field": "reviewer",
+                        "before": "Grace Kalisa",
+                        "after": null
+                    }
+                ]
+            },
+            {
+                "id": "evt_4",
+                "at": "2026-09-23T18:05:23+02:00",
+                "actor": "finance@rozine",
+                "action": {
+                    "code": "report.exported",
+                    "label": "Exported report",
+                    "tone": "blue"
+                },
+                "target": "REV-2026-06",
+                "source": "41.74.2.31",
+                "reason": "Board pack, June.",
+                "changes": []
+            },
+            {
+                "id": "evt_3",
+                "at": "2026-09-23T17:42:23+02:00",
+                "actor": "ops@rozine",
+                "action": {
+                    "code": "party.frozen",
+                    "label": "Suspended account",
+                    "tone": "red"
+                },
+                "target": "INV-21077",
+                "source": "41.74.2.44",
+                "reason": "Provider fraud alert FA-2291.",
+                "changes": [
+                    {
+                        "field": "frozen",
+                        "before": "false",
+                        "after": "true"
+                    }
+                ]
+            },
+            {
+                "id": "evt_2",
+                "at": "2026-09-23T17:19:23+02:00",
+                "actor": "system",
+                "action": {
+                    "code": "ledger.contra",
+                    "label": "Contra entry posted",
+                    "tone": "blue"
+                },
+                "target": "LED-1925",
+                "source": "core",
+                "reason": null,
+                "changes": [
+                    {
+                        "field": "reverses",
+                        "before": null,
+                        "after": "LED-1911"
+                    }
+                ]
+            },
+            {
+                "id": "evt_1",
+                "at": "2026-09-23T16:56:23+02:00",
+                "actor": "admin@rozine",
+                "action": {
+                    "code": "policy.updated",
+                    "label": "Updated policy value",
+                    "tone": "blue"
+                },
+                "target": "CFG-DUAL-THRESHOLD",
+                "source": "41.74.2.10",
+                "reason": "Board resolution 2026-09.",
+                "changes": [
+                    {
+                        "field": "dual_control_threshold",
+                        "before": "RWF 10,000,000",
+                        "after": "RWF 5,000,000"
+                    }
+                ]
+            }
+        ],
+        "total": 8,
+        "filters": {
+            "q": "",
+            "preset": null,
+            "from": null,
+            "to": null
+        },
+        "more": null,
+        "export": {
+            "state": "running",
+            "requested": {
+                "actor": "A. Diane",
+                "at": "2026-09-23T17:38:00+02:00",
+                "reason": "RCMA request 2026-114"
+            }
+        },
+        "actions": {}
+    }
+}

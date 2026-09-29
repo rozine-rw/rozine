@@ -1,0 +1,542 @@
+{
+    "component": "admin/today",
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2026-09-23T17:40:00+02:00",
+        "kpis": [
+            {
+                "key": "capital_raised",
+                "value": {
+                    "kind": "money",
+                    "value": {
+                        "currency": "RWF",
+                        "amount": "3712400000"
+                    }
+                }
+            },
+            {
+                "key": "active_businesses",
+                "value": {
+                    "kind": "count",
+                    "value": 43
+                }
+            },
+            {
+                "key": "verified_investors",
+                "value": {
+                    "kind": "count",
+                    "value": 524
+                }
+            },
+            {
+                "key": "outstanding_notes",
+                "value": {
+                    "kind": "count",
+                    "value": 125
+                }
+            },
+            {
+                "key": "treasury_position",
+                "value": {
+                    "kind": "money",
+                    "value": {
+                        "currency": "RWF",
+                        "amount": "143300000"
+                    }
+                },
+                "negative": false
+            },
+            {
+                "key": "default_rate",
+                "value": {
+                    "kind": "percent",
+                    "value": "5.5"
+                },
+                "failed": 9,
+                "total": 165,
+                "breach": true
+            },
+            {
+                "key": "secondary_volume",
+                "value": {
+                    "kind": "money",
+                    "value": {
+                        "currency": "RWF",
+                        "amount": "753000"
+                    }
+                }
+            }
+        ],
+        "attention": [
+            {
+                "key": "applications_pending",
+                "count": 1,
+                "link": {
+                    "url": "/preview/admin-applications",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "kyc_awaiting",
+                "count": 46,
+                "link": {
+                    "url": "/preview/admin-investors",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "notes_late",
+                "count": 10,
+                "link": null
+            },
+            {
+                "key": "notes_default_risk",
+                "count": 3,
+                "link": null
+            },
+            {
+                "key": "frozen_accounts",
+                "count": 1,
+                "link": {
+                    "url": "/preview/admin-businesses-frozen",
+                    "method": "get"
+                }
+            }
+        ],
+        "breaks": [
+            {
+                "id": "brk_1",
+                "reference": "TXN-99214",
+                "description": "MoMo settlement mismatch",
+                "gap": {
+                    "currency": "RWF",
+                    "amount": "12400"
+                },
+                "opened_at": "2026-09-20T09:00:00+02:00",
+                "age_days": 3,
+                "owner": null,
+                "actions": {
+                    "assign": {
+                        "url": "/admin/breaks/brk_1/assign",
+                        "method": "post"
+                    },
+                    "escalate": {
+                        "url": "/admin/breaks/brk_1/escalate",
+                        "method": "post"
+                    }
+                }
+            },
+            {
+                "id": "brk_2",
+                "reference": "TXN-99180",
+                "description": "Bank fee unaccounted",
+                "gap": {
+                    "currency": "RWF",
+                    "amount": "3100"
+                },
+                "opened_at": "2026-09-22T11:00:00+02:00",
+                "age_days": 1,
+                "owner": {
+                    "actor": "Grace Kalisa",
+                    "at": "2026-09-22T12:10:00+02:00",
+                    "reason": "Matching the Equity statement"
+                },
+                "actions": {
+                    "escalate": {
+                        "url": "/admin/breaks/brk_2/escalate",
+                        "method": "post"
+                    }
+                }
+            }
+        ],
+        "capital_raised": {
+            "from": null,
+            "to": null,
+            "grain": "year",
+            "bars": [
+                {
+                    "label": "2023",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "24000000"
+                    },
+                    "height_pct": 1
+                },
+                {
+                    "label": "2024",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "height_pct": 0
+                },
+                {
+                    "label": "2025",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "27000000"
+                    },
+                    "height_pct": 1
+                },
+                {
+                    "label": "2026",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "3661400000"
+                    },
+                    "height_pct": 100
+                }
+            ]
+        },
+        "portfolio_health": {
+            "total": 165,
+            "healthy": {
+                "count": 143,
+                "pct": 87
+            },
+            "watch": {
+                "count": 10,
+                "pct": 6
+            },
+            "distressed": {
+                "count": 12,
+                "pct": 7
+            }
+        },
+        "activity": [
+            {
+                "id": "led_1",
+                "kind": "auditor_share",
+                "summary": "Rozine Platform · Diane Uwase, CPA",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "80000"
+                },
+                "at": "2026-09-23T17:37:00+02:00",
+                "link": {
+                    "url": "/preview/admin-ledger-entry",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "led_2",
+                "kind": "secondary",
+                "summary": "Eric Mugisha → Diane Niyonsaba",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "41000"
+                },
+                "at": "2026-09-23T16:44:00+02:00",
+                "link": {
+                    "url": "/preview/admin-ledger-entry",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "led_3",
+                "kind": "deposit",
+                "summary": "External rail · Linda Gatera",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "1800000"
+                },
+                "at": "2026-09-23T16:10:00+02:00",
+                "link": {
+                    "url": "/preview/admin-ledger-entry",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "led_4",
+                "kind": "deposit",
+                "summary": "External rail · Emmanuel Uwera",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "47000"
+                },
+                "at": "2026-09-23T15:20:00+02:00",
+                "link": {
+                    "url": "/preview/admin-ledger-entry",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "led_5",
+                "kind": "secondary",
+                "summary": "Emmanuel Mugisha → Jean Mwangi",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "45000"
+                },
+                "at": "2026-09-23T13:20:00+02:00",
+                "link": {
+                    "url": "/preview/admin-ledger-entry",
+                    "method": "get"
+                }
+            }
+        ],
+        "funnel": [
+            {
+                "stage": "submitted",
+                "count": 1,
+                "width_pct": 2
+            },
+            {
+                "stage": "live",
+                "count": 40,
+                "width_pct": 70
+            },
+            {
+                "stage": "funded",
+                "count": 28,
+                "width_pct": 49
+            },
+            {
+                "stage": "repaying",
+                "count": 57,
+                "width_pct": 100
+            },
+            {
+                "stage": "matured",
+                "count": 31,
+                "width_pct": 54
+            },
+            {
+                "stage": "failed",
+                "count": 9,
+                "width_pct": 16
+            }
+        ],
+        "pending_applications": [
+            {
+                "id": "APP-20250007",
+                "business": "Akabanga Foods",
+                "requested": {
+                    "currency": "RWF",
+                    "amount": "24000000"
+                },
+                "rating": {
+                    "band": "stable",
+                    "score": "3.8"
+                },
+                "link": {
+                    "url": "/preview/admin-applications-review",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "APP-20250014",
+                "business": "Murakoze Tech",
+                "requested": {
+                    "currency": "RWF",
+                    "amount": "18000000"
+                },
+                "rating": {
+                    "band": "strong",
+                    "score": "4.1"
+                },
+                "link": {
+                    "url": "/preview/admin-applications-review",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "APP-20250021",
+                "business": "Kivu Fisheries",
+                "requested": {
+                    "currency": "RWF",
+                    "amount": "15000000"
+                },
+                "rating": {
+                    "band": "stable",
+                    "score": "3.4"
+                },
+                "link": {
+                    "url": "/preview/admin-applications-review",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "APP-20250028",
+                "business": "Rwanda Textiles",
+                "requested": {
+                    "currency": "RWF",
+                    "amount": "42000000"
+                },
+                "rating": null,
+                "link": {
+                    "url": "/preview/admin-applications-review",
+                    "method": "get"
+                }
+            }
+        ],
+        "sector_exposure": [
+            {
+                "sector": "Technology",
+                "outstanding": {
+                    "currency": "RWF",
+                    "amount": "418900000"
+                },
+                "notes": 24,
+                "at_risk": true
+            },
+            {
+                "sector": "Manufacturing",
+                "outstanding": {
+                    "currency": "RWF",
+                    "amount": "347300000"
+                },
+                "notes": 16,
+                "at_risk": true
+            },
+            {
+                "sector": "Retail",
+                "outstanding": {
+                    "currency": "RWF",
+                    "amount": "304000000"
+                },
+                "notes": 19,
+                "at_risk": true
+            },
+            {
+                "sector": "Energy",
+                "outstanding": {
+                    "currency": "RWF",
+                    "amount": "302300000"
+                },
+                "notes": 20,
+                "at_risk": true
+            },
+            {
+                "sector": "Hospitality",
+                "outstanding": {
+                    "currency": "RWF",
+                    "amount": "237600000"
+                },
+                "notes": 14,
+                "at_risk": true
+            },
+            {
+                "sector": "Health",
+                "outstanding": {
+                    "currency": "RWF",
+                    "amount": "198600000"
+                },
+                "notes": 11,
+                "at_risk": true
+            },
+            {
+                "sector": "Agriculture",
+                "outstanding": {
+                    "currency": "RWF",
+                    "amount": "118000000"
+                },
+                "notes": 6,
+                "at_risk": true
+            },
+            {
+                "sector": "Logistics",
+                "outstanding": {
+                    "currency": "RWF",
+                    "amount": "116000000"
+                },
+                "notes": 8,
+                "at_risk": true
+            },
+            {
+                "sector": "Construction",
+                "outstanding": {
+                    "currency": "RWF",
+                    "amount": "51800000"
+                },
+                "notes": 5,
+                "at_risk": false
+            }
+        ],
+        "treasury": {
+            "invested": {
+                "currency": "RWF",
+                "amount": "3712400000"
+            },
+            "disbursed": {
+                "currency": "RWF",
+                "amount": "3569100000"
+            },
+            "platform_net": {
+                "currency": "RWF",
+                "amount": "143300000"
+            },
+            "paid_to_investors": {
+                "currency": "RWF",
+                "amount": "1204700000"
+            }
+        },
+        "collections": {
+            "in_repayment": 57,
+            "outstanding": {
+                "currency": "RWF",
+                "amount": "612400000"
+            },
+            "next_due": {
+                "currency": "RWF",
+                "amount": "118900000"
+            },
+            "on_track": 44,
+            "late": 10,
+            "default_risk": 3
+        }
+    }
+}

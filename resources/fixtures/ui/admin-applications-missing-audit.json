@@ -1,0 +1,255 @@
+{
+    "component": "admin/applications",
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2026-09-23T17:40:00+02:00",
+        "policy": [
+            {
+                "key": "target_dscr",
+                "value": "1.50×"
+            },
+            {
+                "key": "listing_audit",
+                "value": "Required on every deal"
+            },
+            {
+                "key": "audit_routing",
+                "value": "Request DSCR ≥ 1.25× · below rejects"
+            },
+            {
+                "key": "rate_band",
+                "value": "10–15%"
+            }
+        ],
+        "tabs": [
+            {
+                "key": "pending",
+                "count": 1,
+                "link": {
+                    "url": "/preview/admin-applications",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "under_review",
+                "count": 5,
+                "link": {
+                    "url": "/preview/admin-applications",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "escalated",
+                "count": 2,
+                "link": {
+                    "url": "/preview/admin-applications",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "approved",
+                "count": 9,
+                "link": {
+                    "url": "/preview/admin-applications",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "rejected",
+                "count": 4,
+                "link": {
+                    "url": "/preview/admin-applications-empty",
+                    "method": "get"
+                }
+            }
+        ],
+        "active_tab": "pending",
+        "applications": [
+            {
+                "id": "APP-20250091",
+                "business": "Kigali Motors",
+                "note_title": "Kigali Expansion",
+                "sector": "Hospitality",
+                "requested": {
+                    "currency": "RWF",
+                    "amount": "50000000"
+                },
+                "term_months": 6,
+                "rate_pct": "12.9",
+                "capacity_used_pct": 63,
+                "rating": {
+                    "band": "stable",
+                    "score": "3.5"
+                },
+                "submitted_at": "2026-09-02T10:00:00+02:00",
+                "state": "submitted",
+                "decision": {
+                    "code": "audit",
+                    "reason": "Request DSCR 1.31 clears the 1.25 cutoff; listing audit not yet sealed"
+                },
+                "link": {
+                    "url": "/preview/admin-applications-review",
+                    "method": "get"
+                },
+                "approve_link": null
+            }
+        ],
+        "review": {
+            "id": "APP-20250091",
+            "business": "Kigali Motors",
+            "note_title": "Kigali Expansion",
+            "sector": "Hospitality",
+            "state": "submitted",
+            "decision": {
+                "code": "audit",
+                "reason": "Request DSCR 1.31 clears the 1.25 cutoff; listing audit not yet sealed"
+            },
+            "requested": {
+                "currency": "RWF",
+                "amount": "50000000"
+            },
+            "rating": {
+                "band": "stable",
+                "score": "3.5"
+            },
+            "term_months": 6,
+            "rate_pct": "12.9",
+            "capacity": {
+                "used_pct": 63,
+                "approved": {
+                    "currency": "RWF",
+                    "amount": "80000000"
+                },
+                "active_notes": 3,
+                "outstanding": {
+                    "currency": "RWF",
+                    "amount": "79300000"
+                }
+            },
+            "factors": [
+                {
+                    "key": "repayment_history",
+                    "value": 77
+                },
+                {
+                    "key": "revenue_consistency",
+                    "value": 65
+                },
+                {
+                    "key": "statement_record",
+                    "value": 75
+                },
+                {
+                    "key": "capacity_headroom",
+                    "value": 37
+                },
+                {
+                    "key": "sector_risk",
+                    "value": 61
+                }
+            ],
+            "audit": {
+                "state": "missing",
+                "sealed_at": null
+            },
+            "use_of_funds": "Packhouse automation and hiring",
+            "submitted_at": "2026-09-02T10:00:00+02:00",
+            "reviewer": null,
+            "trail": [
+                {
+                    "id": "ev_1",
+                    "at": "2026-09-02T10:00:00+02:00",
+                    "actor": "Kigali Motors",
+                    "action": {
+                        "code": "application.submitted",
+                        "label": "Application submitted",
+                        "tone": "blue"
+                    },
+                    "reason": null
+                }
+            ],
+            "links": {
+                "close": {
+                    "url": "/preview/admin-applications",
+                    "method": "get"
+                },
+                "business": {
+                    "url": "/preview/admin-businesses-frozen",
+                    "method": "get"
+                }
+            },
+            "actions": {
+                "take": {
+                    "url": "/admin/applications/APP-20250091/take",
+                    "method": "post"
+                },
+                "reject": {
+                    "url": "/admin/applications/APP-20250091/reject",
+                    "method": "post"
+                },
+                "info": {
+                    "url": "/admin/applications/APP-20250091/info",
+                    "method": "post"
+                },
+                "escalate": {
+                    "url": "/admin/applications/APP-20250091/escalate",
+                    "method": "post"
+                }
+            }
+        },
+        "stage": null
+    }
+}
