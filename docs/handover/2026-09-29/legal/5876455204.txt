@@ -1,0 +1,77 @@
+================================================================================
+ROZINE TECHNOLOGIES LTD (TIN: 156642791)
+CMA FINTECH REGULATORY SANDBOX PLATFORM
+================================================================================
+
+DOCUMENT IDENTIFIER: business-terms-2026-10-01
+EFFECTIVE DATE: October 1, 2026
+TARGET AUDIENCE: All registered Corporate Entities, SMEs, and Borrowers
+
+--------------------------------------------------------------------------------
+1. BORROWER ELIGIBILITY AND REPRESENTATIONS
+--------------------------------------------------------------------------------
+1.1. Incorporation: The borrowing entity ("Business" or "Issuer") warrants that 
+it is a lawfully registered legal entity in Rwanda holding a valid Tax Identification 
+Number (TIN) issued by the Rwanda Revenue Authority (RRA).
+
+1.2. Authority: The individual executing this agreement represents that they 
+hold full corporate authority to bind the Business to debt obligations.
+
+1.3. Credit Bureau Authorization: The Business authorizes Rozine to query its 
+credit history with licensed Credit Reference Bureaus (CRBs) in Rwanda and to 
+report repayment performance, delays, or defaults to relevant credit bureaus.
+
+--------------------------------------------------------------------------------
+2. APPLICATION FEES AND DISBURSEMENT DEDUCTIONS
+--------------------------------------------------------------------------------
+2.1. Upfront Application Fee: A non-refundable Application Fee of RWF 50,000 is 
+due upon submission of a campaign application for credit assessment, underwriting, 
+and risk scoring.
+
+2.2. Platform Service Fee: Upon successful completion of a campaign raise on the 
+Rozine platform, Rozine charges a 2.0% Platform Service Fee calculated against 
+the gross target principal raised.
+
+2.3. Net Disbursement Formula: Disbursements to the Business's designated bank 
+account or mobile money wallet are executed net of platform fees:
+   Net Disbursement = Target Raised Principal - (2.0% x Target Principal) - Application Fee
+
+--------------------------------------------------------------------------------
+3. REPAYMENT OBLIGATIONS AND AUTOMATED COLLECTION
+--------------------------------------------------------------------------------
+3.1. Unconditional Obligation: The Business undertakes an unconditional 
+obligation to repay the full principal amount plus agreed flat interest according 
+to the six-month (or specified) repayment schedule.
+
+3.2. Mandatory Wallet Auto-Debit: The Business authorizes Rozine to automatically 
+debit its platform wallet on 23:59 CAT of each scheduled instalment due date.
+
+3.3. Auto-Collection Retry Protocol: If available wallet funds are insufficient 
+on the due date, Rozine's automated collection engine will execute daily auto-debit 
+retries against the Business's account from Day 1 through Day 7 post-due-date.
+
+3.4. Partial and Early Payments: Partial instalment payments are permitted and 
+will immediately reduce the outstanding balance used to calculate subsequent 
+late-fee escalation steps. Early payment of future instalments is permitted at 
+any time without penalty or yield discount.
+
+--------------------------------------------------------------------------------
+4. ARREARS MANAGEMENT AND DEFAULT CONSEQUENCES
+--------------------------------------------------------------------------------
+4.1. Late Fee Escalation: Overdue instalments attract late penalty fees added 
+to the Business's debt balance:
+  - Day 0 (Due Date 23:59 CAT): +5% penalty on overdue instalment.
+  - Day 7: Additional +5% penalty on remaining overdue balance.
+  - Day 30: Additional +5% penalty on remaining overdue balance (capped at 15% 
+    total per instalment).
+
+4.2. Default Classification (Day 45): Non-payment exceeding 45 calendar days 
+constitutes a material event of default. Rozine reserves the right to initiate 
+formal legal recovery proceedings, enforce collateral/guarantees, report default 
+status to RRA/CRB authorities, and transition the recovery process to third-party 
+recovery agencies or the First-Loss Reserve Fund framework under CMA Sandbox rules.
+
+================================================================================
+APPROVED & SIGNED: Robert Tumaini Ingabire (CEO, Rozine Technologies Ltd)
+DATE OF ISSUANCE: October 1, 2026
+================================================================================

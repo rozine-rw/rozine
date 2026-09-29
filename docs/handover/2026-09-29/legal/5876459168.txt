@@ -1,0 +1,87 @@
+================================================================================
+ROZINE TECHNOLOGIES LTD (TIN: 156642791)
+DATA PROTECTION & PRIVACY POLICY
+================================================================================
+
+DOCUMENT IDENTIFIER: privacy-note-2026-10-01
+EFFECTIVE DATE: October 1, 2026
+TARGET AUDIENCE: All Users (Investor App, Business App, Auditor Portal, Admin)
+
+--------------------------------------------------------------------------------
+1. STATUTORY COMPLIANCE DECLARATION
+--------------------------------------------------------------------------------
+Rozine Technologies Ltd is committed to protecting user privacy and processes 
+all personal data in strict compliance with Law N° 058/2021 of 13/10/2021 
+Relating to the Protection of Personal Data and Privacy of the Republic of Rwanda. 
+Rozine acts as a registered Data Controller and Data Processor under the oversight 
+of the National Cyber Security Authority (NCSA).
+
+--------------------------------------------------------------------------------
+2. CATEGORIES OF DATA COLLECTED
+--------------------------------------------------------------------------------
+2.1. Identity & KYC Data: Full legal name, National Identity Number (NIN), 
+Passport details, date of birth, residential address, and facial biometric 
+verification photos.
+
+2.2. Financial & Transaction Data: Mobile Money wallet numbers (MTN/Airtel), 
+commercial bank account details, transaction logs, wallet balances, investment 
+portfolios, and repayment performance history.
+
+2.3. Technical & Usage Data: IP address, device hardware identifiers, operating 
+system version, app usage analytics, and login session logs.
+
+--------------------------------------------------------------------------------
+3. LEGAL BASIS AND PURPOSES OF PROCESSING
+--------------------------------------------------------------------------------
+We process your personal data under the following lawful bases pursuant to 
+Law N° 058/2021:
+  - Contract Performance: To onboard your account, process note investments, 
+    manage wallet deposits/withdrawals, and collect loan repayments.
+  - Legal & Regulatory Obligation: To verify identity (KYC), enforce Sandbox 
+    investment caps mandated by the CMA, combat money laundering (AML), and 
+    report credit information to licensed Credit Reference Bureaus (CRBs).
+  - Legitimate Interest: To maintain platform security, prevent fraudulent 
+    transactions, and optimize user experience.
+
+--------------------------------------------------------------------------------
+4. DATA STORAGE AND LOCALIZATION
+--------------------------------------------------------------------------------
+In strict accordance with Article 50 of Law N° 058/2021:
+4.1. All primary personal, financial, and transactional data are stored securely 
+on primary server infrastructure physically localized within the territory of the 
+Republic of Rwanda.
+
+4.2. Cross-border transmission or cloud processing of personal data is restricted 
+to encrypted channels and executed only with authorized entities maintaining 
+equivalent or superior data protection standards certified by the NCSA.
+
+--------------------------------------------------------------------------------
+5. THIRD-PARTY DATA DISCLOSURES
+--------------------------------------------------------------------------------
+Rozine does not sell, trade, or rent personal data to third parties. We disclose 
+personal data solely to:
+  - Regulatory Bodies: Capital Market Authority (CMA), National Bank of Rwanda (BNR), 
+    and National Cyber Security Authority (NCSA) for regulatory oversight and reporting.
+  - Payment Service Providers: MTN Rwanda, Airtel Rwanda, and commercial banks 
+    to execute wallet transfers.
+  - Credit Reference Agencies: Licensed CRBs in Rwanda for credit scoring and 
+    default reporting.
+
+--------------------------------------------------------------------------------
+6. DATA SUBJECT RIGHTS
+--------------------------------------------------------------------------------
+Under Law N° 058/2021, you possess the following enforceable rights:
+  - Right of Access & Rectification: The right to inspect and correct incomplete 
+    or inaccurate personal data.
+  - Right to Erasure / Deletion: The right to request deletion of personal data, 
+    subject to mandatory financial record retention periods prescribed by Rwandan 
+    banking and tax laws.
+  - Right to Withdraw Consent: The right to withdraw consent for secondary marketing 
+    communications at any time.
+
+Requests regarding data subject rights may be submitted to privacy@rozine.rw.
+
+================================================================================
+APPROVED & SIGNED: Robert Tumaini Ingabire (CEO, Rozine Technologies Ltd)
+DATE OF ISSUANCE: October 1, 2026
+================================================================================

@@ -1,0 +1,22 @@
+# Memory Index
+
+- [Staging + production deployment](staging-deployment.md) — staging.rozine.rw (uat) and rozine.rw (main) both hosted on one Contabo box; stack, DBs, CI/CD, branch flow
+- [Deploy notes](deploy-notes.md) — gotchas & follow-ups (nginx buffers 502 fix, npm lockfile, shared deploy user, branch protection TODO, local build dirties Wayfinder output)
+- [Frontend & brand](rozine-frontend.md) — brand colours, the star mark, laravel/head for the <head>, and the 100%-coverage CI gate
+- [Ship to production](ship-to-production.md) — standing approval to carry Rozine work all the way to rozine.rw, no per-release ask
+- [Branch flow: worktree → dev](erastus-dev-base-branch.md) — since 2026-09-27 PRs go straight to dev (erastus-dev retired); dev merges on fast checks + review (#150), full gates only for uat/main; never branch off main; retarget stacked PRs
+- [Silent PHP tool exits](pao-silences-tool-output.md) — pao swallows PHP fatals on any version; a tool exiting 255 with no output means re-run with PAO_DISABLE=1
+- [Host isolation audit (#89)](host-isolation-verification.md) — 2026-09-14 findings (SSH since hardened), shared deploy user/SMTP key, UAT promotion takes staging down until host is prepared
+- [D-04 device & dwell plan (#90)](d04-device-dwell-plan.md) — harness live on rozine-d04-harness.pages.dev (keep the `/index.html` rewrite), Android + spare iPhone, Safari-use-days caveat; DEFERRED to UAT with real users (2026-09-28), excluded from estimates
+- [Production reads need approval](production-reads-need-approval.md) — share a read-only script and get explicit OK before any SSH inspection of the Contabo box
+- [Phase 1B UI decisions](phase-1b-ui-decisions.md) — design source, dark mode derived+approved, capped desktop width, Investor-style shared login, 1B scope only, fixture preview routes
+- [GH issues are the comms channel](gh-issues-comms.md) — set by #96; Hussain (hussain4real), Robert (robtumaini) and us talk via rozine-rw/rozine issues; every session keeps checking for updates and mentions; standing permission to post there without asking
+- [Stay on MVP course](stay-on-mvp-course.md) — steer every session and Hussain's agent toward finishing the MVP (Alpha = 5 checkpoints, then Phase 2/3); strict blocker triage, parallel next-checkpoint prep
+- [Robert's #99 policy adopted](robert-99-policy-adopted.md) — adopted 2026-09-25; N3 stays RWF 0 for MVP, N6=24h/1 signatory; contract amendment draft #180 awaits joint sign-off
+- [Shared scratch Postgres](shared-scratch-postgres.md) — port 5439/rozine_test shared with Hussain's agent; announce DB windows on #96, one suite at a time, never stop the service
+- [Checkpoint 2 exit list](checkpoint-2-exit-list.md) — ACCEPTED 2026-09-25 (#101 merged to dev bb0fa320); agreed S-C → S-A/S-B → S-D → joint close (server), U-A–D (UI), merge #101 to dev at J-3; no C3 work in #101
+- [Checkpoint 3 plan](checkpoint-3-plan.md) — C3 slice order S3-A..D + UI U3-A..E posted on #96 2026-09-26; #99 inputs (RWF 0 fee, 50% cap only); scaffold draft PR #131; manifest regen rule
+- [Browser review depth](browser-review-depth.md) — #160 miss: click through decks, read every figure at full scale, check lifecycle-dependent bits and canvas squeeze
+- [Local test tooling](local-test-tooling.md) — rebuild tooling; vp fmt/lint (grep errors); fastmerge per-group checks; PHPStan tests
+- [Never idle](never-idle.md) — both lanes always work the backlog while the MVP is unfinished; waiting on CI or review is never a stop
+- [Ask owners directly](ask-owners-directly.md) — on conflicts/gaps, post numbered a/b decision questions to the owner in the same issue at once (Erastus, 2026-09-29, #154)

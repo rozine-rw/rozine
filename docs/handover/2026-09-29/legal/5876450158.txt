@@ -1,0 +1,136 @@
+================================================================================
+ROZINE TECHNOLOGIES LTD (TIN: 156642791)
+CMA FINTECH REGULATORY SANDBOX PLATFORM
+================================================================================
+
+DOCUMENT IDENTIFIER: investor-terms-2026-10-01
+EFFECTIVE DATE: October 1, 2026
+TARGET AUDIENCE: All registered Retail, High-Net-Worth, and Institutional Investors
+
+--------------------------------------------------------------------------------
+1. INTERPRETATION AND PLATFORM OPERATING SCOPE
+--------------------------------------------------------------------------------
+1.1. The Platform: These Terms and Conditions ("Investor Terms") constitute a 
+legally binding agreement between you ("Investor", "User", or "You") and 
+Rozine Technologies Ltd ("Rozine", "We", "Us", or "Our"), a private limited 
+liability company incorporated under the laws of the Republic of Rwanda 
+(TIN: 156642791).
+
+1.2. Regulatory Sandbox Framework: Rozine operates as a peer-to-peer 
+marketplace lending platform under the express oversight and authorization 
+of the Capital Market Authority (CMA) Fintech Regulatory Sandbox of Rwanda.
+
+1.3. No Banking or Deposit Guarantee: Rozine is an intermediary technology 
+platform. Rozine is not a commercial bank, microfinance institution, deposit-taking 
+entity, or insurance underwriter. Funds held in your Rozine wallet or allocated 
+to SME Loan Notes are not insured by the Government of Rwanda, the National Bank 
+of Rwanda (BNR), or the CMA.
+
+--------------------------------------------------------------------------------
+2. ELIGIBILITY, ONBOARDING, AND KYC/AML COMPLIANCE
+--------------------------------------------------------------------------------
+2.1. Eligibility Criteria: To access the platform and purchase SME Loan Notes, 
+you must be a natural person of at least 18 years of age or a duly registered 
+corporate entity, possessing an active Rwandan Mobile Money account (MTN or 
+Airtel) or a licensed Rwandan commercial bank account registered in your legal name.
+
+2.2. Identity Verification (KYC): You agree to provide accurate, current, and 
+complete identification documentation, including a valid Rwandan National ID 
+or Passport.
+
+2.3. AML & Sanctions Screening: You authorize Rozine to perform background 
+verification checks against anti-money laundering (AML) and counter-terrorist 
+financing (CFT) databases, as required under Rwandan financial regulations. 
+Rozine reserves the absolute right to suspend or terminate accounts that fail 
+compliance checks.
+
+--------------------------------------------------------------------------------
+3. INVESTMENT MECHANICS, PLUS TIERS, AND CART CHECKOUT
+--------------------------------------------------------------------------------
+3.1. SME Loan Notes: When you commit funds to a campaign on Rozine, you are 
+purchasing a fractionalized, bilateral debt instrument ("Note") issued directly 
+by the borrowing Small and Medium Enterprise ("Business" or "Issuer").
+
+3.2. Rozine Plus Tier Architecture: Your eligibility for discounted platform 
+service fees is governed by your Total Active Capital Deployed across all live 
+Notes in your portfolio at the moment of checkout, according to the following 
+thresholds:
+  - Standard Tier (< RWF 1,000,000 active): 10.0% Fee on Earnings
+  - Plus Tier (RWF 1,000,000 – RWF 4,999,999 active): 8.0% Fee on Earnings
+  - Gold Tier (RWF 5,000,000 – RWF 24,999,999 active): 6.5% Fee on Earnings
+  - Platinum Tier (RWF 25,000,000 – RWF 99,999,999 active): 5.0% Fee on Earnings
+  - Diamond Tier (>= RWF 100,000,000 active): 4.0% Fee on Earnings
+
+3.3. Cart / Basket Checkout Engine: Investors may aggregate allocations across 
+multiple active Notes into a single cart checkout order. The system evaluates 
+your post-commitment Active Capital Deployed by combining your current active 
+balance with the total value of all Notes in the cart. If the aggregate order 
+pushes your active capital across a higher tier threshold, the lower fee rate 
+applies to every Note contained within that cart execution.
+
+3.4. Note-Level Fee Locking: The investor fee rate evaluated and quoted at 
+checkout is permanently locked into that specific Note record for its entire 
+tenure. Subsequent changes to your total active portfolio balance, tier upgrades, 
+or tier downgrades will not alter the locked fee rate on previously executed Notes.
+
+3.5. Fee Application Scope: Rozine's investor service fee applies strictly to 
+the return (interest) portion of each payout received ("Fee on Earnings"). 
+Principal repayments are returned to your wallet 100% gross without any fee 
+deduction.
+
+--------------------------------------------------------------------------------
+4. SANDBOX INVESTMENT LIMITS
+--------------------------------------------------------------------------------
+In strict compliance with CMA Sandbox operational mandates, the following ceiling 
+limits apply to all retail investors:
+4.1. Maximum Single Note Ticket: RWF 1,000,000 per Note listing.
+4.2. Maximum Single Issuer Exposure: RWF 2,000,000 total exposure across all 
+active notes of a single SME.
+4.3. Aggregate Sandbox Exposure Cap: RWF 5,000,000 total active capital deployed 
+across the platform at any single time.
+
+--------------------------------------------------------------------------------
+5. REPAYMENTS, ARREARS, AND LATE FEE PASSTHROUGH
+--------------------------------------------------------------------------------
+5.1. Repayment Schedule: SME repayments are collected monthly and distributed 
+pro-rata to Note holders upon collection.
+
+5.2. N4 Escalation Late Fee Engine: If an SME fails to pay an instalment on 
+the due date, the system applies a structured late fee ladder (+5% at due date, 
++5% on Day 7, and +5% on Day 30) calculated on the overdue instalment amount 
+(principal + return), capped at a cumulative maximum of 15% per overdue instalment. 
+Partial repayments reduce the base for subsequent late fee steps.
+
+5.3. 100% Late Fee Passthrough: 100% of all collected late fees are passed 
+through directly to affected investors on a pro-rata basis. Rozine charges 0% 
+platform fee on collected late fees.
+
+5.4. Non-Guarantee & Pass-Through Disclaimer: Late fee distributions and debt 
+recoveries are payable to you strictly upon actual collection from the borrowing 
+Business. Late fee distributions and principal recoveries are not guaranteed, 
+insured, or underwritten by Rozine Technologies Ltd.
+
+--------------------------------------------------------------------------------
+6. WALLET WITHDRAWALS AND PSP FEES
+--------------------------------------------------------------------------------
+6.1. Limits: Minimum wallet withdrawal is RWF 1,000; maximum withdrawal per 
+single transaction is RWF 2,000,000.
+
+6.2. Processing Windows: Withdrawals are executed via integrated Payment Service 
+Providers (MTN MoMo / Airtel Money / Bank Rail) and are processed within 1 to 24 hours.
+
+6.3. Third-Party PSP Fees: Network processing fees charged by telecom operators 
+or banks are displayed transparently prior to confirmation and deducted directly 
+from the requested withdrawal amount.
+
+--------------------------------------------------------------------------------
+7. LIMITATION OF LIABILITY
+--------------------------------------------------------------------------------
+To the maximum extent permitted under Rwandan law, Rozine shall not be liable 
+for any indirect, incidental, or consequential damages, or for any investment 
+losses resulting from borrower default, business failure, or force majeure events.
+
+================================================================================
+APPROVED & SIGNED: Robert Tumaini Ingabire (CEO, Rozine Technologies Ltd)
+DATE OF ISSUANCE: October 1, 2026
+================================================================================
