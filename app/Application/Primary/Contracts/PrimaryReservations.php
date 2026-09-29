@@ -67,10 +67,13 @@ interface PrimaryReservations
     public function lockFundingCandidate(string $campaignId): PrimaryFundingCandidate;
 
     /**
-     * Examines at most limit overdue, nonterminal candidates in deadline/id order.
-     * Each candidate uses its own transaction and the expire() lock order. Returns
-     * the number newly expired; concurrent terminal transitions are harmless skips.
-     * Integrity failures stop the sweep; earlier committed expiries remain retained.
+     * Examines at most limit overdue, nonterminal candidates. Unfailed candidates go
+     * first in deadline/id order, then failed ones in oldest-attempt/deadline/id order.
+     * Invoke without an outer transaction so each candidate commits independently.
+     * Failures roll back that candidate, retain retry metadata and log its identity;
+     * remaining candidates still run, then the first error is rethrown. Successful
+     * expiry evidence stays immutable and the failure metadata never authorizes cash.
+     * Returns the number newly expired; concurrent terminal transitions are harmless skips.
      */
     public function expireDue(int $limit): int;
 

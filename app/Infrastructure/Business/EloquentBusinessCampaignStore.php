@@ -174,12 +174,14 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                 && in_array('application.sign', $person['permissions'] ?? [], true)
                 && in_array($identity['party']['id'], $business['mandate']['required_signatories'], true);
 
+            $progress = $closure === null ? $this->raisingProgress($campaign->id, $payload)
+                : ['phase' => $closure['phase'], 'committed_refunded' => $closure['committed_refunded'],
+                    'investors' => 0, 'closed_at' => $closure['closed_at']];
+
             return ['identity_context_revision' => $contextRevision, 'business_id' => $businessId, 'id' => $campaign->id, 'revision' => $closure === null ? 1 : 2,
-                'lifecycle' => $closure['phase'] ?? 'live', 'can_cancel' => $canCancel,
+                'lifecycle' => $closure['phase'] ?? $progress['lifecycle'], 'can_cancel' => $canCancel,
                 'title' => $payload['title'], 'principal' => $payload['principal'], 'quote' => $payload['quote'],
-                'progress' => $closure === null ? $this->raisingProgress($campaign->id, $payload)
-                    : ['phase' => $closure['phase'], 'committed_refunded' => $closure['committed_refunded'],
-                        'investors' => 0, 'closed_at' => $closure['closed_at']],
+                'progress' => $progress,
                 'receipt' => $this->receipt($campaign->id, $payload, 'LISTING_PUBLISHED')];
         });
     }
@@ -193,19 +195,29 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
      */
     private function raisingProgress(string $campaignId, array $payload): array
     {
-        $summary = $this->reservations->read($campaignId, now('UTC')->toDateTimeImmutable());
-        $remaining = BigInteger::of($payload['principal'])->minus($summary['committed_principal']);
+        $at = now('UTC');
+        $summary = $this->reservations->read($campaignId, $at->toDateTimeImmutable());
+        $remaining = BigInteger::of($payload['principal'])->minus($summary['committed_principal'])->minus($summary['held_principal']);
         $available = BigInteger::of($payload['quote']['units'])->minus($summary['occupied_units']);
-        if ($remaining->isNegative() || $available->isNegative()) {
+        $unavailable = BigInteger::of($summary['occupied_units'])->minus($summary['committed_units'])->minus($summary['held_units']);
+        if ($remaining->isNegative() || $available->isNegative() || $unavailable->isNegative()) {
             throw new RuntimeException('RESERVATION_SUMMARY_INTEGRITY_FAILED');
         }
 
-        return ['phase' => 'raising', 'lifecycle' => 'live', 'restriction' => null,
+        $lifecycle = match (true) {
+            $at->gte($payload['expires_at']) => 'closing_pending_settlement',
+            BigInteger::of($summary['committed_principal'])->isEqualTo($payload['principal']) => 'sold_out_pending_settlement',
+            $available->isZero() && BigInteger::of($summary['held_units'])->isPositive() => 'fully_reserved',
+            $available->isZero() => 'inventory_unavailable',
+            default => 'live',
+        };
+
+        return ['phase' => 'raising', 'lifecycle' => $lifecycle, 'restriction' => null,
             'committed' => ['currency' => 'RWF', 'amount' => $summary['committed_principal']],
             'reserved' => ['currency' => 'RWF', 'amount' => $summary['held_principal']],
             'remaining' => ['currency' => 'RWF', 'amount' => (string) $remaining],
             'units' => ['total' => $payload['quote']['units'], 'available' => (string) $available,
-                'reserved' => $summary['held_units'], 'committed' => $summary['committed_units']],
+                'reserved' => $summary['held_units'], 'committed' => $summary['committed_units'], 'unavailable' => (string) $unavailable],
             'investors' => $summary['investors'],
             'funded_pct' => (string) BigDecimal::of($summary['committed_principal'])->multipliedBy(100)
                 ->dividedBy($payload['principal'], 1, RoundingMode::Down),

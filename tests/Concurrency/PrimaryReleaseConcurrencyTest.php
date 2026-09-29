@@ -13,8 +13,10 @@ use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use PragmaRX\Google2FA\Google2FA;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 
@@ -208,3 +210,46 @@ it('retains earlier sweep commits when a later candidate fails atomically', func
         ->and(PrimaryReservationVersion::query()->where('primary_reservation_id', $second->id)->count())->toBe(1)
         ->and(LedgerEntry::query()->where('kind', 'primary_release')->sole()->source_id)->toBe($first->id);
 });
+
+it('moves a failed expiry behind healthy holds across bounded runs and retries it after repair', function (int $limit): void {
+    $this->freezeSecond();
+    InvestorWalletFixture::policy(maximum: null);
+    $campaign = PrimaryReservationFixture::campaign();
+    $investor = PrimaryReservationFixture::investor();
+    $checkout = app(PrimaryCheckout::class);
+    $checkout->reserve($investor['user']->id, 1, $campaign->id, '1', (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+    $broken = PrimaryReservationRecord::query()->sole();
+    $this->travel(1)->seconds();
+    Cache::forget('fortify.2fa_codes.'.md5((new Google2FA)->getCurrentOtp('JBSWY3DPEHPK3PXP')));
+    $other = PrimaryReservationFixture::campaign();
+    $reserved = $checkout->reserve($investor['user']->id, 1, $other->id, '1', (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+    $healthy = PrimaryReservationRecord::query()->whereKey($reserved['data']['reservation_id'])->sole();
+    $this->travelTo($healthy->expires_at);
+    $failure = new class
+    {
+        public bool $enabled = true;
+    };
+    DB::listen(function (QueryExecuted $query) use ($broken, $failure): void {
+        if ($failure->enabled && str_starts_with($query->sql, 'insert into "primary_reservation_versions"') && in_array($broken->id, $query->bindings, true)) {
+            throw new RuntimeException('Injected corrupt hold.');
+        }
+    });
+    expect(fn () => app(PrimaryReservations::class)->expireDue($limit))->toThrow(RuntimeException::class, 'Injected corrupt hold.')
+        ->and(DB::transactionLevel())->toBe(0)
+        ->and(PrimaryReservationVersion::query()->where('primary_reservation_id', $broken->id)->count())->toBe(1)
+        ->and(DB::table('primary_expiry_failures')->where('primary_reservation_id', $broken->id)->value('exception_class'))->toBe(RuntimeException::class);
+    if ($limit === 1) {
+        expect(app(PrimaryReservations::class)->expireDue(1))->toBe(1);
+    }
+    expect(PrimaryReservationVersion::query()->where('primary_reservation_id', $healthy->id)->orderByDesc('revision')->value('state'))->toBe('expired')
+        ->and(LedgerEntry::query()->where('kind', 'primary_release')->sole()->source_id)->toBe($healthy->id);
+    $firstAttempt = DB::table('primary_expiry_failures')->sole()->last_attempted_at;
+    $this->travel(1)->seconds();
+    expect(fn () => app(PrimaryReservations::class)->expireDue(1))->toThrow(RuntimeException::class, 'Injected corrupt hold.')
+        ->and(DB::table('primary_expiry_failures')->count())->toBe(1)
+        ->and(DB::table('primary_expiry_failures')->sole()->last_attempted_at)->not->toBe($firstAttempt);
+    $failure->enabled = false;
+    expect(app(PrimaryReservations::class)->expireDue(1))->toBe(1)
+        ->and(app(PrimaryReservations::class)->expireDue(1))->toBe(0)
+        ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(2);
+})->with([1, 2]);

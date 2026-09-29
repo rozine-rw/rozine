@@ -223,6 +223,8 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
         'primary_version_outcome_bound', 'primary_version_cash_bound', 'ledger_primary_terminal_bound', 'primary_expiry_outcome_bound');
     $confirmationReceipts = require database_path('migrations/2026_09_28_195022_bind_primary_confirmation_receipts_to_commitments.php');
     $confirmationOperations = require database_path('migrations/2026_09_28_212446_bind_primary_confirmation_operations_to_purchases.php');
+    $expiryFailures = require database_path('migrations/2026_09_29_112938_create_primary_expiry_failures_table.php');
+    $expiryFailures->down();
     $confirmationOperations->down();
     $confirmationReceipts->down();
     $primaryTerminalCash->down();
@@ -271,6 +273,7 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $primaryTerminalCash->up();
     $confirmationReceipts->up();
     $confirmationOperations->up();
+    $expiryFailures->up();
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
         ->and(DB::select($functionQuery))->toEqual($functions)->and(DB::select($constraintQuery))->toEqual($constraints);
     expect(Schema::hasTable('audit_reports'))->toBeTrue()->and(Schema::hasTable('audit_report_versions'))->toBeTrue()

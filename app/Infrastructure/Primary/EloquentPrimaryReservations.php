@@ -31,8 +31,10 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RuntimeException;
+use Throwable;
 
 /** @phpstan-import-type CampaignInput from PrimaryCampaignSource */
 final readonly class EloquentPrimaryReservations implements PrimaryReservations
@@ -239,17 +241,33 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
             throw new CommandRejection('INVALID_SWEEP_LIMIT');
         }
         $cutoff = now('UTC')->format('Y-m-d H:i:s.uP');
-        $candidates = PrimaryReservationRecord::query()->where('expires_at', '<=', $cutoff)
+        $candidates = PrimaryReservationRecord::query()->select('primary_reservations.*')
+            ->leftJoin('primary_expiry_failures as failures', 'failures.primary_reservation_id', 'primary_reservations.id')
+            ->where('expires_at', '<=', $cutoff)
             ->whereNotExists(function (Builder $query): void {
                 $query->selectRaw('1')->from('primary_reservation_versions')
                     ->whereColumn('primary_reservation_id', 'primary_reservations.id')
                     ->whereIn('state', ['confirmed', 'released', 'expired']);
-            })->orderBy('expires_at')->orderBy('id')->limit($limit)->get();
+            })->orderByRaw('failures.last_attempted_at ASC NULLS FIRST')
+            ->orderBy('expires_at')->orderBy('primary_reservations.id')->limit($limit)->get();
         $expired = 0;
+        $failure = null;
         foreach ($candidates as $candidate) {
-            if (DB::transaction(fn (): ?ReservationRelease => $this->expire($candidate->business_campaign_id, $candidate->id), 3) !== null) {
-                $expired++;
+            try {
+                if (DB::transaction(fn (): ?ReservationRelease => $this->expire($candidate->business_campaign_id, $candidate->id), 3) !== null) {
+                    $expired++;
+                }
+            } catch (Throwable $exception) {
+                DB::table('primary_expiry_failures')->upsert([['primary_reservation_id' => $candidate->id,
+                    'last_attempted_at' => now('UTC')->format('Y-m-d H:i:s.uP'), 'exception_class' => $exception::class]],
+                    ['primary_reservation_id'], ['last_attempted_at', 'exception_class']);
+                Log::error('Primary reservation expiry failed.', ['reservation_id' => $candidate->id,
+                    'campaign_id' => $candidate->business_campaign_id, 'exception_class' => $exception::class]);
+                $failure ??= $exception;
             }
+        }
+        if ($failure !== null) {
+            throw $failure;
         }
 
         return $expired;

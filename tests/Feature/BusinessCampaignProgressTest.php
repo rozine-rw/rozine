@@ -52,8 +52,8 @@ it('reports real retained commitments and live holds without changing evidence',
     $progress = ($this->page)()['progress'];
     expect($progress)->toMatchArray(['phase' => 'raising', 'lifecycle' => 'live', 'investors' => 1, 'funded_pct' => '0.2',
         'committed' => ['currency' => 'RWF', 'amount' => '25000'], 'reserved' => ['currency' => 'RWF', 'amount' => '20000'],
-        'remaining' => ['currency' => 'RWF', 'amount' => '10775000'],
-        'units' => ['total' => '2160', 'available' => '2146', 'reserved' => '4', 'committed' => '5']])
+        'remaining' => ['currency' => 'RWF', 'amount' => '10755000'],
+        'units' => ['total' => '2160', 'available' => '2146', 'reserved' => '4', 'committed' => '5', 'unavailable' => '5']])
         ->and(($this->page)()['can_cancel'])->toBeFalse()
         ->and(LedgerEntry::query()->count())->toBe($cash)->and(CommandOperation::query()->count())->toBe($operations);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
@@ -64,7 +64,7 @@ it('removes overdue holds from reserved totals without advertising recycled capa
     $this->travelTo($root->expires_at);
     $before = ($this->page)()['progress'];
     expect($before)->toMatchArray(['reserved' => ['currency' => 'RWF', 'amount' => '0'],
-        'units' => ['total' => '2160', 'available' => '2157', 'reserved' => '0', 'committed' => '0']])
+        'units' => ['total' => '2160', 'available' => '2157', 'reserved' => '0', 'committed' => '0', 'unavailable' => '3']])
         ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(0);
     expect(app(PrimaryReservations::class)->expireDue(1))->toBe(1)
         ->and(($this->page)()['progress'])->toBe($before);
@@ -77,7 +77,7 @@ it('never treats complete retained commitments as the funded settlement phase', 
     ($this->confirm)(($this->reserve)((string) ($complete ? $units : $units->minus(1))));
     expect(($this->page)()['progress'])->toMatchArray(['phase' => 'raising', 'investors' => 2, 'funded_pct' => $complete ? '100.0' : '99.9',
         'remaining' => ['currency' => 'RWF', 'amount' => $complete ? '0' : '5000'],
-        'units' => ['total' => '2160', 'available' => $complete ? '0' : '1', 'reserved' => '0', 'committed' => $complete ? '2160' : '2159']]);
+        'units' => ['total' => '2160', 'available' => $complete ? '0' : '1', 'reserved' => '0', 'committed' => $complete ? '2160' : '2159', 'unavailable' => '0']]);
 })->with([false, true]);
 
 it('keeps another campaigns commitments out of the authorized progress', function (): void {
@@ -86,7 +86,7 @@ it('keeps another campaigns commitments out of the authorized progress', functio
     $other = PrimaryReservationFixture::campaign();
     $page = app(BusinessCampaignStore::class)->campaign($other->actor_user_id, 1, $other->business_id, $other->id);
     expect($page['progress'])->toMatchArray(['investors' => 0, 'funded_pct' => '0.0', 'committed' => ['currency' => 'RWF', 'amount' => '0'],
-        'units' => ['total' => '2160', 'available' => '2160', 'reserved' => '0', 'committed' => '0']]);
+        'units' => ['total' => '2160', 'available' => '2160', 'reserved' => '0', 'committed' => '0', 'unavailable' => '0']]);
 });
 
 it('returns the same server totals through browser and token transports', function (string $transport): void {
@@ -102,11 +102,14 @@ it('returns the same server totals through browser and token transports', functi
     if ($transport === 'browser') {
         $this->get(route('business.campaigns.show', $parameters))->assertOk()->assertInertia(fn (Assert $page): Assert => $page
             ->where('note.progress.committed.amount', '15000')->where('note.progress.reserved.amount', '20000')
-            ->where('note.progress.units.available', '2153')->where('note.progress.investors', 1));
+            ->where('note.progress.units.available', '2153')->where('note.progress.units.unavailable', '0')
+            ->where('note.progress.remaining.amount', '10765000')->where('campaign.lifecycle', 'live')->where('note.progress.lifecycle', 'live')->where('note.progress.investors', 1));
     } else {
         $this->getJson(route(($transport === 'token' ? 'api.v1.' : '').'business.campaigns.show', $parameters))->assertOk()
             ->assertJsonPath('data.note.progress.committed.amount', '15000')->assertJsonPath('data.note.progress.reserved.amount', '20000')
-            ->assertJsonPath('data.note.progress.units.available', '2153')->assertJsonPath('data.note.progress.investors', 1);
+            ->assertJsonPath('data.note.progress.units.available', '2153')->assertJsonPath('data.note.progress.units.unavailable', '0')
+            ->assertJsonPath('data.note.progress.remaining.amount', '10765000')->assertJsonPath('data.campaign.lifecycle', 'live')
+            ->assertJsonPath('data.note.progress.lifecycle', 'live')->assertJsonPath('data.note.progress.investors', 1);
     }
 })->with(['browser', 'token']);
 
@@ -117,4 +120,41 @@ it('refuses impossible aggregate amounts or occupied capacity', function (string
     $port->expects($this->once())->method('read')->willReturn($summary);
     app()->instance(CampaignReservationSummary::class, $port);
     expect($this->page)->toThrow(RuntimeException::class, 'RESERVATION_SUMMARY_INTEGRITY_FAILED');
-})->with(['committed_principal', 'occupied_units']);
+})->with(['committed_principal', 'held_principal', 'occupied_units', 'held_units']);
+
+it('reports truthful lifecycle and reconciling totals from the retained inventory', function (string $state): void {
+    $first = ($this->reserve)('1080');
+    $firstInvestor = $this->investor;
+    $this->investor = PrimaryReservationFixture::investor();
+    $second = ($this->reserve)('1080');
+    if (in_array($state, ['sold_out_pending_settlement', 'closing_pending_settlement'], true)) {
+        ($this->confirm)($second);
+        $this->investor = $firstInvestor;
+        ($this->confirm)($first);
+    } elseif ($state === 'inventory_unavailable') {
+        $this->checkout->release($this->investor['user']->id, 1, $this->campaign->id, $second->id, 1, (string) Str::uuid());
+        $this->checkout->release($firstInvestor['user']->id, 1, $this->campaign->id, $first->id, 1, (string) Str::uuid());
+    }
+    if ($state === 'closing_pending_settlement') {
+        $this->travelTo($this->campaign->expires_at);
+    }
+    $page = ($this->page)();
+    $progress = $page['progress'];
+    $units = $progress['units'];
+    expect($page['lifecycle'])->toBe($state)->and($progress['lifecycle'])->toBe($state)
+        ->and($progress['phase'])->toBe('raising')
+        ->and((string) BigInteger::of($units['committed'])->plus($units['reserved'])->plus($units['available'])->plus($units['unavailable']))->toBe($units['total'])
+        ->and((string) BigInteger::of($progress['committed']['amount'])->plus($progress['reserved']['amount'])->plus($progress['remaining']['amount']))->toBe($this->campaign->principal);
+    if (in_array($state, ['sold_out_pending_settlement', 'closing_pending_settlement'], true)) {
+        expect($page['can_cancel'])->toBeFalse();
+    }
+})->with(['fully_reserved', 'sold_out_pending_settlement', 'inventory_unavailable', 'closing_pending_settlement']);
+
+it('stops advertising live inventory at the exact campaign deadline even without commitments', function (): void {
+    $this->travelTo($this->campaign->expires_at->subMicrosecond());
+    expect(($this->page)()['lifecycle'])->toBe('live');
+    $this->travelTo($this->campaign->expires_at);
+    $page = ($this->page)();
+    expect($page['lifecycle'])->toBe('closing_pending_settlement')
+        ->and($page['progress']['lifecycle'])->toBe('closing_pending_settlement')->and($page['can_cancel'])->toBeFalse();
+});

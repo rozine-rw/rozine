@@ -953,6 +953,16 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `primary_commitments_operation_id_unique` on (operation_id) — unique; `primary_commitments_pkey` on (id) — unique; `primary_commitments_primary_reservation_id_unique` on (primary_reservation_id) — unique; `primary_commitments_primary_reservation_version_id_unique` on (primary_reservation_version_id) — unique
 
+### `primary_expiry_failures`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `primary_reservation_id` | `bpchar` | no | — |
+| `last_attempted_at` | `timestamptz` | no | — |
+| `exception_class` | `varchar` | no | — |
+
+**Indexes:** `primary_expiry_failures_last_attempted_at_index` on (last_attempted_at); `primary_expiry_failures_pkey` on (primary_reservation_id) — unique
+
 ### `primary_ordinal_claims`
 
 | Column | Type | Nullable | Default |
@@ -1374,6 +1384,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_28_175455_bind_primary_terminal_versions_to_cash_movements.php |
 | 2026_09_28_195022_bind_primary_confirmation_receipts_to_commitments.php |
 | 2026_09_28_212446_bind_primary_confirmation_operations_to_purchases.php |
+| 2026_09_29_112938_create_primary_expiry_failures_table.php |
 
 ## Routes
 
