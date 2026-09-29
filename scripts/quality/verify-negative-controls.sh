@@ -111,7 +111,10 @@ else
   echo "    architecture suite is already red; its controls cannot be attributed and will be skipped"
 fi
 
-if gate_is_green "${LOG_DIR}/pre-static.log" vendor/bin/phpstan analyse --no-progress --error-format=raw; then
+# PHPStan needs more than the 128M a stock php.ini grants, and its workers die
+# without saying why. CI never hit this because setup-php runs with no limit at
+# all; carrying an explicit one keeps the gate runnable on a plain machine.
+if gate_is_green "${LOG_DIR}/pre-static.log" vendor/bin/phpstan analyse --no-progress --error-format=raw --memory-limit=1G; then
   STATIC_GREEN=true
   echo "    static analysis green"
 else
@@ -272,7 +275,7 @@ VIOLATION
 
   if [ "${STATIC_GREEN}" != true ]; then
     report phpstan-tests skip "static analysis was not green beforehand, so a failure now proves nothing"
-  elif gate_fails "${LOG_DIR}/phpstan.log" vendor/bin/phpstan analyse --no-progress --error-format=raw; then
+  elif gate_fails "${LOG_DIR}/phpstan.log" vendor/bin/phpstan analyse --no-progress --error-format=raw --memory-limit=1G; then
     report phpstan-tests pass "static analysis rejected it"
   else
     report phpstan-tests fail "static analysis accepted an invalid construct inside tests/"
