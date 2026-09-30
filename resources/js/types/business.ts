@@ -1281,6 +1281,8 @@ export type CampaignProgress =
       }
     | {
           phase: 'funded';
+          /** Sent with the durable funding lock; when present it matches the campaign's lifecycle. */
+          lifecycle?: 'funded_pending_disbursement';
           restriction: CampaignRestriction;
           committed: Money;
           investors: number;

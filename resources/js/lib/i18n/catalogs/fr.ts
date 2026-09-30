@@ -3533,6 +3533,8 @@ const fr: Catalog = {
     'business.campaign.state.live': 'En ligne',
     'business.campaign.state.fully_reserved': 'Entièrement réservée',
     'business.campaign.state.funded': 'Financée',
+    'business.campaign.state.funded_pending_disbursement':
+        'Financée · décaissement en attente',
     'business.campaign.state.disbursing': 'Versement en cours',
     'business.campaign.state.issued': 'Titres émis',
     'business.campaign.state.expired': 'Non remplie',

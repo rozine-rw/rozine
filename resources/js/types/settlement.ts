@@ -115,8 +115,15 @@ export type RaisingLifecycle =
     | 'inventory_unavailable'
     | 'closing_pending_settlement';
 
-/** A Business campaign page's lifecycle: an open raise's, or where it went after raising. */
-export type BusinessCampaignLifecycle = CampaignLifecycle | RaisingLifecycle;
+/**
+ * A Business campaign page's lifecycle: an open raise's, or where it went after raising.
+ * `funded_pending_disbursement` is the durable funding lock (#96 5908090045): the raise is
+ * funded and awaits disbursement, with nothing dispatched or paid.
+ */
+export type BusinessCampaignLifecycle =
+    | CampaignLifecycle
+    | RaisingLifecycle
+    | 'funded_pending_disbursement';
 
 export type CampaignLifecycle =
     | 'live'

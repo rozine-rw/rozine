@@ -52,21 +52,31 @@ const isClosing = (closing: unknown): boolean => {
  * Whether a campaign's progress can be shown. The server supplies every figure and the client
  * never subtracts, so a raise with an unknown lifecycle, a missing unit bucket or amount, or a
  * top-level lifecycle that disagrees with its progress fails closed rather than guessing. So does
- * a funded campaign sent without the funding instant or closing the page reads (#96 5905707280:
- * `funded_pending_disbursement` stays closed until it is bound). Other phases are read as they are.
+ * a funded campaign sent without the funding instant or closing the page reads, or with a
+ * lifecycle that isn't a funded one. Other phases are read as they are.
  */
 export function isReadableProgress(
     progress: CampaignProgressV2,
     lifecycle: BusinessCampaignLifecycle,
 ): boolean {
     if (progress.phase === 'funded') {
-        const funded: { funded_at?: unknown; closing?: unknown } = progress;
+        const funded: {
+            funded_at?: unknown;
+            closing?: unknown;
+            lifecycle?: unknown;
+        } = progress;
 
+        /* A funding lock awaiting disbursement has nothing in flight; the others may. */
         return (
-            (lifecycle === 'funded' || lifecycle === 'disbursing') &&
             typeof funded.funded_at === 'string' &&
             isMoney(progress.committed) &&
-            isClosing(funded.closing)
+            isClosing(funded.closing) &&
+            (funded.lifecycle === undefined ||
+                funded.lifecycle === lifecycle) &&
+            (lifecycle === 'funded' ||
+                lifecycle === 'disbursing' ||
+                (lifecycle === 'funded_pending_disbursement' &&
+                    progress.closing.stage === 'awaiting_disbursement'))
         );
     }
 

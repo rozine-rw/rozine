@@ -3517,6 +3517,8 @@ const rw: Catalog = {
     'business.campaign.state.live': 'Irakora',
     'business.campaign.state.fully_reserved': 'Yose yafashwe',
     'business.campaign.state.funded': 'Yabonye amafaranga yose',
+    'business.campaign.state.funded_pending_disbursement':
+        'Yabonye amafaranga yose · itegereje koherezwa',
     'business.campaign.state.disbursing': 'Amafaranga arimo koherezwa',
     'business.campaign.state.issued': 'Impapuro zatanzwe',
     'business.campaign.state.expired': 'Ntiyuzuye',

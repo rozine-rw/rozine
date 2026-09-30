@@ -33,6 +33,7 @@ import failedClosingFixture from '../../../resources/fixtures/ui/business-campai
 import fullyReservedFixture from '../../../resources/fixtures/ui/business-campaign-fully-reserved.json';
 import awaitingFixture from '../../../resources/fixtures/ui/business-campaign-funded-awaiting.json';
 import inFlightFixture from '../../../resources/fixtures/ui/business-campaign-funded-in-flight.json';
+import fundedPendingFixture from '../../../resources/fixtures/ui/business-campaign-funded-pending-disbursement.json';
 import unknownFixture from '../../../resources/fixtures/ui/business-campaign-funded-unknown.json';
 import inventoryUnavailableFixture from '../../../resources/fixtures/ui/business-campaign-inventory-unavailable.json';
 import liveMinimalFixture from '../../../resources/fixtures/ui/business-campaign-live-minimal.json';
@@ -428,11 +429,11 @@ describe('A funded campaign the page cannot read yet', () => {
     const funded = (page: BusinessCampaignProps) =>
         page.note.progress as unknown as Record<string, unknown>;
 
-    it('fails closed on the durable funding lock the server reports before it is bound', () => {
+    it('fails closed on a funding lock sent with raising figures and no funding instant', () => {
         vi.useFakeTimers();
         const page = props(soldOutFixture);
 
-        /* The server's shape at #175 3bb74427: the raising figures under a funded phase. */
+        /* The server's shape at #175 3bb74427, before it sent the funded variant. */
         funded(page).phase = 'funded';
         funded(page).lifecycle = 'funded_pending_disbursement';
         (page.campaign as { lifecycle: string }).lifecycle =
@@ -444,6 +445,20 @@ describe('A funded campaign the page cannot read yet', () => {
         });
 
         expect(inertia.reloads).toHaveLength(0);
+    });
+
+    it('fails closed when a funding lock awaiting disbursement claims a payment in flight', () => {
+        const page = props(fundedPendingFixture);
+
+        funded(page).closing = { stage: 'in_flight', provider: 'pending' };
+        closed(page);
+    });
+
+    it('fails closed when the funding lock and the campaign disagree on the lifecycle', () => {
+        const page = props(fundedPendingFixture);
+
+        page.campaign.lifecycle = 'funded';
+        closed(page);
     });
 
     it('fails closed when a funded campaign carries a lifecycle that is not funded', () => {
@@ -771,6 +786,35 @@ describe('A funded campaign closing', () => {
             expect(sheet).not.toHaveTextContent('provider');
         },
     );
+
+    it('shows a durable funding lock as funded and awaiting disbursement, never as paid', () => {
+        vi.useFakeTimers();
+        renderWithUser(<BusinessCampaign {...props(fundedPendingFixture)} />);
+        const sheet = campaignSheet();
+        const view = within(sheet);
+
+        expect(
+            view.getByText('Funded · awaiting disbursement'),
+        ).toBeInTheDocument();
+        expect(view.getByText('RWF 18M')).toBeInTheDocument();
+        expect(view.getByText('402')).toBeInTheDocument();
+        expect(view.getByRole('status')).toHaveTextContent(
+            'Fully funded on 20 Sept 2026. The raise can no longer be cancelled.',
+        );
+        expect(view.getByText('Awaiting disbursement')).toBeInTheDocument();
+        expect(sheet).not.toHaveTextContent(SETTLED);
+        expect(view.queryByRole('timer')).not.toBeInTheDocument();
+        expect(view.queryByRole('progressbar')).not.toBeInTheDocument();
+        expect(
+            view.queryByRole('button', { name: 'Cancel this raise' }),
+        ).not.toBeInTheDocument();
+
+        act(() => {
+            vi.advanceTimersByTime(POLL_INTERVAL_MS * 2);
+        });
+
+        expect(inertia.reloads).toHaveLength(0);
+    });
 
     it('polls an in-flight closing within bounds, then hands over to a manual refresh', () => {
         vi.useFakeTimers();

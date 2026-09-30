@@ -3387,6 +3387,8 @@ const en = {
     'business.campaign.state.live': 'Live',
     'business.campaign.state.fully_reserved': 'Fully reserved',
     'business.campaign.state.funded': 'Funded',
+    'business.campaign.state.funded_pending_disbursement':
+        'Funded · awaiting disbursement',
     'business.campaign.state.disbursing': 'Paying out',
     'business.campaign.state.issued': 'Notes issued',
     'business.campaign.state.expired': "Didn't fill",
