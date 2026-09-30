@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\HoldingSource;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\PostingSource;
@@ -11,6 +13,7 @@ use App\Models\PrimaryHolding;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\PrimaryHoldingFixture;
 use Tests\Support\PrimaryReservationFixture;
@@ -42,6 +45,21 @@ function holdingSource(PrimaryCommitment $commitment): array
     return ['root' => PrimaryReservationRecord::query()->whereKey($commitment->primary_reservation_id)->sole(),
         'confirmed' => PrimaryReservationVersion::query()->whereKey($commitment->primary_reservation_version_id)->sole(),
         'revisions' => PrimaryReservationVersion::query()->where('primary_reservation_id', $commitment->primary_reservation_id)->orderBy('revision')->get()];
+}
+
+/**
+ * Rewrites retained evidence the way only a holder of the encryption key could: new payload, matching digest.
+ * The immutability trigger is lifted inside the caller's savepoint and returns when that is rolled back;
+ * nothing in the application can do this.
+ */
+function holdingForge(string $table, string $id, Closure $change): void
+{
+    $trigger = ['primary_reservations' => 'primary_reservations_immutable', 'primary_reservation_versions' => 'primary_reservation_versions_immutable',
+        'primary_campaign_fundings' => 'primary_funding_immutable'][$table];
+    $payload = $change(json_decode(Crypt::decryptString((string) DB::table($table)->where('id', $id)->value('payload')), true, 512, JSON_THROW_ON_ERROR));
+    DB::statement("ALTER TABLE {$table} DISABLE TRIGGER {$trigger}");
+    DB::table($table)->where('id', $id)->update(['payload' => Crypt::encryptString(json_encode($payload, JSON_THROW_ON_ERROR)),
+        'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload))]);
 }
 
 beforeEach(fn () => $this->freezeSecond());
@@ -201,6 +219,74 @@ it('gives the adapter a commitment\'s verified facts and refuses what is not fun
         ->and(fn () => app(HoldingSource::class)->facts($root->id))->toThrow(RuntimeException::class, 'PRIMARY_HOLDING_SOURCE_UNAVAILABLE')
         ->and(fn () => app(HoldingSource::class)->facts($unfunded->id))->toThrow(RuntimeException::class, 'PRIMARY_HOLDING_SOURCE_UNAVAILABLE')
         ->and(fn () => app(HoldingSource::class)->verify(PrimaryHoldingFixture::id()))->toThrow(RuntimeException::class, 'PRIMARY_HOLDING_NOT_FOUND');
+});
+
+it('replays the acknowledged disclosure and refuses retained evidence that no longer reproduces it', function (): void {
+    ['campaign' => $campaign, 'commitments' => [$first]] = PrimaryHoldingFixture::committed();
+    ['root' => $root, 'confirmed' => $confirmed] = holdingSource($first);
+    $funding = (string) DB::table('primary_campaign_fundings')->where('business_campaign_id', $campaign->id)->value('id');
+    $source = app(HoldingSource::class);
+    $holding = PrimaryHoldingFixture::insert($first->id, PrimaryHoldingFixture::issuedClosing($campaign));
+    $source->verify($holding);
+    // Each forgery keeps every stored digest and the funding record consistent, so only the replay can notice it.
+    $purchase = fn (Closure $change): Closure => function (array $payload) use ($change, $first): array {
+        $payload['commitments'] = array_map(fn (array $purchase): array => $purchase['commitment_id'] === $first->id ? $change($purchase) : $purchase, $payload['commitments']);
+
+        return $payload;
+    };
+    $raisedReturn = function (array $holder): array {
+        $holder['rights']['instalments'][0]['return']['amount'] = (string) ((int) $holder['rights']['instalments'][0]['return']['amount'] + 1);
+
+        return $holder;
+    };
+    $terms = fn (Closure $change): Closure => function (array $holder) use ($change): array {
+        $holder['terms'] = $change($holder['terms']);
+
+        return $holder;
+    };
+    $digest = function (array $holder): array {
+        $holder['disclosure_sha256'] = str_repeat('a', 64);
+
+        return $holder;
+    };
+    $split = function (array $holder): array {
+        $holder['ordinals'] = [['first' => '1', 'last' => '500'], ['first' => '501', 'last' => '1080']];
+
+        return $holder;
+    };
+    $cheaperFee = fn (array $retained): array => [...$retained, 'payout_fee' => ['currency' => 'RWF', 'amount' => '1']];
+    $newTier = fn (array $retained): array => [...$retained, 'earnings_fee' => [...$retained['earnings_fee'], 'tier' => 'gold', 'rate_bps' => 550]];
+    $newPolicy = fn (array $retained): array => [...$retained, 'policy_version' => 'a-later-policy'];
+    foreach ([
+        'rights the retained schedule does not allocate' => [$raisedReturn, null, $raisedReturn],
+        'a payout fee the rights do not produce' => [null, $terms($cheaperFee), $terms($cheaperFee)],
+        'a fee tier the Investor never acknowledged' => [null, $terms($newTier), $terms($newTier)],
+        'a later policy version than the held quote' => [null, $terms($newPolicy), $terms($newPolicy)],
+        'a disclosure digest that is not the terms\' digest' => [null, $digest, $digest],
+        'ordinals that are not the exact normalized ranges' => [$split, null, $split],
+        'a reservation without its campaign schedule' => [fn (array $payload): array => array_diff_key($payload, ['campaign_payments' => true]), null, null],
+    ] as $case => [$inRoot, $inRevision, $inPurchase]) {
+        DB::beginTransaction();
+        if ($inRoot !== null) {
+            holdingForge('primary_reservations', $root->id, $inRoot);
+        }
+        if ($inRevision !== null) {
+            holdingForge('primary_reservation_versions', $confirmed->id, $inRevision);
+        }
+        if ($inPurchase !== null) {
+            holdingForge('primary_campaign_fundings', $funding, $purchase($inPurchase));
+        }
+        expect(app(CampaignFundingEvidence::class)->find($campaign->id))->toBeArray($case)
+            ->and(fn () => $source->facts($first->id))->toThrow(RuntimeException::class, 'PRIMARY_HOLDING_SOURCE_INTEGRITY_FAILED')
+            ->and(fn () => $source->verify($holding))->toThrow(RuntimeException::class, 'PRIMARY_HOLDING_SOURCE_INTEGRITY_FAILED');
+        DB::rollBack();
+    }
+    // Evidence the funding record itself no longer matches is refused by #175's verifier before any replay.
+    DB::beginTransaction();
+    holdingForge('primary_reservations', $root->id, $raisedReturn);
+    expect(fn () => $source->facts($first->id))->toThrow(RuntimeException::class, 'PRIMARY_FUNDING_INTEGRITY_FAILED');
+    DB::rollBack();
+    $source->verify($holding);
 });
 
 it('refuses a commitment that is unknown, only held, or outside a funding record', function (): void {
