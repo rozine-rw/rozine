@@ -17,6 +17,8 @@ use App\Models\Party;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
+use App\Models\WalletDepositCredit;
+use App\Models\WalletDepositIntent;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\DB;
@@ -67,7 +69,8 @@ class PrimaryReservationRecordFactory extends Factory
             ?? LedgerAccount::factory()->create(['wallet_id' => $wallet->walletId]);
         $clearing = LedgerAccount::query()->where('kind', 'deposit_clearing')->first()
             ?? LedgerAccount::factory()->system()->create();
-        $deposit = LedgerEntry::factory()->create(['wallet_id' => $wallet->walletId]);
+        $deposit = LedgerEntry::query()->findOrFail(WalletDepositCredit::factory()->create(['intent_id' => WalletDepositIntent::factory()
+            ->state(['wallet_id' => $wallet->walletId, 'amount' => $reservation->principal, 'credited' => $reservation->principal])])->ledger_entry_id);
         LedgerLine::factory()->create(['entry_id' => $deposit->id, 'account_id' => $clearing->id, 'direction' => 'debit', 'amount' => $reservation->principal]);
         LedgerLine::factory()->create(['entry_id' => $deposit->id, 'account_id' => $available->id, 'direction' => 'credit', 'amount' => $reservation->principal]);
         $postings->hold($wallet, WalletMoney::of($reservation->principal), new PostingSource('primary_reservation', $reservation->id, $reservation->origin_operation_id));

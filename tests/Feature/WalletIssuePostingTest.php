@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\PrimaryReservationFixture;
 use Tests\Support\PrimarySourceFixture;
 
 /*
@@ -50,6 +51,7 @@ function committedWallet(): array
         $wallet = $postings->lockForParty($fixture['party']->id);
         $source = PrimarySourceFixture::reservation($wallet, '20000');
         $postings->hold($wallet, WalletMoney::of('20000'), $source);
+        PrimaryReservationFixture::terminalVersion($source, 'confirmed');
         $postings->commit($wallet, WalletMoney::of('20000'), $source);
 
         return ['user' => $fixture['user'], 'wallet' => $wallet, 'source' => $source];
