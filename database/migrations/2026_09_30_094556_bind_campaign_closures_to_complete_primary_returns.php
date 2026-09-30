@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         DB::transaction(function (): void {
-            DB::unprepared('LOCK TABLE business_profiles, business_campaigns, business_campaign_closures, primary_reservations, primary_reservation_versions, primary_commitments, investor_wallets, ledger_accounts, ledger_entries, ledger_lines IN ACCESS EXCLUSIVE MODE');
+            DB::unprepared('LOCK TABLE primary_reservations, primary_reservation_versions, primary_commitments, investor_wallets, ledger_entries, business_campaign_closures IN SHARE ROW EXCLUSIVE MODE');
             Schema::create('primary_campaign_closure_returns', function (Blueprint $table): void {
                 $table->ulid('primary_reservation_id')->primary();
                 $table->ulid('business_campaign_closure_id')->index();
@@ -160,7 +160,7 @@ return new class extends Migration
                     DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION require_primary_campaign_closure_returns();
                 DO $$ DECLARE closure_id varchar; BEGIN
                     FOR closure_id IN SELECT id FROM business_campaign_closures LOOP
-                        PERFORM check_primary_campaign_closure_returns(closure_id);
+                        PERFORM check_primary_campaign_closure_returns(closure_id, false);
                     END LOOP;
                 END; $$;
                 SQL);
@@ -171,7 +171,7 @@ return new class extends Migration
     {
         DB::transaction(function (): void {
             DB::unprepared(<<<'SQL'
-                LOCK TABLE business_profiles, business_campaigns, business_campaign_closures, primary_reservations, primary_campaign_closure_returns IN ACCESS EXCLUSIVE MODE;
+                LOCK TABLE primary_reservations, primary_reservation_versions, primary_commitments, investor_wallets, ledger_entries, primary_campaign_closure_returns, business_campaign_closures IN ACCESS EXCLUSIVE MODE;
                 DO $$ BEGIN
                     IF EXISTS (SELECT 1 FROM primary_campaign_closure_returns)
                         OR EXISTS (SELECT 1 FROM business_campaign_closures c JOIN primary_reservations r ON r.business_campaign_id = c.business_campaign_id) THEN
