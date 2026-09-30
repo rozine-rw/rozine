@@ -244,6 +244,10 @@ arch('business authority records are only accessed by their adapter')
     ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion', 'App\Models\BusinessCreditSnapshot', 'App\Models\BusinessApplicationQuote', 'App\Models\BusinessApplicationSignature', 'App\Models\BusinessApplicationSubmission', 'App\Models\BusinessExposureReservation', 'App\Models\BusinessApplicationRelease', 'App\Models\BusinessCampaign', 'App\Models\BusinessCampaignClosure'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Models', 'Database\Factories']);
 
+arch('declared Business connection evidence stays inside financial persistence adapters')
+    ->expect('App\Application\Business\Contracts\BusinessConnections')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Infrastructure\Primary', 'App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider']);
+
 it('has concrete targets for the immutable statement evidence boundary', function (): void {
     expect(class_exists(StatementEvidence::class))->toBeTrue()
         ->and(class_exists(StatementOriginal::class))->toBeTrue()
