@@ -307,6 +307,81 @@ function runIdentityContenders(array $operations): array
     return $statuses;
 }
 
+/**
+ * Forces the same-request replay interleaving instead of waiting for chance. The first contender
+ * is held inside its transaction just after it journals its operation; the second is forked only
+ * then, and the first is released only once PostgreSQL reports the second waiting on its locks.
+ *
+ * @param  Closure(): void  $first
+ * @param  Closure(): void  $second
+ * @return array{blocked: bool, exits: list<int>, outcomes: list<string>}
+ */
+function runHeldIdentityRetry(Closure $first, Closure $second): array
+{
+    DB::purge();
+    /** @param Closure(resource): void $prepare */
+    $fork = function (Closure $operation, Closure $prepare): array {
+        $channel = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        if ($channel === false) {
+            throw new RuntimeException('Could not open a held identity contender channel.');
+        }
+        $pid = pcntl_fork();
+        if ($pid === -1) {
+            throw new RuntimeException('Could not fork held identity contender.');
+        }
+        if ($pid === 0) {
+            fclose($channel[0]);
+            $prepare($channel[1]);
+            try {
+                $operation();
+                fwrite($channel[1], "OK\n");
+                exit(0);
+            } catch (IdentityViolation|CommandRejection $exception) {
+                fwrite($channel[1], $exception->reason."\n");
+                exit($exception->status === 409 ? 2 : 3);
+            } catch (Throwable $exception) {
+                fwrite($channel[1], $exception::class."\n");
+                exit(1);
+            }
+        }
+        fclose($channel[1]);
+
+        return [$pid, $channel[0]];
+    };
+
+    [$firstPid, $firstChannel] = $fork($first, function ($channel): void {
+        Event::listen('eloquent.created: '.CommandOperation::class, function () use ($channel): void {
+            fwrite($channel, DB::scalar('SELECT pg_backend_pid()')."\n");
+            fgets($channel);
+        });
+    });
+    $holder = (int) fgets($firstChannel);
+    [$secondPid, $secondChannel] = $fork($second, function ($channel): void {
+        fwrite($channel, DB::scalar('SELECT pg_backend_pid()')."\n");
+    });
+    $waiter = (int) fgets($secondChannel);
+    $blocked = false;
+    for ($poll = 0; $poll < 500 && ! $blocked; $poll++) {
+        $blocked = (bool) DB::scalar('SELECT ?::int = ANY(pg_blocking_pids(?::int))', [$holder, $waiter]);
+        if (! $blocked) {
+            usleep(10_000);
+        }
+    }
+    fwrite($firstChannel, "release\n");
+
+    $exits = [];
+    $outcomes = [];
+    foreach ([[$firstPid, $firstChannel], [$secondPid, $secondChannel]] as [$pid, $channel]) {
+        pcntl_waitpid($pid, $status);
+        $exitCode = pcntl_wexitstatus($status);
+        $exits[] = pcntl_wifexited($status) && is_int($exitCode) ? $exitCode : 99;
+        $outcomes[] = trim((string) fgets($channel));
+        fclose($channel);
+    }
+
+    return ['blocked' => $blocked, 'exits' => $exits, 'outcomes' => $outcomes];
+}
+
 it('serializes conflicting Investor and Auditor grants from different operators', function (): void {
     $party = Party::factory()->verified()->create();
     $one = concurrentIdentityOperator();
@@ -1516,6 +1591,22 @@ it('records assignment source facts once under simultaneous identical retries', 
         ->and(AuditSourceSnapshot::query()->count())->toBe(1)
         ->and(CommandOperation::query()->where('command', 'audit.source.fixture')->count())->toBe(1);
 });
+
+it('replays an identical assignment source facts retry that waited behind the first writer', function (int $retryDelaySeconds): void {
+    $fixture = AuditSourceFactsFixture::accepted();
+    $request = (string) Str::uuid();
+    $this->freezeTime();
+    $write = function () use ($fixture, $request): void {
+        expect(AuditSourceFactsFixture::record($fixture['audit']['staff'], $fixture['assignment'], requestId: $request)['code'])->toBe('AUDIT_SOURCE_FACTS_RECORDED');
+    };
+    $retry = function () use ($write, $retryDelaySeconds): void {
+        $this->travel($retryDelaySeconds)->seconds();
+        $write();
+    };
+    expect(runHeldIdentityRetry($write, $retry))->toBe(['blocked' => true, 'exits' => [0, 0], 'outcomes' => ['OK', 'OK']])
+        ->and(AuditSourceSnapshot::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'audit.source.fixture')->count())->toBe(1);
+})->with(['within the same clock second' => 0, 'after the clock crossed a second' => 1]);
 
 it('admits one assignment source revision when independent writers compete', function (): void {
     $fixture = AuditSourceFactsFixture::accepted();
