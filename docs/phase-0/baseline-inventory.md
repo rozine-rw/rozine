@@ -940,6 +940,26 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `personal_access_tokens_expires_at_index` on (expires_at); `personal_access_tokens_pkey` on (id) — unique; `personal_access_tokens_token_unique` on (token) — unique; `personal_access_tokens_tokenable_type_tokenable_id_index` on (tokenable_type, tokenable_id)
 
+### `primary_campaign_closure_returns`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `primary_reservation_id` | `bpchar` | no | — |
+| `business_campaign_closure_id` | `bpchar` | no | — |
+| `primary_reservation_version_id` | `bpchar` | no | — |
+| `version_sha256` | `bpchar` | no | — |
+| `primary_commitment_id` | `bpchar` | yes | — |
+| `party_id` | `bpchar` | no | — |
+| `wallet_id` | `bpchar` | no | — |
+| `principal` | `numeric` | no | — |
+| `origin_operation_id` | `bpchar` | no | — |
+| `hold_entry_id` | `bpchar` | no | — |
+| `commit_entry_id` | `bpchar` | yes | — |
+| `return_entry_id` | `bpchar` | no | — |
+| `return_kind` | `varchar` | no | — |
+
+**Indexes:** `primary_campaign_closure_returns_business_campaign_closure_id_i` on (business_campaign_closure_id); `primary_campaign_closure_returns_pkey` on (primary_reservation_id) — unique; `primary_campaign_closure_returns_return_entry_id_unique` on (return_entry_id) — unique
+
 ### `primary_campaign_fundings`
 
 | Column | Type | Nullable | Default |
@@ -1416,6 +1436,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_28_212446_bind_primary_confirmation_operations_to_purchases.php |
 | 2026_09_29_112938_create_primary_expiry_failures_table.php |
 | 2026_09_30_054318_create_primary_campaign_fundings.php |
+| 2026_09_30_094556_bind_campaign_closures_to_complete_primary_returns.php |
 
 ## Routes
 

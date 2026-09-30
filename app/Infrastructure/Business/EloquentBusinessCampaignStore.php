@@ -15,12 +15,13 @@ use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
-use App\Application\Primary\Contracts\CampaignCommitments;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\CampaignReservationSummary;
+use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
+use App\Domain\Wallet\WalletViolation;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessApplicationSubmission;
@@ -43,7 +44,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
 
     public function __construct(private AcceptedApplicationStore $accepted, private BusinessAuthorityStore $businesses,
         private WithBusinessAuthority $authority, private AuthorizeStaffPermission $staff, private IdentityRepository $identities,
-        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications, private CampaignCommitments $commitments, private CampaignReservationSummary $reservations, private CampaignFundingEvidence $fundings) {}
+        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications, private PrimaryReservations $primary, private CampaignReservationSummary $reservations, private CampaignFundingEvidence $fundings) {}
 
     /** @return array<string, mixed> */
     public function release(int $userId, string $applicationId, int $expectedRevision, string $reason, string $requestId): array
@@ -171,13 +172,15 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             $payload = $this->publications->find($campaign->id);
             $closure = $this->closures->find($campaign->id);
             $person = array_find($business['mandate']['people'], fn (array $person): bool => $person['party_id'] === $identity['party']['id']);
-            $canCancel = $closure === null && $this->fundings->find($campaign->id) === null && now()->lt($campaign->expires_at) && ! $this->commitments->anyForCampaign($campaign->id)
+            $summary = $closure === null ? $this->reservations->read($campaign->id, now('UTC')->toDateTimeImmutable()) : null;
+            $canCancel = $closure === null && $this->fundings->find($campaign->id) === null && now()->lt($campaign->expires_at)
+                && $summary['committed_principal'] === '0' && $summary['held_principal'] === '0'
                 && in_array('application.sign', $person['permissions'] ?? [], true)
                 && in_array($identity['party']['id'], $business['mandate']['required_signatories'], true);
 
             $progress = $closure === null ? $this->campaignProgress($campaign->id, $payload)
                 : ['phase' => $closure['phase'], 'committed_refunded' => $closure['committed_refunded'],
-                    'investors' => 0, 'closed_at' => $closure['closed_at']];
+                    'investors' => $closure['investors'], 'closed_at' => $closure['closed_at']];
 
             return ['identity_context_revision' => $contextRevision, 'business_id' => $businessId, 'id' => $campaign->id, 'revision' => $closure === null ? 1 : 2,
                 'lifecycle' => $closure['phase'] ?? $progress['lifecycle'], 'can_cancel' => $canCancel,
@@ -302,7 +305,8 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                         }
                         $closure = $this->close($campaign, 'cancelled', $userId, $partyId, $operationId, $requestId, $reason);
                         $receipt = [...$this->receipt($closure->id, $closure->payload, 'CAMPAIGN_CANCELLED'), 'revision' => 2,
-                            'exposure_released' => ['currency' => 'RWF', 'amount' => $campaign->principal], 'investors' => 0];
+                            'exposure_released' => ['currency' => 'RWF', 'amount' => $campaign->principal],
+                            'committed_refunded' => $closure->payload['committed_refunded'], 'investors' => $closure->payload['investors']];
 
                         return new OperationResult('CAMPAIGN_CANCELLED', [...$data, 'receipt' => $receipt], 2);
                     });
@@ -377,8 +381,8 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
     }
 
     /**
-     * Legacy closure releases exposure only for a campaign with no confirmed commitments.
-     * Funded cancellation and expiry must settle refunds in this same transaction first.
+     * Releases exposure only after every original principal return is verified and bound.
+     * This prerequisite does not refund active commitments or release live holds itself.
      */
     private function close(BusinessCampaign $campaign, string $phase, ?int $userId, ?string $partyId, ?string $operationId, ?string $requestId, ?string $reason): BusinessCampaignClosure
     {
@@ -395,20 +399,42 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         if ($phase === 'cancelled' && $recordedAt->gte($campaign->expires_at)) {
             throw new CommandRejection('CAMPAIGN_CLOSED', revision: 1, data: ['campaign_id' => $campaign->id, 'business_id' => $campaign->business_id]);
         }
-        if ($this->commitments->anyForCampaign($campaign->id)) {
+        try {
+            $returned = $this->primary->lockReturnedCampaign($campaign->id);
+        } catch (CommandRejection|WalletViolation $exception) {
+            if (! in_array($exception->reason, ['CAMPAIGN_SETTLEMENT_REQUIRED', 'PRIMARY_RETURNED_CASH_REQUIRED'], true)) {
+                throw $exception;
+            }
             throw new CommandRejection('CAMPAIGN_SETTLEMENT_REQUIRED', revision: 1,
                 data: ['campaign_id' => $campaign->id, 'business_id' => $campaign->business_id]);
         }
+        $bindings = array_map(fn (array $purchase): array => [
+            'primary_reservation_id' => $purchase['reservation_id'], 'primary_reservation_version_id' => $purchase['version_id'],
+            'version_sha256' => $purchase['version_sha256'], 'primary_commitment_id' => $purchase['commitment_id'],
+            'party_id' => $purchase['party_id'], 'wallet_id' => $purchase['cash']->walletId, 'principal' => $purchase['cash']->amount,
+            'origin_operation_id' => $purchase['cash']->originOperationId, 'hold_entry_id' => $purchase['cash']->holdEntryId,
+            'commit_entry_id' => $purchase['cash']->commitEntryId, 'return_entry_id' => $purchase['cash']->returnEntryId,
+            'return_kind' => $purchase['cash']->returnKind,
+        ], $returned->returns);
         $closedAt = $phase === 'expired' ? $campaign->expires_at : $recordedAt;
         $payload = ['closure_id' => $closure->id, 'campaign_id' => $campaign->id, 'campaign_sha256' => $campaign->sha256,
             'business_id' => $campaign->business_id, 'exposure_reservation_id' => $campaign->exposure_reservation_id,
-            'principal_released' => $campaign->principal, 'phase' => $phase, 'scope' => 'unfunded-v1',
+            'principal_released' => $campaign->principal, 'phase' => $phase, 'scope' => 'unfunded-returned-v1',
             'actor_user_id' => $userId, 'actor_party_id' => $partyId, 'operation_id' => $operationId, 'request_id' => $requestId,
             'reason' => $reason === null ? null : trim($reason), 'recorded_at' => $recordedAt->toIso8601String(),
-            'closed_at' => $closedAt->toIso8601String(), 'committed_refunded' => ['currency' => 'RWF', 'amount' => '0'], 'investors' => 0, 'revision' => 2];
+            'closed_at' => $closedAt->toIso8601String(), 'committed_refunded' => ['currency' => 'RWF', 'amount' => $returned->refundedPrincipal],
+            'released_held' => ['currency' => 'RWF', 'amount' => $returned->releasedPrincipal], 'investors' => $returned->refundedInvestors,
+            'cash_returns' => $bindings, 'revision' => 2];
         $closure->forceFill(['business_campaign_id' => $campaign->id, 'business_id' => $campaign->business_id,
             'exposure_reservation_id' => $campaign->exposure_reservation_id, 'principal' => $campaign->principal,
             'phase' => $phase, 'actor_user_id' => $userId, 'closed_at' => $closedAt, 'payload' => $payload, 'sha256' => $this->hash($payload)])->save();
+
+        if ($bindings !== []) {
+            DB::table('primary_campaign_closure_returns')->insert(array_map(fn (array $binding): array => [
+                ...$binding, 'business_campaign_closure_id' => $closure->id,
+            ], $bindings));
+        }
+        DB::select('SELECT check_primary_campaign_closure_returns(?)', [$closure->id]);
 
         return $closure;
     }

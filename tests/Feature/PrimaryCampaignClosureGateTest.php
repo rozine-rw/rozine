@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
-use App\Application\Primary\Contracts\CampaignCommitments;
 use App\Application\Primary\Contracts\PrimaryCheckout;
+use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Domain\Operations\CommandRejection;
 use App\Models\BusinessCampaignClosure;
 use App\Models\LedgerEntry;
@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Mockery\CompositeExpectation;
 use PragmaRX\Google2FA\Google2FA;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
@@ -112,14 +113,13 @@ it('advances past committed campaigns without consuming the closure limit or ski
 
 it('propagates unrelated command refusals during expiry', function (): void {
     $this->travelTo($this->campaign->expires_at);
-    $commitments = new class implements CampaignCommitments
-    {
-        public function anyForCampaign(string $campaignId): bool
-        {
-            throw new CommandRejection('UNRELATED_REFUSAL');
-        }
-    };
-    app()->instance(CampaignCommitments::class, $commitments);
+    $primary = Mockery::mock(PrimaryReservations::class);
+    $expectation = $primary->shouldReceive('lockReturnedCampaign');
+    if (! $expectation instanceof CompositeExpectation) {
+        throw new LogicException('Expected a method expectation.');
+    }
+    $expectation->__call('once', [])->__call('andThrow', [new CommandRejection('UNRELATED_REFUSAL')]);
+    app()->instance(PrimaryReservations::class, $primary);
     expect(fn () => app(BusinessCampaignStore::class)->expireDue(1))->toThrow(CommandRejection::class, 'UNRELATED_REFUSAL')
         ->and(BusinessCampaignClosure::query()->count())->toBe(0)
         ->and(LedgerEntry::query()->orderBy('id')->get()->toArray())->toBe($this->cash)

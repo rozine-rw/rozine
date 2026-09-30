@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
+use App\Application\Business\Contracts\CampaignClosureEvidence;
 use App\Application\Primary\Contracts\PrimaryCheckout;
+use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Wallet\GetInvestorWallet;
 use App\Models\BusinessCampaignClosure;
 use App\Models\CommandOperation;
@@ -12,6 +14,7 @@ use App\Models\LedgerEntry;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
@@ -103,17 +106,27 @@ beforeEach(function (): void {
     };
 });
 
-it('a confirmation queued behind an uncommitted cancellation is refused after it commits', function (): void {
+it('a confirmation queued behind an atomic held release and cancellation is refused after it commits', function (): void {
     $confirm = ($this->reserveAndConfirmer)();
     $outcome = ($this->race)('R1 cancel holds, confirm waits',
-        fn (): string => app(BusinessCampaignStore::class)->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id,
-            $this->campaign->id, 1, null, (string) Str::uuid())['code'],
+        function (): string {
+            $root = PrimaryReservationRecord::query()->sole();
+            expect(app(PrimaryCheckout::class)->release($this->investor['user']->id, 1, $this->campaign->id,
+                $root->id, 1, (string) Str::uuid())['code'])->toBe('RESERVATION_RELEASED');
+
+            return app(BusinessCampaignStore::class)->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id,
+                $this->campaign->id, 1, null, (string) Str::uuid())['code'];
+        },
         fn (): string => $confirm()['code']);
-    expect($outcome)->toBe('CAMPAIGN_CLOSED')
+    expect($outcome)->toBe('VERSION_CONFLICT')
         ->and(BusinessCampaignClosure::query()->count())->toBe(1)
         ->and(PrimaryCommitment::query()->count())->toBe(0)
         ->and(LedgerEntry::query()->where('kind', 'primary_commit')->count())->toBe(0)
-        ->and(app(GetInvestorWallet::class)->handle($this->investor['user']->id, 1)['wallet']['breakdown']['held']['amount'])->toBe('5000');
+        ->and(app(GetInvestorWallet::class)->handle($this->investor['user']->id, 1)['wallet']['breakdown']['held']['amount'])->toBe('0')
+        ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(1)
+        ->and(DB::table('primary_campaign_closure_returns')->count())->toBe(1)
+        ->and(app(PrimaryCheckout::class)->reserve($this->investor['user']->id, 1, $this->campaign->id, '1',
+            (string) Str::uuid(), PrimaryReservationFixture::terms(...))['code'])->toBe('CAMPAIGN_CLOSED');
 });
 
 it('an expiry sweep queued behind an uncommitted confirmation defers settlement', function (): void {
@@ -140,14 +153,48 @@ it('a confirmation queued behind an uncommitted expiry (skewed clock) is refused
     $confirm = ($this->reserveAndConfirmer)();
     $this->travelTo($this->campaign->expires_at);
     $outcome = ($this->race)('R3 expiry holds, confirm waits',
-        fn (): string => 'expired '.app(BusinessCampaignStore::class)->expireDue(100),
+        function (): string {
+            $root = PrimaryReservationRecord::query()->sole();
+            expect(app(PrimaryReservations::class)->expire($this->campaign->id, $root->id))->not->toBeNull();
+
+            return 'expired '.app(BusinessCampaignStore::class)->expireDue(100);
+        },
         function () use ($confirm): string {
             $this->travelTo($this->campaign->expires_at->subSeconds(30));
 
             return $confirm()['code'];
         });
-    expect($outcome)->toBe('CAMPAIGN_CLOSED')
+    expect($outcome)->toBe('VERSION_CONFLICT')
         ->and(BusinessCampaignClosure::query()->sole()->phase)->toBe('expired')
         ->and(PrimaryCommitment::query()->count())->toBe(0)
-        ->and(CommandOperation::query()->where('command', 'primary.confirm')->sole()->result['code'])->toBe('CAMPAIGN_CLOSED');
+        ->and(CommandOperation::query()->where('command', 'primary.confirm')->sole()->result['code'])->toBe('VERSION_CONFLICT')
+        ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(1)
+        ->and(DB::table('primary_campaign_closure_returns')->count())->toBe(1);
+});
+
+it('refuses direct cash-return closure under snapshot isolation even without any roots', function (string $isolation): void {
+    DB::beginTransaction();
+    try {
+        DB::statement('SET TRANSACTION ISOLATION LEVEL '.$isolation);
+        expect(fn () => DB::transaction(fn () => BusinessCampaignClosure::factory()->create(['business_campaign_id' => $this->campaign->id])))
+            ->toThrow(QueryException::class, 'requires READ COMMITTED');
+    } finally {
+        DB::rollBack();
+    }
+    expect(BusinessCampaignClosure::query()->count())->toBe(0);
+})->with(['REPEATABLE READ', 'SERIALIZABLE']);
+
+it('verifies a committed returned closure from a read-only transaction without locking shared wallets', function (): void {
+    ($this->reserveAndConfirmer)();
+    $root = PrimaryReservationRecord::query()->sole();
+    $this->checkout->release($this->investor['user']->id, 1, $this->campaign->id, $root->id, 1, (string) Str::uuid());
+    app(BusinessCampaignStore::class)->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id,
+        $this->campaign->id, 1, null, (string) Str::uuid());
+    DB::beginTransaction();
+    try {
+        DB::statement('SET TRANSACTION READ ONLY');
+        expect(app(CampaignClosureEvidence::class)->find($this->campaign->id)['phase'])->toBe('cancelled');
+    } finally {
+        DB::rollBack();
+    }
 });
