@@ -3538,9 +3538,20 @@ const fr: Catalog = {
     'business.campaign.state.expired': 'Non remplie',
     'business.campaign.state.cancelled': 'Annulée',
     'business.campaign.state.failed_closing': 'Clôturée et remboursée',
+    'business.campaign.state.sold_out_pending_settlement':
+        'Entièrement engagée',
+    'business.campaign.state.inventory_unavailable': 'Aucune note disponible',
+    'business.campaign.state.closing_pending_settlement': 'Clôture en cours',
+    'business.campaign.state.unavailable': 'Statut indisponible',
     'business.campaign.lifecycle.live': 'Levée · en cours',
     'business.campaign.lifecycle.fully_reserved':
         'Levée · entièrement réservée',
+    'business.campaign.lifecycle.sold_out_pending_settlement':
+        'Entièrement engagée · règlement en attente',
+    'business.campaign.lifecycle.inventory_unavailable':
+        'Levée · aucune note disponible',
+    'business.campaign.lifecycle.closing_pending_settlement':
+        'Échéance passée · clôture en cours',
     'business.campaign.restriction.RESTRICTION_ACTIVE':
         'Restreinte depuis le {date}. Les nouveaux engagements sont suspendus pendant la restriction ; ceux déjà pris restent.',
     'business.campaign.restriction.NOTE_INELIGIBLE':
@@ -3556,10 +3567,22 @@ const fr: Catalog = {
     'business.campaign.reserved_note':
         "Notes bloquées dans le paiement d'un investisseur. Elles ne sont pas encore confirmées.",
     'business.campaign.units':
-        '{committed} notes engagées sur {total} · {reserved} réservées · {available} disponibles',
+        '{committed} notes engagées sur {total} · {reserved} réservées · {available} disponibles · {unavailable} indisponibles',
     'business.campaign.closes': 'Clôture le {date}',
     'business.campaign.fully_reserved':
         'Chaque note disponible est actuellement bloquée dans un paiement. Les nouveaux investisseurs ne peuvent pas réserver tant que les réservations ne sont pas confirmées ou terminées.',
+    'business.campaign.unavailable_note':
+        'Les notes indisponibles étaient dans un paiement ou un engagement qui a pris fin. Elles ne sont pas en vente.',
+    'business.campaign.sold_out':
+        "Toutes les notes sont engagées : aucun nouvel investisseur ne peut participer. La levée n'est pas financée tant que Rozine n'a pas terminé le règlement.",
+    'business.campaign.inventory_unavailable':
+        "Aucune note n'est disponible à la réservation et aucune n'est bloquée dans un paiement : les nouveaux investisseurs ne peuvent pas s'engager pour le moment.",
+    'business.campaign.closing':
+        "L'échéance est passée : les nouveaux investisseurs ne peuvent plus s'engager. Rozine clôture la levée et en affichera le résultat ici.",
+    'business.campaign.progress_unavailable':
+        'La progression de cette levée ne peut pas être affichée pour le moment. Actualisez la page pour réessayer.',
+    'business.campaign.tile.deadline': 'Échéance',
+    'business.campaign.deadline_passed': 'Échéance passée le {date}',
     'business.campaign.funded':
         'Entièrement financée le {date}. La levée ne peut plus être annulée.',
     'business.campaign.closing_title': 'Décaissement',

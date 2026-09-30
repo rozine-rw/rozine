@@ -26,6 +26,7 @@ import cancelRefusedFixture from '../../../resources/fixtures/ui/business-campai
 import cancelUnconfirmedFixture from '../../../resources/fixtures/ui/business-campaign-cancel-unconfirmed.json';
 import cancelledEmptyFixture from '../../../resources/fixtures/ui/business-campaign-cancelled-empty.json';
 import cancelledFixture from '../../../resources/fixtures/ui/business-campaign-cancelled.json';
+import closingPendingFixture from '../../../resources/fixtures/ui/business-campaign-closing-pending.json';
 import disbursedFixture from '../../../resources/fixtures/ui/business-campaign-disbursed.json';
 import expiredFixture from '../../../resources/fixtures/ui/business-campaign-expired.json';
 import failedClosingFixture from '../../../resources/fixtures/ui/business-campaign-failed-closing.json';
@@ -33,12 +34,14 @@ import fullyReservedFixture from '../../../resources/fixtures/ui/business-campai
 import awaitingFixture from '../../../resources/fixtures/ui/business-campaign-funded-awaiting.json';
 import inFlightFixture from '../../../resources/fixtures/ui/business-campaign-funded-in-flight.json';
 import unknownFixture from '../../../resources/fixtures/ui/business-campaign-funded-unknown.json';
+import inventoryUnavailableFixture from '../../../resources/fixtures/ui/business-campaign-inventory-unavailable.json';
 import liveMinimalFixture from '../../../resources/fixtures/ui/business-campaign-live-minimal.json';
 import liveFixture from '../../../resources/fixtures/ui/business-campaign-raising-live.json';
 import restrictedFixture from '../../../resources/fixtures/ui/business-campaign-raising-restricted.json';
 import repaidFixture from '../../../resources/fixtures/ui/business-campaign-repaid.json';
 import overdueFixture from '../../../resources/fixtures/ui/business-campaign-repaying-overdue.json';
 import repayingFixture from '../../../resources/fixtures/ui/business-campaign-repaying.json';
+import soldOutFixture from '../../../resources/fixtures/ui/business-campaign-sold-out-pending.json';
 import v2LiveMinimalFixture from '../../../resources/fixtures/ui/business-campaign-v2-live-minimal.json';
 import { answers, fails, inertia, operation } from '../auditor/inertia';
 import { renderWithUser } from '../helpers/render-with-user';
@@ -113,9 +116,10 @@ describe('A raising campaign', () => {
         expect(view.getByText('RWF 3,042,000')).toBeInTheDocument();
         expect(
             view.getByText(
-                '14,058 of 18,000 notes committed · 900 reserved · 3,042 available',
+                '14,058 of 18,000 notes committed · 900 reserved · 3,042 available · 0 unavailable',
             ),
         ).toBeInTheDocument();
+        expect(sheet).not.toHaveTextContent(/aren't on sale/);
         expect(view.getByText('Closes 2 Oct 2026 · 09:00')).toBeInTheDocument();
         expect(
             view.getByText(
@@ -209,7 +213,7 @@ describe('A raising campaign', () => {
         expect(campaignSheet()).not.toHaveTextContent(/5 minutes/i);
         expect(
             view.getByText(
-                '16,200 of 18,000 notes committed · 1,800 reserved · 0 available',
+                '16,200 of 18,000 notes committed · 1,800 reserved · 0 available · 0 unavailable',
             ),
         ).toBeInTheDocument();
     });
@@ -225,6 +229,182 @@ describe('A raising campaign', () => {
                 name: 'Commitment tracker',
             }),
         ).toHaveValue(100);
+    });
+});
+
+describe('A raise that is no longer simply live', () => {
+    it('reads a fully committed raise as awaiting settlement, never funded, with the countdown stopped', () => {
+        renderWithUser(<BusinessCampaign {...props(soldOutFixture)} />);
+        const sheet = campaignSheet();
+        const view = within(sheet);
+
+        expect(view.getByText('Fully committed')).toBeInTheDocument();
+        expect(
+            view.getByText('Fully committed · awaiting settlement'),
+        ).toBeInTheDocument();
+        expect(view.getByRole('status')).toHaveTextContent(
+            "Every note is committed, so new investors can't join. The raise isn't funded until Rozine completes settlement.",
+        );
+        expect(sheet).not.toHaveTextContent(/fully funded|\bFunded\b/);
+        expect(view.queryByRole('timer')).not.toBeInTheDocument();
+        expect(view.getByText('Deadline')).toBeInTheDocument();
+        expect(view.getByText('25 Sept 2026')).toBeInTheDocument();
+        expect(
+            view.getByText('Closes 25 Sept 2026 · 21:30'),
+        ).toBeInTheDocument();
+        expect(view.getByText('100.0% committed')).toBeInTheDocument();
+        expect(view.getByText('RWF 18,000,000')).toBeInTheDocument();
+        expect(
+            view.getByText(
+                '18,000 of 18,000 notes committed · 0 reserved · 0 available · 0 unavailable',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            view.queryByRole('button', { name: 'Cancel this raise' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('says when no notes are left to reserve, and why some are unavailable', () => {
+        renderWithUser(
+            <BusinessCampaign {...props(inventoryUnavailableFixture)} />,
+        );
+        const sheet = campaignSheet();
+        const view = within(sheet);
+
+        expect(view.getByText('No notes available')).toBeInTheDocument();
+        expect(
+            view.getByText('Raising · no notes available'),
+        ).toBeInTheDocument();
+        expect(view.getByRole('status')).toHaveTextContent(
+            "No notes are available to reserve and none are held in a checkout, so new investors can't commit right now.",
+        );
+        expect(
+            view.getByText(
+                '16,200 of 18,000 notes committed · 0 reserved · 0 available · 1,800 unavailable',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            view.getByText(
+                "Unavailable notes were in a checkout or commitment that has ended. They aren't on sale.",
+            ),
+        ).toBeInTheDocument();
+        expect(view.getByText('RWF 1,800,000')).toBeInTheDocument();
+        expect(
+            view.getByText('Not yet committed or reserved'),
+        ).toBeInTheDocument();
+        expect(sheet).not.toHaveTextContent(/back on sale|left to raise/i);
+        expect(
+            view.getByRole('timer', { name: 'Closes in' }),
+        ).toBeInTheDocument();
+    });
+
+    it('stops counting down once the deadline has passed, and says the raise is closing', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-09-20T00:00:00Z'));
+        renderWithUser(<BusinessCampaign {...props(closingPendingFixture)} />);
+        const sheet = campaignSheet();
+        const view = within(sheet);
+
+        expect(view.getByText('Closing')).toBeInTheDocument();
+        expect(view.getByText('Deadline passed · closing')).toBeInTheDocument();
+        expect(view.getByRole('status')).toHaveTextContent(
+            "The deadline has passed, so new investors can't commit. Rozine is closing the raise and will show the outcome here.",
+        );
+        expect(view.queryByRole('timer')).not.toBeInTheDocument();
+        expect(
+            view.getByText('Deadline passed 25 Sept 2026 · 21:30'),
+        ).toBeInTheDocument();
+        expect(sheet).not.toHaveTextContent(/Closes 25 Sept/);
+        expect(
+            view.getByText(
+                '14,058 of 18,000 notes committed · 0 reserved · 3,042 available · 900 unavailable',
+            ),
+        ).toBeInTheDocument();
+        expect(sheet).not.toHaveTextContent(/fully funded|\bFunded\b/);
+        expect(
+            view.queryByRole('button', { name: 'Cancel this raise' }),
+        ).not.toBeInTheDocument();
+    });
+});
+
+describe('Raising progress the server sent incompletely', () => {
+    const unreadable = (page: BusinessCampaignProps) => {
+        renderWithUser(<BusinessCampaign {...page} />);
+        const sheet = campaignSheet();
+        const view = within(sheet);
+
+        expect(view.getByRole('status')).toHaveTextContent(
+            "This raise's progress can't be shown right now. Refresh the page to try again.",
+        );
+        expect(view.getByText('Status unavailable')).toBeInTheDocument();
+        expect(view.queryByRole('progressbar')).not.toBeInTheDocument();
+        expect(view.queryByRole('timer')).not.toBeInTheDocument();
+
+        for (const figure of [
+            'RWF 14.1M',
+            '78.1%',
+            'Commitment tracker',
+            'notes committed',
+            'Not yet committed or reserved',
+            'Closes',
+        ]) {
+            expect(sheet).not.toHaveTextContent(figure);
+        }
+
+        expect(
+            view.queryByRole('button', { name: 'Cancel this raise' }),
+        ).not.toBeInTheDocument();
+    };
+
+    it('fails closed on a lifecycle it does not know', () => {
+        const page = props(liveFixture);
+
+        (raising(page) as { lifecycle: string }).lifecycle = 'recycling';
+        (page.campaign as { lifecycle: string }).lifecycle = 'recycling';
+        unreadable(page);
+    });
+
+    it('fails closed when the page and its progress disagree on the lifecycle', () => {
+        const page = props(liveFixture);
+
+        page.campaign.lifecycle = 'fully_reserved';
+        unreadable(page);
+    });
+
+    it('fails closed without the unavailable units', () => {
+        const page = props(liveFixture);
+
+        delete (raising(page).units as Partial<Phase<'raising'>['units']>)
+            .unavailable;
+        unreadable(page);
+    });
+
+    it('fails closed on a unit count that is not a whole number', () => {
+        const page = props(liveFixture);
+
+        raising(page).units.available = '-3';
+        unreadable(page);
+    });
+
+    it('fails closed without an amount it would show', () => {
+        const missing = props(liveFixture);
+
+        (raising(missing) as { remaining: unknown }).remaining = null;
+        unreadable(missing);
+    });
+
+    it('fails closed on an amount with no value', () => {
+        const page = props(liveFixture);
+
+        (raising(page) as { reserved: unknown }).reserved = { currency: 'RWF' };
+        unreadable(page);
+    });
+
+    it('fails closed on an amount that is not an object', () => {
+        const page = props(liveFixture);
+
+        (raising(page) as { committed: unknown }).committed = '14058000';
+        unreadable(page);
     });
 });
 

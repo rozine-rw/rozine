@@ -6,13 +6,14 @@ import type {
 import type { RouteAction, RouteLink } from './routing';
 import type {
     Bps,
+    BusinessCampaignLifecycle,
     C3PreviewOutcome,
-    CampaignLifecycle,
     CampaignRestriction,
     Clock,
     CoarseInFlight,
     ComponentAmounts,
     KigaliDate,
+    RaisingLifecycle,
     Receipt,
     ServicingState,
     Units,
@@ -1260,7 +1261,7 @@ export type BusinessClosing =
 export type CampaignProgress =
     | {
           phase: 'raising';
-          lifecycle: 'live' | 'fully_reserved';
+          lifecycle: RaisingLifecycle;
           restriction: CampaignRestriction;
           committed: Money;
           reserved: Money;
@@ -1270,6 +1271,8 @@ export type CampaignProgress =
               available: Units;
               reserved: Units;
               committed: Units;
+              /** Occupied by a hold or commitment that has ended; not on sale (no recycling yet). */
+              unavailable: Units;
           };
           investors: number;
           /** One decimal: "78.1". */
@@ -1309,7 +1312,11 @@ export type BusinessCampaignProps = Omit<
     server_time: string;
     allowed_actions: 'campaign.cancel'[];
     /** The campaign lifecycle (#96): never the 1B `NoteStatus`, so `fully_reserved` never reads as funded. */
-    campaign: { id: string; revision: number; lifecycle: CampaignLifecycle };
+    campaign: {
+        id: string;
+        revision: number;
+        lifecycle: BusinessCampaignLifecycle;
+    };
     note: Omit<
         BusinessNoteProps['note'],
         'recent_investors' | 'progress' | 'status'

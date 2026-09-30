@@ -3392,8 +3392,18 @@ const en = {
     'business.campaign.state.expired': "Didn't fill",
     'business.campaign.state.cancelled': 'Cancelled',
     'business.campaign.state.failed_closing': 'Closed and refunded',
+    'business.campaign.state.sold_out_pending_settlement': 'Fully committed',
+    'business.campaign.state.inventory_unavailable': 'No notes available',
+    'business.campaign.state.closing_pending_settlement': 'Closing',
+    'business.campaign.state.unavailable': 'Status unavailable',
     'business.campaign.lifecycle.live': 'Raising · live',
     'business.campaign.lifecycle.fully_reserved': 'Raising · fully reserved',
+    'business.campaign.lifecycle.sold_out_pending_settlement':
+        'Fully committed · awaiting settlement',
+    'business.campaign.lifecycle.inventory_unavailable':
+        'Raising · no notes available',
+    'business.campaign.lifecycle.closing_pending_settlement':
+        'Deadline passed · closing',
     'business.campaign.restriction.RESTRICTION_ACTIVE':
         "Restricted since {date}. New commitments are paused while the restriction lasts; what's already committed stays.",
     'business.campaign.restriction.NOTE_INELIGIBLE':
@@ -3409,10 +3419,22 @@ const en = {
     'business.campaign.reserved_note':
         "Notes held in an investor's checkout. They aren't confirmed yet.",
     'business.campaign.units':
-        '{committed} of {total} notes committed · {reserved} reserved · {available} available',
+        '{committed} of {total} notes committed · {reserved} reserved · {available} available · {unavailable} unavailable',
     'business.campaign.closes': 'Closes {date}',
     'business.campaign.fully_reserved':
         "Every available note is currently held in a checkout. New investors can't reserve until holds are confirmed or end.",
+    'business.campaign.unavailable_note':
+        "Unavailable notes were in a checkout or commitment that has ended. They aren't on sale.",
+    'business.campaign.sold_out':
+        "Every note is committed, so new investors can't join. The raise isn't funded until Rozine completes settlement.",
+    'business.campaign.inventory_unavailable':
+        "No notes are available to reserve and none are held in a checkout, so new investors can't commit right now.",
+    'business.campaign.closing':
+        "The deadline has passed, so new investors can't commit. Rozine is closing the raise and will show the outcome here.",
+    'business.campaign.progress_unavailable':
+        "This raise's progress can't be shown right now. Refresh the page to try again.",
+    'business.campaign.tile.deadline': 'Deadline',
+    'business.campaign.deadline_passed': 'Deadline passed {date}',
     'business.campaign.funded':
         'Fully funded on {date}. The raise can no longer be cancelled.',
     'business.campaign.closing_title': 'Disbursement',

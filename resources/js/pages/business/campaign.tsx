@@ -11,15 +11,20 @@ import { C3Notice } from '@/components/rozine/c3-notice';
 import { useBoundedPoll } from '@/hooks/use-bounded-poll';
 import { useC3Command } from '@/hooks/use-c3-command';
 import { useTranslation } from '@/hooks/use-translation';
+import { isReadableProgress } from '@/lib/rozine/raising';
 import { cn } from '@/lib/utils';
 import type {
     BusinessCampaignProps,
     BusinessCampaignV2Props,
 } from '@/types/business';
-import type { CampaignLifecycle } from '@/types/settlement';
+import type { BusinessCampaignLifecycle } from '@/types/settlement';
 
 /** Lifecycles where the raise ended without the business receiving the money. */
-const CLOSED: CampaignLifecycle[] = ['expired', 'cancelled', 'failed_closing'];
+const CLOSED: BusinessCampaignLifecycle[] = [
+    'expired',
+    'cancelled',
+    'failed_closing',
+];
 
 /** The props a poll of an in-flight closing reloads: fresh facts, authority and actions. */
 const POLLED = [
@@ -63,7 +68,10 @@ export default function BusinessCampaign({
         progress.phase === 'funded' && progress.closing.stage === 'in_flight',
         POLLED,
     );
+    /* Unreadable progress also withholds its lifecycle and the cancel it would offer. */
+    const readable = isReadableProgress(progress, campaign.lifecycle);
     const canCancel =
+        readable &&
         progress.phase === 'raising' &&
         actions.cancel !== null &&
         allowed_actions.includes('campaign.cancel');
@@ -118,7 +126,9 @@ export default function BusinessCampaign({
                                 )}
                             >
                                 {t(
-                                    `business.campaign.state.${campaign.lifecycle}`,
+                                    readable
+                                        ? `business.campaign.state.${campaign.lifecycle}`
+                                        : 'business.campaign.state.unavailable',
                                 )}
                             </span>
                         </p>
@@ -127,6 +137,7 @@ export default function BusinessCampaign({
                 <C3Notice command={command} className="mt-4" />
                 <CampaignProgress
                     progress={progress}
+                    lifecycle={campaign.lifecycle}
                     serverTime={server_time}
                     poll={poll}
                 />

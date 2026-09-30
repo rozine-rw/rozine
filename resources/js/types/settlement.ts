@@ -103,6 +103,21 @@ export type C3PreviewOutcome<Name extends string> =
  * replaces the lifecycle, so a restricted campaign still says whether it was raising, funded or in
  * flight.
  */
+/**
+ * An open raise's lifecycle, from the server (#96 5885379912). A persisted closure comes first,
+ * then an elapsed deadline, then inventory. `sold_out_pending_settlement` is fully committed, never
+ * funded or issued.
+ */
+export type RaisingLifecycle =
+    | 'live'
+    | 'fully_reserved'
+    | 'sold_out_pending_settlement'
+    | 'inventory_unavailable'
+    | 'closing_pending_settlement';
+
+/** A Business campaign page's lifecycle: an open raise's, or where it went after raising. */
+export type BusinessCampaignLifecycle = CampaignLifecycle | RaisingLifecycle;
+
 export type CampaignLifecycle =
     | 'live'
     | 'fully_reserved'
