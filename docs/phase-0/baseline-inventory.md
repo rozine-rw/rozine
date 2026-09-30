@@ -1439,6 +1439,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_30_054318_create_primary_campaign_fundings.php |
 | 2026_09_30_094556_bind_campaign_closures_to_complete_primary_returns.php |
 | 2026_09_30_111709_add_reason_code_to_primary_expiry_failures.php |
+| 2026_09_30_120729_bind_primary_refund_receipts_to_returned_cash.php |
 
 ## Routes
 
