@@ -37,9 +37,10 @@ final class PrimaryHoldingFixture
      *
      * @param  list<string>  $units  one real purchase per entry, in order
      * @param  list<int>  $requoted  indexes of purchases that are requoted once before confirming
+     * @param  array<int, string>  $buyers  purchase index to a buyer key; purchases sharing a key share one Investor
      * @return array{campaign: BusinessCampaign, commitments: list<PrimaryCommitment>}
      */
-    public static function committed(array $units = ['1080', '1080'], array $requoted = [], bool $fund = true): array
+    public static function committed(array $units = ['1080', '1080'], array $requoted = [], bool $fund = true, array $buyers = []): array
     {
         InvestorWalletFixture::policy(maximum: null);
         // A second campaign in one test would replay the sealing fixture's authenticator code inside Fortify's reuse window.
@@ -47,8 +48,9 @@ final class PrimaryHoldingFixture
         $campaign = PrimaryReservationFixture::campaign();
         $checkout = app(PrimaryCheckout::class);
         $commitments = [];
+        $investors = [];
         foreach ($units as $index => $quantity) {
-            $investor = PrimaryReservationFixture::investor();
+            $investor = $investors[$buyers[$index] ?? 'purchase-'.$index] ??= PrimaryReservationFixture::investor();
             $held = $checkout->reserve($investor['user']->id, 1, $campaign->id, $quantity, (string) Str::uuid(), PrimaryReservationFixture::terms(...));
             $root = PrimaryReservationRecord::query()->whereKey($held['data']['reservation_id'])->sole();
             $version = PrimaryReservationVersion::query()->where('primary_reservation_id', $root->id)->sole();

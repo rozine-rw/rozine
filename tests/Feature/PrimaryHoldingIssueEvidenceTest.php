@@ -81,6 +81,23 @@ it('refuses a Holding whose issue posting is missing or names another closing', 
     expect(DB::table('primary_holdings')->count())->toBe(0)->and(DB::table('ledger_entries')->where('kind', 'primary_issue')->count())->toBe(0);
 });
 
+it('does not let one Investor\'s posting for one reservation stand in for another of the same size', function (): void {
+    ['campaign' => $campaign, 'commitments' => $commitments] = PrimaryHoldingFixture::committed(['540', '540', '1080'], buyers: [0 => 'same', 1 => 'same']);
+    [$first, $second, $third] = $commitments;
+    $closing = PrimaryHoldingFixture::issuedClosing($campaign);
+    expect(PrimaryReservationRecord::query()->whereKey($first->primary_reservation_id)->sole()->party_id)
+        ->toBe(PrimaryReservationRecord::query()->whereKey($second->primary_reservation_id)->sole()->party_id);
+    foreach ($commitments as $commitment) {
+        PrimaryHoldingFixture::insert($commitment->id, $closing);
+    }
+    PrimaryHoldingFixture::issue($first->id, $closing);
+    PrimaryHoldingFixture::issue($third->id, $closing);
+    issueEvidenceRefused(fn () => DB::statement('SET CONSTRAINTS ALL IMMEDIATE'), 'A Holding requires its reservation\'s exact primary issue posting for its own closing');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    PrimaryHoldingFixture::issue($second->id, $closing);
+    issueEvidenceCommit();
+});
+
 it('refuses an issued closing that leaves a funded commitment without a Holding', function (): void {
     ['campaign' => $campaign, 'commitments' => [$first, $second]] = PrimaryHoldingFixture::committed();
     $closing = PrimaryHoldingFixture::issuedClosing($campaign);
