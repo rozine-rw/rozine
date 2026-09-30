@@ -3890,7 +3890,7 @@ const fr: Catalog = {
     'investor.primary.cancel': "Annuler l'engagement",
     'investor.primary.cancel_title': 'Annuler cet engagement ?',
     'investor.primary.cancel_body':
-        'Votre capital revient intégralement sur le disponible, sans frais, et ces titres sont libérés.',
+        'Votre capital revient intégralement sur le disponible, sans frais. Vous ne détiendrez plus ces titres.',
     'investor.primary.cancel_confirm': 'Oui, annuler et rembourser',
     'investor.primary.cancel_keep': 'Le conserver',
     'investor.holding.issue.title': "Relevé d'émission",

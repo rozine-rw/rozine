@@ -3731,7 +3731,7 @@ const en = {
     'investor.primary.cancel': 'Cancel commitment',
     'investor.primary.cancel_title': 'Cancel this commitment?',
     'investor.primary.cancel_body':
-        'Your principal goes back to Available in full, with no fee, and these notes are released.',
+        "Your principal goes back to Available in full, with no fee. You'll no longer hold these notes.",
     'investor.primary.cancel_confirm': 'Yes, cancel and refund',
     'investor.primary.cancel_keep': 'Keep it',
     'investor.holding.issue.title': 'Issue record',

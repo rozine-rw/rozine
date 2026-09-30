@@ -3864,7 +3864,7 @@ const rw: Catalog = {
     'investor.primary.cancel': 'Hagarika icyiyemezo',
     'investor.primary.cancel_title': 'Uhagarika iki cyiyemezo?',
     'investor.primary.cancel_body':
-        'Igishoro cyawe gisubira muri aboneka cyose, nta kiguzi, kandi izi mpapuro zirarekurwa.',
+        'Igishoro cyawe gisubira muri aboneka cyose, nta kiguzi. Ntuzongera gutunga izi mpapuro.',
     'investor.primary.cancel_confirm': 'Yego, hagarika usubize',
     'investor.primary.cancel_keep': 'Bigumeho',
     'investor.holding.issue.title': 'Inyandiko yo gutanga',
