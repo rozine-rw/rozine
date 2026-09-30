@@ -414,6 +414,12 @@ arch('proposed Holdings stay unwritten until the S3-C adapter owns them')
     ->expect('App\Models\PrimaryHolding')
     ->toOnlyBeUsedIn(['App\Models', 'Database\Factories']);
 
+it('keeps the Holding source verifier read-only', function (): void {
+    $source = (string) file_get_contents(app_path('Infrastructure/Primary/RetainedHoldingSource.php'));
+    expect(interface_exists('App\Application\Primary\Contracts\HoldingSource'))->toBeTrue()
+        ->and($source)->not->toMatch('/->(insert|update|delete|upsert|save|forceFill|create|lockForUpdate|sharedLock|lock)\(|PrimaryHolding|DB::(statement|unprepared|transaction)/');
+})->group('arch');
+
 arch('funding, destination and staff connection sources are reached only through the disbursement adapter')
     ->expect(['App\Application\Disbursement\Contracts\FundedCampaigns', 'App\Application\Disbursement\Contracts\PayoutDestinations',
         'App\Application\Disbursement\Contracts\StaffConnections'])
@@ -433,6 +439,10 @@ arch('funding cash evidence stays behind the wallet and Primary adapters')
 arch('funding locks and evidence remain internal to Business and Primary persistence')
     ->expect(['App\Application\Primary\Contracts\PrimaryFunding', 'App\Application\Primary\Contracts\CampaignFundingEvidence'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Infrastructure\Primary', 'App\Providers\AppServiceProvider']);
+
+arch('Holding source facts are read only by the Primary and disbursement adapters')
+    ->expect('App\Application\Primary\Contracts\HoldingSource')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Primary', 'App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider']);
 
 arch('funding records remain inside Primary persistence')
     ->expect('App\Models\PrimaryCampaignFunding')
