@@ -208,9 +208,12 @@ describe('A raising campaign', () => {
 
         expect(view.getByText('Raising · fully reserved')).toBeInTheDocument();
         expect(view.getByRole('status')).toHaveTextContent(
-            "Every available note is currently held in a checkout. New investors can't reserve until holds are confirmed or end.",
+            "Every available note is currently held in a checkout. New investors can't reserve right now.",
         );
         expect(campaignSheet()).not.toHaveTextContent(/back on sale/i);
+        expect(campaignSheet()).not.toHaveTextContent(
+            /until|confirmed or end|once holds/i,
+        );
         expect(campaignSheet()).not.toHaveTextContent(/5 minutes/i);
         expect(
             view.getByText(
@@ -565,8 +568,9 @@ describe('Cancelling a raise', () => {
         });
 
         expect(dialog).toHaveTextContent(
-            'Any unconfirmed holds are released to investors in full, and the raise closes for good.',
+            "The raise closes for good and stops taking investors. This can't be undone.",
         );
+        expect(dialog).not.toHaveTextContent(/released|returned|refund/i);
         expect(dialog).not.toHaveTextContent(/commitment goes back/i);
         expect(dialog).not.toHaveTextContent(/without fee/i);
 
