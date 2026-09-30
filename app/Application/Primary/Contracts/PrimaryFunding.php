@@ -14,7 +14,11 @@ interface PrimaryFunding
      * admission, which must lock and verify current eligibility, policy, connections and
      * destination and return their retained evidence. The result must bind campaign_id
      * and publication_sha256 and contain eligibility, policy, connections and destination
-     * checks, each with status passed and nonempty server evidence. It is never client input. Missing input must throw/refuse;
+     * checks, each with status passed and at least one nonblank scalar source fact in
+     * the server evidence. Nulls and empty containers provide no evidence; recorded
+     * zero/false facts and optional null fields remain valid. This shape check does
+     * not authenticate a source or replace current authoritative admission. It is
+     * never client input. Missing input must throw/refuse;
      * there is no permissive default. Admission may not perform external effects.
      * Campaign, roots, commitments and Party-sorted wallets follow those locks. The
      * complete immutable purchase/cash set is rechecked even on a retry. All evidence

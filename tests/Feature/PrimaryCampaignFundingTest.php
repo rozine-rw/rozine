@@ -236,6 +236,8 @@ it('records no funding for mismatched failed or unavailable admission', function
     $admission = ($this->admit)($this->campaign->id);
     if ($damage === 'binding') {
         $admission['publication_sha256'] = str_repeat('0', 64);
+    } elseif ($damage === 'campaign') {
+        $admission['campaign_id'] = strtolower((string) Str::ulid());
     } elseif ($damage === 'failed') {
         $admission['eligibility']['status'] = 'failed';
     } else {
@@ -244,7 +246,8 @@ it('records no funding for mismatched failed or unavailable admission', function
     expect(fn () => app(PrimaryFunding::class)->lock($this->campaign->id, fn (): array => $admission))->toThrow(CommandRejection::class, $expected)
         ->and(PrimaryCampaignFunding::query()->count())->toBe(0);
 })->with([
-    ['binding', 'FUNDING_ADMISSION_MISMATCH'], ['failed', 'FUNDING_PRECHECK_FAILED'], ['missing', 'POLICY_INPUT_REQUIRED'],
+    ['binding', 'FUNDING_ADMISSION_MISMATCH'], ['campaign', 'FUNDING_ADMISSION_MISMATCH'],
+    ['failed', 'FUNDING_PRECHECK_FAILED'], ['missing', 'POLICY_INPUT_REQUIRED'],
 ]);
 
 it('refuses economic snapshot tampering even if its funding digest was recomputed', function (string $field): void {
@@ -282,6 +285,55 @@ it('rejects a conflicting retained commitment set instead of rewriting a checked
     expect(fn () => ($this->fund)())->toThrow(RuntimeException::class, 'PRIMARY_FUNDING_INTEGRITY_FAILED')
         ->and(PrimaryCampaignFunding::query()->count())->toBe(1);
 });
+
+it('refuses absent source facts before acquiring purchases and retains prior funding on a refused retry', function (string $check): void {
+    ($this->purchase)();
+    ($this->purchase)();
+    $cash = LedgerEntry::query()->orderBy('id')->get()->toJson();
+    $admission = ($this->admit)($this->campaign->id);
+    $admission[$check] = ['status' => 'passed', 'evidence' => [null]];
+    $purchaseLocks = 0;
+    DB::listen(function (QueryExecuted $event) use (&$purchaseLocks): void {
+        if (str_contains($event->sql, 'from "primary_reservations"') && str_contains($event->sql, 'for update')) {
+            $purchaseLocks++;
+        }
+    });
+    expect(fn () => app(PrimaryFunding::class)->lock($this->campaign->id, fn (): array => $admission))
+        ->toThrow(CommandRejection::class, 'POLICY_INPUT_REQUIRED')
+        ->and($purchaseLocks)->toBe(0)
+        ->and(PrimaryCampaignFunding::query()->count())->toBe(0)
+        ->and(DB::table('primary_funding_commitments')->count())->toBe(0)
+        ->and(LedgerEntry::query()->orderBy('id')->get()->toJson())->toBe($cash);
+    $funding = ($this->fund)();
+    $purchaseLocks = 0;
+    expect(fn () => app(PrimaryFunding::class)->lock($this->campaign->id, fn (): array => $admission))
+        ->toThrow(CommandRejection::class, 'POLICY_INPUT_REQUIRED')
+        ->and($purchaseLocks)->toBe(0)
+        ->and(app(CampaignFundingEvidence::class)->find($this->campaign->id))->toBe($funding)
+        ->and(PrimaryCampaignFunding::query()->count())->toBe(1)
+        ->and(DB::table('primary_funding_commitments')->count())->toBe(2)
+        ->and(LedgerEntry::query()->orderBy('id')->get()->toJson())->toBe($cash);
+})->with(['eligibility', 'policy', 'connections', 'destination']);
+
+it('refuses retained funding with absent admission facts even when its digest is consistent', function (string $check): void {
+    ($this->purchase)();
+    ($this->purchase)();
+    ($this->fund)();
+    $funding = PrimaryCampaignFunding::query()->sole();
+    $cash = LedgerEntry::query()->orderBy('id')->get()->toJson();
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('ALTER TABLE primary_campaign_fundings DISABLE TRIGGER primary_funding_immutable');
+    try {
+        $payload = $funding->payload;
+        $payload['admission'][$check]['evidence'] = ['source' => ['id' => null]];
+        $funding->forceFill(['payload' => $payload, 'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload))])->save();
+    } finally {
+        DB::statement('ALTER TABLE primary_campaign_fundings ENABLE TRIGGER primary_funding_immutable');
+    }
+    expect(fn () => app(CampaignFundingEvidence::class)->find($this->campaign->id))
+        ->toThrow(RuntimeException::class, 'PRIMARY_FUNDING_INTEGRITY_FAILED')
+        ->and(LedgerEntry::query()->orderBy('id')->get()->toJson())->toBe($cash);
+})->with(['eligibility', 'policy', 'connections', 'destination']);
 
 it('evaluates server admission under Business before campaign or wallet locks', function (): void {
     ($this->purchase)();

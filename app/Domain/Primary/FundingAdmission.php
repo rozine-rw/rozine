@@ -15,7 +15,7 @@ final class FundingAdmission
         }
         foreach (['eligibility', 'policy', 'connections', 'destination'] as $name) {
             $check = $admission[$name] ?? null;
-            if (! is_array($check) || ! is_array($check['evidence'] ?? null) || $check['evidence'] === []) {
+            if (! is_array($check) || ! is_array($check['evidence'] ?? null) || ! self::hasSourceFact($check['evidence'])) {
                 return 'POLICY_INPUT_REQUIRED';
             }
             if (($check['status'] ?? null) === 'failed') {
@@ -27,5 +27,21 @@ final class FundingAdmission
         }
 
         return null;
+    }
+
+    /** @param array<string|int, mixed> $evidence */
+    private static function hasSourceFact(array $evidence): bool
+    {
+        foreach ($evidence as $fact) {
+            if (is_array($fact)) {
+                if (self::hasSourceFact($fact)) {
+                    return true;
+                }
+            } elseif (is_scalar($fact) && (! is_string($fact) || trim($fact) !== '')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
