@@ -415,7 +415,7 @@ arch('proposed Holdings stay unwritten until the S3-C adapter owns them')
     ->toOnlyBeUsedIn(['App\Models', 'Database\Factories']);
 
 it('keeps the Holding source verifier read-only', function (): void {
-    $source = (string) file_get_contents(app_path('Infrastructure/Primary/RetainedHoldingSource.php'));
+    $source = (string) file_get_contents(dirname(__DIR__, 2).'/app/Infrastructure/Primary/RetainedHoldingSource.php');
     expect(interface_exists('App\Application\Primary\Contracts\HoldingSource'))->toBeTrue()
         ->and($source)->not->toMatch('/->(insert|update|delete|upsert|save|forceFill|create|lockForUpdate|sharedLock|lock)\(|PrimaryHolding|DB::(statement|unprepared|transaction)/');
 })->group('arch');
