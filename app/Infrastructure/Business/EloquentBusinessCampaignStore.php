@@ -9,11 +9,15 @@ use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Business\Contracts\CampaignClosureEvidence;
+use App\Application\Business\Contracts\PublishedCampaignEvidence;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Application\Primary\Contracts\CampaignCommitments;
+use App\Application\Primary\Contracts\CampaignFundingEvidence;
+use App\Application\Primary\Contracts\CampaignReservationSummary;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
@@ -23,8 +27,13 @@ use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessProfile;
+use Brick\Math\BigDecimal;
+use Brick\Math\BigInteger;
+use Brick\Math\RoundingMode;
 use Closure;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -34,7 +43,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
 
     public function __construct(private AcceptedApplicationStore $accepted, private BusinessAuthorityStore $businesses,
         private WithBusinessAuthority $authority, private AuthorizeStaffPermission $staff, private IdentityRepository $identities,
-        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures) {}
+        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications, private CampaignCommitments $commitments, private CampaignReservationSummary $reservations, private CampaignFundingEvidence $fundings) {}
 
     /** @return array<string, mixed> */
     public function release(int $userId, string $applicationId, int $expectedRevision, string $reason, string $requestId): array
@@ -159,25 +168,63 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null, function (array $business, array $identity) use ($businessId, $campaignId, $contextRevision): array {
             $campaign = BusinessCampaign::query()->where('business_id', $businessId)->whereKey($campaignId)->first()
                 ?? throw new CommandRejection('CAMPAIGN_NOT_FOUND', 404);
-            $payload = $this->campaignPayload($campaign);
+            $payload = $this->publications->find($campaign->id);
             $closure = $this->closures->find($campaign->id);
             $person = array_find($business['mandate']['people'], fn (array $person): bool => $person['party_id'] === $identity['party']['id']);
-            $canCancel = $closure === null && now()->lt($campaign->expires_at)
+            $canCancel = $closure === null && $this->fundings->find($campaign->id) === null && now()->lt($campaign->expires_at) && ! $this->commitments->anyForCampaign($campaign->id)
                 && in_array('application.sign', $person['permissions'] ?? [], true)
                 && in_array($identity['party']['id'], $business['mandate']['required_signatories'], true);
 
+            $progress = $closure === null ? $this->raisingProgress($campaign->id, $payload)
+                : ['phase' => $closure['phase'], 'committed_refunded' => $closure['committed_refunded'],
+                    'investors' => 0, 'closed_at' => $closure['closed_at']];
+
             return ['identity_context_revision' => $contextRevision, 'business_id' => $businessId, 'id' => $campaign->id, 'revision' => $closure === null ? 1 : 2,
-                'lifecycle' => $closure['phase'] ?? 'live', 'can_cancel' => $canCancel,
+                'lifecycle' => $closure['phase'] ?? $progress['lifecycle'], 'can_cancel' => $canCancel,
                 'title' => $payload['title'], 'principal' => $payload['principal'], 'quote' => $payload['quote'],
-                'progress' => $closure === null ? ['phase' => 'raising', 'lifecycle' => 'live', 'restriction' => null,
-                    'committed' => ['currency' => 'RWF', 'amount' => '0'], 'reserved' => ['currency' => 'RWF', 'amount' => '0'],
-                    'remaining' => ['currency' => 'RWF', 'amount' => $payload['principal']],
-                    'units' => ['total' => $payload['quote']['units'], 'available' => $payload['quote']['units'], 'reserved' => '0', 'committed' => '0'],
-                    'investors' => 0, 'funded_pct' => '0.0', 'clock' => ['starts_at' => $payload['recorded_at'], 'expires_at' => $payload['expires_at']]]
-                    : ['phase' => $closure['phase'], 'committed_refunded' => $closure['committed_refunded'],
-                        'investors' => 0, 'closed_at' => $closure['closed_at']],
+                'progress' => $progress,
                 'receipt' => $this->receipt($campaign->id, $payload, 'LISTING_PUBLISHED')];
         });
+    }
+
+    /**
+     * Retained raise progress only; this does not perform or certify funding/settlement.
+     * Returned and overdue claims remain unavailable until ordinal recycling exists.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function raisingProgress(string $campaignId, array $payload): array
+    {
+        $at = now('UTC');
+        $summary = $this->reservations->read($campaignId, $at->toDateTimeImmutable());
+        $remaining = BigInteger::of($payload['principal'])->minus($summary['committed_principal'])->minus($summary['held_principal']);
+        $available = BigInteger::of($payload['quote']['units'])->minus($summary['occupied_units']);
+        $unavailable = BigInteger::of($summary['occupied_units'])->minus($summary['committed_units'])->minus($summary['held_units']);
+        if ($remaining->isNegative() || $available->isNegative() || $unavailable->isNegative()) {
+            throw new RuntimeException('RESERVATION_SUMMARY_INTEGRITY_FAILED');
+        }
+
+        $funding = $this->fundings->find($campaignId);
+        $lifecycle = match (true) {
+            $funding !== null => 'funded_pending_disbursement',
+            $at->gte($payload['expires_at']) => 'closing_pending_settlement',
+            BigInteger::of($summary['committed_principal'])->isEqualTo($payload['principal']) => 'sold_out_pending_settlement',
+            $available->isZero() && BigInteger::of($summary['held_units'])->isPositive() => 'fully_reserved',
+            $available->isZero() => 'inventory_unavailable',
+            default => 'live',
+        };
+
+        return ['phase' => $funding === null ? 'raising' : 'funded', 'lifecycle' => $lifecycle, 'restriction' => null,
+            'committed' => ['currency' => 'RWF', 'amount' => $summary['committed_principal']],
+            'reserved' => ['currency' => 'RWF', 'amount' => $summary['held_principal']],
+            'remaining' => ['currency' => 'RWF', 'amount' => (string) $remaining],
+            'units' => ['total' => $payload['quote']['units'], 'available' => (string) $available,
+                'reserved' => $summary['held_units'], 'committed' => $summary['committed_units'], 'unavailable' => (string) $unavailable],
+            'investors' => $summary['investors'],
+            'funded_pct' => (string) BigDecimal::of($summary['committed_principal'])->multipliedBy(100)
+                ->dividedBy($payload['principal'], 1, RoundingMode::Down),
+            'clock' => ['starts_at' => $payload['recorded_at'], 'expires_at' => $payload['expires_at']]];
     }
 
     /** @return array<string, mixed> */
@@ -235,7 +282,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
 
                 return $this->journal->execute('party:'.$partyId, $userId, 'campaign.cancel', $requestId, 'campaign', $campaign->id, $input,
                     function (): void {}, function (string $operationId) use ($campaign, $expectedRevision, $reason, $requestId, $userId, $partyId): OperationResult {
-                        $this->campaignPayload($campaign);
+                        $this->publications->find($campaign->id);
                         $closure = $this->closures->find($campaign->id);
                         $revision = $closure === null ? 1 : 2;
                         $data = ['campaign_id' => $campaign->id, 'business_id' => $campaign->business_id];
@@ -282,33 +329,57 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         if ($limit < 1 || $limit > 1000) {
             throw new CommandRejection('INVALID_SWEEP_LIMIT', 422);
         }
-        $due = BusinessCampaign::query()->where('expires_at', '<=', now())
-            ->whereNotIn('id', BusinessCampaignClosure::query()->select('business_campaign_id'))
-            ->orderBy('expires_at')->orderBy('id')->limit($limit)->get(['id', 'business_id']);
+        $cutoff = now();
+        $cursor = null;
         $expired = 0;
-        foreach ($due as $candidate) {
-            $expired += DB::transaction(function () use ($candidate): int {
-                BusinessProfile::query()->whereKey($candidate->business_id)->lockForUpdate()->firstOrFail();
-                $campaign = BusinessCampaign::query()->whereKey($candidate->id)->lockForUpdate()->firstOrFail();
-                $this->campaignPayload($campaign);
-                if ($this->closures->find($campaign->id) !== null || now()->lt($campaign->expires_at)) {
-                    return 0;
-                }
-                $this->close($campaign, 'expired', null, null, null, null, null);
+        while ($expired < $limit) {
+            $query = BusinessCampaign::query()->where('expires_at', '<=', $cutoff)
+                ->whereNotIn('id', BusinessCampaignClosure::query()->select('business_campaign_id'));
+            if ($cursor !== null) {
+                $query->where(fn (Builder $query): Builder => $query->where('expires_at', '>', $cursor->expires_at)
+                    ->orWhere(fn (Builder $query): Builder => $query->where('expires_at', $cursor->expires_at)->where('id', '>', $cursor->id)));
+            }
+            $due = $query->orderBy('expires_at')->orderBy('id')->limit($limit - $expired)->get(['id', 'business_id', 'expires_at']);
+            if ($due->isEmpty()) {
+                break;
+            }
+            foreach ($due as $candidate) {
+                $cursor = $candidate;
+                try {
+                    $expired += DB::transaction(function () use ($candidate): int {
+                        BusinessProfile::query()->whereKey($candidate->business_id)->lockForUpdate()->firstOrFail();
+                        $campaign = BusinessCampaign::query()->whereKey($candidate->id)->lockForUpdate()->firstOrFail();
+                        $this->publications->find($campaign->id);
+                        if ($this->closures->find($campaign->id) !== null || $this->fundings->find($campaign->id) !== null || now()->lt($campaign->expires_at)) {
+                            return 0;
+                        }
+                        $this->close($campaign, 'expired', null, null, null, null, null);
 
-                return 1;
-            }, 3);
+                        return 1;
+                    }, 3);
+                } catch (CommandRejection $exception) {
+                    if ($exception->reason !== 'CAMPAIGN_SETTLEMENT_REQUIRED') {
+                        throw $exception;
+                    }
+                    Log::notice('Campaign expiry deferred until commitments are settled.', [
+                        'campaign_id' => $candidate->id, 'business_id' => $candidate->business_id, 'code' => $exception->reason,
+                    ]);
+                }
+            }
         }
 
         return $expired;
     }
 
     /**
-     * The current campaign model has no investor commitments. Future funding must
-     * settle its ledger in this same transaction before a closure can release exposure.
+     * Legacy closure releases exposure only for a campaign with no confirmed commitments.
+     * Funded cancellation and expiry must settle refunds in this same transaction first.
      */
     private function close(BusinessCampaign $campaign, string $phase, ?int $userId, ?string $partyId, ?string $operationId, ?string $requestId, ?string $reason): BusinessCampaignClosure
     {
+        if ($this->fundings->find($campaign->id) !== null) {
+            throw new CommandRejection('CAMPAIGN_FUNDED', revision: 1, data: ['campaign_id' => $campaign->id, 'business_id' => $campaign->business_id]);
+        }
         $reservation = array_find($this->exposures->current($campaign->business_id), fn (array $entry): bool => $entry['id'] === $campaign->exposure_reservation_id);
         if ($reservation === null || $reservation['principal'] !== $campaign->principal) {
             throw new RuntimeException('CAMPAIGN_EXPOSURE_INTEGRITY_FAILED');
@@ -318,6 +389,10 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         $recordedAt = now('UTC')->toImmutable()->startOfSecond();
         if ($phase === 'cancelled' && $recordedAt->gte($campaign->expires_at)) {
             throw new CommandRejection('CAMPAIGN_CLOSED', revision: 1, data: ['campaign_id' => $campaign->id, 'business_id' => $campaign->business_id]);
+        }
+        if ($this->commitments->anyForCampaign($campaign->id)) {
+            throw new CommandRejection('CAMPAIGN_SETTLEMENT_REQUIRED', revision: 1,
+                data: ['campaign_id' => $campaign->id, 'business_id' => $campaign->business_id]);
         }
         $closedAt = $phase === 'expired' ? $campaign->expires_at : $recordedAt;
         $payload = ['closure_id' => $closure->id, 'campaign_id' => $campaign->id, 'campaign_sha256' => $campaign->sha256,
@@ -395,7 +470,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             'public_evidence' => $submission?->payload['public_evidence'], 'submitted_at' => $submission?->payload['submitted_at'],
             'fee_disclosure' => ['version' => self::FEE_VERSION, 'text' => 'The listing fee is waived for the MVP. You pay RWF 0 to publish.'],
             'cause' => $cause, 'gates' => $gates, 'prerequisites' => $prerequisites, 'release' => $release === null ? null : $this->receipt($release->id, $release->payload, 'APPLICATION_RELEASED'),
-            'listing' => $campaign === null ? null : ['id' => $campaign->id, 'receipt' => $this->receipt($campaign->id, $this->campaignPayload($campaign), 'LISTING_PUBLISHED')]];
+            'listing' => $campaign === null ? null : ['id' => $campaign->id, 'receipt' => $this->receipt($campaign->id, $this->publications->find($campaign->id), 'LISTING_PUBLISHED')]];
     }
 
     private function releaseRecord(BusinessApplication $application): ?BusinessApplicationRelease
@@ -409,21 +484,6 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         }
 
         return $release;
-    }
-
-    /** @return array<string, mixed> */
-    private function campaignPayload(BusinessCampaign $campaign): array
-    {
-        $payload = $campaign->payload;
-        if ($this->hash($payload) !== $campaign->sha256 || $payload['campaign_id'] !== $campaign->id
-            || $payload['business_id'] !== $campaign->business_id || $payload['application_id'] !== $campaign->business_application_id
-            || $payload['release_id'] !== $campaign->business_application_release_id || $payload['exposure_reservation_id'] !== $campaign->exposure_reservation_id
-            || $payload['principal'] !== $campaign->principal || $payload['actor_user_id'] !== $campaign->actor_user_id
-            || $payload['recorded_at'] !== $campaign->live_at->toIso8601String() || $payload['expires_at'] !== $campaign->expires_at->toIso8601String()) {
-            throw new RuntimeException('CAMPAIGN_INTEGRITY_FAILED');
-        }
-
-        return $payload;
     }
 
     /** @param array<string, mixed> $input

@@ -350,6 +350,25 @@ arch('campaign closure evidence is private to the Business adapter')
     ->expect('App\\Application\\Business\\Contracts\\CampaignClosureEvidence')
     ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Providers\\AppServiceProvider']);
 
+arch('retained campaign inputs are private to the Business and Primary adapters')
+    ->expect('App\Application\Business\Contracts\PrimaryCampaignSource')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Infrastructure\Primary', 'App\Providers\AppServiceProvider']);
+
+arch('full publication evidence remains private to the Business adapter')
+    ->expect('App\Application\Business\Contracts\PublishedCampaignEvidence')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Providers\AppServiceProvider']);
+
+arch('campaign commitment evidence stays private to the Business and Primary adapters')
+    ->expect('App\\Application\\Primary\\Contracts\\CampaignCommitments')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);
+
+arch('campaign reservation aggregates remain private to the Business and Primary adapters')
+    ->expect('App\\Application\\Primary\\Contracts\\CampaignReservationSummary')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);
+
+arch('Primary reservation and commitment records remain inside their persistence boundary')
+    ->expect(['App\\Models\\PrimaryReservationRecord', 'App\\Models\\PrimaryReservationVersion', 'App\\Models\\PrimaryCommitment'])
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Primary', 'App\\Models', 'Database\\Factories']);
 it('has concrete targets for the wallet ledger boundary', function (): void {
     foreach ([InvestorWallet::class, LedgerAccount::class, LedgerEntry::class, LedgerLine::class, DepositPolicy::class, InvestorFundingMethod::class,
         InvestorAccountRestriction::class, WalletDepositIntent::class, WalletDepositDispatch::class, WalletProviderEvent::class, WalletDepositCredit::class,
@@ -407,3 +426,18 @@ arch('the payout provider is reached only through the disbursement actions and a
 arch('synthetic disbursement fixtures stay inside the local disbursement hook')
     ->expect(['App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures', 'App\Application\Disbursement\Contracts\SyntheticPayoutScripts'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider', 'App\Console\Commands\PrepareSyntheticDisbursement']);
+arch('funding cash evidence stays behind the wallet and Primary adapters')
+    ->expect('App\\Application\\Wallet\\Contracts\\PrimaryCommittedCash')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Wallet', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);
+
+arch('funding locks and evidence remain internal to Business and Primary persistence')
+    ->expect(['App\Application\Primary\Contracts\PrimaryFunding', 'App\Application\Primary\Contracts\CampaignFundingEvidence'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Infrastructure\Primary', 'App\Providers\AppServiceProvider']);
+
+arch('funding records remain inside Primary persistence')
+    ->expect('App\Models\PrimaryCampaignFunding')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Primary', 'App\Models', 'Database\Factories']);
+
+arch('returned cash evidence stays behind the wallet and Primary adapters')
+    ->expect('App\\Application\\Wallet\\Contracts\\PrimaryReturnedCash')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Wallet', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);
