@@ -171,12 +171,13 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                 ?? throw new CommandRejection('CAMPAIGN_NOT_FOUND', 404);
             $payload = $this->publications->find($campaign->id);
             $closure = $this->closures->find($campaign->id);
-            $progress = $closure === null ? $this->campaignProgress($campaign->id, $payload)
+            $projection = $closure === null ? $this->campaignProjection($campaign->id, $payload) : null;
+            $progress = $projection !== null ? $projection['progress']
                 : ['phase' => $closure['phase'], 'committed_refunded' => $closure['committed_refunded'],
                     'investors' => $closure['investors'], 'closed_at' => $closure['closed_at']];
             $person = array_find($business['mandate']['people'], fn (array $person): bool => $person['party_id'] === $identity['party']['id']);
             $canCancel = $closure === null && $progress['phase'] === 'raising' && now()->lt($campaign->expires_at)
-                && $progress['committed']['amount'] === '0' && $progress['reserved']['amount'] === '0'
+                && $progress['committed']['amount'] === '0' && ! $projection['has_unreturned_holds']
                 && in_array('application.sign', $person['permissions'] ?? [], true)
                 && in_array($identity['party']['id'], $business['mandate']['required_signatories'], true);
 
@@ -193,9 +194,9 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
      * Returned and overdue claims remain unavailable until ordinal recycling exists.
      *
      * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>
+     * @return array{progress: array<string, mixed>, has_unreturned_holds: bool}
      */
-    private function campaignProgress(string $campaignId, array $payload): array
+    private function campaignProjection(string $campaignId, array $payload): array
     {
         $at = now('UTC');
         $summary = $this->reservations->read($campaignId, $at->toDateTimeImmutable());
@@ -206,12 +207,13 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             throw new RuntimeException('RESERVATION_SUMMARY_INTEGRITY_FAILED');
         }
 
+        $hasUnreturnedHolds = $summary['held_principal'] !== '0' || $summary['expired_hold_principal'] !== '0';
         $funding = $this->fundings->find($campaignId);
         if ($funding !== null) {
-            return ['phase' => 'funded', 'lifecycle' => 'funded_pending_disbursement', 'restriction' => null,
+            return ['has_unreturned_holds' => $hasUnreturnedHolds, 'progress' => ['phase' => 'funded', 'lifecycle' => 'funded_pending_disbursement', 'restriction' => null,
                 'committed' => ['currency' => 'RWF', 'amount' => $funding['principal']],
                 'investors' => count(array_unique(array_column($funding['commitments'], 'party_id'))),
-                'funded_at' => $funding['recorded_at'], 'closing' => ['stage' => 'awaiting_disbursement']];
+                'funded_at' => $funding['recorded_at'], 'closing' => ['stage' => 'awaiting_disbursement']]];
         }
         $lifecycle = match (true) {
             $at->gte($payload['expires_at']) => 'closing_pending_settlement',
@@ -221,7 +223,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             default => 'live',
         };
 
-        return ['phase' => 'raising', 'lifecycle' => $lifecycle, 'restriction' => null,
+        return ['has_unreturned_holds' => $hasUnreturnedHolds, 'progress' => ['phase' => 'raising', 'lifecycle' => $lifecycle, 'restriction' => null,
             'committed' => ['currency' => 'RWF', 'amount' => $summary['committed_principal']],
             'reserved' => ['currency' => 'RWF', 'amount' => $summary['held_principal']],
             'remaining' => ['currency' => 'RWF', 'amount' => (string) $remaining],
@@ -230,7 +232,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             'investors' => $summary['investors'],
             'funded_pct' => (string) BigDecimal::of($summary['committed_principal'])->multipliedBy(100)
                 ->dividedBy($payload['principal'], 1, RoundingMode::Down),
-            'clock' => ['starts_at' => $payload['recorded_at'], 'expires_at' => $payload['expires_at']]];
+            'clock' => ['starts_at' => $payload['recorded_at'], 'expires_at' => $payload['expires_at']]]];
     }
 
     /** @return array<string, mixed> */
