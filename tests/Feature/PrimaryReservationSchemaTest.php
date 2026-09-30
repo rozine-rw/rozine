@@ -195,6 +195,8 @@ it('rolls back all Primary records when the surrounding command fails', function
 });
 
 it('reverses an empty schema but refuses rollback after reservation evidence exists', function (): void {
+    $settlementGuardQuery = "SELECT tgname, pg_get_triggerdef(oid) AS definition FROM pg_trigger WHERE tgrelid = 'primary_campaign_expiry_settlements'::regclass AND NOT tgisinternal ORDER BY tgname";
+    $settlementGuards = DB::select($settlementGuardQuery);
     $migration = require database_path('migrations/2026_09_28_143756_create_primary_reservation_records.php');
     $capacity = require database_path('migrations/2026_09_28_151253_enforce_primary_campaign_capacity_and_closure.php');
     $commands = require database_path('migrations/2026_09_28_152823_bind_primary_evidence_to_command_actors.php');
@@ -208,6 +210,8 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $fundings = require database_path('migrations/2026_09_30_054318_create_primary_campaign_fundings.php');
     $closureReturns = require database_path('migrations/2026_09_30_094556_bind_campaign_closures_to_complete_primary_returns.php');
     $entryIndex = require database_path('migrations/2026_09_30_171842_index_wallet_ledger_lines_by_entry.php');
+    $expirySettlements = require database_path('migrations/2026_09_30_204213_create_primary_campaign_expiry_settlements_table.php');
+    $expirySettlements->down();
     $entryIndex->down();
     $refundReceipts = require database_path('migrations/2026_09_30_120729_bind_primary_refund_receipts_to_returned_cash.php');
     $refundReceipts->down();
@@ -225,7 +229,8 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $commands->down();
     $capacity->down();
     $migration->down();
-    expect(Schema::hasTable('primary_reservations'))->toBeFalse();
+    expect(Schema::hasTable('primary_reservations'))->toBeFalse()
+        ->and(Schema::hasTable('primary_campaign_expiry_settlements'))->toBeFalse();
     $migration->up();
     $capacity->up();
     $commands->up();
@@ -241,6 +246,10 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $closureReturns->up();
     $refundReceipts->up();
     $entryIndex->up();
+    $expirySettlements->up();
+    expect(Schema::hasTable('primary_campaign_expiry_settlements'))->toBeTrue()
+        ->and(DB::select($settlementGuardQuery))->toEqual($settlementGuards)
+        ->and(array_column($settlementGuards, 'tgname'))->toContain('primary_expiry_settlement_bound', 'primary_expiry_settlements_immutable');
     PrimaryReservationRecord::factory()->withInitialVersion()->create();
     primarySchemaFlush();
     expect(fn () => $migration->down())->toThrow(QueryException::class, 'forward migration');
