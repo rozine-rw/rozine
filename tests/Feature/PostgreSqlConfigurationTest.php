@@ -95,6 +95,9 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $holdings->down();
     $disbursements->down();
     expect(Schema::hasTable('disbursements'))->toBeFalse()->and(Schema::hasTable('primary_holdings'))->toBeFalse();
+    $depositCreditBinding = require database_path('migrations/2026_09_28_175521_bind_deposit_credits_to_their_intent_amounts.php');
+    $depositCreditBinding->down();
+    expect(DB::scalar("SELECT to_regprocedure('deposit_credit_entry_check(varchar)') IS NULL"))->toBeTrue();
     $postingAnchors->down();
     $primaryPostings->down();
     expect(Schema::hasColumn('ledger_entries', 'origin_operation_id'))->toBeFalse();
@@ -188,6 +191,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $ledgerSeal->up();
     $primaryPostings->up();
     $postingAnchors->up();
+    $depositCreditBinding->up();
     $disbursements->up();
     $holdings->up();
     $walletIssue->up();
@@ -231,5 +235,6 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasTable('ledger_lines'))->toBeTrue()
         ->and(Schema::hasTable('investor_funding_methods'))->toBeTrue()
         ->and(Schema::hasTable('wallet_deposit_credits'))->toBeTrue()
-        ->and(Schema::hasColumn('ledger_entries', 'origin_operation_id'))->toBeTrue();
+        ->and(Schema::hasColumn('ledger_entries', 'origin_operation_id'))->toBeTrue()
+        ->and(DB::scalar("SELECT to_regprocedure('deposit_credit_entry_check(varchar)') IS NOT NULL"))->toBeTrue();
 });

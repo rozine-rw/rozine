@@ -205,6 +205,8 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $exposure = require database_path('migrations/2026_09_26_190340_create_business_exposure_reservations_table.php');
     $campaigns = require database_path('migrations/2026_09_27_054238_create_business_application_releases_and_campaigns.php');
     $closures = require database_path('migrations/2026_09_27_230946_create_business_campaign_closures_table.php');
+    $depositCreditBinding = require database_path('migrations/2026_09_28_175521_bind_deposit_credits_to_their_intent_amounts.php');
+    $depositCreditBinding->down();
     $closures->down();
     $campaigns->down();
     $exposure->down();
@@ -233,6 +235,7 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $exposure->up();
     $campaigns->up();
     $closures->up();
+    $depositCreditBinding->up();
     expect(Schema::hasTable('audit_reports'))->toBeTrue()->and(Schema::hasTable('audit_report_versions'))->toBeTrue()
         ->and($fixture['application']->refresh()->getRawOriginal())->toBe($before);
 });
