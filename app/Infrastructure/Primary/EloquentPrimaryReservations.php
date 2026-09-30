@@ -290,6 +290,52 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
         });
     }
 
+    public function settleExpiredCampaign(string $campaignId, string $closureId): void
+    {
+        if (DB::transactionLevel() === 0) {
+            throw new CommandRejection('PRIMARY_TRANSACTION_REQUIRED');
+        }
+        if (DB::scalar("SELECT current_setting('transaction_isolation')") !== 'read committed') {
+            throw new WalletViolation('PRIMARY_CASH_ISOLATION_REQUIRED');
+        }
+        DB::transaction(function () use ($campaignId, $closureId): void {
+            $campaign = $this->campaigns->lockForFunding($campaignId);
+            if (now('UTC')->lt($campaign['expires_at'])) {
+                throw new CommandRejection('CAMPAIGN_NOT_EXPIRED');
+            }
+            if ($this->fundings->find($campaignId) !== null) {
+                throw new CommandRejection('CAMPAIGN_FUNDED');
+            }
+            try {
+                $this->lockFundingCandidate($campaignId);
+                throw new CommandRejection('CAMPAIGN_SETTLEMENT_REQUIRED');
+            } catch (CommandRejection $exception) {
+                if ($exception->reason !== 'CAMPAIGN_NOT_FULLY_COMMITTED') {
+                    throw $exception;
+                }
+            }
+            $roots = PrimaryReservationRecord::query()->where('business_campaign_id', $campaignId)->orderBy('id')->lockForUpdate()->get();
+            PrimaryCommitment::query()->whereIn('primary_reservation_id', $roots->modelKeys())->orderBy('id')->lockForUpdate()->get();
+            $retained = [];
+            foreach ($roots as $root) {
+                $retained[$root->id] = $this->retainedReservation($root, $campaign);
+            }
+            foreach ($roots->map(fn (PrimaryReservationRecord $root): string => $root->party_id)->unique()->sort()->values() as $partyId) {
+                $this->wallets->lockForParty($partyId);
+            }
+            DB::table('primary_campaign_expiry_settlements')->insert(['business_campaign_id' => $campaignId,
+                'business_campaign_closure_id' => $closureId, 'created_at' => now('UTC')->format('Y-m-d H:i:s.uP')]);
+            foreach ($roots as $root) {
+                [$reservation, $version] = $retained[$root->id];
+                if ($reservation->state === 'confirmed') {
+                    $this->refund($campaignId, $root->id, $root->party_id, $version->revision);
+                } elseif ($reservation->state === 'held') {
+                    $this->expire($campaignId, $root->id);
+                }
+            }
+        });
+    }
+
     public function lockReturnedCampaign(string $campaignId): PrimaryCampaignReturns
     {
         if (DB::transactionLevel() === 0) {

@@ -43,16 +43,23 @@ beforeEach(function (): void {
     $this->store = app(BusinessCampaignStore::class);
 });
 
-it('defers a real unreturned commitment without recording failure or stopping healthy campaign closure', function (): void {
+it('defers complete committed cash without recording failure or stopping healthy campaign closure', function (): void {
     $this->travelTo($this->first->created_at);
     InvestorWalletFixture::policy(maximum: null);
     $investor = PrimaryReservationFixture::investor();
     $checkout = app(PrimaryCheckout::class);
-    $reserved = $checkout->reserve($investor['user']->id, 1, $this->first->id, '1', (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+    $reserved = $checkout->reserve($investor['user']->id, 1, $this->first->id, '1080', (string) Str::uuid(), PrimaryReservationFixture::terms(...));
     $root = PrimaryReservationRecord::query()->whereKey($reserved['data']['reservation_id'])->sole();
     $version = PrimaryReservationVersion::query()->where('primary_reservation_id', $root->id)->sole();
     expect($checkout->confirm($investor['user']->id, 1, $this->first->id, $root->id, 1,
         $version->payload['terms']['disclosure_version'], $version->payload['disclosure_sha256'], (string) Str::uuid(),
+        PrimaryReservationFixture::terms(...))['code'])->toBe('RESERVATION_CONFIRMED');
+    $otherInvestor = PrimaryReservationFixture::investor();
+    $reserved = $checkout->reserve($otherInvestor['user']->id, 1, $this->first->id, '1080', (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+    $otherRoot = PrimaryReservationRecord::query()->whereKey($reserved['data']['reservation_id'])->sole();
+    $otherVersion = PrimaryReservationVersion::query()->where('primary_reservation_id', $otherRoot->id)->sole();
+    expect($checkout->confirm($otherInvestor['user']->id, 1, $this->first->id, $otherRoot->id, 1,
+        $otherVersion->payload['terms']['disclosure_version'], $otherVersion->payload['disclosure_sha256'], (string) Str::uuid(),
         PrimaryReservationFixture::terms(...))['code'])->toBe('RESERVATION_CONFIRMED');
     $cash = LedgerEntry::query()->orderBy('id')->get()->toJson();
     $this->travelTo($this->second->expires_at);

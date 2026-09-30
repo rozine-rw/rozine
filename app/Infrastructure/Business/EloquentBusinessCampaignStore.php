@@ -410,7 +410,8 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
 
     /**
      * Releases exposure only after every original principal return is verified and bound.
-     * This prerequisite does not refund active commitments or release live holds itself.
+     * System expiry settles partially funded purchases atomically with its durable cause.
+     * Business cancellation still requires separately returned original cash.
      */
     private function close(BusinessCampaign $campaign, string $phase, ?int $userId, ?string $partyId, ?string $operationId, ?string $requestId, ?string $reason): BusinessCampaignClosure
     {
@@ -428,6 +429,9 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             throw new CommandRejection('CAMPAIGN_CLOSED', revision: 1, data: ['campaign_id' => $campaign->id, 'business_id' => $campaign->business_id]);
         }
         try {
+            if ($phase === 'expired') {
+                $this->primary->settleExpiredCampaign($campaign->id, $closure->id);
+            }
             $returned = $this->primary->lockReturnedCampaign($campaign->id);
         } catch (CommandRejection|WalletViolation $exception) {
             if (! in_array($exception->reason, ['CAMPAIGN_SETTLEMENT_REQUIRED', 'PRIMARY_RETURNED_CASH_REQUIRED'], true)) {

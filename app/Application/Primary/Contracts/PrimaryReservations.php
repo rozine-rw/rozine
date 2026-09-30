@@ -82,7 +82,16 @@ interface PrimaryReservations
     public function lockReturnedCampaign(string $campaignId): PrimaryCampaignReturns;
 
     /**
-     * Requires the authorized caller transaction and journal command. Before retained full
+     * Requires the caller transaction and a new system-expiry closure ID. Returns exact
+     * original cash for a partially funded expired campaign, preserving immutable purchase
+     * history. Fully committed campaigns defer to funding settlement; retained funding refuses.
+     * Business → campaign → roots/commitments → Party-sorted wallets. A durable system cause
+     * requires the matching guarded expiry closure at outer commit, so this cannot commit alone.
+     */
+    public function settleExpiredCampaign(string $campaignId, string $closureId): void;
+
+    /**
+     * Requires the authorized caller transaction and actor journal command or bound system expiry cause. Before retained full
      * funding, returns the exact confirmed principal fee-free under Business → campaign →
      * root → commitment → wallet gates. Confirmation history remains immutable; cash replay
      * is idempotent. Publication/hold expiry does not remove the right to return unissued cash.

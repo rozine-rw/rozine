@@ -971,6 +971,16 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `primary_campaign_closure_returns_business_campaign_closure_id_i` on (business_campaign_closure_id); `primary_campaign_closure_returns_pkey` on (primary_reservation_id) — unique; `primary_campaign_closure_returns_return_entry_id_unique` on (return_entry_id) — unique
 
+### `primary_campaign_expiry_settlements`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `business_campaign_closure_id` | `bpchar` | no | — |
+| `business_campaign_id` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `primary_campaign_expiry_settlements_business_campaign_id_unique` on (business_campaign_id) — unique; `primary_campaign_expiry_settlements_pkey` on (business_campaign_closure_id) — unique
+
 ### `primary_campaign_fundings`
 
 | Column | Type | Nullable | Default |
@@ -1453,6 +1463,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_30_120729_bind_primary_refund_receipts_to_returned_cash.php |
 | 2026_09_30_171842_index_wallet_ledger_lines_by_entry.php |
 | 2026_09_30_184347_create_business_campaign_expiry_failures_table.php |
+| 2026_09_30_204213_create_primary_campaign_expiry_settlements_table.php |
 
 ## Routes
 

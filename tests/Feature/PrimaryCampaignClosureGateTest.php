@@ -38,6 +38,18 @@ beforeEach(function (): void {
     $this->campaigns = app(BusinessCampaignStore::class);
     $this->exposure = app(BusinessExposureStore::class)->current($this->campaign->business_id);
     $this->cash = LedgerEntry::query()->orderBy('id')->get()->toArray();
+    $this->completeFunding = function (): void {
+        foreach (['1080', '1077'] as $units) {
+            $investor = PrimaryReservationFixture::investor();
+            $checkout = app(PrimaryCheckout::class);
+            $reserved = $checkout->reserve($investor['user']->id, 1, $this->campaign->id, $units, (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+            $root = PrimaryReservationRecord::query()->whereKey($reserved['data']['reservation_id'])->sole();
+            $version = PrimaryReservationVersion::query()->where('primary_reservation_id', $root->id)->sole();
+            $checkout->confirm($investor['user']->id, 1, $this->campaign->id, $root->id, 1,
+                $version->payload['terms']['disclosure_version'], $version->payload['disclosure_sha256'], (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+        }
+        $this->cash = LedgerEntry::query()->orderBy('id')->get()->toArray();
+    };
 });
 
 it('refuses and replays cancellation until confirmed commitments can be settled atomically', function (): void {
@@ -57,12 +69,13 @@ it('refuses and replays cancellation until confirmed commitments can be settled 
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 });
 
-it('reports deferred settlement without releasing committed campaign exposure', function (): void {
+it('reports deferred settlement without releasing fully committed campaign exposure', function (): void {
+    ($this->completeFunding)();
     $this->travelTo($this->campaign->expires_at);
     Event::fake([MessageLogged::class]);
     expect($this->campaigns->expireDue(100))->toBe(0)
         ->and(BusinessCampaignClosure::query()->count())->toBe(0)
-        ->and(PrimaryCommitment::query()->count())->toBe(1)
+        ->and(PrimaryCommitment::query()->count())->toBe(3)
         ->and(LedgerEntry::query()->orderBy('id')->get()->toArray())->toBe($this->cash)
         ->and(app(BusinessExposureStore::class)->current($this->campaign->business_id))->toBe($this->exposure);
     Event::assertDispatchedTimes(MessageLogged::class, 1);
@@ -83,7 +96,8 @@ it('keeps investor-free closure available for a different campaign', function ()
         ->and(app(BusinessExposureStore::class)->current($other->business_id))->toBe([]);
 });
 
-it('advances past committed campaigns without consuming the closure limit or skipping later businesses', function (int $delay): void {
+it('advances past fully committed campaigns without consuming the closure limit or skipping later businesses', function (int $delay): void {
+    ($this->completeFunding)();
     $this->travel($delay)->seconds();
     Cache::forget('fortify.2fa_codes.'.md5((new Google2FA)->getCurrentOtp('JBSWY3DPEHPK3PXP')));
     $second = PrimaryReservationFixture::campaign();
@@ -101,7 +115,7 @@ it('advances past committed campaigns without consuming the closure limit or ski
         ->and(BusinessCampaignClosure::query()->count())->toBe(2)
         ->and(app(BusinessExposureStore::class)->current($third->business_id))->toBe([])
         ->and($this->campaigns->expireDue(1))->toBe(0)
-        ->and(PrimaryCommitment::query()->count())->toBe(1)
+        ->and(PrimaryCommitment::query()->count())->toBe(3)
         ->and(LedgerEntry::query()->orderBy('id')->get()->toArray())->toBe($cash)
         ->and(app(BusinessExposureStore::class)->current($this->campaign->business_id))->toBe($this->exposure);
     Event::assertDispatchedTimes(MessageLogged::class, 3);
@@ -114,6 +128,11 @@ it('advances past committed campaigns without consuming the closure limit or ski
 it('propagates unrelated command refusals during expiry', function (): void {
     $this->travelTo($this->campaign->expires_at);
     $primary = Mockery::mock(PrimaryReservations::class);
+    $settlement = $primary->shouldReceive('settleExpiredCampaign');
+    if (! $settlement instanceof CompositeExpectation) {
+        throw new LogicException('Expected a settlement expectation.');
+    }
+    $settlement->__call('once', [])->__call('andReturn', [null]);
     $expectation = $primary->shouldReceive('lockReturnedCampaign');
     if (! $expectation instanceof CompositeExpectation) {
         throw new LogicException('Expected a method expectation.');

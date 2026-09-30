@@ -26,8 +26,8 @@ beforeEach(function (): void {
     $this->campaign = PrimaryReservationFixture::campaign();
     $this->investor = PrimaryReservationFixture::investor();
     $this->checkout = app(PrimaryCheckout::class);
-    $this->reserveAndConfirmer = function (): Closure {
-        $this->checkout->reserve($this->investor['user']->id, 1, $this->campaign->id, '1', (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+    $this->reserveAndConfirmer = function (string $units = '1'): Closure {
+        $this->checkout->reserve($this->investor['user']->id, 1, $this->campaign->id, $units, (string) Str::uuid(), PrimaryReservationFixture::terms(...));
         $root = PrimaryReservationRecord::query()->sole();
         $version = PrimaryReservationVersion::query()->sole();
 
@@ -129,11 +129,10 @@ it('a confirmation queued behind an atomic held release and cancellation is refu
             (string) Str::uuid(), PrimaryReservationFixture::terms(...))['code'])->toBe('CAMPAIGN_CLOSED');
 });
 
-it('an expiry sweep queued behind an uncommitted confirmation defers settlement', function (): void {
+it('an expiry sweep queued behind an uncommitted confirmation settles the partial campaign after confirmation commits', function (): void {
     $this->travelTo($this->campaign->expires_at->subSeconds(60));
     $confirm = ($this->reserveAndConfirmer)();
     $this->travelTo($this->campaign->expires_at->subSeconds(30));
-    $exposure = app(BusinessExposureStore::class)->current($this->campaign->business_id);
     $outcome = ($this->race)('R2 confirm holds, expiry sweep waits',
         fn (): string => $confirm()['code'],
         function (): string {
@@ -141,12 +140,41 @@ it('an expiry sweep queued behind an uncommitted confirmation defers settlement'
 
             return 'expired '.app(BusinessCampaignStore::class)->expireDue(100);
         });
-    expect($outcome)->toBe('expired 0')
-        ->and(BusinessCampaignClosure::query()->count())->toBe(0)
+    expect($outcome)->toBe('expired 1')
+        ->and(BusinessCampaignClosure::query()->count())->toBe(1)
         ->and(PrimaryCommitment::query()->count())->toBe(1)
-        ->and(LedgerEntry::query()->where('kind', 'primary_refund')->count())->toBe(0)
-        ->and(app(BusinessExposureStore::class)->current($this->campaign->business_id))->toBe($exposure);
+        ->and(LedgerEntry::query()->where('kind', 'primary_refund')->count())->toBe(1)
+        ->and(DB::table('primary_campaign_expiry_settlements')->count())->toBe(1)
+        ->and(app(BusinessExposureStore::class)->current($this->campaign->business_id))->toBe([]);
 });
+
+it('serializes the last full-funding confirmation and system expiry with either legal winner', function (bool $confirmationFirst): void {
+    $this->travelTo($this->campaign->expires_at->subSeconds(60));
+    ($this->reserveAndConfirmer)('1080')();
+    $other = PrimaryReservationFixture::investor();
+    $reserved = $this->checkout->reserve($other['user']->id, 1, $this->campaign->id, '1080', (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+    $root = PrimaryReservationRecord::query()->whereKey($reserved['data']['reservation_id'])->sole();
+    $version = PrimaryReservationVersion::query()->where('primary_reservation_id', $root->id)->sole();
+    $confirm = function () use ($other, $root, $version): string {
+        $this->travelTo($this->campaign->expires_at->subSeconds(30));
+
+        return app(PrimaryCheckout::class)->confirm($other['user']->id, 1, $this->campaign->id, $root->id, 1,
+            $version->payload['terms']['disclosure_version'], $version->payload['disclosure_sha256'], (string) Str::uuid(), PrimaryReservationFixture::terms(...))['code'];
+    };
+    $expire = function (): string {
+        $this->travelTo($this->campaign->expires_at);
+
+        return 'expired '.app(BusinessCampaignStore::class)->expireDue(100);
+    };
+    $outcome = ($this->race)('last confirmation versus system expiry', $confirmationFirst ? $confirm : $expire, $confirmationFirst ? $expire : $confirm);
+    expect($outcome)->toBe($confirmationFirst ? 'expired 0' : 'VERSION_CONFLICT')
+        ->and(BusinessCampaignClosure::query()->count())->toBe($confirmationFirst ? 0 : 1)
+        ->and(PrimaryCommitment::query()->count())->toBe($confirmationFirst ? 2 : 1)
+        ->and(LedgerEntry::query()->where('kind', 'primary_refund')->count())->toBe($confirmationFirst ? 0 : 1)
+        ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe($confirmationFirst ? 0 : 1)
+        ->and(DB::table('primary_campaign_expiry_settlements')->count())->toBe($confirmationFirst ? 0 : 1)
+        ->and(app(BusinessExposureStore::class)->current($this->campaign->business_id))->toHaveCount($confirmationFirst ? 1 : 0);
+})->with([false, true]);
 
 it('a confirmation queued behind an uncommitted expiry (skewed clock) is refused after it commits', function (): void {
     $this->travelTo($this->campaign->expires_at->subSeconds(60));
