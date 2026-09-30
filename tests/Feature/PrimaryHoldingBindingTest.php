@@ -282,13 +282,21 @@ it('rolls the binding back to the proposed table exactly and refuses either dire
         array_flip(['primary_reservation_id', 'reservation_sha256', 'confirmation_version_id', 'confirmation_revision', 'confirmation_sha256']));
     DB::transaction(function () use ($binding, $unpinned): void {
         DB::table('primary_holdings')->insert([...$unpinned, 'commitment_id' => PrimaryHoldingFixture::id()]);
-        expect(fn () => $binding->up())->toThrow(QueryException::class, 'Existing Holdings require verified source pins through a forward migration');
+        // The statement text repeats the guard's message, so the SQLSTATE and the raised error line are what prove the guard fired.
+        $refusal = null;
+        try {
+            $binding->up();
+        } catch (QueryException $exception) {
+            $refusal = $exception;
+        }
+        expect($refusal?->getCode())->toBe('23514')
+            ->and($refusal?->getMessage())->toContain('ERROR:  Existing Holdings require verified source pins through a forward migration');
         DB::rollBack();
         DB::beginTransaction();
     });
     $binding->up();
     expect($shape())->toEqual($bound);
     PrimaryHoldingFixture::insert($first->id, $closing);
-    expect(fn () => $binding->down())->toThrow(QueryException::class, 'Issued Holdings require a forward migration; rollback is refused')
+    expect(fn () => $binding->down())->toThrow(QueryException::class, 'ERROR:  Issued Holdings require a forward migration; rollback is refused')
         ->and($shape())->toEqual($bound);
 });
