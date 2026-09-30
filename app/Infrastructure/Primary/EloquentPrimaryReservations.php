@@ -27,7 +27,6 @@ use App\Domain\Primary\UnitOrdinals;
 use App\Domain\Primary\UnitRights;
 use App\Domain\Wallet\WalletMoney;
 use App\Domain\Wallet\WalletViolation;
-use App\Models\LedgerEntry;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
@@ -271,11 +270,17 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                 try {
                     $cash = $this->cash->requireCommitted($wallets[$root->party_id], $amount, $source);
                 } catch (WalletViolation $exception) {
-                    if ($exception->reason !== 'PRIMARY_COMMITTED_CASH_REQUIRED'
-                        || ! LedgerEntry::query()->where('source_type', $source->type)->where('source_id', $source->id)->where('kind', 'primary_refund')->exists()) {
+                    if ($exception->reason !== 'PRIMARY_COMMITTED_CASH_REQUIRED') {
                         throw $exception;
                     }
-                    $this->returnedCash->requireReturned($wallets[$root->party_id], $amount, $source);
+                    try {
+                        $returned = $this->returnedCash->requireReturned($wallets[$root->party_id], $amount, $source);
+                    } catch (WalletViolation $returnedException) {
+                        throw $returnedException->reason === 'PRIMARY_RETURNED_CASH_REQUIRED' ? $exception : $returnedException;
+                    }
+                    if ($returned->returnKind !== 'primary_refund' || $returned->commitEntryId === null) {
+                        throw $exception;
+                    }
                     throw new CommandRejection('CAMPAIGN_NOT_FULLY_COMMITTED');
                 }
                 $purchases[] = [...$retained[$root->id], 'reservation_id' => $root->id, 'party_id' => $root->party_id, 'cash' => $cash];
