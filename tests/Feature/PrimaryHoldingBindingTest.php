@@ -8,6 +8,7 @@ use App\Application\Primary\Contracts\HoldingSource;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\PostingSource;
 use App\Domain\Wallet\WalletMoney;
+use App\Models\BusinessCampaign;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryHolding;
 use App\Models\PrimaryReservationRecord;
@@ -164,6 +165,45 @@ it('refuses forged ordinals', function (): void {
         holdingRefused(fn () => PrimaryHoldingFixture::insert($middle->id, $closing, ['ordinals' => $ordinals]), 'A Holding must keep exactly its reservation\'s claimed ordinals');
     }
     PrimaryHoldingFixture::insert($middle->id, $closing);
+});
+
+it('keeps a multi-range reservation\'s exact sorted ranges without merging or reordering them', function (): void {
+    // #175 allocates the lowest free ordinals and never recycles, so a real checkout cannot produce two ranges. This one
+    // is retained through #175's own factories (synthetic payloads, real hold and commit postings) and a raw funding
+    // record and member that pass #175's insert triggers; its deferred full-funding check is deliberately never run.
+    $root = PrimaryReservationRecord::factory()->withInitialVersion()->create(['units' => 5, 'principal' => '25000', 'ordinal_ranges' => '{[1,3),[5,8)}']);
+    $confirmed = PrimaryReservationVersion::factory()->confirmed()->withCashMovement()->create(['primary_reservation_id' => $root->id]);
+    $commitment = PrimaryCommitment::factory()->create(['primary_reservation_version_id' => $confirmed->id]);
+    $campaign = BusinessCampaign::query()->whereKey($root->business_campaign_id)->sole();
+    $entries = DB::table('ledger_entries')->where('source_type', 'primary_reservation')->where('source_id', $root->id)->get()->keyBy('kind');
+    $funding = PrimaryHoldingFixture::id();
+    DB::table('primary_campaign_fundings')->insert(['id' => $funding, 'business_campaign_id' => $campaign->id, 'business_id' => $campaign->business_id,
+        'exposure_reservation_id' => $campaign->exposure_reservation_id, 'publication_sha256' => $campaign->sha256, 'principal' => $campaign->principal,
+        'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()]);
+    DB::table('primary_funding_commitments')->insert(['funding_id' => $funding, 'commitment_id' => $commitment->id, 'reservation_id' => $root->id,
+        'hold_entry_id' => $entries['primary_hold']->id, 'commit_entry_id' => $entries['primary_commit']->id,
+        'wallet_id' => $entries['primary_hold']->wallet_id, 'origin_operation_id' => $root->origin_operation_id]);
+    $row = ['id' => PrimaryHoldingFixture::id(), 'business_campaign_id' => $campaign->id, 'commitment_id' => $commitment->id, 'primary_reservation_id' => $root->id,
+        'party_id' => $root->party_id, 'units' => 5, 'principal' => '25000', 'ordinals' => '[{"first":1,"last":2},{"first":5,"last":7}]',
+        'rights' => '{"synthetic":true}', 'terms' => '{"synthetic":true}', 'reservation_sha256' => $root->sha256, 'confirmation_version_id' => $confirmed->id,
+        'confirmation_revision' => $confirmed->revision, 'confirmation_sha256' => $confirmed->sha256,
+        'disbursement_closing_id' => PrimaryHoldingFixture::issuedClosing($campaign), 'schedule' => '[{"index":1}]', 'issued_at' => '2027-01-31T09:00:00Z',
+        'disbursement_effective_at' => '2027-01-31T08:00:00Z', 'effective_date' => '2027-01-31', 'receipt_id' => PrimaryHoldingFixture::id(),
+        'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()];
+    foreach ([
+        'the ranges in descending order' => '[{"first":5,"last":7},{"first":1,"last":2}]',
+        'the gap filled by one merged range' => '[{"first":1,"last":7}]',
+        'five contiguous units instead' => '[{"first":1,"last":5}]',
+        'only the first range' => '[{"first":1,"last":2}]',
+        'only the second range' => '[{"first":5,"last":7}]',
+        'the second range split' => '[{"first":1,"last":2},{"first":5,"last":6},{"first":7,"last":7}]',
+        'the second range moved into the gap' => '[{"first":1,"last":2},{"first":3,"last":5}]',
+    ] as $ordinals) {
+        holdingRefused(fn () => DB::table('primary_holdings')->insert([...$row, 'ordinals' => $ordinals]), 'A Holding must keep exactly its reservation\'s claimed ordinals');
+    }
+    DB::table('primary_holdings')->insert($row);
+    expect(json_decode((string) DB::table('primary_holdings')->value('ordinals'), true))->toEqual([['first' => 1, 'last' => 2], ['first' => 5, 'last' => 7]])
+        ->and(DB::table('primary_ordinal_claims')->where('primary_reservation_id', $root->id)->orderBy('ordinal')->pluck('ordinal')->all())->toBe([1, 2, 5, 6, 7]);
 });
 
 it('refuses a Holding pinned to another reservation or to a revision its commitment did not confirm', function (): void {
