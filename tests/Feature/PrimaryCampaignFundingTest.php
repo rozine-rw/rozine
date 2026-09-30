@@ -312,11 +312,14 @@ it('refuses rolling the migration back once funding evidence exists', function (
 it('can reverse and reapply the empty funding migration', function (): void {
     $migration = require database_path('migrations/2026_09_30_054318_create_primary_campaign_fundings.php');
     $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
+    $holdingIssue = require database_path('migrations/2026_09_30_114217_require_issue_evidence_for_primary_holdings.php');
+    $holdingIssue->down();
     $holdingBinding->down();
     $migration->down();
     expect(Schema::hasTable('primary_campaign_fundings'))->toBeFalse();
     $migration->up();
     $holdingBinding->up();
+    $holdingIssue->up();
     expect(Schema::hasTable('primary_campaign_fundings'))->toBeTrue();
 });
 

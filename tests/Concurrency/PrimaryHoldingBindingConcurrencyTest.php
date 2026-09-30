@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Application\Primary\Contracts\PrimaryFunding;
+use App\Domain\Wallet\WalletViolation;
 use App\Models\PrimaryCampaignFunding;
+use App\Models\PrimaryCommitment;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\PrimaryHoldingFixture;
 
@@ -11,14 +13,23 @@ use Tests\Support\PrimaryHoldingFixture;
  * The Holding binding adds no row lock of its own. Its foreign keys take FOR KEY SHARE on the
  * retained reservation, revision, commitment and funding member, which conflicts only with the
  * FOR UPDATE the funding lock takes on reservations and commitments. Either side waits for the
- * other and then completes; neither deadlocks.
+ * other and neither deadlocks. A funding-lock retry that waited behind a committed issue is then
+ * refused by #175 itself (`PRIMARY_COMMITTED_CASH_REQUIRED`, exit 4): the cash is no longer committed.
  */
 it('waits for, and is waited on by, the funding lock without deadlock', function (bool $fundingFirst): void {
     $this->freezeSecond();
-    ['campaign' => $campaign, 'commitments' => [$first]] = PrimaryHoldingFixture::committed();
-    $row = PrimaryHoldingFixture::row($first->id, PrimaryHoldingFixture::issuedClosing($campaign));
+    ['campaign' => $campaign, 'commitments' => $commitments] = PrimaryHoldingFixture::committed();
+    [$first] = $commitments;
+    $closing = PrimaryHoldingFixture::issuedClosing($campaign);
+    $rows = array_map(fn (PrimaryCommitment $commitment): array => PrimaryHoldingFixture::row($commitment->id, $closing), $commitments);
     $funding = PrimaryCampaignFunding::query()->sole()->id;
-    $issue = fn (): bool => DB::table('primary_holdings')->insert($row);
+    // The whole issue as the adapter must order it: every Holding first, then the Party-locked issue postings.
+    $issue = function () use ($rows, $commitments, $closing): void {
+        DB::table('primary_holdings')->insert($rows);
+        foreach ($commitments as $commitment) {
+            PrimaryHoldingFixture::issue($commitment->id, $closing);
+        }
+    };
     $lock = fn (): array => app(PrimaryFunding::class)->lock($campaign->id, fn (): array => PrimaryHoldingFixture::admission($campaign));
     [$held, $contended] = $fundingFirst ? [$lock, $issue] : [$issue, $lock];
     DB::disconnect();
@@ -44,6 +55,9 @@ it('waits for, and is waited on by, the funding lock without deadlock', function
             DB::transaction(fn () => $contended());
             exit(0);
         } catch (Throwable $exception) {
+            if ($exception instanceof WalletViolation && $exception->getMessage() === 'PRIMARY_COMMITTED_CASH_REQUIRED') {
+                exit(4);
+            }
             fwrite(STDERR, $exception::class.' '.$exception->getMessage()."\n");
             exit(1);
         }
@@ -69,7 +83,7 @@ it('waits for, and is waited on by, the funding lock without deadlock', function
         DB::commit();
         pcntl_waitpid($pid, $status);
         expect($waitingQuery)->toContain($fundingFirst ? 'insert into "primary_holdings"' : '"primary_reservations"')
-            ->and(pcntl_wifexited($status))->toBeTrue()->and(pcntl_wexitstatus($status))->toBe(0)
+            ->and(pcntl_wifexited($status))->toBeTrue()->and(pcntl_wexitstatus($status))->toBe($fundingFirst ? 0 : 4)
             ->and(DB::table('primary_holdings')->where('commitment_id', $first->id)->count())->toBe(1)
             ->and(PrimaryCampaignFunding::query()->sole()->id)->toBe($funding);
     } finally {

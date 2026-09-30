@@ -434,6 +434,8 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $expiryFailures = require database_path('migrations/2026_09_29_112938_create_primary_expiry_failures_table.php');
     $fundings = require database_path('migrations/2026_09_30_054318_create_primary_campaign_fundings.php');
     $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
+    $holdingIssue = require database_path('migrations/2026_09_30_114217_require_issue_evidence_for_primary_holdings.php');
+    $holdingIssue->down();
     $holdingBinding->down();
     $fundings->down();
     $expiryFailures->down();
@@ -492,6 +494,7 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $expiryFailures->up();
     $fundings->up();
     $holdingBinding->up();
+    $holdingIssue->up();
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
         ->and(DB::select($functionQuery))->toEqual($functions)->and(DB::select($constraintQuery))->toEqual($constraints);
     expect(DB::selectOne("SELECT count(*) AS total FROM pg_constraint WHERE conname = 'primary_commitment_source_unavailable'")->total)->toBe(1);

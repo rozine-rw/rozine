@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\DB;
  * - `commitment_id` is a real `primary_commitments.id` (FK) that is a member of a durable funding
  *   record (FK to `primary_funding_commitments`), and the Holding's closing belongs to the
  *   disbursement of that funding record: same Business, exposure reservation and principal.
+ *   The disbursement accounts for the full retained funded principal. If an approved policy ever
+ *   separates gross principal from a net provider transfer, those must be recorded and reconciled
+ *   as separate facts; this binding to the original principal is never the thing to weaken.
  * - campaign, Party, units and principal equal the commitment's retained reservation.
  * - `ordinals` is exactly the reservation's `ordinal_ranges`, as one canonical list of
  *   `{"first": int, "last": int}` in ascending order. #175 derives `primary_ordinal_claims` from
@@ -35,8 +38,8 @@ use Illuminate\Support\Facades\DB;
  * retained evidence, re-derives both digests and compares ordinals, rights and terms; the adapter
  * must write from `HoldingSource::facts` and verify in the same transaction.
  *
- * Not checked here: the matching `primary_issue` posting, exposure conversion, or that a future
- * refund is refused once a Holding exists. Those stay with the S3-C issue integration.
+ * Not checked here: the matching `primary_issue` posting and a refund after a Holding (both in
+ * 114217), or exposure conversion, which stays with the S3-C issue integration.
  *
  * Locks: the trigger still locks only the issued closing row (FOR UPDATE, as 100100). It reads the
  * Primary, funding and ledger rows without row locks. The two commitment FKs and the reservation
@@ -45,6 +48,12 @@ use Illuminate\Support\Facades\DB;
  * never blocks one. The issuing transaction already holds Business → campaign → disbursement and
  * its closing before it reaches Primary rows, then Party-sorted wallets, then the ledger, so this
  * adds no lock ahead of that order.
+ *
+ * Install takes ONE up-front SHARE ROW EXCLUSIVE lock over every table it alters or references, in
+ * the order commands write them: reservations, revisions, commitments, funding members, Holdings.
+ * It touches no Business, wallet, ledger or `command_operations` table. A command in flight queues
+ * the install on the first of those tables it has written and the install holds nothing the
+ * command still needs ahead of it, so neither can wait on the other in a cycle.
  */
 return new class extends Migration
 {
@@ -52,8 +61,8 @@ return new class extends Migration
     {
         DB::transaction(function (): void {
             DB::unprepared(<<<'SQL'
-                LOCK TABLE primary_reservations, primary_reservation_versions, primary_commitments, primary_funding_commitments IN SHARE ROW EXCLUSIVE MODE;
-                LOCK TABLE primary_holdings IN ACCESS EXCLUSIVE MODE;
+                LOCK TABLE primary_reservations, primary_reservation_versions, primary_commitments, primary_funding_commitments, primary_holdings
+                    IN SHARE ROW EXCLUSIVE MODE;
                 DO $$
                 BEGIN
                     IF EXISTS (SELECT 1 FROM primary_holdings) THEN

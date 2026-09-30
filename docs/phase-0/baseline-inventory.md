@@ -1210,7 +1210,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `confirmation_revision` | `int4` | no | — |
 | `confirmation_sha256` | `bpchar` | no | — |
 
-**Indexes:** `primary_holdings_business_campaign_id_index` on (business_campaign_id); `primary_holdings_commitment_id_unique` on (commitment_id) — unique; `primary_holdings_party_id_index` on (party_id); `primary_holdings_pkey` on (id) — unique; `primary_holdings_receipt_id_unique` on (receipt_id) — unique
+**Indexes:** `primary_holding_reservation_lookup` on (primary_reservation_id); `primary_holdings_business_campaign_id_index` on (business_campaign_id); `primary_holdings_commitment_id_unique` on (commitment_id) — unique; `primary_holdings_party_id_index` on (party_id); `primary_holdings_pkey` on (id) — unique; `primary_holdings_receipt_id_unique` on (receipt_id) — unique
 
 ### `primary_ordinal_claims`
 
@@ -1641,6 +1641,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_29_112938_create_primary_expiry_failures_table.php |
 | 2026_09_30_054318_create_primary_campaign_fundings.php |
 | 2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php |
+| 2026_09_30_114217_require_issue_evidence_for_primary_holdings.php |
 
 ## Routes
 

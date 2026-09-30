@@ -7,8 +7,13 @@ namespace Tests\Support;
 use App\Application\Primary\Contracts\HoldingSource;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryFunding;
+use App\Application\Wallet\Contracts\WalletPostings;
+use App\Application\Wallet\PostingCause;
+use App\Application\Wallet\PostingReceipt;
+use App\Application\Wallet\PostingSource;
 use App\Domain\Primary\PrimaryTerms;
 use App\Domain\Primary\UnitRights;
+use App\Domain\Wallet\WalletMoney;
 use App\Models\BusinessCampaign;
 use App\Models\CommandOperation;
 use App\Models\Disbursement;
@@ -152,6 +157,16 @@ final class PrimaryHoldingFixture
             'disbursement_closing_id' => $closingId, 'schedule' => '[{"index":1}]', 'issued_at' => '2027-01-31T09:00:00Z',
             'disbursement_effective_at' => '2027-01-31T08:00:00Z', 'effective_date' => '2027-01-31', 'receipt_id' => self::id(),
             'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()], ...$overrides];
+    }
+
+    /** The commitment's real `primary_issue` posting through the wallet port, caused by this closing. */
+    public static function issue(string $commitmentId, string $closingId): PostingReceipt
+    {
+        $root = PrimaryReservationRecord::query()->whereKey(PrimaryCommitment::query()->whereKey($commitmentId)->sole()->primary_reservation_id)->sole();
+        $wallets = app(WalletPostings::class);
+
+        return DB::transaction(fn (): PostingReceipt => $wallets->issue($wallets->lockForParty($root->party_id), WalletMoney::of($root->principal),
+            new PostingSource('primary_reservation', $root->id, $root->origin_operation_id), new PostingCause('disbursement_closing', $closingId)));
     }
 
     /** @param array<string, mixed> $overrides */

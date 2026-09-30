@@ -72,6 +72,9 @@ it('accepts one immutable Holding per commitment that equals its retained facts'
     holdingRefused(fn () => PrimaryHoldingFixture::insert($first->id, $closing), 'primary_holdings_commitment_id_unique', '23505');
     $holdings = [...$holdings, PrimaryHoldingFixture::insert($requoted->id, $closing),
         PrimaryHoldingFixture::insert($last->id, $closing, ['payload' => encrypt(json_encode(['source' => 'synthetic']), false)])];
+    foreach ([$first, $requoted, $last] as $commitment) {
+        PrimaryHoldingFixture::issue($commitment->id, $closing);
+    }
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     foreach ($holdings as $holding) {
         app(HoldingSource::class)->verify($holding);
@@ -388,6 +391,8 @@ it('refuses a Holding for a commitment whose principal was refunded', function (
 
 it('rolls the binding back to the proposed table exactly and refuses either direction over Holdings', function (): void {
     $binding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
+    // 114217 sits on top of the binding; it has its own round trip in PrimaryHoldingIssueEvidenceTest.
+    (require database_path('migrations/2026_09_30_114217_require_issue_evidence_for_primary_holdings.php'))->down();
     $proposed = require database_path('migrations/2026_09_29_100100_create_primary_holdings_table.php');
     $shape = fn (): array => [DB::scalar("SELECT pg_get_functiondef('protect_primary_holding()'::regprocedure)"),
         DB::select("SELECT conname, pg_get_constraintdef(oid) AS definition FROM pg_constraint WHERE conrelid = 'primary_holdings'::regclass ORDER BY conname"),
