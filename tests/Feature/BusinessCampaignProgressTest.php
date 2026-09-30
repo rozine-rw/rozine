@@ -6,6 +6,9 @@ use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Primary\Contracts\CampaignReservationSummary;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryReservations;
+use App\Application\Wallet\Contracts\WalletPostings;
+use App\Application\Wallet\PostingSource;
+use App\Domain\Wallet\WalletMoney;
 use App\Models\CommandOperation;
 use App\Models\LedgerEntry;
 use App\Models\PrimaryReservationRecord;
@@ -158,3 +161,39 @@ it('stops advertising live inventory at the exact campaign deadline even without
     expect($page['lifecycle'])->toBe('closing_pending_settlement')
         ->and($page['progress']['lifecycle'])->toBe('closing_pending_settlement')->and($page['can_cancel'])->toBeFalse();
 });
+
+it('removes returned committed money from progress without reopening cancelled allocation rights', function (): void {
+    $root = ($this->reserve)('3');
+    ($this->confirm)($root);
+    $wallets = app(WalletPostings::class);
+    $wallets->refund($wallets->lockForParty($root->party_id), WalletMoney::of($root->principal),
+        new PostingSource('primary_reservation', $root->id, $root->origin_operation_id));
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    $page = ($this->page)();
+    expect($page['progress'])->toMatchArray(['phase' => 'raising', 'lifecycle' => 'live', 'investors' => 0, 'funded_pct' => '0.0',
+        'committed' => ['currency' => 'RWF', 'amount' => '0'], 'remaining' => ['currency' => 'RWF', 'amount' => '10800000'],
+        'units' => ['total' => '2160', 'available' => '2157', 'reserved' => '0', 'committed' => '0', 'unavailable' => '3']])
+        ->and($page['can_cancel'])->toBeFalse();
+});
+
+it('projects refunded principal identically through browser and token campaign reads', function (string $transport): void {
+    $root = ($this->reserve)('3');
+    ($this->confirm)($root);
+    $wallets = app(WalletPostings::class);
+    $wallets->refund($wallets->lockForParty($root->party_id), WalletMoney::of($root->principal),
+        new PostingSource('primary_reservation', $root->id, $root->origin_operation_id));
+    $parameters = ['business' => $this->campaign->business_id, 'campaign' => $this->campaign->id];
+    $actor = User::query()->findOrFail($this->campaign->actor_user_id);
+    if ($transport === 'token') {
+        Sanctum::actingAs($actor, ['business:read']);
+        $this->getJson(route('api.v1.business.campaigns.show', $parameters))->assertOk()
+            ->assertJsonPath('data.note.progress.committed.amount', '0')->assertJsonPath('data.note.progress.funded_pct', '0.0')
+            ->assertJsonPath('data.note.progress.investors', 0)->assertJsonPath('data.note.progress.units.unavailable', '3')
+            ->assertJsonPath('data.note.progress.remaining.amount', '10800000');
+    } else {
+        $this->actingAs($actor)->get(route('business.campaigns.show', $parameters))->assertOk()->assertInertia(fn (Assert $page): Assert => $page
+            ->where('note.progress.committed.amount', '0')->where('note.progress.funded_pct', '0.0')
+            ->where('note.progress.investors', 0)->where('note.progress.units.unavailable', '3')
+            ->where('note.progress.remaining.amount', '10800000'));
+    }
+})->with(['browser', 'token']);

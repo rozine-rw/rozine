@@ -13,7 +13,8 @@ interface CampaignReservationSummary
      * The caller authorizes access and holds the Business lock when composing this with other evidence.
      * The instant classifies current held rows at their half-open deadline; this is not a historical query.
      * Returned and overdue roots still occupy inventory until recycling is implemented. Confirmed totals
-     * describe retained commitments, not settlement state: callers must separately verify original cash.
+     * exclude complete, source-bound principal refunds; original commitment evidence remains retained.
+     * This is a current projection, not funding admission: callers must separately verify original cash.
      *
      * @return array{committed_principal: string, committed_units: string, investors: int,
      *     held_principal: string, held_units: string, expired_hold_principal: string, expired_hold_units: string,
