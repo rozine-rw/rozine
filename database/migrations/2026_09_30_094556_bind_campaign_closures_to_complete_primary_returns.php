@@ -20,7 +20,7 @@ return new class extends Migration
                 $table->foreignUlid('primary_reservation_version_id')->constrained('primary_reservation_versions')->restrictOnDelete();
                 $table->char('version_sha256', 64);
                 $table->foreignUlid('primary_commitment_id')->nullable()->constrained('primary_commitments')->restrictOnDelete();
-                $table->foreignUlid('party_id')->constrained('parties')->restrictOnDelete();
+                $table->ulid('party_id');
                 $table->foreignUlid('wallet_id')->constrained('investor_wallets')->restrictOnDelete();
                 $table->decimal('principal', 9, 0);
                 $table->ulid('origin_operation_id');
@@ -149,7 +149,7 @@ return new class extends Migration
                     IF TG_TABLE_NAME = 'business_campaign_closures' THEN
                         PERFORM check_primary_campaign_closure_returns(NEW.id);
                     ELSE
-                        PERFORM check_primary_campaign_closure_returns(NEW.business_campaign_closure_id);
+                        PERFORM check_primary_closure_return(NEW.primary_reservation_id);
                     END IF;
                     RETURN NEW;
                 END;

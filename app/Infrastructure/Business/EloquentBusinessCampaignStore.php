@@ -432,7 +432,6 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                 ...$binding, 'business_campaign_closure_id' => $closure->id,
             ], $bindings));
         }
-        DB::select('SELECT check_primary_campaign_closure_returns(?)', [$closure->id]);
 
         return $closure;
     }

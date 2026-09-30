@@ -315,6 +315,8 @@ it('refuses rolling the migration back once funding evidence exists', function (
 });
 
 it('can reverse and reapply the empty funding migration', function (): void {
+    $entryIndex = require database_path('migrations/2026_09_30_171842_index_wallet_ledger_lines_by_entry.php');
+    $entryIndex->down();
     $refundReceipts = require database_path('migrations/2026_09_30_120729_bind_primary_refund_receipts_to_returned_cash.php');
     $refundReceipts->down();
     $migration = require database_path('migrations/2026_09_30_054318_create_primary_campaign_fundings.php');
@@ -322,6 +324,7 @@ it('can reverse and reapply the empty funding migration', function (): void {
     expect(Schema::hasTable('primary_campaign_fundings'))->toBeFalse();
     $migration->up();
     $refundReceipts->up();
+    $entryIndex->up();
     expect(Schema::hasTable('primary_campaign_fundings'))->toBeTrue();
 });
 

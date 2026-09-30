@@ -198,3 +198,69 @@ it('verifies a committed returned closure from a read-only transaction without l
         DB::rollBack();
     }
 });
+
+it('commits returned closure while its Investor Party is locked by an unrelated command', function (): void {
+    ($this->reserveAndConfirmer)();
+    $root = PrimaryReservationRecord::query()->sole();
+    expect($this->checkout->release($this->investor['user']->id, 1, $this->campaign->id, $root->id, 1, (string) Str::uuid())['code'])
+        ->toBe('RESERVATION_RELEASED');
+    $channels = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+    if ($channels === false) {
+        throw new RuntimeException('Could not open the Investor Party closure barrier.');
+    }
+    stream_set_timeout($channels[0], 8);
+    stream_set_timeout($channels[1], 8);
+    DB::disconnect();
+    $pid = pcntl_fork();
+    if ($pid === -1) {
+        throw new RuntimeException('Could not fork returned closure.');
+    }
+    if ($pid === 0) {
+        fclose($channels[0]);
+        DB::purge();
+        try {
+            DB::statement("SET lock_timeout = '6s'");
+            DB::statement("SET statement_timeout = '8s'");
+            if (fgets($channels[1]) !== "go\n") {
+                exit(3);
+            }
+            $result = app(BusinessCampaignStore::class)->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id,
+                $this->campaign->id, 1, null, (string) Str::uuid());
+            fwrite($channels[1], $result['code']."\n");
+            exit(0);
+        } catch (Throwable) {
+            exit(1);
+        }
+    }
+    fclose($channels[1]);
+    $reaped = false;
+    $status = 0;
+    try {
+        DB::beginTransaction();
+        DB::table('parties')->where('id', $this->investor['party']->id)->lockForUpdate()->sole();
+        fwrite($channels[0], "go\n");
+        $deadline = hrtime(true) + 4_000_000_000;
+        while (! $reaped && hrtime(true) < $deadline) {
+            $reaped = pcntl_waitpid($pid, $status, WNOHANG) === $pid;
+            if (! $reaped) {
+                usleep(10_000);
+            }
+        }
+        expect($reaped)->toBeTrue('Closure must not acquire the Investor Party after its wallet')
+            ->and(pcntl_wifexited($status))->toBeTrue()->and(pcntl_wexitstatus($status))->toBe(0)
+            ->and(trim((string) fgets($channels[0])))->toBe('CAMPAIGN_CANCELLED');
+    } finally {
+        if (DB::transactionLevel() > 0) {
+            DB::rollBack();
+        }
+        fclose($channels[0]);
+        if (! $reaped) {
+            posix_kill($pid, SIGKILL);
+            pcntl_waitpid($pid, $status);
+        }
+        DB::purge();
+    }
+    expect(BusinessCampaignClosure::query()->count())->toBe(1)
+        ->and(DB::table('primary_campaign_closure_returns')->count())->toBe(1)
+        ->and(LedgerEntry::query()->where('source_id', $root->id)->count())->toBe(2);
+});
