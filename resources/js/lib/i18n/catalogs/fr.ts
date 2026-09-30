@@ -3355,6 +3355,8 @@ const fr: Catalog = {
         'La levée est entièrement financée : cela ne peut plus être annulé.',
     'settlement.refusal.CAMPAIGN_SETTLEMENT_REQUIRED':
         "Des investisseurs se sont déjà engagés dans cette levée : elle ne peut donc pas être annulée ici. Leurs engagements doivent d'abord être réglés.",
+    'settlement.refusal.CAMPAIGN_FUNDED':
+        'Cette levée est financée et en attente de décaissement : elle ne peut pas être annulée.',
     'settlement.refusal.NOTE_INELIGIBLE':
         "Ce titre n'est pas éligible pour le moment.",
     'settlement.refusal.DISCLOSURE_STALE':

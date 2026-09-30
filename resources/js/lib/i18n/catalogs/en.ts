@@ -3215,6 +3215,8 @@ const en = {
         'The raise is fully funded, so this can no longer be cancelled.',
     'settlement.refusal.CAMPAIGN_SETTLEMENT_REQUIRED':
         "Investors have already committed to this raise, so it can't be cancelled here. Their commitments have to be settled first.",
+    'settlement.refusal.CAMPAIGN_FUNDED':
+        "This raise is funded and awaiting disbursement, so it can't be cancelled.",
     'settlement.refusal.NOTE_INELIGIBLE': "This note isn't eligible right now.",
     'settlement.refusal.DISCLOSURE_STALE':
         'The disclosure changed. Read the current version and acknowledge it again.',

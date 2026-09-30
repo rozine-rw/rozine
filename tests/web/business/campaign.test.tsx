@@ -715,6 +715,31 @@ describe('Cancelling a raise', () => {
         ).toBeInTheDocument();
     });
 
+    it('explains a cancel refused because the raise is funded', async () => {
+        inertia.queue.push(fails(409, { code: 'CAMPAIGN_FUNDED' }));
+        const { user } = renderWithUser(
+            <BusinessCampaign {...props(liveFixture)} />,
+        );
+
+        await user.click(
+            within(campaignSheet()).getByRole('button', {
+                name: 'Cancel this raise',
+            }),
+        );
+        await user.click(screen.getByRole('button', { name: 'Cancel raise' }));
+
+        expect(
+            await within(campaignSheet()).findByText(
+                "This raise is funded and awaiting disbursement, so it can't be cancelled.",
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(campaignSheet()).queryByText(
+                'This request was refused. Refresh and try again.',
+            ),
+        ).not.toBeInTheDocument();
+    });
+
     it('explains a cancel refused because investors have committed', async () => {
         inertia.queue.push(
             fails(409, { code: 'CAMPAIGN_SETTLEMENT_REQUIRED' }),

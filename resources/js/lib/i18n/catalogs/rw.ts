@@ -3341,6 +3341,8 @@ const rw: Catalog = {
         'Imari yose yabonetse, ibi ntibigishobora guhagarikwa.',
     'settlement.refusal.CAMPAIGN_SETTLEMENT_REQUIRED':
         'Abashoramari bamaze kwiyemeza muri iki gikorwa cyo gukusanya, bityo ntigishobora guhagarikwa hano. Ibyo biyemeje bigomba kubanza gukemurwa.',
+    'settlement.refusal.CAMPAIGN_FUNDED':
+        'Iki gikorwa cyabonye amafaranga yose kandi gitegereje koherezwa, bityo ntigishobora guhagarikwa.',
     'settlement.refusal.NOTE_INELIGIBLE': 'Uru rupapuro ntirwemerewe ubu.',
     'settlement.refusal.DISCLOSURE_STALE':
         'Amakuru yo kumenyesha yahindutse. Soma ayariho ubu wongere uyemeze.',
