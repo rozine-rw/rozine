@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
+use App\Application\Identity\SelectActiveRole;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryFunding;
@@ -16,12 +17,14 @@ use App\Application\Wallet\ReturnedCash;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Wallet\WalletMoney;
+use App\Domain\Wallet\WalletViolation;
 use App\Models\BusinessCampaign;
 use App\Models\CommandOperation;
 use App\Models\LedgerEntry;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
+use App\Models\RoleMembership;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -164,13 +167,17 @@ it('refuses a missing or substituted confirmation commitment before posting cash
     DB::statement('ALTER TABLE primary_commitments DISABLE TRIGGER USER');
     if ($case === 'missing') {
         PrimaryCommitment::query()->delete();
-    } else {
+    } elseif ($case === 'substituted') {
         PrimaryCommitment::query()->update(['operation_id' => $this->root->origin_operation_id]);
+    } elseif ($case === 'version') {
+        PrimaryCommitment::query()->update(['primary_reservation_version_id' => PrimaryReservationVersion::query()->where('revision', 1)->sole()->id]);
+    } else {
+        PrimaryCommitment::query()->update(['confirmed_at' => $this->commitment->confirmed_at->subSecond()]);
     }
     expect(fn () => ($this->refund)())->toThrow(RuntimeException::class, 'RESERVATION_INTEGRITY_FAILED')
         ->and(LedgerEntry::query()->where('kind', 'primary_refund')->count())->toBe(0)
         ->and(CommandOperation::query()->where('command', 'primary.refund')->count())->toBe(0);
-})->with(['missing', 'substituted']);
+})->with(['missing', 'substituted', 'version', 'instant']);
 
 it('holds Business campaign root and commitment locks before the wallet gate', function (): void {
     $locks = [];
@@ -225,5 +232,40 @@ it('rolls back cash if retaining the command outcome fails after the return post
         ->toThrow(RuntimeException::class, 'REFUND_RECEIPT_FAILED')
         ->and(LedgerEntry::query()->where('kind', 'primary_refund')->count())->toBe(0)
         ->and(CommandOperation::query()->where('command', 'primary.refund')->count())->toBe(0);
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+});
+
+it('reverifies retained refund cash before issuing a fresh-key replay receipt', function (): void {
+    $key = (string) Str::uuid();
+    $result = ($this->refund)($key);
+    $other = PrimaryReservationFixture::investor();
+    $otherAccount = DB::table('ledger_accounts')->join('investor_wallets', 'investor_wallets.id', '=', 'ledger_accounts.wallet_id')
+        ->where('investor_wallets.party_id', $other['party']->id)->where('ledger_accounts.kind', 'investor_available')->value('ledger_accounts.id');
+    expect($otherAccount)->toBeString();
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('ALTER TABLE ledger_lines DISABLE TRIGGER USER');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    expect(DB::table('ledger_lines')->where('entry_id', $result['data']['entry_id'])->where('direction', 'credit')
+        ->update(['account_id' => $otherAccount]))->toBe(1);
+    $before = [LedgerEntry::query()->orderBy('id')->get()->toJson(), DB::table('ledger_lines')->orderBy('id')->get()->toJson(),
+        CommandOperation::query()->where('command', 'primary.refund')->get()->toJson()];
+    expect(fn () => ($this->refund)())->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT')
+        ->and([LedgerEntry::query()->orderBy('id')->get()->toJson(), DB::table('ledger_lines')->orderBy('id')->get()->toJson(),
+            CommandOperation::query()->where('command', 'primary.refund')->get()->toJson()])->toBe($before);
+});
+
+it('binds a refund retry to its original identity context while authorized lookup survives a context change', function (): void {
+    $key = (string) Str::uuid();
+    $result = ($this->refund)($key);
+    RoleMembership::factory()->for($this->investor['party'])->active()->create(['role' => 'business']);
+    app(SelectActiveRole::class)->handle($this->investor['user']->id, 'business', 1, (string) Str::uuid());
+    app(SelectActiveRole::class)->handle($this->investor['user']->id, 'investor', 2, (string) Str::uuid());
+    expect(fn () => ($this->refund)($key))->toThrow(IdentityViolation::class, 'ACTIVE_ROLE_REVISION_CONFLICT')
+        ->and(fn () => $this->checkout->refund($this->investor['user']->id, 3, $this->campaign->id, $this->root->id, 2, $key))
+        ->toThrow(CommandRejection::class, 'IDEMPOTENCY_CONFLICT')
+        ->and($this->checkout->findRefund($this->investor['user']->id, 3, $this->campaign->id, $this->root->id, $key))->toBe($result)
+        ->and($this->checkout->refund($this->investor['user']->id, 3, $this->campaign->id, $this->root->id, 2, (string) Str::uuid())['data'])->toBe($result['data'])
+        ->and(LedgerEntry::query()->where('kind', 'primary_refund')->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'primary.refund')->count())->toBe(2);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 });
