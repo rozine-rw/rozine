@@ -164,6 +164,7 @@ it('rolls back the refund and receipt when exact returned cash cannot be verifie
 
 it('refuses a missing or substituted confirmation commitment before posting cash', function (string $case): void {
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
     DB::statement('ALTER TABLE primary_commitments DISABLE TRIGGER USER');
     if ($case === 'missing') {
         PrimaryCommitment::query()->delete();

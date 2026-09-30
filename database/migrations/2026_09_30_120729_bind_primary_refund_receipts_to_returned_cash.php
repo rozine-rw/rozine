@@ -5,16 +5,18 @@ declare(strict_types=1);
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-/** Successful actor refund receipts require the exact retained purchase and original cash return. */
+/**
+ * Successful actor refund receipts require the exact retained purchase and original cash return.
+ * Only the journal is altered. Its lock serializes receipt inserts with the historical audit;
+ * immutable Primary and cash dependencies are read without blocking their writers or taking row locks.
+ */
 return new class extends Migration
 {
     public function up(): void
     {
         DB::transaction(function (): void {
             DB::unprepared(<<<'SQL'
-                LOCK TABLE business_profiles, business_campaigns, primary_reservations, primary_reservation_versions,
-                    primary_commitments, investor_wallets, ledger_accounts, ledger_entries, ledger_lines,
-                    command_operations IN ACCESS EXCLUSIVE MODE;
+                LOCK TABLE command_operations IN SHARE ROW EXCLUSIVE MODE;
                 CREATE OR REPLACE FUNCTION check_primary_refund_receipt(checked_operation varchar) RETURNS void LANGUAGE plpgsql AS $$
                 DECLARE
                     operation command_operations%ROWTYPE;
@@ -96,9 +98,7 @@ return new class extends Migration
     {
         DB::transaction(function (): void {
             DB::unprepared(<<<'SQL'
-                LOCK TABLE business_profiles, business_campaigns, primary_reservations, primary_reservation_versions,
-                    primary_commitments, investor_wallets, ledger_accounts, ledger_entries, ledger_lines,
-                    command_operations IN ACCESS EXCLUSIVE MODE;
+                LOCK TABLE command_operations IN ACCESS EXCLUSIVE MODE;
                 DO $$ BEGIN
                     IF EXISTS (SELECT 1 FROM command_operations WHERE command = 'primary.refund') THEN
                         RAISE EXCEPTION 'Retained Primary refund receipts require a forward migration' USING ERRCODE = '23514';

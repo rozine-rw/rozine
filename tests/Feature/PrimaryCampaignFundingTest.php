@@ -13,7 +13,6 @@ use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\PostingSource;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Wallet\WalletMoney;
-use App\Domain\Wallet\WalletViolation;
 use App\Models\BusinessCampaignClosure;
 use App\Models\LedgerEntry;
 use App\Models\PrimaryCampaignFunding;
@@ -109,8 +108,7 @@ it('refuses empty partial held or returned cash as full funding', function (stri
     } elseif ($state !== 'empty') {
         ($this->purchase)($state !== 'held');
     }
-    expect(fn () => ($this->fund)())->toThrow($state === 'returned' ? WalletViolation::class : CommandRejection::class,
-        $state === 'returned' ? 'PRIMARY_COMMITTED_CASH_REQUIRED' : 'CAMPAIGN_NOT_FULLY_COMMITTED')
+    expect(fn () => ($this->fund)())->toThrow(CommandRejection::class, 'CAMPAIGN_NOT_FULLY_COMMITTED')
         ->and(PrimaryCampaignFunding::query()->count())->toBe(0);
 })->with(['empty', 'partial', 'held', 'returned']);
 
@@ -317,10 +315,13 @@ it('refuses rolling the migration back once funding evidence exists', function (
 });
 
 it('can reverse and reapply the empty funding migration', function (): void {
+    $refundReceipts = require database_path('migrations/2026_09_30_120729_bind_primary_refund_receipts_to_returned_cash.php');
+    $refundReceipts->down();
     $migration = require database_path('migrations/2026_09_30_054318_create_primary_campaign_fundings.php');
     $migration->down();
     expect(Schema::hasTable('primary_campaign_fundings'))->toBeFalse();
     $migration->up();
+    $refundReceipts->up();
     expect(Schema::hasTable('primary_campaign_fundings'))->toBeTrue();
 });
 

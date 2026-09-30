@@ -27,6 +27,7 @@ use App\Domain\Primary\UnitOrdinals;
 use App\Domain\Primary\UnitRights;
 use App\Domain\Wallet\WalletMoney;
 use App\Domain\Wallet\WalletViolation;
+use App\Models\LedgerEntry;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
@@ -265,9 +266,19 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
             }
             $purchases = [];
             foreach ($roots as $root) {
-                $purchases[] = [...$retained[$root->id], 'reservation_id' => $root->id, 'party_id' => $root->party_id,
-                    'cash' => $this->cash->requireCommitted($wallets[$root->party_id], WalletMoney::of($root->principal),
-                        new PostingSource('primary_reservation', $root->id, $root->origin_operation_id))];
+                $source = new PostingSource('primary_reservation', $root->id, $root->origin_operation_id);
+                $amount = WalletMoney::of($root->principal);
+                try {
+                    $cash = $this->cash->requireCommitted($wallets[$root->party_id], $amount, $source);
+                } catch (WalletViolation $exception) {
+                    if ($exception->reason !== 'PRIMARY_COMMITTED_CASH_REQUIRED'
+                        || ! LedgerEntry::query()->where('source_type', $source->type)->where('source_id', $source->id)->where('kind', 'primary_refund')->exists()) {
+                        throw $exception;
+                    }
+                    $this->returnedCash->requireReturned($wallets[$root->party_id], $amount, $source);
+                    throw new CommandRejection('CAMPAIGN_NOT_FULLY_COMMITTED');
+                }
+                $purchases[] = [...$retained[$root->id], 'reservation_id' => $root->id, 'party_id' => $root->party_id, 'cash' => $cash];
             }
 
             return new PrimaryFundingCandidate($campaign['id'], $campaign['publication_sha256'], $campaign['principal'], $purchases);

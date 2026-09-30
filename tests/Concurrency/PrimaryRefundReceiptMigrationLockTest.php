@@ -6,6 +6,7 @@ use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Models\LedgerEntry;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -13,7 +14,7 @@ use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 
-it('queues receipt guard migration behind an actual refund without taking its later write locks', function (bool $install): void {
+it('installs receipt guards without blocking the earlier reads or later writes of an actual refund', function (bool $install, bool $firstRead): void {
     $this->freezeSecond();
     $migration = require database_path('migrations/2026_09_30_120729_bind_primary_refund_receipts_to_returned_cash.php');
     if ($install) {
@@ -55,7 +56,7 @@ it('queues receipt guard migration behind an actual refund without taking its la
                 exit(3);
             }
             $migration->{$install ? 'up' : 'down'}();
-            exit($install ? 0 : 2);
+            exit(0);
         } catch (QueryException $exception) {
             exit(! $install && str_contains($exception->getMessage(), 'Retained Primary refund receipts require a forward migration') ? 0 : 1);
         } catch (Throwable) {
@@ -68,30 +69,48 @@ it('queues receipt guard migration behind an actual refund without taking its la
     try {
         $backend = (int) trim((string) fgets($channels[0]));
         expect($backend)->toBeGreaterThan(0);
-        Event::listen($event, function (LedgerEntry $entry) use ($channels, $backend): void {
-            if ($entry->kind !== 'primary_refund') {
-                return;
-            }
+        $pause = function () use ($channels, $backend, $pid, $install, $firstRead, &$reaped, &$status): void {
             fwrite($channels[0], "go\n");
             $blocked = false;
             $deadline = hrtime(true) + 4_000_000_000;
-            while (hrtime(true) < $deadline && ! $blocked) {
+            while (hrtime(true) < $deadline && ! $blocked && ! $reaped) {
                 $blocked = (bool) DB::scalar('SELECT pg_backend_pid() = ANY(pg_blocking_pids(?))', [$backend]);
-                if (! $blocked) {
+                $reaped = pcntl_waitpid($pid, $status, WNOHANG) === $pid;
+                if (! $blocked && ! $reaped) {
                     usleep(10_000);
                 }
             }
-            expect($blocked)->toBeTrue()
-                ->and(DB::scalar("SELECT EXISTS (SELECT 1 FROM pg_locks WHERE pid = ? AND granted AND relation = 'command_operations'::regclass)", [$backend]))->toBeFalse();
-        });
+            if ($firstRead || $install) {
+                expect($reaped)->toBeTrue()->and(pcntl_wifexited($status))->toBeTrue()->and(pcntl_wexitstatus($status))->toBe(0);
+            } else {
+                expect($blocked)->toBeTrue()
+                    ->and(DB::scalar("SELECT EXISTS (SELECT 1 FROM pg_locks WHERE pid = ? AND granted AND relation IN
+                        ('business_profiles'::regclass, 'business_campaigns'::regclass, 'investor_wallets'::regclass, 'ledger_entries'::regclass))", [$backend]))->toBeFalse();
+            }
+        };
+        if ($firstRead) {
+            $paused = false;
+            DB::listen(function (QueryExecuted $query) use ($pause, &$paused): void {
+                if (! $paused && str_starts_with($query->sql, 'select * from "business_campaigns"')) {
+                    $paused = true;
+                    $pause();
+                }
+            });
+        } else {
+            Event::listen($event, function (LedgerEntry $entry) use ($pause): void {
+                if ($entry->kind === 'primary_refund') {
+                    $pause();
+                }
+            });
+        }
         expect($checkout->refund($investor['user']->id, 1, $campaign->id, $root->id, 2, (string) Str::uuid())['code'])->toBe('COMMITMENT_REFUNDED');
         $deadline = hrtime(true) + 10_000_000_000;
-        do {
+        while (! $reaped && hrtime(true) < $deadline) {
             $reaped = pcntl_waitpid($pid, $status, WNOHANG) === $pid;
             if (! $reaped) {
                 usleep(10_000);
             }
-        } while (! $reaped && hrtime(true) < $deadline);
+        }
         expect($reaped)->toBeTrue()->and(pcntl_wifexited($status))->toBeTrue()->and(pcntl_wexitstatus($status))->toBe(0);
     } finally {
         Event::forget($event);
@@ -106,4 +125,4 @@ it('queues receipt guard migration behind an actual refund without taking its la
         }
     }
     expect(LedgerEntry::query()->where('kind', 'primary_refund')->count())->toBe(1);
-})->with(['install' => true, 'rollback refuses retained receipts' => false]);
+})->with(['install' => true, 'rollback' => false])->with(['first campaign read' => true, 'refund header before lines/receipt' => false]);
