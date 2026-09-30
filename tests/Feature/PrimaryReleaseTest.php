@@ -5,9 +5,12 @@ declare(strict_types=1);
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryReservations;
+use App\Application\Wallet\Contracts\PrimaryReturnedCash;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\GetInvestorWallet;
+use App\Application\Wallet\LockedWallet;
 use App\Application\Wallet\PostingSource;
+use App\Application\Wallet\ReturnedCash;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Primary\PrimaryTerms;
@@ -255,3 +258,37 @@ it('takes the reservation lock before the wallet lock when releasing cash', func
     $wallet = array_find_key($locks, fn (string $sql): bool => str_contains($sql, 'from "investor_wallets"'));
     expect($reservation)->toBeInt()->and($wallet)->toBeInt()->and($reservation)->toBeLessThan($wallet);
 });
+
+it('rolls back cash state and actor receipt when retained return verification fails', function (string $path, string $failure): void {
+    if ($path !== 'release') {
+        $this->travelTo($this->root->expires_at);
+    }
+    $real = app(PrimaryReturnedCash::class);
+    $cash = $this->createMock(PrimaryReturnedCash::class);
+    $cash->expects($this->once())->method('requireReturned')->willReturnCallback(
+        function (LockedWallet $wallet, WalletMoney $amount, PostingSource $source) use ($real, $failure): ReturnedCash {
+            $returned = $real->requireReturned($wallet, $amount, $source);
+            if ($failure === 'refused') {
+                throw new RuntimeException('RETURN_VERIFICATION_FAILED');
+            }
+
+            return new ReturnedCash($returned->holdEntryId, $returned->commitEntryId,
+                $failure === 'wrong_entry' ? strtolower((string) Str::ulid()) : $returned->returnEntryId,
+                $failure === 'wrong_kind' ? 'primary_refund' : $returned->returnKind,
+                $returned->walletId, $returned->reservationId, $returned->originOperationId, $returned->amount, $returned->returnedAt);
+        });
+    app()->instance(PrimaryReturnedCash::class, $cash);
+    $checkout = app(PrimaryCheckout::class);
+    $perform = fn () => match ($path) {
+        'release', 'expired release' => $checkout->release($this->investor['user']->id, 1, $this->campaign->id, $this->root->id, 1, (string) Str::uuid()),
+        'system expiry' => app(PrimaryReservations::class)->expire($this->campaign->id, $this->root->id),
+        'expired confirm' => $checkout->confirm($this->investor['user']->id, 1, $this->campaign->id, $this->root->id, 1,
+            'unused', 'unused', (string) Str::uuid(), PrimaryReservationFixture::terms(...)),
+        default => throw new InvalidArgumentException('Unknown release path.'),
+    };
+    expect($perform)->toThrow(RuntimeException::class, $failure === 'refused' ? 'RETURN_VERIFICATION_FAILED' : 'RESERVATION_INTEGRITY_FAILED')
+        ->and(PrimaryReservationVersion::query()->count())->toBe(1)
+        ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(0)
+        ->and(CommandOperation::query()->whereIn('command', ['primary.release', 'primary.confirm'])->count())->toBe(0);
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+})->with(['release', 'expired release', 'system expiry', 'expired confirm'])->with(['refused', 'wrong_entry', 'wrong_kind']);

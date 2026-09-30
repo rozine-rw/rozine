@@ -12,6 +12,7 @@ use App\Application\Primary\ReservationConfirmation;
 use App\Application\Primary\ReservationRelease;
 use App\Application\Primary\ReservedCheckout;
 use App\Application\Wallet\Contracts\PrimaryCommittedCash;
+use App\Application\Wallet\Contracts\PrimaryReturnedCash;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\PostingSource;
 use App\Domain\Operations\CommandRejection;
@@ -39,7 +40,7 @@ use Throwable;
 /** @phpstan-import-type CampaignInput from PrimaryCampaignSource */
 final readonly class EloquentPrimaryReservations implements PrimaryReservations
 {
-    public function __construct(private PrimaryCampaignSource $campaigns, private WalletPostings $wallets, private CanonicalJson $json, private PrimaryCommittedCash $cash) {}
+    public function __construct(private PrimaryCampaignSource $campaigns, private WalletPostings $wallets, private CanonicalJson $json, private PrimaryCommittedCash $cash, private PrimaryReturnedCash $returnedCash) {}
 
     public function reserve(string $campaignId, string $partyId, string $originOperationId, string $units, Closure $admit): ReservedCheckout
     {
@@ -294,9 +295,16 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
     {
         $version = $previous->state === 'held'
             ? $this->appendVersion($root, $released, $operationId, $previous, $at) : $previous;
-        $posting = $this->wallets->release($this->wallets->lockForParty($root->party_id), WalletMoney::of($root->principal),
-            new PostingSource('primary_reservation', $root->id, $root->origin_operation_id));
+        $wallet = $this->wallets->lockForParty($root->party_id);
+        $amount = WalletMoney::of($root->principal);
+        $source = new PostingSource('primary_reservation', $root->id, $root->origin_operation_id);
+        $posting = $this->wallets->release($wallet, $amount, $source);
         if ($previous->state === 'held' && $posting->replayed) {
+            throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+        }
+
+        $returned = $this->returnedCash->requireReturned($wallet, $amount, $source);
+        if ($returned->returnKind !== 'primary_release' || $returned->returnEntryId !== $posting->entryId) {
             throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
         }
 

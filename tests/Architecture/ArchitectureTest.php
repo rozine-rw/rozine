@@ -403,3 +403,7 @@ arch('funding locks and evidence remain internal to Business and Primary persist
 arch('funding records remain inside Primary persistence')
     ->expect('App\Models\PrimaryCampaignFunding')
     ->toOnlyBeUsedIn(['App\Infrastructure\Primary', 'App\Models', 'Database\Factories']);
+
+arch('returned cash evidence stays behind the wallet and Primary adapters')
+    ->expect('App\\Application\\Wallet\\Contracts\\PrimaryReturnedCash')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Wallet', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);
