@@ -69,7 +69,7 @@ These capture uncommitted state from old local worktrees; the first four are 6 d
   - refund-aware progress;
   - the service-fee server field;
   - the fee rounding decision, with Aminu.
-- The flaky test `IdentityAccessConcurrencyTest:1515` (same-key audit-source replay race) is reported on #96. We offered to fix it and he hasn't answered yet.
+- **Assigned to our lane (2026-09-29, #96 5889289982):** the flaky test `IdentityAccessConcurrencyTest:1515` (same-key `AuditSourceFactsFixture::record` replay race). Deliver a separate server draft into `dev` (`fix/audit-source-replay-race`) with a deterministic repro and a regression that fails before the fix. Hussain won't edit that path in parallel. Accepted on #96 (5904239517).
 
 ## 4. How to review #175
 - **Always review an immutable range**, `A..B`, exactly as Hussain names it on #96.
