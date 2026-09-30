@@ -25,16 +25,51 @@ const UNITS = /^\d+$/;
 const isUnits = (value: unknown): boolean =>
     typeof value === 'string' && UNITS.test(value);
 
+const isMoney = (money: unknown): boolean =>
+    typeof money === 'object' &&
+    money !== null &&
+    isUnits((money as { amount?: unknown }).amount);
+
+/** A funded campaign's closing as the page draws it: a known stage, and a known coarse outcome in flight. */
+const isClosing = (closing: unknown): boolean => {
+    if (typeof closing !== 'object' || closing === null) {
+        return false;
+    }
+
+    const { stage, provider } = closing as {
+        stage?: unknown;
+        provider?: unknown;
+    };
+
+    return (
+        stage === 'awaiting_disbursement' ||
+        (stage === 'in_flight' &&
+            (provider === 'pending' || provider === 'unknown'))
+    );
+};
+
 /**
- * Whether a raising campaign's progress can be shown. The server supplies every figure and the
- * client never subtracts, so an unknown lifecycle, a missing unit bucket or amount, or a page
- * whose top-level lifecycle disagrees with its progress fails closed rather than guessing. Other
- * phases are read as they are.
+ * Whether a campaign's progress can be shown. The server supplies every figure and the client
+ * never subtracts, so a raise with an unknown lifecycle, a missing unit bucket or amount, or a
+ * top-level lifecycle that disagrees with its progress fails closed rather than guessing. So does
+ * a funded campaign sent without the funding instant or closing the page reads (#96 5905707280:
+ * `funded_pending_disbursement` stays closed until it is bound). Other phases are read as they are.
  */
 export function isReadableProgress(
     progress: CampaignProgressV2,
     lifecycle: BusinessCampaignLifecycle,
 ): boolean {
+    if (progress.phase === 'funded') {
+        const funded: { funded_at?: unknown; closing?: unknown } = progress;
+
+        return (
+            (lifecycle === 'funded' || lifecycle === 'disbursing') &&
+            typeof funded.funded_at === 'string' &&
+            isMoney(progress.committed) &&
+            isClosing(funded.closing)
+        );
+    }
+
     if (progress.phase !== 'raising') {
         return true;
     }
@@ -48,10 +83,7 @@ export function isReadableProgress(
             (bucket) => isUnits(units[bucket]),
         ) &&
         [progress.committed, progress.reserved, progress.remaining].every(
-            (money: unknown) =>
-                typeof money === 'object' &&
-                money !== null &&
-                isUnits((money as { amount?: unknown }).amount),
+            isMoney,
         )
     );
 }

@@ -409,6 +409,93 @@ describe('Raising progress the server sent incompletely', () => {
     });
 });
 
+describe('A funded campaign the page cannot read yet', () => {
+    const closed = (page: BusinessCampaignProps) => {
+        renderWithUser(<BusinessCampaign {...page} />);
+        const sheet = campaignSheet();
+        const view = within(sheet);
+
+        expect(view.getByRole('status')).toHaveTextContent(
+            "This raise's progress can't be shown right now. Refresh the page to try again.",
+        );
+        expect(view.getByText('Status unavailable')).toBeInTheDocument();
+        expect(sheet).not.toHaveTextContent(/Fully funded|Disbursement/);
+        expect(
+            view.queryByRole('button', { name: 'Cancel this raise' }),
+        ).not.toBeInTheDocument();
+    };
+
+    const funded = (page: BusinessCampaignProps) =>
+        page.note.progress as unknown as Record<string, unknown>;
+
+    it('fails closed on the durable funding lock the server reports before it is bound', () => {
+        vi.useFakeTimers();
+        const page = props(soldOutFixture);
+
+        /* The server's shape at #175 3bb74427: the raising figures under a funded phase. */
+        funded(page).phase = 'funded';
+        funded(page).lifecycle = 'funded_pending_disbursement';
+        (page.campaign as { lifecycle: string }).lifecycle =
+            'funded_pending_disbursement';
+        closed(page);
+
+        act(() => {
+            vi.advanceTimersByTime(POLL_INTERVAL_MS * 2);
+        });
+
+        expect(inertia.reloads).toHaveLength(0);
+    });
+
+    it('fails closed when a funded campaign carries a lifecycle that is not funded', () => {
+        const page = props(awaitingFixture);
+
+        page.campaign.lifecycle = 'live';
+        closed(page);
+    });
+
+    it('fails closed without the funding instant', () => {
+        const page = props(awaitingFixture);
+
+        delete funded(page).funded_at;
+        closed(page);
+    });
+
+    it('fails closed without the committed amount', () => {
+        const page = props(awaitingFixture);
+
+        funded(page).committed = { currency: 'RWF' };
+        closed(page);
+    });
+
+    it('fails closed without a closing', () => {
+        const page = props(awaitingFixture);
+
+        funded(page).closing = null;
+        closed(page);
+    });
+
+    it('fails closed on a closing that is not an object', () => {
+        const page = props(awaitingFixture);
+
+        funded(page).closing = 'awaiting_disbursement';
+        closed(page);
+    });
+
+    it('fails closed on a closing stage it does not know', () => {
+        const page = props(awaitingFixture);
+
+        funded(page).closing = { stage: 'settled' };
+        closed(page);
+    });
+
+    it('fails closed on an in-flight closing with an outcome it does not know', () => {
+        const page = props(inFlightFixture);
+
+        funded(page).closing = { stage: 'in_flight', provider: 'paid' };
+        closed(page);
+    });
+});
+
 describe('Cancelling a raise', () => {
     it('is offered only while raising and while the server lists campaign.cancel', () => {
         const withoutAction = props(liveFixture);

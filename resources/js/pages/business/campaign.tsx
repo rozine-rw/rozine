@@ -64,12 +64,14 @@ export default function BusinessCampaign({
         allowed: allowed_actions,
         preview: preview_outcome,
     });
+    /* Unreadable progress also withholds its lifecycle, its poll and the cancel it would offer. */
+    const readable = isReadableProgress(progress, campaign.lifecycle);
     const poll = useBoundedPoll(
-        progress.phase === 'funded' && progress.closing.stage === 'in_flight',
+        readable &&
+            progress.phase === 'funded' &&
+            progress.closing.stage === 'in_flight',
         POLLED,
     );
-    /* Unreadable progress also withholds its lifecycle and the cancel it would offer. */
-    const readable = isReadableProgress(progress, campaign.lifecycle);
     const canCancel =
         readable &&
         progress.phase === 'raising' &&
