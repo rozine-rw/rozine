@@ -413,6 +413,33 @@ describe('Cancelling a raise', () => {
             ),
         ).toBeInTheDocument();
     });
+
+    it('explains a cancel refused because investors have committed', async () => {
+        inertia.queue.push(
+            fails(409, { code: 'CAMPAIGN_SETTLEMENT_REQUIRED' }),
+        );
+        const { user } = renderWithUser(
+            <BusinessCampaign {...props(liveFixture)} />,
+        );
+
+        await user.click(
+            within(campaignSheet()).getByRole('button', {
+                name: 'Cancel this raise',
+            }),
+        );
+        await user.click(screen.getByRole('button', { name: 'Cancel raise' }));
+
+        expect(
+            await within(campaignSheet()).findByText(
+                "Investors have already committed to this raise, so it can't be cancelled here. Their commitments have to be settled first.",
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(campaignSheet()).queryByText(
+                'This request was refused. Refresh and try again.',
+            ),
+        ).not.toBeInTheDocument();
+    });
 });
 
 describe('A funded campaign closing', () => {
