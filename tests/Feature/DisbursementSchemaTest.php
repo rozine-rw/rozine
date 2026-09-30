@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Models\Disbursement;
 use App\Models\Party;
-use App\Models\PrimaryHolding;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -340,33 +339,18 @@ it('refuses a disbursement snapshot outside whole issuance units', function (): 
     refusedBySchema(fn () => Disbursement::factory()->create(['commitment_count' => 0]));
 });
 
-it('issues a proposed Holding only from its campaign\'s issued closing and within its principal', function (): void {
+it('no longer issues a proposed Holding for a commitment Primary does not retain', function (): void {
+    // The closing, principal, immutability and model cases this test held now run against real retained evidence in PrimaryHoldingBindingTest.
     $chain = schemaDispatched();
     $success = schemaObservation($chain['intent'], 'succeeded', 'applied');
     $reconciliation = schemaReconcile($chain['intent'], $success, 'matched_success');
     $closing = schemaClosing($chain['disbursement']->id, 'issued', 'reconciled_success', ['intent_id' => $chain['intent'], 'reconciliation_id' => $reconciliation]);
-    $holding = fn (array $overrides = []) => DB::table('primary_holdings')->insert([...['id' => schemaId(),
+    expect(fn () => DB::transaction(fn () => DB::table('primary_holdings')->insert(['id' => schemaId(),
         'business_campaign_id' => $chain['disbursement']->business_campaign_id, 'commitment_id' => schemaId(), 'party_id' => schemaId(),
         'disbursement_closing_id' => $closing, 'units' => 300, 'principal' => '1500000', 'ordinals' => '[{"first":1,"last":300}]',
         'rights' => '{}', 'terms' => '{}', 'schedule' => '[{"index":1}]', 'issued_at' => '2027-01-31T09:00:00Z', 'disbursement_effective_at' => '2027-01-31T08:00:00Z',
-        'effective_date' => '2027-01-31', 'receipt_id' => schemaId(), 'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()], ...$overrides]);
-    refusedBySchema(fn () => $holding(['principal' => '1500001']));
-    refusedBySchema(fn () => $holding(['business_campaign_id' => schemaId()]));
-    refusedBySchema(fn () => $holding(['effective_date' => '2027-02-01']));
-    refusedBySchema(fn () => $holding(['units' => 700, 'principal' => '3500000']));
-    $holding();
-    $holding(['payload' => encrypt(json_encode(['source' => 'synthetic']), false)]);
-    refusedBySchema(fn () => $holding(['units' => 1, 'principal' => '5000']));
-    $read = PrimaryHolding::query()->where('payload', '<>', 'x')->sole();
-    expect([$read->principal, $read->ordinals, $read->effective_date->format('Y-m-d'), $read->payload])
-        ->toEqual(['1500000', [['first' => 1, 'last' => 300]], '2027-01-31', ['source' => 'synthetic']]);
-    refusedBySchema(fn () => DB::table('primary_holdings')->update(['units' => 1]));
-    refusedBySchema(fn () => DB::table('primary_holdings')->delete());
-
-    $failed = Disbursement::factory()->create();
-    schemaEvent($failed->id, 1, 'authorized', $chain['maker']);
-    $refund = schemaClosing($failed->id, 'failed_closing', 'approve_recheck');
-    refusedBySchema(fn () => $holding(['disbursement_closing_id' => $refund, 'business_campaign_id' => $failed->business_campaign_id]));
+        'effective_date' => '2027-01-31', 'receipt_id' => schemaId(), 'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()])))
+        ->toThrow(QueryException::class, 'A Holding must name a commitment retained in a funding record');
 });
 
 it('refuses to roll back the schema once a disbursement exists', function (): void {

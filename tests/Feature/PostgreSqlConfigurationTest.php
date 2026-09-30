@@ -110,6 +110,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $holdings = require database_path('migrations/2026_09_29_100100_create_primary_holdings_table.php');
     $walletIssue = require database_path('migrations/2026_09_29_100200_add_primary_issue_to_wallet_ledger.php');
     $staffDisjoint = require database_path('migrations/2026_09_29_100300_keep_staff_accounts_and_parties_disjoint.php');
+    $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
+    $holdingBinding->down();
     $fundings->down();
     $expiryFailures->down();
     $staffDisjoint->down();
@@ -240,6 +242,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $staffDisjoint->up();
     $expiryFailures->up();
     $fundings->up();
+    $holdingBinding->up();
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
         ->and(DB::select($functionQuery))->toEqual($functions)->and(DB::select($constraintQuery))->toEqual($constraints);
     expect(DB::selectOne("SELECT count(*) AS total FROM pg_constraint WHERE conname = 'primary_commitment_source_unavailable'")->total)->toBe(1);

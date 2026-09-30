@@ -206,6 +206,8 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $confirmationOperations = require database_path('migrations/2026_09_28_212446_bind_primary_confirmation_operations_to_purchases.php');
     $expiryFailures = require database_path('migrations/2026_09_29_112938_create_primary_expiry_failures_table.php');
     $fundings = require database_path('migrations/2026_09_30_054318_create_primary_campaign_fundings.php');
+    $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
+    $holdingBinding->down();
     $fundings->down();
     $expiryFailures->down();
     $confirmationOperations->down();
@@ -229,6 +231,7 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $confirmationOperations->up();
     $expiryFailures->up();
     $fundings->up();
+    $holdingBinding->up();
     PrimaryReservationRecord::factory()->withInitialVersion()->create();
     primarySchemaFlush();
     expect(fn () => $migration->down())->toThrow(QueryException::class, 'forward migration');

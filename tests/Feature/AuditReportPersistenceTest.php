@@ -229,6 +229,8 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $disbursements = require database_path('migrations/2026_09_29_100000_create_disbursement_tables.php');
     $holdings = require database_path('migrations/2026_09_29_100100_create_primary_holdings_table.php');
     $walletIssue = require database_path('migrations/2026_09_29_100200_add_primary_issue_to_wallet_ledger.php');
+    $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
+    $holdingBinding->down();
     $fundings->down();
     $expiryFailures->down();
     $walletIssue->down();
@@ -289,6 +291,7 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $walletIssue->up();
     $expiryFailures->up();
     $fundings->up();
+    $holdingBinding->up();
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
         ->and(DB::select($functionQuery))->toEqual($functions)->and(DB::select($constraintQuery))->toEqual($constraints);
     expect(Schema::hasTable('audit_reports'))->toBeTrue()->and(Schema::hasTable('audit_report_versions'))->toBeTrue()
