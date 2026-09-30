@@ -8,7 +8,6 @@ use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\PostingSource;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Wallet\WalletMoney;
-use App\Domain\Wallet\WalletViolation;
 use App\Models\BusinessCampaign;
 use App\Models\LedgerEntry;
 use App\Models\PrimaryCampaignFunding;
@@ -191,7 +190,7 @@ it('serializes funding against original principal refund at the wallet gate', fu
         } catch (Throwable $exception) {
             $expected = $fundingFirst
                 ? $exception instanceof QueryException && str_contains($exception->getMessage(), 'authoritative failed closing')
-                : $exception instanceof WalletViolation && $exception->getMessage() === 'PRIMARY_COMMITTED_CASH_REQUIRED';
+                : $exception instanceof CommandRejection && $exception->reason === 'CAMPAIGN_NOT_FULLY_COMMITTED';
             fwrite($channels[1], $expected ? "refused\n" : $exception::class."\n");
             exit($expected ? 0 : 1);
         }

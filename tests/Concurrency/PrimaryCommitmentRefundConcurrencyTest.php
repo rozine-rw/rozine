@@ -6,7 +6,6 @@ use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryFunding;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Domain\Operations\CommandRejection;
-use App\Domain\Wallet\WalletViolation;
 use App\Models\BusinessCampaign;
 use App\Models\CommandOperation;
 use App\Models\LedgerEntry;
@@ -83,8 +82,8 @@ it('serializes the actual investor refund command and full funding on the Busine
                 }
             });
             $code = 0;
-        } catch (WalletViolation $exception) {
-            $code = ! $fundingFirst && $exception->reason === 'PRIMARY_COMMITTED_CASH_REQUIRED' ? 0 : 1;
+        } catch (CommandRejection $exception) {
+            $code = ! $fundingFirst && $exception->reason === 'CAMPAIGN_NOT_FULLY_COMMITTED' ? 0 : 1;
         } catch (Throwable $exception) {
             fwrite(STDERR, $exception::class.' '.$exception->getCode()."\n");
         } finally {
