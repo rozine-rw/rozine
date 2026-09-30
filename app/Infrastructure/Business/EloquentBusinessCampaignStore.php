@@ -175,7 +175,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                 && in_array('application.sign', $person['permissions'] ?? [], true)
                 && in_array($identity['party']['id'], $business['mandate']['required_signatories'], true);
 
-            $progress = $closure === null ? $this->raisingProgress($campaign->id, $payload)
+            $progress = $closure === null ? $this->campaignProgress($campaign->id, $payload)
                 : ['phase' => $closure['phase'], 'committed_refunded' => $closure['committed_refunded'],
                     'investors' => 0, 'closed_at' => $closure['closed_at']];
 
@@ -188,13 +188,13 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
     }
 
     /**
-     * Retained raise progress only; this does not perform or certify funding/settlement.
+     * Retained raise or funding-lock progress; this never dispatches or certifies payment.
      * Returned and overdue claims remain unavailable until ordinal recycling exists.
      *
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
-    private function raisingProgress(string $campaignId, array $payload): array
+    private function campaignProgress(string $campaignId, array $payload): array
     {
         $at = now('UTC');
         $summary = $this->reservations->read($campaignId, $at->toDateTimeImmutable());
@@ -206,8 +206,13 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         }
 
         $funding = $this->fundings->find($campaignId);
+        if ($funding !== null) {
+            return ['phase' => 'funded', 'lifecycle' => 'funded_pending_disbursement', 'restriction' => null,
+                'committed' => ['currency' => 'RWF', 'amount' => $funding['principal']],
+                'investors' => count(array_unique(array_column($funding['commitments'], 'party_id'))),
+                'funded_at' => $funding['recorded_at'], 'closing' => ['stage' => 'awaiting_disbursement']];
+        }
         $lifecycle = match (true) {
-            $funding !== null => 'funded_pending_disbursement',
             $at->gte($payload['expires_at']) => 'closing_pending_settlement',
             BigInteger::of($summary['committed_principal'])->isEqualTo($payload['principal']) => 'sold_out_pending_settlement',
             $available->isZero() && BigInteger::of($summary['held_units'])->isPositive() => 'fully_reserved',
@@ -215,7 +220,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             default => 'live',
         };
 
-        return ['phase' => $funding === null ? 'raising' : 'funded', 'lifecycle' => $lifecycle, 'restriction' => null,
+        return ['phase' => 'raising', 'lifecycle' => $lifecycle, 'restriction' => null,
             'committed' => ['currency' => 'RWF', 'amount' => $summary['committed_principal']],
             'reserved' => ['currency' => 'RWF', 'amount' => $summary['held_principal']],
             'remaining' => ['currency' => 'RWF', 'amount' => (string) $remaining],

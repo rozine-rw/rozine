@@ -72,7 +72,14 @@ it('retains one full funding lock without paying issuing or double counting expo
         ->and(app(BusinessExposureStore::class)->current($this->campaign->business_id))->toBe($exposure);
     $page = app(BusinessCampaignStore::class)->campaign($this->campaign->actor_user_id, 1, $this->campaign->business_id, $this->campaign->id);
     expect($page['lifecycle'])->toBe('funded_pending_disbursement')->and($page['progress']['phase'])->toBe('funded')
-        ->and($page['progress']['lifecycle'])->toBe($page['lifecycle'])->and($page['can_cancel'])->toBeFalse();
+        ->and($page['progress'])->toBe(['phase' => 'funded', 'lifecycle' => 'funded_pending_disbursement', 'restriction' => null,
+            'committed' => ['currency' => 'RWF', 'amount' => '10800000'], 'investors' => 2,
+            'funded_at' => $funding['recorded_at'], 'closing' => ['stage' => 'awaiting_disbursement']])
+        ->and($page['can_cancel'])->toBeFalse();
+    $this->travelTo(now()->addHour());
+    $again = app(BusinessCampaignStore::class)->campaign($this->campaign->actor_user_id, 1, $this->campaign->business_id, $this->campaign->id);
+    expect($again['progress'])->toBe($page['progress'])
+        ->and(LedgerEntry::query()->orderBy('id')->get()->toJson())->toBe($cash);
 })->with(['live', 'deadline', 'late']);
 
 it('requires explicit admission and preserves its original evidence on a checked retry', function (): void {
@@ -337,3 +344,23 @@ it('refuses malformed funding membership snapshots without losing the integrity 
     }
     expect(fn () => app(CampaignFundingEvidence::class)->find($this->campaign->id))->toThrow(RuntimeException::class, 'PRIMARY_FUNDING_INTEGRITY_FAILED');
 })->with(['list', 'cash']);
+
+it('reports distinct funded investors from retained membership across multiple purchases', function (): void {
+    $one = PrimaryReservationFixture::investor();
+    $two = PrimaryReservationFixture::investor();
+    $checkout = app(PrimaryCheckout::class);
+    foreach ([[$one, '540'], [$one, '540'], [$two, '1080']] as [$investor, $units]) {
+        $result = $checkout->reserve($investor['user']->id, 1, $this->campaign->id, $units, (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+        $root = PrimaryReservationRecord::query()->whereKey($result['data']['reservation_id'])->sole();
+        $version = PrimaryReservationVersion::query()->where('primary_reservation_id', $root->id)->sole();
+        expect($checkout->confirm($investor['user']->id, 1, $this->campaign->id, $root->id, 1,
+            $version->payload['terms']['disclosure_version'], $version->payload['disclosure_sha256'], (string) Str::uuid(), PrimaryReservationFixture::terms(...))['code'])->toBe('RESERVATION_CONFIRMED');
+    }
+    $funding = ($this->fund)();
+    $page = app(BusinessCampaignStore::class)->campaign($this->campaign->actor_user_id, 1, $this->campaign->business_id, $this->campaign->id);
+    expect($funding['commitments'])->toHaveCount(3)->and($page['progress']['investors'])->toBe(2)
+        ->and($page['progress']['committed'])->toBe(['currency' => 'RWF', 'amount' => '10800000'])
+        ->and($page['progress']['funded_at'])->toBe($funding['recorded_at'])
+        ->and($page['progress']['closing'])->toBe(['stage' => 'awaiting_disbursement']);
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+});
