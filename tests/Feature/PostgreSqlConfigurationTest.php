@@ -101,6 +101,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $fundings = require database_path('migrations/2026_09_30_054318_create_primary_campaign_fundings.php');
     $closureReturns = require database_path('migrations/2026_09_30_094556_bind_campaign_closures_to_complete_primary_returns.php');
     $entryIndex = require database_path('migrations/2026_09_30_171842_index_wallet_ledger_lines_by_entry.php');
+    $campaignExpiryFailures = require database_path('migrations/2026_09_30_184347_create_business_campaign_expiry_failures_table.php');
+    $campaignExpiryFailures->down();
     $entryIndex->down();
     $refundReceipts = require database_path('migrations/2026_09_30_120729_bind_primary_refund_receipts_to_returned_cash.php');
     $refundReceipts->down();
@@ -234,6 +236,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $closureReturns->up();
     $refundReceipts->up();
     $entryIndex->up();
+    $campaignExpiryFailures->up();
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
         ->and(DB::select($functionQuery))->toEqual($functions)->and(DB::select($constraintQuery))->toEqual($constraints);
     expect(DB::selectOne("SELECT count(*) AS total FROM pg_constraint WHERE conname = 'primary_commitment_source_unavailable'")->total)->toBe(1);

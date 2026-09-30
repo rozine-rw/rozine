@@ -557,6 +557,17 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `business_campaign_closures_business_campaign_id_unique` on (business_campaign_id) — unique; `business_campaign_closures_business_id_index` on (business_id); `business_campaign_closures_exposure_reservation_id_unique` on (exposure_reservation_id) — unique; `business_campaign_closures_pkey` on (id) — unique
 
+### `business_campaign_expiry_failures`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `business_campaign_id` | `bpchar` | no | — |
+| `last_attempted_at` | `timestamptz` | no | — |
+| `exception_class` | `varchar` | no | — |
+| `reason_code` | `varchar` | no | — |
+
+**Indexes:** `business_campaign_expiry_failures_last_attempted_at_index` on (last_attempted_at); `business_campaign_expiry_failures_pkey` on (business_campaign_id) — unique
+
 ### `business_campaigns`
 
 | Column | Type | Nullable | Default |
@@ -1441,6 +1452,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_30_111709_add_reason_code_to_primary_expiry_failures.php |
 | 2026_09_30_120729_bind_primary_refund_receipts_to_returned_cash.php |
 | 2026_09_30_171842_index_wallet_ledger_lines_by_entry.php |
+| 2026_09_30_184347_create_business_campaign_expiry_failures_table.php |
 
 ## Routes
 

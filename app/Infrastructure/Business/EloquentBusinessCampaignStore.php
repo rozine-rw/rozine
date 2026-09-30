@@ -37,6 +37,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RuntimeException;
+use Throwable;
 
 final class EloquentBusinessCampaignStore implements BusinessCampaignStore
 {
@@ -341,6 +342,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         $cutoff = now();
         $cursor = null;
         $expired = 0;
+        $failure = null;
         while ($expired < $limit) {
             $query = BusinessCampaign::query()->where('expires_at', '<=', $cutoff)
                 ->whereNotIn('id', BusinessCampaignClosure::query()->select('business_campaign_id'));
@@ -366,18 +368,44 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
 
                         return 1;
                     }, 3);
-                } catch (CommandRejection $exception) {
-                    if ($exception->reason !== 'CAMPAIGN_SETTLEMENT_REQUIRED') {
-                        throw $exception;
+                } catch (Throwable $exception) {
+                    if ($exception instanceof CommandRejection && $exception->reason === 'CAMPAIGN_SETTLEMENT_REQUIRED') {
+                        Log::notice('Campaign expiry deferred until commitments are settled.', [
+                            'campaign_id' => $candidate->id, 'business_id' => $candidate->business_id, 'code' => $exception->reason,
+                        ]);
+
+                        continue;
                     }
-                    Log::notice('Campaign expiry deferred until commitments are settled.', [
-                        'campaign_id' => $candidate->id, 'business_id' => $candidate->business_id, 'code' => $exception->reason,
+                    $reasonCode = $this->expiryFailureReason($exception);
+                    DB::table('business_campaign_expiry_failures')->upsert([['business_campaign_id' => $candidate->id,
+                        'last_attempted_at' => now('UTC')->format('Y-m-d H:i:s.uP'), 'exception_class' => $exception::class,
+                        'reason_code' => $reasonCode]], ['business_campaign_id'], ['last_attempted_at', 'exception_class', 'reason_code']);
+                    Log::error('Business campaign expiry failed.', [
+                        'campaign_id' => $candidate->id, 'business_id' => $candidate->business_id,
+                        'exception_class' => $exception::class, 'reason_code' => $reasonCode,
                     ]);
+                    $failure ??= $exception;
                 }
             }
         }
+        if ($failure !== null) {
+            throw $failure;
+        }
 
         return $expired;
+    }
+
+    private function expiryFailureReason(Throwable $exception): string
+    {
+        $reason = $exception instanceof CommandRejection || $exception instanceof WalletViolation
+            ? $exception->reason : $exception->getMessage();
+
+        return in_array($reason, ['CAMPAIGN_INTEGRITY_FAILED', 'CAMPAIGN_CLOSURE_INTEGRITY_FAILED',
+            'CAMPAIGN_EXPOSURE_INTEGRITY_FAILED', 'BUSINESS_EXPOSURE_INTEGRITY_FAILED',
+            'APPLICATION_RELEASE_INTEGRITY_FAILED', 'APPLICATION_QUOTE_INTEGRITY_FAILED',
+            'RESERVATION_INTEGRITY_FAILED', 'CAMPAIGN_NOT_FOUND', 'RESERVATION_NOT_FOUND',
+            'PRIMARY_TRANSACTION_REQUIRED', 'PRIMARY_CASH_ISOLATION_REQUIRED', 'WALLET_POSTING_CONFLICT',
+            'WALLET_POSTING_STATE_INVALID'], true) ? $reason : 'UNCLASSIFIED_EXPIRY_FAILURE';
     }
 
     /**
