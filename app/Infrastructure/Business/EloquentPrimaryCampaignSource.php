@@ -9,6 +9,7 @@ use App\Application\Business\Contracts\CampaignClosureEvidence;
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Business\Contracts\PublishedCampaignEvidence;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Domain\Business\MandateAuthority;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Underwriting\LoanSchedule;
@@ -28,7 +29,7 @@ use RuntimeException;
 final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
 {
     public function __construct(private PublishedCampaignEvidence $publications, private CampaignClosureEvidence $closures,
-        private BusinessExposureStore $exposures, private CanonicalJson $json, private MandateAuthority $mandates) {}
+        private BusinessExposureStore $exposures, private CanonicalJson $json, private MandateAuthority $mandates, private CampaignFundingEvidence $fundings) {}
 
     public function lockBusiness(string $campaignId): void
     {
@@ -83,6 +84,9 @@ final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
         $campaign = BusinessCampaign::query()->whereKey($campaignId)->lockForUpdate()->firstOrFail();
         $payload = $this->publications->find($campaign->id);
         $closure = $this->closures->find($campaign->id);
+        if ($requireOpen && ! $allowElapsed && $this->fundings->find($campaign->id) !== null) {
+            throw new CommandRejection('CAMPAIGN_FUNDED');
+        }
         if ($requireOpen && ($closure !== null || now()->lt($campaign->live_at) || (! $allowElapsed && now()->gte($campaign->expires_at)))) {
             throw new CommandRejection('CAMPAIGN_CLOSED');
         }

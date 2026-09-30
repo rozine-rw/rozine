@@ -16,6 +16,7 @@ use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\Contracts\CampaignCommitments;
+use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\CampaignReservationSummary;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
@@ -42,7 +43,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
 
     public function __construct(private AcceptedApplicationStore $accepted, private BusinessAuthorityStore $businesses,
         private WithBusinessAuthority $authority, private AuthorizeStaffPermission $staff, private IdentityRepository $identities,
-        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications, private CampaignCommitments $commitments, private CampaignReservationSummary $reservations) {}
+        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications, private CampaignCommitments $commitments, private CampaignReservationSummary $reservations, private CampaignFundingEvidence $fundings) {}
 
     /** @return array<string, mixed> */
     public function release(int $userId, string $applicationId, int $expectedRevision, string $reason, string $requestId): array
@@ -170,7 +171,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             $payload = $this->publications->find($campaign->id);
             $closure = $this->closures->find($campaign->id);
             $person = array_find($business['mandate']['people'], fn (array $person): bool => $person['party_id'] === $identity['party']['id']);
-            $canCancel = $closure === null && now()->lt($campaign->expires_at) && ! $this->commitments->anyForCampaign($campaign->id)
+            $canCancel = $closure === null && $this->fundings->find($campaign->id) === null && now()->lt($campaign->expires_at) && ! $this->commitments->anyForCampaign($campaign->id)
                 && in_array('application.sign', $person['permissions'] ?? [], true)
                 && in_array($identity['party']['id'], $business['mandate']['required_signatories'], true);
 
@@ -204,7 +205,9 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             throw new RuntimeException('RESERVATION_SUMMARY_INTEGRITY_FAILED');
         }
 
+        $funding = $this->fundings->find($campaignId);
         $lifecycle = match (true) {
+            $funding !== null => 'funded_pending_disbursement',
             $at->gte($payload['expires_at']) => 'closing_pending_settlement',
             BigInteger::of($summary['committed_principal'])->isEqualTo($payload['principal']) => 'sold_out_pending_settlement',
             $available->isZero() && BigInteger::of($summary['held_units'])->isPositive() => 'fully_reserved',
@@ -212,7 +215,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             default => 'live',
         };
 
-        return ['phase' => 'raising', 'lifecycle' => $lifecycle, 'restriction' => null,
+        return ['phase' => $funding === null ? 'raising' : 'funded', 'lifecycle' => $lifecycle, 'restriction' => null,
             'committed' => ['currency' => 'RWF', 'amount' => $summary['committed_principal']],
             'reserved' => ['currency' => 'RWF', 'amount' => $summary['held_principal']],
             'remaining' => ['currency' => 'RWF', 'amount' => (string) $remaining],
@@ -347,7 +350,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                         BusinessProfile::query()->whereKey($candidate->business_id)->lockForUpdate()->firstOrFail();
                         $campaign = BusinessCampaign::query()->whereKey($candidate->id)->lockForUpdate()->firstOrFail();
                         $this->publications->find($campaign->id);
-                        if ($this->closures->find($campaign->id) !== null || now()->lt($campaign->expires_at)) {
+                        if ($this->closures->find($campaign->id) !== null || $this->fundings->find($campaign->id) !== null || now()->lt($campaign->expires_at)) {
                             return 0;
                         }
                         $this->close($campaign, 'expired', null, null, null, null, null);
@@ -374,6 +377,9 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
      */
     private function close(BusinessCampaign $campaign, string $phase, ?int $userId, ?string $partyId, ?string $operationId, ?string $requestId, ?string $reason): BusinessCampaignClosure
     {
+        if ($this->fundings->find($campaign->id) !== null) {
+            throw new CommandRejection('CAMPAIGN_FUNDED', revision: 1, data: ['campaign_id' => $campaign->id, 'business_id' => $campaign->business_id]);
+        }
         $reservation = array_find($this->exposures->current($campaign->business_id), fn (array $entry): bool => $entry['id'] === $campaign->exposure_reservation_id);
         if ($reservation === null || $reservation['principal'] !== $campaign->principal) {
             throw new RuntimeException('CAMPAIGN_EXPOSURE_INTEGRITY_FAILED');

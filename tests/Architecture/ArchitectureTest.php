@@ -395,3 +395,11 @@ arch('synthetic signing and fixtures stay inside the local wallet hook')
 arch('funding cash evidence stays behind the wallet and Primary adapters')
     ->expect('App\\Application\\Wallet\\Contracts\\PrimaryCommittedCash')
     ->toOnlyBeUsedIn(['App\\Infrastructure\\Wallet', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);
+
+arch('funding locks and evidence remain internal to Business and Primary persistence')
+    ->expect(['App\Application\Primary\Contracts\PrimaryFunding', 'App\Application\Primary\Contracts\CampaignFundingEvidence'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Infrastructure\Primary', 'App\Providers\AppServiceProvider']);
+
+arch('funding records remain inside Primary persistence')
+    ->expect('App\Models\PrimaryCampaignFunding')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Primary', 'App\Models', 'Database\Factories']);
