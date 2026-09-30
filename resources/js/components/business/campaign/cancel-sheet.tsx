@@ -8,9 +8,9 @@ export const CANCEL_REASON_MAX = 500;
 
 /**
  * "Cancel this raise?" (C3 v2 §2f), offered only while the campaign is raising and the server lists
- * `campaign.cancel`. Cancel is allowed only while no investor has confirmed, so the copy speaks of
- * unconfirmed holds being released and promises no refund. It takes an optional reason. Nothing
- * changes on this page until the server answers.
+ * `campaign.cancel`. The server lists it only when no held or committed principal remains, and
+ * cancelling returns no cash by itself, so the copy speaks of closing only: no hold released, no
+ * refund. It takes an optional reason. Nothing changes on this page until the server answers.
  */
 export function CancelSheet({
     busy,

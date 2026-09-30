@@ -3559,7 +3559,7 @@ const fr: Catalog = {
         '{committed} notes engagées sur {total} · {reserved} réservées · {available} disponibles',
     'business.campaign.closes': 'Clôture le {date}',
     'business.campaign.fully_reserved':
-        'Chaque note disponible est actuellement bloquée dans un paiement. Les nouveaux investisseurs ne peuvent pas réserver tant que les réservations ne sont pas confirmées ou terminées.',
+        'Chaque note disponible est actuellement bloquée dans un paiement. Les nouveaux investisseurs ne peuvent pas réserver pour le moment.',
     'business.campaign.funded':
         'Entièrement financée le {date}. La levée ne peut plus être annulée.',
     'business.campaign.closing_title': 'Décaissement',
@@ -3598,7 +3598,7 @@ const fr: Catalog = {
     'business.campaign.cancel.cancelling': 'Annulation…',
     'business.campaign.cancel.title': 'Annuler cette levée ?',
     'business.campaign.cancel.body':
-        'Les réservations non confirmées sont intégralement libérées pour les investisseurs, et la levée est définitivement close. Cette action est irréversible.',
+        "La levée est définitivement close et n'accepte plus d'investisseurs. Cette action est irréversible.",
     'business.campaign.cancel.reason': 'Motif (facultatif)',
     'business.campaign.cancel.confirm': 'Annuler la levée',
     'business.campaign.cancel.keep': 'Continuer la levée',
