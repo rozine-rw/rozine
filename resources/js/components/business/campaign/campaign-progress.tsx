@@ -77,7 +77,8 @@ function Notice({
                     'border-[#cfe9d8] bg-rz-accent-soft dark:border-transparent',
                 tone === 'amber' &&
                     'border-[#fbe4cc] bg-[#fff8f1] dark:border-transparent dark:bg-[rgba(194,102,31,.12)]',
-                tone === 'blue' && 'border-[#dbe7ff] bg-rz-surface',
+                tone === 'blue' &&
+                    'border-[#dbe7ff] bg-rz-surface dark:border-rz-border',
             )}
         >
             {children}
@@ -256,9 +257,11 @@ function Raising({
                         value={formatRwf(progress.remaining)}
                     />
                 </dl>
-                <p className="mt-2 text-[11px] leading-normal text-rz-secondary">
-                    {t('business.campaign.reserved_note')}
-                </p>
+                {progress.units.reserved !== '0' && (
+                    <p className="mt-2 text-[11px] leading-normal text-rz-secondary">
+                        {t('business.campaign.reserved_note')}
+                    </p>
+                )}
                 <p className="mt-2 text-[11px] leading-normal text-rz-secondary">
                     {t('business.campaign.units', {
                         committed: formatUnits(progress.units.committed),

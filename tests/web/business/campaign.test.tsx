@@ -253,6 +253,7 @@ describe('A raise that is no longer simply live', () => {
             view.getByText('Closes 25 Sept 2026 · 21:30'),
         ).toBeInTheDocument();
         expect(view.getByText('100.0% committed')).toBeInTheDocument();
+        expect(sheet).not.toHaveTextContent(/investor's checkout/);
         expect(view.getByText('RWF 18,000,000')).toBeInTheDocument();
         expect(
             view.getByText(
