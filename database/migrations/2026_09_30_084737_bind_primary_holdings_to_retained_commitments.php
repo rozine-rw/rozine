@@ -49,11 +49,13 @@ use Illuminate\Support\Facades\DB;
  * its closing before it reaches Primary rows, then Party-sorted wallets, then the ledger, so this
  * adds no lock ahead of that order.
  *
- * Install takes ONE up-front SHARE ROW EXCLUSIVE lock over every table it alters or references, in
- * the order commands write them: reservations, revisions, commitments, funding members, Holdings.
- * It touches no Business, wallet, ledger or `command_operations` table. A command in flight queues
- * the install on the first of those tables it has written and the install holds nothing the
- * command still needs ahead of it, so neither can wait on the other in a cycle.
+ * Install locks, before anything else, every table it alters or references, in the order commands
+ * write them: reservations, revisions, commitments, funding members (SHARE ROW EXCLUSIVE, all an
+ * added foreign key needs), then Holdings (ACCESS EXCLUSIVE). `down()` takes the same five in the
+ * same order in ACCESS EXCLUSIVE mode, because dropping a foreign key needs that on the referenced
+ * table too; dropping them one by one locked revisions before reservations and deadlocked against
+ * a reserve in flight (found by PrimaryHoldingInstallProbeTest). Neither direction touches a
+ * Business, wallet, ledger or `command_operations` table or upgrades a lock it already holds.
  */
 return new class extends Migration
 {
@@ -61,8 +63,8 @@ return new class extends Migration
     {
         DB::transaction(function (): void {
             DB::unprepared(<<<'SQL'
-                LOCK TABLE primary_reservations, primary_reservation_versions, primary_commitments, primary_funding_commitments, primary_holdings
-                    IN SHARE ROW EXCLUSIVE MODE;
+                LOCK TABLE primary_reservations, primary_reservation_versions, primary_commitments, primary_funding_commitments IN SHARE ROW EXCLUSIVE MODE;
+                LOCK TABLE primary_holdings IN ACCESS EXCLUSIVE MODE;
                 DO $$
                 BEGIN
                     IF EXISTS (SELECT 1 FROM primary_holdings) THEN
@@ -147,7 +149,8 @@ return new class extends Migration
     {
         DB::transaction(function (): void {
             DB::unprepared(<<<'SQL'
-                LOCK TABLE primary_holdings IN ACCESS EXCLUSIVE MODE;
+                LOCK TABLE primary_reservations, primary_reservation_versions, primary_commitments, primary_funding_commitments, primary_holdings
+                    IN ACCESS EXCLUSIVE MODE;
                 DO $$
                 BEGIN
                     IF EXISTS (SELECT 1 FROM primary_holdings) THEN

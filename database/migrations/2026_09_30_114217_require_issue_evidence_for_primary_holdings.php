@@ -36,7 +36,8 @@ use Illuminate\Support\Facades\DB;
  *
  * Locks: the deferred check and the refund guard read without row locks. Install takes one
  * up-front SHARE ROW EXCLUSIVE lock on `primary_holdings` then `ledger_entries`, the order the
- * issuing transaction writes them, and nothing else.
+ * issuing transaction writes them, and nothing else. `down()` takes the same two in ACCESS
+ * EXCLUSIVE mode up front, which dropping a trigger needs, so it never upgrades a held lock.
  */
 return new class extends Migration
 {
@@ -114,7 +115,7 @@ return new class extends Migration
     {
         DB::transaction(function (): void {
             DB::unprepared(<<<'SQL'
-                LOCK TABLE primary_holdings, ledger_entries IN SHARE ROW EXCLUSIVE MODE;
+                LOCK TABLE primary_holdings, ledger_entries IN ACCESS EXCLUSIVE MODE;
                 DO $$
                 BEGIN
                     IF EXISTS (SELECT 1 FROM primary_holdings) THEN
