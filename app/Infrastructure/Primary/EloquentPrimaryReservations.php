@@ -189,7 +189,7 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
         }
 
         return DB::transaction(function () use ($campaignId): PrimaryFundingCandidate {
-            $campaign = $this->campaigns->lock($campaignId);
+            $campaign = $this->campaigns->lockForFunding($campaignId);
             $roots = PrimaryReservationRecord::query()->where('business_campaign_id', $campaignId)->orderBy('id')->lockForUpdate()->get();
             $commitments = PrimaryCommitment::query()->whereIn('primary_reservation_id', $roots->modelKeys())
                 ->orderBy('id')->lockForUpdate()->get()->keyBy('primary_reservation_id');
@@ -225,10 +225,6 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                 $purchases[] = [...$retained[$root->id], 'reservation_id' => $root->id, 'party_id' => $root->party_id,
                     'cash' => $this->cash->requireCommitted($wallets[$root->party_id], WalletMoney::of($root->principal),
                         new PostingSource('primary_reservation', $root->id, $root->origin_operation_id))];
-            }
-
-            if (now('UTC')->gte($campaign['expires_at'])) {
-                throw new CommandRejection('CAMPAIGN_CLOSED');
             }
 
             return new PrimaryFundingCandidate($campaign['id'], $campaign['publication_sha256'], $campaign['principal'], $purchases);

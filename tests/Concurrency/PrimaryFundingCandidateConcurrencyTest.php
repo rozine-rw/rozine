@@ -20,7 +20,7 @@ it('requires an outer transaction before acquiring any funding candidate locks',
         ->toThrow(CommandRejection::class, 'PRIMARY_TRANSACTION_REQUIRED');
 });
 
-it('retains all candidate locks until the callers real transaction ends', function (): void {
+it('retains all candidate locks until the callers real transaction ends', function (bool $afterDeadline): void {
     $this->freezeSecond();
     InvestorWalletFixture::policy(maximum: null);
     $campaign = PrimaryReservationFixture::campaign();
@@ -32,6 +32,9 @@ it('retains all candidate locks until the callers real transaction ends', functi
         $version = PrimaryReservationVersion::query()->where('primary_reservation_id', $root->id)->sole();
         expect($checkout->confirm($investor['user']->id, 1, $campaign->id, $root->id, 1,
             $version->payload['terms']['disclosure_version'], $version->payload['disclosure_sha256'], (string) Str::uuid(), PrimaryReservationFixture::terms(...))['code'])->toBe('RESERVATION_CONFIRMED');
+    }
+    if ($afterDeadline) {
+        $this->travelTo($campaign->expires_at->addDay());
     }
     config(['database.connections.funding_observer' => config('database.connections.pgsql')]);
     $observer = DB::connection('funding_observer');
@@ -60,7 +63,7 @@ it('retains all candidate locks until the callers real transaction ends', functi
         }
         DB::purge('funding_observer');
     }
-});
+})->with(['during publication' => false, 'after publication deadline' => true]);
 
 it('reads the winning final confirmation only after its Business transaction ends', function (bool $commitConfirmation): void {
     $this->freezeSecond();

@@ -66,19 +66,24 @@ final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
         return $this->lockedInput($campaignId, true);
     }
 
+    public function lockForFunding(string $campaignId): array
+    {
+        return $this->lockedInput($campaignId, true, allowElapsed: true);
+    }
+
     public function lockRetained(string $campaignId): array
     {
         return $this->lockedInput($campaignId, false);
     }
 
     /** @return CampaignInput */
-    private function lockedInput(string $campaignId, bool $requireOpen): array
+    private function lockedInput(string $campaignId, bool $requireOpen, bool $allowElapsed = false): array
     {
         $this->lockBusiness($campaignId);
         $campaign = BusinessCampaign::query()->whereKey($campaignId)->lockForUpdate()->firstOrFail();
         $payload = $this->publications->find($campaign->id);
         $closure = $this->closures->find($campaign->id);
-        if ($requireOpen && ($closure !== null || now()->lt($campaign->live_at) || now()->gte($campaign->expires_at))) {
+        if ($requireOpen && ($closure !== null || now()->lt($campaign->live_at) || (! $allowElapsed && now()->gte($campaign->expires_at)))) {
             throw new CommandRejection('CAMPAIGN_CLOSED');
         }
         $release = BusinessApplicationRelease::query()->whereKey($campaign->business_application_release_id)->firstOrFail();

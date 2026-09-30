@@ -187,3 +187,30 @@ it('verifies retained publication and released exposure after closure for recove
     corruptPrimarySource($exposure, [...$exposure->payload, 'principal' => '1']);
     expect(fn () => $this->source->lockRetained($this->campaign->id))->toThrow(RuntimeException::class, 'BUSINESS_EXPOSURE_INTEGRITY_FAILED');
 });
+
+it('retains an unclosed publication after deadline for funding verification only', function (string $instant): void {
+    $input = $this->source->lock($this->campaign->id);
+    $this->travelTo(match ($instant) {
+        'live' => $this->campaign->live_at,
+        'deadline' => $this->campaign->expires_at,
+        'late' => $this->campaign->expires_at->addDay(),
+        default => throw new InvalidArgumentException('Unknown funding boundary.'),
+    });
+    expect($this->source->lockForFunding($this->campaign->id))->toEqual($input);
+    if ($instant !== 'live') {
+        expect(fn () => $this->source->lock($this->campaign->id))->toThrow(CommandRejection::class, 'CAMPAIGN_CLOSED');
+    }
+})->with(['live', 'deadline', 'late']);
+
+it('refuses funding input before live or after an actual campaign closure', function (string $state): void {
+    if ($state === 'early') {
+        $this->travelTo($this->campaign->live_at->subMicrosecond());
+    } elseif ($state === 'cancelled') {
+        $this->campaigns->cancel($this->fixture['audit']['authority']['users'][0]->id, 1, $this->campaign->business_id,
+            $this->campaign->id, 1, null, (string) Str::uuid());
+    } else {
+        $this->travelTo($this->campaign->expires_at);
+        expect($this->campaigns->expireDue(1))->toBe(1);
+    }
+    expect(fn () => $this->source->lockForFunding($this->campaign->id))->toThrow(CommandRejection::class, 'CAMPAIGN_CLOSED');
+})->with(['early', 'cancelled', 'expired']);

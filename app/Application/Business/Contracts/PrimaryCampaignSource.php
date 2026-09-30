@@ -45,6 +45,16 @@ interface PrimaryCampaignSource
     public function lock(string $campaignId): array;
 
     /**
+     * Same immutable publication checks and Business → campaign locks as lock().
+     * Requires a live, unclosed publication but permits its elapsed deadline so the
+     * caller can verify purchases committed before expiry for later settlement.
+     * This is not permission to reserve/confirm; it supplies no cash or funding authority.
+     *
+     * @return CampaignInput
+     */
+    public function lockForFunding(string $campaignId): array;
+
+    /**
      * Same locks and immutable evidence checks as lock(), including validated exposure history,
      * but permits a closed or elapsed publication. This is recovery input for returning held
      * cash, never permission to reserve or confirm another purchase.

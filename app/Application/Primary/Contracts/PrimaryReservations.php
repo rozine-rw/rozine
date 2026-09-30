@@ -58,8 +58,10 @@ interface PrimaryReservations
     public function release(string $campaignId, string $reservationId, string $partyId, string $operationId, int $expectedRevision): ReservationRelease;
 
     /**
-     * Requires the caller transaction and Business-first authority order. Locks the open
+     * Requires the caller transaction and Business-first authority order. Locks the unclosed
      * campaign, all reservation roots then commitments by id, and all wallets by Party id.
+     * The publication deadline may have elapsed; replayed confirmation history must still
+     * prove each purchase occurred within its original half-open hold/publication window.
      * Verifies complete retained rights and original committed cash without posting or
      * declaring funding. Returned/issued cash refuses. The caller must keep these locks
      * while checking current eligibility/policy/destination and recording any funding.

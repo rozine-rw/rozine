@@ -117,7 +117,7 @@ it('locks every Primary row before wallets and every wallet before checking ledg
         ->and(array_key_last($firstLocks))->toBeLessThan($firstLedger);
 });
 
-it('refuses a funding candidate when the campaign deadline passes during cash verification', function (): void {
+it('keeps a fully committed candidate when the deadline passes during cash verification', function (): void {
     ($this->purchase)();
     ($this->purchase)();
     $elapsed = false;
@@ -127,6 +127,32 @@ it('refuses a funding candidate when the campaign deadline passes during cash ve
             $this->travelTo($this->campaign->expires_at);
         }
     });
-    expect(fn () => app(PrimaryReservations::class)->lockFundingCandidate($this->campaign->id))
-        ->toThrow(CommandRejection::class, 'CAMPAIGN_CLOSED')->and($elapsed)->toBeTrue();
+    expect(app(PrimaryReservations::class)->lockFundingCandidate($this->campaign->id)->purchases)
+        ->toHaveCount(2)->and($elapsed)->toBeTrue();
 });
+
+it('keeps predeadline commitments eligible for settlement after the publication clock ends', function (bool $afterDeadline): void {
+    ($this->purchase)();
+    ($this->purchase)();
+    $candidate = app(PrimaryReservations::class)->lockFundingCandidate($this->campaign->id);
+    $cash = LedgerEntry::query()->orderBy('id')->get()->toJson();
+    $operations = CommandOperation::query()->count();
+    $this->travelTo($afterDeadline ? $this->campaign->expires_at->addDay() : $this->campaign->expires_at);
+    expect(app(PrimaryReservations::class)->lockFundingCandidate($this->campaign->id))->toEqual($candidate)
+        ->and(LedgerEntry::query()->orderBy('id')->get()->toJson())->toBe($cash)
+        ->and(CommandOperation::query()->count())->toBe($operations);
+})->with([false, true]);
+
+it('still refuses incomplete or returned commitment cash after the deadline', function (string $state): void {
+    $first = ($this->purchase)(confirm: $state !== 'held');
+    if ($state === 'refunded') {
+        ($this->purchase)();
+        $wallets = app(WalletPostings::class);
+        $wallets->refund($wallets->lockForParty($first->party_id), WalletMoney::of($first->principal),
+            new PostingSource('primary_reservation', $first->id, $first->origin_operation_id));
+    }
+    $this->travelTo($this->campaign->expires_at);
+    expect(fn () => app(PrimaryReservations::class)->lockFundingCandidate($this->campaign->id))
+        ->toThrow($state === 'refunded' ? WalletViolation::class : CommandRejection::class,
+            $state === 'refunded' ? 'PRIMARY_COMMITTED_CASH_REQUIRED' : 'CAMPAIGN_NOT_FULLY_COMMITTED');
+})->with(['partial', 'held', 'refunded']);
