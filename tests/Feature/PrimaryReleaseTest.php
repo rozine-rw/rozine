@@ -178,10 +178,10 @@ it('keeps a released allocation reserved until the separate inventory guard migr
     expect(PrimaryReservationRecord::query()->whereKey($result['data']['reservation_id'])->sole()->ordinal_ranges)->toBe('{[4,5)}');
 });
 
-it('returns retained held cash after an actual campaign cancellation', function (bool $expired): void {
+it('returns held cash before permitting actual campaign cancellation', function (bool $expired): void {
     $cancelled = app(BusinessCampaignStore::class)->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id,
         $this->campaign->id, 1, 'Cancelled before funding integration.', (string) Str::uuid());
-    expect($cancelled['code'])->toBe('CAMPAIGN_CANCELLED');
+    expect($cancelled['code'])->toBe('CAMPAIGN_SETTLEMENT_REQUIRED');
     if ($expired) {
         $this->travelTo($this->root->expires_at);
     }
@@ -189,6 +189,10 @@ it('returns retained held cash after an actual campaign cancellation', function 
     expect($result['code'])->toBe($expired ? 'RESERVATION_EXPIRED' : 'RESERVATION_RELEASED')
         ->and(PrimaryReservationVersion::query()->orderByDesc('revision')->value('state'))->toBe($expired ? 'expired' : 'released')
         ->and(LedgerEntry::query()->where('kind', 'primary_release')->sole()->source_id)->toBe($this->root->id);
+    expect(app(BusinessCampaignStore::class)->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id,
+        $this->campaign->id, 1, null, (string) Str::uuid())['code'])->toBe('CAMPAIGN_CANCELLED');
+    expect(($this->release)(revision: 2)['data'])->toBe($result['data'])
+        ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(1);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 })->with([false, true]);
 
@@ -233,17 +237,19 @@ it('retains the same expiry receipt facts when a hold expires during confirmatio
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 });
 
-it('refuses confirmation on a cancelled campaign before admission can requote it', function (): void {
+it('refuses confirmation of a returned reservation after cancellation before admission can requote it', function (): void {
+    ($this->release)();
     expect(app(BusinessCampaignStore::class)->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id,
         $this->campaign->id, 1, null, (string) Str::uuid())['code'])->toBe('CAMPAIGN_CANCELLED');
-    $result = $this->checkout->confirm($this->investor['user']->id, 1, $this->campaign->id, $this->root->id, 1,
+    $result = $this->checkout->confirm($this->investor['user']->id, 1, $this->campaign->id, $this->root->id, 2,
         $this->version->payload['terms']['disclosure_version'], $this->version->payload['disclosure_sha256'], (string) Str::uuid(),
         function (): never {
             throw new RuntimeException('Closed campaign reached admission.');
         });
-    expect($result['code'])->toBe('CAMPAIGN_CLOSED')
-        ->and(PrimaryReservationVersion::query()->count())->toBe(1)
-        ->and(LedgerEntry::query()->whereIn('kind', ['primary_release', 'primary_commit'])->count())->toBe(0);
+    expect($result['code'])->toBe('RESERVATION_NOT_HELD')
+        ->and(PrimaryReservationVersion::query()->count())->toBe(2)
+        ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(1)
+        ->and(LedgerEntry::query()->where('kind', 'primary_commit')->count())->toBe(0);
 });
 
 it('takes the reservation lock before the wallet lock when releasing cash', function (): void {

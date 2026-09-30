@@ -148,6 +148,8 @@ it('does not silently backfill pre-C3 submissions when the reservation migration
     $closureReturns = require database_path('migrations/2026_09_30_094556_bind_campaign_closures_to_complete_primary_returns.php');
     $closureReturns->down();
     $fundings->down();
+    $expiryFailureReasons = require database_path('migrations/2026_09_30_111709_add_reason_code_to_primary_expiry_failures.php');
+    $expiryFailureReasons->down();
     $expiryFailures->down();
     $confirmationOperations->down();
     $confirmationReceipts->down();
@@ -176,6 +178,7 @@ it('does not silently backfill pre-C3 submissions when the reservation migration
     $confirmationReceipts->up();
     $confirmationOperations->up();
     $expiryFailures->up();
+    $expiryFailureReasons->up();
     $fundings->up();
     $closureReturns->up();
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)

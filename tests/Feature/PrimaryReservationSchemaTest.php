@@ -209,6 +209,8 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $closureReturns = require database_path('migrations/2026_09_30_094556_bind_campaign_closures_to_complete_primary_returns.php');
     $closureReturns->down();
     $fundings->down();
+    $expiryFailureReasons = require database_path('migrations/2026_09_30_111709_add_reason_code_to_primary_expiry_failures.php');
+    $expiryFailureReasons->down();
     $expiryFailures->down();
     $confirmationOperations->down();
     $confirmationReceipts->down();
@@ -230,6 +232,7 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $confirmationReceipts->up();
     $confirmationOperations->up();
     $expiryFailures->up();
+    $expiryFailureReasons->up();
     $fundings->up();
     $closureReturns->up();
     PrimaryReservationRecord::factory()->withInitialVersion()->create();

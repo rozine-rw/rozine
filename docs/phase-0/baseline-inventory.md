@@ -996,6 +996,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `primary_reservation_id` | `bpchar` | no | — |
 | `last_attempted_at` | `timestamptz` | no | — |
 | `exception_class` | `varchar` | no | — |
+| `reason_code` | `varchar` | yes | — |
 
 **Indexes:** `primary_expiry_failures_last_attempted_at_index` on (last_attempted_at); `primary_expiry_failures_pkey` on (primary_reservation_id) — unique
 
@@ -1437,6 +1438,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_29_112938_create_primary_expiry_failures_table.php |
 | 2026_09_30_054318_create_primary_campaign_fundings.php |
 | 2026_09_30_094556_bind_campaign_closures_to_complete_primary_returns.php |
+| 2026_09_30_111709_add_reason_code_to_primary_expiry_failures.php |
 
 ## Routes
 

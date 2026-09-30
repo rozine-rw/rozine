@@ -360,11 +360,12 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                     $expired++;
                 }
             } catch (Throwable $exception) {
+                $reasonCode = $this->expiryFailureReason($exception);
                 DB::table('primary_expiry_failures')->upsert([['primary_reservation_id' => $candidate->id,
-                    'last_attempted_at' => now('UTC')->format('Y-m-d H:i:s.uP'), 'exception_class' => $exception::class]],
-                    ['primary_reservation_id'], ['last_attempted_at', 'exception_class']);
+                    'last_attempted_at' => now('UTC')->format('Y-m-d H:i:s.uP'), 'exception_class' => $exception::class, 'reason_code' => $reasonCode]],
+                    ['primary_reservation_id'], ['last_attempted_at', 'exception_class', 'reason_code']);
                 Log::error('Primary reservation expiry failed.', ['reservation_id' => $candidate->id,
-                    'campaign_id' => $candidate->business_campaign_id, 'exception_class' => $exception::class]);
+                    'campaign_id' => $candidate->business_campaign_id, 'exception_class' => $exception::class, 'reason_code' => $reasonCode]);
                 $failure ??= $exception;
             }
         }
@@ -373,6 +374,18 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
         }
 
         return $expired;
+    }
+
+    private function expiryFailureReason(Throwable $exception): string
+    {
+        $reason = $exception instanceof WalletViolation || $exception instanceof CommandRejection
+            ? $exception->reason : $exception->getMessage();
+
+        return in_array($reason, ['RESERVATION_INTEGRITY_FAILED', 'CAMPAIGN_INTEGRITY_FAILED',
+            'PRIMARY_CASH_ISOLATION_REQUIRED', 'PRIMARY_RETURNED_CASH_REQUIRED',
+            'WALLET_POSTING_TRANSACTION_REQUIRED', 'WALLET_POSTING_SOURCE_INVALID', 'WALLET_POSTING_WALLET_INVALID',
+            'WALLET_POSTING_CONFLICT', 'WALLET_POSTING_STATE_INVALID', 'WALLET_BUCKET_NEGATIVE',
+            'RESERVATION_NOT_FOUND', 'PRIMARY_TRANSACTION_REQUIRED'], true) ? $reason : 'UNCLASSIFIED_EXPIRY_FAILURE';
     }
 
     public function expire(string $campaignId, string $reservationId, ?string $operationId = null): ?ReservationRelease

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessCampaignStore;
+use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\CampaignReservationSummary;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryReservations;
@@ -116,6 +117,14 @@ it('returns the same server totals through browser and token transports', functi
     }
 })->with(['browser', 'token']);
 
+it('reads funding once for both campaign progress and cancellation eligibility', function (): void {
+    $funding = $this->createMock(CampaignFundingEvidence::class);
+    $funding->expects($this->once())->method('find')->with($this->campaign->id)->willReturn(null);
+    app()->instance(CampaignFundingEvidence::class, $funding);
+    $page = ($this->page)();
+    expect($page['progress']['phase'])->toBe('raising')->and($page['can_cancel'])->toBeTrue();
+});
+
 it('refuses impossible aggregate amounts or occupied capacity', function (string $field): void {
     $summary = app(CampaignReservationSummary::class)->read($this->campaign->id, now()->toDateTimeImmutable());
     $summary[$field] = '999999999';
@@ -173,7 +182,7 @@ it('removes returned committed money from progress without reopening cancelled a
     expect($page['progress'])->toMatchArray(['phase' => 'raising', 'lifecycle' => 'live', 'investors' => 0, 'funded_pct' => '0.0',
         'committed' => ['currency' => 'RWF', 'amount' => '0'], 'remaining' => ['currency' => 'RWF', 'amount' => '10800000'],
         'units' => ['total' => '2160', 'available' => '2157', 'reserved' => '0', 'committed' => '0', 'unavailable' => '3']])
-        ->and($page['can_cancel'])->toBeFalse();
+        ->and($page['can_cancel'])->toBeTrue();
 });
 
 it('projects refunded principal identically through browser and token campaign reads', function (string $transport): void {

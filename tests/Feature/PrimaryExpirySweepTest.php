@@ -68,18 +68,20 @@ it('excludes confirmed and released roots from the bounded candidate batch', fun
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 })->with(['confirmed', 'released']);
 
-it('drains oldest deadlines in bounded batches after actual campaign cancellation', function (): void {
+it('drains oldest deadlines in bounded batches before cancelling a cash-returned campaign', function (): void {
     $this->travel(1)->seconds();
     $reserved = $this->checkout->reserve($this->investor['user']->id, 1, $this->campaign->id, '1', (string) Str::uuid(), PrimaryReservationFixture::terms(...));
     $next = PrimaryReservationRecord::query()->whereKey($reserved['data']['reservation_id'])->sole();
     expect(app(BusinessCampaignStore::class)->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id,
-        $this->campaign->id, 1, null, (string) Str::uuid())['code'])->toBe('CAMPAIGN_CANCELLED');
+        $this->campaign->id, 1, null, (string) Str::uuid())['code'])->toBe('CAMPAIGN_SETTLEMENT_REQUIRED');
     $this->travelTo($next->expires_at);
     expect(app(ExpireReservations::class)->handle(1))->toBe(1)
         ->and(LedgerEntry::query()->where('kind', 'primary_release')->sole()->source_id)->toBe($this->root->id)
         ->and(PrimaryReservationVersion::query()->where('primary_reservation_id', $next->id)->count())->toBe(1)
         ->and(app(ExpireReservations::class)->handle(1))->toBe(1)
         ->and(app(ExpireReservations::class)->handle(1))->toBe(0);
+    expect(app(BusinessCampaignStore::class)->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id,
+        $this->campaign->id, 1, null, (string) Str::uuid())['code'])->toBe('CAMPAIGN_CANCELLED');
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 });
 

@@ -171,16 +171,14 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                 ?? throw new CommandRejection('CAMPAIGN_NOT_FOUND', 404);
             $payload = $this->publications->find($campaign->id);
             $closure = $this->closures->find($campaign->id);
-            $person = array_find($business['mandate']['people'], fn (array $person): bool => $person['party_id'] === $identity['party']['id']);
-            $summary = $closure === null ? $this->reservations->read($campaign->id, now('UTC')->toDateTimeImmutable()) : null;
-            $canCancel = $closure === null && $this->fundings->find($campaign->id) === null && now()->lt($campaign->expires_at)
-                && $summary['committed_principal'] === '0' && $summary['held_principal'] === '0'
-                && in_array('application.sign', $person['permissions'] ?? [], true)
-                && in_array($identity['party']['id'], $business['mandate']['required_signatories'], true);
-
             $progress = $closure === null ? $this->campaignProgress($campaign->id, $payload)
                 : ['phase' => $closure['phase'], 'committed_refunded' => $closure['committed_refunded'],
                     'investors' => $closure['investors'], 'closed_at' => $closure['closed_at']];
+            $person = array_find($business['mandate']['people'], fn (array $person): bool => $person['party_id'] === $identity['party']['id']);
+            $canCancel = $closure === null && $progress['phase'] === 'raising' && now()->lt($campaign->expires_at)
+                && $progress['committed']['amount'] === '0' && $progress['reserved']['amount'] === '0'
+                && in_array('application.sign', $person['permissions'] ?? [], true)
+                && in_array($identity['party']['id'], $business['mandate']['required_signatories'], true);
 
             return ['identity_context_revision' => $contextRevision, 'business_id' => $businessId, 'id' => $campaign->id, 'revision' => $closure === null ? 1 : 2,
                 'lifecycle' => $closure['phase'] ?? $progress['lifecycle'], 'can_cancel' => $canCancel,
