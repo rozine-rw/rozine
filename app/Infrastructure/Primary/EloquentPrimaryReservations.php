@@ -8,6 +8,7 @@ use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\PrimaryReservations;
+use App\Application\Primary\PrimaryCampaignReturns;
 use App\Application\Primary\PrimaryFundingCandidate;
 use App\Application\Primary\ReservationConfirmation;
 use App\Application\Primary\ReservationRefund;
@@ -25,6 +26,7 @@ use App\Domain\Primary\ReservationWindow;
 use App\Domain\Primary\UnitOrdinals;
 use App\Domain\Primary\UnitRights;
 use App\Domain\Wallet\WalletMoney;
+use App\Domain\Wallet\WalletViolation;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
@@ -269,6 +271,69 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
             }
 
             return new PrimaryFundingCandidate($campaign['id'], $campaign['publication_sha256'], $campaign['principal'], $purchases);
+        });
+    }
+
+    public function lockReturnedCampaign(string $campaignId): PrimaryCampaignReturns
+    {
+        if (DB::transactionLevel() === 0) {
+            throw new CommandRejection('PRIMARY_TRANSACTION_REQUIRED');
+        }
+
+        if (DB::scalar("SELECT current_setting('transaction_isolation')") !== 'read committed') {
+            throw new WalletViolation('PRIMARY_CASH_ISOLATION_REQUIRED');
+        }
+
+        return DB::transaction(function () use ($campaignId): PrimaryCampaignReturns {
+            $campaign = $this->campaigns->lockRetained($campaignId);
+            if ($this->fundings->find($campaignId) !== null) {
+                throw new CommandRejection('CAMPAIGN_FUNDED');
+            }
+            $roots = PrimaryReservationRecord::query()->where('business_campaign_id', $campaignId)->orderBy('id')->lockForUpdate()->get();
+            $commitments = PrimaryCommitment::query()->whereIn('primary_reservation_id', $roots->modelKeys())
+                ->orderBy('id')->lockForUpdate()->get()->keyBy('primary_reservation_id');
+            $retained = [];
+            foreach ($roots as $root) {
+                [$reservation, $version] = $this->retainedReservation($root, $campaign);
+                if ($reservation->state === 'held') {
+                    throw new CommandRejection('CAMPAIGN_SETTLEMENT_REQUIRED');
+                }
+                $commitment = $commitments->get($root->id);
+                if (($reservation->state === 'confirmed' && ($commitment === null || $commitment->primary_reservation_version_id !== $version->id
+                    || $commitment->operation_id !== $version->operation_id || ! $commitment->confirmed_at->equalTo($version->created_at)))
+                    || ($reservation->state !== 'confirmed' && $commitment !== null)) {
+                    throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+                }
+                $retained[$root->id] = ['reservation_id' => $root->id, 'version_id' => $version->id, 'version_sha256' => $version->sha256,
+                    'commitment_id' => $commitment?->id, 'party_id' => $root->party_id, 'reservation' => $reservation];
+            }
+            $wallets = [];
+            foreach ($roots->map(fn (PrimaryReservationRecord $root): string => $root->party_id)->unique()->sort()->values() as $partyId) {
+                $wallets[$partyId] = $this->wallets->lockForParty($partyId);
+            }
+            $released = BigInteger::zero();
+            $refunded = BigInteger::zero();
+            $investors = [];
+            $returns = [];
+            foreach ($roots as $root) {
+                $purchase = $retained[$root->id];
+                $cash = $this->returnedCash->requireReturned($wallets[$root->party_id], WalletMoney::of($root->principal),
+                    new PostingSource('primary_reservation', $root->id, $root->origin_operation_id));
+                $confirmed = $purchase['reservation']->state === 'confirmed';
+                if ($cash->returnKind !== ($confirmed ? 'primary_refund' : 'primary_release') || ($cash->commitEntryId !== null) !== $confirmed) {
+                    throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+                }
+                if ($confirmed) {
+                    $refunded = $refunded->plus($root->principal);
+                    $investors[$root->party_id] = true;
+                } else {
+                    $released = $released->plus($root->principal);
+                }
+                $returns[] = [...$purchase, 'cash' => $cash];
+            }
+
+            return new PrimaryCampaignReturns($campaign['id'], $campaign['publication_sha256'], (string) $released, (string) $refunded,
+                count($investors), $returns);
         });
     }
 

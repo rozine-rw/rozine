@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Primary\Contracts;
 
+use App\Application\Primary\PrimaryCampaignReturns;
 use App\Application\Primary\PrimaryFundingCandidate;
 use App\Application\Primary\ReservationConfirmation;
 use App\Application\Primary\ReservationRefund;
@@ -68,6 +69,17 @@ interface PrimaryReservations
      * while checking current eligibility/policy/destination and recording any funding.
      */
     public function lockFundingCandidate(string $campaignId): PrimaryFundingCandidate;
+
+    /**
+     * Requires the authorized closing caller's outer READ COMMITTED transaction. Verifies
+     * every retained root, confirmation and exact original cash return under Business →
+     * campaign → roots → commitments → Party-sorted wallet locks. Live holds, unreturned
+     * commitments and funded campaigns refuse. Publication expiry does not remove evidence.
+     * All roots must be settled; this port moves no cash, creates no closing cause, releases
+     * no exposure and recycles no ordinals. The caller must retain the locks while recording
+     * a separately guarded closure and its exact return bindings in the same transaction.
+     */
+    public function lockReturnedCampaign(string $campaignId): PrimaryCampaignReturns;
 
     /**
      * Requires the authorized caller transaction and journal command. Before retained full
