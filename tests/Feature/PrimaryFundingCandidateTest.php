@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Wallet\Contracts\WalletPostings;
@@ -156,3 +157,30 @@ it('still refuses incomplete or returned commitment cash after the deadline', fu
         ->toThrow($state === 'refunded' ? WalletViolation::class : CommandRejection::class,
             $state === 'refunded' ? 'PRIMARY_COMMITTED_CASH_REQUIRED' : 'CAMPAIGN_NOT_FULLY_COMMITTED');
 })->with(['partial', 'held', 'refunded']);
+
+it('replays digest-consistent confirmation stamps against the original half-open deadline', function (bool $atDeadline): void {
+    $this->travelTo($this->campaign->expires_at->subSeconds(100));
+    ($this->purchase)();
+    $root = ($this->purchase)();
+    $stamp = $atDeadline ? $this->campaign->expires_at : $this->campaign->expires_at->subMicrosecond();
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    $confirmed = PrimaryReservationVersion::query()->where('primary_reservation_id', $root->id)->orderByDesc('revision')->firstOrFail();
+    $payload = $confirmed->payload;
+    $payload['recorded_at'] = $stamp->utc()->format('Y-m-d\TH:i:s.u\Z');
+    DB::statement('ALTER TABLE primary_reservation_versions DISABLE TRIGGER primary_reservation_versions_immutable');
+    DB::statement('ALTER TABLE primary_commitments DISABLE TRIGGER primary_commitments_immutable');
+    $confirmed->forceFill(['created_at' => $stamp, 'payload' => $payload, 'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload))])->save();
+    PrimaryCommitment::query()->where('primary_reservation_version_id', $confirmed->id)->sole()->forceFill(['confirmed_at' => $stamp, 'created_at' => $stamp])->save();
+    $this->travelTo($this->campaign->expires_at->addDay());
+    $cash = LedgerEntry::query()->orderBy('id')->get()->toJson();
+    $operations = CommandOperation::query()->count();
+    if ($atDeadline) {
+        expect(fn () => app(PrimaryReservations::class)->lockFundingCandidate($this->campaign->id))
+            ->toThrow(RuntimeException::class, 'RESERVATION_INTEGRITY_FAILED');
+    } else {
+        expect(app(PrimaryReservations::class)->lockFundingCandidate($this->campaign->id)->purchases)->toHaveCount(2);
+    }
+    expect(LedgerEntry::query()->orderBy('id')->get()->toJson())->toBe($cash)
+        ->and(CommandOperation::query()->count())->toBe($operations);
+})->with(['at deadline' => true, 'last microsecond' => false]);

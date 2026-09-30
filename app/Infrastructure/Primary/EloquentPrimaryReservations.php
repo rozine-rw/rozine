@@ -6,9 +6,11 @@ namespace App\Infrastructure\Primary;
 
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Primary\PrimaryFundingCandidate;
 use App\Application\Primary\ReservationConfirmation;
+use App\Application\Primary\ReservationRefund;
 use App\Application\Primary\ReservationRelease;
 use App\Application\Primary\ReservedCheckout;
 use App\Application\Wallet\Contracts\PrimaryCommittedCash;
@@ -40,7 +42,7 @@ use Throwable;
 /** @phpstan-import-type CampaignInput from PrimaryCampaignSource */
 final readonly class EloquentPrimaryReservations implements PrimaryReservations
 {
-    public function __construct(private PrimaryCampaignSource $campaigns, private WalletPostings $wallets, private CanonicalJson $json, private PrimaryCommittedCash $cash, private PrimaryReturnedCash $returnedCash) {}
+    public function __construct(private PrimaryCampaignSource $campaigns, private WalletPostings $wallets, private CanonicalJson $json, private PrimaryCommittedCash $cash, private PrimaryReturnedCash $returnedCash, private CampaignFundingEvidence $fundings) {}
 
     public function reserve(string $campaignId, string $partyId, string $originOperationId, string $units, Closure $admit): ReservedCheckout
     {
@@ -181,6 +183,44 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
         } catch (PrimaryViolation $exception) {
             throw new CommandRejection($exception->reasonCode);
         }
+    }
+
+    public function refund(string $campaignId, string $reservationId, string $partyId, int $expectedRevision): ReservationRefund
+    {
+        if (DB::transactionLevel() === 0) {
+            throw new CommandRejection('PRIMARY_TRANSACTION_REQUIRED');
+        }
+
+        return DB::transaction(function () use ($campaignId, $reservationId, $partyId, $expectedRevision): ReservationRefund {
+            $campaign = $this->campaigns->lockRetained($campaignId);
+            $root = PrimaryReservationRecord::query()->where('business_campaign_id', $campaign['id'])->where('party_id', $partyId)
+                ->whereKey($reservationId)->lockForUpdate()->first() ?? throw new CommandRejection('RESERVATION_NOT_FOUND', 404);
+            [$reservation, $previous] = $this->retainedReservation($root, $campaign);
+            if ($previous->revision !== $expectedRevision) {
+                throw new CommandRejection('VERSION_CONFLICT', 409, $previous->revision);
+            }
+            if ($reservation->state !== 'confirmed') {
+                throw new CommandRejection('RESERVATION_NOT_CONFIRMED', 409, $previous->revision);
+            }
+            if ($this->fundings->find($campaignId) !== null) {
+                throw new CommandRejection('CAMPAIGN_FUNDED', 409, $previous->revision);
+            }
+            $commitment = PrimaryCommitment::query()->where('primary_reservation_id', $root->id)->lockForUpdate()->first();
+            if ($commitment === null || $commitment->primary_reservation_version_id !== $previous->id
+                || $commitment->operation_id !== $previous->operation_id || ! $commitment->confirmed_at->equalTo($previous->created_at)) {
+                throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+            }
+            $wallet = $this->wallets->lockForParty($partyId);
+            $amount = WalletMoney::of($root->principal);
+            $source = new PostingSource('primary_reservation', $root->id, $root->origin_operation_id);
+            $posting = $this->wallets->refund($wallet, $amount, $source);
+            $returned = $this->returnedCash->requireReturned($wallet, $amount, $source);
+            if ($returned->returnKind !== 'primary_refund' || $returned->returnEntryId !== $posting->entryId || $returned->commitEntryId === null) {
+                throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+            }
+
+            return new ReservationRefund($root->id, $previous->revision, $commitment->id, $returned);
+        });
     }
 
     public function lockFundingCandidate(string $campaignId): PrimaryFundingCandidate

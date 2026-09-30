@@ -6,6 +6,7 @@ namespace App\Application\Primary\Contracts;
 
 use App\Application\Primary\PrimaryFundingCandidate;
 use App\Application\Primary\ReservationConfirmation;
+use App\Application\Primary\ReservationRefund;
 use App\Application\Primary\ReservationRelease;
 use App\Application\Primary\ReservedCheckout;
 use App\Domain\Primary\PrimaryTerms;
@@ -67,6 +68,15 @@ interface PrimaryReservations
      * while checking current eligibility/policy/destination and recording any funding.
      */
     public function lockFundingCandidate(string $campaignId): PrimaryFundingCandidate;
+
+    /**
+     * Requires the authorized caller transaction and journal command. Before retained full
+     * funding, returns the exact confirmed principal fee-free under Business → campaign →
+     * root → commitment → wallet gates. Confirmation history remains immutable; cash replay
+     * is idempotent. Publication/hold expiry does not remove the right to return unissued cash.
+     * This primitive neither closes the campaign nor releases exposure or recycles ordinals.
+     */
+    public function refund(string $campaignId, string $reservationId, string $partyId, int $expectedRevision): ReservationRefund;
 
     /**
      * Examines at most limit overdue, nonterminal candidates. Unfailed candidates go
