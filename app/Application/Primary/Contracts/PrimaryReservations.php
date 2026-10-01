@@ -91,8 +91,9 @@ interface PrimaryReservations
     public function settleExpiredCampaign(string $campaignId, string $closureId): void;
 
     /**
-     * Requires the authorized caller transaction and actor journal command or bound system expiry cause. Before retained full
-     * funding, returns the exact confirmed principal fee-free under Business → campaign →
+     * Requires the caller transaction. The caller authorizes and retains its actor journal
+     * command or bound system expiry cause; this primitive does not authenticate that cause.
+     * Before retained full funding, returns exact confirmed principal fee-free under Business → campaign →
      * root → commitment → wallet gates. Confirmation history remains immutable; cash replay
      * is idempotent. Publication/hold expiry does not remove the right to return unissued cash.
      * This primitive neither closes the campaign nor releases exposure or recycles ordinals.
