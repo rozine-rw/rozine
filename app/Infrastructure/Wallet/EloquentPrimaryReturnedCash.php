@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Wallet;
 
+use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Wallet\Contracts\PrimaryReturnedCash;
 use App\Application\Wallet\LockedWallet;
 use App\Application\Wallet\PostingSource;
 use App\Application\Wallet\ReturnedCash;
+use App\Domain\Wallet\JournalEntry;
 use App\Domain\Wallet\WalletMoney;
 use App\Domain\Wallet\WalletViolation;
 use App\Models\InvestorWallet;
@@ -16,6 +18,8 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class EloquentPrimaryReturnedCash implements PrimaryReturnedCash
 {
+    public function __construct(private CanonicalJson $json) {}
+
     public function requireReturned(LockedWallet $wallet, WalletMoney $amount, PostingSource $source): ReturnedCash
     {
         if (DB::transactionLevel() < 1) {
@@ -55,6 +59,16 @@ final readonly class EloquentPrimaryReturnedCash implements PrimaryReturnedCash
                 ->get(['ledger_lines.direction', 'ledger_lines.amount', 'ledger_accounts.kind', 'ledger_accounts.wallet_id', 'ledger_accounts.currency'])
                 ->map(fn (object $line): array => [(string) $line->direction, (string) $line->amount, $line->kind, $line->wallet_id, $line->currency])->all();
             if ($lines !== [['credit', $amount->amount(), $credit, $wallet->walletId, 'RWF'], ['debit', $amount->amount(), $debit, $wallet->walletId, 'RWF']]) {
+                throw new WalletViolation('WALLET_POSTING_CONFLICT');
+            }
+            $expectedLines = array_map(fn ($line): array => ['account' => $line->account, 'direction' => $line->direction,
+                'amount' => $line->amount->amount()], JournalEntry::primary($entry->kind, $amount)->lines);
+            $expected = ['entry_id' => $entry->id, 'wallet_id' => $wallet->walletId, 'kind' => $entry->kind,
+                'source_type' => $source->type, 'source_id' => $source->id, 'origin_operation_id' => $source->originOperationId,
+                'lines' => $expectedLines, 'recorded_at' => $entry->created_at->utc()->toIso8601String()];
+            $payload = $this->json->encode($entry->payload);
+            if ($entry->cause_type !== null || $entry->cause_id !== null || ! hash_equals($entry->sha256, hash('sha256', $payload))
+                || $payload !== $this->json->encode($expected)) {
                 throw new WalletViolation('WALLET_POSTING_CONFLICT');
             }
         }
