@@ -557,6 +557,17 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `business_campaign_closures_business_campaign_id_unique` on (business_campaign_id) — unique; `business_campaign_closures_business_id_index` on (business_id); `business_campaign_closures_exposure_reservation_id_unique` on (exposure_reservation_id) — unique; `business_campaign_closures_pkey` on (id) — unique
 
+### `business_campaign_expiry_failures`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `business_campaign_id` | `bpchar` | no | — |
+| `last_attempted_at` | `timestamptz` | no | — |
+| `exception_class` | `varchar` | no | — |
+| `reason_code` | `varchar` | no | — |
+
+**Indexes:** `business_campaign_expiry_failures_last_attempted_at_index` on (last_attempted_at); `business_campaign_expiry_failures_pkey` on (business_campaign_id) — unique
+
 ### `business_campaigns`
 
 | Column | Type | Nullable | Default |
@@ -574,7 +585,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `sha256` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
 
-**Indexes:** `business_campaigns_business_application_id_unique` on (business_application_id) — unique; `business_campaigns_business_application_release_id_unique` on (business_application_release_id) — unique; `business_campaigns_exposure_reservation_id_unique` on (exposure_reservation_id) — unique; `business_campaigns_pkey` on (id) — unique; `campaign_closure_parent` on (id, business_id, exposure_reservation_id, principal) — unique; `campaign_expiry_sweep` on (expires_at, id)
+**Indexes:** `business_campaigns_business_application_id_unique` on (business_application_id) — unique; `business_campaigns_business_application_release_id_unique` on (business_application_release_id) — unique; `business_campaigns_exposure_reservation_id_unique` on (exposure_reservation_id) — unique; `business_campaigns_pkey` on (id) — unique; `campaign_closure_parent` on (id, business_id, exposure_reservation_id, principal) — unique; `campaign_expiry_sweep` on (expires_at, id); `primary_publication_parent` on (id, sha256) — unique
 
 ### `business_credit_snapshots`
 
@@ -1065,7 +1076,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `amount` | `numeric` | no | — |
 | `created_at` | `timestamptz` | no | — |
 
-**Indexes:** `ledger_lines_account_id_direction_index` on (account_id, direction); `ledger_lines_pkey` on (id) — unique
+**Indexes:** `ledger_lines_account_id_direction_index` on (account_id, direction); `ledger_lines_entry_id_index` on (entry_id); `ledger_lines_pkey` on (id) — unique
 
 ### `migrations`
 
@@ -1131,6 +1142,90 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `personal_access_tokens_expires_at_index` on (expires_at); `personal_access_tokens_pkey` on (id) — unique; `personal_access_tokens_token_unique` on (token) — unique; `personal_access_tokens_tokenable_type_tokenable_id_index` on (tokenable_type, tokenable_id)
 
+### `primary_campaign_closure_returns`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `primary_reservation_id` | `bpchar` | no | — |
+| `business_campaign_closure_id` | `bpchar` | no | — |
+| `primary_reservation_version_id` | `bpchar` | no | — |
+| `version_sha256` | `bpchar` | no | — |
+| `primary_commitment_id` | `bpchar` | yes | — |
+| `party_id` | `bpchar` | no | — |
+| `wallet_id` | `bpchar` | no | — |
+| `principal` | `numeric` | no | — |
+| `origin_operation_id` | `bpchar` | no | — |
+| `hold_entry_id` | `bpchar` | no | — |
+| `commit_entry_id` | `bpchar` | yes | — |
+| `return_entry_id` | `bpchar` | no | — |
+| `return_kind` | `varchar` | no | — |
+
+**Indexes:** `primary_campaign_closure_returns_business_campaign_closure_id_i` on (business_campaign_closure_id); `primary_campaign_closure_returns_pkey` on (primary_reservation_id) — unique; `primary_campaign_closure_returns_return_entry_id_unique` on (return_entry_id) — unique
+
+### `primary_campaign_expiry_settlements`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `business_campaign_closure_id` | `bpchar` | no | — |
+| `business_campaign_id` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `primary_campaign_expiry_settlements_business_campaign_id_unique` on (business_campaign_id) — unique; `primary_campaign_expiry_settlements_pkey` on (business_campaign_closure_id) — unique
+
+### `primary_campaign_fundings`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `business_campaign_id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `exposure_reservation_id` | `bpchar` | no | — |
+| `publication_sha256` | `bpchar` | no | — |
+| `principal` | `numeric` | no | — |
+| `payload` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `primary_campaign_fundings_business_campaign_id_unique` on (business_campaign_id) — unique; `primary_campaign_fundings_business_id_index` on (business_id); `primary_campaign_fundings_exposure_reservation_id_unique` on (exposure_reservation_id) — unique; `primary_campaign_fundings_pkey` on (id) — unique
+
+### `primary_commitments`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `primary_reservation_id` | `bpchar` | no | — |
+| `primary_reservation_version_id` | `bpchar` | no | — |
+| `operation_id` | `bpchar` | no | — |
+| `confirmed_at` | `timestamptz` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `primary_commitments_operation_id_unique` on (operation_id) — unique; `primary_commitments_pkey` on (id) — unique; `primary_commitments_primary_reservation_id_unique` on (primary_reservation_id) — unique; `primary_commitments_primary_reservation_version_id_unique` on (primary_reservation_version_id) — unique
+
+### `primary_expiry_failures`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `primary_reservation_id` | `bpchar` | no | — |
+| `last_attempted_at` | `timestamptz` | no | — |
+| `exception_class` | `varchar` | no | — |
+| `reason_code` | `varchar` | yes | — |
+
+**Indexes:** `primary_expiry_failures_last_attempted_at_index` on (last_attempted_at); `primary_expiry_failures_pkey` on (primary_reservation_id) — unique
+
+### `primary_funding_commitments`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `funding_id` | `bpchar` | no | — |
+| `commitment_id` | `bpchar` | no | — |
+| `reservation_id` | `bpchar` | no | — |
+| `hold_entry_id` | `bpchar` | no | — |
+| `commit_entry_id` | `bpchar` | no | — |
+| `wallet_id` | `bpchar` | no | — |
+| `origin_operation_id` | `bpchar` | no | — |
+
+**Indexes:** `primary_funding_commitments_commit_entry_id_unique` on (commit_entry_id) — unique; `primary_funding_commitments_hold_entry_id_unique` on (hold_entry_id) — unique; `primary_funding_commitments_pkey` on (commitment_id) — unique; `primary_funding_commitments_reservation_id_unique` on (reservation_id) — unique
+
 ### `primary_holdings`
 
 | Column | Type | Nullable | Default |
@@ -1153,8 +1248,58 @@ facts that would differ between machines, so they are excluded deliberately.
 | `payload` | `text` | no | — |
 | `sha256` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
+| `primary_reservation_id` | `bpchar` | no | — |
+| `reservation_sha256` | `bpchar` | no | — |
+| `confirmation_version_id` | `bpchar` | no | — |
+| `confirmation_revision` | `int4` | no | — |
+| `confirmation_sha256` | `bpchar` | no | — |
 
-**Indexes:** `primary_holdings_business_campaign_id_index` on (business_campaign_id); `primary_holdings_commitment_id_unique` on (commitment_id) — unique; `primary_holdings_party_id_index` on (party_id); `primary_holdings_pkey` on (id) — unique; `primary_holdings_receipt_id_unique` on (receipt_id) — unique
+**Indexes:** `primary_holding_reservation_lookup` on (primary_reservation_id); `primary_holdings_business_campaign_id_index` on (business_campaign_id); `primary_holdings_commitment_id_unique` on (commitment_id) — unique; `primary_holdings_party_id_index` on (party_id); `primary_holdings_pkey` on (id) — unique; `primary_holdings_receipt_id_unique` on (receipt_id) — unique
+
+### `primary_ordinal_claims`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `business_campaign_id` | `bpchar` | no | — |
+| `ordinal` | `int4` | no | — |
+| `primary_reservation_id` | `bpchar` | no | — |
+
+**Indexes:** `primary_claim_reservation` on (primary_reservation_id); `primary_ordinal_claims_pkey` on (business_campaign_id, ordinal) — unique
+
+### `primary_reservation_versions`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `primary_reservation_id` | `bpchar` | no | — |
+| `revision` | `int4` | no | — |
+| `state` | `varchar` | no | — |
+| `operation_id` | `bpchar` | yes | — |
+| `payload` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `previous_sha256` | `bpchar` | yes | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `primary_confirmation_parent` on (id, primary_reservation_id) — unique; `primary_reservation_revision` on (primary_reservation_id, revision) — unique; `primary_reservation_versions_operation_id_unique` on (operation_id) — unique; `primary_reservation_versions_pkey` on (id) — unique
+
+### `primary_reservations`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `business_campaign_id` | `bpchar` | no | — |
+| `publication_sha256` | `bpchar` | no | — |
+| `party_id` | `bpchar` | no | — |
+| `origin_operation_id` | `bpchar` | no | — |
+| `units` | `int4` | no | — |
+| `principal` | `numeric` | no | — |
+| `payload` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+| `expires_at` | `timestamptz` | no | — |
+| `ordinal_ranges` | `int8multirange` | no | — |
+
+**Indexes:** `primary_campaign_reservations` on (business_campaign_id, id); `primary_ordinal_intersection` on (ordinal_ranges); `primary_party_reservations` on (party_id, id); `primary_reservation_expiry` on (expires_at, id); `primary_reservations_origin_operation_id_unique` on (origin_operation_id) — unique; `primary_reservations_pkey` on (id) — unique
 
 ### `pulse_signups`
 
@@ -1537,6 +1682,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_29_100100_create_primary_holdings_table.php |
 | 2026_09_29_100200_add_primary_issue_to_wallet_ledger.php |
 | 2026_09_29_100300_keep_staff_accounts_and_parties_disjoint.php |
+| 2026_09_29_100400_bind_disbursement_closing_command_authority.php |
 | 2026_09_29_112938_create_primary_expiry_failures_table.php |
 | 2026_09_30_054318_create_primary_campaign_fundings.php |
 | 2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php |

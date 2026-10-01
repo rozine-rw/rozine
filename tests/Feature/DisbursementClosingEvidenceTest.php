@@ -17,8 +17,10 @@ use App\Models\Disbursement;
 use App\Models\DisbursementClosing;
 use App\Models\DisbursementIntent;
 use App\Models\DisbursementReconciliation;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
@@ -122,9 +124,11 @@ function closingFor(string $cause): DisbursementClosing
  * Runs a change with one table's append-only trigger lifted; the test's transaction rolls it back.
  * Deferred keys are checked first, since PostgreSQL refuses DDL on a table with pending trigger events.
  */
-function withTriggerLifted(string $table, string $trigger, Closure $change): void
+function withTriggerLifted(string $table, string $trigger, Closure $change, bool $flushDeferred = true): void
 {
-    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    if ($flushDeferred) {
+        DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    }
     DB::statement("ALTER TABLE {$table} DISABLE TRIGGER {$trigger}");
     try {
         $change();
@@ -154,10 +158,57 @@ function rewritten(Model $record, string $trigger, array $columns, array $payloa
         'sha256' => hash('sha256', app(CanonicalJson::class)->encode($merged))])->save());
 }
 
+/**
+ * Rewrites one part of a reconciliation's retained comparison; null removes it.
+ *
+ * @param  array<string, string>|null  $changes
+ */
+function compared(DisbursementReconciliation $reconciliation, string $part, ?array $changes): void
+{
+    $comparison = $reconciliation->comparison;
+    if ($changes === null) {
+        unset($comparison[$part]);
+    } else {
+        $comparison[$part] = [...$comparison[$part], ...$changes];
+    }
+    withTriggerLifted('disbursement_reconciliations', 'disbursement_reconciliations_protected',
+        fn () => DB::table('disbursement_reconciliations')->where('id', $reconciliation->id)->update(['comparison' => json_encode($comparison)]));
+}
+
+/**
+ * Changes the selected observation and what the reconciliation retained of it alike, so only its
+ * binding to the intent can refuse it.
+ *
+ * @param  array<string, string>  $columns
+ * @param  array<string, string>  $observed
+ */
+function observedAs(DisbursementReconciliation $reconciliation, array $columns, array $observed): void
+{
+    withTriggerLifted('disbursement_provider_events', 'disbursement_provider_events_immutable',
+        fn () => DB::table('disbursement_provider_events')->where('id', $reconciliation->provider_event_id)->update($columns));
+    compared($reconciliation, 'observed', $observed);
+}
+
+/** Makes the recorded approve command disagree with the closing's retained authority in one respect. */
+function mismatchedOperation(string $operationId, string $case, bool $flushDeferred): void
+{
+    $change = match ($case) {
+        'operation of another command' => ['command' => 'disbursement.reject'],
+        'operation on another target' => ['target_id' => strtolower((string) Str::ulid())],
+        'operation by another actor' => ['actor_user_id' => User::factory()->create()->id],
+        'operation of another request' => ['request_id' => (string) Str::uuid()],
+        'operation with another outcome' => ['result' => DB::raw("jsonb_set(result, '{code}', '\"DISBURSEMENT_INTENT_RECORDED\"')")],
+        'operation receipt of another closing' => ['result' => DB::raw("jsonb_set(result, '{data,receipt,receipt_id}', '\"01kanotherclosing000000000\"')")],
+        default => throw new LogicException($case),
+    };
+    withTriggerLifted('command_operations', 'command_operations_immutable',
+        fn () => DB::table('command_operations')->where('id', $operationId)->update($change), $flushDeferred);
+}
+
 it('authenticates every cause inside the closing call and afterwards, with the retained issue instant', function (string $cause): void {
     $seen = closingCalls();
     app()->instance(FundedCampaigns::class, evidenceRecordingFunding($seen));
-    // Time moves on between recording the closing and issuing, so only the retained instant matches.
+    // Time moves on between recording the closing and issuing, so only the one retained instant matches.
     DisbursementClosing::saved(fn () => $this->travel(1)->hours());
     $closing = closingFor($cause);
     $disbursement = Disbursement::query()->findOrFail($closing->disbursement_id);
@@ -176,7 +227,15 @@ it('authenticates every cause inside the closing call and afterwards, with the r
         ->and([$evidence->intentId, $evidence->intentOperationId, $evidence->reconciliationId, $evidence->operationId])
         ->toBe([$intent?->id, $intent?->operation_id, $closing->reconciliation_id, $closing->operation_id])
         ->and([$evidence->recordedAt, $evidence->closingSha256])->toBe([$closing->payload['recorded_at'], $closing->sha256])
-        ->and($instruction->closingId)->toBe($closing->id);
+        ->and($closing->created_at->utc()->toIso8601String())->toBe($evidence->recordedAt)
+        ->and($instruction->closingId)->toBe($closing->id)
+        ->and($closing->payload['provider_event_id'])->toBe($closing->reconciliation_id === null ? null
+            : DisbursementReconciliation::query()->findOrFail($closing->reconciliation_id)->provider_event_id);
+    $operation = DB::table('command_operations')->where('id', $closing->operation_id)->first(['actor_user_id', 'request_id']);
+    expect([$closing->payload['command'], $closing->payload['actor_user_id'], $closing->payload['request_id'], $closing->actor_user_id, $closing->request_id])
+        ->toBe($operation === null ? [null, null, null, null, null]
+            : ['disbursement.approve', (int) $operation->actor_user_id, $operation->request_id, (int) $operation->actor_user_id, $operation->request_id])
+        ->and($operation === null)->toBe($cause !== 'approve_recheck');
     expect($instruction instanceof IssueInstruction)->toBe($issued);
     if ($instruction instanceof IssueInstruction) {
         expect([$evidence->effectiveAt, $evidence->effectiveDate, $evidence->dueDates])
@@ -273,6 +332,28 @@ it('refuses a stored closing that contradicts itself or its ancestry', function 
                 ...$reconciliation->comparison, 'observed' => [...$reconciliation->comparison['observed'], 'event_id' => 'evt-other']])])),
         'final observation not applied' => withTriggerLifted('disbursement_provider_events', 'disbursement_provider_events_immutable',
             fn () => DB::table('disbursement_provider_events')->where('id', $reconciliation->provider_event_id)->update(['disposition' => 'stale'])),
+        'created_at against recorded_at' => withTriggerLifted('disbursement_closings', $closings,
+            fn () => DB::table('disbursement_closings')->where('id', $closing->id)->update(['created_at' => DB::raw("created_at + interval '1 second'")])),
+        'closing payload names another observation' => rewritten($closing, $closings, [], ['provider_event_id' => strtolower((string) Str::ulid())]),
+        'reconciliation compared another destination' => compared($reconciliation, 'intent', ['destination_sha256' => str_repeat('f', 64)]),
+        'reconciliation compared another provider' => compared($reconciliation, 'intent', ['provider' => 'other']),
+        'reconciliation without its observation count' => compared($reconciliation, 'observations', null),
+        'reconciliation observed another effective instant' => compared($reconciliation, 'observed', ['effective_at' => '2028-01-31T09:00:00+00:00']),
+        'matched reconciliation with causes' => (function () use ($reconciliation): void {
+            withoutConstraint('disbursement_reconciliations', 'disbursement_reconciliation_facts');
+            withTriggerLifted('disbursement_reconciliations', 'disbursement_reconciliations_protected',
+                fn () => DB::table('disbursement_reconciliations')->where('id', $reconciliation->id)->update(['causes' => json_encode(['conflict'])]));
+        })(),
+        'observation of another amount' => observedAs($reconciliation, ['amount' => '5000'], ['amount' => '5000']),
+        'observation of another destination' => observedAs($reconciliation, ['destination_sha256' => str_repeat('e', 64)], ['destination_sha256' => str_repeat('e', 64)]),
+        'observation of another operation' => (function () use ($reconciliation): void {
+            $other = strtolower((string) Str::ulid());
+            observedAs($reconciliation, ['observed_operation_id' => $other], ['operation_id' => $other]);
+        })(),
+        'observation of another environment' => observedAs($reconciliation, ['environment' => 'other'], ['environment' => 'other']),
+        'observation of another reference' => observedAs($reconciliation, ['provider_reference_sha256' => str_repeat('a', 64)],
+            ['provider_reference_sha256' => str_repeat('a', 64)]),
+        'non-final observation' => observedAs($reconciliation, ['state' => 'pending'], ['state' => 'pending']),
         'effective_at against the reconciliation' => rewritten($closing, $closings, ['effective_at' => '2028-01-31T09:00:00+00:00'],
             ['effective_at' => '2028-01-31T09:00:00+00:00']),
         'effective date not recomputed' => rewritten($closing, $closings, ['effective_date' => '2028-02-01'], ['effective_date' => '2028-02-01']),
@@ -286,26 +367,62 @@ it('refuses a stored closing that contradicts itself or its ancestry', function 
     'malformed recorded_at', 'non-string causes', 'failure shape with dates', 'unknown cause', 'disbursement sha only', 'disbursement column against payload',
     'disbursement term out of schedule range', 'intent sha only', 'intent commitments binding', 'intent payload of another disbursement',
     'reconciliation decision', 'reconciliation compared another operation', 'reconciliation observed another event', 'final observation not applied',
-    'effective_at against the reconciliation', 'effective date not recomputed', 'due dates not recomputed']);
+    'effective_at against the reconciliation', 'effective date not recomputed', 'due dates not recomputed', 'created_at against recorded_at',
+    'closing payload names another observation', 'reconciliation compared another destination', 'reconciliation compared another provider',
+    'reconciliation without its observation count', 'reconciliation observed another effective instant', 'matched reconciliation with causes',
+    'observation of another amount', 'observation of another destination', 'observation of another operation', 'observation of another environment',
+    'observation of another reference', 'non-final observation']);
 
-it('authenticates the approve operation of an approve-time failed closing', function (string $case, string $reason): void {
+it('refuses an intent whose destination falls outside its recomputed intent digest', function (): void {
+    $closing = closingFor('worker_recheck');
+    withTriggerLifted('disbursement_intents', 'disbursement_intents_protected',
+        fn () => DB::table('disbursement_intents')->where('id', $closing->intent_id)->update(['destination_sha256' => str_repeat('d', 64)]));
+
+    expect(fn () => closingEvidence($closing->id))->toThrow(DisbursementViolation::class, 'DISBURSEMENT_CLOSING_INTEGRITY_FAILED');
+});
+
+it('authenticates the approve command authority of an approve-time failed closing on reread', function (string $case, string $reason): void {
     $closing = closingFor('approve_recheck');
     match ($case) {
         'proof released from the operation' => withTriggerLifted('disbursement_step_up_proofs', 'disbursement_step_up_proofs_protected',
             fn () => DB::table('disbursement_step_up_proofs')->where('consumed_operation_id', $closing->operation_id)->update(['consumed_operation_id' => null, 'consumed_at' => null])),
         'proof for another amount' => withTriggerLifted('disbursement_step_up_proofs', 'disbursement_step_up_proofs_protected',
             fn () => DB::table('disbursement_step_up_proofs')->where('consumed_operation_id', $closing->operation_id)->update(['amount' => '5000'])),
-        'operation of another command' => withTriggerLifted('command_operations', 'command_operations_immutable',
-            fn () => DB::table('command_operations')->where('id', $closing->operation_id)->update(['command' => 'disbursement.reject'])),
-        'operation on another target' => withTriggerLifted('command_operations', 'command_operations_immutable',
-            fn () => DB::table('command_operations')->where('id', $closing->operation_id)->update(['target_id' => strtolower((string) Str::ulid())])),
-        default => throw new LogicException($case),
+        'closing authority of another actor' => rewritten($closing, 'disbursement_closings_protected', ['actor_user_id' => $other = User::factory()->create()->id],
+            ['actor_user_id' => $other]),
+        default => mismatchedOperation((string) $closing->operation_id, $case, true),
     };
 
     expect(fn () => closingEvidence($closing->id))->toThrow(DisbursementViolation::class, $reason);
 })->with([
     'proof released from the operation' => ['proof released from the operation', 'DISBURSEMENT_CLOSING_UNAVAILABLE'],
     'proof for another amount' => ['proof for another amount', 'DISBURSEMENT_CLOSING_INTEGRITY_FAILED'],
+    'closing authority of another actor' => ['closing authority of another actor', 'DISBURSEMENT_CLOSING_INTEGRITY_FAILED'],
     'operation of another command' => ['operation of another command', 'DISBURSEMENT_CLOSING_INTEGRITY_FAILED'],
     'operation on another target' => ['operation on another target', 'DISBURSEMENT_CLOSING_INTEGRITY_FAILED'],
+    'operation by another actor' => ['operation by another actor', 'DISBURSEMENT_CLOSING_INTEGRITY_FAILED'],
+    'operation of another request' => ['operation of another request', 'DISBURSEMENT_CLOSING_INTEGRITY_FAILED'],
+    'operation with another outcome' => ['operation with another outcome', 'DISBURSEMENT_CLOSING_INTEGRITY_FAILED'],
+    'operation receipt of another closing' => ['operation receipt of another closing', 'DISBURSEMENT_CLOSING_INTEGRITY_FAILED'],
 ]);
+
+it('lets an approve-time closing commit only with its own recorded approve command', function (string $case): void {
+    $closing = closingFor('approve_recheck');
+    if ($case !== 'its own command') {
+        // Changed before the deferred check runs, as if the journal had recorded another command.
+        mismatchedOperation((string) $closing->operation_id, $case, false);
+    }
+    $commit = fn () => DB::statement('SET CONSTRAINTS disbursement_closings_authority IMMEDIATE');
+
+    $case === 'its own command' ? expect($commit())->toBeTrue()
+        : expect($commit)->toThrow(QueryException::class, 'commits only with its own recorded approve command');
+})->with(['its own command', 'operation of another command', 'operation on another target', 'operation by another actor', 'operation of another request',
+    'operation with another outcome', 'operation receipt of another closing']);
+
+it('refuses an approve-time closing without its command authority', function (): void {
+    $closing = closingFor('approve_recheck');
+
+    expect(fn () => withTriggerLifted('disbursement_closings', 'disbursement_closings_protected',
+        fn () => DB::transaction(fn () => DB::table('disbursement_closings')->where('id', $closing->id)->update(['request_id' => null]))))
+        ->toThrow(QueryException::class, 'disbursement_closing_authority');
+});
