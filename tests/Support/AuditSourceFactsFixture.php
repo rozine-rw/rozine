@@ -52,12 +52,19 @@ final class AuditSourceFactsFixture
     }
 
     /**
+     * Identical calls must be identical requests. The default payload is timed from the
+     * assignment's last change rather than the wall clock, so same-request retries forked
+     * either side of a clock second send one payload and replay instead of being refused
+     * IDEMPOTENCY_CONFLICT.
+     *
      * @param  array<string, mixed>|null  $facts
      * @return array<string, mixed>
      */
     public static function record(User $staff, AuditAssignment $assignment, int $revision = 0, ?string $requestId = null, ?array $facts = null, ?int $assignmentRevision = null): array
     {
+        $facts ??= self::facts($assignment->updated_at?->toImmutable()->utc()->subMinutes(30)->format('Y-m-d\TH:i:s\Z'));
+
         return app(RecordIsolatedAuditSourceFacts::class)->handle($staff->id, $assignment->id, $assignmentRevision ?? $assignment->revision, $revision,
-            $facts ?? self::facts(), 'synthetic:c2-stock-declaration', 'Isolated C2 procedure acceptance scenario.', $requestId ?? (string) Str::uuid());
+            $facts, 'synthetic:c2-stock-declaration', 'Isolated C2 procedure acceptance scenario.', $requestId ?? (string) Str::uuid());
     }
 }

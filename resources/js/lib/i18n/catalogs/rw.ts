@@ -50,6 +50,11 @@ const rw: Catalog = {
     'errors.not_found.body':
         'Birashoboka ko ihuza ryanditswe nabi, cyangwa icyo ryerekezagaho kitakiboneka. Reba ihuza, cyangwa wongere utangirire kuri Rozine.',
     'errors.not_found.home': 'Jya ku rupapuro rw’ibanze rwa Rozine',
+    'errors.unavailable.head_title': 'Ntibiboneka by’agateganyo',
+    'errors.unavailable.title': 'Rozine ntiyashoboye gufungura iyi paji',
+    'errors.unavailable.body':
+        'Habaye ikibazo ku ruhande rwacu. Ibyo wamaze kohereza ntibyagizweho ingaruka. Tegereza gato, hanyuma wongere ugerageze.',
+    'errors.unavailable.retry': 'Ongera ugerageze',
     'environment.demo': 'Demo — si urubuga nyarwo',
     'environment.uat': 'UAT — si urubuga nyarwo',
     'environment.synthetic_only':
@@ -3767,7 +3772,7 @@ const rw: Catalog = {
     'investor.deal.lifecycle.failed_closing': 'Byafunzwe, amafaranga asubizwa',
     'investor.deal.notice.fully_reserved.title': 'Impapuro zose zafashwe ubu',
     'investor.deal.notice.fully_reserved.body':
-        'Kwishyura bifata impapuro kugeza ku minota 5. Izo igihe cyazo kirangiye zigaruka muri iki gikorwa.',
+        "Impapuro zose zihari ubu zafashwe mu kwishyura kw'abandi bashoramari. Uzongere urebe nyuma.",
     'investor.deal.notice.funded.title': 'Imari yose yabonetse',
     'investor.deal.notice.funded.body':
         'Ibyiyemejwe birafunze mu gihe amafaranga yoherezwa ku kigo. Impapuro zitangwa ubwo bwishyu bumaze kwemezwa.',
@@ -3893,7 +3898,7 @@ const rw: Catalog = {
     'investor.primary.cancel': 'Hagarika icyiyemezo',
     'investor.primary.cancel_title': 'Uhagarika iki cyiyemezo?',
     'investor.primary.cancel_body':
-        'Igishoro cyawe gisubira muri aboneka cyose, nta kiguzi, kandi izi mpapuro zirarekurwa.',
+        'Igishoro cyawe gisubira muri aboneka cyose, nta kiguzi. Ntuzongera gutunga izi mpapuro.',
     'investor.primary.cancel_confirm': 'Yego, hagarika usubize',
     'investor.primary.cancel_keep': 'Bigumeho',
     'investor.holding.issue.title': 'Inyandiko yo gutanga',

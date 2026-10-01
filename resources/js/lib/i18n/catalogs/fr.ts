@@ -49,6 +49,11 @@ const fr: Catalog = {
     'errors.not_found.body':
         "Le lien est peut-être mal saisi, ou ce vers quoi il pointait n'est plus disponible. Vérifiez le lien ou recommencez depuis Rozine.",
     'errors.not_found.home': "Aller à l'accueil de Rozine",
+    'errors.unavailable.head_title': 'Momentanément indisponible',
+    'errors.unavailable.title': "Rozine n'a pas pu charger cette page",
+    'errors.unavailable.body':
+        "Un problème est survenu de notre côté. Ce que vous avez déjà envoyé n'est pas affecté. Patientez un instant, puis réessayez.",
+    'errors.unavailable.retry': 'Réessayer',
     'environment.demo': 'Démo — hors production',
     'environment.uat': 'UAT — hors production',
     'environment.synthetic_only':
@@ -3788,7 +3793,7 @@ const fr: Catalog = {
     'investor.deal.notice.fully_reserved.title':
         'Tous les titres sont réservés pour le moment',
     'investor.deal.notice.fully_reserved.body':
-        "Les paiements réservent des titres jusqu'à 5 minutes. Ceux qui expirent reviennent dans cette levée.",
+        "Tous les titres disponibles sont actuellement réservés dans les paiements d'autres investisseurs. Revenez plus tard.",
     'investor.deal.notice.funded.title': 'Entièrement financé',
     'investor.deal.notice.funded.body':
         "Les engagements sont verrouillés pendant le versement à l'entreprise. Les titres sont émis une fois ce paiement confirmé.",
@@ -3920,7 +3925,7 @@ const fr: Catalog = {
     'investor.primary.cancel': "Annuler l'engagement",
     'investor.primary.cancel_title': 'Annuler cet engagement ?',
     'investor.primary.cancel_body':
-        'Votre capital revient intégralement sur le disponible, sans frais, et ces titres sont libérés.',
+        'Votre capital revient intégralement sur le disponible, sans frais. Vous ne détiendrez plus ces titres.',
     'investor.primary.cancel_confirm': 'Oui, annuler et rembourser',
     'investor.primary.cancel_keep': 'Le conserver',
     'investor.holding.issue.title': "Relevé d'émission",
