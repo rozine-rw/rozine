@@ -110,12 +110,15 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $holdings = require database_path('migrations/2026_09_29_100100_create_primary_holdings_table.php');
     $walletIssue = require database_path('migrations/2026_09_29_100200_add_primary_issue_to_wallet_ledger.php');
     $staffDisjoint = require database_path('migrations/2026_09_29_100300_keep_staff_accounts_and_parties_disjoint.php');
+    $closingAuthority = require database_path('migrations/2026_09_29_100400_bind_disbursement_closing_command_authority.php');
     $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
     $holdingIssue = require database_path('migrations/2026_09_30_114217_require_issue_evidence_for_primary_holdings.php');
     $holdingIssue->down();
     $holdingBinding->down();
     $fundings->down();
     $expiryFailures->down();
+    $closingAuthority->down();
+    expect(Schema::hasColumn('disbursement_closings', 'actor_user_id'))->toBeFalse();
     $staffDisjoint->down();
     $walletIssue->down();
     expect(Schema::hasColumn('ledger_entries', 'cause_id'))->toBeFalse();
@@ -242,6 +245,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $holdings->up();
     $walletIssue->up();
     $staffDisjoint->up();
+    $closingAuthority->up();
     $expiryFailures->up();
     $fundings->up();
     $holdingBinding->up();
@@ -259,6 +263,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasTable('verified_organization_identities'))->toBeTrue()
         ->and(Schema::hasTable('command_operations'))->toBeTrue()
         ->and(Schema::hasTable('disbursement_closings'))->toBeTrue()
+        ->and(Schema::hasColumns('disbursement_closings', ['actor_user_id', 'request_id']))->toBeTrue()
         ->and(Schema::hasTable('primary_holdings'))->toBeTrue()
         ->and(Schema::hasColumn('ledger_entries', 'cause_id'))->toBeTrue()
         ->and(Schema::hasColumn('business_mandates', 'profile'))->toBeTrue()

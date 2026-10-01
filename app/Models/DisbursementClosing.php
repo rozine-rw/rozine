@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $cause
  * @property list<string> $causes
  * @property string|null $operation_id
+ * @property int|null $actor_user_id
+ * @property string|null $request_id
  * @property CarbonImmutable|null $effective_at
  * @property CarbonImmutable|null $effective_date
  * @property list<string>|null $due_dates

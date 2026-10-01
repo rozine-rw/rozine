@@ -731,6 +731,8 @@ facts that would differ between machines, so they are excluded deliberately.
 | `payload` | `text` | no | — |
 | `sha256` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
+| `actor_user_id` | `int8` | yes | — |
+| `request_id` | `uuid` | yes | — |
 
 **Indexes:** `disbursement_closings_disbursement_id_unique` on (disbursement_id) — unique; `disbursement_closings_intent_id_unique` on (intent_id) — unique; `disbursement_closings_operation_id_unique` on (operation_id) — unique; `disbursement_closings_pkey` on (id) — unique; `disbursement_closings_reconciliation_id_unique` on (reconciliation_id) — unique
 
@@ -1638,6 +1640,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_29_100100_create_primary_holdings_table.php |
 | 2026_09_29_100200_add_primary_issue_to_wallet_ledger.php |
 | 2026_09_29_100300_keep_staff_accounts_and_parties_disjoint.php |
+| 2026_09_29_100400_bind_disbursement_closing_command_authority.php |
 | 2026_09_29_112938_create_primary_expiry_failures_table.php |
 | 2026_09_30_054318_create_primary_campaign_fundings.php |
 | 2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php |

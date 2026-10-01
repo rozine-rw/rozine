@@ -113,7 +113,14 @@ final class PrimaryHoldingFixture
             'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()]);
         $event(1, 'authorized', $maker);
         if ($kind !== 'issued') {
-            return self::closing($disbursement->id, $kind, ['cause' => 'approve_recheck', 'causes' => '["mandate"]', 'operation_id' => self::operation($checker)]);
+            // An approve-time closing commits only with its own completed approve command (#96 5925545895).
+            $closing = self::id();
+            $approve = CommandOperation::factory()->create(['actor_key' => 'staff:'.$checker, 'actor_user_id' => $checker, 'command' => 'disbursement.approve',
+                'target_type' => 'disbursement', 'target_id' => $disbursement->id,
+                'result' => ['status' => 'completed', 'code' => 'CAMPAIGN_FAILED_CLOSING', 'data' => ['receipt' => ['receipt_id' => $closing]]]]);
+
+            return self::closing($disbursement->id, $kind, ['id' => $closing, 'cause' => 'approve_recheck', 'causes' => '["mandate"]', 'operation_id' => $approve->id,
+                'actor_user_id' => $checker, 'request_id' => $approve->request_id]);
         }
         [$intent, $operation] = [self::id(), self::operation($checker)];
         DB::table('disbursement_intents')->insert(['id' => $intent, 'disbursement_id' => $disbursement->id, 'operation_id' => $operation,
