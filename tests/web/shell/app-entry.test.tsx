@@ -80,10 +80,20 @@ describe('application entry point', () => {
         expect(options.layout('welcome')).toBe(state.publicLayout);
         expect(options.layout('pulse')).toBe(state.publicLayout);
         expect(options.layout('audit/verify-seal')).toBe(state.publicLayout);
-        /* The error page's not-found answer is public; its refusals keep the app layout. */
+        /* The error page's not-found and 5xx answers are public; its refusals keep the app layout. */
         expect(
             options.layout('identity/access-denied', {
                 props: { status: 404 },
+            }),
+        ).toBe(state.publicLayout);
+        expect(
+            options.layout('identity/access-denied', {
+                props: { status: 503 },
+            }),
+        ).toBe(state.publicLayout);
+        expect(
+            options.layout('identity/access-denied', {
+                props: { status: 500 },
             }),
         ).toBe(state.publicLayout);
         expect(

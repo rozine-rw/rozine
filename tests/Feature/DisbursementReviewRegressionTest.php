@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\PrimaryReservationFixture;
 use Tests\Support\PrimarySourceFixture;
 
 /*
@@ -119,6 +120,7 @@ it('F4: refuses a primary_issue whose cause is not an issued disbursement closin
         $wallet = $postings->lockForParty($fixture['party']->id);
         $source = PrimarySourceFixture::reservation($wallet, '20000');
         $postings->hold($wallet, WalletMoney::of('20000'), $source);
+        PrimaryReservationFixture::terminalVersion($source, 'confirmed');
         $postings->commit($wallet, WalletMoney::of('20000'), $source);
 
         return $source;

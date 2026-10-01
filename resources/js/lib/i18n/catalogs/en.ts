@@ -49,6 +49,11 @@ const en = {
     'errors.not_found.body':
         'The link may be mistyped, or what it pointed to is no longer available. Check the link, or start again from Rozine.',
     'errors.not_found.home': 'Go to the Rozine home page',
+    'errors.unavailable.head_title': 'Temporarily unavailable',
+    'errors.unavailable.title': "Rozine couldn't load this page",
+    'errors.unavailable.body':
+        'Something went wrong on our side. Anything you already sent is unaffected. Wait a moment, then try again.',
+    'errors.unavailable.retry': 'Try again',
     'environment.demo': 'Demo — not live',
     'environment.uat': 'UAT — not live',
     'environment.synthetic_only':
@@ -3215,6 +3220,8 @@ const en = {
         'The raise is fully funded, so this can no longer be cancelled.',
     'settlement.refusal.CAMPAIGN_SETTLEMENT_REQUIRED':
         "Investors have already committed to this raise, so it can't be cancelled here. Their commitments have to be settled first.",
+    'settlement.refusal.CAMPAIGN_FUNDED':
+        "This raise is funded and awaiting disbursement, so it can't be cancelled.",
     'settlement.refusal.NOTE_INELIGIBLE': "This note isn't eligible right now.",
     'settlement.refusal.DISCLOSURE_STALE':
         'The disclosure changed. Read the current version and acknowledge it again.',
@@ -3387,29 +3394,56 @@ const en = {
     'business.campaign.state.live': 'Live',
     'business.campaign.state.fully_reserved': 'Fully reserved',
     'business.campaign.state.funded': 'Funded',
+    'business.campaign.state.funded_pending_disbursement':
+        'Funded · awaiting disbursement',
     'business.campaign.state.disbursing': 'Paying out',
     'business.campaign.state.issued': 'Notes issued',
     'business.campaign.state.expired': "Didn't fill",
     'business.campaign.state.cancelled': 'Cancelled',
     'business.campaign.state.failed_closing': 'Closed and refunded',
+    'business.campaign.state.sold_out_pending_settlement': 'Fully committed',
+    'business.campaign.state.inventory_unavailable': 'No notes available',
+    'business.campaign.state.closing_pending_settlement': 'Closing',
+    'business.campaign.state.unavailable': 'Status unavailable',
     'business.campaign.lifecycle.live': 'Raising · live',
     'business.campaign.lifecycle.fully_reserved': 'Raising · fully reserved',
+    'business.campaign.lifecycle.sold_out_pending_settlement':
+        'Fully committed · awaiting settlement',
+    'business.campaign.lifecycle.inventory_unavailable':
+        'Raising · no notes available',
+    'business.campaign.lifecycle.closing_pending_settlement':
+        'Deadline passed · closing',
     'business.campaign.restriction.RESTRICTION_ACTIVE':
         "Restricted since {date}. New commitments are paused while the restriction lasts; what's already committed stays.",
     'business.campaign.restriction.NOTE_INELIGIBLE':
         "Not eligible for new commitments since {date}; what's already committed stays.",
     'business.campaign.tile.committed': 'Committed',
     'business.campaign.tile.refunded': 'Refunded',
+    'business.campaign.tracker.title': 'Commitment tracker',
+    'business.campaign.tracker.committed_pct': '{pct}% committed',
+    'business.campaign.not_yet_committed': 'Not yet committed or reserved',
     'business.campaign.closing_now': 'Closing',
     'business.campaign.committed': 'Committed',
     'business.campaign.reserved': 'Reserved',
     'business.campaign.reserved_note':
-        "Reserved notes are held in investors' live checkouts and aren't committed yet; an unconfirmed hold is released after 5 minutes.",
+        "Notes held in an investor's checkout. They aren't confirmed yet.",
     'business.campaign.units':
-        '{committed} of {total} notes committed · {reserved} reserved · {available} available',
+        '{committed} of {total} notes committed · {reserved} reserved · {available} available · {unavailable} unavailable',
     'business.campaign.closes': 'Closes {date}',
     'business.campaign.fully_reserved':
-        "Every note is reserved in a live checkout. Holds that aren't confirmed within 5 minutes go back on sale.",
+        "Every available note is currently held in a checkout. New investors can't reserve right now.",
+    'business.campaign.unavailable_note':
+        "Unavailable notes were in a checkout or commitment that has ended. They aren't on sale.",
+    'business.campaign.sold_out':
+        "Every note is committed, so new investors can't join. The raise isn't funded until Rozine completes settlement.",
+    'business.campaign.inventory_unavailable':
+        "No notes are available to reserve and none are held in a checkout, so new investors can't commit right now.",
+    'business.campaign.closing':
+        "The deadline has passed, so new investors can't commit. Rozine is closing the raise and will show the outcome here.",
+    'business.campaign.progress_unavailable':
+        "This raise's progress can't be shown right now. Refresh the page to try again.",
+    'business.campaign.tile.deadline': 'Deadline',
+    'business.campaign.deadline_passed': 'Deadline passed {date}',
     'business.campaign.funded':
         'Fully funded on {date}. The raise can no longer be cancelled.',
     'business.campaign.closing_title': 'Disbursement',
@@ -3447,7 +3481,7 @@ const en = {
     'business.campaign.cancel.cancelling': 'Cancelling…',
     'business.campaign.cancel.title': 'Cancel this raise?',
     'business.campaign.cancel.body':
-        "Every investor's commitment goes back to them in full, without fee, and the raise closes for good. This can't be undone.",
+        "The raise closes for good and stops taking investors. This can't be undone.",
     'business.campaign.cancel.reason': 'Reason (optional)',
     'business.campaign.cancel.confirm': 'Cancel raise',
     'business.campaign.cancel.keep': 'Keep raising',
@@ -3605,7 +3639,7 @@ const en = {
     'investor.deal.notice.fully_reserved.title':
         'Every note is reserved right now',
     'investor.deal.notice.fully_reserved.body':
-        'Checkouts hold notes for up to 5 minutes. Any that lapse come back to this raise.',
+        "Every available note is currently held in other investors' checkouts. Check back later.",
     'investor.deal.notice.funded.title': 'Fully funded',
     'investor.deal.notice.funded.body':
         'Commitments are locked while the funds are paid to the business. Notes are issued once that payment is confirmed.',
@@ -3731,7 +3765,7 @@ const en = {
     'investor.primary.cancel': 'Cancel commitment',
     'investor.primary.cancel_title': 'Cancel this commitment?',
     'investor.primary.cancel_body':
-        'Your principal goes back to Available in full, with no fee, and these notes are released.',
+        "Your principal goes back to Available in full, with no fee. You'll no longer hold these notes.",
     'investor.primary.cancel_confirm': 'Yes, cancel and refund',
     'investor.primary.cancel_keep': 'Keep it',
     'investor.holding.issue.title': 'Issue record',

@@ -1,10 +1,7 @@
 {
     "version": 1,
     "sourceRoot": "resources/js",
-    "extensions": [
-        ".ts",
-        ".tsx"
-    ],
+    "extensions": [".ts", ".tsx"],
     "policy": "D-66/D-67",
     "exclusionMetadata": {
         "generatedPaths": {
@@ -546,6 +543,7 @@
         "resources/js/lib/rozine/dispute-note.ts",
         "resources/js/lib/rozine/format.ts",
         "resources/js/lib/rozine/operation.ts",
+        "resources/js/lib/rozine/raising.ts",
         "resources/js/lib/utils.ts",
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/auth/login.tsx",
@@ -616,10 +614,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 585,
+        "totalTrackedSources": 586,
         "generated": 196,
         "declarationOnly": 18,
-        "authoredExecutable": 371
+        "authoredExecutable": 372
     },
-    "coverageSetSha256": "d5ec3334d44b186afcd654c693e0094d87e9421a748a9e6a0b6a83a2a2bdf662"
+    "coverageSetSha256": "024d8fa39d46c5573585c0ec5e76052db3bd64465c46c647c6decc21a5132efd"
 }

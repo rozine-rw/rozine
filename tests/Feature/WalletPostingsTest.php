@@ -19,6 +19,11 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\PrimaryReservationFixture;
+
+beforeEach(function (): void {
+    $this->freezeSecond();
+});
 
 function postingId(): string
 {
@@ -50,13 +55,14 @@ function postingMoney(string $amount): WalletMoney
 it('holds, commits and refunds exactly, keeping each bucket once in the total', function (): void {
     ['user' => $user, 'wallet' => $wallet] = fundedWallet();
     $postings = app(WalletPostings::class);
-    $source = new PostingSource('primary_reservation', postingId(), postingId());
+    $source = PrimaryReservationFixture::postingSource($wallet, '20000');
 
     $hold = $postings->hold($wallet, postingMoney('20000'), $source);
     expect([$hold->kind, $hold->walletId, $hold->sourceType, $hold->sourceId, $hold->originOperationId, $hold->amount, $hold->replayed])
         ->toBe(['primary_hold', $wallet->walletId, 'primary_reservation', $source->id, $source->originOperationId, '20000', false])
         ->and(postingBuckets($user))->toBe(['30000', '20000', '0', '50000']);
 
+    PrimaryReservationFixture::terminalVersion($source, 'confirmed');
     $commit = $postings->commit($wallet, postingMoney('20000'), $source);
     expect($commit->kind)->toBe('primary_commit')->and($commit->entryId)->not->toBe($hold->entryId)
         ->and(postingBuckets($user))->toBe(['30000', '0', '20000', '50000']);
@@ -70,8 +76,9 @@ it('holds, commits and refunds exactly, keeping each bucket once in the total', 
 it('releases a hold back to available and ends its lifecycle', function (): void {
     ['user' => $user, 'wallet' => $wallet] = fundedWallet();
     $postings = app(WalletPostings::class);
-    $source = new PostingSource('primary_reservation', postingId(), postingId());
+    $source = PrimaryReservationFixture::postingSource($wallet, '20000');
     $postings->hold($wallet, postingMoney('20000'), $source);
+    PrimaryReservationFixture::terminalVersion($source, 'released');
     $release = $postings->release($wallet, postingMoney('20000'), $source);
 
     expect($release->kind)->toBe('primary_release')->and(postingBuckets($user))->toBe(['50000', '0', '0', '50000'])
@@ -96,7 +103,7 @@ it('returns the original posting for an identical retry and refuses any changed 
     ['wallet' => $wallet] = fundedWallet();
     ['wallet' => $other] = fundedWallet();
     $postings = app(WalletPostings::class);
-    $source = new PostingSource('primary_reservation', postingId(), postingId());
+    $source = PrimaryReservationFixture::postingSource($wallet, '20000');
     $hold = $postings->hold($wallet, postingMoney('20000'), $source);
     $again = $postings->hold($wallet, postingMoney('20000'), $source);
 
@@ -105,6 +112,7 @@ it('returns the original posting for an identical retry and refuses any changed 
         ->and(fn () => $postings->hold($other, postingMoney('20000'), $source))->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT')
         ->and(fn () => $postings->hold($wallet, postingMoney('20000'), new PostingSource('primary_reservation', $source->id, postingId())))
         ->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT');
+    PrimaryReservationFixture::terminalVersion($source, 'confirmed');
     $commit = $postings->commit($wallet, postingMoney('20000'), $source);
     expect($postings->commit($wallet, postingMoney('20000'), $source)->entryId)->toBe($commit->entryId)
         ->and(LedgerEntry::query()->where('source_id', $source->id)->count())->toBe(2);
@@ -114,7 +122,7 @@ it('lets no other operation, wallet or amount consume a hold', function (): void
     ['wallet' => $wallet] = fundedWallet();
     ['wallet' => $other] = fundedWallet();
     $postings = app(WalletPostings::class);
-    $source = new PostingSource('primary_reservation', postingId(), postingId());
+    $source = PrimaryReservationFixture::postingSource($wallet, '20000');
     $postings->hold($wallet, postingMoney('20000'), $source);
     $foreign = new PostingSource('primary_reservation', $source->id, postingId());
 
@@ -124,6 +132,7 @@ it('lets no other operation, wallet or amount consume a hold', function (): void
         ->and(fn () => $postings->commit($wallet, postingMoney('19999'), $source))->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT')
         ->and(fn () => $postings->commit($wallet, postingMoney('20000'), new PostingSource('primary_commitment', $source->id, $source->originOperationId)))
         ->toThrow(WalletViolation::class, 'WALLET_POSTING_STATE_INVALID');
+    PrimaryReservationFixture::terminalVersion($source, 'confirmed');
     $postings->commit($wallet, postingMoney('20000'), $source);
     expect(fn () => $postings->refund($wallet, postingMoney('20001'), $source))->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT')
         ->and(fn () => $postings->release($wallet, postingMoney('20000'), $source))->toThrow(WalletViolation::class, 'WALLET_POSTING_STATE_INVALID')
@@ -165,17 +174,18 @@ it('keeps the lifecycle and non-negative buckets at the database boundary too', 
         LedgerLine::factory()->create(['entry_id' => $entry->id, 'account_id' => $to, 'direction' => 'credit', 'amount' => $amount]);
         DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     };
-    $source = postingId();
+    $source = PrimaryReservationFixture::postingSource($wallet, '5000');
     $operation = postingId();
+    $post('primary_hold', $source->id, $source->originOperationId, $available->id, $held->id, '5000');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
 
     expect(fn () => DB::transaction(fn () => $post('primary_hold', postingId(), $operation, $available->id, $held->id, '50001')))
         ->toThrow(QueryException::class, 'would overdraw an Investor bucket')
-        ->and(fn () => DB::transaction(fn () => $post('primary_release', $source, $operation, $held->id, $available->id, '1000')))
+        ->and(fn () => DB::transaction(fn () => $post('primary_release', postingId(), $operation, $held->id, $available->id, '5000')))
         ->toThrow(QueryException::class, 'must follow its open hold')
-        ->and(fn () => DB::transaction(fn () => $post('primary_hold', $source, postingId(), $available->id, $held->id, '1000')))->not->toThrow(QueryException::class)
-        ->and(fn () => DB::transaction(fn () => $post('primary_release', $source, $operation, $held->id, $available->id, '1000')))
+        ->and(fn () => DB::transaction(fn () => $post('primary_release', $source->id, $operation, $held->id, $available->id, '5000')))
         ->toThrow(QueryException::class, 'must follow its open hold')
-        ->and(fn () => DB::transaction(fn () => $post('primary_hold', $source, $operation, $available->id, $held->id, '1000')))
+        ->and(fn () => DB::transaction(fn () => $post('primary_hold', $source->id, $operation, $available->id, $held->id, '5000')))
         ->toThrow(QueryException::class, 'must be the first posting')
         ->and(fn () => DB::transaction(fn () => LedgerEntry::factory()->create(['kind' => 'primary_hold', 'source_type' => 'primary_reservation'])))
         ->toThrow(QueryException::class, 'ledger_entry_source')
@@ -213,13 +223,16 @@ function rawPrimaryPosting(LockedWallet $wallet, string $kind, PostingSource $so
 it('binds each raw primary movement to its own source anchor amount and bucket shape', function (string $kind, string $on, string $lines, string $message): void {
     ['wallet' => $wallet] = fundedWallet();
     $postings = app(WalletPostings::class);
-    $held = new PostingSource('primary_reservation', postingId(), postingId());
-    $other = new PostingSource('primary_reservation', postingId(), postingId());
-    $committed = new PostingSource('primary_commitment', postingId(), postingId());
-    $postings->hold($wallet, postingMoney('1000'), $held);
-    $postings->hold($wallet, postingMoney('1000'), $other);
-    $postings->hold($wallet, postingMoney('1000'), $committed);
-    $postings->commit($wallet, postingMoney('1000'), $committed);
+    $held = PrimaryReservationFixture::postingSource($wallet, '5000');
+    $other = PrimaryReservationFixture::postingSource($wallet, '5000');
+    $committed = PrimaryReservationFixture::postingSource($wallet, '5000');
+    $postings->hold($wallet, postingMoney('5000'), $held);
+    $postings->hold($wallet, postingMoney('5000'), $other);
+    $postings->hold($wallet, postingMoney('5000'), $committed);
+    PrimaryReservationFixture::terminalVersion($committed, 'confirmed');
+    $postings->commit($wallet, postingMoney('5000'), $committed);
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
 
     $parsed = array_map(function (string $line): array {
         [$account, $direction, $amount] = explode(':', $line);
@@ -230,22 +243,23 @@ it('binds each raw primary movement to its own source anchor amount and bucket s
         ->and(LedgerEntry::query()->where('source_id', $held->id)->count())->toBe(1);
 })->with([
     'partial release' => ['primary_release', 'held', 'investor_held:debit:500,investor_available:credit:500', 'must move exactly its source anchor amount'],
-    'excessive release' => ['primary_release', 'held', 'investor_held:debit:2000,investor_available:credit:2000', 'must move exactly its source anchor amount'],
-    'excessive commit' => ['primary_commit', 'held', 'investor_held:debit:2000,investor_committed:credit:2000', 'must move exactly its source anchor amount'],
-    'excessive refund' => ['primary_refund', 'committed', 'investor_committed:debit:2000,investor_available:credit:2000', 'must move exactly its source anchor amount'],
-    'release crediting committed' => ['primary_release', 'held', 'investor_held:debit:1000,investor_committed:credit:1000', 'must move one amount from its source bucket'],
-    'commit from available' => ['primary_commit', 'held', 'investor_available:debit:1000,investor_committed:credit:1000', 'must move one amount from its source bucket'],
-    'extra third line' => ['primary_release', 'held', 'investor_held:debit:1000,investor_available:credit:600,investor_available:credit:400',
+    'excessive release' => ['primary_release', 'held', 'investor_held:debit:10000,investor_available:credit:10000', 'must move exactly its source anchor amount'],
+    'excessive commit' => ['primary_commit', 'held', 'investor_held:debit:10000,investor_committed:credit:10000', 'must move exactly its source anchor amount'],
+    'excessive refund' => ['primary_refund', 'committed', 'investor_committed:debit:10000,investor_available:credit:10000', 'must move exactly its source anchor amount'],
+    'release crediting committed' => ['primary_release', 'held', 'investor_held:debit:5000,investor_committed:credit:5000', 'must move one amount from its source bucket'],
+    'commit from available' => ['primary_commit', 'held', 'investor_available:debit:5000,investor_committed:credit:5000', 'must move one amount from its source bucket'],
+    'extra third line' => ['primary_release', 'held', 'investor_held:debit:5000,investor_available:credit:3000,investor_available:credit:2000',
         'must move one amount from its source bucket'],
 ]);
 
 it('keeps a raw same-transaction hold, commit and refund valid at the database boundary', function (): void {
     ['user' => $user, 'wallet' => $wallet] = fundedWallet();
-    $source = new PostingSource('primary_reservation', postingId(), postingId());
+    $source = PrimaryReservationFixture::postingSource($wallet, '10000');
     DB::transaction(function () use ($wallet, $source): void {
-        rawPrimaryPosting($wallet, 'primary_hold', $source, [['investor_available', 'debit', '7000'], ['investor_held', 'credit', '7000']]);
-        rawPrimaryPosting($wallet, 'primary_commit', $source, [['investor_held', 'debit', '7000'], ['investor_committed', 'credit', '7000']]);
-        rawPrimaryPosting($wallet, 'primary_refund', $source, [['investor_committed', 'debit', '7000'], ['investor_available', 'credit', '7000']]);
+        rawPrimaryPosting($wallet, 'primary_hold', $source, [['investor_available', 'debit', '10000'], ['investor_held', 'credit', '10000']]);
+        PrimaryReservationFixture::terminalVersion($source, 'confirmed');
+        rawPrimaryPosting($wallet, 'primary_commit', $source, [['investor_held', 'debit', '10000'], ['investor_committed', 'credit', '10000']]);
+        rawPrimaryPosting($wallet, 'primary_refund', $source, [['investor_committed', 'debit', '10000'], ['investor_available', 'credit', '10000']]);
     });
     expect(LedgerEntry::query()->where('source_id', $source->id)->count())->toBe(3)
         ->and(postingBuckets($user))->toBe(['50000', '0', '0', '50000']);
