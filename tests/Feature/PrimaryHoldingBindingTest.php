@@ -13,6 +13,7 @@ use App\Models\PrimaryCommitment;
 use App\Models\PrimaryHolding;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -500,4 +501,98 @@ it('rolls the binding back to the proposed table exactly and refuses either dire
     PrimaryHoldingFixture::insert($first->id, $closing);
     expect(fn () => $binding->down())->toThrow(QueryException::class, 'ERROR:  Issued Holdings require a forward migration; rollback is refused')
         ->and($shape())->toEqual($bound);
+});
+
+/**
+ * The SQL a read issues, with fixture setup excluded.
+ *
+ * @template T
+ *
+ * @param  Closure(): T  $read
+ * @return array{0: T, 1: list<string>}
+ */
+function holdingQueries(Closure $read): array
+{
+    $queries = [];
+    DB::listen(function (QueryExecuted $query) use (&$queries): void {
+        $queries[] = strtolower($query->sql);
+    });
+    $result = $read();
+
+    // The copy keeps only this read's SQL; the listener's later appends go to the original array.
+    return [$result, $queries];
+}
+
+it('gives a campaign\'s verified facts keyed by commitment, each equal to that commitment\'s own facts, without locks or writes', function (): void {
+    ['campaign' => $campaign, 'commitments' => $commitments] = PrimaryHoldingFixture::committed(['720', '720', '720'], [0, 2]);
+    $ledger = DB::table('ledger_entries')->orderBy('id')->get()->toJson();
+    $funding = app(CampaignFundingEvidence::class)->find($campaign->id);
+    [$facts, $queries] = holdingQueries(fn (): array => app(HoldingSource::class)->campaignFacts($campaign->id));
+    $ids = array_map(fn (PrimaryCommitment $commitment): string => $commitment->id, $commitments);
+    sort($ids, SORT_STRING);
+    expect(array_keys($facts))->toBe($ids)
+        ->and(array_map(fn (string $id): int => $facts[$id]['confirmation_revision'], $ids))->toEqualCanonicalizing([3, 2, 3]);
+    foreach ($commitments as $commitment) {
+        expect($facts[$commitment->id])->toBe(app(HoldingSource::class)->facts($commitment->id));
+    }
+    foreach ($queries as $query) {
+        expect($query)->toStartWith('select')->not->toContain('for update', 'for share', 'for no key update', 'for key share');
+    }
+    expect(DB::table('ledger_entries')->orderBy('id')->get()->toJson())->toBe($ledger)
+        ->and(app(CampaignFundingEvidence::class)->find($campaign->id))->toBe($funding);
+});
+
+it('reads a campaign\'s facts in a linear number of queries, so a per-commitment replay could not pass', function (int $members): void {
+    // The campaign's 2,160 units split evenly between that many buyers, two of whom requote.
+    $units = array_map(fn (): string => (string) intdiv(2160, $members), range(1, $members));
+    ['campaign' => $campaign, 'commitments' => $commitments] = PrimaryHoldingFixture::committed($units, [0, 1]);
+    [$facts, $queries] = holdingQueries(fn (): array => app(HoldingSource::class)->campaignFacts($campaign->id));
+    // Funding row and bindings, three reads per verified purchase, then commitments, roots and revisions once each.
+    $ceiling = 6 + 3 * $members;
+    expect($facts)->toHaveCount($members)->and(count($queries))->toBeLessThanOrEqual($ceiling);
+    // Replaying commitment by commitment re-verifies the whole funding for each one, which this ceiling refuses.
+    [, $perCommitment] = holdingQueries(fn (): array => array_map(fn (PrimaryCommitment $commitment): array => app(HoldingSource::class)->facts($commitment->id), $commitments));
+    expect(count($perCommitment))->toBeGreaterThan($ceiling);
+})->with([
+    'three funded members' => [3],
+    'twelve funded members' => [12],
+]);
+
+it('refuses a campaign whose funding is missing, duplicated, names an unknown commitment or no longer replays', function (): void {
+    ['campaign' => $campaign, 'commitments' => [$first, $second]] = PrimaryHoldingFixture::committed(['1080', '1080'], [1]);
+    ['campaign' => $unfunded] = PrimaryHoldingFixture::committed(['1080'], fund: false);
+    $source = app(HoldingSource::class);
+    expect(fn () => $source->campaignFacts($unfunded->id))->toThrow(RuntimeException::class, 'PRIMARY_HOLDING_SOURCE_UNAVAILABLE')
+        ->and(fn () => $source->campaignFacts(PrimaryHoldingFixture::id()))->toThrow(RuntimeException::class, 'PRIMARY_HOLDING_SOURCE_UNAVAILABLE');
+
+    $retained = app(CampaignFundingEvidence::class)->find($campaign->id);
+    $evidence = fn (array $commitments): CampaignFundingEvidence => new readonly class([...$retained, 'commitments' => $commitments]) implements CampaignFundingEvidence
+    {
+        /** @param array<string, mixed> $evidence */
+        public function __construct(private array $evidence) {}
+
+        /** @return array<string, mixed> */
+        public function find(string $campaignId): array
+        {
+            return $this->evidence;
+        }
+    };
+    [$one, $two] = $retained['commitments'];
+    foreach ([
+        'a purchase listed twice' => [[$one, $one, $two], 'PRIMARY_HOLDING_SOURCE_INTEGRITY_FAILED'],
+        'a purchase naming no retained commitment' => [[$one, [...$two, 'commitment_id' => PrimaryHoldingFixture::id()]], 'PRIMARY_HOLDING_SOURCE_UNAVAILABLE'],
+    ] as $case => [$commitments, $refusal]) {
+        app()->instance(CampaignFundingEvidence::class, $evidence($commitments));
+        expect(fn () => app(HoldingSource::class)->campaignFacts($campaign->id))->toThrow(RuntimeException::class, $refusal);
+    }
+    app()->forgetInstance(CampaignFundingEvidence::class);
+
+    ['revisions' => [, $requote]] = holdingSource($second);
+    DB::beginTransaction();
+    DB::statement('ALTER TABLE primary_reservation_versions DISABLE TRIGGER primary_reservation_versions_immutable');
+    DB::table('primary_reservation_versions')->where('id', $requote->id)->update(['previous_sha256' => str_repeat('0', 64)]);
+    expect(app(CampaignFundingEvidence::class)->find($campaign->id))->toBeArray()
+        ->and(fn () => $source->campaignFacts($campaign->id))->toThrow(RuntimeException::class, 'PRIMARY_HOLDING_SOURCE_INTEGRITY_FAILED');
+    DB::rollBack();
+    expect(array_keys($source->campaignFacts($campaign->id)))->toEqualCanonicalizing([$first->id, $second->id]);
 });
