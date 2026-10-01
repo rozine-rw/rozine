@@ -3608,7 +3608,7 @@ const en = {
     'investor.deal.notice.fully_reserved.title':
         'Every note is reserved right now',
     'investor.deal.notice.fully_reserved.body':
-        'Checkouts hold notes for up to 5 minutes. Any that lapse come back to this raise.',
+        "Every available note is currently held in other investors' checkouts. Check back later.",
     'investor.deal.notice.funded.title': 'Fully funded',
     'investor.deal.notice.funded.body':
         'Commitments are locked while the funds are paid to the business. Notes are issued once that payment is confirmed.',
@@ -3734,7 +3734,7 @@ const en = {
     'investor.primary.cancel': 'Cancel commitment',
     'investor.primary.cancel_title': 'Cancel this commitment?',
     'investor.primary.cancel_body':
-        'Your principal goes back to Available in full, with no fee, and these notes are released.',
+        "Your principal goes back to Available in full, with no fee. You'll no longer hold these notes.",
     'investor.primary.cancel_confirm': 'Yes, cancel and refund',
     'investor.primary.cancel_keep': 'Keep it',
     'investor.holding.issue.title': 'Issue record',
