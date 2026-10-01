@@ -33,6 +33,8 @@ use TypeError;
  * the confirmed terms, their disclosure digest and the rights must equal what the revision, the
  * reservation and the funding record each retain. Current campaign inputs, fee policy and tiers
  * are never read, so nothing is repriced. No locks, no writes.
+ *
+ * @phpstan-import-type HoldingFacts from HoldingSource
  */
 final readonly class RetainedHoldingSource implements HoldingSource
 {
@@ -49,6 +51,49 @@ final readonly class RetainedHoldingSource implements HoldingSource
         if ($commitment === null || $root === null || $funding === null) {
             throw new RuntimeException('PRIMARY_HOLDING_SOURCE_UNAVAILABLE');
         }
+
+        return $this->replay($commitment, $root, $funding,
+            PrimaryReservationVersion::query()->where('primary_reservation_id', $root->id)->orderBy('revision')->get());
+    }
+
+    public function campaignFacts(string $campaignId): array
+    {
+        $funding = $this->fundings->find($campaignId);
+        if ($funding === null) {
+            throw new RuntimeException('PRIMARY_HOLDING_SOURCE_UNAVAILABLE');
+        }
+        $purchases = Arr::wrap($funding['commitments'] ?? null);
+        $ids = array_map(fn (mixed $purchase): mixed => Arr::get($purchase, 'commitment_id'), $purchases);
+        if (count(array_unique($ids, SORT_REGULAR)) !== count($purchases)) {
+            throw new RuntimeException('PRIMARY_HOLDING_SOURCE_INTEGRITY_FAILED');
+        }
+        $commitments = PrimaryCommitment::query()->whereIn('id', $ids)->get()->keyBy('id');
+        $roots = PrimaryReservationRecord::query()->whereIn('id', $commitments->pluck('primary_reservation_id')->all())->get()->keyBy('id');
+        $versions = PrimaryReservationVersion::query()->whereIn('primary_reservation_id', $roots->keys()->all())
+            ->orderBy('primary_reservation_id')->orderBy('revision')->get()->groupBy('primary_reservation_id');
+        $facts = [];
+        foreach ($ids as $id) {
+            $commitment = $commitments->get($id);
+            $root = $roots->get($commitment?->primary_reservation_id);
+            if ($commitment === null || $root === null) {
+                throw new RuntimeException('PRIMARY_HOLDING_SOURCE_UNAVAILABLE');
+            }
+            $facts[$commitment->id] = $this->replay($commitment, $root, $funding, $versions->get($root->id) ?? []);
+        }
+        ksort($facts, SORT_STRING);
+
+        return $facts;
+    }
+
+    /**
+     * Replays one funded commitment's retained revisions against the already verified funding evidence of its campaign.
+     *
+     * @param  array<string, mixed>  $funding
+     * @param  iterable<PrimaryReservationVersion>  $versions  every retained revision of the root, in revision order
+     * @return HoldingFacts
+     */
+    private function replay(PrimaryCommitment $commitment, PrimaryReservationRecord $root, array $funding, iterable $versions): array
+    {
         $purchase = Arr::first(Arr::wrap($funding['commitments'] ?? null), fn (mixed $purchase): bool => Arr::get($purchase, 'commitment_id') === $commitment->id);
         $evidence = $root->payload;
         try {
@@ -58,7 +103,7 @@ final readonly class RetainedHoldingSource implements HoldingSource
             $reservation = null;
             $terms = null;
             $confirmed = null;
-            foreach (PrimaryReservationVersion::query()->where('primary_reservation_id', $root->id)->orderBy('revision')->get() as $version) {
+            foreach ($versions as $version) {
                 $payload = $version->payload;
                 $disclosed = $payload['terms'];
                 $terms = PrimaryTerms::disclosed($disclosed['rate_pct'], $disclosed['term_months'], $disclosed['policy_version'],

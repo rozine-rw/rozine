@@ -22,6 +22,16 @@ interface HoldingSource
      */
     public function facts(string $commitmentId): array;
 
+    /**
+     * `facts` of every commitment in a campaign's durable funding record, keyed by commitment ID in
+     * ascending order. The funding evidence is verified once and each funded root's revisions are
+     * replayed once, so the reads grow linearly with the campaign's purchases. Refuses an unfunded
+     * campaign as unavailable and evidence that fails its digests as an integrity failure.
+     *
+     * @return array<string, HoldingFacts>
+     */
+    public function campaignFacts(string $campaignId): array;
+
     /** Refuses unless the persisted Holding equals `facts` of its commitment, rights and terms included. */
     public function verify(string $holdingId): void;
 }
