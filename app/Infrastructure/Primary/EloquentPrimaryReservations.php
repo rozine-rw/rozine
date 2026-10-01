@@ -231,7 +231,13 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
             throw new CommandRejection('PRIMARY_TRANSACTION_REQUIRED');
         }
 
-        return DB::transaction(function () use ($campaignId): PrimaryFundingCandidate {
+        return $this->lockCommittedCandidate($campaignId, checkConnections: true);
+    }
+
+    /** System expiry authenticates original cash without granting current funding admission. */
+    private function lockCommittedCandidate(string $campaignId, bool $checkConnections): PrimaryFundingCandidate
+    {
+        return DB::transaction(function () use ($campaignId, $checkConnections): PrimaryFundingCandidate {
             $campaign = $this->campaigns->lockForFunding($campaignId);
             $roots = PrimaryReservationRecord::query()->where('business_campaign_id', $campaignId)->orderBy('id')->lockForUpdate()->get();
             $commitments = PrimaryCommitment::query()->whereIn('primary_reservation_id', $roots->modelKeys())
@@ -258,7 +264,9 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                 throw new CommandRejection('CAMPAIGN_NOT_FULLY_COMMITTED');
             }
             $partyIds = $roots->map(fn (PrimaryReservationRecord $root): string => $root->party_id)->unique()->sort()->values();
-            $this->campaigns->rejectKnownConnections($campaign['business_id'], array_values($partyIds->all()));
+            if ($checkConnections) {
+                $this->campaigns->rejectKnownConnections($campaign['business_id'], array_values($partyIds->all()));
+            }
             $wallets = [];
             foreach ($partyIds as $partyId) {
                 $wallets[$partyId] = $this->wallets->lockForParty($partyId);
@@ -307,7 +315,7 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                 throw new CommandRejection('CAMPAIGN_FUNDED');
             }
             try {
-                $this->lockFundingCandidate($campaignId);
+                $this->lockCommittedCandidate($campaignId, checkConnections: false);
                 throw new CommandRejection('CAMPAIGN_SETTLEMENT_REQUIRED');
             } catch (CommandRejection $exception) {
                 if ($exception->reason !== 'CAMPAIGN_NOT_FULLY_COMMITTED') {
