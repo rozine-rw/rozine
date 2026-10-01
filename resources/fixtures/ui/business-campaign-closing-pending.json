@@ -4,12 +4,12 @@
     "props": {
         "contract_version": "business-campaign-v1",
         "identity_context_revision": 4,
-        "server_time": "2026-09-25T09:00:00+02:00",
+        "server_time": "2026-09-25T22:00:00+02:00",
         "allowed_actions": [],
         "campaign": {
             "id": "CMP-2026-0118",
             "revision": 12,
-            "lifecycle": "live"
+            "lifecycle": "closing_pending_settlement"
         },
         "home": {
             "business": {
@@ -254,35 +254,32 @@
             "title": "Cold-Chain Hub",
             "progress": {
                 "phase": "raising",
-                "lifecycle": "live",
-                "restriction": {
-                    "code": "RESTRICTION_ACTIVE",
-                    "since": "2026-09-24T11:30:00+02:00"
-                },
+                "lifecycle": "closing_pending_settlement",
+                "restriction": null,
                 "committed": {
                     "currency": "RWF",
                     "amount": "14058000"
                 },
                 "reserved": {
                     "currency": "RWF",
-                    "amount": "900000"
+                    "amount": "0"
                 },
                 "remaining": {
                     "currency": "RWF",
-                    "amount": "3042000"
+                    "amount": "3942000"
                 },
                 "units": {
                     "total": "18000",
                     "available": "3042",
-                    "reserved": "900",
+                    "reserved": "0",
                     "committed": "14058",
-                    "unavailable": "0"
+                    "unavailable": "900"
                 },
-                "investors": 318,
+                "investors": 377,
                 "funded_pct": "78.1",
                 "clock": {
                     "starts_at": "2026-09-02T09:00:00+02:00",
-                    "expires_at": "2026-10-02T09:00:00+02:00"
+                    "expires_at": "2026-09-25T21:30:00+02:00"
                 }
             },
             "photos": [
