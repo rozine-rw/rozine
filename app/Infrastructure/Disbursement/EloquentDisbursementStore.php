@@ -397,18 +397,17 @@ final class EloquentDisbursementStore implements DisbursementStore
         if ($decision->decision === 'matched_success') {
             $effectiveAt = $final->effective_at?->toIso8601String() ?? throw new DisbursementViolation('RECONCILIATION_EFFECTIVE_AT_MISSING');
             $schedule = IssueSchedule::dates($effectiveAt, $disbursement->term_months);
-            // The issue instant is the closing's retained one, so a replayed issue sees the same instant.
-            $recordedAt = now('UTC')->toIso8601String();
-            $closingId = $this->recordClosing($disbursement, 'issued', 'reconciled_success', [], $intent->id, $reconciliation->id, null, $recordedAt,
-                $final->effective_at, $schedule->effectiveDate, $schedule->dueDates);
+            // The issue instant is the closing's one retained instant, so a replayed issue sees the same instant.
+            $recordedAt = $this->instant();
+            $closingId = $this->recordClosing($disbursement, 'issued', 'reconciled_success', [], $intent->id, $reconciliation, $recordedAt,
+                effectiveAt: $final->effective_at, effectiveDate: $schedule->effectiveDate, dueDates: $schedule->dueDates);
             $this->funding->issue($campaign, new IssueInstruction($closingId, $disbursement->id, $intent->operation_id, $effectiveAt,
-                $schedule->effectiveDate, $schedule->dueDates, $recordedAt));
+                $schedule->effectiveDate, $schedule->dueDates, $recordedAt->toIso8601String()));
             $this->appendEvent($disbursement, $state->revision + 1, 'succeeded', null, null, null, ['closing_id' => $closingId]);
 
             return 'matched_success';
         }
-        $closingId = $this->recordClosing($disbursement, 'failed_closing', 'reconciled_failure', [], $intent->id, $reconciliation->id, null,
-            now('UTC')->toIso8601String());
+        $closingId = $this->recordClosing($disbursement, 'failed_closing', 'reconciled_failure', [], $intent->id, $reconciliation, $this->instant());
         $this->funding->failClose($campaign, new FailedClosing($closingId, $disbursement->id, 'reconciled_failure', []));
         $this->appendEvent($disbursement, $state->revision + 1, 'failed_closing', null, null, null, ['closing_id' => $closingId]);
 
@@ -482,9 +481,11 @@ final class EloquentDisbursementStore implements DisbursementStore
         if ($recheck->outcome === 'unavailable') {
             throw new CommandRejection('POLICY_INPUT_REQUIRED', revision: $state->revision, data: ['causes' => $recheck->causes]);
         }
-        $recordedAt = now('UTC')->toIso8601String();
+        $recorded = $this->instant();
+        $recordedAt = $recorded->toIso8601String();
         if ($recheck->outcome === 'failed') {
-            $closingId = $this->recordClosing($disbursement, 'failed_closing', 'approve_recheck', $recheck->causes, null, null, $operationId, $recordedAt);
+            $closingId = $this->recordClosing($disbursement, 'failed_closing', 'approve_recheck', $recheck->causes, null, null, $recorded,
+                ['operation_id' => $operationId, 'actor_user_id' => $userId, 'request_id' => strtolower($requestId)]);
             $this->funding->failClose($campaign, new FailedClosing($closingId, $disbursement->id, 'approve_recheck', $recheck->causes));
             $this->appendEvent($disbursement, $state->revision + 1, 'failed_closing', $userId, $operationId, $requestId, ['reason' => $reason,
                 'closing_id' => $closingId, 'causes' => $recheck->causes, 'policy_version' => $recheck->policyVersion]);
@@ -555,8 +556,8 @@ final class EloquentDisbursementStore implements DisbursementStore
                         }
                         if ($recheck->outcome === 'failed') {
                             (new DisbursementDispatch)->forceFill(['intent_id' => $intent->id, 'phase' => 'recheck_failed', 'created_at' => now('UTC')])->save();
-                            $closingId = $this->recordClosing($disbursement, 'failed_closing', 'worker_recheck', $recheck->causes, $intent->id, null, null,
-                                now('UTC')->toIso8601String());
+                            $closingId = $this->recordClosing($disbursement, 'failed_closing', 'worker_recheck', $recheck->causes, $intent->id, null,
+                                $this->instant());
                             $this->funding->failClose($campaign, new FailedClosing($closingId, $disbursement->id, 'worker_recheck', $recheck->causes));
                             $this->appendEvent($disbursement, $state->revision + 1, 'failed_closing', null, null, null,
                                 ['closing_id' => $closingId, 'causes' => $recheck->causes, 'policy_version' => $recheck->policyVersion]);
@@ -819,25 +820,42 @@ final class EloquentDisbursementStore implements DisbursementStore
     }
 
     /**
+     * Records the single terminal closing. One instant is its payload `recorded_at`, its native
+     * `created_at` and, for an issue, the instruction's `issuedAt`. An approve-time closing retains
+     * its command authority (operation, actor and request), which the deferred
+     * `disbursement_closings_authority` trigger binds to the recorded approve at the outer commit; a
+     * reconciled closing retains the provider observation its reconciliation selected.
+     *
      * @param  list<string>  $causes
+     * @param  array{operation_id: string, actor_user_id: int, request_id: string}|null  $authority
      * @param  list<string>|null  $dueDates
      */
-    private function recordClosing(Disbursement $disbursement, string $kind, string $cause, array $causes, ?string $intentId, ?string $reconciliationId,
-        ?string $operationId, string $recordedAt, ?CarbonImmutable $effectiveAt = null, ?string $effectiveDate = null, ?array $dueDates = null): string
+    private function recordClosing(Disbursement $disbursement, string $kind, string $cause, array $causes, ?string $intentId,
+        ?DisbursementReconciliation $reconciliation, CarbonImmutable $recordedAt, ?array $authority = null, ?CarbonImmutable $effectiveAt = null,
+        ?string $effectiveDate = null, ?array $dueDates = null): string
     {
         $closing = new DisbursementClosing;
         $closing->id = strtolower((string) Str::ulid());
         // Every column has its twin in the digested payload, the effective instant included (#96 5925426310).
         $payload = ['closing_id' => $closing->id, 'disbursement_id' => $disbursement->id, 'kind' => $kind, 'cause' => $cause, 'causes' => $causes,
-            'intent_id' => $intentId, 'reconciliation_id' => $reconciliationId, 'operation_id' => $operationId, 'effective_at' => $effectiveAt?->toIso8601String(),
-            'effective_date' => $effectiveDate, 'due_dates' => $dueDates,
+            'intent_id' => $intentId, 'reconciliation_id' => $reconciliation?->id, 'provider_event_id' => $reconciliation?->provider_event_id,
+            'operation_id' => $authority['operation_id'] ?? null, 'command' => $authority === null ? null : 'disbursement.approve',
+            'actor_user_id' => $authority['actor_user_id'] ?? null, 'request_id' => $authority['request_id'] ?? null,
+            'effective_at' => $effectiveAt?->toIso8601String(), 'effective_date' => $effectiveDate, 'due_dates' => $dueDates,
             'refund' => $kind === 'failed_closing' ? ['commitments' => $disbursement->commitment_count, 'amount' => $disbursement->amount, 'fee' => '0'] : null,
-            'recorded_at' => $recordedAt];
-        $closing->forceFill(['disbursement_id' => $disbursement->id, 'intent_id' => $intentId, 'reconciliation_id' => $reconciliationId, 'kind' => $kind,
-            'cause' => $cause, 'causes' => $causes, 'operation_id' => $operationId, 'effective_at' => $effectiveAt, 'effective_date' => $effectiveDate,
-            'due_dates' => $dueDates, 'payload' => $payload, 'sha256' => hash('sha256', $this->json->encode($payload)), 'created_at' => now('UTC')])->save();
+            'recorded_at' => $recordedAt->toIso8601String()];
+        $closing->forceFill(['disbursement_id' => $disbursement->id, 'intent_id' => $intentId, 'reconciliation_id' => $reconciliation?->id, 'kind' => $kind,
+            'cause' => $cause, 'causes' => $causes, 'operation_id' => $payload['operation_id'], 'actor_user_id' => $payload['actor_user_id'],
+            'request_id' => $payload['request_id'], 'effective_at' => $effectiveAt, 'effective_date' => $effectiveDate, 'due_dates' => $dueDates,
+            'payload' => $payload, 'sha256' => hash('sha256', $this->json->encode($payload)), 'created_at' => $recordedAt])->save();
 
         return $closing->id;
+    }
+
+    /** A whole-second UTC instant, exact in a `timestampTz(0)` column and in its ISO-8601 form. */
+    private function instant(): CarbonImmutable
+    {
+        return now('UTC')->startOfSecond()->toImmutable();
     }
 
     /** @param array<string, mixed> $payload */

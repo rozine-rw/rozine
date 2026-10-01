@@ -18,6 +18,16 @@ use App\Application\Disbursement\ClosingEvidence;
  * missing or unreadable source refuses `DISBURSEMENT_CLOSING_UNAVAILABLE`; a stored record that
  * contradicts itself or its ancestry refuses `DISBURSEMENT_CLOSING_INTEGRITY_FAILED`. Neither is
  * ever an evidenced financial failure.
+ *
+ * It is safe to call from inside the closing's own effect. An approve-time closing (cause
+ * `approve_recheck`) is recorded before the operation journal records its approve command, so its
+ * command authority (`disbursement.approve`, this disbursement, the approve's actor and request)
+ * is retained in the closing itself, digested, and the deferred `disbursement_closings_authority`
+ * trigger refuses the outer commit unless the recorded command matches it and its receipt names
+ * the closing; `find` checks the command whenever it is visible. Reconciled closings are read from
+ * the observation their reconciliation selected, never from later observations or current
+ * provider state, and `recordedAt` is the closing's one recorded instant (its native `created_at`,
+ * its payload and an issue's `issuedAt`). No terminal disbursement event is required.
  */
 interface DisbursementClosingEvidence
 {

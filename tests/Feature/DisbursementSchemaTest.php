@@ -8,6 +8,7 @@ use App\Models\PrimaryHolding;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
 
@@ -91,7 +92,9 @@ function schemaClosing(string $disbursementId, string $kind, string $cause, arra
     $issued = $kind === 'issued';
     DB::table('disbursement_closings')->insert([...['id' => $id, 'disbursement_id' => $disbursementId, 'intent_id' => null, 'reconciliation_id' => null,
         'kind' => $kind, 'cause' => $cause, 'causes' => in_array($cause, ['approve_recheck', 'worker_recheck'], true) ? '["mandate"]' : '[]',
-        'operation_id' => $cause === 'approve_recheck' ? schemaId() : null, 'effective_at' => $issued ? '2027-01-31T08:00:00Z' : null,
+        'operation_id' => $cause === 'approve_recheck' ? schemaId() : null,
+        'actor_user_id' => $cause === 'approve_recheck' ? User::factory()->create()->id : null, 'request_id' => $cause === 'approve_recheck' ? (string) Str::uuid() : null,
+        'effective_at' => $issued ? '2027-01-31T08:00:00Z' : null,
         'effective_date' => $issued ? '2027-01-31' : null, 'due_dates' => $issued ? '["2027-02-28"]' : null,
         'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()], ...$overrides]);
 
@@ -406,4 +409,31 @@ it('lets only an observation that matches its intent claim a provider event iden
     schemaObservation($other['intent'], 'succeeded', 'unverifiable', ['provider_event_id' => 'claimed-event', 'content_sha256' => str_repeat('c', 64), ...$facts]);
     expect(DB::table('disbursement_provider_events')->where('provider_event_id', 'claimed-event')->orderBy('id')->pluck('disposition')->all())
         ->toBe(['applied', 'unverifiable']);
+});
+
+it('requires an approve-time closing to retain its command authority and commit with its own approve', function (): void {
+    $disbursement = Disbursement::factory()->create();
+    schemaEvent($disbursement->id, 1, 'authorized', User::factory()->create()->id);
+    refusedBySchema(fn () => schemaClosing($disbursement->id, 'failed_closing', 'approve_recheck', ['actor_user_id' => null]));
+    refusedBySchema(fn () => schemaClosing($disbursement->id, 'failed_closing', 'approve_recheck', ['request_id' => null]));
+    schemaClosing($disbursement->id, 'failed_closing', 'approve_recheck');
+
+    // An invented operation is no recorded approve: the deferred authority check refuses it.
+    expect(fn () => DB::statement('SET CONSTRAINTS disbursement_closings_authority IMMEDIATE'))
+        ->toThrow(QueryException::class, 'commits only with its own recorded approve command');
+});
+
+it('rolls the closing authority binding back only while no closing retains an authority', function (): void {
+    $migration = require database_path('migrations/2026_09_29_100400_bind_disbursement_closing_command_authority.php');
+    $migration->down();
+    expect(Schema::hasColumns('disbursement_closings', ['actor_user_id']))->toBeFalse()->and(Schema::hasColumn('disbursement_closings', 'request_id'))->toBeFalse()
+        ->and(DB::table('pg_trigger')->where('tgname', 'disbursement_closings_authority')->exists())->toBeFalse();
+    $migration->up();
+    expect(Schema::hasColumns('disbursement_closings', ['actor_user_id', 'request_id']))->toBeTrue()
+        ->and(DB::table('pg_trigger')->where('tgname', 'disbursement_closings_authority')->exists())->toBeTrue();
+
+    $disbursement = Disbursement::factory()->create();
+    schemaEvent($disbursement->id, 1, 'authorized', User::factory()->create()->id);
+    schemaClosing($disbursement->id, 'failed_closing', 'approve_recheck');
+    expect(fn () => $migration->down())->toThrow(QueryException::class, 'Recorded closing authority requires a forward migration');
 });
