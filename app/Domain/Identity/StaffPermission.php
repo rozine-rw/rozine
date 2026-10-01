@@ -9,10 +9,14 @@ final class StaffPermission
     /** @var array<string, list<string>> */
     private const ROLES = [
         'analyst' => ['businesses.view', 'audit.reports.view'],
-        'approver' => ['businesses.view', 'businesses.verify', 'applications.review', 'audit.partners.verify', 'audit.assignments.manage', 'audit.reports.view'],
-        'treasury' => ['businesses.view', 'audit.reports.view'],
-        'compliance' => ['businesses.view', 'businesses.verify', 'audit.partners.verify', 'audit.reports.view', 'consent.documents.record'],
-        'superadmin' => ['businesses.view', 'businesses.verify', 'applications.review', 'audit.partners.verify', 'audit.assignments.manage', 'audit.reports.view', 'consent.documents.record'],
+        'approver' => ['businesses.view', 'businesses.verify', 'applications.review', 'audit.partners.verify', 'audit.assignments.manage', 'audit.reports.view',
+            'disbursements.view', 'disbursements.approve', 'disbursements.hold'],
+        'treasury' => ['businesses.view', 'audit.reports.view', 'disbursements.view', 'disbursements.authorize', 'disbursements.hold', 'disbursements.requery'],
+        'compliance' => ['businesses.view', 'businesses.verify', 'audit.partners.verify', 'audit.reports.view', 'consent.documents.record',
+            'disbursements.view', 'disbursements.hold'],
+        // No superadmin bypass (§10.6, §11.1): disbursements are view-only here, never authorize or approve.
+        'superadmin' => ['businesses.view', 'businesses.verify', 'applications.review', 'audit.partners.verify', 'audit.assignments.manage', 'audit.reports.view', 'consent.documents.record',
+            'disbursements.view'],
     ];
 
     /**

@@ -99,6 +99,18 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $confirmationOperations = require database_path('migrations/2026_09_28_212446_bind_primary_confirmation_operations_to_purchases.php');
     $expiryFailures = require database_path('migrations/2026_09_29_112938_create_primary_expiry_failures_table.php');
     $fundings = require database_path('migrations/2026_09_30_054318_create_primary_campaign_fundings.php');
+    $walletLedger = require database_path('migrations/2026_09_28_104818_create_investor_wallet_ledger_tables.php');
+    $walletInputs = require database_path('migrations/2026_09_28_104819_create_wallet_deposit_policy_method_and_restriction_tables.php');
+    $walletDeposits = require database_path('migrations/2026_09_28_104821_create_wallet_deposit_intent_and_outcome_tables.php');
+    $ledgerSeal = require database_path('migrations/2026_09_28_112500_seal_ledger_entries_once_validated.php');
+    $primaryPostings = require database_path('migrations/2026_09_28_112902_add_primary_postings_to_wallet_ledger.php');
+    $postingAnchors = require database_path('migrations/2026_09_28_140000_bind_primary_postings_to_their_source_anchor.php');
+    $depositCreditBinding = require database_path('migrations/2026_09_28_175521_bind_deposit_credits_to_their_intent_amounts.php');
+    $disbursements = require database_path('migrations/2026_09_29_100000_create_disbursement_tables.php');
+    $holdings = require database_path('migrations/2026_09_29_100100_create_primary_holdings_table.php');
+    $walletIssue = require database_path('migrations/2026_09_29_100200_add_primary_issue_to_wallet_ledger.php');
+    $staffDisjoint = require database_path('migrations/2026_09_29_100300_keep_staff_accounts_and_parties_disjoint.php');
+    $closingAuthority = require database_path('migrations/2026_09_29_100400_bind_disbursement_closing_command_authority.php');
     $closureReturns = require database_path('migrations/2026_09_30_094556_bind_campaign_closures_to_complete_primary_returns.php');
     $entryIndex = require database_path('migrations/2026_09_30_171842_index_wallet_ledger_lines_by_entry.php');
     $expirySettlements = require database_path('migrations/2026_09_30_204213_create_primary_campaign_expiry_settlements_table.php');
@@ -113,9 +125,16 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $expiryFailureReasons = require database_path('migrations/2026_09_30_111709_add_reason_code_to_primary_expiry_failures.php');
     $expiryFailureReasons->down();
     $expiryFailures->down();
+    $closingAuthority->down();
+    expect(Schema::hasColumn('disbursement_closings', 'actor_user_id'))->toBeFalse();
+    $staffDisjoint->down();
+    $walletIssue->down();
+    expect(Schema::hasColumn('ledger_entries', 'cause_id'))->toBeFalse();
+    $holdings->down();
+    $disbursements->down();
+    expect(Schema::hasTable('disbursements'))->toBeFalse()->and(Schema::hasTable('primary_holdings'))->toBeFalse();
     $confirmationOperations->down();
     $confirmationReceipts->down();
-    $depositCreditBinding = require database_path('migrations/2026_09_28_175521_bind_deposit_credits_to_their_intent_amounts.php');
     $depositCreditBinding->down();
     expect(DB::scalar("SELECT to_regprocedure('deposit_credit_entry_check(varchar)') IS NULL"))->toBeTrue();
     $primaryTerminalCash->down();
@@ -126,12 +145,6 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $primaryCommands->down();
     $primaryCapacity->down();
     $primary->down();
-    $walletLedger = require database_path('migrations/2026_09_28_104818_create_investor_wallet_ledger_tables.php');
-    $walletInputs = require database_path('migrations/2026_09_28_104819_create_wallet_deposit_policy_method_and_restriction_tables.php');
-    $walletDeposits = require database_path('migrations/2026_09_28_104821_create_wallet_deposit_intent_and_outcome_tables.php');
-    $ledgerSeal = require database_path('migrations/2026_09_28_112500_seal_ledger_entries_once_validated.php');
-    $primaryPostings = require database_path('migrations/2026_09_28_112902_add_primary_postings_to_wallet_ledger.php');
-    $postingAnchors = require database_path('migrations/2026_09_28_140000_bind_primary_postings_to_their_source_anchor.php');
     $postingAnchors->down();
     $primaryPostings->down();
     expect(Schema::hasColumn('ledger_entries', 'origin_operation_id'))->toBeFalse();
@@ -236,6 +249,11 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $depositCreditBinding->up();
     $confirmationReceipts->up();
     $confirmationOperations->up();
+    $disbursements->up();
+    $holdings->up();
+    $walletIssue->up();
+    $staffDisjoint->up();
+    $closingAuthority->up();
     $expiryFailures->up();
     $expiryFailureReasons->up();
     $fundings->up();
@@ -256,6 +274,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasColumn('staff_accounts', 'roles'))->toBeTrue()
         ->and(Schema::hasTable('verified_organization_identities'))->toBeTrue()
         ->and(Schema::hasTable('command_operations'))->toBeTrue()
+        ->and(Schema::hasTable('disbursement_closings'))->toBeTrue()
+        ->and(Schema::hasColumns('disbursement_closings', ['actor_user_id', 'request_id']))->toBeTrue()
+        ->and(Schema::hasTable('primary_holdings'))->toBeTrue()
+        ->and(Schema::hasColumn('ledger_entries', 'cause_id'))->toBeTrue()
         ->and(Schema::hasColumn('business_mandates', 'profile'))->toBeTrue()
         ->and(Schema::hasTable('consent_releases'))->toBeTrue()
         ->and(Schema::hasTable('business_application_versions'))->toBeTrue()

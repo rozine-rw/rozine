@@ -29,6 +29,15 @@ use App\Application\Business\Contracts\CampaignClosureEvidence;
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Business\Contracts\PublishedCampaignEvidence;
 use App\Application\Business\Contracts\StaffApplicationQueue;
+use App\Application\Disbursement\Contracts\DisbursementClosingEvidence;
+use App\Application\Disbursement\Contracts\DisbursementStore;
+use App\Application\Disbursement\Contracts\FundedCampaigns;
+use App\Application\Disbursement\Contracts\PayoutDestinations;
+use App\Application\Disbursement\Contracts\PayoutProvider;
+use App\Application\Disbursement\Contracts\StaffConnections;
+use App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures;
+use App\Application\Disbursement\Contracts\SyntheticPayoutScripts;
+use App\Application\Disbursement\SyntheticDisbursementGuard;
 use App\Application\Environment\Contracts\DemoFixtureStore;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Evidence\Contracts\StatementExtractionQueue;
@@ -78,6 +87,14 @@ use App\Infrastructure\Business\EloquentPrimaryCampaignSource;
 use App\Infrastructure\Business\EloquentStaffApplicationQueue;
 use App\Infrastructure\Business\RetainedCampaignClosures;
 use App\Infrastructure\Business\RetainedCampaignPublication;
+use App\Infrastructure\Disbursement\EloquentDisbursementClosingEvidence;
+use App\Infrastructure\Disbursement\EloquentDisbursementStore;
+use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
+use App\Infrastructure\Disbursement\SyntheticPayoutProvider;
+use App\Infrastructure\Disbursement\UnavailableFundedCampaigns;
+use App\Infrastructure\Disbursement\UnavailablePayoutDestinations;
+use App\Infrastructure\Disbursement\UnavailablePayoutProvider;
+use App\Infrastructure\Disbursement\UnavailableStaffConnections;
 use App\Infrastructure\Environment\EloquentDemoFixtureStore;
 use App\Infrastructure\Evidence\EloquentStatementExtractionQueue;
 use App\Infrastructure\Evidence\EloquentStatementStore;
@@ -179,6 +196,25 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(DepositProvider::class, $synthetic);
         $this->app->bind(SyntheticEventSigner::class, $synthetic);
         $this->app->bind(SyntheticWalletFixtures::class, EloquentSyntheticWalletFixtures::class);
+        $this->registerDisbursements();
+    }
+
+    /**
+     * Disbursement ports. Outside local/testing with live money off, every funding, destination,
+     * connection and provider port is its unavailable adapter, so disbursement fails closed.
+     */
+    private function registerDisbursements(): void
+    {
+        $this->app->bind(DisbursementStore::class, EloquentDisbursementStore::class);
+        $this->app->bind(DisbursementClosingEvidence::class, EloquentDisbursementClosingEvidence::class);
+        $this->app->singleton(SyntheticDisbursementSources::class);
+        $synthetic = fn (): bool => $this->app->make(SyntheticDisbursementGuard::class)->allowed();
+        $this->app->bind(FundedCampaigns::class, fn (): FundedCampaigns => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailableFundedCampaigns);
+        $this->app->bind(PayoutDestinations::class, fn (): PayoutDestinations => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailablePayoutDestinations);
+        $this->app->bind(StaffConnections::class, fn (): StaffConnections => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailableStaffConnections);
+        $this->app->bind(SyntheticDisbursementFixtures::class, fn (): SyntheticDisbursementFixtures => $this->app->make(SyntheticDisbursementSources::class));
+        $this->app->bind(PayoutProvider::class, fn (): PayoutProvider => $synthetic() ? $this->app->make(SyntheticPayoutProvider::class) : new UnavailablePayoutProvider);
+        $this->app->bind(SyntheticPayoutScripts::class, SyntheticPayoutProvider::class);
     }
 
     /**
@@ -191,6 +227,10 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('audit-step-up', fn (Request $request): array => [
             Limit::perMinute(5)->by('account:'.$request->user()?->getAuthIdentifier()),
             Limit::perMinute(20)->by('ip:'.$request->ip()),
+        ]);
+        RateLimiter::for('disbursement-step-up', fn (Request $request): array => [
+            Limit::perMinute(5)->by('disbursement-step-up-account:'.$request->user()?->getAuthIdentifier()),
+            Limit::perMinute(20)->by('disbursement-step-up-ip:'.$request->ip()),
         ]);
     }
 

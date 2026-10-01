@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Wallet\Contracts;
 
 use App\Application\Wallet\LockedWallet;
+use App\Application\Wallet\PostingCause;
 use App\Application\Wallet\PostingReceipt;
 use App\Application\Wallet\PostingSource;
 use App\Domain\Wallet\WalletMoney;
@@ -46,6 +47,20 @@ interface WalletPostings
     /** held → available (release, expiry or cancel before commit), for exactly the held amount. */
     public function release(LockedWallet $wallet, WalletMoney $amount, PostingSource $source): PostingReceipt;
 
-    /** committed → available (pre-funding cancellation or unfunded expiry), for exactly the committed amount. */
+    /**
+     * committed → available, fee-free, for exactly the committed amount: pre-funding cancellation,
+     * unfunded expiry, or the agreed funded failed closing (§11.3). It is never a payout.
+     */
     public function refund(LockedWallet $wallet, WalletMoney $amount, PostingSource $source): PostingReceipt;
+
+    /**
+     * committed → the system `disbursement_settlement` account, for exactly the committed amount, on
+     * a verified and reconciled disbursement success. It names the lifecycle's single source, the
+     * `primary_reservation` its hold opened (anything else refuses `WALLET_POSTING_SOURCE_INVALID`),
+     * and follows that source's commit on the same wallet and originating operation; the issuing
+     * closing is its separate cause. Issue and
+     * refund end a commitment once between them: after either, the other refuses
+     * `WALLET_POSTING_STATE_INVALID`. A retry with another cause refuses `WALLET_POSTING_CONFLICT`.
+     */
+    public function issue(LockedWallet $wallet, WalletMoney $amount, PostingSource $source, PostingCause $cause): PostingReceipt;
 }

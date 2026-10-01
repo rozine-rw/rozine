@@ -1102,7 +1102,6 @@ describe('Disbursement approval step-up', () => {
                 url: STEP_UP_ROUTE.url,
                 method: 'post',
                 body: {
-                    request_id: expect.any(String),
                     expected_revision: 4,
                     intent_digest: DIGEST,
                     code: '123456',
@@ -1286,7 +1285,18 @@ describe('Disbursement approval step-up', () => {
         expect(firstApprove.step_up_proof).toBe('opaque-proof-1');
         expect(secondApprove.step_up_proof).toBe('opaque-proof-2');
         expect(secondApprove.request_id).not.toBe(firstApprove.request_id);
-        expect(secondStepUp.request_id).not.toBe(firstStepUp.request_id);
+        /* The exchange is never journaled: no request_id, just a fresh code for a fresh proof. */
+        expect(Object.keys(firstStepUp).sort()).toEqual([
+            'code',
+            'expected_revision',
+            'intent_digest',
+        ]);
+        expect(Object.keys(secondStepUp).sort()).toEqual([
+            'code',
+            'expected_revision',
+            'intent_digest',
+        ]);
+        expect(secondStepUp.code).not.toBe(firstStepUp.code);
         expect(secondStepUp.code).toBe('222222');
     });
 
@@ -1417,8 +1427,14 @@ describe('Disbursement approval step-up', () => {
                 (call) => call.body as Record<string, unknown>,
             );
 
+            expect(inertia.calls).toHaveLength(2);
+            expect(first.code).toBe('123456');
             expect(second.code).toBe('777777');
-            expect(second.request_id).not.toBe(first.request_id);
+            expect(Object.keys(second).sort()).toEqual([
+                'code',
+                'expected_revision',
+                'intent_digest',
+            ]);
         },
     );
 

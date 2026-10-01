@@ -11,7 +11,9 @@ use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\StaffAccount;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
@@ -57,8 +59,16 @@ it('grants only Admin entry and audits the dedicated account bootstrap with idem
 it('rechecks staff separation email MFA and enabled state on every entry', function (string $failure): void {
     $user = User::factory()->withTwoFactor()->create();
     $staff = StaffAccount::factory()->create(['user_id' => $user->id]);
+    if ($failure === 'party') {
+        // Staff and marketplace Parties are disjoint at the database too (#176): the gap this
+        // scenario simulated can no longer be written, and the application check stays behind it.
+        $party = Party::factory()->create();
+        expect(fn () => DB::transaction(fn () => $user->forceFill(['party_id' => $party->id])->save()))
+            ->toThrow(QueryException::class, 'A staff account never holds a marketplace Party');
+        $staff->forceFill(['enabled' => false])->save();
+    }
     match ($failure) {
-        'party' => $user->forceFill(['party_id' => Party::factory()->create()->id])->save(),
+        'party' => null,
         'email' => $user->forceFill(['email_verified_at' => null])->save(),
         'future email' => $user->forceFill(['email_verified_at' => now()->addDay()])->save(),
         'mfa' => $user->forceFill(['two_factor_secret' => null])->save(),
