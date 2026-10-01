@@ -3400,16 +3400,19 @@ const en = {
         "Not eligible for new commitments since {date}; what's already committed stays.",
     'business.campaign.tile.committed': 'Committed',
     'business.campaign.tile.refunded': 'Refunded',
+    'business.campaign.tracker.title': 'Commitment tracker',
+    'business.campaign.tracker.committed_pct': '{pct}% committed',
+    'business.campaign.not_yet_committed': 'Not yet committed or reserved',
     'business.campaign.closing_now': 'Closing',
     'business.campaign.committed': 'Committed',
     'business.campaign.reserved': 'Reserved',
     'business.campaign.reserved_note':
-        "Reserved notes are held in investors' live checkouts and aren't committed yet; an unconfirmed hold is released after 5 minutes.",
+        "Notes held in an investor's checkout. They aren't confirmed yet.",
     'business.campaign.units':
         '{committed} of {total} notes committed · {reserved} reserved · {available} available',
     'business.campaign.closes': 'Closes {date}',
     'business.campaign.fully_reserved':
-        "Every note is reserved in a live checkout. Holds that aren't confirmed within 5 minutes go back on sale.",
+        "Every available note is currently held in a checkout. New investors can't reserve right now.",
     'business.campaign.funded':
         'Fully funded on {date}. The raise can no longer be cancelled.',
     'business.campaign.closing_title': 'Disbursement',
@@ -3447,7 +3450,7 @@ const en = {
     'business.campaign.cancel.cancelling': 'Cancelling…',
     'business.campaign.cancel.title': 'Cancel this raise?',
     'business.campaign.cancel.body':
-        "Every investor's commitment goes back to them in full, without fee, and the raise closes for good. This can't be undone.",
+        "The raise closes for good and stops taking investors. This can't be undone.",
     'business.campaign.cancel.reason': 'Reason (optional)',
     'business.campaign.cancel.confirm': 'Cancel raise',
     'business.campaign.cancel.keep': 'Keep raising',
@@ -3605,7 +3608,7 @@ const en = {
     'investor.deal.notice.fully_reserved.title':
         'Every note is reserved right now',
     'investor.deal.notice.fully_reserved.body':
-        'Checkouts hold notes for up to 5 minutes. Any that lapse come back to this raise.',
+        "Every available note is currently held in other investors' checkouts. Check back later.",
     'investor.deal.notice.funded.title': 'Fully funded',
     'investor.deal.notice.funded.body':
         'Commitments are locked while the funds are paid to the business. Notes are issued once that payment is confirmed.',
@@ -3731,7 +3734,7 @@ const en = {
     'investor.primary.cancel': 'Cancel commitment',
     'investor.primary.cancel_title': 'Cancel this commitment?',
     'investor.primary.cancel_body':
-        'Your principal goes back to Available in full, with no fee, and these notes are released.',
+        "Your principal goes back to Available in full, with no fee. You'll no longer hold these notes.",
     'investor.primary.cancel_confirm': 'Yes, cancel and refund',
     'investor.primary.cancel_keep': 'Keep it',
     'investor.holding.issue.title': 'Issue record',

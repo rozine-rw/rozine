@@ -152,7 +152,7 @@ function Raising({
                     value={formatRwfShort(progress.committed)}
                 />
                 <Tile
-                    label={t('business.note.tile.funded')}
+                    label={t('business.campaign.tile.committed')}
                     value={t('business.note.pct', { pct: progress.funded_pct })}
                     green
                 />
@@ -179,23 +179,26 @@ function Raising({
             <div className="mt-4 rounded-2xl border border-rz-border bg-rz-surface p-4">
                 <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold tracking-[.04em] text-rz-slate uppercase">
-                        {t('business.note.tracker.funding')}
+                        {t('business.campaign.tracker.title')}
                     </span>
                     <span className="text-[11px] font-semibold text-rz-accent-app-text">
-                        {t('business.note.tracker.funded_pct', {
+                        {t('business.campaign.tracker.committed_pct', {
                             pct: progress.funded_pct,
                         })}
                     </span>
                 </div>
                 <div
                     role="progressbar"
-                    aria-label={t('business.note.tracker.funding')}
+                    aria-label={t('business.campaign.tracker.title')}
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-valuenow={pct}
-                    aria-valuetext={t('business.note.tracker.funded_pct', {
-                        pct: progress.funded_pct,
-                    })}
+                    aria-valuetext={t(
+                        'business.campaign.tracker.committed_pct',
+                        {
+                            pct: progress.funded_pct,
+                        },
+                    )}
                     className="mt-[11px] h-[9px] overflow-hidden rounded-[5px] bg-rz-page"
                 >
                     <div
@@ -213,7 +216,7 @@ function Raising({
                         value={formatRwf(progress.reserved)}
                     />
                     <Row
-                        label={t('business.note.tracker.left_to_raise')}
+                        label={t('business.campaign.not_yet_committed')}
                         value={formatRwf(progress.remaining)}
                     />
                 </dl>
