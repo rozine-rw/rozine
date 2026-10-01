@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Domain\Operations\CommandRejection;
+use App\Domain\Wallet\WalletViolation;
 use App\Models\CommandOperation;
 use App\Models\InvestorWallet;
 use App\Models\LedgerEntry;
@@ -237,7 +238,8 @@ it('moves a failed expiry behind healthy holds across bounded runs and retries i
     expect(fn () => app(PrimaryReservations::class)->expireDue($limit))->toThrow(RuntimeException::class, 'Injected corrupt hold.')
         ->and(DB::transactionLevel())->toBe(0)
         ->and(PrimaryReservationVersion::query()->where('primary_reservation_id', $broken->id)->count())->toBe(1)
-        ->and(DB::table('primary_expiry_failures')->where('primary_reservation_id', $broken->id)->value('exception_class'))->toBe(RuntimeException::class);
+        ->and(DB::table('primary_expiry_failures')->where('primary_reservation_id', $broken->id)->value('exception_class'))->toBe(RuntimeException::class)
+        ->and(DB::table('primary_expiry_failures')->sole()->reason_code)->toBe('UNCLASSIFIED_EXPIRY_FAILURE');
     if ($limit === 1) {
         expect(app(PrimaryReservations::class)->expireDue(1))->toBe(1);
     }
@@ -248,8 +250,42 @@ it('moves a failed expiry behind healthy holds across bounded runs and retries i
     expect(fn () => app(PrimaryReservations::class)->expireDue(1))->toThrow(RuntimeException::class, 'Injected corrupt hold.')
         ->and(DB::table('primary_expiry_failures')->count())->toBe(1)
         ->and(DB::table('primary_expiry_failures')->sole()->last_attempted_at)->not->toBe($firstAttempt);
+    $lastFailure = DB::table('primary_expiry_failures')->sole();
     $failure->enabled = false;
     expect(app(PrimaryReservations::class)->expireDue(1))->toBe(1)
         ->and(app(PrimaryReservations::class)->expireDue(1))->toBe(0)
-        ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(2);
+        ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(2)
+        ->and(DB::table('primary_expiry_failures')->sole()->reason_code)->toBe('UNCLASSIFIED_EXPIRY_FAILURE')
+        ->and(DB::table('primary_expiry_failures')->sole()->last_attempted_at)->toBe($lastFailure->last_attempted_at);
 })->with([1, 2]);
+
+it('records a real cash isolation refusal and preserves its reason after a repaired retry', function (): void {
+    $this->freezeSecond();
+    InvestorWalletFixture::policy(maximum: null);
+    $campaign = PrimaryReservationFixture::campaign();
+    $investor = PrimaryReservationFixture::investor();
+    app(PrimaryCheckout::class)->reserve($investor['user']->id, 1, $campaign->id, '1',
+        (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+    $root = PrimaryReservationRecord::query()->sole();
+    $this->travelTo($root->expires_at);
+    DB::beginTransaction();
+    try {
+        DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+        expect(fn () => app(PrimaryReservations::class)->expireDue(1))
+            ->toThrow(WalletViolation::class, 'PRIMARY_CASH_ISOLATION_REQUIRED');
+        expect(DB::table('primary_expiry_failures')->sole()->reason_code)->toBe('PRIMARY_CASH_ISOLATION_REQUIRED')
+            ->and(PrimaryReservationVersion::query()->count())->toBe(1)
+            ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(0);
+        DB::commit();
+    } finally {
+        if (DB::transactionLevel() > 0) {
+            DB::rollBack();
+        }
+    }
+    $failure = DB::table('primary_expiry_failures')->sole();
+    expect(app(PrimaryReservations::class)->expireDue(1))->toBe(1)
+        ->and(app(PrimaryReservations::class)->expireDue(1))->toBe(0)
+        ->and(PrimaryReservationVersion::query()->orderByDesc('revision')->value('state'))->toBe('expired')
+        ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(1)
+        ->and(DB::table('primary_expiry_failures')->sole())->toEqual($failure);
+});

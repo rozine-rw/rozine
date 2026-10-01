@@ -129,6 +129,7 @@ it('fails closed on damaged closure evidence even if its payload is rehashed', f
     $closure = BusinessCampaignClosure::query()->sole();
     $payload = $closure->payload;
     $payload['principal_released'] = '3000000';
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     DB::statement('ALTER TABLE business_campaign_closures DISABLE TRIGGER business_campaign_closures_protected');
     try {
         $closure->forceFill(['payload' => $payload, 'sha256' => $rehash ? hash('sha256', app(CanonicalJson::class)->encode($payload)) : $closure->sha256])->save();

@@ -2,11 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Application\Primary\Contracts\CampaignCommitments;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\PostingSource;
 use App\Domain\Wallet\WalletMoney;
 use App\Models\LedgerEntry;
+use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
+use App\Models\PrimaryReservationVersion;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -51,4 +54,20 @@ it('allows empty rollback and reinstall but refuses rollback once Primary cash i
     DB::statement('SET CONSTRAINTS ALL DEFERRED');
     expect(fn () => $migration->down())->toThrow(QueryException::class, 'forward migration')
         ->and(DB::selectOne("SELECT count(*) AS total FROM pg_constraint WHERE conname = 'primary_commitment_source_unavailable'")->total)->toBe(1);
+});
+
+it('keeps retained commitment presence campaign scoped after its principal is refunded', function (): void {
+    $root = PrimaryReservationRecord::factory()->withInitialVersion()->create();
+    $other = PrimaryReservationRecord::factory()->withInitialVersion()->create();
+    $commitments = app(CampaignCommitments::class);
+    expect($commitments->anyForCampaign($root->business_campaign_id))->toBeFalse();
+    $confirmed = PrimaryReservationVersion::factory()->confirmed()->withCashMovement()->create(['primary_reservation_id' => $root->id]);
+    PrimaryCommitment::factory()->create(['primary_reservation_version_id' => $confirmed->id]);
+    expect($commitments->anyForCampaign($root->business_campaign_id))->toBeTrue()
+        ->and($commitments->anyForCampaign($other->business_campaign_id))->toBeFalse();
+    $wallets = app(WalletPostings::class);
+    $wallets->refund($wallets->lockForParty($root->party_id), WalletMoney::of($root->principal),
+        new PostingSource('primary_reservation', $root->id, $root->origin_operation_id));
+    expect($commitments->anyForCampaign($root->business_campaign_id))->toBeTrue()
+        ->and($commitments->anyForCampaign($other->business_campaign_id))->toBeFalse();
 });

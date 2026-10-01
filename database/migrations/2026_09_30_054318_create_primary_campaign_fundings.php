@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         DB::transaction(function (): void {
-            DB::statement('LOCK TABLE business_profiles, business_campaigns, primary_reservations, primary_commitments, investor_wallets, ledger_entries IN SHARE ROW EXCLUSIVE MODE');
+            DB::statement('LOCK TABLE business_profiles, business_campaigns, primary_reservations, primary_reservation_versions, business_campaign_closures, primary_commitments, investor_wallets, ledger_entries, command_operations IN SHARE ROW EXCLUSIVE MODE');
             Schema::create('primary_campaign_fundings', function (Blueprint $table): void {
                 $table->ulid('id')->primary();
                 $table->ulid('business_campaign_id')->unique();

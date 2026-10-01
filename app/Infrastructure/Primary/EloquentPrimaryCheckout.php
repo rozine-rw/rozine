@@ -124,6 +124,39 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
         });
     }
 
+    public function refund(int $userId, int $contextRevision, string $campaignId, string $reservationId, int $expectedRevision, string $requestId): array
+    {
+        return $this->withInvestor($userId, $contextRevision, $campaignId,
+            function (array $identity) use ($userId, $contextRevision, $campaignId, $reservationId, $expectedRevision, $requestId): array {
+                $partyId = (string) $identity['party']['id'];
+                $root = $this->reservationTarget($campaignId, $reservationId, $partyId);
+
+                return $this->journal->execute('party:'.$partyId, $userId, 'primary.refund', $requestId, 'primary_reservation', $root->id,
+                    ['identity_context_revision' => $contextRevision, 'campaign_id' => $root->business_campaign_id, 'expected_revision' => $expectedRevision],
+                    function (): void {}, function () use ($root, $partyId, $expectedRevision): OperationResult {
+                        $refund = $this->reservations->refund($root->business_campaign_id, $root->id, $partyId, $expectedRevision);
+
+                        return new OperationResult('COMMITMENT_REFUNDED', ['reservation_id' => $refund->id, 'commitment_id' => $refund->commitmentId,
+                            'entry_id' => $refund->cash->returnEntryId, 'origin_operation_id' => $root->origin_operation_id,
+                            'amount' => $refund->cash->amount, 'currency' => 'RWF', 'fee' => '0'], $refund->revision);
+                    });
+            });
+    }
+
+    public function findRefund(int $userId, int $contextRevision, string $campaignId, string $reservationId, string $requestId): array
+    {
+        return $this->withInvestor($userId, $contextRevision, $campaignId, function (array $identity) use ($campaignId, $reservationId, $requestId): array {
+            $root = $this->reservationTarget($campaignId, $reservationId, (string) $identity['party']['id']);
+
+            return $this->journal->find('party:'.$identity['party']['id'], 'primary.refund', $requestId,
+                function (string $type, string $id) use ($root): void {
+                    if ($type !== 'primary_reservation' || $id !== $root->id) {
+                        throw new CommandRejection('OPERATION_NOT_FOUND', 404);
+                    }
+                });
+        });
+    }
+
     /**
      * The journal rolls back a rejected operation's savepoint. The enclosing Business and
      * authority transaction therefore records expiry only after the rejected receipt exists;

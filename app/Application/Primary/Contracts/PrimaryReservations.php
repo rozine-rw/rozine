@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Application\Primary\Contracts;
 
+use App\Application\Primary\PrimaryCampaignReturns;
 use App\Application\Primary\PrimaryFundingCandidate;
 use App\Application\Primary\ReservationConfirmation;
+use App\Application\Primary\ReservationRefund;
 use App\Application\Primary\ReservationRelease;
 use App\Application\Primary\ReservedCheckout;
 use App\Domain\Primary\PrimaryTerms;
@@ -67,6 +69,35 @@ interface PrimaryReservations
      * while checking current eligibility/policy/destination and recording any funding.
      */
     public function lockFundingCandidate(string $campaignId): PrimaryFundingCandidate;
+
+    /**
+     * Requires the authorized closing caller's outer READ COMMITTED transaction. Verifies
+     * every retained root, confirmation and exact original cash return under Business →
+     * campaign → roots → commitments → Party-sorted wallet locks. Live holds, unreturned
+     * commitments and funded campaigns refuse. Publication expiry does not remove evidence.
+     * All roots must be settled; this port moves no cash, creates no closing cause, releases
+     * no exposure and recycles no ordinals. The caller must retain the locks while recording
+     * a separately guarded closure and its exact return bindings in the same transaction.
+     */
+    public function lockReturnedCampaign(string $campaignId): PrimaryCampaignReturns;
+
+    /**
+     * Requires the caller transaction and a new system-expiry closure ID. Returns exact
+     * original cash for a partially funded expired campaign, preserving immutable purchase
+     * history. Fully committed campaigns defer to funding settlement; retained funding refuses.
+     * Business → campaign → roots/commitments → Party-sorted wallets. A durable system cause
+     * requires the matching guarded expiry closure at outer commit, so this cannot commit alone.
+     */
+    public function settleExpiredCampaign(string $campaignId, string $closureId): void;
+
+    /**
+     * Requires the authorized caller transaction and actor journal command or bound system expiry cause. Before retained full
+     * funding, returns the exact confirmed principal fee-free under Business → campaign →
+     * root → commitment → wallet gates. Confirmation history remains immutable; cash replay
+     * is idempotent. Publication/hold expiry does not remove the right to return unissued cash.
+     * This primitive neither closes the campaign nor releases exposure or recycles ordinals.
+     */
+    public function refund(string $campaignId, string $reservationId, string $partyId, int $expectedRevision): ReservationRefund;
 
     /**
      * Examines at most limit overdue, nonterminal candidates. Unfailed candidates go

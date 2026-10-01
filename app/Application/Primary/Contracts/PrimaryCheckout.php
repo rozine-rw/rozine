@@ -55,4 +55,16 @@ interface PrimaryCheckout
 
     /** @return array<string, mixed> */
     public function findRelease(int $userId, int $contextRevision, string $campaignId, string $reservationId, string $requestId): array;
+
+    /**
+     * Returns confirmed principal without a fee before full funding. Requires current Investor
+     * authority even on a retry; no new investment admission or fee policy is applied.
+     * Original confirmation revision and terms remain retained, as do occupied unit claims.
+     *
+     * @return array<string, mixed>
+     */
+    public function refund(int $userId, int $contextRevision, string $campaignId, string $reservationId, int $expectedRevision, string $requestId): array;
+
+    /** @return array<string, mixed> */
+    public function findRefund(int $userId, int $contextRevision, string $campaignId, string $reservationId, string $requestId): array;
 }

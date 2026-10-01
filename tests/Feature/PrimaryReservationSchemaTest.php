@@ -195,6 +195,8 @@ it('rolls back all Primary records when the surrounding command fails', function
 });
 
 it('reverses an empty schema but refuses rollback after reservation evidence exists', function (): void {
+    $settlementGuardQuery = "SELECT tgname, pg_get_triggerdef(oid) AS definition FROM pg_trigger WHERE tgrelid = 'primary_campaign_expiry_settlements'::regclass AND NOT tgisinternal ORDER BY tgname";
+    $settlementGuards = DB::select($settlementGuardQuery);
     $migration = require database_path('migrations/2026_09_28_143756_create_primary_reservation_records.php');
     $capacity = require database_path('migrations/2026_09_28_151253_enforce_primary_campaign_capacity_and_closure.php');
     $commands = require database_path('migrations/2026_09_28_152823_bind_primary_evidence_to_command_actors.php');
@@ -212,7 +214,17 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $issuedCompleteness->down();
     $holdingIssue->down();
     $holdingBinding->down();
+    $closureReturns = require database_path('migrations/2026_09_30_094556_bind_campaign_closures_to_complete_primary_returns.php');
+    $entryIndex = require database_path('migrations/2026_09_30_171842_index_wallet_ledger_lines_by_entry.php');
+    $expirySettlements = require database_path('migrations/2026_09_30_204213_create_primary_campaign_expiry_settlements_table.php');
+    $expirySettlements->down();
+    $entryIndex->down();
+    $refundReceipts = require database_path('migrations/2026_09_30_120729_bind_primary_refund_receipts_to_returned_cash.php');
+    $refundReceipts->down();
+    $closureReturns->down();
     $fundings->down();
+    $expiryFailureReasons = require database_path('migrations/2026_09_30_111709_add_reason_code_to_primary_expiry_failures.php');
+    $expiryFailureReasons->down();
     $expiryFailures->down();
     $confirmationOperations->down();
     $confirmationReceipts->down();
@@ -223,7 +235,8 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $commands->down();
     $capacity->down();
     $migration->down();
-    expect(Schema::hasTable('primary_reservations'))->toBeFalse();
+    expect(Schema::hasTable('primary_reservations'))->toBeFalse()
+        ->and(Schema::hasTable('primary_campaign_expiry_settlements'))->toBeFalse();
     $migration->up();
     $capacity->up();
     $commands->up();
@@ -234,7 +247,15 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $confirmationReceipts->up();
     $confirmationOperations->up();
     $expiryFailures->up();
+    $expiryFailureReasons->up();
     $fundings->up();
+    $closureReturns->up();
+    $refundReceipts->up();
+    $entryIndex->up();
+    $expirySettlements->up();
+    expect(Schema::hasTable('primary_campaign_expiry_settlements'))->toBeTrue()
+        ->and(DB::select($settlementGuardQuery))->toEqual($settlementGuards)
+        ->and(array_column($settlementGuards, 'tgname'))->toContain('primary_expiry_settlement_bound', 'primary_expiry_settlements_immutable');
     $holdingBinding->up();
     $holdingIssue->up();
     $issuedCompleteness->up();
@@ -286,15 +307,25 @@ it('bounds total retained allocations even through direct database writes', func
     ])))->toThrow(QueryException::class, 'published campaign capacity');
 });
 
-it('rejects held and confirmed revisions after campaign closure while allowing cash-unwinding states', function (string $state): void {
+it('rejects held and confirmed revisions after campaign closure while allowing fully bound cash unwinding in the closure transaction', function (string $state): void {
     $root = PrimaryReservationRecord::factory()->withInitialVersion()->create();
-    BusinessCampaignClosure::factory()->create(['business_campaign_id' => $root->business_campaign_id, 'closed_at' => now()]);
+    $closure = BusinessCampaignClosure::factory()->create(['business_campaign_id' => $root->business_campaign_id, 'closed_at' => now()]);
     $write = fn () => PrimaryReservationVersion::factory()->withCashMovement()->create(['primary_reservation_id' => $root->id, 'state' => $state]);
     if (in_array($state, ['held', 'confirmed'], true)) {
         expect(fn () => DB::transaction($write))->toThrow(QueryException::class, 'closed campaign');
     } else {
-        expect($write()->state)->toBe('released');
+        $released = $write();
+        $entries = DB::table('ledger_entries')->where('source_type', 'primary_reservation')->where('source_id', $root->id)->get()->keyBy('kind');
+        DB::table('primary_campaign_closure_returns')->insert([
+            'primary_reservation_id' => $root->id, 'business_campaign_closure_id' => $closure->id,
+            'primary_reservation_version_id' => $released->id, 'version_sha256' => $released->sha256,
+            'primary_commitment_id' => null, 'party_id' => $root->party_id,
+            'wallet_id' => $entries['primary_hold']->wallet_id, 'principal' => $root->principal,
+            'origin_operation_id' => $root->origin_operation_id, 'hold_entry_id' => $entries['primary_hold']->id,
+            'commit_entry_id' => null, 'return_entry_id' => $entries['primary_release']->id, 'return_kind' => 'primary_release',
+        ]);
         primarySchemaFlush();
+        expect($released->state)->toBe('released')->and(DB::table('primary_campaign_closure_returns')->count())->toBe(1);
     }
 })->with(['held', 'confirmed', 'released']);
 

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessCampaignStore;
+use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\CampaignReservationSummary;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryReservations;
@@ -62,16 +63,28 @@ it('reports real retained commitments and live holds without changing evidence',
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 });
 
-it('removes overdue holds from reserved totals without advertising recycled capacity', function (): void {
+it('keeps overdue holds uncancellable until return without advertising recycled capacity', function (int $secondsAfterExpiry): void {
     $root = ($this->reserve)('3');
-    $this->travelTo($root->expires_at);
-    $before = ($this->page)()['progress'];
-    expect($before)->toMatchArray(['reserved' => ['currency' => 'RWF', 'amount' => '0'],
-        'units' => ['total' => '2160', 'available' => '2157', 'reserved' => '0', 'committed' => '0', 'unavailable' => '3']])
+    $this->travelTo($root->expires_at->addSeconds($secondsAfterExpiry));
+    $cash = LedgerEntry::query()->count();
+    $operations = CommandOperation::query()->count();
+    $page = ($this->page)();
+    $before = $page['progress'];
+    expect($page['can_cancel'])->toBeFalse()
+        ->and(LedgerEntry::query()->count())->toBe($cash)
+        ->and(CommandOperation::query()->count())->toBe($operations)
+        ->and($before)->toMatchArray(['reserved' => ['currency' => 'RWF', 'amount' => '0'],
+            'units' => ['total' => '2160', 'available' => '2157', 'reserved' => '0', 'committed' => '0', 'unavailable' => '3']])
         ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(0);
+    $store = app(BusinessCampaignStore::class);
+    expect($store->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id, $this->campaign->id, 1, null, (string) Str::uuid())['code'])
+        ->toBe('CAMPAIGN_SETTLEMENT_REQUIRED');
     expect(app(PrimaryReservations::class)->expireDue(1))->toBe(1)
-        ->and(($this->page)()['progress'])->toBe($before);
-});
+        ->and(($this->page)()['progress'])->toBe($before)
+        ->and(($this->page)()['can_cancel'])->toBeTrue();
+    expect($store->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id, $this->campaign->id, 1, null, (string) Str::uuid())['code'])
+        ->toBe('CAMPAIGN_CANCELLED');
+})->with([0, 1]);
 
 it('never treats complete retained commitments as the funded settlement phase', function (bool $complete): void {
     $units = BigInteger::of($this->campaign->payload['quote']['units'])->dividedBy(2);
@@ -115,6 +128,18 @@ it('returns the same server totals through browser and token transports', functi
             ->assertJsonPath('data.note.progress.lifecycle', 'live')->assertJsonPath('data.note.progress.investors', 1);
     }
 })->with(['browser', 'token']);
+
+it('reads reservation and funding evidence once for campaign progress and cancellation eligibility', function (): void {
+    $summary = app(CampaignReservationSummary::class)->read($this->campaign->id, now()->toDateTimeImmutable());
+    $reservations = $this->createMock(CampaignReservationSummary::class);
+    $reservations->expects($this->once())->method('read')->with($this->campaign->id, now('UTC')->toDateTimeImmutable())->willReturn($summary);
+    app()->instance(CampaignReservationSummary::class, $reservations);
+    $funding = $this->createMock(CampaignFundingEvidence::class);
+    $funding->expects($this->once())->method('find')->with($this->campaign->id)->willReturn(null);
+    app()->instance(CampaignFundingEvidence::class, $funding);
+    $page = ($this->page)();
+    expect($page['progress']['phase'])->toBe('raising')->and($page['can_cancel'])->toBeTrue();
+});
 
 it('refuses impossible aggregate amounts or occupied capacity', function (string $field): void {
     $summary = app(CampaignReservationSummary::class)->read($this->campaign->id, now()->toDateTimeImmutable());
@@ -173,7 +198,7 @@ it('removes returned committed money from progress without reopening cancelled a
     expect($page['progress'])->toMatchArray(['phase' => 'raising', 'lifecycle' => 'live', 'investors' => 0, 'funded_pct' => '0.0',
         'committed' => ['currency' => 'RWF', 'amount' => '0'], 'remaining' => ['currency' => 'RWF', 'amount' => '10800000'],
         'units' => ['total' => '2160', 'available' => '2157', 'reserved' => '0', 'committed' => '0', 'unavailable' => '3']])
-        ->and($page['can_cancel'])->toBeFalse();
+        ->and($page['can_cancel'])->toBeTrue();
 });
 
 it('projects refunded principal identically through browser and token campaign reads', function (string $transport): void {

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Wallet\Contracts\WalletPostings;
@@ -78,9 +79,76 @@ it('refuses a full retained raise if any original committed cash has been refund
     $wallets->refund($wallets->lockForParty($first->party_id), WalletMoney::of($first->principal),
         new PostingSource('primary_reservation', $first->id, $first->origin_operation_id));
     expect(fn () => app(PrimaryReservations::class)->lockFundingCandidate($this->campaign->id))
-        ->toThrow(WalletViolation::class, 'PRIMARY_COMMITTED_CASH_REQUIRED')
+        ->toThrow(CommandRejection::class, 'CAMPAIGN_NOT_FULLY_COMMITTED')
         ->and(PrimaryCommitment::query()->count())->toBe(2)
         ->and(LedgerEntry::query()->where('kind', 'primary_refund')->count())->toBe(1);
+});
+
+it('keeps damaged refund evidence distinct from an ordinary funding refusal', function (string $damage): void {
+    $root = ($this->purchase)();
+    ($this->purchase)();
+    $wallets = app(WalletPostings::class);
+    $refund = $wallets->refund($wallets->lockForParty($root->party_id), WalletMoney::of($root->principal),
+        new PostingSource('primary_reservation', $root->id, $root->origin_operation_id));
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    DB::statement('ALTER TABLE ledger_entries DISABLE TRIGGER USER');
+    DB::statement('ALTER TABLE ledger_lines DISABLE TRIGGER USER');
+    $credit = DB::table('ledger_lines')->where('entry_id', $refund->entryId)->where('direction', 'credit');
+    if ($damage === 'amount') {
+        $credit->update(['amount' => '1']);
+    } elseif ($damage === 'missing credit') {
+        $credit->delete();
+    } elseif ($damage === 'origin') {
+        DB::table('ledger_entries')->where('id', $refund->entryId)->update(['origin_operation_id' => $root->id]);
+    } else {
+        $heldAccount = DB::table('ledger_accounts')->where('wallet_id', $refund->walletId)->where('kind', 'investor_held')->value('id');
+        $credit->update(['account_id' => $heldAccount]);
+    }
+    $before = [DB::table('ledger_entries')->orderBy('id')->get()->toJson(), DB::table('ledger_lines')->orderBy('id')->get()->toJson(),
+        CommandOperation::query()->count(), DB::table('primary_campaign_fundings')->count()];
+    expect(fn () => app(PrimaryReservations::class)->lockFundingCandidate($this->campaign->id))
+        ->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT')
+        ->and([DB::table('ledger_entries')->orderBy('id')->get()->toJson(), DB::table('ledger_lines')->orderBy('id')->get()->toJson(),
+            CommandOperation::query()->count(), DB::table('primary_campaign_fundings')->count()])->toBe($before);
+})->with(['amount', 'missing credit', 'origin', 'wrong bucket']);
+
+it('preserves original cash integrity refusals when there is no refund evidence', function (bool $missingCommit): void {
+    $root = ($this->purchase)();
+    ($this->purchase)();
+    $commit = LedgerEntry::query()->where('source_id', $root->id)->where('kind', 'primary_commit')->sole();
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    DB::statement('ALTER TABLE ledger_entries DISABLE TRIGGER USER');
+    DB::statement('ALTER TABLE ledger_lines DISABLE TRIGGER USER');
+    if ($missingCommit) {
+        DB::table('ledger_lines')->where('entry_id', $commit->id)->delete();
+        DB::table('ledger_entries')->where('id', $commit->id)->delete();
+    } else {
+        DB::table('ledger_lines')->where('entry_id', $commit->id)->where('direction', 'credit')->update(['amount' => '1']);
+    }
+    expect(fn () => app(PrimaryReservations::class)->lockFundingCandidate($this->campaign->id))
+        ->toThrow(WalletViolation::class, $missingCommit ? 'PRIMARY_COMMITTED_CASH_REQUIRED' : 'WALLET_POSTING_CONFLICT')
+        ->and(LedgerEntry::query()->where('kind', 'primary_refund')->count())->toBe(0)
+        ->and(DB::table('primary_campaign_fundings')->count())->toBe(0);
+})->with([true, false]);
+
+it('does not classify returned hold cash as a verified refunded confirmation', function (): void {
+    $root = ($this->purchase)();
+    ($this->purchase)();
+    $commit = LedgerEntry::query()->where('source_id', $root->id)->where('kind', 'primary_commit')->sole();
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    DB::statement('ALTER TABLE ledger_entries DISABLE TRIGGER USER');
+    DB::statement('ALTER TABLE ledger_lines DISABLE TRIGGER USER');
+    DB::table('ledger_entries')->where('id', $commit->id)->update(['kind' => 'primary_release']);
+    $available = DB::table('ledger_accounts')->where('wallet_id', $commit->wallet_id)->where('kind', 'investor_available')->value('id');
+    DB::table('ledger_lines')->where('entry_id', $commit->id)->where('direction', 'credit')->update(['account_id' => $available]);
+    $before = [DB::table('ledger_entries')->orderBy('id')->get()->toJson(), DB::table('ledger_lines')->orderBy('id')->get()->toJson()];
+    expect(fn () => app(PrimaryReservations::class)->lockFundingCandidate($this->campaign->id))
+        ->toThrow(WalletViolation::class, 'PRIMARY_COMMITTED_CASH_REQUIRED')
+        ->and(DB::table('primary_campaign_fundings')->count())->toBe(0)
+        ->and([DB::table('ledger_entries')->orderBy('id')->get()->toJson(), DB::table('ledger_lines')->orderBy('id')->get()->toJson()])->toBe($before);
 });
 
 it('rejects mismatched retained commitment evidence before reading cash', function (): void {
@@ -153,6 +221,32 @@ it('still refuses incomplete or returned commitment cash after the deadline', fu
     }
     $this->travelTo($this->campaign->expires_at);
     expect(fn () => app(PrimaryReservations::class)->lockFundingCandidate($this->campaign->id))
-        ->toThrow($state === 'refunded' ? WalletViolation::class : CommandRejection::class,
-            $state === 'refunded' ? 'PRIMARY_COMMITTED_CASH_REQUIRED' : 'CAMPAIGN_NOT_FULLY_COMMITTED');
+        ->toThrow(CommandRejection::class, 'CAMPAIGN_NOT_FULLY_COMMITTED');
 })->with(['partial', 'held', 'refunded']);
+
+it('replays digest-consistent confirmation stamps against the original half-open deadline', function (bool $atDeadline): void {
+    $this->travelTo($this->campaign->expires_at->subSeconds(100));
+    ($this->purchase)();
+    $root = ($this->purchase)();
+    $stamp = $atDeadline ? $this->campaign->expires_at : $this->campaign->expires_at->subMicrosecond();
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    $confirmed = PrimaryReservationVersion::query()->where('primary_reservation_id', $root->id)->orderByDesc('revision')->firstOrFail();
+    $payload = $confirmed->payload;
+    $payload['recorded_at'] = $stamp->utc()->format('Y-m-d\TH:i:s.u\Z');
+    DB::statement('ALTER TABLE primary_reservation_versions DISABLE TRIGGER primary_reservation_versions_immutable');
+    DB::statement('ALTER TABLE primary_commitments DISABLE TRIGGER primary_commitments_immutable');
+    $confirmed->forceFill(['created_at' => $stamp, 'payload' => $payload, 'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload))])->save();
+    PrimaryCommitment::query()->where('primary_reservation_version_id', $confirmed->id)->sole()->forceFill(['confirmed_at' => $stamp, 'created_at' => $stamp])->save();
+    $this->travelTo($this->campaign->expires_at->addDay());
+    $cash = LedgerEntry::query()->orderBy('id')->get()->toJson();
+    $operations = CommandOperation::query()->count();
+    if ($atDeadline) {
+        expect(fn () => app(PrimaryReservations::class)->lockFundingCandidate($this->campaign->id))
+            ->toThrow(RuntimeException::class, 'RESERVATION_INTEGRITY_FAILED');
+    } else {
+        expect(app(PrimaryReservations::class)->lockFundingCandidate($this->campaign->id)->purchases)->toHaveCount(2);
+    }
+    expect(LedgerEntry::query()->orderBy('id')->get()->toJson())->toBe($cash)
+        ->and(CommandOperation::query()->count())->toBe($operations);
+})->with(['at deadline' => true, 'last microsecond' => false]);
