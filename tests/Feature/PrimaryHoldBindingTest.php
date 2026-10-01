@@ -25,6 +25,8 @@ function holdBindingWallet(): LockedWallet
 {
     $fixture = InvestorWalletFixture::ready();
     InvestorWalletFixture::settle(InvestorWalletFixture::deposit($fixture, '50000')['data']['intent_id']);
+    // #181's deferred deposit credit checks are pending after a settle; run them before a test alters ledger triggers.
+    flushHoldBinding();
 
     return app(WalletPostings::class)->lockForParty($fixture['party']->id);
 }
