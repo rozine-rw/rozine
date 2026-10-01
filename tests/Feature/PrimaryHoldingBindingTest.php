@@ -353,6 +353,7 @@ it('authenticates every consumed earlier revision\'s digest, ancestry and record
         'the requoted revision\'s digest replaced' => fn () => $column($requote->id, ['sha256' => str_repeat('0', 64)]),
         'the held revision\'s payload rewritten under a matching digest' => fn () => $rewrite($held->id, fn (array $payload): array => [...$payload, 'operation_id' => (string) Str::uuid()]),
         'the requoted revision detached from its parent' => fn () => $column($requote->id, ['previous_sha256' => str_repeat('0', 64)]),
+        'the requoted revision recorded as an earlier terminal state' => fn () => $column($requote->id, ['state' => 'expired']),
         'a requoted instant the chain re-signs but the revision did not record' => function () use ($requote, $confirmed, $column, $rewrite): void {
             $parent = $rewrite($requote->id, fn (array $payload): array => [...$payload, 'recorded_at' => '2099-01-01T00:00:00.000000Z']);
             $rewrite($confirmed->id, fn (array $payload): array => [...$payload, 'previous_sha256' => $parent]);
