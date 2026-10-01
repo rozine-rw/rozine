@@ -212,6 +212,7 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $walletBindings = require database_path('migrations/2026_09_28_161335_bind_primary_reservations_to_wallet_holds.php');
     $outcomes = require database_path('migrations/2026_09_28_163057_require_completed_primary_command_outcomes.php');
     $primarySourceGuard = require database_path('migrations/2026_09_28_165949_reject_unbound_primary_commitment_sources.php');
+    $depositCreditBinding = require database_path('migrations/2026_09_28_175521_bind_deposit_credits_to_their_intent_amounts.php');
     $primaryTerminalCash = require database_path('migrations/2026_09_28_175455_bind_primary_terminal_versions_to_cash_movements.php');
     $primaryGuardQuery = "SELECT tgname, pg_get_triggerdef(t.oid) AS definition, pg_get_functiondef(t.tgfoid) AS body FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid WHERE NOT t.tgisinternal AND c.relname IN ('primary_reservations', 'primary_reservation_versions', 'primary_commitments', 'ledger_entries') ORDER BY tgname";
     $primaryGuards = DB::select($primaryGuardQuery);
@@ -241,6 +242,7 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $expiryFailures->down();
     $confirmationOperations->down();
     $confirmationReceipts->down();
+    $depositCreditBinding->down();
     $primaryTerminalCash->down();
     $primarySourceGuard->down();
     $outcomes->down();
@@ -285,6 +287,7 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $outcomes->up();
     $primarySourceGuard->up();
     $primaryTerminalCash->up();
+    $depositCreditBinding->up();
     $confirmationReceipts->up();
     $confirmationOperations->up();
     $expiryFailures->up();
