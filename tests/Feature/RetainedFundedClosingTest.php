@@ -186,6 +186,20 @@ it('refuses crossing issued and failed closings', function (): void {
         ->toThrow(RuntimeException::class, 'PRIMARY_CLOSING_MISMATCH');
 });
 
+it('refuses issued authority as failed even when a malformed instruction matches its cause', function (): void {
+    $issued = retainedPrimaryClosingCall('reconciled_success');
+    $before = DisbursementClosing::query()->count();
+    // The runtime constructor accepts causes outside its PHPDoc union.
+    $malformed = (new ReflectionClass(FailedClosing::class))->newInstanceArgs([
+        $issued['evidence']->closingId, $issued['evidence']->disbursementId, 'reconciled_success', [],
+    ]);
+
+    expect(fn () => DB::transaction(fn (): ClosingEvidence => app(RetainedFundedClosing::class)->failed($issued['campaign'], $malformed)))
+        ->toThrow(RuntimeException::class, 'PRIMARY_CLOSING_MISMATCH');
+    expect(DisbursementClosing::query()->count())->toBe($before)
+        ->and(DisbursementClosing::query()->where('kind', 'failed_closing')->exists())->toBeFalse();
+});
+
 it('propagates unavailable source evidence instead of creating a financial failure', function (): void {
     $call = retainedPrimaryClosingCall('approve_recheck');
     $before = DisbursementClosing::query()->count();
