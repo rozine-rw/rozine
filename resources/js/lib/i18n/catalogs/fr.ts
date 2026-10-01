@@ -49,6 +49,11 @@ const fr: Catalog = {
     'errors.not_found.body':
         "Le lien est peut-être mal saisi, ou ce vers quoi il pointait n'est plus disponible. Vérifiez le lien ou recommencez depuis Rozine.",
     'errors.not_found.home': "Aller à l'accueil de Rozine",
+    'errors.unavailable.head_title': 'Momentanément indisponible',
+    'errors.unavailable.title': "Rozine n'a pas pu charger cette page",
+    'errors.unavailable.body':
+        "Un problème est survenu de notre côté. Ce que vous avez déjà envoyé n'est pas affecté. Patientez un instant, puis réessayez.",
+    'errors.unavailable.retry': 'Réessayer',
     'environment.demo': 'Démo — hors production',
     'environment.uat': 'UAT — hors production',
     'environment.synthetic_only':

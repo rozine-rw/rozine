@@ -21,12 +21,13 @@ createInertiaApp({
         switch (true) {
             // Public pages, audit seal verification among them: no session, no role shell. The
             // error page's not-found answer too, which a visitor with no session reaches from a
-            // public link.
+            // public link. Its could-not-load answer (5xx) as well: it is rendered with no session.
             case name === 'home':
             case name === 'welcome':
             case name === 'pulse':
             case name.startsWith('audit/'):
-            case name === 'identity/access-denied' && page.props.status === 404:
+            case name === 'identity/access-denied' &&
+                (page.props.status === 404 || Number(page.props.status) >= 500):
                 return PublicLayout;
             // The Suite launcher and the role apps draw their own shells.
             case name === 'dashboard':

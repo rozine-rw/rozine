@@ -49,6 +49,11 @@ const en = {
     'errors.not_found.body':
         'The link may be mistyped, or what it pointed to is no longer available. Check the link, or start again from Rozine.',
     'errors.not_found.home': 'Go to the Rozine home page',
+    'errors.unavailable.head_title': 'Temporarily unavailable',
+    'errors.unavailable.title': "Rozine couldn't load this page",
+    'errors.unavailable.body':
+        'Something went wrong on our side. Anything you already sent is unaffected. Wait a moment, then try again.',
+    'errors.unavailable.retry': 'Try again',
     'environment.demo': 'Demo — not live',
     'environment.uat': 'UAT — not live',
     'environment.synthetic_only':
