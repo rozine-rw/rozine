@@ -227,6 +227,11 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $fundings = require database_path('migrations/2026_09_30_054318_create_primary_campaign_fundings.php');
     $depositCreditBinding = require database_path('migrations/2026_09_28_175521_bind_deposit_credits_to_their_intent_amounts.php');
     $disbursements = require database_path('migrations/2026_09_29_100000_create_disbursement_tables.php');
+    $closingAuthority = require database_path('migrations/2026_09_29_100400_bind_disbursement_closing_command_authority.php');
+    $closingAuthorityShape = fn (): array => [Schema::getColumnListing('disbursement_closings'),
+        DB::select("SELECT pg_get_triggerdef(oid) AS definition FROM pg_trigger WHERE tgname = 'disbursement_closings_authority'"),
+        DB::select("SELECT pg_get_functiondef(oid) AS definition FROM pg_proc WHERE proname = 'authenticate_disbursement_closing_authority'")];
+    $originalClosingAuthority = $closingAuthorityShape();
     $holdings = require database_path('migrations/2026_09_29_100100_create_primary_holdings_table.php');
     $walletIssue = require database_path('migrations/2026_09_29_100200_add_primary_issue_to_wallet_ledger.php');
     $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
@@ -251,6 +256,7 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $expiryFailures->down();
     $walletIssue->down();
     $holdings->down();
+    $closingAuthority->down();
     $disbursements->down();
     $confirmationOperations->down();
     $confirmationReceipts->down();
@@ -303,6 +309,8 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $confirmationReceipts->up();
     $confirmationOperations->up();
     $disbursements->up();
+    $closingAuthority->up();
+    expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
     $holdings->up();
     $walletIssue->up();
     $expiryFailures->up();

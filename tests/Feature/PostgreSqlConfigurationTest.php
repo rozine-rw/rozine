@@ -111,6 +111,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $walletIssue = require database_path('migrations/2026_09_29_100200_add_primary_issue_to_wallet_ledger.php');
     $staffDisjoint = require database_path('migrations/2026_09_29_100300_keep_staff_accounts_and_parties_disjoint.php');
     $closingAuthority = require database_path('migrations/2026_09_29_100400_bind_disbursement_closing_command_authority.php');
+    $closingAuthorityShape = fn (): array => [Schema::getColumnListing('disbursement_closings'),
+        DB::select("SELECT pg_get_triggerdef(oid) AS definition FROM pg_trigger WHERE tgname = 'disbursement_closings_authority'"),
+        DB::select("SELECT pg_get_functiondef(oid) AS definition FROM pg_proc WHERE proname = 'authenticate_disbursement_closing_authority'")];
+    $originalClosingAuthority = $closingAuthorityShape();
     $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
     $holdingIssue = require database_path('migrations/2026_09_30_114217_require_issue_evidence_for_primary_holdings.php');
     $issuedCompleteness = require database_path('migrations/2026_09_30_234802_require_complete_primary_holdings_for_issued_closings.php');
@@ -261,6 +265,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $staffDisjoint->up();
     $closingAuthority->up();
     expect(Schema::hasColumn('disbursement_closings', 'actor_user_id'))->toBeTrue();
+    expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
     $expiryFailures->up();
     $expiryFailureReasons->up();
     $fundings->up();
