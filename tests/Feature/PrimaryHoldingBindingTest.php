@@ -370,6 +370,31 @@ it('authenticates every consumed earlier revision\'s digest, ancestry and record
     expect($source->facts($requoted->id)['confirmation_sha256'])->toBe($confirmed->sha256);
 });
 
+it('refuses funding evidence that disagrees with the authenticated replay even past the funding verifier', function (): void {
+    ['campaign' => $campaign, 'commitments' => [$first]] = PrimaryHoldingFixture::committed();
+    $retained = app(CampaignFundingEvidence::class)->find($campaign->id);
+    // Every retained revision authenticates and replays; only the final comparison can see the funding purchase disagree.
+    $forge = fn (Closure $change): CampaignFundingEvidence => new readonly class([...$retained, 'commitments' => array_map(fn (array $purchase): array => $purchase['commitment_id'] === $first->id ? $change($purchase) : $purchase, $retained['commitments'])]) implements CampaignFundingEvidence
+    {
+        /** @param array<string, mixed> $evidence */
+        public function __construct(private array $evidence) {}
+
+        public function find(string $campaignId): ?array
+        {
+            return $this->evidence;
+        }
+    };
+    foreach ([
+        'terms' => fn (array $purchase): array => [...$purchase, 'terms' => [...$purchase['terms'], 'payout_fee' => ['currency' => 'RWF', 'amount' => '1']]],
+        'ordinals' => fn (array $purchase): array => [...$purchase, 'ordinals' => [['first' => '1', 'last' => '500'], ['first' => '501', 'last' => '1080']]],
+    ] as $case => $change) {
+        app()->instance(CampaignFundingEvidence::class, $forge($change));
+        expect(fn () => app(HoldingSource::class)->facts($first->id))->toThrow(RuntimeException::class, 'PRIMARY_HOLDING_SOURCE_INTEGRITY_FAILED');
+    }
+    app()->forgetInstance(CampaignFundingEvidence::class);
+    expect(app(HoldingSource::class)->facts($first->id)['commitment_id'])->toBe($first->id);
+});
+
 it('refuses a commitment that is unknown, only held, or outside a funding record', function (): void {
     ['campaign' => $campaign, 'commitments' => [$unfunded]] = PrimaryHoldingFixture::committed(['1080'], fund: false);
     $held = PrimaryReservationFixture::reserve($campaign, PrimaryReservationFixture::investor(), '600')['data']['reservation_id'];
