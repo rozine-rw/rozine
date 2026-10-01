@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "6e72f751faaaee4b03d9b9d084881cc9cfc791cb4ace20e35108b88ee8bcf9ab",
-    "coverageSetSha256": "15bb272f3fdcb18dd20e9a8dfd280ac6a7d0236596b0829331f6353b52b2fee7",
+    "sourceManifestSha256": "0f49b5801f2f4438dc7e8607336b6269b426af2bc3d50427a527ba9e46b6fd04",
+    "coverageSetSha256": "d5ec3334d44b186afcd654c693e0094d87e9421a748a9e6a0b6a83a2a2bdf662",
     "thresholds": {
         "critical": {
             "global": {
@@ -138,6 +138,7 @@
         "resources/js/components/business/apply/operation-outcome.ts",
         "resources/js/components/business/apply/outcome-banner.tsx",
         "resources/js/components/business/apply/pending-review.tsx",
+        "resources/js/components/business/apply/service-fee.tsx",
         "resources/js/components/business/apply/step-business.tsx",
         "resources/js/components/business/apply/step-heading.tsx",
         "resources/js/components/business/apply/step-raise.tsx",

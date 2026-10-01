@@ -406,7 +406,7 @@ const rw: Catalog = {
     'business.apply.review.application_fee_when':
         'Rimwe gusa, yishyurwa nibyemezwa.',
     'business.apply.review.fee_note':
-        "Nta mafaranga ku gishoro ubona, nta n'ikirenga ku gipimo cyatanzwe. Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa.",
+        'Nta mafaranga ku gishoro ubona. Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa.',
     'business.apply.review.binding':
         "Umukono wawe utegeka ubucuruzi mu mategeko kubahiriza inshingano zatangajwe. Nimero y'ubusabe itangwa iyo bwoherejwe.",
     'business.apply.submitted.title': 'Ubusabe bwawe bwoherejwe',
@@ -2972,6 +2972,20 @@ const rw: Catalog = {
     'business.apply.review.reduced':
         'Wahisemo {principal} kuri {offered} wahawe.',
     'business.apply.review.use_full': 'Fata ayo wahawe yose',
+    'business.apply.raise.instalment_fee': "+ {fee} y'amafaranga ya serivisi",
+    'business.apply.review.service_fee':
+        'Amafaranga ya serivisi ({rate}% bya buri bwishyu)',
+    'business.apply.review.projected': 'Biteganyijwe',
+    'business.apply.review.total_payable':
+        'Igiteranyo cyo kwishyura (biteganyijwe)',
+    'business.apply.review.fee_projection_note':
+        "Amafaranga ya serivisi ateganyijwe: {rate}% bya buri bwishyu, acibwa ku mafaranga yishyuwe koko (igishoro n'inyungu, hatarimo andi mafaranga n'amande). Iyi mibare ifata ko buri cyiciro cyishyurwa cyose ku gihe cyateganyijwe.",
+    'business.apply.review.fee_note_service_fee':
+        "Nta mafaranga ku gishoro ubona. Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa. Amafaranga ya serivisi kuri buri bwishyu agaragara hamwe n'icyifuzo cyawe hejuru.",
+    'business.apply.review.fee_unavailable':
+        "Amategeko y'amafaranga ntaraboneka — ntushobora gusinya ubu",
+    'business.apply.review.fee_unavailable_body':
+        "Rozine ntiratangaza amategeko y'amafaranga ya serivisi kuri iki cyifuzo, bityo ntikiremerwa. Umushinga wawe n'icyifuzo cyawe biguma bibitswe.",
 
     'business.apply.recalculating': 'Turimo kubara…',
     'auditor.capture.unavailable':
@@ -3325,6 +3339,8 @@ const rw: Catalog = {
         'Izo mpapuro ntizikiboneka. Hitamo nke cyangwa wongere ugerageze nyuma.',
     'settlement.refusal.COMMITMENT_LOCKED':
         'Imari yose yabonetse, ibi ntibigishobora guhagarikwa.',
+    'settlement.refusal.CAMPAIGN_SETTLEMENT_REQUIRED':
+        'Abashoramari bamaze kwiyemeza muri iki gikorwa cyo gukusanya, bityo ntigishobora guhagarikwa hano. Ibyo biyemeje bigomba kubanza gukemurwa.',
     'settlement.refusal.NOTE_INELIGIBLE': 'Uru rupapuro ntirwemerewe ubu.',
     'settlement.refusal.DISCLOSURE_STALE':
         'Amakuru yo kumenyesha yahindutse. Soma ayariho ubu wongere uyemeze.',
@@ -3494,6 +3510,10 @@ const rw: Catalog = {
     'business.publish.published.disclosure': 'Itangazo ku mafaranga',
     'business.publish.published.campaign': 'Reba igikorwa cyo gukusanya',
     'business.publish.published.home': 'Subira ku Ahabanza',
+    'business.publish.fee_unavailable':
+        "Amategeko y'amafaranga ntaraboneka — ntushobora gutangaza ubu",
+    'business.publish.fee_unavailable_body':
+        "Rozine ntiratangaza amategeko y'amafaranga ya serivisi kuri iyi nkunga, bityo ntirashobora gutangazwa. Nta kintu cyatangajwe.",
     'business.campaign.state.live': 'Irakora',
     'business.campaign.state.fully_reserved': 'Yose yafashwe',
     'business.campaign.state.funded': 'Yabonye amafaranga yose',
@@ -3510,16 +3530,19 @@ const rw: Catalog = {
         'Ntiyemerewe ibyiyemezo bishya kuva ku wa {date}; ibyamaze kwiyemezwa birahaguma.',
     'business.campaign.tile.committed': 'Byiyemejwe',
     'business.campaign.tile.refunded': 'Byasubijwe',
+    'business.campaign.tracker.title': "Ikurikirana ry'ibyiyemejwe",
+    'business.campaign.tracker.committed_pct': '{pct}% byiyemejwe',
+    'business.campaign.not_yet_committed': 'Ibitariyemezwa kandi bitarafatwa',
     'business.campaign.closing_now': 'Birarangira',
     'business.campaign.committed': 'Byiyemejwe',
     'business.campaign.reserved': 'Byafashwe',
     'business.campaign.reserved_note':
-        "Inyandiko zafashwe ziri mu kwishyura kw'abashoramari kutararangira kandi ntiziriyemezwa; ifatwa ritemejwe rirekurwa nyuma y'iminota 5.",
+        "Inyandiko zafashwe mu kwishyura kw'umushoramari. Ntiziriyemezwa.",
     'business.campaign.units':
         'Inyandiko {committed} kuri {total} ziyemejwe · {reserved} zafashwe · {available} ziraboneka',
     'business.campaign.closes': 'Birangira ku wa {date}',
     'business.campaign.fully_reserved':
-        'Inyandiko zose zafashwe mu kwishyura kutararangira. Amafatwa atemejwe mu minota 5 asubizwa ku isoko.',
+        'Inyandiko zose zihari zafashwe mu kwishyura. Abashoramari bashya ntibashobora gufata ubu.',
     'business.campaign.funded':
         'Byatewe inkunga yose ku wa {date}. Iki gikorwa ntikigishobora guhagarikwa.',
     'business.campaign.closing_title': 'Kohereza amafaranga',
@@ -3558,7 +3581,7 @@ const rw: Catalog = {
     'business.campaign.cancel.cancelling': 'Birahagarikwa…',
     'business.campaign.cancel.title': 'Uhagarike iki gikorwa cyo gukusanya?',
     'business.campaign.cancel.body':
-        'Buri mushoramari asubizwa ibyo yiyemeje byose, nta kiguzi, kandi igikorwa cyo gukusanya kirafungwa burundu. Ntibishobora gusubizwa inyuma.',
+        'Igikorwa cyo gukusanya kirafungwa burundu kandi ntikizongera kwakira abashoramari. Ntibishobora gusubizwa inyuma.',
     'business.campaign.cancel.reason': 'Impamvu (si ngombwa)',
     'business.campaign.cancel.confirm': 'Hagarika gukusanya',
     'business.campaign.cancel.keep': 'Komeza gukusanya',
@@ -3718,7 +3741,7 @@ const rw: Catalog = {
     'investor.deal.lifecycle.failed_closing': 'Byafunzwe, amafaranga asubizwa',
     'investor.deal.notice.fully_reserved.title': 'Impapuro zose zafashwe ubu',
     'investor.deal.notice.fully_reserved.body':
-        'Kwishyura bifata impapuro kugeza ku minota 5. Izo igihe cyazo kirangiye zigaruka muri iki gikorwa.',
+        "Impapuro zose zihari ubu zafashwe mu kwishyura kw'abandi bashoramari. Uzongere urebe nyuma.",
     'investor.deal.notice.funded.title': 'Imari yose yabonetse',
     'investor.deal.notice.funded.body':
         'Ibyiyemejwe birafunze mu gihe amafaranga yoherezwa ku kigo. Impapuro zitangwa ubwo bwishyu bumaze kwemezwa.',
@@ -3844,7 +3867,7 @@ const rw: Catalog = {
     'investor.primary.cancel': 'Hagarika icyiyemezo',
     'investor.primary.cancel_title': 'Uhagarika iki cyiyemezo?',
     'investor.primary.cancel_body':
-        'Igishoro cyawe gisubira muri aboneka cyose, nta kiguzi, kandi izi mpapuro zirarekurwa.',
+        'Igishoro cyawe gisubira muri aboneka cyose, nta kiguzi. Ntuzongera gutunga izi mpapuro.',
     'investor.primary.cancel_confirm': 'Yego, hagarika usubize',
     'investor.primary.cancel_keep': 'Bigumeho',
     'investor.holding.issue.title': 'Inyandiko yo gutanga',

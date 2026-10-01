@@ -307,6 +307,121 @@ function runIdentityContenders(array $operations): array
     return $statuses;
 }
 
+/**
+ * Forces the same-request replay interleaving instead of waiting for chance. The first contender
+ * is held inside its transaction just after it journals its operation; the second is forked only
+ * then, and the first is released only once PostgreSQL reports the second waiting on its locks.
+ *
+ * Every socket read is bounded, and whatever throws, the held contender is let go, both children
+ * are reaped and the channels are closed, so no process or open transaction outlives the call.
+ *
+ * @param  Closure(): void  $first
+ * @param  Closure(): void  $second
+ * @return array{blocked: bool, exits: list<int>, outcomes: list<string>}
+ */
+function runHeldIdentityRetry(Closure $first, Closure $second): array
+{
+    DB::purge();
+    /** @param resource $channel */
+    $read = function ($channel, string $awaited, int $seconds = 5): string {
+        stream_set_timeout($channel, $seconds);
+        $line = fgets($channel);
+        if ($line === false) {
+            throw new RuntimeException("Held identity contender channel closed or gave no {$awaited} within {$seconds} seconds.");
+        }
+
+        return trim($line);
+    };
+    /**
+     * @param  Closure(resource): void  $prepare
+     * @param  array<int, resource>  $inherited  Parent ends of earlier channels, which the child must not keep open.
+     */
+    $fork = function (Closure $operation, Closure $prepare, array $inherited = []): array {
+        $channel = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        if ($channel === false) {
+            throw new RuntimeException('Could not open a held identity contender channel.');
+        }
+        $pid = pcntl_fork();
+        if ($pid === -1) {
+            fclose($channel[0]);
+            fclose($channel[1]);
+            throw new RuntimeException('Could not fork held identity contender.');
+        }
+        if ($pid === 0) {
+            try {
+                array_map(fclose(...), [$channel[0], ...$inherited]);
+                $prepare($channel[1]);
+                $operation();
+                [$exit, $outcome] = [0, 'OK'];
+            } catch (IdentityViolation|CommandRejection $exception) {
+                [$exit, $outcome] = [$exception->status === 409 ? 2 : 3, $exception->reason];
+            } catch (Throwable $exception) {
+                [$exit, $outcome] = [1, $exception::class];
+            }
+            @fwrite($channel[1], $outcome."\n");
+            exit($exit);
+        }
+        fclose($channel[1]);
+
+        return [$pid, $channel[0]];
+    };
+    $reap = function (int $pid): int {
+        $status = 0;
+        for ($wait = 0; $wait < 500 && pcntl_waitpid($pid, $status, WNOHANG) === 0; $wait++) {
+            usleep(10_000);
+        }
+        if ($wait === 500) {
+            posix_kill($pid, SIGKILL);
+            pcntl_waitpid($pid, $status);
+        }
+        $exitCode = pcntl_wexitstatus($status);
+
+        return pcntl_wifexited($status) && is_int($exitCode) ? $exitCode : 99;
+    };
+
+    /** @var array<int, resource> $pending */
+    $pending = [];
+    try {
+        [$firstPid, $firstChannel] = $fork($first, function ($channel) use ($read): void {
+            Event::listen('eloquent.created: '.CommandOperation::class, function () use ($channel, $read): void {
+                fwrite($channel, DB::scalar('SELECT pg_backend_pid()')."\n");
+                $read($channel, 'release', 15);
+            });
+        });
+        $pending[$firstPid] = $firstChannel;
+        $holder = (int) $read($firstChannel, 'holder backend pid');
+        [$secondPid, $secondChannel] = $fork($second, function ($channel): void {
+            fwrite($channel, DB::scalar('SELECT pg_backend_pid()')."\n");
+        }, $pending);
+        $pending[$secondPid] = $secondChannel;
+        $waiter = (int) $read($secondChannel, 'waiter backend pid');
+        $blocked = false;
+        for ($poll = 0; $poll < 500 && ! $blocked; $poll++) {
+            $blocked = (bool) DB::scalar('SELECT ?::int = ANY(pg_blocking_pids(?::int))', [$holder, $waiter]);
+            if (! $blocked) {
+                usleep(10_000);
+            }
+        }
+        fwrite($firstChannel, "release\n");
+
+        $exits = [];
+        $outcomes = [];
+        foreach ($pending as $pid => $channel) {
+            $outcomes[] = $read($channel, 'outcome');
+            $exits[] = $reap($pid);
+            fclose($channel);
+            unset($pending[$pid]);
+        }
+
+        return ['blocked' => $blocked, 'exits' => $exits, 'outcomes' => $outcomes];
+    } finally {
+        foreach ($pending as $pid => $channel) {
+            fclose($channel);
+            $reap($pid);
+        }
+    }
+}
+
 it('serializes conflicting Investor and Auditor grants from different operators', function (): void {
     $party = Party::factory()->verified()->create();
     $one = concurrentIdentityOperator();
@@ -1516,6 +1631,22 @@ it('records assignment source facts once under simultaneous identical retries', 
         ->and(AuditSourceSnapshot::query()->count())->toBe(1)
         ->and(CommandOperation::query()->where('command', 'audit.source.fixture')->count())->toBe(1);
 });
+
+it('replays an identical assignment source facts retry that waited behind the first writer', function (int $retryDelaySeconds): void {
+    $fixture = AuditSourceFactsFixture::accepted();
+    $request = (string) Str::uuid();
+    $this->freezeTime();
+    $write = function () use ($fixture, $request): void {
+        expect(AuditSourceFactsFixture::record($fixture['audit']['staff'], $fixture['assignment'], requestId: $request)['code'])->toBe('AUDIT_SOURCE_FACTS_RECORDED');
+    };
+    $retry = function () use ($write, $retryDelaySeconds): void {
+        $this->travel($retryDelaySeconds)->seconds();
+        $write();
+    };
+    expect(runHeldIdentityRetry($write, $retry))->toBe(['blocked' => true, 'exits' => [0, 0], 'outcomes' => ['OK', 'OK']])
+        ->and(AuditSourceSnapshot::query()->count())->toBe(1)
+        ->and(CommandOperation::query()->where('command', 'audit.source.fixture')->count())->toBe(1);
+})->with(['within the same clock second' => 0, 'after the clock crossed a second' => 1]);
 
 it('admits one assignment source revision when independent writers compete', function (): void {
     $fixture = AuditSourceFactsFixture::accepted();

@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { PendingReview } from '@/components/business/apply/pending-review';
+import {
+    FeeTermsUnavailable,
+    ServiceFeeNote,
+    ServiceFeeRows,
+} from '@/components/business/apply/service-fee';
+import type { FeeTermsState } from '@/components/business/apply/service-fee';
 import { StepHeading } from '@/components/business/apply/step-heading';
 import { InstalmentSchedule } from '@/components/business/apply/step-raise';
 import { FieldError } from '@/components/rozine/form';
@@ -41,6 +47,11 @@ type StepReviewProps = {
     pendingReview: RouteLink | null;
     /** Present when the current person may evaluate a lower amount for this ready offer. */
     reduce: ReduceControl | null;
+    /**
+     * The server's borrower service-fee terms for this offer (C4 gate 6). While they are
+     * unavailable the offer cannot be accepted; while absent nothing changes.
+     */
+    feeTerms: FeeTermsState;
     fields: ReviewFields;
     errors: Partial<Record<string, string>>;
     onChange: <K extends keyof ReviewFields>(
@@ -278,12 +289,14 @@ function ReduceOffer({
  */
 function OfferCard({
     quote,
+    feeTerms,
     acceptable,
     on,
     onToggle,
     reduce,
 }: {
     quote: Extract<ApplicationQuote, { status: 'ready' }>;
+    feeTerms: FeeTermsState;
     /** Only a person who may sign now is asked to accept the offer. */
     acceptable: boolean;
     on: boolean;
@@ -292,9 +305,12 @@ function OfferCard({
 }) {
     const { t } = useTranslation();
     const reduced = quote.principal.amount !== quote.offered_principal.amount;
+    const shownFee = feeTerms.state === 'shown' ? feeTerms : null;
 
     return (
         <div
+            role="group"
+            aria-label={t('business.apply.review.your_offer')}
             className={cn(
                 'mt-[11px] rounded-2xl border bg-rz-surface p-4',
                 on
@@ -333,7 +349,17 @@ function OfferCard({
                         {formatRwf(quote.total)}
                     </span>
                 </div>
-                <InstalmentSchedule schedule={quote.schedule} />
+                {shownFee && (
+                    <ServiceFeeRows
+                        fee={shownFee.fee}
+                        totalPayable={shownFee.totalPayable}
+                    />
+                )}
+                <InstalmentSchedule
+                    schedule={quote.schedule}
+                    fee={shownFee?.fee}
+                />
+                {shownFee && <ServiceFeeNote fee={shownFee.fee} />}
             </div>
             {reduced && (
                 <p className="mt-3 text-xs leading-normal text-rz-secondary">
@@ -451,6 +477,7 @@ export function StepReview({
     agreementAvailable,
     pendingReview,
     reduce,
+    feeTerms,
     fields,
     errors,
     onChange,
@@ -516,15 +543,21 @@ export function StepReview({
 
             <SectionLabel>{t('business.apply.review.your_offer')}</SectionLabel>
             {quote ? (
-                <OfferCard
-                    quote={quote}
-                    acceptable={canSign}
-                    on={fields.accept_offer}
-                    onToggle={() =>
-                        onChange('accept_offer', !fields.accept_offer)
-                    }
-                    reduce={reduce}
-                />
+                <>
+                    <OfferCard
+                        quote={quote}
+                        feeTerms={feeTerms}
+                        acceptable={canSign && feeTerms.state !== 'unavailable'}
+                        on={fields.accept_offer}
+                        onToggle={() =>
+                            onChange('accept_offer', !fields.accept_offer)
+                        }
+                        reduce={reduce}
+                    />
+                    {canSign && feeTerms.state === 'unavailable' && (
+                        <FeeTermsUnavailable surface="sign" className="mt-3" />
+                    )}
+                </>
             ) : (
                 <p className="mt-[11px] text-[12.5px] text-rz-secondary">
                     {t('business.apply.review.no_offer')}
@@ -713,7 +746,11 @@ export function StepReview({
                     </span>
                 </div>
                 <p className="mt-[11px] border-t border-[#dbe7ff] pt-[11px] text-[11px] leading-[1.55] text-rz-secondary dark:border-rz-divider">
-                    {t('business.apply.review.fee_note')}
+                    {t(
+                        feeTerms.state === 'shown'
+                            ? 'business.apply.review.fee_note_service_fee'
+                            : 'business.apply.review.fee_note',
+                    )}
                 </p>
             </div>
             {agreementAvailable && (

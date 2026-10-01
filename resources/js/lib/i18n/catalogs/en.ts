@@ -398,7 +398,7 @@ const en = {
     'business.apply.review.application_fee_when':
         'One-time, charged when approved.',
     'business.apply.review.fee_note':
-        'No fee on the amount you raise, and nothing on top of your quoted rate. Charged once your note is approved, before it goes live.',
+        'No fee on the amount you raise. Charged once your note is approved, before it goes live.',
     'business.apply.review.binding':
         'Your signature legally binds the business to the disclosed obligations. Your application ID is issued on submission.',
     'business.apply.submitted.title': 'Your application has been submitted',
@@ -2912,6 +2912,19 @@ const en = {
     'business.apply.review.reduced':
         'You chose {principal} of the {offered} offered.',
     'business.apply.review.use_full': 'Use the full offer',
+    'business.apply.raise.instalment_fee': '+ {fee} service fee',
+    'business.apply.review.service_fee':
+        'Service fee ({rate}% of each repayment)',
+    'business.apply.review.projected': 'Projected',
+    'business.apply.review.total_payable': 'Total payable (projected)',
+    'business.apply.review.fee_projection_note':
+        'Projected service fee: {rate}% of each repayment, charged on amounts actually repaid (principal and interest, excluding fees and penalties). These figures assume every instalment is paid in full on schedule.',
+    'business.apply.review.fee_note_service_fee':
+        'No fee on the amount you raise. Charged once your note is approved, before it goes live. The service fee on each repayment is shown with your offer above.',
+    'business.apply.review.fee_unavailable':
+        "Fee terms unavailable — you can't sign yet",
+    'business.apply.review.fee_unavailable_body':
+        "Rozine hasn't published the service-fee terms for this offer, so it can't be accepted yet. Your draft and your offer stay saved.",
     'business.apply.recalculating': 'Recalculating…',
     'auditor.capture.unavailable':
         "The capture app isn't available for this assignment yet, so photos and the check-in can't be taken. There's no way to capture them on the web.",
@@ -3200,6 +3213,8 @@ const en = {
         'Those notes are no longer available. Choose fewer notes or try again later.',
     'settlement.refusal.COMMITMENT_LOCKED':
         'The raise is fully funded, so this can no longer be cancelled.',
+    'settlement.refusal.CAMPAIGN_SETTLEMENT_REQUIRED':
+        "Investors have already committed to this raise, so it can't be cancelled here. Their commitments have to be settled first.",
     'settlement.refusal.NOTE_INELIGIBLE': "This note isn't eligible right now.",
     'settlement.refusal.DISCLOSURE_STALE':
         'The disclosure changed. Read the current version and acknowledge it again.',
@@ -3365,6 +3380,10 @@ const en = {
     'business.publish.published.disclosure': 'Fee disclosure',
     'business.publish.published.campaign': 'View campaign',
     'business.publish.published.home': 'Back to Home',
+    'business.publish.fee_unavailable':
+        "Fee terms unavailable — you can't publish yet",
+    'business.publish.fee_unavailable_body':
+        "Rozine hasn't published the service-fee terms for this raise, so it can't go live yet. Nothing has been published.",
     'business.campaign.state.live': 'Live',
     'business.campaign.state.fully_reserved': 'Fully reserved',
     'business.campaign.state.funded': 'Funded',
@@ -3381,16 +3400,19 @@ const en = {
         "Not eligible for new commitments since {date}; what's already committed stays.",
     'business.campaign.tile.committed': 'Committed',
     'business.campaign.tile.refunded': 'Refunded',
+    'business.campaign.tracker.title': 'Commitment tracker',
+    'business.campaign.tracker.committed_pct': '{pct}% committed',
+    'business.campaign.not_yet_committed': 'Not yet committed or reserved',
     'business.campaign.closing_now': 'Closing',
     'business.campaign.committed': 'Committed',
     'business.campaign.reserved': 'Reserved',
     'business.campaign.reserved_note':
-        "Reserved notes are held in investors' live checkouts and aren't committed yet; an unconfirmed hold is released after 5 minutes.",
+        "Notes held in an investor's checkout. They aren't confirmed yet.",
     'business.campaign.units':
         '{committed} of {total} notes committed · {reserved} reserved · {available} available',
     'business.campaign.closes': 'Closes {date}',
     'business.campaign.fully_reserved':
-        "Every note is reserved in a live checkout. Holds that aren't confirmed within 5 minutes go back on sale.",
+        "Every available note is currently held in a checkout. New investors can't reserve right now.",
     'business.campaign.funded':
         'Fully funded on {date}. The raise can no longer be cancelled.',
     'business.campaign.closing_title': 'Disbursement',
@@ -3428,7 +3450,7 @@ const en = {
     'business.campaign.cancel.cancelling': 'Cancelling…',
     'business.campaign.cancel.title': 'Cancel this raise?',
     'business.campaign.cancel.body':
-        "Every investor's commitment goes back to them in full, without fee, and the raise closes for good. This can't be undone.",
+        "The raise closes for good and stops taking investors. This can't be undone.",
     'business.campaign.cancel.reason': 'Reason (optional)',
     'business.campaign.cancel.confirm': 'Cancel raise',
     'business.campaign.cancel.keep': 'Keep raising',
@@ -3586,7 +3608,7 @@ const en = {
     'investor.deal.notice.fully_reserved.title':
         'Every note is reserved right now',
     'investor.deal.notice.fully_reserved.body':
-        'Checkouts hold notes for up to 5 minutes. Any that lapse come back to this raise.',
+        "Every available note is currently held in other investors' checkouts. Check back later.",
     'investor.deal.notice.funded.title': 'Fully funded',
     'investor.deal.notice.funded.body':
         'Commitments are locked while the funds are paid to the business. Notes are issued once that payment is confirmed.',
@@ -3712,7 +3734,7 @@ const en = {
     'investor.primary.cancel': 'Cancel commitment',
     'investor.primary.cancel_title': 'Cancel this commitment?',
     'investor.primary.cancel_body':
-        'Your principal goes back to Available in full, with no fee, and these notes are released.',
+        "Your principal goes back to Available in full, with no fee. You'll no longer hold these notes.",
     'investor.primary.cancel_confirm': 'Yes, cancel and refund',
     'investor.primary.cancel_keep': 'Keep it',
     'investor.holding.issue.title': 'Issue record',

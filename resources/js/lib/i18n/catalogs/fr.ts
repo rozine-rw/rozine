@@ -410,7 +410,7 @@ const fr: Catalog = {
     'business.apply.review.application_fee_when':
         "Unique, facturés à l'approbation.",
     'business.apply.review.fee_note':
-        'Aucuns frais sur le montant levé, et rien au-delà du taux annoncé. Facturés une fois la note approuvée, avant sa mise en ligne.',
+        'Aucuns frais sur le montant levé. Facturés une fois la note approuvée, avant sa mise en ligne.',
     'business.apply.review.binding':
         "Votre signature engage légalement l'entreprise aux obligations divulguées. L'identifiant de la demande est attribué à la soumission.",
     'business.apply.submitted.title': 'Votre demande a été soumise',
@@ -2985,6 +2985,19 @@ const fr: Catalog = {
     'business.apply.review.reduced':
         'Vous avez choisi {principal} sur les {offered} proposés.',
     'business.apply.review.use_full': "Reprendre l'offre complète",
+    'business.apply.raise.instalment_fee': '+ {fee} de frais de service',
+    'business.apply.review.service_fee':
+        'Frais de service ({rate} % de chaque remboursement)',
+    'business.apply.review.projected': 'Prévisionnel',
+    'business.apply.review.total_payable': 'Total à payer (prévisionnel)',
+    'business.apply.review.fee_projection_note':
+        'Frais de service prévisionnels : {rate} % de chaque remboursement, prélevés sur les montants effectivement remboursés (capital et intérêts, hors frais et pénalités). Ces montants supposent que chaque échéance est payée en totalité à la date prévue.',
+    'business.apply.review.fee_note_service_fee':
+        'Aucuns frais sur le montant levé. Facturés une fois la note approuvée, avant sa mise en ligne. Les frais de service sur chaque remboursement figurent avec votre offre ci-dessus.',
+    'business.apply.review.fee_unavailable':
+        'Conditions de frais indisponibles — vous ne pouvez pas encore signer',
+    'business.apply.review.fee_unavailable_body':
+        "Rozine n'a pas encore publié les conditions des frais de service pour cette offre : elle ne peut donc pas encore être acceptée. Votre brouillon et votre offre restent enregistrés.",
 
     'business.apply.recalculating': 'Recalcul…',
     'auditor.capture.unavailable':
@@ -3340,6 +3353,8 @@ const fr: Catalog = {
         'Ces titres ne sont plus disponibles. Choisissez-en moins ou réessayez plus tard.',
     'settlement.refusal.COMMITMENT_LOCKED':
         'La levée est entièrement financée : cela ne peut plus être annulé.',
+    'settlement.refusal.CAMPAIGN_SETTLEMENT_REQUIRED':
+        "Des investisseurs se sont déjà engagés dans cette levée : elle ne peut donc pas être annulée ici. Leurs engagements doivent d'abord être réglés.",
     'settlement.refusal.NOTE_INELIGIBLE':
         "Ce titre n'est pas éligible pour le moment.",
     'settlement.refusal.DISCLOSURE_STALE':
@@ -3511,6 +3526,10 @@ const fr: Catalog = {
     'business.publish.published.disclosure': 'Information sur les frais',
     'business.publish.published.campaign': 'Voir la campagne',
     'business.publish.published.home': "Retour à l'accueil",
+    'business.publish.fee_unavailable':
+        'Conditions de frais indisponibles — vous ne pouvez pas encore publier',
+    'business.publish.fee_unavailable_body':
+        "Rozine n'a pas encore publié les conditions des frais de service pour cette levée : elle ne peut donc pas encore être mise en ligne. Rien n'a été publié.",
     'business.campaign.state.live': 'En ligne',
     'business.campaign.state.fully_reserved': 'Entièrement réservée',
     'business.campaign.state.funded': 'Financée',
@@ -3528,16 +3547,19 @@ const fr: Catalog = {
         'Non éligible à de nouveaux engagements depuis le {date} ; ceux déjà pris restent.',
     'business.campaign.tile.committed': 'Engagé',
     'business.campaign.tile.refunded': 'Remboursé',
+    'business.campaign.tracker.title': 'Suivi des engagements',
+    'business.campaign.tracker.committed_pct': '{pct} % engagé',
+    'business.campaign.not_yet_committed': 'Ni engagé ni réservé',
     'business.campaign.closing_now': 'Clôture en cours',
     'business.campaign.committed': 'Engagé',
     'business.campaign.reserved': 'Réservé',
     'business.campaign.reserved_note':
-        'Les notes réservées sont bloquées dans des paiements en cours et ne sont pas encore engagées ; une réservation non confirmée est libérée après 5 minutes.',
+        "Notes bloquées dans le paiement d'un investisseur. Elles ne sont pas encore confirmées.",
     'business.campaign.units':
         '{committed} notes engagées sur {total} · {reserved} réservées · {available} disponibles',
     'business.campaign.closes': 'Clôture le {date}',
     'business.campaign.fully_reserved':
-        'Chaque note est réservée dans un paiement en cours. Les réservations non confirmées sous 5 minutes sont remises en vente.',
+        'Chaque note disponible est actuellement bloquée dans un paiement. Les nouveaux investisseurs ne peuvent pas réserver pour le moment.',
     'business.campaign.funded':
         'Entièrement financée le {date}. La levée ne peut plus être annulée.',
     'business.campaign.closing_title': 'Décaissement',
@@ -3576,7 +3598,7 @@ const fr: Catalog = {
     'business.campaign.cancel.cancelling': 'Annulation…',
     'business.campaign.cancel.title': 'Annuler cette levée ?',
     'business.campaign.cancel.body':
-        "Chaque engagement est intégralement rendu à l'investisseur, sans frais, et la levée est définitivement close. Cette action est irréversible.",
+        "La levée est définitivement close et n'accepte plus d'investisseurs. Cette action est irréversible.",
     'business.campaign.cancel.reason': 'Motif (facultatif)',
     'business.campaign.cancel.confirm': 'Annuler la levée',
     'business.campaign.cancel.keep': 'Continuer la levée',
@@ -3739,7 +3761,7 @@ const fr: Catalog = {
     'investor.deal.notice.fully_reserved.title':
         'Tous les titres sont réservés pour le moment',
     'investor.deal.notice.fully_reserved.body':
-        "Les paiements réservent des titres jusqu'à 5 minutes. Ceux qui expirent reviennent dans cette levée.",
+        "Tous les titres disponibles sont actuellement réservés dans les paiements d'autres investisseurs. Revenez plus tard.",
     'investor.deal.notice.funded.title': 'Entièrement financé',
     'investor.deal.notice.funded.body':
         "Les engagements sont verrouillés pendant le versement à l'entreprise. Les titres sont émis une fois ce paiement confirmé.",
@@ -3871,7 +3893,7 @@ const fr: Catalog = {
     'investor.primary.cancel': "Annuler l'engagement",
     'investor.primary.cancel_title': 'Annuler cet engagement ?',
     'investor.primary.cancel_body':
-        'Votre capital revient intégralement sur le disponible, sans frais, et ces titres sont libérés.',
+        'Votre capital revient intégralement sur le disponible, sans frais. Vous ne détiendrez plus ces titres.',
     'investor.primary.cancel_confirm': 'Oui, annuler et rembourser',
     'investor.primary.cancel_keep': 'Le conserver',
     'investor.holding.issue.title': "Relevé d'émission",
