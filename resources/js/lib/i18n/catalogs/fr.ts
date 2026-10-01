@@ -3547,16 +3547,19 @@ const fr: Catalog = {
         'Non éligible à de nouveaux engagements depuis le {date} ; ceux déjà pris restent.',
     'business.campaign.tile.committed': 'Engagé',
     'business.campaign.tile.refunded': 'Remboursé',
+    'business.campaign.tracker.title': 'Suivi des engagements',
+    'business.campaign.tracker.committed_pct': '{pct} % engagé',
+    'business.campaign.not_yet_committed': 'Ni engagé ni réservé',
     'business.campaign.closing_now': 'Clôture en cours',
     'business.campaign.committed': 'Engagé',
     'business.campaign.reserved': 'Réservé',
     'business.campaign.reserved_note':
-        'Les notes réservées sont bloquées dans des paiements en cours et ne sont pas encore engagées ; une réservation non confirmée est libérée après 5 minutes.',
+        "Notes bloquées dans le paiement d'un investisseur. Elles ne sont pas encore confirmées.",
     'business.campaign.units':
         '{committed} notes engagées sur {total} · {reserved} réservées · {available} disponibles',
     'business.campaign.closes': 'Clôture le {date}',
     'business.campaign.fully_reserved':
-        'Chaque note est réservée dans un paiement en cours. Les réservations non confirmées sous 5 minutes sont remises en vente.',
+        'Chaque note disponible est actuellement bloquée dans un paiement. Les nouveaux investisseurs ne peuvent pas réserver pour le moment.',
     'business.campaign.funded':
         'Entièrement financée le {date}. La levée ne peut plus être annulée.',
     'business.campaign.closing_title': 'Décaissement',
@@ -3595,7 +3598,7 @@ const fr: Catalog = {
     'business.campaign.cancel.cancelling': 'Annulation…',
     'business.campaign.cancel.title': 'Annuler cette levée ?',
     'business.campaign.cancel.body':
-        "Chaque engagement est intégralement rendu à l'investisseur, sans frais, et la levée est définitivement close. Cette action est irréversible.",
+        "La levée est définitivement close et n'accepte plus d'investisseurs. Cette action est irréversible.",
     'business.campaign.cancel.reason': 'Motif (facultatif)',
     'business.campaign.cancel.confirm': 'Annuler la levée',
     'business.campaign.cancel.keep': 'Continuer la levée',
