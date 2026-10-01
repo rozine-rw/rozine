@@ -6,6 +6,7 @@ use App\Application\Business\Contracts\PublishedCampaignEvidence;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
+use App\Application\Primary\Contracts\HoldingSource;
 use App\Domain\Disbursement\IntentDigest;
 use App\Infrastructure\Business\RetainedFundedCampaignFacts;
 use App\Models\BusinessProfile;
@@ -48,7 +49,7 @@ it('projects exact immutable purchases and terms in commitment order without loc
     ['campaign' => $campaign] = PrimaryHoldingFixture::committed(['540', '540', '1080'], requoted: [1], buyers: [0 => 'same', 1 => 'same']);
     $retained = app(CampaignFundingEvidence::class)->find($campaign->id);
     $source = retainedFundingFactsStub([...$retained, 'commitments' => array_reverse($retained['commitments'])]);
-    $projection = new RetainedFundedCampaignFacts($source, app(PublishedCampaignEvidence::class), app(CanonicalJson::class));
+    $projection = new RetainedFundedCampaignFacts($source, app(PublishedCampaignEvidence::class), app(CanonicalJson::class), app(HoldingSource::class));
     $queries = [];
     DB::listen(function (QueryExecuted $query) use (&$queries): void {
         $queries[] = $query->sql;
@@ -95,7 +96,7 @@ it('refuses misbound source facts before they become a funded campaign', functio
         $retained[$damage] = 'foreign';
     }
     $source = retainedFundingFactsStub($retained);
-    expect(fn () => (new RetainedFundedCampaignFacts($source, app(PublishedCampaignEvidence::class), app(CanonicalJson::class)))->find($campaign->id))
+    expect(fn () => (new RetainedFundedCampaignFacts($source, app(PublishedCampaignEvidence::class), app(CanonicalJson::class), app(HoldingSource::class)))->find($campaign->id))
         ->toThrow(RuntimeException::class, 'PRIMARY_FUNDING_INTEGRITY_FAILED');
 })->with(['campaign_id', 'business_id', 'exposure_reservation_id', 'principal', 'publication_sha256', 'term']);
 
@@ -125,6 +126,6 @@ it('refuses a publication without a typed retained tenor', function (): void {
             return $this->payload;
         }
     };
-    expect(fn () => (new RetainedFundedCampaignFacts(app(CampaignFundingEvidence::class), $source, app(CanonicalJson::class)))->find($campaign->id))
+    expect(fn () => (new RetainedFundedCampaignFacts(app(CampaignFundingEvidence::class), $source, app(CanonicalJson::class), app(HoldingSource::class)))->find($campaign->id))
         ->toThrow(RuntimeException::class, 'PRIMARY_FUNDING_INTEGRITY_FAILED');
 });

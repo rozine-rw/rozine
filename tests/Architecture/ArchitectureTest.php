@@ -444,9 +444,10 @@ arch('funding locks and evidence remain internal to Business and Primary persist
     ->expect(['App\Application\Primary\Contracts\PrimaryFunding', 'App\Application\Primary\Contracts\CampaignFundingEvidence'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Infrastructure\Primary', 'App\Providers\AppServiceProvider']);
 
-arch('Holding source facts are read only by the Primary and disbursement adapters')
+arch('Holding source facts stay behind the Primary, disbursement and funded purchase projection adapters')
     ->expect('App\Application\Primary\Contracts\HoldingSource')
-    ->toOnlyBeUsedIn(['App\Infrastructure\Primary', 'App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider']);
+    ->toOnlyBeUsedIn(['App\Infrastructure\Primary', 'App\Infrastructure\Disbursement',
+        'App\Infrastructure\Business\RetainedFundedCampaignFacts', 'App\Providers\AppServiceProvider']);
 
 arch('funding records remain inside Primary persistence')
     ->expect('App\Models\PrimaryCampaignFunding')

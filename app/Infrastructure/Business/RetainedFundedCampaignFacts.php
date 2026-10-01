@@ -9,6 +9,7 @@ use App\Application\Disbursement\FundedCampaign;
 use App\Application\Disbursement\FundedCommitment;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
+use App\Application\Primary\Contracts\HoldingSource;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessApplicationSubmission;
@@ -20,13 +21,14 @@ use RuntimeException;
 /**
  * Immutable purchase projection for FundedCampaigns integration, including issue retries after
  * committed cash has left the wallets. It neither locks nor writes; the caller retains Business,
- * staff and campaign/disbursement gates before using these facts to settle. Current admission,
- * authenticated closing authority and Holding-source verification remain separate requirements.
+ * staff and campaign/disbursement gates before using these facts to settle. The existing Holding
+ * source authenticates every acknowledged purchase replay; persisted Holdings, current admission
+ * and authenticated closing authority remain separate requirements.
  * The Business name is a current display label and supplies no financial or mandate authority.
  */
 final class RetainedFundedCampaignFacts
 {
-    public function __construct(private CampaignFundingEvidence $fundings, private PublishedCampaignEvidence $publications, private CanonicalJson $json) {}
+    public function __construct(private CampaignFundingEvidence $fundings, private PublishedCampaignEvidence $publications, private CanonicalJson $json, private HoldingSource $holdings) {}
 
     public function find(string $campaignId): ?FundedCampaign
     {
@@ -46,10 +48,11 @@ final class RetainedFundedCampaignFacts
             throw new RuntimeException('PRIMARY_FUNDING_INTEGRITY_FAILED');
         }
         $this->requireOriginalExposure($campaign, $publication);
-        $commitments = array_map(function (array $purchase) use ($termMonths): FundedCommitment {
+        $commitments = array_map(function (array $purchase) use ($campaignId, $termMonths): FundedCommitment {
             if (($purchase['terms']['term_months'] ?? null) !== $termMonths) {
                 throw new RuntimeException('PRIMARY_FUNDING_INTEGRITY_FAILED');
             }
+            $this->requireAcknowledgedPurchase($campaignId, $purchase);
 
             return new FundedCommitment($purchase['commitment_id'], $purchase['party_id'], $purchase['cash']['origin_operation_id'],
                 (int) $purchase['units'], $purchase['ordinals'], $purchase['rights'], $purchase['terms'], $purchase['principal']);
@@ -59,6 +62,19 @@ final class RetainedFundedCampaignFacts
 
         return new FundedCampaign($campaignId, $funding['business_id'], $business->profile['name'], $publication['title'],
             $funding['exposure_reservation_id'], $funding['principal'], $funding['recorded_at'], $termMonths, $commitments);
+    }
+
+    /** @param array<string, mixed> $purchase */
+    private function requireAcknowledgedPurchase(string $campaignId, array $purchase): void
+    {
+        $facts = $this->holdings->facts($purchase['commitment_id']);
+        $expected = ['business_campaign_id' => $campaignId, 'commitment_id' => $purchase['commitment_id'],
+            'primary_reservation_id' => $purchase['reservation_id'], 'party_id' => $purchase['party_id'], 'units' => (int) $purchase['units'],
+            'principal' => $purchase['principal'], 'ordinals' => array_map(fn (array $range): array => ['first' => (int) $range['first'], 'last' => (int) $range['last']], $purchase['ordinals']),
+            'rights' => $purchase['rights'], 'terms' => $purchase['terms'], 'confirmation_version_id' => $purchase['confirmation_version_id']];
+        if ($this->json->encode(array_intersect_key($facts, $expected)) !== $this->json->encode($expected)) {
+            throw new RuntimeException('PRIMARY_FUNDING_INTEGRITY_FAILED');
+        }
     }
 
     /** Historical acceptance only; current exposure totals and eligibility are separate gates.
