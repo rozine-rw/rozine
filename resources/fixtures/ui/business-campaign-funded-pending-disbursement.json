@@ -9,7 +9,7 @@
         "campaign": {
             "id": "CMP-2026-0118",
             "revision": 12,
-            "lifecycle": "live"
+            "lifecycle": "funded_pending_disbursement"
         },
         "home": {
             "business": {
@@ -253,36 +253,17 @@
             "id": "RNP-2026-0118",
             "title": "Cold-Chain Hub",
             "progress": {
-                "phase": "raising",
-                "lifecycle": "live",
-                "restriction": {
-                    "code": "RESTRICTION_ACTIVE",
-                    "since": "2026-09-24T11:30:00+02:00"
-                },
+                "phase": "funded",
+                "lifecycle": "funded_pending_disbursement",
+                "restriction": null,
                 "committed": {
                     "currency": "RWF",
-                    "amount": "14058000"
+                    "amount": "18000000"
                 },
-                "reserved": {
-                    "currency": "RWF",
-                    "amount": "900000"
-                },
-                "remaining": {
-                    "currency": "RWF",
-                    "amount": "3042000"
-                },
-                "units": {
-                    "total": "18000",
-                    "available": "3042",
-                    "reserved": "900",
-                    "committed": "14058",
-                    "unavailable": "0"
-                },
-                "investors": 318,
-                "funded_pct": "78.1",
-                "clock": {
-                    "starts_at": "2026-09-02T09:00:00+02:00",
-                    "expires_at": "2026-10-02T09:00:00+02:00"
+                "investors": 402,
+                "funded_at": "2026-09-20T15:42:00+02:00",
+                "closing": {
+                    "stage": "awaiting_disbursement"
                 }
             },
             "photos": [
