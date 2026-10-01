@@ -74,11 +74,11 @@ it('refuses digest-consistent disclosure ancestry forgeries without altering fun
 it('binds every replayed purchase fact before using it in a funded campaign', function (): void {
     ['campaign' => $campaign, 'commitments' => [$commitment]] = PrimaryHoldingFixture::committed(requoted: [0]);
     $genuine = app(HoldingSource::class);
-    $retained = $genuine->facts($commitment->id);
+    $retained = $genuine->campaignFacts($campaign->id);
     $ledger = DB::table('ledger_entries')->orderBy('id')->get()->toJson();
     foreach (['business_campaign_id', 'commitment_id', 'primary_reservation_id', 'party_id', 'units', 'principal',
         'ordinals', 'rights', 'terms', 'confirmation_version_id', 'missing'] as $field) {
-        $facts = $retained;
+        $facts = $retained[$commitment->id];
         if ($field === 'missing') {
             unset($facts['confirmation_version_id']);
         } else {
@@ -89,13 +89,13 @@ it('binds every replayed purchase fact before using it in a funded campaign', fu
             };
         }
         $source = $this->mock(HoldingSource::class);
-        $source->shouldReceive('facts');
-        $expectation = $source->mockery_findExpectation('facts', []);
+        $source->shouldReceive('campaignFacts');
+        $expectation = $source->mockery_findExpectation('campaignFacts', []);
         if (! $expectation instanceof Expectation) {
             throw new RuntimeException('The expected purchase test boundary was not registered.');
         }
-        $expectation->andReturnUsing(fn (string $id): array => $id === $commitment->id ? $facts : $genuine->facts($id));
-        $source->shouldNotReceive('verify');
+        $expectation->andReturnUsing(fn (string $id): array => $id === $campaign->id ? [...$retained, $commitment->id => $facts] : $genuine->campaignFacts($id));
+        $source->shouldNotReceive('facts', 'verify');
         $projection = app(RetainedFundedCampaignFacts::class);
         expect(fn () => $projection->find($campaign->id))->toThrow(RuntimeException::class, 'PRIMARY_FUNDING_INTEGRITY_FAILED');
     }
@@ -110,6 +110,11 @@ it('propagates unavailable purchase authority without treating it as a failed ca
         public function __construct(private RuntimeException $failure) {}
 
         public function facts(string $commitmentId): array
+        {
+            throw $this->failure;
+        }
+
+        public function campaignFacts(string $campaignId): array
         {
             throw $this->failure;
         }
@@ -130,3 +135,34 @@ it('propagates unavailable purchase authority without treating it as a failed ca
     expect(DB::table('ledger_entries')->orderBy('id')->get()->toJson())->toBe($ledger)
         ->and(DB::table('disbursement_closings')->count())->toBe(0);
 });
+
+it('requires the exact campaign purchase membership while allowing extra verified fact metadata', function (string $damage): void {
+    ['campaign' => $campaign, 'commitments' => $commitments] = PrimaryHoldingFixture::committed(requoted: [1]);
+    $facts = app(HoldingSource::class)->campaignFacts($campaign->id);
+    if ($damage === 'missing') {
+        unset($facts[$commitments[0]->id]);
+    } elseif ($damage === 'extra') {
+        $facts[PrimaryHoldingFixture::id()] = $facts[$commitments[0]->id];
+    } else {
+        $facts = array_map(fn (array $fact): array => [...$fact, 'source_metadata' => ['verified' => true]], $facts);
+    }
+    $source = $this->mock(HoldingSource::class);
+    $source->shouldReceive('campaignFacts');
+    $expectation = $source->mockery_findExpectation('campaignFacts', []);
+    if (! $expectation instanceof Expectation) {
+        throw new RuntimeException('The expected campaign test boundary was not registered.');
+    }
+    $expectation->once()->with($campaign->id)->andReturn($facts);
+    $source->shouldNotReceive('facts', 'verify');
+    $projection = app(RetainedFundedCampaignFacts::class);
+    $ledger = DB::table('ledger_entries')->orderBy('id')->get()->toJson();
+    $funding = app(CampaignFundingEvidence::class)->find($campaign->id);
+    if ($damage === 'metadata') {
+        expect($projection->find($campaign->id)->commitments)->toHaveCount(count($commitments));
+    } else {
+        expect(fn () => $projection->find($campaign->id))->toThrow(RuntimeException::class, 'PRIMARY_FUNDING_INTEGRITY_FAILED');
+    }
+    expect(DB::table('ledger_entries')->orderBy('id')->get()->toJson())->toBe($ledger)
+        ->and(app(CampaignFundingEvidence::class)->find($campaign->id))->toBe($funding)
+        ->and(DB::table('disbursement_closings')->count())->toBe(0);
+})->with(['missing', 'extra', 'metadata']);

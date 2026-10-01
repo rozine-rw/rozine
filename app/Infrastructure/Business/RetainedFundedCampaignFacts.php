@@ -48,11 +48,19 @@ final class RetainedFundedCampaignFacts
             throw new RuntimeException('PRIMARY_FUNDING_INTEGRITY_FAILED');
         }
         $this->requireOriginalExposure($campaign, $publication);
-        $commitments = array_map(function (array $purchase) use ($campaignId, $termMonths): FundedCommitment {
+        $facts = $this->holdings->campaignFacts($campaignId);
+        $expectedIds = array_column($funding['commitments'], 'commitment_id');
+        $actualIds = array_keys($facts);
+        sort($expectedIds, SORT_STRING);
+        sort($actualIds, SORT_STRING);
+        if ($actualIds !== $expectedIds) {
+            throw new RuntimeException('PRIMARY_FUNDING_INTEGRITY_FAILED');
+        }
+        $commitments = array_map(function (array $purchase) use ($campaignId, $termMonths, $facts): FundedCommitment {
             if (($purchase['terms']['term_months'] ?? null) !== $termMonths) {
                 throw new RuntimeException('PRIMARY_FUNDING_INTEGRITY_FAILED');
             }
-            $this->requireAcknowledgedPurchase($campaignId, $purchase);
+            $this->requireAcknowledgedPurchase($campaignId, $purchase, $facts[$purchase['commitment_id']]);
 
             return new FundedCommitment($purchase['commitment_id'], $purchase['party_id'], $purchase['cash']['origin_operation_id'],
                 (int) $purchase['units'], $purchase['ordinals'], $purchase['rights'], $purchase['terms'], $purchase['principal']);
@@ -64,10 +72,12 @@ final class RetainedFundedCampaignFacts
             $funding['exposure_reservation_id'], $funding['principal'], $funding['recorded_at'], $termMonths, $commitments);
     }
 
-    /** @param array<string, mixed> $purchase */
-    private function requireAcknowledgedPurchase(string $campaignId, array $purchase): void
+    /**
+     * @param  array<string, mixed>  $purchase
+     * @param  array<string, mixed>  $facts
+     */
+    private function requireAcknowledgedPurchase(string $campaignId, array $purchase, array $facts): void
     {
-        $facts = $this->holdings->facts($purchase['commitment_id']);
         $expected = ['business_campaign_id' => $campaignId, 'commitment_id' => $purchase['commitment_id'],
             'primary_reservation_id' => $purchase['reservation_id'], 'party_id' => $purchase['party_id'], 'units' => (int) $purchase['units'],
             'principal' => $purchase['principal'], 'ordinals' => array_map(fn (array $range): array => ['first' => (int) $range['first'], 'last' => (int) $range['last']], $purchase['ordinals']),

@@ -129,3 +129,24 @@ it('refuses a publication without a typed retained tenor', function (): void {
     expect(fn () => (new RetainedFundedCampaignFacts(app(CampaignFundingEvidence::class), $source, app(CanonicalJson::class), app(HoldingSource::class)))->find($campaign->id))
         ->toThrow(RuntimeException::class, 'PRIMARY_FUNDING_INTEGRITY_FAILED');
 });
+
+it('projects verified requoted campaign purchases with linear reads and no financial changes', function (int $members): void {
+    ['campaign' => $campaign] = PrimaryHoldingFixture::committed(array_fill(0, $members, (string) intdiv(2160, $members)), requoted: [0, 1]);
+    $ledger = DB::table('ledger_entries')->orderBy('id')->get()->toJson();
+    $funding = app(CampaignFundingEvidence::class)->find($campaign->id);
+    $queries = [];
+    DB::listen(function (QueryExecuted $query) use (&$queries): void {
+        $queries[] = strtolower($query->sql);
+    });
+    $facts = app(RetainedFundedCampaignFacts::class)->find($campaign->id);
+    $reads = $queries;
+    // Two complete funding authentications include original cash receipts; Holding roots/revisions are batched.
+    expect($facts->commitments)->toHaveCount($members)
+        ->and(count($reads))->toBeLessThanOrEqual(16 + 14 * $members);
+    foreach ($reads as $query) {
+        expect($query)->toStartWith('select')->not->toContain('for update', 'for share', 'for no key update', 'for key share');
+    }
+    expect(DB::table('ledger_entries')->orderBy('id')->get()->toJson())->toBe($ledger)
+        ->and(app(CampaignFundingEvidence::class)->find($campaign->id))->toBe($funding)
+        ->and(DB::table('disbursement_closings')->count())->toBe(0);
+})->with(['three funded members' => [3], 'twelve funded members' => [12]]);

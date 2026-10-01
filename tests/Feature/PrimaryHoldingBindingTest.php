@@ -541,8 +541,8 @@ it('reads a campaign\'s facts in a linear number of queries, so a per-commitment
     $units = array_map(fn (): string => (string) intdiv(2160, $members), range(1, $members));
     ['campaign' => $campaign, 'commitments' => $commitments] = PrimaryHoldingFixture::committed($units, [0, 1]);
     [$facts, $queries] = holdingQueries(fn (): array => app(HoldingSource::class)->campaignFacts($campaign->id));
-    // Funding row and bindings, three reads per verified purchase, then commitments, roots and revisions once each.
-    $ceiling = 6 + 3 * $members;
+    // Funding row and bindings, seven reads per purchase including original cash receipts, then three batched reads.
+    $ceiling = 6 + 7 * $members;
     expect($facts)->toHaveCount($members)->and(count($queries))->toBeLessThanOrEqual($ceiling);
     // Replaying commitment by commitment re-verifies the whole funding for each one, which this ceiling refuses.
     [, $perCommitment] = holdingQueries(fn (): array => array_map(fn (PrimaryCommitment $commitment): array => app(HoldingSource::class)->facts($commitment->id), $commitments));
