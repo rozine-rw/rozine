@@ -50,7 +50,8 @@ it('accepts a Holding and its issue posting in either order and refuses the comm
         $postings();
     } else {
         $postings();
-        issueEvidenceCommit();
+        issueEvidenceRefused(fn () => DB::statement('SET CONSTRAINTS ALL IMMEDIATE'), 'An issued closing must issue a Holding for every funded commitment');
+        DB::statement('SET CONSTRAINTS ALL DEFERRED');
         $holdings();
     }
     issueEvidenceCommit();

@@ -20,11 +20,11 @@ it('waits for, and is waited on by, the funding lock without deadlock', function
     $this->freezeSecond();
     ['campaign' => $campaign, 'commitments' => $commitments] = PrimaryHoldingFixture::committed();
     [$first] = $commitments;
-    $closing = PrimaryHoldingFixture::issuedClosing($campaign);
-    $rows = array_map(fn (PrimaryCommitment $commitment): array => PrimaryHoldingFixture::row($commitment->id, $closing), $commitments);
     $funding = PrimaryCampaignFunding::query()->sole()->id;
     // The whole issue as the adapter must order it: every Holding first, then the Party-locked issue postings.
-    $issue = function () use ($rows, $commitments, $closing): void {
+    $issue = function () use ($campaign, $commitments): void {
+        $closing = PrimaryHoldingFixture::issuedClosing($campaign);
+        $rows = array_map(fn (PrimaryCommitment $commitment): array => PrimaryHoldingFixture::row($commitment->id, $closing), $commitments);
         DB::table('primary_holdings')->insert($rows);
         foreach ($commitments as $commitment) {
             PrimaryHoldingFixture::issue($commitment->id, $closing);
