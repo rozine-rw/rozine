@@ -379,7 +379,8 @@ it('refuses funding evidence that disagrees with the authenticated replay even p
         /** @param array<string, mixed> $evidence */
         public function __construct(private array $evidence) {}
 
-        public function find(string $campaignId): ?array
+        /** @return array<string, mixed> */
+        public function find(string $campaignId): array
         {
             return $this->evidence;
         }
