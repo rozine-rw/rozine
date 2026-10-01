@@ -111,7 +111,11 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $walletIssue = require database_path('migrations/2026_09_29_100200_add_primary_issue_to_wallet_ledger.php');
     $staffDisjoint = require database_path('migrations/2026_09_29_100300_keep_staff_accounts_and_parties_disjoint.php');
     $closingAuthority = require database_path('migrations/2026_09_29_100400_bind_disbursement_closing_command_authority.php');
-    $closingAuthorityShape = fn (): array => [Schema::getColumnListing('disbursement_closings'),
+    $closingAuthorityShape = fn (): array => [
+        DB::select("SELECT column_name, data_type, udt_name, is_nullable, column_default FROM information_schema.columns
+            WHERE table_schema = current_schema() AND table_name = 'disbursement_closings' ORDER BY ordinal_position"),
+        DB::select("SELECT conname, pg_get_constraintdef(oid) AS definition FROM pg_constraint
+            WHERE conrelid = 'disbursement_closings'::regclass ORDER BY conname"),
         DB::select("SELECT pg_get_triggerdef(oid) AS definition FROM pg_trigger WHERE tgname = 'disbursement_closings_authority'"),
         DB::select("SELECT pg_get_functiondef(oid) AS definition FROM pg_proc WHERE proname = 'authenticate_disbursement_closing_authority'")];
     $originalClosingAuthority = $closingAuthorityShape();
@@ -265,7 +269,6 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $staffDisjoint->up();
     $closingAuthority->up();
     expect(Schema::hasColumn('disbursement_closings', 'actor_user_id'))->toBeTrue();
-    expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
     $expiryFailures->up();
     $expiryFailureReasons->up();
     $fundings->up();
@@ -277,6 +280,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $holdingBinding->up();
     $holdingIssue->up();
     $issuedCompleteness->up();
+    expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
         ->and(DB::select($functionQuery))->toEqual($functions)->and(DB::select($constraintQuery))->toEqual($constraints);
