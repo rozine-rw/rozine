@@ -163,6 +163,33 @@ it('refuses every supplied issue field against genuine retained authority', func
     }
 });
 
+it('refuses malformed issued kind and causes from the source boundary', function (string $field, string|array $value): void {
+    $call = retainedPrimaryClosingCall('reconciled_success');
+    if (! $call['instruction'] instanceof IssueInstruction) {
+        throw new LogicException('Issued closing did not supply an issue instruction.');
+    }
+    $other = new ClosingEvidence(...array_replace(get_object_vars($call['evidence']), [$field => $value]));
+    $source = new class($other) implements DisbursementClosingEvidence
+    {
+        public function __construct(private ClosingEvidence $evidence) {}
+
+        public function find(string $closingId): ClosingEvidence
+        {
+            return $this->evidence;
+        }
+    };
+    $before = [DisbursementClosing::query()->count(), DB::table('ledger_entries')->count()];
+
+    expect(fn () => (new RetainedFundedClosing($source))->issued($call['campaign'], $call['instruction']))
+        ->toThrow(RuntimeException::class, 'PRIMARY_CLOSING_MISMATCH');
+    expect([DisbursementClosing::query()->count(), DB::table('ledger_entries')->count()])->toBe($before)
+        ->and(DisbursementClosing::query()->where('kind', 'failed_closing')->exists())->toBeFalse();
+})->with([
+    'failure kind with otherwise matching issued fields' => ['kind', 'failed_closing'],
+    'failure cause with otherwise matching issued fields' => ['cause', 'worker_recheck'],
+    'nonempty failed conditions with otherwise matching issued fields' => ['causes', ['restriction']],
+]);
+
 it('refuses every supplied failure field against genuine retained authority', function (string $cause): void {
     $call = retainedPrimaryClosingCall($cause);
     foreach (['closingId' => strtolower((string) Str::ulid()), 'disbursementId' => strtolower((string) Str::ulid()),
