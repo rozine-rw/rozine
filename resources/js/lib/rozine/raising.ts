@@ -84,13 +84,16 @@ export function isReadableProgress(
         return true;
     }
 
-    const units: Partial<Record<string, unknown>> = progress.units;
+    const units: unknown = progress.units;
 
     return (
         RAISING.includes(progress.lifecycle) &&
         progress.lifecycle === lifecycle &&
+        typeof units === 'object' &&
+        units !== null &&
         ['total', 'available', 'reserved', 'committed', 'unavailable'].every(
-            (bucket) => isUnits(units[bucket]),
+            (bucket) =>
+                isUnits((units as Partial<Record<string, unknown>>)[bucket]),
         ) &&
         [progress.committed, progress.reserved, progress.remaining].every(
             isMoney,

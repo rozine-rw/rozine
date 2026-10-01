@@ -384,6 +384,20 @@ describe('Raising progress the server sent incompletely', () => {
         unreadable(page);
     });
 
+    it('fails closed when the units are null', () => {
+        const page = props(liveFixture);
+
+        (raising(page) as { units: unknown }).units = null;
+        unreadable(page);
+    });
+
+    it('fails closed when the units are omitted', () => {
+        const page = props(liveFixture);
+
+        delete (raising(page) as { units?: unknown }).units;
+        unreadable(page);
+    });
+
     it('fails closed on a unit count that is not a whole number', () => {
         const page = props(liveFixture);
 
