@@ -99,8 +99,15 @@ describe('A raising campaign', () => {
         expect(view.getByText('78.1%')).toBeInTheDocument();
         expect(view.getByText('318')).toBeInTheDocument();
         expect(
-            view.getByRole('progressbar', { name: 'Funding tracker' }),
+            view.getByRole('progressbar', { name: 'Commitment tracker' }),
         ).toHaveValue(78.1);
+        expect(view.getByText('78.1% committed')).toBeInTheDocument();
+        expect(view.getAllByText('Committed')).toHaveLength(3);
+        expect(
+            view.getByText('Not yet committed or reserved'),
+        ).toBeInTheDocument();
+        expect(sheet).not.toHaveTextContent(/funded|funding/i);
+        expect(sheet).not.toHaveTextContent(/left to raise/i);
         expect(view.getByText('RWF 14,058,000')).toBeInTheDocument();
         expect(view.getByText('RWF 900,000')).toBeInTheDocument();
         expect(view.getByText('RWF 3,042,000')).toBeInTheDocument();
@@ -110,6 +117,13 @@ describe('A raising campaign', () => {
             ),
         ).toBeInTheDocument();
         expect(view.getByText('Closes 2 Oct 2026 · 09:00')).toBeInTheDocument();
+        expect(
+            view.getByText(
+                "Notes held in an investor's checkout. They aren't confirmed yet.",
+            ),
+        ).toBeInTheDocument();
+        expect(sheet).not.toHaveTextContent(/released after 5 minutes/i);
+        expect(sheet).not.toHaveTextContent(/back on sale/i);
         expect(view.queryByRole('alert')).not.toBeInTheDocument();
 
         for (const text of IDENTITIES) {
@@ -189,8 +203,13 @@ describe('A raising campaign', () => {
 
         expect(view.getByText('Raising · fully reserved')).toBeInTheDocument();
         expect(view.getByRole('status')).toHaveTextContent(
-            'Every note is reserved in a live checkout.',
+            "Every available note is currently held in a checkout. New investors can't reserve right now.",
         );
+        expect(campaignSheet()).not.toHaveTextContent(/back on sale/i);
+        expect(campaignSheet()).not.toHaveTextContent(
+            /until|confirmed or end|once holds/i,
+        );
+        expect(campaignSheet()).not.toHaveTextContent(/5 minutes/i);
         expect(
             view.getByText(
                 '16,200 of 18,000 notes committed · 1,800 reserved · 0 available',
@@ -206,7 +225,7 @@ describe('A raising campaign', () => {
 
         expect(
             within(campaignSheet()).getByRole('progressbar', {
-                name: 'Funding tracker',
+                name: 'Commitment tracker',
             }),
         ).toHaveValue(100);
     });
@@ -266,8 +285,11 @@ describe('Cancelling a raise', () => {
         });
 
         expect(dialog).toHaveTextContent(
-            "Every investor's commitment goes back to them in full, without fee",
+            "The raise closes for good and stops taking investors. This can't be undone.",
         );
+        expect(dialog).not.toHaveTextContent(/released|returned|refund/i);
+        expect(dialog).not.toHaveTextContent(/commitment goes back/i);
+        expect(dialog).not.toHaveTextContent(/without fee/i);
 
         await user.type(
             within(dialog).getByLabelText('Reason (optional)'),
