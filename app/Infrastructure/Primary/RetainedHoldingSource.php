@@ -16,6 +16,8 @@ use App\Domain\Primary\UnitRights;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
+use DateTimeImmutable;
+use DateTimeZone;
 use ErrorException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +28,8 @@ use TypeError;
  * Replays a funded commitment's acknowledged disclosure from retained evidence only. The funding
  * evidence must exist and verify (it re-derives the funding, reservation and revision digests).
  * Then the rights are re-allocated from the retained campaign schedule and ordinals, every retained
- * revision is replayed through the domain at its own recorded instant up to the confirmation, and
+ * revision is authenticated (its digest, its predecessor's digest, its revision and its recorded instant)
+ * and replayed through the domain at its own recorded instant up to the confirmation, and
  * the confirmed terms, their disclosure digest and the rights must equal what the revision, the
  * reservation and the funding record each retain. Current campaign inputs, fee policy and tiers
  * are never read, so nothing is repriced. No locks, no writes.
@@ -56,15 +59,18 @@ final readonly class RetainedHoldingSource implements HoldingSource
             $terms = null;
             $confirmed = null;
             foreach (PrimaryReservationVersion::query()->where('primary_reservation_id', $root->id)->orderBy('revision')->get() as $version) {
-                $disclosed = $version->payload['terms'];
+                $payload = $version->payload;
+                $disclosed = $payload['terms'];
                 $terms = PrimaryTerms::disclosed($disclosed['rate_pct'], $disclosed['term_months'], $disclosed['policy_version'],
                     $disclosed['disclosure_version'], $disclosed['earnings_fee'], $disclosed['payout_fee']['amount'], $rights);
                 $at = $version->created_at->toDateTimeImmutable();
                 $reservation = match (true) {
                     $reservation === null => PrimaryReservation::hold($rights, $terms, $window),
                     $version->state === 'held' => $reservation->requote($at, $terms),
-                    default => $reservation->confirm($at, $terms, $disclosed['disclosure_version'], $version->payload['disclosure_sha256']),
+                    $version->state === 'confirmed' => $reservation->confirm($at, $terms, $disclosed['disclosure_version'], $payload['disclosure_sha256']),
+                    default => throw new RuntimeException('PRIMARY_HOLDING_SOURCE_INTEGRITY_FAILED'),
                 };
+                $this->requireRevision($root, $version, $confirmed, $reservation, $at);
                 $confirmed = $version;
             }
         } catch (PrimaryViolation|TypeError|ErrorException $exception) {
@@ -86,6 +92,28 @@ final readonly class RetainedHoldingSource implements HoldingSource
             'ordinals' => array_map(fn (array $range): array => ['first' => (int) $range['first'], 'last' => (int) $range['last']], $ordinals->ranges),
             'rights' => $rights->toArray(), 'terms' => $terms->toArray(), 'reservation_sha256' => $root->sha256,
             'confirmation_version_id' => $confirmed->id, 'confirmation_revision' => $confirmed->revision, 'confirmation_sha256' => $confirmed->sha256];
+    }
+
+    /**
+     * Authenticates one consumed revision before its replay is trusted: its stored digest must be its payload's,
+     * it must follow its predecessor in revision, instant and digest, and its payload must be exactly what that
+     * revision records for the replayed state at its own recorded instant. Read-only; it takes no locks.
+     */
+    private function requireRevision(PrimaryReservationRecord $root, PrimaryReservationVersion $version, ?PrimaryReservationVersion $previous,
+        PrimaryReservation $reservation, DateTimeImmutable $at): void
+    {
+        $payload = $version->payload;
+        $expected = ['contract' => 'primary-reservation-version-1', 'reservation_id' => $root->id, 'reservation_sha256' => $root->sha256,
+            'revision' => ($previous === null ? 0 : $previous->revision) + 1, 'state' => $reservation->state, 'operation_id' => $version->operation_id,
+            'previous_sha256' => $previous?->sha256, 'terms' => $reservation->terms->toArray(), 'disclosure_sha256' => $reservation->terms->disclosureSha256,
+            'recorded_at' => $at->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:s.u\Z')];
+        if (! hash_equals($version->sha256, hash('sha256', $this->json->encode($payload)))
+            || $version->revision !== $expected['revision'] || $version->state !== $reservation->state || $version->previous_sha256 !== $previous?->sha256
+            || ($previous === null ? $version->operation_id !== $root->origin_operation_id || $at != $root->created_at->toDateTimeImmutable()
+                : $at < $previous->created_at->toDateTimeImmutable())
+            || $this->json->encode($payload) !== $this->json->encode($expected)) {
+            throw new RuntimeException('PRIMARY_HOLDING_SOURCE_INTEGRITY_FAILED');
+        }
     }
 
     public function verify(string $holdingId): void
