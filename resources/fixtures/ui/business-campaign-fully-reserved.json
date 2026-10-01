@@ -272,7 +272,8 @@
                     "total": "18000",
                     "available": "0",
                     "reserved": "1800",
-                    "committed": "16200"
+                    "committed": "16200",
+                    "unavailable": "0"
                 },
                 "investors": 377,
                 "funded_pct": "90.0",

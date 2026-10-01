@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "0f49b5801f2f4438dc7e8607336b6269b426af2bc3d50427a527ba9e46b6fd04",
-    "coverageSetSha256": "d5ec3334d44b186afcd654c693e0094d87e9421a748a9e6a0b6a83a2a2bdf662",
+    "sourceManifestSha256": "197ae9ce18b60caab36ddd7d1483d125e27f7a9cad3976b652d5334e999ef107",
+    "coverageSetSha256": "024d8fa39d46c5573585c0ec5e76052db3bd64465c46c647c6decc21a5132efd",
     "thresholds": {
         "critical": {
             "global": {
@@ -351,6 +351,7 @@
         "resources/js/lib/rozine/dispute-note.ts",
         "resources/js/lib/rozine/format.ts",
         "resources/js/lib/rozine/operation.ts",
+        "resources/js/lib/rozine/raising.ts",
         "resources/js/lib/utils.ts",
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/auth/login.tsx",
