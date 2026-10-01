@@ -437,7 +437,7 @@ arch('synthetic disbursement fixtures stay inside the local disbursement hook')
     ->expect(['App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures', 'App\Application\Disbursement\Contracts\SyntheticPayoutScripts'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider', 'App\Console\Commands\PrepareSyntheticDisbursement']);
 arch('funding cash evidence stays behind the wallet and Primary adapters')
-    ->expect('App\\Application\\Wallet\\Contracts\\PrimaryCommittedCash')
+    ->expect(['App\\Application\\Wallet\\Contracts\\PrimaryCommittedCash', 'App\\Application\\Wallet\\Contracts\\PrimaryCashReceipts'])
     ->toOnlyBeUsedIn(['App\\Infrastructure\\Wallet', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);
 
 arch('funding locks and evidence remain internal to Business and Primary persistence')
