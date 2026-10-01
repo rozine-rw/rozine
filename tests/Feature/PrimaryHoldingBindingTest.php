@@ -16,6 +16,7 @@ use App\Models\PrimaryReservationVersion;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\Support\PrimaryHoldingFixture;
 use Tests\Support\PrimaryReservationFixture;
 
@@ -330,6 +331,42 @@ it('replays the acknowledged disclosure and refuses retained evidence that no lo
     expect(fn () => $source->facts($first->id))->toThrow(RuntimeException::class, 'PRIMARY_FUNDING_INTEGRITY_FAILED');
     DB::rollBack();
     $source->verify($holding);
+});
+
+it('authenticates every consumed earlier revision\'s digest, ancestry and recorded instant before replaying it', function (): void {
+    ['campaign' => $campaign, 'commitments' => [$requoted]] = PrimaryHoldingFixture::committed(['1080', '1080'], [0]);
+    ['revisions' => [$held, $requote, $confirmed]] = holdingSource($requoted);
+    $source = app(HoldingSource::class);
+    expect([$held->state, $requote->state, $confirmed->state])->toBe(['held', 'held', 'confirmed'])
+        ->and($source->facts($requoted->id)['confirmation_revision'])->toBe(3);
+    // Inside each rolled-back case the immutability trigger is lifted once; nothing in the application can do this.
+    $column = fn (string $id, array $values): int => DB::table('primary_reservation_versions')->where('id', $id)->update($values);
+    $rewrite = function (string $id, Closure $change) use ($column): string {
+        $payload = $change(json_decode(Crypt::decryptString((string) DB::table('primary_reservation_versions')->where('id', $id)->value('payload')), true, 512, JSON_THROW_ON_ERROR));
+        $sha256 = hash('sha256', app(CanonicalJson::class)->encode($payload));
+        $column($id, ['payload' => Crypt::encryptString(json_encode($payload, JSON_THROW_ON_ERROR)), 'sha256' => $sha256]);
+
+        return $sha256;
+    };
+    foreach ([
+        'the held revision\'s digest replaced' => fn () => $column($held->id, ['sha256' => str_repeat('0', 64)]),
+        'the requoted revision\'s digest replaced' => fn () => $column($requote->id, ['sha256' => str_repeat('0', 64)]),
+        'the held revision\'s payload rewritten under a matching digest' => fn () => $rewrite($held->id, fn (array $payload): array => [...$payload, 'operation_id' => (string) Str::uuid()]),
+        'the requoted revision detached from its parent' => fn () => $column($requote->id, ['previous_sha256' => str_repeat('0', 64)]),
+        'a requoted instant the chain re-signs but the revision did not record' => function () use ($requote, $confirmed, $column, $rewrite): void {
+            $parent = $rewrite($requote->id, fn (array $payload): array => [...$payload, 'recorded_at' => '2099-01-01T00:00:00.000000Z']);
+            $rewrite($confirmed->id, fn (array $payload): array => [...$payload, 'previous_sha256' => $parent]);
+            $column($confirmed->id, ['previous_sha256' => $parent]);
+        },
+    ] as $case => $corrupt) {
+        DB::beginTransaction();
+        DB::statement('ALTER TABLE primary_reservation_versions DISABLE TRIGGER primary_reservation_versions_immutable');
+        $corrupt();
+        expect(app(CampaignFundingEvidence::class)->find($campaign->id))->toBeArray($case)
+            ->and(fn () => $source->facts($requoted->id))->toThrow(RuntimeException::class, 'PRIMARY_HOLDING_SOURCE_INTEGRITY_FAILED');
+        DB::rollBack();
+    }
+    expect($source->facts($requoted->id)['confirmation_sha256'])->toBe($confirmed->sha256);
 });
 
 it('refuses a commitment that is unknown, only held, or outside a funding record', function (): void {
