@@ -112,7 +112,7 @@ it('rechecks closure after the expiry candidate is selected', function (): void 
     $event = 'eloquent.retrieved: '.BusinessCampaign::class;
     $advanced = false;
     Event::listen($event, function (BusinessCampaign $campaign) use (&$advanced): void {
-        if (! $advanced && ! array_key_exists('expires_at', $campaign->getAttributes())) {
+        if (! $advanced && ! array_key_exists('principal', $campaign->getAttributes())) {
             $advanced = true;
             expect($this->store->expireDue(100))->toBe(1);
         }
@@ -129,6 +129,7 @@ it('fails closed on damaged closure evidence even if its payload is rehashed', f
     $closure = BusinessCampaignClosure::query()->sole();
     $payload = $closure->payload;
     $payload['principal_released'] = '3000000';
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     DB::statement('ALTER TABLE business_campaign_closures DISABLE TRIGGER business_campaign_closures_protected');
     try {
         $closure->forceFill(['payload' => $payload, 'sha256' => $rehash ? hash('sha256', app(CanonicalJson::class)->encode($payload)) : $closure->sha256])->save();
