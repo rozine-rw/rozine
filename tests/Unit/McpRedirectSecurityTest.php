@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Laravel\Mcp\Server\Http\Controllers\OAuthRegisterController;
 
 it('rejects redirect authority confusion and preserves localhost callback ports', function () {
