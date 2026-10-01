@@ -9,10 +9,38 @@ use Illuminate\Support\Facades\Schema;
 it('installs funding behind in-flight command table locks without blocking their remaining writes', function (array $written, array $remaining): void {
     $closures = require database_path('migrations/2026_09_30_094556_bind_campaign_closures_to_complete_primary_returns.php');
     $funding = require database_path('migrations/2026_09_30_054318_create_primary_campaign_fundings.php');
-    $closures->down();
-    $funding->down();
+    $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
+    $holdingIssue = require database_path('migrations/2026_09_30_114217_require_issue_evidence_for_primary_holdings.php');
+    $completeness = require database_path('migrations/2026_09_30_234802_require_complete_primary_holdings_for_issued_closings.php');
+    $dependants = [$completeness, $holdingIssue, $holdingBinding, $closures];
+    $shape = fn (): array => [
+        DB::select("SELECT tgname, pg_get_triggerdef(oid) AS definition FROM pg_trigger WHERE NOT tgisinternal
+            AND tgrelid IN ('primary_campaign_fundings'::regclass, 'primary_holdings'::regclass,
+                'business_campaign_closures'::regclass, 'disbursement_closings'::regclass) ORDER BY tgname"),
+        DB::select("SELECT conname, pg_get_constraintdef(oid) AS definition FROM pg_constraint WHERE conname LIKE 'primary_holding_%' ORDER BY conname"),
+        DB::select("SELECT proname, pg_get_functiondef(oid) AS definition FROM pg_proc WHERE pronamespace = 'public'::regnamespace
+            AND prokind = 'f' AND proname LIKE '%primary%' ORDER BY proname"),
+    ];
+    $installed = $shape();
+    $restore = function () use ($funding, $dependants): void {
+        DB::transaction(function () use ($funding, $dependants): void {
+            if (! Schema::hasTable('primary_campaign_fundings')) {
+                $funding->up();
+            }
+            foreach (array_reverse($dependants) as $migration) {
+                $migration->up();
+            }
+        });
+    };
+    DB::transaction(function () use ($dependants, $funding): void {
+        foreach ($dependants as $migration) {
+            $migration->down();
+        }
+        $funding->down();
+    });
     $channels = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
     if ($channels === false) {
+        $restore();
         throw new RuntimeException('Could not create migration barrier.');
     }
     stream_set_timeout($channels[0], 10);
@@ -22,8 +50,7 @@ it('installs funding behind in-flight command table locks without blocking their
     if ($pid === -1) {
         fclose($channels[0]);
         fclose($channels[1]);
-        $funding->up();
-        $closures->up();
+        $restore();
         throw new RuntimeException('Could not fork migration installer.');
     }
     if ($pid === 0) {
@@ -71,13 +98,11 @@ it('installs funding behind in-flight command table locks without blocking their
         fclose($channels[0]);
         pcntl_waitpid($pid, $status);
         DB::purge();
-        if (! Schema::hasTable('primary_campaign_fundings')) {
-            $funding->up();
-        }
-        $closures->up();
+        $restore();
     }
     expect(pcntl_wifexited($status))->toBeTrue()->and(pcntl_wexitstatus($status))->toBe(0)
-        ->and(Schema::hasTable('primary_campaign_closure_returns'))->toBeTrue();
+        ->and(Schema::hasTable('primary_campaign_closure_returns'))->toBeTrue()
+        ->and($shape())->toEqual($installed);
 })->with([
     'confirm after version' => [['primary_reservation_versions'], ['primary_commitments', 'investor_wallets', 'ledger_entries', 'command_operations']],
     'release after version' => [['primary_reservation_versions'], ['investor_wallets', 'ledger_entries', 'command_operations']],
