@@ -380,7 +380,7 @@ it('has concrete targets for the disbursement boundary', function (): void {
         'App\Application\Disbursement\Contracts\DisbursementStore', 'App\Application\Disbursement\Contracts\FundedCampaigns',
         'App\Application\Disbursement\Contracts\PayoutDestinations', 'App\Application\Disbursement\Contracts\StaffConnections',
         'App\Application\Disbursement\Contracts\PayoutProvider', 'App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures',
-        'App\Application\Disbursement\Contracts\SyntheticPayoutScripts'] as $target) {
+        'App\Application\Disbursement\Contracts\SyntheticPayoutScripts', 'App\Application\Disbursement\Contracts\DisbursementClosingEvidence'] as $target) {
         expect(class_exists($target) || interface_exists($target))->toBeTrue($target);
     }
 })->group('arch');

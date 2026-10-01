@@ -397,15 +397,18 @@ final class EloquentDisbursementStore implements DisbursementStore
         if ($decision->decision === 'matched_success') {
             $effectiveAt = $final->effective_at?->toIso8601String() ?? throw new DisbursementViolation('RECONCILIATION_EFFECTIVE_AT_MISSING');
             $schedule = IssueSchedule::dates($effectiveAt, $disbursement->term_months);
-            $closingId = $this->recordClosing($disbursement, 'issued', 'reconciled_success', [], $intent->id, $reconciliation->id, null,
+            // The issue instant is the closing's retained one, so a replayed issue sees the same instant.
+            $recordedAt = now('UTC')->toIso8601String();
+            $closingId = $this->recordClosing($disbursement, 'issued', 'reconciled_success', [], $intent->id, $reconciliation->id, null, $recordedAt,
                 $final->effective_at, $schedule->effectiveDate, $schedule->dueDates);
             $this->funding->issue($campaign, new IssueInstruction($closingId, $disbursement->id, $intent->operation_id, $effectiveAt,
-                $schedule->effectiveDate, $schedule->dueDates, now('UTC')->toIso8601String()));
+                $schedule->effectiveDate, $schedule->dueDates, $recordedAt));
             $this->appendEvent($disbursement, $state->revision + 1, 'succeeded', null, null, null, ['closing_id' => $closingId]);
 
             return 'matched_success';
         }
-        $closingId = $this->recordClosing($disbursement, 'failed_closing', 'reconciled_failure', [], $intent->id, $reconciliation->id, null);
+        $closingId = $this->recordClosing($disbursement, 'failed_closing', 'reconciled_failure', [], $intent->id, $reconciliation->id, null,
+            now('UTC')->toIso8601String());
         $this->funding->failClose($campaign, new FailedClosing($closingId, $disbursement->id, 'reconciled_failure', []));
         $this->appendEvent($disbursement, $state->revision + 1, 'failed_closing', null, null, null, ['closing_id' => $closingId]);
 
@@ -481,7 +484,7 @@ final class EloquentDisbursementStore implements DisbursementStore
         }
         $recordedAt = now('UTC')->toIso8601String();
         if ($recheck->outcome === 'failed') {
-            $closingId = $this->recordClosing($disbursement, 'failed_closing', 'approve_recheck', $recheck->causes, null, null, $operationId);
+            $closingId = $this->recordClosing($disbursement, 'failed_closing', 'approve_recheck', $recheck->causes, null, null, $operationId, $recordedAt);
             $this->funding->failClose($campaign, new FailedClosing($closingId, $disbursement->id, 'approve_recheck', $recheck->causes));
             $this->appendEvent($disbursement, $state->revision + 1, 'failed_closing', $userId, $operationId, $requestId, ['reason' => $reason,
                 'closing_id' => $closingId, 'causes' => $recheck->causes, 'policy_version' => $recheck->policyVersion]);
@@ -552,7 +555,8 @@ final class EloquentDisbursementStore implements DisbursementStore
                         }
                         if ($recheck->outcome === 'failed') {
                             (new DisbursementDispatch)->forceFill(['intent_id' => $intent->id, 'phase' => 'recheck_failed', 'created_at' => now('UTC')])->save();
-                            $closingId = $this->recordClosing($disbursement, 'failed_closing', 'worker_recheck', $recheck->causes, $intent->id, null, null);
+                            $closingId = $this->recordClosing($disbursement, 'failed_closing', 'worker_recheck', $recheck->causes, $intent->id, null, null,
+                                now('UTC')->toIso8601String());
                             $this->funding->failClose($campaign, new FailedClosing($closingId, $disbursement->id, 'worker_recheck', $recheck->causes));
                             $this->appendEvent($disbursement, $state->revision + 1, 'failed_closing', null, null, null,
                                 ['closing_id' => $closingId, 'causes' => $recheck->causes, 'policy_version' => $recheck->policyVersion]);
@@ -819,14 +823,16 @@ final class EloquentDisbursementStore implements DisbursementStore
      * @param  list<string>|null  $dueDates
      */
     private function recordClosing(Disbursement $disbursement, string $kind, string $cause, array $causes, ?string $intentId, ?string $reconciliationId,
-        ?string $operationId, ?CarbonImmutable $effectiveAt = null, ?string $effectiveDate = null, ?array $dueDates = null): string
+        ?string $operationId, string $recordedAt, ?CarbonImmutable $effectiveAt = null, ?string $effectiveDate = null, ?array $dueDates = null): string
     {
         $closing = new DisbursementClosing;
         $closing->id = strtolower((string) Str::ulid());
+        // Every column has its twin in the digested payload, the effective instant included (#96 5925426310).
         $payload = ['closing_id' => $closing->id, 'disbursement_id' => $disbursement->id, 'kind' => $kind, 'cause' => $cause, 'causes' => $causes,
-            'intent_id' => $intentId, 'reconciliation_id' => $reconciliationId, 'operation_id' => $operationId, 'effective_date' => $effectiveDate,
-            'due_dates' => $dueDates, 'refund' => $kind === 'failed_closing' ? ['commitments' => $disbursement->commitment_count, 'amount' => $disbursement->amount, 'fee' => '0'] : null,
-            'recorded_at' => now('UTC')->toIso8601String()];
+            'intent_id' => $intentId, 'reconciliation_id' => $reconciliationId, 'operation_id' => $operationId, 'effective_at' => $effectiveAt?->toIso8601String(),
+            'effective_date' => $effectiveDate, 'due_dates' => $dueDates,
+            'refund' => $kind === 'failed_closing' ? ['commitments' => $disbursement->commitment_count, 'amount' => $disbursement->amount, 'fee' => '0'] : null,
+            'recorded_at' => $recordedAt];
         $closing->forceFill(['disbursement_id' => $disbursement->id, 'intent_id' => $intentId, 'reconciliation_id' => $reconciliationId, 'kind' => $kind,
             'cause' => $cause, 'causes' => $causes, 'operation_id' => $operationId, 'effective_at' => $effectiveAt, 'effective_date' => $effectiveDate,
             'due_dates' => $dueDates, 'payload' => $payload, 'sha256' => hash('sha256', $this->json->encode($payload)), 'created_at' => now('UTC')])->save();

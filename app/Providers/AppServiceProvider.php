@@ -26,6 +26,7 @@ use App\Application\Business\Contracts\BusinessCreditFactsStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Business\Contracts\CampaignClosureEvidence;
 use App\Application\Business\Contracts\StaffApplicationQueue;
+use App\Application\Disbursement\Contracts\DisbursementClosingEvidence;
 use App\Application\Disbursement\Contracts\DisbursementStore;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutDestinations;
@@ -72,6 +73,7 @@ use App\Infrastructure\Business\EloquentBusinessCreditFactsStore;
 use App\Infrastructure\Business\EloquentBusinessExposureReservations;
 use App\Infrastructure\Business\EloquentStaffApplicationQueue;
 use App\Infrastructure\Business\RetainedCampaignClosures;
+use App\Infrastructure\Disbursement\EloquentDisbursementClosingEvidence;
 use App\Infrastructure\Disbursement\EloquentDisbursementStore;
 use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
 use App\Infrastructure\Disbursement\SyntheticPayoutProvider;
@@ -171,6 +173,7 @@ class AppServiceProvider extends ServiceProvider
     private function registerDisbursements(): void
     {
         $this->app->bind(DisbursementStore::class, EloquentDisbursementStore::class);
+        $this->app->bind(DisbursementClosingEvidence::class, EloquentDisbursementClosingEvidence::class);
         $this->app->singleton(SyntheticDisbursementSources::class);
         $synthetic = fn (): bool => $this->app->make(SyntheticDisbursementGuard::class)->allowed();
         $this->app->bind(FundedCampaigns::class, fn (): FundedCampaigns => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailableFundedCampaigns);
