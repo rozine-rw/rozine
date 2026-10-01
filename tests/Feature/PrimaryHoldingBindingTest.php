@@ -130,8 +130,14 @@ it('refuses a Holding issued from a disbursement that is not its funding record\
 it('keeps the closing rules: an issued closing of the same campaign, its effective instant and its principal', function (): void {
     ['campaign' => $campaign, 'commitments' => [$first]] = PrimaryHoldingFixture::committed();
     $message = 'A Holding issues once from its campaign\'s issued closing, within its principal';
-    holdingRefused(fn () => PrimaryHoldingFixture::insert($first->id, PrimaryHoldingFixture::issuedClosing($campaign, kind: 'failed_closing'),
-        ['disbursement_effective_at' => null, 'effective_date' => null]), $message);
+    // The fixture must return the failed closing it inserted, so the refusal is for its kind and not a missing row.
+    $failed = function () use ($campaign): string {
+        $closing = PrimaryHoldingFixture::issuedClosing($campaign, kind: 'failed_closing');
+        expect(DB::table('disbursement_closings')->where('id', $closing)->value('kind'))->toBe('failed_closing');
+
+        return $closing;
+    };
+    holdingRefused(fn () => PrimaryHoldingFixture::insert($first->id, $failed(), ['disbursement_effective_at' => null, 'effective_date' => null]), $message);
     holdingRefused(fn () => PrimaryHoldingFixture::insert($first->id, PrimaryHoldingFixture::issuedClosing($campaign, ['amount' => '5395000'])), $message);
     $closing = PrimaryHoldingFixture::issuedClosing($campaign);
     holdingRefused(fn () => PrimaryHoldingFixture::insert($first->id, PrimaryHoldingFixture::id()), $message);

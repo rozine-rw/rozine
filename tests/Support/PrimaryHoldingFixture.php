@@ -208,7 +208,7 @@ final class PrimaryHoldingFixture
     /** @param array<string, mixed> $facts */
     private static function closing(string $disbursementId, string $kind, array $facts): string
     {
-        $id = self::id();
+        $id = (string) ($facts['id'] ?? self::id());
         DB::table('disbursement_closings')->insert([...['id' => $id, 'disbursement_id' => $disbursementId, 'intent_id' => null, 'reconciliation_id' => null,
             'kind' => $kind, 'causes' => '[]', 'operation_id' => null, 'effective_at' => null, 'effective_date' => null, 'due_dates' => null,
             'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()], ...$facts]);
