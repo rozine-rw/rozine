@@ -58,6 +58,8 @@ it('indexes original entry cash lookups and reverses without modifying retained 
     $plan = DB::select('EXPLAIN (FORMAT JSON) SELECT * FROM ledger_lines WHERE entry_id = ?', [$entry->id]);
     expect(json_encode($plan, JSON_THROW_ON_ERROR))->toContain('ledger_lines_entry_id_index');
     $migration = require database_path('migrations/2026_09_30_171842_index_wallet_ledger_lines_by_entry.php');
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
     $migration->down();
     expect(Schema::hasIndex('ledger_lines', ['entry_id']))->toBeFalse();
     $migration->up();
