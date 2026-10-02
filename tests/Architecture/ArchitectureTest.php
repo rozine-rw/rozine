@@ -203,7 +203,16 @@ arch('infrastructure concretions are reached through their container binding')
     // Naming an adapter anywhere else is how a provider implementation leaks
     // past the port that is supposed to hide it.
     ->expect('App\Infrastructure')
-    ->toOnlyBeUsedIn('App\Providers');
+    ->toOnlyBeUsedIn('App\Providers')
+    ->ignoring('App\Infrastructure\Business\RetainedFundedCampaignFacts');
+
+arch('the retained funded projection is an internal collaborator of the named funding adapter')
+    ->expect('App\Infrastructure\Business\RetainedFundedCampaignFacts')
+    ->toOnlyBeUsedIn(['App\Providers', 'App\Infrastructure\Primary\EloquentFundedCampaigns']);
+
+arch('the retained funded projection keeps its own collaborators behind contracts')
+    ->expect('App\Infrastructure\Business\RetainedFundedCampaignFacts')
+    ->not->toUse('App\Infrastructure');
 
 it('has concrete targets for the identity persistence boundary', function (): void {
     expect(class_exists(Party::class))->toBeTrue()
@@ -241,8 +250,12 @@ it('has concrete targets for the business authority boundary', function (): void
 })->group('arch');
 
 arch('business authority records are only accessed by their adapter')
-    ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion', 'App\Models\BusinessCreditSnapshot', 'App\Models\BusinessApplicationQuote', 'App\Models\BusinessApplicationSignature', 'App\Models\BusinessApplicationSubmission', 'App\Models\BusinessExposureReservation', 'App\Models\BusinessApplicationRelease', 'App\Models\BusinessCampaign', 'App\Models\BusinessCampaignClosure'])
+    ->expect(['App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion', 'App\Models\BusinessCreditSnapshot', 'App\Models\BusinessApplicationQuote', 'App\Models\BusinessApplicationSignature', 'App\Models\BusinessApplicationSubmission', 'App\Models\BusinessExposureReservation', 'App\Models\BusinessApplicationRelease', 'App\Models\BusinessCampaignClosure'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Models', 'Database\Factories']);
+
+arch('business authority records are only accessed by their adapter or the named funding gate reader')
+    ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessCampaign'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Infrastructure\Primary\EloquentFundedCampaigns', 'App\Models', 'Database\Factories']);
 
 arch('declared Business connection evidence stays inside financial persistence adapters')
     ->expect('App\Application\Business\Contracts\BusinessConnections')
@@ -418,8 +431,18 @@ arch('proposed Holdings stay unwritten until the S3-C adapter owns them')
     ->expect('App\Models\PrimaryHolding')
     ->toOnlyBeUsedIn(['App\Models', 'Database\Factories']);
 
-arch('funding, destination and staff connection sources are reached only through the disbursement adapter')
-    ->expect(['App\Application\Disbursement\Contracts\FundedCampaigns', 'App\Application\Disbursement\Contracts\PayoutDestinations',
+it('keeps the Holding source verifier read-only', function (): void {
+    $source = (string) file_get_contents(dirname(__DIR__, 2).'/app/Infrastructure/Primary/RetainedHoldingSource.php');
+    expect(interface_exists('App\Application\Primary\Contracts\HoldingSource'))->toBeTrue()
+        ->and($source)->not->toMatch('/->(insert|update|delete|upsert|save|forceFill|create|lockForUpdate|sharedLock|lock)\(|PrimaryHolding|DB::(statement|unprepared|transaction)/');
+})->group('arch');
+
+arch('funding sources are reached only through the disbursement and named Primary adapters')
+    ->expect('App\Application\Disbursement\Contracts\FundedCampaigns')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Infrastructure\Primary\EloquentFundedCampaigns', 'App\Providers\AppServiceProvider']);
+
+arch('destination and staff connection sources are reached only through the disbursement adapter')
+    ->expect(['App\Application\Disbursement\Contracts\PayoutDestinations',
         'App\Application\Disbursement\Contracts\StaffConnections'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider']);
 
@@ -430,14 +453,18 @@ arch('the payout provider is reached only through the disbursement actions and a
 arch('synthetic disbursement fixtures stay inside the local disbursement hook')
     ->expect(['App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures', 'App\Application\Disbursement\Contracts\SyntheticPayoutScripts'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider', 'App\Console\Commands\PrepareSyntheticDisbursement']);
-
 arch('funding cash evidence stays behind the wallet and Primary adapters')
-    ->expect('App\\Application\\Wallet\\Contracts\\PrimaryCommittedCash')
+    ->expect(['App\\Application\\Wallet\\Contracts\\PrimaryCommittedCash', 'App\\Application\\Wallet\\Contracts\\PrimaryCashReceipts'])
     ->toOnlyBeUsedIn(['App\\Infrastructure\\Wallet', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);
 
 arch('funding locks and evidence remain internal to Business and Primary persistence')
     ->expect(['App\Application\Primary\Contracts\PrimaryFunding', 'App\Application\Primary\Contracts\CampaignFundingEvidence'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Infrastructure\Primary', 'App\Providers\AppServiceProvider']);
+
+arch('Holding source facts stay behind the Primary, disbursement and funded purchase projection adapters')
+    ->expect('App\Application\Primary\Contracts\HoldingSource')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Primary', 'App\Infrastructure\Disbursement',
+        'App\Infrastructure\Business\RetainedFundedCampaignFacts', 'App\Providers\AppServiceProvider']);
 
 arch('funding records remain inside Primary persistence')
     ->expect('App\Models\PrimaryCampaignFunding')

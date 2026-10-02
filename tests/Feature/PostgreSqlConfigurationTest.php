@@ -111,6 +111,20 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $walletIssue = require database_path('migrations/2026_09_29_100200_add_primary_issue_to_wallet_ledger.php');
     $staffDisjoint = require database_path('migrations/2026_09_29_100300_keep_staff_accounts_and_parties_disjoint.php');
     $closingAuthority = require database_path('migrations/2026_09_29_100400_bind_disbursement_closing_command_authority.php');
+    $closingAuthorityShape = fn (): array => [
+        DB::select("SELECT column_name, data_type, udt_name, is_nullable, column_default FROM information_schema.columns
+            WHERE table_schema = current_schema() AND table_name = 'disbursement_closings' ORDER BY ordinal_position"),
+        DB::select("SELECT conname, pg_get_constraintdef(oid) AS definition FROM pg_constraint
+            WHERE conrelid = 'disbursement_closings'::regclass ORDER BY conname"),
+        DB::select("SELECT pg_get_triggerdef(oid) AS definition FROM pg_trigger WHERE tgname = 'disbursement_closings_authority'"),
+        DB::select("SELECT pg_get_functiondef(oid) AS definition FROM pg_proc WHERE proname = 'authenticate_disbursement_closing_authority'")];
+    $originalClosingAuthority = $closingAuthorityShape();
+    $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
+    $holdingIssue = require database_path('migrations/2026_09_30_114217_require_issue_evidence_for_primary_holdings.php');
+    $issuedCompleteness = require database_path('migrations/2026_09_30_234802_require_complete_primary_holdings_for_issued_closings.php');
+    $issuedCompleteness->down();
+    $holdingIssue->down();
+    $holdingBinding->down();
     $closureReturns = require database_path('migrations/2026_09_30_094556_bind_campaign_closures_to_complete_primary_returns.php');
     $entryIndex = require database_path('migrations/2026_09_30_171842_index_wallet_ledger_lines_by_entry.php');
     $expirySettlements = require database_path('migrations/2026_09_30_204213_create_primary_campaign_expiry_settlements_table.php');
@@ -258,6 +272,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $walletIssue->up();
     $staffDisjoint->up();
     $closingAuthority->up();
+    expect(Schema::hasColumn('disbursement_closings', 'actor_user_id'))->toBeTrue();
     $expiryFailures->up();
     $expiryFailureReasons->up();
     $fundings->up();
@@ -266,6 +281,11 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $entryIndex->up();
     $campaignExpiryFailures->up();
     $expirySettlements->up();
+    $holdingBinding->up();
+    $holdingIssue->up();
+    $issuedCompleteness->up();
+    expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
+    expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
         ->and(DB::select($functionQuery))->toEqual($functions)->and(DB::select($constraintQuery))->toEqual($constraints);
     expect(DB::selectOne("SELECT count(*) AS total FROM pg_constraint WHERE conname = 'primary_commitment_source_unavailable'")->total)->toBe(1);
@@ -279,7 +299,6 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasTable('verified_organization_identities'))->toBeTrue()
         ->and(Schema::hasTable('command_operations'))->toBeTrue()
         ->and(Schema::hasTable('disbursement_closings'))->toBeTrue()
-        ->and(Schema::hasColumns('disbursement_closings', ['actor_user_id', 'request_id']))->toBeTrue()
         ->and(Schema::hasTable('primary_holdings'))->toBeTrue()
         ->and(Schema::hasColumn('ledger_entries', 'cause_id'))->toBeTrue()
         ->and(Schema::hasColumn('business_mandates', 'profile'))->toBeTrue()

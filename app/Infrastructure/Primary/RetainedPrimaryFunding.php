@@ -6,7 +6,11 @@ namespace App\Infrastructure\Primary;
 
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
+use App\Application\Wallet\Contracts\PrimaryCashReceipts;
+use App\Application\Wallet\PostingSource;
 use App\Domain\Primary\FundingAdmission;
+use App\Domain\Wallet\WalletMoney;
+use App\Domain\Wallet\WalletViolation;
 use App\Models\PrimaryCampaignFunding;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
@@ -16,7 +20,7 @@ use RuntimeException;
 
 final class RetainedPrimaryFunding implements CampaignFundingEvidence
 {
-    public function __construct(private CanonicalJson $json) {}
+    public function __construct(private CanonicalJson $json, private PrimaryCashReceipts $cash) {}
 
     public function find(string $campaignId): ?array
     {
@@ -78,6 +82,12 @@ final class RetainedPrimaryFunding implements CampaignFundingEvidence
             || $purchase['ordinals'] !== ($root->payload['ordinals'] ?? null) || $purchase['rights'] !== ($root->payload['rights'] ?? null)
             || $purchase['terms'] !== ($version->payload['terms'] ?? null) || $purchase['disclosure_sha256'] !== ($version->payload['disclosure_sha256'] ?? null)) {
             throw new RuntimeException('PRIMARY_FUNDING_INTEGRITY_FAILED');
+        }
+        try {
+            $this->cash->verify($root->party_id, $purchase['cash']['wallet_id'], WalletMoney::of($root->principal),
+                new PostingSource('primary_reservation', $root->id, $root->origin_operation_id), $purchase['cash']['hold_entry_id'], $purchase['cash']['commit_entry_id']);
+        } catch (WalletViolation $exception) {
+            throw new RuntimeException('PRIMARY_FUNDING_INTEGRITY_FAILED', previous: $exception);
         }
     }
 }
