@@ -24,7 +24,7 @@ use Tests\TestCase;
  *
  *   Failure branch: synthetic payout failed → failed closing → full refund to each wallet.
  *
- * Only the live prefix runs on dev today (Publish from #141/#146, deposits from #172). Every later
+ * Only the live prefix runs on dev today (Publish from #141/#146, deposits from #172; #175 and #176 are merged but gated). Every later
  * step is written against the UI it will drive and skipped with the exact dependency it waits for;
  * remove a skip only when that dependency is merged into dev. Two Investors each take half of the
  * raise, so the 50% single-investor cap (#99 C3) is met exactly and the last confirm funds it.
@@ -40,17 +40,17 @@ const C3_CHECKER_SECRET = 'KRSXG5CTMVRXEZLU';
 /** The synthetic deposit policy's maximum per deposit (local:wallet). */
 const C3_DEPOSIT_MAXIMUM = '5000000';
 
-const C3_AWAITS_RESERVE = 'awaiting S3-C adapter / #176 merge: activation of the Investor reserve/confirm HTTP commands (investor.primary.* web routes, checkout Resource and operation lookup; inactive in #175 1a8bb677), the caller authority lock tier ahead of the Business → campaign order, and the S2 reservation/wallet-hold binding';
+const C3_AWAITS_RESERVE = 'awaiting activation of the Investor reserve/confirm HTTP commands (investor.primary.* web routes, checkout Resource and operation lookup): #175\'s checkout is merged but its routes stay gated until the #194 financial integration lands';
 
-const C3_AWAITS_FUNDING = 'awaiting S3-C adapter / #176 merge: the full-funding transition and funded lock in S3-C (last confirm → campaign funded, COMMITMENT_LOCKED on cancel, CAMPAIGN_CLOSED on reserve) and its funded state in the business.campaigns.show Resource';
+const C3_AWAITS_FUNDING = 'awaiting the gated Investor reserve/confirm routes (see C3_AWAITS_RESERVE): #175\'s full-funding transition and funded lock are merged, but no browser path reaches them yet';
 
-const C3_AWAITS_APPROVAL = 'awaiting S3-C adapter / #176 merge: #176 merged (staff.disbursements.* routes, step-up exchange, treasury/approver mapping) and the concrete S3-C FundedCampaigns adapter opening a disbursement for a published campaign (UnavailableFundedCampaigns is bound)';
+const C3_AWAITS_APPROVAL = 'awaiting #194: #176\'s staff.disbursements.* routes and step-up are merged, but a disbursement only opens for a funded campaign through the concrete FundedCampaigns adapter (UnavailableFundedCampaigns is still bound)';
 
-const C3_AWAITS_PAYOUT = 'awaiting S3-C adapter / #176 merge: the #176 local:disbursement --script-send/--event hooks, disbursements:dispatch and disbursements:reconcile, driving FundedCampaigns::issue on the concrete S3-C adapter';
+const C3_AWAITS_PAYOUT = 'awaiting #194: #176\'s local:disbursement hooks, disbursements:dispatch and disbursements:reconcile are merged; FundedCampaigns::issue on the concrete adapter is not';
 
-const C3_AWAITS_HOLDINGS = 'awaiting S3-C adapter / #176 merge: the primary_holdings commitment FK and equality constraints (#176 2026_09_29_100100, unactivated), Holding writes from FundedCampaigns::issue, and the live Investor portfolio/holding and Business disbursed-campaign Resources';
+const C3_AWAITS_HOLDINGS = 'awaiting #194: the Holding binding and issue-evidence migrations (#189 084737/114217) with #190\'s completeness guards, Holding writes from FundedCampaigns::issue, and the live Investor portfolio/holding Resources';
 
-const C3_AWAITS_REFUND = 'awaiting S3-C adapter / #176 merge: FundedCampaigns::failClose with the funded failed-closing migration, the capacity release migration for retained unit claims (#175), the confirm/release/expiry/refund lifecycle and fee-free WalletPostings::refund per commitment';
+const C3_AWAITS_REFUND = 'awaiting #194: FundedCampaigns::failClose with authenticated forward failure settlement and fee-free WalletPostings::refund per commitment';
 
 /**
  * A staff-released application its signatory can publish.
