@@ -133,7 +133,7 @@ it('preserves original cash integrity refusals when there is no refund evidence'
         ->and(DB::table('primary_campaign_fundings')->count())->toBe(0);
 })->with([true, false]);
 
-it('does not classify returned hold cash as a verified refunded confirmation', function (): void {
+it('does not classify a forged or authenticated hold release as a refunded confirmation', function (bool $authenticateRelease): void {
     $root = ($this->purchase)();
     ($this->purchase)();
     $commit = LedgerEntry::query()->where('source_id', $root->id)->where('kind', 'primary_commit')->sole();
@@ -144,12 +144,19 @@ it('does not classify returned hold cash as a verified refunded confirmation', f
     DB::table('ledger_entries')->where('id', $commit->id)->update(['kind' => 'primary_release']);
     $available = DB::table('ledger_accounts')->where('wallet_id', $commit->wallet_id)->where('kind', 'investor_available')->value('id');
     DB::table('ledger_lines')->where('entry_id', $commit->id)->where('direction', 'credit')->update(['account_id' => $available]);
+    if ($authenticateRelease) {
+        $payload = $commit->payload;
+        $payload['kind'] = 'primary_release';
+        $payload['lines'][1]['account'] = 'investor_available';
+        $commit->forceFill(['kind' => 'primary_release', 'payload' => $payload,
+            'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload))])->save();
+    }
     $before = [DB::table('ledger_entries')->orderBy('id')->get()->toJson(), DB::table('ledger_lines')->orderBy('id')->get()->toJson()];
     expect(fn () => app(PrimaryReservations::class)->lockFundingCandidate($this->campaign->id))
-        ->toThrow(WalletViolation::class, 'PRIMARY_COMMITTED_CASH_REQUIRED')
+        ->toThrow(WalletViolation::class, $authenticateRelease ? 'PRIMARY_COMMITTED_CASH_REQUIRED' : 'WALLET_POSTING_CONFLICT')
         ->and(DB::table('primary_campaign_fundings')->count())->toBe(0)
         ->and([DB::table('ledger_entries')->orderBy('id')->get()->toJson(), DB::table('ledger_lines')->orderBy('id')->get()->toJson()])->toBe($before);
-});
+})->with(['native forgery' => [false], 'authenticated release' => [true]]);
 
 it('rejects mismatched retained commitment evidence before reading cash', function (): void {
     ($this->purchase)();

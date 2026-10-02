@@ -9,10 +9,17 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * PROPOSED for S3-C review: an issued Holding, written only by the FundedCampaigns adapter.
+ * PROPOSED for S3-C review: an issued Holding, written only by the FundedCampaigns adapter. It
+ * copies `HoldingSource::facts` of its retained commitment; the database compares the plaintext
+ * facts and the digest pins, and `HoldingSource::verify` compares the decrypted rights and terms.
  *
  * @property string $business_campaign_id
  * @property string $commitment_id
+ * @property string $primary_reservation_id
+ * @property string $reservation_sha256
+ * @property string $confirmation_version_id
+ * @property int $confirmation_revision
+ * @property string $confirmation_sha256
  * @property string $party_id
  * @property string $disbursement_closing_id
  * @property int $units

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Wallet\Contracts\PrimaryReturnedCash;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\LockedWallet;
@@ -161,3 +162,75 @@ it('refuses a return with an altered currency header', function (): void {
     expect(fn () => $this->cash->requireReturned($this->wallet, WalletMoney::of('5000'), $this->source))
         ->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT');
 });
+
+it('authenticates every original cash receipt before proving a release or refund', function (string $returnKind, string $corruptedKind): void {
+    $wallet = $this->wallet;
+    $source = $this->source;
+    if ($returnKind === 'primary_release') {
+        $root = PrimaryReservationRecord::factory()->withInitialVersion()->create();
+        $wallet = app(WalletPostings::class)->lockForParty($root->party_id);
+        $source = new PostingSource('primary_reservation', $root->id, $root->origin_operation_id);
+        PrimaryReservationFixture::terminalVersion($source, 'released');
+        app(WalletPostings::class)->release($wallet, WalletMoney::of('5000'), $source);
+    }
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('ALTER TABLE ledger_entries DISABLE TRIGGER USER');
+    DB::table('ledger_entries')->where('source_id', $source->id)->where('kind', $corruptedKind)
+        ->update(['sha256' => str_repeat('0', 64)]);
+    expect(fn () => $this->cash->requireReturned($wallet, WalletMoney::of('5000'), $source))
+        ->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT');
+})->with([
+    ['primary_refund', 'primary_hold'], ['primary_refund', 'primary_commit'], ['primary_refund', 'primary_refund'],
+    ['primary_release', 'primary_hold'], ['primary_release', 'primary_release'],
+]);
+
+it('refuses digest-consistent receipt envelope forgeries throughout the returned cash chain', function (string $returnKind, string $corruptedKind, string $field): void {
+    $wallet = $this->wallet;
+    $source = $this->source;
+    if ($returnKind === 'primary_release') {
+        $root = PrimaryReservationRecord::factory()->withInitialVersion()->create();
+        $wallet = app(WalletPostings::class)->lockForParty($root->party_id);
+        $source = new PostingSource('primary_reservation', $root->id, $root->origin_operation_id);
+        PrimaryReservationFixture::terminalVersion($source, 'released');
+        app(WalletPostings::class)->release($wallet, WalletMoney::of('5000'), $source);
+    }
+    $entry = LedgerEntry::query()->where('source_id', $source->id)->where('kind', $corruptedKind)->sole();
+    $payload = $entry->payload;
+    if ($field === 'lines') {
+        $payload['lines'][0]['amount'] = '10000';
+    } elseif ($field === 'cause') {
+        $payload['cause'] = ['type' => 'disbursement_closing', 'id' => strtolower((string) Str::ulid())];
+    } else {
+        $payload[$field] = 'foreign';
+    }
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('ALTER TABLE ledger_entries DISABLE TRIGGER USER');
+    $entry->forceFill(['payload' => $payload, 'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload))])->save();
+    expect(fn () => $this->cash->requireReturned($wallet, WalletMoney::of('5000'), $source))
+        ->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT');
+})->with([
+    ['primary_refund', 'primary_hold'], ['primary_refund', 'primary_commit'], ['primary_refund', 'primary_refund'],
+    ['primary_release', 'primary_hold'], ['primary_release', 'primary_release'],
+])->with(['entry_id', 'wallet_id', 'kind', 'source_type', 'source_id', 'origin_operation_id', 'recorded_at', 'lines', 'cause', 'extra']);
+
+it('refuses a native cause on any retained release or refund receipt', function (string $returnKind, string $corruptedKind, string $field): void {
+    $wallet = $this->wallet;
+    $source = $this->source;
+    if ($returnKind === 'primary_release') {
+        $root = PrimaryReservationRecord::factory()->withInitialVersion()->create();
+        $wallet = app(WalletPostings::class)->lockForParty($root->party_id);
+        $source = new PostingSource('primary_reservation', $root->id, $root->origin_operation_id);
+        PrimaryReservationFixture::terminalVersion($source, 'released');
+        app(WalletPostings::class)->release($wallet, WalletMoney::of('5000'), $source);
+    }
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('ALTER TABLE ledger_entries DISABLE TRIGGER USER');
+    DB::statement('ALTER TABLE ledger_entries DROP CONSTRAINT ledger_entry_source');
+    DB::table('ledger_entries')->where('source_id', $source->id)->where('kind', $corruptedKind)
+        ->update([$field => $field === 'cause_type' ? 'disbursement_closing' : strtolower((string) Str::ulid())]);
+    expect(fn () => $this->cash->requireReturned($wallet, WalletMoney::of('5000'), $source))
+        ->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT');
+})->with([
+    ['primary_refund', 'primary_hold'], ['primary_refund', 'primary_commit'], ['primary_refund', 'primary_refund'],
+    ['primary_release', 'primary_hold'], ['primary_release', 'primary_release'],
+])->with(['cause_type', 'cause_id']);

@@ -212,7 +212,6 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $walletBindings = require database_path('migrations/2026_09_28_161335_bind_primary_reservations_to_wallet_holds.php');
     $outcomes = require database_path('migrations/2026_09_28_163057_require_completed_primary_command_outcomes.php');
     $primarySourceGuard = require database_path('migrations/2026_09_28_165949_reject_unbound_primary_commitment_sources.php');
-    $depositCreditBinding = require database_path('migrations/2026_09_28_175521_bind_deposit_credits_to_their_intent_amounts.php');
     $primaryTerminalCash = require database_path('migrations/2026_09_28_175455_bind_primary_terminal_versions_to_cash_movements.php');
     $primaryGuardQuery = "SELECT tgname, pg_get_triggerdef(t.oid) AS definition, pg_get_functiondef(t.tgfoid) AS body FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid WHERE NOT t.tgisinternal AND c.relname IN ('primary_reservations', 'primary_reservation_versions', 'primary_commitments', 'ledger_entries') ORDER BY tgname";
     $primaryGuards = DB::select($primaryGuardQuery);
@@ -226,6 +225,25 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $confirmationOperations = require database_path('migrations/2026_09_28_212446_bind_primary_confirmation_operations_to_purchases.php');
     $expiryFailures = require database_path('migrations/2026_09_29_112938_create_primary_expiry_failures_table.php');
     $fundings = require database_path('migrations/2026_09_30_054318_create_primary_campaign_fundings.php');
+    $depositCreditBinding = require database_path('migrations/2026_09_28_175521_bind_deposit_credits_to_their_intent_amounts.php');
+    $disbursements = require database_path('migrations/2026_09_29_100000_create_disbursement_tables.php');
+    $closingAuthority = require database_path('migrations/2026_09_29_100400_bind_disbursement_closing_command_authority.php');
+    $closingAuthorityShape = fn (): array => [
+        DB::select("SELECT column_name, data_type, udt_name, is_nullable, column_default FROM information_schema.columns
+            WHERE table_schema = current_schema() AND table_name = 'disbursement_closings' ORDER BY ordinal_position"),
+        DB::select("SELECT conname, pg_get_constraintdef(oid) AS definition FROM pg_constraint
+            WHERE conrelid = 'disbursement_closings'::regclass ORDER BY conname"),
+        DB::select("SELECT pg_get_triggerdef(oid) AS definition FROM pg_trigger WHERE tgname = 'disbursement_closings_authority'"),
+        DB::select("SELECT pg_get_functiondef(oid) AS definition FROM pg_proc WHERE proname = 'authenticate_disbursement_closing_authority'")];
+    $originalClosingAuthority = $closingAuthorityShape();
+    $holdings = require database_path('migrations/2026_09_29_100100_create_primary_holdings_table.php');
+    $walletIssue = require database_path('migrations/2026_09_29_100200_add_primary_issue_to_wallet_ledger.php');
+    $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
+    $holdingIssue = require database_path('migrations/2026_09_30_114217_require_issue_evidence_for_primary_holdings.php');
+    $issuedCompleteness = require database_path('migrations/2026_09_30_234802_require_complete_primary_holdings_for_issued_closings.php');
+    $issuedCompleteness->down();
+    $holdingIssue->down();
+    $holdingBinding->down();
     $closureReturns = require database_path('migrations/2026_09_30_094556_bind_campaign_closures_to_complete_primary_returns.php');
     $entryIndex = require database_path('migrations/2026_09_30_171842_index_wallet_ledger_lines_by_entry.php');
     $expirySettlements = require database_path('migrations/2026_09_30_204213_create_primary_campaign_expiry_settlements_table.php');
@@ -240,6 +258,10 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $expiryFailureReasons = require database_path('migrations/2026_09_30_111709_add_reason_code_to_primary_expiry_failures.php');
     $expiryFailureReasons->down();
     $expiryFailures->down();
+    $walletIssue->down();
+    $holdings->down();
+    $closingAuthority->down();
+    $disbursements->down();
     $confirmationOperations->down();
     $confirmationReceipts->down();
     $depositCreditBinding->down();
@@ -290,6 +312,10 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $depositCreditBinding->up();
     $confirmationReceipts->up();
     $confirmationOperations->up();
+    $disbursements->up();
+    $closingAuthority->up();
+    $holdings->up();
+    $walletIssue->up();
     $expiryFailures->up();
     $expiryFailureReasons->up();
     $fundings->up();
@@ -298,6 +324,11 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $entryIndex->up();
     $campaignExpiryFailures->up();
     $expirySettlements->up();
+    $holdingBinding->up();
+    $holdingIssue->up();
+    $issuedCompleteness->up();
+    expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
+    expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
         ->and(DB::select($functionQuery))->toEqual($functions)->and(DB::select($constraintQuery))->toEqual($constraints);
     expect(Schema::hasTable('audit_reports'))->toBeTrue()->and(Schema::hasTable('audit_report_versions'))->toBeTrue()

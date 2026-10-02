@@ -53,11 +53,13 @@ use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\Contracts\CampaignCommitments;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\CampaignReservationSummary;
+use App\Application\Primary\Contracts\HoldingSource;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryFunding;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Application\Wallet\Contracts\DepositProvider;
+use App\Application\Wallet\Contracts\PrimaryCashReceipts;
 use App\Application\Wallet\Contracts\PrimaryCommittedCash;
 use App\Application\Wallet\Contracts\PrimaryReturnedCash;
 use App\Application\Wallet\Contracts\SyntheticEventSigner;
@@ -112,8 +114,10 @@ use App\Infrastructure\Primary\EloquentCampaignReservationSummary;
 use App\Infrastructure\Primary\EloquentPrimaryCheckout;
 use App\Infrastructure\Primary\EloquentPrimaryFunding;
 use App\Infrastructure\Primary\EloquentPrimaryReservations;
+use App\Infrastructure\Primary\RetainedHoldingSource;
 use App\Infrastructure\Primary\RetainedPrimaryFunding;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
+use App\Infrastructure\Wallet\EloquentPrimaryCashReceipts;
 use App\Infrastructure\Wallet\EloquentPrimaryCommittedCash;
 use App\Infrastructure\Wallet\EloquentPrimaryReturnedCash;
 use App\Infrastructure\Wallet\EloquentSyntheticWalletFixtures;
@@ -185,6 +189,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(WalletStore::class, EloquentWalletStore::class);
         $this->app->bind(WalletPostings::class, EloquentWalletPostings::class);
         $this->app->bind(PrimaryCommittedCash::class, EloquentPrimaryCommittedCash::class);
+        $this->app->bind(PrimaryCashReceipts::class, EloquentPrimaryCashReceipts::class);
         $this->app->bind(PrimaryReturnedCash::class, EloquentPrimaryReturnedCash::class);
         $this->app->bind(CampaignCommitments::class, EloquentCampaignCommitments::class);
         $this->app->bind(CampaignReservationSummary::class, EloquentCampaignReservationSummary::class);
@@ -192,6 +197,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PrimaryReservations::class, EloquentPrimaryReservations::class);
         $this->app->bind(PrimaryFunding::class, EloquentPrimaryFunding::class);
         $this->app->bind(CampaignFundingEvidence::class, RetainedPrimaryFunding::class);
+        $this->app->bind(HoldingSource::class, RetainedHoldingSource::class);
         // The synthetic provider exists only on local and testing with live money off; everywhere
         // else nothing can be sent, verified or signed, because no live provider exists yet.
         $synthetic = fn (): DepositProvider&SyntheticEventSigner => $this->app->make(SyntheticWalletGuard::class)->allowed()

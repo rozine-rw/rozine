@@ -372,11 +372,21 @@ it('can reverse and reapply the empty funding migration', function (): void {
     $refundReceipts = require database_path('migrations/2026_09_30_120729_bind_primary_refund_receipts_to_returned_cash.php');
     $refundReceipts->down();
     $migration = require database_path('migrations/2026_09_30_054318_create_primary_campaign_fundings.php');
+    $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
+    $holdingIssue = require database_path('migrations/2026_09_30_114217_require_issue_evidence_for_primary_holdings.php');
+    $issuedCompleteness = require database_path('migrations/2026_09_30_234802_require_complete_primary_holdings_for_issued_closings.php');
+    $issuedCompleteness->down();
+    $holdingIssue->down();
+    $holdingBinding->down();
     $migration->down();
     expect(Schema::hasTable('primary_campaign_fundings'))->toBeFalse();
     $migration->up();
     $refundReceipts->up();
     $entryIndex->up();
+    $holdingBinding->up();
+    $holdingIssue->up();
+    $issuedCompleteness->up();
+    expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(Schema::hasTable('primary_campaign_fundings'))->toBeTrue();
 });
 
