@@ -52,8 +52,10 @@ final readonly class JournalEntry
     }
 
     /**
-     * A primary purchase movement between the Investor's own buckets: the source bucket is
-     * debited and the destination credited by the same amount, so the total never changes.
+     * A primary movement: the source bucket is debited and the destination credited by the same
+     * amount. Between the Investor's own buckets (hold, commit, release, refund) the total never
+     * changes; an issue moves committed principal out to the system settlement account, so it
+     * lowers the Investor's total by exactly that amount.
      */
     public static function primary(string $kind, WalletMoney $amount): self
     {

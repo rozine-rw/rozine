@@ -68,12 +68,12 @@ report() {
   echo
 }
 
-ALL_CONTROLS=(strict-types domain-purity transport-boundary identity-boundary operation-boundary business-boundary evidence-boundary wallet-boundary auditor-boundary audit-signing-boundary adapter-leak php-coverage phpstan-tests)
+ALL_CONTROLS=(strict-types domain-purity transport-boundary identity-boundary operation-boundary business-boundary evidence-boundary wallet-boundary disbursement-boundary auditor-boundary audit-signing-boundary adapter-leak php-coverage phpstan-tests)
 
 controls_for_group() {
   case "$1" in
     architecture) printf '%s\n' strict-types domain-purity transport-boundary adapter-leak ;;
-    business) printf '%s\n' identity-boundary operation-boundary business-boundary evidence-boundary wallet-boundary ;;
+    business) printf '%s\n' identity-boundary operation-boundary business-boundary evidence-boundary wallet-boundary disbursement-boundary ;;
     auditor) printf '%s\n' auditor-boundary audit-signing-boundary ;;
     coverage) printf '%s\n' php-coverage phpstan-tests ;;
     *) echo "unknown control group '$1'" >&2; return 64 ;;
@@ -407,6 +407,39 @@ VIOLATION
     cat "${LOG_DIR}/wallet.log"
   fi
   rm -f app/Application/Wallet/NegativeControlWalletWrite.php
+  done
+fi
+
+if selected disbursement-boundary; then
+  control disbursement-boundary "bypassing the disbursement adapter to write intents, observations, closings or proofs must fail the protected rule"
+  for disbursement_model in Disbursement DisbursementEvent DisbursementStepUpProof DisbursementStepUpMarker DisbursementIntent DisbursementDispatch DisbursementProviderCall DisbursementProviderEvent DisbursementReconciliation DisbursementClosing; do
+  echo "    checking ${disbursement_model}"
+  plant app/Application/Disbursement/NegativeControlDisbursementWrite.php <<VIOLATION
+<?php
+
+declare(strict_types=1);
+
+namespace App\\Application\\Disbursement;
+
+use App\\Models\\${disbursement_model};
+
+final class NegativeControlDisbursementWrite
+{
+    public function handle(): ${disbursement_model}
+    {
+        return ${disbursement_model}::query()->create([]);
+    }
+}
+VIOLATION
+  if [ "${ARCHITECTURE_GREEN}" != true ]; then
+    report disbursement-boundary fail "the architecture suite must be green beforehand"
+  elif gate_fails "${LOG_DIR}/disbursement.log" vendor/bin/pest --ci --no-tia tests/Architecture/ArchitectureTest.php --filter='disbursement records are only accessed' --compact; then
+    report disbursement-boundary pass "the disbursement boundary rejected it"
+  else
+    report disbursement-boundary fail "the disbursement boundary accepted an external write"
+    cat "${LOG_DIR}/disbursement.log"
+  fi
+  rm -f app/Application/Disbursement/NegativeControlDisbursementWrite.php
   done
 fi
 

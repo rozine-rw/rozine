@@ -106,8 +106,9 @@ describe('Commitment', () => {
         });
 
         expect(step).toHaveTextContent(
-            'Your principal goes back to Available in full, with no fee, and these notes are released.',
+            "Your principal goes back to Available in full, with no fee. You'll no longer hold these notes.",
         );
+        expect(step).not.toHaveTextContent(/released|back on sale/i);
         await user.click(within(step).getByRole('button', { name: 'Keep it' }));
         expect(
             screen.queryByRole('group', { name: 'Cancel this commitment?' }),

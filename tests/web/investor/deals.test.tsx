@@ -609,6 +609,11 @@ describe('Deal detail on a phone', () => {
         expect(screen.getByRole('status')).toHaveTextContent(
             'Every note is reserved right now',
         );
+        expect(screen.getByRole('status')).toHaveTextContent(
+            "Every available note is currently held in other investors' checkouts. Check back later.",
+        );
+        expect(document.body).not.toHaveTextContent(/lapse/i);
+        expect(document.body).not.toHaveTextContent(/come back to this raise/i);
         expect(
             screen.getByRole('button', { name: 'Fully reserved' }),
         ).toBeDisabled();

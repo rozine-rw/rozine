@@ -24,6 +24,11 @@ use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\BusinessCreditFactsFixture;
 use Tests\Support\BusinessQuoteFixture;
 
+/**
+ * Underwriting months are Africa/Kigali months, which start at 22:00 UTC on the last day of the UTC month.
+ */
+dataset('kigali month boundaries', ['current', 'last-utc-second-before-kigali-month', 'kigali-month-start']);
+
 it('publishes one immutable replayable quote with a minimal public offer and exact retry lookup', function (): void {
     $fixture = BusinessQuoteFixture::make();
     expect(BusinessQuoteFixture::quote($fixture))->toBeNull();
@@ -108,7 +113,11 @@ it('requires an evaluated saved request and records missing-evidence refusal', f
         ->and(BusinessApplicationQuote::query()->firstOrFail()->payload['accepted_principal'])->toBe('5000000');
 });
 
-it('invalidates current offers after source mandate draft or calendar changes while preserving historical receipts', function (string $change): void {
+it('invalidates current offers after source mandate draft or calendar changes while preserving historical receipts', function (string $change, string $instant): void {
+    if ($instant !== 'current') {
+        $kigaliMonthStart = now('Africa/Kigali')->toImmutable()->startOfMonth()->utc();
+        $this->travelTo($instant === 'kigali-month-start' ? $kigaliMonthStart : $kigaliMonthStart->subSecond());
+    }
     $fixture = BusinessQuoteFixture::make();
     $request = (string) Str::uuid();
     $first = BusinessQuoteFixture::evaluate($fixture, request: $request);
@@ -132,7 +141,7 @@ it('invalidates current offers after source mandate draft or calendar changes wh
                 BusinessApplicationFixture::fields('5000000'), 'raise', (string) Str::uuid());
             break;
         case 'calendar':
-            $this->travelTo(now('UTC')->toImmutable()->startOfMonth()->addMonth());
+            $this->travelTo(now('Africa/Kigali')->toImmutable()->startOfMonth()->addMonth());
             break;
         case 'auditor':
             $fixture['audit']['partners'][0]['party']->forceFill(['verified_at' => null])->save();
@@ -140,7 +149,7 @@ it('invalidates current offers after source mandate draft or calendar changes wh
     }
     expect(BusinessQuoteFixture::quote($fixture))->toBeNull()->and($quote->refresh()->payload)->toBe($original)
         ->and(BusinessQuoteFixture::evaluate($fixture, request: $request))->toBe($first);
-})->with(['credit', 'withdrawal', 'mandate', 'draft', 'calendar', 'auditor']);
+})->with(['credit', 'withdrawal', 'mandate', 'draft', 'calendar', 'auditor'])->with('kigali month boundaries');
 
 it('advances to Review only with the same current ready quote and complete draft', function (): void {
     $fixture = BusinessQuoteFixture::make();
@@ -219,14 +228,18 @@ it('allows incomplete descriptive fields in a quote but requires them for Review
         ->and($fixture['application']->refresh()->step)->toBe('raise')->and($fixture['application']->revision)->toBe(4);
 });
 
-it('preserves affordability and exposure refusals through the quote projection', function (string $case): void {
+it('preserves affordability and exposure refusals through the quote projection', function (string $case, string $instant): void {
+    if ($instant !== 'current') {
+        $kigaliMonthStart = now('Africa/Kigali')->toImmutable()->startOfMonth()->utc();
+        $this->travelTo($instant === 'kigali-month-start' ? $kigaliMonthStart : $kigaliMonthStart->subSecond());
+    }
     $fixture = BusinessQuoteFixture::make();
     if ($case === 'affordability') {
         app(SaveBusinessApplication::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'], $fixture['application']->id, 2,
             BusinessApplicationFixture::fields('20000000'), 'raise', (string) Str::uuid());
     } else {
         $schedule = [];
-        $first = now('UTC')->toImmutable()->startOfMonth();
+        $first = now('Africa/Kigali')->toImmutable()->startOfMonth();
         for ($index = 0; $index < 6; $index++) {
             $schedule[$first->addMonths($index)->format('Y-m')] = '0';
         }
@@ -237,7 +250,7 @@ it('preserves affordability and exposure refusals through the quote projection',
     expect($result['data']['quote']['status'])->toBe('refused')
         ->and($result['data']['quote']['code'])->toBe($case === 'affordability' ? 'DSCR_BELOW_CUTOFF' : 'CAPACITY_BELOW_MINIMUM')
         ->and($result['data']['quote'])->not->toHaveKey('principal');
-})->with(['affordability', 'exposure']);
+})->with(['affordability', 'exposure'])->with('kigali month boundaries');
 
 it('rolls back a failed publication together with its quote pointer version and journal outcome', function (): void {
     $fixture = BusinessQuoteFixture::make();

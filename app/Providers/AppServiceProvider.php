@@ -22,10 +22,22 @@ use App\Application\Business\Contracts\AcceptedApplicationStore;
 use App\Application\Business\Contracts\BusinessApplicationStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\Contracts\BusinessCampaignStore;
+use App\Application\Business\Contracts\BusinessConnections;
 use App\Application\Business\Contracts\BusinessCreditFactsStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Business\Contracts\CampaignClosureEvidence;
+use App\Application\Business\Contracts\PrimaryCampaignSource;
+use App\Application\Business\Contracts\PublishedCampaignEvidence;
 use App\Application\Business\Contracts\StaffApplicationQueue;
+use App\Application\Disbursement\Contracts\DisbursementClosingEvidence;
+use App\Application\Disbursement\Contracts\DisbursementStore;
+use App\Application\Disbursement\Contracts\FundedCampaigns;
+use App\Application\Disbursement\Contracts\PayoutDestinations;
+use App\Application\Disbursement\Contracts\PayoutProvider;
+use App\Application\Disbursement\Contracts\StaffConnections;
+use App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures;
+use App\Application\Disbursement\Contracts\SyntheticPayoutScripts;
+use App\Application\Disbursement\SyntheticDisbursementGuard;
 use App\Application\Environment\Contracts\DemoFixtureStore;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Evidence\Contracts\StatementExtractionQueue;
@@ -37,8 +49,16 @@ use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Application\Primary\Contracts\CampaignCommitments;
+use App\Application\Primary\Contracts\CampaignFundingEvidence;
+use App\Application\Primary\Contracts\CampaignReservationSummary;
+use App\Application\Primary\Contracts\PrimaryCheckout;
+use App\Application\Primary\Contracts\PrimaryFunding;
+use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Application\Wallet\Contracts\DepositProvider;
+use App\Application\Wallet\Contracts\PrimaryCommittedCash;
+use App\Application\Wallet\Contracts\PrimaryReturnedCash;
 use App\Application\Wallet\Contracts\SyntheticEventSigner;
 use App\Application\Wallet\Contracts\SyntheticWalletFixtures;
 use App\Application\Wallet\Contracts\WalletPostings;
@@ -60,10 +80,21 @@ use App\Infrastructure\Auditor\JoseAuditReportCryptography;
 use App\Infrastructure\Business\EloquentBusinessApplicationStore;
 use App\Infrastructure\Business\EloquentBusinessAuthorityStore;
 use App\Infrastructure\Business\EloquentBusinessCampaignStore;
+use App\Infrastructure\Business\EloquentBusinessConnections;
 use App\Infrastructure\Business\EloquentBusinessCreditFactsStore;
 use App\Infrastructure\Business\EloquentBusinessExposureReservations;
+use App\Infrastructure\Business\EloquentPrimaryCampaignSource;
 use App\Infrastructure\Business\EloquentStaffApplicationQueue;
 use App\Infrastructure\Business\RetainedCampaignClosures;
+use App\Infrastructure\Business\RetainedCampaignPublication;
+use App\Infrastructure\Disbursement\EloquentDisbursementClosingEvidence;
+use App\Infrastructure\Disbursement\EloquentDisbursementStore;
+use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
+use App\Infrastructure\Disbursement\SyntheticPayoutProvider;
+use App\Infrastructure\Disbursement\UnavailableFundedCampaigns;
+use App\Infrastructure\Disbursement\UnavailablePayoutDestinations;
+use App\Infrastructure\Disbursement\UnavailablePayoutProvider;
+use App\Infrastructure\Disbursement\UnavailableStaffConnections;
 use App\Infrastructure\Environment\EloquentDemoFixtureStore;
 use App\Infrastructure\Evidence\EloquentStatementExtractionQueue;
 use App\Infrastructure\Evidence\EloquentStatementStore;
@@ -74,7 +105,15 @@ use App\Infrastructure\Identity\EloquentIdentityRepository;
 use App\Infrastructure\Identity\FortifyAuthenticator;
 use App\Infrastructure\Operations\EloquentOperationJournal;
 use App\Infrastructure\Operations\JcsCanonicalJson;
+use App\Infrastructure\Primary\EloquentCampaignCommitments;
+use App\Infrastructure\Primary\EloquentCampaignReservationSummary;
+use App\Infrastructure\Primary\EloquentPrimaryCheckout;
+use App\Infrastructure\Primary\EloquentPrimaryFunding;
+use App\Infrastructure\Primary\EloquentPrimaryReservations;
+use App\Infrastructure\Primary\RetainedPrimaryFunding;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
+use App\Infrastructure\Wallet\EloquentPrimaryCommittedCash;
+use App\Infrastructure\Wallet\EloquentPrimaryReturnedCash;
 use App\Infrastructure\Wallet\EloquentSyntheticWalletFixtures;
 use App\Infrastructure\Wallet\EloquentWalletPostings;
 use App\Infrastructure\Wallet\EloquentWalletStore;
@@ -118,6 +157,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(BusinessCreditFactsStore::class, EloquentBusinessCreditFactsStore::class);
         $this->app->bind(BusinessApplicationStore::class, EloquentBusinessApplicationStore::class);
         $this->app->bind(BusinessCampaignStore::class, EloquentBusinessCampaignStore::class);
+        $this->app->bind(PrimaryCampaignSource::class, EloquentPrimaryCampaignSource::class);
+        $this->app->bind(BusinessConnections::class, EloquentBusinessConnections::class);
+        $this->app->bind(PublishedCampaignEvidence::class, RetainedCampaignPublication::class);
         $this->app->bind(CampaignClosureEvidence::class, RetainedCampaignClosures::class);
         $this->app->bind(StaffApplicationQueue::class, EloquentStaffApplicationQueue::class);
         $this->app->bind(AcceptedApplicationStore::class, EloquentBusinessApplicationStore::class);
@@ -139,6 +181,14 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AuditLedgerEvidence::class, EloquentAuditLedgerEvidence::class);
         $this->app->bind(WalletStore::class, EloquentWalletStore::class);
         $this->app->bind(WalletPostings::class, EloquentWalletPostings::class);
+        $this->app->bind(PrimaryCommittedCash::class, EloquentPrimaryCommittedCash::class);
+        $this->app->bind(PrimaryReturnedCash::class, EloquentPrimaryReturnedCash::class);
+        $this->app->bind(CampaignCommitments::class, EloquentCampaignCommitments::class);
+        $this->app->bind(CampaignReservationSummary::class, EloquentCampaignReservationSummary::class);
+        $this->app->bind(PrimaryCheckout::class, EloquentPrimaryCheckout::class);
+        $this->app->bind(PrimaryReservations::class, EloquentPrimaryReservations::class);
+        $this->app->bind(PrimaryFunding::class, EloquentPrimaryFunding::class);
+        $this->app->bind(CampaignFundingEvidence::class, RetainedPrimaryFunding::class);
         // The synthetic provider exists only on local and testing with live money off; everywhere
         // else nothing can be sent, verified or signed, because no live provider exists yet.
         $synthetic = fn (): DepositProvider&SyntheticEventSigner => $this->app->make(SyntheticWalletGuard::class)->allowed()
@@ -146,6 +196,25 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(DepositProvider::class, $synthetic);
         $this->app->bind(SyntheticEventSigner::class, $synthetic);
         $this->app->bind(SyntheticWalletFixtures::class, EloquentSyntheticWalletFixtures::class);
+        $this->registerDisbursements();
+    }
+
+    /**
+     * Disbursement ports. Outside local/testing with live money off, every funding, destination,
+     * connection and provider port is its unavailable adapter, so disbursement fails closed.
+     */
+    private function registerDisbursements(): void
+    {
+        $this->app->bind(DisbursementStore::class, EloquentDisbursementStore::class);
+        $this->app->bind(DisbursementClosingEvidence::class, EloquentDisbursementClosingEvidence::class);
+        $this->app->singleton(SyntheticDisbursementSources::class);
+        $synthetic = fn (): bool => $this->app->make(SyntheticDisbursementGuard::class)->allowed();
+        $this->app->bind(FundedCampaigns::class, fn (): FundedCampaigns => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailableFundedCampaigns);
+        $this->app->bind(PayoutDestinations::class, fn (): PayoutDestinations => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailablePayoutDestinations);
+        $this->app->bind(StaffConnections::class, fn (): StaffConnections => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailableStaffConnections);
+        $this->app->bind(SyntheticDisbursementFixtures::class, fn (): SyntheticDisbursementFixtures => $this->app->make(SyntheticDisbursementSources::class));
+        $this->app->bind(PayoutProvider::class, fn (): PayoutProvider => $synthetic() ? $this->app->make(SyntheticPayoutProvider::class) : new UnavailablePayoutProvider);
+        $this->app->bind(SyntheticPayoutScripts::class, SyntheticPayoutProvider::class);
     }
 
     /**
@@ -158,6 +227,10 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('audit-step-up', fn (Request $request): array => [
             Limit::perMinute(5)->by('account:'.$request->user()?->getAuthIdentifier()),
             Limit::perMinute(20)->by('ip:'.$request->ip()),
+        ]);
+        RateLimiter::for('disbursement-step-up', fn (Request $request): array => [
+            Limit::perMinute(5)->by('disbursement-step-up-account:'.$request->user()?->getAuthIdentifier()),
+            Limit::perMinute(20)->by('disbursement-step-up-ip:'.$request->ip()),
         ]);
     }
 

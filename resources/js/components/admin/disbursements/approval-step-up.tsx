@@ -100,7 +100,6 @@ export function useApprovalStepUp({
         setEntry({ kind: 'ready' });
 
         const result = await stepUp.verify(route, {
-            request_id: crypto.randomUUID(),
             expected_revision: approval.revision,
             intent_digest: approval.intent_digest,
             code,
