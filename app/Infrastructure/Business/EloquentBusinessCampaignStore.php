@@ -432,9 +432,10 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         if ($phase === 'cancelled' && $recordedAt->gte($campaign->expires_at)) {
             throw new CommandRejection('CAMPAIGN_CLOSED', revision: 1, data: ['campaign_id' => $campaign->id, 'business_id' => $campaign->business_id]);
         }
+        $settled = [];
         try {
             if ($phase === 'expired') {
-                $this->primary->settleExpiredCampaign($campaign->id, $closure->id);
+                $settled = $this->primary->settleExpiredCampaign($campaign->id, $closure->id);
             }
             $returned = $this->primary->lockReturnedCampaign($campaign->id);
         } catch (CommandRejection|WalletViolation $exception) {
@@ -470,7 +471,14 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                 ...$binding, 'business_campaign_closure_id' => $closure->id,
             ], $bindings));
         }
-        // The feed's advisory lock is taken last, after every financial and closure write.
+        // The feed's advisory locks are taken last, after every financial and closure write.
+        usort($settled, fn (array $left, array $right): int => [$left['party_id'], $left['reservation_id']] <=> [$right['party_id'], $right['reservation_id']]);
+        foreach ($settled as $subject) {
+            $this->changes->record(ChangeScope::party($subject['party_id']), 'purchase', $subject['reservation_id']);
+        }
+        if ($settled !== []) {
+            $this->changes->record(ChangeScope::business($campaign->business_id), 'campaign', $campaign->id);
+        }
         $this->changes->record(ChangeScope::business($campaign->business_id), 'campaign', $campaign->id);
 
         return $closure;
