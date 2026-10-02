@@ -175,6 +175,11 @@ export default function BusinessCampaign({
             tab="home"
             links={shell_links}
             showTabBar={false}
+            beacon={{
+                link: links.changes,
+                reloads: { campaign: { only: POLLED, subject: campaign.id } },
+                settled: !command.busy && !command.unresolved,
+            }}
         >
             {home === null ? (
                 <BlankBody overlay={{ column: 'right', content: sheet }} />

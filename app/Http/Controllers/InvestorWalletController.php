@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Operations\ReadChanges;
 use App\Application\Wallet\FindWalletOperation;
 use App\Application\Wallet\GetInvestorWallet;
 use App\Application\Wallet\RecordDepositIntent;
@@ -18,13 +19,15 @@ use Inertia\Response;
 
 class InvestorWalletController extends Controller
 {
-    public function __construct(private GetInvestorWallet $wallet) {}
+    public function __construct(private GetInvestorWallet $wallet, private ReadChanges $changes) {}
 
+    /** The beacon cursor is taken before the facts, so every change they could miss is still ahead of it. */
     public function show(ShowWalletRequest $request): Response|InvestorWalletResource
     {
         $context = $request->validated('identity_context_revision');
-        $resource = new InvestorWalletResource($this->commandsFor($request, $this->wallet->handle((int) $request->user()?->getAuthIdentifier(),
-            $context === null ? null : (int) $context, $request->safe()->only(['kind', 'amount', 'movement', 'before', 'receipt']))));
+        $cursor = $this->changes->cursor((int) $request->user()?->getAuthIdentifier());
+        $resource = new InvestorWalletResource([...$this->commandsFor($request, $this->wallet->handle((int) $request->user()?->getAuthIdentifier(),
+            $context === null ? null : (int) $context, $request->safe()->only(['kind', 'amount', 'movement', 'before', 'receipt']))), 'changes_cursor' => $cursor]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('investor/wallet', $resource->resolve($request));
     }

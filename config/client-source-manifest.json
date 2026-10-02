@@ -44,6 +44,7 @@
         "resources/js/actions/App/Http/Controllers/BusinessApplicationController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessAuditReportController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessPublicationController.ts",
+        "resources/js/actions/App/Http/Controllers/ChangeFeedController.ts",
         "resources/js/actions/App/Http/Controllers/DashboardController.ts",
         "resources/js/actions/App/Http/Controllers/IdentityManagementController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorWalletController.ts",
@@ -126,6 +127,7 @@
         "resources/js/routes/api/v1/business/audit-reports/operations/index.ts",
         "resources/js/routes/api/v1/business/campaigns/index.ts",
         "resources/js/routes/api/v1/business/index.ts",
+        "resources/js/routes/api/v1/changes/index.ts",
         "resources/js/routes/api/v1/identity/active-role/index.ts",
         "resources/js/routes/api/v1/identity/bookmarks/index.ts",
         "resources/js/routes/api/v1/identity/index.ts",
@@ -176,6 +178,7 @@
         "resources/js/routes/business/audit-reports/operations/index.ts",
         "resources/js/routes/business/campaigns/index.ts",
         "resources/js/routes/business/index.ts",
+        "resources/js/routes/changes/index.ts",
         "resources/js/routes/identity/active-role/index.ts",
         "resources/js/routes/identity/bookmarks/index.ts",
         "resources/js/routes/identity/index.ts",
@@ -207,6 +210,7 @@
         "resources/js/routes/staff/audit/disputes/proofs/index.ts",
         "resources/js/routes/staff/audit/index.ts",
         "resources/js/routes/staff/audit/operations/index.ts",
+        "resources/js/routes/staff/changes/index.ts",
         "resources/js/routes/staff/disbursements/index.ts",
         "resources/js/routes/staff/disbursements/operations/index.ts",
         "resources/js/routes/staff/index.ts",
@@ -505,6 +509,7 @@
         "resources/js/hooks/use-appearance.tsx",
         "resources/js/hooks/use-bounded-poll.ts",
         "resources/js/hooks/use-c3-command.ts",
+        "resources/js/hooks/use-change-beacon.ts",
         "resources/js/hooks/use-clipboard.ts",
         "resources/js/hooks/use-current-url.ts",
         "resources/js/hooks/use-flash-toast.ts",
@@ -614,10 +619,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 586,
-        "generated": 196,
+        "totalTrackedSources": 591,
+        "generated": 200,
         "declarationOnly": 18,
-        "authoredExecutable": 372
+        "authoredExecutable": 373
     },
-    "coverageSetSha256": "024d8fa39d46c5573585c0ec5e76052db3bd64465c46c647c6decc21a5132efd"
+    "coverageSetSha256": "92d736fc4fa683987714ad58ac6189e8c9610bf194531c550f0f9ac879d336fb"
 }

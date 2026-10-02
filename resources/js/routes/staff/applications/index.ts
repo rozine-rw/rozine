@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 import operations from './operations'
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/admin/applications'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +17,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/admin/applications'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/admin/applications'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +36,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/admin/applications'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -46,7 +46,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/admin/applications'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -56,7 +56,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/admin/applications'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -66,7 +66,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::index
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:22
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:24
 * @route '/admin/applications'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/admin/applications/{application}'
 */
 export const show = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -98,7 +98,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/admin/applications/{application}'
 */
 show.url = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -125,7 +125,7 @@ show.url = (args: { application: string | number } | [application: string | numb
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/admin/applications/{application}'
 */
 show.get = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -135,7 +135,7 @@ show.get = (args: { application: string | number } | [application: string | numb
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/admin/applications/{application}'
 */
 show.head = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -145,7 +145,7 @@ show.head = (args: { application: string | number } | [application: string | num
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/admin/applications/{application}'
 */
 const showForm = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -155,7 +155,7 @@ const showForm = (args: { application: string | number } | [application: string 
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/admin/applications/{application}'
 */
 showForm.get = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -165,7 +165,7 @@ showForm.get = (args: { application: string | number } | [application: string | 
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::show
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:31
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:34
 * @route '/admin/applications/{application}'
 */
 showForm.head = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -182,7 +182,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::release
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:38
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:41
 * @route '/admin/applications/{application}/release'
 */
 export const release = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -197,7 +197,7 @@ release.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::release
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:38
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:41
 * @route '/admin/applications/{application}/release'
 */
 release.url = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -224,7 +224,7 @@ release.url = (args: { application: string | number } | [application: string | n
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::release
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:38
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:41
 * @route '/admin/applications/{application}/release'
 */
 release.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -234,7 +234,7 @@ release.post = (args: { application: string | number } | [application: string | 
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::release
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:38
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:41
 * @route '/admin/applications/{application}/release'
 */
 const releaseForm = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -244,7 +244,7 @@ const releaseForm = (args: { application: string | number } | [application: stri
 
 /**
 * @see \App\Http\Controllers\StaffApplicationReleaseController::release
-* @see app/Http/Controllers/StaffApplicationReleaseController.php:38
+* @see app/Http/Controllers/StaffApplicationReleaseController.php:41
 * @route '/admin/applications/{application}/release'
 */
 releaseForm.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

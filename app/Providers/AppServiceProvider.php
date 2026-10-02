@@ -48,6 +48,7 @@ use App\Application\Identity\Contracts\ConsentCatalog;
 use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\Contracts\CampaignCommitments;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
@@ -105,6 +106,7 @@ use App\Infrastructure\Identity\EloquentIdentityRepository;
 use App\Infrastructure\Identity\FortifyAuthenticator;
 use App\Infrastructure\Operations\EloquentOperationJournal;
 use App\Infrastructure\Operations\JcsCanonicalJson;
+use App\Infrastructure\Operations\PostgresChangeFeed;
 use App\Infrastructure\Primary\EloquentCampaignCommitments;
 use App\Infrastructure\Primary\EloquentCampaignReservationSummary;
 use App\Infrastructure\Primary\EloquentPrimaryCheckout;
@@ -153,6 +155,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(IdentityAccessStore::class, EloquentIdentityAccessStore::class);
         $this->app->bind(CanonicalJson::class, JcsCanonicalJson::class);
         $this->app->bind(OperationJournal::class, EloquentOperationJournal::class);
+        $this->app->bind(ChangeFeed::class, PostgresChangeFeed::class);
         $this->app->bind(BusinessAuthorityStore::class, EloquentBusinessAuthorityStore::class);
         $this->app->bind(BusinessCreditFactsStore::class, EloquentBusinessCreditFactsStore::class);
         $this->app->bind(BusinessApplicationStore::class, EloquentBusinessApplicationStore::class);
@@ -224,6 +227,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureHead();
+        RateLimiter::for('changes', fn (Request $request): Limit => Limit::perMinute(30)->by('changes:'.$request->user()?->getAuthIdentifier()));
         RateLimiter::for('audit-step-up', fn (Request $request): array => [
             Limit::perMinute(5)->by('account:'.$request->user()?->getAuthIdentifier()),
             Limit::perMinute(20)->by('ip:'.$request->ip()),

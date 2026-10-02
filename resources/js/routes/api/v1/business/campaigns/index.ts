@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::show
-* @see app/Http/Controllers/BusinessPublicationController.php:40
+* @see app/Http/Controllers/BusinessPublicationController.php:42
 * @route '/api/v1/business/{business}/campaigns/{campaign}'
 */
 export const show = (args: { business: string | number, campaign: string | number } | [business: string | number, campaign: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::show
-* @see app/Http/Controllers/BusinessPublicationController.php:40
+* @see app/Http/Controllers/BusinessPublicationController.php:42
 * @route '/api/v1/business/{business}/campaigns/{campaign}'
 */
 show.url = (args: { business: string | number, campaign: string | number } | [business: string | number, campaign: string | number ], options?: RouteQueryOptions) => {
@@ -42,7 +42,7 @@ show.url = (args: { business: string | number, campaign: string | number } | [bu
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::show
-* @see app/Http/Controllers/BusinessPublicationController.php:40
+* @see app/Http/Controllers/BusinessPublicationController.php:42
 * @route '/api/v1/business/{business}/campaigns/{campaign}'
 */
 show.get = (args: { business: string | number, campaign: string | number } | [business: string | number, campaign: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -52,7 +52,7 @@ show.get = (args: { business: string | number, campaign: string | number } | [bu
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::show
-* @see app/Http/Controllers/BusinessPublicationController.php:40
+* @see app/Http/Controllers/BusinessPublicationController.php:42
 * @route '/api/v1/business/{business}/campaigns/{campaign}'
 */
 show.head = (args: { business: string | number, campaign: string | number } | [business: string | number, campaign: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -62,7 +62,7 @@ show.head = (args: { business: string | number, campaign: string | number } | [b
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::show
-* @see app/Http/Controllers/BusinessPublicationController.php:40
+* @see app/Http/Controllers/BusinessPublicationController.php:42
 * @route '/api/v1/business/{business}/campaigns/{campaign}'
 */
 const showForm = (args: { business: string | number, campaign: string | number } | [business: string | number, campaign: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -72,7 +72,7 @@ const showForm = (args: { business: string | number, campaign: string | number }
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::show
-* @see app/Http/Controllers/BusinessPublicationController.php:40
+* @see app/Http/Controllers/BusinessPublicationController.php:42
 * @route '/api/v1/business/{business}/campaigns/{campaign}'
 */
 showForm.get = (args: { business: string | number, campaign: string | number } | [business: string | number, campaign: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ showForm.get = (args: { business: string | number, campaign: string | number } |
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::show
-* @see app/Http/Controllers/BusinessPublicationController.php:40
+* @see app/Http/Controllers/BusinessPublicationController.php:42
 * @route '/api/v1/business/{business}/campaigns/{campaign}'
 */
 showForm.head = (args: { business: string | number, campaign: string | number } | [business: string | number, campaign: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -99,7 +99,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::cancel
-* @see app/Http/Controllers/BusinessPublicationController.php:48
+* @see app/Http/Controllers/BusinessPublicationController.php:51
 * @route '/api/v1/business/{business}/campaigns/{campaign}/cancel'
 */
 export const cancel = (args: { business: string | number, campaign: string | number } | [business: string | number, campaign: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -114,7 +114,7 @@ cancel.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::cancel
-* @see app/Http/Controllers/BusinessPublicationController.php:48
+* @see app/Http/Controllers/BusinessPublicationController.php:51
 * @route '/api/v1/business/{business}/campaigns/{campaign}/cancel'
 */
 cancel.url = (args: { business: string | number, campaign: string | number } | [business: string | number, campaign: string | number ], options?: RouteQueryOptions) => {
@@ -140,7 +140,7 @@ cancel.url = (args: { business: string | number, campaign: string | number } | [
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::cancel
-* @see app/Http/Controllers/BusinessPublicationController.php:48
+* @see app/Http/Controllers/BusinessPublicationController.php:51
 * @route '/api/v1/business/{business}/campaigns/{campaign}/cancel'
 */
 cancel.post = (args: { business: string | number, campaign: string | number } | [business: string | number, campaign: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -150,7 +150,7 @@ cancel.post = (args: { business: string | number, campaign: string | number } | 
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::cancel
-* @see app/Http/Controllers/BusinessPublicationController.php:48
+* @see app/Http/Controllers/BusinessPublicationController.php:51
 * @route '/api/v1/business/{business}/campaigns/{campaign}/cancel'
 */
 const cancelForm = (args: { business: string | number, campaign: string | number } | [business: string | number, campaign: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -160,7 +160,7 @@ const cancelForm = (args: { business: string | number, campaign: string | number
 
 /**
 * @see \App\Http\Controllers\BusinessPublicationController::cancel
-* @see app/Http/Controllers/BusinessPublicationController.php:48
+* @see app/Http/Controllers/BusinessPublicationController.php:51
 * @route '/api/v1/business/{business}/campaigns/{campaign}/cancel'
 */
 cancelForm.post = (args: { business: string | number, campaign: string | number } | [business: string | number, campaign: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

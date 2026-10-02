@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Business\ListStaffApplications;
 use App\Application\Business\ManageBusinessCampaigns;
+use App\Application\Operations\ReadChanges;
 use App\Http\Requests\Business\ListStaffApplicationsRequest;
 use App\Http\Requests\Business\ReleaseApplicationRequest;
 use App\Http\Resources\OperationResource;
@@ -19,11 +20,13 @@ class StaffApplicationReleaseController extends Controller
 {
     public function __construct(private ManageBusinessCampaigns $campaigns) {}
 
-    public function index(ListStaffApplicationsRequest $request, ListStaffApplications $action): StaffApplicationsResource|Response
+    /** The beacon cursor is taken before the facts, so every change they could miss is still ahead of it. */
+    public function index(ListStaffApplicationsRequest $request, ListStaffApplications $action, ReadChanges $changes): StaffApplicationsResource|Response
     {
-        $resource = new StaffApplicationsResource($action->handle((int) $request->user()?->getAuthIdentifier(),
+        $cursor = $changes->cursor((int) $request->user()?->getAuthIdentifier());
+        $resource = new StaffApplicationsResource([...$action->handle((int) $request->user()?->getAuthIdentifier(),
             (string) $request->validated('tab', 'pending'), trim((string) $request->validated('search', '')),
-            $request->validated('before'), (int) $request->validated('limit', 20), $request->validated('application')));
+            $request->validated('before'), (int) $request->validated('limit', 20), $request->validated('application')), 'changes_cursor' => $cursor]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('admin/applications', $resource->resolve($request));
     }

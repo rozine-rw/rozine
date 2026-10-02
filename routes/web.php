@@ -12,6 +12,7 @@ use App\Http\Controllers\AuditSealVerificationController;
 use App\Http\Controllers\BusinessApplicationController;
 use App\Http\Controllers\BusinessAuditReportController;
 use App\Http\Controllers\BusinessPublicationController;
+use App\Http\Controllers\ChangeFeedController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IdentityManagementController;
 use App\Http\Controllers\InvestorWalletController;
@@ -167,4 +168,13 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
         ->whereUlid(['business', 'campaign'])->name('business.campaigns.show');
     Route::post('business/{business}/campaigns/{campaign}/cancel', [BusinessPublicationController::class, 'cancel'])
         ->whereUlid(['business', 'campaign'])->name('business.campaigns.cancel');
+});
+
+/*
+ * The online propagation beacon (S4-E): which of the caller's topics changed, authorized at every
+ * read. Polled by open pages, so it has its own per-account limit.
+ */
+Route::middleware(['auth', 'throttle:changes', 'cache.headers:private;no_store'])->group(function (): void {
+    Route::get('changes', [ChangeFeedController::class, 'index'])->name('changes.index');
+    Route::get('admin/changes', [ChangeFeedController::class, 'index'])->name('staff.changes.index');
 });

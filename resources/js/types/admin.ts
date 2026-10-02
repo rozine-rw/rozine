@@ -912,7 +912,11 @@ export type C3AdminApplicationsProps = Omit<
     'review'
 > & {
     review: C3ApplicationReview | null;
-    links: { operation: RouteLink };
+    links: {
+        operation: RouteLink;
+        /** The change beacon (S4-E), with its render-time cursor; null in previews. */
+        changes?: RouteLink | null;
+    };
     /** The live index pages by cursor (`staff-applications-v1`); previews may omit it. */
     pagination?: Pagination;
     preview_outcome?: C3PreviewOutcome<'application.release'>;

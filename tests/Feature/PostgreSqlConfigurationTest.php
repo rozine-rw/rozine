@@ -135,6 +135,9 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     expect(Schema::hasTable('disbursements'))->toBeFalse()->and(Schema::hasTable('primary_holdings'))->toBeFalse();
     $confirmationOperations->down();
     $confirmationReceipts->down();
+    $changeFeed = require database_path('migrations/2026_09_28_180000_create_change_feed_table.php');
+    $changeFeed->down();
+    expect(Schema::hasTable('change_feed'))->toBeFalse();
     $depositCreditBinding->down();
     expect(DB::scalar("SELECT to_regprocedure('deposit_credit_entry_check(varchar)') IS NULL"))->toBeTrue();
     $primaryTerminalCash->down();
@@ -247,6 +250,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $primarySourceGuard->up();
     $primaryTerminalCash->up();
     $depositCreditBinding->up();
+    $changeFeed->up();
     $confirmationReceipts->up();
     $confirmationOperations->up();
     $disbursements->up();
@@ -306,5 +310,6 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasTable('investor_funding_methods'))->toBeTrue()
         ->and(Schema::hasTable('wallet_deposit_credits'))->toBeTrue()
         ->and(Schema::hasColumn('ledger_entries', 'origin_operation_id'))->toBeTrue()
-        ->and(DB::scalar("SELECT to_regprocedure('deposit_credit_entry_check(varchar)') IS NOT NULL"))->toBeTrue();
+        ->and(DB::scalar("SELECT to_regprocedure('deposit_credit_entry_check(varchar)') IS NOT NULL"))->toBeTrue()
+        ->and(Schema::hasTable('change_feed'))->toBeTrue();
 });
