@@ -21,6 +21,7 @@ use App\Http\Controllers\RoleBookmarkController;
 use App\Http\Controllers\RoleHomeController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StaffApplicationReleaseController;
+use App\Http\Controllers\StaffDisbursementController;
 use App\Http\Controllers\StaffHomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -123,6 +124,17 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('{assignment}', [AuditOperationsController::class, 'show'])->where('assignment', '[0-9a-z]{26}')->name('show');
     foreach (['redispatch', 'close'] as $decision) {
         Route::post('{assignment}/'.$decision, [AuditOperationsController::class, 'resolve'])->where('assignment', '[0-9a-z]{26}')->defaults('decision', $decision)->name($decision);
+    }
+});
+
+Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/disbursements')->name('staff.disbursements.')->group(function (): void {
+    Route::get('/', [StaffDisbursementController::class, 'index'])->name('index');
+    Route::get('operations/{request_id}', [StaffDisbursementController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
+    Route::get('{disbursement}', [StaffDisbursementController::class, 'show'])->whereUlid('disbursement')->name('show');
+    Route::post('{disbursement}/step-up', [StaffDisbursementController::class, 'stepUp'])->whereUlid('disbursement')
+        ->middleware('throttle:disbursement-step-up')->name('step-up');
+    foreach (['authorize' => 'authorize', 'approve' => 'approve', 'reject' => 'reject', 'hold' => 'hold', 'release-hold' => 'release_hold', 'requery' => 'requery'] as $path => $command) {
+        Route::post('{disbursement}/'.$path, [StaffDisbursementController::class, 'command'])->whereUlid('disbursement')->defaults('command', $command)->name($path);
     }
 });
 

@@ -22,6 +22,13 @@ interface IdentityAccessStore
     public function staffAccess(int $userId, bool $required = false, bool $lock = true): array;
 
     /**
+     * Whether a staff member holds this permission now and has held it without a gap since the
+     * given instant: no recorded staff-access change since then removed it, and MFA was not
+     * re-confirmed since then. Optionally locks the account row in the caller's order.
+     */
+    public function staffPermissionContinuousSince(int $userId, string $permission, string $since, bool $lock = true): bool;
+
+    /**
      * @template TResult
      *
      * @param  Closure(): TResult  $operation

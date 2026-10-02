@@ -244,6 +244,10 @@ arch('business authority records are only accessed by their adapter')
     ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion', 'App\Models\BusinessCreditSnapshot', 'App\Models\BusinessApplicationQuote', 'App\Models\BusinessApplicationSignature', 'App\Models\BusinessApplicationSubmission', 'App\Models\BusinessExposureReservation', 'App\Models\BusinessApplicationRelease', 'App\Models\BusinessCampaign', 'App\Models\BusinessCampaignClosure'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Models', 'Database\Factories']);
 
+arch('declared Business connection evidence stays inside financial persistence adapters')
+    ->expect('App\Application\Business\Contracts\BusinessConnections')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Infrastructure\Primary', 'App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider']);
+
 it('has concrete targets for the immutable statement evidence boundary', function (): void {
     expect(class_exists(StatementEvidence::class))->toBeTrue()
         ->and(class_exists(StatementOriginal::class))->toBeTrue()
@@ -350,6 +354,25 @@ arch('campaign closure evidence is private to the Business adapter')
     ->expect('App\\Application\\Business\\Contracts\\CampaignClosureEvidence')
     ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Providers\\AppServiceProvider']);
 
+arch('retained campaign inputs are private to the Business and Primary adapters')
+    ->expect('App\Application\Business\Contracts\PrimaryCampaignSource')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Infrastructure\Primary', 'App\Providers\AppServiceProvider']);
+
+arch('full publication evidence remains private to the Business adapter')
+    ->expect('App\Application\Business\Contracts\PublishedCampaignEvidence')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Providers\AppServiceProvider']);
+
+arch('campaign commitment evidence stays private to the Business and Primary adapters')
+    ->expect('App\\Application\\Primary\\Contracts\\CampaignCommitments')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);
+
+arch('campaign reservation aggregates remain private to the Business and Primary adapters')
+    ->expect('App\\Application\\Primary\\Contracts\\CampaignReservationSummary')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);
+
+arch('Primary reservation and commitment records remain inside their persistence boundary')
+    ->expect(['App\\Models\\PrimaryReservationRecord', 'App\\Models\\PrimaryReservationVersion', 'App\\Models\\PrimaryCommitment'])
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Primary', 'App\\Models', 'Database\\Factories']);
 it('has concrete targets for the wallet ledger boundary', function (): void {
     foreach ([InvestorWallet::class, LedgerAccount::class, LedgerEntry::class, LedgerLine::class, DepositPolicy::class, InvestorFundingMethod::class,
         InvestorAccountRestriction::class, WalletDepositIntent::class, WalletDepositDispatch::class, WalletProviderEvent::class, WalletDepositCredit::class,
@@ -372,3 +395,54 @@ arch('the deposit provider is reached only through the wallet actions and adapte
 arch('synthetic signing and fixtures stay inside the local wallet hook')
     ->expect(['App\Application\Wallet\Contracts\SyntheticEventSigner', 'App\Application\Wallet\Contracts\SyntheticWalletFixtures'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Wallet', 'App\Providers\AppServiceProvider', 'App\Console\Commands\PrepareSyntheticWallet']);
+
+it('has concrete targets for the disbursement boundary', function (): void {
+    foreach (['App\Models\Disbursement', 'App\Models\DisbursementEvent', 'App\Models\DisbursementStepUpProof', 'App\Models\DisbursementStepUpMarker',
+        'App\Models\DisbursementIntent', 'App\Models\DisbursementDispatch', 'App\Models\DisbursementProviderCall', 'App\Models\DisbursementProviderEvent',
+        'App\Models\DisbursementReconciliation', 'App\Models\DisbursementClosing', 'App\Models\PrimaryHolding',
+        'App\Application\Disbursement\Contracts\DisbursementStore', 'App\Application\Disbursement\Contracts\FundedCampaigns',
+        'App\Application\Disbursement\Contracts\PayoutDestinations', 'App\Application\Disbursement\Contracts\StaffConnections',
+        'App\Application\Disbursement\Contracts\PayoutProvider', 'App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures',
+        'App\Application\Disbursement\Contracts\SyntheticPayoutScripts', 'App\Application\Disbursement\Contracts\DisbursementClosingEvidence'] as $target) {
+        expect(class_exists($target) || interface_exists($target))->toBeTrue($target);
+    }
+})->group('arch');
+
+arch('disbursement records are only accessed by the disbursement adapters')
+    ->expect(['App\Models\Disbursement', 'App\Models\DisbursementEvent', 'App\Models\DisbursementStepUpProof', 'App\Models\DisbursementStepUpMarker',
+        'App\Models\DisbursementIntent', 'App\Models\DisbursementDispatch', 'App\Models\DisbursementProviderCall', 'App\Models\DisbursementProviderEvent',
+        'App\Models\DisbursementReconciliation', 'App\Models\DisbursementClosing'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Models', 'Database\Factories']);
+
+arch('proposed Holdings stay unwritten until the S3-C adapter owns them')
+    ->expect('App\Models\PrimaryHolding')
+    ->toOnlyBeUsedIn(['App\Models', 'Database\Factories']);
+
+arch('funding, destination and staff connection sources are reached only through the disbursement adapter')
+    ->expect(['App\Application\Disbursement\Contracts\FundedCampaigns', 'App\Application\Disbursement\Contracts\PayoutDestinations',
+        'App\Application\Disbursement\Contracts\StaffConnections'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider']);
+
+arch('the payout provider is reached only through the disbursement actions and adapters')
+    ->expect('App\Application\Disbursement\Contracts\PayoutProvider')
+    ->toOnlyBeUsedIn(['App\Application\Disbursement', 'App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider']);
+
+arch('synthetic disbursement fixtures stay inside the local disbursement hook')
+    ->expect(['App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures', 'App\Application\Disbursement\Contracts\SyntheticPayoutScripts'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider', 'App\Console\Commands\PrepareSyntheticDisbursement']);
+
+arch('funding cash evidence stays behind the wallet and Primary adapters')
+    ->expect('App\\Application\\Wallet\\Contracts\\PrimaryCommittedCash')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Wallet', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);
+
+arch('funding locks and evidence remain internal to Business and Primary persistence')
+    ->expect(['App\Application\Primary\Contracts\PrimaryFunding', 'App\Application\Primary\Contracts\CampaignFundingEvidence'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Infrastructure\Primary', 'App\Providers\AppServiceProvider']);
+
+arch('funding records remain inside Primary persistence')
+    ->expect('App\Models\PrimaryCampaignFunding')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Primary', 'App\Models', 'Database\Factories']);
+
+arch('returned cash evidence stays behind the wallet and Primary adapters')
+    ->expect('App\\Application\\Wallet\\Contracts\\PrimaryReturnedCash')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Wallet', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);

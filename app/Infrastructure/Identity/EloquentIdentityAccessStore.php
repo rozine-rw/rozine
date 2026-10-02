@@ -20,6 +20,7 @@ use App\Models\StaffAccount;
 use App\Models\User;
 use App\Models\VerifiedOrganizationIdentity;
 use App\Models\VerifiedPersonIdentity;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -308,6 +309,27 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
 
             return ['contract_version' => 'staff-access-v1', 'can_open_admin' => $allowed,
                 'allowed_actions' => $allowed ? StaffPermission::forRoles($staff->roles) : [], 'roles' => $allowed ? $staff->roles : []];
+        }, 3);
+    }
+
+    public function staffPermissionContinuousSince(int $userId, string $permission, string $since, bool $lock = true): bool
+    {
+        return DB::transaction(function () use ($userId, $permission, $since, $lock): bool {
+            if (! in_array($permission, $this->staffAccess($userId, false, $lock)['allowed_actions'], true)) {
+                return false;
+            }
+            $user = User::query()->findOrFail($userId);
+            // Audit times are whole seconds, so a change in the same second counts against continuity.
+            $from = CarbonImmutable::parse($since)->utc();
+            $changes = IdentityAuditEvent::query()->where('target_type', 'user')->where('target_id', (string) $userId)
+                ->where('action', 'staff.configure')->where('created_at', '>=', $from->startOfSecond())->get();
+            foreach ($changes as $change) {
+                if (($change->after['enabled'] ?? false) !== true || ! in_array($permission, StaffPermission::forRoles($change->after['roles'] ?? []), true)) {
+                    return false;
+                }
+            }
+
+            return $user->two_factor_confirmed_at !== null && $user->two_factor_confirmed_at->lessThanOrEqualTo($from);
         }, 3);
     }
 

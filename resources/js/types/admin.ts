@@ -774,8 +774,8 @@ export type C3DisbursementRow = {
 
 /**
  * The staff step-up an approval needs (#96 answer 5). It has its own staff route and purpose, not
- * the Auditor seal's. The server lists `route` only once S3-D publishes that exchange; while it is
- * null, approval is withheld. With a route, the drawer exchanges an authenticator code for a
+ * the Auditor seal's. The server lists `route` only while this viewer may approve this
+ * disbursement now (never for its maker); while it is null, approval is withheld. With a route, the drawer exchanges an authenticator code for a
  * `DisbursementStepUpProof` and sends it as `step_up_proof` on approve.
  */
 export type DisbursementStepUp = {
@@ -784,22 +784,22 @@ export type DisbursementStepUp = {
 };
 
 /**
- * PROVISIONAL until S3-D publishes the staff step-up DTO. The body the drawer sends to
- * `step_up.route`, mirroring the Auditor seal exchange: the route-bound disbursement is the
- * record, so no disbursement id is sent, and the server binds the proof to the staff principal,
- * revision, exact amount, verified destination and intent digest.
+ * The body the drawer sends to `step_up.route` (S3-D, #96 5871859618 answer 11): the route-bound
+ * disbursement is the record, so no disbursement id is sent, and no `request_id` either: the
+ * exchange is never journaled, and a lost answer asks for a fresh step-up. The server binds the
+ * proof to the staff principal, revision, exact amount, verified destination and intent digest,
+ * and one accepted code mints one proof.
  */
 export type DisbursementStepUpRequest = {
-    request_id: string;
     expected_revision: number;
     intent_digest: string;
     code: string;
 };
 
 /**
- * PROVISIONAL until S3-D publishes the staff step-up DTO. What the exchange answers, in the seal
- * exchange's shape: an opaque, single-use proof and when it expires. It lives only in the
- * drawer's transient state, never in the operation journal, the lookup or storage.
+ * What the staff step-up exchange answers, in the seal exchange's shape: an opaque, single-use
+ * proof and when it expires. It lives only in the drawer's transient state, never in the operation
+ * journal, the lookup or storage.
  */
 export type DisbursementStepUpProof = {
     proof: string;
@@ -863,7 +863,11 @@ export type C3DisbursementDetail = C3DisbursementRow & {
     };
 };
 
-export type C3AdminDisbursementsProps = AdminShellProps &
+/**
+ * The live staff Resource sends the frame as `AdminFrameShellProps` (#96): only the sections the
+ * server serves, and a null badge where it knows no count. Every full fixture shell is one too.
+ */
+export type C3AdminDisbursementsProps = AdminFrameShellProps &
     StaffDisbursementPageContract & {
         disbursements: C3DisbursementRow[];
         pagination: Pagination;

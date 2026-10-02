@@ -1,4 +1,10 @@
 import { Link } from '@inertiajs/react';
+import {
+    FeeTermsUnavailable,
+    readFeeTerms,
+    ServiceFeeNote,
+    ServiceFeeRows,
+} from '@/components/business/apply/service-fee';
 import { BusinessShell } from '@/components/business/business-shell';
 import { BlankBody, HomeBody } from '@/components/business/home/home-body';
 import { C3Notice } from '@/components/rozine/c3-notice';
@@ -56,6 +62,10 @@ export default function BusinessPublish({
     home,
     shell_links,
     preview_outcome,
+    preview_fee_terms_required,
+    service_fee,
+    total_payable,
+    expected_schedule,
 }: C3BusinessPublishProps) {
     const { t, locale } = useTranslation();
     const command = useC3Command<'application.publish'>({
@@ -74,8 +84,22 @@ export default function BusinessPublish({
                     step.key === 'terms_current') &&
                 !step.met,
         );
+    /*
+     * The borrower service-fee terms (C4 gate 6), retained from the signed quote and checked
+     * against its own instalments, never against the fee list. Explicitly unavailable terms
+     * withhold Publish; absent terms leave it as it is, except in a synthetic
+     * preview of the proposed rule that absence blocks too.
+     */
+    const feeTerms = readFeeTerms(
+        { service_fee, total_payable },
+        expected_schedule,
+        preview_fee_terms_required === true,
+    );
+    const feeUnavailable = feeTerms.state === 'unavailable';
     const canPublish =
-        !signAgain && allowed_actions.includes('application.publish');
+        !signAgain &&
+        !feeUnavailable &&
+        allowed_actions.includes('application.publish');
 
     const publish = () => {
         command.send('application.publish', {
@@ -244,6 +268,20 @@ export default function BusinessPublish({
                             </dd>
                         </div>
                     </dl>
+                    {feeTerms.state === 'shown' && (
+                        <div className="mt-3 rounded-2xl border border-rz-border bg-rz-surface p-[15px]">
+                            <div className="flex flex-col gap-3">
+                                <ServiceFeeRows
+                                    fee={feeTerms.fee}
+                                    totalPayable={feeTerms.totalPayable}
+                                />
+                            </div>
+                            <ServiceFeeNote
+                                fee={feeTerms.fee}
+                                className="mt-3 border-t border-[#eef2f9] pt-3 dark:border-rz-divider"
+                            />
+                        </div>
+                    )}
                     <div className="mt-3 rounded-2xl border border-rz-border bg-rz-surface p-[15px]">
                         <p className="text-[11px] font-bold tracking-[.05em] text-rz-slate uppercase">
                             {t('business.publish.disclosure_title')}
@@ -275,6 +313,11 @@ export default function BusinessPublish({
                                 {t('business.publish.review_again')}
                             </Link>
                         </>
+                    ) : feeUnavailable ? (
+                        <FeeTermsUnavailable
+                            surface="publish"
+                            className="mt-4"
+                        />
                     ) : canPublish ? (
                         <button
                             type="button"

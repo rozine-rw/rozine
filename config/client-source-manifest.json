@@ -1,10 +1,7 @@
 {
     "version": 1,
     "sourceRoot": "resources/js",
-    "extensions": [
-        ".ts",
-        ".tsx"
-    ],
+    "extensions": [".ts", ".tsx"],
     "policy": "D-66/D-67",
     "exclusionMetadata": {
         "generatedPaths": {
@@ -59,6 +56,7 @@
         "resources/js/actions/App/Http/Controllers/Settings/index.ts",
         "resources/js/actions/App/Http/Controllers/SiteController.ts",
         "resources/js/actions/App/Http/Controllers/StaffApplicationReleaseController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffDisbursementController.ts",
         "resources/js/actions/App/Http/Controllers/StaffHomeController.ts",
         "resources/js/actions/App/Http/Controllers/index.ts",
         "resources/js/actions/App/Http/index.ts",
@@ -148,6 +146,8 @@
         "resources/js/routes/api/v1/staff/audit/disputes/proofs/index.ts",
         "resources/js/routes/api/v1/staff/audit/index.ts",
         "resources/js/routes/api/v1/staff/audit/operations/index.ts",
+        "resources/js/routes/api/v1/staff/disbursements/index.ts",
+        "resources/js/routes/api/v1/staff/disbursements/operations/index.ts",
         "resources/js/routes/api/v1/staff/index.ts",
         "resources/js/routes/appearance/index.ts",
         "resources/js/routes/audit/index.ts",
@@ -211,6 +211,8 @@
         "resources/js/routes/staff/audit/index.ts",
         "resources/js/routes/staff/audit/operations/index.ts",
         "resources/js/routes/staff/changes/index.ts",
+        "resources/js/routes/staff/disbursements/index.ts",
+        "resources/js/routes/staff/disbursements/operations/index.ts",
         "resources/js/routes/staff/index.ts",
         "resources/js/routes/storage/index.ts",
         "resources/js/routes/storage/local/index.ts",
@@ -332,6 +334,7 @@
         "resources/js/components/business/apply/operation-outcome.ts",
         "resources/js/components/business/apply/outcome-banner.tsx",
         "resources/js/components/business/apply/pending-review.tsx",
+        "resources/js/components/business/apply/service-fee.tsx",
         "resources/js/components/business/apply/step-business.tsx",
         "resources/js/components/business/apply/step-heading.tsx",
         "resources/js/components/business/apply/step-raise.tsx",
@@ -545,6 +548,7 @@
         "resources/js/lib/rozine/dispute-note.ts",
         "resources/js/lib/rozine/format.ts",
         "resources/js/lib/rozine/operation.ts",
+        "resources/js/lib/rozine/raising.ts",
         "resources/js/lib/utils.ts",
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/auth/login.tsx",
@@ -615,10 +619,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 584,
-        "generated": 195,
+        "totalTrackedSources": 591,
+        "generated": 200,
         "declarationOnly": 18,
-        "authoredExecutable": 371
+        "authoredExecutable": 373
     },
-    "coverageSetSha256": "8bc39e3606a428f122e955c30507988f4cc50f80173f774904fdb432f00a268c"
+    "coverageSetSha256": "92d736fc4fa683987714ad58ac6189e8c9610bf194531c550f0f9ac879d336fb"
 }

@@ -6,8 +6,6 @@ use App\Application\Wallet\Contracts\DepositProvider;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\DepositInstruction;
 use App\Application\Wallet\DispatchDepositIntents;
-use App\Application\Wallet\LockedWallet;
-use App\Application\Wallet\PostingSource;
 use App\Application\Wallet\VerifiedDepositEvent;
 use App\Domain\Wallet\WalletMoney;
 use App\Models\LedgerAccount;
@@ -16,11 +14,11 @@ use App\Models\LedgerLine;
 use App\Models\WalletDepositDispatch;
 use App\Models\WalletDepositIntent;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\PrimaryReservationFixture;
 
 /*
- * Hussain's independent #172 review (#96 5871460536): the first and last tests are his, verbatim.
+ * Hussain's independent #172 review (#96 5871460536), with retained S3-C source fixtures.
  */
 
 it('does not dispatch an intent when its outer transaction rolls back', function (): void {
@@ -107,18 +105,18 @@ it('dispatches exactly once, at transaction level 0, after the outer transaction
 });
 
 it('refuses a database release that consumes another source hold', function (): void {
+    $this->freezeSecond();
     $fixture = InvestorWalletFixture::ready();
     InvestorWalletFixture::settle(InvestorWalletFixture::deposit($fixture)['data']['intent_id']);
     $postings = app(WalletPostings::class);
-    $id = fn (): string => strtolower((string) Str::ulid());
-    $first = new PostingSource('primary_reservation', $id(), $id());
-    $second = new PostingSource('primary_reservation', $id(), $id());
-    $wallet = DB::transaction(function () use ($postings, $fixture, $first, $second): LockedWallet {
+    [$wallet, $first] = DB::transaction(function () use ($postings, $fixture): array {
         $wallet = $postings->lockForParty($fixture['party']->id);
-        $postings->hold($wallet, WalletMoney::of('1000'), $first);
-        $postings->hold($wallet, WalletMoney::of('1000'), $second);
+        $first = PrimaryReservationFixture::postingSource($wallet, '5000');
+        $second = PrimaryReservationFixture::postingSource($wallet, '5000');
+        $postings->hold($wallet, WalletMoney::of('5000'), $first);
+        $postings->hold($wallet, WalletMoney::of('5000'), $second);
 
-        return $wallet;
+        return [$wallet, $first];
     });
     $accounts = LedgerAccount::query()->where('wallet_id', $wallet->walletId)->get()->keyBy('kind');
 
@@ -130,7 +128,7 @@ it('refuses a database release that consumes another source hold', function (): 
             'source_id' => $first->id,
             'origin_operation_id' => $first->originOperationId,
         ]);
-        LedgerLine::factory()->create(['entry_id' => $entry->id, 'account_id' => $accounts['investor_held']->id, 'direction' => 'debit', 'amount' => '2000']);
-        LedgerLine::factory()->create(['entry_id' => $entry->id, 'account_id' => $accounts['investor_available']->id, 'direction' => 'credit', 'amount' => '2000']);
-    }))->toThrow(PDOException::class);
+        LedgerLine::factory()->create(['entry_id' => $entry->id, 'account_id' => $accounts['investor_held']->id, 'direction' => 'debit', 'amount' => '10000']);
+        LedgerLine::factory()->create(['entry_id' => $entry->id, 'account_id' => $accounts['investor_available']->id, 'direction' => 'credit', 'amount' => '10000']);
+    }))->toThrow(PDOException::class, 'must move exactly its source anchor amount');
 });

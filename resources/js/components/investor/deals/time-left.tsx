@@ -4,8 +4,8 @@ import type { TimeLeft } from '@/lib/investor/server-clock';
 import type { CampaignLifecycle } from '@/types/settlement';
 
 /**
- * Whether a raise is still open against its clock. A fully reserved raise is: lapsed checkouts
- * return notes to it until it closes. Every later lifecycle has no time left to count down.
+ * Whether a raise is still open against its clock. A fully reserved raise is: it stays open until
+ * its clock runs out. Every later lifecycle has no time left to count down.
  */
 export function raiseOpen(lifecycle: CampaignLifecycle): boolean {
     return lifecycle === 'live' || lifecycle === 'fully_reserved';

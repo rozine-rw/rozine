@@ -4,6 +4,7 @@ import { Tile } from '@/components/business/note/progress-summary';
 import { PollStopped } from '@/components/rozine/c3-notice';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
+import type { MessageCode } from '@/lib/i18n/types';
 import { timeLeft, useServerNow } from '@/lib/investor/server-clock';
 import {
     formatCount,
@@ -12,13 +13,16 @@ import {
     formatRwf,
     formatRwfShort,
 } from '@/lib/rozine/format';
+import { isReadableProgress, SETTLING } from '@/lib/rozine/raising';
 import { cn } from '@/lib/utils';
 import type {
     CampaignProgressV2 as Progress,
     CampaignServicing,
 } from '@/types/business';
 import type {
+    BusinessCampaignLifecycle,
     CampaignRestriction,
+    RaisingLifecycle,
     ServicingState,
     Units,
 } from '@/types/settlement';
@@ -33,6 +37,24 @@ const SERVICING_TONE: Record<ServicingState, string> = {
     overdue: 'bg-[rgba(229,72,77,.1)] text-rz-danger-text',
     repaid: 'bg-rz-accent-soft text-rz-accent-app-text',
     defaulted: 'bg-[rgba(229,72,77,.1)] text-rz-danger-text',
+};
+
+/** The raise's status chip: amber once new investors can't commit, green otherwise. */
+const RAISING_TONE: Record<RaisingLifecycle, string> = {
+    live: 'bg-rz-accent-soft text-rz-accent-app-text',
+    fully_reserved: 'bg-rz-accent-soft text-rz-accent-app-text',
+    sold_out_pending_settlement: 'bg-rz-accent-soft text-rz-accent-app-text',
+    inventory_unavailable: SERVICING_TONE.due_today,
+    closing_pending_settlement: SERVICING_TONE.due_today,
+};
+
+/** What a raise that isn't simply live says about itself. Never "funded" before settlement. */
+const RAISING_NOTICE: Record<RaisingLifecycle, MessageCode | null> = {
+    live: null,
+    fully_reserved: 'business.campaign.fully_reserved',
+    sold_out_pending_settlement: 'business.campaign.sold_out',
+    inventory_unavailable: 'business.campaign.inventory_unavailable',
+    closing_pending_settlement: 'business.campaign.closing',
 };
 
 /** A whole-unit count as the server sent it, grouped for reading: "1,200". */
@@ -55,7 +77,8 @@ function Notice({
                     'border-[#cfe9d8] bg-rz-accent-soft dark:border-transparent',
                 tone === 'amber' &&
                     'border-[#fbe4cc] bg-[#fff8f1] dark:border-transparent dark:bg-[rgba(194,102,31,.12)]',
-                tone === 'blue' && 'border-[#dbe7ff] bg-rz-surface',
+                tone === 'blue' &&
+                    'border-[#dbe7ff] bg-rz-surface dark:border-rz-border',
             )}
         >
             {children}
@@ -137,11 +160,18 @@ function Raising({
 }) {
     const { t, locale } = useTranslation();
     const pct = Math.min(100, Math.max(0, Number(progress.funded_pct)));
+    const settling = SETTLING.includes(progress.lifecycle);
+    const notice = RAISING_NOTICE[progress.lifecycle];
 
     return (
         <>
             <p className="mt-4 flex items-center gap-2">
-                <span className="rounded-full bg-rz-accent-soft px-2.5 py-1 text-[11px] font-bold text-rz-accent-app-text">
+                <span
+                    className={cn(
+                        'rounded-full px-2.5 py-1 text-[11px] font-bold',
+                        RAISING_TONE[progress.lifecycle],
+                    )}
+                >
                     {t(`business.campaign.lifecycle.${progress.lifecycle}`)}
                 </span>
             </p>
@@ -152,7 +182,7 @@ function Raising({
                     value={formatRwfShort(progress.committed)}
                 />
                 <Tile
-                    label={t('business.note.tile.funded')}
+                    label={t('business.campaign.tile.committed')}
                     value={t('business.note.pct', { pct: progress.funded_pct })}
                     green
                 />
@@ -160,42 +190,52 @@ function Raising({
                     label={t('business.note.tile.investors')}
                     value={formatCount(progress.investors)}
                 />
-                <div
-                    role="timer"
-                    aria-label={t('business.note.tile.closes_in')}
-                    className="rounded-2xl border border-rz-border bg-rz-surface p-3.5"
-                >
-                    <p className="text-[11px] font-semibold text-rz-secondary uppercase">
-                        {t('business.note.tile.closes_in')}
-                    </p>
-                    <p className="mt-[3px] text-lg font-semibold text-rz-ink tabular-nums">
-                        <Countdown
-                            expiresAt={progress.clock.expires_at}
-                            serverTime={serverTime}
-                        />
-                    </p>
-                </div>
+                {settling ? (
+                    <Tile
+                        label={t('business.campaign.tile.deadline')}
+                        value={formatDate(progress.clock.expires_at, locale)}
+                    />
+                ) : (
+                    <div
+                        role="timer"
+                        aria-label={t('business.note.tile.closes_in')}
+                        className="rounded-2xl border border-rz-border bg-rz-surface p-3.5"
+                    >
+                        <p className="text-[11px] font-semibold text-rz-secondary uppercase">
+                            {t('business.note.tile.closes_in')}
+                        </p>
+                        <p className="mt-[3px] text-lg font-semibold text-rz-ink tabular-nums">
+                            <Countdown
+                                expiresAt={progress.clock.expires_at}
+                                serverTime={serverTime}
+                            />
+                        </p>
+                    </div>
+                )}
             </div>
             <div className="mt-4 rounded-2xl border border-rz-border bg-rz-surface p-4">
                 <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold tracking-[.04em] text-rz-slate uppercase">
-                        {t('business.note.tracker.funding')}
+                        {t('business.campaign.tracker.title')}
                     </span>
                     <span className="text-[11px] font-semibold text-rz-accent-app-text">
-                        {t('business.note.tracker.funded_pct', {
+                        {t('business.campaign.tracker.committed_pct', {
                             pct: progress.funded_pct,
                         })}
                     </span>
                 </div>
                 <div
                     role="progressbar"
-                    aria-label={t('business.note.tracker.funding')}
+                    aria-label={t('business.campaign.tracker.title')}
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-valuenow={pct}
-                    aria-valuetext={t('business.note.tracker.funded_pct', {
-                        pct: progress.funded_pct,
-                    })}
+                    aria-valuetext={t(
+                        'business.campaign.tracker.committed_pct',
+                        {
+                            pct: progress.funded_pct,
+                        },
+                    )}
                     className="mt-[11px] h-[9px] overflow-hidden rounded-[5px] bg-rz-page"
                 >
                     <div
@@ -213,32 +253,44 @@ function Raising({
                         value={formatRwf(progress.reserved)}
                     />
                     <Row
-                        label={t('business.note.tracker.left_to_raise')}
+                        label={t('business.campaign.not_yet_committed')}
                         value={formatRwf(progress.remaining)}
                     />
                 </dl>
-                <p className="mt-2 text-[11px] leading-normal text-rz-secondary">
-                    {t('business.campaign.reserved_note')}
-                </p>
+                {progress.units.reserved !== '0' && (
+                    <p className="mt-2 text-[11px] leading-normal text-rz-secondary">
+                        {t('business.campaign.reserved_note')}
+                    </p>
+                )}
                 <p className="mt-2 text-[11px] leading-normal text-rz-secondary">
                     {t('business.campaign.units', {
                         committed: formatUnits(progress.units.committed),
                         reserved: formatUnits(progress.units.reserved),
                         available: formatUnits(progress.units.available),
+                        unavailable: formatUnits(progress.units.unavailable),
                         total: formatUnits(progress.units.total),
                     })}
                 </p>
+                {progress.units.unavailable !== '0' && (
+                    <p className="mt-1 text-[11px] leading-normal text-rz-secondary">
+                        {t('business.campaign.unavailable_note')}
+                    </p>
+                )}
                 <p className="mt-1 text-[11px] leading-normal text-rz-secondary">
-                    {t('business.campaign.closes', {
-                        date: formatDateTime(progress.clock.expires_at, locale),
-                    })}
+                    {t(
+                        progress.lifecycle === 'closing_pending_settlement'
+                            ? 'business.campaign.deadline_passed'
+                            : 'business.campaign.closes',
+                        {
+                            date: formatDateTime(
+                                progress.clock.expires_at,
+                                locale,
+                            ),
+                        },
+                    )}
                 </p>
             </div>
-            {progress.lifecycle === 'fully_reserved' && (
-                <Notice tone="blue">
-                    {t('business.campaign.fully_reserved')}
-                </Notice>
-            )}
+            {notice !== null && <Notice tone="blue">{t(notice)}</Notice>}
         </>
     );
 }
@@ -596,22 +648,40 @@ function Repaid({ progress }: { progress: Phase<'repaid'> }) {
     );
 }
 
+/** Progress the server sent incompletely or inconsistently: no guessed figures, no countdown. */
+function Unreadable() {
+    const { t } = useTranslation();
+
+    return (
+        <Notice tone="amber">
+            {t('business.campaign.progress_unavailable')}
+        </Notice>
+    );
+}
+
 /**
  * A campaign's aggregate funding progress (C3 v2 §2f). Every figure is the server's and the client
  * never subtracts; no Investor is named, typed or given an amount (H16). Closing is coarse (H15):
  * a payment in flight reads "not yet confirmed" — never paid or failed — until the server moves it
  * on, and it carries no provider reference. Once issued, v2 adds the repayment phases (C4 v1 §4a):
  * how much is repaid and left, the next instalment and any arrears, all as the server states them.
+ * A raise whose figures are missing, unknown or disagree with the campaign's lifecycle fails closed.
  */
 export function CampaignProgress({
     progress,
+    lifecycle,
     serverTime,
     poll,
 }: {
     progress: Progress;
+    lifecycle: BusinessCampaignLifecycle;
     serverTime: string;
     poll: { exhausted: boolean; refresh: () => void };
 }) {
+    if (!isReadableProgress(progress, lifecycle)) {
+        return <Unreadable />;
+    }
+
     switch (progress.phase) {
         case 'raising':
             return <Raising progress={progress} serverTime={serverTime} />;

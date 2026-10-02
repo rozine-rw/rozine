@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "fff8463727351abfcdadd869df0f8cea160cd2bf0fa3adfc4c690e7d0e7a819f",
-    "coverageSetSha256": "8bc39e3606a428f122e955c30507988f4cc50f80173f774904fdb432f00a268c",
+    "sourceManifestSha256": "8c6540fd3329c4f8b6dd93e764a9247073823e78a5f1c129d0642ae490e89495",
+    "coverageSetSha256": "92d736fc4fa683987714ad58ac6189e8c9610bf194531c550f0f9ac879d336fb",
     "thresholds": {
         "critical": {
             "global": {
@@ -138,6 +138,7 @@
         "resources/js/components/business/apply/operation-outcome.ts",
         "resources/js/components/business/apply/outcome-banner.tsx",
         "resources/js/components/business/apply/pending-review.tsx",
+        "resources/js/components/business/apply/service-fee.tsx",
         "resources/js/components/business/apply/step-business.tsx",
         "resources/js/components/business/apply/step-heading.tsx",
         "resources/js/components/business/apply/step-raise.tsx",
@@ -351,6 +352,7 @@
         "resources/js/lib/rozine/dispute-note.ts",
         "resources/js/lib/rozine/format.ts",
         "resources/js/lib/rozine/operation.ts",
+        "resources/js/lib/rozine/raising.ts",
         "resources/js/lib/utils.ts",
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/auth/login.tsx",

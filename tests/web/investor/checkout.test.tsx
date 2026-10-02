@@ -148,6 +148,11 @@ describe('Checkout: the indicative step', () => {
         expect(
             within(sheet).getByRole('button', { name: 'Reserve · RWF 5,000' }),
         ).toBeEnabled();
+        expect(sheet).toHaveTextContent(
+            'Reserving holds the notes and the amount for 5 minutes while you confirm.',
+        );
+        expect(sheet).not.toHaveTextContent(/lapse/i);
+        expect(sheet).not.toHaveTextContent(/back (on sale|to this raise)/i);
         expect(
             within(sheet).getByRole('button', { name: 'One note fewer' }),
         ).toBeDisabled();
