@@ -132,7 +132,7 @@ it('propagates unrelated command refusals during expiry', function (): void {
     if (! $settlement instanceof CompositeExpectation) {
         throw new LogicException('Expected a settlement expectation.');
     }
-    $settlement->__call('once', [])->__call('andReturn', [null]);
+    $settlement->__call('once', [])->__call('andReturn', [[]]);
     $expectation = $primary->shouldReceive('lockReturnedCampaign');
     if (! $expectation instanceof CompositeExpectation) {
         throw new LogicException('Expected a method expectation.');

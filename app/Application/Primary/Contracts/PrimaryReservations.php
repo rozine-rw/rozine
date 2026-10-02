@@ -87,8 +87,14 @@ interface PrimaryReservations
      * history. Fully committed campaigns defer to funding settlement; retained funding refuses.
      * Business → campaign → roots/commitments → Party-sorted wallets. A durable system cause
      * requires the matching guarded expiry closure at outer commit, so this cannot commit alone.
+     * Returns command-local subjects only for newly posted refunds/releases, without recording
+     * feed rows. The closing caller must finish every financial and closure write before flushing
+     * these advisory notifications in deterministic Party/reservation order in that same transaction.
+     * The subjects provide no retained cash, closing, current-authority or ordinal-reuse evidence.
+     *
+     * @return list<array{party_id: string, reservation_id: string}>
      */
-    public function settleExpiredCampaign(string $campaignId, string $closureId): void;
+    public function settleExpiredCampaign(string $campaignId, string $closureId): array;
 
     /**
      * Requires the caller transaction. The caller authorizes and retains its actor journal

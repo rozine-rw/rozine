@@ -9,12 +9,14 @@ use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryFunding;
 use App\Application\Primary\Contracts\PrimaryReservations;
+use App\Application\Primary\PrimaryCampaignReturns;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Wallet\WalletViolation;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessMandate;
 use App\Models\BusinessProfile;
+use App\Models\CommandOperation;
 use App\Models\LedgerEntry;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
@@ -24,6 +26,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Mockery\CompositeExpectation;
 use Tests\Support\AuditSealingFixture;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
@@ -103,6 +106,82 @@ it('returns partially funded purchases and unswept holds once with a durable sys
     expect($this->store->expireDue(1))->toBe(0)
         ->and(LedgerEntry::query()->orderBy('id')->get()->toJson())->toBe($cash)
         ->and(DB::table('primary_campaign_expiry_settlements')->count())->toBe(1);
+});
+
+it('reports only newly written command-local expiry subjects without recording feed rows', function (array $states): void {
+    $expected = [];
+    foreach ($states as $state) {
+        $root = ($this->purchase)(in_array($state, ['released', 'expired'], true) ? 'held' : $state);
+        if ($state === 'released') {
+            $actor = CommandOperation::query()->whereKey($root->origin_operation_id)->sole()->actor_user_id;
+            app(PrimaryCheckout::class)->release($actor, 1, $this->campaign->id, $root->id, 1, (string) Str::uuid());
+        } elseif ($state === 'expired') {
+            $this->travelTo($root->expires_at);
+            app(PrimaryReservations::class)->expire($this->campaign->id, $root->id);
+        }
+        if (in_array($state, ['confirmed', 'held'], true)) {
+            $expected[$root->id] = ['party_id' => $root->party_id, 'reservation_id' => $root->id];
+        }
+    }
+    ksort($expected);
+    $this->travelTo($this->campaign->expires_at);
+    $feedCount = DB::table('change_feed')->count();
+    $real = app(PrimaryReservations::class);
+    $subjects = null;
+    $primary = Mockery::mock(PrimaryReservations::class);
+    $settlement = $primary->shouldReceive('settleExpiredCampaign');
+    $returns = $primary->shouldReceive('lockReturnedCampaign');
+    if (! $settlement instanceof CompositeExpectation || ! $returns instanceof CompositeExpectation) {
+        throw new LogicException('Expected settlement capture expectations.');
+    }
+    $settlement->__call('once', [])->__call('andReturnUsing', [function (string $campaign, string $closure) use ($real, &$subjects, $feedCount): array {
+        $subjects = $real->settleExpiredCampaign($campaign, $closure);
+        expect(DB::table('change_feed')->count())->toBe($feedCount);
+
+        return $subjects;
+    }]);
+    $returns->__call('once', [])->__call('andReturnUsing', [fn (string $campaign): PrimaryCampaignReturns => $real->lockReturnedCampaign($campaign)]);
+    app()->instance(PrimaryReservations::class, $primary);
+    $store = app(BusinessCampaignStore::class);
+    expect($store->expireDue(1))->toBe(1)->and($subjects)->toBe(array_values($expected));
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    $cash = LedgerEntry::query()->orderBy('id')->get()->toJson();
+    expect($store->expireDue(1))->toBe(0)
+        ->and(DB::table('change_feed')->count())->toBe($feedCount + 1)
+        ->and(LedgerEntry::query()->orderBy('id')->get()->toJson())->toBe($cash);
+})->with([
+    'empty campaign' => [[]],
+    'previous returns only' => [['refunded', 'released', 'expired']],
+    'new and previous returns' => [['confirmed', 'held', 'refunded', 'released', 'expired']],
+]);
+
+it('rolls back observed expiry subjects with every cash return when the closing caller fails', function (): void {
+    ($this->purchase)();
+    ($this->purchase)('held');
+    $this->travelTo($this->campaign->expires_at);
+    $cash = LedgerEntry::query()->orderBy('id')->get()->toJson();
+    $versions = PrimaryReservationVersion::query()->orderBy('id')->get()->toJson();
+    $feed = DB::table('change_feed')->orderBy('id')->get()->toJson();
+    $real = app(PrimaryReservations::class);
+    $subjects = null;
+    $primary = Mockery::mock(PrimaryReservations::class);
+    $settlement = $primary->shouldReceive('settleExpiredCampaign');
+    $returns = $primary->shouldReceive('lockReturnedCampaign');
+    if (! $settlement instanceof CompositeExpectation || ! $returns instanceof CompositeExpectation) {
+        throw new LogicException('Expected settlement capture expectations.');
+    }
+    $settlement->__call('once', [])->__call('andReturnUsing', [function (string $campaign, string $closure) use ($real, &$subjects): array {
+        return $subjects = $real->settleExpiredCampaign($campaign, $closure);
+    }]);
+    $returns->__call('once', [])->__call('andThrow', [new RuntimeException('CLOSING_CALLER_FAILURE')]);
+    app()->instance(PrimaryReservations::class, $primary);
+    expect(fn () => app(BusinessCampaignStore::class)->expireDue(1))->toThrow(RuntimeException::class, 'CLOSING_CALLER_FAILURE')
+        ->and($subjects)->toHaveCount(2)
+        ->and(LedgerEntry::query()->orderBy('id')->get()->toJson())->toBe($cash)
+        ->and(PrimaryReservationVersion::query()->orderBy('id')->get()->toJson())->toBe($versions)
+        ->and(DB::table('change_feed')->orderBy('id')->get()->toJson())->toBe($feed)
+        ->and(DB::table('primary_campaign_expiry_settlements')->count())->toBe(0)
+        ->and(BusinessCampaignClosure::query()->count())->toBe(0);
 });
 
 it('keeps complete committed cash for funding settlement after the deadline', function (bool $funded): void {
