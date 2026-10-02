@@ -81,14 +81,35 @@ it('reads only the caller\'s own wallet, business and queue changes', function (
         ->not->toContain($other['party']->id)->not->toContain($stranger['business']);
 });
 
+it('reads only the caller\'s own purchases, deriving its Party whether or not it asks for its wallet', function (): void {
+    $investor = InvestorWalletFixture::investor();
+    $other = InvestorWalletFixture::investor();
+    $member = businessMember();
+    $cursors = array_map(fn (User $user): string => app(ReadChanges::class)->cursor($user->id), [$investor['user'], $investor['user'], $member['user']]);
+
+    change(ChangeScope::party($investor['party']->id), 'purchase', 'myreservation');
+    change(ChangeScope::party($investor['party']->id), 'wallet', 'mywallet');
+    change(ChangeScope::party($other['party']->id), 'purchase', 'otherreservation');
+
+    $purchase = readChanges($investor['user'], 'purchase', $cursors[0]);
+    $both = readChanges($investor['user'], 'purchase,wallet', $cursors[1]);
+
+    expect($purchase['changes'])->toBe([['topic' => 'purchase', 'subject' => 'myreservation', 'revision' => 1]])
+        ->and($both['changes'])->toBe([['topic' => 'purchase', 'subject' => 'myreservation', 'revision' => 1], ['topic' => 'wallet', 'subject' => 'mywallet', 'revision' => 1]])
+        ->and(readChanges($member['user'], 'purchase', $cursors[2]))->toMatchArray(['changes' => [], 'reset' => false])
+        ->and(json_encode([$purchase, $both]))->not->toContain('otherreservation')->not->toContain($other['party']->id);
+});
+
 it('leaves out every topic the caller\'s current authority cannot read', function (): void {
     $investor = InvestorWalletFixture::investor();
     $member = businessMember();
     $analyst = staffUser(['analyst']);
     foreach ([[$investor['user'], 'campaign', 'changes.index'], [$member['user'], 'wallet', 'changes.index'],
-        [$analyst, 'staff_queue', 'staff.changes.index'], [$investor['user'], 'staff_queue', 'staff.changes.index']] as [$user, $topics, $route]) {
+        [$member['user'], 'purchase', 'changes.index'], [$analyst, 'staff_queue', 'staff.changes.index'],
+        [$investor['user'], 'staff_queue', 'staff.changes.index']] as [$user, $topics, $route]) {
         $cursor = app(ReadChanges::class)->cursor($user->id);
         change(ChangeScope::party($investor['party']->id), 'wallet', 'w'.Str::lower(Str::random(6)));
+        change(ChangeScope::party($investor['party']->id), 'purchase', 'r'.Str::lower(Str::random(6)));
         change(ChangeScope::business($member['business']), 'campaign', 'c'.Str::lower(Str::random(6)), 2);
         change(ChangeScope::staffQueue('applications'), 'staff_queue', 'applications');
 
@@ -183,17 +204,19 @@ it('keeps a cursor within its lifetime', function (): void {
     expect(readChanges($investor['user'], 'wallet', $cursor))->toMatchArray(['reset' => false, 'changes' => [['topic' => 'wallet', 'subject' => 'w1', 'revision' => 1]]]);
 });
 
-it('resets a reader whose identity context changed', function (): void {
+it('resets a reader whose identity context changed, and reads no Party topic once Investor is no longer active', function (string $topic): void {
     $investor = InvestorWalletFixture::investor();
     RoleMembership::factory()->for($investor['party'])->active()->create(['role' => 'business']);
     $cursor = app(ReadChanges::class)->cursor($investor['user']->id);
     app(SelectActiveRole::class)->handle($investor['user']->id, 'business', 1, (string) Str::uuid());
-    change(ChangeScope::party($investor['party']->id), 'wallet', 'w1');
-    $read = readChanges($investor['user']->refresh(), 'wallet', $cursor);
+    change(ChangeScope::party($investor['party']->id), $topic, 'w1');
+    $read = readChanges($investor['user']->refresh(), $topic, $cursor);
+    change(ChangeScope::party($investor['party']->id), $topic, 'w2');
 
     expect($read)->toMatchArray(['changes' => [], 'reset' => true])
-        ->and(ChangeCursor::parse($read['next_cursor'])?->context)->toBe(2);
-});
+        ->and(ChangeCursor::parse($read['next_cursor'])?->context)->toBe(2)
+        ->and(readChanges($investor['user'], $topic, $read['next_cursor']))->toMatchArray(['changes' => [], 'reset' => false]);
+})->with(['wallet', 'purchase']);
 
 it('resets a reader too far behind to catch up in one read', function (): void {
     $investor = InvestorWalletFixture::investor();
@@ -212,10 +235,12 @@ it('serves the same contract to an API token with the audience read ability', fu
 
     $this->getJson(route('api.v1.changes.index', ['topics' => 'wallet', 'after' => $cursor]))->assertOk()
         ->assertJsonPath('changes', [['topic' => 'wallet', 'subject' => 'w1', 'revision' => 1]])->assertJsonPath('reset', false);
+    $this->getJson(route('api.v1.changes.index', ['topics' => 'purchase', 'after' => $cursor]))->assertOk()->assertJsonPath('changes', []);
     $this->getJson(route('api.v1.changes.index', ['topics' => 'wallet,campaign']))->assertForbidden();
 
     Sanctum::actingAs($investor['user'], ['business:read']);
     $this->getJson(route('api.v1.changes.index', ['topics' => 'wallet']))->assertForbidden();
+    $this->getJson(route('api.v1.changes.index', ['topics' => 'purchase']))->assertForbidden();
 });
 
 it('validates topics per route, requires a session and is never cached', function (): void {
@@ -229,6 +254,7 @@ it('validates topics per route, requires a session and is never cached', functio
         $this->getJson(route('changes.index', $query))->assertUnprocessable();
     }
     $this->getJson(route('staff.changes.index', ['topics' => 'wallet']))->assertUnprocessable()->assertJsonValidationErrors('topics');
+    $this->getJson(route('staff.changes.index', ['topics' => 'purchase']))->assertUnprocessable()->assertJsonValidationErrors('topics');
 });
 
 it('limits each account\'s beacon reads', function (): void {

@@ -1703,6 +1703,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_30_171842_index_wallet_ledger_lines_by_entry.php |
 | 2026_09_30_184347_create_business_campaign_expiry_failures_table.php |
 | 2026_09_30_204213_create_primary_campaign_expiry_settlements_table.php |
+| 2026_10_02_090000_add_purchase_topic_to_change_feed.php |
 
 ## Routes
 

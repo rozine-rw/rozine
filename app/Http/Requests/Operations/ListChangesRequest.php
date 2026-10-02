@@ -14,7 +14,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class ListChangesRequest extends FormRequest
 {
     /** The read ability an API token needs for each topic. */
-    private const array ABILITIES = ['wallet' => 'investor:read', 'campaign' => 'business:read', 'staff_queue' => 'staff:applications:read'];
+    private const array ABILITIES = ['wallet' => 'investor:read', 'purchase' => 'investor:read', 'campaign' => 'business:read', 'staff_queue' => 'staff:applications:read'];
 
     public function authorize(): bool
     {
@@ -42,7 +42,7 @@ class ListChangesRequest extends FormRequest
     /** @return list<string> */
     private function allowedTopics(): array
     {
-        return $this->routeIs('staff.*') ? ['staff_queue'] : ['wallet', 'campaign'];
+        return $this->routeIs('staff.*') ? ['staff_queue'] : ['wallet', 'purchase', 'campaign'];
     }
 
     /** @return list<string> */

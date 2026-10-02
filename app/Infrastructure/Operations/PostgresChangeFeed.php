@@ -24,7 +24,7 @@ use LogicException;
 final class PostgresChangeFeed implements ChangeFeed
 {
     /** Which topics each audience can carry. */
-    private const array TOPICS = [ChangeScope::PARTY => ['wallet'], ChangeScope::BUSINESS => ['campaign'], ChangeScope::STAFF_QUEUE => ['staff_queue']];
+    private const array TOPICS = [ChangeScope::PARTY => ['wallet', 'purchase'], ChangeScope::BUSINESS => ['campaign'], ChangeScope::STAFF_QUEUE => ['staff_queue']];
 
     public function record(ChangeScope $scope, string $topic, string $subject, ?int $revision = null): void
     {
