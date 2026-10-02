@@ -17,6 +17,7 @@ use App\Models\Party;
 use App\Models\RoleBookmark;
 use App\Models\RoleMembership;
 use App\Models\StaffAccount;
+use App\Models\StaffPersonIdentity;
 use App\Models\User;
 use App\Models\VerifiedOrganizationIdentity;
 use App\Models\VerifiedPersonIdentity;
@@ -202,6 +203,55 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
 
             return $result;
         }, 3);
+    }
+
+    /** @return array<string, mixed> */
+    public function recordStaffPerson(int $actorId, int $staffUserId, ?string $identityReference, string $evidenceReference, string $reason, string $requestId): array
+    {
+        return DB::transaction(function () use ($actorId, $staffUserId, $identityReference, $evidenceReference, $reason, $requestId): array {
+            $users = User::query()->whereKey([$actorId, $staffUserId])->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+            $this->authorizeOperator($users->get($actorId));
+            if ($users->get($staffUserId) === null || ! StaffAccount::query()->whereKey($staffUserId)->exists()) {
+                throw new IdentityViolation('STAFF_ACCOUNT_NOT_FOUND', 404);
+            }
+            $this->evidenceRequired($evidenceReference);
+            if ($identityReference !== null && (mb_strlen($identityReference) > 255
+                || ! preg_match('/^[a-z0-9._-]+:[A-Za-z0-9._-]{1,128}$/D', $identityReference))) {
+                throw new IdentityViolation('IDENTITY_REFERENCE_INVALID', 422);
+            }
+
+            $digest = $identityReference === null ? null : hash('sha256', $identityReference);
+            $hash = $this->requestHash(['staff.person.record', $staffUserId, $digest, $evidenceReference, $reason], $reason, $requestId);
+            if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
+                return $replay;
+            }
+
+            $current = StaffPersonIdentity::query()->where('staff_user_id', $staffUserId)->orderByDesc('revision')->first();
+            if ($digest === null && $current?->status !== 'active') {
+                throw new IdentityViolation('STAFF_PERSON_NOT_RESOLVED', 409);
+            }
+            $revision = ($current->revision ?? 0) + 1;
+            $status = $digest === null ? 'revoked' : 'active';
+            (new StaffPersonIdentity)->forceFill(['staff_user_id' => $staffUserId, 'revision' => $revision, 'status' => $status,
+                'identity_digest' => $digest, 'evidence_reference' => $evidenceReference, 'recorded_by' => $actorId, 'created_at' => now()])->save();
+
+            $result = ['code' => $digest === null ? 'STAFF_PERSON_REVOKED' : 'STAFF_PERSON_RECORDED', 'user_id' => $staffUserId];
+            $this->record('user:'.$actorId, $actorId, 'user', (string) $staffUserId, 'staff.person.record', $reason, $requestId, $hash,
+                ['revision' => $current?->revision, 'status' => $current?->status],
+                ['revision' => $revision, 'status' => $status, 'evidence_reference' => $evidenceReference, 'identity_digest' => $digest], $result);
+
+            return $result;
+        }, 3);
+    }
+
+    public function staffPerson(int $staffUserId): ?array
+    {
+        $current = StaffPersonIdentity::query()->where('staff_user_id', $staffUserId)->orderByDesc('revision')->first();
+        if ($current === null || $current->identity_digest === null) {
+            return null;
+        }
+
+        return ['resolution_id' => $current->id, 'party_id' => VerifiedPersonIdentity::query()->find($current->identity_digest)?->party_id];
     }
 
     /** @return array<string, mixed> */

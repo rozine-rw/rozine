@@ -6,9 +6,11 @@ namespace App\Http\Controllers;
 
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\ChangeMembership;
+use App\Application\Identity\RecordStaffPerson;
 use App\Application\Identity\ResolveVerifiedPerson;
 use App\Application\Identity\SelectActiveRole;
 use App\Http\Requests\Identity\ChangeMembershipRequest;
+use App\Http\Requests\Identity\RecordStaffPersonRequest;
 use App\Http\Requests\Identity\ResolvePersonRequest;
 use App\Http\Requests\Identity\SelectActiveRoleRequest;
 use App\Http\Resources\IdentityContextResource;
@@ -23,6 +25,16 @@ class IdentityManagementController extends Controller
             (int) $request->user()?->getAuthIdentifier(), (int) $request->validated('user_id'),
             (string) $request->validated('identity_reference'), (string) $request->validated('evidence_reference'),
             (string) $request->validated('reason'), (string) $request->validated('request_id'),
+        ));
+    }
+
+    public function staffPerson(RecordStaffPersonRequest $request, RecordStaffPerson $action): IdentityMutationResource
+    {
+        $reference = $request->validated('identity_reference');
+
+        return new IdentityMutationResource($action->handle(
+            (int) $request->user()?->getAuthIdentifier(), (int) $request->validated('user_id'), is_string($reference) ? $reference : null,
+            (string) $request->validated('evidence_reference'), (string) $request->validated('reason'), (string) $request->validated('request_id'),
         ));
     }
 

@@ -143,6 +143,10 @@ const withheld = (
     return null;
 };
 
+/** Authorize and approve carry the actor's signed independence declaration (#96 5956161592). */
+const signs = (key: DisbursementCommandKey): boolean =>
+    key === 'authorize' || key === 'approve';
+
 /**
  * One disbursement (MVP-ADMIN-SCR-03, C3 proposal v2 §2e): precheck, the two distinct staff, what
  * an approval binds and its step-up, the recorded intent (not a payment), the worker's dispatch,
@@ -150,7 +154,8 @@ const withheld = (
  * recorded. Every command comes from `allowed_actions` only, carries a written reason and goes
  * through the shared operation command: an uncertain answer is looked up, never resent on its own.
  * The route names the disbursement, so no body carries its id (#96 answer 3): each body is
- * `{request_id, expected_revision, reason}`, and approve adds the step-up's `step_up_proof`.
+ * `{request_id, expected_revision, reason}`, approve adds the step-up's `step_up_proof`, and
+ * authorize and approve add `independence_declared` once the actor ticks the statement.
  */
 export function DisbursementDrawer({
     disbursement,
@@ -201,10 +206,13 @@ export function DisbursementDrawer({
             expected_revision: disbursement.revision,
             reason,
             ...(key === 'approve' ? { step_up_proof: approval.take() } : {}),
+            ...(signs(key) ? { independence_declared: true } : {}),
         });
     };
     const stepUpRoute = disbursement.step_up.route;
     const needsProof = stage?.key === 'approve' && approval.proof === null;
+    const [declared, setDeclared] = useState(false);
+    const needsDeclaration = stage !== null && signs(stage.key) && !declared;
 
     return (
         <Drawer
@@ -358,6 +366,26 @@ export function DisbursementDrawer({
                     />
                 )}
 
+                {stage !== null && signs(stage.key) && (
+                    <label className="mt-[18px] flex items-start gap-2.5 rounded-[11px] border border-rz-hairline bg-rz-surface p-[11px] text-[13px] leading-[1.5] text-rz-ink">
+                        <input
+                            type="checkbox"
+                            checked={declared}
+                            disabled={command.busy || command.unresolved}
+                            onChange={(event) =>
+                                setDeclared(event.target.checked)
+                            }
+                            className="mt-[3px]"
+                        />
+                        <span>
+                            <span className="block text-[11px] font-bold tracking-[.05em] text-[#7b8699] uppercase dark:text-rz-muted">
+                                {t('admin.disbursements.independence.title')}
+                            </span>
+                            {disbursement.independence.statement}
+                        </span>
+                    </label>
+                )}
+
                 {stage !== null && (
                     <CommandStage
                         key={stage.key}
@@ -375,10 +403,15 @@ export function DisbursementDrawer({
                         tone={stage.tone}
                         viewer={viewer}
                         busy={command.busy}
-                        locked={command.unresolved || needsProof}
+                        locked={
+                            command.unresolved || needsProof || needsDeclaration
+                        }
                         error={command.errors.reason}
                         onSubmit={(reason) => send(stage.key, reason)}
-                        onCancel={() => setStage(null)}
+                        onCancel={() => {
+                            setStage(null);
+                            setDeclared(false);
+                        }}
                     />
                 )}
             </div>

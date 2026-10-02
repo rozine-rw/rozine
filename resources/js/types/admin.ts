@@ -829,6 +829,11 @@ export type C3DisbursementDetail = C3DisbursementRow & {
         intent_digest: string;
     } | null;
     step_up: DisbursementStepUp;
+    /**
+     * The independence statement a maker or checker signs with authorize or approve, exactly as
+     * the server records it; without the signature the staff check stays unavailable.
+     */
+    independence: { version: string; statement: string };
     intent: {
         operation_id: string;
         recorded_at: string;

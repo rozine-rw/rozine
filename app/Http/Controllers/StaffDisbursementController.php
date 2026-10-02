@@ -41,7 +41,8 @@ class StaffDisbursementController extends Controller
 
         return $this->present($request, (string) $request->route('command'), $this->disbursements->command((int) $request->user()?->getAuthIdentifier(),
             (string) $request->route('disbursement'), (string) $request->route('command'), (int) $request->validated('expected_revision'),
-            (string) $request->validated('reason'), (string) $request->validated('request_id'), is_string($proof) ? $proof : null));
+            (string) $request->validated('reason'), (string) $request->validated('request_id'), is_string($proof) ? $proof : null,
+            $request->boolean('independence_declared')));
     }
 
     public function stepUp(ConfirmDisbursementStepUpRequest $request): JsonResponse

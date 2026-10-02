@@ -111,7 +111,7 @@ final class SyntheticDisbursementSources implements FundedCampaigns, PayoutDesti
             $destination['masked']);
     }
 
-    public function connection(int $staffUserId, string $businessId, array $partyIds): string
+    public function connection(int $staffUserId, string $disbursementId, string $operationId, string $businessId, array $partyIds): string
     {
         $this->guard->assertAllowed();
         if ($this->store()->get(self::PREFIX.'connections') === 'unavailable') {

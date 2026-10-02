@@ -18,11 +18,13 @@ interface DisbursementStore
     public function page(int $userId, ?string $disbursementId, ?string $before, int $limit): array;
 
     /**
-     * authorize, approve, reject, hold or release_hold through the operation journal.
+     * authorize, approve, reject, hold or release_hold through the operation journal. On authorize and
+     * approve, `$independenceDeclared` records the actor's signed independence declaration with the
+     * command (#96 5956161592); it is retained only if the command is recorded as accepted.
      *
      * @return array<string, mixed>
      */
-    public function command(int $userId, string $disbursementId, string $command, int $expectedRevision, string $reason, string $requestId, ?string $stepUpProof): array;
+    public function command(int $userId, string $disbursementId, string $command, int $expectedRevision, string $reason, string $requestId, ?string $stepUpProof, bool $independenceDeclared = false): array;
 
     /** @return array{proof: string, expires_at: string} */
     public function stepUp(int $userId, string $disbursementId, int $expectedRevision, string $intentDigest, string $code): array;

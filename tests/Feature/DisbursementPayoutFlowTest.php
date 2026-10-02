@@ -279,7 +279,7 @@ it('binds only unavailable adapters where synthetic disbursements are not allowe
     config(['isolation.live_money_enabled' => true]);
     expect(get_class(app(FundedCampaigns::class)))->toBe(UnavailableFundedCampaigns::class)
         ->and(app(PayoutDestinations::class)->verified('b', 'testing'))->toBeNull()
-        ->and(app(StaffConnections::class)->connection(1, 'b', []))->toBe('unavailable')
+        ->and(app(StaffConnections::class)->connection(1, 'd', 'o', 'b', []))->toBe('unavailable')
         ->and(app(PayoutProvider::class)->name())->toBe('unavailable')
         ->and(app(PayoutProvider::class)->idempotentSends())->toBeFalse()
         ->and(fn () => app(FundedCampaigns::class)->funded(null, 5))->toThrow(CommandRejection::class, 'FUNDING_SOURCE_UNAVAILABLE')

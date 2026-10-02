@@ -120,6 +120,10 @@
                 "purpose": "disbursement.approve",
                 "route": null
             },
+            "independence": {
+                "version": "staff-independence-v1",
+                "statement": "I confirm that I have no personal, family, financial or employment relationship with this Business, its signatories or beneficial owners, or any Investor in this campaign."
+            },
             "intent": null,
             "dispatch": null,
             "provider": null,

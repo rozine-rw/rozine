@@ -1092,6 +1092,7 @@ const rw: Catalog = {
     'admin.disbursements.empty_title': 'Kwishyura kose kwarangiye',
     'admin.disbursements.empty_body': 'Nta kwishyura gutegerejwe ubu.',
     'admin.disbursements.drawer_label': 'Kwishyura {reference}',
+    'admin.disbursements.independence.title': 'Itangazo ry’ubwigenge',
     'admin.disbursements.amount': 'Amafaranga',
     'admin.disbursements.destination': 'Aho yoherezwa',
     'admin.disbursements.due': 'Igihe',

@@ -182,7 +182,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::stepUp
-* @see app/Http/Controllers/StaffDisbursementController.php:47
+* @see app/Http/Controllers/StaffDisbursementController.php:48
 * @route '/api/v1/staff/disbursements/{disbursement}/step-up'
 */
 export const stepUp = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -197,7 +197,7 @@ stepUp.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::stepUp
-* @see app/Http/Controllers/StaffDisbursementController.php:47
+* @see app/Http/Controllers/StaffDisbursementController.php:48
 * @route '/api/v1/staff/disbursements/{disbursement}/step-up'
 */
 stepUp.url = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -224,7 +224,7 @@ stepUp.url = (args: { disbursement: string | number } | [disbursement: string | 
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::stepUp
-* @see app/Http/Controllers/StaffDisbursementController.php:47
+* @see app/Http/Controllers/StaffDisbursementController.php:48
 * @route '/api/v1/staff/disbursements/{disbursement}/step-up'
 */
 stepUp.post = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -234,7 +234,7 @@ stepUp.post = (args: { disbursement: string | number } | [disbursement: string |
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::stepUp
-* @see app/Http/Controllers/StaffDisbursementController.php:47
+* @see app/Http/Controllers/StaffDisbursementController.php:48
 * @route '/api/v1/staff/disbursements/{disbursement}/step-up'
 */
 const stepUpForm = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -244,7 +244,7 @@ const stepUpForm = (args: { disbursement: string | number } | [disbursement: str
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::stepUp
-* @see app/Http/Controllers/StaffDisbursementController.php:47
+* @see app/Http/Controllers/StaffDisbursementController.php:48
 * @route '/api/v1/staff/disbursements/{disbursement}/step-up'
 */
 stepUpForm.post = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

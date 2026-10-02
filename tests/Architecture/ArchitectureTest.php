@@ -223,7 +223,7 @@ it('has concrete targets for the identity persistence boundary', function (): vo
 })->group('arch');
 
 arch('identity records are only accessed by their adapter and model relationships')
-    ->expect(['App\Models\Party', 'App\Models\RoleMembership', 'App\Models\VerifiedPersonIdentity', 'App\Models\VerifiedOrganizationIdentity', 'App\Models\IdentityOperator', 'App\Models\IdentityAuditEvent', 'App\Models\StaffAccount', 'App\Models\RoleBookmark', 'App\Models\ConsentRelease'])
+    ->expect(['App\Models\Party', 'App\Models\RoleMembership', 'App\Models\VerifiedPersonIdentity', 'App\Models\VerifiedOrganizationIdentity', 'App\Models\IdentityOperator', 'App\Models\IdentityAuditEvent', 'App\Models\StaffAccount', 'App\Models\StaffPersonIdentity', 'App\Models\RoleBookmark', 'App\Models\ConsentRelease'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Identity', 'App\Models', 'Database\Factories']);
 
 it('has concrete targets for the command outcome boundary', function (): void {
@@ -424,7 +424,7 @@ it('has concrete targets for the disbursement boundary', function (): void {
 arch('disbursement records are only accessed by the disbursement adapters')
     ->expect(['App\Models\Disbursement', 'App\Models\DisbursementEvent', 'App\Models\DisbursementStepUpProof', 'App\Models\DisbursementStepUpMarker',
         'App\Models\DisbursementIntent', 'App\Models\DisbursementDispatch', 'App\Models\DisbursementProviderCall', 'App\Models\DisbursementProviderEvent',
-        'App\Models\DisbursementReconciliation', 'App\Models\DisbursementClosing'])
+        'App\Models\DisbursementReconciliation', 'App\Models\DisbursementClosing', 'App\Models\DisbursementIndependenceDeclaration'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Models', 'Database\Factories']);
 
 arch('proposed Holdings stay unwritten until the S3-C adapter owns them')

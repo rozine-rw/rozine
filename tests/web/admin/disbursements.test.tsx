@@ -113,6 +113,19 @@ afterEach(() => {
     vi.useRealTimers();
 });
 
+/** Ticks the actor's independence declaration that authorize and approve require. */
+const declareIndependence = async (
+    user: ReturnType<typeof renderWithUser>['user'],
+) => {
+    const statement = screen.getByRole<HTMLInputElement>('checkbox', {
+        name: /Independence declaration/,
+    });
+
+    if (!statement.checked) {
+        await user.click(statement);
+    }
+};
+
 describe('Disbursements queue', () => {
     it('lists each disbursement with its state and provider outcome, with no deadline', () => {
         render(<AdminDisbursements {...props(queueFixture)} />);
@@ -307,6 +320,18 @@ describe('Disbursement drawer', () => {
             within(stage).getByRole('button', { name: 'Authorize' }),
         ).toBeDisabled();
         await user.type(within(stage).getByRole('textbox'), 'Funded.');
+        expect(
+            within(stage).getByRole('button', { name: 'Authorize' }),
+        ).toBeDisabled();
+        const declaration = screen.getByRole('checkbox', {
+            name: /Independence declaration/,
+        });
+        expect(declaration).toHaveAccessibleName(
+            expect.stringContaining(
+                opened(props(readyFixture)).independence.statement,
+            ),
+        );
+        await user.click(declaration);
         await user.click(
             within(stage).getByRole('button', { name: 'Authorize' }),
         );
@@ -328,6 +353,7 @@ describe('Disbursement drawer', () => {
                     request_id: expect.any(String),
                     expected_revision: 3,
                     reason: 'Funded.',
+                    independence_declared: true,
                 },
             },
         ]);
@@ -669,6 +695,12 @@ describe('Disbursement drawer', () => {
             await user.type(screen.getByRole('textbox'), '   ');
             expect(submit).toBeDisabled();
             await user.type(screen.getByRole('textbox'), 'Checked.');
+
+            if (key === 'authorize') {
+                expect(submit).toBeDisabled();
+                await declareIndependence(user);
+            }
+
             await user.click(submit);
 
             expect(inertia.calls).toEqual([
@@ -681,6 +713,9 @@ describe('Disbursement drawer', () => {
                         request_id: expect.any(String),
                         expected_revision: revision,
                         reason: '   Checked.',
+                        ...(key === 'authorize'
+                            ? { independence_declared: true }
+                            : {}),
                     },
                 },
             ]);
@@ -728,6 +763,7 @@ describe('Disbursement drawer', () => {
             screen.getByRole('button', { name: 'Authorize release' }),
         );
         await user.type(screen.getByRole('textbox'), 'Funded.');
+        await declareIndependence(user);
         await user.click(screen.getByRole('button', { name: 'Authorize' }));
 
         await screen.findByText('Nothing was recorded');
@@ -775,6 +811,7 @@ describe('Disbursement commands', () => {
             screen.getByRole('button', { name: 'Authorize release' }),
         );
         await user.type(screen.getByRole('textbox'), 'Funded.');
+        await declareIndependence(user);
         await user.click(screen.getByRole('button', { name: 'Authorize' }));
 
         await screen.findByText('Nothing was recorded');
@@ -905,6 +942,7 @@ describe('Disbursement commands', () => {
                 screen.getByRole('button', { name: 'Authorize release' }),
             );
             await user.type(screen.getByRole('textbox'), 'Funded.');
+            await declareIndependence(user);
             await user.click(screen.getByRole('button', { name: 'Authorize' }));
 
             await screen.findByText(new RegExp(text.slice(0, 30)));
@@ -923,6 +961,7 @@ describe('Disbursement commands', () => {
             screen.getByRole('button', { name: 'Authorize release' }),
         );
         await user.type(screen.getByRole('textbox'), ' x');
+        await declareIndependence(user);
         await user.click(screen.getByRole('button', { name: 'Authorize' }));
 
         expect(await screen.findByText('Give a reason.')).toBeInTheDocument();
@@ -1050,6 +1089,8 @@ describe('Disbursement approval step-up', () => {
             await user.type(field, reason);
         }
 
+        await declareIndependence(user);
+
         await user.click(
             within(stage).getByRole('button', {
                 name: 'Approve and record intent',
@@ -1086,6 +1127,7 @@ describe('Disbursement approval step-up', () => {
         });
 
         await user.type(within(stage).getByRole('textbox'), 'Checked.');
+        await declareIndependence(user);
         expect(submit).toBeDisabled();
         expect(
             screen.getByRole('button', { name: 'Confirm code' }),
@@ -1121,6 +1163,7 @@ describe('Disbursement approval step-up', () => {
                 expected_revision: 4,
                 reason: 'Checked.',
                 step_up_proof: 'opaque-proof-1',
+                independence_declared: true,
             },
         });
         expect(inertia.calls).toHaveLength(2);
