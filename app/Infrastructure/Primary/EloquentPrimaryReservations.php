@@ -221,7 +221,7 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                 throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
             }
 
-            return new ReservationRefund($root->id, $previous->revision, $commitment->id, $returned);
+            return new ReservationRefund($root->id, $previous->revision, $commitment->id, $returned, $posting->replayed);
         });
     }
 

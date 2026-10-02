@@ -6,9 +6,11 @@ namespace App\Infrastructure\Primary;
 
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Identity\AuthorizeActiveRole;
+use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryReservations;
+use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\PrimaryReservationRecord;
@@ -19,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
 {
     public function __construct(private PrimaryCampaignSource $campaigns, private AuthorizeActiveRole $authority,
-        private OperationJournal $journal, private PrimaryReservations $reservations) {}
+        private OperationJournal $journal, private PrimaryReservations $reservations, private ChangeFeed $changes) {}
 
     public function reserve(int $userId, int $contextRevision, string $campaignId, string $units, string $requestId, Closure $admit): array
     {
@@ -31,6 +33,7 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
                     ['identity_context_revision' => $contextRevision, 'units' => $units],
                     function (): void {}, function (string $operationId) use ($campaignId, $partyId, $units, $admit): OperationResult {
                         $result = $this->reservations->reserve($campaignId, $partyId, $operationId, $units, $admit);
+                        $this->changed($campaignId, $result->id, $partyId);
 
                         return new OperationResult('RESERVATION_HELD', ['reservation_id' => $result->id, 'entry_id' => $result->hold->entryId,
                             'origin_operation_id' => $result->originOperationId, 'amount' => $result->hold->amount], 1);
@@ -63,6 +66,7 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
                         'disclosure_version' => $disclosureVersion, 'disclosure_sha256' => $disclosureSha256],
                     function (): void {}, function (string $operationId) use ($root, $partyId, $expectedRevision, $disclosureVersion, $disclosureSha256, $admit): OperationResult {
                         $result = $this->reservations->confirm($root->business_campaign_id, $root->id, $partyId, $operationId, $expectedRevision, $disclosureVersion, $disclosureSha256, $admit);
+                        $this->changed($root->business_campaign_id, $root->id, $partyId, progress: $result->commitmentId !== null);
 
                         return new OperationResult($result->commitmentId === null ? 'RESERVATION_REQUOTED' : 'RESERVATION_CONFIRMED',
                             ['reservation_id' => $result->id, 'commitment_id' => $result->commitmentId, 'entry_id' => $result->posting?->entryId,
@@ -100,6 +104,9 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
                     ['identity_context_revision' => $contextRevision, 'campaign_id' => $root->business_campaign_id, 'expected_revision' => $expectedRevision],
                     function (): void {}, function (string $operationId) use ($root, $partyId, $expectedRevision): OperationResult {
                         $released = $this->reservations->release($root->business_campaign_id, $root->id, $partyId, $operationId, $expectedRevision);
+                        if (! $released->posting->replayed) {
+                            $this->changed($root->business_campaign_id, $root->id, $partyId);
+                        }
 
                         return new OperationResult('RESERVATION_RELEASED', ['reservation_id' => $released->id, 'entry_id' => $released->posting->entryId,
                             'origin_operation_id' => $root->origin_operation_id, 'amount' => $released->posting->amount], $released->revision);
@@ -135,6 +142,9 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
                     ['identity_context_revision' => $contextRevision, 'campaign_id' => $root->business_campaign_id, 'expected_revision' => $expectedRevision],
                     function (): void {}, function () use ($root, $partyId, $expectedRevision): OperationResult {
                         $refund = $this->reservations->refund($root->business_campaign_id, $root->id, $partyId, $expectedRevision);
+                        if (! $refund->replayed) {
+                            $this->changed($root->business_campaign_id, $root->id, $partyId);
+                        }
 
                         return new OperationResult('COMMITMENT_REFUNDED', ['reservation_id' => $refund->id, 'commitment_id' => $refund->commitmentId,
                             'entry_id' => $refund->cash->returnEntryId, 'origin_operation_id' => $root->origin_operation_id,
@@ -167,7 +177,20 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
     private function expireRejected(PrimaryReservationRecord $root, array $result): void
     {
         if ($result['status'] === 'rejected' && $result['code'] === 'RESERVATION_EXPIRED') {
-            $this->reservations->expire($root->business_campaign_id, $root->id, $result['operation_id']);
+            $expired = $this->reservations->expire($root->business_campaign_id, $root->id, $result['operation_id']);
+            if ($expired !== null) {
+                $this->changed($root->business_campaign_id, $root->id, $root->party_id);
+            }
+        }
+    }
+
+    /** The successful financial operation already retains these Business/campaign gates. */
+    private function changed(string $campaignId, string $reservationId, string $partyId, bool $progress = true): void
+    {
+        $campaign = $progress ? $this->campaigns->lockRetained($campaignId) : null;
+        $this->changes->record(ChangeScope::party($partyId), 'purchase', $reservationId);
+        if ($campaign !== null) {
+            $this->changes->record(ChangeScope::business($campaign['business_id']), 'campaign', $campaignId);
         }
     }
 
