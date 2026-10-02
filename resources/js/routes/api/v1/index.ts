@@ -5,6 +5,7 @@ import staffAccess from './staff-access'
 import staff from './staff'
 import auditor from './auditor'
 import investor from './investor'
+import changes from './changes'
 
 const v1 = {
     audit: Object.assign(audit, audit),
@@ -14,6 +15,7 @@ const v1 = {
     staff: Object.assign(staff, staff),
     auditor: Object.assign(auditor, auditor),
     investor: Object.assign(investor, investor),
+    changes: Object.assign(changes, changes),
 }
 
 export default v1

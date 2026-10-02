@@ -14,11 +14,13 @@ use App\Application\Business\WithBusinessAuthority;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\CampaignReservationSummary;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Domain\Identity\IdentityViolation;
+use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Domain\Wallet\WalletViolation;
@@ -45,7 +47,8 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
 
     public function __construct(private AcceptedApplicationStore $accepted, private BusinessAuthorityStore $businesses,
         private WithBusinessAuthority $authority, private AuthorizeStaffPermission $staff, private IdentityRepository $identities,
-        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications, private PrimaryReservations $primary, private CampaignReservationSummary $reservations, private CampaignFundingEvidence $fundings) {}
+        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications, private PrimaryReservations $primary, private CampaignReservationSummary $reservations, private CampaignFundingEvidence $fundings,
+        private ChangeFeed $changes) {}
 
     /** @return array<string, mixed> */
     public function release(int $userId, string $applicationId, int $expectedRevision, string $reason, string $requestId): array
@@ -83,6 +86,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                             $release->forceFill(['business_id' => $application->business_id, 'business_application_id' => $application->id,
                                 'exposure_reservation_id' => $input['reservation_id'], 'actor_user_id' => $userId,
                                 'payload' => $payload, 'sha256' => $this->hash($payload)])->save();
+                            $this->changes->record(ChangeScope::staffQueue('applications'), 'staff_queue', 'applications');
 
                             return new OperationResult('APPLICATION_RELEASED', ['application_id' => $application->id, 'business_id' => $application->business_id,
                                 'receipt' => $this->receipt($release->id, $payload, 'APPLICATION_RELEASED')], 1);
@@ -460,6 +464,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         $closure->forceFill(['business_campaign_id' => $campaign->id, 'business_id' => $campaign->business_id,
             'exposure_reservation_id' => $campaign->exposure_reservation_id, 'principal' => $campaign->principal,
             'phase' => $phase, 'actor_user_id' => $userId, 'closed_at' => $closedAt, 'payload' => $payload, 'sha256' => $this->hash($payload)])->save();
+        $this->changes->record(ChangeScope::business($campaign->business_id), 'campaign', $campaign->id, 2);
 
         if ($bindings !== []) {
             DB::table('primary_campaign_closure_returns')->insert(array_map(fn (array $binding): array => [

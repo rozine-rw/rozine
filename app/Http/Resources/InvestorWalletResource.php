@@ -33,7 +33,8 @@ class InvestorWalletResource extends JsonResource
             'receipt' => self::receipt($request, $context, $data['receipt']), 'earnings' => null, 'exports' => null,
             'links' => ['deals' => null, 'portfolio' => null, 'profile' => null, 'wallet' => $wallet(), 'notifications' => null,
                 'launcher' => self::link($request, $request->routeIs('api.*') ? 'identity.show' : 'dashboard'), 'close' => $wallet(),
-                'deposit' => $wallet(['kind' => 'deposit']), 'link_account' => null, 'operation' => self::lookup($request, $context)],
+                'deposit' => $wallet(['kind' => 'deposit']), 'link_account' => null, 'operation' => self::lookup($request, $context),
+                'changes' => isset($data['changes_cursor']) ? self::link($request, 'changes.index', ['topics' => 'wallet', 'after' => (string) $data['changes_cursor']]) : null],
             'actions' => ['deposit' => ['url' => route(self::prefix($request).'investor.wallet.deposit', [], false), 'method' => 'post']]];
     }
 

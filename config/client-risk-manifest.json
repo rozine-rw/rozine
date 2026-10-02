@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "4b39a75372abe42e4b1fd8c19ea1e8e9139ccaab5148bad9a2e94ce7b7d717fa",
-    "coverageSetSha256": "024d8fa39d46c5573585c0ec5e76052db3bd64465c46c647c6decc21a5132efd",
+    "sourceManifestSha256": "8c6540fd3329c4f8b6dd93e764a9247073823e78a5f1c129d0642ae490e89495",
+    "coverageSetSha256": "92d736fc4fa683987714ad58ac6189e8c9610bf194531c550f0f9ac879d336fb",
     "thresholds": {
         "critical": {
             "global": {
@@ -313,6 +313,7 @@
         "resources/js/hooks/use-appearance.tsx",
         "resources/js/hooks/use-bounded-poll.ts",
         "resources/js/hooks/use-c3-command.ts",
+        "resources/js/hooks/use-change-beacon.ts",
         "resources/js/hooks/use-clipboard.ts",
         "resources/js/hooks/use-current-url.ts",
         "resources/js/hooks/use-flash-toast.ts",

@@ -41,6 +41,7 @@ class StaffApplicationsResource extends JsonResource
                 return [...$entry, 'link' => $link([...$position, 'application' => $entry['id']]), 'approve_link' => null];
             }, $page['entries']), 'review' => $review, 'stage' => null,
             'pagination' => ['next' => $page['next_cursor'] === null ? null : $link([...$filters, 'before' => $page['next_cursor']])],
-            'links' => ['operation' => StaffApplicationReleaseResource::lookup($request)]];
+            'links' => ['operation' => StaffApplicationReleaseResource::lookup($request), 'changes' => $request->routeIs('api.*') ? null
+                : ['url' => route('staff.changes.index', ['topics' => 'staff_queue', 'after' => (string) $page['changes_cursor']], false), 'method' => 'get']]];
     }
 }

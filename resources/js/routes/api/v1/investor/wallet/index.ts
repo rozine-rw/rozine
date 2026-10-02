@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 import operations from './operations'
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:32
+* @see app/Http/Controllers/InvestorWalletController.php:35
 * @route '/api/v1/investor/wallet/deposits'
 */
 export const deposit = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -17,7 +17,7 @@ deposit.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:32
+* @see app/Http/Controllers/InvestorWalletController.php:35
 * @route '/api/v1/investor/wallet/deposits'
 */
 deposit.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ deposit.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:32
+* @see app/Http/Controllers/InvestorWalletController.php:35
 * @route '/api/v1/investor/wallet/deposits'
 */
 deposit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -36,7 +36,7 @@ deposit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:32
+* @see app/Http/Controllers/InvestorWalletController.php:35
 * @route '/api/v1/investor/wallet/deposits'
 */
 const depositForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -46,7 +46,7 @@ const depositForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:32
+* @see app/Http/Controllers/InvestorWalletController.php:35
 * @route '/api/v1/investor/wallet/deposits'
 */
 depositForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

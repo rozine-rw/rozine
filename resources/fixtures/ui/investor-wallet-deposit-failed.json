@@ -294,7 +294,8 @@
             "operation": {
                 "url": "/preview/investor-wallet-operation-{request_id}",
                 "method": "get"
-            }
+            },
+            "changes": null
         },
         "actions": {
             "deposit": {

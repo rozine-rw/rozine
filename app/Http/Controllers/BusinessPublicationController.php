@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Business\ManageBusinessCampaigns;
 use App\Application\Identity\AuthorizeActiveRole;
+use App\Application\Operations\ReadChanges;
 use App\Http\Requests\Business\CancelCampaignRequest;
 use App\Http\Requests\Business\PublishApplicationRequest;
 use App\Http\Requests\Business\ShowApplicationRequest;
@@ -37,10 +38,12 @@ class BusinessPublicationController extends Controller
         return $this->present($request, $result);
     }
 
-    public function campaign(ShowApplicationRequest $request): Response|BusinessCampaignResource
+    /** The beacon cursor is taken before the facts, so every change they could miss is still ahead of it. */
+    public function campaign(ShowApplicationRequest $request, ReadChanges $changes): Response|BusinessCampaignResource
     {
-        $resource = new BusinessCampaignResource($this->campaigns->campaign((int) $request->user()?->getAuthIdentifier(), $this->context($request),
-            (string) $request->route('business'), (string) $request->route('campaign')));
+        $cursor = $changes->cursor((int) $request->user()?->getAuthIdentifier());
+        $resource = new BusinessCampaignResource([...$this->campaigns->campaign((int) $request->user()?->getAuthIdentifier(), $this->context($request),
+            (string) $request->route('business'), (string) $request->route('campaign')), 'changes_cursor' => $cursor]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('business/campaign', $resource->resolve($request));
     }

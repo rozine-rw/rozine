@@ -258,3 +258,41 @@ export type AllocationKind =
     | 'investor_late_fee'
     | 'psp_fee'
     | 'unapplied';
+
+/* ------------------------------------------------------------------------------------------ */
+/* Checkpoint 4: the change beacon (S4-E, change-feed-v1)                                      */
+/* ------------------------------------------------------------------------------------------ */
+
+/** The topics the beacon reports. Each belongs to one audience: a Party, a Business or staff. */
+export type ChangeTopicName = 'wallet' | 'campaign' | 'staff_queue';
+
+/**
+ * One change: which subject of a topic moved, and to which revision. It never says what the
+ * subject now is, and carries no amount or name; the page reloads its facts to learn that.
+ */
+export type ChangeTopic = {
+    topic: ChangeTopicName;
+    subject: string;
+    /** Monotonic per subject; a revision not newer than one already seen is ignored. */
+    revision: number;
+};
+
+/**
+ * `GET changes?after=&topics=` (`changes.index`, `staff.changes.index`, `api.v1.changes.index`),
+ * authorized at every read: only the caller's current audiences appear.
+ */
+export type ChangeFeed = {
+    contract_version: 'change-feed-v1';
+    /** The latest revision per subject since the cursor. */
+    changes: ChangeTopic[];
+    /** Opaque; the next read passes it as `after`. */
+    next_cursor: string;
+    /**
+     * The cursor was unknown, expired, issued under another identity context, or too far
+     * behind: the page reloads in full rather than trusting any partial view.
+     */
+    reset: boolean;
+    server_time: string;
+    /** Server pacing for the next read; the client clamps it to [5 000, 60 000]. */
+    poll_after_ms: number;
+};

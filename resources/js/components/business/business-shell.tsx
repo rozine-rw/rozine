@@ -1,6 +1,8 @@
 import { Head } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { AppFrame } from '@/components/rozine/app-frame';
+import { useChangeBeacon } from '@/hooks/use-change-beacon';
+import type { ChangeBeacon } from '@/hooks/use-change-beacon';
 import { useTranslation } from '@/hooks/use-translation';
 import type { BusinessShellLinks } from '@/types/business';
 
@@ -52,6 +54,8 @@ type BusinessShellProps = {
     tab: BusinessTab;
     links: BusinessShellLinks;
     showTabBar?: boolean;
+    /** The live page's change beacon; a preview passes none, so nothing polls. */
+    beacon?: ChangeBeacon;
     children: ReactNode;
 };
 
@@ -65,9 +69,11 @@ export function BusinessShell({
     tab,
     links,
     showTabBar,
+    beacon,
     children,
 }: BusinessShellProps) {
     const { t } = useTranslation();
+    useChangeBeacon(beacon);
     const nav = (['home', 'reports', 'profile'] as const).flatMap((key) => {
         const href = links[key];
 

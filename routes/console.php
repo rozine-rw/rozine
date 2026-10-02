@@ -21,3 +21,5 @@ Schedule::command('campaigns:expire')->everyMinute()->withoutOverlapping(5);
 Schedule::command('primary:expire-reservations')->everyMinute()->withoutOverlapping(5);
 
 Schedule::command('disbursements:reconcile')->everyMinute()->withoutOverlapping(5);
+
+Schedule::command('changes:prune')->daily()->withoutOverlapping(60);

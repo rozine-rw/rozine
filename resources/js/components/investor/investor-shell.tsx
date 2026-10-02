@@ -1,6 +1,8 @@
 import { Head } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { AppFrame } from '@/components/rozine/app-frame';
+import { useChangeBeacon } from '@/hooks/use-change-beacon';
+import type { ChangeBeacon } from '@/hooks/use-change-beacon';
 import { useTranslation } from '@/hooks/use-translation';
 import type { C3InvestorShellLinks } from '@/types/investor';
 
@@ -41,6 +43,8 @@ type InvestorShellProps = {
     /** Phase 1B links, or a C3 page's narrowed links: a null destination is hidden, never faked. */
     links: C3InvestorShellLinks;
     showTabBar?: boolean;
+    /** The live page's change beacon; a preview passes none, so nothing polls. */
+    beacon?: ChangeBeacon;
     children: ReactNode;
 };
 
@@ -55,9 +59,11 @@ export function InvestorShell({
     tab,
     links,
     showTabBar,
+    beacon,
     children,
 }: InvestorShellProps) {
     const { t } = useTranslation();
+    useChangeBeacon(beacon);
     const nav = (['deals', 'portfolio', 'profile'] as const).flatMap((key) => {
         const href = links[key];
 

@@ -191,6 +191,15 @@ function QueueRow({
  * Approve never commits from the row — it opens the review at its reasoned approval stage. An
  * approved application's review carries the minimal staff release (C3).
  */
+/** What a queue change reloads: the queue and its counts, never an open review's draft. */
+const BEACON_RELOADS = [
+    'server_time',
+    'badges',
+    'tabs',
+    'applications',
+    'pagination',
+];
+
 export default function AdminApplications(props: C3AdminApplicationsProps) {
     const { t } = useTranslation();
     const next = props.pagination?.next ?? null;
@@ -200,6 +209,10 @@ export default function AdminApplications(props: C3AdminApplicationsProps) {
         <AdminFrame
             section="applications"
             {...props}
+            beacon={{
+                link: props.links.changes,
+                reloads: { staff_queue: { only: BEACON_RELOADS } },
+            }}
             searchQuery={
                 props.pagination === undefined ? undefined : SEARCH_QUERY
             }
