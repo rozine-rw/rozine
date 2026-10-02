@@ -203,7 +203,16 @@ arch('infrastructure concretions are reached through their container binding')
     // Naming an adapter anywhere else is how a provider implementation leaks
     // past the port that is supposed to hide it.
     ->expect('App\Infrastructure')
-    ->toOnlyBeUsedIn('App\Providers');
+    ->toOnlyBeUsedIn('App\Providers')
+    ->ignoring('App\Infrastructure\Business\RetainedFundedCampaignFacts');
+
+arch('the retained funded projection is an internal collaborator of the named funding adapter')
+    ->expect('App\Infrastructure\Business\RetainedFundedCampaignFacts')
+    ->toOnlyBeUsedIn(['App\Providers', 'App\Infrastructure\Primary\EloquentFundedCampaigns']);
+
+arch('the retained funded projection keeps its own collaborators behind contracts')
+    ->expect('App\Infrastructure\Business\RetainedFundedCampaignFacts')
+    ->not->toUse('App\Infrastructure');
 
 it('has concrete targets for the identity persistence boundary', function (): void {
     expect(class_exists(Party::class))->toBeTrue()
@@ -241,8 +250,12 @@ it('has concrete targets for the business authority boundary', function (): void
 })->group('arch');
 
 arch('business authority records are only accessed by their adapter')
-    ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion', 'App\Models\BusinessCreditSnapshot', 'App\Models\BusinessApplicationQuote', 'App\Models\BusinessApplicationSignature', 'App\Models\BusinessApplicationSubmission', 'App\Models\BusinessExposureReservation', 'App\Models\BusinessApplicationRelease', 'App\Models\BusinessCampaign', 'App\Models\BusinessCampaignClosure'])
+    ->expect(['App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion', 'App\Models\BusinessCreditSnapshot', 'App\Models\BusinessApplicationQuote', 'App\Models\BusinessApplicationSignature', 'App\Models\BusinessApplicationSubmission', 'App\Models\BusinessExposureReservation', 'App\Models\BusinessApplicationRelease', 'App\Models\BusinessCampaignClosure'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Models', 'Database\Factories']);
+
+arch('Business and campaign gate records also allow the named funding adapter')
+    ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessCampaign'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Infrastructure\Primary\EloquentFundedCampaigns', 'App\Models', 'Database\Factories']);
 
 arch('declared Business connection evidence stays inside financial persistence adapters')
     ->expect('App\Application\Business\Contracts\BusinessConnections')
@@ -424,8 +437,12 @@ it('keeps the Holding source verifier read-only', function (): void {
         ->and($source)->not->toMatch('/->(insert|update|delete|upsert|save|forceFill|create|lockForUpdate|sharedLock|lock)\(|PrimaryHolding|DB::(statement|unprepared|transaction)/');
 })->group('arch');
 
-arch('funding, destination and staff connection sources are reached only through the disbursement adapter')
-    ->expect(['App\Application\Disbursement\Contracts\FundedCampaigns', 'App\Application\Disbursement\Contracts\PayoutDestinations',
+arch('funding sources are reached only through the disbursement and named Primary adapters')
+    ->expect('App\Application\Disbursement\Contracts\FundedCampaigns')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Infrastructure\Primary\EloquentFundedCampaigns', 'App\Providers\AppServiceProvider']);
+
+arch('destination and staff connection sources are reached only through the disbursement adapter')
+    ->expect(['App\Application\Disbursement\Contracts\PayoutDestinations',
         'App\Application\Disbursement\Contracts\StaffConnections'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider']);
 
