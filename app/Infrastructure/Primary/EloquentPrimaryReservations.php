@@ -298,7 +298,7 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
         });
     }
 
-    public function settleExpiredCampaign(string $campaignId, string $closureId): void
+    public function settleExpiredCampaign(string $campaignId, string $closureId): array
     {
         if (DB::transactionLevel() === 0) {
             throw new CommandRejection('PRIMARY_TRANSACTION_REQUIRED');
@@ -306,7 +306,8 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
         if (DB::scalar("SELECT current_setting('transaction_isolation')") !== 'read committed') {
             throw new WalletViolation('PRIMARY_CASH_ISOLATION_REQUIRED');
         }
-        DB::transaction(function () use ($campaignId, $closureId): void {
+
+        return DB::transaction(function () use ($campaignId, $closureId): array {
             $campaign = $this->campaigns->lockForFunding($campaignId);
             if (now('UTC')->lt($campaign['expires_at'])) {
                 throw new CommandRejection('CAMPAIGN_NOT_EXPIRED');
@@ -333,14 +334,22 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
             }
             DB::table('primary_campaign_expiry_settlements')->insert(['business_campaign_id' => $campaignId,
                 'business_campaign_closure_id' => $closureId, 'created_at' => now('UTC')->format('Y-m-d H:i:s.uP')]);
+            $changed = [];
             foreach ($roots as $root) {
                 [$reservation, $version] = $retained[$root->id];
                 if ($reservation->state === 'confirmed') {
-                    $this->refund($campaignId, $root->id, $root->party_id, $version->revision);
+                    $refund = $this->refund($campaignId, $root->id, $root->party_id, $version->revision);
+                    if (! $refund->replayed) {
+                        $changed[] = ['party_id' => $root->party_id, 'reservation_id' => $root->id];
+                    }
                 } elseif ($reservation->state === 'held') {
-                    $this->expire($campaignId, $root->id);
+                    if ($this->expire($campaignId, $root->id) !== null) {
+                        $changed[] = ['party_id' => $root->party_id, 'reservation_id' => $root->id];
+                    }
                 }
             }
+
+            return $changed;
         });
     }
 

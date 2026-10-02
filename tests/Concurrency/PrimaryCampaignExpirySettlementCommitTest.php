@@ -32,8 +32,9 @@ it('refuses an outer commit without its system closure and persists valid expiry
         ->and(fn () => app(PrimaryReservations::class)->settleExpiredCampaign($campaign->id, strtolower((string) Str::ulid())))
         ->toThrow(CommandRejection::class, 'PRIMARY_TRANSACTION_REQUIRED');
     $this->travelTo($campaign->expires_at);
-    expect(fn () => DB::transaction(function () use ($campaign): void {
-        app(PrimaryReservations::class)->settleExpiredCampaign($campaign->id, strtolower((string) Str::ulid()));
+    expect(fn () => DB::transaction(function () use ($campaign, $root, $investor): void {
+        $subjects = app(PrimaryReservations::class)->settleExpiredCampaign($campaign->id, strtolower((string) Str::ulid()));
+        expect($subjects)->toBe([['party_id' => $investor['party']->id, 'reservation_id' => $root->id]]);
         expect(LedgerEntry::query()->where('kind', 'primary_refund')->count())->toBe(1);
     }))->toThrow(PDOException::class);
     expect(DB::transactionLevel())->toBe(0);
