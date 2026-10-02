@@ -464,13 +464,14 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         $closure->forceFill(['business_campaign_id' => $campaign->id, 'business_id' => $campaign->business_id,
             'exposure_reservation_id' => $campaign->exposure_reservation_id, 'principal' => $campaign->principal,
             'phase' => $phase, 'actor_user_id' => $userId, 'closed_at' => $closedAt, 'payload' => $payload, 'sha256' => $this->hash($payload)])->save();
-        $this->changes->record(ChangeScope::business($campaign->business_id), 'campaign', $campaign->id);
 
         if ($bindings !== []) {
             DB::table('primary_campaign_closure_returns')->insert(array_map(fn (array $binding): array => [
                 ...$binding, 'business_campaign_closure_id' => $closure->id,
             ], $bindings));
         }
+        // The feed's advisory lock is taken last, after every financial and closure write.
+        $this->changes->record(ChangeScope::business($campaign->business_id), 'campaign', $campaign->id);
 
         return $closure;
     }
