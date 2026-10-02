@@ -146,10 +146,19 @@ it('refuses to add the purchase topic over a row outside its audience, without r
     $migration = require database_path('migrations/2026_10_02_090000_add_purchase_topic_to_change_feed.php');
     $migration->down();
     DB::statement('ALTER TABLE change_feed DROP CONSTRAINT change_feed_topic_audience');
+    DB::statement('ALTER TABLE change_feed ADD CONSTRAINT change_feed_topic_audience CHECK (true)');
     DB::insert("INSERT INTO change_feed (business_id, topic, subject, revision) VALUES (?, 'purchase', 'r1', 1)", [feedParty()]);
+    $corrupt = DB::table('change_feed')->get()->all();
+    $refusal = null;
+    try {
+        $migration->up();
+    } catch (QueryException $exception) {
+        $refusal = $exception;
+    }
 
-    expect(fn () => $migration->up())->toThrow(QueryException::class, 'change_feed_topic_audience')
-        ->and(DB::table('change_feed')->pluck('topic')->all())->toBe(['purchase']);
+    expect($refusal?->getCode())->toBe('23514')
+        ->and($refusal?->getMessage())->toContain('change_feed_topic_audience')
+        ->and(DB::table('change_feed')->get()->all())->toEqual($corrupt);
 });
 
 it('parses only the cursors it issues', function (string $cursor, bool $valid): void {
