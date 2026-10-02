@@ -22,6 +22,7 @@ use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -147,13 +148,38 @@ it('reports only newly written command-local expiry subjects without recording f
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     $cash = LedgerEntry::query()->orderBy('id')->get()->toJson();
     expect($store->expireDue(1))->toBe(0)
-        ->and(DB::table('change_feed')->count())->toBe($feedCount + 1)
+        ->and(DB::table('change_feed')->count())->toBe($feedCount + count($subjects ?? []) + ($subjects === [] ? 1 : 2))
         ->and(LedgerEntry::query()->orderBy('id')->get()->toJson())->toBe($cash);
 })->with([
     'empty campaign' => [[]],
     'previous returns only' => [['refunded', 'released', 'expired']],
     'new and previous returns' => [['confirmed', 'held', 'refunded', 'released', 'expired']],
 ]);
+
+it('flushes expiry purchase beacons, then campaign progress, then the closure, after every closing write', function (): void {
+    $roots = [($this->purchase)(), ($this->purchase)('held'), ($this->purchase)()];
+    $this->travelTo($this->campaign->expires_at);
+    $before = DB::table('change_feed')->max('id') ?? 0;
+    $writes = [];
+    DB::listen(function (QueryExecuted $query) use (&$writes): void {
+        if (preg_match('/^\s*(insert into|update|delete from)\s+"?([a-z_]+)"?/i', $query->sql, $match) === 1) {
+            $writes[] = strtolower($match[2]);
+        }
+    });
+
+    expect($this->store->expireDue(1))->toBe(1);
+    $purchases = collect($roots)->map(fn (PrimaryReservationRecord $root): string => $root->party_id.'|purchase|'.$root->id)
+        ->sort(fn (string $left, string $right): int => strcmp($left, $right))->values()->all();
+    $campaign = $this->campaign->business_id.'|campaign|'.$this->campaign->id;
+    $rows = DB::table('change_feed')->where('id', '>', $before)->orderBy('id')->get()
+        ->map(fn (object $row): string => ($row->party_id ?? $row->business_id).'|'.$row->topic.'|'.$row->subject)->all();
+    [$progress, $closure] = DB::table('change_feed')->where('id', '>', $before)->where('topic', 'campaign')->orderBy('id')->pluck('revision')->all();
+
+    expect($rows)->toBe([...$purchases, $campaign, $campaign])
+        ->and($closure)->toBe($progress + 1)
+        // A system expiry journals nothing afterwards: the return bindings are the last write before the beacons.
+        ->and(array_slice($writes, -6))->toBe(['primary_campaign_closure_returns', ...array_fill(0, 5, 'change_feed')]);
+});
 
 it('rolls back observed expiry subjects with every cash return when the closing caller fails', function (): void {
     ($this->purchase)();
