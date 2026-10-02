@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\ReadChanges;
+use App\Domain\Operations\ChangeScope;
+use App\Models\BusinessProfile;
 use Illuminate\Database\Connection;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\InvestorWalletFixture;
 
@@ -13,6 +17,7 @@ use Tests\Support\InvestorWalletFixture;
  */
 
 afterEach(function (): void {
+    DB::setDefaultConnection('pgsql');
     foreach (['feed_early', 'feed_late'] as $name) {
         DB::purge($name);
     }
@@ -97,4 +102,27 @@ it('moves on past a rolled-back transaction without delivering it', function ():
 
     expect($blocked['subjects'])->toBe([])
         ->and(beacon($investor['user']->id, $blocked['cursor'])['subjects'])->toBe(['committed']);
+});
+
+it('serializes feed revisions for one subject across concurrent emitters', function (): void {
+    $business = BusinessProfile::factory()->create()->id;
+    $record = function (Connection $connection) use ($business): void {
+        DB::setDefaultConnection($connection->getName() ?? 'pgsql');
+        app(ChangeFeed::class)->record(ChangeScope::business($business), 'campaign', 'progress');
+    };
+    $first = feedWriter('feed_early');
+    $record($first);
+    $second = feedWriter('feed_late');
+    $second->statement("SET LOCAL lock_timeout = '200ms'");
+
+    expect(fn () => $record($second))->toThrow(QueryException::class, 'lock timeout');
+
+    $second->rollBack();
+    $first->commit();
+    $second->beginTransaction();
+    $record($second);
+    $second->commit();
+    DB::setDefaultConnection('pgsql');
+
+    expect(DB::table('change_feed')->where('subject', 'progress')->orderBy('id')->pluck('revision')->all())->toBe([1, 2]);
 });

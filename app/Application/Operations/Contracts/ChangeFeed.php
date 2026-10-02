@@ -19,6 +19,8 @@ interface ChangeFeed
     /**
      * Records a change inside the caller's open transaction, so it commits or rolls back with the
      * effect itself. A null revision takes the subject's next revision, serialized per subject.
+     * Revisions are observation sequences, never a record's own version: a topic with more than
+     * one emitter for a subject (a campaign's progress and its closure) must leave them all null.
      */
     public function record(ChangeScope $scope, string $topic, string $subject, ?int $revision = null): void;
 

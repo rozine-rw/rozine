@@ -62,6 +62,9 @@ it('keeps each change to exactly one audience that matches its topic', function 
     'two audiences' => ["INSERT INTO change_feed (party_id, business_id, topic, subject, revision) VALUES (:party, :business, 'wallet', 'w1', 1)"],
     'a wallet for a business' => ["INSERT INTO change_feed (business_id, topic, subject, revision) VALUES (:business, 'wallet', 'w1', 1)"],
     'a campaign for a party' => ["INSERT INTO change_feed (party_id, topic, subject, revision) VALUES (:party, 'campaign', 'c1', 1)"],
+    'a purchase for a business' => ["INSERT INTO change_feed (business_id, topic, subject, revision) VALUES (:business, 'purchase', 'r1', 1)"],
+    'a purchase for a queue' => ["INSERT INTO change_feed (staff_queue, topic, subject, revision) VALUES ('applications', 'purchase', 'applications', 1)"],
+    'an unknown topic' => ["INSERT INTO change_feed (party_id, topic, subject, revision) VALUES (:party, 'holding', 'h1', 1)"],
     'an unknown queue' => ["INSERT INTO change_feed (staff_queue, topic, subject, revision) VALUES ('payouts', 'staff_queue', 'payouts', 1)"],
     'a queue under another subject' => ["INSERT INTO change_feed (staff_queue, topic, subject, revision) VALUES ('applications', 'staff_queue', 'other', 1)"],
     'a subject outside its shape' => ["INSERT INTO change_feed (party_id, topic, subject, revision) VALUES (:party, 'wallet', 'w-1', 1)"],
@@ -84,6 +87,7 @@ it('refuses a change outside a transaction or outside its audience', function (C
 })->with([
     'no transaction' => [fn () => app(ChangeFeed::class)->record(ChangeScope::staffQueue('applications'), 'staff_queue', 'applications'), 'CHANGE_FEED_TRANSACTION_REQUIRED'],
     'another topic' => [fn () => DB::transaction(fn () => app(ChangeFeed::class)->record(ChangeScope::staffQueue('applications'), 'wallet', 'applications')), 'CHANGE_INVALID'],
+    'a purchase for a business' => [fn () => DB::transaction(fn () => app(ChangeFeed::class)->record(ChangeScope::business(feedParty()), 'purchase', 'r1')), 'CHANGE_INVALID'],
     'a bad subject' => [fn () => DB::transaction(fn () => app(ChangeFeed::class)->record(ChangeScope::staffQueue('applications'), 'staff_queue', 'a b')), 'CHANGE_INVALID'],
     'a zero revision' => [fn () => DB::transaction(fn () => app(ChangeFeed::class)->record(ChangeScope::staffQueue('applications'), 'staff_queue', 'applications', 0)), 'CHANGE_INVALID'],
     'an unknown queue' => [fn () => ChangeScope::staffQueue('payouts'), 'CHANGE_SCOPE_INVALID'],
@@ -113,6 +117,48 @@ it('refuses to roll the feed back once it holds a change', function (): void {
 
     expect(fn () => (require database_path('migrations/2026_09_28_180000_create_change_feed_table.php'))->down())
         ->toThrow(QueryException::class, 'Recorded changes require a forward migration');
+});
+
+it('records a purchase for a Party with the feed\'s own revisions', function (): void {
+    $party = feedParty();
+    recordChange(ChangeScope::party($party), 'purchase', 'r1');
+
+    expect(recordChange(ChangeScope::party($party), 'purchase', 'r1'))->toMatchArray(['party_id' => $party, 'topic' => 'purchase', 'revision' => 2]);
+});
+
+it('adds the purchase topic forward, and refuses to roll it back once it holds a purchase', function (): void {
+    $migration = require database_path('migrations/2026_10_02_090000_add_purchase_topic_to_change_feed.php');
+    $party = feedParty();
+    recordChange(ChangeScope::party($party), 'wallet', 'w1');
+    $migration->down();
+
+    expect(fn () => DB::transaction(fn () => DB::insert("INSERT INTO change_feed (party_id, topic, subject, revision) VALUES (?, 'purchase', 'r1', 1)", [$party])))
+        ->toThrow(QueryException::class, 'change_feed_topic_audience');
+
+    $migration->up();
+    recordChange(ChangeScope::party($party), 'purchase', 'r1');
+
+    expect(fn () => $migration->down())->toThrow(QueryException::class, 'Recorded purchase changes require a forward migration')
+        ->and(DB::table('change_feed')->orderBy('id')->pluck('topic')->all())->toBe(['wallet', 'purchase']);
+});
+
+it('refuses to add the purchase topic over a row outside its audience, without repairing it', function (): void {
+    $migration = require database_path('migrations/2026_10_02_090000_add_purchase_topic_to_change_feed.php');
+    $migration->down();
+    DB::statement('ALTER TABLE change_feed DROP CONSTRAINT change_feed_topic_audience');
+    DB::statement('ALTER TABLE change_feed ADD CONSTRAINT change_feed_topic_audience CHECK (true)');
+    DB::insert("INSERT INTO change_feed (business_id, topic, subject, revision) VALUES (?, 'purchase', 'r1', 1)", [feedParty()]);
+    $corrupt = DB::table('change_feed')->get()->all();
+    $refusal = null;
+    try {
+        $migration->up();
+    } catch (QueryException $exception) {
+        $refusal = $exception;
+    }
+
+    expect($refusal?->getCode())->toBe('23514')
+        ->and($refusal?->getMessage())->toContain('change_feed_topic_audience')
+        ->and(DB::table('change_feed')->get()->all())->toEqual($corrupt);
 });
 
 it('parses only the cursors it issues', function (string $cursor, bool $valid): void {

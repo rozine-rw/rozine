@@ -202,6 +202,34 @@ describe('Change beacon', () => {
         });
     });
 
+    it('tracks a purchase apart from a wallet change under the same subject id', async () => {
+        answers.push(
+            feed([
+                wallet(1, 'r1'),
+                { topic: 'purchase', subject: 'r1', revision: 1 },
+            ]),
+            feed([{ topic: 'purchase', subject: 'r1', revision: 2 }]),
+        );
+        mount({
+            link: {
+                url: '/changes?topics=wallet,purchase&after=1.10.0.100.1',
+                method: 'get',
+            },
+            reloads: {
+                wallet: { only: ['wallet'] },
+                purchase: { only: ['reservation'], subject: 'r1' },
+            },
+        });
+
+        await elapse(POLL_INTERVAL_MS);
+        expect(reload).toHaveBeenCalledExactlyOnceWith({
+            only: ['wallet', 'reservation'],
+        });
+
+        await elapse(POLL_INTERVAL_MS);
+        expect(reload).toHaveBeenLastCalledWith({ only: ['reservation'] });
+    });
+
     it('reloads the page in full on a reset and forgets what it had seen', async () => {
         answers.push(
             feed([wallet(7)]),

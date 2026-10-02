@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessCampaignStore;
+use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\ReadChanges;
+use App\Domain\Operations\ChangeScope;
 use App\Models\BusinessCampaign;
 use App\Models\InvestorWallet;
 use App\Models\User;
@@ -93,9 +95,9 @@ it('emits a Business campaign change once when its campaign is cancelled', funct
     $request = (string) Str::uuid();
     expect($cancel(1, $request)['code'])->toBe('CAMPAIGN_CANCELLED')
         ->and($cancel(1, $request)['code'])->toBe('CAMPAIGN_CANCELLED')
-        ->and(campaignRows())->toBe([$live['business'].'|campaign|'.$live['campaign']->id.'@2'])
+        ->and(campaignRows())->toBe([$live['business'].'|campaign|'.$live['campaign']->id.'@1'])
         ->and(app(ReadChanges::class)->handle($live['user']->id, ['campaign'], $cursor)['changes'])
-        ->toBe([['topic' => 'campaign', 'subject' => $live['campaign']->id, 'revision' => 2]]);
+        ->toBe([['topic' => 'campaign', 'subject' => $live['campaign']->id, 'revision' => 1]]);
 });
 
 it('emits a Business campaign change once when its campaign expires', function (): void {
@@ -105,7 +107,23 @@ it('emits a Business campaign change once when its campaign expires', function (
 
     expect(app(BusinessCampaignStore::class)->expireDue(100))->toBe(1)
         ->and(app(BusinessCampaignStore::class)->expireDue(100))->toBe(0)
-        ->and(campaignRows())->toBe([$live['business'].'|campaign|'.$live['campaign']->id.'@2']);
+        ->and(campaignRows())->toBe([$live['business'].'|campaign|'.$live['campaign']->id.'@1']);
+});
+
+it('delivers a campaign closure after progress changes to the same campaign', function (): void {
+    $this->freezeSecond();
+    $live = liveCampaign();
+    $cursor = app(ReadChanges::class)->cursor($live['user']->id);
+    foreach (range(1, 3) as $progress) {
+        DB::transaction(fn () => app(ChangeFeed::class)->record(ChangeScope::business($live['business']), 'campaign', $live['campaign']->id));
+    }
+    $progressed = app(ReadChanges::class)->handle($live['user']->id, ['campaign'], $cursor);
+
+    expect(app(BusinessCampaignStore::class)->cancel($live['user']->id, 1, $live['business'], $live['campaign']->id, 1, null, (string) Str::uuid())['code'])
+        ->toBe('CAMPAIGN_CANCELLED')
+        ->and($progressed['changes'])->toBe([['topic' => 'campaign', 'subject' => $live['campaign']->id, 'revision' => 3]])
+        ->and(app(ReadChanges::class)->handle($live['user']->id, ['campaign'], $progressed['next_cursor'])['changes'])
+        ->toBe([['topic' => 'campaign', 'subject' => $live['campaign']->id, 'revision' => 4]]);
 });
 
 it('emits a staff queue change when an application is submitted and when staff release it', function (): void {
@@ -151,7 +169,7 @@ it('gives each live page its beacon link at the render-time cursor, and none ove
 
     expect($this->actingAs($wallet['user'])->getJson($links[0]['url'])->assertOk()->json('changes.0.topic'))->toBe('wallet')
         ->and($this->actingAs($live['user'])->getJson($links[1]['url'])->assertOk()->json('changes'))
-        ->toBe([['topic' => 'campaign', 'subject' => $live['campaign']->id, 'revision' => 2]])
+        ->toBe([['topic' => 'campaign', 'subject' => $live['campaign']->id, 'revision' => 1]])
         ->and($this->actingAs($live['staff'])->getJson($links[2]['url'])->assertOk()->json('changes'))->toBe([]);
 
     Sanctum::actingAs($wallet['user'], ['investor:read']);

@@ -264,7 +264,11 @@ export type AllocationKind =
 /* ------------------------------------------------------------------------------------------ */
 
 /** The topics the beacon reports. Each belongs to one audience: a Party, a Business or staff. */
-export type ChangeTopicName = 'wallet' | 'campaign' | 'staff_queue';
+export type ChangeTopicName =
+    | 'wallet'
+    | 'purchase'
+    | 'campaign'
+    | 'staff_queue';
 
 /**
  * One change: which subject of a topic moved, and to which revision. It never says what the

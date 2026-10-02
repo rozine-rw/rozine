@@ -20,7 +20,8 @@ use App\Domain\Operations\CommandRejection;
  * never from anything the client names. A topic the caller cannot read is left out, so neither
  * another audience's subject ids nor their revisions can leak.
  *
- * - `wallet`: the caller's own Party, while the Investor role is active (AuthorizeActiveRole).
+ * - `wallet` and `purchase`: the caller's own Party, while the Investor role is active
+ *   (AuthorizeActiveRole), derived for each read whichever of the two it asks for.
  * - `campaign`: every Business the caller's Party can currently view under an active mandate.
  * - `staff_queue`: each queue the caller's current staff permission covers.
  *
@@ -41,7 +42,7 @@ final class ReadChanges
     /** How long the client waits before its next read, in milliseconds. */
     public const int POLL_AFTER_MS = 10_000;
 
-    public const array TOPICS = ['wallet', 'campaign', 'staff_queue'];
+    public const array TOPICS = ['wallet', 'purchase', 'campaign', 'staff_queue'];
 
     /** The staff permission each queue needs. */
     private const array QUEUE_PERMISSIONS = ['applications' => 'applications.review'];
@@ -82,11 +83,12 @@ final class ReadChanges
     private function audiences(int $userId, int $context, array $topics): array
     {
         $audiences = [];
-        if (in_array('wallet', $topics, true)) {
+        $partyTopics = array_values(array_intersect(['wallet', 'purchase'], $topics));
+        if ($partyTopics !== []) {
             $party = $this->authorized(fn (): string => $this->roles->handle($userId, 'investor', null, $context,
                 fn (array $identity): string => (string) $identity['party']['id']));
-            if ($party !== null) {
-                $audiences[] = ['scope' => ChangeScope::party($party), 'topic' => 'wallet'];
+            foreach ($party === null ? [] : $partyTopics as $topic) {
+                $audiences[] = ['scope' => ChangeScope::party($party), 'topic' => $topic];
             }
         }
         if (in_array('campaign', $topics, true)) {
