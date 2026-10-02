@@ -17,6 +17,7 @@ use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -88,6 +89,22 @@ it('closes a fully returned campaign once with retained refunds distinct Parties
     expect($page['progress'])->toEqual(['phase' => 'cancelled', 'committed_refunded' => ['currency' => 'RWF', 'amount' => '30000'],
         'investors' => 2, 'closed_at' => $closure->payload['closed_at']]);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+});
+
+it('records the closure beacon only after every closure and return-binding write', function (): void {
+    ($this->purchase)('3');
+    ($this->purchase)('2', 'released');
+    $writes = [];
+    DB::listen(function (QueryExecuted $query) use (&$writes): void {
+        if (preg_match('/^\s*(insert into|update|delete from)\s+"?([a-z_]+)"?/i', $query->sql, $match) === 1) {
+            $writes[] = strtolower($match[2]);
+        }
+    });
+
+    // Only the command's own journal entry, written once the closure returns, follows the beacon.
+    expect(($this->cancel)()['code'])->toBe('CAMPAIGN_CANCELLED')
+        ->and(array_slice($writes, -4))->toBe(['business_campaign_closures', 'primary_campaign_closure_returns', 'change_feed', 'command_operations'])
+        ->and(array_count_values($writes)['change_feed'])->toBe(1);
 });
 
 it('closes returned commitments after expiry retaining the deadline and actual processing time', function (): void {
