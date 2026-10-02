@@ -253,7 +253,7 @@ arch('business authority records are only accessed by their adapter')
     ->expect(['App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion', 'App\Models\BusinessCreditSnapshot', 'App\Models\BusinessApplicationQuote', 'App\Models\BusinessApplicationSignature', 'App\Models\BusinessApplicationSubmission', 'App\Models\BusinessExposureReservation', 'App\Models\BusinessApplicationRelease', 'App\Models\BusinessCampaignClosure'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Models', 'Database\Factories']);
 
-arch('Business and campaign gate records also allow the named funding adapter')
+arch('business authority records are only accessed by their adapter or the named funding gate reader')
     ->expect(['App\Models\BusinessProfile', 'App\Models\BusinessCampaign'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Infrastructure\Primary\EloquentFundedCampaigns', 'App\Models', 'Database\Factories']);
 
