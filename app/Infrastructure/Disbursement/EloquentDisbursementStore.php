@@ -18,6 +18,7 @@ use App\Application\Disbursement\VerifiedDestination;
 use App\Application\Disbursement\VerifiedPayoutEvent;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Identity\AuthorizeStaffPermission;
+use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\VerifyAuthenticator;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
@@ -77,7 +78,8 @@ final class EloquentDisbursementStore implements DisbursementStore
 
     public function __construct(private FundedCampaigns $funding, private PayoutDestinations $destinations, private StaffConnections $connections,
         private PayoutProvider $provider, private AuthorizeStaffPermission $staff, private OperationJournal $journal, private CanonicalJson $json,
-        private VerifyAuthenticator $authenticator, private Repository $config, private EnvironmentIsolation $isolation) {}
+        private VerifyAuthenticator $authenticator, private Repository $config, private EnvironmentIsolation $isolation,
+        private IdentityAccessStore $identities) {}
 
     public function page(int $userId, ?string $disbursementId, ?string $before, int $limit): array
     {
@@ -423,13 +425,15 @@ final class EloquentDisbursementStore implements DisbursementStore
     {
         $campaign = in_array($command, ['authorize', 'approve'], true) ? $this->funding->lockFunded($disbursement->business_campaign_id) : null;
         if ($declared) {
-            // The actor's own statement, retained with this command; a refused command rolls it back.
+            // The actor's own statement, retained with this command and the staff-person revision it
+            // was signed under; a refused command rolls it back.
             (new DisbursementIndependenceDeclaration)->forceFill(['disbursement_id' => $disbursement->id, 'staff_user_id' => $userId,
-                'command' => $command, 'operation_id' => $operationId, 'statement_version' => StaffIndependence::VERSION,
+                'staff_person_identity_id' => $this->identities->staffPerson($userId)['resolution_id'] ?? null, 'command' => $command, 'operation_id' => $operationId, 'statement_version' => StaffIndependence::VERSION,
                 'statement_sha256' => StaffIndependence::statementSha256(), 'declared_at' => now('UTC')])->save();
         }
         // Connection and destination sources are read before the disbursement lock, never under it.
-        $facts = $campaign === null ? null : $this->sourceFacts($disbursement, $campaign, $command === 'approve' ? [$userId, (int) $before->makerUserId] : [$userId]);
+        $facts = $campaign === null ? null : $this->sourceFacts($disbursement, $campaign, $command === 'approve' && $before->makerUserId !== null
+            ? [$before->makerUserId => (string) $this->authorization($disbursement)->operation_id, $userId => $operationId] : [$userId => $operationId]);
         $this->lock($disbursement);
         $state = $this->state($disbursement);
         if ($state->makerUserId !== $before->makerUserId) {
@@ -547,7 +551,8 @@ final class EloquentDisbursementStore implements DisbursementStore
                     $intent->checker_user_id => ['disbursements.approve', $intent->created_at->format('Y-m-d\TH:i:s.uP')]],
                     function (array $current) use ($intent, $disbursement, $recovery): ?PayoutInstruction {
                         $campaign = $this->funding->lockFunded($disbursement->business_campaign_id);
-                        $facts = $this->sourceFacts($disbursement, $campaign, [$intent->maker_user_id, $intent->checker_user_id]);
+                        $facts = $this->sourceFacts($disbursement, $campaign, [$intent->maker_user_id => (string) $this->authorization($disbursement)->operation_id,
+                            $intent->checker_user_id => $intent->operation_id]);
                         $this->lock($disbursement);
                         DisbursementIntent::query()->whereKey($intent->id)->lockForUpdate()->sole();
                         $state = $this->state($disbursement);
@@ -605,14 +610,17 @@ final class EloquentDisbursementStore implements DisbursementStore
      * Business and campaign locks and before the disbursement lock (#96 5874488658), so no source
      * that may lock Business, User or Party rows is ever called under a disbursement or intent lock.
      *
-     * @param  list<int>  $staffUserIds
+     * Each staff member is checked against the declaration of their own operation that the
+     * disbursement relies on: the maker's authorize and the checker's approve.
+     *
+     * @param  array<int, string>  $operations  staff user id => their authorize or approve operation id
      * @return array{connections: array<int, string>, destination: VerifiedDestination|null}
      */
-    private function sourceFacts(Disbursement $disbursement, FundedCampaign $campaign, array $staffUserIds): array
+    private function sourceFacts(Disbursement $disbursement, FundedCampaign $campaign, array $operations): array
     {
         $connections = [];
-        foreach (array_unique($staffUserIds) as $staffUserId) {
-            $connections[$staffUserId] = $this->connections->connection($staffUserId, $disbursement->id, $disbursement->business_id, $campaign->partyIds());
+        foreach ($operations as $staffUserId => $operationId) {
+            $connections[$staffUserId] = $this->connections->connection($staffUserId, $disbursement->id, $operationId, $disbursement->business_id, $campaign->partyIds());
         }
 
         return ['connections' => $connections, 'destination' => $this->verifiedDestination($disbursement)];

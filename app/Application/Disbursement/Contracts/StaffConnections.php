@@ -15,6 +15,11 @@ namespace App\Application\Disbursement\Contracts;
  */
 interface StaffConnections
 {
-    /** @param list<string> $partyIds the campaign's committed Investor Parties */
-    public function connection(int $staffUserId, string $disbursementId, string $businessId, array $partyIds): string;
+    /**
+     * `$operationId` names the staff member's own authorize or approve operation on this
+     * disbursement whose declaration counts; no other declaration is evidence.
+     *
+     * @param  list<string>  $partyIds  the campaign's committed Investor Parties
+     */
+    public function connection(int $staffUserId, string $disbursementId, string $operationId, string $businessId, array $partyIds): string;
 }

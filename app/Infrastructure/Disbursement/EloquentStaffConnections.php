@@ -19,7 +19,9 @@ use App\Models\DisbursementIndependenceDeclaration;
  * - `connected`: the staff member's own Party is the Business entity, a person in its current
  *   mandate, or a committed Investor of the campaign. A visible connection always wins.
  * - `unconnected`: only with a current verified person, no visible connection and the staff
- *   member's own declaration of the current statement for this disbursement.
+ *   member's own declaration of the current statement, recorded with the named operation on this
+ *   disbursement while the same staff-person revision was current. Revoking or re-linking the
+ *   account therefore retires every earlier declaration without rewriting it.
  *
  * Called from the disbursement adapter after the Business and campaign locks and before any
  * disbursement lock. `lockDeclared` re-enters the Business gate the caller already holds; the staff
@@ -29,7 +31,7 @@ final readonly class EloquentStaffConnections implements StaffConnections
 {
     public function __construct(private IdentityAccessStore $identities, private BusinessConnections $businesses) {}
 
-    public function connection(int $staffUserId, string $disbursementId, string $businessId, array $partyIds): string
+    public function connection(int $staffUserId, string $disbursementId, string $operationId, string $businessId, array $partyIds): string
     {
         $person = $this->identities->staffPerson($staffUserId);
         if ($person === null) {
@@ -44,7 +46,8 @@ final readonly class EloquentStaffConnections implements StaffConnections
             return 'connected';
         }
 
-        return DisbursementIndependenceDeclaration::query()->where('disbursement_id', $disbursementId)->where('staff_user_id', $staffUserId)
+        return DisbursementIndependenceDeclaration::query()->where('operation_id', $operationId)->where('disbursement_id', $disbursementId)
+            ->where('staff_user_id', $staffUserId)->where('staff_person_identity_id', $person['resolution_id'])
             ->where('statement_sha256', StaffIndependence::statementSha256())->exists() ? 'unconnected' : 'unavailable';
     }
 }

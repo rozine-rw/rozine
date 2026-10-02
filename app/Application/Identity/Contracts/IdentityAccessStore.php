@@ -60,10 +60,10 @@ interface IdentityAccessStore
 
     /**
      * The verified person behind a staff account, read without row locks: null when the account is
-     * unresolved or its current link is revoked; otherwise that person's marketplace Party, which is
-     * null when the person holds none.
+     * unresolved or its current link is revoked; otherwise the current link revision's id and that
+     * person's marketplace Party, which is null when the person holds none.
      *
-     * @return array{party_id: string|null}|null
+     * @return array{resolution_id: string, party_id: string|null}|null
      */
     public function staffPerson(int $staffUserId): ?array;
 

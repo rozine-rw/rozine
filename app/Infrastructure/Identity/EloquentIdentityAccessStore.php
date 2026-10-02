@@ -251,7 +251,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             return null;
         }
 
-        return ['party_id' => VerifiedPersonIdentity::query()->find($current->identity_digest)?->party_id];
+        return ['resolution_id' => $current->id, 'party_id' => VerifiedPersonIdentity::query()->find($current->identity_digest)?->party_id];
     }
 
     /** @return array<string, mixed> */

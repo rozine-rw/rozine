@@ -20,6 +20,7 @@ use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Events\TransactionBeginning;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
 
 /*
@@ -111,11 +112,11 @@ function lockOrderProbe(): LockOrderProbe
     {
         public function __construct(private StaffConnections $inner, private LockOrderProbe $probe) {}
 
-        public function connection(int $staffUserId, string $disbursementId, string $businessId, array $partyIds): string
+        public function connection(int $staffUserId, string $disbursementId, string $operationId, string $businessId, array $partyIds): string
         {
             $this->probe->call('connection');
 
-            return $this->inner->connection($staffUserId, $disbursementId, $businessId, $partyIds);
+            return $this->inner->connection($staffUserId, $disbursementId, $operationId, $businessId, $partyIds);
         }
     });
     app()->instance(PayoutDestinations::class, new class($sources, $probe) implements PayoutDestinations
@@ -170,7 +171,7 @@ it('detects a source called under a disbursement lock, so its silence means some
     ['disbursement' => $disbursement] = DisbursementFixture::funded();
     DB::transaction(function () use ($disbursement): void {
         Disbursement::query()->whereKey($disbursement->id)->lockForUpdate()->sole();
-        app(StaffConnections::class)->connection(1, $disbursement->id, $disbursement->business_id, []);
+        app(StaffConnections::class)->connection(1, $disbursement->id, strtolower((string) Str::ulid()), $disbursement->business_id, []);
     });
     expect($probe->violations)->toBe(['connection under a disbursement lock without the Business lock', 'connection under a disbursement lock']);
 });

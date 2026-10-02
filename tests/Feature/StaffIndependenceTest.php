@@ -46,16 +46,21 @@ function linkStaffPerson(User $operator, User $staff, ?string $reference, ?strin
 }
 
 /** @param  list<string>  $partyIds */
-function staffConnection(User $staff, string $disbursementId, string $businessId, array $partyIds = []): string
+function staffConnection(User $staff, string $disbursementId, string $operationId, string $businessId, array $partyIds = []): string
 {
-    return DB::transaction(fn (): string => app(EloquentStaffConnections::class)->connection($staff->id, $disbursementId, $businessId, $partyIds));
+    return DB::transaction(fn (): string => app(EloquentStaffConnections::class)->connection($staff->id, $disbursementId, $operationId, $businessId, $partyIds));
 }
 
-function declareIndependence(User $staff, string $disbursementId, ?string $sha256 = null): void
+/** Retains a declaration under the staff member's current staff-person revision and returns its operation id. */
+function declareIndependence(User $staff, string $disbursementId, ?string $sha256 = null): string
 {
-    (new DisbursementIndependenceDeclaration)->forceFill(['disbursement_id' => $disbursementId, 'staff_user_id' => $staff->id, 'command' => 'authorize',
-        'operation_id' => strtolower((string) Str::ulid()), 'statement_version' => StaffIndependence::VERSION,
+    $operationId = strtolower((string) Str::ulid());
+    (new DisbursementIndependenceDeclaration)->forceFill(['disbursement_id' => $disbursementId, 'staff_user_id' => $staff->id,
+        'staff_person_identity_id' => app(IdentityAccessStore::class)->staffPerson($staff->id)['resolution_id'] ?? null, 'command' => 'authorize',
+        'operation_id' => $operationId, 'statement_version' => StaffIndependence::VERSION,
         'statement_sha256' => $sha256 ?? StaffIndependence::statementSha256(), 'declared_at' => now()])->save();
+
+    return $operationId;
 }
 
 /** Gives a verified person Party a known identity reference, replacing the factory's random digest. */
@@ -84,7 +89,7 @@ it('records and revokes a staff person as append-only revisions with one audit e
     expect($first)->toMatchArray(['code' => 'STAFF_PERSON_RECORDED', 'user_id' => $staff->id, 'contract_version' => 'identity-management-v1'])
         ->and(linkStaffPerson($operator, $staff, 'nid:1199880012345678', $request))->toBe($first)
         ->and(fn () => linkStaffPerson($operator, $staff, 'nid:other', $request))->toThrow(IdentityViolation::class, 'IDEMPOTENCY_KEY_REUSED')
-        ->and(app(IdentityAccessStore::class)->staffPerson($staff->id))->toBe(['party_id' => null]);
+        ->and(app(IdentityAccessStore::class)->staffPerson($staff->id))->toBe(['resolution_id' => StaffPersonIdentity::query()->sole()->id, 'party_id' => null]);
 
     expect(linkStaffPerson($operator, $staff, null)['code'])->toBe('STAFF_PERSON_REVOKED')
         ->and(app(IdentityAccessStore::class)->staffPerson($staff->id))->toBeNull()
@@ -104,7 +109,7 @@ it('resolves a staff person to the verified Party that holds the same identity',
     $staff = DisbursementFixture::staff(['approver']);
     linkStaffPerson(independenceOperator(), $staff, 'nid:shared-person');
 
-    expect(app(IdentityAccessStore::class)->staffPerson($staff->id))->toBe(['party_id' => $party->id]);
+    expect(app(IdentityAccessStore::class)->staffPerson($staff->id))->toBe(['resolution_id' => StaffPersonIdentity::query()->sole()->id, 'party_id' => $party->id]);
 });
 
 it('refuses a staff person record from a non-operator, for a non-staff account or with invalid input', function (Closure $call, string $code): void {
@@ -141,36 +146,61 @@ it('answers unavailable, connected or unconnected from identity, visible connect
     $operator = independenceOperator();
     $disbursement = strtolower((string) Str::ulid());
     $investor = Party::factory()->verified()->create();
-    $person = function (string $reference, ?Party $party) use ($operator, $disbursement): User {
+    /** @return array{0: User, 1: string} */
+    $person = function (string $reference, ?Party $party) use ($operator, $disbursement): array {
         if ($party !== null) {
             knownIdentity($party->id, $reference);
         }
         $staff = DisbursementFixture::staff(['treasury']);
         linkStaffPerson($operator, $staff, $reference);
-        declareIndependence($staff, $disbursement);
 
-        return $staff;
+        return [$staff, declareIndependence($staff, $disbursement)];
     };
     $unresolved = DisbursementFixture::staff(['treasury']);
-    declareIndependence($unresolved, $disbursement);
-    $independent = $person('nid:independent', null);
+    $unresolvedOperation = declareIndependence($unresolved, $disbursement);
+    [$independent, $independentOperation] = $person('nid:independent', null);
     $undeclared = DisbursementFixture::staff(['treasury']);
     linkStaffPerson($operator, $undeclared, 'nid:undeclared');
     $otherDisbursement = DisbursementFixture::staff(['treasury']);
     linkStaffPerson($operator, $otherDisbursement, 'nid:other-disbursement');
-    declareIndependence($otherDisbursement, strtolower((string) Str::ulid()));
+    $elsewhere = declareIndependence($otherDisbursement, strtolower((string) Str::ulid()));
     $oldStatement = DisbursementFixture::staff(['treasury']);
     linkStaffPerson($operator, $oldStatement, 'nid:old-statement');
-    declareIndependence($oldStatement, $disbursement, hash('sha256', 'staff-independence-v0'));
+    $oldOperation = declareIndependence($oldStatement, $disbursement, hash('sha256', 'staff-independence-v0'));
+    [$signatory, $signatoryOperation] = $person('nid:signatory', $business['people'][1]);
+    [$investing, $investingOperation] = $person('nid:investor', $investor);
 
-    expect(staffConnection($unresolved, $disbursement, $business['business']))->toBe('unavailable')
-        ->and(staffConnection($independent, $disbursement, $business['business'], [$investor->id]))->toBe('unconnected')
-        ->and(staffConnection($undeclared, $disbursement, $business['business']))->toBe('unavailable')
-        ->and(staffConnection($otherDisbursement, $disbursement, $business['business']))->toBe('unavailable')
-        ->and(staffConnection($oldStatement, $disbursement, $business['business']))->toBe('unavailable')
-        ->and(staffConnection($person('nid:signatory', $business['people'][1]), $disbursement, $business['business']))->toBe('connected')
-        ->and(staffConnection($person('nid:investor', $investor), $disbursement, $business['business'], [$investor->id]))->toBe('connected')
-        ->and(staffConnection($independent, $disbursement, strtolower((string) Str::ulid())))->toBe('unavailable');
+    expect(staffConnection($unresolved, $disbursement, $unresolvedOperation, $business['business']))->toBe('unavailable')
+        ->and(staffConnection($independent, $disbursement, $independentOperation, $business['business'], [$investor->id]))->toBe('unconnected')
+        ->and(staffConnection($independent, $disbursement, strtolower((string) Str::ulid()), $business['business']))->toBe('unavailable')
+        ->and(staffConnection($signatory, $disbursement, $independentOperation, $business['business']))->toBe('connected')
+        ->and(staffConnection($undeclared, $disbursement, $independentOperation, $business['business']))->toBe('unavailable')
+        ->and(staffConnection($otherDisbursement, $disbursement, $elsewhere, $business['business']))->toBe('unavailable')
+        ->and(staffConnection($oldStatement, $disbursement, $oldOperation, $business['business']))->toBe('unavailable')
+        ->and(staffConnection($signatory, $disbursement, $signatoryOperation, $business['business']))->toBe('connected')
+        ->and(staffConnection($investing, $disbursement, $investingOperation, $business['business'], [$investor->id]))->toBe('connected')
+        ->and(staffConnection($independent, $disbursement, $independentOperation, strtolower((string) Str::ulid())))->toBe('unavailable');
+});
+
+it('never lets a declaration signed under one staff-person link vouch for a later link', function (): void {
+    $business = independenceBusiness();
+    $operator = independenceOperator();
+    $staff = DisbursementFixture::staff(['treasury']);
+    $disbursement = strtolower((string) Str::ulid());
+    linkStaffPerson($operator, $staff, 'nid:person-a');
+    $signed = declareIndependence($staff, $disbursement);
+
+    expect(staffConnection($staff, $disbursement, $signed, $business['business']))->toBe('unconnected');
+    linkStaffPerson($operator, $staff, null);
+    expect(staffConnection($staff, $disbursement, $signed, $business['business']))->toBe('unavailable');
+    linkStaffPerson($operator, $staff, 'nid:person-b');
+    expect(staffConnection($staff, $disbursement, $signed, $business['business']))->toBe('unavailable');
+    linkStaffPerson($operator, $staff, 'nid:person-a');
+    expect(staffConnection($staff, $disbursement, $signed, $business['business']))->toBe('unavailable')
+        ->and(DisbursementIndependenceDeclaration::query()->where('operation_id', $signed)->count())->toBe(1);
+
+    $resigned = declareIndependence($staff, $disbursement);
+    expect(staffConnection($staff, $disbursement, $resigned, $business['business']))->toBe('unconnected');
 });
 
 it('treats the Business entity Party itself as connected', function (): void {
@@ -181,9 +211,8 @@ it('treats the Business entity Party itself as connected', function (): void {
     $staff = DisbursementFixture::staff(['approver']);
     linkStaffPerson(independenceOperator(), $staff, 'nid:sole-trader');
     $disbursement = strtolower((string) Str::ulid());
-    declareIndependence($staff, $disbursement);
 
-    expect(staffConnection($staff, $disbursement, $business))->toBe('connected');
+    expect(staffConnection($staff, $disbursement, declareIndependence($staff, $disbursement), $business))->toBe('connected');
 });
 
 it('records the actor’s declaration with an accepted authorize, never with a refused one, and binds it to the request', function (): void {
@@ -204,6 +233,7 @@ it('records the actor’s declaration with an accepted authorize, never with a r
             'disbursement_id' => $disbursement->id, 'staff_user_id' => $maker->id, 'command' => 'authorize',
             'statement_version' => StaffIndependence::VERSION, 'statement_sha256' => StaffIndependence::statementSha256()])
         ->and($declaration->operation_id)->toBe($accepted['operation_id'])
+        ->and($declaration->staff_person_identity_id)->toBeNull()
         ->and($manage->command($maker->id, $disbursement->id, 'authorize', 0, 'Checked against the funded campaign.', $request, null, true))->toBe($accepted)
         ->and(fn () => $manage->command($maker->id, $disbursement->id, 'authorize', 0, 'Checked against the funded campaign.', $request))
         ->toThrow(CommandRejection::class, 'IDEMPOTENCY_CONFLICT')
@@ -213,6 +243,7 @@ it('records the actor’s declaration with an accepted authorize, never with a r
 it('accepts the declaration only on authorize and approve, and shows the statement it records', function (): void {
     ['disbursement' => $disbursement] = DisbursementFixture::funded();
     $treasury = DisbursementFixture::staff(['treasury']);
+    linkStaffPerson(independenceOperator(), $treasury, 'nid:treasury');
     $this->actingAs($treasury);
     $body = ['request_id' => (string) Str::uuid(), 'expected_revision' => 0, 'reason' => 'Checked against the funded campaign.', 'independence_declared' => true];
 
@@ -222,7 +253,8 @@ it('accepts the declaration only on authorize and approve, and shows the stateme
         ->assertUnprocessable()->assertJsonValidationErrors('independence_declared');
     $this->postJson(route('staff.disbursements.authorize', ['disbursement' => $disbursement->id]), $body)->assertOk();
 
-    expect(DisbursementIndependenceDeclaration::query()->sole()->staff_user_id)->toBe($treasury->id)
+    expect(DisbursementIndependenceDeclaration::query()->sole()->only(['staff_user_id', 'staff_person_identity_id']))
+        ->toBe(['staff_user_id' => $treasury->id, 'staff_person_identity_id' => StaffPersonIdentity::query()->sole()->id])
         ->and($this->get(route('staff.disbursements.show', ['disbursement' => $disbursement->id]))
             ->viewData('page')['props']['disbursement']['independence'])->toBe(['version' => StaffIndependence::VERSION, 'statement' => StaffIndependence::STATEMENT]);
 });

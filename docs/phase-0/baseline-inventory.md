@@ -800,6 +800,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `id` | `bpchar` | no | — |
 | `disbursement_id` | `bpchar` | no | — |
 | `staff_user_id` | `int8` | no | — |
+| `staff_person_identity_id` | `bpchar` | yes | — |
 | `command` | `varchar` | no | — |
 | `operation_id` | `bpchar` | no | — |
 | `statement_version` | `varchar` | no | — |

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $id
  * @property string $disbursement_id
  * @property int $staff_user_id
+ * @property string|null $staff_person_identity_id
  * @property string $command
  * @property string $operation_id
  * @property string $statement_version

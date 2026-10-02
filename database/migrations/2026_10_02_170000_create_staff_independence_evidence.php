@@ -14,7 +14,9 @@ use Illuminate\Support\Facades\DB;
  *   a new revision; the latest revision is current, and a revoked revision resolves nobody.
  * - `disbursement_independence_declarations`: the staff member's own signed statement, made with
  *   their authorize or approve command, that they have no relationship with the Business or its
- *   Investors. It is the only evidence of being unconnected; a visible connection always wins.
+ *   Investors. It is the only evidence of being unconnected; a visible connection always wins. It
+ *   is bound to the command's operation and to the staff-person revision current when it was
+ *   signed (null when none was), so it never vouches for another command or a re-linked person.
  *
  * Neither table carries a foreign key to `users` or `disbursements`: a key would take KEY SHARE on
  * those rows at insert, which the disbursement lock order does not otherwise acquire there.
@@ -40,6 +42,7 @@ return new class extends Migration
                 id char(26) PRIMARY KEY,
                 disbursement_id char(26) NOT NULL,
                 staff_user_id bigint NOT NULL,
+                staff_person_identity_id char(26) NULL,
                 command varchar(10) NOT NULL CHECK (command IN ('authorize', 'approve')),
                 operation_id char(26) NOT NULL UNIQUE,
                 statement_version varchar(40) NOT NULL,
