@@ -26,13 +26,13 @@ final class ManageDisbursements
     }
 
     /** @return array<string, mixed> */
-    public function command(int $userId, string $disbursementId, string $command, int $expectedRevision, string $reason, string $requestId, ?string $stepUpProof = null): array
+    public function command(int $userId, string $disbursementId, string $command, int $expectedRevision, string $reason, string $requestId, ?string $stepUpProof = null, bool $independenceDeclared = false): array
     {
         if ($command === 'requery') {
             return $this->requery($userId, $disbursementId, $expectedRevision, $reason, $requestId);
         }
 
-        return $this->store->command($userId, $disbursementId, $command, $expectedRevision, $reason, $requestId, $stepUpProof);
+        return $this->store->command($userId, $disbursementId, $command, $expectedRevision, $reason, $requestId, $stepUpProof, $independenceDeclared);
     }
 
     /** @return array{proof: string, expires_at: string} */

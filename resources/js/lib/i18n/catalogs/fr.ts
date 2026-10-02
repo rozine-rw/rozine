@@ -1091,6 +1091,7 @@ const fr: Catalog = {
     'admin.disbursements.empty_title': 'Tous les décaissements sont versés',
     'admin.disbursements.empty_body': "Aucun versement dû pour l'instant.",
     'admin.disbursements.drawer_label': 'Décaissement {reference}',
+    'admin.disbursements.independence.title': 'Déclaration d’indépendance',
     'admin.disbursements.amount': 'Montant',
     'admin.disbursements.destination': 'Destination',
     'admin.disbursements.due': 'Échéance',

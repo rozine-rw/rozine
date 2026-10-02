@@ -28,12 +28,14 @@ use App\Domain\Disbursement\IntentDigest;
 use App\Domain\Disbursement\IssueSchedule;
 use App\Domain\Disbursement\PayoutOutcome;
 use App\Domain\Disbursement\Reconciliation;
+use App\Domain\Disbursement\StaffIndependence;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\Disbursement;
 use App\Models\DisbursementClosing;
 use App\Models\DisbursementDispatch;
 use App\Models\DisbursementEvent;
+use App\Models\DisbursementIndependenceDeclaration;
 use App\Models\DisbursementIntent;
 use App\Models\DisbursementProviderCall;
 use App\Models\DisbursementProviderEvent;
@@ -93,25 +95,26 @@ final class EloquentDisbursementStore implements DisbursementStore
             'refusal' => $disbursementId !== null && $selected === null ? ['code' => 'DISBURSEMENT_NOT_FOUND', 'status' => 404] : null];
     }
 
-    public function command(int $userId, string $disbursementId, string $command, int $expectedRevision, string $reason, string $requestId, ?string $stepUpProof): array
+    public function command(int $userId, string $disbursementId, string $command, int $expectedRevision, string $reason, string $requestId, ?string $stepUpProof, bool $independenceDeclared = false): array
     {
         $permission = self::PERMISSIONS[$command] ?? throw new DisbursementViolation('DISBURSEMENT_COMMAND_INVALID');
         $this->staff->check($userId, $permission);
         $disbursement = $this->disbursement($disbursementId);
         $before = $this->state($disbursement);
         $others = in_array($command, ['authorize', 'approve'], true) && $before->makerUserId !== null ? $this->makerAuthority($disbursement, $before) : [];
-        $input = $this->input($expectedRevision, $reason);
+        $declared = $independenceDeclared && in_array($command, ['authorize', 'approve'], true);
+        $input = [...$this->input($expectedRevision, $reason), ...($declared ? ['independence' => StaffIndependence::statementSha256()] : [])];
 
-        return $this->serialized(function () use ($userId, $disbursement, $command, $permission, $others, $before, $input, $expectedRevision, $reason, $requestId, $stepUpProof): array {
+        return $this->serialized(function () use ($userId, $disbursement, $command, $permission, $others, $before, $input, $expectedRevision, $reason, $requestId, $stepUpProof, $declared): array {
             $this->funding->lockBusiness($disbursement->business_id);
 
-            return $this->withStaff($userId, $permission, $others, function (array $current) use ($userId, $disbursement, $command, $before, $input, $expectedRevision, $reason, $requestId, $stepUpProof): array {
+            return $this->withStaff($userId, $permission, $others, function (array $current) use ($userId, $disbursement, $command, $before, $input, $expectedRevision, $reason, $requestId, $stepUpProof, $declared): array {
                 $makerCurrent = $before->makerUserId === null || ($current[$before->makerUserId] ?? false);
 
                 return $this->journal->execute('staff:'.$userId, $userId, 'disbursement.'.$command, $requestId, 'disbursement', $disbursement->id, $input,
                     function (): void {},
                     fn (string $operationId): OperationResult => $this->perform($command, $userId, $disbursement, $before, $makerCurrent,
-                        $expectedRevision, $reason, $requestId, $operationId, $stepUpProof));
+                        $expectedRevision, $reason, $requestId, $operationId, $stepUpProof, $declared));
             });
         });
     }
@@ -416,9 +419,15 @@ final class EloquentDisbursementStore implements DisbursementStore
 
     /** One command's effect inside its journal operation, after every lock it needs. */
     private function perform(string $command, int $userId, Disbursement $disbursement, DisbursementState $before, bool $makerCurrent,
-        int $expectedRevision, string $reason, string $requestId, string $operationId, ?string $stepUpProof): OperationResult
+        int $expectedRevision, string $reason, string $requestId, string $operationId, ?string $stepUpProof, bool $declared = false): OperationResult
     {
         $campaign = in_array($command, ['authorize', 'approve'], true) ? $this->funding->lockFunded($disbursement->business_campaign_id) : null;
+        if ($declared) {
+            // The actor's own statement, retained with this command; a refused command rolls it back.
+            (new DisbursementIndependenceDeclaration)->forceFill(['disbursement_id' => $disbursement->id, 'staff_user_id' => $userId,
+                'command' => $command, 'operation_id' => $operationId, 'statement_version' => StaffIndependence::VERSION,
+                'statement_sha256' => StaffIndependence::statementSha256(), 'declared_at' => now('UTC')])->save();
+        }
         // Connection and destination sources are read before the disbursement lock, never under it.
         $facts = $campaign === null ? null : $this->sourceFacts($disbursement, $campaign, $command === 'approve' ? [$userId, (int) $before->makerUserId] : [$userId]);
         $this->lock($disbursement);
@@ -603,7 +612,7 @@ final class EloquentDisbursementStore implements DisbursementStore
     {
         $connections = [];
         foreach (array_unique($staffUserIds) as $staffUserId) {
-            $connections[$staffUserId] = $this->connections->connection($staffUserId, $disbursement->business_id, $campaign->partyIds());
+            $connections[$staffUserId] = $this->connections->connection($staffUserId, $disbursement->id, $disbursement->business_id, $campaign->partyIds());
         }
 
         return ['connections' => $connections, 'destination' => $this->verifiedDestination($disbursement)];
@@ -933,6 +942,7 @@ final class EloquentDisbursementStore implements DisbursementStore
             'precheck' => $precheck, 'maker' => $attribution($authorized), 'checker' => $attribution($recorded ?? ($closing?->cause === 'approve_recheck' ? $last('failed_closing') : null)),
             'viewer_is_maker' => $state->makerUserId === $userId, 'approval_binding' => $binding,
             'step_up_allowed' => in_array('disbursement.approve', $allowed, true),
+            'independence' => ['version' => StaffIndependence::VERSION, 'statement' => StaffIndependence::STATEMENT],
             'intent' => $intent === null || $recorded === null ? null : ['operation_id' => $intent->operation_id, 'recorded_at' => $recorded->created_at->toIso8601String(),
                 'receipt' => $this->receipt($recorded->id, $intent->operation_id, $intent->request_id, 'DISBURSEMENT_INTENT_RECORDED',
                     $recorded->created_at->toIso8601String(), $disbursement, $recorded->revision)],

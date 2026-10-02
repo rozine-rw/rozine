@@ -79,10 +79,12 @@ class StaffDisbursementsResource extends JsonResource
         if ($refund !== null) {
             $refund['receipt']['link'] = self::lookup($request, $refund['receipt']['request_id'], 'disbursement.approve');
         }
-        unset($detail['step_up_allowed']);
+        $independence = $detail['independence'];
+        unset($detail['step_up_allowed'], $detail['independence']);
 
         return [...$detail, 'intent' => $intent, 'refund' => $refund, 'allowed_actions' => $allowed, 'actions' => (object) $actions,
             'step_up' => ['purpose' => 'disbursement.approve', 'route' => $stepUp],
+            'independence' => $independence,
             'links' => ['close' => $close, 'ledger' => null, 'operation' => self::lookup($request)]];
     }
 }

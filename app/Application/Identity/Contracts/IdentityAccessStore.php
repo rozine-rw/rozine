@@ -49,6 +49,24 @@ interface IdentityAccessStore
     /** @return array<string, mixed> */
     public function resolvePerson(int $actorId, int $userId, string $identityReference, string $evidenceReference, string $reason, string $requestId): array;
 
+    /**
+     * Records, as an identity operator, the verified person behind a staff account; a null reference
+     * revokes the current link. A staff account never holds a Party, so this is the only staff-person
+     * resolution. Each change is an append-only revision recorded in the identity audit log.
+     *
+     * @return array<string, mixed>
+     */
+    public function recordStaffPerson(int $actorId, int $staffUserId, ?string $identityReference, string $evidenceReference, string $reason, string $requestId): array;
+
+    /**
+     * The verified person behind a staff account, read without row locks: null when the account is
+     * unresolved or its current link is revoked; otherwise that person's marketplace Party, which is
+     * null when the person holds none.
+     *
+     * @return array{party_id: string|null}|null
+     */
+    public function staffPerson(int $staffUserId): ?array;
+
     /** @return array<string, mixed> */
     public function resolveOrganization(int $actorId, string $registryReference, string $evidenceReference, string $reason, string $requestId): array;
 

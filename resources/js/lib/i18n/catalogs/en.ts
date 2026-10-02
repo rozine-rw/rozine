@@ -1062,6 +1062,7 @@ const en = {
     'admin.disbursements.empty_title': 'All disbursements released',
     'admin.disbursements.empty_body': 'No payouts owed right now.',
     'admin.disbursements.drawer_label': 'Disbursement {reference}',
+    'admin.disbursements.independence.title': 'Independence declaration',
     'admin.disbursements.amount': 'Amount',
     'admin.disbursements.destination': 'Destination',
     'admin.disbursements.due': 'Due',

@@ -92,12 +92,12 @@ use App\Infrastructure\Business\RetainedCampaignClosures;
 use App\Infrastructure\Business\RetainedCampaignPublication;
 use App\Infrastructure\Disbursement\EloquentDisbursementClosingEvidence;
 use App\Infrastructure\Disbursement\EloquentDisbursementStore;
+use App\Infrastructure\Disbursement\EloquentStaffConnections;
 use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
 use App\Infrastructure\Disbursement\SyntheticPayoutProvider;
 use App\Infrastructure\Disbursement\UnavailableFundedCampaigns;
 use App\Infrastructure\Disbursement\UnavailablePayoutDestinations;
 use App\Infrastructure\Disbursement\UnavailablePayoutProvider;
-use App\Infrastructure\Disbursement\UnavailableStaffConnections;
 use App\Infrastructure\Environment\EloquentDemoFixtureStore;
 use App\Infrastructure\Evidence\EloquentStatementExtractionQueue;
 use App\Infrastructure\Evidence\EloquentStatementStore;
@@ -209,8 +209,9 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Disbursement ports. Outside local/testing with live money off, every funding, destination,
-     * connection and provider port is its unavailable adapter, so disbursement fails closed.
+     * Disbursement ports. Outside local/testing with live money off, every funding, destination and
+     * provider port is its unavailable adapter, so disbursement fails closed; staff connections are
+     * answered by the real source, which itself answers `unavailable` without full evidence.
      */
     private function registerDisbursements(): void
     {
@@ -220,7 +221,7 @@ class AppServiceProvider extends ServiceProvider
         $synthetic = fn (): bool => $this->app->make(SyntheticDisbursementGuard::class)->allowed();
         $this->app->bind(FundedCampaigns::class, fn (): FundedCampaigns => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailableFundedCampaigns);
         $this->app->bind(PayoutDestinations::class, fn (): PayoutDestinations => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailablePayoutDestinations);
-        $this->app->bind(StaffConnections::class, fn (): StaffConnections => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailableStaffConnections);
+        $this->app->bind(StaffConnections::class, fn (): StaffConnections => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : $this->app->make(EloquentStaffConnections::class));
         $this->app->bind(SyntheticDisbursementFixtures::class, fn (): SyntheticDisbursementFixtures => $this->app->make(SyntheticDisbursementSources::class));
         $this->app->bind(PayoutProvider::class, fn (): PayoutProvider => $synthetic() ? $this->app->make(SyntheticPayoutProvider::class) : new UnavailablePayoutProvider);
         $this->app->bind(SyntheticPayoutScripts::class, SyntheticPayoutProvider::class);
