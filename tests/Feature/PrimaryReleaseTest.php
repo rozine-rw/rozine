@@ -172,10 +172,12 @@ it('rolls back the expiry receipt and evidence if returning cash fails', functio
         ->and(PrimaryReservationVersion::query()->count())->toBe(1)->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(0);
 })->with(['confirm', 'release']);
 
-it('keeps a released allocation reserved until the separate inventory guard migration', function (): void {
+it('reuses a fully returned held allocation while retaining its original claims', function (): void {
     ($this->release)();
     $result = $this->checkout->reserve($this->investor['user']->id, 1, $this->campaign->id, '1', (string) Str::uuid(), PrimaryReservationFixture::terms(...));
-    expect(PrimaryReservationRecord::query()->whereKey($result['data']['reservation_id'])->sole()->ordinal_ranges)->toBe('{[4,5)}');
+    expect(PrimaryReservationRecord::query()->whereKey($result['data']['reservation_id'])->sole()->ordinal_ranges)->toBe('{[1,2)}')
+        ->and(DB::table('primary_ordinal_claims')->where('ordinal', 1)->value('primary_reservation_id'))->toBe($this->root->id)
+        ->and(DB::table('primary_held_claim_releases')->where('primary_reservation_id', $this->root->id)->exists())->toBeTrue();
 });
 
 it('returns held cash before permitting actual campaign cancellation', function (bool $expired): void {

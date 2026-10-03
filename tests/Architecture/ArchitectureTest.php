@@ -204,7 +204,21 @@ arch('infrastructure concretions are reached through their container binding')
     // past the port that is supposed to hide it.
     ->expect('App\Infrastructure')
     ->toOnlyBeUsedIn('App\Providers')
-    ->ignoring('App\Infrastructure\Business\RetainedFundedCampaignFacts');
+    ->ignoring(['App\Infrastructure\Business\RetainedFundedCampaignFacts',
+        'App\Infrastructure\Primary\RetainedPrimaryReservation', 'App\Infrastructure\Primary\RetainedHeldClaimRelease']);
+
+arch('retained reservation replay is private to the two named Primary consumers')
+    ->expect('App\Infrastructure\Primary\RetainedPrimaryReservation')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Primary\EloquentPrimaryReservations', 'App\Infrastructure\Primary\RetainedHeldClaimRelease']);
+
+arch('held retirement proof is private to allocation and the readonly summary')
+    ->expect('App\Infrastructure\Primary\RetainedHeldClaimRelease')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Primary\EloquentPrimaryReservations', 'App\Infrastructure\Primary\EloquentCampaignReservationSummary']);
+
+arch('held retirement collaborators keep Business and Wallet persistence behind their ports')
+    ->expect(['App\Infrastructure\Primary\RetainedPrimaryReservation', 'App\Infrastructure\Primary\RetainedHeldClaimRelease'])
+    ->not->toUse(['App\Models\BusinessCampaign', 'App\Models\InvestorWallet', 'App\Models\LedgerEntry',
+        'App\Models\LedgerAccount', 'App\Application\Business\Contracts\PublishedCampaignEvidence']);
 
 arch('the retained funded projection is an internal collaborator of the named funding adapter')
     ->expect('App\Infrastructure\Business\RetainedFundedCampaignFacts')

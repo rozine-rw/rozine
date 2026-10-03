@@ -173,7 +173,11 @@ it('keeps unit identities unique for simultaneous writers with older snapshots',
                     DB::commit();
                     exit(0);
                 } catch (QueryException $exception) {
-                    exit(str_contains($exception->getMessage(), 'primary_ordinal_claims_pkey') ? 2 : 3);
+                    // Reuse now reaches the retained-release guard; an old repeatable-read snapshot
+                    // may instead abort with serialization failure. Either loser leaves one original claim set.
+                    exit(str_contains($exception->getMessage(), 'primary_ordinal_claims_pkey')
+                        || str_contains($exception->getMessage(), 'Held claim retirement requires retained evidence')
+                        || $exception->getCode() === '40001' ? 2 : 3);
                 } catch (Throwable) {
                     exit(4);
                 }
