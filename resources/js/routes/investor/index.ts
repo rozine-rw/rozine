@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 import wallet0fdd46 from './wallet'
+import primary from './primary'
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
 * @see app/Http/Controllers/RoleHomeController.php:20
@@ -165,6 +166,7 @@ wallet.form = walletForm
 const investor = {
     home: Object.assign(home, home),
     wallet: Object.assign(wallet, wallet0fdd46),
+    primary: Object.assign(primary, primary),
 }
 
 export default investor
