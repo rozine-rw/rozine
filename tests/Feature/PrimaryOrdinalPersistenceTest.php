@@ -20,6 +20,7 @@ function removePrimaryOrdinalProjection(): void
 {
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    (require database_path('migrations/2026_10_03_083345_create_primary_held_claim_generations.php'))->down();
     DB::unprepared('DROP TRIGGER primary_ordinal_evidence ON primary_reservations;
         DROP TABLE primary_ordinal_claims;
         DROP FUNCTION retain_primary_ordinal_claims(), validate_primary_ordinal_claim();

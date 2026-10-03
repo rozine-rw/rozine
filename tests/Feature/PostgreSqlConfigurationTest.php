@@ -122,6 +122,9 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
     $holdingIssue = require database_path('migrations/2026_09_30_114217_require_issue_evidence_for_primary_holdings.php');
     $issuedCompleteness = require database_path('migrations/2026_09_30_234802_require_complete_primary_holdings_for_issued_closings.php');
+    $heldGenerations = require database_path('migrations/2026_10_03_083345_create_primary_held_claim_generations.php');
+    $heldGenerations->down();
+    expect(Schema::hasTable('primary_held_claim_generations'))->toBeFalse()->and(Schema::hasTable('primary_held_claim_releases'))->toBeFalse();
     $staffIndependence = require database_path('migrations/2026_10_02_170000_create_staff_independence_evidence.php');
     $staffIndependence->down();
     expect(Schema::hasTable('staff_person_identities'))->toBeFalse();
@@ -295,6 +298,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $issuedCompleteness->up();
     $purchaseTopic->up();
     $staffIndependence->up();
+    $heldGenerations->up();
     expect(DB::select($changeFeedConstraintQuery))->toEqual($changeFeedConstraints);
     expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);

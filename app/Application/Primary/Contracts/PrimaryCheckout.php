@@ -8,9 +8,28 @@ use App\Domain\Primary\PrimaryTerms;
 use App\Domain\Primary\UnitRights;
 use Closure;
 
-/** Internal caller boundary. HTTP checkout remains inactive until admission and lifecycle integration. */
+/** Internal caller boundary. HTTP checkout remains inactive until admission and lifecycle integration.
+ * @phpstan-import-type PurchaseFacts from PrimaryReservations
+ */
 interface PrimaryCheckout
 {
+    /**
+     * Current Investor/context/Party authorization precedes private retained-history replay.
+     * Starts without previously acquired authority/wallet locks; retains Business → User →
+     * Party → shared root/commitment gates through the caller's outer commit. Returns only
+     * authenticated historical reservation and confirmation facts, including terminal roots.
+     * Separate current cash/funding/admission/Holding sources remain necessary. No writes,
+     * policy selection or transport activation occur.
+     *
+     * @return PurchaseFacts
+     */
+    public function reservationFacts(int $userId, int $contextRevision, string $campaignId, string $reservationId): array;
+
+    /** Same current authority and historical-only contract as reservationFacts().
+     * @return PurchaseFacts
+     */
+    public function commitmentFacts(int $userId, int $contextRevision, string $campaignId, string $commitmentId): array;
+
     /**
      * Starts with no previously acquired authority/wallet locks. Retains Business → User → Party
      * authority through journal replay, reservation persistence and the outer commit. The Party
