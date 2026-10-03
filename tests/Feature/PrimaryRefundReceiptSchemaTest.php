@@ -86,7 +86,7 @@ it('accepts either insertion order and multiple receipts for the same exact refu
         DB::transaction(function () use (&$captured): void {
             $result = ($this->refund)();
             $captured = ['operation' => CommandOperation::query()->whereKey($result['operation_id'])->sole()->getAttributes(),
-                'entry' => LedgerEntry::query()->whereKey($result['data']['entry_id'])->sole()->getAttributes(),
+                'entry' => array_diff_key(LedgerEntry::query()->whereKey($result['data']['entry_id'])->sole()->getAttributes(), ['wallet_owner' => true]),
                 'lines' => DB::table('ledger_lines')->where('entry_id', $result['data']['entry_id'])->get()->map(fn (object $line): array => (array) $line)->all()];
             throw new RuntimeException('ROLL_BACK_CAPTURED_REFUND');
         });
@@ -152,7 +152,7 @@ it('verifies actual retained ledger facts instead of accepting a matching receip
     DB::statement('ALTER TABLE ledger_lines DISABLE TRIGGER USER');
     DB::statement('SET CONSTRAINTS ALL DEFERRED');
     $credit = DB::table('ledger_lines')->where('entry_id', $result['data']['entry_id'])->where('direction', 'credit');
-    $extra = LedgerEntry::query()->whereKey($result['data']['entry_id'])->sole()->getAttributes();
+    $extra = array_diff_key(LedgerEntry::query()->whereKey($result['data']['entry_id'])->sole()->getAttributes(), ['wallet_owner' => true]);
     $extra['id'] = strtolower((string) Str::ulid());
     $extra['kind'] = 'primary_release';
     match ($damage) {
