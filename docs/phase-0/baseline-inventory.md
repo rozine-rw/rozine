@@ -652,6 +652,18 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `business_profiles_entity_party_id_unique` on (entity_party_id) — unique; `business_profiles_pkey` on (id) — unique
 
+### `business_wallets`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `owner` | `varchar` | no | `'business'::character varying` |
+| `business_id` | `bpchar` | no | — |
+| `currency` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_wallets_business_unique` on (business_id) — unique; `business_wallets_pkey` on (id) — unique
+
 ### `cache`
 
 | Column | Type | Nullable | Default |
@@ -1031,6 +1043,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `party_id` | `bpchar` | no | — |
 | `currency` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
+| `owner` | `varchar` | no | `'investor'::character varying` |
 
 **Indexes:** `investor_wallets_id_party_id_unique` on (id, party_id) — unique; `investor_wallets_party_id_unique` on (party_id) — unique; `investor_wallets_pkey` on (id) — unique
 
@@ -1074,6 +1087,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `kind` | `varchar` | no | — |
 | `currency` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
+| `wallet_owner` | `varchar` | yes | — |
 
 **Indexes:** `ledger_accounts_pkey` on (id) — unique; `ledger_accounts_system_kind` on (kind) — unique; `ledger_accounts_wallet_kind` on (wallet_id, kind) — unique
 
@@ -1094,6 +1108,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `origin_operation_id` | `varchar` | yes | — |
 | `cause_type` | `varchar` | yes | — |
 | `cause_id` | `varchar` | yes | — |
+| `wallet_owner` | `varchar` | yes | — |
 
 **Indexes:** `ledger_entries_kind_source_type_source_id_unique` on (kind, source_type, source_id) — unique; `ledger_entries_pkey` on (id) — unique; `ledger_entries_source` on (source_type, source_id); `ledger_entries_wallet_id_id_index` on (wallet_id, id)
 
@@ -1652,6 +1667,16 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `wallet_provider_events_content` on (provider, provider_event_id, content_sha256) — unique; `wallet_provider_events_final` on (intent_id) — unique; `wallet_provider_events_identity` on (provider, provider_event_id) — unique; `wallet_provider_events_intent_id_id_index` on (intent_id, id); `wallet_provider_events_pkey` on (id) — unique
 
+### `wallets`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `owner` | `varchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `wallets_identity` on (id, owner) — unique; `wallets_pkey` on (id) — unique
+
 ## Migrations
 
 Files present in `database/migrations`. Which of these have run is per-environment and not captured here.
@@ -1744,6 +1769,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_30_234802_require_complete_primary_holdings_for_issued_closings.php |
 | 2026_10_02_090000_add_purchase_topic_to_change_feed.php |
 | 2026_10_02_170000_create_staff_independence_evidence.php |
+| 2026_10_03_100000_add_wallet_supertype_and_business_wallets.php |
 
 ## Routes
 
