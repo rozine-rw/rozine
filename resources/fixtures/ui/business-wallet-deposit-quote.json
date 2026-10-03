@@ -24,7 +24,7 @@
             }
         },
         "funding": {
-            "kind": null,
+            "kind": "deposit",
             "policy": {
                 "version": "synthetic-deposit-policy-0",
                 "synthetic": true,
@@ -69,7 +69,21 @@
                     "amount": "3500000"
                 }
             ],
-            "quote": null
+            "quote": {
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "1000000"
+                },
+                "fee": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "credited": {
+                    "currency": "RWF",
+                    "amount": "1000000"
+                },
+                "refusal": null
+            }
         },
         "deposits": [
             {

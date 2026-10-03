@@ -968,6 +968,23 @@
                 "url": "/preview/business-repayments-paid",
                 "method": "post"
             }
+        },
+        "preview_outcome": {
+            "kind": "unconfirmed",
+            "command": {
+                "name": "repayment.pay",
+                "payload": {
+                    "request_id": "4c2e9b10-7d3a-4e5f-9a10-c1c2c3c4c5c6",
+                    "identity_context_revision": 4,
+                    "note_id": "RZN-2026-0418",
+                    "option": "next_instalment",
+                    "expected_servicing_revision": 7,
+                    "quoted_total": {
+                        "currency": "RWF",
+                        "amount": "3465000"
+                    }
+                }
+            }
         }
     }
 }

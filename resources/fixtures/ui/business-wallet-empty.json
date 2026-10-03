@@ -1,77 +1,111 @@
 {
     "component": "business/wallet",
+    "synthetic": true,
     "props": {
+        "contract_version": "business-servicing-v1",
+        "identity_context_revision": 4,
+        "server_time": "2026-12-01T09:00:00+02:00",
+        "allowed_actions": ["business.wallet.deposit"],
+        "business": {
+            "id": "01k6r4m2n6p8q0r2s4t6v8b1z2",
+            "name": "GreenLeaf Agro"
+        },
         "wallet": {
+            "revision": 0,
+            "status": "active",
+            "restriction": null,
             "available": {
                 "currency": "RWF",
-                "amount": "12383800"
+                "amount": "0"
             },
-            "status": "active"
+            "pending_deposits": {
+                "currency": "RWF",
+                "amount": "0"
+            }
         },
-        "methods": {
-            "deposit": [
-                {
-                    "key": "mtn",
-                    "kind": "mtn",
-                    "name": "MTN Mobile Money"
+        "funding": {
+            "kind": null,
+            "policy": {
+                "version": "synthetic-deposit-policy-0",
+                "synthetic": true,
+                "fee": {
+                    "currency": "RWF",
+                    "amount": "0"
                 },
-                {
-                    "key": "airtel",
-                    "kind": "airtel",
-                    "name": "Airtel Money"
+                "minimum": {
+                    "currency": "RWF",
+                    "amount": "1000"
                 },
+                "maximum": {
+                    "currency": "RWF",
+                    "amount": "5000000"
+                }
+            },
+            "methods": [
                 {
-                    "key": "bk",
+                    "id": "bk-1",
                     "kind": "bank",
-                    "name": "Bank of Kigali"
+                    "label": "Bank of Kigali",
+                    "masked": "Account ····2231"
+                },
+                {
+                    "id": "mtn-1",
+                    "kind": "mtn",
+                    "label": "MTN MoMo",
+                    "masked": "+250 788 ···· 456"
                 }
             ],
-            "withdraw": [
+            "picks": [
                 {
-                    "key": "mtn",
-                    "kind": "mtn",
-                    "name": "MTN Mobile Money"
+                    "currency": "RWF",
+                    "amount": "500000"
                 },
                 {
-                    "key": "airtel",
-                    "kind": "airtel",
-                    "name": "Airtel Money"
+                    "currency": "RWF",
+                    "amount": "1000000"
                 },
                 {
-                    "key": "bk",
-                    "kind": "bank",
-                    "name": "Bank of Kigali"
+                    "currency": "RWF",
+                    "amount": "3500000"
                 }
-            ]
+            ],
+            "quote": null
         },
-        "quick_amounts": [
-            {
-                "currency": "RWF",
-                "amount": "100000"
-            },
-            {
-                "currency": "RWF",
-                "amount": "500000"
-            },
-            {
-                "currency": "RWF",
-                "amount": "1000000"
-            },
-            {
-                "currency": "RWF",
-                "amount": "5000000"
-            }
-        ],
-        "quote": null,
-        "today": "2026-09-23",
-        "transactions": {
+        "deposits": [],
+        "history": {
+            "movement": "external",
+            "filters": [
+                {
+                    "key": "external",
+                    "active": true,
+                    "link": {
+                        "url": "/preview/business-wallet",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "internal",
+                    "active": false,
+                    "link": {
+                        "url": "/preview/business-wallet-internal",
+                        "method": "get"
+                    }
+                }
+            ],
             "items": [],
-            "from": "2026-09-16",
-            "to": "2026-09-23"
+            "pagination": {
+                "next": null
+            }
         },
-        "links": {
+        "receipt": null,
+        "bases": {},
+        "shell_links": {
             "home": {
                 "url": "/preview/business-home",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
                 "method": "get"
             },
             "reports": {
@@ -81,35 +115,26 @@
             "profile": {
                 "url": "/preview/business-profile",
                 "method": "get"
-            },
-            "launcher": {
-                "url": "/preview/launcher-ready",
-                "method": "get"
-            },
-            "back": {
-                "url": "/preview/business-home",
-                "method": "get"
-            },
-            "wallet": {
+            }
+        },
+        "links": {
+            "close": {
                 "url": "/preview/business-wallet",
                 "method": "get"
             },
-            "export_pdf": {
-                "url": "/preview/business-wallet.pdf",
+            "deposit": {
+                "url": "/preview/business-wallet-deposit",
                 "method": "get"
             },
-            "export_csv": {
-                "url": "/preview/business-wallet.csv",
+            "operation": {
+                "url": "/preview/business-wallet-operation-{request_id}",
                 "method": "get"
-            }
+            },
+            "repayments": null
         },
         "actions": {
             "deposit": {
-                "url": "/preview/business-wallet",
-                "method": "post"
-            },
-            "withdraw": {
-                "url": "/preview/business-wallet",
+                "url": "/preview/business-wallet-deposit-pending",
                 "method": "post"
             }
         }

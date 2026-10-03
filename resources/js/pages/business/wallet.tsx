@@ -1,66 +1,47 @@
-import { Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { Link, router } from '@inertiajs/react';
 import { BusinessShell } from '@/components/business/business-shell';
 import { BalanceCard } from '@/components/business/wallet/balance-card';
-import { FlowPanel } from '@/components/business/wallet/flow-panel';
-import { TransactionHistory } from '@/components/business/wallet/transaction-history';
-import { TransactionSheet } from '@/components/business/wallet/transaction-sheet';
+import {
+    EntryReceiptSheet,
+    WalletHistory,
+} from '@/components/business/wallet/history';
+import { DepositPanel } from '@/components/investor/wallet/funding';
+import {
+    DepositIntents,
+    ReceiptSheet,
+} from '@/components/investor/wallet/history';
+import { PollStopped } from '@/components/rozine/c3-notice';
+import { useBoundedPoll } from '@/hooks/use-bounded-poll';
 import { useTranslation } from '@/hooks/use-translation';
-import { cn } from '@/lib/utils';
-import type {
-    BusinessWalletProps,
-    WalletFlow,
-    WalletTransaction,
-} from '@/types/business';
+import type { BusinessWalletProps } from '@/types/business';
+import type { DepositIntent } from '@/types/investor';
 
-/** The Deposit and Withdraw buttons' tray arrows (design L1336–1345). */
-function Arrow({ flow, className }: { flow: WalletFlow; className: string }) {
-    return (
-        <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden
-            className="size-[15px]"
-        >
-            <path
-                d={
-                    flow === 'deposit'
-                        ? 'M12 4v10M8 11l4 4 4-4M5 20h14'
-                        : 'M12 20V10M8 13l4-4 4 4M5 4h14'
-                }
-                stroke="currentColor"
-                className={className}
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
-        </svg>
-    );
-}
+const isIntent = (
+    receipt: NonNullable<BusinessWalletProps['receipt']>,
+): receipt is DepositIntent => 'intent_receipt' in receipt;
 
 /**
- * Wallet (MVP-BUSINESS-SCR-08, design L1315–1457), reached from Home's wallet pill. It is not a
- * tab, so it renders full width in the main pane, as the design's desktop does.
+ * Wallet (MVP-BUSINESS-SCR-08, design L1315–1457; C4 v1 §4a, `business.wallet.show`), reached
+ * from Home's wallet pill or from Repayments when funds are short. Repayments are paid from the
+ * available balance, which the Business funds through the C3 deposit adapter: a deposit records
+ * an intent only, and nothing is credited until the provider's success is verified. Intents still
+ * `pending` or `unknown` are polled, boundedly. Withdrawal and exports are Phase 2.
  */
-export default function BusinessWallet({
-    wallet,
-    methods,
-    quick_amounts,
-    quote,
-    today,
-    transactions,
-    links,
-    actions,
-}: BusinessWalletProps) {
+export default function BusinessWallet(props: BusinessWalletProps) {
     const { t } = useTranslation();
-    const [flow, setFlow] = useState<WalletFlow | null>(null);
-    const [open, setOpen] = useState<WalletTransaction | null>(null);
+    const inFlight = props.deposits.some(
+        (deposit) => deposit.state === 'pending' || deposit.state === 'unknown',
+    );
+    const poll = useBoundedPoll(inFlight, ['wallet', 'deposits', 'history']);
+    const closeReceipt = () =>
+        router.visit(props.links.close, { preserveScroll: true });
+    const receipt = props.receipt;
 
     return (
         <BusinessShell
             title={t('business.wallet.title')}
             tab="home"
-            links={links}
+            links={props.shell_links}
             showTabBar={false}
         >
             <div
@@ -69,7 +50,7 @@ export default function BusinessWallet({
             >
                 <div className="flex items-center gap-[11px]">
                     <Link
-                        href={links.back}
+                        href={props.shell_links.home}
                         aria-label={t('business.wallet.back')}
                         className="flex size-[34px] items-center justify-center rounded-xl border border-rz-border bg-rz-surface text-base text-rz-ink"
                     >
@@ -79,69 +60,54 @@ export default function BusinessWallet({
                         {t('business.wallet.title')}
                     </h1>
                 </div>
-                <BalanceCard wallet={wallet} />
-                <div className="mt-3.5 grid grid-cols-2 gap-[11px]">
-                    {(['deposit', 'withdraw'] as const).map((key) => (
-                        <button
-                            key={`${key}-${flow === key}`}
-                            type="button"
-                            aria-pressed={flow === key}
-                            onClick={() => setFlow(flow === key ? null : key)}
-                            className={cn(
-                                'relative flex items-center justify-center gap-[7px] rounded-2xl border border-rz-border bg-rz-surface py-[13px] text-[13px] font-semibold text-rz-ink shadow-[0_5px_14px_-8px_rgba(20,45,95,.3)]',
-                                flow === key && 'border-transparent text-white',
-                            )}
-                        >
-                            {flow === key && (
-                                <span
-                                    aria-hidden
-                                    className={cn(
-                                        'absolute inset-0 animate-[rz-pillin_.32s_cubic-bezier(.34,1.2,.5,1)_both] rounded-2xl',
-                                        key === 'deposit'
-                                            ? 'bg-rz-accent-fill'
-                                            : 'bg-[#7d420f]',
-                                    )}
-                                />
-                            )}
-                            <span className="relative flex items-center gap-[7px]">
-                                <Arrow
-                                    flow={key}
-                                    className={
-                                        flow === key
-                                            ? 'text-white'
-                                            : key === 'deposit'
-                                              ? 'text-rz-accent-app-text'
-                                              : 'text-[#b05c1a] dark:text-[#f0a060]'
-                                    }
-                                />
-                                {t(`business.wallet.${key}.button`)}
-                            </span>
-                        </button>
-                    ))}
-                </div>
-                {flow !== null && (
-                    <FlowPanel
-                        key={flow}
-                        flow={flow}
-                        methods={methods[flow]}
-                        quickAmounts={quick_amounts}
-                        quote={quote}
-                        action={actions[flow]}
-                        onClose={() => setFlow(null)}
-                    />
-                )}
-                <TransactionHistory
-                    transactions={transactions}
-                    today={today}
-                    links={links}
-                    onOpen={setOpen}
+                <BalanceCard
+                    wallet={props.wallet}
+                    basis={props.bases.available}
                 />
-                {open !== null && (
-                    <TransactionSheet
-                        transaction={open}
-                        onClose={() => setOpen(null)}
+                {props.links.repayments !== null && (
+                    <Link
+                        href={props.links.repayments}
+                        className="mt-2.5 block text-center text-xs font-semibold text-rz-accent-app-text"
+                    >
+                        {t('business.servicing.wallet.to_repayments')}
+                    </Link>
+                )}
+                {props.funding.kind === null ? (
+                    <Link
+                        href={props.links.deposit}
+                        preserveScroll
+                        className="mt-3.5 flex items-center justify-center rounded-2xl bg-rz-accent-fill py-[13px] text-[13px] font-semibold text-white shadow-[0_5px_14px_-8px_rgba(20,45,95,.3)]"
+                    >
+                        {t('business.wallet.deposit.button')}
+                    </Link>
+                ) : (
+                    <DepositPanel<'business.wallet.deposit'>
+                        funding={props.funding}
+                        actions={props.actions}
+                        allowed_actions={props.allowed_actions}
+                        identity_context_revision={
+                            props.identity_context_revision
+                        }
+                        preview_outcome={props.preview_outcome}
+                        operation={props.links.operation}
+                        close={props.links.close}
+                        wide={false}
+                        command="business.wallet.deposit"
+                        payload={{ business_id: props.business.id }}
                     />
                 )}
+                <DepositIntents deposits={props.deposits} />
+                <PollStopped {...poll} className="mt-2" />
+                <WalletHistory history={props.history} />
+                {receipt !== null &&
+                    (isIntent(receipt) ? (
+                        <ReceiptSheet receipt={receipt} close={closeReceipt} />
+                    ) : (
+                        <EntryReceiptSheet
+                            entry={receipt}
+                            close={closeReceipt}
+                        />
+                    ))}
             </div>
         </BusinessShell>
     );
