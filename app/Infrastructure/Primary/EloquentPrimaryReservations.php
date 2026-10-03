@@ -41,10 +41,60 @@ use Illuminate\Support\Str;
 use RuntimeException;
 use Throwable;
 
-/** @phpstan-import-type CampaignInput from PrimaryCampaignSource */
+/** @phpstan-import-type CampaignInput from PrimaryCampaignSource
+ * @phpstan-import-type PurchaseFacts from PrimaryReservations
+ */
 final readonly class EloquentPrimaryReservations implements PrimaryReservations
 {
     public function __construct(private PrimaryCampaignSource $campaigns, private WalletPostings $wallets, private CanonicalJson $json, private PrimaryCommittedCash $cash, private PrimaryReturnedCash $returnedCash, private CampaignFundingEvidence $fundings, private ChangeFeed $changes, private RetainedPrimaryReservation $retained, private RetainedHeldClaimRelease $claims) {}
+
+    public function reservationFacts(string $campaignId, string $partyId, string $reservationId): array
+    {
+        return $this->purchaseFacts($campaignId, $partyId, $reservationId, null);
+    }
+
+    public function commitmentFacts(string $campaignId, string $partyId, string $commitmentId): array
+    {
+        return $this->purchaseFacts($campaignId, $partyId, null, $commitmentId);
+    }
+
+    /** @return PurchaseFacts */
+    private function purchaseFacts(string $campaignId, string $partyId, ?string $reservationId, ?string $commitmentId): array
+    {
+        if (DB::transactionLevel() === 0) {
+            throw new CommandRejection('PRIMARY_TRANSACTION_REQUIRED');
+        }
+        $query = PrimaryReservationRecord::query()->where('business_campaign_id', $campaignId)->where('party_id', $partyId);
+        if ($commitmentId === null) {
+            $query->whereKey($reservationId);
+        } else {
+            $query->whereIn('id', PrimaryCommitment::query()->select('primary_reservation_id')->whereKey($commitmentId));
+        }
+        $root = $query->sharedLock()->first()
+            ?? throw new CommandRejection($commitmentId === null ? 'RESERVATION_NOT_FOUND' : 'COMMITMENT_NOT_FOUND', 404);
+        $commitment = PrimaryCommitment::query()->where('primary_reservation_id', $root->id)->sharedLock()->first();
+        [$reservation, $version] = $this->retained->read($root, $this->retained->facts($root));
+        if ($reservation->state === 'confirmed') {
+            if ($commitment === null || $version->operation_id === null || $commitment->primary_reservation_version_id !== $version->id
+                || $commitment->operation_id !== $version->operation_id || ! $commitment->confirmed_at->equalTo($version->created_at)
+                || ! $commitment->created_at->equalTo($version->created_at)) {
+                throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+            }
+        } elseif ($commitment !== null) {
+            throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+        }
+
+        return ['reservation_id' => $root->id, 'campaign_id' => $root->business_campaign_id, 'party_id' => $root->party_id,
+            'publication_sha256' => $root->publication_sha256, 'root_sha256' => $root->sha256,
+            'revision' => $version->revision, 'revision_sha256' => $version->sha256, 'state' => $reservation->state,
+            'starts_at' => $reservation->window->startsAt->format('Y-m-d\TH:i:s.u\Z'), 'expires_at' => $reservation->window->expiresAt->format('Y-m-d\TH:i:s.u\Z'),
+            'units' => (string) $reservation->rights->ordinals->count, 'ordinal_ranges' => $reservation->rights->ordinals->ranges,
+            'principal' => ['currency' => 'RWF', 'amount' => (string) $reservation->rights->principal],
+            'rights' => $reservation->rights->toArray(), 'terms' => $reservation->terms->toArray(),
+            'disclosure_sha256' => $reservation->terms->disclosureSha256,
+            'confirmation' => $commitment === null ? null : ['commitment_id' => $commitment->id, 'operation_id' => $commitment->operation_id,
+                'confirmed_at' => $commitment->confirmed_at->format('Y-m-d\TH:i:s.u\Z')]];
+    }
 
     public function reserve(string $campaignId, string $partyId, string $originOperationId, string $units, Closure $admit): ReservedCheckout
     {

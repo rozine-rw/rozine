@@ -14,9 +14,28 @@ use App\Domain\Primary\PrimaryTerms;
 use App\Domain\Primary\UnitRights;
 use Closure;
 
-/** Internal persistence boundary; no HTTP checkout is activated by this port. */
+/** Internal persistence boundary; no HTTP checkout is activated by this port.
+ * @phpstan-type PurchaseFacts array{reservation_id: string, campaign_id: string, party_id: string, publication_sha256: string, root_sha256: string, revision: int, revision_sha256: string, state: string, starts_at: string, expires_at: string, units: string, ordinal_ranges: list<array{first: string, last: string}>, principal: array{currency: string, amount: string}, rights: array<string, mixed>, terms: array<string, mixed>, disclosure_sha256: string, confirmation: null|array{commitment_id: string, operation_id: string, confirmed_at: string}}
+ */
 interface PrimaryReservations
 {
+    /**
+     * Requires the caller's transaction and retained Business/current Investor/Party authority,
+     * acquired before this call. Scopes the native target before decryption, then authenticates
+     * the complete original root/revision history and confirmation binding under shared root
+     * and commitment locks. Returns historical rights and disclosures, including terminal and
+     * recycled roots. No cash, occupancy, funding, Holding or current admission is asserted;
+     * time alone never changes the retained state. No journal, wallet or feed writes occur.
+     *
+     * @return PurchaseFacts
+     */
+    public function reservationFacts(string $campaignId, string $partyId, string $reservationId): array;
+
+    /** Same authority and historical-only contract as reservationFacts().
+     * @return PurchaseFacts
+     */
+    public function commitmentFacts(string $campaignId, string $partyId, string $commitmentId): array;
+
     /**
      * Requires the caller's transaction, journal operation and authorized canonical Party.
      * Activation requires a verified caller authority/Business lock order; authority evidence
