@@ -14,6 +14,8 @@ use RuntimeException;
 
 final class EloquentCampaignReservationSummary implements CampaignReservationSummary
 {
+    public function __construct(private readonly RetainedHeldClaimRelease $claims) {}
+
     public function read(string $campaignId, DateTimeImmutable $at): array
     {
         $instant = $at->format('Y-m-d H:i:s.uP');
@@ -40,6 +42,7 @@ final class EloquentCampaignReservationSummary implements CampaignReservationSum
                 ->on('versions.primary_reservation_id', 'reservations.id')->on('versions.revision', 'latest.revision'))
             ->leftJoin('primary_commitments as commitments', 'commitments.primary_reservation_id', 'reservations.id')
             ->leftJoinSub($refunds, 'refunds', fn (JoinClause $join): JoinClause => $join->on('refunds.source_id', 'reservations.id'))
+            ->leftJoin('primary_held_claim_releases as retirements', 'retirements.primary_reservation_id', 'reservations.id')
             ->leftJoin('investor_wallets as refund_wallets', 'refund_wallets.id', 'refunds.wallet_id')
             ->selectRaw("COALESCE(SUM(reservations.principal) FILTER (WHERE versions.state = 'confirmed' AND refunds.id IS NULL), 0)::text AS committed_principal,
                 COALESCE(SUM(reservations.units) FILTER (WHERE versions.state = 'confirmed' AND refunds.id IS NULL), 0)::text AS committed_units,
@@ -50,7 +53,7 @@ final class EloquentCampaignReservationSummary implements CampaignReservationSum
                 COALESCE(SUM(reservations.units) FILTER (WHERE versions.state = 'held' AND reservations.expires_at <= ?), 0)::text AS expired_hold_units,
                 COALESCE(SUM(reservations.principal) FILTER (WHERE versions.state IN ('released', 'expired') OR refunds.id IS NOT NULL), 0)::text AS returned_principal,
                 COALESCE(SUM(reservations.units) FILTER (WHERE versions.state IN ('released', 'expired') OR refunds.id IS NOT NULL), 0)::text AS returned_units,
-                COALESCE(SUM(reservations.units), 0)::text AS occupied_units,
+                COALESCE(SUM(reservations.units) FILTER (WHERE retirements.primary_reservation_id IS NULL), 0)::text AS occupied_units,
                 COUNT(*) FILTER (WHERE versions.state IS NULL OR (versions.state = 'confirmed') <> (commitments.id IS NOT NULL)
                     OR (refunds.id IS NOT NULL AND (versions.state IS DISTINCT FROM 'confirmed'
                         OR refund_wallets.party_id IS DISTINCT FROM reservations.party_id
@@ -58,6 +61,7 @@ final class EloquentCampaignReservationSummary implements CampaignReservationSum
                         OR refunds.currency IS DISTINCT FROM 'RWF' OR refunds.line_count <> 2
                         OR refunds.credited <> reservations.principal OR refunds.debited <> reservations.principal))) AS invalid_roots",
                 [$instant, $instant, $instant, $instant])->toBase()->first();
+        $this->claims->retired($campaignId);
         if ($totals === null || (int) $totals->invalid_roots !== 0) {
             throw new RuntimeException('RESERVATION_SUMMARY_INTEGRITY_FAILED');
         }

@@ -21,7 +21,9 @@ interface PrimaryReservations
      * Requires the caller's transaction, journal operation and authorized canonical Party.
      * Activation requires a verified caller authority/Business lock order; authority evidence
      * stays locked through commit. Successful journal replay precedes this call. This port takes
-     * Business → campaign → reservations in stable id order → wallet/ledger locks.
+     * Business → campaign → reservations/commitments in stable id order → all affected
+     * prior/new wallets in Party order → ledger. The caller retains all required staff/Party
+     * authority locks before entering this boundary; admission must not invert that order.
      * All new evidence and cash movements roll back together, even if the caller catches a refusal.
      *
      * The required server-side admission callback checks current eligibility, connected parties,
@@ -29,10 +31,11 @@ interface PrimaryReservations
      * terms or refuses; this port supplies no permissive policy fallback. It must not send external
      * effects. The campaign input is retained publication evidence, not current eligibility.
      *
-     * Reservation creation conservatively counts every retained allocation, including timed-out
-     * holds. Reusing allocations requires verified release/refund integration and a forward
-     * migration of the capacity trigger and retained unit claims; application-only release
-     * cannot recycle inventory.
+     * Reservation creation counts the shared live claim set, including overdue holds and
+     * confirmed refunds. Only full replayed held release/expiry plus original full principal
+     * return may create immutable retirement and per-ordinal successor generations. Original
+     * claims and every root/revision remain retained. Retirement, successor and hold are atomic;
+     * a SELECT-only summary never creates retirement evidence.
      *
      * @param  Closure(UnitRights, array<string, mixed>): PrimaryTerms  $admit
      */
@@ -44,7 +47,7 @@ interface PrimaryReservations
      * they never extend the deadline or move cash. Matching current acknowledgement
      * atomically creates the commitment and moves the original hold to committed.
      * Expired holds refuse here; the caller records the refusal, then expires the hold in
-     * the same outer transaction. Inventory recycling remains separate work.
+     * the same outer transaction. Time alone never retires inventory.
      *
      * @param  Closure(UnitRights, array<string, mixed>): PrimaryTerms  $admit
      */

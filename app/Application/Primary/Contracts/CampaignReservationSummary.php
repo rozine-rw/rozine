@@ -12,7 +12,8 @@ interface CampaignReservationSummary
     /**
      * The caller authorizes access and holds the Business lock when composing this with other evidence.
      * The instant classifies current held rows at their half-open deadline; this is not a historical query.
-     * Returned and overdue roots still occupy inventory until recycling is implemented. Confirmed totals
+     * Held roots cease occupying only after a retained, fully authenticated release retirement.
+     * Unretired returns, confirmed refunds and overdue holds still occupy inventory. Confirmed totals
      * exclude complete, source-bound principal refunds; original commitment evidence remains retained.
      * This is a current projection, not funding admission: callers must separately verify original cash.
      *
