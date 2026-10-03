@@ -6,6 +6,7 @@ namespace App\Infrastructure\Primary;
 
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Primary\PrimaryCampaignReturns;
@@ -18,6 +19,7 @@ use App\Application\Wallet\Contracts\PrimaryCommittedCash;
 use App\Application\Wallet\Contracts\PrimaryReturnedCash;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\PostingSource;
+use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Primary\PrimaryReservation;
 use App\Domain\Primary\PrimaryTerms;
@@ -44,7 +46,7 @@ use Throwable;
 /** @phpstan-import-type CampaignInput from PrimaryCampaignSource */
 final readonly class EloquentPrimaryReservations implements PrimaryReservations
 {
-    public function __construct(private PrimaryCampaignSource $campaigns, private WalletPostings $wallets, private CanonicalJson $json, private PrimaryCommittedCash $cash, private PrimaryReturnedCash $returnedCash, private CampaignFundingEvidence $fundings) {}
+    public function __construct(private PrimaryCampaignSource $campaigns, private WalletPostings $wallets, private CanonicalJson $json, private PrimaryCommittedCash $cash, private PrimaryReturnedCash $returnedCash, private CampaignFundingEvidence $fundings, private ChangeFeed $changes) {}
 
     public function reserve(string $campaignId, string $partyId, string $originOperationId, string $units, Closure $admit): ReservedCheckout
     {
@@ -421,6 +423,20 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
         if ($limit < 1 || $limit > 1000) {
             throw new CommandRejection('INVALID_SWEEP_LIMIT');
         }
+
+        $result = DB::transactionLevel() > 0
+            ? DB::transaction(fn (): array => $this->sweepExpired($limit, true), 3)
+            : $this->sweepExpired($limit, false);
+        if ($result['failure'] !== null) {
+            throw $result['failure'];
+        }
+
+        return $result['expired'];
+    }
+
+    /** @return array{expired: int, failure: Throwable|null} */
+    private function sweepExpired(int $limit, bool $deferChanges): array
+    {
         $cutoff = now('UTC')->format('Y-m-d H:i:s.uP');
         $candidates = PrimaryReservationRecord::query()->select('primary_reservations.*')
             ->leftJoin('primary_expiry_failures as failures', 'failures.primary_reservation_id', 'primary_reservations.id')
@@ -433,9 +449,28 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
             ->orderBy('expires_at')->orderBy('primary_reservations.id')->limit($limit)->get();
         $expired = 0;
         $failure = null;
+        $subjects = [];
         foreach ($candidates as $candidate) {
             try {
-                if (DB::transaction(fn (): ?ReservationRelease => $this->expire($candidate->business_campaign_id, $candidate->id), 3) !== null) {
+                $subject = DB::transaction(function () use ($candidate, $deferChanges): ?array {
+                    $released = $this->expire($candidate->business_campaign_id, $candidate->id);
+                    if ($released === null) {
+                        return null;
+                    }
+                    $campaign = $this->campaigns->lockRetained($candidate->business_campaign_id);
+                    $subject = ['party_id' => $candidate->party_id, 'reservation_id' => $candidate->id,
+                        'business_id' => $campaign['business_id'], 'campaign_id' => $candidate->business_campaign_id];
+                    if (! $deferChanges) {
+                        $this->changedExpiries([$subject]);
+                    }
+
+                    return $subject;
+                }, 3);
+                if ($subject !== null) {
+                    if ($deferChanges) {
+                        $subjects[] = $subject;
+                    }
+
                     $expired++;
                 }
             } catch (Throwable $exception) {
@@ -448,11 +483,24 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                 $failure ??= $exception;
             }
         }
-        if ($failure !== null) {
-            throw $failure;
-        }
+        $this->changedExpiries($subjects);
 
-        return $expired;
+        return ['expired' => $expired, 'failure' => $failure];
+    }
+
+    /** @param list<array{party_id: string, reservation_id: string, business_id: string, campaign_id: string}> $subjects */
+    private function changedExpiries(array $subjects): void
+    {
+        usort($subjects, fn (array $left, array $right): int => [$left['party_id'], $left['reservation_id']] <=> [$right['party_id'], $right['reservation_id']]);
+        $campaigns = [];
+        foreach ($subjects as $subject) {
+            $this->changes->record(ChangeScope::party($subject['party_id']), 'purchase', $subject['reservation_id']);
+            $campaigns[$subject['business_id'].'|'.$subject['campaign_id']] = $subject;
+        }
+        ksort($campaigns, SORT_STRING);
+        foreach ($campaigns as $subject) {
+            $this->changes->record(ChangeScope::business($subject['business_id']), 'campaign', $subject['campaign_id']);
+        }
     }
 
     private function expiryFailureReason(Throwable $exception): string

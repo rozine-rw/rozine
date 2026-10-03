@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessCampaignStore;
+use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Primary\ExpireReservations;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\GetInvestorWallet;
+use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Models\CommandOperation;
 use App\Models\LedgerEntry;
@@ -35,8 +37,10 @@ beforeEach(function (): void {
 
 it('expires due holds once with the original cash source and no new receipt', function (): void {
     $operations = CommandOperation::query()->count();
+    $before = (int) DB::table('change_feed')->max('id');
     $this->travelTo($this->root->expires_at->subMicrosecond());
-    expect(app(ExpireReservations::class)->handle(100))->toBe(0);
+    expect(app(ExpireReservations::class)->handle(100))->toBe(0)
+        ->and(DB::table('change_feed')->where('id', '>', $before)->count())->toBe(0);
     $this->travelTo($this->root->expires_at);
     expect(Artisan::call('primary:expire-reservations'))->toBe(0)
         ->and(Artisan::output())->toContain('Expired 1 reservations.');
@@ -47,8 +51,77 @@ it('expires due holds once with the original cash source and no new receipt', fu
         ->and(LedgerEntry::query()->where('kind', 'primary_release')->sole()->source_id)->toBe($this->root->id)
         ->and(app(GetInvestorWallet::class)->handle($this->investor['user']->id, 1)['wallet']['breakdown'])
         ->toMatchArray(['held' => ['currency' => 'RWF', 'amount' => '0'], 'available' => ['currency' => 'RWF', 'amount' => '10000000']]);
+    $rows = DB::table('change_feed')->where('id', '>', $before)->orderBy('id')->get();
+    expect($rows->pluck('topic')->all())->toBe(['purchase', 'campaign'])
+        ->and($rows->pluck('subject')->all())->toBe([$this->root->id, $this->campaign->id])
+        ->and($rows[0]->party_id)->toBe($this->investor['party']->id)
+        ->and($rows[0]->business_id)->toBeNull()->and($rows[0]->staff_queue)->toBeNull()
+        ->and($rows[1]->business_id)->toBe($this->campaign->business_id)
+        ->and($rows[1]->party_id)->toBeNull()->and($rows[1]->staff_queue)->toBeNull()
+        ->and($rows->pluck('revision')->all())->toBe([2, 2]);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 });
+
+it('returns cash before the sweeper feed and rolls back both when recording fails', function (string $failedTopic): void {
+    $this->travelTo($this->root->expires_at);
+    $tables = ['primary_reservations', 'primary_reservation_versions', 'primary_commitments', 'ledger_entries', 'ledger_lines', 'command_operations', 'investor_wallets', 'change_feed'];
+    $snapshot = array_map(fn (string $table): string => DB::table($table)->orderBy('id')->get()->toJson(), $tables);
+    $real = app(ChangeFeed::class);
+    $calls = [];
+    $feed = $this->createMock(ChangeFeed::class);
+    $feed->expects($this->exactly($failedTopic === 'purchase' ? 1 : 2))->method('record')
+        ->willReturnCallback(function (ChangeScope $scope, string $topic, string $subject, ?int $revision = null) use ($real, $failedTopic, &$calls): void {
+            expect($revision)->toBeNull()
+                ->and(PrimaryReservationVersion::query()->where('state', 'expired')->count())->toBe(1)
+                ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(1)
+                ->and(app(GetInvestorWallet::class)->handle($this->investor['user']->id, 1)['wallet']['breakdown']['held']['amount'])->toBe('0');
+            $real->record($scope, $topic, $subject, $revision);
+            $calls[] = $topic;
+            if ($topic === $failedTopic) {
+                throw new RuntimeException('sweeper feed failure');
+            }
+        });
+    app()->instance(ChangeFeed::class, $feed);
+    expect(fn () => app(ExpireReservations::class)->handle(1))->toThrow(RuntimeException::class, 'sweeper feed failure')
+        ->and($calls)->toBe($failedTopic === 'purchase' ? ['purchase'] : ['purchase', 'campaign'])
+        ->and(array_map(fn (string $table): string => DB::table($table)->orderBy('id')->get()->toJson(), $tables))->toBe($snapshot);
+})->with(['purchase', 'campaign']);
+
+it('finishes a caller wrapped sweep before sorted observations and rolls the batch back on feed failure', function (?string $failedTopic): void {
+    $second = PrimaryReservationFixture::investor();
+    $third = PrimaryReservationFixture::investor();
+    foreach ([$third, $second] as $investor) {
+        $this->checkout->reserve($investor['user']->id, 1, $this->campaign->id, '1', (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+    }
+    $roots = PrimaryReservationRecord::query()->orderBy('party_id')->get();
+    expect($roots->pluck('id')->all())->not->toBe(PrimaryReservationRecord::query()->orderBy('id')->pluck('id')->all());
+    $this->travelTo($roots->max('expires_at'));
+    $tables = ['primary_reservation_versions', 'ledger_entries', 'ledger_lines', 'change_feed'];
+    $snapshot = array_map(fn (string $table): string => DB::table($table)->orderBy('id')->get()->toJson(), $tables);
+    $before = (int) DB::table('change_feed')->max('id');
+    $real = app(ChangeFeed::class);
+    $feed = $this->createMock(ChangeFeed::class);
+    $feed->method('record')->willReturnCallback(function (ChangeScope $scope, string $topic, string $subject, ?int $revision = null) use ($real, $failedTopic): void {
+        expect(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(3)
+            ->and(PrimaryReservationVersion::query()->where('state', 'expired')->count())->toBe(3)
+            ->and($revision)->toBeNull();
+        $real->record($scope, $topic, $subject, $revision);
+        if ($topic === $failedTopic) {
+            throw new RuntimeException('batch feed failure');
+        }
+    });
+    app()->instance(ChangeFeed::class, $feed);
+    if ($failedTopic !== null) {
+        expect(fn () => app(ExpireReservations::class)->handle(3))->toThrow(RuntimeException::class, 'batch feed failure')
+            ->and(array_map(fn (string $table): string => DB::table($table)->orderBy('id')->get()->toJson(), $tables))->toBe($snapshot);
+    } else {
+        expect(app(ExpireReservations::class)->handle(3))->toBe(3)
+            ->and(DB::table('change_feed')->where('id', '>', $before)->orderBy('id')->pluck('subject')->all())->toBe([...$roots->pluck('id')->all(), $this->campaign->id])
+            ->and(DB::table('change_feed')->where('id', '>', $before)->orderBy('id')->pluck('topic')->all())->toBe(['purchase', 'purchase', 'purchase', 'campaign'])
+            ->and(app(ExpireReservations::class)->handle(3))->toBe(0)
+            ->and(DB::table('change_feed')->where('id', '>', $before)->count())->toBe(4);
+    }
+})->with(['success' => null, 'purchase failure' => 'purchase', 'campaign failure' => 'campaign']);
 
 it('excludes confirmed and released roots from the bounded candidate batch', function (string $terminal): void {
     if ($terminal === 'confirmed') {
@@ -81,7 +154,9 @@ it('drains oldest deadlines in bounded batches before cancelling a cash-returned
         ->and(app(ExpireReservations::class)->handle(1))->toBe(1)
         ->and(app(ExpireReservations::class)->handle(1))->toBe(0);
     expect(app(BusinessCampaignStore::class)->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id,
-        $this->campaign->id, 1, null, (string) Str::uuid())['code'])->toBe('CAMPAIGN_CANCELLED');
+        $this->campaign->id, 1, null, (string) Str::uuid())['code'])->toBe('CAMPAIGN_CANCELLED')
+        ->and(DB::table('change_feed')->where('topic', 'campaign')->where('subject', $this->campaign->id)->orderBy('revision')->pluck('revision')->all())
+        ->toBe([1, 2, 3, 4, 5]);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 });
 
@@ -114,6 +189,7 @@ it('schedules the bounded expiry command every minute with overlap protection', 
 
 it('rechecks a candidate that another worker expired after selection', function (): void {
     $this->travelTo($this->root->expires_at);
+    $before = DB::table('change_feed')->count();
     $intervened = false;
     DB::listen(function (QueryExecuted $query) use (&$intervened): void {
         if (! $intervened && str_contains($query->sql, 'from "primary_reservations"') && str_contains($query->sql, 'not exists')) {
@@ -122,6 +198,7 @@ it('rechecks a candidate that another worker expired after selection', function 
         }
     });
     expect(app(ExpireReservations::class)->handle(1))->toBe(0)->and($intervened)->toBeTrue()
+        ->and(DB::table('change_feed')->count())->toBe($before)
         ->and(PrimaryReservationVersion::query()->count())->toBe(2)
         ->and(LedgerEntry::query()->where('kind', 'primary_release')->count())->toBe(1);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
