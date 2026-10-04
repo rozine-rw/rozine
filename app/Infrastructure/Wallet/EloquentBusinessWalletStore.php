@@ -140,16 +140,19 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
         return $this->authority->handle($userId, $contextRevision, $businessId, 'repayment.pay', null,
             function (array $business, array $identity) use ($userId, $contextRevision, $businessId, $requestId, $noteId, $option, $expectedRevision, $quotedTotal): array {
                 $partyId = (string) ($identity['party']['id'] ?? throw new CommandRejection('BUSINESS_NOT_FOUND', 404));
-                $wallet = $this->lockWallet($business['id']);
+                // Only the wallet's identity here: its row lock waits until servicing holds the note.
+                $walletId = BusinessWallet::query()->where('business_id', $business['id'])->value('id')
+                    ?? throw new CommandRejection('INSUFFICIENT_AVAILABLE_FUNDS', 422);
                 $input = ['identity_context_revision' => $contextRevision, 'note_id' => $noteId, 'option' => $option,
                     'expected_servicing_revision' => $expectedRevision, 'quoted_total' => ['currency' => $quotedTotal['currency'], 'amount' => $quotedTotal['amount']]];
 
-                return $this->journal->execute('party:'.$partyId, $userId, 'repayment.pay', $requestId, 'business_wallet', $wallet->id, $input,
+                return $this->journal->execute('party:'.$partyId, $userId, 'repayment.pay', $requestId, 'business_wallet', $walletId, $input,
                     function () use ($userId, $contextRevision, $businessId): void {
                         $this->authority->handle($userId, $contextRevision, $businessId, 'repayment.pay', null, fn (): bool => true);
                     },
-                    function (string $operationId) use ($wallet, $business, $partyId, $userId, $requestId, $noteId, $option, $expectedRevision, $quotedTotal): OperationResult {
+                    function (string $operationId) use ($walletId, $business, $partyId, $userId, $requestId, $noteId, $option, $expectedRevision, $quotedTotal): OperationResult {
                         $quote = $this->servicing->lockForPayment($business['id'], $noteId) ?? throw new CommandRejection('NOTE_NOT_SERVICING', 404);
+                        $wallet = BusinessWallet::query()->whereKey($walletId)->lockForUpdate()->sole();
                         if ($quote->revision !== $expectedRevision) {
                             throw new CommandRejection('VERSION_CONFLICT', 409, $quote->revision);
                         }

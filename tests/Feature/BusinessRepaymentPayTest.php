@@ -31,8 +31,13 @@ final class FakeNoteServicing implements NoteServicing
 
     public function __construct(public ?ServicingQuote $quote) {}
 
+    /** @var list<string>|null The statements this transaction had run when servicing was asked for its note lock. */
+    public ?array $statementsBeforeNoteLock = null;
+
     public function lockForPayment(string $businessId, string $noteId): ?ServicingQuote
     {
+        $this->statementsBeforeNoteLock = array_column(DB::getQueryLog(), 'query');
+
         return $this->quote !== null && $this->quote->noteId === $noteId ? $this->quote : null;
     }
 
@@ -161,4 +166,29 @@ it('finds no operation for another command and refuses to apply a repayment whil
     $this->actingAs($fixture['payer'])->getJson($lookup)->assertNotFound()->assertJsonPath('code', 'OPERATION_NOT_FOUND');
     expect(fn () => app(UnavailableNoteServicing::class)->applyRepayment($fixture['note'], (string) Str::ulid(), 'due_now', WalletMoney::of('1'), 1))
         ->toThrow(CommandRejection::class, 'NOTE_NOT_SERVICING');
+});
+
+it('takes the servicing note lock before the wallet row lock', function (): void {
+    $fixture = repaymentPayFixture();
+    $servicing = repaymentPayServicing($fixture['note']);
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+
+    $this->actingAs($fixture['payer'])->postJson(route('business.repayments.pay', $fixture['business']->id), repaymentPayBody($fixture['note']))->assertOk();
+    $walletLock = fn (string $sql): bool => str_contains($sql, '"business_wallets"') && str_contains($sql, 'for update');
+    expect($servicing->statementsBeforeNoteLock)->not->toBeNull()
+        ->and(array_filter($servicing->statementsBeforeNoteLock ?? [], $walletLock))->toBe([])
+        ->and(array_filter(array_column(DB::getQueryLog(), 'query'), $walletLock))->not->toBe([]);
+});
+
+it('refuses a Business with no wallet before asking servicing for its note', function (): void {
+    $authority = BusinessAuthorityFixture::make();
+    BusinessAuthorityFixture::configure($authority);
+    $business = BusinessProfile::query()->where('entity_party_id', $authority['entity'])->firstOrFail();
+    $note = strtolower((string) Str::ulid());
+    $servicing = repaymentPayServicing($note);
+
+    $this->actingAs($authority['users'][0])->postJson(route('business.repayments.pay', $business->id), repaymentPayBody($note))
+        ->assertStatus(422)->assertJsonPath('code', 'INSUFFICIENT_AVAILABLE_FUNDS');
+    expect($servicing->statementsBeforeNoteLock)->toBeNull()->and(BusinessRepayment::query()->count())->toBe(0);
 });
