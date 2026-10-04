@@ -94,7 +94,7 @@ it('offers no deposit without an active policy or the mandate permission, and re
     expect(BusinessDepositIntent::query()->count())->toBe(0);
 });
 
-it('records a deposit intent under the acting Party, registers its reference and queues it without crediting', function (): void {
+it('records a deposit intent under the acting Party, registers its reference and dispatches it after commit without crediting', function (): void {
     $fixture = businessWalletFixture();
     $business = $fixture['business']->id;
     $body = businessWalletDepositBody($fixture);
@@ -108,7 +108,7 @@ it('records a deposit intent under the acting Party, registers its reference and
         ->toBe(['party:'.$fixture['depositor_party'], 'business.wallet.deposit', 'business_wallet', $intent->wallet_id])
         ->and([$intent->business_id, $intent->party_id, $intent->amount, $intent->credited])->toBe([$business, $fixture['depositor_party'], '50000', '50000'])
         ->and(DB::table('provider_references')->where('intent_id', $intent->id)->value('owner'))->toBe('business')
-        ->and(BusinessDepositDispatch::query()->where('intent_id', $intent->id)->pluck('phase')->all())->toBe(['queued']);
+        ->and(BusinessDepositDispatch::query()->where('intent_id', $intent->id)->orderBy('id')->pluck('phase')->all())->toBe(['queued', 'claimed', 'acknowledged']);
     $props = businessWalletPage($this->actingAs($fixture['depositor'])->get(route('business.wallet.show', $business)));
     expect($props['wallet']['available'])->toBe(['currency' => 'RWF', 'amount' => '0'])
         ->and($props['wallet']['pending_deposits'])->toBe(['currency' => 'RWF', 'amount' => '50000'])

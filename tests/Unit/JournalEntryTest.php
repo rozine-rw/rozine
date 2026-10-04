@@ -75,3 +75,10 @@ it('allows each primary movement only in its lifecycle order', function (string 
     'refund twice' => ['primary_refund', 'primary_hold,primary_commit,primary_refund', false],
     'unknown' => ['primary_move', '', false],
 ]);
+
+it('posts a Business deposit credit to the Business available balance under the same fee rules', function (): void {
+    expect(JournalEntry::businessDepositCredit(WalletMoney::of('5000'), WalletMoney::zero())->kind)->toBe('business_deposit_credit')
+        ->and(journalLines(JournalEntry::businessDepositCredit(WalletMoney::of('5000'), WalletMoney::of('150'))))
+        ->toBe([['deposit_clearing', 'debit', '5000'], ['business_available', 'credit', '4850'], ['deposit_fee_revenue', 'credit', '150']])
+        ->and(fn () => JournalEntry::businessDepositCredit(WalletMoney::of('150'), WalletMoney::of('150')))->toThrow(WalletViolation::class, 'DEPOSIT_NET_NOT_POSITIVE');
+});
