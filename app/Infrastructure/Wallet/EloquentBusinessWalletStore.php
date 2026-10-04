@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Wallet;
 
+use App\Application\Business\Contracts\NoteServicing;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
@@ -24,6 +25,7 @@ use App\Models\BusinessDepositDispatch;
 use App\Models\BusinessDepositIntent;
 use App\Models\BusinessFundingMethod;
 use App\Models\BusinessProviderEvent;
+use App\Models\BusinessRepayment;
 use App\Models\BusinessWallet;
 use App\Models\DepositPolicy;
 use App\Models\LedgerEntry;
@@ -47,7 +49,7 @@ use RuntimeException;
 final class EloquentBusinessWalletStore implements BusinessWalletStore
 {
     public function __construct(private WithBusinessAuthority $authority, private OperationJournal $journal, private CanonicalJson $json,
-        private DepositProvider $provider, private SyntheticWalletGuard $guard) {}
+        private DepositProvider $provider, private SyntheticWalletGuard $guard, private NoteServicing $servicing) {}
 
     /**
      * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, before?: string|null, receipt?: string|null}  $query
@@ -119,6 +121,68 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
                 $walletId = BusinessWallet::query()->where('business_id', $business['id'])->value('id');
 
                 return $this->journal->find('party:'.$partyId, 'business.wallet.deposit', $requestId, function (string $type, string $id) use ($walletId): void {
+                    ($type === 'business_wallet' && $id === $walletId) || throw new CommandRejection('OPERATION_NOT_FOUND', 404);
+                });
+            });
+    }
+
+    /**
+     * Lock order: the Business and the actor's authority, the note's servicing state, then the
+     * Business wallet and the ledger. The server's total for the option must equal the quoted total
+     * at the quoted servicing revision, and the wallet must cover it; nothing is charged otherwise.
+     *
+     * @param  array{currency: string, amount: string}  $quotedTotal
+     * @return array<string, mixed>
+     */
+    public function pay(int $userId, int $contextRevision, string $businessId, string $requestId, string $noteId, string $option,
+        int $expectedRevision, array $quotedTotal): array
+    {
+        return $this->authority->handle($userId, $contextRevision, $businessId, 'repayment.pay', null,
+            function (array $business, array $identity) use ($userId, $contextRevision, $businessId, $requestId, $noteId, $option, $expectedRevision, $quotedTotal): array {
+                $partyId = (string) ($identity['party']['id'] ?? throw new CommandRejection('BUSINESS_NOT_FOUND', 404));
+                // Only the wallet's identity here: its row lock waits until servicing holds the note.
+                $walletId = BusinessWallet::query()->where('business_id', $business['id'])->value('id')
+                    ?? throw new CommandRejection('INSUFFICIENT_AVAILABLE_FUNDS', 422);
+                $input = ['identity_context_revision' => $contextRevision, 'note_id' => $noteId, 'option' => $option,
+                    'expected_servicing_revision' => $expectedRevision, 'quoted_total' => ['currency' => $quotedTotal['currency'], 'amount' => $quotedTotal['amount']]];
+
+                return $this->journal->execute('party:'.$partyId, $userId, 'repayment.pay', $requestId, 'business_wallet', $walletId, $input,
+                    function () use ($userId, $contextRevision, $businessId): void {
+                        $this->authority->handle($userId, $contextRevision, $businessId, 'repayment.pay', null, fn (): bool => true);
+                    },
+                    function (string $operationId) use ($walletId, $business, $partyId, $userId, $requestId, $noteId, $option, $expectedRevision, $quotedTotal): OperationResult {
+                        $quote = $this->servicing->lockForPayment($business['id'], $noteId) ?? throw new CommandRejection('NOTE_NOT_SERVICING', 404);
+                        $wallet = BusinessWallet::query()->whereKey($walletId)->lockForUpdate()->sole();
+                        if ($quote->revision !== $expectedRevision) {
+                            throw new CommandRejection('VERSION_CONFLICT', 409, $quote->revision);
+                        }
+                        $offered = $quote->options[$option] ?? throw new CommandRejection('NOTHING_DUE', 409, $quote->revision);
+                        $quoted = $quotedTotal['currency'] === 'RWF' ? WalletMoney::fromInput($quotedTotal['amount']) : null;
+                        if ($quoted === null || $quoted->compareTo($offered['total']) !== 0) {
+                            throw new CommandRejection('VERSION_CONFLICT', 409, $quote->revision);
+                        }
+                        if ($this->available($wallet)->compareTo($offered['total']) < 0) {
+                            throw new CommandRejection('INSUFFICIENT_AVAILABLE_FUNDS', 422, $quote->revision);
+                        }
+                        $repayment = $this->recordRepayment($wallet, $partyId, $quote->noteId, $option, $offered['total'], $quote->revision,
+                            $operationId, $requestId, $userId, $offered['instalment_indexes']);
+                        $revision = $this->servicing->applyRepayment($quote->noteId, $repayment->id, $option, $offered['total'], $quote->revision);
+
+                        return new OperationResult('REPAYMENT_RECEIVED', ['repayment_id' => $repayment->id, 'note_id' => $quote->noteId,
+                            'receipt' => $this->repaymentReceipt($repayment, $revision)], $revision);
+                    });
+            });
+    }
+
+    /** @return array<string, mixed> */
+    public function findRepayment(int $userId, int $contextRevision, string $businessId, string $requestId): array
+    {
+        return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null,
+            function (array $business, array $identity) use ($requestId): array {
+                $partyId = (string) ($identity['party']['id'] ?? throw new CommandRejection('OPERATION_NOT_FOUND', 404));
+                $walletId = BusinessWallet::query()->where('business_id', $business['id'])->value('id');
+
+                return $this->journal->find('party:'.$partyId, 'repayment.pay', $requestId, function (string $type, string $id) use ($walletId): void {
                     ($type === 'business_wallet' && $id === $walletId) || throw new CommandRejection('OPERATION_NOT_FOUND', 404);
                 });
             });
@@ -451,6 +515,68 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
 
         return (string) DB::table('ledger_accounts')->where('kind', $kind)
             ->when($owned, fn ($query) => $query->where('wallet_id', $walletId), fn ($query) => $query->whereNull('wallet_id'))->value('id');
+    }
+
+    /** The wallet's spendable balance, read under its lock. */
+    private function available(BusinessWallet $wallet): WalletMoney
+    {
+        $sums = DB::table('ledger_lines')->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_lines.account_id')
+            ->where('ledger_accounts.wallet_id', $wallet->id)->where('ledger_accounts.kind', 'business_available')->groupBy('ledger_lines.direction')
+            ->selectRaw('ledger_lines.direction AS direction, sum(ledger_lines.amount)::text AS total')->get()
+            ->mapWithKeys(fn (object $row): array => [(string) $row->direction => (string) $row->total]);
+
+        return WalletBalance::bucket(WalletMoney::of($sums['credit'] ?? '0'), WalletMoney::of($sums['debit'] ?? '0'));
+    }
+
+    /**
+     * Records the repayment and its one debit of the Business wallet into repayment clearing.
+     *
+     * @param  list<int>  $instalments
+     */
+    private function recordRepayment(BusinessWallet $wallet, string $partyId, string $noteId, string $option, WalletMoney $amount, int $revision,
+        string $operationId, string $requestId, int $userId, array $instalments): BusinessRepayment
+    {
+        $recordedAt = now('UTC')->toImmutable()->startOfSecond();
+        $repayment = new BusinessRepayment;
+        $repayment->id = strtolower((string) Str::ulid());
+        $payload = ['repayment_id' => $repayment->id, 'wallet_id' => $wallet->id, 'business_id' => $wallet->business_id, 'party_id' => $partyId,
+            'note_id' => $noteId, 'operation_id' => $operationId, 'request_id' => strtolower($requestId), 'option' => $option, 'amount' => $amount->amount(),
+            'servicing_revision' => $revision, 'instalment_indexes' => $instalments, 'actor_user_id' => $userId, 'recorded_at' => $recordedAt->toIso8601String()];
+        $repayment->forceFill(['wallet_id' => $wallet->id, 'business_id' => $wallet->business_id, 'party_id' => $partyId, 'note_id' => $noteId,
+            'operation_id' => $operationId, 'request_id' => $payload['request_id'], 'option' => $option, 'amount' => $amount->amount(),
+            'servicing_revision' => $revision, 'payload' => $payload, 'sha256' => hash('sha256', $this->json->encode($payload)), 'created_at' => $recordedAt])->save();
+        $journal = JournalEntry::businessRepaymentDebit($amount);
+        $entry = new LedgerEntry;
+        $entry->id = strtolower((string) Str::ulid());
+        $lines = array_map(fn ($line): array => ['account' => $line->account, 'direction' => $line->direction, 'amount' => $line->amount->amount()], $journal->lines);
+        $entryPayload = ['entry_id' => $entry->id, 'wallet_id' => $wallet->id, 'kind' => $journal->kind, 'source_type' => 'business_repayment',
+            'source_id' => $repayment->id, 'operation_id' => $operationId, 'request_id' => $payload['request_id'], 'lines' => $lines,
+            'recorded_at' => $recordedAt->toIso8601String()];
+        $entry->forceFill(['wallet_id' => $wallet->id, 'kind' => $journal->kind, 'source_type' => 'business_repayment', 'source_id' => $repayment->id,
+            'origin_operation_id' => $operationId, 'currency' => 'RWF', 'payload' => $entryPayload,
+            'sha256' => hash('sha256', $this->json->encode($entryPayload)), 'created_at' => $recordedAt])->save();
+        foreach ($journal->lines as $line) {
+            (new LedgerLine)->forceFill(['entry_id' => $entry->id, 'account_id' => $this->account($line->account, $wallet->id),
+                'direction' => $line->direction, 'amount' => $line->amount->amount(), 'created_at' => $recordedAt])->save();
+        }
+        // Surface an unbalanced, overdrawn or unbound debit here rather than at commit.
+        DB::statement('SET CONSTRAINTS ledger_entries_balanced, ledger_lines_entry_balanced, ledger_entries_business_repayment_bound, ledger_lines_entry_business_repayment_bound, business_repayments_debited IMMEDIATE');
+        DB::statement('SET CONSTRAINTS ledger_entries_balanced, ledger_lines_entry_balanced, ledger_entries_business_repayment_bound, ledger_lines_entry_business_repayment_bound, business_repayments_debited DEFERRED');
+
+        return $repayment;
+    }
+
+    /**
+     * REPAYMENT_RECEIVED: the Business paid this amount toward the note; allocation follows separately.
+     *
+     * @return array<string, mixed>
+     */
+    private function repaymentReceipt(BusinessRepayment $repayment, int $revision): array
+    {
+        return ['receipt_id' => $repayment->id, 'operation_id' => $repayment->operation_id, 'request_id' => $repayment->request_id,
+            'code' => 'REPAYMENT_RECEIVED', 'recorded_at' => $repayment->payload['recorded_at'], 'amount' => WalletMoney::of($repayment->amount)->money(),
+            'units' => null, 'reference' => 'RZR-'.strtoupper(substr($repayment->id, -10)), 'revision' => $revision,
+            'policy_version' => null, 'disclosure_version' => null];
     }
 
     /**

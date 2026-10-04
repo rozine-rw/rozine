@@ -31,6 +31,18 @@ interface BusinessWalletStore
     public function findDeposit(int $userId, int $contextRevision, string $businessId, string $requestId): array;
 
     /**
+     * `repayment.pay`: debits the Business wallet by exactly the quoted option of a servicing note.
+     *
+     * @param  array{currency: string, amount: string}  $quotedTotal
+     * @return array<string, mixed>
+     */
+    public function pay(int $userId, int $contextRevision, string $businessId, string $requestId, string $noteId, string $option,
+        int $expectedRevision, array $quotedTotal): array;
+
+    /** @return array<string, mixed> */
+    public function findRepayment(int $userId, int $contextRevision, string $businessId, string $requestId): array;
+
+    /**
      * Claims queued Business deposit dispatches, committing each claim before any provider call.
      *
      * @return list<DepositInstruction>

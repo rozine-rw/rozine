@@ -403,12 +403,16 @@ arch('wallet ledger records are only accessed by their adapter')
 
 arch('Business wallet records are only accessed by the wallet adapter')
     ->expect(['App\Models\BusinessWallet', 'App\Models\BusinessFundingMethod', 'App\Models\BusinessDepositIntent', 'App\Models\BusinessDepositDispatch',
-        'App\Models\BusinessProviderEvent', 'App\Models\BusinessDepositCredit'])
+        'App\Models\BusinessProviderEvent', 'App\Models\BusinessDepositCredit', 'App\Models\BusinessRepayment'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Wallet', 'App\Models', 'Database\Factories']);
 
 arch('the Business wallet port is reached only through its actions and adapter')
     ->expect('App\Application\Wallet\Contracts\BusinessWalletStore')
     ->toOnlyBeUsedIn(['App\Application\Wallet', 'App\Infrastructure\Wallet', 'App\Providers\AppServiceProvider']);
+
+arch('the servicing port is reached only by the wallet adapter and its implementations')
+    ->expect('App\Application\Business\Contracts\NoteServicing')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Wallet', 'App\Infrastructure\Business', 'App\Providers\AppServiceProvider']);
 
 arch('the deposit provider is reached only through the wallet actions and adapters')
     ->expect('App\Application\Wallet\Contracts\DepositProvider')
