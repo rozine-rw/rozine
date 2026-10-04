@@ -15,7 +15,7 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "b93ae3a71c1f0c62fce9e08ee53a2aaff5248b68b2ca3f94180d9e697ffdb04a",
+    "sourceManifestSha256": "7271348705ff215c8519ebb191628319d0a9e63b474301dfa892f4fa9a6d6f43",
     "coverageSetSha256": "120b152bbff9a5e670f65840694a70cb658b537272a35fd0f00f66cb9e11bc31",
     "thresholds": {
         "critical": {

@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 import auditReports from './audit-reports'
+import repayments from './repayments'
 import wallet from './wallet'
 import applications from './applications'
 import campaigns from './campaigns'
@@ -87,6 +88,7 @@ home.form = homeForm
 const business = {
     auditReports: Object.assign(auditReports, auditReports),
     home: Object.assign(home, home),
+    repayments: Object.assign(repayments, repayments),
     wallet: Object.assign(wallet, wallet),
     applications: Object.assign(applications, applications),
     campaigns: Object.assign(campaigns, campaigns),
