@@ -387,22 +387,19 @@
         "resources/js/components/business/rating/band.ts",
         "resources/js/components/business/rating/capacity-card.tsx",
         "resources/js/components/business/rating/score-card.tsx",
+        "resources/js/components/business/repayments/components.tsx",
+        "resources/js/components/business/repayments/due-card.tsx",
         "resources/js/components/business/repayments/late-policy.tsx",
-        "resources/js/components/business/repayments/pay-ahead.tsx",
+        "resources/js/components/business/repayments/pay-panel.tsx",
         "resources/js/components/business/repayments/progress-card.tsx",
         "resources/js/components/business/repayments/receipt.tsx",
         "resources/js/components/business/repayments/schedule-list.tsx",
-        "resources/js/components/business/repayments/this-month.tsx",
         "resources/js/components/business/reports/audit-guide.tsx",
         "resources/js/components/business/reports/period-label.ts",
         "resources/js/components/business/reports/report-sheet.tsx",
         "resources/js/components/business/use-create-application.ts",
         "resources/js/components/business/wallet/balance-card.tsx",
-        "resources/js/components/business/wallet/flow-panel.tsx",
-        "resources/js/components/business/wallet/method-tile.tsx",
-        "resources/js/components/business/wallet/transaction-history.tsx",
-        "resources/js/components/business/wallet/transaction-row.tsx",
-        "resources/js/components/business/wallet/transaction-sheet.tsx",
+        "resources/js/components/business/wallet/history.tsx",
         "resources/js/components/delete-user.tsx",
         "resources/js/components/heading.tsx",
         "resources/js/components/i18n-provider.tsx",
@@ -626,10 +623,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 598,
+        "totalTrackedSources": 595,
         "generated": 207,
         "declarationOnly": 18,
-        "authoredExecutable": 373
+        "authoredExecutable": 370
     },
-    "coverageSetSha256": "92d736fc4fa683987714ad58ac6189e8c9610bf194531c550f0f9ac879d336fb"
+    "coverageSetSha256": "120b152bbff9a5e670f65840694a70cb658b537272a35fd0f00f66cb9e11bc31"
 }

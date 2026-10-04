@@ -1,0 +1,78 @@
+{
+    "component": "business/wallet",
+    "synthetic": true,
+    "props": {
+        "contract_version": "business-servicing-v1",
+        "identity_context_revision": 1,
+        "server_time": "2026-12-01T09:00:00+02:00",
+        "allowed_actions": [],
+        "business": {
+            "id": "01k6r4m2n6p8q0r2s4t6v8b1z2",
+            "name": "GreenLeaf Agro"
+        },
+        "wallet": {
+            "revision": 0,
+            "status": "active",
+            "restriction": null,
+            "available": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "pending_deposits": {
+                "currency": "RWF",
+                "amount": "0"
+            }
+        },
+        "funding": {
+            "kind": null,
+            "policy": null,
+            "methods": [],
+            "picks": [],
+            "quote": null
+        },
+        "deposits": [],
+        "history": {
+            "movement": "external",
+            "filters": [],
+            "items": [],
+            "pagination": {
+                "next": null
+            }
+        },
+        "receipt": null,
+        "bases": {},
+        "shell_links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "reports": null,
+            "profile": null
+        },
+        "links": {
+            "close": {
+                "url": "/preview/business-wallet-live-minimal",
+                "method": "get"
+            },
+            "deposit": {
+                "url": "/preview/business-wallet-live-minimal",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/business-wallet-operation-{request_id}",
+                "method": "get"
+            },
+            "repayments": null
+        },
+        "actions": {
+            "deposit": {
+                "url": "/preview/business-wallet-live-minimal",
+                "method": "post"
+            }
+        }
+    }
+}

@@ -199,7 +199,46 @@
                 "next": null
             }
         },
-        "receipt": null,
+        "receipt": {
+            "id": "bwe-1128",
+            "movement": "external",
+            "kind": "deposit",
+            "direction": "in",
+            "amount": {
+                "currency": "RWF",
+                "amount": "3500000"
+            },
+            "psp_fee": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "counterparty": "Bank of Kigali ····2231",
+            "occurred_at": "2026-11-28T10:04:00+02:00",
+            "link": {
+                "url": "/preview/business-wallet-entry-receipt",
+                "method": "get"
+            },
+            "receipt": {
+                "receipt_id": "rcp_bwe-1128",
+                "operation_id": "op_bwe-1128",
+                "request_id": "7f1c2a90-0000-4000-8000-0000bwe-1128",
+                "code": "DEPOSIT_CREDITED",
+                "recorded_at": "2026-11-28T10:04:00+02:00",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "3500000"
+                },
+                "units": null,
+                "reference": "RZ-BWE-1128",
+                "revision": 1,
+                "policy_version": "synthetic-deposit-policy-0",
+                "disclosure_version": null,
+                "link": {
+                    "url": "/preview/business-wallet-receipt",
+                    "method": "get"
+                }
+            }
+        },
         "bases": {
             "available": {
                 "url": "/preview/business-wallet-internal",

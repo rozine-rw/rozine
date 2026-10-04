@@ -134,11 +134,11 @@
             }
         ],
         "history": {
-            "movement": "external",
+            "movement": "internal",
             "filters": [
                 {
                     "key": "external",
-                    "active": true,
+                    "active": false,
                     "link": {
                         "url": "/preview/business-wallet",
                         "method": "get"
@@ -146,7 +146,7 @@
                 },
                 {
                     "key": "internal",
-                    "active": false,
+                    "active": true,
                     "link": {
                         "url": "/preview/business-wallet-internal",
                         "method": "get"
@@ -155,42 +155,36 @@
             ],
             "items": [
                 {
-                    "id": "bwe-1128",
-                    "movement": "external",
-                    "kind": "deposit",
-                    "direction": "in",
+                    "id": "bwr-1123",
+                    "movement": "internal",
+                    "kind": "repayment",
+                    "direction": "out",
                     "amount": {
                         "currency": "RWF",
-                        "amount": "3500000"
+                        "amount": "3465000"
                     },
-                    "psp_fee": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "counterparty": "Bank of Kigali ····2231",
-                    "occurred_at": "2026-11-28T10:04:00+02:00",
+                    "note_title": "Fleet Expansion",
+                    "instalment_indexes": [2],
+                    "occurred_at": "2026-11-23T23:59:00+02:00",
                     "link": {
-                        "url": "/preview/business-wallet-entry-receipt",
+                        "url": "/preview/business-wallet-internal-receipt",
                         "method": "get"
                     }
                 },
                 {
-                    "id": "bwe-1020",
-                    "movement": "external",
-                    "kind": "deposit",
-                    "direction": "in",
+                    "id": "bwr-1023",
+                    "movement": "internal",
+                    "kind": "repayment",
+                    "direction": "out",
                     "amount": {
                         "currency": "RWF",
-                        "amount": "3500000"
+                        "amount": "3465000"
                     },
-                    "psp_fee": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "counterparty": "Bank of Kigali ····2231",
-                    "occurred_at": "2026-10-20T15:12:00+02:00",
+                    "note_title": "Fleet Expansion",
+                    "instalment_indexes": [1],
+                    "occurred_at": "2026-10-23T23:59:00+02:00",
                     "link": {
-                        "url": "/preview/business-wallet-entry-receipt",
+                        "url": "/preview/business-wallet-internal-receipt",
                         "method": "get"
                     }
                 }
@@ -199,7 +193,43 @@
                 "next": null
             }
         },
-        "receipt": null,
+        "receipt": {
+            "id": "bwr-1123",
+            "movement": "internal",
+            "kind": "repayment",
+            "direction": "out",
+            "amount": {
+                "currency": "RWF",
+                "amount": "3465000"
+            },
+            "note_title": "Fleet Expansion",
+            "instalment_indexes": [2],
+            "occurred_at": "2026-11-23T23:59:00+02:00",
+            "link": {
+                "url": "/preview/business-wallet-internal-receipt",
+                "method": "get"
+            },
+            "receipt": {
+                "receipt_id": "rcp_bwr-1123",
+                "operation_id": "op_bwr-1123",
+                "request_id": "7f1c2a90-0000-4000-8000-0000bwr-1123",
+                "code": "REPAYMENT_RECEIVED",
+                "recorded_at": "2026-11-23T23:59:00+02:00",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "3465000"
+                },
+                "units": null,
+                "reference": "RZ-RPY-1123",
+                "revision": 1,
+                "policy_version": "synthetic-servicing-policy-0",
+                "disclosure_version": null,
+                "link": {
+                    "url": "/preview/business-wallet-receipt",
+                    "method": "get"
+                }
+            }
+        },
         "bases": {
             "available": {
                 "url": "/preview/business-wallet-internal",

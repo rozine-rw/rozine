@@ -13,6 +13,7 @@ import type {
     C3InvestorWalletProps,
     PayoutAccountKind,
 } from '@/types/investor';
+import type { C3PreviewOutcome } from '@/types/settlement';
 
 /** Mobile-money and bank marks, drawn rather than loaded (the design's logo files are missing). */
 const METHOD_TILE: Record<PayoutAccountKind, string> = {
@@ -136,17 +137,19 @@ export function BalanceCard({
 /** How long an entered amount must settle before the server prices it. */
 const FUNDING_DEBOUNCE_MS = 300;
 
-type DepositPanelProps = Pick<
+type DepositPanelProps<Name extends string> = Pick<
     C3InvestorWalletProps,
-    | 'funding'
-    | 'actions'
-    | 'allowed_actions'
-    | 'identity_context_revision'
-    | 'preview_outcome'
+    'funding' | 'actions' | 'identity_context_revision'
 > & {
+    allowed_actions: readonly string[];
+    preview_outcome?: C3PreviewOutcome<Name>;
     operation: C3InvestorWalletProps['links']['operation'];
     close: C3InvestorWalletProps['links']['close'] | null;
     wide: boolean;
+    /** The deposit command: the Investor's `wallet.deposit` unless a Business wallet names its own. */
+    command?: Name;
+    /** What the command carries beyond the amount and method, such as a Business wallet's owner. */
+    payload?: Record<string, unknown>;
 };
 
 /**
@@ -157,7 +160,7 @@ type DepositPanelProps = Pick<
  * deposits aren't offered, keeping any held command's notice. Deposit records an intent only:
  * nothing is credited until the provider's success is verified.
  */
-export function DepositPanel({
+export function DepositPanel<Name extends string = 'wallet.deposit'>({
     funding,
     actions,
     allowed_actions: allowed,
@@ -166,15 +169,19 @@ export function DepositPanel({
     operation,
     close,
     wide,
-}: DepositPanelProps) {
+    command: name = 'wallet.deposit' as Name,
+    payload = {},
+}: DepositPanelProps<Name>) {
     const { t } = useTranslation();
     const quote = funding.quote;
     const [amount, setAmountState] = useState(quote?.amount.amount ?? '');
     const [method, setMethod] = useState(funding.methods[0]?.id ?? '');
     const [pricing, setPricing] = useState(false);
     const timer = useRef<number | undefined>(undefined);
-    const command = useC3Command<'wallet.deposit'>({
-        actions: { 'wallet.deposit': actions.deposit },
+    const command = useC3Command<Name>({
+        actions: { [name]: actions.deposit } as Partial<
+            Record<Name, typeof actions.deposit>
+        >,
         lookup: operation,
         lookupQuery: { identity_context_revision: identityRevision },
         allowed,
@@ -206,7 +213,7 @@ export function DepositPanel({
         wide ? 'mt-[11px] p-3.5' : 'mt-2.5 p-[15px]',
     );
 
-    const offered = allowed.includes('wallet.deposit');
+    const offered = allowed.includes(name);
 
     if (funding.policy === null || funding.methods.length === 0 || !offered) {
         return (
@@ -262,7 +269,8 @@ export function DepositPanel({
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
-        command.send('wallet.deposit', {
+        command.send(name, {
+            ...payload,
             identity_context_revision: identityRevision,
             amount: { currency: 'RWF', amount },
             method_id: method,
