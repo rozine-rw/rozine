@@ -47,6 +47,7 @@
         "resources/js/actions/App/Http/Controllers/ChangeFeedController.ts",
         "resources/js/actions/App/Http/Controllers/DashboardController.ts",
         "resources/js/actions/App/Http/Controllers/IdentityManagementController.ts",
+        "resources/js/actions/App/Http/Controllers/InvestorPrimaryController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorWalletController.ts",
         "resources/js/actions/App/Http/Controllers/PulseController.ts",
         "resources/js/actions/App/Http/Controllers/RoleBookmarkController.ts",
@@ -137,6 +138,8 @@
         "resources/js/routes/api/v1/identity/staff-people/index.ts",
         "resources/js/routes/api/v1/index.ts",
         "resources/js/routes/api/v1/investor/index.ts",
+        "resources/js/routes/api/v1/investor/primary/index.ts",
+        "resources/js/routes/api/v1/investor/primary/operations/index.ts",
         "resources/js/routes/api/v1/investor/wallet/index.ts",
         "resources/js/routes/api/v1/investor/wallet/operations/index.ts",
         "resources/js/routes/api/v1/staff-access/index.ts",
@@ -189,6 +192,8 @@
         "resources/js/routes/identity/staff-people/index.ts",
         "resources/js/routes/index.ts",
         "resources/js/routes/investor/index.ts",
+        "resources/js/routes/investor/primary/index.ts",
+        "resources/js/routes/investor/primary/operations/index.ts",
         "resources/js/routes/investor/wallet/index.ts",
         "resources/js/routes/investor/wallet/operations/index.ts",
         "resources/js/routes/login/index.ts",
@@ -618,8 +623,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 590,
-        "generated": 202,
+        "totalTrackedSources": 595,
+        "generated": 207,
         "declarationOnly": 18,
         "authoredExecutable": 370
     },
