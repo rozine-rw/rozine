@@ -28,7 +28,7 @@ it('defers a receipt-first refund until actual commit without an explicit constr
         DB::transaction(function () use ($checkout, $investor, $campaign, $root, &$captured): void {
             $result = $checkout->refund($investor['user']->id, 1, $campaign->id, $root->id, 2, (string) Str::uuid());
             $captured = ['operation' => CommandOperation::query()->whereKey($result['operation_id'])->sole()->getAttributes(),
-                'entry' => LedgerEntry::query()->whereKey($result['data']['entry_id'])->sole()->getAttributes(),
+                'entry' => array_diff_key(LedgerEntry::query()->whereKey($result['data']['entry_id'])->sole()->getAttributes(), ['wallet_owner' => true]),
                 'lines' => DB::table('ledger_lines')->where('entry_id', $result['data']['entry_id'])->get()->map(fn (object $line): array => (array) $line)->all()];
             throw new RuntimeException('ROLL_BACK_CAPTURED_REFUND');
         });
