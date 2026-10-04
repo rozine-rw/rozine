@@ -1348,6 +1348,18 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `primary_campaign_reservations` on (business_campaign_id, id); `primary_ordinal_intersection` on (ordinal_ranges); `primary_party_reservations` on (party_id, id); `primary_reservation_expiry` on (expires_at, id); `primary_reservations_origin_operation_id_unique` on (origin_operation_id) — unique; `primary_reservations_pkey` on (id) — unique
 
+### `provider_references`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `provider` | `varchar` | no | — |
+| `reference_sha256` | `bpchar` | no | — |
+| `owner` | `varchar` | no | — |
+| `intent_id` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `provider_references_binding` on (provider, reference_sha256, owner, intent_id) — unique; `provider_references_intent` on (owner, intent_id) — unique; `provider_references_pkey` on (provider, reference_sha256) — unique
+
 ### `pulse_signups`
 
 | Column | Type | Nullable | Default |
@@ -1644,6 +1656,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `payload` | `text` | no | — |
 | `sha256` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
+| `owner` | `varchar` | no | `'investor'::character varying` |
 
 **Indexes:** `wallet_deposit_intents_id_wallet_id_unique` on (id, wallet_id) — unique; `wallet_deposit_intents_operation_id_unique` on (operation_id) — unique; `wallet_deposit_intents_pkey` on (id) — unique; `wallet_deposit_intents_provider_reference_sha256_unique` on (provider_reference_sha256) — unique; `wallet_deposit_intents_wallet_id_id_index` on (wallet_id, id); `wallet_deposit_intents_wallet_id_request_id_unique` on (wallet_id, request_id) — unique
 
@@ -1771,6 +1784,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_10_02_170000_create_staff_independence_evidence.php |
 | 2026_10_03_100000_add_wallet_supertype_and_business_wallets.php |
 | 2026_10_03_100100_refuse_ownerless_ledger_entries.php |
+| 2026_10_03_110000_create_provider_reference_registry.php |
 
 ## Routes
 
