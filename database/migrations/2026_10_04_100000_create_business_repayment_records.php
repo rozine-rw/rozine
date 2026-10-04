@@ -149,7 +149,10 @@ return new class extends Migration
     {
         DB::transaction(function (): void {
             DB::unprepared(<<<'SQL'
-                LOCK TABLE ledger_entries, ledger_accounts, ledger_lines, business_repayments IN ACCESS EXCLUSIVE MODE;
+                -- A repayment writer reads its Party and wallet, records its operation, then its repayment root, then posts.
+                -- Dropping the root also locks the tables it references, so take every lock up front in that order.
+                LOCK TABLE parties, business_wallets, command_operations, business_repayments, ledger_entries, ledger_accounts, ledger_lines
+                    IN ACCESS EXCLUSIVE MODE;
                 DO $$ BEGIN
                     IF EXISTS (SELECT 1 FROM business_repayments) OR EXISTS (SELECT 1 FROM ledger_entries WHERE kind = 'business_repayment_debit')
                         OR EXISTS (SELECT 1 FROM ledger_accounts WHERE kind = 'repayment_clearing') THEN
