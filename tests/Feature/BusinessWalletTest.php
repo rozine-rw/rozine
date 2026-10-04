@@ -2,13 +2,19 @@
 
 declare(strict_types=1);
 
+use App\Application\Operations\Contracts\CanonicalJson;
+use App\Models\BusinessDepositCredit;
 use App\Models\BusinessDepositDispatch;
 use App\Models\BusinessDepositIntent;
 use App\Models\BusinessFundingMethod;
 use App\Models\BusinessProfile;
+use App\Models\BusinessProviderEvent;
 use App\Models\BusinessWallet;
 use App\Models\CommandOperation;
 use App\Models\DepositPolicy;
+use App\Models\LedgerAccount;
+use App\Models\LedgerEntry;
+use App\Models\LedgerLine;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -162,3 +168,87 @@ it('serves the API with its abilities: no command without business:command', fun
     $this->postJson(route('api.v1.business.wallet.deposit', $business), businessWalletDepositBody($fixture))->assertOk()
         ->assertJsonPath('code', 'DEPOSIT_INTENT_RECORDED');
 });
+
+it('withholds the deposit action from a mandate holder without the permission while still pricing the quote', function (array $query, ?array $quote): void {
+    $fixture = businessWalletFixture();
+    $props = businessWalletPage($this->actingAs($fixture['viewer'])->get(route('business.wallet.show', [$fixture['business']->id, ...$query])));
+
+    expect($props['allowed_actions'])->toBe([])->and($props['funding']['quote'])->toEqual($quote);
+})->with([
+    'priced' => [['kind' => 'deposit', 'amount' => '005000'], ['amount' => ['currency' => 'RWF', 'amount' => '5000'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
+        'credited' => ['currency' => 'RWF', 'amount' => '5000'], 'refusal' => null]],
+    'below minimum' => [['kind' => 'deposit', 'amount' => '100'], ['amount' => ['currency' => 'RWF', 'amount' => '100'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
+        'credited' => ['currency' => 'RWF', 'amount' => '100'], 'refusal' => 'VALIDATION_FAILED']],
+    'zero' => [['kind' => 'deposit', 'amount' => '0'], ['amount' => ['currency' => 'RWF', 'amount' => '0'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
+        'credited' => ['currency' => 'RWF', 'amount' => '0'], 'refusal' => 'VALIDATION_FAILED']],
+    'empty' => [['kind' => 'deposit', 'amount' => ''], null],
+]);
+
+it('refuses the quote without a verified method of this Business', function (): void {
+    $fixture = businessWalletFixture();
+    BusinessFundingMethod::query()->whereKey($fixture['method']->id)->update(['revoked_at' => now()]);
+    $props = businessWalletPage($this->actingAs($fixture['depositor'])->get(route('business.wallet.show', [$fixture['business']->id, 'kind' => 'deposit', 'amount' => '5000'])));
+
+    expect($props['allowed_actions'])->toBe([])->and($props['funding']['quote']['refusal'])->toBe('DEPOSIT_METHOD_UNVERIFIED');
+});
+
+/**
+ * Records a verified success and its sealed credit for a recorded intent, as the settlement adapter will.
+ */
+function businessWalletCredit(BusinessDepositIntent $intent): BusinessDepositCredit
+{
+    $event = new BusinessProviderEvent;
+    $event->forceFill(['provider' => $intent->provider, 'provider_event_id' => 'synthetic-event-'.Str::lower(Str::random(12)), 'intent_id' => $intent->id,
+        'content_sha256' => hash('sha256', Str::random(16)), 'state' => 'succeeded', 'amount' => $intent->amount, 'currency' => 'RWF', 'environment' => 'testing',
+        'observed_at' => now(), 'disposition' => 'applied', 'evidence' => ['source' => 'test'], 'created_at' => now()])->save();
+    $entry = LedgerEntry::factory()->create(['wallet_id' => $intent->wallet_id, 'kind' => 'business_deposit_credit', 'source_type' => 'business_deposit_intent',
+        'source_id' => $intent->id, 'origin_operation_id' => $intent->operation_id]);
+    $clearing = LedgerAccount::factory()->system()->create();
+    $available = LedgerAccount::factory()->create(['wallet_id' => $intent->wallet_id, 'kind' => 'business_available']);
+    LedgerLine::factory()->create(['entry_id' => $entry->id, 'account_id' => $clearing->id, 'direction' => 'debit', 'amount' => $intent->amount]);
+    LedgerLine::factory()->create(['entry_id' => $entry->id, 'account_id' => $available->id, 'direction' => 'credit', 'amount' => $intent->credited]);
+    $credit = new BusinessDepositCredit;
+    $credit->id = strtolower((string) Str::ulid());
+    $payload = ['receipt_id' => $credit->id, 'intent_id' => $intent->id, 'wallet_id' => $intent->wallet_id, 'ledger_entry_id' => $entry->id,
+        'provider_event_id' => $event->id, 'operation_id' => $intent->operation_id, 'request_id' => $intent->request_id, 'amount' => $intent->credited,
+        'policy_version' => 'synthetic', 'recorded_at' => now('UTC')->startOfSecond()->toIso8601String()];
+    $credit->forceFill(['intent_id' => $intent->id, 'wallet_id' => $intent->wallet_id, 'ledger_entry_id' => $entry->id, 'provider_event_id' => $event->id,
+        'operation_id' => $intent->operation_id, 'request_id' => $intent->request_id, 'amount' => $intent->credited, 'payload' => $payload,
+        'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload)), 'created_at' => now()])->save();
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+
+    return $credit;
+}
+
+it('reads a credited deposit as available balance, external history and an openable credit receipt', function (): void {
+    $fixture = businessWalletFixture();
+    $business = $fixture['business']->id;
+    $this->actingAs($fixture['depositor'])->postJson(route('business.wallet.deposit', $business), businessWalletDepositBody($fixture))->assertOk();
+    $credit = businessWalletCredit(BusinessDepositIntent::query()->sole());
+    $props = businessWalletPage($this->actingAs($fixture['depositor'])->get(route('business.wallet.show', $business)));
+    $opened = businessWalletPage($this->actingAs($fixture['depositor'])->get(route('business.wallet.show', [$business, 'receipt' => $credit->id])));
+
+    expect($props['wallet']['available'])->toEqual(['currency' => 'RWF', 'amount' => '50000'])
+        ->and($props['history']['items'][0])->toMatchArray(['id' => $credit->id, 'movement' => 'external', 'kind' => 'deposit', 'direction' => 'in',
+            'counterparty' => 'MTN MoMo +250 788 ···· 456'])
+        ->and($props['deposits'][0]['credit_receipt']['code'])->toBe('DEPOSIT_CREDITED')
+        ->and($opened['receipt']['receipt']['receipt_id'])->toBe($credit->id)->and($opened['receipt']['kind'])->toBe('deposit')
+        ->and(businessWalletPage($this->actingAs($fixture['depositor'])->get(route('business.wallet.show', [$business, 'receipt' => strtolower((string) Str::ulid())])))['receipt'])
+        ->toBeNull();
+});
+
+it('refuses to read a deposit intent or credit whose sealed facts no longer match', function (string $table, string $message): void {
+    $fixture = businessWalletFixture();
+    $business = $fixture['business']->id;
+    $this->actingAs($fixture['depositor'])->postJson(route('business.wallet.deposit', $business), businessWalletDepositBody($fixture))->assertOk();
+    businessWalletCredit(BusinessDepositIntent::query()->sole());
+    DB::statement('ALTER TABLE '.$table.' DISABLE TRIGGER USER');
+    DB::table($table)->update(['sha256' => str_repeat('0', 64)]);
+    DB::statement('ALTER TABLE '.$table.' ENABLE TRIGGER USER');
+
+    $this->withoutExceptionHandling();
+    expect(fn () => $this->actingAs($fixture['depositor'])->get(route('business.wallet.show', $business)))->toThrow(RuntimeException::class, $message);
+})->with([
+    'intent' => ['business_deposit_intents', 'WALLET_DEPOSIT_INTEGRITY_FAILED'],
+    'credit' => ['business_deposit_credits', 'WALLET_CREDIT_INTEGRITY_FAILED'],
+]);
