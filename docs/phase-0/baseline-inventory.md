@@ -1770,6 +1770,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_10_02_090000_add_purchase_topic_to_change_feed.php |
 | 2026_10_02_170000_create_staff_independence_evidence.php |
 | 2026_10_03_100000_add_wallet_supertype_and_business_wallets.php |
+| 2026_10_03_100100_refuse_ownerless_ledger_entries.php |
 
 ## Routes
 

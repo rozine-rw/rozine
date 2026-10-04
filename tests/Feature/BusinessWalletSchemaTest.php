@@ -83,9 +83,9 @@ it('binds each wallet account and entry kind to its own wallet owner only', func
     businessWalletSchemaRejects(fn () => LedgerAccount::factory()->create(['wallet_id' => $investor->id, 'kind' => 'business_available']), 'ledger_account_wallet');
     businessWalletSchemaRejects(fn () => LedgerAccount::factory()->create(['wallet_id' => null, 'kind' => 'business_available']), 'ledger_account_owner');
     businessWalletSchemaRejects(fn () => LedgerAccount::factory()->system()->create(['wallet_id' => $business]), 'ledger_account_owner');
-    businessWalletSchemaRejects(fn () => LedgerEntry::factory()->create(['wallet_id' => $business]), 'ledger_entry_wallet');
+    businessWalletSchemaRejects(fn () => LedgerEntry::factory()->create(['wallet_id' => $business]), 'needs a wallet of its own owner');
     businessWalletSchemaRejects(fn () => LedgerEntry::factory()->create(['wallet_id' => $business, 'kind' => 'primary_hold',
-        'source_type' => 'primary_reservation', 'origin_operation_id' => strtolower((string) Str::ulid())]), 'ledger_entry_wallet');
+        'source_type' => 'primary_reservation', 'origin_operation_id' => strtolower((string) Str::ulid())]), 'needs a wallet of its own owner');
     businessWalletSchemaRejects(fn () => DB::table('ledger_accounts')->where('id', $available->id)->update(['wallet_owner' => 'investor']), 'wallet_owner');
 });
 
@@ -132,6 +132,17 @@ it('keeps every line native to its entry wallet owner in both directions', funct
         'must belong to the entry wallet');
     businessWalletSchemaRejects(fn () => LedgerEntry::factory()->create(['wallet_id' => $business, 'kind' => 'business_deposit_credit']),
         'ledger_entry_source');
+});
+
+it('locks only a wallet of the entry owner and refuses an ownerless kind before any key check', function (): void {
+    $business = businessWalletSchemaWallet();
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('ALTER TABLE ledger_entries DROP CONSTRAINT ledger_entry_source');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
+
+    businessWalletSchemaRejects(fn () => LedgerEntry::factory()->create(['kind' => 'manual_adjustment']), 'needs a wallet owner');
+    businessWalletSchemaRejects(fn () => LedgerEntry::factory()->create(['wallet_id' => $business, 'kind' => 'deposit_credit']), 'needs a wallet of its own owner');
+    businessWalletSchemaRejects(fn () => LedgerEntry::factory()->create(['kind' => 'business_deposit_credit']), 'needs a wallet of its own owner');
 });
 
 it('maps every wallet kind to one owner and leaves every other kind ownerless', function (): void {
