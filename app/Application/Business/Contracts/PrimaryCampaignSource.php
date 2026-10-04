@@ -62,4 +62,12 @@ interface PrimaryCampaignSource
      * @return CampaignInput
      */
     public function lockRetained(string $campaignId): array;
+
+    /**
+     * The retained publication's title, and whether a campaign closure has been recorded, for
+     * presenting a purchase the caller has already authorized. Takes no lock and grants nothing.
+     *
+     * @return array{title: string, closed: bool}
+     */
+    public function presentation(string $campaignId): array;
 }
