@@ -744,6 +744,26 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `business_provider_events_content` on (provider, provider_event_id, content_sha256) — unique; `business_provider_events_final` on (intent_id) — unique; `business_provider_events_identity` on (provider, provider_event_id) — unique; `business_provider_events_intent` on (intent_id, id); `business_provider_events_pkey` on (id) — unique
 
+### `business_repayments`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `wallet_id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `party_id` | `bpchar` | no | — |
+| `note_id` | `bpchar` | no | — |
+| `operation_id` | `bpchar` | no | — |
+| `request_id` | `uuid` | no | — |
+| `option` | `varchar` | no | — |
+| `amount` | `numeric` | no | — |
+| `servicing_revision` | `int4` | no | — |
+| `payload` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_repayments_note` on (note_id, id); `business_repayments_operation` on (operation_id) — unique; `business_repayments_pkey` on (id) — unique; `business_repayments_request` on (wallet_id, request_id) — unique; `business_repayments_wallet_order` on (wallet_id, id)
+
 ### `business_wallets`
 
 | Column | Type | Nullable | Default |
@@ -1878,6 +1898,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_10_03_100100_refuse_ownerless_ledger_entries.php |
 | 2026_10_03_110000_create_provider_reference_registry.php |
 | 2026_10_03_120000_create_business_deposit_records.php |
+| 2026_10_04_100000_create_business_repayment_records.php |
 
 ## Routes
 
