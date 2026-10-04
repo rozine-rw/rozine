@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 use App\Application\Wallet\ApplyBusinessProviderOutcome;
 use App\Application\Wallet\ApplyProviderOutcome;
+use App\Application\Wallet\Contracts\DepositProvider;
 use App\Application\Wallet\Contracts\SyntheticEventSigner;
+use App\Application\Wallet\DepositInstruction;
+use App\Application\Wallet\DispatchBusinessDeposits;
 use App\Application\Wallet\RecordBusinessDeposit;
+use App\Application\Wallet\VerifiedDepositEvent;
 use App\Domain\Operations\CommandRejection;
 use App\Models\BusinessDepositCredit;
 use App\Models\BusinessDepositDispatch;
@@ -16,6 +20,7 @@ use App\Models\DepositPolicy;
 use App\Models\LedgerEntry;
 use App\Models\User;
 use App\Models\WalletDepositIntent;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\InvestorWalletFixture;
@@ -99,4 +104,33 @@ it('routes an event only to the owner its reference is registered to', function 
         ->and(fn () => businessSettle($business->provider_reference, '50000', investorPath: true))->toThrow(CommandRejection::class, 'DEPOSIT_REFERENCE_UNKNOWN')
         ->and(fn () => businessSettle('syn_'.str_repeat('0', 40), '50000'))->toThrow(CommandRejection::class, 'DEPOSIT_REFERENCE_UNKNOWN')
         ->and(LedgerEntry::query()->count())->toBe(0);
+});
+
+it('records a Business send that throws as unacknowledged and refuses to dispatch inside an open transaction', function (): void {
+    app()->instance(DepositProvider::class, new class implements DepositProvider
+    {
+        public function name(): string
+        {
+            return 'synthetic';
+        }
+
+        public function idempotentSends(): bool
+        {
+            return false;
+        }
+
+        public function initiate(DepositInstruction $instruction): bool
+        {
+            throw new RuntimeException('provider timeout');
+        }
+
+        public function verify(array $message): VerifiedDepositEvent
+        {
+            throw new CommandRejection('PROVIDER_EVENT_UNVERIFIED', 401);
+        }
+    });
+    $intent = businessSettlementDeposit(businessSettlementFixture());
+
+    expect(BusinessDepositDispatch::query()->where('intent_id', $intent->id)->orderBy('id')->pluck('phase')->all())->toBe(['queued', 'claimed', 'unacknowledged'])
+        ->and(fn () => DB::transaction(fn () => app(DispatchBusinessDeposits::class)->handle()))->toThrow(LogicException::class, 'WALLET_DISPATCH_TRANSACTION_OPEN');
 });
