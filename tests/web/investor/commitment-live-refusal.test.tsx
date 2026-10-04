@@ -1,3 +1,4 @@
+import type * as InertiaReact from '@inertiajs/react';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vite-plus/test';
 import InvestorCommitment from '@/pages/investor/commitment';
@@ -6,9 +7,7 @@ import type { C3InvestorCommitmentProps } from '@/types/investor';
 /** The real Inertia `Link`, which calls `href.toString()`, with the rest of the page's Inertia mocked. */
 vi.mock('@inertiajs/react', async () => {
     const actual =
-        await vi.importActual<typeof import('@inertiajs/react')>(
-            '@inertiajs/react',
-        );
+        await vi.importActual<typeof InertiaReact>('@inertiajs/react');
     const mock = await import('./inertia-mock');
 
     return { ...mock, Link: actual.Link };
