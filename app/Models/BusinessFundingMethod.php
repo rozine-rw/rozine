@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * A registered Business funding method. Its reference is encrypted and never serialized.
  *
+ * @property string $id
  * @property string $business_id
  * @property string $kind
  * @property string $label

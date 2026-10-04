@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * The one credit receipt of a Business deposit intent's applied success.
  *
+ * @property string $id
  * @property string $intent_id
  * @property string $wallet_id
  * @property string $ledger_entry_id

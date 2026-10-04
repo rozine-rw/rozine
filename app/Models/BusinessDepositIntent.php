@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Database\Factories\BusinessDepositIntentFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * An immutable Business deposit intent, recorded before any provider is called.
  *
+ * @property string $id
  * @property string $wallet_id
  * @property string $business_id
  * @property string $party_id
@@ -31,8 +30,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class BusinessDepositIntent extends Model
 {
-    /** @use HasFactory<BusinessDepositIntentFactory> */
-    use HasFactory, HasUlids;
+    use HasUlids;
 
     public const UPDATED_AT = null;
 

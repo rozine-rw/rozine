@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * One phase of a Business deposit dispatch outbox row.
  *
+ * @property string $id
  * @property string $intent_id
  * @property string $phase
  */

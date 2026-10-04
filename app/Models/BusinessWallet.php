@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * One per Business: the wallet is the lock gate for every Business balance change.
  *
+ * @property string $id
  * @property string $business_id
  * @property string $currency
  */

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * An immutable verified provider event for a Business deposit intent, with its disposition.
  *
+ * @property string $id
  * @property string $provider
  * @property string $provider_event_id
  * @property string $intent_id
