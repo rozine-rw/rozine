@@ -7,7 +7,9 @@ use App\Application\Business\ServicingQuote;
 use App\Application\Wallet\ApplyBusinessProviderOutcome;
 use App\Application\Wallet\Contracts\SyntheticEventSigner;
 use App\Application\Wallet\RecordBusinessDeposit;
+use App\Domain\Operations\CommandRejection;
 use App\Domain\Wallet\WalletMoney;
+use App\Infrastructure\Business\UnavailableNoteServicing;
 use App\Models\BusinessDepositIntent;
 use App\Models\BusinessFundingMethod;
 use App\Models\BusinessProfile;
@@ -149,4 +151,14 @@ it('requires the repayment permission, scopes the lookup to the payer and honour
     $this->actingAs($fixture['viewer'])->getJson($lookup)->assertNotFound()->assertJsonPath('code', 'OPERATION_NOT_FOUND');
     Sanctum::actingAs($fixture['payer'], ['business:read']);
     $this->postJson(route('api.v1.business.repayments.pay', $business), repaymentPayBody($fixture['note']))->assertForbidden();
+});
+
+it('finds no operation for another command and refuses to apply a repayment while no servicing domain is bound', function (): void {
+    $fixture = repaymentPayFixture();
+    $lookup = route('business.repayments.operations.show', ['business' => $fixture['business']->id, 'request_id' => (string) Str::uuid(),
+        'command' => 'business.wallet.deposit', 'identity_context_revision' => 1]);
+
+    $this->actingAs($fixture['payer'])->getJson($lookup)->assertNotFound()->assertJsonPath('code', 'OPERATION_NOT_FOUND');
+    expect(fn () => app(UnavailableNoteServicing::class)->applyRepayment($fixture['note'], (string) Str::ulid(), 'due_now', WalletMoney::of('1'), 1))
+        ->toThrow(CommandRejection::class, 'NOTE_NOT_SERVICING');
 });

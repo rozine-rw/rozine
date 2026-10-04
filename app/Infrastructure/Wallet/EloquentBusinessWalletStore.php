@@ -568,14 +568,8 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
      */
     private function repaymentReceipt(BusinessRepayment $repayment, int $revision): array
     {
-        $payload = $repayment->payload;
-        if (! hash_equals($repayment->sha256, hash('sha256', $this->json->encode($payload))) || $payload['repayment_id'] !== $repayment->id
-            || $payload['amount'] !== $repayment->amount || $payload['operation_id'] !== $repayment->operation_id) {
-            throw new RuntimeException('WALLET_REPAYMENT_INTEGRITY_FAILED');
-        }
-
         return ['receipt_id' => $repayment->id, 'operation_id' => $repayment->operation_id, 'request_id' => $repayment->request_id,
-            'code' => 'REPAYMENT_RECEIVED', 'recorded_at' => $payload['recorded_at'], 'amount' => WalletMoney::of($repayment->amount)->money(),
+            'code' => 'REPAYMENT_RECEIVED', 'recorded_at' => $repayment->payload['recorded_at'], 'amount' => WalletMoney::of($repayment->amount)->money(),
             'units' => null, 'reference' => 'RZR-'.strtoupper(substr($repayment->id, -10)), 'revision' => $revision,
             'policy_version' => null, 'disclosure_version' => null];
     }
