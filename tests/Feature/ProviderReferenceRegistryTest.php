@@ -57,10 +57,12 @@ it('keeps registrations immutable', function (): void {
 it('backfills retained Investor intents after auditing them, and rolls back and forward', function (): void {
     $intent = WalletDepositIntent::factory()->create();
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    (require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php'))->down();
     (require database_path('migrations/2026_10_03_110000_create_provider_reference_registry.php'))->down();
     expect(Schema::hasTable('provider_references'))->toBeFalse()->and(Schema::hasColumn('wallet_deposit_intents', 'owner'))->toBeFalse();
 
     (require database_path('migrations/2026_10_03_110000_create_provider_reference_registry.php'))->up();
+    (require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php'))->up();
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 
     expect(DB::table('provider_references')->where('intent_id', $intent->id)->value('reference_sha256'))->toBe($intent->provider_reference_sha256);
@@ -70,6 +72,7 @@ it('refuses the backfill over a retained reference or event binding it cannot ve
     $intent = WalletDepositIntent::factory()->create();
     WalletProviderEvent::factory()->create(['intent_id' => $intent->id, 'provider' => $intent->provider]);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    (require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php'))->down();
     (require database_path('migrations/2026_10_03_110000_create_provider_reference_registry.php'))->down();
     DB::statement('ALTER TABLE wallet_deposit_intents DISABLE TRIGGER USER');
     DB::statement('ALTER TABLE wallet_provider_events DISABLE TRIGGER USER');
