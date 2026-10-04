@@ -117,9 +117,8 @@ it('derives an owner for exactly the wallet kinds every ledger constraint admits
 
     expect($accountOwners)->toBe(['business_available' => 'business', 'deposit_clearing' => null, 'deposit_fee_revenue' => null,
         'disbursement_settlement' => null, 'investor_available' => 'investor', 'investor_committed' => 'investor', 'investor_held' => 'investor'])
-        ->and($entryOwners)->toBe(['deposit_credit' => 'investor', 'primary_commit' => 'investor', 'primary_hold' => 'investor',
-            'primary_issue' => 'investor', 'primary_refund' => 'investor', 'primary_release' => 'investor'])
-        ->and(DB::scalar("SELECT ledger_entry_wallet_owner('business_deposit_credit')"))->toBe('business');
+        ->and($entryOwners)->toBe(['business_deposit_credit' => 'business', 'deposit_credit' => 'investor', 'primary_commit' => 'investor',
+            'primary_hold' => 'investor', 'primary_issue' => 'investor', 'primary_refund' => 'investor', 'primary_release' => 'investor']);
 });
 
 it('keeps every line native to its entry wallet owner in both directions', function (): void {

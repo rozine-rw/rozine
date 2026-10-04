@@ -18,11 +18,14 @@ it('installs the provider reference registry behind in-flight deposit writers wi
             AND tgrelid IN ('wallet_deposit_intents'::regclass, 'provider_references'::regclass) ORDER BY tgname"),
     ];
     $installed = $shape();
-    $restore = function () use ($migration): void {
+    $businessDeposits = require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php');
+    $restore = function () use ($migration, $businessDeposits): void {
         if (! Schema::hasTable('provider_references')) {
             $migration->up();
         }
+        $businessDeposits->up();
     };
+    $businessDeposits->down();
     $migration->down();
     $channels = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
     if ($channels === false) {
