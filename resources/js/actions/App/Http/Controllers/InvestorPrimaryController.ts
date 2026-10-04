@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::reserve
-* @see app/Http/Controllers/InvestorPrimaryController.php:27
+* @see app/Http/Controllers/InvestorPrimaryController.php:26
 * @route '/api/v1/investor/deals/{campaign}/reservations'
 */
 const reserve569453ae235f04e8e1ffe08b577d123a = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ reserve569453ae235f04e8e1ffe08b577d123a.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::reserve
-* @see app/Http/Controllers/InvestorPrimaryController.php:27
+* @see app/Http/Controllers/InvestorPrimaryController.php:26
 * @route '/api/v1/investor/deals/{campaign}/reservations'
 */
 reserve569453ae235f04e8e1ffe08b577d123a.url = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ reserve569453ae235f04e8e1ffe08b577d123a.url = (args: { campaign: string | number
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::reserve
-* @see app/Http/Controllers/InvestorPrimaryController.php:27
+* @see app/Http/Controllers/InvestorPrimaryController.php:26
 * @route '/api/v1/investor/deals/{campaign}/reservations'
 */
 reserve569453ae235f04e8e1ffe08b577d123a.post = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -53,7 +53,7 @@ reserve569453ae235f04e8e1ffe08b577d123a.post = (args: { campaign: string | numbe
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::reserve
-* @see app/Http/Controllers/InvestorPrimaryController.php:27
+* @see app/Http/Controllers/InvestorPrimaryController.php:26
 * @route '/api/v1/investor/deals/{campaign}/reservations'
 */
 const reserve569453ae235f04e8e1ffe08b577d123aForm = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -63,7 +63,7 @@ const reserve569453ae235f04e8e1ffe08b577d123aForm = (args: { campaign: string | 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::reserve
-* @see app/Http/Controllers/InvestorPrimaryController.php:27
+* @see app/Http/Controllers/InvestorPrimaryController.php:26
 * @route '/api/v1/investor/deals/{campaign}/reservations'
 */
 reserve569453ae235f04e8e1ffe08b577d123aForm.post = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -74,7 +74,7 @@ reserve569453ae235f04e8e1ffe08b577d123aForm.post = (args: { campaign: string | n
 reserve569453ae235f04e8e1ffe08b577d123a.form = reserve569453ae235f04e8e1ffe08b577d123aForm
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::reserve
-* @see app/Http/Controllers/InvestorPrimaryController.php:27
+* @see app/Http/Controllers/InvestorPrimaryController.php:26
 * @route '/investor/deals/{campaign}/reservations'
 */
 const reserve99473108201d15d29adcdaea6a44a104 = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -89,7 +89,7 @@ reserve99473108201d15d29adcdaea6a44a104.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::reserve
-* @see app/Http/Controllers/InvestorPrimaryController.php:27
+* @see app/Http/Controllers/InvestorPrimaryController.php:26
 * @route '/investor/deals/{campaign}/reservations'
 */
 reserve99473108201d15d29adcdaea6a44a104.url = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -116,7 +116,7 @@ reserve99473108201d15d29adcdaea6a44a104.url = (args: { campaign: string | number
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::reserve
-* @see app/Http/Controllers/InvestorPrimaryController.php:27
+* @see app/Http/Controllers/InvestorPrimaryController.php:26
 * @route '/investor/deals/{campaign}/reservations'
 */
 reserve99473108201d15d29adcdaea6a44a104.post = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -126,7 +126,7 @@ reserve99473108201d15d29adcdaea6a44a104.post = (args: { campaign: string | numbe
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::reserve
-* @see app/Http/Controllers/InvestorPrimaryController.php:27
+* @see app/Http/Controllers/InvestorPrimaryController.php:26
 * @route '/investor/deals/{campaign}/reservations'
 */
 const reserve99473108201d15d29adcdaea6a44a104Form = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -136,7 +136,7 @@ const reserve99473108201d15d29adcdaea6a44a104Form = (args: { campaign: string | 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::reserve
-* @see app/Http/Controllers/InvestorPrimaryController.php:27
+* @see app/Http/Controllers/InvestorPrimaryController.php:26
 * @route '/investor/deals/{campaign}/reservations'
 */
 reserve99473108201d15d29adcdaea6a44a104Form.post = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -158,7 +158,7 @@ export const reserve = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::confirm
-* @see app/Http/Controllers/InvestorPrimaryController.php:34
+* @see app/Http/Controllers/InvestorPrimaryController.php:33
 * @route '/api/v1/investor/reservations/{reservation}/confirm'
 */
 const confirm071bb353caf9e5a6ea27d8de3f5a097f = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -173,7 +173,7 @@ confirm071bb353caf9e5a6ea27d8de3f5a097f.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::confirm
-* @see app/Http/Controllers/InvestorPrimaryController.php:34
+* @see app/Http/Controllers/InvestorPrimaryController.php:33
 * @route '/api/v1/investor/reservations/{reservation}/confirm'
 */
 confirm071bb353caf9e5a6ea27d8de3f5a097f.url = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -200,7 +200,7 @@ confirm071bb353caf9e5a6ea27d8de3f5a097f.url = (args: { reservation: string | num
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::confirm
-* @see app/Http/Controllers/InvestorPrimaryController.php:34
+* @see app/Http/Controllers/InvestorPrimaryController.php:33
 * @route '/api/v1/investor/reservations/{reservation}/confirm'
 */
 confirm071bb353caf9e5a6ea27d8de3f5a097f.post = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -210,7 +210,7 @@ confirm071bb353caf9e5a6ea27d8de3f5a097f.post = (args: { reservation: string | nu
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::confirm
-* @see app/Http/Controllers/InvestorPrimaryController.php:34
+* @see app/Http/Controllers/InvestorPrimaryController.php:33
 * @route '/api/v1/investor/reservations/{reservation}/confirm'
 */
 const confirm071bb353caf9e5a6ea27d8de3f5a097fForm = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -220,7 +220,7 @@ const confirm071bb353caf9e5a6ea27d8de3f5a097fForm = (args: { reservation: string
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::confirm
-* @see app/Http/Controllers/InvestorPrimaryController.php:34
+* @see app/Http/Controllers/InvestorPrimaryController.php:33
 * @route '/api/v1/investor/reservations/{reservation}/confirm'
 */
 confirm071bb353caf9e5a6ea27d8de3f5a097fForm.post = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -231,7 +231,7 @@ confirm071bb353caf9e5a6ea27d8de3f5a097fForm.post = (args: { reservation: string 
 confirm071bb353caf9e5a6ea27d8de3f5a097f.form = confirm071bb353caf9e5a6ea27d8de3f5a097fForm
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::confirm
-* @see app/Http/Controllers/InvestorPrimaryController.php:34
+* @see app/Http/Controllers/InvestorPrimaryController.php:33
 * @route '/investor/reservations/{reservation}/confirm'
 */
 const confirma7667de5aefcd00aca89630e7b15b660 = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -246,7 +246,7 @@ confirma7667de5aefcd00aca89630e7b15b660.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::confirm
-* @see app/Http/Controllers/InvestorPrimaryController.php:34
+* @see app/Http/Controllers/InvestorPrimaryController.php:33
 * @route '/investor/reservations/{reservation}/confirm'
 */
 confirma7667de5aefcd00aca89630e7b15b660.url = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -273,7 +273,7 @@ confirma7667de5aefcd00aca89630e7b15b660.url = (args: { reservation: string | num
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::confirm
-* @see app/Http/Controllers/InvestorPrimaryController.php:34
+* @see app/Http/Controllers/InvestorPrimaryController.php:33
 * @route '/investor/reservations/{reservation}/confirm'
 */
 confirma7667de5aefcd00aca89630e7b15b660.post = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -283,7 +283,7 @@ confirma7667de5aefcd00aca89630e7b15b660.post = (args: { reservation: string | nu
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::confirm
-* @see app/Http/Controllers/InvestorPrimaryController.php:34
+* @see app/Http/Controllers/InvestorPrimaryController.php:33
 * @route '/investor/reservations/{reservation}/confirm'
 */
 const confirma7667de5aefcd00aca89630e7b15b660Form = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -293,7 +293,7 @@ const confirma7667de5aefcd00aca89630e7b15b660Form = (args: { reservation: string
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::confirm
-* @see app/Http/Controllers/InvestorPrimaryController.php:34
+* @see app/Http/Controllers/InvestorPrimaryController.php:33
 * @route '/investor/reservations/{reservation}/confirm'
 */
 confirma7667de5aefcd00aca89630e7b15b660Form.post = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -315,7 +315,7 @@ export const confirm = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::release
-* @see app/Http/Controllers/InvestorPrimaryController.php:41
+* @see app/Http/Controllers/InvestorPrimaryController.php:40
 * @route '/api/v1/investor/reservations/{reservation}/release'
 */
 const releasee94260be7793b4986fddf3fde5282ec3 = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -330,7 +330,7 @@ releasee94260be7793b4986fddf3fde5282ec3.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::release
-* @see app/Http/Controllers/InvestorPrimaryController.php:41
+* @see app/Http/Controllers/InvestorPrimaryController.php:40
 * @route '/api/v1/investor/reservations/{reservation}/release'
 */
 releasee94260be7793b4986fddf3fde5282ec3.url = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -357,7 +357,7 @@ releasee94260be7793b4986fddf3fde5282ec3.url = (args: { reservation: string | num
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::release
-* @see app/Http/Controllers/InvestorPrimaryController.php:41
+* @see app/Http/Controllers/InvestorPrimaryController.php:40
 * @route '/api/v1/investor/reservations/{reservation}/release'
 */
 releasee94260be7793b4986fddf3fde5282ec3.post = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -367,7 +367,7 @@ releasee94260be7793b4986fddf3fde5282ec3.post = (args: { reservation: string | nu
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::release
-* @see app/Http/Controllers/InvestorPrimaryController.php:41
+* @see app/Http/Controllers/InvestorPrimaryController.php:40
 * @route '/api/v1/investor/reservations/{reservation}/release'
 */
 const releasee94260be7793b4986fddf3fde5282ec3Form = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -377,7 +377,7 @@ const releasee94260be7793b4986fddf3fde5282ec3Form = (args: { reservation: string
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::release
-* @see app/Http/Controllers/InvestorPrimaryController.php:41
+* @see app/Http/Controllers/InvestorPrimaryController.php:40
 * @route '/api/v1/investor/reservations/{reservation}/release'
 */
 releasee94260be7793b4986fddf3fde5282ec3Form.post = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -388,7 +388,7 @@ releasee94260be7793b4986fddf3fde5282ec3Form.post = (args: { reservation: string 
 releasee94260be7793b4986fddf3fde5282ec3.form = releasee94260be7793b4986fddf3fde5282ec3Form
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::release
-* @see app/Http/Controllers/InvestorPrimaryController.php:41
+* @see app/Http/Controllers/InvestorPrimaryController.php:40
 * @route '/investor/reservations/{reservation}/release'
 */
 const releasef8ea3d2bec7566206046b917e432010f = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -403,7 +403,7 @@ releasef8ea3d2bec7566206046b917e432010f.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::release
-* @see app/Http/Controllers/InvestorPrimaryController.php:41
+* @see app/Http/Controllers/InvestorPrimaryController.php:40
 * @route '/investor/reservations/{reservation}/release'
 */
 releasef8ea3d2bec7566206046b917e432010f.url = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -430,7 +430,7 @@ releasef8ea3d2bec7566206046b917e432010f.url = (args: { reservation: string | num
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::release
-* @see app/Http/Controllers/InvestorPrimaryController.php:41
+* @see app/Http/Controllers/InvestorPrimaryController.php:40
 * @route '/investor/reservations/{reservation}/release'
 */
 releasef8ea3d2bec7566206046b917e432010f.post = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -440,7 +440,7 @@ releasef8ea3d2bec7566206046b917e432010f.post = (args: { reservation: string | nu
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::release
-* @see app/Http/Controllers/InvestorPrimaryController.php:41
+* @see app/Http/Controllers/InvestorPrimaryController.php:40
 * @route '/investor/reservations/{reservation}/release'
 */
 const releasef8ea3d2bec7566206046b917e432010fForm = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -450,7 +450,7 @@ const releasef8ea3d2bec7566206046b917e432010fForm = (args: { reservation: string
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::release
-* @see app/Http/Controllers/InvestorPrimaryController.php:41
+* @see app/Http/Controllers/InvestorPrimaryController.php:40
 * @route '/investor/reservations/{reservation}/release'
 */
 releasef8ea3d2bec7566206046b917e432010fForm.post = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -472,7 +472,7 @@ export const release = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/api/v1/investor/commitments/{commitment}'
 */
 const commitment863bb59b225460d3979143a9ba64ce62 = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -487,7 +487,7 @@ commitment863bb59b225460d3979143a9ba64ce62.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/api/v1/investor/commitments/{commitment}'
 */
 commitment863bb59b225460d3979143a9ba64ce62.url = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -514,7 +514,7 @@ commitment863bb59b225460d3979143a9ba64ce62.url = (args: { commitment: string | n
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/api/v1/investor/commitments/{commitment}'
 */
 commitment863bb59b225460d3979143a9ba64ce62.get = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -524,7 +524,7 @@ commitment863bb59b225460d3979143a9ba64ce62.get = (args: { commitment: string | n
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/api/v1/investor/commitments/{commitment}'
 */
 commitment863bb59b225460d3979143a9ba64ce62.head = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -534,7 +534,7 @@ commitment863bb59b225460d3979143a9ba64ce62.head = (args: { commitment: string | 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/api/v1/investor/commitments/{commitment}'
 */
 const commitment863bb59b225460d3979143a9ba64ce62Form = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -544,7 +544,7 @@ const commitment863bb59b225460d3979143a9ba64ce62Form = (args: { commitment: stri
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/api/v1/investor/commitments/{commitment}'
 */
 commitment863bb59b225460d3979143a9ba64ce62Form.get = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -554,7 +554,7 @@ commitment863bb59b225460d3979143a9ba64ce62Form.get = (args: { commitment: string
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/api/v1/investor/commitments/{commitment}'
 */
 commitment863bb59b225460d3979143a9ba64ce62Form.head = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -570,7 +570,7 @@ commitment863bb59b225460d3979143a9ba64ce62Form.head = (args: { commitment: strin
 commitment863bb59b225460d3979143a9ba64ce62.form = commitment863bb59b225460d3979143a9ba64ce62Form
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/investor/commitments/{commitment}'
 */
 const commitment14cf5dc7eed53f902216996a710f089e = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -585,7 +585,7 @@ commitment14cf5dc7eed53f902216996a710f089e.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/investor/commitments/{commitment}'
 */
 commitment14cf5dc7eed53f902216996a710f089e.url = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -612,7 +612,7 @@ commitment14cf5dc7eed53f902216996a710f089e.url = (args: { commitment: string | n
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/investor/commitments/{commitment}'
 */
 commitment14cf5dc7eed53f902216996a710f089e.get = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -622,7 +622,7 @@ commitment14cf5dc7eed53f902216996a710f089e.get = (args: { commitment: string | n
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/investor/commitments/{commitment}'
 */
 commitment14cf5dc7eed53f902216996a710f089e.head = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -632,7 +632,7 @@ commitment14cf5dc7eed53f902216996a710f089e.head = (args: { commitment: string | 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/investor/commitments/{commitment}'
 */
 const commitment14cf5dc7eed53f902216996a710f089eForm = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -642,7 +642,7 @@ const commitment14cf5dc7eed53f902216996a710f089eForm = (args: { commitment: stri
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/investor/commitments/{commitment}'
 */
 commitment14cf5dc7eed53f902216996a710f089eForm.get = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -652,7 +652,7 @@ commitment14cf5dc7eed53f902216996a710f089eForm.get = (args: { commitment: string
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/investor/commitments/{commitment}'
 */
 commitment14cf5dc7eed53f902216996a710f089eForm.head = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -679,7 +679,7 @@ export const commitment = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:47
+* @see app/Http/Controllers/InvestorPrimaryController.php:46
 * @route '/api/v1/investor/commitments/{commitment}/cancel'
 */
 const cancel8607c40168c7cea24228dbfb8a158129 = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -694,7 +694,7 @@ cancel8607c40168c7cea24228dbfb8a158129.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:47
+* @see app/Http/Controllers/InvestorPrimaryController.php:46
 * @route '/api/v1/investor/commitments/{commitment}/cancel'
 */
 cancel8607c40168c7cea24228dbfb8a158129.url = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -721,7 +721,7 @@ cancel8607c40168c7cea24228dbfb8a158129.url = (args: { commitment: string | numbe
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:47
+* @see app/Http/Controllers/InvestorPrimaryController.php:46
 * @route '/api/v1/investor/commitments/{commitment}/cancel'
 */
 cancel8607c40168c7cea24228dbfb8a158129.post = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -731,7 +731,7 @@ cancel8607c40168c7cea24228dbfb8a158129.post = (args: { commitment: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:47
+* @see app/Http/Controllers/InvestorPrimaryController.php:46
 * @route '/api/v1/investor/commitments/{commitment}/cancel'
 */
 const cancel8607c40168c7cea24228dbfb8a158129Form = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -741,7 +741,7 @@ const cancel8607c40168c7cea24228dbfb8a158129Form = (args: { commitment: string |
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:47
+* @see app/Http/Controllers/InvestorPrimaryController.php:46
 * @route '/api/v1/investor/commitments/{commitment}/cancel'
 */
 cancel8607c40168c7cea24228dbfb8a158129Form.post = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -752,7 +752,7 @@ cancel8607c40168c7cea24228dbfb8a158129Form.post = (args: { commitment: string | 
 cancel8607c40168c7cea24228dbfb8a158129.form = cancel8607c40168c7cea24228dbfb8a158129Form
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:47
+* @see app/Http/Controllers/InvestorPrimaryController.php:46
 * @route '/investor/commitments/{commitment}/cancel'
 */
 const cancel12de6d9297648c5933065d1c735ca295 = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -767,7 +767,7 @@ cancel12de6d9297648c5933065d1c735ca295.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:47
+* @see app/Http/Controllers/InvestorPrimaryController.php:46
 * @route '/investor/commitments/{commitment}/cancel'
 */
 cancel12de6d9297648c5933065d1c735ca295.url = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -794,7 +794,7 @@ cancel12de6d9297648c5933065d1c735ca295.url = (args: { commitment: string | numbe
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:47
+* @see app/Http/Controllers/InvestorPrimaryController.php:46
 * @route '/investor/commitments/{commitment}/cancel'
 */
 cancel12de6d9297648c5933065d1c735ca295.post = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -804,7 +804,7 @@ cancel12de6d9297648c5933065d1c735ca295.post = (args: { commitment: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:47
+* @see app/Http/Controllers/InvestorPrimaryController.php:46
 * @route '/investor/commitments/{commitment}/cancel'
 */
 const cancel12de6d9297648c5933065d1c735ca295Form = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -814,7 +814,7 @@ const cancel12de6d9297648c5933065d1c735ca295Form = (args: { commitment: string |
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:47
+* @see app/Http/Controllers/InvestorPrimaryController.php:46
 * @route '/investor/commitments/{commitment}/cancel'
 */
 cancel12de6d9297648c5933065d1c735ca295Form.post = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -836,7 +836,7 @@ export const cancel = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:53
+* @see app/Http/Controllers/InvestorPrimaryController.php:52
 * @route '/api/v1/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 const operation3ff2f17357c5339b36a3556bb0d1d97f = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -851,7 +851,7 @@ operation3ff2f17357c5339b36a3556bb0d1d97f.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:53
+* @see app/Http/Controllers/InvestorPrimaryController.php:52
 * @route '/api/v1/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation3ff2f17357c5339b36a3556bb0d1d97f.url = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions) => {
@@ -877,7 +877,7 @@ operation3ff2f17357c5339b36a3556bb0d1d97f.url = (args: { campaign: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:53
+* @see app/Http/Controllers/InvestorPrimaryController.php:52
 * @route '/api/v1/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation3ff2f17357c5339b36a3556bb0d1d97f.get = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -887,7 +887,7 @@ operation3ff2f17357c5339b36a3556bb0d1d97f.get = (args: { campaign: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:53
+* @see app/Http/Controllers/InvestorPrimaryController.php:52
 * @route '/api/v1/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation3ff2f17357c5339b36a3556bb0d1d97f.head = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -897,7 +897,7 @@ operation3ff2f17357c5339b36a3556bb0d1d97f.head = (args: { campaign: string | num
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:53
+* @see app/Http/Controllers/InvestorPrimaryController.php:52
 * @route '/api/v1/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 const operation3ff2f17357c5339b36a3556bb0d1d97fForm = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -907,7 +907,7 @@ const operation3ff2f17357c5339b36a3556bb0d1d97fForm = (args: { campaign: string 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:53
+* @see app/Http/Controllers/InvestorPrimaryController.php:52
 * @route '/api/v1/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation3ff2f17357c5339b36a3556bb0d1d97fForm.get = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -917,7 +917,7 @@ operation3ff2f17357c5339b36a3556bb0d1d97fForm.get = (args: { campaign: string | 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:53
+* @see app/Http/Controllers/InvestorPrimaryController.php:52
 * @route '/api/v1/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation3ff2f17357c5339b36a3556bb0d1d97fForm.head = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -933,7 +933,7 @@ operation3ff2f17357c5339b36a3556bb0d1d97fForm.head = (args: { campaign: string |
 operation3ff2f17357c5339b36a3556bb0d1d97f.form = operation3ff2f17357c5339b36a3556bb0d1d97fForm
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:53
+* @see app/Http/Controllers/InvestorPrimaryController.php:52
 * @route '/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 const operation697b591f09ca55c1ba911f7007f55f79 = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -948,7 +948,7 @@ operation697b591f09ca55c1ba911f7007f55f79.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:53
+* @see app/Http/Controllers/InvestorPrimaryController.php:52
 * @route '/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation697b591f09ca55c1ba911f7007f55f79.url = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions) => {
@@ -974,7 +974,7 @@ operation697b591f09ca55c1ba911f7007f55f79.url = (args: { campaign: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:53
+* @see app/Http/Controllers/InvestorPrimaryController.php:52
 * @route '/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation697b591f09ca55c1ba911f7007f55f79.get = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -984,7 +984,7 @@ operation697b591f09ca55c1ba911f7007f55f79.get = (args: { campaign: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:53
+* @see app/Http/Controllers/InvestorPrimaryController.php:52
 * @route '/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation697b591f09ca55c1ba911f7007f55f79.head = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -994,7 +994,7 @@ operation697b591f09ca55c1ba911f7007f55f79.head = (args: { campaign: string | num
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:53
+* @see app/Http/Controllers/InvestorPrimaryController.php:52
 * @route '/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 const operation697b591f09ca55c1ba911f7007f55f79Form = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1004,7 +1004,7 @@ const operation697b591f09ca55c1ba911f7007f55f79Form = (args: { campaign: string 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:53
+* @see app/Http/Controllers/InvestorPrimaryController.php:52
 * @route '/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation697b591f09ca55c1ba911f7007f55f79Form.get = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1014,7 +1014,7 @@ operation697b591f09ca55c1ba911f7007f55f79Form.get = (args: { campaign: string | 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:53
+* @see app/Http/Controllers/InvestorPrimaryController.php:52
 * @route '/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation697b591f09ca55c1ba911f7007f55f79Form.head = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

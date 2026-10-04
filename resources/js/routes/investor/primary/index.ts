@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 import operations from './operations'
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::reserve
-* @see app/Http/Controllers/InvestorPrimaryController.php:27
+* @see app/Http/Controllers/InvestorPrimaryController.php:26
 * @route '/investor/deals/{campaign}/reservations'
 */
 export const reserve = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -17,7 +17,7 @@ reserve.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::reserve
-* @see app/Http/Controllers/InvestorPrimaryController.php:27
+* @see app/Http/Controllers/InvestorPrimaryController.php:26
 * @route '/investor/deals/{campaign}/reservations'
 */
 reserve.url = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ reserve.url = (args: { campaign: string | number } | [campaign: string | number 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::reserve
-* @see app/Http/Controllers/InvestorPrimaryController.php:27
+* @see app/Http/Controllers/InvestorPrimaryController.php:26
 * @route '/investor/deals/{campaign}/reservations'
 */
 reserve.post = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -54,7 +54,7 @@ reserve.post = (args: { campaign: string | number } | [campaign: string | number
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::reserve
-* @see app/Http/Controllers/InvestorPrimaryController.php:27
+* @see app/Http/Controllers/InvestorPrimaryController.php:26
 * @route '/investor/deals/{campaign}/reservations'
 */
 const reserveForm = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -64,7 +64,7 @@ const reserveForm = (args: { campaign: string | number } | [campaign: string | n
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::reserve
-* @see app/Http/Controllers/InvestorPrimaryController.php:27
+* @see app/Http/Controllers/InvestorPrimaryController.php:26
 * @route '/investor/deals/{campaign}/reservations'
 */
 reserveForm.post = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -76,7 +76,7 @@ reserve.form = reserveForm
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::confirm
-* @see app/Http/Controllers/InvestorPrimaryController.php:34
+* @see app/Http/Controllers/InvestorPrimaryController.php:33
 * @route '/investor/reservations/{reservation}/confirm'
 */
 export const confirm = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -91,7 +91,7 @@ confirm.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::confirm
-* @see app/Http/Controllers/InvestorPrimaryController.php:34
+* @see app/Http/Controllers/InvestorPrimaryController.php:33
 * @route '/investor/reservations/{reservation}/confirm'
 */
 confirm.url = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -118,7 +118,7 @@ confirm.url = (args: { reservation: string | number } | [reservation: string | n
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::confirm
-* @see app/Http/Controllers/InvestorPrimaryController.php:34
+* @see app/Http/Controllers/InvestorPrimaryController.php:33
 * @route '/investor/reservations/{reservation}/confirm'
 */
 confirm.post = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -128,7 +128,7 @@ confirm.post = (args: { reservation: string | number } | [reservation: string | 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::confirm
-* @see app/Http/Controllers/InvestorPrimaryController.php:34
+* @see app/Http/Controllers/InvestorPrimaryController.php:33
 * @route '/investor/reservations/{reservation}/confirm'
 */
 const confirmForm = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -138,7 +138,7 @@ const confirmForm = (args: { reservation: string | number } | [reservation: stri
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::confirm
-* @see app/Http/Controllers/InvestorPrimaryController.php:34
+* @see app/Http/Controllers/InvestorPrimaryController.php:33
 * @route '/investor/reservations/{reservation}/confirm'
 */
 confirmForm.post = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -150,7 +150,7 @@ confirm.form = confirmForm
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::release
-* @see app/Http/Controllers/InvestorPrimaryController.php:41
+* @see app/Http/Controllers/InvestorPrimaryController.php:40
 * @route '/investor/reservations/{reservation}/release'
 */
 export const release = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -165,7 +165,7 @@ release.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::release
-* @see app/Http/Controllers/InvestorPrimaryController.php:41
+* @see app/Http/Controllers/InvestorPrimaryController.php:40
 * @route '/investor/reservations/{reservation}/release'
 */
 release.url = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -192,7 +192,7 @@ release.url = (args: { reservation: string | number } | [reservation: string | n
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::release
-* @see app/Http/Controllers/InvestorPrimaryController.php:41
+* @see app/Http/Controllers/InvestorPrimaryController.php:40
 * @route '/investor/reservations/{reservation}/release'
 */
 release.post = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -202,7 +202,7 @@ release.post = (args: { reservation: string | number } | [reservation: string | 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::release
-* @see app/Http/Controllers/InvestorPrimaryController.php:41
+* @see app/Http/Controllers/InvestorPrimaryController.php:40
 * @route '/investor/reservations/{reservation}/release'
 */
 const releaseForm = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -212,7 +212,7 @@ const releaseForm = (args: { reservation: string | number } | [reservation: stri
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::release
-* @see app/Http/Controllers/InvestorPrimaryController.php:41
+* @see app/Http/Controllers/InvestorPrimaryController.php:40
 * @route '/investor/reservations/{reservation}/release'
 */
 releaseForm.post = (args: { reservation: string | number } | [reservation: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -224,7 +224,7 @@ release.form = releaseForm
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:47
+* @see app/Http/Controllers/InvestorPrimaryController.php:46
 * @route '/investor/commitments/{commitment}/cancel'
 */
 export const cancel = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -239,7 +239,7 @@ cancel.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:47
+* @see app/Http/Controllers/InvestorPrimaryController.php:46
 * @route '/investor/commitments/{commitment}/cancel'
 */
 cancel.url = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -266,7 +266,7 @@ cancel.url = (args: { commitment: string | number } | [commitment: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:47
+* @see app/Http/Controllers/InvestorPrimaryController.php:46
 * @route '/investor/commitments/{commitment}/cancel'
 */
 cancel.post = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -276,7 +276,7 @@ cancel.post = (args: { commitment: string | number } | [commitment: string | num
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:47
+* @see app/Http/Controllers/InvestorPrimaryController.php:46
 * @route '/investor/commitments/{commitment}/cancel'
 */
 const cancelForm = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -286,7 +286,7 @@ const cancelForm = (args: { commitment: string | number } | [commitment: string 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:47
+* @see app/Http/Controllers/InvestorPrimaryController.php:46
 * @route '/investor/commitments/{commitment}/cancel'
 */
 cancelForm.post = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

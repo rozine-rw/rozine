@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::show
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/investor/commitments/{commitment}'
 */
 export const show = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::show
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/investor/commitments/{commitment}'
 */
 show.url = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ show.url = (args: { commitment: string | number } | [commitment: string | number
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::show
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/investor/commitments/{commitment}'
 */
 show.get = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ show.get = (args: { commitment: string | number } | [commitment: string | number
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::show
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/investor/commitments/{commitment}'
 */
 show.head = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ show.head = (args: { commitment: string | number } | [commitment: string | numbe
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::show
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/investor/commitments/{commitment}'
 */
 const showForm = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ const showForm = (args: { commitment: string | number } | [commitment: string | 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::show
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/investor/commitments/{commitment}'
 */
 showForm.get = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ showForm.get = (args: { commitment: string | number } | [commitment: string | nu
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::show
-* @see app/Http/Controllers/InvestorPrimaryController.php:65
+* @see app/Http/Controllers/InvestorPrimaryController.php:64
 * @route '/investor/commitments/{commitment}'
 */
 showForm.head = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
