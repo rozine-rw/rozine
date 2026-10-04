@@ -142,10 +142,12 @@ final class EloquentWalletStore implements WalletStore
             if ($replay !== null) {
                 return ['disposition' => $replay->disposition, 'state' => $this->currentState($intent->id), 'credited' => false, 'replayed' => true];
             }
+            // Provider event keys are one namespace across owners: a key the other owner already consumed is a conflict here.
+            $consumedElsewhere = DB::table('business_provider_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists();
             $current = $this->currentState($intent->id);
             $outcome = DepositOutcome::transition($current, $event->state);
             $disposition = match (true) {
-                $existing->isNotEmpty() => 'key_conflict',
+                $existing->isNotEmpty() || $consumedElsewhere => 'key_conflict',
                 $event->environment !== $environment || $event->currency !== $intent->currency || $event->amount !== $intent->amount => 'mismatch',
                 default => $outcome->disposition,
             };

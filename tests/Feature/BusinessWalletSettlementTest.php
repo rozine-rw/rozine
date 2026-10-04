@@ -134,3 +134,19 @@ it('records a Business send that throws as unacknowledged and refuses to dispatc
     expect(BusinessDepositDispatch::query()->where('intent_id', $intent->id)->orderBy('id')->pluck('phase')->all())->toBe(['queued', 'claimed', 'unacknowledged'])
         ->and(fn () => DB::transaction(fn () => app(DispatchBusinessDeposits::class)->handle()))->toThrow(LogicException::class, 'WALLET_DISPATCH_TRANSACTION_OPEN');
 });
+
+it('refuses a provider event key the other owner already consumed, in either arrival order', function (bool $investorFirst): void {
+    $this->freezeSecond();
+    $business = businessSettlementDeposit(businessSettlementFixture());
+    $investor = WalletDepositIntent::query()->whereKey((string) InvestorWalletFixture::deposit(InvestorWalletFixture::ready())['data']['intent_id'])->sole();
+    $deliveries = [[$investor->provider_reference, $investor->amount, true], [$business->provider_reference, $business->amount, false]];
+    [$first, $second] = $investorFirst ? $deliveries : array_reverse($deliveries);
+
+    expect(businessSettle($first[0], $first[1], eventId: 'synthetic-event-shared', investorPath: $first[2]))
+        ->toBe(['disposition' => 'applied', 'state' => 'succeeded', 'credited' => true, 'replayed' => false])
+        ->and(businessSettle($second[0], $second[1], eventId: 'synthetic-event-shared', investorPath: $second[2]))
+        ->toBe(['disposition' => 'key_conflict', 'state' => 'pending', 'credited' => false, 'replayed' => false])
+        ->and(businessSettle($second[0], '1', eventId: 'synthetic-event-shared', investorPath: $second[2])['disposition'])->toBe('key_conflict')
+        ->and(businessSettle($first[0], $first[1], eventId: 'synthetic-event-shared', investorPath: $first[2])['replayed'])->toBeTrue()
+        ->and(LedgerEntry::query()->whereIn('kind', ['deposit_credit', 'business_deposit_credit'])->count())->toBe(1);
+})->with(['investor first' => [true], 'business first' => [false]]);
