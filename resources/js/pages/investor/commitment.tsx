@@ -32,7 +32,8 @@ export default function InvestorCommitment({
     const [confirming, setConfirming] = useState(false);
     const command = useC3Command<'primary.cancel'>({
         actions: { 'primary.cancel': commitment?.actions.cancel ?? null },
-        lookup: links.operation,
+        // A refusal has no commitment, so no command, and its lookup is never used.
+        lookup: links.operation ?? links.close,
         lookupQuery: { identity_context_revision: identityRevision },
         allowed: commitment?.allowed_actions ?? [],
         preview,
@@ -74,12 +75,14 @@ export default function InvestorCommitment({
                             className="rounded-2xl border border-rz-border bg-rz-surface p-4 text-[13px] leading-[1.55] text-rz-secondary"
                         >
                             {refusalText(refusal?.code ?? 'NOT_FOUND')}
-                            <Link
-                                href={links.portfolio}
-                                className="mt-3 block font-semibold text-rz-accent-app-text"
-                            >
-                                {t('investor.primary.back_to_portfolio')}
-                            </Link>
+                            {links.portfolio !== null && (
+                                <Link
+                                    href={links.portfolio}
+                                    className="mt-3 block font-semibold text-rz-accent-app-text"
+                                >
+                                    {t('investor.primary.back_to_portfolio')}
+                                </Link>
+                            )}
                         </div>
                     ) : (
                         <>
