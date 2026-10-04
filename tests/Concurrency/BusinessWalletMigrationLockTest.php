@@ -18,11 +18,14 @@ it('installs the wallet supertype behind an in-flight posting without blocking i
             AND proname IN ('protect_ledger_entry', 'ledger_account_wallet_owner', 'ledger_entry_wallet_owner') ORDER BY proname"),
     ];
     $installed = $shape();
-    $restore = function () use ($migration): void {
+    $ownerGuard = require database_path('migrations/2026_10_03_100100_refuse_ownerless_ledger_entries.php');
+    $restore = function () use ($migration, $ownerGuard): void {
         if (! Schema::hasTable('business_wallets')) {
             $migration->up();
         }
+        $ownerGuard->up();
     };
+    $ownerGuard->down();
     $migration->down();
     $channels = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
     if ($channels === false) {
