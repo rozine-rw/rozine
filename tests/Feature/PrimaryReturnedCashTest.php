@@ -144,6 +144,7 @@ it('refuses a foreign source before acquiring any supplied wallet lock', functio
 it('refuses additional issue mixed release and unknown movements', function (string $kind): void {
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     DB::statement('ALTER TABLE ledger_entries DROP CONSTRAINT ledger_entry_source');
+    DB::statement('ALTER TABLE ledger_entries DROP CONSTRAINT ledger_entry_wallet');
     DB::statement('ALTER TABLE ledger_entries DISABLE TRIGGER USER');
     DB::statement('SET CONSTRAINTS ALL DEFERRED');
     DB::table('ledger_entries')->insert(['id' => strtolower((string) Str::ulid()), 'wallet_id' => $this->wallet->walletId,
@@ -226,6 +227,7 @@ it('refuses a native cause on any retained release or refund receipt', function 
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     DB::statement('ALTER TABLE ledger_entries DISABLE TRIGGER USER');
     DB::statement('ALTER TABLE ledger_entries DROP CONSTRAINT ledger_entry_source');
+    DB::statement('ALTER TABLE ledger_entries DROP CONSTRAINT ledger_entry_wallet');
     DB::table('ledger_entries')->where('source_id', $source->id)->where('kind', $corruptedKind)
         ->update([$field => $field === 'cause_type' ? 'disbursement_closing' : strtolower((string) Str::ulid())]);
     expect(fn () => $this->cash->requireReturned($wallet, WalletMoney::of('5000'), $source))
