@@ -4,8 +4,8 @@
     "props": {
         "contract_version": "business-servicing-v1",
         "identity_context_revision": 4,
-        "server_time": "2026-12-01T09:00:00+02:00",
-        "allowed_actions": ["repayment.pay"],
+        "server_time": "2027-03-23T10:05:00+02:00",
+        "allowed_actions": [],
         "note": {
             "id": "RZN-2026-0418",
             "title": "Fleet Expansion",
@@ -15,12 +15,12 @@
         "servicing": {
             "note_id": "RZN-2026-0418",
             "revision": 7,
-            "state": "current",
+            "state": "repaid",
             "dpd": null,
             "progress": {
                 "repaid": {
                     "currency": "RWF",
-                    "amount": "6930000"
+                    "amount": "20790000"
                 },
                 "total": {
                     "currency": "RWF",
@@ -28,46 +28,18 @@
                 },
                 "remaining": {
                     "currency": "RWF",
-                    "amount": "13860000"
+                    "amount": "0"
                 },
-                "repaid_pct": "33.3",
-                "payments_made": 2,
+                "repaid_pct": "100.0",
+                "payments_made": 6,
                 "payments_total": 6,
-                "remaining_instalments": 4
+                "remaining_instalments": 0
             },
             "due_now": null,
-            "next": {
-                "index": 3,
-                "due_on": "2026-12-23",
-                "amounts": {
-                    "principal": {
-                        "currency": "RWF",
-                        "amount": "3000000"
-                    },
-                    "return": {
-                        "currency": "RWF",
-                        "amount": "405000"
-                    },
-                    "late_fees": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "60000"
-                    },
-                    "total": {
-                        "currency": "RWF",
-                        "amount": "3465000"
-                    }
-                }
-            },
+            "next": null,
             "next_late_fee": null,
             "restriction": null,
-            "autocollect": {
-                "mode": "on_due_date",
-                "next_attempt_on": "2026-12-23"
-            }
+            "autocollect": null
         },
         "schedule": [
             {
@@ -246,28 +218,6 @@
                 "paid": {
                     "principal": {
                         "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "return": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "late_fees": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "total": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    }
-                },
-                "outstanding": {
-                    "principal": {
-                        "currency": "RWF",
                         "amount": "3000000"
                     },
                     "return": {
@@ -287,9 +237,31 @@
                         "amount": "3465000"
                     }
                 },
-                "status": "upcoming",
+                "outstanding": {
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "return": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "late_fees": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "service_fee": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "total": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    }
+                },
+                "status": "paid",
                 "dpd": null,
-                "paid_on": null,
+                "paid_on": "2026-12-23",
                 "late_fees": []
             },
             {
@@ -320,28 +292,6 @@
                 "paid": {
                     "principal": {
                         "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "return": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "late_fees": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "total": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    }
-                },
-                "outstanding": {
-                    "principal": {
-                        "currency": "RWF",
                         "amount": "3000000"
                     },
                     "return": {
@@ -361,9 +311,31 @@
                         "amount": "3465000"
                     }
                 },
-                "status": "upcoming",
+                "outstanding": {
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "return": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "late_fees": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "service_fee": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "total": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    }
+                },
+                "status": "paid",
                 "dpd": null,
-                "paid_on": null,
+                "paid_on": "2027-01-23",
                 "late_fees": []
             },
             {
@@ -394,28 +366,6 @@
                 "paid": {
                     "principal": {
                         "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "return": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "late_fees": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "total": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    }
-                },
-                "outstanding": {
-                    "principal": {
-                        "currency": "RWF",
                         "amount": "3000000"
                     },
                     "return": {
@@ -435,9 +385,31 @@
                         "amount": "3465000"
                     }
                 },
-                "status": "upcoming",
+                "outstanding": {
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "return": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "late_fees": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "service_fee": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "total": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    }
+                },
+                "status": "paid",
                 "dpd": null,
-                "paid_on": null,
+                "paid_on": "2027-02-23",
                 "late_fees": []
             },
             {
@@ -468,28 +440,6 @@
                 "paid": {
                     "principal": {
                         "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "return": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "late_fees": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "total": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    }
-                },
-                "outstanding": {
-                    "principal": {
-                        "currency": "RWF",
                         "amount": "3000000"
                     },
                     "return": {
@@ -509,9 +459,31 @@
                         "amount": "3465000"
                     }
                 },
-                "status": "upcoming",
+                "outstanding": {
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "return": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "late_fees": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "service_fee": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "total": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    }
+                },
+                "status": "paid",
                 "dpd": null,
-                "paid_on": null,
+                "paid_on": "2027-03-23",
                 "late_fees": []
             }
         ],
@@ -536,44 +508,17 @@
             ]
         },
         "pay": {
-            "options": [
-                {
-                    "key": "next_instalment",
-                    "amounts": {
-                        "principal": {
-                            "currency": "RWF",
-                            "amount": "3000000"
-                        },
-                        "return": {
-                            "currency": "RWF",
-                            "amount": "405000"
-                        },
-                        "late_fees": {
-                            "currency": "RWF",
-                            "amount": "0"
-                        },
-                        "service_fee": {
-                            "currency": "RWF",
-                            "amount": "60000"
-                        },
-                        "total": {
-                            "currency": "RWF",
-                            "amount": "3465000"
-                        }
-                    },
-                    "instalment_indexes": [3]
-                }
-            ],
+            "options": [],
             "funding": {
                 "available": {
                     "currency": "RWF",
-                    "amount": "4200000"
+                    "amount": "120000"
                 },
                 "sufficient": {
                     "due_now": false,
-                    "next_instalment": true
+                    "next_instalment": false
                 },
-                "revision": 12
+                "revision": 22
             }
         },
         "receipt": null,

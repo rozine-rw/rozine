@@ -24,7 +24,7 @@
             }
         },
         "funding": {
-            "kind": null,
+            "kind": "deposit",
             "policy": {
                 "version": "synthetic-deposit-policy-0",
                 "synthetic": true,
@@ -246,6 +246,22 @@
             "deposit": {
                 "url": "/preview/business-wallet-deposit-pending",
                 "method": "post"
+            }
+        },
+        "preview_outcome": {
+            "kind": "unconfirmed",
+            "command": {
+                "name": "business.wallet.deposit",
+                "payload": {
+                    "request_id": "9d3e7a10-2b4c-4d6e-8f10-b1b2c3d4e5f6",
+                    "business_id": "01k6r4m2n6p8q0r2s4t6v8b1z2",
+                    "identity_context_revision": 4,
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "1000000"
+                    },
+                    "method_id": "bk-1"
+                }
             }
         }
     }

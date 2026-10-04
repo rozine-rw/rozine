@@ -235,6 +235,15 @@ export type ComponentAmounts = {
  */
 export type LateFeeStep = 'due_date' | 'day_7' | 'day_30';
 
+/**
+ * The late-fee policy as disclosed, not an assessment: each step's DPD and rate. Provisional with
+ * `LateFeeStep`; a page that receives no ladder treats the policy as unavailable.
+ */
+export type LateFeeLadder = {
+    policy_version: string;
+    steps: { step: LateFeeStep; dpd: number; rate_bps: Bps }[];
+};
+
 export type LateFeeStatus =
     | 'projected'
     | 'assessed'

@@ -4,8 +4,8 @@
     "props": {
         "contract_version": "business-servicing-v1",
         "identity_context_revision": 4,
-        "server_time": "2026-12-01T09:00:00+02:00",
-        "allowed_actions": ["repayment.pay"],
+        "server_time": "2026-12-23T10:02:05+02:00",
+        "allowed_actions": [],
         "note": {
             "id": "RZN-2026-0418",
             "title": "Fleet Expansion",
@@ -14,7 +14,7 @@
         },
         "servicing": {
             "note_id": "RZN-2026-0418",
-            "revision": 7,
+            "revision": 8,
             "state": "current",
             "dpd": null,
             "progress": {
@@ -37,8 +37,8 @@
             },
             "due_now": null,
             "next": {
-                "index": 3,
-                "due_on": "2026-12-23",
+                "index": 4,
+                "due_on": "2027-01-23",
                 "amounts": {
                     "principal": {
                         "currency": "RWF",
@@ -66,7 +66,7 @@
             "restriction": null,
             "autocollect": {
                 "mode": "on_due_date",
-                "next_attempt_on": "2026-12-23"
+                "next_attempt_on": "2027-01-23"
             }
         },
         "schedule": [
@@ -246,28 +246,6 @@
                 "paid": {
                     "principal": {
                         "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "return": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "late_fees": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "total": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    }
-                },
-                "outstanding": {
-                    "principal": {
-                        "currency": "RWF",
                         "amount": "3000000"
                     },
                     "return": {
@@ -287,9 +265,31 @@
                         "amount": "3465000"
                     }
                 },
-                "status": "upcoming",
+                "outstanding": {
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "return": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "late_fees": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "service_fee": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "total": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    }
+                },
+                "status": "processing",
                 "dpd": null,
-                "paid_on": null,
+                "paid_on": "2026-12-23",
                 "late_fees": []
             },
             {
@@ -536,48 +536,142 @@
             ]
         },
         "pay": {
-            "options": [
-                {
-                    "key": "next_instalment",
-                    "amounts": {
-                        "principal": {
-                            "currency": "RWF",
-                            "amount": "3000000"
-                        },
-                        "return": {
-                            "currency": "RWF",
-                            "amount": "405000"
-                        },
-                        "late_fees": {
-                            "currency": "RWF",
-                            "amount": "0"
-                        },
-                        "service_fee": {
-                            "currency": "RWF",
-                            "amount": "60000"
-                        },
-                        "total": {
-                            "currency": "RWF",
-                            "amount": "3465000"
-                        }
-                    },
-                    "instalment_indexes": [3]
-                }
-            ],
+            "options": [],
             "funding": {
                 "available": {
                     "currency": "RWF",
-                    "amount": "4200000"
+                    "amount": "735000"
                 },
                 "sufficient": {
                     "due_now": false,
-                    "next_instalment": true
+                    "next_instalment": false
                 },
-                "revision": 12
+                "revision": 15
             }
         },
-        "receipt": null,
+        "receipt": {
+            "id": "rpy-1223",
+            "revision": 1,
+            "note_title": "Fleet Expansion",
+            "amount": {
+                "currency": "RWF",
+                "amount": "3465000"
+            },
+            "applied": {
+                "principal": {
+                    "currency": "RWF",
+                    "amount": "3000000"
+                },
+                "return": {
+                    "currency": "RWF",
+                    "amount": "405000"
+                },
+                "late_fees": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "service_fee": {
+                    "currency": "RWF",
+                    "amount": "60000"
+                },
+                "total": {
+                    "currency": "RWF",
+                    "amount": "3465000"
+                }
+            },
+            "unapplied": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "allocation": "allocating",
+            "investors_paid": null,
+            "receipt": {
+                "receipt_id": "rcp_rpy-1223",
+                "operation_id": "op_rpy-1223",
+                "request_id": "7f1c2a90-0000-4000-8000-0000rpy-1223",
+                "code": "REPAYMENT_RECEIVED",
+                "recorded_at": "2026-12-23T10:02:00+02:00",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "3465000"
+                },
+                "units": null,
+                "reference": "RZ-RPY-1223",
+                "revision": 1,
+                "policy_version": "synthetic-servicing-policy-0",
+                "disclosure_version": null,
+                "link": {
+                    "url": "/preview/business-repayments-receipt",
+                    "method": "get"
+                }
+            },
+            "link": {
+                "url": "/preview/business-repayments-receipt",
+                "method": "get"
+            }
+        },
         "recent": [
+            {
+                "id": "rpy-1223",
+                "revision": 1,
+                "note_title": "Fleet Expansion",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "3465000"
+                },
+                "applied": {
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "3000000"
+                    },
+                    "return": {
+                        "currency": "RWF",
+                        "amount": "405000"
+                    },
+                    "late_fees": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "service_fee": {
+                        "currency": "RWF",
+                        "amount": "60000"
+                    },
+                    "total": {
+                        "currency": "RWF",
+                        "amount": "3465000"
+                    }
+                },
+                "unapplied": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "allocation": "allocating",
+                "investors_paid": null,
+                "receipt": {
+                    "receipt_id": "rcp_rpy-1223",
+                    "operation_id": "op_rpy-1223",
+                    "request_id": "7f1c2a90-0000-4000-8000-0000rpy-1223",
+                    "code": "REPAYMENT_RECEIVED",
+                    "recorded_at": "2026-12-23T10:02:00+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "3465000"
+                    },
+                    "units": null,
+                    "reference": "RZ-RPY-1223",
+                    "revision": 1,
+                    "policy_version": "synthetic-servicing-policy-0",
+                    "disclosure_version": null,
+                    "link": {
+                        "url": "/preview/business-repayments-receipt",
+                        "method": "get"
+                    }
+                },
+                "link": {
+                    "url": "/preview/business-repayments-receipt",
+                    "method": "get"
+                }
+            },
             {
                 "id": "rpy-1123",
                 "revision": 2,
