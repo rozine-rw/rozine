@@ -2,9 +2,16 @@
 
 declare(strict_types=1);
 
+use App\Application\Wallet\ApplyBusinessProviderOutcome;
 use App\Application\Wallet\ApplyProviderOutcome;
 use App\Application\Wallet\Contracts\SyntheticEventSigner;
+use App\Application\Wallet\RecordBusinessDeposit;
+use App\Models\BusinessDepositIntent;
+use App\Models\BusinessFundingMethod;
+use App\Models\BusinessProfile;
+use App\Models\BusinessProviderEvent;
 use App\Models\CommandOperation;
+use App\Models\DepositPolicy;
 use App\Models\LedgerEntry;
 use App\Models\LedgerLine;
 use App\Models\WalletDepositCredit;
@@ -14,6 +21,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\InvestorWalletFixture;
 
 /**
@@ -94,6 +102,32 @@ it('credits once when two different success events for one intent race', functio
     expect(depositContenders([$deliver('synthetic-event-a'), $deliver('synthetic-event-b')]))->toBe([0, 0])
         ->and(WalletProviderEvent::query()->pluck('disposition')->sort()->values()->all())->toBe(['applied', 'duplicate'])
         ->and(WalletDepositCredit::query()->count())->toBe(1)->and(concurrentAvailable($intent))->toBe('50000');
+});
+
+it('credits only one owner when the same provider event key arrives for a Business and an Investor reference at once', function (): void {
+    $investor = concurrentIntent();
+    $authority = BusinessAuthorityFixture::make();
+    BusinessAuthorityFixture::configure($authority);
+    $business = BusinessProfile::query()->where('entity_party_id', $authority['entity'])->firstOrFail();
+    DepositPolicy::factory()->create(['fee' => '0', 'minimum' => '1000', 'maximum' => '1000000']);
+    $recorded = app(RecordBusinessDeposit::class)->handle($authority['users'][0]->id, 1, $business->id, (string) Str::uuid(),
+        ['currency' => 'RWF', 'amount' => '50000'], BusinessFundingMethod::factory()->create(['business_id' => $business->id])->id);
+    $reference = BusinessDepositIntent::query()->whereKey((string) $recorded['data']['intent_id'])->sole()->provider_reference;
+    $businessEvent = app(SyntheticEventSigner::class)->sign(['provider' => 'synthetic', 'event_id' => 'synthetic-event-shared', 'reference' => $reference,
+        'state' => 'succeeded', 'amount' => '50000', 'currency' => 'RWF', 'environment' => 'testing', 'observed_at' => '2026-09-28T10:00:00+00:00']);
+    $investorEvent = concurrentEvent($investor, 'succeeded', 'synthetic-event-shared');
+
+    $deliverBusiness = function () use ($businessEvent): void {
+        app(ApplyBusinessProviderOutcome::class)->handle($businessEvent);
+    };
+    $deliverInvestor = function () use ($investorEvent): void {
+        app(ApplyProviderOutcome::class)->handle($investorEvent);
+    };
+
+    expect(depositContenders([$deliverBusiness, $deliverInvestor]))->toBe([0, 0]);
+    $dispositions = [...WalletProviderEvent::query()->pluck('disposition')->all(), ...BusinessProviderEvent::query()->pluck('disposition')->all()];
+    expect($dispositions)->toEqualCanonicalizing(['applied', 'key_conflict'])
+        ->and(LedgerEntry::query()->whereIn('kind', ['deposit_credit', 'business_deposit_credit'])->count())->toBe(1);
 });
 
 it('lets exactly one final outcome win when a success races a failure', function (): void {
