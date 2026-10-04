@@ -223,7 +223,8 @@
     },
     "MVP-BUSINESS-SCR-05-ST-03": {
         "name": "defaulted",
-        "fixtures": ["business-repayments-defaulted"]
+        "disposition": "missing",
+        "note": "Reserved: nothing emits a `defaulted` servicing state before Phase 2 (C4 v1 `ServicingState`). Overdue with arrears is covered (`business-repayments-overdue`)."
     },
     "MVP-BUSINESS-SCR-06-ST-01": {
         "name": "due now",
@@ -253,11 +254,14 @@
     },
     "MVP-BUSINESS-SCR-08-ST-02": {
         "name": "pending settlement",
-        "fixtures": ["business-wallet-states"]
+        "fixtures": [
+            "business-wallet-deposit-pending",
+            "business-wallet-deposit-unknown"
+        ]
     },
     "MVP-BUSINESS-SCR-08-ST-03": {
         "name": "failed",
-        "fixtures": ["business-wallet-states"]
+        "fixtures": ["business-wallet-deposit-failed"]
     },
     "MVP-BUSINESS-SCR-09-ST-01": {
         "name": "incomplete",

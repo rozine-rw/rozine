@@ -515,26 +515,7 @@
                 "late_fees": []
             }
         ],
-        "ladder": {
-            "policy_version": "synthetic-late-fee-policy-0",
-            "steps": [
-                {
-                    "step": "due_date",
-                    "dpd": 0,
-                    "rate_bps": 500
-                },
-                {
-                    "step": "day_7",
-                    "dpd": 7,
-                    "rate_bps": 500
-                },
-                {
-                    "step": "day_30",
-                    "dpd": 30,
-                    "rate_bps": 500
-                }
-            ]
-        },
+        "ladder": null,
         "pay": {
             "options": [
                 {

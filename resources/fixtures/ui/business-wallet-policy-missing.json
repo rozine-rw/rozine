@@ -5,7 +5,7 @@
         "contract_version": "business-servicing-v1",
         "identity_context_revision": 4,
         "server_time": "2026-12-01T09:00:00+02:00",
-        "allowed_actions": ["business.wallet.deposit"],
+        "allowed_actions": [],
         "business": {
             "id": "01k6r4m2n6p8q0r2s4t6v8b1z2",
             "name": "GreenLeaf Agro"
@@ -24,23 +24,8 @@
             }
         },
         "funding": {
-            "kind": null,
-            "policy": {
-                "version": "synthetic-deposit-policy-0",
-                "synthetic": true,
-                "fee": {
-                    "currency": "RWF",
-                    "amount": "0"
-                },
-                "minimum": {
-                    "currency": "RWF",
-                    "amount": "1000"
-                },
-                "maximum": {
-                    "currency": "RWF",
-                    "amount": "5000000"
-                }
-            },
+            "kind": "deposit",
+            "policy": null,
             "methods": [
                 {
                     "id": "bk-1",

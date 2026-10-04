@@ -4,8 +4,8 @@
     "props": {
         "contract_version": "business-servicing-v1",
         "identity_context_revision": 4,
-        "server_time": "2026-12-01T09:00:00+02:00",
-        "allowed_actions": ["repayment.pay"],
+        "server_time": "2026-12-23T09:00:00+02:00",
+        "allowed_actions": [],
         "note": {
             "id": "RZN-2026-0418",
             "title": "Fleet Expansion",
@@ -15,8 +15,8 @@
         "servicing": {
             "note_id": "RZN-2026-0418",
             "revision": 7,
-            "state": "current",
-            "dpd": null,
+            "state": "due_today",
+            "dpd": 0,
             "progress": {
                 "repaid": {
                     "currency": "RWF",
@@ -35,7 +35,28 @@
                 "payments_total": 6,
                 "remaining_instalments": 4
             },
-            "due_now": null,
+            "due_now": {
+                "principal": {
+                    "currency": "RWF",
+                    "amount": "3000000"
+                },
+                "return": {
+                    "currency": "RWF",
+                    "amount": "405000"
+                },
+                "late_fees": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "service_fee": {
+                    "currency": "RWF",
+                    "amount": "60000"
+                },
+                "total": {
+                    "currency": "RWF",
+                    "amount": "3465000"
+                }
+            },
             "next": {
                 "index": 3,
                 "due_on": "2026-12-23",
@@ -62,7 +83,14 @@
                     }
                 }
             },
-            "next_late_fee": null,
+            "next_late_fee": {
+                "step": "day_7",
+                "applies_on": "2026-12-30",
+                "projected": {
+                    "currency": "RWF",
+                    "amount": "173250"
+                }
+            },
             "restriction": null,
             "autocollect": {
                 "mode": "on_due_date",
@@ -287,8 +315,8 @@
                         "amount": "3465000"
                     }
                 },
-                "status": "upcoming",
-                "dpd": null,
+                "status": "due",
+                "dpd": 0,
                 "paid_on": null,
                 "late_fees": []
             },
@@ -538,7 +566,7 @@
         "pay": {
             "options": [
                 {
-                    "key": "next_instalment",
+                    "key": "due_now",
                     "amounts": {
                         "principal": {
                             "currency": "RWF",
@@ -567,13 +595,13 @@
             "funding": {
                 "available": {
                     "currency": "RWF",
-                    "amount": "4200000"
+                    "amount": "1250000"
                 },
                 "sufficient": {
                     "due_now": false,
-                    "next_instalment": true
+                    "next_instalment": false
                 },
-                "revision": 12
+                "revision": 14
             }
         },
         "receipt": null,

@@ -12,8 +12,11 @@
         },
         "wallet": {
             "revision": 12,
-            "status": "active",
-            "restriction": null,
+            "status": "restricted",
+            "restriction": {
+                "code": "RESTRICTION_ACTIVE",
+                "since": "2026-11-30T23:59:00+02:00"
+            },
             "available": {
                 "currency": "RWF",
                 "amount": "4200000"

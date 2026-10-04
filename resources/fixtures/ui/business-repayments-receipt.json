@@ -576,7 +576,67 @@
                 "revision": 12
             }
         },
-        "receipt": null,
+        "receipt": {
+            "id": "rpy-1123",
+            "revision": 2,
+            "note_title": "Fleet Expansion",
+            "amount": {
+                "currency": "RWF",
+                "amount": "3465000"
+            },
+            "applied": {
+                "principal": {
+                    "currency": "RWF",
+                    "amount": "3000000"
+                },
+                "return": {
+                    "currency": "RWF",
+                    "amount": "405000"
+                },
+                "late_fees": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "service_fee": {
+                    "currency": "RWF",
+                    "amount": "60000"
+                },
+                "total": {
+                    "currency": "RWF",
+                    "amount": "3465000"
+                }
+            },
+            "unapplied": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "allocation": "allocated",
+            "investors_paid": 318,
+            "receipt": {
+                "receipt_id": "rcp_rpy-1123",
+                "operation_id": "op_rpy-1123",
+                "request_id": "7f1c2a90-0000-4000-8000-0000rpy-1123",
+                "code": "REPAYMENT_RECEIVED",
+                "recorded_at": "2026-11-23T23:59:00+02:00",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "3465000"
+                },
+                "units": null,
+                "reference": "RZ-RPY-1123",
+                "revision": 1,
+                "policy_version": "synthetic-servicing-policy-0",
+                "disclosure_version": null,
+                "link": {
+                    "url": "/preview/business-repayments-receipt",
+                    "method": "get"
+                }
+            },
+            "link": {
+                "url": "/preview/business-repayments-receipt",
+                "method": "get"
+            }
+        },
         "recent": [
             {
                 "id": "rpy-1123",

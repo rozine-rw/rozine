@@ -968,6 +968,11 @@
                 "url": "/preview/business-repayments-paid",
                 "method": "post"
             }
+        },
+        "preview_outcome": {
+            "kind": "refused",
+            "code": "VERSION_CONFLICT",
+            "status": 409
         }
     }
 }

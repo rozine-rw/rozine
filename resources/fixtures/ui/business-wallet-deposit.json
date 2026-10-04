@@ -24,7 +24,7 @@
             }
         },
         "funding": {
-            "kind": null,
+            "kind": "deposit",
             "policy": {
                 "version": "synthetic-deposit-policy-0",
                 "synthetic": true,

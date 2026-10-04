@@ -1,0 +1,94 @@
+{
+    "component": "business/repayments",
+    "synthetic": true,
+    "props": {
+        "contract_version": "business-servicing-v1",
+        "identity_context_revision": 1,
+        "server_time": "2026-12-01T09:00:00+02:00",
+        "allowed_actions": [],
+        "note": {
+            "id": "RZN-2026-0418",
+            "title": "Fleet Expansion",
+            "disbursement_effective_date": "2026-09-23",
+            "due_day": 23
+        },
+        "servicing": {
+            "note_id": "RZN-2026-0418",
+            "revision": 1,
+            "state": "current",
+            "dpd": null,
+            "progress": {
+                "repaid": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "total": {
+                    "currency": "RWF",
+                    "amount": "20790000"
+                },
+                "remaining": {
+                    "currency": "RWF",
+                    "amount": "20790000"
+                },
+                "repaid_pct": "0.0",
+                "payments_made": 0,
+                "payments_total": 6,
+                "remaining_instalments": 6
+            },
+            "due_now": null,
+            "next": null,
+            "next_late_fee": null,
+            "restriction": null,
+            "autocollect": null
+        },
+        "schedule": [],
+        "ladder": null,
+        "pay": {
+            "options": [],
+            "funding": {
+                "available": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "sufficient": {
+                    "due_now": false,
+                    "next_instalment": false
+                },
+                "revision": 0
+            }
+        },
+        "receipt": null,
+        "recent": [],
+        "bases": {},
+        "home": null,
+        "shell_links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "reports": null,
+            "profile": null
+        },
+        "links": {
+            "close": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "top_up": {
+                "url": "/preview/business-wallet-live-minimal",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/business-repayments-operation-{request_id}",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "pay": null
+        }
+    }
+}
