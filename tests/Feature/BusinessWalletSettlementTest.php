@@ -79,6 +79,8 @@ it('dispatches a recorded Business deposit after commit and credits its net once
 });
 
 it('replays a duplicate, records a changed body as a key conflict and a wrong amount as a mismatch, crediting nothing more', function (): void {
+    // An exact replay needs identical content, and observed_at is stamped to the second.
+    $this->freezeSecond();
     $fixture = businessSettlementFixture();
     $intent = businessSettlementDeposit($fixture);
     $mismatch = businessSettlementDeposit($fixture, '20000');
