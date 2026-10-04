@@ -18,11 +18,14 @@ it('installs Business deposit records behind an in-flight Investor posting witho
             AND tgrelid IN ('ledger_entries'::regclass, 'ledger_lines'::regclass) ORDER BY tgname"),
     ];
     $installed = $shape();
-    $restore = function () use ($migration): void {
+    $businessRepayments = require database_path('migrations/2026_10_04_100000_create_business_repayment_records.php');
+    $restore = function () use ($migration, $businessRepayments): void {
         if (! Schema::hasTable('business_deposit_intents')) {
             $migration->up();
         }
+        $businessRepayments->up();
     };
+    $businessRepayments->down();
     $migration->down();
     $channels = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
     if ($channels === false) {

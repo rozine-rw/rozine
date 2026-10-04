@@ -68,6 +68,13 @@ final readonly class JournalEntry
         return new self('business_deposit_credit', $lines);
     }
 
+    /** A Business repayment: the paid amount leaves the Business's available balance for repayment clearing. */
+    public static function businessRepaymentDebit(WalletMoney $amount): self
+    {
+        return self::balanced('business_repayment_debit', [new JournalLine('business_available', 'debit', $amount),
+            new JournalLine('repayment_clearing', 'credit', $amount)]);
+    }
+
     /**
      * A primary movement: the source bucket is debited and the destination credited by the same
      * amount. Between the Investor's own buckets (hold, commit, release, refund) the total never

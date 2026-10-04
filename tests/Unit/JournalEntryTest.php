@@ -82,3 +82,10 @@ it('posts a Business deposit credit to the Business available balance under the 
         ->toBe([['deposit_clearing', 'debit', '5000'], ['business_available', 'credit', '4850'], ['deposit_fee_revenue', 'credit', '150']])
         ->and(fn () => JournalEntry::businessDepositCredit(WalletMoney::of('150'), WalletMoney::of('150')))->toThrow(WalletViolation::class, 'DEPOSIT_NET_NOT_POSITIVE');
 });
+
+it('posts a Business repayment as one available debit and one repayment clearing credit of the same amount', function (): void {
+    $entry = JournalEntry::businessRepaymentDebit(WalletMoney::of('112500'));
+    expect($entry->kind)->toBe('business_repayment_debit')
+        ->and(journalLines($entry))->toBe([['business_available', 'debit', '112500'], ['repayment_clearing', 'credit', '112500']])
+        ->and(fn () => JournalEntry::businessRepaymentDebit(WalletMoney::zero()))->toThrow(WalletViolation::class, 'JOURNAL_LINE_INVALID');
+});

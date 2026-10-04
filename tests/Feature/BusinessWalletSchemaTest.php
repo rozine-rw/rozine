@@ -116,8 +116,9 @@ it('derives an owner for exactly the wallet kinds every ledger constraint admits
     $entryOwners = collect($entries)->mapWithKeys(fn (string $kind): array => [$kind => DB::scalar('SELECT ledger_entry_wallet_owner(?)', [$kind])])->all();
 
     expect($accountOwners)->toBe(['business_available' => 'business', 'deposit_clearing' => null, 'deposit_fee_revenue' => null,
-        'disbursement_settlement' => null, 'investor_available' => 'investor', 'investor_committed' => 'investor', 'investor_held' => 'investor'])
-        ->and($entryOwners)->toBe(['business_deposit_credit' => 'business', 'deposit_credit' => 'investor', 'primary_commit' => 'investor',
+        'disbursement_settlement' => null, 'investor_available' => 'investor', 'investor_committed' => 'investor', 'investor_held' => 'investor',
+        'repayment_clearing' => null])
+        ->and($entryOwners)->toBe(['business_deposit_credit' => 'business', 'business_repayment_debit' => 'business', 'deposit_credit' => 'investor', 'primary_commit' => 'investor',
             'primary_hold' => 'investor', 'primary_issue' => 'investor', 'primary_refund' => 'investor', 'primary_release' => 'investor']);
 });
 
