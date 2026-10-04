@@ -117,8 +117,14 @@ it('credits only one owner when the same provider event key arrives for a Busine
         'state' => 'succeeded', 'amount' => '50000', 'currency' => 'RWF', 'environment' => 'testing', 'observed_at' => '2026-09-28T10:00:00+00:00']);
     $investorEvent = concurrentEvent($investor, 'succeeded', 'synthetic-event-shared');
 
-    expect(depositContenders([fn () => app(ApplyBusinessProviderOutcome::class)->handle($businessEvent), fn () => app(ApplyProviderOutcome::class)->handle($investorEvent)]))
-        ->toBe([0, 0]);
+    $deliverBusiness = function () use ($businessEvent): void {
+        app(ApplyBusinessProviderOutcome::class)->handle($businessEvent);
+    };
+    $deliverInvestor = function () use ($investorEvent): void {
+        app(ApplyProviderOutcome::class)->handle($investorEvent);
+    };
+
+    expect(depositContenders([$deliverBusiness, $deliverInvestor]))->toBe([0, 0]);
     $dispositions = [...WalletProviderEvent::query()->pluck('disposition')->all(), ...BusinessProviderEvent::query()->pluck('disposition')->all()];
     expect($dispositions)->toEqualCanonicalizing(['applied', 'key_conflict'])
         ->and(LedgerEntry::query()->whereIn('kind', ['deposit_credit', 'business_deposit_credit'])->count())->toBe(1);
