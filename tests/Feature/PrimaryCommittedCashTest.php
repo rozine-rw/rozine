@@ -135,6 +135,7 @@ it('refuses a foreign source before acquiring any supplied wallet lock', functio
 it('refuses simulated issue and unknown movements until the settlement schema is integrated', function (string $kind): void {
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     DB::statement('ALTER TABLE ledger_entries DROP CONSTRAINT ledger_entry_source');
+    DB::statement('ALTER TABLE ledger_entries DROP CONSTRAINT ledger_entry_wallet');
     DB::statement('ALTER TABLE ledger_entries DISABLE TRIGGER USER');
     DB::statement('SET CONSTRAINTS ALL DEFERRED');
     DB::table('ledger_entries')->insert(['id' => strtolower((string) Str::ulid()), 'wallet_id' => $this->wallet->walletId,

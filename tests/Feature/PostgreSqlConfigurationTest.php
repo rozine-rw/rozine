@@ -122,6 +122,17 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
     $holdingIssue = require database_path('migrations/2026_09_30_114217_require_issue_evidence_for_primary_holdings.php');
     $issuedCompleteness = require database_path('migrations/2026_09_30_234802_require_complete_primary_holdings_for_issued_closings.php');
+    $businessDeposits = require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php');
+    $businessDeposits->down();
+    expect(Schema::hasTable('business_deposit_intents'))->toBeFalse();
+    $providerReferences = require database_path('migrations/2026_10_03_110000_create_provider_reference_registry.php');
+    $providerReferences->down();
+    expect(Schema::hasTable('provider_references'))->toBeFalse();
+    $ownerGuard = require database_path('migrations/2026_10_03_100100_refuse_ownerless_ledger_entries.php');
+    $ownerGuard->down();
+    $businessWallets = require database_path('migrations/2026_10_03_100000_add_wallet_supertype_and_business_wallets.php');
+    $businessWallets->down();
+    expect(Schema::hasTable('wallets'))->toBeFalse()->and(Schema::hasColumn('ledger_entries', 'wallet_owner'))->toBeFalse();
     $staffIndependence = require database_path('migrations/2026_10_02_170000_create_staff_independence_evidence.php');
     $staffIndependence->down();
     expect(Schema::hasTable('staff_person_identities'))->toBeFalse();
@@ -295,6 +306,33 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $issuedCompleteness->up();
     $purchaseTopic->up();
     $staffIndependence->up();
+    $walletShapeQuery = "SELECT c.relname, c.relkind, a.attname, format_type(a.atttypid, a.atttypmod) AS type, a.attnotnull,
+        pg_get_expr(d.adbin, d.adrelid) AS default FROM pg_class c LEFT JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum > 0 AND NOT a.attisdropped
+        LEFT JOIN pg_attrdef d ON d.adrelid = c.oid AND d.adnum = a.attnum WHERE c.relnamespace = current_schema()::regnamespace
+        AND c.relname IN ('wallets', 'business_wallets', 'investor_wallets', 'ledger_accounts', 'ledger_entries') ORDER BY c.relname, a.attnum";
+    $walletObjectQuery = "SELECT conname AS name, pg_get_constraintdef(oid) AS definition FROM pg_constraint WHERE conrelid IN ('investor_wallets'::regclass,
+        'ledger_accounts'::regclass, 'ledger_entries'::regclass) UNION ALL SELECT tgname, pg_get_triggerdef(t.oid) FROM pg_trigger t
+        WHERE NOT t.tgisinternal AND t.tgrelid IN ('investor_wallets'::regclass, 'ledger_accounts'::regclass, 'ledger_entries'::regclass)
+        UNION ALL SELECT proname, pg_get_functiondef(oid) FROM pg_proc WHERE pronamespace = current_schema()::regnamespace AND proname IN
+        ('protect_ledger_entry', 'create_wallet_supertype', 'require_one_wallet_subtype', 'ledger_account_wallet_owner', 'ledger_entry_wallet_owner') ORDER BY 1";
+    $walletsBefore = [DB::select($walletShapeQuery), DB::select($walletObjectQuery)];
+    $primaryGuardsWithoutWalletLock = fn (): array => [DB::select($functionQuery), DB::select("SELECT tgname, pg_get_triggerdef(t.oid) AS definition,
+        pg_get_functiondef(t.tgfoid) AS body FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid WHERE NOT t.tgisinternal AND c.relname IN ('primary_reservations',
+        'primary_reservation_versions', 'primary_commitments', 'ledger_entries') AND t.tgfoid <> 'protect_ledger_entry'::regproc ORDER BY tgname")];
+    $primaryBefore = $primaryGuardsWithoutWalletLock();
+    $businessWallets->up();
+    expect(Schema::hasTable('business_wallets'))->toBeTrue()->and($primaryGuardsWithoutWalletLock())->toEqual($primaryBefore);
+    $businessWallets->down();
+    expect([DB::select($walletShapeQuery), DB::select($walletObjectQuery)])->toEqual($walletsBefore);
+    $businessWallets->up();
+    $guardedEntry = DB::select("SELECT pg_get_functiondef('protect_ledger_entry'::regproc) AS definition");
+    $ownerGuard->up();
+    $ownerGuard->down();
+    expect(DB::select("SELECT pg_get_functiondef('protect_ledger_entry'::regproc) AS definition"))->toEqual($guardedEntry);
+    $ownerGuard->up();
+    $providerReferences->up();
+    expect(Schema::hasColumn('wallet_deposit_intents', 'owner'))->toBeTrue();
+    $businessDeposits->up();
     expect(DB::select($changeFeedConstraintQuery))->toEqual($changeFeedConstraints);
     expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);

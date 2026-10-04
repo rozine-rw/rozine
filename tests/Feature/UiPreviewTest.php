@@ -22,7 +22,7 @@ function c3PreviewComponents(): array
         'investor/deals', 'investor/deal', 'investor/checkout', 'investor/commitment',
         'investor/portfolio', 'investor/holding', 'investor/wallet',
         'admin/disbursements', 'admin/applications', 'admin/repayments',
-        'business/publish', 'business/campaign',
+        'business/publish', 'business/campaign', 'business/wallet', 'business/repayments',
         'admin/book', 'admin/exceptions',
         'admin/reconciliation', 'admin/coverage', 'admin/reports',
     ];
@@ -209,7 +209,7 @@ test('C4 fixtures cover every surface in the scaffold, each with a live-minimal 
     $fixtures = c3PreviewFixtures();
     $names = array_keys($fixtures);
 
-    foreach (['investor-holding-servicing', 'investor-portfolio-earnings', 'admin-repayments', 'business-campaign-v2'] as $surface) {
+    foreach (['investor-holding-servicing', 'investor-portfolio-earnings', 'admin-repayments', 'business-campaign-v2', 'business-wallet', 'business-repayments'] as $surface) {
         expect($names)->toContain("{$surface}-live-minimal");
     }
 
@@ -220,6 +220,12 @@ test('C4 fixtures cover every surface in the scaffold, each with a live-minimal 
         'admin-repayments', 'admin-repayments-allocated', 'admin-repayments-received',
         'admin-repayments-exception-mismatch', 'admin-repayments-requery-unknown', 'admin-repayments-unconfirmed',
         'business-campaign-repaying', 'business-campaign-repaying-overdue', 'business-campaign-repaid',
+        'business-wallet', 'business-wallet-deposit-pending', 'business-wallet-deposit-unknown',
+        'business-wallet-deposit-failed', 'business-wallet-policy-missing', 'business-wallet-restricted',
+        'business-wallet-internal', 'business-wallet-unconfirmed', 'business-repayments', 'business-repayments-due',
+        'business-repayments-overdue', 'business-repayments-short', 'business-repayments-allocating',
+        'business-repayments-paid', 'business-repayments-repaid', 'business-repayments-policy-missing',
+        'business-repayments-unconfirmed', 'business-repayments-version-conflict',
     );
 
     foreach ($fixtures as $name => $fixture) {
@@ -231,6 +237,10 @@ test('C4 fixtures cover every surface in the scaffold, each with a live-minimal 
 
         if (str_starts_with($name, 'admin-repayments')) {
             expect($version)->toBe('staff-servicing-v1', $name);
+        }
+
+        if (str_starts_with($name, 'business-wallet') || str_starts_with($name, 'business-repayments')) {
+            expect($version)->toBe('business-servicing-v1', $name);
         }
 
         if (in_array($name, ['business-campaign-repaying', 'business-campaign-repaying-overdue', 'business-campaign-repaid', 'business-campaign-v2-live-minimal'], true)) {

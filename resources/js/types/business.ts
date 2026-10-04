@@ -1,3 +1,9 @@
+import type {
+    DepositIntent,
+    DepositPolicy,
+    DepositQuote,
+    FundingMethod,
+} from './investor';
 import type { Money } from './money';
 import type {
     OperationCommand,
@@ -12,7 +18,12 @@ import type {
     Clock,
     CoarseInFlight,
     ComponentAmounts,
+    InstalmentStatus,
     KigaliDate,
+    LateFeeLadder,
+    LateFeeStatus,
+    LateFeeStep,
+    Pagination,
     RaisingLifecycle,
     Receipt,
     ServicingState,
@@ -938,77 +949,115 @@ export type BusinessProfileProps = {
 };
 
 /* ------------------------------------------------------------------------------------------ */
-/* Wallet (MVP-BUSINESS-SCR-08, design L1315–1457, transaction detail L2378–2413)              */
+/* Business servicing (C4 contract proposal v1 §4a, `business-servicing-v1`)                   */
 /* ------------------------------------------------------------------------------------------ */
 
-export type WalletFlow = 'deposit' | 'withdraw';
+/*
+ * Additive and non-activatable: nothing returns these shapes yet, and the pages are reviewed
+ * through synthetic `preview/{fixture}` fixtures. The Business repays from its Rozine wallet,
+ * funded through the C3 deposit adapter; `repayment.pay` is then an internal ledger movement with
+ * no provider outcome. Every figure is the server's: the client never adds, subtracts or splits
+ * money, and never derives DPD, a ladder step or a due date from the browser clock.
+ */
 
-export type WalletMethod = {
-    key: string;
-    kind: 'mtn' | 'airtel' | 'bank';
-    name: string;
+export type BusinessServicingAllowedAction =
+    | 'business.wallet.deposit'
+    | 'repayment.pay';
+
+export type BusinessServicingPageContract = {
+    contract_version: 'business-servicing-v1';
+    identity_context_revision: number;
+    server_time: string;
+    allowed_actions: BusinessServicingAllowedAction[];
 };
+
+/** Withdrawal stays hidden (Phase 2); a restriction never withholds deposits (§11.4). */
+export type BusinessWalletBalances = {
+    revision: number;
+    status: 'active' | 'restricted';
+    restriction: { code: 'RESTRICTION_ACTIVE'; since: string } | null;
+    /** Spendable for repayments. */
+    available: Money;
+    /** Recorded but not credited, outside `available`. */
+    pending_deposits: Money;
+};
+
+/** External cash apart from internal transfers (H5), as on the Investor wallet. */
+export type BusinessWalletEntry =
+    | {
+          id: string;
+          movement: 'external';
+          kind: 'deposit';
+          direction: 'in';
+          amount: Money;
+          /** The provider's fee on the deposit, passed through (#99 N11). */
+          psp_fee: Money;
+          /** The masked rail: "MTN MoMo +250 788 ···· 456". */
+          counterparty: string;
+          occurred_at: string;
+          link: RouteLink;
+      }
+    | {
+          id: string;
+          movement: 'internal';
+          kind: 'repayment';
+          direction: 'out';
+          amount: Money;
+          note_title: string;
+          instalment_indexes: number[];
+          occurred_at: string;
+          link: RouteLink;
+      };
+
+export type BusinessWalletMovement = BusinessWalletEntry['movement'];
 
 /**
- * The server's price for the amount and method on screen: the fee, and either what reaches the
- * account (withdraw) or the balance after (deposit). A refusal carries the reason instead.
+ * `business.wallet.show`. Mirrors the C3 Investor wallet (v2 §2a): deposit through a verified
+ * registered rail under a versioned policy, recorded intents, and the history. A null `policy`
+ * means deposit is not offered; a post would be refused `POLICY_INPUT_REQUIRED`.
  */
-export type WalletQuote =
-    | {
-          status: 'ready';
-          flow: WalletFlow;
-          fee: Money;
-          receive: Money;
-          new_balance: Money;
-      }
-    | { status: 'refused'; flow: WalletFlow; message: string };
-
-export type WalletTransactionKind =
-    | 'deposit'
-    | 'withdrawal'
-    | 'disbursement'
-    | 'repayment'
-    | 'services_fee'
-    | 'application_fee';
-
-export type WalletTransaction = {
-    id: string;
-    kind: WalletTransactionKind;
-    direction: 'in' | 'out';
-    /** The bank, network or note the money moved through: "Bank of Kigali", "Fleet Expansion". */
-    via: string;
-    amount: Money;
-    occurred_at: string;
-    status: 'completed' | 'pending' | 'failed';
-    /** Why a transfer failed, so it can be inspected before any retry. */
-    failure_reason: string | null;
-    reference: string;
-    balance_before: Money;
-    balance_after: Money;
-    /** Withdrawals only: the fee and what reached the account. */
-    charges: { gross: Money; fee: Money; net: Money } | null;
-};
-
-export type BusinessWalletProps = {
-    wallet: { available: Money; status: 'active' | 'frozen' };
-    methods: Record<WalletFlow, WalletMethod[]>;
-    quick_amounts: Money[];
-    /** Quoted for the `flow`, `amount` and `method` the page last asked for. */
-    quote: WalletQuote | null;
-    /** Today in Kigali, ISO date, for the quick date ranges. */
-    today: string;
-    transactions: {
-        items: WalletTransaction[];
-        from: string | null;
-        to: string | null;
+export type BusinessWalletProps = BusinessServicingPageContract & {
+    business: { id: string; name: string };
+    wallet: BusinessWalletBalances;
+    funding: {
+        kind: 'deposit' | null;
+        policy: DepositPolicy | null;
+        methods: FundingMethod[];
+        picks: Money[];
+        quote: DepositQuote | null;
     };
-    links: BusinessAppLinks & {
-        back: RouteLink;
-        wallet: RouteLink;
-        export_pdf: RouteLink;
-        export_csv: RouteLink;
+    /** Pending and unknown first. */
+    deposits: DepositIntent[];
+    history: {
+        movement: BusinessWalletMovement;
+        filters: {
+            key: BusinessWalletMovement;
+            active: boolean;
+            link: RouteLink;
+        }[];
+        items: BusinessWalletEntry[];
+        pagination: Pagination;
     };
-    actions: Record<WalletFlow, RouteAction>;
+    /** The opened receipt: a history entry with its receipt, or a deposit intent. */
+    receipt:
+        | (BusinessWalletEntry & { receipt: Receipt })
+        | DepositIntent
+        | null;
+    /** A headline figure without a basis renders without a drill-down. */
+    bases: Partial<Record<'available', RouteLink>>;
+    /** The shell's navigation for this page. */
+    shell_links: BusinessShellLinks;
+    links: {
+        close: RouteLink;
+        /** Opens the deposit panel. */
+        deposit: RouteLink;
+        /** The operation lookup; its url holds the literal `{request_id}` token. */
+        operation: RouteLink;
+        /** The note being repaid, when one is servicing. */
+        repayments: RouteLink | null;
+    };
+    actions: { deposit: RouteAction };
+    preview_outcome?: C3PreviewOutcome<'business.wallet.deposit'>;
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -1075,78 +1124,129 @@ export type BusinessRatingProps = {
 };
 
 /* ------------------------------------------------------------------------------------------ */
-/* Repayments (MVP-BUSINESS-SCR-05, design L1060–1262)                                         */
+/* Repayments (MVP-BUSINESS-SCR-05; C4 contract proposal v1 §4a, `business-servicing-v1`)       */
 /* ------------------------------------------------------------------------------------------ */
 
-export type RepaymentSource = {
-    key: string;
-    kind: 'wallet' | 'bank' | 'mobile_money';
-    name: string;
-    /** "Balance RWF 12,383,800", "Bank of Kigali ····2231", masked by the server. */
-    detail: string;
+/** One step of the late-fee ladder applied to an instalment. Provisional with `LateFeeStep`. */
+export type BusinessLateFeeLine = {
+    id: string;
+    step: LateFeeStep;
+    applies_on: KigaliDate;
+    rate_bps: Bps;
+    /** The amount the step applies to (#99 R1). */
+    basis: Money;
+    assessed: Money;
+    collected: Money;
+    outstanding: Money;
+    status: LateFeeStatus;
 };
 
-export type BusinessRepaymentsProps = {
-    home: BusinessHomeProps;
-    note: { id: string; title: string };
-    progress: {
-        repaid_pct: number;
-        repaid: Money;
-        payments_made: number;
-        payments_total: number;
-        remaining: Money;
-        remaining_months: number;
-        total: Money;
-    };
+export type BusinessInstalment = {
+    index: number;
+    due_on: KigaliDate;
+    /** `late_fees` is "0" here; `service_fee` is whatever the server's fee policy schedules. */
+    scheduled: ComponentAmounts;
+    paid: ComponentAmounts;
+    outstanding: ComponentAmounts;
+    status: InstalmentStatus;
+    /** Days past due (MC-03); null when not due. */
+    dpd: number | null;
+    paid_on: KigaliDate | null;
+    late_fees: BusinessLateFeeLine[];
+};
+
+/**
+ * What the Business may pay now. `next_instalment` pays the next scheduled instalment early, at
+ * its exact scheduled amount with no discount (C4 Q8, #99 R8).
+ */
+export type RepaymentPayOption = {
+    key: 'due_now' | 'next_instalment';
+    amounts: ComponentAmounts;
+    instalment_indexes: number[];
+};
+
+export type BusinessServicing = CampaignServicing & {
+    note_id: string;
+    revision: number;
+    /** The oldest overdue instalment and today's, with assessed late fees; null when nothing is due. */
+    due_now: ComponentAmounts | null;
+    /** The next step's fee if nothing is paid first: a projection, labelled as one. */
+    next_late_fee: {
+        step: LateFeeStep;
+        applies_on: KigaliDate;
+        projected: Money;
+    } | null;
     /**
-     * This month's instalment. `days` counts to the due date, or since it when overdue. After a
-     * payment ahead there is nothing due this month; a defaulted note owes the whole balance.
+     * Collection from the wallet on the due date (#99 R7: 23:59 on the due date, then daily during
+     * recovery days 1–7). Null when the server runs no auto-collection.
      */
-    this_month: {
-        state: 'due' | 'overdue' | 'paid' | 'defaulted';
-        amount: Money;
-        due_on: string;
-        days: number;
-        /** The day of the month every instalment falls due: the disbursement day. */
+    autocollect: {
+        mode: 'on_due_date' | 'off';
+        next_attempt_on: KigaliDate | null;
+    } | null;
+};
+
+/**
+ * One repayment as the Business may see it. Allocation reads only `allocating` or `allocated`:
+ * an exception stays with staff (H15), and only the number of Investors paid is shown (H16).
+ */
+export type RepaymentReceiptView = {
+    id: string;
+    revision: number;
+    note_title: string;
+    amount: Money;
+    applied: ComponentAmounts;
+    unapplied: Money;
+    allocation: 'allocating' | 'allocated';
+    /** Null until allocated. */
+    investors_paid: number | null;
+    /** REPAYMENT_RECEIVED, immutable. */
+    receipt: Receipt;
+    link: RouteLink;
+};
+
+/**
+ * `business.repayments.show`. Pays from the Business wallet only: the Phase 1B pay-ahead, bank
+ * and mobile-money sources, deferral and manual review are Phase 2. `repayment.pay` carries the
+ * total on screen as `quoted_total`; a different server total is refused `VERSION_CONFLICT`.
+ */
+export type BusinessRepaymentsProps = BusinessServicingPageContract & {
+    note: {
+        id: string;
+        title: string;
+        disbursement_effective_date: KigaliDate;
+        /** The day of the month every instalment falls due. */
         due_day: number;
     };
-    sources: RepaymentSource[];
-    pay_ahead: {
-        options: (
-            | { key: 'next'; months: number; amount: Money }
-            | { key: 'full'; amount: Money; last: boolean }
-        )[];
-        /** The most the business can pay: what is left on the note. */
-        max: Money;
-    } | null;
-    schedule: {
-        due_on: string;
-        amount: Money;
-        status: 'paid' | 'due' | 'overdue' | 'upcoming';
-    }[];
-    /**
-     * The late-fee ladder, with the total owed at each step for this instalment. The 5/5/5 steps
-     * follow Robert's adopted #99 N4; provisional pending #99 R1/R2 and the §8.5 amendment.
-     */
-    late_ladder: {
-        step: 'due_day' | 'day_7' | 'day_30';
-        fee_percent: string;
-        total: Money;
-    }[];
-    /** Set after a payment is processed: the design's "Payment processed" screen. */
-    receipt: {
-        amount: Money;
-        investors: number;
-        outstanding: Money;
-        payments_made: number;
-        payments_total: number;
-    } | null;
+    servicing: BusinessServicing;
+    schedule: BusinessInstalment[];
+    /** Null when the late-fee policy is unavailable: no ladder is shown or implied. */
+    ladder: LateFeeLadder | null;
+    pay: {
+        /** Empty when nothing is payable. */
+        options: RepaymentPayOption[];
+        funding: {
+            available: Money;
+            sufficient: Record<RepaymentPayOption['key'], boolean>;
+            revision: number;
+        };
+    };
+    /** The opened repayment, or the one just recorded. */
+    receipt: RepaymentReceiptView | null;
+    /** Newest first. */
+    recent: RepaymentReceiptView[];
+    bases: Partial<Record<'remaining' | 'due_now' | 'repaid', RouteLink>>;
+    /** Home, drawn beneath the sheet on a wide screen; null opens over an empty backdrop. */
+    home: BusinessHomeProps | null;
+    shell_links: BusinessShellLinks;
     links: {
         close: RouteLink;
-        defer: RouteLink | null;
-        review: RouteLink | null;
+        /** The wallet's deposit panel, offered instead of Pay when funds are short. */
+        top_up: RouteLink;
+        operation: RouteLink;
     };
-    actions: { pay: RouteAction; pay_ahead: RouteAction };
+    actions: { pay: RouteAction | null };
+    preview_outcome?: C3PreviewOutcome<'repayment.pay'>;
 };
 
 /* ------------------------------------------------------------------------------------------ */

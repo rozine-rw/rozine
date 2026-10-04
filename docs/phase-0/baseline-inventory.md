@@ -605,6 +605,61 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `business_credit_snapshots_business_id_revision_unique` on (business_id, revision) — unique; `business_credit_snapshots_pkey` on (id) — unique
 
+### `business_deposit_credits`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `intent_id` | `bpchar` | no | — |
+| `wallet_id` | `bpchar` | no | — |
+| `ledger_entry_id` | `bpchar` | no | — |
+| `provider_event_id` | `bpchar` | no | — |
+| `operation_id` | `bpchar` | no | — |
+| `request_id` | `uuid` | no | — |
+| `amount` | `numeric` | no | — |
+| `payload` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_deposit_credits_entry` on (ledger_entry_id) — unique; `business_deposit_credits_event` on (provider_event_id) — unique; `business_deposit_credits_intent` on (intent_id) — unique; `business_deposit_credits_pkey` on (id) — unique; `business_deposit_credits_wallet` on (wallet_id, id)
+
+### `business_deposit_dispatches`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `intent_id` | `bpchar` | no | — |
+| `phase` | `varchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_deposit_dispatches_outcome` on (intent_id) — unique; `business_deposit_dispatches_phase` on (intent_id, phase) — unique; `business_deposit_dispatches_pkey` on (id) — unique; `business_deposit_dispatches_queue` on (phase, intent_id)
+
+### `business_deposit_intents`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `owner` | `varchar` | no | `'business'::character varying` |
+| `wallet_id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `party_id` | `bpchar` | no | — |
+| `operation_id` | `bpchar` | no | — |
+| `request_id` | `uuid` | no | — |
+| `method_id` | `bpchar` | no | — |
+| `policy_id` | `bpchar` | no | — |
+| `amount` | `numeric` | no | — |
+| `fee` | `numeric` | no | — |
+| `credited` | `numeric` | no | — |
+| `currency` | `bpchar` | no | — |
+| `provider` | `varchar` | no | — |
+| `provider_reference` | `text` | no | — |
+| `provider_reference_sha256` | `bpchar` | no | — |
+| `payload` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_deposit_intents_operation` on (operation_id) — unique; `business_deposit_intents_pkey` on (id) — unique; `business_deposit_intents_reference` on (provider_reference_sha256) — unique; `business_deposit_intents_request` on (wallet_id, request_id) — unique; `business_deposit_intents_wallet` on (id, wallet_id) — unique; `business_deposit_intents_wallet_order` on (wallet_id, id)
+
 ### `business_exposure_reservations`
 
 | Column | Type | Nullable | Default |
@@ -619,6 +674,23 @@ facts that would differ between machines, so they are excluded deliberately.
 | `created_at` | `timestamptz` | no | — |
 
 **Indexes:** `business_exposure_reservations_business_application_id_unique` on (business_application_id) — unique; `business_exposure_reservations_business_application_submission_` on (business_application_submission_id) — unique; `business_exposure_reservations_business_id_id_index` on (business_id, id); `business_exposure_reservations_pkey` on (id) — unique; `exposure_release_parent` on (id, business_application_id, business_id) — unique
+
+### `business_funding_methods`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `kind` | `varchar` | no | — |
+| `label` | `varchar` | no | — |
+| `masked` | `varchar` | no | — |
+| `reference` | `text` | no | — |
+| `verification_source` | `varchar` | no | — |
+| `verified_at` | `timestamptz` | yes | — |
+| `revoked_at` | `timestamptz` | yes | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_funding_methods_business` on (business_id, id); `business_funding_methods_identity` on (id, business_id) — unique; `business_funding_methods_pkey` on (id) — unique
 
 ### `business_mandates`
 
@@ -651,6 +723,38 @@ facts that would differ between machines, so they are excluded deliberately.
 | `updated_at` | `timestamp` | yes | — |
 
 **Indexes:** `business_profiles_entity_party_id_unique` on (entity_party_id) — unique; `business_profiles_pkey` on (id) — unique
+
+### `business_provider_events`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `provider` | `varchar` | no | — |
+| `provider_event_id` | `varchar` | no | — |
+| `intent_id` | `bpchar` | no | — |
+| `content_sha256` | `bpchar` | no | — |
+| `state` | `varchar` | no | — |
+| `amount` | `numeric` | no | — |
+| `currency` | `bpchar` | no | — |
+| `environment` | `varchar` | no | — |
+| `observed_at` | `timestamptz` | no | — |
+| `disposition` | `varchar` | no | — |
+| `evidence` | `text` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_provider_events_content` on (provider, provider_event_id, content_sha256) — unique; `business_provider_events_final` on (intent_id) — unique; `business_provider_events_identity` on (provider, provider_event_id) — unique; `business_provider_events_intent` on (intent_id, id); `business_provider_events_pkey` on (id) — unique
+
+### `business_wallets`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `owner` | `varchar` | no | `'business'::character varying` |
+| `business_id` | `bpchar` | no | — |
+| `currency` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_wallets_business_unique` on (business_id) — unique; `business_wallets_identity` on (id, business_id) — unique; `business_wallets_pkey` on (id) — unique
 
 ### `cache`
 
@@ -1031,6 +1135,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `party_id` | `bpchar` | no | — |
 | `currency` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
+| `owner` | `varchar` | no | `'investor'::character varying` |
 
 **Indexes:** `investor_wallets_id_party_id_unique` on (id, party_id) — unique; `investor_wallets_party_id_unique` on (party_id) — unique; `investor_wallets_pkey` on (id) — unique
 
@@ -1074,6 +1179,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `kind` | `varchar` | no | — |
 | `currency` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
+| `wallet_owner` | `varchar` | yes | — |
 
 **Indexes:** `ledger_accounts_pkey` on (id) — unique; `ledger_accounts_system_kind` on (kind) — unique; `ledger_accounts_wallet_kind` on (wallet_id, kind) — unique
 
@@ -1094,6 +1200,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `origin_operation_id` | `varchar` | yes | — |
 | `cause_type` | `varchar` | yes | — |
 | `cause_id` | `varchar` | yes | — |
+| `wallet_owner` | `varchar` | yes | — |
 
 **Indexes:** `ledger_entries_kind_source_type_source_id_unique` on (kind, source_type, source_id) — unique; `ledger_entries_pkey` on (id) — unique; `ledger_entries_source` on (source_type, source_id); `ledger_entries_wallet_id_id_index` on (wallet_id, id)
 
@@ -1332,6 +1439,18 @@ facts that would differ between machines, so they are excluded deliberately.
 | `ordinal_ranges` | `int8multirange` | no | — |
 
 **Indexes:** `primary_campaign_reservations` on (business_campaign_id, id); `primary_ordinal_intersection` on (ordinal_ranges); `primary_party_reservations` on (party_id, id); `primary_reservation_expiry` on (expires_at, id); `primary_reservations_origin_operation_id_unique` on (origin_operation_id) — unique; `primary_reservations_pkey` on (id) — unique
+
+### `provider_references`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `provider` | `varchar` | no | — |
+| `reference_sha256` | `bpchar` | no | — |
+| `owner` | `varchar` | no | — |
+| `intent_id` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `provider_references_binding` on (provider, reference_sha256, owner, intent_id) — unique; `provider_references_intent` on (owner, intent_id) — unique; `provider_references_pkey` on (provider, reference_sha256) — unique
 
 ### `pulse_signups`
 
@@ -1629,6 +1748,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `payload` | `text` | no | — |
 | `sha256` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
+| `owner` | `varchar` | no | `'investor'::character varying` |
 
 **Indexes:** `wallet_deposit_intents_id_wallet_id_unique` on (id, wallet_id) — unique; `wallet_deposit_intents_operation_id_unique` on (operation_id) — unique; `wallet_deposit_intents_pkey` on (id) — unique; `wallet_deposit_intents_provider_reference_sha256_unique` on (provider_reference_sha256) — unique; `wallet_deposit_intents_wallet_id_id_index` on (wallet_id, id); `wallet_deposit_intents_wallet_id_request_id_unique` on (wallet_id, request_id) — unique
 
@@ -1651,6 +1771,16 @@ facts that would differ between machines, so they are excluded deliberately.
 | `created_at` | `timestamptz` | no | — |
 
 **Indexes:** `wallet_provider_events_content` on (provider, provider_event_id, content_sha256) — unique; `wallet_provider_events_final` on (intent_id) — unique; `wallet_provider_events_identity` on (provider, provider_event_id) — unique; `wallet_provider_events_intent_id_id_index` on (intent_id, id); `wallet_provider_events_pkey` on (id) — unique
+
+### `wallets`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `owner` | `varchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `wallets_identity` on (id, owner) — unique; `wallets_pkey` on (id) — unique
 
 ## Migrations
 
@@ -1744,6 +1874,10 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_09_30_234802_require_complete_primary_holdings_for_issued_closings.php |
 | 2026_10_02_090000_add_purchase_topic_to_change_feed.php |
 | 2026_10_02_170000_create_staff_independence_evidence.php |
+| 2026_10_03_100000_add_wallet_supertype_and_business_wallets.php |
+| 2026_10_03_100100_refuse_ownerless_ledger_entries.php |
+| 2026_10_03_110000_create_provider_reference_registry.php |
+| 2026_10_03_120000_create_business_deposit_records.php |
 
 ## Routes
 
