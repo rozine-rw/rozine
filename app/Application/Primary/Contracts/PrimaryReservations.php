@@ -14,14 +14,35 @@ use App\Domain\Primary\PrimaryTerms;
 use App\Domain\Primary\UnitRights;
 use Closure;
 
-/** Internal persistence boundary; no HTTP checkout is activated by this port. */
+/** Internal persistence boundary; no HTTP checkout is activated by this port.
+ * @phpstan-type PurchaseFacts array{reservation_id: string, campaign_id: string, party_id: string, publication_sha256: string, root_sha256: string, revision: int, revision_sha256: string, state: string, starts_at: string, expires_at: string, units: string, ordinal_ranges: list<array{first: string, last: string}>, principal: array{currency: string, amount: string}, rights: array<string, mixed>, terms: array<string, mixed>, disclosure_sha256: string, confirmation: null|array{commitment_id: string, operation_id: string, confirmed_at: string}}
+ */
 interface PrimaryReservations
 {
+    /**
+     * Requires the caller's transaction and retained Business/current Investor/Party authority,
+     * acquired before this call. Scopes the native target before decryption, then authenticates
+     * the complete original root/revision history and confirmation binding under shared root
+     * and commitment locks. Returns historical rights and disclosures, including terminal and
+     * recycled roots. No cash, occupancy, funding, Holding or current admission is asserted;
+     * time alone never changes the retained state. No journal, wallet or feed writes occur.
+     *
+     * @return PurchaseFacts
+     */
+    public function reservationFacts(string $campaignId, string $partyId, string $reservationId): array;
+
+    /** Same authority and historical-only contract as reservationFacts().
+     * @return PurchaseFacts
+     */
+    public function commitmentFacts(string $campaignId, string $partyId, string $commitmentId): array;
+
     /**
      * Requires the caller's transaction, journal operation and authorized canonical Party.
      * Activation requires a verified caller authority/Business lock order; authority evidence
      * stays locked through commit. Successful journal replay precedes this call. This port takes
-     * Business → campaign → reservations in stable id order → wallet/ledger locks.
+     * Business → campaign → reservations/commitments in stable id order → all affected
+     * prior/new wallets in Party order → ledger. The caller retains all required staff/Party
+     * authority locks before entering this boundary; admission must not invert that order.
      * All new evidence and cash movements roll back together, even if the caller catches a refusal.
      *
      * The required server-side admission callback checks current eligibility, connected parties,
@@ -29,10 +50,11 @@ interface PrimaryReservations
      * terms or refuses; this port supplies no permissive policy fallback. It must not send external
      * effects. The campaign input is retained publication evidence, not current eligibility.
      *
-     * Reservation creation conservatively counts every retained allocation, including timed-out
-     * holds. Reusing allocations requires verified release/refund integration and a forward
-     * migration of the capacity trigger and retained unit claims; application-only release
-     * cannot recycle inventory.
+     * Reservation creation counts the shared live claim set, including overdue holds and
+     * confirmed refunds. Only full replayed held release/expiry plus original full principal
+     * return may create immutable retirement and per-ordinal successor generations. Original
+     * claims and every root/revision remain retained. Retirement, successor and hold are atomic;
+     * a SELECT-only summary never creates retirement evidence.
      *
      * @param  Closure(UnitRights, array<string, mixed>): PrimaryTerms  $admit
      */
@@ -44,7 +66,7 @@ interface PrimaryReservations
      * they never extend the deadline or move cash. Matching current acknowledgement
      * atomically creates the commitment and moves the original hold to committed.
      * Expired holds refuse here; the caller records the refusal, then expires the hold in
-     * the same outer transaction. Inventory recycling remains separate work.
+     * the same outer transaction. Time alone never retires inventory.
      *
      * @param  Closure(UnitRights, array<string, mixed>): PrimaryTerms  $admit
      */

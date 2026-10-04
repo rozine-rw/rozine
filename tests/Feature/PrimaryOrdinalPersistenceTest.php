@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Domain\Primary\PrimaryViolation;
+use App\Infrastructure\Primary\RetainedPrimaryReservation;
 use App\Models\BusinessCampaign;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
@@ -20,6 +22,7 @@ function removePrimaryOrdinalProjection(): void
 {
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    (require database_path('migrations/2026_10_03_083345_create_primary_held_claim_generations.php'))->down();
     DB::unprepared('DROP TRIGGER primary_ordinal_evidence ON primary_reservations;
         DROP TABLE primary_ordinal_claims;
         DROP FUNCTION retain_primary_ordinal_claims(), validate_primary_ordinal_claim();
@@ -106,7 +109,7 @@ it('rolls schema and trigger changes back when historical ordinal evidence canno
     expect(fn () => DB::transaction(fn () => DB::table('primary_reservations')->update(['units' => 3])))->toThrow(QueryException::class, 'immutable');
 })->with(['digest', 'binding', 'quantity', 'shape', 'bounds']);
 
-it('treats a cross reservation overlap as an integrity failure even when both payloads have valid digests', function (): void {
+it('treats a cross reservation overlap as an integrity failure even when both payloads have valid digests', function (bool $fullReplay): void {
     InvestorWalletFixture::policy(maximum: null);
     $campaign = PrimaryReservationFixture::campaign();
     $investor = PrimaryReservationFixture::investor();
@@ -121,11 +124,45 @@ it('treats a cross reservation overlap as an integrity failure even when both pa
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     DB::statement('SET CONSTRAINTS ALL DEFERRED');
     DB::statement('ALTER TABLE primary_reservations ENABLE TRIGGER primary_reservations_immutable');
-    expect(fn () => PrimaryReservationFixture::reserve($campaign, $investor, '1'))->toThrow(RuntimeException::class, 'RESERVATION_INTEGRITY_FAILED');
+    if ($fullReplay) {
+        $firstVersion = PrimaryReservationVersion::query()->where('primary_reservation_id', $first->id)->sole();
+        $secondVersion = PrimaryReservationVersion::query()->where('primary_reservation_id', $second->id)->sole();
+        $versionPayload = [...$secondVersion->payload, 'reservation_sha256' => $second->sha256,
+            'terms' => $firstVersion->payload['terms'], 'disclosure_sha256' => $firstVersion->payload['disclosure_sha256']];
+        DB::statement('ALTER TABLE primary_reservation_versions DISABLE TRIGGER primary_reservation_versions_immutable');
+        try {
+            $secondVersion->forceFill(['payload' => $versionPayload,
+                'sha256' => hash('sha256', app(CanonicalJson::class)->encode($versionPayload))])->save();
+        } finally {
+            DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+            DB::statement('SET CONSTRAINTS ALL DEFERRED');
+            DB::statement('ALTER TABLE primary_reservation_versions ENABLE TRIGGER primary_reservation_versions_immutable');
+        }
+        $retained = app(RetainedPrimaryReservation::class);
+        foreach ([$first, $second] as $root) {
+            expect($retained->read($root, $retained->facts($root))[0]->state)->toBe('held');
+        }
+        $before = [DB::table('primary_reservations')->count(), DB::table('primary_reservation_versions')->count(),
+            DB::table('ledger_entries')->count(), DB::table('ledger_lines')->count(), DB::table('primary_held_claim_releases')->count(),
+            DB::table('primary_held_claim_generations')->count(), DB::table('change_feed')->count()];
+        try {
+            PrimaryReservationFixture::reserve($campaign, $investor, '1');
+            $this->fail('Overlapping authenticated live roots must refuse allocation.');
+        } catch (RuntimeException $exception) {
+            expect($exception->getMessage())->toBe('RESERVATION_INTEGRITY_FAILED')
+                ->and($exception->getPrevious())->toBeInstanceOf(PrimaryViolation::class)
+                ->and($exception->getPrevious()?->getMessage())->toBe('OVERLAPPING_ORDINALS');
+        }
+        expect([DB::table('primary_reservations')->count(), DB::table('primary_reservation_versions')->count(),
+            DB::table('ledger_entries')->count(), DB::table('ledger_lines')->count(), DB::table('primary_held_claim_releases')->count(),
+            DB::table('primary_held_claim_generations')->count(), DB::table('change_feed')->count()])->toBe($before);
+    } else {
+        expect(fn () => PrimaryReservationFixture::reserve($campaign, $investor, '1'))->toThrow(RuntimeException::class, 'RESERVATION_INTEGRITY_FAILED');
+    }
     removePrimaryOrdinalProjection();
     $migration = require database_path('migrations/2026_09_28_154941_enforce_primary_ordinal_exclusion.php');
     expect(fn () => $migration->up())->toThrow(QueryException::class, 'verified nonoverlapping evidence');
-});
+})->with(['root digest only' => false, 'complete retained revision replay' => true]);
 
 it('retains all claims until a verified forward release migration exists', function (): void {
     $root = PrimaryReservationRecord::factory()->withInitialVersion()->create();

@@ -12,7 +12,8 @@ it('installs funding behind in-flight command table locks without blocking their
     $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
     $holdingIssue = require database_path('migrations/2026_09_30_114217_require_issue_evidence_for_primary_holdings.php');
     $completeness = require database_path('migrations/2026_09_30_234802_require_complete_primary_holdings_for_issued_closings.php');
-    $dependants = [$completeness, $holdingIssue, $holdingBinding, $closures];
+    $heldGenerations = require database_path('migrations/2026_10_03_083345_create_primary_held_claim_generations.php');
+    $dependants = [$heldGenerations, $completeness, $holdingIssue, $holdingBinding, $closures];
     $shape = fn (): array => [
         DB::select("SELECT tgname, pg_get_triggerdef(oid) AS definition FROM pg_trigger WHERE NOT tgisinternal
             AND tgrelid IN ('primary_campaign_fundings'::regclass, 'primary_holdings'::regclass,
