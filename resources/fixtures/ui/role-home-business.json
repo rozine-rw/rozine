@@ -24,6 +24,10 @@
                 {
                     "business_id": "01k6q1a2b3c4d5e6f7g8h9j0k1",
                     "name": "Kigali Fresh Foods",
+                    "home": {
+                        "url": "/business/01k6q1a2b3c4d5e6f7g8h9j0k1",
+                        "method": "get"
+                    },
                     "allowed_actions": ["application.create"],
                     "application": null,
                     "actions": {
@@ -37,6 +41,10 @@
                 {
                     "business_id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
                     "name": "GreenLeaf Agro",
+                    "home": {
+                        "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2",
+                        "method": "get"
+                    },
                     "allowed_actions": [],
                     "application": {
                         "id": "01k6p4c8s3d0f4g9h2j6k1m7n3",
@@ -56,6 +64,10 @@
                 {
                     "business_id": "01k6q2m3n4p5q6r7s8t9v0w1x2",
                     "name": "Huye Motors",
+                    "home": {
+                        "url": "/business/01k6q2m3n4p5q6r7s8t9v0w1x2",
+                        "method": "get"
+                    },
                     "allowed_actions": [],
                     "application": {
                         "id": "01k6q2m3n4p5q6r7s8t9v0w1x3",
@@ -75,6 +87,10 @@
                 {
                     "business_id": "01k6q3y4z5a6b7c8d9e0f1g2h3",
                     "name": "Nyamirambo Crafts",
+                    "home": {
+                        "url": "/business/01k6q3y4z5a6b7c8d9e0f1g2h3",
+                        "method": "get"
+                    },
                     "allowed_actions": [],
                     "application": null,
                     "actions": {
@@ -85,6 +101,10 @@
                 {
                     "business_id": "01k6q4j5k6m7n8p9q0r1s2t3v4",
                     "name": "Musanze Dairy",
+                    "home": {
+                        "url": "/business/01k6q4j5k6m7n8p9q0r1s2t3v4",
+                        "method": "get"
+                    },
                     "allowed_actions": [],
                     "application": {
                         "id": "01k6q4j5k6m7n8p9q0r1s2t3v5",
