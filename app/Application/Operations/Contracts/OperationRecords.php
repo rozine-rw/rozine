@@ -9,6 +9,7 @@ namespace App\Application\Operations\Contracts;
  * only: it never executes, replays or changes an operation, and returns each result unchanged.
  *
  * @phpstan-type OperationRecord array{operation_id: string, request_id: string, result: array<string, mixed>, recorded_at: string}
+ * @phpstan-type OperationAttribution array{operation_id: string, actor_key: string, command: string, recorded_at: string}
  */
 interface OperationRecords
 {
@@ -18,4 +19,12 @@ interface OperationRecords
      * @return list<OperationRecord>
      */
     public function forTarget(string $actorKey, string $command, string $targetType, string $targetId): array;
+
+    /**
+     * Who recorded one operation, by which command and when; null for an unknown operation. It
+     * never returns the operation's request or result.
+     *
+     * @return OperationAttribution|null
+     */
+    public function attribution(string $operationId): ?array;
 }

@@ -18,4 +18,8 @@ export const KIND_META: Record<LedgerKind, { glyph: string; color: string }> = {
     secondary: { glyph: '⇄', color: 'text-[#7c3aed] dark:text-[#b199fb]' },
     secondary_fee: { glyph: '₣', color: 'text-[#7c3aed] dark:text-[#b199fb]' },
     contra: { glyph: '⇆', color: 'text-[#e5484d] dark:text-[#ff6b6f]' },
+    hold: { glyph: '⏸', color: 'text-rz-slate' },
+    release: { glyph: '↩', color: 'text-rz-slate' },
+    refund: { glyph: '↩', color: 'text-[#c2661f] dark:text-[#f0a060]' },
+    issue: { glyph: '✓', color: 'text-rz-accent-app-text' },
 };

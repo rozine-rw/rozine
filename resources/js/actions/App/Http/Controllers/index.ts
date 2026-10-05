@@ -3,6 +3,7 @@ import Api from './Api'
 import AuditDisputeController from './AuditDisputeController'
 import BusinessRepaymentController from './BusinessRepaymentController'
 import BusinessWalletController from './BusinessWalletController'
+import StaffLedgerController from './StaffLedgerController'
 import StaffDisbursementController from './StaffDisbursementController'
 import AuditOperationsController from './AuditOperationsController'
 import StaffApplicationReleaseController from './StaffApplicationReleaseController'
@@ -31,6 +32,7 @@ const Controllers = {
     AuditDisputeController: Object.assign(AuditDisputeController, AuditDisputeController),
     BusinessRepaymentController: Object.assign(BusinessRepaymentController, BusinessRepaymentController),
     BusinessWalletController: Object.assign(BusinessWalletController, BusinessWalletController),
+    StaffLedgerController: Object.assign(StaffLedgerController, StaffLedgerController),
     StaffDisbursementController: Object.assign(StaffDisbursementController, StaffDisbursementController),
     AuditOperationsController: Object.assign(AuditOperationsController, AuditOperationsController),
     StaffApplicationReleaseController: Object.assign(StaffApplicationReleaseController, StaffApplicationReleaseController),

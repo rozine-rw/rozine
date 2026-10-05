@@ -110,6 +110,48 @@ describe('Ledger', () => {
         ).toHaveAttribute('href', '/preview/admin-events');
     });
 
+    it('shows the live ledger: Primary kinds, no operation and no event-log link', () => {
+        const fixture = ledgerProps(entryFixture);
+
+        if (fixture.entry === null) {
+            throw new Error('fixture has an entry');
+        }
+
+        fixture.entries = fixture.entries.map((row, index) => ({
+            ...row,
+            kind: (['hold', 'release', 'refund', 'issue'] as const)[index % 4],
+        }));
+        fixture.entry = {
+            ...fixture.entry,
+            kind: 'refund',
+            operation_id: null,
+            links: { ...fixture.entry.links, events: null },
+        };
+        render(<AdminLedger {...fixture} />);
+
+        for (const label of [
+            'Reservation hold',
+            'Hold released',
+            'Notes issued',
+        ]) {
+            expect(screen.getAllByText(label).length).toBeGreaterThan(0);
+        }
+
+        const drawer = screen.getByRole('dialog', {
+            name: `Ledger entry ${fixture.entry.id}`,
+        });
+
+        expect(within(drawer).getAllByText('Refund').length).toBeGreaterThan(0);
+        expect(
+            within(drawer).queryByText('op_7f3c21a9e4'),
+        ).not.toBeInTheDocument();
+        expect(
+            within(drawer).queryByRole('link', {
+                name: 'See this entry in the event log →',
+            }),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows a contra entry, a reasoned posting and an unbalanced entry', () => {
         const fixture = ledgerProps(entryFixture);
 

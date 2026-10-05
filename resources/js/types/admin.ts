@@ -203,7 +203,12 @@ export type LedgerKind =
     | 'withdrawal'
     | 'secondary'
     | 'secondary_fee'
-    | 'contra';
+    | 'contra'
+    /** Wallet-internal Primary movements: cash held for, released from, refunded or issued as notes. */
+    | 'hold'
+    | 'release'
+    | 'refund'
+    | 'issue';
 
 export type ActivityItem = {
     id: string;
@@ -646,7 +651,8 @@ export type Posting = {
 };
 
 export type LedgerEntryDetail = LedgerRow & {
-    operation_id: string;
+    /** The recording operation; null for an entry no operation recorded. */
+    operation_id: string | null;
     posted_by: Attribution;
     postings: Posting[];
     totals: { debit: Money; credit: Money };
@@ -655,7 +661,8 @@ export type LedgerEntryDetail = LedgerRow & {
     /** A correction is a contra entry, never an edit (AC-02). */
     contra_of: { id: string; link: RouteLink } | null;
     contra_by: { id: string; link: RouteLink } | null;
-    links: { close: RouteLink; events: RouteLink };
+    /** `events` is null until the event log has a live route. */
+    links: { close: RouteLink; events: RouteLink | null };
 };
 
 export type AdminLedgerProps = AdminShellProps & {
