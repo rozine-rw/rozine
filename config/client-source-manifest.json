@@ -143,6 +143,7 @@
         "resources/js/routes/api/v1/identity/roles/index.ts",
         "resources/js/routes/api/v1/identity/staff-people/index.ts",
         "resources/js/routes/api/v1/index.ts",
+        "resources/js/routes/api/v1/investor/commitments/index.ts",
         "resources/js/routes/api/v1/investor/index.ts",
         "resources/js/routes/api/v1/investor/primary/index.ts",
         "resources/js/routes/api/v1/investor/primary/operations/index.ts",
@@ -201,6 +202,7 @@
         "resources/js/routes/identity/roles/index.ts",
         "resources/js/routes/identity/staff-people/index.ts",
         "resources/js/routes/index.ts",
+        "resources/js/routes/investor/commitments/index.ts",
         "resources/js/routes/investor/index.ts",
         "resources/js/routes/investor/primary/index.ts",
         "resources/js/routes/investor/primary/operations/index.ts",
@@ -633,8 +635,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 605,
-        "generated": 217,
+        "totalTrackedSources": 607,
+        "generated": 219,
         "declarationOnly": 18,
         "authoredExecutable": 370
     },

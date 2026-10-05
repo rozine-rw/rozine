@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Primary\GetInvestorCommitment;
 use App\Application\Primary\ManagePrimaryCheckout;
 use App\Http\Requests\Investor\PrimaryCommandRequest;
+use App\Http\Requests\Investor\ShowCommitmentRequest;
 use App\Http\Requests\Investor\ShowPrimaryOperationRequest;
+use App\Http\Resources\InvestorCommitmentResource;
 use App\Http\Resources\OperationResource;
+use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * The Investor purchase transport (C3 v2 §2c, AC-04) for the web session and API v1 alike.
@@ -52,7 +57,24 @@ class InvestorPrimaryController extends Controller
             (string) $request->validated('command'), $campaign, is_string($reservation) ? $reservation : null, $requestId));
     }
 
-    private function user(PrimaryCommandRequest|ShowPrimaryOperationRequest $request): int
+    /**
+     * The commitment page (`investor.commitments.show`). On the web a commitment the Investor may
+     * not read, or whose state is not yet sourced, renders the page's own scoped refusal.
+     */
+    public function commitment(ShowCommitmentRequest $request, GetInvestorCommitment $action, string $commitment): Response|InvestorCommitmentResource
+    {
+        $context = $request->validated('identity_context_revision');
+        $context = $context === null ? null : (int) $context;
+        if ($request->routeIs('api.*')) {
+            return new InvestorCommitmentResource([...$action->handle($this->user($request), $context, $commitment), 'refusal' => null]);
+        }
+        $page = $action->page($this->user($request), $context, $commitment);
+
+        return Inertia::render('investor/commitment', (new InvestorCommitmentResource($page))->resolve($request))->toResponse($request)
+            ->setStatusCode($page['refusal']['status'] ?? 200);
+    }
+
+    private function user(PrimaryCommandRequest|ShowPrimaryOperationRequest|ShowCommitmentRequest $request): int
     {
         return (int) $request->user()?->getAuthIdentifier();
     }

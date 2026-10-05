@@ -1294,7 +1294,14 @@ export type C3InvestorCheckoutProps = InvestorPageContract & {
 export type C3InvestorCommitmentProps = InvestorPageContract & {
     commitment: Commitment | null;
     refusal: { code: string; status: number } | null;
-    links: InvestorAppLinks & { close: RouteLink; operation: RouteLink };
+    /**
+     * A destination with no live route yet is null and hidden. `operation` is null on a refusal,
+     * which offers no command to look up.
+     */
+    links: C3InvestorShellLinks & {
+        close: RouteLink;
+        operation: RouteLink | null;
+    };
     preview_outcome?: C3PreviewOutcome<'primary.cancel'>;
 };
 

@@ -67,6 +67,14 @@ final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
         return $this->lockedInput($campaignId, false);
     }
 
+    public function presentation(string $campaignId): array
+    {
+        $title = $this->publications->find($campaignId)['title'] ?? null;
+
+        return ['title' => is_string($title) ? $title : throw new RuntimeException('CAMPAIGN_INTEGRITY_FAILED'),
+            'closed' => $this->closures->find($campaignId) !== null];
+    }
+
     /** @return CampaignInput */
     private function lockedInput(string $campaignId, bool $requireOpen, bool $allowElapsed = false): array
     {
