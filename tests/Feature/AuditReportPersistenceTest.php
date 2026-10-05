@@ -245,6 +245,8 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $businessRepayments->down();
     $businessDeposits = require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php');
     $businessDeposits->down();
+    $heldGenerations = require database_path('migrations/2026_10_03_083345_create_primary_held_claim_generations.php');
+    $heldGenerations->down();
     $issuedCompleteness->down();
     $holdingIssue->down();
     $holdingBinding->down();
@@ -331,6 +333,7 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $holdingBinding->up();
     $holdingIssue->up();
     $issuedCompleteness->up();
+    $heldGenerations->up();
     $businessDeposits->up();
     $businessRepayments->up();
     expect($closingAuthorityShape())->toEqual($originalClosingAuthority);

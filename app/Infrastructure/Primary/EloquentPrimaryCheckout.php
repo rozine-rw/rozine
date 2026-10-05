@@ -23,6 +23,18 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
     public function __construct(private PrimaryCampaignSource $campaigns, private AuthorizeActiveRole $authority,
         private OperationJournal $journal, private PrimaryReservations $reservations, private ChangeFeed $changes) {}
 
+    public function reservationFacts(int $userId, int $contextRevision, string $campaignId, string $reservationId): array
+    {
+        return $this->withInvestor($userId, $contextRevision, $campaignId,
+            fn (array $identity): array => $this->reservations->reservationFacts($campaignId, (string) $identity['party']['id'], $reservationId));
+    }
+
+    public function commitmentFacts(int $userId, int $contextRevision, string $campaignId, string $commitmentId): array
+    {
+        return $this->withInvestor($userId, $contextRevision, $campaignId,
+            fn (array $identity): array => $this->reservations->commitmentFacts($campaignId, (string) $identity['party']['id'], $commitmentId));
+    }
+
     public function reserve(int $userId, int $contextRevision, string $campaignId, string $units, string $requestId, Closure $admit): array
     {
         return $this->withInvestor($userId, $contextRevision, $campaignId,
@@ -201,8 +213,10 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
     }
 
     /**
-     * @param  Closure(AccessSnapshot): array<string, mixed>  $operation
-     * @return array<string, mixed>
+     * @template TResult of array<string, mixed>
+     *
+     * @param  Closure(AccessSnapshot): TResult  $operation
+     * @return TResult
      */
     private function withInvestor(int $userId, int $contextRevision, string $campaignId, Closure $operation): array
     {
