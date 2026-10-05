@@ -244,3 +244,7 @@ release. Add a tool name to select part of the graph. For example, run
 - [ ] If setup, runtime, or package-manager behavior looks wrong, run `vp env doctor` and include its output when asking for help.
 
 <!--VITE PLUS END-->
+
+## Shared agent coordination
+
+Before starting or handing off work, read and follow [the shared coordination instructions](docs/agent-coordination.md). Keep coordination rules there; the existing development, testing and deployment instructions above remain in force.
