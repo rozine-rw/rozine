@@ -15,7 +15,7 @@ use DateTimeZone;
  */
 final class MandateAuthority
 {
-    public const array PERMISSIONS = ['business.view', 'application.create', 'application.save', 'application.evaluate', 'application.sign', 'report.cosign'];
+    public const array PERMISSIONS = ['business.view', 'application.create', 'application.save', 'application.evaluate', 'application.sign', 'report.cosign', 'business.wallet.deposit', 'repayment.pay'];
 
     /**
      * @param  Profile  $profile

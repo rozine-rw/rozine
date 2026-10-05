@@ -52,6 +52,30 @@ final readonly class JournalEntry
     }
 
     /**
+     * A credited Business deposit: the gross leaves deposit clearing, the net lands in the Business's
+     * available balance and any fee in fee revenue, under the same fee rules as an Investor deposit.
+     */
+    public static function businessDepositCredit(WalletMoney $gross, WalletMoney $fee): self
+    {
+        if ($gross->compareTo($fee) <= 0) {
+            throw new WalletViolation('DEPOSIT_NET_NOT_POSITIVE');
+        }
+        $lines = [new JournalLine('deposit_clearing', 'debit', $gross), new JournalLine('business_available', 'credit', $gross->minus($fee))];
+        if (! $fee->isZero()) {
+            $lines[] = new JournalLine('deposit_fee_revenue', 'credit', $fee);
+        }
+
+        return new self('business_deposit_credit', $lines);
+    }
+
+    /** A Business repayment: the paid amount leaves the Business's available balance for repayment clearing. */
+    public static function businessRepaymentDebit(WalletMoney $amount): self
+    {
+        return self::balanced('business_repayment_debit', [new JournalLine('business_available', 'debit', $amount),
+            new JournalLine('repayment_clearing', 'credit', $amount)]);
+    }
+
+    /**
      * A primary movement: the source bucket is debited and the destination credited by the same
      * amount. Between the Investor's own buckets (hold, commit, release, refund) the total never
      * changes; an issue moves committed principal out to the system settlement account, so it

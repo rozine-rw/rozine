@@ -605,6 +605,61 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `business_credit_snapshots_business_id_revision_unique` on (business_id, revision) — unique; `business_credit_snapshots_pkey` on (id) — unique
 
+### `business_deposit_credits`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `intent_id` | `bpchar` | no | — |
+| `wallet_id` | `bpchar` | no | — |
+| `ledger_entry_id` | `bpchar` | no | — |
+| `provider_event_id` | `bpchar` | no | — |
+| `operation_id` | `bpchar` | no | — |
+| `request_id` | `uuid` | no | — |
+| `amount` | `numeric` | no | — |
+| `payload` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_deposit_credits_entry` on (ledger_entry_id) — unique; `business_deposit_credits_event` on (provider_event_id) — unique; `business_deposit_credits_intent` on (intent_id) — unique; `business_deposit_credits_pkey` on (id) — unique; `business_deposit_credits_wallet` on (wallet_id, id)
+
+### `business_deposit_dispatches`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `intent_id` | `bpchar` | no | — |
+| `phase` | `varchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_deposit_dispatches_outcome` on (intent_id) — unique; `business_deposit_dispatches_phase` on (intent_id, phase) — unique; `business_deposit_dispatches_pkey` on (id) — unique; `business_deposit_dispatches_queue` on (phase, intent_id)
+
+### `business_deposit_intents`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `owner` | `varchar` | no | `'business'::character varying` |
+| `wallet_id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `party_id` | `bpchar` | no | — |
+| `operation_id` | `bpchar` | no | — |
+| `request_id` | `uuid` | no | — |
+| `method_id` | `bpchar` | no | — |
+| `policy_id` | `bpchar` | no | — |
+| `amount` | `numeric` | no | — |
+| `fee` | `numeric` | no | — |
+| `credited` | `numeric` | no | — |
+| `currency` | `bpchar` | no | — |
+| `provider` | `varchar` | no | — |
+| `provider_reference` | `text` | no | — |
+| `provider_reference_sha256` | `bpchar` | no | — |
+| `payload` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_deposit_intents_operation` on (operation_id) — unique; `business_deposit_intents_pkey` on (id) — unique; `business_deposit_intents_reference` on (provider_reference_sha256) — unique; `business_deposit_intents_request` on (wallet_id, request_id) — unique; `business_deposit_intents_wallet` on (id, wallet_id) — unique; `business_deposit_intents_wallet_order` on (wallet_id, id)
+
 ### `business_exposure_reservations`
 
 | Column | Type | Nullable | Default |
@@ -619,6 +674,23 @@ facts that would differ between machines, so they are excluded deliberately.
 | `created_at` | `timestamptz` | no | — |
 
 **Indexes:** `business_exposure_reservations_business_application_id_unique` on (business_application_id) — unique; `business_exposure_reservations_business_application_submission_` on (business_application_submission_id) — unique; `business_exposure_reservations_business_id_id_index` on (business_id, id); `business_exposure_reservations_pkey` on (id) — unique; `exposure_release_parent` on (id, business_application_id, business_id) — unique
+
+### `business_funding_methods`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `kind` | `varchar` | no | — |
+| `label` | `varchar` | no | — |
+| `masked` | `varchar` | no | — |
+| `reference` | `text` | no | — |
+| `verification_source` | `varchar` | no | — |
+| `verified_at` | `timestamptz` | yes | — |
+| `revoked_at` | `timestamptz` | yes | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_funding_methods_business` on (business_id, id); `business_funding_methods_identity` on (id, business_id) — unique; `business_funding_methods_pkey` on (id) — unique
 
 ### `business_mandates`
 
@@ -651,6 +723,58 @@ facts that would differ between machines, so they are excluded deliberately.
 | `updated_at` | `timestamp` | yes | — |
 
 **Indexes:** `business_profiles_entity_party_id_unique` on (entity_party_id) — unique; `business_profiles_pkey` on (id) — unique
+
+### `business_provider_events`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `provider` | `varchar` | no | — |
+| `provider_event_id` | `varchar` | no | — |
+| `intent_id` | `bpchar` | no | — |
+| `content_sha256` | `bpchar` | no | — |
+| `state` | `varchar` | no | — |
+| `amount` | `numeric` | no | — |
+| `currency` | `bpchar` | no | — |
+| `environment` | `varchar` | no | — |
+| `observed_at` | `timestamptz` | no | — |
+| `disposition` | `varchar` | no | — |
+| `evidence` | `text` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_provider_events_content` on (provider, provider_event_id, content_sha256) — unique; `business_provider_events_final` on (intent_id) — unique; `business_provider_events_identity` on (provider, provider_event_id) — unique; `business_provider_events_intent` on (intent_id, id); `business_provider_events_pkey` on (id) — unique
+
+### `business_repayments`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `wallet_id` | `bpchar` | no | — |
+| `business_id` | `bpchar` | no | — |
+| `party_id` | `bpchar` | no | — |
+| `note_id` | `bpchar` | no | — |
+| `operation_id` | `bpchar` | no | — |
+| `request_id` | `uuid` | no | — |
+| `option` | `varchar` | no | — |
+| `amount` | `numeric` | no | — |
+| `servicing_revision` | `int4` | no | — |
+| `payload` | `text` | no | — |
+| `sha256` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_repayments_note` on (note_id, id); `business_repayments_operation` on (operation_id) — unique; `business_repayments_pkey` on (id) — unique; `business_repayments_request` on (wallet_id, request_id) — unique; `business_repayments_wallet_order` on (wallet_id, id)
+
+### `business_wallets`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `owner` | `varchar` | no | `'business'::character varying` |
+| `business_id` | `bpchar` | no | — |
+| `currency` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `business_wallets_business_unique` on (business_id) — unique; `business_wallets_identity` on (id, business_id) — unique; `business_wallets_pkey` on (id) — unique
 
 ### `cache`
 
@@ -1031,6 +1155,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `party_id` | `bpchar` | no | — |
 | `currency` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
+| `owner` | `varchar` | no | `'investor'::character varying` |
 
 **Indexes:** `investor_wallets_id_party_id_unique` on (id, party_id) — unique; `investor_wallets_party_id_unique` on (party_id) — unique; `investor_wallets_pkey` on (id) — unique
 
@@ -1074,6 +1199,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `kind` | `varchar` | no | — |
 | `currency` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
+| `wallet_owner` | `varchar` | yes | — |
 
 **Indexes:** `ledger_accounts_pkey` on (id) — unique; `ledger_accounts_system_kind` on (kind) — unique; `ledger_accounts_wallet_kind` on (wallet_id, kind) — unique
 
@@ -1094,6 +1220,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `origin_operation_id` | `varchar` | yes | — |
 | `cause_type` | `varchar` | yes | — |
 | `cause_id` | `varchar` | yes | — |
+| `wallet_owner` | `varchar` | yes | — |
 
 **Indexes:** `ledger_entries_kind_source_type_source_id_unique` on (kind, source_type, source_id) — unique; `ledger_entries_pkey` on (id) — unique; `ledger_entries_source` on (source_type, source_id); `ledger_entries_wallet_id_id_index` on (wallet_id, id)
 
@@ -1362,6 +1489,18 @@ facts that would differ between machines, so they are excluded deliberately.
 | `ordinal_ranges` | `int8multirange` | no | — |
 
 **Indexes:** `primary_campaign_reservations` on (business_campaign_id, id); `primary_ordinal_intersection` on (ordinal_ranges); `primary_party_reservations` on (party_id, id); `primary_reservation_expiry` on (expires_at, id); `primary_reservations_origin_operation_id_unique` on (origin_operation_id) — unique; `primary_reservations_pkey` on (id) — unique
+
+### `provider_references`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `provider` | `varchar` | no | — |
+| `reference_sha256` | `bpchar` | no | — |
+| `owner` | `varchar` | no | — |
+| `intent_id` | `bpchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `provider_references_binding` on (provider, reference_sha256, owner, intent_id) — unique; `provider_references_intent` on (owner, intent_id) — unique; `provider_references_pkey` on (provider, reference_sha256) — unique
 
 ### `pulse_signups`
 
@@ -1659,6 +1798,7 @@ facts that would differ between machines, so they are excluded deliberately.
 | `payload` | `text` | no | — |
 | `sha256` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
+| `owner` | `varchar` | no | `'investor'::character varying` |
 
 **Indexes:** `wallet_deposit_intents_id_wallet_id_unique` on (id, wallet_id) — unique; `wallet_deposit_intents_operation_id_unique` on (operation_id) — unique; `wallet_deposit_intents_pkey` on (id) — unique; `wallet_deposit_intents_provider_reference_sha256_unique` on (provider_reference_sha256) — unique; `wallet_deposit_intents_wallet_id_id_index` on (wallet_id, id); `wallet_deposit_intents_wallet_id_request_id_unique` on (wallet_id, request_id) — unique
 
@@ -1681,6 +1821,16 @@ facts that would differ between machines, so they are excluded deliberately.
 | `created_at` | `timestamptz` | no | — |
 
 **Indexes:** `wallet_provider_events_content` on (provider, provider_event_id, content_sha256) — unique; `wallet_provider_events_final` on (intent_id) — unique; `wallet_provider_events_identity` on (provider, provider_event_id) — unique; `wallet_provider_events_intent_id_id_index` on (intent_id, id); `wallet_provider_events_pkey` on (id) — unique
+
+### `wallets`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | `bpchar` | no | — |
+| `owner` | `varchar` | no | — |
+| `created_at` | `timestamptz` | no | — |
+
+**Indexes:** `wallets_identity` on (id, owner) — unique; `wallets_pkey` on (id) — unique
 
 ## Migrations
 
@@ -1775,6 +1925,11 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_10_02_090000_add_purchase_topic_to_change_feed.php |
 | 2026_10_02_170000_create_staff_independence_evidence.php |
 | 2026_10_03_083345_create_primary_held_claim_generations.php |
+| 2026_10_03_100000_add_wallet_supertype_and_business_wallets.php |
+| 2026_10_03_100100_refuse_ownerless_ledger_entries.php |
+| 2026_10_03_110000_create_provider_reference_registry.php |
+| 2026_10_03_120000_create_business_deposit_records.php |
+| 2026_10_04_100000_create_business_repayment_records.php |
 
 ## Routes
 
@@ -1858,6 +2013,11 @@ Vendor routes excluded, matching `route:list --except-vendor`.
 | GET | `/api/v1/business/{business}/audit-reports/{report}/dispute/proofs/{proof}` | `api.v1.business.audit-reports.disputes.proofs.show` | `AuditDisputeController@proof` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
 | GET | `/api/v1/business/{business}/campaigns/{campaign}` | `api.v1.business.campaigns.show` | `BusinessPublicationController@campaign` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
 | POST | `/api/v1/business/{business}/campaigns/{campaign}/cancel` | `api.v1.business.campaigns.cancel` | `BusinessPublicationController@cancel` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/business/{business}/repayment-operations/{request_id}` | `api.v1.business.repayments.operations.show` | `BusinessRepaymentController@operation` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/business/{business}/repayments` | `api.v1.business.repayments.pay` | `BusinessRepaymentController@pay` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/business/{business}/wallet` | `api.v1.business.wallet.show` | `BusinessWalletController@show` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/business/{business}/wallet-operations/{request_id}` | `api.v1.business.wallet.operations.show` | `BusinessWalletController@operation` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/business/{business}/wallet/deposits` | `api.v1.business.wallet.deposit` | `BusinessWalletController@deposit` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
 | GET | `/api/v1/changes` | `api.v1.changes.index` | `ChangeFeedController@index` | api, auth:sanctum, throttle:changes, cache.headers:private;no_store |
 | GET | `/api/v1/identity` | `api.v1.identity.show` | `Api\V1\IdentityController@__invoke` | api, auth:sanctum, throttle:60,1 |
 | POST | `/api/v1/identity/active-role` | `api.v1.identity.active-role.store` | `Api\V1\IdentityManagementController@selectRole` | api, auth:sanctum, throttle:60,1 |
@@ -1950,6 +2110,11 @@ Vendor routes excluded, matching `route:list --except-vendor`.
 | GET | `/business/{business}/audit-reports/{report}/dispute/proofs/{proof}` | `business.audit-reports.disputes.proofs.show` | `AuditDisputeController@proof` | web, auth, throttle:60,1, cache.headers:private;no_store |
 | GET | `/business/{business}/campaigns/{campaign}` | `business.campaigns.show` | `BusinessPublicationController@campaign` | web, auth, throttle:60,1, cache.headers:private;no_store |
 | POST | `/business/{business}/campaigns/{campaign}/cancel` | `business.campaigns.cancel` | `BusinessPublicationController@cancel` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/business/{business}/repayment-operations/{request_id}` | `business.repayments.operations.show` | `BusinessRepaymentController@operation` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/business/{business}/repayments` | `business.repayments.pay` | `BusinessRepaymentController@pay` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/business/{business}/wallet` | `business.wallet.show` | `BusinessWalletController@show` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/business/{business}/wallet-operations/{request_id}` | `business.wallet.operations.show` | `BusinessWalletController@operation` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| POST | `/business/{business}/wallet/deposits` | `business.wallet.deposit` | `BusinessWalletController@deposit` | web, auth, throttle:60,1, cache.headers:private;no_store |
 | GET | `/changes` | `changes.index` | `ChangeFeedController@index` | web, auth, throttle:changes, cache.headers:private;no_store |
 | GET | `/dashboard` | `dashboard` | `DashboardController@__invoke` | web, auth, verified |
 | POST | `/identity/active-role` | `identity.active-role.store` | `IdentityManagementController@selectRole` | web, auth, throttle:60,1 |
@@ -2000,13 +2165,13 @@ The ADR-0001 layering as it stands. `tests/Architecture` enforces the dependency
 | Layer | Path | Classes | Contents |
 |---|---|---|---|
 | Domain | `app/Domain` | 74 | `Auditor\AccreditationCertificate`, `Auditor\AccreditationProfile`, `Auditor\AccreditationView`, `Auditor\AuditAssignmentClock`, `Auditor\AuditEngagementDocuments`, `Auditor\AuditEngagementState`, `Auditor\AuditMonthlyFacts`, `Auditor\AuditProcedure`, `Auditor\AuditReadPolicy`, `Auditor\AuditReportDecision`, `Auditor\AuditReportWindow`, `Auditor\AuditSourceFacts`, `Auditor\AuditVariance`, `Auditor\AuditorDispatch`, `Auditor\AuditorIndependence`, `Auditor\AuditorStanding`, `Auditor\MonthlyReportReview`, `Auditor\VerifiedAuditLocation`, `Auditor\Wgs84Distance`, `Business\ApplicationAcceptance`, `Business\ApplicationDraft`, `Business\ApplicationEvidence`, `Business\MandateAuthority`, `Disbursement\DisbursementReason`, `Disbursement\DisbursementState`, `Disbursement\DisbursementViolation`, `Disbursement\IntentDigest`, `Disbursement\IssueSchedule`, `Disbursement\PayoutOutcome`, `Disbursement\Reconciliation`, `Disbursement\StaffIndependence`, `Evidence\StatementAuditReview`, `Evidence\StatementReconciliation`, `Evidence\StatementSource`, `Identity\ActiveRolePolicy`, `Identity\BookmarkDestination`, `Identity\ConsentDocuments`, `Identity\IdentityViolation`, `Identity\MembershipTransitions`, `Identity\RoleAccess`, `Identity\StaffPermission`, `Operations\ChangeCursor`, `Operations\ChangeScope`, `Operations\CommandRejection`, `Operations\OperationResult`, `Primary\FundingAdmission`, `Primary\PrimaryReservation`, `Primary\PrimaryTerms`, `Primary\PrimaryViolation`, `Primary\ReservationWindow`, `Primary\UnitOrdinals`, `Primary\UnitRights`, `Pulse\PulseSector`, `Pulse\PulseUnderwriting`, `Underwriting\AcceptedExposure`, `Underwriting\ApplicationUnderwriting`, `Underwriting\BorrowerCreditFacts`, `Underwriting\CashFlowEvidence`, `Underwriting\EngineScorecard`, `Underwriting\ExactFinancialValue`, `Underwriting\FlatReturnPricing`, `Underwriting\LoanCapacity`, `Underwriting\LoanSchedule`, `Underwriting\UnderwritingObservationWindow`, `Underwriting\UnderwritingViolation`, `Wallet\AccountRestriction`, `Wallet\DepositOutcome`, `Wallet\DepositPolicyTerms`, `Wallet\JournalEntry`, `Wallet\JournalLine`, `Wallet\PrimaryPosting`, `Wallet\WalletBalance`, `Wallet\WalletMoney`, `Wallet\WalletViolation` |
-| Application | `app/Application` | 220 | `Auditor\AcceptAuditEngagementTerms`, `Auditor\AdvanceAuditAssignment`, `Auditor\AdvanceExpiredAuditOffers`, `Auditor\AmendAuditReport`, `Auditor\BuildAuditReportPreview`, `Auditor\ConfirmAuditStepUp`, `Auditor\Contracts\AuditAssignmentStore`, `Auditor\Contracts\AuditEngagementStore`, `Auditor\Contracts\AuditLedgerEvidence`, `Auditor\Contracts\AuditLedgerExtractionQueue`, `Auditor\Contracts\AuditLocationStore`, `Auditor\Contracts\AuditReportCryptography`, `Auditor\Contracts\AuditReportLifecycle`, `Auditor\Contracts\AuditReportPublicationStore`, `Auditor\Contracts\AuditReportStore`, `Auditor\Contracts\AuditSourceFactsStore`, `Auditor\Contracts\AuditStepUp`, `Auditor\Contracts\AuditorIndependenceStore`, `Auditor\Contracts\AuditorProfileStore`, `Auditor\Contracts\PublishedApplicationReport`, `Auditor\CosignAuditReport`, `Auditor\DecideAuditReport`, `Auditor\FindAuditAssignmentOperation`, `Auditor\FindAuditCosignOperation`, `Auditor\FindAuditEngagementOperation`, `Auditor\FindAuditReportOperation`, `Auditor\FindAuditResolutionOperation`, `Auditor\FindAuditorOperation`, `Auditor\GetAssignmentAuditReport`, `Auditor\GetAuditAssignment`, `Auditor\GetAuditEngagementSummary`, `Auditor\GetAuditEngagementTerms`, `Auditor\GetAuditLocation`, `Auditor\GetAuditOperationsCase`, `Auditor\GetAuditProcedure`, `Auditor\GetAuditProcedureSources`, `Auditor\GetAuditReport`, `Auditor\GetAuditSourceFacts`, `Auditor\GetAuditorAccreditation`, `Auditor\GetAuditorIndependence`, `Auditor\GetAuditorProfile`, `Auditor\GetBusinessAuditReport`, `Auditor\GetOwnAuditConflict`, `Auditor\IngestAuditLedger`, `Auditor\ListAuditJobs`, `Auditor\ListOwnAuditConflicts`, `Auditor\MarkAuditLocationMoved`, `Auditor\ProjectAuditAssignmentOperation`, `Auditor\ReadAuditLedger`, `Auditor\ReadAuditorCertificate`, `Auditor\RecordAuditEngagementTerms`, `Auditor\RecordAuditorIndependence`, `Auditor\RecordAuditorStanding`, `Auditor\RecordIsolatedAuditSourceFacts`, `Auditor\RequestAuditAssignment`, `Auditor\ResolveAuditAssignment`, `Auditor\RespondToAuditAssignment`, `Auditor\ReviewAuditPublication`, `Auditor\SaveAuditReportStep`, `Auditor\SealAuditReport`, `Auditor\SetAuditorAvailability`, `Auditor\StartAuditReport`, `Auditor\SubmitAuditorAccreditation`, `Auditor\VerifyAuditLocation`, `Auditor\VerifyAuditReportSeal`, `Auditor\WithAcceptedAuditAssignment`, `Auditor\WithCurrentAuditAssignment`, `Auditor\WithdrawAuditorAccreditation`, `Business\ConfigureBusinessAuthority`, `Business\Contracts\AcceptedApplicationStore`, `Business\Contracts\BusinessApplicationStore`, `Business\Contracts\BusinessAuthorityStore`, `Business\Contracts\BusinessCampaignStore`, `Business\Contracts\BusinessConnections`, `Business\Contracts\BusinessCreditFactsStore`, `Business\Contracts\BusinessExposureStore`, `Business\Contracts\CampaignClosureEvidence`, `Business\Contracts\PrimaryCampaignSource`, `Business\Contracts\PublishedCampaignEvidence`, `Business\Contracts\StaffApplicationQueue`, `Business\CreateBusinessApplication`, `Business\EvaluateBusinessApplication`, `Business\FindBusinessOperation`, `Business\GetAuditApplication`, `Business\GetBusinessApplication`, `Business\GetBusinessApplicationPage`, `Business\GetBusinessApplicationQuote`, `Business\GetBusinessApplicationReview`, `Business\GetCurrentBusinessApplication`, `Business\ListBusinessApplications`, `Business\ListStaffApplications`, `Business\ManageBusinessCampaigns`, `Business\ProjectBusinessApplicationOperation`, `Business\RecordIsolatedBusinessCreditFacts`, `Business\SaveBusinessApplication`, `Business\SubmitBusinessApplication`, `Business\WithAuditApplicationBinding`, `Business\WithBusinessAuthority`, `Business\WithBusinessReview`, `Disbursement\ClosingEvidence`, `Disbursement\Contracts\DisbursementClosingEvidence`, `Disbursement\Contracts\DisbursementStore`, `Disbursement\Contracts\FundedCampaigns`, `Disbursement\Contracts\PayoutDestinations`, `Disbursement\Contracts\PayoutProvider`, `Disbursement\Contracts\StaffConnections`, `Disbursement\Contracts\SyntheticDisbursementFixtures`, `Disbursement\Contracts\SyntheticPayoutScripts`, `Disbursement\DispatchDisbursements`, `Disbursement\FailedClosing`, `Disbursement\FundedCampaign`, `Disbursement\FundedCampaignRef`, `Disbursement\FundedCommitment`, `Disbursement\IssueInstruction`, `Disbursement\ManageDisbursements`, `Disbursement\OpenFundedDisbursements`, `Disbursement\PayoutInstruction`, `Disbursement\RecheckResult`, `Disbursement\ReconcileDisbursements`, `Disbursement\RecordPayoutEvent`, `Disbursement\SyntheticDisbursementGuard`, `Disbursement\VerifiedDestination`, `Disbursement\VerifiedPayoutEvent`, `Environment\Contracts\DemoFixtureStore`, `Environment\EnvironmentIsolation`, `Environment\ResetDemoFixtures`, `Evidence\Contracts\StatementExtractionQueue`, `Evidence\Contracts\StatementStore`, `Evidence\Contracts\StatementTextExtractor`, `Evidence\FindStatementOperation`, `Evidence\FindStatementVerificationOperation`, `Evidence\GetAuditStatementVerification`, `Evidence\GetAuditStatements`, `Evidence\GetAuditTranscription`, `Evidence\GetStatementEvidence`, `Evidence\GetStatementTranscription`, `Evidence\GetStatementVerification`, `Evidence\IngestStatement`, `Evidence\ReadAuditStatement`, `Evidence\ReadStatementOriginal`, `Evidence\RecordStatementTranscription`, `Evidence\RecordStatementVerification`, `Evidence\WithBusinessStatementVerification`, `Identity\AuthorizeActiveRole`, `Identity\AuthorizeEntityRole`, `Identity\AuthorizeStaffPermission`, `Identity\ChangeMembership`, `Identity\ConfigureIdentityOperator`, `Identity\ConfigureStaffAccess`, `Identity\Contracts\Authenticator`, `Identity\Contracts\ConsentCatalog`, `Identity\Contracts\IdentityAccessStore`, `Identity\Contracts\IdentityRepository`, `Identity\GetIdentityContext`, `Identity\GetRoleBookmark`, `Identity\GetStaffAccess`, `Identity\RecordConsentRelease`, `Identity\RecordStaffPerson`, `Identity\RegisterIdentity`, `Identity\ResolveVerifiedOrganization`, `Identity\ResolveVerifiedPerson`, `Identity\SaveRoleBookmark`, `Identity\SelectActiveRole`, `Identity\VerifyAuthenticator`, `Identity\WithCurrentConsent`, `Identity\WithVerifiedParties`, `Operations\Contracts\CanonicalJson`, `Operations\Contracts\ChangeFeed`, `Operations\Contracts\OperationJournal`, `Operations\Contracts\OperationRecords`, `Operations\ReadChanges`, `Primary\Contracts\CampaignCommitments`, `Primary\Contracts\CampaignFundingEvidence`, `Primary\Contracts\CampaignReservationSummary`, `Primary\Contracts\HoldingSource`, `Primary\Contracts\PrimaryAdmission`, `Primary\Contracts\PrimaryCheckout`, `Primary\Contracts\PrimaryCommitmentView`, `Primary\Contracts\PrimaryFunding`, `Primary\Contracts\PrimaryPurchaseIndex`, `Primary\Contracts\PrimaryReservations`, `Primary\ExpireReservations`, `Primary\GetInvestorCommitment`, `Primary\ManagePrimaryCheckout`, `Primary\PrimaryCampaignReturns`, `Primary\PrimaryFundingCandidate`, `Primary\ReservationConfirmation`, `Primary\ReservationRefund`, `Primary\ReservationRelease`, `Primary\ReservedCheckout`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor`, `Wallet\ApplyProviderOutcome`, `Wallet\CommittedCash`, `Wallet\Contracts\DepositProvider`, `Wallet\Contracts\PrimaryCashReceipts`, `Wallet\Contracts\PrimaryCommittedCash`, `Wallet\Contracts\PrimaryReturnedCash`, `Wallet\Contracts\SyntheticEventSigner`, `Wallet\Contracts\SyntheticWalletFixtures`, `Wallet\Contracts\WalletPostings`, `Wallet\Contracts\WalletStore`, `Wallet\DepositInstruction`, `Wallet\DispatchDepositIntents`, `Wallet\FindWalletOperation`, `Wallet\GetInvestorWallet`, `Wallet\LockedWallet`, `Wallet\PostingCause`, `Wallet\PostingReceipt`, `Wallet\PostingSource`, `Wallet\RecordDepositIntent`, `Wallet\ReturnedCash`, `Wallet\SyntheticWalletGuard`, `Wallet\VerifiedDepositEvent` |
-| Infrastructure | `app/Infrastructure` | 69 | `Auditor\EloquentAuditAssignmentStore`, `Auditor\EloquentAuditEngagementStore`, `Auditor\EloquentAuditLedgerEvidence`, `Auditor\EloquentAuditLedgerExtractionQueue`, `Auditor\EloquentAuditLocationStore`, `Auditor\EloquentAuditReportLifecycle`, `Auditor\EloquentAuditReportPublicationStore`, `Auditor\EloquentAuditReportStore`, `Auditor\EloquentAuditSourceFactsStore`, `Auditor\EloquentAuditStepUp`, `Auditor\EloquentAuditorIndependenceStore`, `Auditor\EloquentAuditorProfileStore`, `Auditor\JoseAuditReportCryptography`, `Business\EloquentBusinessApplicationStore`, `Business\EloquentBusinessAuthorityStore`, `Business\EloquentBusinessCampaignStore`, `Business\EloquentBusinessConnections`, `Business\EloquentBusinessCreditFactsStore`, `Business\EloquentBusinessExposureReservations`, `Business\EloquentPrimaryCampaignSource`, `Business\EloquentStaffApplicationQueue`, `Business\RetainedCampaignClosures`, `Business\RetainedCampaignPublication`, `Business\RetainedFundedCampaignFacts`, `Disbursement\EloquentDisbursementClosingEvidence`, `Disbursement\EloquentDisbursementStore`, `Disbursement\EloquentStaffConnections`, `Disbursement\SyntheticDisbursementSources`, `Disbursement\SyntheticPayoutProvider`, `Disbursement\UnavailableFundedCampaigns`, `Disbursement\UnavailablePayoutDestinations`, `Disbursement\UnavailablePayoutProvider`, `Environment\EloquentDemoFixtureStore`, `Evidence\EloquentStatementExtractionQueue`, `Evidence\EloquentStatementStore`, `Evidence\IsolatedStatementTextExtractor`, `Evidence\PdfAndCsvTextExtractor`, `Identity\EloquentConsentCatalog`, `Identity\EloquentIdentityAccessStore`, `Identity\EloquentIdentityRepository`, `Identity\FortifyAuthenticator`, `Operations\EloquentOperationJournal`, `Operations\EloquentOperationRecords`, `Operations\JcsCanonicalJson`, `Operations\PostgresChangeFeed`, `Primary\EloquentCampaignCommitments`, `Primary\EloquentCampaignReservationSummary`, `Primary\EloquentFundedCampaigns`, `Primary\EloquentPrimaryCheckout`, `Primary\EloquentPrimaryCommitmentView`, `Primary\EloquentPrimaryFunding`, `Primary\EloquentPrimaryPurchaseIndex`, `Primary\EloquentPrimaryReservations`, `Primary\RetainedFundedClosing`, `Primary\RetainedHeldClaimRelease`, `Primary\RetainedHoldingSource`, `Primary\RetainedPrimaryFunding`, `Primary\RetainedPrimaryReservation`, `Primary\UnavailablePrimaryAdmission`, `Pulse\EloquentPulseSignupRepository`, `Wallet\EloquentPrimaryCashReceipts`, `Wallet\EloquentPrimaryCommittedCash`, `Wallet\EloquentPrimaryReturnedCash`, `Wallet\EloquentSyntheticWalletFixtures`, `Wallet\EloquentWalletPostings`, `Wallet\EloquentWalletStore`, `Wallet\RetainedPrimaryIssueCash`, `Wallet\SyntheticDepositProvider`, `Wallet\UnavailableDepositProvider` |
-| HTTP — controllers | `app/Http/Controllers` | 35 | `Api\V1\AuditorEngagementController`, `Api\V1\AuditorJobsController`, `Api\V1\AuditorProcedureController`, `Api\V1\AuditorProfileController`, `Api\V1\BusinessApplicationController`, `Api\V1\BusinessAuditReportController`, `Api\V1\IdentityController`, `Api\V1\IdentityManagementController`, `Api\V1\RoleBookmarkController`, `Api\V1\StaffAccessController`, `AuditDisputeController`, `AuditOperationsController`, `AuditSealVerificationController`, `AuditorEngagementController`, `AuditorJobsController`, `AuditorProcedureController`, `AuditorProfileController`, `BusinessApplicationController`, `BusinessAuditReportController`, `BusinessPublicationController`, `ChangeFeedController`, `Controller`, `DashboardController`, `IdentityManagementController`, `InvestorPrimaryController`, `InvestorWalletController`, `PulseController`, `RoleBookmarkController`, `RoleHomeController`, `Settings\ProfileController`, `Settings\SecurityController`, `SiteController`, `StaffApplicationReleaseController`, `StaffDisbursementController`, `StaffHomeController` |
-| HTTP — requests | `app/Http/Requests` | 62 | `Auditor\AcceptEngagementTermsRequest`, `Auditor\AmendAuditReportRequest`, `Auditor\AuditorCommandRequest`, `Auditor\ConfirmAuditStepUpRequest`, `Auditor\DecideAuditReportRequest`, `Auditor\ListAuditJobsRequest`, `Auditor\ResolveAuditAssignmentRequest`, `Auditor\ResolveAuditDisputeRequest`, `Auditor\RespondToAssignmentRequest`, `Auditor\SaveAuditReportStepRequest`, `Auditor\SealAuditReportRequest`, `Auditor\ShowAuditReportOperationRequest`, `Auditor\ShowAuditReportRequest`, `Auditor\ShowAuditResolutionOperationRequest`, `Auditor\ShowAuditorOperationRequest`, `Auditor\StartAuditReportRequest`, `Auditor\SubmitAccreditationRequest`, `Auditor\UpdateAvailabilityRequest`, `Auditor\UpholdAuditDisputeRequest`, `Auditor\WithdrawAccreditationRequest`, `Business\BusinessCommandRequest`, `Business\CancelCampaignRequest`, `Business\CosignAuditReportRequest`, `Business\CreateApplicationRequest`, `Business\DisputeAuditReportRequest`, `Business\EvaluateApplicationRequest`, `Business\ListApplicationsRequest`, `Business\ListStaffApplicationsRequest`, `Business\PublishApplicationRequest`, `Business\ReleaseApplicationRequest`, `Business\SaveApplicationRequest`, `Business\ShowApplicationOperationRequest`, `Business\ShowApplicationRequest`, `Business\ShowAuditCosignOperationRequest`, `Business\ShowAuditReportRequest`, `Business\SubmitApplicationRequest`, `Disbursement\ConfirmDisbursementStepUpRequest`, `Disbursement\DisbursementCommandRequest`, `Disbursement\ListDisbursementsRequest`, `Disbursement\ShowDisbursementOperationRequest`, `Identity\ChangeMembershipRequest`, `Identity\RecordStaffPersonRequest`, `Identity\ResolvePersonRequest`, `Identity\SaveRoleBookmarkRequest`, `Identity\SelectActiveRoleRequest`, `Investor\DepositRequest`, `Investor\PrimaryCommandRequest`, `Investor\ShowCommitmentRequest`, `Investor\ShowPrimaryOperationRequest`, `Investor\ShowWalletOperationRequest`, `Investor\ShowWalletRequest`, `Operations\ListChangesRequest`, `Pulse\PreviewBusinessRequest`, `Pulse\PreviewInvestorRequest`, `Pulse\StoreBusinessSignupRequest`, `Pulse\StoreInvestorPledgeRequest`, `Settings\PasswordUpdateRequest`, `Settings\ProfileDeleteRequest`, `Settings\ProfileUpdateRequest`, `Settings\TwoFactorAuthenticationRequest`, `Site\StoreSiteBusinessRequest`, `Site\StoreSiteInvestorRequest` |
-| HTTP — resources | `app/Http/Resources` | 33 | `AuditDisputeResource`, `AuditOperationsResource`, `AuditorAccreditationResource`, `AuditorConflictsResource`, `AuditorEngagementResource`, `AuditorEngagementSummaryResource`, `AuditorFileResource`, `AuditorJobsResource`, `AuditorProcedureResource`, `AuditorProfileResource`, `BusinessApplicationResource`, `BusinessApplicationsResource`, `BusinessAuditReportResource`, `BusinessCampaignResource`, `BusinessPublicationResource`, `ChangeFeedResource`, `IdentityContextResource`, `IdentityMutationResource`, `InvestorCommitmentResource`, `InvestorWalletResource`, `OperationResource`, `PulseBusinessPreviewResource`, `PulseBusinessSignupReceiptResource`, `PulseInvestorPreviewResource`, `PulseInvestorSignupReceiptResource`, `PulseListingResource`, `PulsePageResource`, `PulsePolicyResource`, `RoleBookmarkResource`, `StaffAccessResource`, `StaffApplicationReleaseResource`, `StaffApplicationsResource`, `StaffDisbursementsResource` |
+| Application | `app/Application` | 230 | `Auditor\AcceptAuditEngagementTerms`, `Auditor\AdvanceAuditAssignment`, `Auditor\AdvanceExpiredAuditOffers`, `Auditor\AmendAuditReport`, `Auditor\BuildAuditReportPreview`, `Auditor\ConfirmAuditStepUp`, `Auditor\Contracts\AuditAssignmentStore`, `Auditor\Contracts\AuditEngagementStore`, `Auditor\Contracts\AuditLedgerEvidence`, `Auditor\Contracts\AuditLedgerExtractionQueue`, `Auditor\Contracts\AuditLocationStore`, `Auditor\Contracts\AuditReportCryptography`, `Auditor\Contracts\AuditReportLifecycle`, `Auditor\Contracts\AuditReportPublicationStore`, `Auditor\Contracts\AuditReportStore`, `Auditor\Contracts\AuditSourceFactsStore`, `Auditor\Contracts\AuditStepUp`, `Auditor\Contracts\AuditorIndependenceStore`, `Auditor\Contracts\AuditorProfileStore`, `Auditor\Contracts\PublishedApplicationReport`, `Auditor\CosignAuditReport`, `Auditor\DecideAuditReport`, `Auditor\FindAuditAssignmentOperation`, `Auditor\FindAuditCosignOperation`, `Auditor\FindAuditEngagementOperation`, `Auditor\FindAuditReportOperation`, `Auditor\FindAuditResolutionOperation`, `Auditor\FindAuditorOperation`, `Auditor\GetAssignmentAuditReport`, `Auditor\GetAuditAssignment`, `Auditor\GetAuditEngagementSummary`, `Auditor\GetAuditEngagementTerms`, `Auditor\GetAuditLocation`, `Auditor\GetAuditOperationsCase`, `Auditor\GetAuditProcedure`, `Auditor\GetAuditProcedureSources`, `Auditor\GetAuditReport`, `Auditor\GetAuditSourceFacts`, `Auditor\GetAuditorAccreditation`, `Auditor\GetAuditorIndependence`, `Auditor\GetAuditorProfile`, `Auditor\GetBusinessAuditReport`, `Auditor\GetOwnAuditConflict`, `Auditor\IngestAuditLedger`, `Auditor\ListAuditJobs`, `Auditor\ListOwnAuditConflicts`, `Auditor\MarkAuditLocationMoved`, `Auditor\ProjectAuditAssignmentOperation`, `Auditor\ReadAuditLedger`, `Auditor\ReadAuditorCertificate`, `Auditor\RecordAuditEngagementTerms`, `Auditor\RecordAuditorIndependence`, `Auditor\RecordAuditorStanding`, `Auditor\RecordIsolatedAuditSourceFacts`, `Auditor\RequestAuditAssignment`, `Auditor\ResolveAuditAssignment`, `Auditor\RespondToAuditAssignment`, `Auditor\ReviewAuditPublication`, `Auditor\SaveAuditReportStep`, `Auditor\SealAuditReport`, `Auditor\SetAuditorAvailability`, `Auditor\StartAuditReport`, `Auditor\SubmitAuditorAccreditation`, `Auditor\VerifyAuditLocation`, `Auditor\VerifyAuditReportSeal`, `Auditor\WithAcceptedAuditAssignment`, `Auditor\WithCurrentAuditAssignment`, `Auditor\WithdrawAuditorAccreditation`, `Business\ConfigureBusinessAuthority`, `Business\Contracts\AcceptedApplicationStore`, `Business\Contracts\BusinessApplicationStore`, `Business\Contracts\BusinessAuthorityStore`, `Business\Contracts\BusinessCampaignStore`, `Business\Contracts\BusinessConnections`, `Business\Contracts\BusinessCreditFactsStore`, `Business\Contracts\BusinessExposureStore`, `Business\Contracts\CampaignClosureEvidence`, `Business\Contracts\NoteServicing`, `Business\Contracts\PrimaryCampaignSource`, `Business\Contracts\PublishedCampaignEvidence`, `Business\Contracts\StaffApplicationQueue`, `Business\CreateBusinessApplication`, `Business\EvaluateBusinessApplication`, `Business\FindBusinessOperation`, `Business\GetAuditApplication`, `Business\GetBusinessApplication`, `Business\GetBusinessApplicationPage`, `Business\GetBusinessApplicationQuote`, `Business\GetBusinessApplicationReview`, `Business\GetCurrentBusinessApplication`, `Business\ListBusinessApplications`, `Business\ListStaffApplications`, `Business\ManageBusinessCampaigns`, `Business\ProjectBusinessApplicationOperation`, `Business\RecordIsolatedBusinessCreditFacts`, `Business\SaveBusinessApplication`, `Business\ServicingQuote`, `Business\SubmitBusinessApplication`, `Business\WithAuditApplicationBinding`, `Business\WithBusinessAuthority`, `Business\WithBusinessReview`, `Disbursement\ClosingEvidence`, `Disbursement\Contracts\DisbursementClosingEvidence`, `Disbursement\Contracts\DisbursementStore`, `Disbursement\Contracts\FundedCampaigns`, `Disbursement\Contracts\PayoutDestinations`, `Disbursement\Contracts\PayoutProvider`, `Disbursement\Contracts\StaffConnections`, `Disbursement\Contracts\SyntheticDisbursementFixtures`, `Disbursement\Contracts\SyntheticPayoutScripts`, `Disbursement\DispatchDisbursements`, `Disbursement\FailedClosing`, `Disbursement\FundedCampaign`, `Disbursement\FundedCampaignRef`, `Disbursement\FundedCommitment`, `Disbursement\IssueInstruction`, `Disbursement\ManageDisbursements`, `Disbursement\OpenFundedDisbursements`, `Disbursement\PayoutInstruction`, `Disbursement\RecheckResult`, `Disbursement\ReconcileDisbursements`, `Disbursement\RecordPayoutEvent`, `Disbursement\SyntheticDisbursementGuard`, `Disbursement\VerifiedDestination`, `Disbursement\VerifiedPayoutEvent`, `Environment\Contracts\DemoFixtureStore`, `Environment\EnvironmentIsolation`, `Environment\ResetDemoFixtures`, `Evidence\Contracts\StatementExtractionQueue`, `Evidence\Contracts\StatementStore`, `Evidence\Contracts\StatementTextExtractor`, `Evidence\FindStatementOperation`, `Evidence\FindStatementVerificationOperation`, `Evidence\GetAuditStatementVerification`, `Evidence\GetAuditStatements`, `Evidence\GetAuditTranscription`, `Evidence\GetStatementEvidence`, `Evidence\GetStatementTranscription`, `Evidence\GetStatementVerification`, `Evidence\IngestStatement`, `Evidence\ReadAuditStatement`, `Evidence\ReadStatementOriginal`, `Evidence\RecordStatementTranscription`, `Evidence\RecordStatementVerification`, `Evidence\WithBusinessStatementVerification`, `Identity\AuthorizeActiveRole`, `Identity\AuthorizeEntityRole`, `Identity\AuthorizeStaffPermission`, `Identity\ChangeMembership`, `Identity\ConfigureIdentityOperator`, `Identity\ConfigureStaffAccess`, `Identity\Contracts\Authenticator`, `Identity\Contracts\ConsentCatalog`, `Identity\Contracts\IdentityAccessStore`, `Identity\Contracts\IdentityRepository`, `Identity\GetIdentityContext`, `Identity\GetRoleBookmark`, `Identity\GetStaffAccess`, `Identity\RecordConsentRelease`, `Identity\RecordStaffPerson`, `Identity\RegisterIdentity`, `Identity\ResolveVerifiedOrganization`, `Identity\ResolveVerifiedPerson`, `Identity\SaveRoleBookmark`, `Identity\SelectActiveRole`, `Identity\VerifyAuthenticator`, `Identity\WithCurrentConsent`, `Identity\WithVerifiedParties`, `Operations\Contracts\CanonicalJson`, `Operations\Contracts\ChangeFeed`, `Operations\Contracts\OperationJournal`, `Operations\Contracts\OperationRecords`, `Operations\ReadChanges`, `Primary\Contracts\CampaignCommitments`, `Primary\Contracts\CampaignFundingEvidence`, `Primary\Contracts\CampaignReservationSummary`, `Primary\Contracts\HoldingSource`, `Primary\Contracts\PrimaryAdmission`, `Primary\Contracts\PrimaryCheckout`, `Primary\Contracts\PrimaryCommitmentView`, `Primary\Contracts\PrimaryFunding`, `Primary\Contracts\PrimaryPurchaseIndex`, `Primary\Contracts\PrimaryReservations`, `Primary\ExpireReservations`, `Primary\GetInvestorCommitment`, `Primary\ManagePrimaryCheckout`, `Primary\PrimaryCampaignReturns`, `Primary\PrimaryFundingCandidate`, `Primary\ReservationConfirmation`, `Primary\ReservationRefund`, `Primary\ReservationRelease`, `Primary\ReservedCheckout`, `Pulse\Contracts\PulseSignupRepository`, `Pulse\GetPulsePage`, `Pulse\PreviewPulseBusiness`, `Pulse\PreviewPulseInvestor`, `Pulse\RegisterPulseBusiness`, `Pulse\RegisterPulseInvestor`, `Pulse\RegisterSiteBusiness`, `Pulse\RegisterSiteInvestor`, `Wallet\ApplyBusinessProviderOutcome`, `Wallet\ApplyProviderOutcome`, `Wallet\CommittedCash`, `Wallet\Contracts\BusinessWalletStore`, `Wallet\Contracts\DepositProvider`, `Wallet\Contracts\PrimaryCashReceipts`, `Wallet\Contracts\PrimaryCommittedCash`, `Wallet\Contracts\PrimaryReturnedCash`, `Wallet\Contracts\SyntheticEventSigner`, `Wallet\Contracts\SyntheticWalletFixtures`, `Wallet\Contracts\WalletPostings`, `Wallet\Contracts\WalletStore`, `Wallet\DepositInstruction`, `Wallet\DispatchBusinessDeposits`, `Wallet\DispatchDepositIntents`, `Wallet\FindBusinessRepaymentOperation`, `Wallet\FindBusinessWalletOperation`, `Wallet\FindWalletOperation`, `Wallet\GetBusinessWallet`, `Wallet\GetInvestorWallet`, `Wallet\LockedWallet`, `Wallet\PayBusinessRepayment`, `Wallet\PostingCause`, `Wallet\PostingReceipt`, `Wallet\PostingSource`, `Wallet\RecordBusinessDeposit`, `Wallet\RecordDepositIntent`, `Wallet\ReturnedCash`, `Wallet\SyntheticWalletGuard`, `Wallet\VerifiedDepositEvent` |
+| Infrastructure | `app/Infrastructure` | 71 | `Auditor\EloquentAuditAssignmentStore`, `Auditor\EloquentAuditEngagementStore`, `Auditor\EloquentAuditLedgerEvidence`, `Auditor\EloquentAuditLedgerExtractionQueue`, `Auditor\EloquentAuditLocationStore`, `Auditor\EloquentAuditReportLifecycle`, `Auditor\EloquentAuditReportPublicationStore`, `Auditor\EloquentAuditReportStore`, `Auditor\EloquentAuditSourceFactsStore`, `Auditor\EloquentAuditStepUp`, `Auditor\EloquentAuditorIndependenceStore`, `Auditor\EloquentAuditorProfileStore`, `Auditor\JoseAuditReportCryptography`, `Business\EloquentBusinessApplicationStore`, `Business\EloquentBusinessAuthorityStore`, `Business\EloquentBusinessCampaignStore`, `Business\EloquentBusinessConnections`, `Business\EloquentBusinessCreditFactsStore`, `Business\EloquentBusinessExposureReservations`, `Business\EloquentPrimaryCampaignSource`, `Business\EloquentStaffApplicationQueue`, `Business\RetainedCampaignClosures`, `Business\RetainedCampaignPublication`, `Business\RetainedFundedCampaignFacts`, `Business\UnavailableNoteServicing`, `Disbursement\EloquentDisbursementClosingEvidence`, `Disbursement\EloquentDisbursementStore`, `Disbursement\EloquentStaffConnections`, `Disbursement\SyntheticDisbursementSources`, `Disbursement\SyntheticPayoutProvider`, `Disbursement\UnavailableFundedCampaigns`, `Disbursement\UnavailablePayoutDestinations`, `Disbursement\UnavailablePayoutProvider`, `Environment\EloquentDemoFixtureStore`, `Evidence\EloquentStatementExtractionQueue`, `Evidence\EloquentStatementStore`, `Evidence\IsolatedStatementTextExtractor`, `Evidence\PdfAndCsvTextExtractor`, `Identity\EloquentConsentCatalog`, `Identity\EloquentIdentityAccessStore`, `Identity\EloquentIdentityRepository`, `Identity\FortifyAuthenticator`, `Operations\EloquentOperationJournal`, `Operations\EloquentOperationRecords`, `Operations\JcsCanonicalJson`, `Operations\PostgresChangeFeed`, `Primary\EloquentCampaignCommitments`, `Primary\EloquentCampaignReservationSummary`, `Primary\EloquentFundedCampaigns`, `Primary\EloquentPrimaryCheckout`, `Primary\EloquentPrimaryCommitmentView`, `Primary\EloquentPrimaryFunding`, `Primary\EloquentPrimaryPurchaseIndex`, `Primary\EloquentPrimaryReservations`, `Primary\RetainedFundedClosing`, `Primary\RetainedHeldClaimRelease`, `Primary\RetainedHoldingSource`, `Primary\RetainedPrimaryFunding`, `Primary\RetainedPrimaryReservation`, `Primary\UnavailablePrimaryAdmission`, `Pulse\EloquentPulseSignupRepository`, `Wallet\EloquentBusinessWalletStore`, `Wallet\EloquentPrimaryCashReceipts`, `Wallet\EloquentPrimaryCommittedCash`, `Wallet\EloquentPrimaryReturnedCash`, `Wallet\EloquentSyntheticWalletFixtures`, `Wallet\EloquentWalletPostings`, `Wallet\EloquentWalletStore`, `Wallet\RetainedPrimaryIssueCash`, `Wallet\SyntheticDepositProvider`, `Wallet\UnavailableDepositProvider` |
+| HTTP — controllers | `app/Http/Controllers` | 37 | `Api\V1\AuditorEngagementController`, `Api\V1\AuditorJobsController`, `Api\V1\AuditorProcedureController`, `Api\V1\AuditorProfileController`, `Api\V1\BusinessApplicationController`, `Api\V1\BusinessAuditReportController`, `Api\V1\IdentityController`, `Api\V1\IdentityManagementController`, `Api\V1\RoleBookmarkController`, `Api\V1\StaffAccessController`, `AuditDisputeController`, `AuditOperationsController`, `AuditSealVerificationController`, `AuditorEngagementController`, `AuditorJobsController`, `AuditorProcedureController`, `AuditorProfileController`, `BusinessApplicationController`, `BusinessAuditReportController`, `BusinessPublicationController`, `BusinessRepaymentController`, `BusinessWalletController`, `ChangeFeedController`, `Controller`, `DashboardController`, `IdentityManagementController`, `InvestorPrimaryController`, `InvestorWalletController`, `PulseController`, `RoleBookmarkController`, `RoleHomeController`, `Settings\ProfileController`, `Settings\SecurityController`, `SiteController`, `StaffApplicationReleaseController`, `StaffDisbursementController`, `StaffHomeController` |
+| HTTP — requests | `app/Http/Requests` | 66 | `Auditor\AcceptEngagementTermsRequest`, `Auditor\AmendAuditReportRequest`, `Auditor\AuditorCommandRequest`, `Auditor\ConfirmAuditStepUpRequest`, `Auditor\DecideAuditReportRequest`, `Auditor\ListAuditJobsRequest`, `Auditor\ResolveAuditAssignmentRequest`, `Auditor\ResolveAuditDisputeRequest`, `Auditor\RespondToAssignmentRequest`, `Auditor\SaveAuditReportStepRequest`, `Auditor\SealAuditReportRequest`, `Auditor\ShowAuditReportOperationRequest`, `Auditor\ShowAuditReportRequest`, `Auditor\ShowAuditResolutionOperationRequest`, `Auditor\ShowAuditorOperationRequest`, `Auditor\StartAuditReportRequest`, `Auditor\SubmitAccreditationRequest`, `Auditor\UpdateAvailabilityRequest`, `Auditor\UpholdAuditDisputeRequest`, `Auditor\WithdrawAccreditationRequest`, `Business\BusinessCommandRequest`, `Business\BusinessDepositRequest`, `Business\CancelCampaignRequest`, `Business\CosignAuditReportRequest`, `Business\CreateApplicationRequest`, `Business\DisputeAuditReportRequest`, `Business\EvaluateApplicationRequest`, `Business\ListApplicationsRequest`, `Business\ListStaffApplicationsRequest`, `Business\PayRepaymentRequest`, `Business\PublishApplicationRequest`, `Business\ReleaseApplicationRequest`, `Business\SaveApplicationRequest`, `Business\ShowApplicationOperationRequest`, `Business\ShowApplicationRequest`, `Business\ShowAuditCosignOperationRequest`, `Business\ShowAuditReportRequest`, `Business\ShowBusinessWalletOperationRequest`, `Business\ShowBusinessWalletRequest`, `Business\SubmitApplicationRequest`, `Disbursement\ConfirmDisbursementStepUpRequest`, `Disbursement\DisbursementCommandRequest`, `Disbursement\ListDisbursementsRequest`, `Disbursement\ShowDisbursementOperationRequest`, `Identity\ChangeMembershipRequest`, `Identity\RecordStaffPersonRequest`, `Identity\ResolvePersonRequest`, `Identity\SaveRoleBookmarkRequest`, `Identity\SelectActiveRoleRequest`, `Investor\DepositRequest`, `Investor\PrimaryCommandRequest`, `Investor\ShowCommitmentRequest`, `Investor\ShowPrimaryOperationRequest`, `Investor\ShowWalletOperationRequest`, `Investor\ShowWalletRequest`, `Operations\ListChangesRequest`, `Pulse\PreviewBusinessRequest`, `Pulse\PreviewInvestorRequest`, `Pulse\StoreBusinessSignupRequest`, `Pulse\StoreInvestorPledgeRequest`, `Settings\PasswordUpdateRequest`, `Settings\ProfileDeleteRequest`, `Settings\ProfileUpdateRequest`, `Settings\TwoFactorAuthenticationRequest`, `Site\StoreSiteBusinessRequest`, `Site\StoreSiteInvestorRequest` |
+| HTTP — resources | `app/Http/Resources` | 34 | `AuditDisputeResource`, `AuditOperationsResource`, `AuditorAccreditationResource`, `AuditorConflictsResource`, `AuditorEngagementResource`, `AuditorEngagementSummaryResource`, `AuditorFileResource`, `AuditorJobsResource`, `AuditorProcedureResource`, `AuditorProfileResource`, `BusinessApplicationResource`, `BusinessApplicationsResource`, `BusinessAuditReportResource`, `BusinessCampaignResource`, `BusinessPublicationResource`, `BusinessWalletResource`, `ChangeFeedResource`, `IdentityContextResource`, `IdentityMutationResource`, `InvestorCommitmentResource`, `InvestorWalletResource`, `OperationResource`, `PulseBusinessPreviewResource`, `PulseBusinessSignupReceiptResource`, `PulseInvestorPreviewResource`, `PulseInvestorSignupReceiptResource`, `PulseListingResource`, `PulsePageResource`, `PulsePolicyResource`, `RoleBookmarkResource`, `StaffAccessResource`, `StaffApplicationReleaseResource`, `StaffApplicationsResource`, `StaffDisbursementsResource` |
 | HTTP — middleware | `app/Http/Middleware` | 3 | `HandleAppearance`, `HandleInertiaRequests`, `SetLocale` |
-| Models | `app/Models` | 82 | `AuditAssignment`, `AuditAssignmentVersion`, `AuditConflictDeclaration`, `AuditDisputeProof`, `AuditEngagementAcceptance`, `AuditEngagementRelease`, `AuditLedgerExtraction`, `AuditLedgerOriginal`, `AuditLocation`, `AuditLocationVersion`, `AuditPublicationEvent`, `AuditReport`, `AuditReportPublication`, `AuditReportSeal`, `AuditReportSignature`, `AuditReportVersion`, `AuditSigningKey`, `AuditSigningKeyRevocation`, `AuditSourceSnapshot`, `AuditStepUpProof`, `AuditorCertificate`, `AuditorIndependenceReview`, `AuditorIndependenceVersion`, `AuditorProfile`, `AuditorProfileVersion`, `BusinessApplication`, `BusinessApplicationQuote`, `BusinessApplicationRelease`, `BusinessApplicationSignature`, `BusinessApplicationSubmission`, `BusinessApplicationVersion`, `BusinessCampaign`, `BusinessCampaignClosure`, `BusinessCreditSnapshot`, `BusinessExposureReservation`, `BusinessMandate`, `BusinessProfile`, `CommandOperation`, `ConsentRelease`, `DepositPolicy`, `Disbursement`, `DisbursementClosing`, `DisbursementDispatch`, `DisbursementEvent`, `DisbursementIndependenceDeclaration`, `DisbursementIntent`, `DisbursementProviderCall`, `DisbursementProviderEvent`, `DisbursementReconciliation`, `DisbursementStepUpMarker`, `DisbursementStepUpProof`, `IdentityAuditEvent`, `IdentityOperator`, `InvestorAccountRestriction`, `InvestorFundingMethod`, `InvestorWallet`, `LedgerAccount`, `LedgerEntry`, `LedgerLine`, `Party`, `PrimaryCampaignFunding`, `PrimaryCommitment`, `PrimaryHolding`, `PrimaryReservationRecord`, `PrimaryReservationVersion`, `PulseSignup`, `RoleBookmark`, `RoleMembership`, `StaffAccount`, `StaffPersonIdentity`, `StatementEvidence`, `StatementExtraction`, `StatementOriginal`, `StatementTranscription`, `StatementVerification`, `User`, `VerifiedOrganizationIdentity`, `VerifiedPersonIdentity`, `WalletDepositCredit`, `WalletDepositDispatch`, `WalletDepositIntent`, `WalletProviderEvent` |
+| Models | `app/Models` | 89 | `AuditAssignment`, `AuditAssignmentVersion`, `AuditConflictDeclaration`, `AuditDisputeProof`, `AuditEngagementAcceptance`, `AuditEngagementRelease`, `AuditLedgerExtraction`, `AuditLedgerOriginal`, `AuditLocation`, `AuditLocationVersion`, `AuditPublicationEvent`, `AuditReport`, `AuditReportPublication`, `AuditReportSeal`, `AuditReportSignature`, `AuditReportVersion`, `AuditSigningKey`, `AuditSigningKeyRevocation`, `AuditSourceSnapshot`, `AuditStepUpProof`, `AuditorCertificate`, `AuditorIndependenceReview`, `AuditorIndependenceVersion`, `AuditorProfile`, `AuditorProfileVersion`, `BusinessApplication`, `BusinessApplicationQuote`, `BusinessApplicationRelease`, `BusinessApplicationSignature`, `BusinessApplicationSubmission`, `BusinessApplicationVersion`, `BusinessCampaign`, `BusinessCampaignClosure`, `BusinessCreditSnapshot`, `BusinessDepositCredit`, `BusinessDepositDispatch`, `BusinessDepositIntent`, `BusinessExposureReservation`, `BusinessFundingMethod`, `BusinessMandate`, `BusinessProfile`, `BusinessProviderEvent`, `BusinessRepayment`, `BusinessWallet`, `CommandOperation`, `ConsentRelease`, `DepositPolicy`, `Disbursement`, `DisbursementClosing`, `DisbursementDispatch`, `DisbursementEvent`, `DisbursementIndependenceDeclaration`, `DisbursementIntent`, `DisbursementProviderCall`, `DisbursementProviderEvent`, `DisbursementReconciliation`, `DisbursementStepUpMarker`, `DisbursementStepUpProof`, `IdentityAuditEvent`, `IdentityOperator`, `InvestorAccountRestriction`, `InvestorFundingMethod`, `InvestorWallet`, `LedgerAccount`, `LedgerEntry`, `LedgerLine`, `Party`, `PrimaryCampaignFunding`, `PrimaryCommitment`, `PrimaryHolding`, `PrimaryReservationRecord`, `PrimaryReservationVersion`, `PulseSignup`, `RoleBookmark`, `RoleMembership`, `StaffAccount`, `StaffPersonIdentity`, `StatementEvidence`, `StatementExtraction`, `StatementOriginal`, `StatementTranscription`, `StatementVerification`, `User`, `VerifiedOrganizationIdentity`, `VerifiedPersonIdentity`, `WalletDepositCredit`, `WalletDepositDispatch`, `WalletDepositIntent`, `WalletProviderEvent` |
 | Console commands | `app/Console/Commands` | 18 | `AdvanceAuditOffers`, `AdvanceMonthlyReviews`, `CaptureBaselineInventory`, `CheckEnvironmentIsolation`, `ConfigureIdentityOperatorCommand`, `ConfigureStaffAccessCommand`, `DispatchDisbursementPayouts`, `DispatchWalletDeposits`, `ExpireBusinessCampaigns`, `ExpirePrimaryReservations`, `ExtractPendingStatements`, `PrepareCheckpointTwo`, `PrepareSyntheticDisbursement`, `PrepareSyntheticWallet`, `PruneChangeFeed`, `ReconcileDisbursementPayouts`, `RecordAuditEngagementTermsCommand`, `ResetDemo` |
 
 ## CI gates
