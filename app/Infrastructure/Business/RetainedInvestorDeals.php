@@ -20,6 +20,8 @@ use RuntimeException;
  * the business name, industry and district, the published rating, the immutable accepted draft's
  * story and use of funds, average monthly revenue and the publication's own economics. No
  * address, company code, officer, statement, raw evidence or Auditor original is ever read out.
+ * An open raise keeps its own lifecycle: `funded` needs the retained funding lock, and a full or
+ * elapsed raise without one stays pending settlement rather than borrowing a settled state.
  */
 final class RetainedInvestorDeals implements InvestorDealCatalogue
 {
@@ -28,9 +30,6 @@ final class RetainedInvestorDeals implements InvestorDealCatalogue
     private const int JUST_LISTED_HOURS = 72;
 
     private const array ACCENTS = ['green', 'blue', 'amber', 'purple', 'teal', 'magenta', 'ink'];
-
-    private const array LIFECYCLES = ['live' => 'live', 'fully_reserved' => 'fully_reserved', 'inventory_unavailable' => 'fully_reserved',
-        'sold_out_pending_settlement' => 'funded', 'closing_pending_settlement' => 'expired'];
 
     public function __construct(private PublishedCampaignEvidence $publications, private CampaignClosureEvidence $closures,
         private CampaignProgress $progress, private CanonicalJson $json) {}
@@ -81,7 +80,7 @@ final class RetainedInvestorDeals implements InvestorDealCatalogue
             'units' => $funded ? ['total' => $total, 'available' => '0', 'reserved' => '0', 'committed' => $total]
                 : ['total' => $total, 'available' => $progress['units']['available'], 'reserved' => $progress['units']['reserved'], 'committed' => $progress['units']['committed']],
             'unit_price' => $payload['quote']['unit_price'], 'investors' => $progress['investors'],
-            'lifecycle' => $funded ? 'funded' : self::LIFECYCLES[$progress['lifecycle']], 'restriction' => null,
+            'lifecycle' => $funded ? 'funded' : $progress['lifecycle'], 'restriction' => null,
             'clock' => ['starts_at' => $payload['recorded_at'], 'expires_at' => $payload['expires_at']],
             'listing_fee' => $payload['listing_fee'], 'story' => $draft['story'],
             'rate_pct' => $payload['quote']['rate_pct'], 'term_months' => $payload['quote']['term_months']];

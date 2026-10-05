@@ -1001,6 +1001,46 @@ describe('Deals in every closed lifecycle', () => {
     );
 });
 
+describe('An open raise awaiting settlement', () => {
+    it.each([
+        [
+            'sold_out_pending_settlement',
+            'Every note is committed',
+            'Fully committed',
+            false,
+        ],
+        [
+            'inventory_unavailable',
+            'No notes are available right now',
+            'No notes available',
+            true,
+        ],
+        [
+            'closing_pending_settlement',
+            'This raise has closed',
+            'Closing',
+            false,
+        ],
+    ] as const)(
+        'names a %s raise without claiming it was funded or refunded',
+        (lifecycle, title, label, counting) => {
+            const props = deal();
+            props.deal.lifecycle = lifecycle;
+            render(<InvestorDeal {...props} />);
+
+            expect(screen.getByRole('status')).toHaveTextContent(title);
+            expect(screen.getByRole('status')).not.toHaveTextContent(
+                /refunded|Fully funded/u,
+            );
+            expect(screen.getByRole('button', { name: label })).toBeDisabled();
+            expect(
+                screen.queryAllByText(/^\d+ days?$|^\d\d:\d\d:\d\d$/u).length >
+                    0,
+            ).toBe(counting);
+        },
+    );
+});
+
 describe('A failed closing', () => {
     it('names no cause, since a failed check and a verified, reconciled payout failure both end here', () => {
         render(<InvestorDeal {...deal(failedClosingFixture)} />);

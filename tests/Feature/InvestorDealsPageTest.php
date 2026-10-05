@@ -118,10 +118,29 @@ it('shows a funded publication as funded and fully committed', function (): void
         'units' => ['total' => $total, 'available' => '0', 'reserved' => '0', 'committed' => $total]]);
 });
 
-it('maps an elapsed unclosed publication to expired', function (): void {
+it('keeps an elapsed raise without recorded refunds as closing, not expired', function (): void {
     $this->travelTo($this->campaign->expires_at);
 
-    expect(($this->deals)()->viewData('page')['props']['deals'][0]['lifecycle'])->toBe('expired');
+    expect(($this->deals)()->viewData('page')['props']['deals'][0]['lifecycle'])->toBe('closing_pending_settlement');
+});
+
+it('keeps a fully committed raise without a funding lock pending settlement, not funded', function (): void {
+    $checkout = app(PrimaryCheckout::class);
+    $half = (string) intdiv((int) $this->campaign->payload['quote']['units'], 2);
+    foreach ([$this->investor, PrimaryReservationFixture::investor()] as $investor) {
+        $request = (string) Str::uuid();
+        $checkout->reserve($investor['user']->id, 1, $this->campaign->id, $half, $request, PrimaryReservationFixture::terms(...));
+        $root = PrimaryReservationRecord::query()->where('party_id', $investor['party']->id)->sole();
+        $initial = PrimaryReservationVersion::query()->where('primary_reservation_id', $root->id)->sole()->payload;
+        $checkout->confirm($investor['user']->id, 1, $this->campaign->id, $root->id, 1, $initial['terms']['disclosure_version'],
+            $initial['disclosure_sha256'], (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+    }
+    $card = ($this->deals)()->viewData('page')['props']['deals'][0];
+
+    expect(app(CampaignFundingEvidence::class)->find($this->campaign->id))->toBeNull()
+        ->and($card)->toMatchArray(['lifecycle' => 'sold_out_pending_settlement', 'funded_pct' => '100.0', 'investors' => 2,
+            'raised' => ['currency' => 'RWF', 'amount' => $this->campaign->payload['principal']], 'left_to_fill' => ['currency' => 'RWF', 'amount' => '0']])
+        ->and($card['units'])->toMatchArray(['available' => '0', 'reserved' => '0']);
 });
 
 it('opens one deal with its deck, and refuses one that is unknown or closed', function (): void {
