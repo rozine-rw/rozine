@@ -1,6 +1,6 @@
 # GitHub Projects setup for each operator
 
-The private [Rozine Delivery board](https://github.com/orgs/rozine-rw/projects/1) is configured and linked to `rozine-rw/rozine`; see [shared coordination instructions](agent-coordination.md) for verified fields, views and three pilot PR cards. Delivery grouping by Status still awaits UI verification. This PR installs no MCP connection and contains no credentials.
+The private [Rozine Delivery board](https://github.com/orgs/rozine-rw/projects/1) is configured and linked to `rozine-rw/rozine`; see [shared coordination instructions](agent-coordination.md) for verified fields, views and three pilot PR cards. The Delivery board is verified as grouped by Status, showing two Review cards and one Blocked card. This PR installs no MCP connection and contains no credentials.
 
 ## Codex operator
 
@@ -24,7 +24,7 @@ Use the [official server configuration guide](https://github.com/github/github-m
 
 ## Complete each environment's access check
 
-Reuse the existing private board; do not create another. The authorized Mac worker has verified its URL, private/open state, repository link, fields, views and exactly three PR cards: #219 Review, #220 Review and #177 Blocked. The remaining board presentation step is to verify Delivery grouping by Status in the UI. No assignments or priorities have been selected.
+Reuse the existing private board; do not create another. The authorized Mac worker has verified its URL, private/open state, repository link, fields, views and exactly three PR cards: #219 Review, #220 Review and #177 Blocked. Delivery uses `BOARD_LAYOUT` and its verified `verticalGroupByFields` is Status; board display setup is complete. No assignments or priorities have been selected.
 
 The operator-approved personal `gh` Projects scope on the Mac is separate from both agents' MCP connections and the cloud connector. No credentials were copied between environments. Before an agent reads or updates the board, its operator must verify that environment's connection and authorization. If access is unavailable, report the blocker and continue authorized work through the existing task issues and PRs; do not retry denied writes, switch credentials, or change permissions on the agent's own initiative.
 

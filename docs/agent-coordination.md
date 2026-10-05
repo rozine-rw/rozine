@@ -24,7 +24,7 @@ Verified field and option IDs:
 | Agent: `PVTSSF_lADOEnR3N84Blwszzhkchpg` | Codex: `7eb7e287`; Claude Code: `45c28730` |
 | Priority: `PVTSSF_lADOEnR3N84Blwszzhkchpk` | P0: `f250e3e2`; P1: `30f8e73b`; P2: `2a935793` |
 
-Verified views are **Delivery** (board), **Ready** (`status:Ready`), **Review** (`status:Review`) and **Blocked** (`status:Blocked`). Grouping the Delivery board by Status remains pending UI verification by the Mac worker; do not assume it is configured yet.
+Verified views are [**Delivery**](https://github.com/orgs/rozine-rw/projects/1/views/1), **Ready** (`status:Ready`), **Review** (`status:Review`) and **Blocked** (`status:Blocked`). Delivery is saved as `BOARD_LAYOUT`, with `verticalGroupByFields` set to the Status field (`PVTSSF_lADOEnR3N84BlwszzhkcPcw`). The authorized Mac worker verified the browser display: two Review cards and one Blocked card.
 
 Add existing issues directly; where work already exists only as a PR, use that PR as its item. If an issue and linked PR describe one task, retain one task card and link the PR rather than creating a second backlog. Keep acceptance criteria, dependencies, decisions and evidence in the task issue or linked PR. The board is an index of current state. Preserve its private visibility and existing access boundaries.
 
