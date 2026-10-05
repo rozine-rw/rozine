@@ -904,6 +904,36 @@ describe('Deals in C3 states', () => {
         expect(screen.queryByText(/-1\.94/u)).not.toBeInTheDocument();
     });
 
+    it('shows no bell and no rating basis until the live server supplies them', async () => {
+        const rationale = /Six years of profitable trading/u;
+        const home = deals();
+        home.links.notifications = null;
+        home.focus =
+            home.focus === null ? null : { ...home.focus, rationale: null };
+        const { unmount: leavePhone } = render(<InvestorDeals {...home} />);
+
+        expect(
+            screen.queryByRole('link', { name: /^Notifications/u }),
+        ).not.toBeInTheDocument();
+        leavePhone();
+
+        const page = deal();
+        page.deal.rationale = null;
+        const { unmount: leaveDetail } = render(<InvestorDeal {...page} />);
+
+        expect(screen.queryByText(rationale)).not.toBeInTheDocument();
+        leaveDetail();
+
+        setWide(true);
+        render(<InvestorDeals {...home} />);
+
+        expect(await screen.findByTestId('head')).toBeInTheDocument();
+        expect(screen.queryByText(rationale)).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: /^Notifications/u }),
+        ).not.toBeInTheDocument();
+    });
+
     it('renders the live-minimal shape', () => {
         render(<InvestorDeals {...deals(minimalFixture)} />);
 
@@ -967,6 +997,46 @@ describe('Deals in every closed lifecycle', () => {
             expect(
                 screen.queryByRole('link', { name: 'Invest' }),
             ).not.toBeInTheDocument();
+        },
+    );
+});
+
+describe('An open raise awaiting settlement', () => {
+    it.each([
+        [
+            'sold_out_pending_settlement',
+            'Every note is committed',
+            'Fully committed',
+            false,
+        ],
+        [
+            'inventory_unavailable',
+            'No notes are available right now',
+            'No notes available',
+            true,
+        ],
+        [
+            'closing_pending_settlement',
+            'This raise has closed',
+            'Closing',
+            false,
+        ],
+    ] as const)(
+        'names a %s raise without claiming it was funded or refunded',
+        (lifecycle, title, label, counting) => {
+            const props = deal();
+            props.deal.lifecycle = lifecycle;
+            render(<InvestorDeal {...props} />);
+
+            expect(screen.getByRole('status')).toHaveTextContent(title);
+            expect(screen.getByRole('status')).not.toHaveTextContent(
+                /refunded|Fully funded/u,
+            );
+            expect(screen.getByRole('button', { name: label })).toBeDisabled();
+            expect(
+                screen.queryAllByText(/^\d+ days?$|^\d\d:\d\d:\d\d$/u).length >
+                    0,
+            ).toBe(counting);
         },
     );
 });

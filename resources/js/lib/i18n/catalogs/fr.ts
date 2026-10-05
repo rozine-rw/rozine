@@ -3763,6 +3763,10 @@ const fr: Catalog = {
         "Depuis le {date}. La levée elle-même se poursuit en l'état ; les nouvelles réservations attendent la levée de la restriction.",
     'investor.deal.lifecycle.live': 'En cours',
     'investor.deal.lifecycle.fully_reserved': 'Entièrement réservé',
+    'investor.deal.lifecycle.sold_out_pending_settlement':
+        'Entièrement engagée',
+    'investor.deal.lifecycle.inventory_unavailable': 'Aucun titre disponible',
+    'investor.deal.lifecycle.closing_pending_settlement': 'Clôture en cours',
     'investor.deal.lifecycle.funded': 'Entièrement financé',
     'investor.deal.lifecycle.disbursing': 'Versement en cours',
     'investor.deal.lifecycle.issued': 'Titres émis',
@@ -3773,6 +3777,18 @@ const fr: Catalog = {
         'Tous les titres sont réservés pour le moment',
     'investor.deal.notice.fully_reserved.body':
         "Tous les titres disponibles sont actuellement réservés dans les paiements d'autres investisseurs. Revenez plus tard.",
+    'investor.deal.notice.sold_out_pending_settlement.title':
+        'Tous les titres sont engagés',
+    'investor.deal.notice.sold_out_pending_settlement.body':
+        "Les investisseurs se sont engagés sur tous les titres. Le règlement n'est pas encore enregistré ; les titres ne sont émis qu'après le versement des fonds à l'entreprise.",
+    'investor.deal.notice.inventory_unavailable.title':
+        "Aucun titre n'est disponible pour le moment",
+    'investor.deal.notice.inventory_unavailable.body':
+        'Aucun titre ne peut être réservé pour le moment. Revenez plus tard.',
+    'investor.deal.notice.closing_pending_settlement.title':
+        'Cette levée est close',
+    'investor.deal.notice.closing_pending_settlement.body':
+        "L'échéance est passée et la levée est en cours de clôture. Tout remboursement dû apparaît dans votre portefeuille dès qu'il est enregistré.",
     'investor.deal.notice.funded.title': 'Entièrement financé',
     'investor.deal.notice.funded.body':
         "Les engagements sont verrouillés pendant le versement à l'entreprise. Les titres sont émis une fois ce paiement confirmé.",

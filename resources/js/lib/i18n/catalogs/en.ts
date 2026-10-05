@@ -3612,6 +3612,9 @@ const en = {
         'Since {date}. The raise itself carries on as it stands; new reservations wait until the restriction lifts.',
     'investor.deal.lifecycle.live': 'Live',
     'investor.deal.lifecycle.fully_reserved': 'Fully reserved',
+    'investor.deal.lifecycle.sold_out_pending_settlement': 'Fully committed',
+    'investor.deal.lifecycle.inventory_unavailable': 'No notes available',
+    'investor.deal.lifecycle.closing_pending_settlement': 'Closing',
     'investor.deal.lifecycle.funded': 'Fully funded',
     'investor.deal.lifecycle.disbursing': 'Paying out',
     'investor.deal.lifecycle.issued': 'Notes issued',
@@ -3622,6 +3625,18 @@ const en = {
         'Every note is reserved right now',
     'investor.deal.notice.fully_reserved.body':
         "Every available note is currently held in other investors' checkouts. Check back later.",
+    'investor.deal.notice.sold_out_pending_settlement.title':
+        'Every note is committed',
+    'investor.deal.notice.sold_out_pending_settlement.body':
+        "Investors have committed to every note. Settlement hasn't been recorded yet; notes are issued only once the funds are paid to the business.",
+    'investor.deal.notice.inventory_unavailable.title':
+        'No notes are available right now',
+    'investor.deal.notice.inventory_unavailable.body':
+        'No notes can be reserved at the moment. Check back later.',
+    'investor.deal.notice.closing_pending_settlement.title':
+        'This raise has closed',
+    'investor.deal.notice.closing_pending_settlement.body':
+        'The deadline has passed and the raise is being closed. Any refund due appears in your wallet once it is recorded.',
     'investor.deal.notice.funded.title': 'Fully funded',
     'investor.deal.notice.funded.body':
         'Commitments are locked while the funds are paid to the business. Notes are issued once that payment is confirmed.',

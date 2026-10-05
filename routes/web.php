@@ -18,6 +18,7 @@ use App\Http\Controllers\BusinessWalletController;
 use App\Http\Controllers\ChangeFeedController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IdentityManagementController;
+use App\Http\Controllers\InvestorDealsController;
 use App\Http\Controllers\InvestorPrimaryController;
 use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\PulseController;
@@ -70,6 +71,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('investor')->name('investor.')->group(function (): void {
+    Route::get('deals', [InvestorDealsController::class, 'index'])->name('deals');
+    Route::get('deals/{campaign}', [InvestorDealsController::class, 'show'])->whereUlid('campaign')->name('deals.show');
     Route::get('wallet', [InvestorWalletController::class, 'show'])->name('wallet');
     Route::post('wallet/deposits', [InvestorWalletController::class, 'deposit'])->name('wallet.deposit');
     Route::get('wallet-operations/{request_id}', [InvestorWalletController::class, 'operation'])->whereUuid('request_id')->name('wallet.operations.show');

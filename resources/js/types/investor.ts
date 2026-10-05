@@ -4,6 +4,7 @@ import type {
     Bps,
     C3PreviewOutcome,
     CampaignLifecycle,
+    RaisingLifecycle,
     CampaignRestriction,
     Clock,
     CoarseInFlight,
@@ -1039,6 +1040,12 @@ export type CampaignUnits = {
  */
 export type PublishedPhoto = { url: string | null; caption: string };
 
+/**
+ * A deal's lifecycle. An open raise keeps the server's raising state: a full or elapsed raise with
+ * no recorded funding lock or refunds is pending settlement, never `funded` or `expired`.
+ */
+export type DealLifecycle = CampaignLifecycle | RaisingLifecycle;
+
 export type C3DealCard = {
     campaign_id: string;
     revision: number;
@@ -1059,7 +1066,7 @@ export type C3DealCard = {
     units: CampaignUnits;
     unit_price: Money;
     investors: number;
-    lifecycle: CampaignLifecycle;
+    lifecycle: DealLifecycle;
     restriction: CampaignRestriction;
     /** `[live_at, live_at + 30 days)` (MC-02), rendered against `server_time`. */
     clock: Clock;
@@ -1108,7 +1115,8 @@ export type MonthlyUpdateSummary = Omit<MonthlyUpdate, 'photos'> & {
 export type C3DealDetail = C3DealCard & {
     use_of_funds: UseOfFunds[];
     financials: C3DealFinancials;
-    rationale: string;
+    /** The engine's published rating basis; null until the engine publishes one. */
+    rationale: string | null;
     track_record: TrackRecord | null;
     about: C3AboutBusiness;
     audit: AuditSummary | null;
@@ -1169,7 +1177,8 @@ export type C3InvestorDealsProps = InvestorPageContract & {
     deals: C3DealCard[];
     focus: C3DealDetail | null;
     quote: PrimaryQuote | null;
-    links: InvestorAppLinks & {
+    /** A destination with no live route yet is null (C3InvestorShellLinks). */
+    links: C3InvestorShellLinks & {
         deposit: RouteLink;
         checkout: RouteLink | null;
     };
