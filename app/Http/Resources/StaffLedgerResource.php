@@ -29,7 +29,7 @@ class StaffLedgerResource extends JsonResource
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
                 'initials' => mb_strtoupper(mb_substr($name, 0, 1)), 'role' => in_array('applications.review', $permissions, true) ? 'approver' : 'analyst'],
             'nav' => ['applications' => in_array('applications.review', $permissions, true) ? ['url' => route($prefix.'staff.applications.index', [], false), 'method' => 'get'] : null,
-                'launcher' => ['url' => route('dashboard', [], false), 'method' => 'get'], 'today' => null,
+                'launcher' => ['url' => route($prefix === '' ? 'dashboard' : 'api.v1.identity.show', [], false), 'method' => 'get'], 'today' => null,
                 'disbursements' => in_array('disbursements.view', $permissions, true) ? ['url' => route($prefix.'staff.disbursements.index', [], false), 'method' => 'get'] : null,
                 'repayments' => null, 'businesses' => null, 'investors' => null, 'auditors' => null, 'staff' => null, 'ledger' => $ledger(), 'events' => null],
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'],

@@ -39,7 +39,7 @@ it('lists the sealed journal newest first by reference, never by owner, and open
 
     expect($props)->toMatchArray(['contract_version' => 'staff-ledger-v1', 'total' => 1, 'more' => null, 'entry' => null, 'search' => ''])
         ->and($props['nav'])->toMatchArray(['ledger' => ['url' => '/admin/ledger', 'method' => 'get'], 'events' => null, 'applications' => null,
-            'disbursements' => ['url' => '/admin/disbursements', 'method' => 'get']])
+            'disbursements' => ['url' => '/admin/disbursements', 'method' => 'get'], 'launcher' => ['url' => '/dashboard', 'method' => 'get']])
         ->and($props['entries'])->toBe([['id' => $credit->id, 'at' => $credit->created_at->toIso8601String(), 'kind' => 'deposit', 'from' => 'ROZINE',
             'to' => $wallet, 'reference' => $reference, 'amount' => ['currency' => 'RWF', 'amount' => '20000'],
             'link' => ['url' => '/admin/ledger?entry='.$credit->id, 'method' => 'get']]]);
@@ -108,6 +108,8 @@ it('refuses staff without ledger.view, and API tokens without the ledger ability
     Sanctum::actingAs($this->treasury, ['staff:disbursements:read']);
     $this->getJson(route('api.v1.staff.ledger.index'))->assertForbidden();
     Sanctum::actingAs($this->treasury, ['staff:ledger:read']);
-    expect($this->getJson(route('api.v1.staff.ledger.index'))->assertOk()->json('data.entries.0.link.url'))->toStartWith('/api/v1/staff/ledger?entry=');
+    $api = $this->getJson(route('api.v1.staff.ledger.index'))->assertOk();
+    expect($api->json('data.entries.0.link.url'))->toStartWith('/api/v1/staff/ledger?entry=')
+        ->and($api->json('data.nav.launcher'))->toBe(['url' => '/api/v1/identity', 'method' => 'get']);
     $this->getJson(route('api.v1.staff.ledger.index', ['before' => 'not-a-ulid']))->assertUnprocessable()->assertJsonValidationErrors('before');
 });
