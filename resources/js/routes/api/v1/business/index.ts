@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 import auditReports from './audit-reports'
 import repayments from './repayments'
 import wallet from './wallet'
@@ -85,10 +85,110 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 index.form = indexForm
 
+/**
+* @see \App\Http\Controllers\BusinessHomeController::show
+* @see app/Http/Controllers/BusinessHomeController.php:16
+* @route '/api/v1/business/{business}'
+*/
+export const show = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: show.url(args, options),
+    method: 'get',
+})
+
+show.definition = {
+    methods: ["get","head"],
+    url: '/api/v1/business/{business}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::show
+* @see app/Http/Controllers/BusinessHomeController.php:16
+* @route '/api/v1/business/{business}'
+*/
+show.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { business: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            business: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        business: args.business,
+    }
+
+    return show.definition.url
+            .replace('{business}', parsedArgs.business.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::show
+* @see app/Http/Controllers/BusinessHomeController.php:16
+* @route '/api/v1/business/{business}'
+*/
+show.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: show.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::show
+* @see app/Http/Controllers/BusinessHomeController.php:16
+* @route '/api/v1/business/{business}'
+*/
+show.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: show.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::show
+* @see app/Http/Controllers/BusinessHomeController.php:16
+* @route '/api/v1/business/{business}'
+*/
+const showForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::show
+* @see app/Http/Controllers/BusinessHomeController.php:16
+* @route '/api/v1/business/{business}'
+*/
+showForm.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::show
+* @see app/Http/Controllers/BusinessHomeController.php:16
+* @route '/api/v1/business/{business}'
+*/
+showForm.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+show.form = showForm
+
 const business = {
     auditReports: Object.assign(auditReports, auditReports),
     index: Object.assign(index, index),
     repayments: Object.assign(repayments, repayments),
+    show: Object.assign(show, show),
     wallet: Object.assign(wallet, wallet),
     applications: Object.assign(applications, applications),
     campaigns: Object.assign(campaigns, campaigns),

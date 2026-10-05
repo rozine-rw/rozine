@@ -21,6 +21,15 @@ interface BusinessCampaignStore
     /** @return array<string, mixed> */
     public function campaign(int $userId, int $contextRevision, string $businessId, string $campaignId): array;
 
+    /**
+     * The Business's own raises for its Home: every listing newest first with retained progress,
+     * the latest published rating, released applications not yet listed, and capital totals from
+     * retained funding locks only.
+     *
+     * @return array<string, mixed>
+     */
+    public function home(int $userId, int $contextRevision, string $businessId): array;
+
     /** @return array<string, mixed> */
     public function findRelease(int $userId, string $requestId): array;
 

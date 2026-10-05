@@ -205,7 +205,7 @@ export function BusinessApplicationEntries({
                                     id={`business-entry-${entry.business_id}`}
                                     className="font-medium"
                                 >
-                                    {entry.name}
+                                    <Link href={entry.home}>{entry.name}</Link>
                                 </h3>
                                 {entry.application !== null ? (
                                     <ApplicationLink

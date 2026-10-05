@@ -123,6 +123,38 @@ describe('Business Home', () => {
         expect(screen.getByText('—', { selector: 'div' })).toBeInTheDocument();
     });
 
+    it('hides destinations the live server has no route for, and shows the rating unlinked', () => {
+        render(
+            <BusinessHome
+                {...fixture}
+                headroom={money(5_000_000)}
+                links={{
+                    ...fixture.links,
+                    reports: null,
+                    profile: null,
+                    withdraw: null,
+                    notifications: null,
+                    rating: null,
+                }}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('link', { name: 'Withdraw' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: /^Notifications/u }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('Strong · 4.8').closest('a')).toBeNull();
+        expect(
+            screen.queryByText('Headroom available'),
+        ).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Deposit' })).toHaveAttribute(
+            'href',
+            '/preview/business-wallet',
+        );
+    });
+
     it('renders every kind of Today item with its call to act', () => {
         const today: BusinessTodo[] = [
             {

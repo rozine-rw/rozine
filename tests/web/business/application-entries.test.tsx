@@ -521,12 +521,15 @@ describe('Business role landing — latest audit report', () => {
             'href',
             '/business/01k6p4b7r2c9d3f8g1h5j0k6m2/audit-reports/01k6r8m1n2p3q4r5s6t7v8w9x0',
         );
-        /* The application's own way in stays beside the report. */
+        /* The business's Home and the application's own way in stay beside the report. */
         expect(greenleaf.links()).toEqual([
+            '/business/01k6p4b7r2c9d3f8g1h5j0k6m2',
             '/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications/01k6p4c8s3d0f4g9h2j6k1m7n3',
             '/business/01k6p4b7r2c9d3f8g1h5j0k6m2/audit-reports/01k6r8m1n2p3q4r5s6t7v8w9x0',
         ]);
-        expect(reportIn('Nyamirambo Crafts').links()).toEqual([]);
+        expect(reportIn('Nyamirambo Crafts').links()).toEqual([
+            '/business/01k6q3y4z5a6b7c8d9e0f1g2h3',
+        ]);
     });
 
     it('says a Flash or Monthly report is published', () => {
