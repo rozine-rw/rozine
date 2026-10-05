@@ -321,7 +321,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         'ledger_accounts'::regclass, 'ledger_entries'::regclass) UNION ALL SELECT tgname, pg_get_triggerdef(t.oid) FROM pg_trigger t
         WHERE NOT t.tgisinternal AND t.tgrelid IN ('investor_wallets'::regclass, 'ledger_accounts'::regclass, 'ledger_entries'::regclass)
         UNION ALL SELECT proname, pg_get_functiondef(oid) FROM pg_proc WHERE pronamespace = current_schema()::regnamespace AND proname IN
-        ('protect_ledger_entry', 'create_wallet_supertype', 'require_one_wallet_subtype', 'ledger_account_wallet_owner', 'ledger_entry_wallet_owner') ORDER BY 1";
+        ('protect_ledger_entry', 'create_wallet_supertype', 'require_one_wallet_subtype', 'ledger_account_wallet_owner', 'ledger_entry_wallet_owner') ORDER BY 1, 2";
     $walletsBefore = [DB::select($walletShapeQuery), DB::select($walletObjectQuery)];
     $primaryGuardsWithoutWalletLock = fn (): array => [DB::select($functionQuery), DB::select("SELECT tgname, pg_get_triggerdef(t.oid) AS definition,
         pg_get_functiondef(t.tgfoid) AS body FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid WHERE NOT t.tgisinternal AND c.relname IN ('primary_reservations',
