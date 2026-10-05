@@ -904,6 +904,36 @@ describe('Deals in C3 states', () => {
         expect(screen.queryByText(/-1\.94/u)).not.toBeInTheDocument();
     });
 
+    it('shows no bell and no rating basis until the live server supplies them', async () => {
+        const rationale = /Six years of profitable trading/u;
+        const home = deals();
+        home.links.notifications = null;
+        home.focus =
+            home.focus === null ? null : { ...home.focus, rationale: null };
+        const { unmount: leavePhone } = render(<InvestorDeals {...home} />);
+
+        expect(
+            screen.queryByRole('link', { name: /^Notifications/u }),
+        ).not.toBeInTheDocument();
+        leavePhone();
+
+        const page = deal();
+        page.deal.rationale = null;
+        const { unmount: leaveDetail } = render(<InvestorDeal {...page} />);
+
+        expect(screen.queryByText(rationale)).not.toBeInTheDocument();
+        leaveDetail();
+
+        setWide(true);
+        render(<InvestorDeals {...home} />);
+
+        expect(await screen.findByTestId('head')).toBeInTheDocument();
+        expect(screen.queryByText(rationale)).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: /^Notifications/u }),
+        ).not.toBeInTheDocument();
+    });
+
     it('renders the live-minimal shape', () => {
         render(<InvestorDeals {...deals(minimalFixture)} />);
 

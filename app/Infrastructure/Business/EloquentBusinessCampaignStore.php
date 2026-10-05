@@ -17,7 +17,6 @@ use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
-use App\Application\Primary\Contracts\CampaignReservationSummary;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\ChangeScope;
@@ -30,9 +29,6 @@ use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessProfile;
-use Brick\Math\BigDecimal;
-use Brick\Math\BigInteger;
-use Brick\Math\RoundingMode;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +43,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
 
     public function __construct(private AcceptedApplicationStore $accepted, private BusinessAuthorityStore $businesses,
         private WithBusinessAuthority $authority, private AuthorizeStaffPermission $staff, private IdentityRepository $identities,
-        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications, private PrimaryReservations $primary, private CampaignReservationSummary $reservations, private CampaignFundingEvidence $fundings,
+        private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications, private PrimaryReservations $primary, private CampaignProgress $progress, private CampaignFundingEvidence $fundings,
         private ChangeFeed $changes) {}
 
     /** @return array<string, mixed> */
@@ -176,7 +172,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                 ?? throw new CommandRejection('CAMPAIGN_NOT_FOUND', 404);
             $payload = $this->publications->find($campaign->id);
             $closure = $this->closures->find($campaign->id);
-            $projection = $closure === null ? $this->campaignProjection($campaign->id, $payload) : null;
+            $projection = $closure === null ? $this->progress->project($campaign->id, $payload) : null;
             $progress = $projection !== null ? $projection['progress']
                 : ['phase' => $closure['phase'], 'committed_refunded' => $closure['committed_refunded'],
                     'investors' => $closure['investors'], 'closed_at' => $closure['closed_at']];
@@ -192,52 +188,6 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                 'progress' => $progress,
                 'receipt' => $this->receipt($campaign->id, $payload, 'LISTING_PUBLISHED')];
         });
-    }
-
-    /**
-     * Retained raise or funding-lock progress; this never dispatches or certifies payment.
-     * Returned and overdue claims remain unavailable until ordinal recycling exists.
-     *
-     * @param  array<string, mixed>  $payload
-     * @return array{progress: array<string, mixed>, has_unreturned_holds: bool}
-     */
-    private function campaignProjection(string $campaignId, array $payload): array
-    {
-        $at = now('UTC');
-        $summary = $this->reservations->read($campaignId, $at->toDateTimeImmutable());
-        $remaining = BigInteger::of($payload['principal'])->minus($summary['committed_principal'])->minus($summary['held_principal']);
-        $available = BigInteger::of($payload['quote']['units'])->minus($summary['occupied_units']);
-        $unavailable = BigInteger::of($summary['occupied_units'])->minus($summary['committed_units'])->minus($summary['held_units']);
-        if ($remaining->isNegative() || $available->isNegative() || $unavailable->isNegative()) {
-            throw new RuntimeException('RESERVATION_SUMMARY_INTEGRITY_FAILED');
-        }
-
-        $hasUnreturnedHolds = $summary['held_principal'] !== '0' || $summary['expired_hold_principal'] !== '0';
-        $funding = $this->fundings->find($campaignId);
-        if ($funding !== null) {
-            return ['has_unreturned_holds' => $hasUnreturnedHolds, 'progress' => ['phase' => 'funded', 'lifecycle' => 'funded_pending_disbursement', 'restriction' => null,
-                'committed' => ['currency' => 'RWF', 'amount' => $funding['principal']],
-                'investors' => count(array_unique(array_column($funding['commitments'], 'party_id'))),
-                'funded_at' => $funding['recorded_at'], 'closing' => ['stage' => 'awaiting_disbursement']]];
-        }
-        $lifecycle = match (true) {
-            $at->gte($payload['expires_at']) => 'closing_pending_settlement',
-            BigInteger::of($summary['committed_principal'])->isEqualTo($payload['principal']) => 'sold_out_pending_settlement',
-            $available->isZero() && BigInteger::of($summary['held_units'])->isPositive() => 'fully_reserved',
-            $available->isZero() => 'inventory_unavailable',
-            default => 'live',
-        };
-
-        return ['has_unreturned_holds' => $hasUnreturnedHolds, 'progress' => ['phase' => 'raising', 'lifecycle' => $lifecycle, 'restriction' => null,
-            'committed' => ['currency' => 'RWF', 'amount' => $summary['committed_principal']],
-            'reserved' => ['currency' => 'RWF', 'amount' => $summary['held_principal']],
-            'remaining' => ['currency' => 'RWF', 'amount' => (string) $remaining],
-            'units' => ['total' => $payload['quote']['units'], 'available' => (string) $available,
-                'reserved' => $summary['held_units'], 'committed' => $summary['committed_units'], 'unavailable' => (string) $unavailable],
-            'investors' => $summary['investors'],
-            'funded_pct' => (string) BigDecimal::of($summary['committed_principal'])->multipliedBy(100)
-                ->dividedBy($payload['principal'], 1, RoundingMode::Down),
-            'clock' => ['starts_at' => $payload['recorded_at'], 'expires_at' => $payload['expires_at']]]];
     }
 
     /** @return array<string, mixed> */

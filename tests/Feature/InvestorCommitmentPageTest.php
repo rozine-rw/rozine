@@ -49,7 +49,8 @@ it('renders a confirmed commitment from its retained facts and recorded confirma
             'units' => '3', 'reference' => 'RZC-'.strtoupper(substr($this->commitment, -10)), 'revision' => 2, 'link' => $link])
         ->and($props['links']['operation']['url'])->toContain('/investor/deals/'.$this->campaign->id.'/primary-operations/{request_id}')
         ->toContain('command=primary.cancel')->toContain('reservation='.$this->root->id)
-        ->and($props['links']['close'])->toBe(['url' => '/investor/wallet', 'method' => 'get']);
+        ->and($props['links']['close'])->toBe(['url' => '/investor/wallet', 'method' => 'get'])
+        ->and($props['links']['deals'])->toBe(['url' => '/investor/deals', 'method' => 'get']);
 
     Sanctum::actingAs($this->investor['user'], ['investor:read']);
     $api = $this->getJson(route('api.v1.investor.commitments.show', ['commitment' => $this->commitment, 'identity_context_revision' => 1]))

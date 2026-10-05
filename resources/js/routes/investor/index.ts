@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
+import dealsC9d3dc from './deals'
 import wallet0fdd46 from './wallet'
 import primary from './primary'
 import commitments from './commitments'
@@ -84,6 +85,87 @@ homeForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 home.form = homeForm
 
 /**
+* @see \App\Http\Controllers\InvestorDealsController::deals
+* @see app/Http/Controllers/InvestorDealsController.php:16
+* @route '/investor/deals'
+*/
+export const deals = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: deals.url(options),
+    method: 'get',
+})
+
+deals.definition = {
+    methods: ["get","head"],
+    url: '/investor/deals',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::deals
+* @see app/Http/Controllers/InvestorDealsController.php:16
+* @route '/investor/deals'
+*/
+deals.url = (options?: RouteQueryOptions) => {
+    return deals.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::deals
+* @see app/Http/Controllers/InvestorDealsController.php:16
+* @route '/investor/deals'
+*/
+deals.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: deals.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::deals
+* @see app/Http/Controllers/InvestorDealsController.php:16
+* @route '/investor/deals'
+*/
+deals.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: deals.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::deals
+* @see app/Http/Controllers/InvestorDealsController.php:16
+* @route '/investor/deals'
+*/
+const dealsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: deals.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::deals
+* @see app/Http/Controllers/InvestorDealsController.php:16
+* @route '/investor/deals'
+*/
+dealsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: deals.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::deals
+* @see app/Http/Controllers/InvestorDealsController.php:16
+* @route '/investor/deals'
+*/
+dealsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: deals.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+deals.form = dealsForm
+
+/**
 * @see \App\Http\Controllers\InvestorWalletController::wallet
 * @see app/Http/Controllers/InvestorWalletController.php:25
 * @route '/investor/wallet'
@@ -166,6 +248,7 @@ wallet.form = walletForm
 
 const investor = {
     home: Object.assign(home, home),
+    deals: Object.assign(deals, dealsC9d3dc),
     wallet: Object.assign(wallet, wallet0fdd46),
     primary: Object.assign(primary, primary),
     commitments: Object.assign(commitments, commitments),

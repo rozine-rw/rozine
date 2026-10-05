@@ -27,7 +27,7 @@ class InvestorCommitmentResource extends JsonResource
         return ['contract_version' => 'investor-primary-v1', 'identity_context_revision' => $context, 'server_time' => now()->toIso8601String(),
             'allowed_actions' => [], 'commitment' => $commitment === null ? null : self::commitment($request, $context, $commitment),
             'refusal' => $data['refusal'],
-            'links' => ['deals' => null, 'portfolio' => null, 'profile' => null, 'wallet' => $wallet, 'notifications' => null,
+            'links' => ['deals' => self::link($request, 'investor.deals'), 'portfolio' => null, 'profile' => null, 'wallet' => $wallet, 'notifications' => null,
                 'launcher' => self::link($request, $request->routeIs('api.*') ? 'identity.show' : 'dashboard'), 'close' => $wallet,
                 'operation' => $commitment === null ? null : self::lookup($request, $context, $commitment)]];
     }

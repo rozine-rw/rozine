@@ -204,8 +204,12 @@ arch('infrastructure concretions are reached through their container binding')
     // past the port that is supposed to hide it.
     ->expect('App\Infrastructure')
     ->toOnlyBeUsedIn('App\Providers')
-    ->ignoring(['App\Infrastructure\Business\RetainedFundedCampaignFacts',
+    ->ignoring(['App\Infrastructure\Business\RetainedFundedCampaignFacts', 'App\Infrastructure\Business\CampaignProgress',
         'App\Infrastructure\Primary\RetainedPrimaryReservation', 'App\Infrastructure\Primary\RetainedHeldClaimRelease']);
+
+arch('campaign progress is private to the Business campaign page and the Investor deals')
+    ->expect('App\Infrastructure\Business\CampaignProgress')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Business\EloquentBusinessCampaignStore', 'App\Infrastructure\Business\RetainedInvestorDeals']);
 
 arch('retained reservation replay is private to the two named Primary consumers')
     ->expect('App\Infrastructure\Primary\RetainedPrimaryReservation')

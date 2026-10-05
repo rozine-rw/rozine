@@ -1108,7 +1108,8 @@ export type MonthlyUpdateSummary = Omit<MonthlyUpdate, 'photos'> & {
 export type C3DealDetail = C3DealCard & {
     use_of_funds: UseOfFunds[];
     financials: C3DealFinancials;
-    rationale: string;
+    /** The engine's published rating basis; null until the engine publishes one. */
+    rationale: string | null;
     track_record: TrackRecord | null;
     about: C3AboutBusiness;
     audit: AuditSummary | null;
@@ -1169,7 +1170,8 @@ export type C3InvestorDealsProps = InvestorPageContract & {
     deals: C3DealCard[];
     focus: C3DealDetail | null;
     quote: PrimaryQuote | null;
-    links: InvestorAppLinks & {
+    /** A destination with no live route yet is null (C3InvestorShellLinks). */
+    links: C3InvestorShellLinks & {
         deposit: RouteLink;
         checkout: RouteLink | null;
     };
