@@ -2,25 +2,33 @@
 
 Codex and Claude Code use this document for coordination. It supplements the development, testing and deployment rules in `AGENTS.md` and `CLAUDE.md`; it does not replace them or grant additional authority.
 
-## Board setup status
+## Verified board
 
-**Pending as of 2026-10-05.** Board URL: **PENDING — no project created**. Field IDs and repository link: **PENDING — not verified**.
+[**Rozine Delivery**](https://github.com/orgs/rozine-rw/projects/1) is an open, private organization Project linked to `rozine-rw/rozine`. Project ID: `PVT_kwDOEnR3N84Blwsz`.
 
-Inspection found zero Projects in `rozine-rw` and zero linked to `rozine-rw/rozine`. Although `viewerCanCreateProjects` was true, `createProjectV2` failed with `Resource not accessible by integration`. A follow-up read still found zero organization Projects. No credentials, permissions or access settings were changed.
+The authorized Mac worker verified the configuration below on 2026-10-05 using the operator's personal `gh` connection with user-approved Projects scope. No credentials were transferred to this cloud environment, and neither operator's agent MCP connection was installed. The cloud `chatgpt-codex-connector` still lacks organization Projects access; this document does not establish that a cloud agent can read or manage the board. Each execution environment must independently have authorized access before using Projects tools.
 
-The intended private organization project is **Rozine Delivery**, linked to this repository. The table below is the requested setup, not a claim that fields exist. An operator with existing authorized access must complete and verify it, then replace the pending values here. Recheck existing Projects before creating one to avoid a duplicate. Keep existing access boundaries; repository linking does not authorize expanding project access.
-
-| Field | Intended configuration |
+| Field | Verified configuration |
 | --- | --- |
 | Status | Single select: Backlog, Ready, In progress, Review, Blocked, Done |
-| Assignees | Built-in field; accountable human who has accepted the work |
+| Assignees | Existing field; accountable human who has accepted the work |
 | Agent | Single select: Codex, Claude Code |
-| Reviewer | Text; accepted reviewer's GitHub login, otherwise blank |
-| Priority | Single select: High, Medium, Low; leave blank until a human sets it |
+| Reviewers | Existing field; use accepted reviewers, without inventing review commitments |
+| Priority | Single select: P0, P1, P2; no pilot priorities selected |
 
-Use a board view grouped by Status. Add existing issues directly; where work already exists only as a PR, use that PR as its item. If an issue and linked PR describe one task, retain one task card and link the PR rather than creating a second backlog. Keep acceptance criteria, dependencies, decisions and evidence in the task issue or linked PR. The board is an index of current state.
+Verified field and option IDs:
 
-[Issue #96](https://github.com/rozine-rw/rozine/issues/96) remains the historical integration record. Do not migrate its entire history, close it, or repeat its status stream. After the board and repository link are verified, one short index link there is sufficient. Until then, use the existing issues and PRs.
+| Field ID | Option IDs |
+| --- | --- |
+| Status: `PVTSSF_lADOEnR3N84BlwszzhkcPcw` | Backlog: `f75ad846`; Ready: `30c08bd3`; In progress: `47fc9ee4`; Review: `10c0a544`; Blocked: `ae437e8e`; Done: `98236657` |
+| Agent: `PVTSSF_lADOEnR3N84Blwszzhkchpg` | Codex: `7eb7e287`; Claude Code: `45c28730` |
+| Priority: `PVTSSF_lADOEnR3N84Blwszzhkchpk` | P0: `f250e3e2`; P1: `30f8e73b`; P2: `2a935793` |
+
+Verified views are **Delivery** (board), **Ready** (`status:Ready`), **Review** (`status:Review`) and **Blocked** (`status:Blocked`). Grouping the Delivery board by Status remains pending UI verification by the Mac worker; do not assume it is configured yet.
+
+Add existing issues directly; where work already exists only as a PR, use that PR as its item. If an issue and linked PR describe one task, retain one task card and link the PR rather than creating a second backlog. Keep acceptance criteria, dependencies, decisions and evidence in the task issue or linked PR. The board is an index of current state. Preserve its private visibility and existing access boundaries.
+
+[Issue #96](https://github.com/rozine-rw/rozine/issues/96) remains the historical integration record. Do not migrate its entire history, close it, or repeat its status stream. At most one short board index link there is sufficient; check for an existing link before posting another.
 
 ## Ownership and state
 
@@ -61,11 +69,11 @@ Before review or any separately authorized merge, reread the current PR head, ba
 
 Post sparse updates when ownership is accepted, work becomes reviewable, a blocker changes, review finishes, or a merge/deployment is actually verified. Keep routine progress local. Read new state at startup, before shared edits, at review and at handoff. A Project update does not automatically wake Codex or Claude Code; each operator must start/resume their session unless separately configured automation is explicitly authorized.
 
-## Pilot candidates, not a second backlog
+## Verified pilot cards
 
-This is a one-time setup proposal observed on 2026-10-05. **No items or assignments were changed.** Recheck the live PRs before adding them; all three had no GitHub assignees. Leave Assignees, Reviewer and Priority blank until accepted. Do not copy the historical #177 checklist into new tasks.
+The Mac worker verified exactly three existing PR cards on 2026-10-05, with the Status values below. No assignments or priorities were chosen. PR #177 is a pull request, not an issue card. Do not add duplicates or copy its historical checklist into new tasks. The source-head notes are the initial inspection snapshot; reread the live PR before acting, because board status does not freeze its head or establish current approval.
 
-| Existing item | Proposed Status | Evidence and next action |
+| Existing PR card | Verified Status | Initial inspection evidence and next action |
 | --- | --- | --- |
 | [#220: live Investor Deals](https://github.com/rozine-rw/rozine/pull/220) | Review | Draft at `a787c9ca5477fa9464997214fbe7600f87c5ac7b`; earlier head received a lifecycle finding and the new head contains a correction. Exact-head rereview remains needed. #96 records Engineersticity's accepted Deals lane and Claude Code usage; this does not assign a new human or review commitment. |
 | [#219: phased-plan progress](https://github.com/rozine-rw/rozine/pull/219) | Review | Draft at `46a104999fea369c8275aee4197c8dfe71c67667`; the admission-prerequisite correction is source-verified, with acceptance/evidence limits preserved in its review. Recheck current head and gates before the next decision. |
