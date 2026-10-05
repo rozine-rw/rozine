@@ -15,10 +15,14 @@ const BAND_DISC: Record<RatingBand, string> = {
     distressed: 'bg-[#b3383c]',
 };
 
+const RATING_ROW =
+    'relative mt-4 flex w-full items-center gap-[13px] rounded-2xl border border-white/18 bg-black/14 px-[13px] py-[11px] text-left';
+
 type BusinessHeroProps = {
     business: BusinessIdentity;
     rating: BusinessRating | null;
-    ratingLink: RouteLink;
+    /** The rating page; null while it has no live route, and the band is shown unlinked. */
+    ratingLink: RouteLink | null;
 };
 
 /**
@@ -32,6 +36,37 @@ export function BusinessHero({
 }: BusinessHeroProps) {
     const { t } = useTranslation();
     const degrees = rating === null ? 0 : (Number(rating.score) / 5) * 360;
+
+    const score = (
+        <>
+            <span
+                className="flex size-[46px] shrink-0 items-center justify-center rounded-full"
+                style={{
+                    background: `conic-gradient(#8fe3b0 ${degrees}deg, rgba(255,255,255,.22) 0deg)`,
+                }}
+            >
+                <span
+                    className={`flex size-9 items-center justify-center rounded-full text-[13px] font-bold text-white ${
+                        rating === null
+                            ? 'bg-[#0b7a3f]'
+                            : BAND_DISC[rating.band]
+                    }`}
+                >
+                    {rating?.score ?? '—'}
+                </span>
+            </span>
+            <span className="min-w-0 flex-1">
+                <span className="block text-[10.5px] font-bold tracking-[.07em] text-white uppercase">
+                    {t('business.home.rozine_rating')}
+                </span>
+                <span className="mt-0.5 block text-base leading-[1.1] font-bold whitespace-nowrap text-white">
+                    {rating === null
+                        ? t('business.rating.pending')
+                        : `${t(`business.rating.band.${rating.band}`)} · ${rating.score}`}
+                </span>
+            </span>
+        </>
+    );
 
     return (
         <div className="relative overflow-hidden rounded-[20px] bg-[#0b7a3f] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,.14)]">
@@ -56,40 +91,16 @@ export function BusinessHero({
                 </div>
             </div>
 
-            <Link
-                href={ratingLink}
-                className="relative mt-4 flex w-full items-center gap-[13px] rounded-2xl border border-white/18 bg-black/14 px-[13px] py-[11px] text-left"
-            >
-                <span
-                    className="flex size-[46px] shrink-0 items-center justify-center rounded-full"
-                    style={{
-                        background: `conic-gradient(#8fe3b0 ${degrees}deg, rgba(255,255,255,.22) 0deg)`,
-                    }}
-                >
-                    <span
-                        className={`flex size-9 items-center justify-center rounded-full text-[13px] font-bold text-white ${
-                            rating === null
-                                ? 'bg-[#0b7a3f]'
-                                : BAND_DISC[rating.band]
-                        }`}
-                    >
-                        {rating?.score ?? '—'}
+            {ratingLink !== null ? (
+                <Link href={ratingLink} className={RATING_ROW}>
+                    {score}
+                    <span aria-hidden className="shrink-0 text-lg text-white">
+                        ›
                     </span>
-                </span>
-                <span className="min-w-0 flex-1">
-                    <span className="block text-[10.5px] font-bold tracking-[.07em] text-white uppercase">
-                        {t('business.home.rozine_rating')}
-                    </span>
-                    <span className="mt-0.5 block text-base leading-[1.1] font-bold whitespace-nowrap text-white">
-                        {rating === null
-                            ? t('business.rating.pending')
-                            : `${t(`business.rating.band.${rating.band}`)} · ${rating.score}`}
-                    </span>
-                </span>
-                <span aria-hidden className="shrink-0 text-lg text-white">
-                    ›
-                </span>
-            </Link>
+                </Link>
+            ) : (
+                <div className={RATING_ROW}>{score}</div>
+            )}
         </div>
     );
 }

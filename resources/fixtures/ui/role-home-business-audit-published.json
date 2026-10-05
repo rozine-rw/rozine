@@ -24,6 +24,10 @@
                 {
                     "business_id": "01k6q1a2b3c4d5e6f7g8h9j0k1",
                     "name": "Kigali Fresh Foods",
+                    "home": {
+                        "url": "/business/01k6q1a2b3c4d5e6f7g8h9j0k1",
+                        "method": "get"
+                    },
                     "allowed_actions": ["application.create"],
                     "application": null,
                     "actions": {
@@ -45,6 +49,10 @@
                 {
                     "business_id": "01k6q2m3n4p5q6r7s8t9v0w1x2",
                     "name": "Huye Motors",
+                    "home": {
+                        "url": "/business/01k6q2m3n4p5q6r7s8t9v0w1x2",
+                        "method": "get"
+                    },
                     "allowed_actions": [],
                     "application": {
                         "id": "01k6q2m3n4p5q6r7s8t9v0w1x3",

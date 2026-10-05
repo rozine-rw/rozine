@@ -9,8 +9,8 @@ type TopRowProps = {
     links: {
         wallet: RouteLink;
         deposit: RouteLink;
-        withdraw: RouteLink;
-        notifications: RouteLink;
+        withdraw: RouteLink | null;
+        notifications: RouteLink | null;
     };
 };
 
@@ -77,60 +77,64 @@ export function TopRow({ available, unread, links }: TopRowProps) {
                         />
                     </svg>
                 </Link>
+                {links.withdraw !== null && (
+                    <Link
+                        href={links.withdraw}
+                        aria-label={t('business.home.withdraw')}
+                        className="flex size-[30px] shrink-0 items-center justify-center rounded-xl border border-[#e4e9f2] bg-rz-surface-muted dark:border-rz-border"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            aria-hidden
+                            className="size-[15px] text-[#46526b] dark:text-rz-secondary"
+                        >
+                            <path
+                                d="M12 19V5M5 12l7-7 7 7"
+                                stroke="currentColor"
+                                strokeWidth="2.2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
+                    </Link>
+                )}
+            </div>
+            {links.notifications !== null && (
                 <Link
-                    href={links.withdraw}
-                    aria-label={t('business.home.withdraw')}
-                    className="flex size-[30px] shrink-0 items-center justify-center rounded-xl border border-[#e4e9f2] bg-rz-surface-muted dark:border-rz-border"
+                    href={links.notifications}
+                    aria-label={
+                        unread > 0
+                            ? t('business.home.notifications_unread', {
+                                  count: unread,
+                              })
+                            : t('business.home.notifications')
+                    }
+                    className="relative ml-auto flex size-[42px] shrink-0 items-center justify-center rounded-xl border border-rz-border bg-rz-surface"
                 >
                     <svg
                         viewBox="0 0 24 24"
                         fill="none"
                         aria-hidden
-                        className="size-[15px] text-[#46526b] dark:text-rz-secondary"
+                        className="size-[19px] text-[#16233c] dark:text-rz-ink"
                     >
                         <path
-                            d="M12 19V5M5 12l7-7 7 7"
+                            d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"
                             stroke="currentColor"
-                            strokeWidth="2.2"
-                            strokeLinecap="round"
+                            strokeWidth="1.8"
                             strokeLinejoin="round"
                         />
+                        <path
+                            d="M10 19a2 2 0 0 0 4 0"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                        />
                     </svg>
+                    {unread > 0 && (
+                        <span className="absolute top-[9px] right-2.5 size-2 rounded-full border-2 border-rz-surface bg-[#b3383c]" />
+                    )}
                 </Link>
-            </div>
-            <Link
-                href={links.notifications}
-                aria-label={
-                    unread > 0
-                        ? t('business.home.notifications_unread', {
-                              count: unread,
-                          })
-                        : t('business.home.notifications')
-                }
-                className="relative ml-auto flex size-[42px] shrink-0 items-center justify-center rounded-xl border border-rz-border bg-rz-surface"
-            >
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    aria-hidden
-                    className="size-[19px] text-[#16233c] dark:text-rz-ink"
-                >
-                    <path
-                        d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinejoin="round"
-                    />
-                    <path
-                        d="M10 19a2 2 0 0 0 4 0"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                    />
-                </svg>
-                {unread > 0 && (
-                    <span className="absolute top-[9px] right-2.5 size-2 rounded-full border-2 border-rz-surface bg-[#b3383c]" />
-                )}
-            </Link>
+            )}
         </div>
     );
 }

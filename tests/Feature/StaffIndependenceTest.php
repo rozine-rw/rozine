@@ -97,7 +97,9 @@ it('records and revokes a staff person as append-only revisions with one audit e
         ->and(StaffPersonIdentity::query()->orderBy('revision')->get(['revision', 'status'])->map(fn (StaffPersonIdentity $row): string => $row->revision.':'.$row->status)->all())
         ->toBe(['1:active', '2:revoked']);
 
-    $events = IdentityAuditEvent::query()->where('action', 'staff.person.record')->orderBy('created_at')->get();
+    /* Both events can share a timestamp, so order them by the revision each one records. */
+    $events = IdentityAuditEvent::query()->where('action', 'staff.person.record')->get()
+        ->sortBy(fn (IdentityAuditEvent $event): int => (int) $event->after['revision'])->values();
     expect($events)->toHaveCount(2)
         ->and($events[0]->after)->toMatchArray(['revision' => 1, 'status' => 'active', 'identity_digest' => hash('sha256', 'nid:1199880012345678')])
         ->and($events[1]->before)->toEqual(['revision' => 1, 'status' => 'active']);

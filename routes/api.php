@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\StaffAccessController;
 use App\Http\Controllers\AuditDisputeController;
 use App\Http\Controllers\AuditOperationsController;
 use App\Http\Controllers\AuditSealVerificationController;
+use App\Http\Controllers\BusinessHomeController;
 use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\BusinessRepaymentController;
 use App\Http\Controllers\BusinessWalletController;
@@ -53,6 +54,9 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::post('{business}/repayments', [BusinessRepaymentController::class, 'pay'])->whereUlid('business')->name('pay');
     Route::get('{business}/repayment-operations/{request_id}', [BusinessRepaymentController::class, 'operation'])->whereUlid('business')->whereUuid('request_id')->name('operations.show');
 });
+
+Route::get('v1/business/{business}', [BusinessHomeController::class, 'show'])->middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])
+    ->whereUlid('business')->name('api.v1.business.show');
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/business')->name('api.v1.business.wallet.')->group(function (): void {
     Route::get('{business}/wallet', [BusinessWalletController::class, 'show'])->whereUlid('business')->name('show');

@@ -10,7 +10,7 @@ import type { CreateApplicationEntry } from '@/types/business';
 
 type GrowSectionProps = {
     headroom: Money | null;
-    links: { rating: RouteLink; apply: RouteLink | null };
+    links: { rating: RouteLink | null; apply: RouteLink | null };
     createApplication: CreateApplicationEntry | null;
 };
 
@@ -85,7 +85,7 @@ export function GrowSection({
                 {t('business.grow.subtitle')}
             </p>
 
-            {headroom !== null && (
+            {headroom !== null && links.rating !== null && (
                 <Link
                     href={links.rating}
                     className="mt-[11px] flex w-full items-center gap-3.5 rounded-2xl border border-rz-border bg-rz-surface p-[17px] text-left lg:px-[15px] lg:py-[13px]"
