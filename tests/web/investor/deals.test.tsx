@@ -1001,6 +1001,36 @@ describe('Deals in every closed lifecycle', () => {
     );
 });
 
+describe('A live audit summary', () => {
+    it('names the Audit Partner without a standard or reconciliation the seal does not record', async () => {
+        const user = userEvent.setup();
+        const props = deal();
+
+        if (props.deal.audit === null) {
+            throw new Error('fixture has an audit');
+        }
+
+        props.deal.audit = {
+            ...props.deal.audit,
+            standard: null,
+            reconciliation_statement: null,
+        };
+        render(<InvestorDeal {...props} />);
+
+        const summary = screen.getByRole('button', {
+            name: /^Independently audited/u,
+        });
+
+        expect(summary).toHaveTextContent(props.deal.audit.partner);
+        await user.click(summary);
+        expect(screen.queryByText('Standard')).not.toBeInTheDocument();
+        expect(
+            screen.queryByText('RECONCILIATION STATEMENT'),
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('Audit Partner')).toBeInTheDocument();
+    });
+});
+
 describe('An open raise awaiting settlement', () => {
     it.each([
         [

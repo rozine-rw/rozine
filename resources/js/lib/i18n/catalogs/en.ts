@@ -2299,6 +2299,7 @@ const en = {
     'investor.updates.photo_previous': 'Previous photo',
     'investor.updates.photo_next': 'Next photo',
     'investor.audit.kicker': 'Independently audited · {standard}',
+    'investor.audit.kicker_plain': 'Independently audited',
     'investor.audit.verified_line': '{licence} · verified {date}',
     'investor.audit.view': 'View',
     'investor.audit.hide': 'Hide',
