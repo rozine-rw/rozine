@@ -50,7 +50,7 @@ it('renders the live wallet with real routes, the literal lookup token and nothi
         ->and($props['contract_version'])->toBe('investor-primary-v1')->and($props['identity_context_revision'])->toBe(1)
         ->and($props['allowed_actions'])->toBe(['wallet.deposit'])->and($props)->not->toHaveKey('preview_outcome')
         ->and($json)->not->toContain('/preview/')->not->toContain('syn_')
-        ->and($props['links'])->toMatchArray(['deals' => null, 'portfolio' => null, 'profile' => null, 'notifications' => null, 'link_account' => null,
+        ->and($props['links'])->toMatchArray(['deals' => ['url' => '/investor/deals', 'method' => 'get'], 'portfolio' => null, 'profile' => null, 'notifications' => null, 'link_account' => null,
             'wallet' => ['url' => '/investor/wallet', 'method' => 'get'], 'launcher' => ['url' => '/dashboard', 'method' => 'get'],
             'close' => ['url' => '/investor/wallet', 'method' => 'get'], 'deposit' => ['url' => '/investor/wallet?kind=deposit', 'method' => 'get'],
             'operation' => ['url' => '/investor/wallet-operations/{request_id}?command=wallet.deposit&identity_context_revision=1', 'method' => 'get']])

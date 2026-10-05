@@ -13,7 +13,8 @@ type DealTopBarProps = {
     links: {
         wallet: RouteLink;
         deposit: RouteLink;
-        notifications: RouteLink;
+        /** Null until notifications have a live route; the bell is then not shown. */
+        notifications: RouteLink | null;
     };
 };
 
@@ -56,10 +57,14 @@ function Bell({
     size,
 }: {
     unread: number;
-    href: RouteLink;
+    href: RouteLink | null;
     size: 'phone' | 'desk';
 }) {
     const { t } = useTranslation();
+
+    if (href === null) {
+        return null;
+    }
 
     return (
         <Link

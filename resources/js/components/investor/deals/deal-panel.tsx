@@ -137,9 +137,11 @@ export function DealPanel({
                             </SourceBadge>
                         }
                     >
-                        <p className="mt-2.5 rounded-xl border border-rz-border bg-rz-surface p-[13px] text-[11.5px] leading-[1.55] text-rz-secondary">
-                            {deal.rationale}
-                        </p>
+                        {deal.rationale !== null && (
+                            <p className="mt-2.5 rounded-xl border border-rz-border bg-rz-surface p-[13px] text-[11.5px] leading-[1.55] text-rz-secondary">
+                                {deal.rationale}
+                            </p>
+                        )}
                     </Section>
 
                     {deal.track_record !== null && (

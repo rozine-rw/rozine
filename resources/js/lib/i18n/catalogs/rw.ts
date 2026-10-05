@@ -3742,6 +3742,9 @@ const rw: Catalog = {
         'Kuva ku wa {date}. Igikorwa cyo gushaka imari gikomeza uko kiri; gufata bishya bitegereza ko ikumira rivanwaho.',
     'investor.deal.lifecycle.live': 'Birakomeje',
     'investor.deal.lifecycle.fully_reserved': 'Byafashwe byose',
+    'investor.deal.lifecycle.sold_out_pending_settlement': 'Yose yiyemejwe',
+    'investor.deal.lifecycle.inventory_unavailable': 'Nta nyandiko ziboneka',
+    'investor.deal.lifecycle.closing_pending_settlement': 'Birarangira',
     'investor.deal.lifecycle.funded': 'Imari yose yabonetse',
     'investor.deal.lifecycle.disbursing': 'Birimo kwishyurwa',
     'investor.deal.lifecycle.issued': 'Impapuro zatanzwe',
@@ -3751,6 +3754,18 @@ const rw: Catalog = {
     'investor.deal.notice.fully_reserved.title': 'Impapuro zose zafashwe ubu',
     'investor.deal.notice.fully_reserved.body':
         "Impapuro zose zihari ubu zafashwe mu kwishyura kw'abandi bashoramari. Uzongere urebe nyuma.",
+    'investor.deal.notice.sold_out_pending_settlement.title':
+        'Impapuro zose ziyemejwe',
+    'investor.deal.notice.sold_out_pending_settlement.body':
+        'Abashoramari biyemeje impapuro zose. Kurangiza ntikuranditswe; impapuro zitangwa ari uko amafaranga amaze koherezwa ku kigo.',
+    'investor.deal.notice.inventory_unavailable.title':
+        'Nta nyandiko ziboneka ubu',
+    'investor.deal.notice.inventory_unavailable.body':
+        'Nta mpapuro zishobora gufatwa ubu. Uzongere urebe nyuma.',
+    'investor.deal.notice.closing_pending_settlement.title':
+        'Iki gikorwa cyarafunzwe',
+    'investor.deal.notice.closing_pending_settlement.body':
+        'Igihe cyarangiye kandi igikorwa kirimo kurangizwa. Amafaranga ugomba gusubizwa agaragara mu gikapu cyawe akimara kwandikwa.',
     'investor.deal.notice.funded.title': 'Imari yose yabonetse',
     'investor.deal.notice.funded.body':
         'Ibyiyemejwe birafunze mu gihe amafaranga yoherezwa ku kigo. Impapuro zitangwa ubwo bwishyu bumaze kwemezwa.',

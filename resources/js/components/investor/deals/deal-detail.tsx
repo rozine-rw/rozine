@@ -259,9 +259,11 @@ export function DealDetailPage({
                         </dd>
                     </div>
                 </dl>
-                <p className="mt-[9px] rounded-xl border border-[rgba(30,58,255,.10)] bg-[rgba(30,58,255,.06)] px-[13px] py-[11px] text-xs leading-normal text-rz-slate dark:border-rz-border dark:bg-rz-accent-soft">
-                    {deal.rationale}
-                </p>
+                {deal.rationale !== null && (
+                    <p className="mt-[9px] rounded-xl border border-[rgba(30,58,255,.10)] bg-[rgba(30,58,255,.06)] px-[13px] py-[11px] text-xs leading-normal text-rz-slate dark:border-rz-border dark:bg-rz-accent-soft">
+                        {deal.rationale}
+                    </p>
+                )}
                 {deal.track_record !== null && (
                     <div className="mt-3 rounded-2xl border border-rz-border bg-rz-surface p-[15px]">
                         <div className="flex items-center gap-[7px]">
