@@ -145,7 +145,10 @@ describe('Business Home', () => {
         expect(
             screen.queryByRole('link', { name: /^Notifications/u }),
         ).not.toBeInTheDocument();
-        expect(screen.getByText('Strong · 4.8').closest('a')).toBeNull();
+        expect(screen.getByText('Strong · 4.8')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: /Strong · 4\.8/u }),
+        ).not.toBeInTheDocument();
         expect(
             screen.queryByText('Headroom available'),
         ).not.toBeInTheDocument();
