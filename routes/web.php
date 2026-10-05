@@ -11,6 +11,7 @@ use App\Http\Controllers\AuditorProfileController;
 use App\Http\Controllers\AuditSealVerificationController;
 use App\Http\Controllers\BusinessApplicationController;
 use App\Http\Controllers\BusinessAuditReportController;
+use App\Http\Controllers\BusinessHomeController;
 use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\BusinessRepaymentController;
 use App\Http\Controllers\BusinessWalletController;
@@ -118,6 +119,9 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::post('{business}/repayments', [BusinessRepaymentController::class, 'pay'])->whereUlid('business')->name('pay');
     Route::get('{business}/repayment-operations/{request_id}', [BusinessRepaymentController::class, 'operation'])->whereUlid('business')->whereUuid('request_id')->name('operations.show');
 });
+
+Route::get('business/{business}', [BusinessHomeController::class, 'show'])->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])
+    ->whereUlid('business')->name('business.show');
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('business')->name('business.wallet.')->group(function (): void {
     Route::get('{business}/wallet', [BusinessWalletController::class, 'show'])->whereUlid('business')->name('show');

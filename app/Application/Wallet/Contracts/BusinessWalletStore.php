@@ -22,6 +22,13 @@ interface BusinessWalletStore
     public function page(int $userId, int $contextRevision, string $businessId, array $query): array;
 
     /**
+     * The figures Business Home shows: the available balance and the repayments posted from it.
+     *
+     * @return array{available: array{currency: string, amount: string}, repaid: array{currency: string, amount: string}}
+     */
+    public function summary(int $userId, int $contextRevision, string $businessId): array;
+
+    /**
      * @param  array{currency: string, amount: string}  $amount
      * @return array<string, mixed>
      */

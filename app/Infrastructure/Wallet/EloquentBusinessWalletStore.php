@@ -78,6 +78,16 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
             });
     }
 
+    public function summary(int $userId, int $contextRevision, string $businessId): array
+    {
+        return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null, function (array $business): array {
+            $wallet = BusinessWallet::query()->where('business_id', $business['id'])->first();
+            $repaid = (string) BusinessRepayment::query()->where('business_id', $business['id'])->selectRaw('coalesce(sum(amount), 0)::text AS repaid')->value('repaid');
+
+            return ['available' => $this->balances($wallet)['available'], 'repaid' => WalletMoney::of($repaid)->money()];
+        });
+    }
+
     /**
      * @param  array{currency: string, amount: string}  $amount
      * @return array<string, mixed>
