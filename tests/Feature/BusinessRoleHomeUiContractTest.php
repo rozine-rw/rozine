@@ -97,7 +97,8 @@ it('lists none, draft, submitted and view-only businesses in the shape the entry
     roleHomeUiSameShape($entries[$none], $shapes[0], 'none');
     expect($entries[$none]['application'])->toBeNull()
         ->and($entries[$none]['allowed_actions'])->toBe(['application.create'])
-        ->and($entries[$none]['actions']['create'])->toBe(['url' => "/business/{$none}/applications", 'method' => 'post']);
+        ->and($entries[$none]['actions']['create'])->toBe(['url' => "/business/{$none}/applications", 'method' => 'post'])
+        ->and($entries[$none]['home'])->toBe(['url' => "/business/{$none}", 'method' => 'get']);
 
     roleHomeUiSameShape($entries[$draft], $shapes[1], 'draft');
     expect($entries[$draft]['application'])->toMatchArray(['id' => $created['data']['application']['id'], 'status' => 'draft', 'step' => 'business',

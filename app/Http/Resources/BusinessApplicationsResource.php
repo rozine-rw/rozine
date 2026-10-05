@@ -28,7 +28,9 @@ class BusinessApplicationsResource extends JsonResource
                     ['business' => $entry['business_id'], 'report' => $report['id']], false), 'method' => 'get'];
             }
 
-            return ['audit_report' => $report, 'business_id' => $entry['business_id'], 'name' => $entry['name'], 'allowed_actions' => $allowed,
+            return ['audit_report' => $report, 'business_id' => $entry['business_id'], 'name' => $entry['name'],
+                'home' => ['url' => route($request->routeIs('api.*') ? 'api.v1.business.show' : 'business.show', ['business' => $entry['business_id']], false), 'method' => 'get'],
+                'allowed_actions' => $allowed,
                 'application' => $application, 'actions' => ['create' => in_array('application.create', $allowed, true)
                     ? ['url' => route($prefix.'create', ['business' => $entry['business_id']], false), 'method' => 'post'] : null]];
         }, $page['entries']);

@@ -197,24 +197,7 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
         foreach ($discovered['ids'] as $businessId) {
             try {
                 $entries[] = $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null,
-                    function (array $business, array $identity): array {
-                        $canCreate = false;
-                        foreach ($business['mandate']['people'] as $person) {
-                            if ($person['party_id'] === $identity['party']['id']) {
-                                $canCreate = in_array('application.create', $person['permissions'], true);
-                            }
-                        }
-                        $pending = $this->pendingApplication($business['id']);
-                        $canCreate = $canCreate && $pending === null;
-                        $application = $pending ?? BusinessApplication::query()->where('business_id', $business['id'])
-                            ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', ['draft'])->orderByDesc('id')->first();
-
-                        return ['business_id' => $business['id'], 'name' => $business['profile']['name'],
-                            'audit_report' => $this->reports->latestForBusiness($business['id']),
-                            'allowed_actions' => $canCreate ? ['application.create'] : [],
-                            'application' => $application === null ? null : ['id' => $application->id, 'status' => $application->status,
-                                'step' => $application->step, 'revision' => $application->revision]];
-                    });
+                    fn (array $business, array $identity): array => $this->entry($business, $identity));
             } catch (CommandRejection $failure) {
                 if (! in_array($failure->reason, ['BUSINESS_NOT_FOUND', 'MANDATE_REQUIRED', 'ACTION_FORBIDDEN'], true)) {
                     throw $failure;
@@ -229,6 +212,42 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
         return $this->access->withActiveRole($userId, 'business', null, $contextRevision,
             fn (): array => ['identity_context_revision' => $contextRevision, 'entries' => $entries,
                 'next_cursor' => $discovered['next_cursor'], 'limit' => $limit]);
+    }
+
+    /** @return array<string, mixed> */
+    public function home(int $userId, int $contextRevision, string $businessId): array
+    {
+        return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null, function (array $business, array $identity): array {
+            $entry = $this->entry($business, $identity);
+            $draft = ($entry['application']['status'] ?? null) === 'draft' ? BusinessApplication::query()->whereKey($entry['application']['id'])->first() : null;
+
+            return [...$entry, 'profile' => $business['profile'], 'draft_title' => $draft?->draft['title'] ?? null];
+        });
+    }
+
+    /**
+     * @param  array<string, mixed>  $business
+     * @param  array<string, mixed>  $identity
+     * @return array<string, mixed>
+     */
+    private function entry(array $business, array $identity): array
+    {
+        $canCreate = false;
+        foreach ($business['mandate']['people'] as $person) {
+            if ($person['party_id'] === $identity['party']['id']) {
+                $canCreate = in_array('application.create', $person['permissions'], true);
+            }
+        }
+        $pending = $this->pendingApplication($business['id']);
+        $canCreate = $canCreate && $pending === null;
+        $application = $pending ?? BusinessApplication::query()->where('business_id', $business['id'])
+            ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', ['draft'])->orderByDesc('id')->first();
+
+        return ['business_id' => $business['id'], 'name' => $business['profile']['name'],
+            'audit_report' => $this->reports->latestForBusiness($business['id']),
+            'allowed_actions' => $canCreate ? ['application.create'] : [],
+            'application' => $application === null ? null : ['id' => $application->id, 'status' => $application->status,
+                'step' => $application->step, 'revision' => $application->revision]];
     }
 
     /** @return array<string, mixed> */

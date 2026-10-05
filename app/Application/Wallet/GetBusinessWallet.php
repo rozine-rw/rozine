@@ -19,4 +19,14 @@ final class GetBusinessWallet
     {
         return $this->store->page($userId, $contextRevision, $businessId, $query);
     }
+
+    /**
+     * The available balance and repayments posted, for Business Home.
+     *
+     * @return array{available: array{currency: string, amount: string}, repaid: array{currency: string, amount: string}}
+     */
+    public function summary(int $userId, int $contextRevision, string $businessId): array
+    {
+        return $this->store->summary($userId, $contextRevision, $businessId);
+    }
 }

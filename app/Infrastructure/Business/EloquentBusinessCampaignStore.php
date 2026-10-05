@@ -29,6 +29,9 @@ use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessProfile;
+use Brick\Math\BigDecimal;
+use Brick\Math\BigInteger;
+use Brick\Math\RoundingMode;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -187,6 +190,44 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                 'title' => $payload['title'], 'principal' => $payload['principal'], 'quote' => $payload['quote'],
                 'progress' => $progress,
                 'receipt' => $this->receipt($campaign->id, $payload, 'LISTING_PUBLISHED')];
+        });
+    }
+
+    /** @return array<string, mixed> */
+    public function home(int $userId, int $contextRevision, string $businessId): array
+    {
+        return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null, function () use ($businessId): array {
+            $notes = [];
+            $rating = null;
+            $raised = BigInteger::zero();
+            $investors = [];
+            foreach (BusinessCampaign::query()->where('business_id', $businessId)->orderByDesc('live_at')->orderByDesc('id')->get() as $campaign) {
+                $payload = $this->publications->find($campaign->id);
+                $rating ??= $payload['public_evidence']['rating'] ?? null;
+                $closure = $this->closures->find($campaign->id);
+                $progress = $closure === null ? $this->progress->project($campaign->id, $payload)['progress'] : null;
+                if ($progress !== null && $progress['phase'] === 'funded') {
+                    $funding = $this->fundings->find($campaign->id) ?? throw new RuntimeException('CAMPAIGN_FUNDING_INTEGRITY_FAILED');
+                    $raised = $raised->plus($funding['principal']);
+                    $investors = [...$investors, ...array_column($funding['commitments'], 'party_id')];
+                }
+                $committed = $closure['committed_refunded']['amount'] ?? $progress['committed']['amount'];
+                $notes[] = ['campaign_id' => $campaign->id, 'title' => $payload['title'], 'created_at' => $payload['recorded_at'],
+                    'status' => $closure !== null ? 'failed' : ($progress['phase'] === 'funded' ? 'funded' : 'active'),
+                    'lifecycle' => $closure['phase'] ?? $progress['lifecycle'],
+                    'funded_pct' => (float) (string) BigDecimal::of($committed)->multipliedBy(100)->dividedBy($payload['principal'], 1, RoundingMode::Down),
+                    'investors' => $closure['investors'] ?? $progress['investors'],
+                    'raised' => ['currency' => 'RWF', 'amount' => $committed], 'target' => ['currency' => 'RWF', 'amount' => $payload['principal']]];
+            }
+            $released = BusinessApplication::query()->where('business_id', $businessId)
+                ->whereIn('id', BusinessApplicationRelease::query()->select('business_application_id'))
+                ->whereNotIn('id', BusinessCampaign::query()->select('business_application_id'))->orderBy('id')->get()
+                ->filter(fn (BusinessApplication $application): bool => $this->releaseRecord($application) !== null);
+
+            return ['rating' => $rating === null ? null : ['band' => $rating['band'], 'score' => $rating['score']], 'notes' => $notes,
+                'released' => $released->map(fn (BusinessApplication $application): array => ['application_id' => $application->id, 'title' => $application->draft['title']])->values()->all(),
+                'capital' => ['raised' => ['currency' => 'RWF', 'amount' => (string) $raised], 'investors' => count(array_unique($investors)),
+                    'active_notes' => count(array_filter($notes, fn (array $note): bool => $note['status'] === 'funded'))]];
         });
     }
 

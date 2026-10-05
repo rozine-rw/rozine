@@ -144,12 +144,13 @@ export type BusinessHomeProps = {
     capital: BusinessCapital;
     notes: BusinessNoteSummary[];
     headroom: Money | null;
-    links: BusinessAppLinks & {
+    /** A destination with no live route yet is null and hidden, never faked. */
+    links: BusinessShellLinks & {
         wallet: RouteLink;
         deposit: RouteLink;
-        withdraw: RouteLink;
-        notifications: RouteLink;
-        rating: RouteLink;
+        withdraw: RouteLink | null;
+        notifications: RouteLink | null;
+        rating: RouteLink | null;
         /** Resumes the business's open draft by GET; null when there is none. */
         apply: RouteLink | null;
     };
@@ -212,6 +213,8 @@ export type BusinessApplicationsEntry = {
     /** Opaque; never parsed. */
     business_id: string;
     name: string;
+    /** This business's Home. */
+    home: RouteLink;
     allowed_actions: 'application.create'[];
     application: BusinessApplicationSummary | null;
     actions: { create: RouteAction | null };
