@@ -112,7 +112,7 @@ final class EloquentInvestorVerificationStore implements InvestorVerificationSto
             ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, ...$input],
             // The account and Party are already locked and checked above, for a first run and a replay alike.
             static function (): void {},
-            function () use ($party, $record, $verified, $userId, $expectedRevision, $command, $change, $afterSave, $submitted): OperationResult {
+            self::underKycPolicy(function () use ($party, $record, $verified, $userId, $expectedRevision, $command, $change, $afterSave, $submitted): OperationResult {
                 if ($verified) {
                     throw new CommandRejection('VERIFICATION_NOT_REQUIRED');
                 }
@@ -132,7 +132,24 @@ final class EloquentInvestorVerificationStore implements InvestorVerificationSto
 
                 return new OperationResult($submitted ? 'VERIFICATION_SUBMITTED' : 'VERIFICATION_SAVED',
                     ['verification_id' => $record->id, 'status' => $record->status, 'step' => $state['step']], $record->revision, [], self::POLICY_VERSION);
-            }));
+            })));
+    }
+
+    /**
+     * Refusals recorded for these commands carry the KYC policy they were decided under, like their successes.
+     *
+     * @param  Closure(): OperationResult  $operation
+     * @return Closure(): OperationResult
+     */
+    private static function underKycPolicy(Closure $operation): Closure
+    {
+        return static function () use ($operation): OperationResult {
+            try {
+                return $operation();
+            } catch (CommandRejection $rejection) {
+                throw $rejection->underPolicy(self::POLICY_VERSION);
+            }
+        };
     }
 
     /**

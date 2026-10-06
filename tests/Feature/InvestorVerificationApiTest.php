@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Application\Identity\ConfigureStaffAccess;
+use App\Application\Operations\Contracts\OperationJournal;
+use App\Domain\Operations\CommandRejection;
+use App\Domain\Operations\OperationResult;
 use App\Models\InvestorVerification;
 use App\Models\InvestorVerificationDocument;
 use App\Models\Party;
@@ -75,6 +78,41 @@ test('participant commands answer with operation receipts, refusals included', f
     $this->postJson(route('api.v1.investor.verification.save'), [...$stale, 'date_of_birth' => '2/5/1990'])->assertStatus(409)
         ->assertJsonPath('code', 'IDEMPOTENCY_CONFLICT')->assertJsonPath('operation_id', null)->assertJsonPath('data', null)
         ->assertJsonPath('policy_version', 'engineering-2026-10-06.1');
+});
+
+test('KYC receipts report the KYC policy for successes, recorded refusals, replays and pre-journal refusals', function (): void {
+    Sanctum::actingAs($this->person, ['investor:read', 'investor:command']);
+    $save = apiKycCommand($this->person, ['step' => 'personal', 'date_of_birth' => '1/5/1990']);
+    $first = $this->postJson(route('api.v1.investor.verification.save'), $save)->assertOk()
+        ->assertJsonPath('code', 'VERIFICATION_SAVED')->assertJsonPath('policy_version', 'engineering-2026-10-06.1');
+    $this->postJson(route('api.v1.investor.verification.save'), $save)->assertOk()
+        ->assertJsonPath('operation_id', $first->json('operation_id'))->assertJsonPath('policy_version', 'engineering-2026-10-06.1');
+
+    $stale = [...$save, 'request_id' => (string) Str::uuid(), 'expected_revision' => 0];
+    $refused = $this->postJson(route('api.v1.investor.verification.save'), $stale)->assertStatus(409)
+        ->assertJsonPath('code', 'VERSION_CONFLICT')->assertJsonPath('policy_version', 'engineering-2026-10-06.1');
+    $this->postJson(route('api.v1.investor.verification.save'), $stale)->assertStatus(409)
+        ->assertJsonPath('operation_id', $refused->json('operation_id'))->assertJsonPath('policy_version', 'engineering-2026-10-06.1');
+    $this->postJson(route('api.v1.investor.verification.save'), [...$stale, 'date_of_birth' => '2/5/1990'])->assertStatus(409)
+        ->assertJsonPath('code', 'IDEMPOTENCY_CONFLICT')->assertJsonPath('operation_id', null)->assertJsonPath('policy_version', 'engineering-2026-10-06.1');
+
+    $case = InvestorVerification::query()->sole();
+    $case->forceFill(['status' => 'submitted', 'submitted_at' => now()])->save();
+    Sanctum::actingAs($this->officer, ['staff:investors:read', 'staff:investors:verify']);
+    $decision = ['request_id' => (string) Str::uuid(), 'expected_revision' => 5, 'reason' => 'Matches.'];
+    $staffRefused = $this->postJson(route('api.v1.staff.investor-verifications.approve', $case), $decision)->assertStatus(409)
+        ->assertJsonPath('code', 'VERSION_CONFLICT')->assertJsonPath('policy_version', 'engineering-2026-10-06.1');
+    $this->postJson(route('api.v1.staff.investor-verifications.approve', $case), $decision)->assertStatus(409)
+        ->assertJsonPath('operation_id', $staffRefused->json('operation_id'))->assertJsonPath('policy_version', 'engineering-2026-10-06.1');
+});
+
+test('a refusal recorded without a policy keeps the journal default, so other commands are unchanged', function (): void {
+    $journal = app(OperationJournal::class);
+    $refuse = fn (CommandRejection $rejection): array => $journal->execute('staff:'.$this->officer->id, $this->officer->id, 'test.refusal', (string) Str::uuid(),
+        'test', 'target', [], static function (): void {}, static fn (): OperationResult => throw $rejection);
+
+    expect($refuse(new CommandRejection('SOMETHING_REFUSED'))['policy_version'])->toBe('engineering-2026-09-23.4')
+        ->and($refuse((new CommandRejection('SOMETHING_REFUSED'))->underPolicy('engineering-2026-10-06.1'))['policy_version'])->toBe('engineering-2026-10-06.1');
 });
 
 test('Compliance reads the queue and private documents over the API with its own abilities', function (): void {

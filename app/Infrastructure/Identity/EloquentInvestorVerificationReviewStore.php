@@ -168,7 +168,14 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
                     ['expected_revision' => $expectedRevision, 'reason' => $reason],
                     // The accounts and the reviewer's permission are already locked and checked above, for a first run and a replay alike.
                     static function (): void {},
-                    fn (): OperationResult => $operation($participant)));
+                    static function () use ($operation, $participant): OperationResult {
+                        try {
+                            return $operation($participant);
+                        } catch (CommandRejection $rejection) {
+                            // A recorded refusal carries the KYC policy it was decided under, like an approval or rejection.
+                            throw $rejection->underPolicy(self::POLICY_VERSION);
+                        }
+                    }));
             }, 3);
         } catch (CommandRejection $exception) {
             // Refused before it was recorded (a reused request_id): answered like a recorded refusal.
