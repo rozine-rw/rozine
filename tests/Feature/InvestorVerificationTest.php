@@ -18,11 +18,17 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 
+use function Pest\Laravel\actingAs;
+
 beforeEach(function (): void {
     $this->travelTo(now()->setDate(2026, 10, 6)->startOfDay());
     $this->person = User::factory()->create(['party_id' => Party::factory()]);
 });
 
+/**
+ * @param  array<string, mixed>  $fields
+ * @return array<string, mixed>
+ */
 function kycCommand(array $fields = []): array
 {
     return ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 0, ...$fields];
@@ -38,15 +44,16 @@ function kycRevision(User $user): int
     return (int) InvestorVerification::query()->where('party_id', $user->party_id)->value('revision');
 }
 
+/** @param  array<string, mixed>  $answers */
 function kycSave(User $user, string $step, array $answers): void
 {
-    test()->actingAs($user)->post(route('investor.verification.save'), kycCommand(['expected_revision' => kycRevision($user), 'step' => $step, ...$answers]))
+    actingAs($user)->post(route('investor.verification.save'), kycCommand(['expected_revision' => kycRevision($user), 'step' => $step, ...$answers]))
         ->assertRedirect(route('investor.verification'))->assertSessionHasNoErrors();
 }
 
 function kycUpload(User $user, string $slot): void
 {
-    test()->actingAs($user)->post(route('investor.verification.upload'), kycCommand(['expected_revision' => kycRevision($user), 'slot' => $slot, 'file' => kycFile()]))
+    actingAs($user)->post(route('investor.verification.upload'), kycCommand(['expected_revision' => kycRevision($user), 'slot' => $slot, 'file' => kycFile()]))
         ->assertRedirect(route('investor.verification'))->assertSessionHasNoErrors();
 }
 
@@ -207,8 +214,9 @@ test('a stale revision, a changed context and a reused request are refused', fun
 });
 
 test('a refusal without its own words gets the generic message', function (): void {
-    $this->mock(InvestorVerificationStore::class)->shouldReceive('submit')
-        ->andReturn(['status' => 'rejected', 'code' => 'SOMETHING_ELSE', 'field_errors' => []]);
+    $this->mock(InvestorVerificationStore::class, function ($mock): void {
+        $mock->shouldReceive('submit')->andReturn(['status' => 'rejected', 'code' => 'SOMETHING_ELSE', 'field_errors' => []]);
+    });
 
     $this->actingAs($this->person)->post(route('investor.verification.submit'), kycCommand(['expected_revision' => 0]))
         ->assertSessionHasErrors(['form' => 'We could not save this step. Try again.']);
