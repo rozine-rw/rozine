@@ -1,0 +1,89 @@
+name: Delivery board sync (opt-in)
+
+on:
+  pull_request_target:
+    branches: [dev]
+    types: [ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pull_number:
+        description: Existing allowlisted PR to inspect (blank checks configuration only)
+        required: false
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: rozine-delivery-project-1-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: >-
+      github.repository == 'rozine-rw/rozine' &&
+      vars.BOARD_SYNC_ENABLED == 'true' &&
+      ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev') ||
+       (github.event_name == 'pull_request_target' &&
+        github.event.pull_request.head.repo.full_name == 'rozine-rw/rozine'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      BOARD_SYNC_ENABLED: ${{ vars.BOARD_SYNC_ENABLED }}
+      BOARD_SYNC_WRITES_ENABLED: ${{ vars.BOARD_SYNC_WRITES_ENABLED }}
+      BOARD_SYNC_TRUSTED_SHA: ${{ vars.BOARD_SYNC_TRUSTED_SHA }}
+      BOARD_SYNC_CLIENT_ID: ${{ vars.BOARD_SYNC_CLIENT_ID }}
+      BOARD_SYNC_INSTALLATION_ID: ${{ vars.BOARD_SYNC_INSTALLATION_ID }}
+      BOARD_SYNC_APP_SLUG: ${{ vars.BOARD_SYNC_APP_SLUG }}
+      BOARD_SYNC_PULL_NUMBER: ${{ inputs.pull_number }}
+    steps:
+      - name: Validate configuration before checkout or minting credentials
+        env:
+          HAS_PRIVATE_KEY: ${{ secrets.BOARD_SYNC_PRIVATE_KEY != '' }}
+        run: |
+          python3 - <<'PY'
+          import os, re
+          checks = [
+              re.fullmatch(r'[0-9a-f]{40}', os.environ['BOARD_SYNC_TRUSTED_SHA']),
+              re.fullmatch(r'Iv[0-9A-Za-z.]+', os.environ['BOARD_SYNC_CLIENT_ID']),
+              re.fullmatch(r'[1-9][0-9]*', os.environ['BOARD_SYNC_INSTALLATION_ID']),
+              re.fullmatch(r'[a-z0-9-]+', os.environ['BOARD_SYNC_APP_SLUG']),
+              os.environ['HAS_PRIVATE_KEY'] == 'true',
+              os.environ['BOARD_SYNC_WRITES_ENABLED'] in ('', 'false', 'true'),
+          ]
+          if not all(checks):
+              raise SystemExit('Board sync configuration missing or invalid; no token minted.')
+          PY
+      - name: Checkout only the reviewed immutable implementation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: rozine-rw/rozine
+          ref: ${{ vars.BOARD_SYNC_TRUSTED_SHA }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts/project_board_sync.py
+            .github/board-sync-allowlist.json
+          sparse-checkout-cone-mode: false
+      - name: Validate event and reviewed allowlist before minting credentials
+        id: eligibility
+        run: python3 .github/scripts/project_board_sync.py --check
+      - name: Mint dedicated installation token
+        if: steps.eligibility.outputs.eligible == 'true'
+        id: app
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.BOARD_SYNC_CLIENT_ID }}
+          private-key: ${{ secrets.BOARD_SYNC_PRIVATE_KEY }}
+          owner: rozine-rw
+          repositories: rozine
+          permission-organization-projects: ${{ github.event_name == 'pull_request_target' && vars.BOARD_SYNC_WRITES_ENABLED == 'true' && 'write' || 'read' }}
+          permission-pull-requests: read
+          permission-issues: read
+      - name: Inspect or update the one approved card
+        if: steps.eligibility.outputs.eligible == 'true'
+        env:
+          BOARD_SYNC_TOKEN: ${{ steps.app.outputs.token }}
+          BOARD_SYNC_ACTUAL_INSTALLATION_ID: ${{ steps.app.outputs.installation-id }}
+          BOARD_SYNC_ACTUAL_APP_SLUG: ${{ steps.app.outputs.app-slug }}
+        run: python3 .github/scripts/project_board_sync.py
