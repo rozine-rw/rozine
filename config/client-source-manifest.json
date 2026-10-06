@@ -1,10 +1,7 @@
 {
     "version": 1,
     "sourceRoot": "resources/js",
-    "extensions": [
-        ".ts",
-        ".tsx"
-    ],
+    "extensions": [".ts", ".tsx"],
     "policy": "D-66/D-67",
     "exclusionMetadata": {
         "generatedPaths": {

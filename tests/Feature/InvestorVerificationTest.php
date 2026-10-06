@@ -240,6 +240,34 @@ test('a rejected submission reopens as a draft when the person edits it', functi
     expect(InvestorVerification::query()->sole()->status)->toBe('submitted');
 });
 
+test('a rejected case is corrected from an earlier step, keeps its history and is resubmitted', function (): void {
+    kycReady($this->person);
+    $this->actingAs($this->person)->post(route('investor.verification.submit'), kycCommand(['expected_revision' => 5]))->assertSessionHasNoErrors();
+    $record = InvestorVerification::query()->sole();
+    $state = $record->state;
+    $state['decision'] = ['outcome' => 'rejected', 'reason' => 'The date of birth does not match the ID.', 'decided_at' => now()->toIso8601String()];
+    $record->forceFill(['status' => 'rejected', 'state' => $state])->save();
+    $history = InvestorVerificationVersion::query()->orderBy('revision')->get(['id', 'revision', 'snapshot'])->toArray();
+    $firstFront = InvestorVerificationDocument::query()->where('slot', 'front')->sole()->id;
+
+    kycSave($this->person, 'personal', ['date_of_birth' => '2/5/1990']);
+    $this->actingAs($this->person)->get(route('investor.verification'))
+        ->assertInertia(fn (Assert $page) => $page->where('status', 'draft')->where('step', 'document')->where('date_of_birth', '02 / 05 / 1990'));
+    kycUpload($this->person, 'id_front');
+    kycSave($this->person, 'document', ['id_type' => 'national_id', 'id_number' => '1 1990 8 0012345 6 78']);
+    $this->actingAs($this->person)->post(route('investor.verification.submit'), kycCommand(['expected_revision' => kycRevision($this->person)]))
+        ->assertSessionHasNoErrors();
+
+    $record->refresh();
+    expect($record->status)->toBe('submitted')
+        ->and($record->state['uploads']['front'])->not->toBe($firstFront)
+        ->and(InvestorVerificationDocument::query()->whereKey($firstFront)->exists())->toBeTrue()
+        ->and(InvestorVerificationVersion::query()->orderBy('revision')->limit(count($history))->get(['id', 'revision', 'snapshot'])->toArray())->toBe($history)
+        ->and(InvestorVerificationVersion::query()->where('revision', '>', 6)->orderBy('revision')->pluck('command')->all())
+        ->toBe(['verification.save', 'verification.upload', 'verification.save', 'verification.submit'])
+        ->and(CommandOperation::query()->get()->every(fn (CommandOperation $operation): bool => $operation->result['policy_version'] === 'engineering-2026-10-06.1'))->toBeTrue();
+});
+
 test('approved uploads read as verified', function (): void {
     kycReady($this->person);
     InvestorVerification::query()->sole()->forceFill(['status' => 'approved', 'submitted_at' => now()])->save();

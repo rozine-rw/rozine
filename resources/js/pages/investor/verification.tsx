@@ -1,4 +1,5 @@
 import { Link, router, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { InvestorAuthFrame } from '@/components/investor/auth/auth-frame';
 import { ErrorBanner } from '@/components/rozine/form';
@@ -18,6 +19,8 @@ import type {
 const LABEL = 'mb-1.5 block text-xs font-semibold text-rz-label uppercase';
 const FIELD =
     'w-full rounded-xl border border-rz-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border';
+
+type Step = InvestorVerificationProps['step'];
 
 const PERSONAL_STEPS = ['personal', 'document', 'liveness'] as const;
 const ENTITY_STEPS = ['entity', 'representative', 'declarations'] as const;
@@ -49,6 +52,7 @@ function Upload({
     label,
     capture,
     className,
+    onError,
     children,
 }: {
     slot: string;
@@ -58,6 +62,8 @@ function Upload({
     label: string;
     capture?: 'user';
     className: string;
+    /** The upload is its own visit, so its validation errors never reach the step form. */
+    onError: (message: string | null) => void;
     children: ReactNode;
 }) {
     return (
@@ -84,7 +90,13 @@ function Upload({
                         router.post(
                             action.url,
                             { slot, file, ...envelope(submission) },
-                            { forceFormData: true, preserveScroll: true },
+                            {
+                                forceFormData: true,
+                                preserveScroll: true,
+                                onError: (errors: Record<string, string>) =>
+                                    onError(Object.values(errors).join(' ')),
+                                onSuccess: () => onError(null),
+                            },
                         );
                     }
                 }}
@@ -181,9 +193,14 @@ function Check({
  */
 export default function InvestorVerification(props: InvestorVerificationProps) {
     const { t } = useTranslation();
-    const steps: readonly string[] =
+    // A participant can step back to correct an earlier answer (for example after a rejection); the
+    // server's step returns once that earlier step is saved.
+    const [viewing, setViewing] = useState<Step | null>(null);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const steps: readonly Step[] =
         props.investor_type === 'individual' ? PERSONAL_STEPS : ENTITY_STEPS;
-    const index = steps.indexOf(props.step);
+    const step: Step = viewing ?? props.step;
+    const index = steps.indexOf(step);
     const last = index === steps.length - 1;
     const percent = Math.round((index / 3) * 100);
     const form = useForm<Record<string, string | boolean | null>>(
@@ -209,7 +226,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
     const data = form.data;
     const set = (key: string, value: string | boolean) =>
         form.setData(key, value);
-    const failure = Object.values(form.errors)[0];
+    const failure = uploadError ?? Object.values(form.errors)[0];
     const submission: Partial<KycSubmission> =
         props.investor_type === 'individual' ? props : {};
     const locked = submission.status === 'submitted';
@@ -218,11 +235,12 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
         event.preventDefault();
         form.transform((values) => ({
             ...values,
-            step: props.step,
+            step,
             ...envelope(submission),
         }));
         form.post(last ? props.actions.submit.url : props.actions.save.url, {
             preserveScroll: true,
+            onSuccess: () => setViewing(null),
         });
     };
 
@@ -249,7 +267,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
 
     return (
         <InvestorAuthFrame
-            title={t(`investor.kyc.${props.step}.title`)}
+            title={t(`investor.kyc.${step}.title`)}
             layout="column"
         >
             <form
@@ -292,14 +310,14 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                     )}
                 </p>
                 <h1 className="mt-1.5 text-[22px] font-semibold text-rz-ink">
-                    {t(`investor.kyc.${props.step}.title`)}
+                    {t(`investor.kyc.${step}.title`)}
                 </h1>
                 <p className="mt-1.5 text-[13.5px] text-rz-secondary">
-                    {t(`investor.kyc.${props.step}.subtitle`)}
+                    {t(`investor.kyc.${step}.subtitle`)}
                 </p>
 
                 {props.investor_type === 'individual' &&
-                    props.step === 'personal' && (
+                    step === 'personal' && (
                         <div className="mt-5 flex flex-col gap-[13px]">
                             <div>
                                 <p className={LABEL}>
@@ -318,7 +336,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                     )}
 
                 {props.investor_type === 'individual' &&
-                    props.step === 'document' && (
+                    step === 'document' && (
                         <>
                             <div className="mt-4">
                                 <Chips<IdDocument>
@@ -351,6 +369,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
 
                                     return (
                                         <Upload
+                                            onError={setUploadError}
                                             key={side}
                                             slot={`id_${side}`}
                                             action={props.actions.upload}
@@ -387,8 +406,9 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                     )}
 
                 {props.investor_type === 'individual' &&
-                    props.step === 'liveness' && (
+                    step === 'liveness' && (
                         <Upload
+                            onError={setUploadError}
                             slot="selfie"
                             action={props.actions.upload}
                             submission={submission}
@@ -417,80 +437,76 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                         </Upload>
                     )}
 
-                {props.investor_type === 'institution' &&
-                    props.step === 'entity' && (
-                        <div className="mt-5 flex flex-col gap-[13px]">
-                            <div>
-                                <p className={LABEL}>
-                                    {t('investor.kyc.entity_type')}
-                                </p>
-                                <Chips<EntityType>
-                                    label={t('investor.kyc.entity_type')}
-                                    options={[
-                                        'fund',
-                                        'sacco',
-                                        'treasury',
-                                        'insurer',
-                                        'pension',
-                                        'other',
-                                    ]}
-                                    value={
-                                        data.entity_type as EntityType | null
-                                    }
-                                    onChange={(value) =>
-                                        set('entity_type', value)
-                                    }
-                                    render={(value) =>
-                                        t(`investor.kyc.entity.${value}`)
+                {props.investor_type === 'institution' && step === 'entity' && (
+                    <div className="mt-5 flex flex-col gap-[13px]">
+                        <div>
+                            <p className={LABEL}>
+                                {t('investor.kyc.entity_type')}
+                            </p>
+                            <Chips<EntityType>
+                                label={t('investor.kyc.entity_type')}
+                                options={[
+                                    'fund',
+                                    'sacco',
+                                    'treasury',
+                                    'insurer',
+                                    'pension',
+                                    'other',
+                                ]}
+                                value={data.entity_type as EntityType | null}
+                                onChange={(value) => set('entity_type', value)}
+                                render={(value) =>
+                                    t(`investor.kyc.entity.${value}`)
+                                }
+                            />
+                        </div>
+                        {text(
+                            'company_code',
+                            t('investor.kyc.company_code'),
+                            '103847291',
+                            'numeric',
+                        )}
+                        {text(
+                            'incorporated',
+                            t('investor.kyc.incorporated'),
+                            t('investor.kyc.incorporated_placeholder'),
+                        )}
+                        <Upload
+                            onError={setUploadError}
+                            slot="certificate"
+                            action={props.actions.upload}
+                            submission={submission}
+                            state={props.uploads.certificate}
+                            label={t('investor.kyc.certificate')}
+                            className="rounded-2xl px-3.5 py-5 text-center"
+                        >
+                            <span className="text-[22px]">
+                                <Icon
+                                    name={
+                                        props.uploads.certificate.status ===
+                                        'missing'
+                                            ? 'document'
+                                            : 'check-badge'
                                     }
                                 />
-                            </div>
-                            {text(
-                                'company_code',
-                                t('investor.kyc.company_code'),
-                                '103847291',
-                                'numeric',
-                            )}
-                            {text(
-                                'incorporated',
-                                t('investor.kyc.incorporated'),
-                                t('investor.kyc.incorporated_placeholder'),
-                            )}
-                            <Upload
-                                slot="certificate"
-                                action={props.actions.upload}
-                                submission={submission}
-                                state={props.uploads.certificate}
-                                label={t('investor.kyc.certificate')}
-                                className="rounded-2xl px-3.5 py-5 text-center"
-                            >
-                                <span className="text-[22px]">
-                                    <Icon
-                                        name={
-                                            props.uploads.certificate.status ===
-                                            'missing'
-                                                ? 'document'
-                                                : 'check-badge'
-                                        }
-                                    />
-                                </span>
-                                <span className="mt-1.5 block text-[12.5px] font-semibold text-rz-slate">
-                                    {t(
-                                        props.uploads.certificate.status ===
-                                            'missing'
-                                            ? 'investor.kyc.certificate'
-                                            : 'investor.kyc.certificate_done',
-                                    )}
-                                </span>
-                                <span className="mt-0.5 block text-[11px] text-rz-secondary">
-                                    {t('investor.kyc.certificate_hint')}
-                                </span>
-                            </Upload>
-                        </div>
-                    )}
+                            </span>
+                            <span className="mt-1.5 block text-[12.5px] font-semibold text-rz-slate">
+                                {t(
+                                    props.uploads.certificate.status ===
+                                        'missing'
+                                        ? 'investor.kyc.certificate'
+                                        : 'investor.kyc.certificate_done',
+                                )}
+                            </span>
+                            <span className="mt-0.5 block text-[11px] text-rz-secondary">
+                                {t('investor.kyc.certificate_hint')}
+                            </span>
+                        </Upload>
+                    </div>
+                )}
 
                 {props.investor_type === 'institution' &&
-                    props.step === 'representative' && (
+                    step === 'representative' && (
                         <div className="mt-5 flex flex-col gap-[13px]">
                             <div className="flex gap-3">
                                 {text(
@@ -512,6 +528,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                                 '1 1990 8 0012345 6 78',
                             )}
                             <Upload
+                                onError={setUploadError}
                                 slot="resolution"
                                 action={props.actions.upload}
                                 submission={submission}
@@ -542,6 +559,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                                 </span>
                             </Upload>
                             <Upload
+                                onError={setUploadError}
                                 slot="selfie"
                                 action={props.actions.upload}
                                 submission={submission}
@@ -578,7 +596,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                     )}
 
                 {props.investor_type === 'institution' &&
-                    props.step === 'declarations' && (
+                    step === 'declarations' && (
                         <div className="mt-5 flex flex-col gap-[13px]">
                             <div>
                                 <p className={LABEL}>
@@ -675,6 +693,15 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                 >
                     {t(last ? 'investor.kyc.submit' : 'investor.auth.continue')}
                 </button>
+                {index > 0 && !locked && (
+                    <button
+                        type="button"
+                        onClick={() => setViewing(steps[index - 1])}
+                        className="mt-3 h-[46px] w-full rounded-2xl border border-rz-border bg-rz-surface text-[14px] font-semibold text-rz-ink"
+                    >
+                        {t('investor.kyc.previous')}
+                    </button>
+                )}
             </form>
         </InvestorAuthFrame>
     );
