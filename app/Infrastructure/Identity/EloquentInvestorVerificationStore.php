@@ -26,6 +26,9 @@ use Illuminate\Support\Str;
  */
 final class EloquentInvestorVerificationStore implements InvestorVerificationStore
 {
+    /** The KYC rules each recorded step, upload and submission ran under; receipts report the same version. */
+    private const string POLICY_VERSION = 'engineering-2026-10-06.1';
+
     public function __construct(
         private OperationJournal $journal,
         private InvestorVerificationCase $cases,
@@ -125,10 +128,10 @@ final class EloquentInvestorVerificationStore implements InvestorVerificationSto
                 }
                 (new InvestorVerificationVersion)->forceFill(['investor_verification_id' => $record->id, 'revision' => $record->revision,
                     'status' => $record->status, 'snapshot' => $state, 'actor_user_id' => $userId, 'command' => $command,
-                    'policy_version' => 'engineering-2026-10-06.1'])->save();
+                    'policy_version' => self::POLICY_VERSION])->save();
 
                 return new OperationResult($submitted ? 'VERIFICATION_SUBMITTED' : 'VERIFICATION_SAVED',
-                    ['verification_id' => $record->id, 'status' => $record->status, 'step' => $state['step']], $record->revision);
+                    ['verification_id' => $record->id, 'status' => $record->status, 'step' => $state['step']], $record->revision, [], self::POLICY_VERSION);
             }));
     }
 
