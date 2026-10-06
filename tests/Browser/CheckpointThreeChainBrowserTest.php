@@ -200,9 +200,12 @@ function c3ReserveAndConfirm(BrowserJourney $journey, string $session, int $unit
             await page.goto('.json_encode($journey->base.'/investor').');
             await page.getByRole("link", {name:"Synthetic equipment purchase"}).first().click();
             await page.getByRole("link", {name:"Invest", exact:true}).click();
-            const notes = page.getByRole("spinbutton");
-            await notes.fill('.json_encode((string) $units).');
-            await page.getByRole("button", {name:"Reserve", exact:true}).click();
+            /* The sheet steps one note at a time and re-quotes through ?units=, so ask for the half directly. */
+            const quoting = new URL(page.url());
+            quoting.searchParams.set("units", '.json_encode((string) $units).');
+            await page.goto(quoting.toString());
+            await page.locator("output[aria-label=\"INVESTMENT AMOUNT\"]", {hasText:'.json_encode(number_format($units * 5000)).'}).waitFor();
+            await page.getByRole("button", {name:/^Reserve · /}).click();
             await page.getByRole("checkbox").check();
             const confirmed = page.waitForResponse((response) => response.url().includes("/confirm") && response.request().method() === "POST");
             await page.getByRole("button", {name:/^Confirm · /}).click();
@@ -243,7 +246,10 @@ function c3Approve(BrowserJourney $journey): string
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
             await page.goto('.json_encode($journey->base.'/admin/disbursements').');
             await page.getByRole("link", {name:/Synthetic equipment purchase/}).first().click();
-            await page.getByRole("dialog").getByRole("textbox").fill("Funded raise checked against the published terms.");
+            const drawer = page.getByRole("dialog");
+            await drawer.getByRole("button", {name:"Authorize release", exact:true}).click();
+            await drawer.getByRole("checkbox").check();
+            await drawer.getByRole("textbox").fill("Funded raise checked against the published terms.");
             const answered = page.waitForResponse((response) => response.url().endsWith("/authorize") && response.request().method() === "POST");
             await page.getByRole("button", {name:"Authorize", exact:true}).click();
             const body = await (await answered).json();
@@ -258,8 +264,10 @@ function c3Approve(BrowserJourney $journey): string
             await page.goto('.json_encode($journey->base.'/admin/disbursements').');
             await page.getByRole("link", {name:/Synthetic equipment purchase/}).first().click();
             const drawer = page.getByRole("dialog");
+            await drawer.getByRole("button", {name:"Approve release", exact:true}).click();
             await drawer.getByLabel("Six-digit authenticator code").fill('.json_encode($journey->otp(C3_CHECKER_SECRET)).');
             await drawer.getByRole("button", {name:"Confirm code", exact:true}).click();
+            await drawer.getByRole("checkbox").check();
             await drawer.getByRole("textbox").last().fill("Second approver: amount and destination match.");
             const answered = page.waitForResponse((response) => response.url().endsWith("/approve") && response.request().method() === "POST");
             await drawer.getByRole("button", {name:"Approve and record intent", exact:true}).click();
@@ -363,7 +371,7 @@ it('shows the issued Holdings in each Investor portfolio and the disbursement on
             await page.goto('.json_encode($journey->base.'/investor/portfolio').');
             if (await page.getByText("Awaiting issue", {exact:true}).count() !== 0) throw new Error("Commitment still awaiting issue");
             await page.getByRole("link", {name:/Synthetic equipment purchase/}).first().click();
-            await page.getByText("ISSUE RECEIPT", {exact:false}).waitFor();
+            await page.getByRole("region", {name:"Issue record"}).waitFor();
             await noOverflow();
             await shot('.$journey->shot($session.'-holding-phone').');'.c3NoPreview());
         }
