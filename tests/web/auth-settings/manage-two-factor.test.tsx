@@ -7,7 +7,14 @@ import {
     screen,
 } from '@testing-library/react';
 import type { ComponentProps, ReactNode } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+} from 'vite-plus/test';
 import ManageTwoFactor from '@/components/manage-two-factor';
 
 type FormProps = {

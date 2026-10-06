@@ -1,0 +1,48 @@
+{
+    "component": "investor/verification",
+    "props": {
+        "investor_type": "institution",
+        "entity_type": null,
+        "company_code": "",
+        "incorporated": "",
+        "representative": {
+            "name": "",
+            "role": "",
+            "id_number": ""
+        },
+        "funds_source": null,
+        "annual_commitment": "",
+        "uploads": {
+            "certificate": {
+                "status": "missing"
+            },
+            "resolution": {
+                "status": "missing"
+            },
+            "selfie": {
+                "status": "missing"
+            }
+        },
+        "links": {
+            "back": {
+                "url": "/preview/investor-verification-representative",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "save": {
+                "url": "/preview/investor-verification-representative",
+                "method": "post"
+            },
+            "upload": {
+                "url": "/preview/investor-verification-entity",
+                "method": "post"
+            },
+            "submit": {
+                "url": "/preview/investor-verified",
+                "method": "post"
+            }
+        },
+        "step": "declarations"
+    }
+}

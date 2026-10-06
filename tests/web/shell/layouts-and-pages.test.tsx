@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import type { ComponentProps, ReactNode } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import AppHeaderLayout from '@/layouts/app/app-header-layout';
 import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 import AppLayout from '@/layouts/app-layout';
@@ -8,7 +8,6 @@ import AuthCardLayout from '@/layouts/auth/auth-card-layout';
 import AuthSimpleLayout from '@/layouts/auth/auth-simple-layout';
 import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
 import AuthLayout from '@/layouts/auth-layout';
-import Dashboard from '@/pages/dashboard';
 import Welcome from '@/pages/welcome';
 import type { User } from '@/types';
 
@@ -16,6 +15,7 @@ const state = vi.hoisted(() => ({
     page: {
         name: 'Rozine',
         auth: { user: undefined as User | undefined },
+        nonLiveEnvironment: null as 'demo' | 'uat' | null,
     },
 }));
 
@@ -107,9 +107,28 @@ const user: User = {
 
 afterEach(() => {
     state.page.auth.user = undefined;
+    state.page.nonLiveEnvironment = null;
 });
 
 describe('application layouts', () => {
+    it('shows one notice in each application and authentication shell', () => {
+        state.page.nonLiveEnvironment = 'uat';
+        const { rerender } = render(<AppLayout>Content</AppLayout>);
+        expect(
+            screen.getAllByRole('note', { name: 'UAT — not live' }),
+        ).toHaveLength(1);
+
+        rerender(<AppHeaderLayout>Content</AppHeaderLayout>);
+        expect(
+            screen.getAllByRole('note', { name: 'UAT — not live' }),
+        ).toHaveLength(1);
+
+        rerender(<AuthLayout>Content</AuthLayout>);
+        expect(
+            screen.getAllByRole('note', { name: 'UAT — not live' }),
+        ).toHaveLength(1);
+    });
+
     it('forwards default and supplied breadcrumbs through the app layout', () => {
         const { rerender } = render(<AppLayout>Default content</AppLayout>);
 
@@ -218,16 +237,6 @@ describe('authentication layouts', () => {
 });
 
 describe('starter pages', () => {
-    it('renders the dashboard placeholders and layout metadata', () => {
-        render(<Dashboard />);
-
-        expect(screen.getByTestId('page-title')).toHaveTextContent('Dashboard');
-        expect(screen.getAllByLabelText('Placeholder pattern')).toHaveLength(4);
-        expect(Dashboard.layout.breadcrumbs).toEqual([
-            { title: 'Dashboard', href: expect.anything() },
-        ]);
-    });
-
     it('switches the welcome navigation after authentication', () => {
         const { rerender } = render(<Welcome />);
 

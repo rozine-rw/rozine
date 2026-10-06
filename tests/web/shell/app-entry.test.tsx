@@ -1,9 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 type InertiaOptions = {
-    layout: (name: string) => unknown;
+    layout: (
+        name: string,
+        page?: { props: Record<string, unknown> },
+    ) => unknown;
     progress: { color: string };
     strictMode: boolean;
     title: (title: string) => string;
@@ -16,12 +19,17 @@ const state = vi.hoisted(() => ({
     initializeTheme: vi.fn(),
     options: undefined as InertiaOptions | undefined,
     settingsLayout: vi.fn(),
+    publicLayout: vi.fn(),
 }));
 
 vi.mock('@inertiajs/react', () => ({
     createInertiaApp: (options: InertiaOptions) => {
         state.options = options;
     },
+}));
+
+vi.mock('@/components/rozine/read-failure-notice', () => ({
+    ReadFailureNotice: () => <span>Read failure outlet</span>,
 }));
 
 vi.mock('@/components/ui/sonner', () => ({
@@ -41,6 +49,7 @@ vi.mock('@/hooks/use-appearance', () => ({
 vi.mock('@/layouts/app-layout', () => ({ default: state.appLayout }));
 vi.mock('@/layouts/auth-layout', () => ({ default: state.authLayout }));
 vi.mock('@/layouts/settings/layout', () => ({ default: state.settingsLayout }));
+vi.mock('@/layouts/public-layout', () => ({ default: state.publicLayout }));
 
 async function loadApplication(appName: string): Promise<InertiaOptions> {
     vi.resetModules();
@@ -65,17 +74,40 @@ describe('application entry point', () => {
     it('configures fallback titles, layouts, progress, and providers', async () => {
         const options = await loadApplication('');
 
-        expect(options.title('Dashboard')).toBe('Dashboard - Laravel');
-        expect(options.title('')).toBe('Laravel');
-        expect(options.layout('home')).toBeNull();
-        expect(options.layout('welcome')).toBeNull();
-        expect(options.layout('pulse')).toBeNull();
+        expect(options.title('Dashboard')).toBe('Dashboard - Rozine');
+        expect(options.title('')).toBe('Rozine');
+        expect(options.layout('home')).toBe(state.publicLayout);
+        expect(options.layout('welcome')).toBe(state.publicLayout);
+        expect(options.layout('pulse')).toBe(state.publicLayout);
+        expect(options.layout('audit/verify-seal')).toBe(state.publicLayout);
+        /* The error page's not-found and 5xx answers are public; its refusals keep the app layout. */
+        expect(
+            options.layout('identity/access-denied', {
+                props: { status: 404 },
+            }),
+        ).toBe(state.publicLayout);
+        expect(
+            options.layout('identity/access-denied', {
+                props: { status: 503 },
+            }),
+        ).toBe(state.publicLayout);
+        expect(
+            options.layout('identity/access-denied', {
+                props: { status: 500 },
+            }),
+        ).toBe(state.publicLayout);
+        expect(
+            options.layout('identity/access-denied', {
+                props: { status: 403 },
+            }),
+        ).toBe(state.appLayout);
         expect(options.layout('auth/login')).toBe(state.authLayout);
         expect(options.layout('settings/profile')).toEqual([
             state.appLayout,
             state.settingsLayout,
         ]);
-        expect(options.layout('dashboard')).toBe(state.appLayout);
+        expect(options.layout('dashboard')).toBeUndefined();
+        expect(options.layout('anything-else')).toBe(state.appLayout);
         expect(options.strictMode).toBe(true);
         expect(options.progress).toEqual({ color: '#4B5563' });
         expect(state.initializeTheme).toHaveBeenCalledOnce();
@@ -86,10 +118,11 @@ describe('application entry point', () => {
             screen.getByRole('region', { name: 'Tooltip provider' }),
         ).toHaveTextContent('Application page');
         expect(screen.getByText('Toast outlet')).toBeInTheDocument();
+        expect(screen.getByText('Read failure outlet')).toBeInTheDocument();
     });
 
-    it('uses the configured application name', async () => {
-        const options = await loadApplication('Rozine');
+    it('titles every tab Rozine, whatever name the environment carries', async () => {
+        const options = await loadApplication('Laravel');
 
         expect(options.title('Dashboard')).toBe('Dashboard - Rozine');
         expect(options.title('')).toBe('Rozine');

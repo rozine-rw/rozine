@@ -1,0 +1,166 @@
+{
+    "component": "investor/profile",
+    "props": {
+        "section": "statements",
+        "identity": {
+            "name": "Robert Mugisha",
+            "email": "robert.m@example.rw",
+            "investor_type": "individual",
+            "kyc": "verified",
+            "member_since": "2026-03-10T00:00:00+02:00"
+        },
+        "linked": {
+            "accounts": [
+                {
+                    "id": "mtn-1",
+                    "kind": "mtn",
+                    "label": "MTN MoMo",
+                    "masked": "+250 788 ···· 456",
+                    "verified": true,
+                    "unlink": {
+                        "url": "/preview/investor-profile-linked",
+                        "method": "post"
+                    }
+                },
+                {
+                    "id": "bk-1",
+                    "kind": "bank",
+                    "label": "Bank of Kigali",
+                    "masked": "Account ····2231",
+                    "verified": false,
+                    "unlink": {
+                        "url": "/preview/investor-profile-linked",
+                        "method": "post"
+                    }
+                }
+            ],
+            "banks": [
+                {
+                    "code": "BK",
+                    "name": "Bank of Kigali"
+                },
+                {
+                    "code": "EQUITY",
+                    "name": "Equity Bank Rwanda"
+                },
+                {
+                    "code": "IM",
+                    "name": "I&M Bank Rwanda"
+                },
+                {
+                    "code": "BPR",
+                    "name": "BPR Bank Rwanda"
+                }
+            ]
+        },
+        "statements": {
+            "annual": {
+                "period": "2025-07-01T00:00:00+02:00",
+                "kind": "annual",
+                "complete": true,
+                "link": {
+                    "url": "/preview/investor-profile-statements",
+                    "method": "get"
+                }
+            },
+            "monthly": [
+                {
+                    "period": "2026-09-01T00:00:00+02:00",
+                    "kind": "monthly",
+                    "complete": false,
+                    "link": {
+                        "url": "/preview/investor-profile-statements",
+                        "method": "get"
+                    }
+                },
+                {
+                    "period": "2026-08-01T00:00:00+02:00",
+                    "kind": "monthly",
+                    "complete": true,
+                    "link": {
+                        "url": "/preview/investor-profile-statements",
+                        "method": "get"
+                    }
+                },
+                {
+                    "period": "2026-07-01T00:00:00+02:00",
+                    "kind": "monthly",
+                    "complete": true,
+                    "link": {
+                        "url": "/preview/investor-profile-statements",
+                        "method": "get"
+                    }
+                },
+                {
+                    "period": "2026-06-01T00:00:00+02:00",
+                    "kind": "monthly",
+                    "complete": true,
+                    "link": {
+                        "url": "/preview/investor-profile-statements",
+                        "method": "get"
+                    }
+                }
+            ]
+        },
+        "links": {
+            "deals": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "overview": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "linked": {
+                "url": "/preview/investor-profile-linked",
+                "method": "get"
+            },
+            "statements": {
+                "url": "/preview/investor-profile-statements",
+                "method": "get"
+            },
+            "verification": {
+                "url": "/preview/investor-verification",
+                "method": "get"
+            },
+            "terms": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "privacy": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "link_account": {
+                "url": "/preview/investor-profile-linked",
+                "method": "post"
+            },
+            "logout": {
+                "url": "/preview/investor-login",
+                "method": "post"
+            }
+        }
+    }
+}

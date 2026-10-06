@@ -1,0 +1,95 @@
+{
+    "component": "investor/profile",
+    "props": {
+        "section": "overview",
+        "identity": {
+            "name": "Robert Mugisha",
+            "email": "robert.m@example.rw",
+            "investor_type": "individual",
+            "kyc": "unverified",
+            "member_since": "2026-03-10T00:00:00+02:00"
+        },
+        "linked": {
+            "accounts": [],
+            "banks": [
+                {
+                    "code": "BK",
+                    "name": "Bank of Kigali"
+                },
+                {
+                    "code": "EQUITY",
+                    "name": "Equity Bank Rwanda"
+                },
+                {
+                    "code": "IM",
+                    "name": "I&M Bank Rwanda"
+                },
+                {
+                    "code": "BPR",
+                    "name": "BPR Bank Rwanda"
+                }
+            ]
+        },
+        "statements": null,
+        "links": {
+            "deals": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "overview": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "linked": {
+                "url": "/preview/investor-profile-linked",
+                "method": "get"
+            },
+            "statements": {
+                "url": "/preview/investor-profile-statements",
+                "method": "get"
+            },
+            "verification": {
+                "url": "/preview/investor-verification",
+                "method": "get"
+            },
+            "terms": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "privacy": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "link_account": {
+                "url": "/preview/investor-profile-linked",
+                "method": "post"
+            },
+            "logout": {
+                "url": "/preview/investor-login",
+                "method": "post"
+            }
+        }
+    }
+}

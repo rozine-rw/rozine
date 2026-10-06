@@ -1,0 +1,92 @@
+{
+    "component": "auditor/conflicts",
+    "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
+        "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": [],
+        "conflicts": [
+            {
+                "assignment_id": "01k6kz9w3e7r1t5y8u2i6o0p3a",
+                "business_id": "01k5zq1b7c3d9e2f6g0h4j8k2m",
+                "conflict": {
+                    "conflict_id": "01k6n0a4b8c2d6e0f4g8h2j6k0",
+                    "kind": "family_or_business",
+                    "declared_at": "2026-10-03T14:12:00Z",
+                    "note": "My brother-in-law is a director of this business. I learned of the tie at the site-visit briefing.",
+                    "blocking": true,
+                    "status": "reassignment_pending"
+                }
+            },
+            {
+                "assignment_id": "01k6kt4s8d2f6g0h3j7k1l5z9x",
+                "business_id": "01k5yp2c8d4e0f6g2h8j4k0l6m",
+                "conflict": {
+                    "conflict_id": "01k6h8p2q6r0s4t8u2v6w0x4y8",
+                    "kind": "financial_interest",
+                    "declared_at": "2026-09-22T08:40:00Z",
+                    "note": "I hold a 5% stake in the supplier that services this business.",
+                    "blocking": true,
+                    "status": "closed"
+                }
+            },
+            {
+                "assignment_id": "01k6d3f7g1h5j9k3l7m1n5p9q3",
+                "business_id": "01k5xn3d9e5f1g7h3j9k5l1m7n",
+                "conflict": {
+                    "conflict_id": "01k6d4r8s2t6u0v4w8x2y6z0a4",
+                    "kind": "role_tie",
+                    "declared_at": "2026-09-10T11:05:00Z",
+                    "note": "I prepared this business’s tax returns last year.",
+                    "blocking": true,
+                    "status": "reassigned"
+                }
+            },
+            {
+                "assignment_id": "01k6a1b5c9d3e7f1g5h9j3k7l1",
+                "business_id": "01k5wm4e0f6g2h8j4k0l6m2n8p",
+                "conflict": {
+                    "conflict_id": "01k6a2m6n0p4q8r2s6t0u4v8w2",
+                    "kind": "other",
+                    "declared_at": "2026-08-28T15:30:00Z",
+                    "note": "The owner is a member of my church committee.",
+                    "blocking": true,
+                    "status": "recorded"
+                }
+            }
+        ],
+        "links": {
+            "home": {
+                "url": "/auditor",
+                "method": "get"
+            },
+            "jobs": {
+                "url": "/auditor/jobs",
+                "method": "get"
+            },
+            "portfolio": null,
+            "profile": {
+                "url": "/auditor/profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/dashboard",
+                "method": "get"
+            },
+            "conflicts": {
+                "url": "/auditor/conflicts",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/auditor/assignment-operations/{request_id}",
+                "method": "get"
+            }
+        },
+        "pagination": {
+            "next": {
+                "url": "/auditor/conflicts?before=01k6a1b5c9d3e7f1g5h9j3k7l1&limit=25",
+                "method": "get"
+            }
+        }
+    }
+}

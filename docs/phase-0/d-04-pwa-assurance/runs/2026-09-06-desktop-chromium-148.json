@@ -1,0 +1,94 @@
+{
+    "spike": "D-04 Auditor capture assurance",
+    "runLabel": "Desktop Chromium 148 — capability baseline only, not a device-matrix row",
+    "operator": "Erastus Kirui",
+    "ranAt": "2026-09-06",
+    "environment": {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Claude/1.46388.4 Chrome/148.0.7778.280 Safari/537.36",
+        "secureContext": true,
+        "displayMode": "browser",
+        "origin": "http://localhost:8099",
+        "limitations": "Automation surface. Camera, geolocation, notifications, persistent storage and Background Sync registration are all suppressed by the harness browser, so those probes read BLOCKED rather than measured. Nothing here substitutes for the Android and iOS rows."
+    },
+    "gates": [
+        {
+            "id": "G1",
+            "title": "G1 — Camera-only capture",
+            "verdict": "PARTIAL",
+            "probes": [
+                { "id": "G1.1", "status": "PASS", "detail": "getUserMedia present." },
+                { "id": "G1.2", "status": "BLOCKED", "detail": "Camera permission denied or suppressed by this environment." },
+                { "id": "G1.3", "status": "PENDING", "detail": "Depends on G1.2." },
+                { "id": "G1.4", "status": "PENDING", "detail": "Manual." },
+                { "id": "G1.5", "status": "PARTIAL", "detail": "Canvas capture yields no EXIF, no camera signature, and no device attestation. Provenance can only be app-generated, so it is only as trustworthy as the client, which is unattested on the web." }
+            ]
+        },
+        {
+            "id": "G2",
+            "title": "G2 — Encryption and key custody",
+            "verdict": "UNSUPPORTED",
+            "probes": [
+                { "id": "G2.1", "status": "PASS", "detail": "crypto.subtle present." },
+                { "id": "G2.2", "status": "PASS", "detail": "extractable=false and exportKey rejected (InvalidAccessError)." },
+                { "id": "G2.3", "status": "PASS", "detail": "CryptoKey structured-cloned into IndexedDB and decrypted correctly after re-read." },
+                { "id": "G2.4", "status": "UNSUPPORTED", "detail": "No web API binds an AES CryptoKey to hardware or to device unlock. The key is protected by origin isolation only. A platform authenticator is present, but WebAuthn gates authentication, not key custody, and cannot wrap or release this key." }
+            ]
+        },
+        {
+            "id": "G3",
+            "title": "G3 — Interruption and durability",
+            "verdict": "BLOCKED",
+            "probes": [
+                { "id": "G3.1", "status": "BLOCKED", "detail": "Refused while running as a plain tab. Re-measure after installing to the home screen." },
+                { "id": "G3.2", "status": "PASS", "detail": "199775 MB free of 199775 MB quota." },
+                { "id": "G3.3", "status": "PASS", "detail": "0 to 5 records, 0 malformed." },
+                { "id": "G3.4", "status": "PENDING", "detail": "Manual force-quit." },
+                { "id": "G3.5", "status": "PENDING", "detail": "Manual seven-day dwell." }
+            ]
+        },
+        {
+            "id": "G4",
+            "title": "G4 — Ordered, exactly-once sync",
+            "verdict": "BLOCKED",
+            "probes": [
+                { "id": "G4.1", "status": "PASS", "detail": "scope=http://localhost:8099/" },
+                { "id": "G4.2", "status": "BLOCKED", "detail": "SyncManager exists but registration threw (UnknownError: Background Sync is disabled). Re-run on a real device." },
+                { "id": "G4.3", "status": "PASS", "detail": "5 submissions of 3 distinct items produced 3 committed and 2 rejected as duplicates." },
+                { "id": "G4.4", "status": "PASS", "detail": "Interrupted at chunk 3 (HTTP 503); resumed to all 8 chunks committed once each." },
+                { "id": "G4.5", "status": "PENDING", "detail": "Manual airplane mode." }
+            ]
+        },
+        {
+            "id": "G5",
+            "title": "G5 — Location, time, and provenance",
+            "verdict": "UNSUPPORTED",
+            "probes": [
+                { "id": "G5.1", "status": "BLOCKED", "detail": "Location permission denied or suppressed by this environment." },
+                { "id": "G5.2", "status": "UNSUPPORTED", "detail": "The Geolocation API exposes no mock-provider flag and no provider identity. A developer-options mock location, a patched browser, or a devtools sensor override is indistinguishable from a real fix. Only weak heuristics remain: implausible inter-fix speed, constant accuracy, and identical repeated coordinates." },
+                { "id": "G5.3", "status": "UNSUPPORTED", "detail": "No web equivalent of App Attest or Play Integrity is available. The page cannot prove it is unmodified, cannot prove the device is not rooted or emulated, and cannot prevent a modified client from submitting fabricated captures with valid-looking provenance." },
+                { "id": "G5.4", "status": "PARTIAL", "detail": "Wall clock and monotonic origin agree to 0 ms, but both derive from the same settable device clock. A server-signed time token plus monotonic deltas bounds drift within a session but cannot establish absolute time offline." }
+            ]
+        },
+        {
+            "id": "G6",
+            "title": "G6 — Revocation and lost device",
+            "verdict": "UNSUPPORTED",
+            "probes": [
+                { "id": "G6.1", "status": "PASS", "detail": "Client-enforced TTL evaluates on open and can trigger a shred without the network." },
+                { "id": "G6.2", "status": "PARTIAL", "detail": "Check-in path works, so revocation lands whenever the device reconnects. Until then the package stays readable." },
+                { "id": "G6.3", "status": "UNSUPPORTED", "detail": "Web Push cannot be relied on for wipe: iOS requires a home-screen install and user-granted notifications, delivery is best-effort on both platforms, and there is no MDM or OS-level remote-wipe hook." },
+                { "id": "G6.4", "status": "PENDING", "detail": "Manual Compliance acceptance." }
+            ]
+        },
+        {
+            "id": "G7",
+            "title": "G7 — Purge",
+            "verdict": "UNSUPPORTED",
+            "probes": [
+                { "id": "G7.1", "status": "PASS", "detail": "Ciphertext is unrecoverable after key destruction (OperationError)." },
+                { "id": "G7.2", "status": "PASS", "detail": "All evidence and queue records removed." },
+                { "id": "G7.3", "status": "UNSUPPORTED", "detail": "No browser API overwrites or verifies erasure of the physical storage behind IndexedDB. Crypto-shredding is the compensating control." }
+            ]
+        }
+    ]
+}

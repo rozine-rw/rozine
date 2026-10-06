@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Domain\Pulse\PulseUnderwriting;
 use App\Enums\PulseSignupType;
 use App\Models\PulseSignup;

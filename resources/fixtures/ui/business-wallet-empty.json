@@ -1,0 +1,142 @@
+{
+    "component": "business/wallet",
+    "synthetic": true,
+    "props": {
+        "contract_version": "business-servicing-v1",
+        "identity_context_revision": 4,
+        "server_time": "2026-12-01T09:00:00+02:00",
+        "allowed_actions": ["business.wallet.deposit"],
+        "business": {
+            "id": "01k6r4m2n6p8q0r2s4t6v8b1z2",
+            "name": "GreenLeaf Agro"
+        },
+        "wallet": {
+            "revision": 0,
+            "status": "active",
+            "restriction": null,
+            "available": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "pending_deposits": {
+                "currency": "RWF",
+                "amount": "0"
+            }
+        },
+        "funding": {
+            "kind": null,
+            "policy": {
+                "version": "synthetic-deposit-policy-0",
+                "synthetic": true,
+                "fee": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "minimum": {
+                    "currency": "RWF",
+                    "amount": "1000"
+                },
+                "maximum": {
+                    "currency": "RWF",
+                    "amount": "5000000"
+                }
+            },
+            "methods": [
+                {
+                    "id": "bk-1",
+                    "kind": "bank",
+                    "label": "Bank of Kigali",
+                    "masked": "Account ····2231"
+                },
+                {
+                    "id": "mtn-1",
+                    "kind": "mtn",
+                    "label": "MTN MoMo",
+                    "masked": "+250 788 ···· 456"
+                }
+            ],
+            "picks": [
+                {
+                    "currency": "RWF",
+                    "amount": "500000"
+                },
+                {
+                    "currency": "RWF",
+                    "amount": "1000000"
+                },
+                {
+                    "currency": "RWF",
+                    "amount": "3500000"
+                }
+            ],
+            "quote": null
+        },
+        "deposits": [],
+        "history": {
+            "movement": "external",
+            "filters": [
+                {
+                    "key": "external",
+                    "active": true,
+                    "link": {
+                        "url": "/preview/business-wallet",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "internal",
+                    "active": false,
+                    "link": {
+                        "url": "/preview/business-wallet-internal",
+                        "method": "get"
+                    }
+                }
+            ],
+            "items": [],
+            "pagination": {
+                "next": null
+            }
+        },
+        "receipt": null,
+        "bases": {},
+        "shell_links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            }
+        },
+        "links": {
+            "close": {
+                "url": "/preview/business-wallet",
+                "method": "get"
+            },
+            "deposit": {
+                "url": "/preview/business-wallet-deposit",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/business-wallet-operation-{request_id}",
+                "method": "get"
+            },
+            "repayments": null
+        },
+        "actions": {
+            "deposit": {
+                "url": "/preview/business-wallet-deposit-pending",
+                "method": "post"
+            }
+        }
+    }
+}

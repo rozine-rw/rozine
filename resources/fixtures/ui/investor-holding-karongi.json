@@ -1,0 +1,398 @@
+{
+    "component": "investor/holding",
+    "synthetic": true,
+    "props": {
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 5,
+        "server_time": "2026-09-23T09:00:00+02:00",
+        "allowed_actions": [],
+        "holding": {
+            "id": "h-karongi",
+            "name": "Karongi Freight",
+            "accent": "teal",
+            "industry": "Logistics",
+            "district": "Karongi",
+            "health": "healthy",
+            "value": {
+                "currency": "RWF",
+                "amount": "654000"
+            },
+            "invested": {
+                "currency": "RWF",
+                "amount": "600000"
+            },
+            "gain": {
+                "currency": "RWF",
+                "amount": "54000"
+            },
+            "gain_pct": "9.0",
+            "repaid_pct": 75,
+            "matures_on": "2026-10-05T00:00:00+02:00",
+            "payments_made": 3,
+            "payments_total": 4,
+            "link": {
+                "url": "/preview/investor-holding-karongi",
+                "method": "get"
+            },
+            "rating": {
+                "band": "strong",
+                "score": "4.3"
+            },
+            "rate_pct": "12.0",
+            "expected_profit": {
+                "currency": "RWF",
+                "amount": "72000"
+            },
+            "maturity_value": {
+                "currency": "RWF",
+                "amount": "664800"
+            },
+            "received": {
+                "currency": "RWF",
+                "amount": "498600"
+            },
+            "next_payment": {
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "168000"
+                },
+                "due_on": "2026-10-05T00:00:00+02:00"
+            },
+            "on_time": {
+                "made": 3,
+                "on_time": 3,
+                "late": 0
+            },
+            "months_left": 1,
+            "investors": 264,
+            "rating_change": null,
+            "recovery_plan": null,
+            "arrears": null,
+            "photos": [
+                {
+                    "url": null,
+                    "caption": "Storefront"
+                },
+                {
+                    "url": null,
+                    "caption": "Operations"
+                },
+                {
+                    "url": null,
+                    "caption": "Warehouse"
+                }
+            ],
+            "updates": [
+                {
+                    "id": "h-karongi-2026-08",
+                    "month": "2026-08-01T00:00:00+02:00",
+                    "status": "healthy",
+                    "summary": "On plan · coupon repaid on time",
+                    "net": {
+                        "currency": "RWF",
+                        "amount": "1500000"
+                    },
+                    "inflow": {
+                        "currency": "RWF",
+                        "amount": "17600000"
+                    },
+                    "outflow": {
+                        "currency": "RWF",
+                        "amount": "16100000"
+                    },
+                    "business_note": "Trucks ran full on the Kigali corridor all month; fuel costs held to plan and the monthly coupon was paid on its due date.",
+                    "auditor": {
+                        "name": "Diane Uwase, CPA",
+                        "licence": "ICPAR/P-2026/0481",
+                        "verified_on": "2026-09-07T00:00:00+02:00"
+                    },
+                    "auditor_note": "Bank and MoMo statements reconcile to the reported inflow; inventory count matched the sample within tolerance.",
+                    "photos": [
+                        {
+                            "url": null,
+                            "caption": "Truck yard"
+                        },
+                        {
+                            "url": null,
+                            "caption": "Trip log"
+                        },
+                        {
+                            "url": null,
+                            "caption": "Loading bay"
+                        }
+                    ]
+                },
+                {
+                    "id": "h-karongi-2026-07",
+                    "month": "2026-07-01T00:00:00+02:00",
+                    "status": "healthy",
+                    "summary": "On plan · coupon repaid on time",
+                    "net": {
+                        "currency": "RWF",
+                        "amount": "1500000"
+                    },
+                    "inflow": {
+                        "currency": "RWF",
+                        "amount": "17300000"
+                    },
+                    "outflow": {
+                        "currency": "RWF",
+                        "amount": "15800000"
+                    },
+                    "business_note": "Trucks ran full on the Kigali corridor all month; fuel costs held to plan and the monthly coupon was paid on its due date.",
+                    "auditor": {
+                        "name": "Diane Uwase, CPA",
+                        "licence": "ICPAR/P-2026/0481",
+                        "verified_on": "2026-08-07T00:00:00+02:00"
+                    },
+                    "auditor_note": "Bank and MoMo statements reconcile to the reported inflow; inventory count matched the sample within tolerance.",
+                    "photos": [
+                        {
+                            "url": null,
+                            "caption": "Truck yard"
+                        },
+                        {
+                            "url": null,
+                            "caption": "Trip log"
+                        },
+                        {
+                            "url": null,
+                            "caption": "Loading bay"
+                        }
+                    ]
+                },
+                {
+                    "id": "h-karongi-2026-06",
+                    "month": "2026-06-01T00:00:00+02:00",
+                    "status": "healthy",
+                    "summary": "On plan · coupon repaid on time",
+                    "net": {
+                        "currency": "RWF",
+                        "amount": "1500000"
+                    },
+                    "inflow": {
+                        "currency": "RWF",
+                        "amount": "17000000"
+                    },
+                    "outflow": {
+                        "currency": "RWF",
+                        "amount": "15500000"
+                    },
+                    "business_note": "Trucks ran full on the Kigali corridor all month; fuel costs held to plan and the monthly coupon was paid on its due date.",
+                    "auditor": {
+                        "name": "Diane Uwase, CPA",
+                        "licence": "ICPAR/P-2026/0481",
+                        "verified_on": "2026-07-07T00:00:00+02:00"
+                    },
+                    "auditor_note": "Bank and MoMo statements reconcile to the reported inflow; inventory count matched the sample within tolerance.",
+                    "photos": [
+                        {
+                            "url": null,
+                            "caption": "Truck yard"
+                        },
+                        {
+                            "url": null,
+                            "caption": "Trip log"
+                        },
+                        {
+                            "url": null,
+                            "caption": "Loading bay"
+                        }
+                    ]
+                }
+            ],
+            "issue": {
+                "id": "h-karongi",
+                "revision": 1,
+                "note_id": "note_karongi_2026_06",
+                "campaign_id": "cmp_karongi_2026_06",
+                "units": "120",
+                "ordinals": [
+                    {
+                        "first": "481",
+                        "last": "600"
+                    }
+                ],
+                "principal": {
+                    "currency": "RWF",
+                    "amount": "600000"
+                },
+                "rights": {
+                    "total_return": {
+                        "currency": "RWF",
+                        "amount": "72000"
+                    },
+                    "instalments": [
+                        {
+                            "index": 1,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "150000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "18000"
+                            }
+                        },
+                        {
+                            "index": 2,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "150000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "18000"
+                            }
+                        },
+                        {
+                            "index": 3,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "150000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "18000"
+                            }
+                        },
+                        {
+                            "index": 4,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "150000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "18000"
+                            }
+                        }
+                    ]
+                },
+                "issued_at": "2026-06-05T15:20:04+02:00",
+                "disbursement_effective_at": "2026-06-05T15:18:41+02:00",
+                "effective_date": "2026-06-05",
+                "terms": {
+                    "rate_pct": "12.0",
+                    "term_months": 4,
+                    "total_return": {
+                        "currency": "RWF",
+                        "amount": "72000"
+                    },
+                    "earnings_fee": {
+                        "tier": "standard",
+                        "rate_bps": 1000,
+                        "basis": "return_only",
+                        "policy_version": "synthetic-plus-policy-0"
+                    },
+                    "policy_version": "synthetic-primary-policy-0",
+                    "disclosure_version": "disclosure-2026-05.2"
+                },
+                "schedule": [
+                    {
+                        "index": 1,
+                        "due_on": "2026-07-05",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "150000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "18000"
+                        }
+                    },
+                    {
+                        "index": 2,
+                        "due_on": "2026-08-05",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "150000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "18000"
+                        }
+                    },
+                    {
+                        "index": 3,
+                        "due_on": "2026-09-05",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "150000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "18000"
+                        }
+                    },
+                    {
+                        "index": 4,
+                        "due_on": "2026-10-05",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "150000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "18000"
+                        }
+                    }
+                ],
+                "issue_receipt": {
+                    "receipt_id": "rcp_hld7",
+                    "operation_id": "op_hld7",
+                    "request_id": "7f1c2a90-0000-4000-8000-00000000hld7",
+                    "code": "HOLDING_ISSUED",
+                    "recorded_at": "2026-06-05T15:20:04+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "600000"
+                    },
+                    "units": "120",
+                    "reference": "RZ-HLD-2207",
+                    "revision": 1,
+                    "policy_version": "synthetic-primary-policy-0",
+                    "disclosure_version": "disclosure-2026-05.2",
+                    "link": {
+                        "url": "/preview/investor-holding-karongi",
+                        "method": "get"
+                    }
+                },
+                "source": {
+                    "commitment_id": "cmt0_01k4k5",
+                    "disbursement_operation_id": "op_dsb_01k4k6"
+                }
+            }
+        },
+        "links": {
+            "deals": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "back": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            }
+        }
+    }
+}

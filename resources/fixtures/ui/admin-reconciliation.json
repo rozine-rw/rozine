@@ -1,0 +1,153 @@
+{
+    "component": "admin/reconciliation",
+    "synthetic": true,
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "repayments": {
+                "url": "/preview/admin-repayments",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "book": {
+                "url": "/preview/admin-book",
+                "method": "get"
+            },
+            "exceptions": {
+                "url": "/preview/admin-exceptions",
+                "method": "get"
+            },
+            "reconciliation": {
+                "url": "/preview/admin-reconciliation",
+                "method": "get"
+            },
+            "coverage": {
+                "url": "/preview/admin-coverage",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/admin-reports",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2027-01-23T10:00:00+02:00",
+        "contract_version": "staff-reconciliation-v1",
+        "staff_access_version": "staff-access-v1",
+        "allowed_actions": [],
+        "day_close": {
+            "business_date": "2027-01-22",
+            "state": "open_break"
+        },
+        "accounts": [
+            {
+                "id": "acct_momo",
+                "label": "Mobile money collections account",
+                "as_of": "2027-01-22T23:59:59+02:00",
+                "ledger": {
+                    "currency": "RWF",
+                    "amount": "48215600"
+                },
+                "statement": {
+                    "currency": "RWF",
+                    "amount": "48215600"
+                },
+                "difference": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "feed": {
+                    "state": "available"
+                }
+            },
+            {
+                "id": "acct_bank",
+                "label": "Bank settlement account",
+                "as_of": "2027-01-22T23:59:59+02:00",
+                "ledger": {
+                    "currency": "RWF",
+                    "amount": "126480000"
+                },
+                "statement": {
+                    "currency": "RWF",
+                    "amount": "126476900"
+                },
+                "difference": {
+                    "currency": "RWF",
+                    "amount": "3100"
+                },
+                "feed": {
+                    "state": "available"
+                }
+            }
+        ],
+        "breaks": [
+            {
+                "id": "brk_0122",
+                "reference": "STM-2027-0122",
+                "account_id": "acct_bank",
+                "description": "Bank charge on the 22 Jan 2027 statement with no ledger entry",
+                "gap": {
+                    "currency": "RWF",
+                    "amount": "3100"
+                },
+                "opened_at": "2027-01-22T08:15:00+02:00",
+                "age_days": 1,
+                "owner": null,
+                "link": {
+                    "url": "/preview/admin-ledger",
+                    "method": "get"
+                }
+            }
+        ]
+    }
+}

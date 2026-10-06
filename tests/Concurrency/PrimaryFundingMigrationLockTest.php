@@ -1,0 +1,115 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+/** Table modes reproduce the write boundaries observed in the independently forked command probes. */
+it('installs funding behind in-flight command table locks without blocking their remaining writes', function (array $written, array $remaining): void {
+    $closures = require database_path('migrations/2026_09_30_094556_bind_campaign_closures_to_complete_primary_returns.php');
+    $funding = require database_path('migrations/2026_09_30_054318_create_primary_campaign_fundings.php');
+    $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
+    $holdingIssue = require database_path('migrations/2026_09_30_114217_require_issue_evidence_for_primary_holdings.php');
+    $completeness = require database_path('migrations/2026_09_30_234802_require_complete_primary_holdings_for_issued_closings.php');
+    $heldGenerations = require database_path('migrations/2026_10_03_083345_create_primary_held_claim_generations.php');
+    $dependants = [$heldGenerations, $completeness, $holdingIssue, $holdingBinding, $closures];
+    $shape = fn (): array => [
+        DB::select("SELECT tgname, pg_get_triggerdef(oid) AS definition FROM pg_trigger WHERE NOT tgisinternal
+            AND tgrelid IN ('primary_campaign_fundings'::regclass, 'primary_holdings'::regclass,
+                'business_campaign_closures'::regclass, 'disbursement_closings'::regclass) ORDER BY tgname"),
+        DB::select("SELECT conname, pg_get_constraintdef(oid) AS definition FROM pg_constraint WHERE conname LIKE 'primary_holding_%' ORDER BY conname"),
+        DB::select("SELECT proname, pg_get_functiondef(oid) AS definition FROM pg_proc WHERE pronamespace = 'public'::regnamespace
+            AND prokind = 'f' AND proname LIKE '%primary%' ORDER BY proname"),
+    ];
+    $installed = $shape();
+    $restore = function () use ($funding, $dependants): void {
+        DB::transaction(function () use ($funding, $dependants): void {
+            if (! Schema::hasTable('primary_campaign_fundings')) {
+                $funding->up();
+            }
+            foreach (array_reverse($dependants) as $migration) {
+                $migration->up();
+            }
+        });
+    };
+    DB::transaction(function () use ($dependants, $funding): void {
+        foreach ($dependants as $migration) {
+            $migration->down();
+        }
+        $funding->down();
+    });
+    $channels = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+    if ($channels === false) {
+        $restore();
+        throw new RuntimeException('Could not create migration barrier.');
+    }
+    stream_set_timeout($channels[0], 10);
+    stream_set_timeout($channels[1], 10);
+    DB::disconnect();
+    $pid = pcntl_fork();
+    if ($pid === -1) {
+        fclose($channels[0]);
+        fclose($channels[1]);
+        $restore();
+        throw new RuntimeException('Could not fork migration installer.');
+    }
+    if ($pid === 0) {
+        fclose($channels[0]);
+        DB::purge();
+        try {
+            DB::statement("SET lock_timeout = '8s'");
+            fwrite($channels[1], DB::scalar('SELECT pg_backend_pid()')."\n");
+            if (fgets($channels[1]) !== "go\n") {
+                exit(3);
+            }
+            $funding->up();
+            exit(0);
+        } catch (Throwable $exception) {
+            fwrite(STDERR, $exception::class.' '.$exception->getMessage()."\n");
+            exit(1);
+        }
+    }
+    fclose($channels[1]);
+    try {
+        $installer = (int) trim((string) fgets($channels[0]));
+        DB::beginTransaction();
+        DB::statement('LOCK TABLE business_profiles, business_campaigns, primary_reservations IN ROW SHARE MODE');
+        foreach ($written as $table) {
+            DB::statement('LOCK TABLE '.$table.' IN ROW EXCLUSIVE MODE');
+        }
+        fwrite($channels[0], "go\n");
+        $blocked = false;
+        $deadline = hrtime(true) + 4_000_000_000;
+        while (hrtime(true) < $deadline && ! $blocked) {
+            $blocked = (bool) DB::scalar('SELECT pg_backend_pid() = ANY(pg_blocking_pids(?))', [$installer]);
+            if (! $blocked) {
+                usleep(10_000);
+            }
+        }
+        expect($blocked)->toBeTrue('Installer must wait for the in-flight writer.');
+        foreach ($remaining as $table) {
+            DB::statement('LOCK TABLE '.$table.' IN ROW EXCLUSIVE MODE NOWAIT');
+        }
+        DB::commit();
+    } finally {
+        if (DB::transactionLevel() > 0) {
+            DB::rollBack();
+        }
+        fclose($channels[0]);
+        pcntl_waitpid($pid, $status);
+        DB::purge();
+        $restore();
+    }
+    expect(pcntl_wifexited($status))->toBeTrue()->and(pcntl_wexitstatus($status))->toBe(0)
+        ->and(Schema::hasTable('primary_campaign_closure_returns'))->toBeTrue()
+        ->and($shape())->toEqual($installed);
+})->with([
+    'confirm after version' => [['primary_reservation_versions'], ['primary_commitments', 'investor_wallets', 'ledger_entries', 'command_operations']],
+    'release after version' => [['primary_reservation_versions'], ['investor_wallets', 'ledger_entries', 'command_operations']],
+    'cancel after closure' => [['business_campaign_closures'], ['command_operations']],
+    'reserve after journal' => [['primary_reservations', 'investor_wallets', 'ledger_entries', 'command_operations'], []],
+    'confirm after journal' => [['primary_reservation_versions', 'primary_commitments', 'investor_wallets', 'ledger_entries', 'command_operations'], []],
+    'release after journal' => [['primary_reservation_versions', 'investor_wallets', 'ledger_entries', 'command_operations'], []],
+    'cancel after journal' => [['business_campaign_closures', 'command_operations'], []],
+]);

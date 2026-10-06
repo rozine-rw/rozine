@@ -1,0 +1,397 @@
+{
+    "MVP-ADMIN-SCR-01-ST-01": {
+        "name": "all clear",
+        "fixtures": ["admin-today-clear"]
+    },
+    "MVP-ADMIN-SCR-01-ST-02": {
+        "name": "a break unassigned",
+        "fixtures": ["admin-today"]
+    },
+    "MVP-ADMIN-SCR-02-ST-01": {
+        "name": "none waiting",
+        "fixtures": ["admin-applications-empty"]
+    },
+    "MVP-ADMIN-SCR-02-ST-02": {
+        "name": "missing audit",
+        "fixtures": ["admin-applications-missing-audit"]
+    },
+    "MVP-ADMIN-SCR-03-ST-01": {
+        "name": "awaiting second approver",
+        "fixtures": ["admin-disbursements-awaiting-second"]
+    },
+    "MVP-ADMIN-SCR-03-ST-02": {
+        "name": "failed payout",
+        "fixtures": ["admin-disbursements-verified-failure-unreconciled"]
+    },
+    "MVP-ADMIN-SCR-04-ST-01": {
+        "name": "out of balance",
+        "fixtures": [
+            "admin-reconciliation",
+            "admin-repayments-exception-mismatch"
+        ]
+    },
+    "MVP-ADMIN-SCR-04-ST-02": {
+        "name": "feed unavailable",
+        "fixtures": ["admin-reconciliation-feed-unavailable"]
+    },
+    "MVP-ADMIN-SCR-05-ST-01": {
+        "name": "none live",
+        "fixtures": ["admin-book-empty"]
+    },
+    "MVP-ADMIN-SCR-05-ST-02": {
+        "name": "concentration cap breached",
+        "disposition": "deferred",
+        "note": "No approved book-level exposure or concentration policy exists (crosswalk G: approved exposure policy and actual triggers). The #99 50% single-investor per-raise cap is enforced at purchase, not on the Book, so a breach here would be a fabricated state."
+    },
+    "MVP-ADMIN-SCR-06-ST-01": {
+        "name": "none open",
+        "fixtures": ["admin-exceptions-empty"]
+    },
+    "MVP-ADMIN-SCR-06-ST-02": {
+        "name": "one past escalation window",
+        "disposition": "deferred",
+        "note": "The D-25/28/54 escalation windows are unsigned, so no exception can be past one; the screen shows age and owner only and offers no escalate command."
+    },
+    "MVP-ADMIN-SCR-07-ST-01": {
+        "name": "district uncovered",
+        "fixtures": ["admin-coverage"]
+    },
+    "MVP-ADMIN-SCR-07-ST-02": {
+        "name": "licence expired",
+        "fixtures": ["admin-auditors-licence"]
+    },
+    "MVP-ADMIN-SCR-08-ST-01": {
+        "name": "frozen",
+        "fixtures": ["admin-businesses-frozen"]
+    },
+    "MVP-ADMIN-SCR-08-ST-02": {
+        "name": "KYC overdue",
+        "fixtures": ["admin-investors-kyc-overdue"]
+    },
+    "MVP-ADMIN-SCR-09-ST-01": {
+        "name": "filtered to nothing",
+        "fixtures": ["admin-events-filtered-empty"]
+    },
+    "MVP-ADMIN-SCR-09-ST-02": {
+        "name": "export running",
+        "fixtures": ["admin-events-export-running"]
+    },
+    "MVP-ADMIN-SCR-10-ST-01": {
+        "name": "period incomplete",
+        "fixtures": ["admin-reports-incomplete"]
+    },
+    "MVP-ADMIN-SCR-10-ST-02": {
+        "name": "figures still moving",
+        "fixtures": ["admin-reports"]
+    },
+    "MVP-AUDITOR-SCR-01-ST-01": {
+        "name": "none assigned",
+        "fixtures": ["auditor-jobs-empty"]
+    },
+    "MVP-AUDITOR-SCR-01-ST-02": {
+        "name": "overdue",
+        "fixtures": ["auditor-jobs-overdue"]
+    },
+    "MVP-AUDITOR-SCR-01-ST-03": {
+        "name": "declined",
+        "fixtures": ["auditor-jobs-declined"]
+    },
+    "MVP-AUDITOR-SCR-02-ST-01": {
+        "name": "first visit",
+        "fixtures": ["auditor-file-start", "auditor-file"]
+    },
+    "MVP-AUDITOR-SCR-02-ST-02": {
+        "name": "reassigned to you",
+        "fixtures": ["auditor-file-reassigned"]
+    },
+    "MVP-AUDITOR-SCR-03-ST-01": {
+        "name": "part complete",
+        "fixtures": ["auditor-audit-check-in-done"]
+    },
+    "MVP-AUDITOR-SCR-03-ST-02": {
+        "name": "offline, unsynced",
+        "disposition": "partial",
+        "note": "The web labels offline on every Auditor screen (#156, `auditor-audit-photos-offline`). Durable unsynced capture is the D-04 native companion, deferred to UAT with real users."
+    },
+    "MVP-AUDITOR-SCR-04-ST-01": {
+        "name": "no signal",
+        "fixtures": ["auditor-audit-photos-offline"]
+    },
+    "MVP-AUDITOR-SCR-04-ST-02": {
+        "name": "storage full",
+        "fixtures": ["auditor-audit-photos-storage-full"]
+    },
+    "MVP-AUDITOR-SCR-04-ST-03": {
+        "name": "upload failed",
+        "fixtures": ["auditor-audit-photos-upload-failed"]
+    },
+    "MVP-AUDITOR-SCR-05-ST-01": {
+        "name": "variance found",
+        "fixtures": ["auditor-audit-ledger-ingested"]
+    },
+    "MVP-AUDITOR-SCR-05-ST-02": {
+        "name": "feed unavailable",
+        "fixtures": ["auditor-audit-statements-unavailable"]
+    },
+    "MVP-AUDITOR-SCR-06-ST-01": {
+        "name": "incomplete",
+        "fixtures": ["auditor-audit-seal"]
+    },
+    "MVP-AUDITOR-SCR-06-ST-02": {
+        "name": "submitted",
+        "fixtures": ["auditor-audit-sealed"]
+    },
+    "MVP-AUDITOR-SCR-06-ST-03": {
+        "name": "rejected",
+        "fixtures": ["auditor-audit-returned-rejected"]
+    },
+    "MVP-AUDITOR-SCR-07-ST-01": {
+        "name": "none yet",
+        "fixtures": ["auditor-portfolio-empty"]
+    },
+    "MVP-AUDITOR-SCR-07-ST-02": {
+        "name": "one late",
+        "fixtures": ["auditor-portfolio-late"]
+    },
+    "MVP-AUDITOR-SCR-07-ST-03": {
+        "name": "one rejected",
+        "fixtures": ["auditor-portfolio", "auditor-portfolio-rejected"]
+    },
+    "MVP-AUDITOR-SCR-08-ST-01": {
+        "name": "nothing earned yet",
+        "disposition": "missing",
+        "note": "No screen. `auditor-shell.tsx:133` defers earnings to Phase 2."
+    },
+    "MVP-AUDITOR-SCR-08-ST-02": {
+        "name": "payment delayed",
+        "disposition": "missing",
+        "note": "No screen."
+    },
+    "MVP-BUSINESS-SCR-01-ST-01": {
+        "name": "no deal yet",
+        "fixtures": ["business-home-no-deal"]
+    },
+    "MVP-BUSINESS-SCR-01-ST-02": {
+        "name": "frozen",
+        "disposition": "missing",
+        "note": "No frozen field in the Home props (`types/business.ts`). Needs a server prop."
+    },
+    "MVP-BUSINESS-SCR-01-ST-03": {
+        "name": "in arrears",
+        "disposition": "partial",
+        "note": "Only the `repayment_due` Today item exists. There is no arrears or overdue variant."
+    },
+    "MVP-BUSINESS-SCR-02-ST-01": {
+        "name": "draft",
+        "fixtures": ["business-apply-raise"]
+    },
+    "MVP-BUSINESS-SCR-02-ST-02": {
+        "name": "ineligible",
+        "fixtures": ["business-apply-ineligible"]
+    },
+    "MVP-BUSINESS-SCR-02-ST-03": {
+        "name": "under review",
+        "fixtures": ["business-apply-pending-review"]
+    },
+    "MVP-BUSINESS-SCR-03-ST-01": {
+        "name": "pending audit",
+        "fixtures": ["business-rating-pending"]
+    },
+    "MVP-BUSINESS-SCR-03-ST-02": {
+        "name": "refused, with reasons",
+        "fixtures": ["business-rating-refused"]
+    },
+    "MVP-BUSINESS-SCR-04-ST-01": {
+        "name": "not yet listed",
+        "fixtures": ["business-publish"]
+    },
+    "MVP-BUSINESS-SCR-04-ST-02": {
+        "name": "fully funded",
+        "fixtures": ["business-campaign-funded-awaiting"]
+    },
+    "MVP-BUSINESS-SCR-04-ST-03": {
+        "name": "expired",
+        "fixtures": ["business-campaign-expired"]
+    },
+    "MVP-BUSINESS-SCR-05-ST-01": {
+        "name": "paid ahead",
+        "fixtures": ["business-repayments-ahead"]
+    },
+    "MVP-BUSINESS-SCR-05-ST-02": {
+        "name": "overdue",
+        "fixtures": ["business-repayments-overdue"]
+    },
+    "MVP-BUSINESS-SCR-05-ST-03": {
+        "name": "defaulted",
+        "disposition": "missing",
+        "note": "Reserved: nothing emits a `defaulted` servicing state before Phase 2 (C4 v1 `ServicingState`). Overdue with arrears is covered (`business-repayments-overdue`)."
+    },
+    "MVP-BUSINESS-SCR-06-ST-01": {
+        "name": "due now",
+        "disposition": "partial",
+        "note": "Co-sign open is covered (`business-audit-cosign-n6-open`). There is no Business monthly-report composer or submission."
+    },
+    "MVP-BUSINESS-SCR-06-ST-02": {
+        "name": "late",
+        "fixtures": ["business-audit-cosign-overdue"]
+    },
+    "MVP-BUSINESS-SCR-06-ST-03": {
+        "name": "rejected by CPA",
+        "disposition": "missing",
+        "note": "No Business-side view of a rejected report. Only the Auditor side exists (`auditor-audit-returned-rejected`)."
+    },
+    "MVP-BUSINESS-SCR-07-ST-01": {
+        "name": "awaiting first audit",
+        "fixtures": ["business-audit-prep-first"]
+    },
+    "MVP-BUSINESS-SCR-07-ST-02": {
+        "name": "CPA reassigned",
+        "fixtures": ["business-audit-prep-reassigned"]
+    },
+    "MVP-BUSINESS-SCR-08-ST-01": {
+        "name": "empty",
+        "fixtures": ["business-wallet-empty"]
+    },
+    "MVP-BUSINESS-SCR-08-ST-02": {
+        "name": "pending settlement",
+        "fixtures": [
+            "business-wallet-deposit-pending",
+            "business-wallet-deposit-unknown"
+        ]
+    },
+    "MVP-BUSINESS-SCR-08-ST-03": {
+        "name": "failed",
+        "fixtures": ["business-wallet-deposit-failed"]
+    },
+    "MVP-BUSINESS-SCR-09-ST-01": {
+        "name": "incomplete",
+        "fixtures": ["business-onboarding-documents"]
+    },
+    "MVP-BUSINESS-SCR-09-ST-02": {
+        "name": "document expired",
+        "fixtures": ["business-profile-company-expired"]
+    },
+    "MVP-INVESTOR-SCR-01-ST-01": {
+        "name": "none listed",
+        "fixtures": ["investor-deals-empty"]
+    },
+    "MVP-INVESTOR-SCR-01-ST-02": {
+        "name": "all sold out",
+        "fixtures": ["investor-deals-all-closed"]
+    },
+    "MVP-INVESTOR-SCR-01-ST-03": {
+        "name": "gated",
+        "fixtures": ["investor-deals-gated"]
+    },
+    "MVP-INVESTOR-SCR-02-ST-01": {
+        "name": "sold out mid-read",
+        "fixtures": [
+            "investor-deal-fully-reserved",
+            "investor-checkout-units-unavailable"
+        ]
+    },
+    "MVP-INVESTOR-SCR-02-ST-02": {
+        "name": "frozen",
+        "fixtures": ["investor-deals-restricted"]
+    },
+    "MVP-INVESTOR-SCR-02-ST-03": {
+        "name": "withdrawn",
+        "fixtures": ["investor-deal-cancelled"]
+    },
+    "MVP-INVESTOR-SCR-03-ST-01": {
+        "name": "below minimum",
+        "disposition": "partial",
+        "note": "`TRADE_BELOW_MINIMUM` is typed (`types/investor.ts:299`). It is not rendered and no test covers it."
+    },
+    "MVP-INVESTOR-SCR-03-ST-02": {
+        "name": "wallet short",
+        "fixtures": ["investor-checkout-wallet-short"]
+    },
+    "MVP-INVESTOR-SCR-03-ST-03": {
+        "name": "cap hit",
+        "fixtures": ["investor-checkout-cap-hit"]
+    },
+    "MVP-INVESTOR-SCR-04-ST-01": {
+        "name": "nothing held yet",
+        "fixtures": ["investor-portfolio-empty"]
+    },
+    "MVP-INVESTOR-SCR-04-ST-02": {
+        "name": "a note in arrears",
+        "fixtures": ["investor-portfolio"]
+    },
+    "MVP-INVESTOR-SCR-05-ST-01": {
+        "name": "matured",
+        "fixtures": ["investor-holding-matured"]
+    },
+    "MVP-INVESTOR-SCR-05-ST-02": {
+        "name": "frozen",
+        "fixtures": ["investor-holding-frozen"]
+    },
+    "MVP-INVESTOR-SCR-05-ST-03": {
+        "name": "defaulted",
+        "fixtures": ["investor-holding-defaulted"]
+    },
+    "MVP-INVESTOR-SCR-06-ST-01": {
+        "name": "empty book",
+        "disposition": "phase-3",
+        "note": "Secondary market screen, Phase 3."
+    },
+    "MVP-INVESTOR-SCR-06-ST-02": {
+        "name": "your order unfilled",
+        "disposition": "phase-3",
+        "note": "Secondary market screen, Phase 3."
+    },
+    "MVP-INVESTOR-SCR-07-ST-01": {
+        "name": "exit blocked",
+        "disposition": "phase-3",
+        "note": "Secondary market screen, Phase 3."
+    },
+    "MVP-INVESTOR-SCR-07-ST-02": {
+        "name": "quote expired",
+        "disposition": "phase-3",
+        "note": "Secondary market screen, Phase 3."
+    },
+    "MVP-INVESTOR-SCR-08-ST-01": {
+        "name": "empty",
+        "fixtures": ["investor-wallet-empty"]
+    },
+    "MVP-INVESTOR-SCR-08-ST-02": {
+        "name": "withdrawal pending",
+        "disposition": "missing",
+        "note": "Withdrawal is hidden (\"…with withdrawal hidden\", `wallet.test.tsx`)."
+    },
+    "MVP-INVESTOR-SCR-08-ST-03": {
+        "name": "failed",
+        "fixtures": ["investor-wallet-deposit-failed"]
+    },
+    "MVP-INVESTOR-SCR-09-ST-01": {
+        "name": "not eligible",
+        "fixtures": ["investor-profile-automation"]
+    },
+    "MVP-INVESTOR-SCR-09-ST-02": {
+        "name": "paused",
+        "disposition": "deferred",
+        "note": "Auto-Deploy cannot run in the MVP (D-61, C-29); a paused or capped mandate would be a fabricated live outcome."
+    },
+    "MVP-INVESTOR-SCR-09-ST-03": {
+        "name": "cap reached",
+        "disposition": "deferred",
+        "note": "Auto-Deploy cannot run in the MVP (D-61, C-29); a paused or capped mandate would be a fabricated live outcome."
+    },
+    "MVP-INVESTOR-SCR-10-ST-01": {
+        "name": "no history yet",
+        "fixtures": ["investor-profile-statements-empty"]
+    },
+    "MVP-INVESTOR-SCR-10-ST-02": {
+        "name": "period incomplete",
+        "fixtures": ["investor-profile-statements"]
+    },
+    "MVP-INVESTOR-SCR-11-ST-01": {
+        "name": "unverified",
+        "fixtures": ["investor-profile-unverified"]
+    },
+    "MVP-INVESTOR-SCR-11-ST-02": {
+        "name": "document expired",
+        "fixtures": ["investor-profile-kyc-expired"]
+    }
+}

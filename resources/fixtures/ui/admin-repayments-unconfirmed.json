@@ -1,0 +1,321 @@
+{
+    "component": "admin/repayments",
+    "synthetic": true,
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "repayments": {
+                "url": "/preview/admin-repayments",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2027-01-23T10:00:00+02:00",
+        "contract_version": "staff-servicing-v1",
+        "staff_access_version": "staff-access-v1",
+        "allowed_actions": ["repayment.requery"],
+        "counts": {
+            "due_today": 3,
+            "overdue": 1,
+            "exceptions": 1
+        },
+        "repayments": [
+            {
+                "id": "rpy_0301",
+                "reference": "RPY-2026-0301",
+                "business": "Umucyo Foods",
+                "note_title": "Cold-Chain Hub",
+                "source": "wallet",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "3465000"
+                },
+                "state": "allocated",
+                "dpd_at_receipt": 0,
+                "received_at": "2027-01-23T09:12:04+02:00",
+                "link": {
+                    "url": "/preview/admin-repayments-allocated",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "rpy_0302",
+                "reference": "RPY-2026-0302",
+                "business": "Kivu Coffee",
+                "note_title": "Harvest Capex",
+                "source": "wallet",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "2310000"
+                },
+                "state": "received",
+                "dpd_at_receipt": 0,
+                "received_at": "2027-01-23T09:40:51+02:00",
+                "link": {
+                    "url": "/preview/admin-repayments-received",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "rpy_0303",
+                "reference": "RPY-2026-0303",
+                "business": "Isoko Energy",
+                "note_title": "Solar Kiosks",
+                "source": "inbound_receipt",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "1150000"
+                },
+                "state": "exception",
+                "dpd_at_receipt": 8,
+                "received_at": "2027-01-22T16:05:33+02:00",
+                "link": {
+                    "url": "/preview/admin-repayments-exception-mismatch",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "rpy_0304",
+                "reference": "RPY-2026-0304",
+                "business": "GreenLeaf Agro",
+                "note_title": "Warehouse Robotics",
+                "source": "inbound_receipt",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "4833334"
+                },
+                "state": "received",
+                "dpd_at_receipt": 1,
+                "received_at": "2027-01-22T11:20:09+02:00",
+                "link": {
+                    "url": "/preview/admin-repayments-requery-unknown",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "rpy_0299",
+                "reference": "RPY-2026-0299",
+                "business": "Umucyo Foods",
+                "note_title": "Cold-Chain Hub",
+                "source": "wallet",
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "3465000"
+                },
+                "state": "allocated",
+                "dpd_at_receipt": 0,
+                "received_at": "2026-12-23T08:58:17+02:00",
+                "link": {
+                    "url": "/preview/admin-repayments-allocated",
+                    "method": "get"
+                }
+            }
+        ],
+        "pagination": {
+            "next": null
+        },
+        "repayment": {
+            "id": "rpy_0304",
+            "reference": "RPY-2026-0304",
+            "business": "GreenLeaf Agro",
+            "note_title": "Warehouse Robotics",
+            "source": "inbound_receipt",
+            "amount": {
+                "currency": "RWF",
+                "amount": "4833334"
+            },
+            "state": "received",
+            "dpd_at_receipt": 1,
+            "received_at": "2027-01-22T11:20:09+02:00",
+            "link": {
+                "url": "/preview/admin-repayments-requery-unknown",
+                "method": "get"
+            },
+            "revision": 2,
+            "note_id": "note_0304",
+            "servicing_before": {
+                "state": "overdue",
+                "dpd": 1,
+                "outstanding": {
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "4166667"
+                    },
+                    "return": {
+                        "currency": "RWF",
+                        "amount": "666667"
+                    },
+                    "late_fees": {
+                        "currency": "RWF",
+                        "amount": "241667"
+                    },
+                    "service_fee": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "total": {
+                        "currency": "RWF",
+                        "amount": "5075001"
+                    }
+                }
+            },
+            "servicing_after": null,
+            "source_detail": {
+                "kind": "inbound_receipt",
+                "receipt_id": "inb_01k7b4m8",
+                "provider": {
+                    "state": "unknown",
+                    "operation_id": "01k7b4m8op00000000000000000",
+                    "provider_reference": "BK-270122-11873",
+                    "error_code": null,
+                    "observed_at": "2027-01-22T11:20:40+02:00",
+                    "effective_at": null,
+                    "reconciliation": "unreconciled",
+                    "reconciled_at": null
+                }
+            },
+            "reconciliation": {
+                "state": "unreconciled",
+                "tolerance": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "expected": {
+                    "currency": "RWF",
+                    "amount": "4833334"
+                },
+                "observed": {
+                    "currency": "RWF",
+                    "amount": "4833334"
+                },
+                "difference": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "causes": [],
+                "checked_at": null,
+                "policy_version": "synthetic-reconciliation-policy-0"
+            },
+            "allocation": null,
+            "receipts": [
+                {
+                    "receipt_id": "rcp_rpy0304a",
+                    "operation_id": "op_rcp_rpy0304a",
+                    "request_id": "5c2e8a10-0000-4000-8000-00000000304a",
+                    "code": "REPAYMENT_RECEIVED",
+                    "recorded_at": "2027-01-22T11:20:09+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "4833334"
+                    },
+                    "units": null,
+                    "reference": "RPY-2026-0304",
+                    "revision": 2,
+                    "policy_version": "synthetic-servicing-policy-0",
+                    "disclosure_version": null,
+                    "link": {
+                        "url": "/preview/admin-repayments-requery-unknown",
+                        "method": "get"
+                    }
+                }
+            ],
+            "trail": [
+                {
+                    "id": "ev_1",
+                    "at": "2027-01-22T11:20:09+02:00",
+                    "actor": "System",
+                    "action": {
+                        "code": "repayment.received",
+                        "label": "Inbound receipt recorded",
+                        "tone": "blue"
+                    },
+                    "reason": null
+                }
+            ],
+            "allowed_actions": ["repayment.requery"],
+            "actions": {
+                "requery": {
+                    "url": "/preview/admin-repayments-requery-unknown",
+                    "method": "post"
+                }
+            },
+            "links": {
+                "close": {
+                    "url": "/preview/admin-repayments",
+                    "method": "get"
+                },
+                "ledger": null,
+                "operation": {
+                    "url": "/preview/admin-repayments-operation-{request_id}",
+                    "method": "get"
+                },
+                "business": {
+                    "url": "/preview/admin-businesses",
+                    "method": "get"
+                }
+            }
+        },
+        "preview_outcome": {
+            "kind": "unconfirmed",
+            "command": {
+                "name": "repayment.requery",
+                "payload": {
+                    "request_id": "3b9d1f47-8c2a-4e6b-9f0d-1a2c3e4f5a6b",
+                    "repayment_id": "rpy_0304",
+                    "expected_revision": 2,
+                    "reason": "The bank statement shows the credit; asking the provider to confirm."
+                }
+            }
+        }
+    }
+}

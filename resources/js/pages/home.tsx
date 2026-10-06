@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { Component, Fragment, createElement } from 'react';
 
+import { AppEntry } from '@/components/site/app-entry';
 import { downloadPassCard } from '@/lib/pass-card-image';
 import type { PassCardSpec } from '@/lib/pass-card-image';
 import { store as storeBusiness } from '@/routes/site/business';
@@ -23,7 +24,11 @@ declare module 'react' {
     }
 }
 
-type SiteProps = object;
+/** Shared Inertia props the page reads: the app entry shows only on an isolated environment. */
+type SiteProps = {
+    nonLiveEnvironment?: string | null;
+    auth?: { user: unknown };
+};
 
 type SiteState = Record<string, any>;
 type SiteVals = Record<string, any>;
@@ -36,6 +41,13 @@ export default class Home extends Component<SiteProps, SiteState> {
     private _tgt?: { dep: number; ret: number };
 
     private _rzRO?: ResizeObserver;
+
+    /** The glass mask's follow-up measurements, released on unmount so none fires after it. */
+    private _rzFrame = 0;
+
+    private _rzTimers: ReturnType<typeof setTimeout>[] = [];
+
+    private readonly _rzResize = () => this._rzMask();
 
     state: SiteState = Object.assign(
         {
@@ -145,16 +157,20 @@ export default class Home extends Component<SiteProps, SiteState> {
     }
     _rzWatch() {
         this._rzMask();
-        requestAnimationFrame(() => this._rzMask());
-        setTimeout(() => this._rzMask(), 400);
-        setTimeout(() => this._rzMask(), 1200);
+        cancelAnimationFrame(this._rzFrame);
+        this._rzFrame = requestAnimationFrame(() => this._rzMask());
+        this._rzTimers.forEach(clearTimeout);
+        this._rzTimers = [
+            setTimeout(() => this._rzMask(), 400),
+            setTimeout(() => this._rzMask(), 1200),
+        ];
 
         if (!this._rzRO && window.ResizeObserver) {
             this._rzRO = new ResizeObserver(() => this._rzMask());
             this._rzRO.observe(document.body);
         }
 
-        window.addEventListener('resize', () => this._rzMask());
+        window.addEventListener('resize', this._rzResize);
     }
 
     componentDidUpdate() {
@@ -162,6 +178,12 @@ export default class Home extends Component<SiteProps, SiteState> {
     }
     componentWillUnmount() {
         cancelAnimationFrame(this._raf);
+        clearTimeout(this._sm);
+        cancelAnimationFrame(this._rzFrame);
+        this._rzTimers.forEach(clearTimeout);
+        this._rzRO?.disconnect();
+        this._rzRO = undefined;
+        window.removeEventListener('resize', this._rzResize);
     }
     chargeFor(dep: number) {
         const B = [
@@ -1233,6 +1255,15 @@ export default class Home extends Component<SiteProps, SiteState> {
                                     >
                                         Help
                                     </a>
+                                    <AppEntry
+                                        environment={
+                                            this.props.nonLiveEnvironment ??
+                                            null
+                                        }
+                                        signedIn={Boolean(
+                                            this.props.auth?.user,
+                                        )}
+                                    />
                                 </nav>
                             </div>
                             <div

@@ -1,0 +1,302 @@
+{
+    "component": "admin/book",
+    "synthetic": true,
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "repayments": {
+                "url": "/preview/admin-repayments",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "book": {
+                "url": "/preview/admin-book",
+                "method": "get"
+            },
+            "exceptions": {
+                "url": "/preview/admin-exceptions",
+                "method": "get"
+            },
+            "reconciliation": {
+                "url": "/preview/admin-reconciliation",
+                "method": "get"
+            },
+            "coverage": {
+                "url": "/preview/admin-coverage",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/admin-reports",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2027-01-23T10:00:00+02:00",
+        "contract_version": "staff-book-v1",
+        "staff_access_version": "staff-access-v1",
+        "allowed_actions": [],
+        "stats": [
+            {
+                "key": "live_notes",
+                "value": {
+                    "kind": "count",
+                    "value": 6
+                }
+            },
+            {
+                "key": "principal_outstanding",
+                "value": {
+                    "kind": "money",
+                    "value": {
+                        "currency": "RWF",
+                        "amount": "46166667"
+                    }
+                }
+            },
+            {
+                "key": "due_today",
+                "value": {
+                    "kind": "count",
+                    "value": 1
+                }
+            },
+            {
+                "key": "overdue",
+                "value": {
+                    "kind": "count",
+                    "value": 3
+                }
+            }
+        ],
+        "chips": [
+            {
+                "key": "all",
+                "count": 6,
+                "link": {
+                    "url": "/preview/admin-book",
+                    "method": "get"
+                },
+                "active": true
+            },
+            {
+                "key": "current",
+                "count": 2,
+                "link": {
+                    "url": "/preview/admin-book",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "due_today",
+                "count": 1,
+                "link": {
+                    "url": "/preview/admin-book",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "overdue",
+                "count": 3,
+                "link": {
+                    "url": "/preview/admin-book",
+                    "method": "get"
+                },
+                "active": false
+            }
+        ],
+        "notes": [
+            {
+                "id": "note_0301",
+                "note_id": "note_0301",
+                "business": "Umucyo Foods",
+                "note_title": "Cold-Chain Hub",
+                "principal_outstanding": {
+                    "currency": "RWF",
+                    "amount": "9000000"
+                },
+                "next_due": {
+                    "on": "2027-02-23",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "3465000"
+                    }
+                },
+                "servicing": "current",
+                "dpd": null,
+                "link": {
+                    "url": "/preview/admin-repayments-allocated",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "note_0302",
+                "note_id": "note_0302",
+                "business": "Kivu Coffee",
+                "note_title": "Harvest Capex",
+                "principal_outstanding": {
+                    "currency": "RWF",
+                    "amount": "8000000"
+                },
+                "next_due": {
+                    "on": "2027-01-23",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "2310000"
+                    }
+                },
+                "servicing": "due_today",
+                "dpd": 0,
+                "link": {
+                    "url": "/preview/admin-repayments-received",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "note_0304",
+                "note_id": "note_0304",
+                "business": "GreenLeaf Agro",
+                "note_title": "Warehouse Robotics",
+                "principal_outstanding": {
+                    "currency": "RWF",
+                    "amount": "4166667"
+                },
+                "next_due": {
+                    "on": "2027-01-21",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "4833334"
+                    }
+                },
+                "servicing": "overdue",
+                "dpd": 2,
+                "link": {
+                    "url": "/preview/admin-repayments-requery-unknown",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "note_0303",
+                "note_id": "note_0303",
+                "business": "Isoko Energy",
+                "note_title": "Solar Kiosks",
+                "principal_outstanding": {
+                    "currency": "RWF",
+                    "amount": "4000000"
+                },
+                "next_due": {
+                    "on": "2027-01-14",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "1265000"
+                    }
+                },
+                "servicing": "overdue",
+                "dpd": 9,
+                "link": {
+                    "url": "/preview/admin-repayments-exception-mismatch",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "note_0287",
+                "note_id": "note_0287",
+                "business": "Ubuki Crafts",
+                "note_title": "Loom Expansion",
+                "principal_outstanding": {
+                    "currency": "RWF",
+                    "amount": "6000000"
+                },
+                "next_due": {
+                    "on": "2026-12-16",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "2340000"
+                    }
+                },
+                "servicing": "overdue",
+                "dpd": 38,
+                "link": {
+                    "url": "/preview/admin-exceptions",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "note_0310",
+                "note_id": "note_0310",
+                "business": "Nyungwe Tea",
+                "note_title": "Drying Shed",
+                "principal_outstanding": {
+                    "currency": "RWF",
+                    "amount": "15000000"
+                },
+                "next_due": {
+                    "on": "2027-02-05",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "1890000"
+                    }
+                },
+                "servicing": "current",
+                "dpd": null,
+                "link": {
+                    "url": "/preview/admin-repayments",
+                    "method": "get"
+                }
+            }
+        ],
+        "pagination": {
+            "next": null
+        }
+    }
+}

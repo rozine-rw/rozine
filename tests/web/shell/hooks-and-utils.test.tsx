@@ -1,5 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { renderToString } from 'react-dom/server';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useFlashToast } from '@/hooks/use-flash-toast';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
@@ -8,7 +9,8 @@ import { cn, toUrl } from '@/lib/utils';
 const mocks = vi.hoisted(() => ({
     pageUrl: '/settings/profile?tab=account',
     flashListener: undefined as
-        ((event: CustomEvent<{ flash?: unknown }>) => void) | undefined,
+        | ((event: CustomEvent<{ flash?: unknown }>) => void)
+        | undefined,
     routerCleanup: vi.fn(),
     routerOn: vi.fn(),
     success: vi.fn(),
@@ -80,7 +82,13 @@ describe('current URL behavior', () => {
     it('uses a deterministic origin when rendering without a browser window', () => {
         vi.stubGlobal('window', undefined);
 
-        expect(useCurrentUrl().currentUrl).toBe('/settings/profile');
+        function ServerUrl() {
+            return <span>{useCurrentUrl().currentUrl}</span>;
+        }
+
+        expect(renderToString(<ServerUrl />)).toBe(
+            '<span>/settings/profile</span>',
+        );
     });
 
     it('returns the requested current and fallback values', () => {

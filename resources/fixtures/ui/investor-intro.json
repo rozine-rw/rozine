@@ -1,0 +1,25 @@
+{
+    "component": "investor/auth/intro",
+    "props": {
+        "pitch": {
+            "rate_min_pct": "10",
+            "rate_max_pct": "15",
+            "term_min_months": 3,
+            "term_max_months": 6,
+            "unit_price": {
+                "currency": "RWF",
+                "amount": "5000"
+            }
+        },
+        "links": {
+            "start": {
+                "url": "/preview/investor-register",
+                "method": "get"
+            },
+            "login": {
+                "url": "/preview/investor-login",
+                "method": "get"
+            }
+        }
+    }
+}

@@ -1,8 +1,185 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Http\Controllers\Api\V1\AuditorEngagementController;
+use App\Http\Controllers\Api\V1\AuditorJobsController;
+use App\Http\Controllers\Api\V1\AuditorProcedureController;
+use App\Http\Controllers\Api\V1\AuditorProfileController;
+use App\Http\Controllers\Api\V1\BusinessApplicationController;
+use App\Http\Controllers\Api\V1\BusinessAuditReportController;
+use App\Http\Controllers\Api\V1\IdentityController;
+use App\Http\Controllers\Api\V1\IdentityManagementController;
+use App\Http\Controllers\Api\V1\RoleBookmarkController;
+use App\Http\Controllers\Api\V1\StaffAccessController;
+use App\Http\Controllers\AuditDisputeController;
+use App\Http\Controllers\AuditOperationsController;
+use App\Http\Controllers\AuditSealVerificationController;
+use App\Http\Controllers\BusinessHomeController;
+use App\Http\Controllers\BusinessPublicationController;
+use App\Http\Controllers\BusinessRepaymentController;
+use App\Http\Controllers\BusinessWalletController;
+use App\Http\Controllers\ChangeFeedController;
+use App\Http\Controllers\InvestorDealsController;
+use App\Http\Controllers\InvestorPrimaryController;
+use App\Http\Controllers\InvestorWalletController;
+use App\Http\Controllers\StaffApplicationReleaseController;
+use App\Http\Controllers\StaffDisbursementController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+Route::get('v1/audit-seals/{report}', AuditSealVerificationController::class)->whereUlid('report')
+    ->middleware(['throttle:60,1', 'cache.headers:no_store'])->name('api.v1.audit.seals.verify');
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/business')->name('api.v1.business.audit-reports.')->group(function (): void {
+    Route::get('audit-report-operations/{request_id}', [BusinessAuditReportController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
+    Route::get('{business}/audit-reports/{report}', [BusinessAuditReportController::class, 'show'])->whereUlid(['business', 'report'])->name('show');
+    Route::post('{business}/audit-reports/{report}/cosign', [BusinessAuditReportController::class, 'cosign'])->whereUlid(['business', 'report'])->name('cosign');
+    Route::post('{business}/audit-reports/{report}/dispute', [AuditDisputeController::class, 'dispute'])->whereUlid(['business', 'report'])->name('dispute');
+    Route::get('{business}/audit-reports/{report}/dispute/proofs/{proof}', [AuditDisputeController::class, 'proof'])->whereUlid(['business', 'report', 'proof'])->defaults('review_role', 'business')->name('disputes.proofs.show');
+});
+
+Route::get('v1/business', [BusinessApplicationController::class, 'index'])
+    ->middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->name('api.v1.business.index');
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+Route::get('v1/identity', IdentityController::class)
+    ->middleware(['auth:sanctum', 'throttle:60,1'])
+    ->name('api.v1.identity.show');
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/business')->name('api.v1.business.repayments.')->group(function (): void {
+    Route::post('{business}/repayments', [BusinessRepaymentController::class, 'pay'])->whereUlid('business')->name('pay');
+    Route::get('{business}/repayment-operations/{request_id}', [BusinessRepaymentController::class, 'operation'])->whereUlid('business')->whereUuid('request_id')->name('operations.show');
+});
+
+Route::get('v1/business/{business}', [BusinessHomeController::class, 'show'])->middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])
+    ->whereUlid('business')->name('api.v1.business.show');
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/business')->name('api.v1.business.wallet.')->group(function (): void {
+    Route::get('{business}/wallet', [BusinessWalletController::class, 'show'])->whereUlid('business')->name('show');
+    Route::post('{business}/wallet/deposits', [BusinessWalletController::class, 'deposit'])->whereUlid('business')->name('deposit');
+    Route::get('{business}/wallet-operations/{request_id}', [BusinessWalletController::class, 'operation'])->whereUlid('business')->whereUuid('request_id')->name('operations.show');
+});
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/business')->name('api.v1.business.applications.')->group(function (): void {
+    Route::get('application-operations/{request_id}', [BusinessApplicationController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
+    Route::post('{business}/applications', [BusinessApplicationController::class, 'create'])->whereUlid('business')->name('create');
+    Route::get('{business}/applications/{application}', [BusinessApplicationController::class, 'show'])->whereUlid(['business', 'application'])->name('show');
+    foreach (['save', 'evaluate', 'submit'] as $command) {
+        Route::post('{business}/applications/{application}/'.$command, [BusinessApplicationController::class, $command])->whereUlid(['business', 'application'])->name($command);
+    }
+});
+
+Route::get('v1/staff-access', StaffAccessController::class)
+    ->middleware(['auth:sanctum', 'throttle:60,1'])
+    ->name('api.v1.staff-access.show');
+
+Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('v1/identity')->name('api.v1.identity.')->group(function (): void {
+    Route::post('people/resolve', [IdentityManagementController::class, 'resolvePerson'])->name('people.resolve');
+    Route::post('staff-people', [IdentityManagementController::class, 'staffPerson'])->name('staff-people.record');
+    Route::post('memberships', [IdentityManagementController::class, 'membership'])->name('memberships.update');
+    Route::post('active-role', [IdentityManagementController::class, 'selectRole'])->name('active-role.store');
+    Route::get('roles/{role}', [IdentityManagementController::class, 'role'])->name('roles.show');
+    Route::get('bookmarks/{role}', [RoleBookmarkController::class, 'show'])->name('bookmarks.show');
+    Route::post('bookmarks', [RoleBookmarkController::class, 'store'])->name('bookmarks.store');
+});
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/disbursements')->name('api.v1.staff.disbursements.')->group(function (): void {
+    Route::get('/', [StaffDisbursementController::class, 'index'])->name('index');
+    Route::get('operations/{request_id}', [StaffDisbursementController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
+    Route::get('{disbursement}', [StaffDisbursementController::class, 'show'])->whereUlid('disbursement')->name('show');
+    Route::post('{disbursement}/step-up', [StaffDisbursementController::class, 'stepUp'])->whereUlid('disbursement')
+        ->middleware('throttle:disbursement-step-up')->name('step-up');
+    foreach (['authorize' => 'authorize', 'approve' => 'approve', 'reject' => 'reject', 'hold' => 'hold', 'release-hold' => 'release_hold', 'requery' => 'requery'] as $path => $command) {
+        Route::post('{disbursement}/'.$path, [StaffDisbursementController::class, 'command'])->whereUlid('disbursement')->defaults('command', $command)->name($path);
+    }
+});
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/audit-assignments')->name('api.v1.staff.audit.')->group(function (): void {
+    Route::get('operations/{request_id}', [AuditOperationsController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
+    Route::get('dispute-operations/{request_id}', [AuditDisputeController::class, 'operation'])->whereUuid('request_id')->name('disputes.operations.show');
+    Route::get('{assignment}/reports/{report}/dispute', [AuditDisputeController::class, 'show'])->whereUlid(['assignment', 'report'])->name('disputes.show');
+    Route::get('{assignment}/reports/{report}/dispute/proofs/{proof}', [AuditDisputeController::class, 'proof'])->whereUlid(['assignment', 'report', 'proof'])->defaults('review_role', 'staff')->name('disputes.proofs.show');
+    foreach (['escalate', 'resolve'] as $decision) {
+        Route::post('{assignment}/reports/{report}/dispute/'.$decision, [AuditDisputeController::class, 'resolve'])->whereUlid(['assignment', 'report'])->defaults('decision_kind', $decision)->name('disputes.'.$decision);
+    }
+    Route::get('{assignment}', [AuditOperationsController::class, 'show'])->where('assignment', '[0-9a-z]{26}')->name('show');
+    foreach (['redispatch', 'close'] as $decision) {
+        Route::post('{assignment}/'.$decision, [AuditOperationsController::class, 'resolve'])->where('assignment', '[0-9a-z]{26}')->defaults('decision', $decision)->name($decision);
+    }
+});
+
+Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('v1/auditor')->name('api.v1.auditor.')->group(function (): void {
+    Route::post('jobs/{assignment}/report', [AuditorProcedureController::class, 'start'])->where('assignment', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.start');
+    Route::get('report-operations/{request_id}', [AuditorProcedureController::class, 'operation'])->whereUuid('request_id')->middleware('cache.headers:private;no_store')->name('reports.operations.show');
+    Route::post('reports/{report}/dispute/uphold', [AuditDisputeController::class, 'uphold'])->whereUlid('report')->middleware('cache.headers:private;no_store')->name('reports.disputes.uphold');
+    Route::get('reports/{report}/dispute/proofs/{proof}', [AuditDisputeController::class, 'proof'])->whereUlid(['report', 'proof'])->middleware('cache.headers:private;no_store')->defaults('review_role', 'auditor')->name('reports.disputes.proofs.show');
+    Route::get('reports/{report}', [AuditorProcedureController::class, 'show'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.show');
+    Route::get('reports/{report}/statements/{document}', [AuditorProcedureController::class, 'statement'])->where(['report' => '[0-9a-z]{26}', 'document' => '[0-9a-z]{26}'])->middleware('cache.headers:private;no_store')->name('reports.statements.show');
+    Route::get('reports/{report}/ledgers/{document}', [AuditorProcedureController::class, 'ledger'])->where(['report' => '[0-9a-z]{26}', 'document' => '[0-9a-z]{26}'])->middleware('cache.headers:private;no_store')->name('reports.ledgers.show');
+    Route::post('reports/{report}/steps', [AuditorProcedureController::class, 'save'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.save');
+    Route::post('reports/{report}/step-up', [AuditorProcedureController::class, 'stepUp'])->where('report', '[0-9a-z]{26}')->middleware(['throttle:audit-step-up', 'cache.headers:private;no_store'])->name('reports.step-up');
+    Route::post('reports/{report}/seal', [AuditorProcedureController::class, 'seal'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.seal');
+    Route::post('reports/{report}/request-changes', [AuditorProcedureController::class, 'requestChanges'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.request-changes');
+    Route::post('reports/{report}/reject', [AuditorProcedureController::class, 'reject'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.reject');
+    Route::post('reports/{report}/amend', [AuditorProcedureController::class, 'amend'])->where('report', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.amend');
+    Route::get('engagement', [AuditorEngagementController::class, 'show'])->middleware('cache.headers:private;no_store')->name('engagement.show');
+    Route::post('engagement/accept', [AuditorEngagementController::class, 'accept'])->middleware('cache.headers:private;no_store')->name('engagement.accept');
+    Route::get('engagement/operations/{request_id}', [AuditorEngagementController::class, 'operation'])->whereUuid('request_id')->middleware('cache.headers:private;no_store')->name('engagement.operations.show');
+    Route::get('jobs', [AuditorJobsController::class, 'index'])->middleware('cache.headers:private;no_store')->name('jobs.index');
+    Route::get('jobs/{assignment}', [AuditorJobsController::class, 'show'])->where('assignment', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('jobs.show');
+    Route::get('conflicts', [AuditorJobsController::class, 'conflicts'])->middleware('cache.headers:private;no_store')->name('conflicts.index');
+    Route::get('jobs/{assignment}/conflict', [AuditorJobsController::class, 'conflict'])->where('assignment', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('conflicts.show');
+    foreach (['accept', 'decline', 'conflict'] as $decision) {
+        Route::post('jobs/{assignment}/'.$decision, [AuditorJobsController::class, 'respond'])->where('assignment', '[0-9a-z]{26}')->defaults('decision', $decision)->name('jobs.'.$decision);
+    }
+    Route::get('assignment-operations/{request_id}', [AuditorJobsController::class, 'operation'])->whereUuid('request_id')->middleware('cache.headers:private;no_store')->name('jobs.operations.show');
+    Route::get('profile', [AuditorProfileController::class, 'show'])->name('profile');
+    Route::post('accreditation', [AuditorProfileController::class, 'submit'])->name('accreditation.submit');
+    Route::post('accreditation/renewal', [AuditorProfileController::class, 'renew'])->name('accreditation.renew');
+    Route::post('accreditation/withdrawal', [AuditorProfileController::class, 'withdraw'])->name('accreditation.withdraw');
+    Route::get('accreditation/certificates/{certificate}', [AuditorProfileController::class, 'certificate'])
+        ->where('certificate', '[0-9a-z]{26}')->name('accreditation.certificates.show');
+    Route::post('availability', [AuditorProfileController::class, 'availability'])->name('availability.update');
+    Route::get('operations/{request_id}', [AuditorProfileController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
+});
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->group(function (): void {
+    Route::get('v1/staff/application-operations/{request_id}', [StaffApplicationReleaseController::class, 'operation'])
+        ->whereUuid('request_id')->name('api.v1.staff.applications.operations.show');
+    Route::get('v1/staff/applications', [StaffApplicationReleaseController::class, 'index'])->name('api.v1.staff.applications.index');
+    Route::get('v1/staff/applications/{application}', [StaffApplicationReleaseController::class, 'show'])
+        ->whereUlid('application')->name('api.v1.staff.applications.show');
+    Route::post('v1/staff/applications/{application}/release', [StaffApplicationReleaseController::class, 'release'])
+        ->whereUlid('application')->name('api.v1.staff.applications.release');
+    Route::get('v1/business/{business}/applications/{application}/publish', [BusinessPublicationController::class, 'show'])
+        ->whereUlid(['business', 'application'])->name('api.v1.business.applications.publish.show');
+    Route::post('v1/business/{business}/applications/{application}/publish', [BusinessPublicationController::class, 'publish'])
+        ->whereUlid(['business', 'application'])->name('api.v1.business.applications.publish');
+    Route::get('v1/business/{business}/campaigns/{campaign}', [BusinessPublicationController::class, 'campaign'])
+        ->whereUlid(['business', 'campaign'])->name('api.v1.business.campaigns.show');
+    Route::post('v1/business/{business}/campaigns/{campaign}/cancel', [BusinessPublicationController::class, 'cancel'])
+        ->whereUlid(['business', 'campaign'])->name('api.v1.business.campaigns.cancel');
+});
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/investor')->name('api.v1.investor.')->group(function (): void {
+    Route::get('deals', [InvestorDealsController::class, 'index'])->name('deals');
+    Route::get('deals/{campaign}', [InvestorDealsController::class, 'show'])->whereUlid('campaign')->name('deals.show');
+    Route::get('wallet', [InvestorWalletController::class, 'show'])->name('wallet');
+    Route::post('wallet/deposits', [InvestorWalletController::class, 'deposit'])->name('wallet.deposit');
+    Route::get('wallet-operations/{request_id}', [InvestorWalletController::class, 'operation'])->whereUuid('request_id')->name('wallet.operations.show');
+    Route::post('deals/{campaign}/reservations', [InvestorPrimaryController::class, 'reserve'])->whereUlid('campaign')->name('primary.reserve');
+    Route::post('reservations/{reservation}/confirm', [InvestorPrimaryController::class, 'confirm'])->whereUlid('reservation')->name('primary.confirm');
+    Route::post('reservations/{reservation}/release', [InvestorPrimaryController::class, 'release'])->whereUlid('reservation')->name('primary.release');
+    Route::get('commitments/{commitment}', [InvestorPrimaryController::class, 'commitment'])->whereUlid('commitment')->name('commitments.show');
+    Route::post('commitments/{commitment}/cancel', [InvestorPrimaryController::class, 'cancel'])->whereUlid('commitment')->name('primary.cancel');
+    Route::get('deals/{campaign}/primary-operations/{request_id}', [InvestorPrimaryController::class, 'operation'])->whereUlid('campaign')->whereUuid('request_id')
+        ->name('primary.operations.show');
+});
+
+Route::middleware(['auth:sanctum', 'throttle:changes', 'cache.headers:private;no_store'])->group(function (): void {
+    Route::get('v1/changes', [ChangeFeedController::class, 'index'])->name('api.v1.changes.index');
+});

@@ -14,13 +14,15 @@
 # testing
 /coverage
 /.coverage-provenance/
+/.playwright-cli/
+/output/playwright/
 
 # next.js
 /.next/
 /out/
 
-# production
-/build
+# production build output (Vite writes here; deploys build it on the server)
+/public/build
 
 # misc
 .amplify

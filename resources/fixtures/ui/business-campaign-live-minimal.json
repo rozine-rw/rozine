@@ -1,0 +1,77 @@
+{
+    "component": "business/campaign",
+    "synthetic": true,
+    "props": {
+        "contract_version": "business-campaign-v1",
+        "identity_context_revision": 4,
+        "server_time": "2026-09-25T09:00:00+02:00",
+        "allowed_actions": [],
+        "campaign": {
+            "id": "01k6r3d9t4e1g5h0j3k7m2n8p4",
+            "revision": 1,
+            "lifecycle": "live"
+        },
+        "home": null,
+        "shell_links": {
+            "home": {
+                "url": "/business",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/dashboard",
+                "method": "get"
+            },
+            "reports": null,
+            "profile": null
+        },
+        "note": {
+            "id": "01k6r3d9t4e1g5h0j3k7m2n8p4",
+            "title": "Cold-Chain Hub",
+            "progress": {
+                "phase": "raising",
+                "lifecycle": "live",
+                "restriction": null,
+                "committed": {
+                    "currency": "RWF",
+                    "amount": "14058000"
+                },
+                "reserved": {
+                    "currency": "RWF",
+                    "amount": "900000"
+                },
+                "remaining": {
+                    "currency": "RWF",
+                    "amount": "3042000"
+                },
+                "units": {
+                    "total": "18000",
+                    "available": "3042",
+                    "reserved": "900",
+                    "committed": "14058",
+                    "unavailable": "0"
+                },
+                "investors": 318,
+                "funded_pct": "78.1",
+                "clock": {
+                    "starts_at": "2026-09-02T09:00:00+02:00",
+                    "expires_at": "2026-10-02T09:00:00+02:00"
+                }
+            },
+            "photos": [],
+            "performance": null
+        },
+        "links": {
+            "close": {
+                "url": "/business",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/business/campaign-operations/{request_id}",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "cancel": null
+        }
+    }
+}

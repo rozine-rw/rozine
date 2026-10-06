@@ -1,0 +1,114 @@
+{
+    "component": "admin/reports",
+    "synthetic": true,
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "repayments": {
+                "url": "/preview/admin-repayments",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "book": {
+                "url": "/preview/admin-book",
+                "method": "get"
+            },
+            "exceptions": {
+                "url": "/preview/admin-exceptions",
+                "method": "get"
+            },
+            "reconciliation": {
+                "url": "/preview/admin-reconciliation",
+                "method": "get"
+            },
+            "coverage": {
+                "url": "/preview/admin-coverage",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/admin-reports",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2027-01-23T10:00:00+02:00",
+        "contract_version": "staff-reports-v1",
+        "staff_access_version": "staff-access-v1",
+        "allowed_actions": [],
+        "packs": [
+            {
+                "id": "rpt_board_2027_01",
+                "kind": "board",
+                "label": "Board pack · January 2027",
+                "period": {
+                    "start": "2027-01-01",
+                    "end": "2027-01-31"
+                },
+                "link": null,
+                "status": "incomplete",
+                "as_of": null
+            },
+            {
+                "id": "rpt_reg_2027q1",
+                "kind": "regulator",
+                "label": "Regulator pack · Q1 2027",
+                "period": {
+                    "start": "2027-01-01",
+                    "end": "2027-03-31"
+                },
+                "link": null,
+                "status": "incomplete",
+                "as_of": null
+            }
+        ]
+    }
+}

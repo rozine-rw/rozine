@@ -1,7 +1,7 @@
 import type { Auth } from '@/types/auth';
 
 declare module 'react' {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // oxlint-disable-next-line @typescript-eslint/no-unused-vars
     interface InputHTMLAttributes<T> {
         passwordrules?: string;
     }
@@ -13,6 +13,8 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             sidebarOpen: boolean;
+            locale: string;
+            nonLiveEnvironment: 'demo' | 'uat' | null;
             [key: string]: unknown;
         };
     }

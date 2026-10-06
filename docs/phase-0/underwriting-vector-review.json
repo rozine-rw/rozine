@@ -1,0 +1,1611 @@
+{
+  "schema_version": 1,
+  "review_version": "review-2026-09-10.1",
+  "status": "SOURCE_DISPOSITION_REGISTER_NOT_BASELINED",
+  "production_activation": false,
+  "source_path": "docs/Rozine_Phased_Implementation_Plan.md",
+  "source_section": "A.5 Minimum golden-vector matrix",
+  "source_rows_sha256": "a916d7bbb44f64101e364e1eebcc51f1ff0df6562864c3e2564a6299f8132818",
+  "fixture_pack": "policy-review-fixtures.json",
+  "vectors": [
+    {
+      "id": "GV-001",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "No verified statement/evidence.",
+      "source_expected": "No capacity or offer; reason code is stable and auditable. EngineScore/rating representation is deliberately out of scope and covered by `GV-037`.",
+      "source_requirements": "BR-10, BR-15",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-002",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Exactly 5, 6, 11, and 12 complete consecutive months; repeat with a missing month, current partial month, latest complete month 46 days stale, and a seasonal/restarted/material-event case.",
+      "source_expected": "Five months, a gap, or staleness produces no capacity/rating/yield while retaining evidence and scheduling rescore. Six–11 months is manual-only. Twelve months permits the auto route subject to every other gate and is mandatory for the special cases.",
+      "source_requirements": "BR-15–BR-16, D-14",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-003",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "One accepted fixture with known normalized inflows/outflows and content hash.",
+      "source_expected": "Parsed/confirmed values trace to immutable evidence; a correction creates a version rather than overwriting source/parser output.",
+      "source_requirements": "FR-201–FR-203, FR-701",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-004",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Two otherwise identical Businesses; one has verified external/Rozine debt service.",
+      "source_expected": "Debt-inclusive CFADS/capacity is lower or equal and the difference is reconstructible.",
+      "source_requirements": "BR-12",
+      "review_fixture_ids": [
+        "REV-DEBT-01"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-005",
+      "source_status": "BLOCKED",
+      "source_condition": "Series with one exceptional positive NOCF month.",
+      "source_expected": "Exceptional month cannot inflate the offer under the approved `UW-08` trim algorithm. Numeric output awaits that algorithm.",
+      "source_requirements": "BR-13",
+      "review_fixture_ids": [
+        "REV-TRIM-01",
+        "REV-TRIM-02",
+        "REV-TRIM-03",
+        "REV-TRIM-04",
+        "REV-TRIM-05"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-006",
+      "source_status": "BLOCKED",
+      "source_condition": "Same normalized cash flow with and without a verified OwnerDraw.",
+      "source_expected": "CFADS changes by the approved OwnerDraw amount/period treatment. Numeric fixture awaits `UW-06`.",
+      "source_requirements": "Section 12",
+      "review_fixture_ids": [
+        "REV-DRAW-01"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-007",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Precomputed authoritative DSCR = `0.99`.",
+      "source_expected": "Decline; no capacity offer or listing path.",
+      "source_requirements": "BR-14",
+      "review_fixture_ids": [
+        "REV-DSCR-01"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-008",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "DSCR = `1.00`.",
+      "source_expected": "Enhanced procedures and manual approval required; never auto-approved.",
+      "source_requirements": "BR-14",
+      "review_fixture_ids": [
+        "REV-DSCR-02"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-009",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Internal DSCR = `1.249`.",
+      "source_expected": "Enhanced procedures and manual approval required. Display rounding cannot move it into the auto tier.",
+      "source_requirements": "BR-14",
+      "review_fixture_ids": [
+        "REV-DSCR-03"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-010",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "DSCR = `1.25`.",
+      "source_expected": "May auto-approve only when co-signature, KYB, and every other eligibility gate pass.",
+      "source_requirements": "BR-14",
+      "review_fixture_ids": [
+        "REV-DSCR-04"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-011",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "A valid substantive existing/current or authorized pre-issue schedule—not a user request or quantization-only edge—produces DSCR in `1.00–<1.25`.",
+      "source_expected": "Preserve enhanced/manual status, reduce any pre-issue principal to the greatest whole-franc amount whose final contractual schedule yields DSCR `≥1.25`, and show the original reason plus reduced capacity.",
+      "source_requirements": "`UW-14`, D-11B",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-012",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Offer capacity `C`; attempted accepted amount or Live listing is `C + 1` franc.",
+      "source_expected": "Server rejects; no client, Admin path, or race can list above `C` except the separately governed permanent Superadmin override.",
+      "source_requirements": "BR-10–BR-11, BR-17",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-013",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Tenor = `4` months; repeat for every value outside 3/6/9/12.",
+      "source_expected": "Validation/domain rejection with stable code; no calculation/listing occurs.",
+      "source_requirements": "BR-20",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-014",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Total-return candidates `9.9%`, `10.0%`, `15.0%`, `15.1%`.",
+      "source_expected": "`9.9%` and `15.1%` rejected; `10.0%` and `15.0%` are within bounds; no user-facing APR.",
+      "source_requirements": "BR-21–BR-22",
+      "review_fixture_ids": [
+        "REV-PRICE-02",
+        "REV-PRICE-03"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-015",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Price published ratings `5.0/4.0/3.0/2.9/2.8/2.0` at 3/6/9/12 months through repeated/domain/web/API/mobile calculations.",
+      "source_expected": "Every layer exactly matches the `pricing-v1` matrix in A.3.1, including floor/cap and explanation, with no prototype coefficient or fixed 13% path.",
+      "source_requirements": "BR-23, FR-602, D-11",
+      "review_fixture_ids": [
+        "REV-PRICE-01",
+        "REV-PRICE-02",
+        "REV-PRICE-03"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-016",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Ratings `4.0`, `3.9`, `3.0`, `2.9`, `2.0`, `1.9`.",
+      "source_expected": "Strong, Stable, Stable, Weak, Weak, Distressed respectively; word then one-decimal number then color.",
+      "source_requirements": "BR-31–BR-34",
+      "review_fixture_ids": [
+        "REV-RATING-02"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-017",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "EngineScores below `0`, exactly `0`, `77`, `79`, `80`, `100`, and above `100`.",
+      "source_expected": "Clamp rating to `0.0–5.0`; half-up gives `77 ÷ 20 = 3.85 → 3.9 Stable`, `79 ÷ 20 = 3.95 → 4.0 Strong`, and `80 → 4.0 Strong`.",
+      "source_requirements": "Section 12, `UW-12`, D-11",
+      "review_fixture_ids": [
+        "REV-RATING-01",
+        "REV-RATING-02",
+        "REV-RATING-03"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-018",
+      "source_status": "BLOCKED",
+      "source_condition": "Coverage period inflow `10,000,000`; outflow `6,000,000`; debt service `500,000`.",
+      "source_expected": "Raw Coverage is `1.538461538…` and Health is `Healthy`; only persisted/display numeric precision remains blocked by `UW-13`.",
+      "source_requirements": "Coverage formula, D-11C",
+      "review_fixture_ids": [
+        "REV-COVERAGE-01"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-019",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Coverage denominator is zero, negative, or missing.",
+      "source_expected": "Health is `Watch`, Coverage is unavailable, a stable reason/disclosure is emitted, and no layer emits infinity, NaN, or fabricated zero.",
+      "source_requirements": "Coverage formula, FR-602, D-11C",
+      "review_fixture_ids": [
+        "REV-COVERAGE-03"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-020",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Principal `5,000`, total return `10.0%`, tenor `3`.",
+      "source_expected": "Total return `500`; total owed `5,500`; instalments `[1,833, 1,833, 1,834]`, with the residual in the final instalment.",
+      "source_requirements": "BR-24, FR-700",
+      "review_fixture_ids": [
+        "REV-SCHEDULE-01"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-021",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "`GV-020` is paid off immediately after the first scheduled instalment of `1,833` is paid.",
+      "source_expected": "Lifetime contractual total remains `5,500`; amount already paid is `1,833`; remaining early-payoff contractual amount is `3,667` before any separately governed fee. Early repayment does not reduce the `500` return or charge it twice.",
+      "source_requirements": "BR-25",
+      "review_fixture_ids": [
+        "REV-PAYOFF-01"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-022",
+      "source_status": "BLOCKED",
+      "source_condition": "Previously declined Business receives a new verified statement that improves the approved score/capacity inputs.",
+      "source_expected": "Automatic rescore runs without reapplication; eligibility changes only if the still-open volatility trim/debt/OwnerDraw rules and product-approved score/capacity policies pass. Numeric output remains blocked by `UW-06`–`UW-08`.",
+      "source_requirements": "BR-16",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-023",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Note issued at `4.0 Strong`; later verified report produces `3.0 Stable`.",
+      "source_expected": "Issue rating remains immutable at `4.0 Strong`; live rating becomes `3.0 Stable`; holders see both with timestamps/policy versions.",
+      "source_requirements": "BR-36–BR-37",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-024",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Existing Note's live rating becomes `1.9 Distressed`; a new raise is attempted.",
+      "source_expected": "Existing Note enters active monitoring; new listing is rejected.",
+      "source_requirements": "BR-35",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-025",
+      "source_status": "BLOCKED",
+      "source_condition": "Identical approved statement fixture/policy sent through authenticated underwriting and Pulse Business pre-qualification.",
+      "source_expected": "Authoritative capacity, rating, and indicative yield match exactly; Pulse adds only approved non-binding presentation. Numeric end-to-end output still awaits concrete evidence plus the open `UW-06`–`UW-08` upstream rules—not D-11/D-11A–B.",
+      "source_requirements": "BR-82, FR-501, FR-602",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-026",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Pulse pledges of RWF `500,000` and RWF `5,005`, with no Note/rating/tenor selected.",
+      "source_expected": "Return/gross ranges are `50,000–75,000`/`550,000–575,000` and `501–751`/`5,506–5,756`; policy/version/disclosure are present and no single 13% result or net-payout estimate appears.",
+      "source_requirements": "FR-500, D-19A",
+      "review_fixture_ids": [
+        "REV-PULSE-01",
+        "REV-PULSE-02"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-027",
+      "source_status": "REJECTED",
+      "source_condition": "A calculator uses a universal 10.5% floor, prototype `0.085`/`2.5` coefficients, fixed 13%, or any other superseded D-11 pricing path.",
+      "source_expected": "Regression fails. Only `pricing-v1` may determine authoritative return; a valid `10.5%` produced by that formula is not itself rejected.",
+      "source_requirements": "C-03–C-04, D-11",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-028",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Calculate under policy `P1`, activate `P2`, then replay the historical calculation and create a new one.",
+      "source_expected": "Historical result reproduces under `P1`; new result uses `P2`; neither silently overwrites the other.",
+      "source_requirements": "FR-605, FR-702",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-029",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Attempt to submit or derive TIN/tax-system data through upload metadata, parsed fields, request, Resource, log, fixture, or analytics.",
+      "source_expected": "Field is rejected/not collected and never persists or propagates; underwriting remains possible from permitted evidence.",
+      "source_requirements": "DR-8, FR-200, AC-9",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-030",
+      "source_status": "BLOCKED",
+      "source_condition": "Worked calculation-layer candidate in A.6 uses explicit normalized upstream assumptions.",
+      "source_expected": "The approved pricing/TargetDSCR/rounding arithmetic reproduces exactly, but promotion to an end-to-end evidence vector still awaits concrete evidence, the open `UW-06`–`UW-08` upstream rules, and `UW-13` Coverage precision.",
+      "source_requirements": "Section 12, `UW-06`–`UW-08`, `UW-11`–`UW-14`, `UW-19`, `UW-21`, `UW-30`",
+      "review_fixture_ids": [
+        "REV-SCHEDULE-03",
+        "REV-CAPACITY-01"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-031",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "A.6 flows through TargetDSCR, return, theoretical/candidate/final capacity, exact schedule, and accepted principal at `C` and `C−1`.",
+      "source_expected": "Candidate RWF `12,845,674` fails at DSCR `1.249999913…`; `ROUNDING_GUARD` selects RWF `12,845,673` without creating a substantive manual case, and `C−1` recomputes without worsening DSCR. No displayed rounding changes the decision.",
+      "source_requirements": "BR-10–BR-14, BR-24, D-11B",
+      "review_fixture_ids": [
+        "REV-SCHEDULE-03",
+        "REV-CAPACITY-01"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-032",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Raw production DSCR `0.999`, `1.000`, `1.249`, and `1.250` passes through Pulse.",
+      "source_expected": "Results are ineligible/manual/manual/indicatively-pre-qualified. A positive manual figure carries `MANUAL REVIEW REQUIRED`; `1.249` remains manual even if display rounding shows `1.25`.",
+      "source_requirements": "BR-14, BR-82, D-13",
+      "review_fixture_ids": [
+        "REV-DSCR-01",
+        "REV-DSCR-02",
+        "REV-DSCR-03",
+        "REV-DSCR-04"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-033",
+      "source_status": "REJECTED",
+      "source_condition": "Pulse prototype EngineScore base `50` plus `min(years, 10) × 1.5`.",
+      "source_expected": "Regression fails: neither constant, cap, nor calendar-year contribution exists in `engine-score-v1`.",
+      "source_requirements": "`UW-11`, D-11A",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-034",
+      "source_status": "REJECTED",
+      "source_condition": "Pulse prototype sector points: Agriculture `4`, Retail & trade `6`, Logistics `5`, Manufacturing `4`, Services `5`, Energy `3`, Other `2`.",
+      "source_expected": "Regression fails: sector points do not exist in `engine-score-v1`.",
+      "source_requirements": "`UW-11`, D-11A",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-035",
+      "source_status": "REJECTED",
+      "source_condition": "Pulse prototype margin contribution `min(margin, 0.45) × 42`.",
+      "source_expected": "Regression fails: the prototype coefficient/cap does not exist; use the approved CFADS-margin normalization.",
+      "source_requirements": "`UW-11`, D-11A",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-036",
+      "source_status": "REJECTED",
+      "source_condition": "Pulse prototype final EngineScore clamp `max(40, min(92, score))`.",
+      "source_expected": "Regression fails: the prototype clamp cannot replace the approved scorecard or BRS rating transform.",
+      "source_requirements": "`UW-11`–`UW-12`, D-11A",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-037",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Missing mandatory evidence or fewer than six complete consecutive months.",
+      "source_expected": "`EngineScore = null`, rating `Unrated`, no capacity/offer, stable disclosure/Resource fields, retained evidence, and scheduled rescore; never represent missing evidence as score/rating zero.",
+      "source_requirements": "BR-15, D-11A, D-14",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-038",
+      "source_status": "REJECTED",
+      "source_condition": "Any calculator floors or rounds an authoritative monetary capacity, return, fee, schedule, wallet, ledger, or settlement result to RWF 100,000.",
+      "source_expected": "Regression fails: authoritative monetary results use the BRS-fixed nearest-franc rule. Any approved coarse UI summary is a separate labelled presentation field and never replaces, persists as, or feeds the authoritative value.",
+      "source_requirements": "FR-700, C-05, `UW-21`",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-039",
+      "source_status": "QUARANTINED",
+      "source_condition": "Apply a RWF 5M–50M Note boundary or 35% annual-revenue capacity ceiling.",
+      "source_expected": "Neither constraint reaches production unless D-12 explicitly approves it under a new policy version; no code may infer it from a prototype or brief.",
+      "source_requirements": "C-07–C-08, `UW-17`, D-12",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-040",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Principal RWF `5,005`, published rating `4.0`, tenor 6 months.",
+      "source_expected": "Rate `12.1%`; return RWF `606`; total owed RWF `5,611`; instalments `[935, 935, 935, 935, 935, 936]`, with exact cross-layer parity.",
+      "source_requirements": "BR-20–BR-24, D-11",
+      "review_fixture_ids": [
+        "REV-PRICE-01",
+        "REV-SCHEDULE-02"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-041",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "The three explicit normalized scorecard cases in A.3.2.",
+      "source_expected": "Scores/ratings are exactly `90.0/4.5 Strong`, `77.0/3.9 Stable`, and `58.666…/2.9 Weak`; all normalized inputs/intermediates and the policy version are replayable but not publicly exposed.",
+      "source_requirements": "BR-30–BR-34, D-11A",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-042",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "One bank/MoMo PDF covers exactly six complete months; repeat with multiple declared active rails and with audited-cash-only/POS-only Pulse evidence.",
+      "source_expected": "The single bank/MoMo document supports only an indicative, manual-at-six-month Pulse result and does not satisfy production completeness when other active rails exist; audited-cash/POS-only creates a full/manual-review registration without an instant figure.",
+      "source_requirements": "FR-201, FR-501, D-14",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-043",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Repeated content hash, overlapping bank/MoMo/POS transaction, own-account transfer, linked reversal, debt proceeds, and a corrected parser classification.",
+      "source_expected": "Duplicate ingest is idempotent; overlap counts once; transfer/debt proceeds are excluded from operating inflow; reversal nets the original; correction appends a new normalized version while historical replay remains unchanged.",
+      "source_requirements": "BR-13, FR-201–FR-203, FR-701, D-14",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-044",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Uncapped EngineScore `90` with (a) post-grace arrears/open reporting breach and (b) default or at least 30 days past due.",
+      "source_expected": "Case (a) caps at `58 → 2.9 Weak`; case (b) caps at `38 → 1.9 Distressed`; worst applicable cap wins and every trigger/reason is durable.",
+      "source_requirements": "BR-30–BR-37, D-11A",
+      "review_fixture_ids": [
+        "REV-RATING-04",
+        "REV-RATING-05"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-045",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Coverage `1.25`, `1.249999`, `1.00`, `0.999999`, and invalid/missing denominator; inspect all audience Resources.",
+      "source_expected": "Health is Healthy/Watch/Watch/Distressed/Watch-Unavailable. Launch PD is `null/NOT_CALIBRATED`, never `0%`; numeric EngineScore/components and any future PD are absent from unauthorized Resources.",
+      "source_requirements": "FR-209, FR-409, D-11C",
+      "review_fixture_ids": [
+        "REV-COVERAGE-01",
+        "REV-COVERAGE-02",
+        "REV-COVERAGE-03"
+      ],
+      "review_coverage": "PARTIAL_SYNTHETIC_EXAMPLES",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Complete every source subcase, obtain authoritative evidence and named independent approvals, then prove all applicable Appendix A.7 layers.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-046",
+      "source_status": "BLOCKED",
+      "source_condition": "Each standing/risk trigger, competing triggers, cure, and action passes through `risk-policy-v1`.",
+      "source_expected": "Worst-trigger precedence and the 90-DPD/dual-approved-unlikely-to-pay default backstop are fixed; exact Good/Review/Restricted/Suspended and RB0/RB1/RB2/RB3 transitions/actions await the signed activation matrix required by A.3.4.",
+      "source_requirements": "FR-209, FR-409, D-11C",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-047",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "Pulse pledge output omits any required non-binding/no-funds/risk/fee wording or uses `APR`, `expected`, `guaranteed`, net proceeds, or one fixed `13%` projection.",
+      "source_expected": "Content regression fails; only the approved range labels and complete A.3.6 disclosure pass.",
+      "source_requirements": "FR-500, D-19A",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    },
+    {
+      "id": "GV-048",
+      "source_status": "READY-TO-BASELINE",
+      "source_condition": "A pass/projection is created under policy `P1`, policy `P2` activates, then the old record is replayed and a new pledge is created.",
+      "source_expected": "The old record reproduces exactly under `P1`; the new pledge uses `P2`; neither result or disclosure is silently rewritten.",
+      "source_requirements": "FR-605, FR-702, D-19A",
+      "review_fixture_ids": [],
+      "review_coverage": "SCENARIO_CONSTRUCTION_REQUIRED",
+      "baselined": false,
+      "implementation_verified": false,
+      "required_next_step": "Construct concrete input/intermediate/output fixtures for every source subcase after its decision disposition; no behavior is claimed tested.",
+      "required_layers": [
+        "domain",
+        "persistence",
+        "application_action",
+        "resource",
+        "inertia",
+        "api_v1",
+        "mobile_contract",
+        "admin_replay",
+        "observability"
+      ],
+      "approvals": {
+        "product": null,
+        "finance_risk": null,
+        "compliance": null,
+        "internal_legal": null,
+        "engineering_security": null,
+        "independent_test": null,
+        "external_authority": null
+      }
+    }
+  ]
+}

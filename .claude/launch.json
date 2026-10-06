@@ -6,6 +6,12 @@
             "runtimeExecutable": "composer",
             "runtimeArgs": ["run", "dev"],
             "port": 8000
+        },
+        {
+            "name": "d04-spike",
+            "runtimeExecutable": "php",
+            "runtimeArgs": ["-S", "127.0.0.1:8099", "-t", "docs/phase-0/d-04-pwa-assurance/harness"],
+            "port": 8099
         }
     ]
 }

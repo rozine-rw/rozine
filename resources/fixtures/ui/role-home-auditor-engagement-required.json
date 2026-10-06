@@ -1,0 +1,56 @@
+{
+    "component": "identity/role-home",
+    "props": {
+        "identity": {
+            "contract_version": "identity-v2",
+            "policy_version": "engineering-2026-09-23.4",
+            "code": "IDENTITY_READY",
+            "party": {
+                "id": "01k5tfp4r7y0000000000000a1",
+                "kind": "person",
+                "verification_status": "verified"
+            },
+            "available_roles": ["auditor"],
+            "active_role": "auditor",
+            "context_revision": 4,
+            "allowed_actions": ["identity.select_role", "identity.view_role"]
+        },
+        "role": "auditor",
+        "section": "overview",
+        "business_applications": null,
+        "engagement": {
+            "status": "required",
+            "link": {
+                "url": "/preview/auditor-engagement",
+                "method": "get"
+            }
+        },
+        "links": {
+            "home": {
+                "url": "/preview/role-home-auditor-engagement-required",
+                "method": "get"
+            },
+            "jobs": {
+                "url": "/preview/auditor-jobs-engagement-required",
+                "method": "get"
+            },
+            "portfolio": null,
+            "profile": {
+                "url": "/preview/auditor-profile-engagement-required",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-auditor",
+                "method": "get"
+            },
+            "conflicts": {
+                "url": "/preview/auditor-conflicts",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/auditor-operation-{request_id}",
+                "method": "get"
+            }
+        }
+    }
+}

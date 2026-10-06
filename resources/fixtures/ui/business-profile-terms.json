@@ -1,0 +1,285 @@
+{
+    "component": "business/profile",
+    "props": {
+        "business": {
+            "name": "GreenLeaf Agro",
+            "address_line": "North, Musanze",
+            "verified": true,
+            "rating": {
+                "band": "strong",
+                "score": "4.8"
+            }
+        },
+        "section": "terms",
+        "landing": false,
+        "company": {
+            "name": "GreenLeaf Agro",
+            "email": "operations@greenleaf.rw",
+            "phone": "0788013245",
+            "address": {
+                "province": "northern",
+                "district": "musanze",
+                "sector": "Muhoza",
+                "cell": "Kigombe",
+                "street": "KG 5 Ave"
+            },
+            "certificate": {
+                "number": "RDB/2019/004512",
+                "status": "verified",
+                "expires_on": null
+            },
+            "signatories": [
+                {
+                    "name": "Robert Mugisha",
+                    "role": "CEO · Managing Director"
+                },
+                {
+                    "name": "Aline Uwase",
+                    "role": "Board Chair"
+                }
+            ],
+            "signatories_required": 2
+        },
+        "provinces": [
+            {
+                "value": "kigali",
+                "label": "Kigali City",
+                "districts": [
+                    {
+                        "value": "gasabo",
+                        "label": "Gasabo"
+                    },
+                    {
+                        "value": "kicukiro",
+                        "label": "Kicukiro"
+                    },
+                    {
+                        "value": "nyarugenge",
+                        "label": "Nyarugenge"
+                    }
+                ]
+            },
+            {
+                "value": "northern",
+                "label": "Northern",
+                "districts": [
+                    {
+                        "value": "burera",
+                        "label": "Burera"
+                    },
+                    {
+                        "value": "gakenke",
+                        "label": "Gakenke"
+                    },
+                    {
+                        "value": "gicumbi",
+                        "label": "Gicumbi"
+                    },
+                    {
+                        "value": "musanze",
+                        "label": "Musanze"
+                    },
+                    {
+                        "value": "rulindo",
+                        "label": "Rulindo"
+                    }
+                ]
+            },
+            {
+                "value": "southern",
+                "label": "Southern",
+                "districts": [
+                    {
+                        "value": "huye",
+                        "label": "Huye"
+                    },
+                    {
+                        "value": "muhanga",
+                        "label": "Muhanga"
+                    }
+                ]
+            },
+            {
+                "value": "eastern",
+                "label": "Eastern",
+                "districts": [
+                    {
+                        "value": "rwamagana",
+                        "label": "Rwamagana"
+                    },
+                    {
+                        "value": "kayonza",
+                        "label": "Kayonza"
+                    }
+                ]
+            },
+            {
+                "value": "western",
+                "label": "Western",
+                "districts": [
+                    {
+                        "value": "rubavu",
+                        "label": "Rubavu"
+                    },
+                    {
+                        "value": "karongi",
+                        "label": "Karongi"
+                    }
+                ]
+            }
+        ],
+        "linked": null,
+        "legal": {
+            "version": "2.5",
+            "updated_on": "2026-08-04",
+            "sections": [
+                {
+                    "heading": "Acceptance of these Terms",
+                    "body": "These Terms & Conditions (\"Terms\") form a binding legal agreement between your business (\"Business\", \"you\") and Rozine (\"Rozine\", \"we\", \"us\"), the operator of the Rozine platform, applications and website (together, the \"Platform\").\n\nBy registering, verifying your business, starting a raise, or otherwise using the Platform, you confirm that you have read, understood and accepted these Terms in full, along with our Privacy Note, which is incorporated by reference. The person accepting these Terms warrants they are authorised to bind the Business. If you do not accept these Terms, you must not use the Platform."
+                },
+                {
+                    "heading": "Eligibility & business verification",
+                    "body": "To use the Platform your business must be lawfully registered in Rwanda, in good standing, and able to enter into binding contracts. You must complete our onboarding, KYC/KYB and verification checks, including confirming your official registration and uploading your bank and Mobile Money statements for parsing.\n\nYou authorise Rozine to access, verify and use these records. Rozine may refuse, suspend, limit or close any account, or reject any raise, at its sole discretion and without liability.\n\nAuthorised representative. The individual who opens or operates the account warrants that they are duly authorised to bind the business, and must supply their own identity document, their role, and evidence of authority including a board or member resolution where Rozine requests it. Rozine is entitled to treat every instruction given through the account as the authorised act of the business. The individual and the business are jointly responsible for the accuracy of the information supplied.\n\nBeneficial ownership. You must disclose your beneficial owners and controlling persons on request, and notify Rozine of any change without undue delay. Rozine may suspend the account until disclosure is complete."
+                },
+                {
+                    "heading": "Nature of the Platform — Rozine is an intermediary only",
+                    "body": "Rozine operates a technology platform that connects businesses seeking capital with investors. Rozine is not a bank, lender, deposit-taker, broker-dealer, financial adviser, or guarantor, and does not provide legal, tax, accounting or financial advice.\n\nRozine does not lend its own funds, does not guarantee that any raise will be funded, and is not a party to the financing relationship between you and investors beyond facilitating the Platform. Rozine’s role is strictly limited to providing and facilitating the Platform."
+                },
+                {
+                    "heading": "Accuracy of information & no advice",
+                    "body": "You are solely responsible for the accuracy, completeness and currency of all information, records, financials, disclosures and proof materials you submit. You warrant that all such information is true and not misleading.\n\nAny capacity figure, Rozine Score, suggested yield, projection or category displayed is generated from the data available and is provided for general information only; it may contain errors, is not advice, and is not a promise of any outcome. You remain responsible for your own decisions."
+                },
+                {
+                    "heading": "Capacity, pricing & scoring",
+                    "body": "Rozine may calculate an approved capacity (for example, the cash your business generates each month multiplied by your CPA-verified stock cover), a Rozine rating and indicative pricing from your verified data. These are determined by Rozine at its sole discretion and may change at any time as data, conditions or methodology change.\n\nRozine may cap, reduce, suspend or withdraw your capacity or scoring, and may decline or halt any raise, without liability. You have no entitlement to any particular capacity, score, yield or funding outcome."
+                },
+                {
+                    "heading": "Your repayment & reporting obligations",
+                    "body": "Where a raise completes, you are legally obliged to repay investors in full and on schedule under the disclosed terms of the Note. You must also, each month, give your assigned Audit Partner full and timely access to your premises, stock, tills, ledgers and supporting records so that they can open, verify and seal the monthly report. You may not prepare, initiate, amend or submit a monthly report yourself; your role is to co-operate with the audit and then to co-sign or dispute the sealed findings within the disclosed window.\n\nThese obligations are owed by you and are not assumed, guaranteed or advanced by Rozine. Late payment, non-payment, or obstructing or delaying a monthly audit may lower your Rozine Score, pause your ability to raise, and trigger the recovery and enforcement measures described below."
+                },
+                {
+                    "heading": "Audit findings, ratings and disputes",
+                    "body": "Verification. Your assigned Audit Partner may verify a monthly report, including by visiting your premises and inspecting your records and stock. You must cooperate and provide access.\n\nFindings. A finding may affect your Rozine Score, your borrowing capacity and your eligibility to raise further capital. Rozine may publish a finding to investors holding, or considering, your Note.\n\nDisputing a finding. You may dispute a finding within the period stated on the Platform, by filing counter-evidence and paying a filing deposit in the amount then disclosed. The deposit is held while the dispute is reviewed. It is refunded where your dispute succeeds, and is applied to the costs of review where it is dismissed.\n\nWhile a dispute is open. Rozine may pause your ability to raise further capital and may suspend trading in your Note until the dispute is determined. Your repayment obligations are unaffected and continue to fall due.\n\nConsequences of obstruction. Failure to report, obstruction of an audit, or the filing of false information is a material breach and may result in suspension, publication of the fact, acceleration of amounts owed, and referral to the authorities."
+                },
+                {
+                    "heading": "Fees & charges",
+                    "body": "You agree to pay all fees disclosed on the Platform, which may include platform, service, transaction and payout fees. Rozine may introduce, vary or waive fees at its discretion, with prospective effect.\n\nFees already charged are non-refundable except where required by law. Rozine may deduct amounts owed to it (including fees and recoverable costs) from funds it raises, holds or processes for you, or from your linked accounts as authorised."
+                },
+                {
+                    "heading": "Disclosed charges and payment of fees",
+                    "body": "Disclosure before confirmation. Every charge is itemised on screen before you confirm it. By confirming, you accept the charges as displayed.\n\nApplication fees. Where a fee is payable to submit or publish a raise, it is disclosed before you pay and is not refundable once the raise is published, except where required by law.\n\nHow you pay. You may pay from your Rozine wallet, by mobile money, or by payment card. Where you register a card, it is stored by a payment processor as a token; Rozine does not retain the full card number.\n\nThird-party providers. Payments depend on banks, mobile-money operators and card networks. Rozine is not responsible for their delays, charges, limits or outages."
+                },
+                {
+                    "heading": "Disbursement, collections & recovery",
+                    "body": "Rozine may facilitate disbursement of raised funds and the collection and distribution of your repayments as a technical agent only, using licensed third-party providers, and assumes no obligation to advance or make good any amount.\n\nIf you miss a repayment or breach these Terms, Rozine may, without liability: withhold or offset funds; report the default to investors, credit bureaux and authorities; pursue recovery and enforcement (including through third parties); and recover its costs from you. You remain liable for all amounts owed."
+                },
+                {
+                    "heading": "Payout accounts and verification",
+                    "body": "Name matching. A payout account must be held in the name of the business. Rozine will not pay to a third party and may reject or reverse an instruction to do so.\n\nVerification. Rozine may verify a payout account by a small debit or credit, by a confirmation code, or by requesting documentary evidence, and may withhold disbursement until verification succeeds.\n\nAccuracy of details. You are responsible for the accuracy of the account details you supply. Rozine is not liable for funds misdirected because of details you entered incorrectly, and cannot guarantee their recovery."
+                },
+                {
+                    "heading": "Investors & the secondary market",
+                    "body": "Rozine handles distribution to and communication with investors. Investors may hold or trade your Notes among themselves, including on any secondary market. Such trading does not change what you owe or your repayment schedule.\n\nRozine does not guarantee investor demand, funding speed, or that any raise will succeed. You must not contact, solicit or transact with investors outside the Platform in a way that circumvents Rozine or these Terms."
+                },
+                {
+                    "heading": "Your representations & obligations",
+                    "body": "You represent that your business and its representatives comply with all applicable laws, including tax, anti-money-laundering, sanctions and licensing requirements; that funds and activities are lawful; and that you have the right to grant Rozine access to the records you connect.\n\nYou agree to keep information current, to cooperate with checks, and to promptly notify Rozine of any material change, suspected unauthorised access, or inaccuracy. You accept responsibility for all consequences of information you provide."
+                },
+                {
+                    "heading": "Prohibited conduct",
+                    "body": "You must not: provide false, misleading or fraudulent information; misuse raised funds contrary to disclosures; use the Platform for any unlawful or money-laundering purpose; attempt unauthorised access; interfere with, disrupt, scrape, copy or reverse-engineer the Platform; circumvent fees, limits or Rozine’s role; or act in any way that could harm Rozine, investors or other users.\n\nRozine may investigate, suspend access, halt raises, reverse transactions and report suspected breaches to authorities at its sole discretion."
+                },
+                {
+                    "heading": "Limitation of liability",
+                    "body": "To the maximum extent permitted by law, Rozine, its affiliates, directors, employees and agents shall not be liable for any loss of profit, revenue, funding, business, goodwill or data, or any indirect, incidental, special, consequential or punitive damages arising from or connected to the Platform, any raise, any investor, or your use of the Platform, whether in contract, tort or otherwise.\n\nWhere liability cannot lawfully be excluded, Rozine’s total aggregate liability to you for all claims shall not exceed the total fees you actually paid to Rozine in the three (3) months preceding the event giving rise to the claim."
+                },
+                {
+                    "heading": "\"As is\" — no warranties",
+                    "body": "The Platform is provided \"as is\" and \"as available\", without warranties of any kind, whether express or implied, including warranties of merchantability, fitness for a particular purpose, accuracy, uninterrupted availability or non-infringement.\n\nRozine does not warrant that the Platform will be error-free, secure, or free of interruption, that any raise will be funded, or that any capacity, score or projection is accurate or complete."
+                },
+                {
+                    "heading": "Indemnification",
+                    "body": "You agree to indemnify, defend and hold harmless Rozine, its affiliates and their respective officers, directors, employees and agents from and against any and all claims, liabilities, losses, damages, costs and expenses (including reasonable legal and recovery costs) arising out of or related to your use of the Platform, your raises, your disclosures, your breach of these Terms, your failure to repay or report, or your violation of any law or the rights of any third party (including investors)."
+                },
+                {
+                    "heading": "Suspension & termination",
+                    "body": "Rozine may suspend, restrict or terminate your access to the Platform, halt or unwind a raise, or freeze funds, in whole or in part, at any time and at its sole discretion, with or without notice, including where it suspects a breach, misuse of funds, or a legal, risk or reputational concern.\n\nTermination does not affect accrued rights or obligations, including outstanding repayments, reporting duties, fees owed, or provisions that by their nature survive termination (including liability, indemnity and governing-law clauses)."
+                },
+                {
+                    "heading": "Intellectual property",
+                    "body": "All content, software, trademarks, logos, designs and materials on the Platform are owned by or licensed to Rozine and are protected by law. You are granted a limited, non-exclusive, non-transferable, revocable licence to use the Platform for your business’s intended purpose only.\n\nYou grant Rozine a licence to use the information, updates and materials you submit to operate the Platform, verify your business and communicate with investors. You may not copy, modify, distribute, sell or create derivative works from any part of the Platform without Rozine’s prior written consent."
+                },
+                {
+                    "heading": "Electronic communications and notices",
+                    "body": "You agree to receive contractual notices, statements, disclosures and confirmations electronically, in the application or at the email address or number registered to your account.\n\nA notice is deemed received when it is made available in the application or sent to your registered address. You must keep those details current.\n\nMessages about your account, raises, repayments, reporting obligations and legal changes are part of the service and cannot be switched off while your account is open. Marketing messages are separate and may be declined at any time."
+                },
+                {
+                    "heading": "Changes to these Terms",
+                    "body": "Rozine may amend these Terms at any time. Material changes will be notified through the Platform or by other reasonable means. Your continued use of the Platform after changes take effect constitutes acceptance of the revised Terms.\n\nIt is your responsibility to review the current Terms periodically. The version published on the Platform prevails over any other copy."
+                },
+                {
+                    "heading": "Force majeure",
+                    "body": "Rozine shall not be liable for any failure or delay in performance caused by events beyond its reasonable control, including acts of God, natural disasters, epidemics, war, civil unrest, government action, power or telecommunications failure, cyber-attack, or failure of third-party service providers."
+                },
+                {
+                    "heading": "Governing law & dispute resolution",
+                    "body": "These Terms are governed by and construed in accordance with the laws of the Republic of Rwanda, without regard to conflict-of-law rules.\n\nAny dispute shall first be resolved through good-faith negotiation. Failing that, the dispute shall be finally settled by arbitration seated in Kigali, Rwanda, conducted in English, and you submit to the exclusive jurisdiction of the courts of Rwanda for any matter not subject to arbitration. You waive any right to participate in a class or representative action against Rozine."
+                },
+                {
+                    "heading": "General",
+                    "body": "If any provision of these Terms is found unenforceable, the remaining provisions continue in full force. Rozine’s failure to enforce any right is not a waiver of that right. You may not assign your rights under these Terms; Rozine may assign or transfer its rights and obligations freely.\n\nThese Terms, together with the Privacy Note, constitute the entire agreement between your business and Rozine and supersede all prior understandings regarding the Platform."
+                }
+            ]
+        },
+        "links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "back": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            },
+            "sections": {
+                "company": {
+                    "url": "/preview/business-profile-company",
+                    "method": "get"
+                },
+                "linked": {
+                    "url": "/preview/business-profile-linked",
+                    "method": "get"
+                },
+                "terms": {
+                    "url": "/preview/business-profile-terms",
+                    "method": "get"
+                },
+                "privacy": {
+                    "url": "/preview/business-profile-privacy",
+                    "method": "get"
+                }
+            },
+            "sign_out": {
+                "url": "/logout",
+                "method": "post"
+            }
+        },
+        "actions": {
+            "save_company": {
+                "url": "/preview/business-profile-company",
+                "method": "put"
+            }
+        }
+    }
+}

@@ -1,0 +1,277 @@
+{
+    "component": "auditor/file",
+    "props": {
+        "engagement": null,
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
+        "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": ["conflict.declare"],
+        "job": {
+            "id": "01k6kz9w3e7r1t5y8u2i6o0p3a",
+            "revision": 7,
+            "kind": "flash",
+            "business": "Gikondo Metal Works",
+            "district": "Kicukiro",
+            "distance_km": "6.4",
+            "state": "assigned",
+            "deadline": {
+                "due_at": "2026-10-04T09:00:00Z"
+            },
+            "accept_by": null,
+            "complete_by": "2026-10-04T09:00:00Z",
+            "reassigned_from": null,
+            "allowed_actions": ["conflict.declare"]
+        },
+        "file": {
+            "raise": {
+                "requested": null,
+                "term_months": null,
+                "return_pct": null,
+                "sector": null,
+                "use_of_funds": "Working capital for steel stock ahead of a school-furniture order."
+            },
+            "documents": [],
+            "prescreen": [],
+            "reason": null,
+            "mandate": [],
+            "history": {
+                "last_audit": null,
+                "flags": []
+            }
+        },
+        "actions": {
+            "accept": {
+                "url": "/auditor/jobs/01k6kz9w3e7r1t5y8u2i6o0p3a/accept",
+                "method": "post"
+            },
+            "decline": {
+                "url": "/auditor/jobs/01k6kz9w3e7r1t5y8u2i6o0p3a/decline",
+                "method": "post"
+            },
+            "conflict": {
+                "url": "/auditor/jobs/01k6kz9w3e7r1t5y8u2i6o0p3a/conflict",
+                "method": "post"
+            },
+            "start": null
+        },
+        "decline_options": [
+            {
+                "code": "unavailable",
+                "label": "Not available inside the clock",
+                "requires_explanation": false
+            },
+            {
+                "code": "capacity",
+                "label": "At capacity with active work",
+                "requires_explanation": false
+            },
+            {
+                "code": "location",
+                "label": "Cannot reach the site",
+                "requires_explanation": false
+            },
+            {
+                "code": "other",
+                "label": "Other reason",
+                "requires_explanation": true
+            }
+        ],
+        "links": {
+            "close": {
+                "url": "/auditor/jobs",
+                "method": "get"
+            },
+            "procedure": null,
+            "operation": {
+                "url": "/auditor/assignment-operations/{request_id}",
+                "method": "get"
+            },
+            "start_operation": {
+                "url": "/auditor/report-operations/{request_id}",
+                "method": "get"
+            }
+        },
+        "jobs": {
+            "engagement": null,
+            "contract_version": "auditor-filing-v1",
+            "identity_context_revision": 3,
+            "server_time": "2026-10-03T17:00:00Z",
+            "allowed_actions": [],
+            "radius_km": 30,
+            "flash_hours": 24,
+            "eligible": [
+                {
+                    "id": "01k6m3x2v8q4r7t9w1y5z0b3c6",
+                    "revision": 4,
+                    "state": "offered",
+                    "kind": "flash",
+                    "business": "Kimisagara Hardware",
+                    "sector": null,
+                    "district": "Nyarugenge",
+                    "offered_at": "2026-10-03T16:20:00Z",
+                    "distance_km": null,
+                    "requested": null,
+                    "dscr": null,
+                    "term_months": null,
+                    "map": null,
+                    "accept_by": "2026-10-03T17:50:00Z",
+                    "complete_by": "2026-10-04T16:20:00Z",
+                    "deadline": null,
+                    "reassigned_from": null,
+                    "link": {
+                        "url": "/auditor/jobs/01k6m3x2v8q4r7t9w1y5z0b3c6",
+                        "method": "get"
+                    },
+                    "actions": {
+                        "accept": {
+                            "url": "/auditor/jobs/01k6m3x2v8q4r7t9w1y5z0b3c6/accept",
+                            "method": "post"
+                        },
+                        "decline": {
+                            "url": "/auditor/jobs/01k6m3x2v8q4r7t9w1y5z0b3c6/decline",
+                            "method": "post"
+                        },
+                        "conflict": {
+                            "url": "/auditor/jobs/01k6m3x2v8q4r7t9w1y5z0b3c6/conflict",
+                            "method": "post"
+                        }
+                    },
+                    "allowed_actions": [
+                        "assignment.accept",
+                        "assignment.decline",
+                        "conflict.declare"
+                    ]
+                },
+                {
+                    "id": "01k6m2h7n4c8d2f5g9j3k6p1q4",
+                    "revision": 2,
+                    "state": "offered",
+                    "kind": "monthly",
+                    "business": "Nyamirambo Grocers",
+                    "sector": "retail",
+                    "district": "Nyarugenge",
+                    "offered_at": "2026-10-03T15:10:00Z",
+                    "distance_km": "4.8",
+                    "requested": {
+                        "currency": "RWF",
+                        "amount": "18500000"
+                    },
+                    "dscr": null,
+                    "term_months": 9,
+                    "map": {
+                        "east_km": -3.1,
+                        "north_km": 3.6
+                    },
+                    "accept_by": "2026-10-03T19:10:00Z",
+                    "complete_by": null,
+                    "deadline": null,
+                    "reassigned_from": null,
+                    "link": {
+                        "url": "/auditor/jobs/01k6m2h7n4c8d2f5g9j3k6p1q4",
+                        "method": "get"
+                    },
+                    "actions": {
+                        "accept": {
+                            "url": "/auditor/jobs/01k6m2h7n4c8d2f5g9j3k6p1q4/accept",
+                            "method": "post"
+                        },
+                        "decline": {
+                            "url": "/auditor/jobs/01k6m2h7n4c8d2f5g9j3k6p1q4/decline",
+                            "method": "post"
+                        },
+                        "conflict": {
+                            "url": "/auditor/jobs/01k6m2h7n4c8d2f5g9j3k6p1q4/conflict",
+                            "method": "post"
+                        }
+                    },
+                    "allowed_actions": [
+                        "assignment.accept",
+                        "assignment.decline",
+                        "conflict.declare"
+                    ]
+                }
+            ],
+            "assigned": [
+                {
+                    "id": "01k6kz9w3e7r1t5y8u2i6o0p3a",
+                    "revision": 7,
+                    "state": "assigned",
+                    "kind": "flash",
+                    "business": "Gikondo Metal Works",
+                    "district": "Kicukiro",
+                    "distance_km": "6.4",
+                    "deadline": {
+                        "due_at": "2026-10-04T09:00:00Z"
+                    },
+                    "accept_by": null,
+                    "complete_by": "2026-10-04T09:00:00Z",
+                    "step": null,
+                    "steps": null,
+                    "status": "in_progress",
+                    "reassigned_from": null,
+                    "link": {
+                        "url": "/auditor/jobs/01k6kz9w3e7r1t5y8u2i6o0p3a",
+                        "method": "get"
+                    },
+                    "allowed_actions": ["conflict.declare"]
+                }
+            ],
+            "monthly": null,
+            "decline_options": [
+                {
+                    "code": "unavailable",
+                    "label": "Not available inside the clock",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "capacity",
+                    "label": "At capacity with active work",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "location",
+                    "label": "Cannot reach the site",
+                    "requires_explanation": false
+                },
+                {
+                    "code": "other",
+                    "label": "Other reason",
+                    "requires_explanation": true
+                }
+            ],
+            "outcome": null,
+            "links": {
+                "home": {
+                    "url": "/auditor",
+                    "method": "get"
+                },
+                "jobs": {
+                    "url": "/auditor/jobs",
+                    "method": "get"
+                },
+                "portfolio": null,
+                "profile": {
+                    "url": "/auditor/profile",
+                    "method": "get"
+                },
+                "launcher": {
+                    "url": "/dashboard",
+                    "method": "get"
+                },
+                "conflicts": {
+                    "url": "/auditor/conflicts",
+                    "method": "get"
+                },
+                "operation": {
+                    "url": "/auditor/assignment-operations/{request_id}",
+                    "method": "get"
+                }
+            },
+            "pagination": {
+                "next": null
+            }
+        },
+        "blocked": null,
+        "application": null
+    }
+}

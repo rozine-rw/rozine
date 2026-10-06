@@ -1,0 +1,131 @@
+{
+    "component": "business/apply",
+    "props": {
+        "contract_version": "business-application-v1",
+        "business_id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
+        "identity_context_revision": 4,
+        "server_time": "2026-09-24T09:15:00+02:00",
+        "allowed_actions": ["application.save", "application.evaluate"],
+        "step": "business",
+        "application": {
+            "id": "01k6p4c8s3d0f4g9h2j6k1m7n3",
+            "revision": 1,
+            "title": "",
+            "target": null,
+            "term_months": null,
+            "use_of_funds": [],
+            "story": ""
+        },
+        "evidence": {
+            "version": "unavailable",
+            "eligibility": {
+                "status": "ineligible",
+                "code": "UNDERWRITING_EVIDENCE_REQUIRED",
+                "message": "Complete verified statements and current obligation evidence are required for the applicable 36- or 12-month window."
+            },
+            "business": {
+                "name": "GreenLeaf Agro",
+                "company_code": null,
+                "industry": "FMCG",
+                "district": "Gasabo",
+                "established_year": 2018,
+                "officers": [
+                    {
+                        "name": "Robert Mugisha",
+                        "role": "Chief Executive Officer"
+                    },
+                    {
+                        "name": "Aline Uwase",
+                        "role": "Board Chair"
+                    }
+                ]
+            },
+            "verified": {
+                "registry": false,
+                "statements": false
+            },
+            "rating": null,
+            "totals": {
+                "revenue": null,
+                "costs": null,
+                "net_profit": null
+            },
+            "period": null,
+            "years": [],
+            "existing_debt": null,
+            "debt_verified": false,
+            "capacity": null
+        },
+        "quote": null,
+        "acceptance": {
+            "documents": [],
+            "disclosures": [],
+            "fee_on_approval": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "mandate_version": "mandate-2026-08-14.2",
+            "signers": [
+                {
+                    "party_id": "PTY-7F3A21",
+                    "name": "Robert Mugisha",
+                    "role": "Chief Executive Officer",
+                    "state": "pending",
+                    "signed_at": null
+                },
+                {
+                    "party_id": "PTY-2C9D84",
+                    "name": "Aline Uwase",
+                    "role": "Board Chair",
+                    "state": "pending",
+                    "signed_at": null
+                }
+            ],
+            "required_signatures": 2,
+            "signatures_complete": false
+        },
+        "submission": null,
+        "home": null,
+        "shell_links": {
+            "home": {
+                "url": "/business",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/dashboard",
+                "method": "get"
+            },
+            "reports": null,
+            "profile": null
+        },
+        "links": {
+            "close": {
+                "url": "/business",
+                "method": "get"
+            },
+            "back": {
+                "url": "/business",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/business/application-operations/{request_id}",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "save": {
+                "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications/01k6p4c8s3d0f4g9h2j6k1m7n3/save",
+                "method": "post"
+            },
+            "evaluate": {
+                "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications/01k6p4c8s3d0f4g9h2j6k1m7n3/evaluate",
+                "method": "post"
+            },
+            "submit": {
+                "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/applications/01k6p4c8s3d0f4g9h2j6k1m7n3/submit",
+                "method": "post"
+            }
+        },
+        "pending_application": null
+    }
+}

@@ -1,0 +1,79 @@
+{
+    "component": "business/campaign",
+    "synthetic": true,
+    "props": {
+        "contract_version": "business-campaign-v2",
+        "identity_context_revision": 4,
+        "server_time": "2026-12-01T09:00:00+02:00",
+        "allowed_actions": [],
+        "campaign": {
+            "id": "01k6r3d9t4e1g5h0j3k7m2n8p4",
+            "revision": 21,
+            "lifecycle": "issued"
+        },
+        "home": null,
+        "shell_links": {
+            "home": {
+                "url": "/business",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/dashboard",
+                "method": "get"
+            },
+            "reports": null,
+            "profile": null
+        },
+        "note": {
+            "id": "01k6r3d9t4e1g5h0j3k7m2n8p4",
+            "title": "Cold-Chain Hub",
+            "progress": {
+                "phase": "repaying",
+                "servicing": {
+                    "state": "current",
+                    "dpd": null,
+                    "progress": {
+                        "repaid": {
+                            "currency": "RWF",
+                            "amount": "0"
+                        },
+                        "total": {
+                            "currency": "RWF",
+                            "amount": "20790000"
+                        },
+                        "remaining": {
+                            "currency": "RWF",
+                            "amount": "20790000"
+                        },
+                        "repaid_pct": "0.0",
+                        "payments_made": 0,
+                        "payments_total": 6,
+                        "remaining_instalments": 6
+                    },
+                    "next": null,
+                    "restriction": null
+                },
+                "investors": 318,
+                "link": {
+                    "url": "/business/01k6r3d9t4e1g5h0j3k7m2n8p4/notes/01k6r3d9t4e1g5h0j3k7m2n8p4/repayments",
+                    "method": "get"
+                }
+            },
+            "photos": [],
+            "performance": null
+        },
+        "links": {
+            "close": {
+                "url": "/business",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/business/campaign-operations/{request_id}",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "cancel": null
+        }
+    }
+}

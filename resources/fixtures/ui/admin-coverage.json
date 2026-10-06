@@ -1,0 +1,416 @@
+{
+    "component": "admin/coverage",
+    "synthetic": true,
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "repayments": {
+                "url": "/preview/admin-repayments",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "book": {
+                "url": "/preview/admin-book",
+                "method": "get"
+            },
+            "exceptions": {
+                "url": "/preview/admin-exceptions",
+                "method": "get"
+            },
+            "reconciliation": {
+                "url": "/preview/admin-reconciliation",
+                "method": "get"
+            },
+            "coverage": {
+                "url": "/preview/admin-coverage",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/admin-reports",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2027-01-23T10:00:00+02:00",
+        "contract_version": "staff-coverage-v1",
+        "staff_access_version": "staff-access-v1",
+        "allowed_actions": [],
+        "stats": [
+            {
+                "key": "districts",
+                "value": {
+                    "kind": "count",
+                    "value": 30
+                }
+            },
+            {
+                "key": "uncovered",
+                "value": {
+                    "kind": "count",
+                    "value": 19
+                }
+            },
+            {
+                "key": "audits_open",
+                "value": {
+                    "kind": "count",
+                    "value": 25
+                }
+            }
+        ],
+        "districts": [
+            {
+                "id": "dst_gasabo",
+                "district": "Gasabo",
+                "province": "Kigali City",
+                "active_partners": 3,
+                "audits_open": 5,
+                "capacity": "covered",
+                "link": {
+                    "url": "/preview/admin-auditors",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "dst_kicukiro",
+                "district": "Kicukiro",
+                "province": "Kigali City",
+                "active_partners": 2,
+                "audits_open": 3,
+                "capacity": "covered",
+                "link": {
+                    "url": "/preview/admin-auditors",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "dst_nyarugenge",
+                "district": "Nyarugenge",
+                "province": "Kigali City",
+                "active_partners": 2,
+                "audits_open": 2,
+                "capacity": "covered",
+                "link": {
+                    "url": "/preview/admin-auditors",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "dst_bugesera",
+                "district": "Bugesera",
+                "province": "Eastern Province",
+                "active_partners": 1,
+                "audits_open": 2,
+                "capacity": "covered",
+                "link": {
+                    "url": "/preview/admin-auditors",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "dst_gatsibo",
+                "district": "Gatsibo",
+                "province": "Eastern Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_kayonza",
+                "district": "Kayonza",
+                "province": "Eastern Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_kirehe",
+                "district": "Kirehe",
+                "province": "Eastern Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_ngoma",
+                "district": "Ngoma",
+                "province": "Eastern Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_nyagatare",
+                "district": "Nyagatare",
+                "province": "Eastern Province",
+                "active_partners": 1,
+                "audits_open": 1,
+                "capacity": "covered",
+                "link": {
+                    "url": "/preview/admin-auditors",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "dst_rwamagana",
+                "district": "Rwamagana",
+                "province": "Eastern Province",
+                "active_partners": 1,
+                "audits_open": 1,
+                "capacity": "covered",
+                "link": {
+                    "url": "/preview/admin-auditors",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "dst_burera",
+                "district": "Burera",
+                "province": "Northern Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_gakenke",
+                "district": "Gakenke",
+                "province": "Northern Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_gicumbi",
+                "district": "Gicumbi",
+                "province": "Northern Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_musanze",
+                "district": "Musanze",
+                "province": "Northern Province",
+                "active_partners": 1,
+                "audits_open": 3,
+                "capacity": "covered",
+                "link": {
+                    "url": "/preview/admin-auditors",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "dst_rulindo",
+                "district": "Rulindo",
+                "province": "Northern Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_gisagara",
+                "district": "Gisagara",
+                "province": "Southern Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_huye",
+                "district": "Huye",
+                "province": "Southern Province",
+                "active_partners": 1,
+                "audits_open": 1,
+                "capacity": "covered",
+                "link": {
+                    "url": "/preview/admin-auditors",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "dst_kamonyi",
+                "district": "Kamonyi",
+                "province": "Southern Province",
+                "active_partners": 1,
+                "audits_open": 1,
+                "capacity": "covered",
+                "link": {
+                    "url": "/preview/admin-auditors",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "dst_muhanga",
+                "district": "Muhanga",
+                "province": "Southern Province",
+                "active_partners": 1,
+                "audits_open": 2,
+                "capacity": "covered",
+                "link": {
+                    "url": "/preview/admin-auditors",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "dst_nyamagabe",
+                "district": "Nyamagabe",
+                "province": "Southern Province",
+                "active_partners": 0,
+                "audits_open": 1,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_nyanza",
+                "district": "Nyanza",
+                "province": "Southern Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_nyaruguru",
+                "district": "Nyaruguru",
+                "province": "Southern Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_ruhango",
+                "district": "Ruhango",
+                "province": "Southern Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_karongi",
+                "district": "Karongi",
+                "province": "Western Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_ngororero",
+                "district": "Ngororero",
+                "province": "Western Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_nyabihu",
+                "district": "Nyabihu",
+                "province": "Western Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_nyamasheke",
+                "district": "Nyamasheke",
+                "province": "Western Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_rubavu",
+                "district": "Rubavu",
+                "province": "Western Province",
+                "active_partners": 0,
+                "audits_open": 2,
+                "capacity": "uncovered",
+                "link": null
+            },
+            {
+                "id": "dst_rusizi",
+                "district": "Rusizi",
+                "province": "Western Province",
+                "active_partners": 1,
+                "audits_open": 1,
+                "capacity": "covered",
+                "link": {
+                    "url": "/preview/admin-auditors",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "dst_rutsiro",
+                "district": "Rutsiro",
+                "province": "Western Province",
+                "active_partners": 0,
+                "audits_open": 0,
+                "capacity": "uncovered",
+                "link": null
+            }
+        ]
+    }
+}

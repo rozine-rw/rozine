@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Requests\Auditor;
+
+class UpholdAuditDisputeRequest extends AuditorCommandRequest
+{
+    /** @return array<string, list<string>> */
+    protected function commandRules(): array
+    {
+        return ['report_revision' => ['required', 'integer', 'min:1'],
+            'digest' => ['required', 'string', 'regex:/^[a-f0-9]{64}$/D'], 'reason' => ['present', 'string', 'max:10000']];
+    }
+}

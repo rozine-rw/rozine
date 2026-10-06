@@ -1,0 +1,422 @@
+{
+    "component": "investor/holding",
+    "synthetic": true,
+    "props": {
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 5,
+        "server_time": "2026-09-23T09:00:00+02:00",
+        "allowed_actions": [],
+        "holding": {
+            "id": "h-kivu",
+            "name": "Kivu Coffee",
+            "accent": "green",
+            "industry": "Agriculture",
+            "district": "Rubavu",
+            "health": "watch",
+            "value": {
+                "currency": "RWF",
+                "amount": "467250"
+            },
+            "invested": {
+                "currency": "RWF",
+                "amount": "450000"
+            },
+            "gain": {
+                "currency": "RWF",
+                "amount": "17250"
+            },
+            "gain_pct": "3.8",
+            "repaid_pct": 33,
+            "matures_on": "2026-11-03T00:00:00+02:00",
+            "payments_made": 1,
+            "payments_total": 3,
+            "link": {
+                "url": "/preview/investor-holding-plan",
+                "method": "get"
+            },
+            "rating": {
+                "band": "stable",
+                "score": "3.6"
+            },
+            "rate_pct": "11.5",
+            "expected_profit": {
+                "currency": "RWF",
+                "amount": "51750"
+            },
+            "maturity_value": {
+                "currency": "RWF",
+                "amount": "496575"
+            },
+            "received": {
+                "currency": "RWF",
+                "amount": "165525"
+            },
+            "next_payment": {
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "167250"
+                },
+                "due_on": "2026-11-03T00:00:00+02:00"
+            },
+            "on_time": {
+                "made": 1,
+                "on_time": 1,
+                "late": 0
+            },
+            "months_left": 2,
+            "investors": 176,
+            "rating_change": null,
+            "recovery_plan": {
+                "state": "on_track",
+                "reason": "Harvest delayed by late rains",
+                "money_arrives": "2026-11-03T00:00:00+02:00",
+                "deferred": {
+                    "currency": "RWF",
+                    "amount": "167250"
+                }
+            },
+            "arrears": null,
+            "photos": [
+                {
+                    "url": null,
+                    "caption": "Storefront"
+                },
+                {
+                    "url": null,
+                    "caption": "Operations"
+                },
+                {
+                    "url": null,
+                    "caption": "Warehouse"
+                }
+            ],
+            "updates": [
+                {
+                    "id": "h-kivu-2026-08",
+                    "month": "2026-08-01T00:00:00+02:00",
+                    "status": "watch",
+                    "summary": "Watchlist · harvest delayed, one payment deferred",
+                    "net": {
+                        "currency": "RWF",
+                        "amount": "-850000"
+                    },
+                    "inflow": {
+                        "currency": "RWF",
+                        "amount": "34600000"
+                    },
+                    "outflow": {
+                        "currency": "RWF",
+                        "amount": "35450000"
+                    },
+                    "business_note": "Late rains pushed the harvest back by a month. The October payment is deferred to November under the approved plan; the September coupon was paid.",
+                    "auditor": {
+                        "name": "Diane Uwase, CPA",
+                        "licence": "ICPAR/P-2026/0481",
+                        "verified_on": "2026-09-07T00:00:00+02:00"
+                    },
+                    "auditor_note": "Bank and MoMo statements reconcile to the reported inflow; inventory count matched the sample within tolerance.",
+                    "photos": [
+                        {
+                            "url": null,
+                            "caption": "Warehouse stock"
+                        },
+                        {
+                            "url": null,
+                            "caption": "POS register"
+                        },
+                        {
+                            "url": null,
+                            "caption": "Cold room"
+                        }
+                    ]
+                },
+                {
+                    "id": "h-kivu-2026-07",
+                    "month": "2026-07-01T00:00:00+02:00",
+                    "status": "watch",
+                    "summary": "Watchlist · margin under plan for one month",
+                    "net": {
+                        "currency": "RWF",
+                        "amount": "-250000"
+                    },
+                    "inflow": {
+                        "currency": "RWF",
+                        "amount": "34300000"
+                    },
+                    "outflow": {
+                        "currency": "RWF",
+                        "amount": "34550000"
+                    },
+                    "business_note": "A late harvest pushed costs above plan this month. Orders for next month are already booked and cover the shortfall.",
+                    "auditor": {
+                        "name": "Diane Uwase, CPA",
+                        "licence": "ICPAR/P-2026/0481",
+                        "verified_on": "2026-08-07T00:00:00+02:00"
+                    },
+                    "auditor_note": "Bank and MoMo statements reconcile to the reported inflow; inventory count matched the sample within tolerance.",
+                    "photos": [
+                        {
+                            "url": null,
+                            "caption": "Warehouse stock"
+                        },
+                        {
+                            "url": null,
+                            "caption": "POS register"
+                        },
+                        {
+                            "url": null,
+                            "caption": "Cold room"
+                        }
+                    ]
+                },
+                {
+                    "id": "h-kivu-2026-06",
+                    "month": "2026-06-01T00:00:00+02:00",
+                    "status": "healthy",
+                    "summary": "On plan · coupon repaid on time",
+                    "net": {
+                        "currency": "RWF",
+                        "amount": "3100000"
+                    },
+                    "inflow": {
+                        "currency": "RWF",
+                        "amount": "34000000"
+                    },
+                    "outflow": {
+                        "currency": "RWF",
+                        "amount": "30900000"
+                    },
+                    "business_note": "Sales held steady through the season; the cold-storage expansion is on schedule and the monthly coupon was paid on its due date.",
+                    "auditor": {
+                        "name": "Diane Uwase, CPA",
+                        "licence": "ICPAR/P-2026/0481",
+                        "verified_on": "2026-07-07T00:00:00+02:00"
+                    },
+                    "auditor_note": "Bank and MoMo statements reconcile to the reported inflow; inventory count matched the sample within tolerance.",
+                    "photos": [
+                        {
+                            "url": null,
+                            "caption": "Warehouse stock"
+                        },
+                        {
+                            "url": null,
+                            "caption": "POS register"
+                        },
+                        {
+                            "url": null,
+                            "caption": "Cold room"
+                        }
+                    ]
+                },
+                {
+                    "id": "h-kivu-2026-05",
+                    "month": "2026-05-01T00:00:00+02:00",
+                    "status": "healthy",
+                    "summary": "On plan · coupon repaid on time",
+                    "net": {
+                        "currency": "RWF",
+                        "amount": "3100000"
+                    },
+                    "inflow": {
+                        "currency": "RWF",
+                        "amount": "33700000"
+                    },
+                    "outflow": {
+                        "currency": "RWF",
+                        "amount": "30600000"
+                    },
+                    "business_note": "Sales held steady through the season; the cold-storage expansion is on schedule and the monthly coupon was paid on its due date.",
+                    "auditor": {
+                        "name": "Diane Uwase, CPA",
+                        "licence": "ICPAR/P-2026/0481",
+                        "verified_on": "2026-06-07T00:00:00+02:00"
+                    },
+                    "auditor_note": "Bank and MoMo statements reconcile to the reported inflow; inventory count matched the sample within tolerance.",
+                    "photos": [
+                        {
+                            "url": null,
+                            "caption": "Warehouse stock"
+                        },
+                        {
+                            "url": null,
+                            "caption": "POS register"
+                        },
+                        {
+                            "url": null,
+                            "caption": "Cold room"
+                        }
+                    ]
+                }
+            ],
+            "issue": {
+                "id": "h-kivu",
+                "revision": 1,
+                "note_id": "note_kivu_2026_08",
+                "campaign_id": "cmp_kivu_2026_08",
+                "units": "90",
+                "ordinals": [
+                    {
+                        "first": "211",
+                        "last": "300"
+                    }
+                ],
+                "principal": {
+                    "currency": "RWF",
+                    "amount": "450000"
+                },
+                "rights": {
+                    "total_return": {
+                        "currency": "RWF",
+                        "amount": "51750"
+                    },
+                    "instalments": [
+                        {
+                            "index": 1,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "150000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "17250"
+                            }
+                        },
+                        {
+                            "index": 2,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "150000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "17250"
+                            }
+                        },
+                        {
+                            "index": 3,
+                            "principal": {
+                                "currency": "RWF",
+                                "amount": "150000"
+                            },
+                            "return": {
+                                "currency": "RWF",
+                                "amount": "17250"
+                            }
+                        }
+                    ]
+                },
+                "issued_at": "2026-08-03T15:20:04+02:00",
+                "disbursement_effective_at": "2026-08-03T15:18:41+02:00",
+                "effective_date": "2026-08-03",
+                "terms": {
+                    "rate_pct": "11.5",
+                    "term_months": 3,
+                    "total_return": {
+                        "currency": "RWF",
+                        "amount": "51750"
+                    },
+                    "earnings_fee": {
+                        "tier": "standard",
+                        "rate_bps": 1000,
+                        "basis": "return_only",
+                        "policy_version": "synthetic-plus-policy-0"
+                    },
+                    "policy_version": "synthetic-primary-policy-0",
+                    "disclosure_version": "disclosure-2026-05.2"
+                },
+                "schedule": [
+                    {
+                        "index": 1,
+                        "due_on": "2026-09-03",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "150000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "17250"
+                        }
+                    },
+                    {
+                        "index": 2,
+                        "due_on": "2026-10-03",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "150000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "17250"
+                        }
+                    },
+                    {
+                        "index": 3,
+                        "due_on": "2026-11-03",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "150000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "17250"
+                        }
+                    }
+                ],
+                "issue_receipt": {
+                    "receipt_id": "rcp_hld1",
+                    "operation_id": "op_hld1",
+                    "request_id": "7f1c2a90-0000-4000-8000-00000000hld1",
+                    "code": "HOLDING_ISSUED",
+                    "recorded_at": "2026-08-03T15:20:04+02:00",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "450000"
+                    },
+                    "units": "90",
+                    "reference": "RZ-HLD-2204",
+                    "revision": 1,
+                    "policy_version": "synthetic-primary-policy-0",
+                    "disclosure_version": "disclosure-2026-05.2",
+                    "link": {
+                        "url": "/preview/investor-holding-plan",
+                        "method": "get"
+                    }
+                },
+                "source": {
+                    "commitment_id": "cmt0_01k4a1",
+                    "disbursement_operation_id": "op_dsb_01k4a2"
+                }
+            }
+        },
+        "links": {
+            "deals": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "back": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            }
+        }
+    }
+}

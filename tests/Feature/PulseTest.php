@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Domain\Pulse\PulseSector;
 use App\Domain\Pulse\PulseUnderwriting;
 use App\Enums\PulseContactMethod;
@@ -616,7 +618,11 @@ test('figures a business could not have reported are rejected', function (array 
 ]);
 
 test('queue numbers follow the signups already taken for that side', function () {
-    PulseSignup::factory()->investor()->count(3)->create();
+    PulseSignup::factory()->investor()->count(3)->sequence(
+        ['queue_number' => '#0001'],
+        ['queue_number' => '#0002'],
+        ['queue_number' => '#0003'],
+    )->create();
 
     $response = $this->postJson(route('pulse.investor.store'), [
         'name' => 'Diane Uwase',

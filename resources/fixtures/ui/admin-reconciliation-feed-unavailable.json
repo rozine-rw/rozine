@@ -1,0 +1,130 @@
+{
+    "component": "admin/reconciliation",
+    "synthetic": true,
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "repayments": {
+                "url": "/preview/admin-repayments",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "book": {
+                "url": "/preview/admin-book",
+                "method": "get"
+            },
+            "exceptions": {
+                "url": "/preview/admin-exceptions",
+                "method": "get"
+            },
+            "reconciliation": {
+                "url": "/preview/admin-reconciliation",
+                "method": "get"
+            },
+            "coverage": {
+                "url": "/preview/admin-coverage",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/admin-reports",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2027-01-23T10:00:00+02:00",
+        "contract_version": "staff-reconciliation-v1",
+        "staff_access_version": "staff-access-v1",
+        "allowed_actions": [],
+        "day_close": {
+            "business_date": "2027-01-22",
+            "state": "not_reconciled"
+        },
+        "accounts": [
+            {
+                "id": "acct_momo",
+                "label": "Mobile money collections account",
+                "as_of": "2027-01-22T23:59:59+02:00",
+                "ledger": {
+                    "currency": "RWF",
+                    "amount": "48215600"
+                },
+                "statement": null,
+                "difference": null,
+                "feed": {
+                    "state": "unavailable",
+                    "since": "2027-01-22T21:10:00+02:00"
+                }
+            },
+            {
+                "id": "acct_bank",
+                "label": "Bank settlement account",
+                "as_of": "2027-01-22T23:59:59+02:00",
+                "ledger": {
+                    "currency": "RWF",
+                    "amount": "126476900"
+                },
+                "statement": {
+                    "currency": "RWF",
+                    "amount": "126476900"
+                },
+                "difference": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "feed": {
+                    "state": "available"
+                }
+            }
+        ],
+        "breaks": []
+    }
+}

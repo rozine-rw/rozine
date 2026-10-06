@@ -1,6 +1,13 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+} from 'vite-plus/test';
 import type {
     InvestorPreview,
     PulsePolicy,
@@ -607,7 +614,8 @@ describe('Pulse page orchestration', () => {
         );
 
         const request = mocks.investorPreviewHttp.post.mock.calls[0]?.[1] as
-            RequestOptions<InvestorPreview> | undefined;
+            | RequestOptions<InvestorPreview>
+            | undefined;
 
         act(() => {
             request?.onSuccess(
@@ -685,7 +693,8 @@ describe('Pulse page orchestration', () => {
         expect(screen.getByText(/false\/true\/false/)).toBeInTheDocument();
 
         const request = mocks.businessPreviewHttp.post.mock.calls[0]?.[1] as
-            RequestOptions<Sizing> | undefined;
+            | RequestOptions<Sizing>
+            | undefined;
 
         act(() => {
             request?.onSuccess(businessPreview);

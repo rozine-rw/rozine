@@ -1,0 +1,833 @@
+{
+  "schema_version": 1,
+  "review_version": "review-2026-09-10.1",
+  "status": "SYNTHETIC_REVIEW_ONLY_NOT_BASELINED",
+  "production_activation": false,
+  "as_of_utc": "2026-09-10T08:00:00Z",
+  "calculator_version": "REVIEW_ARITHMETIC_ONLY_NO_PRODUCTION_ENGINE",
+  "evidence_origin": "SYNTHETIC_NORMALIZED_INPUTS_NO_PROVIDER_ATTESTATION",
+  "approvals": {
+    "product": null,
+    "business": null,
+    "finance_risk": null,
+    "compliance": null,
+    "internal_legal": null,
+    "engineering": null,
+    "security": null,
+    "independent_test": null,
+    "external_authority": null
+  },
+  "fixtures": [
+    {
+      "id": "REV-PRICE-01",
+      "source_vector_ids": [
+        "GV-015",
+        "GV-040"
+      ],
+      "kind": "pricing",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "rating_tenths": 40,
+        "tenor_months": 6
+      },
+      "input_sha256": "2620821af6c3723e8898efbe1fd69abf290da828156bbabe76482e916a6ee8fc",
+      "expected": {
+        "rate_tenths_percent": 121
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-PRICE-02",
+      "source_vector_ids": [
+        "GV-014",
+        "GV-015"
+      ],
+      "kind": "pricing",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "rating_tenths": 50,
+        "tenor_months": 3
+      },
+      "input_sha256": "1a5c8b501efa877c54aa23c956ab525547130346dcb28e2a7b286befc9d595f5",
+      "expected": {
+        "rate_tenths_percent": 100
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-PRICE-03",
+      "source_vector_ids": [
+        "GV-014",
+        "GV-015"
+      ],
+      "kind": "pricing",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "rating_tenths": 20,
+        "tenor_months": 12
+      },
+      "input_sha256": "dae2a8c90269c14f78743226ef103a0383f41bcc11641bb95c680f290ae13142",
+      "expected": {
+        "rate_tenths_percent": 150
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-RATING-01",
+      "source_vector_ids": [
+        "GV-017"
+      ],
+      "kind": "rating",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "score_numerator": 77,
+        "score_denominator": 1
+      },
+      "input_sha256": "70a94bebcfa6f2107d0945041eb8b1dae68056d4ec0462c77370a9dbfeaac6e9",
+      "expected": {
+        "rating_tenths": 39,
+        "band": "Stable"
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-RATING-02",
+      "source_vector_ids": [
+        "GV-016",
+        "GV-017"
+      ],
+      "kind": "rating",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "score_numerator": 79,
+        "score_denominator": 1
+      },
+      "input_sha256": "afe6301e91e25283c22343ecd2970653bde52d5fa103fb5f77dcc37deae174e5",
+      "expected": {
+        "rating_tenths": 40,
+        "band": "Strong"
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-RATING-03",
+      "source_vector_ids": [
+        "GV-017"
+      ],
+      "kind": "rating",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "score_numerator": -5,
+        "score_denominator": 1
+      },
+      "input_sha256": "a157c74a13b6228d285864916072c32d100407905ec86313ffeafc3e66a1c9e5",
+      "expected": {
+        "rating_tenths": 0,
+        "band": "Distressed"
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-RATING-04",
+      "source_vector_ids": [
+        "GV-044"
+      ],
+      "kind": "rating",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "score_numerator": 58,
+        "score_denominator": 1
+      },
+      "input_sha256": "58fb711ce8bb43b1ec77a0ea771b3698d282f3e30143524ad7523992cafc64a9",
+      "expected": {
+        "rating_tenths": 29,
+        "band": "Weak"
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-RATING-05",
+      "source_vector_ids": [
+        "GV-044"
+      ],
+      "kind": "rating",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "score_numerator": 38,
+        "score_denominator": 1
+      },
+      "input_sha256": "4a0a6e5ba9c1332e9ebf6963e95917d016d1b0f332367ec232a0878b59088a55",
+      "expected": {
+        "rating_tenths": 19,
+        "band": "Distressed"
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-SCHEDULE-01",
+      "source_vector_ids": [
+        "GV-020"
+      ],
+      "kind": "schedule",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "principal_rwf": 5000,
+        "rate_tenths_percent": 100,
+        "tenor_months": 3
+      },
+      "input_sha256": "a2d01d8697187f48cbbb81c2caa6918c85a6c453033b980af7171df27e9b9598",
+      "expected": {
+        "return_rwf": 500,
+        "total_rwf": 5500,
+        "instalments_rwf": [
+          1833,
+          1833,
+          1834
+        ]
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-SCHEDULE-02",
+      "source_vector_ids": [
+        "GV-040"
+      ],
+      "kind": "schedule",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "principal_rwf": 5005,
+        "rate_tenths_percent": 121,
+        "tenor_months": 6
+      },
+      "input_sha256": "0ba5046bfe64c3f65b813a09f153da8f859b27dcc25c9dfcc152f9411ea45b6b",
+      "expected": {
+        "return_rwf": 606,
+        "total_rwf": 5611,
+        "instalments_rwf": [
+          935,
+          935,
+          935,
+          935,
+          935,
+          936
+        ]
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-SCHEDULE-03",
+      "source_vector_ids": [
+        "GV-030",
+        "GV-031"
+      ],
+      "kind": "schedule",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "principal_rwf": 12845673,
+        "rate_tenths_percent": 121,
+        "tenor_months": 6
+      },
+      "input_sha256": "5caed38c4bc7ff78454ed41a69d8751aac3b4e1459961eac6102e781cedd7a77",
+      "expected": {
+        "return_rwf": 1554326,
+        "total_rwf": 14399999,
+        "instalments_rwf": [
+          2400000,
+          2400000,
+          2400000,
+          2400000,
+          2400000,
+          2399999
+        ]
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-CAPACITY-01",
+      "source_vector_ids": [
+        "GV-030",
+        "GV-031"
+      ],
+      "kind": "capacity",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "cfads_rwf": 3000000,
+        "rate_tenths_percent": 121,
+        "tenor_months": 6
+      },
+      "input_sha256": "ea69498e7c2a05f49c42c784e4a40fbe6a39d0b9b6eff95233203ed9fd55ce8c",
+      "expected": {
+        "nearest_candidate_rwf": 12845674,
+        "candidate_total_rwf": 14400001,
+        "capacity_rwf": 12845673,
+        "total_rwf": 14399999,
+        "correction_rwf": 1,
+        "reason": "ROUNDING_GUARD"
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-PAYOFF-01",
+      "source_vector_ids": [
+        "GV-021"
+      ],
+      "kind": "payoff",
+      "policy_authority": "BRS_FIXED",
+      "inputs": {
+        "contractual_total_rwf": 5500,
+        "paid_rwf": 1833
+      },
+      "input_sha256": "cb52157a087e25542896f83db5a1140224a386ca4e3270655dc9196c17803088",
+      "expected": {
+        "remaining_rwf": 3667
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-DSCR-01",
+      "source_vector_ids": [
+        "GV-007",
+        "GV-032"
+      ],
+      "kind": "dscr_tier",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "numerator": 999,
+        "denominator": 1000
+      },
+      "input_sha256": "2c9bc5a752e9007474375a3e8d420950c19e41f2cd00f0f3b84c0ead5988ac41",
+      "expected": {
+        "tier": "DECLINE"
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-DSCR-02",
+      "source_vector_ids": [
+        "GV-008",
+        "GV-032"
+      ],
+      "kind": "dscr_tier",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "numerator": 1000,
+        "denominator": 1000
+      },
+      "input_sha256": "3052343de700d3b31ad6bf01f004575061e5a3dad84b8a398e33258c5a84e827",
+      "expected": {
+        "tier": "MANUAL"
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-DSCR-03",
+      "source_vector_ids": [
+        "GV-009",
+        "GV-032"
+      ],
+      "kind": "dscr_tier",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "numerator": 1249,
+        "denominator": 1000
+      },
+      "input_sha256": "103ca21ed0bb1c5e9b22a78b7cd7374832db2d56677674d30397ccf75dc1d4d4",
+      "expected": {
+        "tier": "MANUAL"
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-DSCR-04",
+      "source_vector_ids": [
+        "GV-010",
+        "GV-032"
+      ],
+      "kind": "dscr_tier",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "numerator": 1250,
+        "denominator": 1000
+      },
+      "input_sha256": "a008ba92eafb3ce5cd10222830f8477a6b8280bf238327feaee19f9091fdbde4",
+      "expected": {
+        "tier": "AUTO_SUBJECT_TO_OTHER_GATES"
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-COVERAGE-01",
+      "source_vector_ids": [
+        "GV-018",
+        "GV-045"
+      ],
+      "kind": "coverage",
+      "policy_authority": "PROPOSED_UW_R04",
+      "inputs": {
+        "inflow_rwf": 10000000,
+        "outflow_rwf": 6000000,
+        "debt_service_rwf": 500000
+      },
+      "input_sha256": "3306a561cdfe30cd11b0dd8249c032b1344e3784091120c5a16afcb5950f9190",
+      "expected": {
+        "ratio_six_dp": "1.538462",
+        "ordinary_display": "1.54",
+        "health": "Healthy",
+        "boundary_hint_required": false
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-COVERAGE-02",
+      "source_vector_ids": [
+        "GV-045"
+      ],
+      "kind": "coverage",
+      "policy_authority": "PROPOSED_UW_R04",
+      "inputs": {
+        "inflow_rwf": 1249999,
+        "outflow_rwf": 1000000,
+        "debt_service_rwf": 0
+      },
+      "input_sha256": "f1c8a174fb105a3cbc467fababc50a6adb6e0b9684d5505a015e81bd056d1735",
+      "expected": {
+        "ratio_six_dp": "1.249999",
+        "ordinary_display": "1.25",
+        "health": "Watch",
+        "boundary_hint_required": true
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-COVERAGE-03",
+      "source_vector_ids": [
+        "GV-019",
+        "GV-045"
+      ],
+      "kind": "coverage",
+      "policy_authority": "PROPOSED_UW_R04",
+      "inputs": {
+        "inflow_rwf": 100,
+        "outflow_rwf": 0,
+        "debt_service_rwf": 0
+      },
+      "input_sha256": "7173636d75536de43a8e9e8b9f587ef171ae4f95749d7d0253523486f2d40b88",
+      "expected": {
+        "ratio_six_dp": null,
+        "ordinary_display": null,
+        "health": "Watch",
+        "boundary_hint_required": false
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-TRIM-01",
+      "source_vector_ids": [
+        "GV-005"
+      ],
+      "kind": "upper_winsorization",
+      "policy_authority": "PROPOSED_UW_R03",
+      "inputs": {
+        "nocf_rwf": [
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          40000000
+        ]
+      },
+      "input_sha256": "7b1a800e36be9535b4adcd87f0da742703ac43a1388f6e7db01753c4d785bb21",
+      "expected": {
+        "cap_rwf": 4000000,
+        "upper_count": 1,
+        "adjusted_rwf": [
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000
+        ],
+        "sum_rwf": 24000000,
+        "count": 6
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-TRIM-02",
+      "source_vector_ids": [
+        "GV-005"
+      ],
+      "kind": "upper_winsorization",
+      "policy_authority": "PROPOSED_UW_R03",
+      "inputs": {
+        "nocf_rwf": [
+          -2000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          40000000
+        ]
+      },
+      "input_sha256": "a5372a316d700c71d17c3d08e531d84d6baba424d9f93f0e445c027c2a8a0cdf",
+      "expected": {
+        "cap_rwf": 4000000,
+        "upper_count": 1,
+        "adjusted_rwf": [
+          -2000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000
+        ],
+        "sum_rwf": 18000000,
+        "count": 6
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-TRIM-03",
+      "source_vector_ids": [
+        "GV-005"
+      ],
+      "kind": "upper_winsorization",
+      "policy_authority": "PROPOSED_UW_R03",
+      "inputs": {
+        "nocf_rwf": [
+          1000000,
+          1000000,
+          1000000,
+          1000000,
+          1000000,
+          1000000,
+          1000000,
+          1000000,
+          1000000,
+          1000000,
+          1000000,
+          100000000
+        ]
+      },
+      "input_sha256": "9bad29c78252402d1756d7f3acbc95d78098a682b3d85f084cf8056a4f35e675",
+      "expected": {
+        "cap_rwf": 1000000,
+        "upper_count": 2,
+        "adjusted_rwf": [
+          1000000,
+          1000000,
+          1000000,
+          1000000,
+          1000000,
+          1000000,
+          1000000,
+          1000000,
+          1000000,
+          1000000,
+          1000000,
+          1000000
+        ],
+        "sum_rwf": 12000000,
+        "count": 12
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-TRIM-04",
+      "source_vector_ids": [
+        "GV-005"
+      ],
+      "kind": "upper_winsorization",
+      "policy_authority": "PROPOSED_UW_R03",
+      "inputs": {
+        "nocf_rwf": [
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          100000000
+        ]
+      },
+      "input_sha256": "625379535ad4b6656e04ea6ca91c6ef44118c3dfdd7bf99e3f1dba1e3bfb2c3b",
+      "expected": {
+        "cap_rwf": 4000000,
+        "upper_count": 4,
+        "adjusted_rwf": [
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000,
+          4000000
+        ],
+        "sum_rwf": 96000000,
+        "count": 24
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-TRIM-05",
+      "source_vector_ids": [
+        "GV-005"
+      ],
+      "kind": "upper_winsorization",
+      "policy_authority": "PROPOSED_UW_R03",
+      "inputs": {
+        "nocf_rwf": [
+          -6000000,
+          -5000000,
+          -4000000,
+          -3000000,
+          -2000000,
+          -1000000
+        ]
+      },
+      "input_sha256": "9b5d57b29e0261085ed4a7ae926c21acd17ff16b54305e5686093c0e5b466213",
+      "expected": {
+        "cap_rwf": -2000000,
+        "upper_count": 1,
+        "adjusted_rwf": [
+          -6000000,
+          -5000000,
+          -4000000,
+          -3000000,
+          -2000000,
+          -2000000
+        ],
+        "sum_rwf": -22000000,
+        "count": 6
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-DRAW-01",
+      "source_vector_ids": [
+        "GV-006"
+      ],
+      "kind": "owner_draw",
+      "policy_authority": "PROPOSED_UW_R01",
+      "inputs": {
+        "historical_draws_rwf": [
+          500000,
+          500000,
+          500000,
+          500000,
+          500000,
+          500000
+        ],
+        "committed_monthly_rwf": 600000,
+        "trimmed_nocf_rwf": 4000000,
+        "debt_service_rwf": 500000
+      },
+      "input_sha256": "1ab5a0bd6f9447981bcefca81397cdc0f9fd3afc6c6fd97c8648c15cdf54518b",
+      "expected": {
+        "owner_draw_rwf": 600000,
+        "cfads_rwf": 2900000
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-DEBT-01",
+      "source_vector_ids": [
+        "GV-004"
+      ],
+      "kind": "debt_service",
+      "policy_authority": "PROPOSED_UW_R02",
+      "inputs": {
+        "historical_service_rwf": [
+          500000,
+          500000,
+          500000,
+          500000,
+          500000,
+          500000
+        ],
+        "forward_monthly_service_rwf": [
+          250000,
+          250000,
+          250000,
+          250000,
+          250000,
+          1500000
+        ],
+        "trimmed_nocf_rwf": 4000000,
+        "owner_draw_rwf": 500000
+      },
+      "input_sha256": "ff2cf3782747cabbd030c76ad1e6be3e7da611b06dc265e8477cd6e49c16b796",
+      "expected": {
+        "debt_service_rwf": 1500000,
+        "cfads_rwf": 2000000
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-PULSE-01",
+      "source_vector_ids": [
+        "GV-026"
+      ],
+      "kind": "pulse_range",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "pledge_rwf": 500000
+      },
+      "input_sha256": "7ab69abd9babd49b2b8d32b108234758d7dc836c74ae9724eab297a71ab8c6ec",
+      "expected": {
+        "return_min_rwf": 50000,
+        "return_max_rwf": 75000,
+        "gross_min_rwf": 550000,
+        "gross_max_rwf": 575000
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-PULSE-02",
+      "source_vector_ids": [
+        "GV-026"
+      ],
+      "kind": "pulse_range",
+      "policy_authority": "PRODUCT_APPROVED_NOT_ACTIVATED",
+      "inputs": {
+        "pledge_rwf": 5005
+      },
+      "input_sha256": "e58f0831da029aafb954cbc71df2b7dd77332dcc9fabdb626e05dd3944ab86c2",
+      "expected": {
+        "return_min_rwf": 501,
+        "return_max_rwf": 751,
+        "gross_min_rwf": 5506,
+        "gross_max_rwf": 5756
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-SEC-FEE-01",
+      "source_vector_ids": [],
+      "kind": "secondary_fee",
+      "policy_authority": "BRS_FIXED",
+      "inputs": {
+        "gross_rwf": 10050
+      },
+      "input_sha256": "3b5c78a7f23ae4d09576a36c5d14848479c782c555f2a556ea4ebbdeb5d68590",
+      "expected": {
+        "seller_fee_rwf": 302,
+        "seller_net_rwf": 9748,
+        "buyer_debit_rwf": 10050
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-SEC-FEE-02",
+      "source_vector_ids": [],
+      "kind": "secondary_fee",
+      "policy_authority": "BRS_FIXED",
+      "inputs": {
+        "gross_rwf": 5000
+      },
+      "input_sha256": "8c1a974d35071bf377e373be2fcb3011bd83ac9f5cedbd48055f0941411aa265",
+      "expected": {
+        "seller_fee_rwf": 150,
+        "seller_net_rwf": 4850,
+        "buyer_debit_rwf": 5000
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-SEC-PRICE-01",
+      "source_vector_ids": [],
+      "kind": "secondary_price",
+      "policy_authority": "PROPOSED_SEC_R04_R06",
+      "inputs": {
+        "units": 1,
+        "unit_ask_rwf": 3000,
+        "remaining_gross_rwf": 3000,
+        "minimum_ticket_rwf": 5000
+      },
+      "input_sha256": "89619e65c60217c3494ac497363b335761cbd0058c75f015f338f9aa01d8eca9",
+      "expected": {
+        "gross_rwf": 3000,
+        "cap_pass": true,
+        "minimum_pass": false,
+        "price_eligible": false
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-SEC-PRICE-02",
+      "source_vector_ids": [],
+      "kind": "secondary_price",
+      "policy_authority": "PROPOSED_SEC_R04_R06",
+      "inputs": {
+        "units": 3,
+        "unit_ask_rwf": 3333,
+        "remaining_gross_rwf": 10001,
+        "minimum_ticket_rwf": 5000
+      },
+      "input_sha256": "8cecbdc42f1b1474977b63e8ce471f48b465a8d39ff0ccdb0862d2aa8ad8a1aa",
+      "expected": {
+        "gross_rwf": 9999,
+        "cap_pass": true,
+        "minimum_pass": true,
+        "price_eligible": true
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    },
+    {
+      "id": "REV-SEC-PRICE-03",
+      "source_vector_ids": [],
+      "kind": "secondary_price",
+      "policy_authority": "PROPOSED_SEC_R04_R06",
+      "inputs": {
+        "units": 3,
+        "unit_ask_rwf": 3334,
+        "remaining_gross_rwf": 10001,
+        "minimum_ticket_rwf": 5000
+      },
+      "input_sha256": "c2aaaf4b5ad98e38ab3dc29f612ca7ba2ef9ce74082f7bad00e92227db9b790d",
+      "expected": {
+        "gross_rwf": 10002,
+        "cap_pass": false,
+        "minimum_pass": true,
+        "price_eligible": false
+      },
+      "claim": "EXAMPLE_ARITHMETIC_ONLY_NOT_COMPLETE_SOURCE_VECTOR"
+    }
+  ]
+}
