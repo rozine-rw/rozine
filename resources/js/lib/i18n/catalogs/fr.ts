@@ -2359,6 +2359,7 @@ const fr: Catalog = {
     'investor.updates.photo_previous': 'Photo précédente',
     'investor.updates.photo_next': 'Photo suivante',
     'investor.audit.kicker': 'Audité en toute indépendance · {standard}',
+    'investor.audit.kicker_plain': 'Audité en toute indépendance',
     'investor.audit.verified_line': '{licence} · vérifié le {date}',
     'investor.audit.view': 'Voir',
     'investor.audit.hide': 'Masquer',

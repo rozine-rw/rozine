@@ -16,7 +16,14 @@ export function AuditDrawer({ audit }: { audit: AuditSummary }) {
     const { t, locale } = useTranslation();
     const [open, setOpen] = useState(false);
     const rows: [string, string][] = [
-        [t('investor.audit.standard'), audit.standard],
+        ...(audit.standard === null
+            ? []
+            : [
+                  [t('investor.audit.standard'), audit.standard] as [
+                      string,
+                      string,
+                  ],
+              ]),
         [t('investor.audit.partner'), audit.partner],
         [t('investor.audit.licence'), audit.licence],
         [t('investor.audit.digest'), `sha256:${audit.digest.slice(0, 10)}…`],
@@ -55,9 +62,11 @@ export function AuditDrawer({ audit }: { audit: AuditSummary }) {
                             AMBER_TEXT,
                         )}
                     >
-                        {t('investor.audit.kicker', {
-                            standard: audit.standard,
-                        })}
+                        {audit.standard === null
+                            ? t('investor.audit.kicker_plain')
+                            : t('investor.audit.kicker', {
+                                  standard: audit.standard,
+                              })}
                     </span>
                     <span className="mt-0.5 block text-[13.5px] font-bold text-rz-ink">
                         {audit.partner}
@@ -94,17 +103,21 @@ export function AuditDrawer({ audit }: { audit: AuditSummary }) {
                             </div>
                         ))}
                     </dl>
-                    <p
-                        className={cn(
-                            'mt-3 text-[10.5px] font-bold tracking-[.06em] uppercase',
-                            AMBER_TEXT,
-                        )}
-                    >
-                        {t('investor.audit.reconciliation')}
-                    </p>
-                    <p className="mt-1.5 rounded-xl border border-[#efe3c4] bg-rz-surface px-[13px] py-2.5 text-[12px] leading-[1.55] text-rz-ink dark:border-rz-border">
-                        {audit.reconciliation_statement}
-                    </p>
+                    {audit.reconciliation_statement !== null && (
+                        <>
+                            <p
+                                className={cn(
+                                    'mt-3 text-[10.5px] font-bold tracking-[.06em] uppercase',
+                                    AMBER_TEXT,
+                                )}
+                            >
+                                {t('investor.audit.reconciliation')}
+                            </p>
+                            <p className="mt-1.5 rounded-xl border border-[#efe3c4] bg-rz-surface px-[13px] py-2.5 text-[12px] leading-[1.55] text-rz-ink dark:border-rz-border">
+                                {audit.reconciliation_statement}
+                            </p>
+                        </>
+                    )}
                     <p className="mt-2 text-[10.5px] leading-normal text-rz-slate">
                         {t('investor.audit.disclaimer')}
                     </p>

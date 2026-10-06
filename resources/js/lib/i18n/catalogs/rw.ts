@@ -2356,6 +2356,7 @@ const rw: Catalog = {
     'investor.updates.photo_previous': 'Ifoto ibanza',
     'investor.updates.photo_next': 'Ifoto ikurikira',
     'investor.audit.kicker': 'Byagenzuwe mu bwigenge · {standard}',
+    'investor.audit.kicker_plain': 'Byagenzuwe mu bwigenge',
     'investor.audit.verified_line': '{licence} · byemejwe ku wa {date}',
     'investor.audit.view': 'Reba',
     'investor.audit.hide': 'Hisha',
