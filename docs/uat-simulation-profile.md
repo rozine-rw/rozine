@@ -25,7 +25,7 @@ screens and state changes end to end.
 | Funding and holdings | `FundedCampaigns` is synthetic only on local. `HoldingSource` reads retained, historical evidence. The S3-C funding writer and Holding conversion are unfinished | `AppServiceProvider`, #96 |
 | Servicing | `NoteServicing` is `UnavailableNoteServicing` on every profile | `AppServiceProvider` |
 
-## Proposal (revision 3, after reviews 5424739389 and 5425309445)
+## Proposal (revision 4, after reviews 5424739389, 5425309445 and 5427016432)
 
 Revision 1 proposed widening `SyntheticWalletGuard` and `SyntheticDisbursementGuard`. Review showed
 why that is wrong: `registerDisbursements()` uses the same `SyntheticDisbursementGuard::allowed()`
@@ -33,7 +33,8 @@ result for `FundedCampaigns`, `PayoutDestinations` and `StaffConnections`. Admit
 would make campaign fixtures, fixture destinations and fixture connections authoritative on staging.
 **Revision 2 leaves both existing guards and every current binding unchanged.** Revision 3 names the
 deposit outbox worker's own gate, says that revocation needs a process reload, and states that expiry
-never turns a pending or unknown obligation into a failure.
+never turns a pending or unknown obligation into a failure. Revision 4 adds the two missing
+stage A gates: the deposit policy read and funding-method verification.
 
 ### 1. A separate provider-only guard
 
@@ -61,6 +62,8 @@ credentials, a dedicated database, debug off, a non-live URL.
 | --- | --- | --- | --- |
 | `DepositProvider`, `SyntheticEventSigner` | synthetic (`SyntheticWalletGuard`) | `UnavailableDepositProvider` | `SyntheticDepositProvider` via `UatProviderSimulation` (stage A) |
 | Deposit outbox worker (`DispatchDepositIntents`, `wallet:dispatch-deposits`) | allowed (`SyntheticWalletGuard`, `guardCommand`) | refused (`ISOLATION_SYNTHETIC_WALLET_DENIED`) | allowed only while `UatProviderSimulation` allows it (stage A); `local:wallet` stays refused |
+| Deposit policy read (`applicablePolicy()` in `EloquentWalletStore` and `EloquentBusinessWalletStore`) | the latest active policy, read only when `SyntheticWalletGuard` allows | none, so no deposit action and `POLICY_INPUT_REQUIRED` on submit | the latest active policy only if it is marked `synthetic` and `UatProviderSimulation` allows; a non-synthetic policy is never read on UAT (stage A) |
+| Funding-method verification (`InvestorFundingMethod`, `BusinessFundingMethod`) | `EloquentSyntheticWalletFixtures` (`verification_source = synthetic`) | none; deposits refuse `DEPOSIT_METHOD_UNVERIFIED` | verified only through the simulated provider edge by a journaled command, recorded `verification_source = synthetic`; fixtures never (stage A) |
 | `PayoutProvider` | synthetic (`SyntheticDisbursementGuard`) | `UnavailablePayoutProvider` | unavailable until stage B; then the synthetic provider edge only |
 | `FundedCampaigns` | `SyntheticDisbursementSources` | `UnavailableFundedCampaigns` | **unchanged:** `UnavailableFundedCampaigns` until the current S3-C writer exists, then that writer. Never fixtures |
 | `PayoutDestinations` | synthetic fixtures | `UnavailablePayoutDestinations` | **unchanged:** unavailable until a verified-destination producer exists. Never fixtures |
@@ -69,10 +72,22 @@ credentials, a dedicated database, debug off, a non-live URL.
 | `NoteServicing` | `UnavailableNoteServicing` | unchanged | unchanged until stage C |
 
 `SyntheticWalletGuard` and `SyntheticDisbursementGuard` keep their exact local/testing-only
-behaviour, messages and call sites. The only changed rows are the two provider rows and the deposit
-outbox worker. Each picks the synthetic provider edge only when the new guard allows it, and stays
-unavailable or refused otherwise. The worker's UAT admission is a separate `guardCommand` and
-dispatcher check against `UatProviderSimulation`; it does not widen `SyntheticWalletGuard`.
+behaviour and messages. The changed rows are:
+- the two provider rows;
+- the deposit outbox worker;
+- the deposit policy read;
+- funding-method verification.
+
+Each takes the synthetic path only when the new guard allows it, and stays unavailable or refused
+otherwise. Three call sites change: the worker's `guardCommand` and dispatcher check, and the two
+`applicablePolicy()` reads. Each accepts `SyntheticWalletGuard` (as today) **or**
+`UatProviderSimulation`, and on UAT only with a `synthetic` policy. `SyntheticWalletGuard` itself is
+not widened.
+
+Today the only code that marks a funding method verified is the local fixture, so UAT has no
+verified methods. Stage A therefore needs a method-verification command on the simulated provider
+edge. It is journaled under current permission, records `verification_source = synthetic`, and is
+refused once the switch is off or expired.
 
 ### 3. Runtime expiry and revocation
 
@@ -104,7 +119,7 @@ dispatcher check against `UatProviderSimulation`; it does not widen `SyntheticWa
 
 | Stage | What testers can do on UAT | Prerequisites |
 | --- | --- | --- |
-| **A. Deposits** | A superadmin-only Simulation panel answers the simulated provider edge for deposits (succeeded, failed, unknown, pending) through the existing signer. The real outcome, ledger and receipt paths run. | The new guard, the two provider bindings, a simulation permission, a deposit-policy decision (§ Decisions) |
+| **A. Deposits** | A superadmin-only Simulation panel answers the simulated provider edge for deposits (succeeded, failed, unknown, pending) through the existing signer. The real outcome, ledger and receipt paths run. | The new guard, the two provider bindings, the policy-read and method-verification changes above, a simulation permission, a deposit-policy decision (§ Decisions), and that policy recorded on UAT as an active `synthetic` policy row by a journaled staff command, not by a fixture seed |
 | **B. Payouts** | The panel answers the simulated payout provider edge for a disbursement that the real gates already approved | Stage A, **plus** authenticated current producers for all of: the `FundedCampaigns` writer, the verified payout destination, staff connections, the broader graph and global exposure, and forward settlement. Fixtures never stand in for any of these |
 | **C. Funded notes and servicing** | A campaign that really closes against simulated deposits becomes funded, its Holdings convert, and servicing runs | Current admission, verified destination, complete broader connections and global exposure, the current funded writer, authenticated forward settlement and successful Holding conversion. Retained `HoldingSource` facts and historical closing certificates are **not** these authorities |
 
@@ -138,6 +153,14 @@ same label, and the panel shows the switch owner and expiry.
   - every simulated record is still readable.
 - Revocation: after the switch is unset and config is reloaded, web and worker processes refuse. A
   test documents that a worker which has not been restarted keeps its loaded value until expiry.
+- Deposit policy reads, Investor and Business:
+  - local/testing still returns the latest active policy, exactly as today;
+  - UAT with the switch off or expired returns none, and a submit refuses `POLICY_INPUT_REQUIRED`;
+  - UAT with the switch on returns only an active `synthetic` policy, and never a non-synthetic one;
+  - production returns none under every setting.
+- Funding-method verification on UAT happens only through the journaled simulated-edge command. It
+  records `verification_source = synthetic`, refuses after expiry or revocation, and fixtures stay
+  refused. A deposit with an unverified method still refuses `DEPOSIT_METHOD_UNVERIFIED`.
 - On `production`, no setting can resolve a synthetic provider.
 - The deployment-admission negative controls stay green, and the UAT deploy prints the switch state
   and expiry in its evidence.
