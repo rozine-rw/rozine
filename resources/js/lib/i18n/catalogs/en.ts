@@ -99,6 +99,7 @@ const en = {
     'suite.app.auditor.description':
         'Field-verify on site, audit reports, earn yield.',
     'suite.blocker.action.verify_email': 'Verify your email →',
+    'suite.blocker.action.verify_identity': 'Verify your identity →',
     'suite.blocker.action.contact': 'Contact Rozine support →',
     'suite.blocker.EMAIL_VERIFICATION_REQUIRED.title':
         'Verify your email first',
@@ -2539,6 +2540,10 @@ const en = {
     'investor.kyc.target':
         "I understand the Rozine Plus return is a target, not a guarantee, that notes are held in the entity's own name, and that Rozine does not hold capital on its balance sheet.",
     'investor.kyc.submit': 'Submit for verification',
+    'investor.kyc.submitted_notice':
+        'Your details are with our Compliance team. We will tell you when they have been reviewed.',
+    'investor.kyc.rejected_notice':
+        'Compliance could not verify these details: {reason}. Correct them and submit again.',
     'investor.kyc.verifying': 'Verifying your identity…',
     'investor.kyc.verifying_entity': 'Verifying the entity…',
     'investor.verified.title': "You're verified",

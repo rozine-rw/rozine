@@ -101,6 +101,7 @@ const rw: Catalog = {
     'suite.app.auditor.description':
         'Genzura aho ubucuruzi bukorera, genzura raporo, ubone inyungu.',
     'suite.blocker.action.verify_email': 'Emeza imeyili yawe →',
+    'suite.blocker.action.verify_identity': 'Emeza umwirondoro wawe →',
     'suite.blocker.action.contact': "Vugana n'ubufasha bwa Rozine →",
     'suite.blocker.EMAIL_VERIFICATION_REQUIRED.title':
         'Banza wemeze imeyili yawe',
@@ -2597,6 +2598,10 @@ const rw: Catalog = {
     'investor.kyc.target':
         "Numva ko inyungu ya Rozine Plus ari intego, atari isezerano, ko impapuro zibikwa mu izina ry'ikigo, kandi ko Rozine idafata igishoro mu mari yayo.",
     'investor.kyc.submit': 'Ohereza kugira ngo bigenzurwe',
+    'investor.kyc.submitted_notice':
+        'Amakuru yawe ari mu itsinda ryacu rishinzwe kubahiriza amategeko. Tuzakumenyesha nibamara kuyasuzuma.',
+    'investor.kyc.rejected_notice':
+        'Itsinda rishinzwe kubahiriza amategeko ntiryashoboye kwemeza aya makuru: {reason}. Yakosore wongere uyohereze.',
     'investor.kyc.verifying': 'Turimo kugenzura umwirondoro wawe…',
     'investor.kyc.verifying_entity': 'Turimo kugenzura ikigo…',
     'investor.verified.title': 'Wemejwe',

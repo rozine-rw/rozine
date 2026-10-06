@@ -100,6 +100,7 @@ const fr: Catalog = {
     'suite.app.auditor.description':
         'Vérifiez sur site, auditez les rapports, percevez un rendement.',
     'suite.blocker.action.verify_email': 'Vérifier votre e-mail →',
+    'suite.blocker.action.verify_identity': 'Vérifier votre identité →',
     'suite.blocker.action.contact': 'Contacter le support Rozine →',
     'suite.blocker.EMAIL_VERIFICATION_REQUIRED.title':
         "Vérifiez d'abord votre e-mail",
@@ -2603,6 +2604,10 @@ const fr: Catalog = {
     'investor.kyc.target':
         "Je comprends que le rendement Rozine Plus est un objectif, pas une garantie, que les titres sont détenus au nom de l'entité et que Rozine ne détient pas de capital à son bilan.",
     'investor.kyc.submit': 'Soumettre pour vérification',
+    'investor.kyc.submitted_notice':
+        "Vos informations sont entre les mains de notre équipe Conformité. Nous vous préviendrons une fois l'examen terminé.",
+    'investor.kyc.rejected_notice':
+        "La Conformité n'a pas pu vérifier ces informations : {reason}. Corrigez-les et soumettez-les à nouveau.",
     'investor.kyc.verifying': 'Vérification de votre identité…',
     'investor.kyc.verifying_entity': "Vérification de l'entité…",
     'investor.verified.title': 'Vous êtes vérifié',

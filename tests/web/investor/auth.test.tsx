@@ -12,6 +12,7 @@ import type {
     InvestorSignUpProps,
     InvestorVerificationProps,
     InvestorVerifiedProps,
+    KycSubmission,
 } from '@/types/investor';
 import introFixture from '../../../resources/fixtures/ui/investor-intro.json';
 import loginFixture from '../../../resources/fixtures/ui/investor-login.json';
@@ -629,6 +630,92 @@ describe('Verification', () => {
 
         render(<InvestorVerification {...entity} />);
         expect(screen.getByText('Certificate uploaded')).toBeInTheDocument();
+    });
+});
+
+describe('Verification submission', () => {
+    const live = (
+        fixture: { props: unknown },
+        submission: Partial<KycSubmission>,
+    ): InvestorVerificationProps => {
+        const props = clone<InvestorVerificationProps>(fixture);
+
+        if (props.investor_type !== 'individual') {
+            throw new Error('An individual fixture is required.');
+        }
+
+        return {
+            ...props,
+            identity_context_revision: 3,
+            revision: 4,
+            status: 'draft',
+            decision_reason: null,
+            ...submission,
+        };
+    };
+
+    it('sends each step and upload with a fresh request and its revision', async () => {
+        const user = userEvent.setup();
+        const { unmount } = render(
+            <InvestorVerification {...live(documentFixture, {})} />,
+        );
+        const file = new File(['id'], 'back.jpg', { type: 'image/jpeg' });
+
+        await user.upload(screen.getByLabelText('Upload back'), file);
+        expect(inertia.routerPost).toHaveBeenCalledWith(
+            '/preview/investor-verification-document',
+            {
+                slot: 'id_back',
+                file,
+                request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u),
+                identity_context_revision: 3,
+                expected_revision: 4,
+            },
+            { forceFormData: true, preserveScroll: true },
+        );
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(inertia.posts[0].data).toMatchObject({
+            step: 'document',
+            identity_context_revision: 3,
+            expected_revision: 4,
+            request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u),
+        });
+        unmount();
+    });
+
+    it('locks a submitted case and shows why a rejected one reopened', () => {
+        const { unmount } = render(
+            <InvestorVerification
+                {...live(livenessFixture, { status: 'submitted' })}
+            />,
+        );
+
+        expect(screen.getByRole('note')).toHaveTextContent(
+            'Your details are with our Compliance team.',
+        );
+        expect(
+            screen.getByRole('button', { name: 'Submit for verification' }),
+        ).toBeDisabled();
+        expect(screen.getByLabelText('Tap to capture selfie')).toBeDisabled();
+        unmount();
+
+        render(
+            <InvestorVerification
+                {...live(livenessFixture, {
+                    status: 'rejected',
+                    decision_reason: 'The ID photo is blurred',
+                })}
+            />,
+        );
+        expect(
+            screen.getByText(
+                'Compliance could not verify these details: The ID photo is blurred. Correct them and submit again.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.queryByRole('note')).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Submit for verification' }),
+        ).toBeEnabled();
     });
 });
 

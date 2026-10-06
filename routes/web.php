@@ -20,6 +20,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IdentityManagementController;
 use App\Http\Controllers\InvestorDealsController;
 use App\Http\Controllers\InvestorPrimaryController;
+use App\Http\Controllers\InvestorVerificationController;
 use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\PulseController;
 use App\Http\Controllers\RoleBookmarkController;
@@ -71,6 +72,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('investor')->name('investor.')->group(function (): void {
     Route::get('deals', [InvestorDealsController::class, 'index'])->name('deals');
+    Route::get('verification', [InvestorVerificationController::class, 'show'])->name('verification');
+    Route::post('verification/steps', [InvestorVerificationController::class, 'save'])->name('verification.save');
+    Route::post('verification/documents', [InvestorVerificationController::class, 'upload'])->name('verification.upload');
+    Route::post('verification/submit', [InvestorVerificationController::class, 'submit'])->name('verification.submit');
     Route::get('deals/{campaign}', [InvestorDealsController::class, 'show'])->whereUlid('campaign')->name('deals.show');
     Route::get('wallet', [InvestorWalletController::class, 'show'])->name('wallet');
     Route::post('wallet/deposits', [InvestorWalletController::class, 'deposit'])->name('wallet.deposit');

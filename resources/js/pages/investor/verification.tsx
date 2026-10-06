@@ -11,6 +11,7 @@ import type {
     FundsSource,
     IdDocument,
     InvestorVerificationProps,
+    KycSubmission,
     UploadState,
 } from '@/types/investor';
 
@@ -25,9 +26,25 @@ const ENTITY_STEPS = ['entity', 'representative', 'declarations'] as const;
  * A dashed design tile that is a file picker (design L3576, L3590, L3638). The file goes straight to
  * the server, which stores it and re-renders the page with the slot's new state.
  */
+/**
+ * A live submission's commands carry a fresh `request_id`, the identity context and the revision
+ * they were drawn from; a preview fixture has no submission and sends none.
+ */
+function envelope(submission: Partial<KycSubmission>) {
+    return submission.revision === undefined ||
+        submission.identity_context_revision === undefined
+        ? {}
+        : {
+              request_id: crypto.randomUUID(),
+              identity_context_revision: submission.identity_context_revision,
+              expected_revision: submission.revision,
+          };
+}
+
 function Upload({
     slot,
     action,
+    submission,
     state,
     label,
     capture,
@@ -36,6 +53,7 @@ function Upload({
 }: {
     slot: string;
     action: RouteAction;
+    submission: Partial<KycSubmission>;
     state: UploadState;
     label: string;
     capture?: 'user';
@@ -57,6 +75,7 @@ function Upload({
                 accept="image/*,application/pdf"
                 capture={capture}
                 aria-label={label}
+                disabled={submission.status === 'submitted'}
                 className="sr-only"
                 onChange={(event) => {
                     const file = event.target.files?.[0];
@@ -64,7 +83,7 @@ function Upload({
                     if (file) {
                         router.post(
                             action.url,
-                            { slot, file },
+                            { slot, file, ...envelope(submission) },
                             { forceFormData: true, preserveScroll: true },
                         );
                     }
@@ -191,10 +210,17 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
     const set = (key: string, value: string | boolean) =>
         form.setData(key, value);
     const failure = Object.values(form.errors)[0];
+    const submission: Partial<KycSubmission> =
+        props.investor_type === 'individual' ? props : {};
+    const locked = submission.status === 'submitted';
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
-        form.transform((values) => ({ ...values, step: props.step }));
+        form.transform((values) => ({
+            ...values,
+            step: props.step,
+            ...envelope(submission),
+        }));
         form.post(last ? props.actions.submit.url : props.actions.save.url, {
             preserveScroll: true,
         });
@@ -328,6 +354,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                                             key={side}
                                             slot={`id_${side}`}
                                             action={props.actions.upload}
+                                            submission={submission}
                                             state={state}
                                             label={t(
                                                 `investor.kyc.upload_${side}`,
@@ -364,6 +391,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                         <Upload
                             slot="selfie"
                             action={props.actions.upload}
+                            submission={submission}
                             state={props.uploads.selfie}
                             label={t('investor.kyc.selfie')}
                             capture="user"
@@ -431,6 +459,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                             <Upload
                                 slot="certificate"
                                 action={props.actions.upload}
+                                submission={submission}
                                 state={props.uploads.certificate}
                                 label={t('investor.kyc.certificate')}
                                 className="rounded-2xl px-3.5 py-5 text-center"
@@ -485,6 +514,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                             <Upload
                                 slot="resolution"
                                 action={props.actions.upload}
+                                submission={submission}
                                 state={props.uploads.resolution}
                                 label={t('investor.kyc.resolution')}
                                 className="rounded-2xl px-3.5 py-5 text-center"
@@ -514,6 +544,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                             <Upload
                                 slot="selfie"
                                 action={props.actions.upload}
+                                submission={submission}
                                 state={props.uploads.selfie}
                                 label={t('investor.kyc.selfie')}
                                 capture="user"
@@ -600,6 +631,24 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                         </div>
                     )}
 
+                {locked && (
+                    <p
+                        role="note"
+                        className="mt-4 rounded-xl border border-rz-border bg-rz-surface p-[15px] text-[13px] text-rz-slate"
+                    >
+                        {t('investor.kyc.submitted_notice')}
+                    </p>
+                )}
+                {submission.status === 'rejected' &&
+                    submission.decision_reason && (
+                        <div className="mt-4">
+                            <ErrorBanner>
+                                {t('investor.kyc.rejected_notice', {
+                                    reason: submission.decision_reason,
+                                })}
+                            </ErrorBanner>
+                        </div>
+                    )}
                 {failure !== undefined && (
                     <div className="mt-4">
                         <ErrorBanner>{failure}</ErrorBanner>
@@ -620,7 +669,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                 )}
                 <button
                     type="submit"
-                    disabled={form.processing}
+                    disabled={form.processing || locked}
                     aria-busy={form.processing || undefined}
                     className="mt-6 h-[52px] w-full rounded-2xl bg-rz-accent-fill text-[15px] font-semibold text-white disabled:opacity-70"
                 >
