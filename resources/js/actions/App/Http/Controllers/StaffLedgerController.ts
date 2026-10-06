@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffLedgerController::index
-* @see app/Http/Controllers/StaffLedgerController.php:16
+* @see app/Http/Controllers/StaffLedgerController.php:17
 * @route '/api/v1/staff/ledger'
 */
 const index6ee27ee88c23d53ec4fe4f870340d04a = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index6ee27ee88c23d53ec4fe4f870340d04a.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffLedgerController::index
-* @see app/Http/Controllers/StaffLedgerController.php:16
+* @see app/Http/Controllers/StaffLedgerController.php:17
 * @route '/api/v1/staff/ledger'
 */
 index6ee27ee88c23d53ec4fe4f870340d04a.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index6ee27ee88c23d53ec4fe4f870340d04a.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffLedgerController::index
-* @see app/Http/Controllers/StaffLedgerController.php:16
+* @see app/Http/Controllers/StaffLedgerController.php:17
 * @route '/api/v1/staff/ledger'
 */
 index6ee27ee88c23d53ec4fe4f870340d04a.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index6ee27ee88c23d53ec4fe4f870340d04a.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\StaffLedgerController::index
-* @see app/Http/Controllers/StaffLedgerController.php:16
+* @see app/Http/Controllers/StaffLedgerController.php:17
 * @route '/api/v1/staff/ledger'
 */
 index6ee27ee88c23d53ec4fe4f870340d04a.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index6ee27ee88c23d53ec4fe4f870340d04a.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\StaffLedgerController::index
-* @see app/Http/Controllers/StaffLedgerController.php:16
+* @see app/Http/Controllers/StaffLedgerController.php:17
 * @route '/api/v1/staff/ledger'
 */
 const index6ee27ee88c23d53ec4fe4f870340d04aForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const index6ee27ee88c23d53ec4fe4f870340d04aForm = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\StaffLedgerController::index
-* @see app/Http/Controllers/StaffLedgerController.php:16
+* @see app/Http/Controllers/StaffLedgerController.php:17
 * @route '/api/v1/staff/ledger'
 */
 index6ee27ee88c23d53ec4fe4f870340d04aForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ index6ee27ee88c23d53ec4fe4f870340d04aForm.get = (options?: RouteQueryOptions): R
 
 /**
 * @see \App\Http\Controllers\StaffLedgerController::index
-* @see app/Http/Controllers/StaffLedgerController.php:16
+* @see app/Http/Controllers/StaffLedgerController.php:17
 * @route '/api/v1/staff/ledger'
 */
 index6ee27ee88c23d53ec4fe4f870340d04aForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,7 +81,7 @@ index6ee27ee88c23d53ec4fe4f870340d04aForm.head = (options?: RouteQueryOptions): 
 index6ee27ee88c23d53ec4fe4f870340d04a.form = index6ee27ee88c23d53ec4fe4f870340d04aForm
 /**
 * @see \App\Http\Controllers\StaffLedgerController::index
-* @see app/Http/Controllers/StaffLedgerController.php:16
+* @see app/Http/Controllers/StaffLedgerController.php:17
 * @route '/admin/ledger'
 */
 const index3c300d59e31a5d246705b6d43698eef1 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,7 +96,7 @@ index3c300d59e31a5d246705b6d43698eef1.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffLedgerController::index
-* @see app/Http/Controllers/StaffLedgerController.php:16
+* @see app/Http/Controllers/StaffLedgerController.php:17
 * @route '/admin/ledger'
 */
 index3c300d59e31a5d246705b6d43698eef1.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ index3c300d59e31a5d246705b6d43698eef1.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffLedgerController::index
-* @see app/Http/Controllers/StaffLedgerController.php:16
+* @see app/Http/Controllers/StaffLedgerController.php:17
 * @route '/admin/ledger'
 */
 index3c300d59e31a5d246705b6d43698eef1.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ index3c300d59e31a5d246705b6d43698eef1.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\StaffLedgerController::index
-* @see app/Http/Controllers/StaffLedgerController.php:16
+* @see app/Http/Controllers/StaffLedgerController.php:17
 * @route '/admin/ledger'
 */
 index3c300d59e31a5d246705b6d43698eef1.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,7 +125,7 @@ index3c300d59e31a5d246705b6d43698eef1.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\StaffLedgerController::index
-* @see app/Http/Controllers/StaffLedgerController.php:16
+* @see app/Http/Controllers/StaffLedgerController.php:17
 * @route '/admin/ledger'
 */
 const index3c300d59e31a5d246705b6d43698eef1Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -135,7 +135,7 @@ const index3c300d59e31a5d246705b6d43698eef1Form = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\StaffLedgerController::index
-* @see app/Http/Controllers/StaffLedgerController.php:16
+* @see app/Http/Controllers/StaffLedgerController.php:17
 * @route '/admin/ledger'
 */
 index3c300d59e31a5d246705b6d43698eef1Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,7 +145,7 @@ index3c300d59e31a5d246705b6d43698eef1Form.get = (options?: RouteQueryOptions): R
 
 /**
 * @see \App\Http\Controllers\StaffLedgerController::index
-* @see app/Http/Controllers/StaffLedgerController.php:16
+* @see app/Http/Controllers/StaffLedgerController.php:17
 * @route '/admin/ledger'
 */
 index3c300d59e31a5d246705b6d43698eef1Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
