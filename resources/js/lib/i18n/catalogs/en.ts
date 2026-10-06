@@ -2545,6 +2545,7 @@ const en = {
     'investor.kyc.target':
         "I understand the Rozine Plus return is a target, not a guarantee, that notes are held in the entity's own name, and that Rozine does not hold capital on its balance sheet.",
     'investor.kyc.submit': 'Submit for verification',
+    'investor.kyc.previous': 'Previous step',
     'investor.kyc.submitted_notice':
         'Your details are with our Compliance team. We will tell you when they have been reviewed.',
     'investor.kyc.rejected_notice':

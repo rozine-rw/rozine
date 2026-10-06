@@ -2609,6 +2609,7 @@ const fr: Catalog = {
     'investor.kyc.target':
         "Je comprends que le rendement Rozine Plus est un objectif, pas une garantie, que les titres sont détenus au nom de l'entité et que Rozine ne détient pas de capital à son bilan.",
     'investor.kyc.submit': 'Soumettre pour vérification',
+    'investor.kyc.previous': 'Étape précédente',
     'investor.kyc.submitted_notice':
         "Vos informations sont entre les mains de notre équipe Conformité. Nous vous préviendrons une fois l'examen terminé.",
     'investor.kyc.rejected_notice':
