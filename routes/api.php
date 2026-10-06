@@ -22,9 +22,11 @@ use App\Http\Controllers\BusinessWalletController;
 use App\Http\Controllers\ChangeFeedController;
 use App\Http\Controllers\InvestorDealsController;
 use App\Http\Controllers\InvestorPrimaryController;
+use App\Http\Controllers\InvestorVerificationController;
 use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\StaffApplicationReleaseController;
 use App\Http\Controllers\StaffDisbursementController;
+use App\Http\Controllers\StaffInvestorVerificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -178,6 +180,21 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::post('commitments/{commitment}/cancel', [InvestorPrimaryController::class, 'cancel'])->whereUlid('commitment')->name('primary.cancel');
     Route::get('deals/{campaign}/primary-operations/{request_id}', [InvestorPrimaryController::class, 'operation'])->whereUlid('campaign')->whereUuid('request_id')
         ->name('primary.operations.show');
+});
+
+Route::middleware(['auth:sanctum', 'verified', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/investor')->name('api.v1.investor.')->group(function (): void {
+    Route::get('verification', [InvestorVerificationController::class, 'show'])->name('verification');
+    Route::post('verification/steps', [InvestorVerificationController::class, 'save'])->name('verification.save');
+    Route::post('verification/documents', [InvestorVerificationController::class, 'upload'])->name('verification.upload');
+    Route::post('verification/submit', [InvestorVerificationController::class, 'submit'])->name('verification.submit');
+});
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/investor-verifications')->name('api.v1.staff.investor-verifications.')->group(function (): void {
+    Route::get('/', [StaffInvestorVerificationController::class, 'index'])->name('index');
+    Route::get('{verification}/documents/{document}', [StaffInvestorVerificationController::class, 'document'])
+        ->whereUlid(['verification', 'document'])->name('document');
+    Route::post('{verification}/approve', [StaffInvestorVerificationController::class, 'approve'])->whereUlid('verification')->name('approve');
+    Route::post('{verification}/reject', [StaffInvestorVerificationController::class, 'reject'])->whereUlid('verification')->name('reject');
 });
 
 Route::middleware(['auth:sanctum', 'throttle:changes', 'cache.headers:private;no_store'])->group(function (): void {

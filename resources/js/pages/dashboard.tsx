@@ -8,6 +8,7 @@ import { dashboard, logout } from '@/routes';
 import { home as adminHome } from '@/routes/admin';
 import { store } from '@/routes/identity/active-role';
 import { resume } from '@/routes/identity/roles';
+import { verification as investorVerification } from '@/routes/investor';
 import { edit as security } from '@/routes/security';
 import { notice as verificationNotice } from '@/routes/verification';
 import type {
@@ -26,16 +27,24 @@ type LauncherProps = {
     preview_links?: Partial<Record<RoleApp, RouteLink>>;
 };
 type Blocker = Exclude<IdentityCode, 'IDENTITY_READY'>;
-const blockerAction = (code: Blocker) =>
-    code === 'EMAIL_VERIFICATION_REQUIRED'
+const blockerAction = (code: Blocker) => {
+    if (code === 'EMAIL_VERIFICATION_REQUIRED') {
+        return {
+            href: verificationNotice().url,
+            label: 'suite.blocker.action.verify_email' as const,
+        };
+    }
+
+    return code === 'IDENTITY_VERIFICATION_REQUIRED'
         ? {
-              href: verificationNotice().url,
-              label: 'suite.blocker.action.verify_email' as const,
+              href: investorVerification().url,
+              label: 'suite.blocker.action.verify_identity' as const,
           }
         : {
               href: 'mailto:hello@rozine.rw',
               label: 'suite.blocker.action.contact' as const,
           };
+};
 
 export default function Launcher({
     identity,

@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "5a650b9054e631b1e6312cfde32f2096430beefab4d2d163a23d44bc2cbf350d",
-    "coverageSetSha256": "2c62480d98e57c2aa94035b21ed53c09d2d6f330ea8c2a8851ffec360cf405ae",
+    "sourceManifestSha256": "0442375a0464483245456725f0412eac13434acd2ed9322e0f1c9fe5485950b9",
+    "coverageSetSha256": "df3f3f575a0280a66db910bb0cb2a3d491ab482783b85ae4e60db3eda6491a6e",
     "thresholds": {
         "critical": {
             "global": {
@@ -359,6 +359,7 @@
         "resources/js/pages/admin/disbursements.tsx",
         "resources/js/pages/admin/events.tsx",
         "resources/js/pages/admin/exceptions.tsx",
+        "resources/js/pages/admin/investor-verifications.tsx",
         "resources/js/pages/admin/ledger.tsx",
         "resources/js/pages/admin/parties.tsx",
         "resources/js/pages/admin/reconciliation.tsx",

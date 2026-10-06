@@ -33,7 +33,7 @@ export type AdminSection =
     | 'ledger'
     | 'events';
 
-export type StaffRole = 'analyst' | 'approver' | 'superadmin';
+export type StaffRole = 'analyst' | 'approver' | 'compliance' | 'superadmin';
 
 /** The signed-in operator. Privileged staff accounts are separate from Party logins (CFG-01). */
 export type StaffViewer = {
@@ -1304,3 +1304,83 @@ export type AdminReportsProps = AdminFrameShellProps &
     StaffReportsPageContract & {
         packs: ReportPack[];
     };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Investor identity review (Compliance, `investors.verify`)                                   */
+/* ------------------------------------------------------------------------------------------ */
+
+export type KycIdType = 'national_id' | 'passport' | 'drivers_license';
+
+export type KycCaseStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
+
+export type InvestorVerificationEntry = {
+    id: string;
+    revision: number;
+    status: KycCaseStatus;
+    submitted_at: string;
+    decided_at: string | null;
+    name: string;
+    email: string;
+    id_type: KycIdType;
+    selected: boolean;
+    link: RouteLink;
+};
+
+/** A private upload: read only through its link, never inlined in the props. */
+export type InvestorVerificationDocument = {
+    id: string;
+    slot: 'front' | 'back' | 'selfie';
+    filename: string;
+    media_type: string;
+    size_bytes: number;
+    sha256: string;
+    uploaded_at: string;
+    /** Whether the submission still points at this upload rather than a replaced one. */
+    current: boolean;
+    link: RouteLink;
+};
+
+export type InvestorVerificationReview = {
+    id: string;
+    revision: number;
+    status: KycCaseStatus;
+    submitted_at: string | null;
+    account: { name: string; email: string };
+    date_of_birth: string;
+    id_type: KycIdType;
+    id_number: string;
+    decision: {
+        outcome: 'approved' | 'rejected';
+        reason: string;
+        decided_at: string;
+    } | null;
+    documents: InvestorVerificationDocument[];
+    history: {
+        revision: number;
+        status: KycCaseStatus;
+        command:
+            | 'verification.save'
+            | 'verification.upload'
+            | 'verification.submit'
+            | 'verification.approve'
+            | 'verification.reject';
+        reason: string | null;
+        at: string;
+    }[];
+    links: { close: RouteLink };
+    /** Present only while the case waits for review. */
+    actions: { approve?: RouteAction; reject?: RouteAction };
+};
+
+export type AdminInvestorVerificationsProps = AdminFrameShellProps & {
+    contract_version: 'staff-investor-verifications-v1';
+    active_tab: 'submitted' | 'decided';
+    tabs: {
+        key: 'submitted' | 'decided';
+        count: number;
+        link: RouteLink;
+    }[];
+    entries: InvestorVerificationEntry[];
+    pagination: { next: RouteLink | null };
+    review: InvestorVerificationReview | null;
+};

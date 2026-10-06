@@ -347,8 +347,8 @@ describe('Suite launcher', () => {
             'Your identity is being verified',
         );
         expect(
-            screen.getByRole('link', { name: 'Contact Rozine support →' }),
-        ).toHaveAttribute('href', 'mailto:hello@rozine.rw');
+            screen.getByRole('link', { name: 'Verify your identity →' }),
+        ).toHaveAttribute('href', '/investor/verification');
     });
     it.each<[Exclude<IdentityCode, 'IDENTITY_READY'>, string, string, string]>([
         [

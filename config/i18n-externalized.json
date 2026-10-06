@@ -190,6 +190,7 @@
         "resources/js/pages/admin/auth/login.tsx",
         "resources/js/pages/admin/disbursements.tsx",
         "resources/js/pages/admin/events.tsx",
+        "resources/js/pages/admin/investor-verifications.tsx",
         "resources/js/pages/admin/ledger.tsx",
         "resources/js/pages/admin/parties.tsx",
         "resources/js/pages/admin/repayments.tsx",

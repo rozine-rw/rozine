@@ -12,6 +12,7 @@ import type {
     InvestorSignUpProps,
     InvestorVerificationProps,
     InvestorVerifiedProps,
+    KycSubmission,
 } from '@/types/investor';
 import introFixture from '../../../resources/fixtures/ui/investor-intro.json';
 import loginFixture from '../../../resources/fixtures/ui/investor-login.json';
@@ -487,7 +488,12 @@ describe('Verification', () => {
         expect(inertia.routerPost).toHaveBeenCalledWith(
             '/preview/investor-verification-document',
             { slot: 'id_back', file },
-            { forceFormData: true, preserveScroll: true },
+            {
+                forceFormData: true,
+                preserveScroll: true,
+                onError: expect.any(Function),
+                onSuccess: expect.any(Function),
+            },
         );
         unmountSecond();
 
@@ -629,6 +635,210 @@ describe('Verification', () => {
 
         render(<InvestorVerification {...entity} />);
         expect(screen.getByText('Certificate uploaded')).toBeInTheDocument();
+    });
+});
+
+describe('Verification submission', () => {
+    const live = (
+        fixture: { props: unknown },
+        submission: Partial<KycSubmission>,
+    ): InvestorVerificationProps => {
+        const props = clone<InvestorVerificationProps>(fixture);
+
+        if (props.investor_type !== 'individual') {
+            throw new Error('An individual fixture is required.');
+        }
+
+        return {
+            ...props,
+            identity_context_revision: 3,
+            revision: 4,
+            status: 'draft',
+            decision_reason: null,
+            ...submission,
+        };
+    };
+
+    it('sends each step and upload with a fresh request and its revision', async () => {
+        const user = userEvent.setup();
+        const { unmount } = render(
+            <InvestorVerification {...live(documentFixture, {})} />,
+        );
+        const file = new File(['id'], 'back.jpg', { type: 'image/jpeg' });
+
+        await user.upload(screen.getByLabelText('Upload back'), file);
+        expect(inertia.routerPost).toHaveBeenCalledWith(
+            '/preview/investor-verification-document',
+            {
+                slot: 'id_back',
+                file,
+                request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u),
+                identity_context_revision: 3,
+                expected_revision: 4,
+            },
+            {
+                forceFormData: true,
+                preserveScroll: true,
+                onError: expect.any(Function),
+                onSuccess: expect.any(Function),
+            },
+        );
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(inertia.posts[0].data).toMatchObject({
+            step: 'document',
+            identity_context_revision: 3,
+            expected_revision: 4,
+            request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u),
+        });
+        unmount();
+    });
+
+    it('locks a submitted case and shows why a rejected one reopened', () => {
+        const { unmount } = render(
+            <InvestorVerification
+                {...live(livenessFixture, { status: 'submitted' })}
+            />,
+        );
+
+        expect(screen.getByRole('note')).toHaveTextContent(
+            'Your details are with our Compliance team.',
+        );
+        expect(
+            screen.getByRole('button', { name: 'Submit for verification' }),
+        ).toBeDisabled();
+        expect(screen.getByLabelText('Tap to capture selfie')).toBeDisabled();
+        unmount();
+
+        render(
+            <InvestorVerification
+                {...live(livenessFixture, {
+                    status: 'rejected',
+                    decision_reason: 'The ID photo is blurred',
+                })}
+            />,
+        );
+        expect(
+            screen.getByText(
+                'Compliance could not verify these details: The ID photo is blurred. Correct them and submit again.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.queryByRole('note')).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Submit for verification' }),
+        ).toBeEnabled();
+    });
+
+    it('lets a rejected participant step back to replace an ID image, then returns to the server step', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <InvestorVerification
+                {...live(livenessFixture, {
+                    status: 'rejected',
+                    decision_reason: 'The ID photo is blurred',
+                })}
+            />,
+        );
+        await user.click(screen.getByRole('button', { name: 'Previous step' }));
+        expect(
+            screen.getByRole('heading', { name: 'Verify your ID' }),
+        ).toBeInTheDocument();
+        const file = new File(['id'], 'front.jpg', { type: 'image/jpeg' });
+
+        await user.upload(screen.getByLabelText('Upload front'), file);
+        expect(inertia.routerPost.mock.calls[0][1]).toMatchObject({
+            slot: 'id_front',
+            file,
+        });
+        inertia.succeed = true;
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(inertia.posts[0].data).toMatchObject({ step: 'document' });
+        expect(
+            screen.getByRole('button', { name: 'Submit for verification' }),
+        ).toBeInTheDocument();
+    });
+
+    it('lets a rejected participant go back two steps to correct their date of birth', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <InvestorVerification
+                {...live(livenessFixture, {
+                    status: 'rejected',
+                    decision_reason: 'The date of birth does not match the ID',
+                })}
+            />,
+        );
+        await user.click(screen.getByRole('button', { name: 'Previous step' }));
+        await user.click(screen.getByRole('button', { name: 'Previous step' }));
+        expect(
+            screen.getByRole('heading', { name: 'Personal details' }),
+        ).toBeInTheDocument();
+        const dob = screen.getByLabelText('DATE OF BIRTH');
+
+        await user.clear(dob);
+        await user.type(dob, '02/05/1990');
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(inertia.posts[0].data).toMatchObject({
+            step: 'personal',
+            date_of_birth: '02/05/1990',
+            expected_revision: 4,
+        });
+    });
+
+    it('offers no step back from the first step or while a case is with Compliance', () => {
+        const { unmount } = render(
+            <InvestorVerification {...live(personalFixture, {})} />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Previous step' }),
+        ).not.toBeInTheDocument();
+        unmount();
+        render(
+            <InvestorVerification
+                {...live(livenessFixture, { status: 'submitted' })}
+            />,
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Previous step' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows why an upload was refused, and clears it once an upload succeeds', async () => {
+        const user = userEvent.setup();
+        const reply = { refuse: true };
+
+        inertia.routerPost.mockImplementation(
+            (
+                _url: string,
+                _data: unknown,
+                options: {
+                    onError: (errors: Record<string, string>) => void;
+                    onSuccess: () => void;
+                },
+            ) =>
+                reply.refuse
+                    ? options.onError({
+                          file: 'Choose a PDF, PNG or JPEG of at most 10 MB.',
+                      })
+                    : options.onSuccess(),
+        );
+        render(<InvestorVerification {...live(documentFixture, {})} />);
+        const file = new File(['id'], 'back.gif', { type: 'image/gif' });
+
+        await user.upload(screen.getByLabelText('Upload back'), file);
+        expect(
+            screen.getByText('Choose a PDF, PNG or JPEG of at most 10 MB.'),
+        ).toBeInTheDocument();
+        reply.refuse = false;
+        await user.upload(
+            screen.getByLabelText('Upload back'),
+            new File(['id'], 'back.jpg', { type: 'image/jpeg' }),
+        );
+        expect(
+            screen.queryByText('Choose a PDF, PNG or JPEG of at most 10 MB.'),
+        ).not.toBeInTheDocument();
     });
 });
 
