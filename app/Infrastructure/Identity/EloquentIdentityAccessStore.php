@@ -155,8 +155,10 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
      */
     public function verifyInvestor(int $actorId, int $userId, string $identityReference, string $evidenceReference, string $reason, string $requestId, Closure $approve): array
     {
-        return $this->withStaffPermission($actorId, 'investors.verify', function () use ($actorId, $userId, $identityReference, $evidenceReference, $reason, $requestId, $approve): array {
+        return DB::transaction(function () use ($actorId, $userId, $identityReference, $evidenceReference, $reason, $requestId, $approve): array {
+            // Both accounts in ascending ID first; the reviewer's current permission is then read under that lock.
             $users = User::query()->whereKey([$actorId, $userId])->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+            $this->requireStaffPermission($actorId, 'investors.verify');
 
             return $this->resolveVerifiedPerson($actorId, $users->get($userId), $identityReference, $evidenceReference, $reason, $requestId, 'investor.verify',
                 function (Party $party) use ($approve): array {
@@ -165,7 +167,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
                     return ['membership' => ['id' => $membership->id, 'role' => 'investor', 'status' => 'active', 'revision' => $revision],
                         'verification' => $approve($party->id)];
                 });
-        });
+        }, 3);
     }
 
     /**
@@ -436,13 +438,18 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
     public function withStaffPermission(int $userId, string $permission, Closure $operation): mixed
     {
         return DB::transaction(function () use ($userId, $permission, $operation): mixed {
-            $access = $this->staffAccess($userId, true);
-            if (! in_array($permission, $access['allowed_actions'], true)) {
-                throw new IdentityViolation('STAFF_PERMISSION_REQUIRED');
-            }
+            $this->requireStaffPermission($userId, $permission);
 
             return $operation();
         }, 3);
+    }
+
+    /** Locks the staff account (a no-op when the caller already holds it in its own order) and checks the permission. */
+    private function requireStaffPermission(int $userId, string $permission): void
+    {
+        if (! in_array($permission, $this->staffAccess($userId, true)['allowed_actions'], true)) {
+            throw new IdentityViolation('STAFF_PERMISSION_REQUIRED');
+        }
     }
 
     /** @return array<string, mixed> */

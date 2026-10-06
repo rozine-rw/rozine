@@ -19,6 +19,7 @@ use App\Models\Party;
 use App\Models\User;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @phpstan-import-type Queue from InvestorVerificationReviewStore
@@ -102,16 +103,21 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
         $document = InvestorVerificationDocument::query()->where('investor_verification_id', $verificationId)->find($documentId)
             ?? throw new CommandRejection('VERIFICATION_DOCUMENT_NOT_FOUND', 404);
 
+        if (! hash_equals($document->sha256, hash('sha256', $document->content))) {
+            throw new CommandRejection('VERIFICATION_DOCUMENT_INTEGRITY_FAILED', 409);
+        }
+
         return ['filename' => $document->filename, 'media_type' => $document->media_type, 'content' => $document->content];
     }
 
     /** @return array<string, mixed> */
     public function approve(int $actorId, string $verificationId, int $expectedRevision, string $reason, string $requestId): array
     {
-        return $this->command($actorId, $verificationId, $expectedRevision, $reason, $requestId, 'approve', function () use ($actorId, $verificationId, $expectedRevision, $reason, $requestId): OperationResult {
+        return $this->command($actorId, $verificationId, $expectedRevision, $reason, $requestId, 'approve', function (?int $participant) use ($actorId, $verificationId, $expectedRevision, $reason, $requestId): OperationResult {
             $record = $this->decidable(InvestorVerification::query()->find($verificationId), $expectedRevision);
+            $userId = $this->locked($record, $participant);
             try {
-                $result = $this->verify->handle($actorId, $this->participant($record->party_id), $this->cases->identityReference($record->state),
+                $result = $this->verify->handle($actorId, $userId, $this->cases->identityReference($record->state),
                     'investor-verification:'.$record->id.'@'.$record->revision, $reason, $requestId,
                     fn (): array => $this->decide($verificationId, $expectedRevision, 'approved', $reason, $actorId));
             } catch (IdentityViolation $violation) {
@@ -127,21 +133,23 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
     /** @return array<string, mixed> */
     public function reject(int $actorId, string $verificationId, int $expectedRevision, string $reason, string $requestId): array
     {
-        return $this->command($actorId, $verificationId, $expectedRevision, $reason, $requestId, 'reject', function () use ($actorId, $verificationId, $expectedRevision, $reason): OperationResult {
-            return $this->staff->handle($actorId, 'investors.verify', function () use ($actorId, $verificationId, $expectedRevision, $reason): OperationResult {
-                $record = $this->decidable(InvestorVerification::query()->find($verificationId), $expectedRevision);
-                User::query()->lockForUpdate()->findOrFail($this->participant($record->party_id));
-                Party::query()->lockForUpdate()->findOrFail($record->party_id);
-                $decision = $this->decide($verificationId, $expectedRevision, 'rejected', $reason, $actorId);
+        return $this->command($actorId, $verificationId, $expectedRevision, $reason, $requestId, 'reject', function (?int $participant) use ($actorId, $verificationId, $expectedRevision, $reason): OperationResult {
+            $record = $this->decidable(InvestorVerification::query()->find($verificationId), $expectedRevision);
+            $this->locked($record, $participant);
+            Party::query()->lockForUpdate()->findOrFail($record->party_id);
+            $decision = $this->decide($verificationId, $expectedRevision, 'rejected', $reason, $actorId);
 
-                return new OperationResult('VERIFICATION_REJECTED', ['verification_id' => $verificationId, 'status' => 'rejected'],
-                    $decision['revision'], [], self::POLICY_VERSION);
-            });
+            return new OperationResult('VERIFICATION_REJECTED', ['verification_id' => $verificationId, 'status' => 'rejected'],
+                $decision['revision'], [], self::POLICY_VERSION);
         });
     }
 
     /**
-     * @param  Closure(): OperationResult  $operation
+     * Locks the reviewer and the case's one account in ascending ID, then checks the reviewer's current
+     * permission under that lock, before the journal either replays a recorded decision or records a new
+     * one. Every later lock (identity, Party, submission) follows these accounts.
+     *
+     * @param  Closure(int|null): OperationResult  $operation
      * @return array<string, mixed>
      */
     private function command(int $actorId, string $verificationId, int $expectedRevision, string $reason, string $requestId, string $decision, Closure $operation): array
@@ -150,11 +158,18 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
             return ['status' => 'rejected', 'code' => 'DECISION_REASON_REQUIRED', 'field_errors' => ['reason' => ['Give the reason for this decision, in at most 1,000 characters.']], 'http_status' => 422];
         }
         try {
-            return $this->journal->execute('staff:'.$actorId, $actorId, 'investor.verification.'.$decision, $requestId, 'investor.verification', $verificationId,
-                ['expected_revision' => $expectedRevision, 'reason' => $reason],
-                function () use ($actorId): void {
-                    $this->staff->check($actorId, 'investors.verify');
-                }, $operation);
+            return DB::transaction(function () use ($actorId, $verificationId, $expectedRevision, $reason, $requestId, $decision, $operation): array {
+                $record = InvestorVerification::query()->find($verificationId);
+                $participant = $record === null ? null : $this->participant($record->party_id);
+                User::query()->whereKey(array_filter([$actorId, $participant]))->orderBy('id')->lockForUpdate()->get();
+
+                return $this->staff->handle($actorId, 'investors.verify', fn (): array => $this->journal->execute('staff:'.$actorId, $actorId,
+                    'investor.verification.'.$decision, $requestId, 'investor.verification', $verificationId,
+                    ['expected_revision' => $expectedRevision, 'reason' => $reason],
+                    // The accounts and the reviewer's permission are already locked and checked above, for a first run and a replay alike.
+                    static function (): void {},
+                    fn (): OperationResult => $operation($participant)));
+            }, 3);
         } catch (CommandRejection $exception) {
             // Refused before it was recorded (a reused request_id): answered like a recorded refusal.
             return ['status' => 'rejected', 'code' => $exception->reason, 'field_errors' => $exception->fieldErrors, 'http_status' => $exception->status];
@@ -177,33 +192,56 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
         return $record;
     }
 
-    /** The one account a self-submitted case belongs to; anything else is for an identity operator. */
-    private function participant(string $partyId): int
+    /** The one account a self-submitted case belongs to, or null when there is none or more than one. */
+    private function participant(string $partyId): ?int
     {
         $users = User::query()->where('party_id', $partyId)->pluck('id');
-        if ($users->count() !== 1) {
-            throw new CommandRejection('IDENTITY_RECONCILIATION_REQUIRED', 409);
-        }
 
-        return (int) $users->first();
+        return $users->count() === 1 ? (int) $users->first() : null;
     }
 
     /**
-     * Locks the submission last, rechecks it and closes it with the reviewer's reason.
+     * Rereads the case's account under the account locks: it must still be exactly the one account locked
+     * before the journal ran. Several accounts, none, or a changed account-to-Party link is for an identity
+     * operator, never a staff decision.
+     */
+    private function locked(InvestorVerification $record, ?int $participant): int
+    {
+        $current = $this->participant($record->party_id);
+        if ($current === null || $current !== $participant) {
+            throw new CommandRejection('IDENTITY_RECONCILIATION_REQUIRED', 409);
+        }
+
+        return $current;
+    }
+
+    /**
+     * Locks the submission last, rechecks it and closes it with the reviewer's reason. An approval also
+     * rechecks the whole submission and binds the hash-pinned uploads it verified.
      *
      * @param  'approved'|'rejected'  $outcome
-     * @return array{verification_id: string, revision: int}
+     * @return array{verification_id: string, revision: int, documents?: array<string, string>}
      */
     private function decide(string $verificationId, int $expectedRevision, string $outcome, string $reason, int $actorId): array
     {
         $record = $this->decidable(InvestorVerification::query()->whereKey($verificationId)->lockForUpdate()->first(), $expectedRevision);
+        $facts = ['verification_id' => $record->id];
+        if ($outcome === 'approved') {
+            $this->cases->complete($record->state, now()->toDateTimeImmutable());
+            $uploads = array_filter($record->state['uploads']);
+            $hashes = InvestorVerificationDocument::query()->where('investor_verification_id', $record->id)->whereIn('id', $uploads)->pluck('sha256', 'id');
+            if ($hashes->count() !== count($uploads)) {
+                throw new CommandRejection('VERIFICATION_DOCUMENT_REQUIRED', 409, $record->revision);
+            }
+            $facts['documents'] = array_map(fn (string $id): string => (string) $hashes[$id], $uploads);
+        }
         $state = [...$record->state, 'decision' => ['outcome' => $outcome, 'reason' => $reason, 'decided_at' => now()->toIso8601String()]];
         $record->forceFill(['revision' => $expectedRevision + 1, 'status' => $outcome, 'state' => $state])->save();
         (new InvestorVerificationVersion)->forceFill(['investor_verification_id' => $record->id, 'revision' => $record->revision,
             'status' => $outcome, 'snapshot' => $state, 'actor_user_id' => $actorId, 'command' => 'verification.'.($outcome === 'approved' ? 'approve' : 'reject'),
             'reason' => $reason, 'policy_version' => self::POLICY_VERSION])->save();
 
-        return ['verification_id' => $record->id, 'revision' => $record->revision];
+        return [...$facts, 'revision' => $record->revision];
     }
 
     /**

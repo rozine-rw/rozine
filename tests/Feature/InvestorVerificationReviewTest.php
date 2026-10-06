@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use App\Application\Identity\ConfigureStaffAccess;
+use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\ReviewInvestorVerifications;
 use App\Application\Identity\SaveInvestorVerification;
 use App\Application\Identity\SubmitInvestorVerification;
 use App\Application\Identity\UploadInvestorVerificationDocument;
+use App\Domain\Identity\IdentityViolation;
 use App\Models\CommandOperation;
 use App\Models\IdentityAuditEvent;
 use App\Models\InvestorVerification;
@@ -16,6 +18,7 @@ use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\User;
 use App\Models\VerifiedPersonIdentity;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -165,7 +168,9 @@ test('approval verifies the person through the one writer and activates the Inve
     expect($event->actor_key)->toBe('user:'.$this->officer->id)
         ->and($event->result['code'])->toBe('INVESTOR_VERIFIED')
         ->and($event->result['membership'])->toEqual(['id' => $membership->id, 'role' => 'investor', 'status' => 'active', 'revision' => 1])
-        ->and($event->result['verification'])->toEqual(['verification_id' => $case->id, 'revision' => 7]);
+        ->and($event->result['verification'])->toEqual(['verification_id' => $case->id, 'revision' => 7,
+            'documents' => InvestorVerificationDocument::query()->whereIn('id', array_filter($case->state['uploads']))->get()
+                ->mapWithKeys(fn (InvestorVerificationDocument $document): array => [$document->slot => $document->sha256])->all()]);
 
     $this->actingAs($this->officer)->post(route('staff.investor-verifications.approve', $case), $command)->assertSessionHasNoErrors();
     expect(CommandOperation::query()->where('command', 'investor.verification.approve')->count())->toBe(1)
@@ -277,4 +282,97 @@ test('the queue searches account names and emails and pages decided cases newest
             ->where('pagination.next.url', '/admin/investor-verifications?tab=decided&before='.$jean->id));
     $this->actingAs($this->officer)->get(route('staff.investor-verifications.index', ['tab' => 'decided', 'limit' => 1, 'before' => $jean->id]))
         ->assertInertia(fn (Assert $page) => $page->has('entries', 1)->where('entries.0.id', $aline->id)->where('pagination.next', null));
+});
+
+test('both decisions lock the two accounts in ascending ID before reading the reviewer\'s permission', function (): void {
+    $case = reviewSubmitted($this->person);
+    $reviewer = reviewStaff(['compliance']);
+    expect($this->person->id)->toBeLessThan($reviewer->id);
+    $userLocks = function (Closure $decision): array {
+        $locks = [];
+        DB::listen(function ($query) use (&$locks): void {
+            $ids = [];
+            if (preg_match('/from "users" where "users"\."id" in \(([0-9, ]+)\) order by "id" asc for update/', $query->sql, $ids) === 1) {
+                $locks[] = array_map('intval', explode(', ', $ids[1]));
+                sort($locks[array_key_last($locks)]);
+            } elseif (str_contains($query->sql, 'from "users"') && str_contains($query->sql, 'for update')) {
+                $locks[] = $query->bindings;
+            }
+        });
+        $decision();
+
+        return $locks;
+    };
+
+    $locks = $userLocks(fn () => $this->actingAs($reviewer)->post(route('staff.investor-verifications.reject', $case), reviewDecision($case, 'Blurred.')));
+    expect($locks[0])->toBe([$this->person->id, $reviewer->id]);
+
+    $other = User::factory()->create(['party_id' => Party::factory()]);
+    $pending = reviewSubmitted($other, 'passport', 'LK123456');
+    $late = reviewStaff(['compliance']);
+    $locks = $userLocks(fn () => $this->actingAs($late)->post(route('staff.investor-verifications.approve', $pending), reviewDecision($pending)));
+    expect($locks[0])->toBe([$other->id, $late->id])
+        ->and($pending->refresh()->status)->toBe('approved');
+});
+
+test('a replayed decision rechecks the reviewer\'s current permission, and changed input is refused', function (): void {
+    $case = reviewSubmitted($this->person);
+    $command = reviewDecision($case);
+    $this->actingAs($this->officer)->post(route('staff.investor-verifications.approve', $case), $command)->assertSessionHasNoErrors();
+    $this->actingAs($this->officer)->post(route('staff.investor-verifications.approve', $case), [...$command, 'reason' => 'Another reason.'])
+        ->assertSessionHasErrors(['form' => 'That request was already used for different details. Try again.']);
+
+    app(ConfigureStaffAccess::class)->handle($this->officer->id, true, 'Moved to analysis.', (string) Str::uuid(), ['analyst']);
+    $this->actingAs($this->officer)->post(route('staff.investor-verifications.approve', $case), $command)->assertForbidden();
+    expect(CommandOperation::query()->where('command', 'investor.verification.approve')->count())->toBe(1);
+});
+
+test('a failure after the person and membership are written rolls every effect back', function (): void {
+    $case = reviewSubmitted($this->person);
+    $context = $this->person->context_revision;
+
+    expect(fn () => app(IdentityAccessStore::class)->verifyInvestor($this->officer->id, $this->person->id, 'rw-nid:1199080012345678',
+        'investor-verification:'.$case->id.'@6', 'Matches.', (string) Str::uuid(), fn (): never => throw new RuntimeException('Submission lock failed.')))
+        ->toThrow(RuntimeException::class, 'Submission lock failed.');
+
+    expect(Party::query()->findOrFail($this->person->party_id)->verified_at)->toBeNull()
+        ->and(VerifiedPersonIdentity::query()->count())->toBe(0)
+        ->and(RoleMembership::query()->count())->toBe(0)
+        ->and($this->person->refresh()->context_revision)->toBe($context)
+        ->and(IdentityAuditEvent::query()->where('action', 'investor.verify')->count())->toBe(0)
+        ->and($case->refresh()->status)->toBe('submitted');
+
+    expect(fn () => app(IdentityAccessStore::class)->verifyInvestor(reviewStaff(['approver'])->id, $this->person->id, 'rw-nid:1199080012345678',
+        'investor-verification:'.$case->id.'@6', 'Matches.', (string) Str::uuid(), fn (): array => []))
+        ->toThrow(IdentityViolation::class, 'STAFF_PERMISSION_REQUIRED');
+});
+
+test('an existing membership is never reset by an approval', function (): void {
+    $case = reviewSubmitted($this->person);
+    (new RoleMembership)->forceFill(['party_id' => $this->person->party_id, 'role' => 'investor', 'status' => 'revoked', 'revision' => 3])->save();
+
+    $this->actingAs($this->officer)->post(route('staff.investor-verifications.approve', $case), reviewDecision($case))
+        ->assertSessionHasErrors(['form' => 'This ID is already verified for another person, or the account needs an identity operator. It cannot be approved here.']);
+    expect(RoleMembership::query()->sole()->only(['status', 'revision']))->toBe(['status' => 'revoked', 'revision' => 3])
+        ->and(Party::query()->findOrFail($this->person->party_id)->verified_at)->toBeNull()
+        ->and($case->refresh()->status)->toBe('submitted');
+});
+
+test('an approval binds the submission\'s own hash-pinned uploads and refuses one that no longer matches', function (): void {
+    $case = reviewSubmitted($this->person);
+    $case->forceFill(['state' => [...$case->state, 'uploads' => [...$case->state['uploads'], 'selfie' => strtolower((string) Str::ulid())]]])->save();
+
+    $this->actingAs($this->officer)->post(route('staff.investor-verifications.approve', $case), reviewDecision($case))->assertSessionHasErrors('form');
+    expect(CommandOperation::query()->where('command', 'investor.verification.approve')->sole()->result['code'])->toBe('VERIFICATION_DOCUMENT_REQUIRED')
+        ->and(Party::query()->findOrFail($this->person->party_id)->verified_at)->toBeNull()
+        ->and($case->refresh()->status)->toBe('submitted');
+});
+
+test('a document whose content no longer matches its pinned hash is not served', function (): void {
+    $case = reviewSubmitted($this->person);
+    $tampered = new InvestorVerificationDocument;
+    $tampered->forceFill(['investor_verification_id' => $case->id, 'slot' => 'front', 'filename' => 'front.png', 'media_type' => 'image/png',
+        'size_bytes' => 4, 'sha256' => str_repeat('0', 64), 'content' => 'fake', 'actor_user_id' => $this->person->id])->save();
+
+    $this->actingAs($this->officer)->get(route('staff.investor-verifications.document', [$case->id, $tampered->id]))->assertStatus(409);
 });

@@ -53,8 +53,9 @@ interface IdentityAccessStore
      * Compliance's approval of a person's own Investor identity submission (`investors.verify`). It runs
      * the verified-person writer that resolvePerson uses, refusing a reference already verified for
      * another Party, activates the Investor membership through the membership-transition core, and
-     * then runs `$approve` with the verified Party id, all in one transaction. Lock order: users,
-     * identity advisory lock, parties, then whatever `$approve` locks (the submission).
+     * then runs `$approve` with the verified Party id, all in one transaction. Lock order: both accounts
+     * in ascending ID (the reviewer's permission is read under that lock), identity advisory lock,
+     * parties, then whatever `$approve` locks (the submission).
      *
      * @param  Closure(string): array<string, mixed>  $approve
      * @return array<string, mixed>
