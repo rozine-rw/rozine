@@ -39,7 +39,7 @@ done
 case "$path" in
   *git/ref/heads/*) body="$(cat "$FIXTURES/ref.json")" ;;
   *actions/workflows/*)
-    [[ "$path" == *'event=push&branch=main&per_page=100'* ]] || exit 64
+    [[ "$path" == *'event=push&branch=main&per_page=100'* || "$path" == *'&branch=uat&per_page=100'* ]] || exit 64
     body="$(cat "$FIXTURES/runs.json")" ;;
   *actions/runs/*/jobs*) body="$(cat "$FIXTURES/jobs.json")" ;;
   *commits/*/pulls) body="$(cat "$FIXTURES/pulls.json")" ;;
@@ -92,7 +92,7 @@ check() {
   local out code
   out="$(PATH="${WORKDIR}/bin:${PATH}" \
         GH_TOKEN=stub GITHUB_REPOSITORY=rozine-rw/rozine \
-        CANDIDATE_SHA="${GOOD_SHA}" TARGET_BRANCH=main \
+        CANDIDATE_SHA="${GOOD_SHA}" TARGET_BRANCH="${TEST_TARGET_BRANCH:-main}" \
         WAIT_TIMEOUT_SECONDS=1 POLL_INTERVAL_SECONDS=1 \
         ATTESTATION_PATH="${WORKDIR}/attestation.json" \
         bash "${GATE}" 2>&1)"
@@ -166,6 +166,21 @@ check "refuses an approval that names a superseded commit" refuse "no APPROVED r
 
 baseline; write_reviews "[{\"state\":\"CHANGES_REQUESTED\",\"commit_id\":\"${HEAD_SHA}\",\"user\":{\"login\":\"aminu\"},\"submitted_at\":\"2026-09-06T11:30:00Z\"}]"
 check "refuses when the non-author requested changes instead of approving" refuse "no APPROVED review"
+
+baseline
+jq '.workflow_runs[0].event = "workflow_dispatch"' "${FIXTURES}/runs.json" > "${FIXTURES}/changed.json"
+mv "${FIXTURES}/changed.json" "${FIXTURES}/runs.json"
+check "production refuses dispatched evidence instead of its push gates" refuse "timed out"
+
+export TEST_TARGET_BRANCH=uat
+jq '.workflow_runs[0].head_branch = "uat"' "${FIXTURES}/runs.json" > "${FIXTURES}/changed.json"
+mv "${FIXTURES}/changed.json" "${FIXTURES}/runs.json"
+jq '.[0].base.ref = "uat"' "${FIXTURES}/pulls.json" > "${FIXTURES}/changed.json"
+mv "${FIXTURES}/changed.json" "${FIXTURES}/pulls.json"
+check "staging accepts exact-SHA dispatched full gates with independent approval" admit "run 99 succeeded"
+write_jobs skipped skipped
+check "staging refuses partial POC or reused proof without executed full gates" refuse "'PHP 8.5 quality gate' is 'skipped'"
+unset TEST_TARGET_BRANCH
 
 echo
 echo "${pass} passed, ${fail} failed"
