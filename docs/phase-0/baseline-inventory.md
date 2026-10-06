@@ -2090,6 +2090,10 @@ Vendor routes excluded, matching `route:list --except-vendor`.
 | POST | `/api/v1/investor/deals/{campaign}/reservations` | `api.v1.investor.primary.reserve` | `InvestorPrimaryController@reserve` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
 | POST | `/api/v1/investor/reservations/{reservation}/confirm` | `api.v1.investor.primary.confirm` | `InvestorPrimaryController@confirm` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
 | POST | `/api/v1/investor/reservations/{reservation}/release` | `api.v1.investor.primary.release` | `InvestorPrimaryController@release` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/investor/verification` | `api.v1.investor.verification` | `InvestorVerificationController@show` | api, auth:sanctum, verified, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/investor/verification/documents` | `api.v1.investor.verification.upload` | `InvestorVerificationController@upload` | api, auth:sanctum, verified, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/investor/verification/steps` | `api.v1.investor.verification.save` | `InvestorVerificationController@save` | api, auth:sanctum, verified, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/investor/verification/submit` | `api.v1.investor.verification.submit` | `InvestorVerificationController@submit` | api, auth:sanctum, verified, throttle:60,1, cache.headers:private;no_store |
 | GET | `/api/v1/investor/wallet` | `api.v1.investor.wallet` | `InvestorWalletController@show` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
 | GET | `/api/v1/investor/wallet-operations/{request_id}` | `api.v1.investor.wallet.operations.show` | `InvestorWalletController@operation` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
 | POST | `/api/v1/investor/wallet/deposits` | `api.v1.investor.wallet.deposit` | `InvestorWalletController@deposit` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
@@ -2117,6 +2121,10 @@ Vendor routes excluded, matching `route:list --except-vendor`.
 | POST | `/api/v1/staff/disbursements/{disbursement}/release-hold` | `api.v1.staff.disbursements.release-hold` | `StaffDisbursementController@command` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
 | POST | `/api/v1/staff/disbursements/{disbursement}/requery` | `api.v1.staff.disbursements.requery` | `StaffDisbursementController@command` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
 | POST | `/api/v1/staff/disbursements/{disbursement}/step-up` | `api.v1.staff.disbursements.step-up` | `StaffDisbursementController@stepUp` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store, throttle:disbursement-step-up |
+| GET | `/api/v1/staff/investor-verifications` | `api.v1.staff.investor-verifications.index` | `StaffInvestorVerificationController@index` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/staff/investor-verifications/{verification}/approve` | `api.v1.staff.investor-verifications.approve` | `StaffInvestorVerificationController@approve` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| GET | `/api/v1/staff/investor-verifications/{verification}/documents/{document}` | `api.v1.staff.investor-verifications.document` | `StaffInvestorVerificationController@document` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
+| POST | `/api/v1/staff/investor-verifications/{verification}/reject` | `api.v1.staff.investor-verifications.reject` | `StaffInvestorVerificationController@reject` | api, auth:sanctum, throttle:60,1, cache.headers:private;no_store |
 | GET | `/audit-seals/{report}` | `audit.seals.verify` | `AuditSealVerificationController@__invoke` | web, throttle:60,1, cache.headers:no_store |
 | GET | `/auditor` | `auditor.home` | `RoleHomeController@__invoke` | web, auth, verified |
 | POST | `/auditor/accreditation` | `auditor.accreditation.submit` | `AuditorProfileController@submit` | web, auth, throttle:60,1 |
