@@ -1098,13 +1098,15 @@ export type C3AboutBusiness = {
  * or tolerance verdict. The reconciliation statement may cite the governed tolerance.
  */
 export type AuditSummary = {
-    standard: string;
+    /** The engagement standard, when the sealed report records one; null otherwise. */
+    standard: string | null;
     partner: string;
     licence: string;
     verified_on: string;
     /** The sealed report's digest, as a reference. */
     digest: string;
-    reconciliation_statement: string;
+    /** The Audit Partner's reconciliation statement, when the sealed report carries one. */
+    reconciliation_statement: string | null;
     tolerance: Money | null;
 };
 
