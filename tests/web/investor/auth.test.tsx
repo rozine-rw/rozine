@@ -758,6 +758,34 @@ describe('Verification submission', () => {
         ).toBeInTheDocument();
     });
 
+    it('lets a rejected participant go back two steps to correct their date of birth', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <InvestorVerification
+                {...live(livenessFixture, {
+                    status: 'rejected',
+                    decision_reason: 'The date of birth does not match the ID',
+                })}
+            />,
+        );
+        await user.click(screen.getByRole('button', { name: 'Previous step' }));
+        await user.click(screen.getByRole('button', { name: 'Previous step' }));
+        expect(
+            screen.getByRole('heading', { name: 'Personal details' }),
+        ).toBeInTheDocument();
+        const dob = screen.getByLabelText('DATE OF BIRTH');
+
+        await user.clear(dob);
+        await user.type(dob, '02/05/1990');
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(inertia.posts[0].data).toMatchObject({
+            step: 'personal',
+            date_of_birth: '02/05/1990',
+            expected_revision: 4,
+        });
+    });
+
     it('offers no step back from the first step or while a case is with Compliance', () => {
         const { unmount } = render(
             <InvestorVerification {...live(personalFixture, {})} />,
