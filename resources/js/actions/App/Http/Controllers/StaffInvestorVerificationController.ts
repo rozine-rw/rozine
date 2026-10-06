@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:40
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:42
 * @route '/api/v1/staff/investor-verifications'
 */
 const index6da9252e107e417771d7d3ccf4090e1e = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index6da9252e107e417771d7d3ccf4090e1e.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:40
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:42
 * @route '/api/v1/staff/investor-verifications'
 */
 index6da9252e107e417771d7d3ccf4090e1e.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index6da9252e107e417771d7d3ccf4090e1e.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:40
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:42
 * @route '/api/v1/staff/investor-verifications'
 */
 index6da9252e107e417771d7d3ccf4090e1e.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index6da9252e107e417771d7d3ccf4090e1e.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:40
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:42
 * @route '/api/v1/staff/investor-verifications'
 */
 index6da9252e107e417771d7d3ccf4090e1e.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index6da9252e107e417771d7d3ccf4090e1e.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:40
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:42
 * @route '/api/v1/staff/investor-verifications'
 */
 const index6da9252e107e417771d7d3ccf4090e1eForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const index6da9252e107e417771d7d3ccf4090e1eForm = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:40
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:42
 * @route '/api/v1/staff/investor-verifications'
 */
 index6da9252e107e417771d7d3ccf4090e1eForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ index6da9252e107e417771d7d3ccf4090e1eForm.get = (options?: RouteQueryOptions): R
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:40
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:42
 * @route '/api/v1/staff/investor-verifications'
 */
 index6da9252e107e417771d7d3ccf4090e1eForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,7 +81,7 @@ index6da9252e107e417771d7d3ccf4090e1eForm.head = (options?: RouteQueryOptions): 
 index6da9252e107e417771d7d3ccf4090e1e.form = index6da9252e107e417771d7d3ccf4090e1eForm
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:40
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:42
 * @route '/admin/investor-verifications'
 */
 const index33c910a80390b490476805c40b40ed33 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,7 +96,7 @@ index33c910a80390b490476805c40b40ed33.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:40
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:42
 * @route '/admin/investor-verifications'
 */
 index33c910a80390b490476805c40b40ed33.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ index33c910a80390b490476805c40b40ed33.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:40
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:42
 * @route '/admin/investor-verifications'
 */
 index33c910a80390b490476805c40b40ed33.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ index33c910a80390b490476805c40b40ed33.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:40
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:42
 * @route '/admin/investor-verifications'
 */
 index33c910a80390b490476805c40b40ed33.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,7 +125,7 @@ index33c910a80390b490476805c40b40ed33.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:40
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:42
 * @route '/admin/investor-verifications'
 */
 const index33c910a80390b490476805c40b40ed33Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -135,7 +135,7 @@ const index33c910a80390b490476805c40b40ed33Form = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:40
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:42
 * @route '/admin/investor-verifications'
 */
 index33c910a80390b490476805c40b40ed33Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,7 +145,7 @@ index33c910a80390b490476805c40b40ed33Form.get = (options?: RouteQueryOptions): R
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:40
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:42
 * @route '/admin/investor-verifications'
 */
 index33c910a80390b490476805c40b40ed33Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -172,7 +172,7 @@ export const index = {
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:54
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:56
 * @route '/api/v1/staff/investor-verifications/{verification}/documents/{document}'
 */
 const document486827cd6497c0c112d8f9f7a1518027 = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -187,7 +187,7 @@ document486827cd6497c0c112d8f9f7a1518027.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:54
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:56
 * @route '/api/v1/staff/investor-verifications/{verification}/documents/{document}'
 */
 document486827cd6497c0c112d8f9f7a1518027.url = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions) => {
@@ -213,7 +213,7 @@ document486827cd6497c0c112d8f9f7a1518027.url = (args: { verification: string | n
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:54
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:56
 * @route '/api/v1/staff/investor-verifications/{verification}/documents/{document}'
 */
 document486827cd6497c0c112d8f9f7a1518027.get = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -223,7 +223,7 @@ document486827cd6497c0c112d8f9f7a1518027.get = (args: { verification: string | n
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:54
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:56
 * @route '/api/v1/staff/investor-verifications/{verification}/documents/{document}'
 */
 document486827cd6497c0c112d8f9f7a1518027.head = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -233,7 +233,7 @@ document486827cd6497c0c112d8f9f7a1518027.head = (args: { verification: string | 
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:54
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:56
 * @route '/api/v1/staff/investor-verifications/{verification}/documents/{document}'
 */
 const document486827cd6497c0c112d8f9f7a1518027Form = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -243,7 +243,7 @@ const document486827cd6497c0c112d8f9f7a1518027Form = (args: { verification: stri
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:54
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:56
 * @route '/api/v1/staff/investor-verifications/{verification}/documents/{document}'
 */
 document486827cd6497c0c112d8f9f7a1518027Form.get = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -253,7 +253,7 @@ document486827cd6497c0c112d8f9f7a1518027Form.get = (args: { verification: string
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:54
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:56
 * @route '/api/v1/staff/investor-verifications/{verification}/documents/{document}'
 */
 document486827cd6497c0c112d8f9f7a1518027Form.head = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -269,7 +269,7 @@ document486827cd6497c0c112d8f9f7a1518027Form.head = (args: { verification: strin
 document486827cd6497c0c112d8f9f7a1518027.form = document486827cd6497c0c112d8f9f7a1518027Form
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:54
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:56
 * @route '/admin/investor-verifications/{verification}/documents/{document}'
 */
 const document5b1620af22ca0eb8fa9e66da44f4553b = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -284,7 +284,7 @@ document5b1620af22ca0eb8fa9e66da44f4553b.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:54
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:56
 * @route '/admin/investor-verifications/{verification}/documents/{document}'
 */
 document5b1620af22ca0eb8fa9e66da44f4553b.url = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions) => {
@@ -310,7 +310,7 @@ document5b1620af22ca0eb8fa9e66da44f4553b.url = (args: { verification: string | n
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:54
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:56
 * @route '/admin/investor-verifications/{verification}/documents/{document}'
 */
 document5b1620af22ca0eb8fa9e66da44f4553b.get = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -320,7 +320,7 @@ document5b1620af22ca0eb8fa9e66da44f4553b.get = (args: { verification: string | n
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:54
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:56
 * @route '/admin/investor-verifications/{verification}/documents/{document}'
 */
 document5b1620af22ca0eb8fa9e66da44f4553b.head = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -330,7 +330,7 @@ document5b1620af22ca0eb8fa9e66da44f4553b.head = (args: { verification: string | 
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:54
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:56
 * @route '/admin/investor-verifications/{verification}/documents/{document}'
 */
 const document5b1620af22ca0eb8fa9e66da44f4553bForm = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -340,7 +340,7 @@ const document5b1620af22ca0eb8fa9e66da44f4553bForm = (args: { verification: stri
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:54
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:56
 * @route '/admin/investor-verifications/{verification}/documents/{document}'
 */
 document5b1620af22ca0eb8fa9e66da44f4553bForm.get = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -350,7 +350,7 @@ document5b1620af22ca0eb8fa9e66da44f4553bForm.get = (args: { verification: string
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:54
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:56
 * @route '/admin/investor-verifications/{verification}/documents/{document}'
 */
 document5b1620af22ca0eb8fa9e66da44f4553bForm.head = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -377,7 +377,7 @@ export const document = {
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::approve
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:67
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:70
 * @route '/api/v1/staff/investor-verifications/{verification}/approve'
 */
 const approvedb0215c93d1d8df745f34c28065ca96b = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -392,7 +392,7 @@ approvedb0215c93d1d8df745f34c28065ca96b.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::approve
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:67
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:70
 * @route '/api/v1/staff/investor-verifications/{verification}/approve'
 */
 approvedb0215c93d1d8df745f34c28065ca96b.url = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -419,7 +419,7 @@ approvedb0215c93d1d8df745f34c28065ca96b.url = (args: { verification: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::approve
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:67
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:70
 * @route '/api/v1/staff/investor-verifications/{verification}/approve'
 */
 approvedb0215c93d1d8df745f34c28065ca96b.post = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -429,7 +429,7 @@ approvedb0215c93d1d8df745f34c28065ca96b.post = (args: { verification: string | n
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::approve
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:67
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:70
 * @route '/api/v1/staff/investor-verifications/{verification}/approve'
 */
 const approvedb0215c93d1d8df745f34c28065ca96bForm = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -439,7 +439,7 @@ const approvedb0215c93d1d8df745f34c28065ca96bForm = (args: { verification: strin
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::approve
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:67
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:70
 * @route '/api/v1/staff/investor-verifications/{verification}/approve'
 */
 approvedb0215c93d1d8df745f34c28065ca96bForm.post = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -450,7 +450,7 @@ approvedb0215c93d1d8df745f34c28065ca96bForm.post = (args: { verification: string
 approvedb0215c93d1d8df745f34c28065ca96b.form = approvedb0215c93d1d8df745f34c28065ca96bForm
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::approve
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:67
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:70
 * @route '/admin/investor-verifications/{verification}/approve'
 */
 const approve18d7c8122dc1c3780268f2ca85d82c62 = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -465,7 +465,7 @@ approve18d7c8122dc1c3780268f2ca85d82c62.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::approve
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:67
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:70
 * @route '/admin/investor-verifications/{verification}/approve'
 */
 approve18d7c8122dc1c3780268f2ca85d82c62.url = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -492,7 +492,7 @@ approve18d7c8122dc1c3780268f2ca85d82c62.url = (args: { verification: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::approve
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:67
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:70
 * @route '/admin/investor-verifications/{verification}/approve'
 */
 approve18d7c8122dc1c3780268f2ca85d82c62.post = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -502,7 +502,7 @@ approve18d7c8122dc1c3780268f2ca85d82c62.post = (args: { verification: string | n
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::approve
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:67
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:70
 * @route '/admin/investor-verifications/{verification}/approve'
 */
 const approve18d7c8122dc1c3780268f2ca85d82c62Form = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -512,7 +512,7 @@ const approve18d7c8122dc1c3780268f2ca85d82c62Form = (args: { verification: strin
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::approve
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:67
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:70
 * @route '/admin/investor-verifications/{verification}/approve'
 */
 approve18d7c8122dc1c3780268f2ca85d82c62Form.post = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -534,7 +534,7 @@ export const approve = {
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::reject
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:72
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:75
 * @route '/api/v1/staff/investor-verifications/{verification}/reject'
 */
 const rejectc3a803ac2cfdc5aa41232b54f86086bd = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -549,7 +549,7 @@ rejectc3a803ac2cfdc5aa41232b54f86086bd.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::reject
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:72
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:75
 * @route '/api/v1/staff/investor-verifications/{verification}/reject'
 */
 rejectc3a803ac2cfdc5aa41232b54f86086bd.url = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -576,7 +576,7 @@ rejectc3a803ac2cfdc5aa41232b54f86086bd.url = (args: { verification: string | num
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::reject
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:72
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:75
 * @route '/api/v1/staff/investor-verifications/{verification}/reject'
 */
 rejectc3a803ac2cfdc5aa41232b54f86086bd.post = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -586,7 +586,7 @@ rejectc3a803ac2cfdc5aa41232b54f86086bd.post = (args: { verification: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::reject
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:72
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:75
 * @route '/api/v1/staff/investor-verifications/{verification}/reject'
 */
 const rejectc3a803ac2cfdc5aa41232b54f86086bdForm = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -596,7 +596,7 @@ const rejectc3a803ac2cfdc5aa41232b54f86086bdForm = (args: { verification: string
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::reject
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:72
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:75
 * @route '/api/v1/staff/investor-verifications/{verification}/reject'
 */
 rejectc3a803ac2cfdc5aa41232b54f86086bdForm.post = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -607,7 +607,7 @@ rejectc3a803ac2cfdc5aa41232b54f86086bdForm.post = (args: { verification: string 
 rejectc3a803ac2cfdc5aa41232b54f86086bd.form = rejectc3a803ac2cfdc5aa41232b54f86086bdForm
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::reject
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:72
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:75
 * @route '/admin/investor-verifications/{verification}/reject'
 */
 const rejectcb994546b0d488a9435ca2b576358f93 = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -622,7 +622,7 @@ rejectcb994546b0d488a9435ca2b576358f93.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::reject
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:72
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:75
 * @route '/admin/investor-verifications/{verification}/reject'
 */
 rejectcb994546b0d488a9435ca2b576358f93.url = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -649,7 +649,7 @@ rejectcb994546b0d488a9435ca2b576358f93.url = (args: { verification: string | num
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::reject
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:72
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:75
 * @route '/admin/investor-verifications/{verification}/reject'
 */
 rejectcb994546b0d488a9435ca2b576358f93.post = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -659,7 +659,7 @@ rejectcb994546b0d488a9435ca2b576358f93.post = (args: { verification: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::reject
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:72
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:75
 * @route '/admin/investor-verifications/{verification}/reject'
 */
 const rejectcb994546b0d488a9435ca2b576358f93Form = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -669,7 +669,7 @@ const rejectcb994546b0d488a9435ca2b576358f93Form = (args: { verification: string
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::reject
-* @see app/Http/Controllers/StaffInvestorVerificationController.php:72
+* @see app/Http/Controllers/StaffInvestorVerificationController.php:75
 * @route '/admin/investor-verifications/{verification}/reject'
 */
 rejectcb994546b0d488a9435ca2b576358f93Form.post = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
