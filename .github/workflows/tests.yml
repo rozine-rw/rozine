@@ -7,6 +7,14 @@ on:
       - uat
       - main
   pull_request:
+  workflow_dispatch:
+    inputs:
+      validation:
+        description: Full release validation (never POC coverage evidence)
+        required: true
+        default: full
+        type: choice
+        options: [full]
 
 permissions:
   contents: read
@@ -35,7 +43,7 @@ jobs:
             -o "$RUNNER_TEMP/actionlint.tar.gz"
           echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $RUNNER_TEMP/actionlint.tar.gz" | sha256sum --check
           tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
-          "$RUNNER_TEMP/actionlint" -shellcheck= .github/workflows/board-sync.yml .github/workflows/board-sync-preflight.yml .github/workflows/tests.yml
+          "$RUNNER_TEMP/actionlint" -shellcheck=
 
   plan:
     name: Select CI scope
@@ -48,6 +56,9 @@ jobs:
     outputs:
       full: ${{ steps.scope.outputs.full }}
       source_run: ${{ steps.scope.outputs.source_run }}
+      poc: ${{ steps.scope.outputs.poc }}
+      scope: ${{ steps.scope.outputs.scope }}
+      reused: ${{ steps.scope.outputs.reused }}
     steps:
       - name: Checkout proposed merge or pushed commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -57,8 +68,11 @@ jobs:
       - name: Reuse only successful evidence for an identical dev tree
         id: scope
         env:
-          GH_TOKEN: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' && github.token || '' }}
-        run: python3 .github/scripts/select-ci-mode.py
+          GH_TOKEN: ${{ github.token }}
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
+          PR_HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+          VALIDATION: ${{ inputs.validation }}
+        run: python3 .github/scripts/select-validation-scope.py
 
   php-shards:
     needs: plan
@@ -124,6 +138,12 @@ jobs:
 
       - name: Install Node dependencies from lock file
         run: npm ci
+
+      - name: Cache Composer downloads
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
 
       - name: Install PHP dependencies from lock file
         run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
@@ -231,6 +251,12 @@ jobs:
       - name: Install Node dependencies from lock file
         run: npm ci
 
+      - name: Cache Composer downloads
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+
       - name: Install PHP dependencies from lock file
         run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
@@ -310,6 +336,12 @@ jobs:
           tools: composer:v2
           coverage: none
 
+      - name: Cache Composer downloads
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+
       - name: Install PHP dependencies for Wayfinder generation
         run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
@@ -346,6 +378,8 @@ jobs:
 
           if [ "$EVENT_NAME" = "pull_request" ]; then
             target_sha="$PR_TARGET_SHA"
+          elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            target_sha="$(git rev-parse HEAD^)"
           else
             target_sha="$PUSH_TARGET_SHA"
           fi
@@ -445,6 +479,12 @@ jobs:
       - name: Install Node dependencies from lock file
         run: npm ci
 
+      - name: Cache Composer downloads
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+
       - name: Install PHP dependencies from lock file
         run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
@@ -536,6 +576,12 @@ jobs:
           extensions: pdo_pgsql, pgsql, pcntl, posix
           coverage: ${{ matrix.group == 'coverage' && 'xdebug' || 'none' }}
 
+      - name: Cache Composer downloads
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+
       - name: Install PHP dependencies from lock file
         run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
@@ -598,7 +644,7 @@ jobs:
   tested-tree:
     name: Record tested PR tree
     needs: [ci, web, concurrency, negative-controls, admission, board-sync]
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' && needs.ci.result == 'success' && needs.web.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout tested merge commit
@@ -630,7 +676,7 @@ jobs:
   dev-smoke:
     name: Dev post-merge smoke
     needs: plan
-    if: ${{ needs.plan.outputs.full == 'false' }}
+    if: ${{ needs.plan.outputs.reused == 'true' && needs.plan.outputs.scope == 'full' && github.ref == 'refs/heads/dev' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -686,6 +732,12 @@ jobs:
       - name: Install Node dependencies from lock file
         run: npm ci
 
+      - name: Cache Composer downloads
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+
       - name: Install PHP dependencies from lock file
         run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
@@ -713,3 +765,242 @@ jobs:
         env:
           SOURCE_RUN: ${{ needs.plan.outputs.source_run }}
         run: echo "Full checks passed for this exact file tree in PR run $SOURCE_RUN. Post-merge build and smoke checks passed." >> "$GITHUB_STEP_SUMMARY"
+
+  poc-php:
+    needs: plan
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+        - 5432:5432
+        options: --health-cmd "pg_isready -U postgres -d postgres" --health-interval 10s --health-timeout 5s --health-retries 10
+    name: POC PHP safety and static checks
+    if: ${{ needs.plan.outputs.poc == 'true' }}
+    timeout-minutes: 9
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+        ref: ${{ github.sha }}
+    - name: Provision isolated PostgreSQL databases
+      env:
+        PGHOST: 127.0.0.1
+        PGUSER: postgres
+        PGPASSWORD: postgres
+        PGDATABASE: postgres
+      run: psql -X -v ON_ERROR_STOP=1 -f .github/scripts/prepare-test-databases.sql
+    - name: Setup PHP
+      uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+      with:
+        php-version: '8.5'
+        tools: composer:v2
+        extensions: pdo_pgsql, pgsql, pcntl, posix
+        coverage: none
+    - name: Setup Node
+      uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+      with:
+        node-version: 24.15.0
+        cache: npm
+    - name: Pin npm
+      run: 'npm install --global npm@10.9.8
+
+        test "$(npm --version)" = "10.9.8"
+
+        '
+    - name: Install Node dependencies from lock file
+      run: npm ci
+    - name: Cache Composer downloads
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
+      with:
+        path: ~/.cache/composer/files
+        key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+    - name: Install PHP dependencies from lock file
+      run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
+    - name: Copy environment file
+      run: cp .env.example .env
+    - name: Generate application key
+      run: php artisan key:generate
+    - name: Run database migrations
+      env:
+        DB_PASSWORD: rozine
+      run: php artisan migrate --force
+    - name: Build production assets
+      run: npm run build
+    - name: Run PHP formatting and full Pest-aware static analysis
+      run: composer ci:check:php:static
+    - name: Run explicit POC PostgreSQL safety catalog without coverage replay
+      run: python3 .github/scripts/run-poc-tests.py php
+    - name: Prove deployment admission still refuses missing full evidence
+      run: bash .github/scripts/test-deployment-admission.sh
+    - name: Prove scoped selection and evidence reuse fail closed
+      run: python3 -B -m unittest discover -s .github/scripts -p 'test_validation_scope.py' -v
+    - name: Upload explicitly partial POC test evidence
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: poc-php-${{ github.run_id }}-${{ github.run_attempt }}
+        path: coverage/poc
+        if-no-files-found: error
+        retention-days: 30
+    - name: Record POC validation tree
+      run: python3 .github/scripts/select-validation-scope.py record poc
+      env:
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+    - name: Publish POC validation tree
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: validation-tree-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ci-evidence/tested-tree.json
+        if-no-files-found: error
+        retention-days: 30
+    - name: Require combined POC execution within ten minutes
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: python3 .github/scripts/check-poc-budget.py
+    permissions:
+      contents: read
+      actions: read
+
+  poc-web:
+    needs: plan
+    runs-on: ubuntu-latest
+    name: POC web safety and static checks
+    if: ${{ needs.plan.outputs.poc == 'true' }}
+    timeout-minutes: 9
+    steps:
+    - name: Checkout exact tested commit
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+        ref: ${{ github.sha }}
+    - name: Setup PHP for Wayfinder generation
+      uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+      with:
+        php-version: '8.5'
+        tools: composer:v2
+        coverage: none
+    - name: Cache Composer downloads
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
+      with:
+        path: ~/.cache/composer/files
+        key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+    - name: Install PHP dependencies for Wayfinder generation
+      run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
+    - name: Prepare Laravel for Wayfinder generation
+      run: 'cp .env.example .env
+
+        php artisan key:generate
+
+        '
+    - name: Setup Node
+      uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+      with:
+        node-version: 24.15.0
+        cache: npm
+    - name: Pin npm
+      run: 'npm install --global npm@10.9.8
+
+        test "$(npm --version)" = "10.9.8"
+
+        '
+    - name: Install Node dependencies from lock file
+      run: npm ci
+    - name: Reject high-severity dependency advisories
+      run: npm audit --audit-level=high
+    - name: Run lint, formatting, types, i18n, production build and generated routes
+      run: npm run lint:check && npm run format:check && npm run types:check && npm run i18n:check && npm run build && npm run generated:check
+    - name: Run explicit POC client safety catalog without coverage claims
+      run: python3 .github/scripts/run-poc-tests.py web
+    - name: Upload explicitly partial POC test evidence
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: poc-web-${{ github.run_id }}-${{ github.run_attempt }}
+        path: coverage/poc
+        if-no-files-found: error
+        retention-days: 30
+
+  validation-tree:
+    name: Record validation tree
+    needs:
+    - plan
+    - ci
+    - web
+    - concurrency
+    - negative-controls
+    - admission
+    - board-sync
+    if: ${{ always() && needs.plan.outputs.full == 'true' && needs.plan.result == 'success' && needs.board-sync.result == 'success' && needs.ci.result
+      == 'success' && needs.web.result == 'success' && needs.concurrency.result == 'success' && needs.negative-controls.result == 'success' && needs.admission.result
+      == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+    - name: Checkout exact validation candidate
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
+        ref: ${{ github.sha }}
+    - name: Bind executed check set and validation scope to the entire Git tree
+      env:
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        SCOPE: ${{ needs.plan.outputs.scope }}
+      run: python3 .github/scripts/select-validation-scope.py record "$SCOPE"
+    - name: Upload scope-bound evidence (POC never authorizes release)
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: validation-tree-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ci-evidence/tested-tree.json
+        if-no-files-found: error
+        retention-days: 30
+
+  reuse-full:
+    name: Reuse full validation evidence
+    needs: plan
+    if: ${{ needs.plan.outputs.reused == 'true' && needs.plan.outputs.scope == 'full' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    steps:
+    - name: Checkout exact validation candidate
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
+        ref: ${{ github.sha }}
+    - name: Revalidate original full proof for the exact candidate tree
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: python3 .github/scripts/select-validation-scope.py verify-full
+
+
+  reuse-poc:
+    name: Reuse POC validation evidence
+    needs: plan
+    if: ${{ needs.plan.outputs.reused == 'true' && needs.plan.outputs.scope == 'poc' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    steps:
+      - name: Checkout actual proposed merge or pushed candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Revalidate original POC proof without repeating passed tests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/select-validation-scope.py verify-poc
+      - name: Distinguish reuse from release admission
+        run: echo 'Identical-tree POC checks reused. Full release coverage and deployment admission remain separate requirements.' >> "$GITHUB_STEP_SUMMARY"
