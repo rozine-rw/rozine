@@ -15,7 +15,7 @@ beforeEach(function (): void {
     $this->candidate = trim($head->getOutput());
     $tree = new Process(['git', 'rev-parse', 'HEAD^{tree}'], $this->root);
     $tree->mustRun();
-    $names = ['PHP 8.5 quality gate', 'TypeScript/React quality gate', 'PostgreSQL concurrency lane',
+    $names = ['Board sync offline tests', 'PHP 8.5 quality gate', 'TypeScript/React quality gate', 'PostgreSQL concurrency lane',
         'PHP gate negative controls', 'Deployment admission negative controls', 'Record tested PR tree',
         'PHP negative controls (architecture)', 'PHP negative controls (business)',
         'PHP negative controls (auditor)', 'PHP negative controls (coverage)'];
@@ -139,7 +139,7 @@ it('tests immutable proposed merges and preserves deployment gates', function ()
     $workflow = Yaml::parseFile($this->root.'/.github/workflows/tests.yml');
     expect($workflow['on']['push']['branches'])->toBe(['dev', 'uat', 'main'])
         ->and($workflow['concurrency']['group'])->toBe('tests-${{ github.event.pull_request.number || github.run_id }}')
-        ->and($workflow['jobs']['plan']['steps'][1]['env']['GH_TOKEN'])->toBe("\${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' && github.token || '' }}");
+        ->and($workflow['jobs']['plan']['steps'][1]['env']['GH_TOKEN'])->toBe('${{ github.token }}');
     foreach ($workflow['jobs'] as $job) {
         foreach ($job['steps'] as $step) {
             if (str_starts_with($step['uses'] ?? '', 'actions/checkout@')) {
@@ -151,7 +151,29 @@ it('tests immutable proposed merges and preserves deployment gates', function ()
         expect($workflow['jobs'][$name]['needs'])->toBe('plan')
             ->and($workflow['jobs'][$name]['if'])->toBe("\${{ needs.plan.outputs.full == 'true' }}");
     }
-    expect($workflow['jobs']['tested-tree']['needs'])->toBe(['ci', 'web', 'concurrency', 'negative-controls', 'admission'])
-        ->and($workflow['jobs']['tested-tree']['if'])->toBe("\${{ github.event_name == 'pull_request' }}")
-        ->and($workflow['jobs']['dev-smoke']['if'])->toBe("\${{ needs.plan.outputs.full == 'false' }}");
+    expect($workflow['jobs']['tested-tree']['needs'])->toBe(['ci', 'web', 'concurrency', 'negative-controls', 'admission', 'board-sync'])
+        ->and($workflow['jobs']['tested-tree']['if'])->toBe("\${{ github.event_name == 'pull_request' && needs.ci.result == 'success' && needs.web.result == 'success' }}")
+        ->and($workflow['jobs']['dev-smoke']['if'])->toBe("\${{ needs.plan.outputs.reused == 'true' && needs.plan.outputs.scope == 'full' && github.ref == 'refs/heads/dev' }}");
+});
+
+it('requires board sync evidence before reusing the tested tree', function (): void {
+    $this->fixtures['jobs'][0]['jobs'][0]['conclusion'] = 'skipped';
+
+    expect(($this->runPolicy)())->toBe("full=true\nsource_run=\n");
+});
+
+it('keeps full suites executable while naming POC evidence separately', function (): void {
+    $workflow = Yaml::parseFile($this->root.'/.github/workflows/tests.yml');
+    expect($workflow['on']['workflow_dispatch']['inputs']['validation']['options'])->toBe(['full'])
+        ->and($workflow['jobs']['plan']['steps'][1]['run'])->toBe('python3 .github/scripts/select-validation-scope.py');
+    foreach (['php-shards', 'web', 'concurrency', 'negative-control-groups', 'admission'] as $name) {
+        expect($workflow['jobs'][$name]['if'])->toBe("\${{ needs.plan.outputs.full == 'true' }}");
+    }
+    foreach (['poc-php', 'poc-web'] as $name) {
+        expect($workflow['jobs'][$name]['if'])->toBe("\${{ needs.plan.outputs.poc == 'true' }}")
+            ->and($workflow['jobs'][$name]['timeout-minutes'])->toBe(9);
+    }
+    expect(array_column($workflow['jobs']['poc-php']['steps'], 'name'))->toContain('Record POC validation tree', 'Publish POC validation tree', 'Require combined POC execution within ten minutes')
+        ->and($workflow['jobs']['validation-tree']['needs'])->not->toContain('poc-php', 'poc-web')
+        ->and($workflow['jobs']['reuse-poc']['name'])->toBe('Reuse POC validation evidence');
 });
