@@ -10,6 +10,7 @@ from pathlib import Path
 
 
 REQUIRED_JOBS = [
+    "Board sync offline tests",
     "PHP 8.5 quality gate",
     "TypeScript/React quality gate",
     "PostgreSQL concurrency lane",
