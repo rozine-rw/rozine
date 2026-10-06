@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "28278620d1b23be90af862448136b15354502a53ed9fba82e9ba0289f31638be",
-    "coverageSetSha256": "120b152bbff9a5e670f65840694a70cb658b537272a35fd0f00f66cb9e11bc31",
+    "sourceManifestSha256": "5a650b9054e631b1e6312cfde32f2096430beefab4d2d163a23d44bc2cbf350d",
+    "coverageSetSha256": "2c62480d98e57c2aa94035b21ed53c09d2d6f330ea8c2a8851ffec360cf405ae",
     "thresholds": {
         "critical": {
             "global": {
@@ -275,6 +275,7 @@
         "resources/js/components/rozine/read-failure-notice.tsx",
         "resources/js/components/rozine/role-icon.tsx",
         "resources/js/components/rozine/toast.tsx",
+        "resources/js/components/site/app-entry.tsx",
         "resources/js/components/text-link.tsx",
         "resources/js/components/two-factor-recovery-codes.tsx",
         "resources/js/components/two-factor-setup-modal.tsx",

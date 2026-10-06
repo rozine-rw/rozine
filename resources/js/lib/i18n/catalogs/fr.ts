@@ -8,6 +8,10 @@ import type { Catalog } from '@/lib/i18n/types';
 
 const fr: Catalog = {
     'suite.sign_out': 'Se déconnecter',
+    'site.app_entry.label': 'Applications Rozine',
+    'site.app_entry.sign_in': 'Se connecter',
+    'site.app_entry.create_account': 'Créer un compte',
+    'site.app_entry.open_app': "Ouvrir l'application",
     'suite.preview': 'Aperçu avec des données fictives',
     'suite.mfa_required':
         'Configurez la double authentification pour ouvrir l’application Auditeur.',
