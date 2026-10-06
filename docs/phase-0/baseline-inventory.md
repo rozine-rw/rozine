@@ -2184,6 +2184,7 @@ The ADR-0001 layering as it stands. `tests/Architecture` enforces the dependency
 
 | Workflow | Name | Jobs | Job titles |
 |---|---|---|---|
+| `board-sync-preflight.yml` | Delivery board App preflight (opt-in) | push, preflight | — |
 | `board-sync.yml` | Delivery board sync (opt-in) | pull_request_target, workflow_dispatch, sync | — |
 | `deploy-prod.yml` | Deploy (production) | push, workflow_dispatch, admission, deploy | — |
 | `deploy-uat.yml` | Deploy (staging) | push, workflow_dispatch, admission, deploy | — |

@@ -27,7 +27,7 @@ jobs:
           persist-credentials: false
           ref: ${{ github.sha }}
       - name: Simulate board events and API failures without network or secrets
-        run: python3 -B -m unittest discover -s .github/scripts -p 'test_project_board_sync.py' -v
+        run: python3 -B -m unittest discover -s .github/scripts -p 'test_project_board_*.py' -v
       - name: Validate workflow syntax with a verified actionlint release
         run: |
           curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
@@ -35,7 +35,7 @@ jobs:
             -o "$RUNNER_TEMP/actionlint.tar.gz"
           echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $RUNNER_TEMP/actionlint.tar.gz" | sha256sum --check
           tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
-          "$RUNNER_TEMP/actionlint" -shellcheck= .github/workflows/board-sync.yml .github/workflows/tests.yml
+          "$RUNNER_TEMP/actionlint" -shellcheck= .github/workflows/board-sync.yml .github/workflows/board-sync-preflight.yml .github/workflows/tests.yml
 
   plan:
     name: Select CI scope
