@@ -50,6 +50,18 @@ interface IdentityAccessStore
     public function resolvePerson(int $actorId, int $userId, string $identityReference, string $evidenceReference, string $reason, string $requestId): array;
 
     /**
+     * Compliance's approval of a person's own Investor identity submission (`investors.verify`). It runs
+     * the verified-person writer that resolvePerson uses, refusing a reference already verified for
+     * another Party, activates the Investor membership through the membership-transition core, and
+     * then runs `$approve` with the verified Party id, all in one transaction. Lock order: users,
+     * identity advisory lock, parties, then whatever `$approve` locks (the submission).
+     *
+     * @param  Closure(string): array<string, mixed>  $approve
+     * @return array<string, mixed>
+     */
+    public function verifyInvestor(int $actorId, int $userId, string $identityReference, string $evidenceReference, string $reason, string $requestId, Closure $approve): array;
+
+    /**
      * Records, as an identity operator, the verified person behind a staff account; a null reference
      * revokes the current link. A staff account never holds a Party, so this is the only staff-person
      * resolution. Each change is an append-only revision recorded in the identity audit log.

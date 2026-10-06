@@ -67,6 +67,7 @@
         "resources/js/actions/App/Http/Controllers/StaffApplicationReleaseController.ts",
         "resources/js/actions/App/Http/Controllers/StaffDisbursementController.ts",
         "resources/js/actions/App/Http/Controllers/StaffHomeController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffInvestorVerificationController.ts",
         "resources/js/actions/App/Http/Controllers/index.ts",
         "resources/js/actions/App/Http/index.ts",
         "resources/js/actions/App/index.ts",
@@ -242,6 +243,7 @@
         "resources/js/routes/staff/disbursements/index.ts",
         "resources/js/routes/staff/disbursements/operations/index.ts",
         "resources/js/routes/staff/index.ts",
+        "resources/js/routes/staff/investor-verifications/index.ts",
         "resources/js/routes/storage/index.ts",
         "resources/js/routes/storage/local/index.ts",
         "resources/js/routes/two-factor/index.ts",
@@ -582,6 +584,7 @@
         "resources/js/pages/admin/disbursements.tsx",
         "resources/js/pages/admin/events.tsx",
         "resources/js/pages/admin/exceptions.tsx",
+        "resources/js/pages/admin/investor-verifications.tsx",
         "resources/js/pages/admin/ledger.tsx",
         "resources/js/pages/admin/parties.tsx",
         "resources/js/pages/admin/reconciliation.tsx",
@@ -644,10 +647,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 613,
-        "generated": 225,
+        "totalTrackedSources": 616,
+        "generated": 227,
         "declarationOnly": 18,
-        "authoredExecutable": 370
+        "authoredExecutable": 371
     },
     "coverageSetSha256": "120b152bbff9a5e670f65840694a70cb658b537272a35fd0f00f66cb9e11bc31"
 }

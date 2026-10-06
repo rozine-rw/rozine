@@ -144,65 +144,97 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
         return DB::transaction(function () use ($actorId, $userId, $identityReference, $evidenceReference, $reason, $requestId): array {
             $users = User::query()->whereKey([$actorId, $userId])->orderBy('id')->lockForUpdate()->get()->keyBy('id');
             $this->authorizeOperator($users->get($actorId));
-            $user = $users->get($userId);
 
-            if ($user === null) {
-                throw new IdentityViolation('IDENTITY_RECORD_NOT_FOUND', 404);
-            }
-
-            $this->evidenceRequired($evidenceReference);
-            if (mb_strlen($identityReference) > 255 || ! preg_match('/^[a-z0-9._-]+:[A-Za-z0-9._-]{1,128}$/D', $identityReference)) {
-                throw new IdentityViolation('IDENTITY_REFERENCE_INVALID', 422);
-            }
-
-            $digest = hash('sha256', $identityReference);
-            $hash = $this->requestHash(['person.resolve', $userId, $digest, $evidenceReference, $reason], $reason, $requestId);
-            if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
-                return $replay;
-            }
-
-            if (! $this->emailVerified($user) || IdentityOperator::query()->whereKey($userId)->exists()
-                || StaffAccount::query()->whereKey($userId)->exists()) {
-                throw new IdentityViolation('VERIFIED_PARTICIPANT_ACCOUNT_REQUIRED');
-            }
-
-            DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', ['identity:'.$digest]);
-            $identity = VerifiedPersonIdentity::query()->find($digest);
-            $partyIds = array_filter([$user->party_id, $identity?->party_id]);
-            $parties = Party::query()->whereKey($partyIds)->orderBy('id')->lockForUpdate()->get()->keyBy('id');
-            $source = $parties->get($user->party_id);
-            $party = $identity === null ? $source : $parties->get($identity->party_id);
-
-            if ($source !== null && ($source->kind !== 'person'
-                || ($source->id !== $identity?->party_id && ($source->memberships()->exists() || $source->verifiedIdentity()->exists())))) {
-                throw new IdentityViolation('IDENTITY_RECONCILIATION_REQUIRED', 409);
-            }
-
-            if ($identity !== null && ($party === null || $party->kind !== 'person' || $party->verified_at === null
-                || $party->verified_at->gt(now()))) {
-                throw new IdentityViolation('IDENTITY_VERIFICATION_REQUIRED');
-            }
-
-            $before = ['party_id' => $user->party_id];
-            if ($identity === null) {
-                $party ??= Party::query()->create(['kind' => 'person']);
-                $party->forceFill(['verified_at' => now()])->save();
-                (new VerifiedPersonIdentity)->forceFill([
-                    'identity_digest' => $digest, 'party_id' => $party->id, 'evidence_reference' => $evidenceReference,
-                ])->save();
-            }
-
-            /** @var Party $party */
-            $user->forceFill([
-                'party_id' => $party->id, 'active_membership_id' => null,
-                'active_membership_revision' => null, 'context_revision' => $user->context_revision + 1,
-            ])->save();
-            $result = ['code' => 'VERIFIED_PERSON_RESOLVED', 'user_id' => $userId, 'party_id' => $party->id];
-            $this->record('user:'.$actorId, $actorId, 'user', (string) $userId, 'person.resolve', $reason, $requestId, $hash,
-                $before, ['party_id' => $party->id, 'evidence_reference' => $evidenceReference, 'identity_digest' => $digest], $result);
-
-            return $result;
+            return $this->resolveVerifiedPerson($actorId, $users->get($userId), $identityReference, $evidenceReference, $reason, $requestId, 'person.resolve');
         }, 3);
+    }
+
+    /**
+     * @param  Closure(string): array<string, mixed>  $approve
+     * @return array<string, mixed>
+     */
+    public function verifyInvestor(int $actorId, int $userId, string $identityReference, string $evidenceReference, string $reason, string $requestId, Closure $approve): array
+    {
+        return $this->withStaffPermission($actorId, 'investors.verify', function () use ($actorId, $userId, $identityReference, $evidenceReference, $reason, $requestId, $approve): array {
+            $users = User::query()->whereKey([$actorId, $userId])->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+
+            return $this->resolveVerifiedPerson($actorId, $users->get($userId), $identityReference, $evidenceReference, $reason, $requestId, 'investor.verify',
+                function (Party $party) use ($approve): array {
+                    [$membership, , $revision] = $this->transitionMembership($party, 'investor', 'active', 0);
+
+                    return ['membership' => ['id' => $membership->id, 'role' => 'investor', 'status' => 'active', 'revision' => $revision],
+                        'verification' => $approve($party->id)];
+                });
+        });
+    }
+
+    /**
+     * The one verified-person writer, after the caller has locked the actor and the account. Lock order
+     * continues identity advisory lock, then parties; `$approve` runs last, in the same transaction, and
+     * only for a person no other Party has been verified as: staff approval never relinks an account.
+     *
+     * @param  (Closure(Party): array<string, mixed>)|null  $approve
+     * @return array<string, mixed>
+     */
+    private function resolveVerifiedPerson(int $actorId, ?User $user, string $identityReference, string $evidenceReference, string $reason, string $requestId, string $action, ?Closure $approve = null): array
+    {
+        if ($user === null) {
+            throw new IdentityViolation('IDENTITY_RECORD_NOT_FOUND', 404);
+        }
+
+        $this->evidenceRequired($evidenceReference);
+        if (mb_strlen($identityReference) > 255 || ! preg_match('/^[a-z0-9._-]+:[A-Za-z0-9._-]{1,128}$/D', $identityReference)) {
+            throw new IdentityViolation('IDENTITY_REFERENCE_INVALID', 422);
+        }
+
+        $digest = hash('sha256', $identityReference);
+        $hash = $this->requestHash([$action, $user->id, $digest, $evidenceReference, $reason], $reason, $requestId);
+        if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
+            return $replay;
+        }
+
+        if (! $this->emailVerified($user) || IdentityOperator::query()->whereKey($user->id)->exists()
+            || StaffAccount::query()->whereKey($user->id)->exists()) {
+            throw new IdentityViolation('VERIFIED_PARTICIPANT_ACCOUNT_REQUIRED');
+        }
+
+        DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', ['identity:'.$digest]);
+        $identity = VerifiedPersonIdentity::query()->find($digest);
+        $partyIds = array_filter([$user->party_id, $identity?->party_id]);
+        $parties = Party::query()->whereKey($partyIds)->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+        $source = $parties->get($user->party_id);
+        $party = $identity === null ? $source : $parties->get($identity->party_id);
+
+        if (($approve !== null && $identity !== null) || ($source !== null && ($source->kind !== 'person'
+            || ($source->id !== $identity?->party_id && ($source->memberships()->exists() || $source->verifiedIdentity()->exists()))))) {
+            throw new IdentityViolation('IDENTITY_RECONCILIATION_REQUIRED', 409);
+        }
+
+        if ($identity !== null && ($party === null || $party->kind !== 'person' || $party->verified_at === null
+            || $party->verified_at->gt(now()))) {
+            throw new IdentityViolation('IDENTITY_VERIFICATION_REQUIRED');
+        }
+
+        $before = ['party_id' => $user->party_id];
+        if ($identity === null) {
+            $party ??= Party::query()->create(['kind' => 'person']);
+            $party->forceFill(['verified_at' => now()])->save();
+            (new VerifiedPersonIdentity)->forceFill([
+                'identity_digest' => $digest, 'party_id' => $party->id, 'evidence_reference' => $evidenceReference,
+            ])->save();
+        }
+
+        /** @var Party $party */
+        $user->forceFill([
+            'party_id' => $party->id, 'active_membership_id' => null,
+            'active_membership_revision' => null, 'context_revision' => $user->context_revision + 1,
+        ])->save();
+        $facts = $approve === null ? [] : $approve($party);
+        $result = ['code' => $approve === null ? 'VERIFIED_PERSON_RESOLVED' : 'INVESTOR_VERIFIED', 'user_id' => $user->id, 'party_id' => $party->id, ...$facts];
+        $this->record('user:'.$actorId, $actorId, 'user', (string) $user->id, $action, $reason, $requestId, $hash,
+            $before, ['party_id' => $party->id, 'evidence_reference' => $evidenceReference, 'identity_digest' => $digest, ...$facts], $result);
+
+        return $result;
     }
 
     /** @return array<string, mixed> */
@@ -277,15 +309,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
                 throw new IdentityViolation('IDENTITY_VERIFICATION_REQUIRED');
             }
 
-            $memberships = $party->memberships()->get();
-            $revision = $this->transitions->nextRevision($role, $status, $expectedRevision,
-                array_values($memberships->map(fn (RoleMembership $membership): array => [
-                    'role' => $membership->role, 'status' => $membership->status, 'revision' => $membership->revision,
-                ])->all()));
-            $membership = $memberships->firstWhere('role', $role);
-            $before = $membership === null ? [] : ['status' => $membership->status, 'revision' => $membership->revision];
-            $membership ??= new RoleMembership;
-            $membership->forceFill(['party_id' => $partyId, 'role' => $role, 'status' => $status, 'revision' => $revision])->save();
+            [$membership, $before, $revision] = $this->transitionMembership($party, $role, $status, $expectedRevision);
             $result = ['code' => 'MEMBERSHIP_UPDATED', 'party_id' => $partyId, 'membership' => [
                 'id' => $membership->id, 'role' => $role, 'status' => $status, 'revision' => $revision,
             ]];
@@ -294,6 +318,26 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
 
             return $result;
         }, 3);
+    }
+
+    /**
+     * The membership-transition core, for a Party already locked by the caller.
+     *
+     * @return array{RoleMembership, array<string, mixed>, int}
+     */
+    private function transitionMembership(Party $party, string $role, string $status, int $expectedRevision): array
+    {
+        $memberships = $party->memberships()->get();
+        $revision = $this->transitions->nextRevision($role, $status, $expectedRevision,
+            array_values($memberships->map(fn (RoleMembership $membership): array => [
+                'role' => $membership->role, 'status' => $membership->status, 'revision' => $membership->revision,
+            ])->all()));
+        $membership = $memberships->firstWhere('role', $role);
+        $before = $membership === null ? [] : ['status' => $membership->status, 'revision' => $membership->revision];
+        $membership ??= new RoleMembership;
+        $membership->forceFill(['party_id' => $party->id, 'role' => $role, 'status' => $status, 'revision' => $revision])->save();
+
+        return [$membership, $before, $revision];
     }
 
     public function selectRole(int $userId, string $role, int $expectedRevision, string $requestId): void

@@ -29,6 +29,7 @@ use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StaffApplicationReleaseController;
 use App\Http\Controllers\StaffDisbursementController;
 use App\Http\Controllers\StaffHomeController;
+use App\Http\Controllers\StaffInvestorVerificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [SiteController::class, 'index'])->name('home');
@@ -202,6 +203,14 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
         ->whereUlid(['business', 'campaign'])->name('business.campaigns.show');
     Route::post('business/{business}/campaigns/{campaign}/cancel', [BusinessPublicationController::class, 'cancel'])
         ->whereUlid(['business', 'campaign'])->name('business.campaigns.cancel');
+});
+
+Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/investor-verifications')->name('staff.investor-verifications.')->group(function (): void {
+    Route::get('/', [StaffInvestorVerificationController::class, 'index'])->name('index');
+    Route::get('{verification}/documents/{document}', [StaffInvestorVerificationController::class, 'document'])
+        ->whereUlid(['verification', 'document'])->name('document');
+    Route::post('{verification}/approve', [StaffInvestorVerificationController::class, 'approve'])->whereUlid('verification')->name('approve');
+    Route::post('{verification}/reject', [StaffInvestorVerificationController::class, 'reject'])->whereUlid('verification')->name('reject');
 });
 
 /*
