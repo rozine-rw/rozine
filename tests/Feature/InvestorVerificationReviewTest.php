@@ -368,6 +368,39 @@ test('an approval binds the submission\'s own hash-pinned uploads and refuses on
         ->and($case->refresh()->status)->toBe('submitted');
 });
 
+test('an approval re-hashes every current upload and refuses one whose content no longer matches, changing nothing', function (): void {
+    $case = reviewSubmitted($this->person);
+    $tampered = new InvestorVerificationDocument;
+    $tampered->forceFill(['investor_verification_id' => $case->id, 'slot' => 'front', 'filename' => 'front.png', 'media_type' => 'image/png',
+        'size_bytes' => 4, 'sha256' => str_repeat('0', 64), 'content' => 'fake', 'actor_user_id' => $this->person->id])->save();
+    $case->forceFill(['state' => [...$case->state, 'uploads' => [...$case->state['uploads'], 'front' => $tampered->id]]])->save();
+    $context = $this->person->refresh()->context_revision;
+    $versions = InvestorVerificationVersion::query()->count();
+
+    $this->actingAs($this->officer)->post(route('staff.investor-verifications.approve', $case), reviewDecision($case))
+        ->assertSessionHasErrors(['form' => 'A document on this case no longer matches what was uploaded, so it cannot be approved. Reject it so the person can upload it again.']);
+
+    expect(CommandOperation::query()->where('command', 'investor.verification.approve')->sole()->result['code'])->toBe('VERIFICATION_DOCUMENT_INTEGRITY_FAILED')
+        ->and(Party::query()->findOrFail($this->person->party_id)->verified_at)->toBeNull()
+        ->and(RoleMembership::query()->count())->toBe(0)
+        ->and($this->person->refresh()->context_revision)->toBe($context)
+        ->and($case->refresh()->only(['status', 'revision']))->toBe(['status' => 'submitted', 'revision' => 6])
+        ->and(InvestorVerificationVersion::query()->count())->toBe($versions)
+        ->and(IdentityAuditEvent::query()->where('action', 'investor.verify')->count())->toBe(0);
+});
+
+test('a document whose name carries a percent sign downloads with a safe fallback name', function (): void {
+    $case = reviewSubmitted($this->person);
+    $content = "\x89PNG\r\n\x1a\nsynthetic identity image";
+    $document = new InvestorVerificationDocument;
+    $document->forceFill(['investor_verification_id' => $case->id, 'slot' => 'front', 'filename' => 'ID 100%.png', 'media_type' => 'image/png',
+        'size_bytes' => strlen($content), 'sha256' => hash('sha256', $content), 'content' => $content, 'actor_user_id' => $this->person->id])->save();
+
+    $response = $this->actingAs($this->officer)->get(route('staff.investor-verifications.document', [$case->id, $document->id]))->assertOk();
+
+    expect($response->headers->get('Content-Disposition'))->toBe("attachment; filename=\"ID 100_.png\"; filename*=utf-8''ID%20100%25.png");
+});
+
 test('a document whose content no longer matches its pinned hash is not served', function (): void {
     $case = reviewSubmitted($this->person);
     $tampered = new InvestorVerificationDocument;

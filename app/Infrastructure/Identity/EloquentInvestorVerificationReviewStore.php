@@ -229,11 +229,17 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
         if ($outcome === 'approved') {
             $this->cases->complete($record->state, now()->toDateTimeImmutable());
             $uploads = array_filter($record->state['uploads']);
-            $hashes = InvestorVerificationDocument::query()->where('investor_verification_id', $record->id)->whereIn('id', $uploads)->pluck('sha256', 'id');
-            if ($hashes->count() !== count($uploads)) {
+            $documents = InvestorVerificationDocument::query()->where('investor_verification_id', $record->id)->whereIn('id', $uploads)->get()->keyBy('id');
+            if ($documents->count() !== count($uploads)) {
                 throw new CommandRejection('VERIFICATION_DOCUMENT_REQUIRED', 409, $record->revision);
             }
-            $facts['documents'] = array_map(fn (string $id): string => (string) $hashes[$id], $uploads);
+            // The reader's own integrity check: evidence whose content no longer matches its pinned hash never approves.
+            foreach ($documents as $document) {
+                if (! hash_equals($document->sha256, hash('sha256', $document->content))) {
+                    throw new CommandRejection('VERIFICATION_DOCUMENT_INTEGRITY_FAILED', 409, $record->revision);
+                }
+            }
+            $facts['documents'] = array_map(fn (string $id): string => (string) $documents[$id]->sha256, $uploads);
         }
         $state = [...$record->state, 'decision' => ['outcome' => $outcome, 'reason' => $reason, 'decided_at' => now()->toIso8601String()]];
         $record->forceFill(['revision' => $expectedRevision + 1, 'status' => $outcome, 'state' => $state])->save();

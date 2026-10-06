@@ -32,6 +32,8 @@ class StaffInvestorVerificationController extends Controller
         'IDENTITY_RECONCILIATION_REQUIRED' => 'This ID is already verified for another person, or the account needs an identity operator. It cannot be approved here.',
         'VERIFIED_PARTICIPANT_ACCOUNT_REQUIRED' => 'The account needs a verified email and cannot be a staff or operator account.',
         'IDEMPOTENCY_CONFLICT' => 'That request was already used for different details. Try again.',
+        'VERIFICATION_DOCUMENT_REQUIRED' => 'A document on this case is missing, so it cannot be approved. Reject it so the person can upload it again.',
+        'VERIFICATION_DOCUMENT_INTEGRITY_FAILED' => 'A document on this case no longer matches what was uploaded, so it cannot be approved. Reject it so the person can upload it again.',
     ];
 
     public function __construct(private ReviewInvestorVerifications $review) {}
@@ -52,9 +54,10 @@ class StaffInvestorVerificationController extends Controller
     {
         $document = $this->review->document((int) $request->user()?->getAuthIdentifier(), (string) $request->route('verification'), (string) $request->route('document'));
 
+        // The ASCII fallback may not carry '%' (Symfony refuses it); filename* keeps the original name.
         return response($document['content'], 200, [
             'Content-Type' => $document['media_type'],
-            'Content-Disposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, $document['filename'], Str::ascii($document['filename']) ?: 'document'),
+            'Content-Disposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, $document['filename'], str_replace('%', '_', Str::ascii($document['filename'])) ?: 'document'),
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'no-store, private',
         ]);
