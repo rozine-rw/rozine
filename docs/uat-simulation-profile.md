@@ -25,13 +25,15 @@ screens and state changes end to end.
 | Funding and holdings | `FundedCampaigns` is synthetic only on local. `HoldingSource` reads retained, historical evidence. The S3-C funding writer and Holding conversion are unfinished | `AppServiceProvider`, #96 |
 | Servicing | `NoteServicing` is `UnavailableNoteServicing` on every profile | `AppServiceProvider` |
 
-## Proposal (revision 2, after review 5424739389)
+## Proposal (revision 3, after reviews 5424739389 and 5425309445)
 
 Revision 1 proposed widening `SyntheticWalletGuard` and `SyntheticDisbursementGuard`. Review showed
 why that is wrong: `registerDisbursements()` uses the same `SyntheticDisbursementGuard::allowed()`
 result for `FundedCampaigns`, `PayoutDestinations` and `StaffConnections`. Admitting UAT through it
 would make campaign fixtures, fixture destinations and fixture connections authoritative on staging.
-**Revision 2 leaves both existing guards and every current binding unchanged.**
+**Revision 2 leaves both existing guards and every current binding unchanged.** Revision 3 names the
+deposit outbox worker's own gate, says that revocation needs a process reload, and states that expiry
+never turns a pending or unknown obligation into a failure.
 
 ### 1. A separate provider-only guard
 
@@ -58,6 +60,7 @@ credentials, a dedicated database, debug off, a non-live URL.
 | Port | local / testing (today, unchanged) | UAT, switch off or expired | UAT, switch on and unexpired |
 | --- | --- | --- | --- |
 | `DepositProvider`, `SyntheticEventSigner` | synthetic (`SyntheticWalletGuard`) | `UnavailableDepositProvider` | `SyntheticDepositProvider` via `UatProviderSimulation` (stage A) |
+| Deposit outbox worker (`DispatchDepositIntents`, `wallet:dispatch-deposits`) | allowed (`SyntheticWalletGuard`, `guardCommand`) | refused (`ISOLATION_SYNTHETIC_WALLET_DENIED`) | allowed only while `UatProviderSimulation` allows it (stage A); `local:wallet` stays refused |
 | `PayoutProvider` | synthetic (`SyntheticDisbursementGuard`) | `UnavailablePayoutProvider` | unavailable until stage B; then the synthetic provider edge only |
 | `FundedCampaigns` | `SyntheticDisbursementSources` | `UnavailableFundedCampaigns` | **unchanged:** `UnavailableFundedCampaigns` until the current S3-C writer exists, then that writer. Never fixtures |
 | `PayoutDestinations` | synthetic fixtures | `UnavailablePayoutDestinations` | **unchanged:** unavailable until a verified-destination producer exists. Never fixtures |
@@ -66,30 +69,43 @@ credentials, a dedicated database, debug off, a non-live URL.
 | `NoteServicing` | `UnavailableNoteServicing` | unchanged | unchanged until stage C |
 
 `SyntheticWalletGuard` and `SyntheticDisbursementGuard` keep their exact local/testing-only
-behaviour, messages and call sites. The only changed bindings are the two provider rows. Each row
-picks the synthetic provider only when the new guard allows it, and stays unavailable otherwise.
+behaviour, messages and call sites. The only changed rows are the two provider rows and the deposit
+outbox worker. Each picks the synthetic provider edge only when the new guard allows it, and stays
+unavailable or refused otherwise. The worker's UAT admission is a separate `guardCommand` and
+dispatcher check against `UatProviderSimulation`; it does not widen `SyntheticWalletGuard`.
 
 ### 3. Runtime expiry and revocation
 
 - **Checked per call.** Every synthetic provider method already calls its guard's `assertAllowed()`.
   On UAT it calls `UatProviderSimulation::assertAllowed()` instead. A worker that booted before
-  expiry therefore refuses its first provider call after expiry; nothing is cached at boot.
-- **Revocation.** Unsetting `ROZINE_UAT_SIMULATION` takes effect at the next config load (deploy,
-  `config:clear` or restart). Expiry needs no deploy.
-- **Queued and in-flight work.** A deposit intent recorded before expiry is dispatched by the existing
-  outbox worker. After expiry the provider refuses, and the intent follows the existing
-  provider-unavailable path, the same as on UAT today. A signed simulated callback arriving after
-  expiry is refused before any outcome is applied. Nothing bypasses the command journal or the
-  isolation boundary.
+  expiry therefore refuses its first provider call after expiry. The decision is never cached at
+  boot; only the configured switch and expiry values are loaded.
+- **Revocation is bounded by process reload.** Unsetting `ROZINE_UAT_SIMULATION` takes effect in a
+  process only when that process reloads its configuration. `config:clear` alone does not refresh a
+  long-running queue worker's in-memory config, so revocation means a deploy, or clearing the cached
+  config *and* restarting the web processes and workers (`queue:restart`). Expiry needs neither: the
+  `expires_at` value is already loaded, and every call compares it with the clock.
+- **Queued and in-flight work.** The outbox worker checks the new guard before it claims anything.
+  After expiry or revocation it refuses, so unclaimed intents stay recorded and pending. If a send that
+  was already claimed throws at the boundary, the existing dispatcher records it `unacknowledged` and
+  never retries it automatically; it is left for reconciliation of the same operation. A signed
+  simulated callback arriving after expiry is refused by `verify()` before any outcome is applied.
+- **Never a financial failure.** Expiry, revocation or unavailable provider verification never marks an
+  intent or obligation failed. Pending and unknown obligations keep their state and history, because
+  a deposit stays pending until a verified `succeeded` or `failed` event is applied.
 - **Reads.** Simulated intents, outcomes, ledger postings and receipts stay readable and labelled
   after expiry or revocation, because reads never resolve a provider. They live only in `rozine_uat`.
+- **Staff simulator actions.** Every action on the stage A panel runs through the existing command
+  journal under the actor's current permission. It takes the full financial lock order and applies its
+  financial writes and feed entries in one atomic boundary. Nothing bypasses the journal or the
+  isolation boundary.
 
 ### 4. Stages
 
 | Stage | What testers can do on UAT | Prerequisites |
 | --- | --- | --- |
 | **A. Deposits** | A superadmin-only Simulation panel answers the simulated provider edge for deposits (succeeded, failed, unknown, pending) through the existing signer. The real outcome, ledger and receipt paths run. | The new guard, the two provider bindings, a simulation permission, a deposit-policy decision (§ Decisions) |
-| **B. Payouts** | The panel answers the simulated payout provider edge for a disbursement that the real gates already approved | Stage A, **plus** a current `FundedCampaigns` writer, a verified payout-destination producer and current staff connections. Fixtures never stand in for any of these |
+| **B. Payouts** | The panel answers the simulated payout provider edge for a disbursement that the real gates already approved | Stage A, **plus** authenticated current producers for all of: the `FundedCampaigns` writer, the verified payout destination, staff connections, the broader graph and global exposure, and forward settlement. Fixtures never stand in for any of these |
 | **C. Funded notes and servicing** | A campaign that really closes against simulated deposits becomes funded, its Holdings convert, and servicing runs | Current admission, verified destination, complete broader connections and global exposure, the current funded writer, authenticated forward settlement and successful Holding conversion. Retained `HoldingSource` facts and historical closing certificates are **not** these authorities |
 
 Until a stage's prerequisites exist, its routes stay gated and the panel says it is unavailable rather
@@ -113,9 +129,15 @@ same label, and the panel shows the switch owner and expiry.
   fixture ports and `local:*` commands refuse.
 - `assertSafeConfiguration()` refuses the switch on non-UAT profiles and when it is not a boolean,
   but boots with an expired switch.
-- After the test clock passes expiry: a provider call from an already-resolved provider refuses; an
-  intent recorded before expiry takes the provider-unavailable path; a late signed callback is refused
-  without applying an outcome; and every simulated record is still readable.
+- After the test clock passes expiry:
+  - a long-lived worker that booted before expiry refuses its next claim;
+  - a provider call from an already-resolved provider refuses;
+  - an intent recorded before expiry stays pending, and a claimed send that throws is recorded
+    `unacknowledged`; neither is ever marked failed;
+  - a late signed callback is refused without applying an outcome;
+  - every simulated record is still readable.
+- Revocation: after the switch is unset and config is reloaded, web and worker processes refuse. A
+  test documents that a worker which has not been restarted keeps its loaded value until expiry.
 - On `production`, no setting can resolve a synthetic provider.
 - The deployment-admission negative controls stay green, and the UAT deploy prints the switch state
   and expiry in its evidence.
