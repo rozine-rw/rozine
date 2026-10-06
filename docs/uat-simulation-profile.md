@@ -25,97 +25,108 @@ screens and state changes end to end.
 | Funding and holdings | `FundedCampaigns` is synthetic only on local. `HoldingSource` reads retained, historical evidence. The S3-C funding writer and Holding conversion are unfinished | `AppServiceProvider`, #96 |
 | Servicing | `NoteServicing` is `UnavailableNoteServicing` on every profile | `AppServiceProvider` |
 
-## Proposal
+## Proposal (revision 2, after review 5424739389)
 
-### 1. One explicit, expiring switch
+Revision 1 proposed widening `SyntheticWalletGuard` and `SyntheticDisbursementGuard`. Review showed
+why that is wrong: `registerDisbursements()` uses the same `SyntheticDisbursementGuard::allowed()`
+result for `FundedCampaigns`, `PayoutDestinations` and `StaffConnections`. Admitting UAT through it
+would make campaign fixtures, fixture destinations and fixture connections authoritative on staging.
+**Revision 2 leaves both existing guards and every current binding unchanged.**
 
-Add `isolation.uat_simulation_enabled` (env `ROZINE_UAT_SIMULATION`, default `false`). Like
-`demo_flags`, it carries `uat_simulation.owner`, `.reason` and `.expires_at` (00:00 UTC), and must be
-reviewed before any extension.
+### 1. A separate provider-only guard
 
-`assertSafeConfiguration()` would add these checks, and boot fails closed on any of them:
+A new `UatProviderSimulation` guard answers one question: may the *provider edge* (the external
+payment provider's sends, queries and signed callbacks) be simulated? It never decides funding,
+destination, connection or admission authority.
 
-- The switch must be a boolean.
-- It may be `true` only when the profile is `uat`. On `production`, `demo`, `local` or `testing` it
-  raises `ISOLATION_UAT_SIMULATION_DENIED`.
-- Once expired it raises `ISOLATION_UAT_SIMULATION_EXPIRED`.
-- The existing checks are unchanged: live money stays `false`, no provider credentials, dedicated
-  database, debug off, non-live URL.
+`allowed()` is true only when **all** of these hold at the moment it is called, not just at boot:
 
-### 2. The guard change that needs agreement
+- the profile is `uat`;
+- `isolation.live_money_enabled === false`;
+- `isolation.uat_simulation_enabled === true` (env `ROZINE_UAT_SIMULATION`, default `false`);
+- `now('UTC') < isolation.uat_simulation.expires_at` (00:00 UTC), with `owner` and `reason`
+  recorded beside it like `demo_flags`.
 
-Both synthetic guards would admit exactly one more case. Nothing else in them changes:
+`assertSafeConfiguration()` adds two boot checks only: the switch must be a boolean, and it may be
+`true` only on `uat` (`ISOLATION_UAT_SIMULATION_DENIED` on any other profile). An **expired** switch
+is deliberately *not* a boot failure. Expiry closes `allowed()` at runtime while the application keeps
+booting and serving reads. The existing isolation checks are unchanged: live money off, no provider
+credentials, a dedicated database, debug off, a non-live URL.
 
-```php
-public function allowed(): bool
-{
-    $profile = $this->isolation->profile();
+### 2. Binding matrix
 
-    return $this->config->get('isolation.live_money_enabled') === false
-        && (in_array($profile, ['local', 'testing'], true)
-            || ($profile === 'uat' && $this->config->get('isolation.uat_simulation_enabled') === true));
-}
-```
+| Port | local / testing (today, unchanged) | UAT, switch off or expired | UAT, switch on and unexpired |
+| --- | --- | --- | --- |
+| `DepositProvider`, `SyntheticEventSigner` | synthetic (`SyntheticWalletGuard`) | `UnavailableDepositProvider` | `SyntheticDepositProvider` via `UatProviderSimulation` (stage A) |
+| `PayoutProvider` | synthetic (`SyntheticDisbursementGuard`) | `UnavailablePayoutProvider` | unavailable until stage B; then the synthetic provider edge only |
+| `FundedCampaigns` | `SyntheticDisbursementSources` | `UnavailableFundedCampaigns` | **unchanged:** `UnavailableFundedCampaigns` until the current S3-C writer exists, then that writer. Never fixtures |
+| `PayoutDestinations` | synthetic fixtures | `UnavailablePayoutDestinations` | **unchanged:** unavailable until a verified-destination producer exists. Never fixtures |
+| `StaffConnections` | synthetic fixtures | `EloquentStaffConnections` | **unchanged:** `EloquentStaffConnections` |
+| `SyntheticDisbursementFixtures`, `SyntheticWalletFixtures`, `local:*` commands | available | refused (`guardCommand`, `assertAllowed`) | **refused:** UAT never seeds fixtures |
+| `NoteServicing` | `UnavailableNoteServicing` | unchanged | unchanged until stage C |
 
-The local/testing behaviour, the exception messages and every `assertAllowed()` call site stay as
-they are. `guardCommand()` keeps `local:*` commands on local/testing. UAT uses the staff panel below,
-not Artisan.
+`SyntheticWalletGuard` and `SyntheticDisbursementGuard` keep their exact local/testing-only
+behaviour, messages and call sites. The only changed bindings are the two provider rows. Each row
+picks the synthetic provider only when the new guard allows it, and stays unavailable otherwise.
 
-**This proposal deliberately does not widen `SyntheticDisbursementGuard`'s `FundedCampaigns`
-binding on UAT** (see stage C).
+### 3. Runtime expiry and revocation
 
-### 3. Stages
+- **Checked per call.** Every synthetic provider method already calls its guard's `assertAllowed()`.
+  On UAT it calls `UatProviderSimulation::assertAllowed()` instead. A worker that booted before
+  expiry therefore refuses its first provider call after expiry; nothing is cached at boot.
+- **Revocation.** Unsetting `ROZINE_UAT_SIMULATION` takes effect at the next config load (deploy,
+  `config:clear` or restart). Expiry needs no deploy.
+- **Queued and in-flight work.** A deposit intent recorded before expiry is dispatched by the existing
+  outbox worker. After expiry the provider refuses, and the intent follows the existing
+  provider-unavailable path, the same as on UAT today. A signed simulated callback arriving after
+  expiry is refused before any outcome is applied. Nothing bypasses the command journal or the
+  isolation boundary.
+- **Reads.** Simulated intents, outcomes, ledger postings and receipts stay readable and labelled
+  after expiry or revocation, because reads never resolve a provider. They live only in `rozine_uat`.
 
-| Stage | What testers can do on UAT | Depends on |
+### 4. Stages
+
+| Stage | What testers can do on UAT | Prerequisites |
 | --- | --- | --- |
-| **A. Deposits** | An Investor or Business starts a deposit; a superadmin-only *Simulation* panel delivers the provider outcome (succeeded, failed, unknown or pending). The panel uses the existing `SyntheticEventSigner`, so the real `ApplyProviderOutcome` path, ledger postings and receipts run unchanged | Guard change; a new staff permission `simulation.operate` (superadmin only); a deposit policy decision (below) |
-| **B. Payouts** | Staff dispatch an approved disbursement; the panel answers the synthetic payout provider's sends, queries and callbacks | Stage A, and a **current** `FundedCampaigns` source (stage C) |
-| **C. Funded notes and servicing** | A campaign that really closes against simulated deposits becomes funded, its Holdings convert, and servicing and repayments run | Hussain's S3-C funding writer and orchestration; the Holding-side producer; `NoteServicing`. **Not** synthetic fixtures |
+| **A. Deposits** | A superadmin-only Simulation panel answers the simulated provider edge for deposits (succeeded, failed, unknown, pending) through the existing signer. The real outcome, ledger and receipt paths run. | The new guard, the two provider bindings, a simulation permission, a deposit-policy decision (§ Decisions) |
+| **B. Payouts** | The panel answers the simulated payout provider edge for a disbursement that the real gates already approved | Stage A, **plus** a current `FundedCampaigns` writer, a verified payout-destination producer and current staff connections. Fixtures never stand in for any of these |
+| **C. Funded notes and servicing** | A campaign that really closes against simulated deposits becomes funded, its Holdings convert, and servicing runs | Current admission, verified destination, complete broader connections and global exposure, the current funded writer, authenticated forward settlement and successful Holding conversion. Retained `HoldingSource` facts and historical closing certificates are **not** these authorities |
 
-On UAT, funded state must come only from the real writer running against simulated deposits.
-Binding `SyntheticDisbursementSources` as `FundedCampaigns` on UAT would let fixtures act as
-funding authority, so this proposal excludes it. Until stage C exists, UAT disbursement stays
-unavailable, and the panel says so instead of faking it.
+Until a stage's prerequisites exist, its routes stay gated and the panel says it is unavailable rather
+than simulating around it.
 
-### 4. Always labelled
+### 5. Always labelled
 
-Every simulated provider record keeps provider `synthetic`, as today. With the switch on, the existing
-`nonLiveEnvironment` banner says *Simulated money — no real funds move*, and simulated receipts carry
-the same label. The panel shows the switch owner and expiry.
-
-### 5. Off switch
-
-Unsetting `ROZINE_UAT_SIMULATION` (or reaching the expiry) closes both guards at the next boot. New
-deposits then answer *unavailable* exactly as today. Simulated rows already in `rozine_uat` stay
-readable and labelled. They are never migrated anywhere, and `rozine_uat` is never production.
+Simulated provider records keep provider `synthetic`, as today. With the switch on, the existing
+`nonLiveEnvironment` banner says *Simulated money — no real funds move*, simulated receipts carry the
+same label, and the panel shows the switch owner and expiry.
 
 ## Tests the implementation must ship
 
 - A guard matrix across profile (`local`, `testing`, `demo`, `uat`, `production`) × switch (`unset`,
-  `false`, `true`) × live money: `allowed()` is true only for local/testing, or for uat with the switch
-  on, and always false with live money on.
-- `assertSafeConfiguration()` refuses the switch on every non-UAT profile, and refuses it once
-  expired or non-boolean.
-- On `production` the switch can never bind a synthetic adapter: container bindings resolve to the
-  unavailable adapters.
-- On UAT with the switch off, behaviour equals today's: every existing `Unavailable*` binding and
-  deployment-isolation test still passes.
-- Panel actions require `simulation.operate`. Each is journaled with a reason and labelled in
-  receipts. `FundedCampaigns` stays unavailable on UAT.
-- The deployment-admission negative controls stay green. The UAT deploy prints the switch state and
-  expiry in its evidence.
+  `false`, `true`) × expiry (before, at, after) × live money: `UatProviderSimulation::allowed()` is
+  true only on `uat` with the switch on, before expiry and with live money off.
+- `SyntheticWalletGuard` and `SyntheticDisbursementGuard` behave exactly as today on every profile.
+  The existing tests stay unchanged and pass.
+- A container-binding matrix on UAT with the switch on asserts `FundedCampaigns`,
+  `PayoutDestinations` and `StaffConnections` resolve to exactly today's UAT adapters, and that the
+  fixture ports and `local:*` commands refuse.
+- `assertSafeConfiguration()` refuses the switch on non-UAT profiles and when it is not a boolean,
+  but boots with an expired switch.
+- After the test clock passes expiry: a provider call from an already-resolved provider refuses; an
+  intent recorded before expiry takes the provider-unavailable path; a late signed callback is refused
+  without applying an outcome; and every simulated record is still readable.
+- On `production`, no setting can resolve a synthetic provider.
+- The deployment-admission negative controls stay green, and the UAT deploy prints the switch state
+  and expiry in its evidence.
 
-## Decisions needed
+## Decisions needed (none adopted here)
 
-1. **Hussain:** agreement to the two-line guard change and the stage boundaries, in particular that
-   stage B waits for a current `FundedCampaigns` source rather than UAT fixtures.
-2. **Erastus:**
-   - whether testers self-serve outcomes through the panel or an engineer drives them;
-   - the switch owner and first expiry date;
-   - who holds `simulation.operate`.
-3. **Deposit policy on UAT (Robert, #99):** deposits require a published deposit policy version. Should
-   UAT use the engineering synthetic policy fixture, labelled as such, or wait for Robert's deposit
-   limits? This proposal adopts no fee, limit, tenor or verification policy.
+1. **Hussain:** the binding matrix and stage boundaries above, before any implementation PR.
+2. **Erastus:** whether a simulation permission exists and who holds it; whether testers self-serve
+   outcomes; the switch owner and first expiry; and when to deploy to staging.
+3. **Robert (#99):** the deposit policy on UAT, either the engineering synthetic fixture (labelled
+   as such) or his deposit limits. No fee, limit, tenor or verification policy is adopted here.
 
 Until these are answered and reviewed, staging keeps today's behaviour: **synthetic money runs only on
 local and testing, and staging has no synthetic deposits.**
