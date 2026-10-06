@@ -60,11 +60,20 @@ jobs:
         with:
           repository: rozine-rw/rozine
           ref: ${{ vars.BOARD_SYNC_TRUSTED_SHA }}
+          fetch-depth: 0
           persist-credentials: false
           sparse-checkout: |
             .github/scripts/project_board_sync.py
             .github/board-sync-allowlist.json
           sparse-checkout-cone-mode: false
+      - name: Require the pinned implementation to be merged into dev
+        run: |
+          set -euo pipefail
+          if ! test "$(git rev-parse HEAD)" = "$BOARD_SYNC_TRUSTED_SHA" ||
+             ! git merge-base --is-ancestor "$BOARD_SYNC_TRUSTED_SHA" refs/remotes/origin/dev 2>/dev/null; then
+            echo 'Trusted implementation is not a verified dev ancestor; no token minted.' >&2
+            exit 1
+          fi
       - name: Validate event and reviewed allowlist before minting credentials
         id: eligibility
         run: python3 .github/scripts/project_board_sync.py --check

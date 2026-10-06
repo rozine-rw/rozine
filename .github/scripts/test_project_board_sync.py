@@ -361,6 +361,43 @@ class TransportTest(unittest.TestCase):
 
 
 class WorkflowBoundaryTest(unittest.TestCase):
+    def test_workflow_gate_accepts_only_checked_out_dev_ancestors(self):
+        import textwrap
+        workflow = (Path(__file__).resolve().parents[1] / "workflows/board-sync.yml").read_text()
+        step = "      - name: Require the pinned implementation to be merged into dev\n"
+        program = textwrap.dedent(workflow.split(step, 1)[1].split("\n      - name:", 1)[0]
+                                 .split("run: |\n", 1)[1])
+        self.assertIn("fetch-depth: 0", workflow)
+        self.assertLess(workflow.index(step), workflow.index("run: python3 .github/scripts/project_board_sync.py --check"))
+        self.assertLess(workflow.index(step), workflow.index("- name: Mint dedicated installation token"))
+        with tempfile.TemporaryDirectory() as directory:
+            def git(*args):
+                return subprocess.run(["git", *args], cwd=directory, check=True,
+                                      capture_output=True, text=True).stdout.strip()
+
+            git("init", "--initial-branch=dev")
+            git("config", "user.name", "Offline test")
+            git("config", "user.email", "offline@example.invalid")
+            git("commit", "--allow-empty", "-m", "Reviewed base")
+            base = git("rev-parse", "HEAD")
+            git("update-ref", "refs/remotes/origin/dev", base)
+            git("commit", "--allow-empty", "-m", "Unmerged malicious feature")
+            feature = git("rev-parse", "HEAD")
+
+            def gate(pin):
+                return subprocess.run(["bash", "-c", program], cwd=directory,
+                                      env={**os.environ, "BOARD_SYNC_TRUSTED_SHA": pin},
+                                      capture_output=True, text=True, timeout=10)
+
+            self.assertEqual(gate(feature).returncode, 1, "unmerged feature must fail")
+            self.assertEqual(gate(base).returncode, 1, "checkout mismatch must fail")
+            git("checkout", "--detach", base)
+            self.assertEqual(gate(base).returncode, 0)
+            git("update-ref", "-d", "refs/remotes/origin/dev")
+            result = gate(base)
+            self.assertEqual(result.returncode, 1, "missing dev history must fail")
+            self.assertIn("no token minted", result.stderr)
+
     def test_configuration_gate_refuses_missing_key_before_minting(self):
         root = Path(__file__).resolve().parents[1]
         workflow = (root / "workflows/board-sync.yml").read_text()

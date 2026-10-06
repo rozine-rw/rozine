@@ -100,6 +100,9 @@ not a personal token or an existing deployment App.
    `BOARD_SYNC_TRUSTED_SHA` to a **full immutable reviewed commit already merged
    into `dev`** containing this script and its reviewed allowlist. Verify its
    ancestry and diff before pinning; never select a PR head or feature commit.
+   Before executing any checked-out script or minting an App token, the workflow
+   verifies checkout identity and requires that commit to be an ancestor of the
+   fetched `origin/dev`; missing history or an unmerged pin fails closed.
    Set `BOARD_SYNC_WRITES_ENABLED=false`; leave `BOARD_SYNC_ENABLED` unset until
    the read-only stage is separately authorized.
 
