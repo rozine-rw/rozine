@@ -8,6 +8,8 @@
 #   1. The SHA is a full 40-hex immutable Git object.
 #   2. The SHA is the current tip of the target branch (no stale redeploys).
 #   3. The authoritative `tests` workflow ran on that exact SHA and succeeded.
+#      Staging may use explicitly dispatched full validation; production still
+#      requires its target-branch push run. POC/reused/skipped jobs cannot admit.
 #   4. Every required quality-gate job inside that run succeeded; a skipped or
 #      cancelled job is not a pass.
 #   5. The SHA reached the target branch through a merged pull request.
@@ -80,11 +82,17 @@ echo "OK  candidate is the current tip of ${TARGET_BRANCH}."
 deadline=$(( $(date +%s) + WAIT_TIMEOUT_SECONDS ))
 run_id=""
 run_conclusion=""
+event_query="event=push&"
+event_filter='.event == "push"'
+if [ "${TARGET_BRANCH}" = uat ]; then
+  event_query=""
+  event_filter='(.event == "push" or .event == "workflow_dispatch")'
+fi
 
 while :; do
   run_json="$(gh api \
-    "repos/${GITHUB_REPOSITORY}/actions/workflows/${EVIDENCE_WORKFLOW}/runs?head_sha=${CANDIDATE_SHA}&event=push&branch=${TARGET_BRANCH}&per_page=100" \
-    --jq "[.workflow_runs[] | select(.event == \"push\" and .head_branch == \"${TARGET_BRANCH}\" and .head_sha == \"${CANDIDATE_SHA}\") | {id, status, conclusion, created_at}] | sort_by(.created_at) | last // empty")"
+    "repos/${GITHUB_REPOSITORY}/actions/workflows/${EVIDENCE_WORKFLOW}/runs?head_sha=${CANDIDATE_SHA}&${event_query}branch=${TARGET_BRANCH}&per_page=100" \
+    --jq "[.workflow_runs[] | select(${event_filter} and .head_branch == \"${TARGET_BRANCH}\" and .head_sha == \"${CANDIDATE_SHA}\") | {id, status, conclusion, created_at}] | sort_by(.created_at) | last // empty")"
 
   if [ -z "${run_json}" ]; then
     status_line="no run yet"
