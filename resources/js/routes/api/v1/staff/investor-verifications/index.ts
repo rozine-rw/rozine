@@ -1,8 +1,8 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:40
-* @route '/admin/investor-verifications'
+* @route '/api/v1/staff/investor-verifications'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -11,13 +11,13 @@ export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 index.definition = {
     methods: ["get","head"],
-    url: '/admin/investor-verifications',
+    url: '/api/v1/staff/investor-verifications',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:40
-* @route '/admin/investor-verifications'
+* @route '/api/v1/staff/investor-verifications'
 */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
@@ -26,7 +26,7 @@ index.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:40
-* @route '/admin/investor-verifications'
+* @route '/api/v1/staff/investor-verifications'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -36,7 +36,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:40
-* @route '/admin/investor-verifications'
+* @route '/api/v1/staff/investor-verifications'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
@@ -46,7 +46,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:40
-* @route '/admin/investor-verifications'
+* @route '/api/v1/staff/investor-verifications'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: index.url(options),
@@ -56,7 +56,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:40
-* @route '/admin/investor-verifications'
+* @route '/api/v1/staff/investor-verifications'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: index.url(options),
@@ -66,7 +66,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::index
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:40
-* @route '/admin/investor-verifications'
+* @route '/api/v1/staff/investor-verifications'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: index.url({
@@ -83,7 +83,7 @@ index.form = indexForm
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:54
-* @route '/admin/investor-verifications/{verification}/documents/{document}'
+* @route '/api/v1/staff/investor-verifications/{verification}/documents/{document}'
 */
 export const document = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: document.url(args, options),
@@ -92,13 +92,13 @@ export const document = (args: { verification: string | number, document: string
 
 document.definition = {
     methods: ["get","head"],
-    url: '/admin/investor-verifications/{verification}/documents/{document}',
+    url: '/api/v1/staff/investor-verifications/{verification}/documents/{document}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:54
-* @route '/admin/investor-verifications/{verification}/documents/{document}'
+* @route '/api/v1/staff/investor-verifications/{verification}/documents/{document}'
 */
 document.url = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
@@ -124,7 +124,7 @@ document.url = (args: { verification: string | number, document: string | number
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:54
-* @route '/admin/investor-verifications/{verification}/documents/{document}'
+* @route '/api/v1/staff/investor-verifications/{verification}/documents/{document}'
 */
 document.get = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: document.url(args, options),
@@ -134,7 +134,7 @@ document.get = (args: { verification: string | number, document: string | number
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:54
-* @route '/admin/investor-verifications/{verification}/documents/{document}'
+* @route '/api/v1/staff/investor-verifications/{verification}/documents/{document}'
 */
 document.head = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: document.url(args, options),
@@ -144,7 +144,7 @@ document.head = (args: { verification: string | number, document: string | numbe
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:54
-* @route '/admin/investor-verifications/{verification}/documents/{document}'
+* @route '/api/v1/staff/investor-verifications/{verification}/documents/{document}'
 */
 const documentForm = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: document.url(args, options),
@@ -154,7 +154,7 @@ const documentForm = (args: { verification: string | number, document: string | 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:54
-* @route '/admin/investor-verifications/{verification}/documents/{document}'
+* @route '/api/v1/staff/investor-verifications/{verification}/documents/{document}'
 */
 documentForm.get = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: document.url(args, options),
@@ -164,7 +164,7 @@ documentForm.get = (args: { verification: string | number, document: string | nu
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::document
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:54
-* @route '/admin/investor-verifications/{verification}/documents/{document}'
+* @route '/api/v1/staff/investor-verifications/{verification}/documents/{document}'
 */
 documentForm.head = (args: { verification: string | number, document: string | number } | [verification: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: document.url(args, {
@@ -181,7 +181,7 @@ document.form = documentForm
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::approve
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:67
-* @route '/admin/investor-verifications/{verification}/approve'
+* @route '/api/v1/staff/investor-verifications/{verification}/approve'
 */
 export const approve = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: approve.url(args, options),
@@ -190,13 +190,13 @@ export const approve = (args: { verification: string | number } | [verification:
 
 approve.definition = {
     methods: ["post"],
-    url: '/admin/investor-verifications/{verification}/approve',
+    url: '/api/v1/staff/investor-verifications/{verification}/approve',
 } satisfies RouteDefinition<["post"]>
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::approve
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:67
-* @route '/admin/investor-verifications/{verification}/approve'
+* @route '/api/v1/staff/investor-verifications/{verification}/approve'
 */
 approve.url = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -223,7 +223,7 @@ approve.url = (args: { verification: string | number } | [verification: string |
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::approve
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:67
-* @route '/admin/investor-verifications/{verification}/approve'
+* @route '/api/v1/staff/investor-verifications/{verification}/approve'
 */
 approve.post = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: approve.url(args, options),
@@ -233,7 +233,7 @@ approve.post = (args: { verification: string | number } | [verification: string 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::approve
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:67
-* @route '/admin/investor-verifications/{verification}/approve'
+* @route '/api/v1/staff/investor-verifications/{verification}/approve'
 */
 const approveForm = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: approve.url(args, options),
@@ -243,7 +243,7 @@ const approveForm = (args: { verification: string | number } | [verification: st
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::approve
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:67
-* @route '/admin/investor-verifications/{verification}/approve'
+* @route '/api/v1/staff/investor-verifications/{verification}/approve'
 */
 approveForm.post = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: approve.url(args, options),
@@ -255,7 +255,7 @@ approve.form = approveForm
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::reject
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:72
-* @route '/admin/investor-verifications/{verification}/reject'
+* @route '/api/v1/staff/investor-verifications/{verification}/reject'
 */
 export const reject = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: reject.url(args, options),
@@ -264,13 +264,13 @@ export const reject = (args: { verification: string | number } | [verification: 
 
 reject.definition = {
     methods: ["post"],
-    url: '/admin/investor-verifications/{verification}/reject',
+    url: '/api/v1/staff/investor-verifications/{verification}/reject',
 } satisfies RouteDefinition<["post"]>
 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::reject
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:72
-* @route '/admin/investor-verifications/{verification}/reject'
+* @route '/api/v1/staff/investor-verifications/{verification}/reject'
 */
 reject.url = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -297,7 +297,7 @@ reject.url = (args: { verification: string | number } | [verification: string | 
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::reject
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:72
-* @route '/admin/investor-verifications/{verification}/reject'
+* @route '/api/v1/staff/investor-verifications/{verification}/reject'
 */
 reject.post = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: reject.url(args, options),
@@ -307,7 +307,7 @@ reject.post = (args: { verification: string | number } | [verification: string |
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::reject
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:72
-* @route '/admin/investor-verifications/{verification}/reject'
+* @route '/api/v1/staff/investor-verifications/{verification}/reject'
 */
 const rejectForm = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: reject.url(args, options),
@@ -317,7 +317,7 @@ const rejectForm = (args: { verification: string | number } | [verification: str
 /**
 * @see \App\Http\Controllers\StaffInvestorVerificationController::reject
 * @see app/Http/Controllers/StaffInvestorVerificationController.php:72
-* @route '/admin/investor-verifications/{verification}/reject'
+* @route '/api/v1/staff/investor-verifications/{verification}/reject'
 */
 rejectForm.post = (args: { verification: string | number } | [verification: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: reject.url(args, options),

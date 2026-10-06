@@ -12,6 +12,7 @@ use App\Http\Requests\Investor\SaveVerificationRequest;
 use App\Http\Requests\Investor\SubmitVerificationRequest;
 use App\Http\Requests\Investor\UploadVerificationDocumentRequest;
 use App\Http\Resources\InvestorVerificationResource;
+use App\Http\Resources\OperationResource;
 use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,9 +37,13 @@ class InvestorVerificationController extends Controller
         'IDEMPOTENCY_CONFLICT' => 'That request was already used for different details. Try again.',
     ];
 
-    public function show(Request $request, GetInvestorVerification $verification): Response|RedirectResponse
+    public function show(Request $request, GetInvestorVerification $verification): Response|RedirectResponse|InvestorVerificationResource
     {
+        abort_if($request->routeIs('api.*') && ! $request->user()?->tokenCan('investor:read'), 403);
         $submission = $verification->handle((int) $request->user()?->getAuthIdentifier());
+        if ($request->routeIs('api.*')) {
+            return new InvestorVerificationResource($submission);
+        }
         if ($submission['verified']) {
             return redirect()->route('dashboard');
         }
@@ -46,37 +51,41 @@ class InvestorVerificationController extends Controller
         return Inertia::render('investor/verification', (new InvestorVerificationResource($submission))->resolve($request));
     }
 
-    public function save(SaveVerificationRequest $request, SaveInvestorVerification $action): RedirectResponse
+    public function save(SaveVerificationRequest $request, SaveInvestorVerification $action): RedirectResponse|OperationResource
     {
-        return $this->answer(fn (): array => $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
+        return $this->answer($request, fn (): array => $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
             (int) $request->validated('expected_revision'), (string) $request->validated('step'),
             $request->safe()->only(['date_of_birth', 'id_type', 'id_number']), (string) $request->validated('request_id')));
     }
 
-    public function upload(UploadVerificationDocumentRequest $request, UploadInvestorVerificationDocument $action): RedirectResponse
+    public function upload(UploadVerificationDocumentRequest $request, UploadInvestorVerificationDocument $action): RedirectResponse|OperationResource
     {
         /** @var UploadedFile $file */
         $file = $request->validated('file');
 
-        return $this->answer(fn (): array => $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
+        return $this->answer($request, fn (): array => $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
             (int) $request->validated('expected_revision'), (string) $request->validated('slot'), $file->getClientOriginalName(),
             (string) $file->get(), (string) $request->validated('request_id')));
     }
 
-    public function submit(SubmitVerificationRequest $request, SubmitInvestorVerification $action): RedirectResponse
+    public function submit(SubmitVerificationRequest $request, SubmitInvestorVerification $action): RedirectResponse|OperationResource
     {
-        return $this->answer(fn (): array => $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
+        return $this->answer($request, fn (): array => $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
             (int) $request->validated('expected_revision'), (string) $request->validated('request_id')));
     }
 
     /**
-     * A recorded refusal and one refused before it was recorded (an idempotency conflict) arrive alike.
+     * A recorded refusal and one refused before it was recorded (an idempotency conflict) arrive alike:
+     * as form errors on the page, or as the operation receipt over the API.
      *
      * @param  Closure(): array<string, mixed>  $command
      */
-    private function answer(Closure $command): RedirectResponse
+    private function answer(Request $request, Closure $command): RedirectResponse|OperationResource
     {
         $result = $command();
+        if ($request->routeIs('api.*')) {
+            return OperationResource::fromResult($result, 'engineering-2026-10-06.1');
+        }
         if ($result['status'] !== 'completed') {
             /** @var array<string, list<string>> $fields */
             $fields = $result['field_errors'];

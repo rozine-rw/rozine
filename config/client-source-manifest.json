@@ -155,6 +155,7 @@
         "resources/js/routes/api/v1/investor/index.ts",
         "resources/js/routes/api/v1/investor/primary/index.ts",
         "resources/js/routes/api/v1/investor/primary/operations/index.ts",
+        "resources/js/routes/api/v1/investor/verification/index.ts",
         "resources/js/routes/api/v1/investor/wallet/index.ts",
         "resources/js/routes/api/v1/investor/wallet/operations/index.ts",
         "resources/js/routes/api/v1/staff-access/index.ts",
@@ -168,6 +169,7 @@
         "resources/js/routes/api/v1/staff/disbursements/index.ts",
         "resources/js/routes/api/v1/staff/disbursements/operations/index.ts",
         "resources/js/routes/api/v1/staff/index.ts",
+        "resources/js/routes/api/v1/staff/investor-verifications/index.ts",
         "resources/js/routes/appearance/index.ts",
         "resources/js/routes/audit/index.ts",
         "resources/js/routes/audit/seals/index.ts",
@@ -647,8 +649,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 616,
-        "generated": 227,
+        "totalTrackedSources": 618,
+        "generated": 229,
         "declarationOnly": 18,
         "authoredExecutable": 371
     },

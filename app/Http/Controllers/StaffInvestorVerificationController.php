@@ -8,6 +8,7 @@ use App\Application\Identity\GetStaffAccess;
 use App\Application\Identity\ReviewInvestorVerifications;
 use App\Http\Requests\Staff\DecideInvestorVerificationRequest;
 use App\Http\Requests\Staff\ListInvestorVerificationsRequest;
+use App\Http\Resources\OperationResource;
 use App\Http\Resources\StaffInvestorVerificationsResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,20 +37,23 @@ class StaffInvestorVerificationController extends Controller
 
     public function __construct(private ReviewInvestorVerifications $review) {}
 
-    public function index(ListInvestorVerificationsRequest $request, GetStaffAccess $access): Response
+    public function index(ListInvestorVerificationsRequest $request, GetStaffAccess $access): Response|StaffInvestorVerificationsResource
     {
         $actorId = (int) $request->user()?->getAuthIdentifier();
         $queue = $this->review->queue($actorId, (string) $request->validated('tab', 'submitted'), trim((string) $request->validated('search', '')),
             $request->validated('before'), (int) $request->validated('limit', 25));
         $selected = $request->validated('verification');
 
-        return Inertia::render('admin/investor-verifications', (new StaffInvestorVerificationsResource([...$queue,
+        $resource = new StaffInvestorVerificationsResource([...$queue,
             'review' => $selected === null ? null : $this->review->show($actorId, (string) $selected),
-            'roles' => $access->handle($actorId)['roles']]))->resolve($request));
+            'roles' => $access->handle($actorId)['roles']]);
+
+        return $request->routeIs('api.*') ? $resource : Inertia::render('admin/investor-verifications', $resource->resolve($request));
     }
 
     public function document(Request $request): FileResponse
     {
+        abort_if($request->routeIs('api.*') && ! $request->user()?->tokenCan('staff:investors:read'), 403);
         $document = $this->review->document((int) $request->user()?->getAuthIdentifier(), (string) $request->route('verification'), (string) $request->route('document'));
 
         return response($document['content'], 200, [
@@ -60,12 +64,12 @@ class StaffInvestorVerificationController extends Controller
         ]);
     }
 
-    public function approve(DecideInvestorVerificationRequest $request): RedirectResponse
+    public function approve(DecideInvestorVerificationRequest $request): RedirectResponse|OperationResource
     {
         return $this->answer($request, $this->review->approve(...$this->command($request)));
     }
 
-    public function reject(DecideInvestorVerificationRequest $request): RedirectResponse
+    public function reject(DecideInvestorVerificationRequest $request): RedirectResponse|OperationResource
     {
         return $this->answer($request, $this->review->reject(...$this->command($request)));
     }
@@ -78,8 +82,11 @@ class StaffInvestorVerificationController extends Controller
     }
 
     /** @param array<string, mixed> $result */
-    private function answer(Request $request, array $result): RedirectResponse
+    private function answer(Request $request, array $result): RedirectResponse|OperationResource
     {
+        if ($request->routeIs('api.*')) {
+            return OperationResource::fromResult($result, 'engineering-2026-10-06.1');
+        }
         if ($result['status'] !== 'completed') {
             throw ValidationException::withMessages(['form' => [self::MESSAGES[$result['code']] ?? 'We could not record this decision. Try again.']]);
         }

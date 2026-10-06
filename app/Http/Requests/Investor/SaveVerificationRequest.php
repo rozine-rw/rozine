@@ -10,7 +10,8 @@ class SaveVerificationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        return $this->user() !== null && (! $this->routeIs('api.*')
+            || ($this->user()->tokenCan('investor:read') && $this->user()->tokenCan('investor:command')));
     }
 
     /** @return array<string, list<string>> */

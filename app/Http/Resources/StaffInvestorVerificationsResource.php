@@ -31,7 +31,8 @@ class StaffInvestorVerificationsResource extends JsonResource
     {
         /** @var Page $page */
         $page = $this->resource;
-        $link = fn (array $query): array => ['url' => route('staff.investor-verifications.index', $query, false), 'method' => 'get'];
+        $prefix = $request->routeIs('api.*') ? 'api.v1.' : '';
+        $link = fn (array $query): array => ['url' => route($prefix.'staff.investor-verifications.index', $query, false), 'method' => 'get'];
         $filters = array_filter(['tab' => $page['tab'], 'search' => $page['search']], fn (string $value): bool => $value !== '');
         $position = array_filter([...$filters, 'before' => $page['before']], fn (?string $value): bool => $value !== null);
         $name = (string) $request->user()?->name;
@@ -50,7 +51,7 @@ class StaffInvestorVerificationsResource extends JsonResource
             'entries' => array_map(fn (array $entry): array => [...$entry, 'selected' => $entry['id'] === ($page['review']['id'] ?? null),
                 'link' => $link([...$position, 'verification' => $entry['id']])], $page['entries']),
             'pagination' => ['next' => $page['next_cursor'] === null ? null : $link([...$filters, 'before' => $page['next_cursor']])],
-            'review' => $page['review'] === null ? null : self::review($page['review'], $link($position))];
+            'review' => $page['review'] === null ? null : self::review($page['review'], $link($position), $prefix)];
     }
 
     /**
@@ -58,14 +59,14 @@ class StaffInvestorVerificationsResource extends JsonResource
      * @param  array{url: string, method: string}  $close
      * @return array<string, mixed>
      */
-    private static function review(array $review, array $close): array
+    private static function review(array $review, array $close, string $prefix): array
     {
-        $action = fn (string $name): array => ['url' => route('staff.investor-verifications.'.$name, ['verification' => $review['id']], false), 'method' => 'post'];
+        $action = fn (string $name): array => ['url' => route($prefix.'staff.investor-verifications.'.$name, ['verification' => $review['id']], false), 'method' => 'post'];
 
         return ['id' => $review['id'], 'revision' => $review['revision'], 'status' => $review['status'], 'submitted_at' => $review['submitted_at'],
             'account' => $review['account'], 'date_of_birth' => $review['state']['date_of_birth'], 'id_type' => $review['state']['id_type'],
             'id_number' => $review['state']['id_number'], 'decision' => $review['state']['decision'],
-            'documents' => array_map(fn (array $document): array => [...$document, 'link' => ['url' => route('staff.investor-verifications.document',
+            'documents' => array_map(fn (array $document): array => [...$document, 'link' => ['url' => route($prefix.'staff.investor-verifications.document',
                 ['verification' => $review['id'], 'document' => $document['id']], false), 'method' => 'get']], $review['documents']),
             'history' => $review['history'], 'links' => ['close' => $close],
             'actions' => (object) array_combine($review['allowed_actions'], array_map($action, $review['allowed_actions']))];

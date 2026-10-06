@@ -11,7 +11,8 @@ class DecideInvestorVerificationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        return $this->user() !== null && (! $this->routeIs('api.*')
+            || ($this->user()->tokenCan('staff:investors:read') && $this->user()->tokenCan('staff:investors:verify')));
     }
 
     /** @return array<string, list<string>> */
