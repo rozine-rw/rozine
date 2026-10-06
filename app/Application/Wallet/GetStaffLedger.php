@@ -10,7 +10,12 @@ use App\Application\Wallet\Contracts\LedgerReader;
 
 /**
  * The staff ledger drill-down (`ledger.view`): entries newest first and one opened entry with its
- * postings and who recorded it. Read only; an entry is never corrected here.
+ * postings and its origin. Read only; an entry is never corrected here.
+ *
+ * An entry records only the operation its money flow started in, not the one that posted it: a
+ * confirmation, release, refund or issue keeps its reservation's origin. So the origin's actor and
+ * time are reported as the origin, never as who posted the entry; the entry's own `at` is when it
+ * was posted.
  *
  * @phpstan-import-type LedgerRow from LedgerReader
  * @phpstan-import-type LedgerPosting from LedgerReader
@@ -18,7 +23,7 @@ use App\Application\Wallet\Contracts\LedgerReader;
  *
  * @phpstan-type StaffLedgerEntry array{row: LedgerRow, operation_id: string|null, postings: list<LedgerPosting>,
  *     totals: array{debit: array{currency: string, amount: string}, credit: array{currency: string, amount: string}}, balanced: bool,
- *     posted_by: array{actor: string, at: string, reason: null}}
+ *     origin: array{actor: string, at: string, reason: null}|null}
  */
 final class GetStaffLedger
 {
@@ -39,24 +44,28 @@ final class GetStaffLedger
         $entry = ($query['entry'] ?? null) === null ? null : $this->ledger->entry($query['entry']);
 
         return ['permissions' => $this->staff->permissions($userId), 'search' => $search, ...$page,
-            'entry' => $entry === null ? null : [...$entry, 'posted_by' => $this->postedBy($entry)]];
+            'entry' => $entry === null ? null : [...$entry, 'origin' => $this->origin($entry)]];
     }
 
     /**
-     * The recording actor by reference, never by name; ROZINE for an entry no operation recorded.
+     * The actor and time of the entry's origin operation, by reference and never by name; null when
+     * the entry carries no operation or the journal holds none for it.
      *
      * @param  LedgerDetail  $entry
-     * @return array{actor: string, at: string, reason: null}
+     * @return array{actor: string, at: string, reason: null}|null
      */
-    private function postedBy(array $entry): array
+    private function origin(array $entry): ?array
     {
         $attribution = $entry['operation_id'] === null ? null : $this->operations->attribution($entry['operation_id']);
-        $actor = $attribution === null ? 'ROZINE' : match (true) {
+        if ($attribution === null) {
+            return null;
+        }
+        $actor = match (true) {
             str_starts_with($attribution['actor_key'], 'party:') => 'PARTY-'.strtoupper(substr($attribution['actor_key'], -8)),
             str_starts_with($attribution['actor_key'], 'staff:') => 'STAFF-'.substr($attribution['actor_key'], 6),
             default => strtoupper($attribution['actor_key']),
         };
 
-        return ['actor' => $actor, 'at' => $attribution['recorded_at'] ?? $entry['row']['at'], 'reason' => null];
+        return ['actor' => $actor, 'at' => $attribution['recorded_at'], 'reason' => null];
     }
 }

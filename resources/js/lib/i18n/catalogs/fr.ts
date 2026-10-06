@@ -799,6 +799,10 @@ const fr: Catalog = {
     'admin.role.access.analyst': 'Accès au tri',
     'admin.role.access.approver': 'Accès approbateur',
     'admin.role.access.superadmin': 'Accès complet',
+    'admin.role.compliance': 'Conformité',
+    'admin.role.access.compliance': 'Accès conformité',
+    'admin.role.treasury': 'Trésorerie',
+    'admin.role.access.treasury': 'Accès trésorerie',
     'admin.drawer.close': 'Fermer',
     'admin.stage.reason_label': 'Motif pour le registre',
     'admin.stage.logged_as':
@@ -1377,8 +1381,11 @@ const fr: Catalog = {
     'admin.ledger.fact.from': 'De',
     'admin.ledger.fact.to': 'À',
     'admin.ledger.fact.reference': 'Référence',
-    'admin.ledger.fact.operation': 'Opération',
-    'admin.ledger.posted_by': 'Passée par {actor} · {at}',
+    'admin.ledger.fact.operation': 'Opération d’origine',
+    'admin.ledger.origin':
+        'Opération d’origine lancée par {actor} · {at}. Un mouvement ultérieur du même flux garde cette origine.',
+    'admin.ledger.origin_none':
+        'Aucune opération n’est enregistrée pour cette écriture.',
     'admin.ledger.postings': 'Écritures',
     'admin.ledger.total': 'Total',
     'admin.ledger.balanced': 'Équilibrée',

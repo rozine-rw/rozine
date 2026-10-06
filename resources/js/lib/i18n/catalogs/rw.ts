@@ -799,6 +799,10 @@ const rw: Catalog = {
     'admin.role.access.analyst': 'Uburenganzira bwo gutondeka',
     'admin.role.access.approver': 'Uburenganzira bwo kwemeza',
     'admin.role.access.superadmin': 'Uburenganzira bwose',
+    'admin.role.compliance': 'Kubahiriza amategeko',
+    'admin.role.access.compliance': 'Uburenganzira bwo kubahiriza amategeko',
+    'admin.role.treasury': 'Imari',
+    'admin.role.access.treasury': 'Uburenganzira bw’imari',
     'admin.drawer.close': 'Funga',
     'admin.stage.reason_label': 'Impamvu yandikwa',
     'admin.stage.logged_as':
@@ -1377,8 +1381,10 @@ const rw: Catalog = {
     'admin.ledger.fact.from': 'Kuva',
     'admin.ledger.fact.to': 'Kuri',
     'admin.ledger.fact.reference': 'Indango',
-    'admin.ledger.fact.operation': 'Igikorwa',
-    'admin.ledger.posted_by': 'Byanditswe na {actor} · {at}',
+    'admin.ledger.fact.operation': 'Igikorwa cy’inkomoko',
+    'admin.ledger.origin':
+        'Igikorwa cy’inkomoko cyatangijwe na {actor} · {at}. Igikorwa gikurikiraho muri uru rugendo kigumana iyi nkomoko.',
+    'admin.ledger.origin_none': 'Nta gikorwa cyanditswe kuri iyi nyandiko.',
     'admin.ledger.postings': 'Ibyanditswe',
     'admin.ledger.total': 'Igiteranyo',
     'admin.ledger.balanced': 'Biringaniye',

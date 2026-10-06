@@ -33,7 +33,12 @@ export type AdminSection =
     | 'ledger'
     | 'events';
 
-export type StaffRole = 'analyst' | 'approver' | 'superadmin';
+export type StaffRole =
+    | 'analyst'
+    | 'approver'
+    | 'compliance'
+    | 'superadmin'
+    | 'treasury';
 
 /** The signed-in operator. Privileged staff accounts are separate from Party logins (CFG-01). */
 export type StaffViewer = {
@@ -651,9 +656,14 @@ export type Posting = {
 };
 
 export type LedgerEntryDetail = LedgerRow & {
-    /** The recording operation; null for an entry no operation recorded. */
+    /**
+     * The operation the entry's money flow started in; null for an entry no operation recorded. A
+     * later movement (a confirmation, release, refund or issue) keeps its reservation's origin, so
+     * this is never who posted the entry; `at` is when it was posted.
+     */
     operation_id: string | null;
-    posted_by: Attribution;
+    /** Who started the origin operation and when; null when no operation is recorded. */
+    origin: Attribution | null;
     postings: Posting[];
     totals: { debit: Money; credit: Money };
     /** Debits equal credits, as the core verified on posting. */

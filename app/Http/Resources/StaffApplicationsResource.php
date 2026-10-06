@@ -32,7 +32,8 @@ class StaffApplicationsResource extends JsonResource
                 'initials' => mb_strtoupper(mb_substr($name, 0, 1)), 'role' => in_array('superadmin', $page['roles'], true) ? 'superadmin' : 'approver'],
             'nav' => ['applications' => $link([]), 'launcher' => ['url' => route('dashboard', [], false), 'method' => 'get'],
                 'today' => null, 'disbursements' => null, 'repayments' => null, 'businesses' => null, 'investors' => null,
-                'auditors' => null, 'staff' => null, 'ledger' => null, 'events' => null],
+                'auditors' => null, 'staff' => null, 'ledger' => in_array('ledger.view', $page['permissions'], true)
+                    ? ['url' => route(($request->routeIs('api.*') ? 'api.v1.' : '').'staff.ledger.index', [], false), 'method' => 'get'] : null, 'events' => null],
             'badges' => ['applications' => $page['counts']['pending'], 'disbursements' => null], 'policy' => [],
             'search' => $page['search'], 'active_tab' => $page['tab'], 'tabs' => array_map(fn (string $tab): array => ['key' => $tab, 'count' => $page['counts'][$tab], 'link' => $link([...$filters, 'tab' => $tab])], ['pending', 'approved']),
             'applications' => array_map(function (array $entry) use ($link, $position): array {

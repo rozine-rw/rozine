@@ -6,7 +6,9 @@ namespace App\Application\Wallet\Contracts;
 
 /**
  * The staff ledger drill-down over the sealed wallet journal. Read only: it takes no lock, never
- * corrects or replays an entry, and names a wallet only by its reference, never its owner.
+ * corrects or replays an entry, and names a wallet only by its reference, never its owner. An
+ * entry's `operation_id` is the operation its money flow started in, which later movements of the
+ * same flow keep; it is not the operation that posted them.
  *
  * @phpstan-type LedgerRow array{id: string, at: string, kind: string, from: string, to: string, reference: string,
  *     amount: array{currency: string, amount: string}}
