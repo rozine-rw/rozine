@@ -37,6 +37,14 @@ interface AuditReportPublicationStore
     /** @return array<string, mixed> */
     public function verify(string $reportId): array;
 
+    /**
+     * The Investor-facing facts of a published report with a currently valid seal: the sealing
+     * Audit Partner, their licence, the seal date and the report digest. Null for any other report.
+     *
+     * @return array{partner: string, licence: string, verified_on: string, digest: string}|null
+     */
+    public function investorSummary(string $reportId): ?array;
+
     /** The caller holds current report authority and the Business/report locks. */
     public function requireAmendable(string $reportId): void;
 

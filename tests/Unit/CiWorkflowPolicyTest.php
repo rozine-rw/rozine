@@ -15,7 +15,7 @@ beforeEach(function (): void {
     $this->candidate = trim($head->getOutput());
     $tree = new Process(['git', 'rev-parse', 'HEAD^{tree}'], $this->root);
     $tree->mustRun();
-    $names = ['PHP 8.5 quality gate', 'TypeScript/React quality gate', 'PostgreSQL concurrency lane',
+    $names = ['Board sync offline tests', 'PHP 8.5 quality gate', 'TypeScript/React quality gate', 'PostgreSQL concurrency lane',
         'PHP gate negative controls', 'Deployment admission negative controls', 'Record tested PR tree',
         'PHP negative controls (architecture)', 'PHP negative controls (business)',
         'PHP negative controls (auditor)', 'PHP negative controls (coverage)'];
@@ -151,7 +151,13 @@ it('tests immutable proposed merges and preserves deployment gates', function ()
         expect($workflow['jobs'][$name]['needs'])->toBe('plan')
             ->and($workflow['jobs'][$name]['if'])->toBe("\${{ needs.plan.outputs.full == 'true' }}");
     }
-    expect($workflow['jobs']['tested-tree']['needs'])->toBe(['ci', 'web', 'concurrency', 'negative-controls', 'admission'])
+    expect($workflow['jobs']['tested-tree']['needs'])->toBe(['ci', 'web', 'concurrency', 'negative-controls', 'admission', 'board-sync'])
         ->and($workflow['jobs']['tested-tree']['if'])->toBe("\${{ github.event_name == 'pull_request' }}")
         ->and($workflow['jobs']['dev-smoke']['if'])->toBe("\${{ needs.plan.outputs.full == 'false' }}");
+});
+
+it('requires board sync evidence before reusing the tested tree', function (): void {
+    $this->fixtures['jobs'][0]['jobs'][0]['conclusion'] = 'skipped';
+
+    expect(($this->runPolicy)())->toBe("full=true\nsource_run=\n");
 });

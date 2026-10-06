@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { Component, Fragment, createElement } from 'react';
 
+import { AppEntry } from '@/components/site/app-entry';
 import { downloadPassCard } from '@/lib/pass-card-image';
 import type { PassCardSpec } from '@/lib/pass-card-image';
 import { store as storeBusiness } from '@/routes/site/business';
@@ -23,7 +24,11 @@ declare module 'react' {
     }
 }
 
-type SiteProps = object;
+/** Shared Inertia props the page reads: the app entry shows only on an isolated environment. */
+type SiteProps = {
+    nonLiveEnvironment?: string | null;
+    auth?: { user: unknown };
+};
 
 type SiteState = Record<string, any>;
 type SiteVals = Record<string, any>;
@@ -1250,6 +1255,15 @@ export default class Home extends Component<SiteProps, SiteState> {
                                     >
                                         Help
                                     </a>
+                                    <AppEntry
+                                        environment={
+                                            this.props.nonLiveEnvironment ??
+                                            null
+                                        }
+                                        signedIn={Boolean(
+                                            this.props.auth?.user,
+                                        )}
+                                    />
                                 </nav>
                             </div>
                             <div

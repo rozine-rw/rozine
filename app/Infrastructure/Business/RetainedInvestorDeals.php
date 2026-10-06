@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Business;
 
+use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Application\Business\Contracts\CampaignClosureEvidence;
 use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Business\Contracts\PublishedCampaignEvidence;
@@ -32,7 +33,7 @@ final class RetainedInvestorDeals implements InvestorDealCatalogue
     private const array ACCENTS = ['green', 'blue', 'amber', 'purple', 'teal', 'magenta', 'ink'];
 
     public function __construct(private PublishedCampaignEvidence $publications, private CampaignClosureEvidence $closures,
-        private CampaignProgress $progress, private CanonicalJson $json) {}
+        private CampaignProgress $progress, private CanonicalJson $json, private AuditReportPublicationStore $reports) {}
 
     public function deals(): array
     {
@@ -63,6 +64,8 @@ final class RetainedInvestorDeals implements InvestorDealCatalogue
             return null;
         }
         $draft = $this->acceptedDraft($payload);
+        $reportId = $payload['binding']['report']['id'] ?? null;
+        $audit = is_string($reportId) ? $this->reports->investorSummary($reportId) : null;
         $progress = $this->progress->project($campaignId, $payload)['progress'];
         $principal = BigInteger::of($payload['principal']);
         $total = $payload['quote']['units'];
@@ -71,7 +74,7 @@ final class RetainedInvestorDeals implements InvestorDealCatalogue
         $card = ['campaign_id' => $campaignId, 'revision' => 1, 'name' => $evidence['business']['name'],
             'accent' => self::ACCENTS[hexdec(substr(hash('sha256', $payload['business_id']), 0, 6)) % count(self::ACCENTS)],
             'industry' => $evidence['business']['industry'], 'district' => $evidence['business']['district'],
-            'rating' => ['band' => $rating['band'], 'score' => $rating['score']], 'audited' => ($payload['binding']['report'] ?? null) !== null,
+            'rating' => ['band' => $rating['band'], 'score' => $rating['score']], 'audited' => $audit !== null,
             'just_listed' => now()->subHours(self::JUST_LISTED_HOURS)->lt($payload['recorded_at']), 'photos' => [],
             'raised' => ['currency' => 'RWF', 'amount' => $raised], 'target' => ['currency' => 'RWF', 'amount' => (string) $principal],
             'funded_pct' => $funded ? '100.0' : $progress['funded_pct'],
@@ -92,7 +95,9 @@ final class RetainedInvestorDeals implements InvestorDealCatalogue
             'financials' => ['avg_monthly_revenue' => $card['avg_monthly_revenue'], 'ebitda' => ['value' => null, 'unavailable' => 'NOT_SOURCED_AS_EBITDA']],
             'rationale' => null, 'track_record' => null,
             'about' => ['description' => $draft['story'], 'industry' => $card['industry'], 'district' => $card['district']],
-            'audit' => null, 'updates' => [], 'overdue_report' => null];
+            'audit' => $audit === null ? null : ['standard' => null, 'partner' => $audit['partner'], 'licence' => $audit['licence'],
+                'verified_on' => $audit['verified_on'], 'digest' => $audit['digest'], 'reconciliation_statement' => null, 'tolerance' => null],
+            'updates' => [], 'overdue_report' => null];
     }
 
     /**

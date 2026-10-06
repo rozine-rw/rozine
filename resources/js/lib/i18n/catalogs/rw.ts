@@ -10,6 +10,10 @@ import type { Catalog } from '@/lib/i18n/types';
 
 const rw: Catalog = {
     'suite.sign_out': 'Sohoka',
+    'site.app_entry.label': 'Porogaramu za Rozine',
+    'site.app_entry.sign_in': 'Injira',
+    'site.app_entry.create_account': 'Fungura konti',
+    'site.app_entry.open_app': 'Fungura porogaramu',
     'suite.preview': 'Igerageza rikoresha amakuru y’icyitegererezo',
     'suite.mfa_required':
         'Shyiraho kwemeza kwinjira mu buryo bubiri kugira ngo ufungure porogaramu y’umugenzuzi.',
@@ -2356,6 +2360,7 @@ const rw: Catalog = {
     'investor.updates.photo_previous': 'Ifoto ibanza',
     'investor.updates.photo_next': 'Ifoto ikurikira',
     'investor.audit.kicker': 'Byagenzuwe mu bwigenge · {standard}',
+    'investor.audit.kicker_plain': 'Byagenzuwe mu bwigenge',
     'investor.audit.verified_line': '{licence} · byemejwe ku wa {date}',
     'investor.audit.view': 'Reba',
     'investor.audit.hide': 'Hisha',
