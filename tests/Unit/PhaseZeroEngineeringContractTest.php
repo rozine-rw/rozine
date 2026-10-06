@@ -1861,3 +1861,45 @@ test('MVP capture and upload cutoffs are distinct without claiming physical evid
 test('unknown review arithmetic is rejected', function (): void {
     expect(fn () => PhaseZeroEngineeringReview::calculate('production_engine', []))->toThrow(UnexpectedValueException::class);
 });
+
+test('proposed amendment A-2026-09-28 stays pending, keeps N6 current and fails closed on open items', function (): void {
+    $root = __DIR__.'/../../';
+    $document = file_get_contents($root.'docs/phase-0/engineering-contract-draft-2026-09-20.md');
+    $start = is_string($document) ? strpos($document, '## 12. Proposed amendment A-2026-09-28') : false;
+
+    if ($document === false || $start === false) {
+        throw new UnexpectedValueException('Missing proposed amendment A-2026-09-28.');
+    }
+
+    $section = substr($document, $start);
+    $expected = array_map(fn (int $number): string => sprintf('PA-%02d', $number), range(1, 13));
+    preg_match_all('/^#### (PA-\d{2}) - /m', $section, $headings);
+    preg_match_all('/^\| (PA-\d{2}) \|/m', $section, $summary);
+    $items = array_combine($headings[1], array_slice(preg_split('/^#### PA-\d{2} - /m', explode('### 12.2 ', $section)[0]) ?: [], 1));
+
+    expect($headings[1])->toBe($expected)
+        ->and($summary[1])->toBe($expected)
+        ->and($section)->toContain(
+            'PROPOSED_PENDING_JOINT_SIGN_OFF - NOT_APPROVED - NOT_IMPLEMENTED',
+            '**Exception: PA-05 is already current behaviour.**',
+            'Every other item stays pending until section 12.5 is complete.',
+            'An agent must not tick a box.',
+        );
+
+    foreach ($items as $id => $body) {
+        expect($body)->toContain('- **Decision:**', '- **Open dependency:**')
+            ->and(preg_match('/issues\/99#issuecomment-\d+/', $body))->toBe(1, $id.' cites no #99 decision');
+    }
+
+    preg_match_all('/^\| [^|]+ \| [^|]+ \| [^|]+ \| \[(.)\] \|/m', explode('### 12.5 Sign-off', $section)[1] ?? '', $boxes);
+
+    expect($boxes[1])->toBe([' ', ' ', ' '])
+        ->and($items['PA-05'])->toContain('exempt from the blanket pending status')
+        ->and($items['PA-11'])->toContain('The snapshot after a secondary transfer (new question).', 'fails closed', 'Section 12 does not choose an answer.')
+        ->and($items['PA-12'])->toContain('the gate fails closed')->not->toContain('not enforced');
+
+    foreach (['app/Domain/Auditor/MonthlyReportReview.php', 'app/Infrastructure/Auditor/EloquentAuditReportPublicationStore.php'] as $path) {
+        expect(is_file($root.$path))->toBeTrue('PA-05 cites a missing implementation file: '.$path)
+            ->and($section)->toContain($path);
+    }
+});

@@ -597,6 +597,8 @@ Local verification on 2026-09-22: **158 tests, 1,651 assertions** across the eng
 
 **Status:** PROPOSED_PENDING_JOINT_SIGN_OFF - NOT_APPROVED - NOT_IMPLEMENTED. **Nothing in this section is approved until every box in section 12.5 is ticked by its owner.** Until then, sections 1–11 remain the executable baseline, including every line quoted below as "current text".
 
+**Exception: PA-05 is already current behaviour.** N6 was jointly authorized and merged before this amendment (PR #126). `app/Domain/Auditor/MonthlyReportReview.php` and `app/Infrastructure/Auditor/EloquentAuditReportPublicationStore.php` implement the 24-hour, one-signatory review today. So for reports sealed under `monthly-review-2026-09-26`, the lines PA-05 names (section 11.5 line 561, MC-06 line 453 and AC-12 line 135) are already superseded, independently of the blanket sign-off. Later work must not restore the joint-signatory or day-7 rule for those reports. Every other item stays pending until section 12.5 is complete.
+
 **Convention:** the contract amends by overlay, not by silent edit (section 2), and the reviewed section hashes in section 9.1 must stay intact. So this amendment leaves sections 1–11 unchanged. Once signed, each item below supersedes only the lines it names. Sign-off then triggers a new contract version, proposed as engineering-2026-09-28.1, together with a separate follow-up for the companion fixture and its Pest guards. For example, `known_parameters.buyer_fee_bps` and `seller_fee_bps` are still asserted at 35. Line numbers refer to this file at base commit `f1428e12` and never move, because the body is untouched.
 
 **Sources:**
@@ -723,7 +725,7 @@ Local verification on 2026-09-22: **158 tests, 1,651 assertions** across the eng
   - "A dispute carries files and/or text of up to 1,000 characters, and freezes the timer. The assigned CPA handles it first and staff next. An amendment opens a fresh window."
   - "Flash reports and reports sealed earlier keep their original rules."
 - **Affected slices:** C2 (delivered). There is no C3 or C4 dependency.
-- **Open dependency:** none on N6 itself. This item transcribes an agreed and merged change into the contract. The seal deadline is covered by PA-07.
+- **Open dependency:** none on N6 itself. This item transcribes an agreed and merged change into the contract, and it is exempt from the blanket pending status (see the status exception at the top of this section). The seal deadline is covered by PA-07.
 
 #### PA-06 - C3 single-investor cap of 50% per raise
 
@@ -856,10 +858,12 @@ Local verification on 2026-09-22: **158 tests, 1,651 assertions** across the eng
 - **Affected slices:**
   - C3: the S3-C quote and snapshot.
   - C4: S4-C payout postings.
+  - C4: S4-F secondary settlement of a holding that carries a snapshot.
 - **Open dependency:**
   - **The Plus capital basis** ([5853012548](https://github.com/rozine-rw/rozine/issues/99#issuecomment-5853012548)). The provisional reading is unpaid principal in issued holdings, excluding wallet cash, reservations and unissued commitments.
   - Live S3-C activation waits for Robert's answer. Fixtures may use the provisional reading.
   - Whether the fee applies to late fees is R3 (PA-09).
+  - **The snapshot after a secondary transfer (new question).** When a snapshotted holding is sold, the buyer owns the future returns. Nothing answered so far says whether the buyer inherits the seller's `EarningsFee` snapshot or takes a new snapshot at the buyer's own tier. This is an explicit activation dependency of S4-F settlement and of C4 payouts on transferred holdings. Until Robert answers, secondary settlement of a snapshotted holding fails closed: it is refused, and no payout fee is calculated for a transferred holding. Section 12 does not choose an answer.
 
 #### PA-12 - N9 RWF 30M minimum annual revenue (found in review)
 
@@ -872,7 +876,7 @@ Local verification on 2026-09-22: **158 tests, 1,651 assertions** across the eng
 - **Affected slices:** an underwriting follow-up, plus the Pulse copy. There is no C3–C5 dependency.
 - **Open dependency:**
   - The measurement basis. The proposal is verified TTM revenue (section 8.2), but it is not confirmed.
-  - Until confirmed, the gate is recorded and not enforced.
+  - Until the basis is confirmed, the gate fails closed, following this section's convention. An application cannot pass revenue eligibility without a confirmed basis. Underwriting refuses it with a policy-input-required outcome rather than admitting it at any revenue level. No revenue figure is accepted on an assumed basis.
 
 #### PA-13 - N11 withdrawal fees passed through from the PSP (found in review)
 
@@ -904,21 +908,21 @@ These are consistent with the contract as written:
 | PA-02 | N3 RWF 0 in MVP; RWF 50,000 post-MVP | 11.1 (l.509), added sentence only | None | Activation, tax, charging rail |
 | PA-03 | N4 +5% ladder | 8.3 (l.248), 8.5 (l.284–285), MC-03 (l.431), 11.4 (l.541) | C4 S4-B/S4-D; C5 | R1, R2, R3; due-date and day-30 mapping; fail-closed |
 | PA-04 | N5 two signatories, KYC bank onboarding only | 11.1 Mandates (l.515), MC-06 (l.453) | C3 S3-D; C2 follow-up | "At least two" reading; existing accounts |
-| PA-05 | N6 24 h, one signatory, auto-publish | 11.5 (l.561), MC-06 (l.453), AC-12 (l.135) | C2 (merged, #126) | None; transcription only |
+| PA-05 | N6 24 h, one signatory, auto-publish | 11.5 (l.561), MC-06 (l.453), AC-12 (l.135) | C2 (merged, #126) | None; transcription only; current behaviour, exempt from blanket pending |
 | PA-06 | C3 50% per raise replaces all caps | 11.1 Investment caps (l.512) | C3 S3-C | Secondary applicability; KYC gate reading |
 | PA-07 | C5 in-person CPA core; 20th–month-end prep | 11.5 (l.553, l.561) | C2 follow-up; C5 | Seal deadline not replaced |
 | PA-08 | C6 TIN replaces RDB code | None directly; BRS DR-8/AC-9; plan l.140, C-01 | C2 follow-up | BRS amendment; #154; migration |
 | PA-09 | C7 late fees to investors | 11.4 (l.545) | C4 S4-B/S4-C/S4-D, U4 | R3, R4, R9 (+R1/R2); fail-closed |
 | PA-10 | C4 Plus in MVP; Auto-Deploy later | None directly; plan D-61, l.674, l.730–731 | C3 S3-C; C4 | Other privileges not in MVP; D-61 |
-| PA-11 | Plus fee on earnings replaces 1% | 11.4 (l.545) | C3 S3-C; C4 S4-C | Plus capital basis; R3 |
-| PA-12 | N9 RWF 30M minimum revenue | 8.2 table (l.227–234), AM-05 (l.40) | Underwriting follow-up | Revenue basis |
+| PA-11 | Plus fee on earnings replaces 1% | 11.4 (l.545) | C3 S3-C; C4 S4-C/S4-F | Plus capital basis; R3; snapshot after secondary transfer (new); fail-closed |
+| PA-12 | N9 RWF 30M minimum revenue | 8.2 table (l.227–234), AM-05 (l.40) | Underwriting follow-up | Revenue basis; fail-closed |
 | PA-13 | N11 PSP pass-through withdrawal fee | 11.1 (l.510); BRS BR-62 | Phase 2 | R6 |
 
 ### 12.4 What this amendment does not do
 
 - It changes no code, fixture, test, plan or BRS text. Every consequential edit follows sign-off, in its own change.
 - It records nothing as approved by Aminu except the N6 authorization already in the ADR.
-- Its only answer to R1–R4, R6–R9 or the Plus capital basis is to keep them open. Every "engineering mapping" above still needs joint confirmation.
+- Its only answer to R1–R4, R6–R9, the Plus capital basis or the snapshot after a secondary transfer is to keep them open. Every "engineering mapping" above still needs joint confirmation.
 - It does not lift the release gate (#154), the section 8.5 operational-evidence gaps, or the Phase 0 exit conditions.
 
 ### 12.5 Sign-off
