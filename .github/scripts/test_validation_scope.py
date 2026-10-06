@@ -62,8 +62,9 @@ class ScopeTests(unittest.TestCase):
         def job(name, start, end):
             return {"name": name, "conclusion": "success", "started_at": f"2026-10-06T{start}Z", "completed_at": f"2026-10-06T{end}Z"}
         jobs = [job("Select CI scope", "11:00:00", "11:00:10"), job("Board sync offline tests", "11:00:00", "11:00:20"),
-                job("POC PHP safety and static checks", "11:05:10", "11:09:10"), job("POC web safety and static checks", "11:05:10", "11:07:10")]
-        self.assertEqual(budget.measure(jobs), (250, 550, 390))
+                job("POC PHP safety and static checks", "11:05:10", "11:09:10"), job("POC web safety and static checks", "11:05:10", "11:07:10"),
+                job("Record validation tree", "11:09:15", "11:09:25")]
+        self.assertEqual(budget.measure(jobs), (260, 565, 400))
         jobs[0]["conclusion"] = "skipped"
         with self.assertRaises(ValueError):
             budget.measure(jobs)

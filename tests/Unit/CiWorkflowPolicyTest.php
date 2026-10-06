@@ -173,7 +173,7 @@ it('keeps full suites executable while naming POC evidence separately', function
         expect($workflow['jobs'][$name]['if'])->toBe("\${{ needs.plan.outputs.poc == 'true' }}")
             ->and($workflow['jobs'][$name]['timeout-minutes'])->toBe(9);
     }
-    expect($workflow['jobs']['poc-budget']['needs'])->toBe(['plan', 'poc-php', 'poc-web', 'board-sync'])
-        ->and($workflow['jobs']['validation-tree']['needs'])->toContain('poc-budget')
+    expect($workflow['jobs']['poc-budget']['needs'])->toBe(['plan', 'poc-php', 'poc-web', 'board-sync', 'validation-tree'])
+        ->and($workflow['jobs']['validation-tree']['needs'])->not->toContain('poc-budget')
         ->and($workflow['jobs']['reuse-poc']['name'])->toBe('Reuse POC validation evidence');
 });

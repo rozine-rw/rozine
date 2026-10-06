@@ -914,7 +914,6 @@ jobs:
     - plan
     - poc-php
     - poc-web
-    - poc-budget
     - ci
     - web
     - concurrency
@@ -922,7 +921,7 @@ jobs:
     - admission
     - board-sync
     if: ${{ always() && needs.plan.result == 'success' && needs.board-sync.result == 'success' && ((needs.plan.outputs.poc == 'true' && needs.poc-php.result
-      == 'success' && needs.poc-web.result == 'success' && needs.poc-budget.result == 'success') || (needs.plan.outputs.full == 'true' && needs.ci.result == 'success' && needs.web.result
+      == 'success' && needs.poc-web.result == 'success') || (needs.plan.outputs.full == 'true' && needs.ci.result == 'success' && needs.web.result
       == 'success' && needs.concurrency.result == 'success' && needs.negative-controls.result == 'success' && needs.admission.result == 'success'))
       }}
     runs-on: ubuntu-latest
@@ -974,6 +973,7 @@ jobs:
     - poc-php
     - poc-web
     - board-sync
+    - validation-tree
     if: ${{ needs.plan.outputs.poc == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 1
