@@ -60,11 +60,10 @@ class ScopeTests(unittest.TestCase):
 
     def test_budget_distinguishes_parallel_execution_queue_gaps_and_runner_sum(self):
         def job(name, start, end):
-            return {"name": name, "conclusion": "success", "started_at": f"2026-10-06T{start}Z", "completed_at": f"2026-10-06T{end}Z"}
+            return {"name": name, "status": "completed", "conclusion": "success", "started_at": f"2026-10-06T{start}Z", "completed_at": f"2026-10-06T{end}Z"}
         jobs = [job("Select CI scope", "11:00:00", "11:00:10"), job("Board sync offline tests", "11:00:00", "11:00:20"),
-                job("POC PHP safety and static checks", "11:05:10", "11:09:10"), job("POC web safety and static checks", "11:05:10", "11:07:10"),
-                job("Record validation tree", "11:09:15", "11:09:25")]
-        self.assertEqual(budget.measure(jobs), (260, 565, 400))
+                job("POC PHP safety and static checks", "11:05:10", "11:09:10"), job("POC web safety and static checks", "11:05:10", "11:07:10")]
+        self.assertEqual(budget.measure(jobs), (250, 550, 390))
         jobs[0]["conclusion"] = "skipped"
         with self.assertRaises(ValueError):
             budget.measure(jobs)
@@ -113,6 +112,15 @@ class ScopeTests(unittest.TestCase):
         self.jobs.append(self.jobs[0].copy())
         with self.assertRaises(ValueError):
             self.validate()
+
+    def test_poc_proof_requires_successful_publication_and_budget_steps(self):
+        self.proof.update(scope="poc", required_jobs=policy.POC_JOBS, required_steps=policy.POC_STEPS)
+        self.jobs = [{"name": name, "conclusion": "success", "steps": [{"name": step, "conclusion": "success"} for step in policy.POC_STEPS]} for name in policy.POC_JOBS]
+        policy.validate_proof(self.proof, self.run, self.jobs, self.commit, "c" * 40, "rozine-rw/rozine", "poc")
+        php = next(job for job in self.jobs if job["name"] == "POC PHP safety and static checks")
+        php["steps"][-1]["conclusion"] = "skipped"
+        with self.assertRaises(ValueError):
+            policy.validate_proof(self.proof, self.run, self.jobs, self.commit, "c" * 40, "rozine-rw/rozine", "poc")
 
     def test_latest_failed_attempt_blocks_older_success(self):
         older = dict(self.run, id=98)

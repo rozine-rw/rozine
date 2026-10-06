@@ -16,7 +16,8 @@ FULL_JOBS = [
     *[f"PHP 8.5 tests (shard {shard}/4)" for shard in range(1, 5)],
     *[f"PHP negative controls ({group})" for group in ["architecture", "business", "auditor", "coverage"]],
 ]
-POC_JOBS = ["Board sync offline tests", "POC PHP safety and static checks", "POC web safety and static checks", "POC execution budget"]
+POC_JOBS = ["Board sync offline tests", "POC PHP safety and static checks", "POC web safety and static checks"]
+POC_STEPS = ["Record POC validation tree", "Publish POC validation tree", "Require combined POC execution within ten minutes"]
 SHA = r"[0-9a-f]{40}"
 
 
@@ -63,10 +64,18 @@ def validate_proof(proof, run, jobs, commit, tree, repository, scope):
     age = datetime.datetime.now(datetime.timezone.utc) - datetime.datetime.fromisoformat(run["created_at"].replace("Z", "+00:00"))
     if age.total_seconds() < 0 or age > datetime.timedelta(days=30):
         raise ValueError("evidence is stale")
-    for name in [*required, "Record validation tree"]:
+    for name in required + (["Record validation tree"] if scope == "full" else []):
         matches = [job for job in jobs if job["name"] == name]
         if len(matches) != 1 or matches[0]["conclusion"] != "success":
             raise ValueError(f"missing, duplicate or unsuccessful job: {name}")
+    if scope == "poc":
+        job = next(job for job in jobs if job["name"] == "POC PHP safety and static checks")
+        if proof.get("required_steps") != POC_STEPS:
+            raise ValueError("POC proof omits publication/budget controls")
+        for name in POC_STEPS:
+            steps = [step for step in job.get("steps", []) if step["name"] == name]
+            if len(steps) != 1 or steps[0]["conclusion"] != "success":
+                raise ValueError(f"missing or unsuccessful POC evidence step: {name}")
     if run["event"] == "pull_request":
         parents = commit["parents"]
         if len(parents) != 2 or parents[1]["sha"] != run["head_sha"]:
@@ -125,6 +134,8 @@ def record(env, scope):
              "tested_sha": command("git", "rev-parse", "HEAD"), "tree_sha": command("git", "rev-parse", "HEAD^{tree}"),
              "run_id": env["GITHUB_RUN_ID"], "run_attempt": env["GITHUB_RUN_ATTEMPT"],
              "pull_number": env.get("PR_NUMBER", ""), "required_jobs": required}
+    if scope == "poc":
+        proof["required_steps"] = POC_STEPS
     Path("ci-evidence").mkdir(exist_ok=True)
     Path("ci-evidence/tested-tree.json").write_text(json.dumps(proof, indent=2) + "\n")
 

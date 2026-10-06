@@ -848,6 +848,24 @@ jobs:
         path: coverage/poc
         if-no-files-found: error
         retention-days: 30
+    - name: Record POC validation tree
+      run: python3 .github/scripts/select-validation-scope.py record poc
+      env:
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+    - name: Publish POC validation tree
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: validation-tree-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ci-evidence/tested-tree.json
+        if-no-files-found: error
+        retention-days: 30
+    - name: Require combined POC execution within ten minutes
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: python3 .github/scripts/check-poc-budget.py
+    permissions:
+      contents: read
+      actions: read
 
   poc-web:
     needs: plan
@@ -912,18 +930,15 @@ jobs:
     name: Record validation tree
     needs:
     - plan
-    - poc-php
-    - poc-web
     - ci
     - web
     - concurrency
     - negative-controls
     - admission
     - board-sync
-    if: ${{ always() && needs.plan.result == 'success' && needs.board-sync.result == 'success' && ((needs.plan.outputs.poc == 'true' && needs.poc-php.result
-      == 'success' && needs.poc-web.result == 'success') || (needs.plan.outputs.full == 'true' && needs.ci.result == 'success' && needs.web.result
-      == 'success' && needs.concurrency.result == 'success' && needs.negative-controls.result == 'success' && needs.admission.result == 'success'))
-      }}
+    if: ${{ always() && needs.plan.outputs.full == 'true' && needs.plan.result == 'success' && needs.board-sync.result == 'success' && needs.ci.result
+      == 'success' && needs.web.result == 'success' && needs.concurrency.result == 'success' && needs.negative-controls.result == 'success' && needs.admission.result
+      == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
@@ -966,30 +981,6 @@ jobs:
         GH_TOKEN: ${{ github.token }}
       run: python3 .github/scripts/select-validation-scope.py verify-full
 
-  poc-budget:
-    name: POC execution budget
-    needs:
-    - plan
-    - poc-php
-    - poc-web
-    - board-sync
-    - validation-tree
-    if: ${{ needs.plan.outputs.poc == 'true' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 1
-    permissions:
-      contents: read
-      actions: read
-    steps:
-    - name: Checkout exact candidate
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      with:
-        persist-credentials: false
-        ref: ${{ github.sha }}
-    - name: Require combined execution critical path within ten minutes
-      env:
-        GH_TOKEN: ${{ github.token }}
-      run: python3 .github/scripts/check-poc-budget.py
 
   reuse-poc:
     name: Reuse POC validation evidence
