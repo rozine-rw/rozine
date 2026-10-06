@@ -231,6 +231,22 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
             'published_at' => $publication->published_at?->toIso8601String(), 'sources' => $seal->payload['sources']];
     }
 
+    public function investorSummary(string $reportId): ?array
+    {
+        $publication = AuditReportPublication::query()->where('audit_report_id', $reportId)->where('status', 'published')->first();
+        if ($publication === null) {
+            return null;
+        }
+        try {
+            $seal = $this->seal($publication);
+        } catch (CommandRejection) {
+            return null;
+        }
+
+        return ['partner' => (string) $seal->payload['auditor_name'], 'licence' => (string) $seal->payload['report']['licence'],
+            'verified_on' => substr((string) $seal->payload['sealed_at'], 0, 10), 'digest' => $seal->digest];
+    }
+
     /** @return array<string, mixed> */
     public function verify(string $reportId): array
     {

@@ -501,6 +501,7 @@
         "resources/js/components/rozine/read-failure-notice.tsx",
         "resources/js/components/rozine/role-icon.tsx",
         "resources/js/components/rozine/toast.tsx",
+        "resources/js/components/site/app-entry.tsx",
         "resources/js/components/text-link.tsx",
         "resources/js/components/two-factor-recovery-codes.tsx",
         "resources/js/components/two-factor-setup-modal.tsx",
@@ -647,10 +648,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 616,
+        "totalTrackedSources": 617,
         "generated": 227,
         "declarationOnly": 18,
-        "authoredExecutable": 371
+        "authoredExecutable": 372
     },
-    "coverageSetSha256": "e5400561620e3dffa4214b8cf70f4290319c37dfbb87ed75283ab9816239df17"
+    "coverageSetSha256": "df3f3f575a0280a66db910bb0cb2a3d491ab482783b85ae4e60db3eda6491a6e"
 }

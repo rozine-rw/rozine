@@ -2,16 +2,19 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Business\Contracts\PublishedCampaignEvidence;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Infrastructure\Business\RetainedCampaignPublication;
+use App\Models\AuditReportSeal;
 use App\Models\BusinessApplicationQuote;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\InvestorWalletFixture;
@@ -71,8 +74,12 @@ it('lists the live publication with allowlisted facts, live fill and no quote or
         ->and($card['accent'])->toBeIn(['green', 'blue', 'amber', 'purple', 'teal', 'magenta', 'ink'])
         ->and($props['focus'])->toMatchArray(['campaign_id' => $this->campaign->id, 'use_of_funds' => $this->draft['use_of_funds'],
             'financials' => ['avg_monthly_revenue' => $card['avg_monthly_revenue'], 'ebitda' => ['value' => null, 'unavailable' => 'NOT_SOURCED_AS_EBITDA']],
-            'rationale' => null, 'track_record' => null, 'audit' => null, 'updates' => [], 'overdue_report' => null,
+            'rationale' => null, 'track_record' => null, 'updates' => [], 'overdue_report' => null,
             'about' => ['description' => $this->draft['story'], 'industry' => $card['industry'], 'district' => $card['district']]]);
+
+    $seal = AuditReportSeal::query()->where('audit_report_id', $this->campaign->payload['binding']['report']['id'])->sole();
+    expect($props['focus']['audit'])->toBe(['standard' => null, 'partner' => $seal->payload['auditor_name'], 'licence' => $seal->payload['report']['licence'],
+        'verified_on' => substr($seal->payload['sealed_at'], 0, 10), 'digest' => $seal->digest, 'reconciliation_statement' => null, 'tolerance' => null]);
 
     $json = json_encode($props, JSON_THROW_ON_ERROR);
     foreach (['company_code', 'officers', 'public_evidence', 'binding', 'actor_user_id', 'exposure_reservation_id', 'application_id'] as $private) {
@@ -170,6 +177,20 @@ it('fails closed when the pinned quote no longer matches the publication', funct
     ($this->publications)(fn (array $payload): array => [...$payload, 'quote' => [...$payload['quote'], 'quote_id' => strtolower((string) Str::ulid())]]);
 
     expect(fn () => app(InvestorDealCatalogue::class)->deals())->toThrow(RuntimeException::class, 'CAMPAIGN_QUOTE_INTEGRITY_FAILED');
+});
+
+it('shows no audit summary unless the sealed report is published with a valid seal', function (): void {
+    $reportId = $this->campaign->payload['binding']['report']['id'];
+    // Simulates a tampered retained row: the protection trigger otherwise refuses any change to a published report.
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('ALTER TABLE audit_report_publications DISABLE TRIGGER audit_publication_protected');
+    DB::table('audit_report_publications')->where('audit_report_id', $reportId)->update(['digest' => str_repeat('0', 64)]);
+    $focus = ($this->deals)()->viewData('page')['props']['focus'];
+    expect([$focus['audit'], $focus['audited']])->toBe([null, false]);
+
+    DB::statement('ALTER TABLE audit_report_publications ENABLE TRIGGER audit_publication_protected');
+    expect(app(AuditReportPublicationStore::class)->investorSummary($reportId))->toBeNull()
+        ->and(app(AuditReportPublicationStore::class)->investorSummary(strtolower((string) Str::ulid())))->toBeNull();
 });
 
 it('sorts and filters the deck by industry and focuses the requested deal', function (): void {
