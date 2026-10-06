@@ -88,6 +88,19 @@ final class InvestorVerificationCase
     public function submit(array $state, string $status, DateTimeImmutable $now): array
     {
         $this->editable($status);
+        $this->complete($state, $now);
+        $state['decision'] = null;
+
+        return $state;
+    }
+
+    /**
+     * Every answer and upload a submission needs, checked again by Compliance's approval under its locks.
+     *
+     * @param  State  $state
+     */
+    public function complete(array $state, DateTimeImmutable $now): void
+    {
         $this->reachable($state, 'liveness');
         $this->dateOfBirth($state['date_of_birth'], $now);
         $this->document($state['id_type'], $state['id_number']);
@@ -95,9 +108,6 @@ final class InvestorVerificationCase
         if ($state['uploads']['selfie'] === null) {
             throw new CommandRejection('VERIFICATION_SELFIE_REQUIRED', 422, fieldErrors: ['selfie' => ['Take a selfie to finish.']]);
         }
-        $state['decision'] = null;
-
-        return $state;
     }
 
     /**
