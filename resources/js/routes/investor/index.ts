@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 import dealsC9d3dc from './deals'
+import verificationAf8c0f from './verification'
 import wallet0fdd46 from './wallet'
 import primary from './primary'
 import commitments from './commitments'
@@ -166,6 +167,87 @@ dealsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 deals.form = dealsForm
 
 /**
+* @see \App\Http\Controllers\InvestorVerificationController::verification
+* @see app/Http/Controllers/InvestorVerificationController.php:40
+* @route '/investor/verification'
+*/
+export const verification = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: verification.url(options),
+    method: 'get',
+})
+
+verification.definition = {
+    methods: ["get","head"],
+    url: '/investor/verification',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\InvestorVerificationController::verification
+* @see app/Http/Controllers/InvestorVerificationController.php:40
+* @route '/investor/verification'
+*/
+verification.url = (options?: RouteQueryOptions) => {
+    return verification.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorVerificationController::verification
+* @see app/Http/Controllers/InvestorVerificationController.php:40
+* @route '/investor/verification'
+*/
+verification.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: verification.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorVerificationController::verification
+* @see app/Http/Controllers/InvestorVerificationController.php:40
+* @route '/investor/verification'
+*/
+verification.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: verification.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorVerificationController::verification
+* @see app/Http/Controllers/InvestorVerificationController.php:40
+* @route '/investor/verification'
+*/
+const verificationForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: verification.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorVerificationController::verification
+* @see app/Http/Controllers/InvestorVerificationController.php:40
+* @route '/investor/verification'
+*/
+verificationForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: verification.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorVerificationController::verification
+* @see app/Http/Controllers/InvestorVerificationController.php:40
+* @route '/investor/verification'
+*/
+verificationForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: verification.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+verification.form = verificationForm
+
+/**
 * @see \App\Http\Controllers\InvestorWalletController::wallet
 * @see app/Http/Controllers/InvestorWalletController.php:25
 * @route '/investor/wallet'
@@ -249,6 +331,7 @@ wallet.form = walletForm
 const investor = {
     home: Object.assign(home, home),
     deals: Object.assign(deals, dealsC9d3dc),
+    verification: Object.assign(verification, verificationAf8c0f),
     wallet: Object.assign(wallet, wallet0fdd46),
     primary: Object.assign(primary, primary),
     commitments: Object.assign(commitments, commitments),

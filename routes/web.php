@@ -20,6 +20,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IdentityManagementController;
 use App\Http\Controllers\InvestorDealsController;
 use App\Http\Controllers\InvestorPrimaryController;
+use App\Http\Controllers\InvestorVerificationController;
 use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\PulseController;
 use App\Http\Controllers\RoleBookmarkController;
@@ -28,6 +29,7 @@ use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StaffApplicationReleaseController;
 use App\Http\Controllers\StaffDisbursementController;
 use App\Http\Controllers\StaffHomeController;
+use App\Http\Controllers\StaffInvestorVerificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [SiteController::class, 'index'])->name('home');
@@ -71,6 +73,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('investor')->name('investor.')->group(function (): void {
     Route::get('deals', [InvestorDealsController::class, 'index'])->name('deals');
+    Route::get('verification', [InvestorVerificationController::class, 'show'])->name('verification');
+    Route::post('verification/steps', [InvestorVerificationController::class, 'save'])->name('verification.save');
+    Route::post('verification/documents', [InvestorVerificationController::class, 'upload'])->name('verification.upload');
+    Route::post('verification/submit', [InvestorVerificationController::class, 'submit'])->name('verification.submit');
     Route::get('deals/{campaign}', [InvestorDealsController::class, 'show'])->whereUlid('campaign')->name('deals.show');
     Route::get('wallet', [InvestorWalletController::class, 'show'])->name('wallet');
     Route::post('wallet/deposits', [InvestorWalletController::class, 'deposit'])->name('wallet.deposit');
@@ -197,6 +203,14 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
         ->whereUlid(['business', 'campaign'])->name('business.campaigns.show');
     Route::post('business/{business}/campaigns/{campaign}/cancel', [BusinessPublicationController::class, 'cancel'])
         ->whereUlid(['business', 'campaign'])->name('business.campaigns.cancel');
+});
+
+Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/investor-verifications')->name('staff.investor-verifications.')->group(function (): void {
+    Route::get('/', [StaffInvestorVerificationController::class, 'index'])->name('index');
+    Route::get('{verification}/documents/{document}', [StaffInvestorVerificationController::class, 'document'])
+        ->whereUlid(['verification', 'document'])->name('document');
+    Route::post('{verification}/approve', [StaffInvestorVerificationController::class, 'approve'])->whereUlid('verification')->name('approve');
+    Route::post('{verification}/reject', [StaffInvestorVerificationController::class, 'reject'])->whereUlid('verification')->name('reject');
 });
 
 /*

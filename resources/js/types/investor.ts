@@ -805,8 +805,19 @@ export type FundsSource =
     | 'contributions'
     | 'other';
 
+/**
+ * The live submission's command envelope (MVP-INVESTOR-SCR-03). Absent on preview fixtures, which
+ * send no `request_id`. `submitted` waits for Compliance; `rejected` carries the reason and reopens.
+ */
+export type KycSubmission = {
+    identity_context_revision: number;
+    revision: number;
+    status: 'draft' | 'submitted' | 'approved' | 'rejected';
+    decision_reason: string | null;
+};
+
 export type InvestorVerificationProps =
-    | {
+    | ({
           investor_type: 'individual';
           step: KycStep;
           country: string;
@@ -824,7 +835,7 @@ export type InvestorVerificationProps =
               upload: RouteAction;
               submit: RouteAction;
           };
-      }
+      } & Partial<KycSubmission>)
     | {
           investor_type: 'institution';
           step: KycInstitutionStep;
