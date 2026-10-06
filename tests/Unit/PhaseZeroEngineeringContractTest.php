@@ -1891,10 +1891,20 @@ test('proposed amendment A-2026-09-28 stays pending, keeps N6 current and fails 
             ->and(preg_match('/issues\/99#issuecomment-\d+/', $body))->toBe(1, $id.' cites no #99 decision');
     }
 
-    preg_match_all('/^\| [^|]+ \| [^|]+ \| [^|]+ \| \[(.)\] \|/m', explode('### 12.5 Sign-off', $section)[1] ?? '', $boxes);
+    preg_match_all('/^\| ([^|]+) \| [^|]+ \| [^|]+ \| \[(.)\] \|([^|]*)\|([^|]*)\|$/m', explode('### 12.5 Sign-off', $section)[1] ?? '', $signOffs, PREG_SET_ORDER);
 
-    expect($boxes[1])->toBe([' ', ' ', ' '])
-        ->and($items['PA-05'])->toContain('exempt from the blanket pending status')
+    expect($signOffs)->toHaveCount(3);
+
+    foreach ($signOffs as [, $approver, $box, $date, $evidence]) {
+        expect($box)->toBeIn([' ', 'x'], trim($approver).' sign-off box is malformed');
+
+        if ($box === 'x') {
+            expect(trim($date))->toMatch('/^\d{4}-\d{2}-\d{2}$/', trim($approver).' ticked without a date')
+                ->and(trim($evidence))->toMatch('#https://github\.com/rozine-rw/rozine/#', trim($approver).' ticked without evidence');
+        }
+    }
+
+    expect($items['PA-05'])->toContain('exempt from the blanket pending status')
         ->and($items['PA-11'])->toContain('The snapshot after a secondary transfer (new question).', 'fails closed', 'Section 12 does not choose an answer.')
         ->and($items['PA-12'])->toContain('the gate fails closed')->not->toContain('not enforced');
 
