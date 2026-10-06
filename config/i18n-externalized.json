@@ -185,6 +185,7 @@
         "resources/js/components/rozine/proof-file-list.tsx",
         "resources/js/components/rozine/role-icon.tsx",
         "resources/js/components/rozine/toast.tsx",
+        "resources/js/components/site/app-entry.tsx",
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/auth/login.tsx",
         "resources/js/pages/admin/disbursements.tsx",

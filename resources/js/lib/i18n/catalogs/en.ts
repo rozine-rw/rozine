@@ -8,6 +8,10 @@
  */
 const en = {
     'suite.sign_out': 'Sign out',
+    'site.app_entry.label': 'Rozine apps',
+    'site.app_entry.sign_in': 'Sign in',
+    'site.app_entry.create_account': 'Create account',
+    'site.app_entry.open_app': 'Open the app',
     'suite.preview': 'Preview with sample data',
     'suite.mfa_required':
         'Set up two-factor authentication to open the Auditor app.',
@@ -2300,6 +2304,7 @@ const en = {
     'investor.updates.photo_previous': 'Previous photo',
     'investor.updates.photo_next': 'Next photo',
     'investor.audit.kicker': 'Independently audited · {standard}',
+    'investor.audit.kicker_plain': 'Independently audited',
     'investor.audit.verified_line': '{licence} · verified {date}',
     'investor.audit.view': 'View',
     'investor.audit.hide': 'Hide',
