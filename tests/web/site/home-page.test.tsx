@@ -70,6 +70,7 @@ const exerciseHandlers = (value: unknown, seen = new Set<unknown>()): void => {
 beforeEach(() => {
     mocks.post.mockReset();
     window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
+    window.history.replaceState(null, '', '/');
 });
 
 afterEach(() => {
@@ -103,6 +104,78 @@ describe('moving between the three audiences', () => {
         await user.click(screen.getByRole('link', { name: 'Help' }));
 
         expect(screen.getByText('Getting started')).toBeInTheDocument();
+    });
+});
+
+describe('giving each audience its own address', () => {
+    /** Moves the address the way the back and forward buttons do. */
+    const visit = (hash: string) => {
+        act(() => {
+            window.history.replaceState(null, '', `/${hash}`);
+            window.dispatchEvent(new HashChangeEvent('hashchange'));
+        });
+    };
+
+    it('writes the audience into the address as visitors move between them', async () => {
+        const user = userEvent.setup();
+
+        mountSite();
+        await user.click(screen.getByText('For businesses'));
+        expect(window.location.hash).toBe('#businesses');
+
+        await user.click(screen.getByText('For businesses'));
+        expect(window.location.hash).toBe('#businesses');
+
+        await user.click(screen.getByRole('link', { name: 'Help' }));
+        expect(window.location.hash).toBe('#help');
+
+        await user.click(screen.getByText('For investors'));
+        expect(window.location.hash).toBe('#investors');
+    });
+
+    it('opens the audience a shared link names', () => {
+        window.history.replaceState(null, '', '/#businesses');
+
+        mountSite();
+
+        expect(
+            screen.getByRole('heading', { level: 1, name: /Borrow up to/ }),
+        ).toBeInTheDocument();
+    });
+
+    it('follows the back and forward buttons between audiences', () => {
+        mountSite();
+
+        visit('#help');
+        expect(screen.getByText('Getting started')).toBeInTheDocument();
+        expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+
+        visit('#investors');
+        expect(
+            screen.getByRole('heading', { level: 1, name: /Earn up to/ }),
+        ).toBeInTheDocument();
+    });
+
+    it('leaves the page alone when the address names no audience or the one on show', () => {
+        window.history.replaceState(null, '', '/#calc');
+
+        mountSite();
+        visit('#nowhere');
+        visit('#investors');
+
+        expect(
+            screen.getByRole('heading', { level: 1, name: /Earn up to/ }),
+        ).toBeInTheDocument();
+        expect(window.scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('stops following the address once the page has gone', () => {
+        const { unmount } = render(<Home />);
+
+        unmount();
+        visit('#help');
+
+        expect(window.scrollTo).not.toHaveBeenCalled();
     });
 });
 
