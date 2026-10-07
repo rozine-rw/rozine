@@ -889,14 +889,25 @@ class CanonicalCoordinationTests(unittest.TestCase):
         new = [{"id": 3406, "name": "ci-coordination-identity-3406-1", "workflow_run": {"id": 3406}}, *old]
         def responses(items):
             return [{"total_count": len(items), "artifacts": items[n:n + 100]} for n in range(0, len(items), 100)]
-        for scenario in ["upload after first read", "upload between pages"]:
+        for scenario in ["upload after first read", "upload between pages", "overlapping page IDs"]:
             unstable = responses(new)
-            if scenario == "upload between pages": unstable[0] = responses(old)[0]
+            if scenario != "upload after first read": unstable[0] = responses(old)[0]
+            if scenario == "overlapping page IDs":
+                unstable[-1]["artifacts"].pop()
+                for page in unstable: page["total_count"] = len(old)
             with self.subTest(scenario=scenario), patch.object(policy, "api", side_effect=[responses(old)[0], responses(new)[0]]) as api, patch.object(policy, "pages", side_effect=[unstable, responses(new)]) as pages, patch.object(policy.time, "sleep"):
                 result = policy.coordination_artifact_index(self.repository)
                 self.assertEqual(result, {artifact["name"]: artifact["workflow_run"]["id"] for artifact in new})
                 self.assertEqual(api.call_count, 2)
                 self.assertEqual(pages.call_count, 2)
+
+    def test_stable_single_page_inventory_needs_no_retry_or_pagination(self):
+        artifact = {"id": 1, "name": "ci-coordination-identity-200-1", "workflow_run": {"id": 200}}
+        with patch.object(policy, "api", return_value={"total_count": 1, "artifacts": [artifact]}) as api, patch.object(policy, "pages") as pages, patch.object(policy.time, "sleep") as sleep:
+            self.assertEqual(policy.coordination_artifact_index(self.repository), {artifact["name"]: 200})
+        self.assertEqual(api.call_count, 1)
+        pages.assert_not_called()
+        sleep.assert_not_called()
 
     def test_artifact_index_persistent_instability_is_bounded_and_cannot_claim_ownership(self):
         first = {"total_count": 2, "artifacts": [{"id": 1, "name": "unrelated"}]}
@@ -920,14 +931,15 @@ class CanonicalCoordinationTests(unittest.TestCase):
 
     def test_artifact_index_hard_failures_are_not_retried(self):
         artifact = {"id": 1, "name": "ci-coordination-identity-200-1", "workflow_run": {"id": 200}}
-        for scenario in ["exceeds bound", "invalid name", "duplicate identity", "API failure"]:
+        for scenario in ["exceeds bound", "invalid name", "duplicate identity", "API failure", "API timeout"]:
             response = {"total_count": 1, "artifacts": [copy.deepcopy(artifact)]}
             error = None
             if scenario == "exceeds bound": response["total_count"] = 10001
             if scenario == "invalid name": response["artifacts"][0]["name"] = []
             if scenario == "duplicate identity": response = {"total_count": 2, "artifacts": [artifact, dict(artifact, id=2)]}
             if scenario == "API failure": error = subprocess.CalledProcessError(1, "gh api")
-            with self.subTest(scenario=scenario), patch.object(policy, "api", return_value=response, side_effect=error) as api, patch.object(policy.time, "sleep") as sleep, self.assertRaises((policy.CoordinationRefusal, subprocess.CalledProcessError)):
+            if scenario == "API timeout": error = subprocess.TimeoutExpired("gh api", 45)
+            with self.subTest(scenario=scenario), patch.object(policy, "api", return_value=response, side_effect=error) as api, patch.object(policy.time, "sleep") as sleep, self.assertRaises((policy.CoordinationRefusal, subprocess.CalledProcessError, subprocess.TimeoutExpired)):
                 policy.coordination_artifact_index(self.repository)
             self.assertEqual(api.call_count, 1)
             sleep.assert_not_called()
