@@ -33,6 +33,16 @@ class EnvironmentIsolation
         return in_array($this->profile(), ['demo', 'uat'], true);
     }
 
+    /**
+     * Staging may opt into real mail, and only through its own Resend SMTP
+     * key as a visibly staging sender. Every other non-live profile and every
+     * staging configuration without the opt-in keeps mail in memory.
+     */
+    public function sendsStagingMail(): bool
+    {
+        return $this->profile() === 'uat' && $this->config->get('mail.default') === 'smtp';
+    }
+
     public function assertSafeConfiguration(?string $expectedProfile = null): void
     {
         $profile = $this->profile();
@@ -69,6 +79,7 @@ class EnvironmentIsolation
         }
 
         $this->assertDatabaseBoundary();
+        $this->assertStagingMailBoundary();
         $this->assertNoProviderCredentials();
         $this->assertStorageBoundary();
 
@@ -89,8 +100,9 @@ class EnvironmentIsolation
 
     /**
      * Install a deliberately narrow, local-only non-live runtime before any
-     * provider boots. No secondary database, cloud disk, Redis, SMTP, SQS or
-     * fallback driver remains selectable by an explicit connection name.
+     * provider boots. No secondary database, cloud disk, Redis, SQS or fallback
+     * driver remains selectable by an explicit connection name, and SMTP only
+     * as staging's checked Resend relay.
      */
     public function configure(): void
     {
@@ -149,8 +161,10 @@ class EnvironmentIsolation
                 ],
             ],
             'filesystems.links' => [$this->app->publicPath('storage') => $root.'/public'],
-            'mail.default' => 'array',
-            'mail.mailers' => ['array' => ['transport' => 'array']],
+            'mail.default' => $this->sendsStagingMail() ? 'smtp' : 'array',
+            'mail.mailers' => ['array' => ['transport' => 'array']] + ($this->sendsStagingMail()
+                ? ['smtp' => Arr::except($this->config->array('mail.mailers.smtp'), ['url'])]
+                : []),
             'services' => [],
             'logging.default' => 'isolated',
             'logging.channels' => ['isolated' => [
@@ -259,8 +273,36 @@ class EnvironmentIsolation
         }
     }
 
+    private function assertStagingMailBoundary(): void
+    {
+        if (! $this->sendsStagingMail()) {
+            return;
+        }
+
+        $mailer = $this->config->array('mail.mailers.smtp');
+        $host = $mailer['host'] ?? null;
+        $password = $mailer['password'] ?? null;
+
+        if (($mailer['transport'] ?? null) !== 'smtp' || ! empty($mailer['url'])
+            || ! is_string($host) || strtolower($host) !== 'smtp.resend.com'
+            || ($mailer['username'] ?? null) !== 'resend'
+            || ! is_string($password) || $password === '') {
+            throw new LogicException('ISOLATION_MAIL_PROVIDER_DENIED');
+        }
+
+        $address = $this->config->get('mail.from.address');
+        $name = $this->config->get('mail.from.name');
+
+        if (! is_string($address) || preg_match('/^staging[^@\s]*@[^@\s]+$/i', $address) !== 1
+            || ! is_string($name) || stripos($name, 'staging') === false) {
+            throw new LogicException('ISOLATION_MAIL_SENDER_NOT_STAGING');
+        }
+    }
+
     private function assertNoProviderCredentials(): void
     {
+        $stagingMailCredentials = $this->sendsStagingMail() ? ['mailers.smtp.username', 'mailers.smtp.password'] : [];
+
         $values = Arr::dot([
             'services' => $this->config->array('services'),
             'mailers' => $this->config->array('mail.mailers'),
@@ -273,7 +315,7 @@ class EnvironmentIsolation
         foreach ($values as $key => $value) {
             if (preg_match('/(?:key|secret|token|password|username|bucket|url|endpoint)$/', $key) === 1
                 && $value !== null && $value !== '' && $value !== false
-                && ! in_array($key, ['disks.public.url', 'logs.slack.username'], true)) {
+                && ! in_array($key, ['disks.public.url', 'logs.slack.username', ...$stagingMailCredentials], true)) {
                 throw new LogicException('ISOLATION_PROVIDER_CREDENTIALS_DENIED');
             }
         }

@@ -5,6 +5,13 @@ Compliance (data classification); Robert — internal Legal (personal data)
 
 **Implementation addendum, 2026-09-14:** Phase 0M in [kickoff evidence](kickoff-evidence.md) records local demo/UAT notices, temporary switch ownership/expiry, and a guarded synthetic Pulse fixture reset. This is not host-isolation acceptance or the Phase 3 financial demo book. The merged runtime requires `rozine_uat` for both UAT database and role and **denies all UAT/staging seeding and destructive resets**; it supersedes the earlier permissive staging entries below. Historical host observations have not been reverified by this addendum.
 
+**Implementation addendum, 2026-10-07 (staging mail):** At Erastus's request, staging (`APP_ENV` `staging` or `uat`) may send real email, but only through Resend's SMTP relay (`smtp.resend.com`, user `resend`) with staging's own key, opted in by `MAIL_MAILER=smtp`. The runtime refuses:
+
+- any other relay, account or `MAIL_URL` (`ISOLATION_MAIL_PROVIDER_DENIED`);
+- a sender whose address doesn't start with `staging` or whose name doesn't say Staging (`ISOLATION_MAIL_SENDER_NOT_STAGING`).
+
+It also prefixes every staging subject with `[Staging]`. Staging shares the `mail.rozine.rw` sending domain with production, so the separation is the key, the sender and the subject line. Demo, and every other provider credential, stays denied. Without the opt-in, staging keeps mail in memory.
+
 The requirement is that demo and UAT facts can never look live or touch real records. That is a
 property of the whole estate, not of one config flag, so this document states what each environment
 is for, what data it may hold, which boundaries hold today with evidence, and which do not yet.
