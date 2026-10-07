@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Environment;
 
+use App\Application\Environment\Contracts\StagingMailTesterStore;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Log;
@@ -12,7 +13,8 @@ use Symfony\Component\Mime\Address;
 
 /**
  * Staging shares production's sending domain, so every real staging message is
- * checked where it is delivered: it reaches only the owner-approved testers,
+ * checked where it is delivered: it reaches only the owner-approved testers (the
+ * server's STAGING_MAIL_RECIPIENTS plus the named testers a superadmin keeps),
  * stays within the hourly allowance and always leaves as the approved staging
  * sender, whatever the code that built it asked for.
  */
@@ -20,7 +22,11 @@ class StagingMailGuard
 {
     private const string LIMITER_KEY = 'staging-mail';
 
-    public function __construct(private readonly Repository $config) {}
+    public function __construct(
+        private readonly Repository $config,
+        private readonly StagingMailTesterStore $testers,
+        private readonly EnvironmentIsolation $isolation,
+    ) {}
 
     /**
      * Returning false cancels the message; null lets later listeners run.
@@ -55,20 +61,6 @@ class StagingMailGuard
 
     private function isApprovedTester(string $address): bool
     {
-        $address = strtolower($address);
-
-        foreach ($this->config->array('isolation.staging_mail.recipients') as $approved) {
-            if (! is_string($approved)) {
-                continue;
-            }
-
-            $approved = strtolower($approved);
-
-            if (str_starts_with($approved, '@') ? str_ends_with($address, $approved) : $address === $approved) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->isolation->stagingMailServerApproves($address) || $this->testers->includes($address);
     }
 }

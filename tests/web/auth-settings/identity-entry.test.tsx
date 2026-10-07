@@ -184,8 +184,30 @@ it.each([true, false])(
         expect(
             screen.getByRole('link', { name: 'Account settings' }),
         ).toHaveAttribute('href', '/settings/profile');
+        expect(
+            screen.queryByRole('link', { name: 'Staging mail testers' }),
+        ).not.toBeInTheDocument();
     },
 );
+
+it('links a superadmin on staging to the staging mail testers', () => {
+    render(
+        <StaffHome
+            staff_access={{
+                contract_version: 'staff-access-v1',
+                can_open_admin: true,
+                allowed_actions: ['admin.open', 'staging.mail.testers.manage'],
+            }}
+            staging_mail_testers={{
+                url: '/admin/staging-mail-testers',
+                method: 'get',
+            }}
+        />,
+    );
+    expect(
+        screen.getByRole('link', { name: 'Staging mail testers' }),
+    ).toHaveAttribute('href', '/admin/staging-mail-testers');
+});
 
 it('replaces denied role pages with an accessible recovery page', () => {
     render(<AccessDenied />);

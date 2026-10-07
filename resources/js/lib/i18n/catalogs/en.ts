@@ -38,6 +38,7 @@ const en = {
         'Your staff account has permission to open this workspace.',
     'identity.home.back': 'Choose an app',
     'identity.home.settings': 'Account settings',
+    'identity.home.staging_mail_testers': 'Staging mail testers',
     'identity.home.auditor_nav': 'Your audit work',
     'identity.home.saving': 'Saving your position…',
     'identity.home.failed':
@@ -834,6 +835,40 @@ const en = {
     'admin.kyc.stage.reject.cta': 'Reject submission',
     'admin.kyc.stage.reject.placeholder':
         'e.g. The ID photo is blurred. Upload a sharper photo.',
+    'admin.nav.mail_testers': 'Staging mail testers',
+    'admin.section.mail_testers.title': 'Staging mail testers',
+    'admin.section.mail_testers.subtitle':
+        'Who staging may send real email to. Staging only.',
+    'admin.section.mail_testers.search': 'Search testers by email…',
+    'admin.mail_testers.intro':
+        "Staging sends real email only to approved testers; mail to anyone else is dropped. Add a tester's exact address here, with a reason. Every change is recorded with your name.",
+    'admin.mail_testers.server.title': 'Always approved on this server',
+    'admin.mail_testers.server.body':
+        'Set on the staging server. Change them there, not here.',
+    'admin.mail_testers.add.label': 'Add a tester',
+    'admin.mail_testers.add.email': 'Tester email address',
+    'admin.mail_testers.add.placeholder': 'name@example.com',
+    'admin.mail_testers.add.cta': 'Add tester',
+    'admin.mail_testers.table': 'Named testers',
+    'admin.mail_testers.col.email': 'Email',
+    'admin.mail_testers.col.added_by': 'Added by',
+    'admin.mail_testers.col.added_at': 'Added',
+    'admin.mail_testers.col.actions': 'Actions',
+    'admin.mail_testers.remove': 'Remove',
+    'admin.mail_testers.remove_label': 'Remove {email}',
+    'admin.mail_testers.empty': 'No named testers yet.',
+    'admin.mail_testers.stage.add.title': 'Add {email} as a tester',
+    'admin.mail_testers.stage.add.body':
+        'Staging will be able to send this address real email, including sign-up and password-reset messages.',
+    'admin.mail_testers.stage.add.cta': 'Add tester',
+    'admin.mail_testers.stage.add.placeholder':
+        'Why does this person need staging email?',
+    'admin.mail_testers.stage.remove.title': 'Remove {email}',
+    'admin.mail_testers.stage.remove.body':
+        'Staging will stop sending this address email straight away.',
+    'admin.mail_testers.stage.remove.cta': 'Remove tester',
+    'admin.mail_testers.stage.remove.placeholder':
+        'Why is this tester being removed?',
     'admin.drawer.close': 'Close',
     'admin.stage.reason_label': 'Reason for the record',
     'admin.stage.logged_as': 'Logged to the audit trail as {name} · {role}',

@@ -39,6 +39,7 @@ const rw: Catalog = {
     'identity.home.staff_ready': 'Konti yawe y’umukozi yemerewe kwinjira hano.',
     'identity.home.back': 'Hitamo porogaramu',
     'identity.home.settings': 'Igenamiterere rya konti',
+    'identity.home.staging_mail_testers': 'Abagerageza imeyili z’igerageza',
     'identity.home.auditor_nav': "Akazi kawe k'igenzura",
     'identity.home.saving': 'Kubika aho ugeze…',
     'identity.home.failed':
@@ -859,6 +860,41 @@ const rw: Catalog = {
     'admin.kyc.stage.reject.cta': 'Anga igisabwa',
     'admin.kyc.stage.reject.placeholder':
         "urugero: Ifoto y'indangamuntu ntigaragara neza. Ohereza indi isobanutse.",
+    'admin.nav.mail_testers': 'Abagerageza imeyili z’igerageza',
+    'admin.section.mail_testers.title': 'Abagerageza imeyili z’igerageza',
+    'admin.section.mail_testers.subtitle':
+        'Abo urubuga rw’igerageza rushobora koherereza imeyili nyazo. Ku rubuga rw’igerageza gusa.',
+    'admin.section.mail_testers.search':
+        'Shakisha ugerageza ukoresheje imeyili…',
+    'admin.mail_testers.intro':
+        'Urubuga rw’igerageza rwohereza imeyili nyazo ku bagerageza bemewe gusa; izindi zirahagarikwa. Ongeraho hano aderesi nyayo y’ugerageza, ugaragaze impamvu. Buri gihinduka kibikwa mu izina ryawe.',
+    'admin.mail_testers.server.title': 'Bemewe buri gihe kuri iyi seriveri',
+    'admin.mail_testers.server.body':
+        'Byashyizwe kuri seriveri y’igerageza. Bihindurirwe aho, si hano.',
+    'admin.mail_testers.add.label': 'Ongeraho ugerageza',
+    'admin.mail_testers.add.email': 'Aderesi ya imeyili y’ugerageza',
+    'admin.mail_testers.add.placeholder': 'izina@urugero.com',
+    'admin.mail_testers.add.cta': 'Ongeraho ugerageza',
+    'admin.mail_testers.table': 'Abagerageza bavuzwe mu mazina',
+    'admin.mail_testers.col.email': 'Imeyili',
+    'admin.mail_testers.col.added_by': 'Yongeweho na',
+    'admin.mail_testers.col.added_at': 'Yongeweho',
+    'admin.mail_testers.col.actions': 'Ibikorwa',
+    'admin.mail_testers.remove': 'Kuraho',
+    'admin.mail_testers.remove_label': 'Kuraho {email}',
+    'admin.mail_testers.empty': 'Nta bagerageza bavuzwe mu mazina barahari.',
+    'admin.mail_testers.stage.add.title': 'Ongeraho {email} nk’ugerageza',
+    'admin.mail_testers.stage.add.body':
+        'Urubuga rw’igerageza ruzashobora koherereza iyi aderesi imeyili nyazo, harimo ubutumwa bwo kwiyandikisha n’ubwo guhindura ijambobanga.',
+    'admin.mail_testers.stage.add.cta': 'Ongeraho ugerageza',
+    'admin.mail_testers.stage.add.placeholder':
+        'Kuki uyu muntu akeneye imeyili z’igerageza?',
+    'admin.mail_testers.stage.remove.title': 'Kuraho {email}',
+    'admin.mail_testers.stage.remove.body':
+        'Urubuga rw’igerageza ruzahita ruhagarika kohereza imeyili kuri iyi aderesi.',
+    'admin.mail_testers.stage.remove.cta': 'Kuraho ugerageza',
+    'admin.mail_testers.stage.remove.placeholder':
+        'Kuki uyu ugerageza akuweho?',
     'admin.drawer.close': 'Funga',
     'admin.stage.reason_label': 'Impamvu yandikwa',
     'admin.stage.logged_as':

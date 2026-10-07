@@ -4,6 +4,8 @@ import copy
 import datetime
 import importlib.util
 import json
+import os
+import subprocess
 import unittest
 import tempfile
 from pathlib import Path
@@ -216,7 +218,7 @@ class ScopeTests(unittest.TestCase):
 
         for scenario in ["good", "expired", "wrong branch", "wrong repo", "malformed artifact", "changed config tree", "skipped gate", "wrong attempt"]:
             proof, jobs, source_pull = copy.deepcopy(self.proof), copy.deepcopy(self.jobs), copy.deepcopy(pull)
-            artifacts = [{"name": "validation-tree-99-2", "expired": scenario == "expired"}]
+            artifacts = [{"id": 1, "name": "validation-tree-99-2", "expired": scenario == "expired"}]
             if scenario == "wrong branch":
                 source_pull["base"]["ref"] = "main"
             elif scenario == "wrong repo":
@@ -236,7 +238,7 @@ class ScopeTests(unittest.TestCase):
                 if "/workflows/" in endpoint:
                     return {"total_count": 1, "workflow_runs": [run]}
                 if "/artifacts?" in endpoint:
-                    return {"artifacts": artifacts}
+                    return {"total_count": len(artifacts), "artifacts": artifacts}
                 if "/git/commits/" in endpoint:
                     return self.commit
                 if "/pulls/" in endpoint:
@@ -374,6 +376,213 @@ class ScopeTests(unittest.TestCase):
         self.assertEqual(budget.measure(jobs), (40, 20, 60))
         jobs[-1]["conclusion"] = "cancelled"
         with self.assertRaises(ValueError): budget.measure(jobs)
+
+
+class MergeIdentityTests(unittest.TestCase):
+    def setUp(self):
+        self.repository = "rozine-rw/rozine"
+        self.source = {"id": 99, "run_attempt": 2, "status": "completed", "conclusion": "success",
+                       "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                       "event": "pull_request", "head_sha": "a" * 40, "workflow_id": 7,
+                       "path": ".github/workflows/tests.yml", "head_repository": {"full_name": self.repository}}
+        self.run = dict(self.source, id=100, head_sha="e" * 40, conclusion="failure")
+        self.proof = {"schema": 1, "kind": "pr-merge-identity", "scope": "identity-only",
+                      "repository": self.repository, "run_id": "100", "run_attempt": "2", "pull_number": "246",
+                      "tested_sha": "b" * 40, "tree_sha": "f" * 40, "base_sha": "d" * 40, "head_sha": "e" * 40}
+        self.commit = {"sha": "b" * 40, "tree": {"sha": "f" * 40},
+                       "parents": [{"sha": "d" * 40}, {"sha": "e" * 40}]}
+        self.latest = copy.deepcopy(self.run)
+        self.jobs = [{"name": "Select CI scope", "steps": [
+            {"name": name, "conclusion": "success"} for name in policy.MERGE_IDENTITY_STEPS]}]
+        self.artifacts = [{"id": 1, "name": "pr-merge-identity-100-2", "expired": False}]
+
+    def api(self, endpoint):
+        if "/artifacts?" in endpoint:
+            return {"total_count": len(self.artifacts), "artifacts": self.artifacts}
+        if endpoint.endswith("/100"):
+            return self.latest
+        if endpoint.endswith("e" * 40):
+            return {"tree": {"sha": "9" * 40}}
+        if endpoint.endswith("b" * 40):
+            return self.commit
+        raise AssertionError(endpoint)
+
+    def command(self, *args):
+        self.assertEqual(args[:4], ("gh", "run", "download", "100"))
+        self.assertEqual(args[args.index("--name") + 1], "pr-merge-identity-100-2")
+        (Path(args[args.index("--dir") + 1]) / "merge-identity.json").write_text(json.dumps(self.proof))
+        return ""
+
+    def classify(self):
+        with patch.object(policy, "api", side_effect=self.api), patch.object(policy, "command", side_effect=self.command), patch.object(policy, "run_jobs", return_value=self.jobs):
+            return policy.newer_run_blocks(self.repository, self.run, self.source, "c" * 40)
+
+    def test_actual_artifact_lookup_excludes_only_proven_different_merge_trees(self):
+        for conclusion in ["failure", "cancelled", "skipped", "timed_out", None]:
+            for matching in [False, True]:
+                self.run.update(conclusion=conclusion, status="in_progress" if conclusion is None else "completed")
+                self.latest = copy.deepcopy(self.run)
+                self.proof["tree_sha"] = self.commit["tree"]["sha"] = "c" * 40 if matching else "f" * 40
+                with self.subTest(conclusion=conclusion, matching=matching):
+                    self.assertEqual(self.classify(), matching)
+
+    def test_identity_is_never_successful_validation_proof(self):
+        with self.assertRaises(ValueError):
+            policy.validate_proof(self.proof, self.run, self.jobs, self.commit, "f" * 40, self.repository, "poc")
+
+    def test_unknown_legacy_run_cannot_be_excluded(self):
+        self.artifacts = []
+        with self.assertRaises(policy.MissingEvidence): self.classify()
+
+    def test_expired_duplicate_unreadable_legacy_evidence_never_falls_back(self):
+        for scenario in ["expired", "duplicate", "malformed", "download failure", "API failure"]:
+            with self.subTest(scenario=scenario):
+                legacy = {"id": 2, "name": "validation-tree-100-2", "expired": scenario == "expired"}
+                artifacts = [legacy, dict(legacy, id=3)] if scenario == "duplicate" else [legacy]
+                def download(*args):
+                    if scenario == "download failure": raise subprocess.CalledProcessError(1, "gh")
+                    (Path(args[args.index("--dir") + 1]) / "tested-tree.json").write_text("not json")
+                    return ""
+                def api(endpoint):
+                    if "/artifacts?" in endpoint:
+                        if scenario == "API failure": raise subprocess.CalledProcessError(1, "gh")
+                        return {"total_count": len(artifacts), "artifacts": artifacts}
+                    return {"tree": {"sha": "9" * 40}}
+                with patch.object(policy, "api", side_effect=api), patch.object(policy, "command", side_effect=download), patch.object(policy, "immutable_merge_identity") as fallback:
+                    with self.assertRaises((ValueError, subprocess.SubprocessError)):
+                        policy.newer_run_blocks(self.repository, self.run, self.source, "c" * 40)
+                    fallback.assert_not_called()
+
+    def test_identity_binding_native_commit_and_publication_controls(self):
+        for scenario in ["schema", "kind", "scope", "repository", "run_id", "run_attempt", "head_sha", "pull_number",
+                         "tested_sha", "tree_sha", "base_sha", "parents", "duplicate job", "duplicate step", "failed record", "pending upload", "stale", "fork", "wrong workflow"]:
+            original = copy.deepcopy((self.proof, self.commit, self.jobs, self.run))
+            if scenario in self.proof: self.proof[scenario] = "wrong"
+            elif scenario == "parents": self.commit["parents"].reverse()
+            elif scenario == "duplicate job": self.jobs *= 2
+            elif scenario == "duplicate step": self.jobs[0]["steps"].append(self.jobs[0]["steps"][0])
+            elif scenario == "failed record": self.jobs[0]["steps"][0]["conclusion"] = "failure"
+            elif scenario == "pending upload": self.jobs[0]["steps"][1]["conclusion"] = None
+            elif scenario == "stale":
+                self.run.update(created_at="2000-01-01T00:00:00Z", updated_at=self.source["created_at"])
+            elif scenario == "fork": self.run["head_repository"]["full_name"] = "fork/repo"
+            elif scenario == "wrong workflow": self.run["path"] = "other.yml"
+            with self.subTest(scenario=scenario), self.assertRaises(ValueError): self.classify()
+            self.proof, self.commit, self.jobs, self.run = original
+
+    def test_native_api_cannot_confirm_a_forged_tree_or_parent(self):
+        for key in ["sha", "tree", "parents"]:
+            original = copy.deepcopy(self.commit)
+            self.commit[key] = {"sha": "c" * 40} if key == "tree" else ([] if key == "parents" else "c" * 40)
+            with self.subTest(key=key), self.assertRaises(ValueError): self.classify()
+            self.commit = original
+
+    def test_expired_duplicate_and_nonobject_identity_cannot_exclude_a_run(self):
+        original = copy.deepcopy((self.artifacts, self.proof))
+        for scenario in ["expired", "duplicate", "nonobject"]:
+            if scenario == "expired": self.artifacts[0]["expired"] = True
+            if scenario == "duplicate": self.artifacts.append(dict(self.artifacts[0], id=2))
+            if scenario == "nonobject": self.proof = []
+            with self.subTest(scenario=scenario), self.assertRaises(ValueError): self.classify()
+            self.artifacts, self.proof = copy.deepcopy(original)
+
+    def test_attempt_and_run_identity_are_rechecked_after_artifact_resolution(self):
+        for key, value in [("run_attempt", 3), ("head_sha", "a" * 40), ("event", "push"), ("workflow_id", 8),
+                           ("path", "other.yml"), ("head_repository", {"full_name": "fork/repo"})]:
+            self.latest = dict(self.run, **{key: value})
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, "changed during"):
+                self.classify()
+
+    def test_validation_artifact_appearing_during_resolution_refuses_exclusion(self):
+        inventory = {"total_count": 1, "artifacts": self.artifacts}
+        changed = {"total_count": 2, "artifacts": self.artifacts + [{"id": 2, "name": "validation-tree-100-2", "expired": False}]}
+        calls = iter([inventory, inventory, changed])
+        def api(endpoint):
+            return next(calls) if "/artifacts?" in endpoint else self.api(endpoint)
+        with patch.object(policy, "api", side_effect=api), patch.object(policy, "command", side_effect=self.command), patch.object(policy, "run_jobs", return_value=self.jobs):
+            with self.assertRaisesRegex(ValueError, "appeared during"):
+                policy.newer_run_blocks(self.repository, self.run, self.source, "c" * 40)
+
+    def test_same_head_and_feature_tree_still_block_without_identity_lookup(self):
+        for same_head in [False, True]:
+            run = dict(self.run, head_sha=self.source["head_sha"] if same_head else self.run["head_sha"])
+            with patch.object(policy, "api", return_value={"tree": {"sha": "c" * 40}}), patch.object(policy, "download_evidence") as download:
+                self.assertTrue(policy.newer_run_blocks(self.repository, run, self.source, "c" * 40))
+                download.assert_not_called()
+
+    def test_complete_artifact_pagination_required_before_absence(self):
+        first = {"total_count": 2, "artifacts": [{"id": 1, "name": "unrelated"}]}
+        last = {"total_count": 2, "artifacts": [{"id": 2, "name": "validation-tree-100-2", "expired": True}]}
+        with patch.object(policy, "api", return_value=first), patch.object(policy, "pages", return_value=[first, last]):
+            with self.assertRaises(ValueError) as error: policy.download_evidence(self.repository, self.run)
+            self.assertNotIsInstance(error.exception, policy.MissingEvidence)
+        for scenario in ["missing page", "duplicate IDs", "changed count", "bound exceeded"]:
+            responses, response = copy.deepcopy([first, last]), copy.deepcopy(first)
+            if scenario == "missing page": responses = [first]
+            if scenario == "duplicate IDs": responses[-1]["artifacts"][0]["id"] = 1
+            if scenario == "changed count": responses[-1]["total_count"] = 3
+            if scenario == "bound exceeded": response["total_count"] = 1001
+            with self.subTest(scenario=scenario), patch.object(policy, "api", return_value=response), patch.object(policy, "pages", return_value=responses):
+                with self.assertRaises(ValueError): policy.artifact_inventory(self.repository, self.run)
+
+    def test_selector_reuses_original_only_when_failed_pr_merge_is_proven_unrelated(self):
+        env = {"GITHUB_REPOSITORY": self.repository, "GITHUB_SHA": "8" * 40, "SOURCE_RUN": "99"}
+        for matching in [False, True]:
+            self.proof["tree_sha"] = self.commit["tree"]["sha"] = "c" * 40 if matching else "f" * 40
+            def command(*args):
+                if args[:2] == ("git", "rev-parse"): return "c" * 40 if args[-1] == "HEAD^{tree}" else "8" * 40
+                return self.command(*args)
+            def api(endpoint):
+                return {"id": 7} if endpoint.endswith("/workflows/tests.yml") else self.api(endpoint)
+            with self.subTest(matching=matching), patch.object(policy, "command", side_effect=command), patch.object(policy, "api", side_effect=api), patch.object(policy, "workflow_history", return_value=[self.run, self.source]), patch.object(policy, "validate_source"), patch.object(policy, "run_jobs", return_value=self.jobs):
+                self.assertEqual(policy.reusable_run(env, "poc", with_attempt=True), ("", "") if matching else ("99", "2"))
+
+    def test_writer_records_actual_shallow_merge_and_rejects_event_or_checkout_mismatch(self):
+        script = str(Path(policy.__file__).resolve())
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repo, checkout = root / "repo", root / "checkout"
+            repo.mkdir()
+            def git(*args, cwd=repo):
+                return subprocess.check_output(["git", *args], cwd=cwd, text=True, stderr=subprocess.PIPE).strip()
+            git("init", "-b", "base")
+            git("config", "user.email", "test@example.invalid")
+            git("config", "user.name", "Test")
+            (repo / "base").write_text("base")
+            git("add", ".")
+            git("commit", "-m", "base")
+            git("checkout", "-b", "feature")
+            (repo / "feature").write_text("feature")
+            git("add", ".")
+            git("commit", "-m", "feature")
+            head = git("rev-parse", "HEAD")
+            git("checkout", "base")
+            (repo / "advance").write_text("advance")
+            git("add", ".")
+            git("commit", "-m", "advance base")
+            base = git("rev-parse", "HEAD")
+            git("merge", "--no-ff", "feature", "-m", "test merge")
+            tested = git("rev-parse", "HEAD")
+            git("clone", "--depth", "1", repo.as_uri(), str(checkout))
+            self.assertEqual(git("rev-parse", "--is-shallow-repository", cwd=checkout), "true")
+            self.assertEqual(git("show", "-s", "--format=%P", "HEAD", cwd=checkout), "")
+            event = {"pull_request": {"number": 246, "head": {"sha": head, "repo": {"full_name": self.repository}}, "base": {"sha": base, "repo": {"full_name": self.repository}}}}
+            event_path = root / "event.json"
+            env = dict(os.environ, GITHUB_EVENT_NAME="pull_request", GITHUB_EVENT_PATH=str(event_path), GITHUB_REPOSITORY=self.repository, GITHUB_RUN_ID="100", GITHUB_RUN_ATTEMPT="2", GITHUB_SHA=tested)
+            for scenario in ["good", "changed head", "changed base", "fork", "wrong checkout", "wrong event"]:
+                current, current_env = copy.deepcopy(event), dict(env)
+                if scenario == "changed head": current["pull_request"]["head"]["sha"] = "a" * 40
+                if scenario == "changed base": current["pull_request"]["base"]["sha"] = "a" * 40
+                if scenario == "fork": current["pull_request"]["head"]["repo"]["full_name"] = "fork/repo"
+                if scenario == "wrong checkout": current_env["GITHUB_SHA"] = "a" * 40
+                if scenario == "wrong event": current_env["GITHUB_EVENT_NAME"] = "push"
+                event_path.write_text(json.dumps(current))
+                result = subprocess.run(["python3", script, "record-merge-identity"], cwd=checkout, env=current_env, capture_output=True, text=True, timeout=45)
+                with self.subTest(scenario=scenario):
+                    self.assertEqual(result.returncode == 0, scenario == "good", result.stderr)
+                    if scenario == "good":
+                        proof = json.loads((checkout / "ci-merge-identity/merge-identity.json").read_text())
+                        self.assertEqual((proof["tested_sha"], proof["tree_sha"], proof["base_sha"], proof["head_sha"]), (tested, git("rev-parse", "HEAD^{tree}", cwd=checkout), base, head))
 
 
 if __name__ == "__main__":
