@@ -209,6 +209,39 @@ it('links a superadmin on staging to the staging mail testers', () => {
     ).toHaveAttribute('href', '/admin/staging-mail-testers');
 });
 
+it('links only the console sections the server sends', () => {
+    render(
+        <StaffHome
+            staff_access={{
+                contract_version: 'staff-access-v1',
+                can_open_admin: true,
+                allowed_actions: ['admin.open'],
+            }}
+            sections={{
+                investors: {
+                    url: '/admin/investor-verifications',
+                    method: 'get',
+                },
+                applications: null,
+                disbursements: {
+                    url: '/admin/disbursements',
+                    method: 'get',
+                },
+            }}
+        />,
+    );
+    expect(
+        screen.getByRole('link', { name: 'Investor Directory' }),
+    ).toHaveAttribute('href', '/admin/investor-verifications');
+    expect(screen.getByRole('link', { name: 'Disbursements' })).toHaveAttribute(
+        'href',
+        '/admin/disbursements',
+    );
+    expect(
+        screen.queryByRole('link', { name: 'Applications Queue' }),
+    ).not.toBeInTheDocument();
+});
+
 it('replaces denied role pages with an accessible recovery page', () => {
     render(<AccessDenied />);
     expect(screen.getByRole('alert')).toHaveTextContent(

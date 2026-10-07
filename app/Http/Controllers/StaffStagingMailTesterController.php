@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Environment\ManageStagingMailTesters;
+use App\Application\Identity\GetStaffAccess;
 use App\Http\Requests\Staff\AddStagingMailTesterRequest;
 use App\Http\Requests\Staff\RemoveStagingMailTesterRequest;
 use App\Http\Resources\StaffStagingMailTestersResource;
@@ -30,11 +31,12 @@ class StaffStagingMailTesterController extends Controller
 
     public function __construct(private ManageStagingMailTesters $testers) {}
 
-    public function index(Request $request): Response
+    public function index(Request $request, GetStaffAccess $access): Response
     {
         $search = trim((string) $request->query('q', ''));
-        $page = ['testers' => $this->testers->list((int) $request->user()?->getAuthIdentifier(), $search),
-            'server_recipients' => $this->testers->serverRecipients(), 'search' => mb_substr($search, 0, 120)];
+        $userId = (int) $request->user()?->getAuthIdentifier();
+        $page = ['testers' => $this->testers->list($userId, $search), 'server_recipients' => $this->testers->serverRecipients(),
+            'search' => mb_substr($search, 0, 120), 'permissions' => $access->handle($userId, true)['allowed_actions']];
 
         return Inertia::render('admin/staging-mail-testers', (new StaffStagingMailTestersResource($page))->resolve($request));
     }
