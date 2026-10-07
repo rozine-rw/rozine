@@ -33,6 +33,19 @@ type SiteProps = {
 type SiteState = Record<string, any>;
 type SiteVals = Record<string, any>;
 
+/**
+ * Each audience view has its own address, so the back button, a reload and a shared link all
+ * land on the view the visitor chose. A fragment that names no view leaves the page alone.
+ */
+const PAGE_HASH: Record<string, string> = {
+    inv: '#investors',
+    biz: '#businesses',
+    help: '#help',
+};
+
+const pageFromHash = (hash: string): string | null =>
+    Object.keys(PAGE_HASH).find((page) => PAGE_HASH[page] === hash) ?? null;
+
 export default class Home extends Component<SiteProps, SiteState> {
     private _raf = 0;
 
@@ -48,6 +61,16 @@ export default class Home extends Component<SiteProps, SiteState> {
     private _rzTimers: ReturnType<typeof setTimeout>[] = [];
 
     private readonly _rzResize = () => this._rzMask();
+
+    /** Follows the address to the view it names: on load, and on back, forward or a shared link. */
+    private readonly _rzHash = () => {
+        const page = pageFromHash(window.location.hash);
+
+        if (page !== null && page !== this.state.page) {
+            this.setState({ page });
+            window.scrollTo(0, 0);
+        }
+    };
 
     state: SiteState = Object.assign(
         {
@@ -99,10 +122,16 @@ export default class Home extends Component<SiteProps, SiteState> {
 
             this.setState({ page: p });
             window.scrollTo(0, 0);
+
+            if (window.location.hash !== PAGE_HASH[p]) {
+                window.location.hash = PAGE_HASH[p];
+            }
         };
     }
 
     componentDidMount() {
+        this._rzHash();
+        window.addEventListener('hashchange', this._rzHash);
         this._sync();
         this._rzWatch();
     }
@@ -184,6 +213,7 @@ export default class Home extends Component<SiteProps, SiteState> {
         this._rzRO?.disconnect();
         this._rzRO = undefined;
         window.removeEventListener('resize', this._rzResize);
+        window.removeEventListener('hashchange', this._rzHash);
     }
     chargeFor(dep: number) {
         const B = [
@@ -1158,7 +1188,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                 }}
                             >
                                 <a
-                                    href="#top"
+                                    href={PAGE_HASH.inv}
                                     onClick={goInv}
                                     style={{
                                         flex: '0 0 auto',
@@ -1197,7 +1227,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                         }}
                                     >
                                         <a
-                                            href="#top"
+                                            href={PAGE_HASH.inv}
                                             onClick={goInv}
                                             style={{
                                                 padding: '7px 15px',
@@ -1221,7 +1251,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                             </span>
                                         </a>
                                         <a
-                                            href="#top"
+                                            href={PAGE_HASH.biz}
                                             onClick={goBiz}
                                             style={{
                                                 padding: '7px 15px',
@@ -1246,7 +1276,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                         </a>
                                     </span>
                                     <a
-                                        href="#top"
+                                        href={PAGE_HASH.help}
                                         onClick={goHelp}
                                         style={{
                                             color: helpFg,
@@ -1279,7 +1309,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                 }}
                             >
                                 <a
-                                    href="#top"
+                                    href={PAGE_HASH.help}
                                     onClick={goHelp}
                                     style={{ color: helpFg, fontWeight: '600' }}
                                 >
