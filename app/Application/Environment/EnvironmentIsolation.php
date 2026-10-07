@@ -46,6 +46,35 @@ class EnvironmentIsolation
         return $this->profile() === 'uat' && $this->config->get('mail.default') === 'smtp';
     }
 
+    /**
+     * The tester domains and addresses set on the server, as staging's start-up check accepted them.
+     *
+     * @return list<string>
+     */
+    public function stagingMailServerRecipients(): array
+    {
+        return array_values(array_filter($this->config->array('isolation.staging_mail.recipients'), is_string(...)));
+    }
+
+    /**
+     * Whether the server's list approves this address, by its exact address or its exact @domain
+     * (never a lookalike or a subdomain), in any case.
+     */
+    public function stagingMailServerApproves(string $address): bool
+    {
+        $address = strtolower(trim($address));
+
+        foreach ($this->stagingMailServerRecipients() as $approved) {
+            $approved = strtolower($approved);
+
+            if (str_starts_with($approved, '@') ? str_ends_with($address, $approved) : $address === $approved) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function assertSafeConfiguration(?string $expectedProfile = null): void
     {
         $profile = $this->profile();

@@ -74,6 +74,17 @@ jobs:
           PR_HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
           VALIDATION: ${{ inputs.validation }}
         run: python3 .github/scripts/select-validation-scope.py
+      - name: Record immutable PR merge identity
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+        run: python3 .github/scripts/select-validation-scope.py record-merge-identity
+      - name: Publish immutable PR merge identity
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr-merge-identity-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ci-merge-identity
+          if-no-files-found: error
+          retention-days: 30
 
   php-shards:
     needs: plan
@@ -840,7 +851,11 @@ jobs:
     - name: Run explicit POC PostgreSQL safety catalog without coverage replay
       run: python3 .github/scripts/run-poc-tests.py php
     - name: Prove deployment admission refuses missing scoped evidence
-      run: bash .github/scripts/test-deployment-admission.sh
+      env:
+        REQUIRE_REAL_RUNTIME_IDENTITIES: 'true'
+      run: |
+        bash .github/scripts/test-deployment-admission.sh
+        python3 -B .github/scripts/test_uat_storage_access.py
     - name: Prove scoped selection and evidence reuse fail closed
       run: python3 -B -m unittest discover -s .github/scripts -p 'test_validation_scope.py' -v
     - name: Upload explicitly partial POC test evidence

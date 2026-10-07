@@ -28,6 +28,7 @@ import BusinessApplicationController from './BusinessApplicationController'
 import IdentityManagementController from './IdentityManagementController'
 import RoleBookmarkController from './RoleBookmarkController'
 import Settings from './Settings'
+import StaffStagingMailTesterController from './StaffStagingMailTesterController'
 
 const Controllers = {
     AuditSealVerificationController: Object.assign(AuditSealVerificationController, AuditSealVerificationController),
@@ -60,6 +61,7 @@ const Controllers = {
     IdentityManagementController: Object.assign(IdentityManagementController, IdentityManagementController),
     RoleBookmarkController: Object.assign(RoleBookmarkController, RoleBookmarkController),
     Settings: Object.assign(Settings, Settings),
+    StaffStagingMailTesterController: Object.assign(StaffStagingMailTesterController, StaffStagingMailTesterController),
 }
 
 export default Controllers

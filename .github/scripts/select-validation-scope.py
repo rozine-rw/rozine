@@ -21,7 +21,12 @@ POC_JOBS = ["Board sync offline tests", "POC PHP safety and static checks", "POC
 REUSE_JOBS = ["Select CI scope", "Board sync offline tests", "Reuse POC validation evidence"]
 REUSE_STEPS = ["Revalidate original POC proof without repeating passed tests", "Record original POC source", "Publish POC reuse receipt", "Require combined POC execution within ten minutes"]
 POC_STEPS = ["Record POC validation tree", "Publish POC validation tree", "Require combined POC execution within ten minutes"]
+MERGE_IDENTITY_STEPS = ["Record immutable PR merge identity", "Publish immutable PR merge identity"]
 SHA = r"[0-9a-f]{40}"
+
+
+class MissingEvidence(ValueError):
+    """The complete artifact inventory contains no artifact with this name."""
 
 
 def command(*args):
@@ -123,16 +128,33 @@ def trusted_run(run, repository, workflow_id):
             and run.get("event") in ("push", "workflow_dispatch", "pull_request"))
 
 
+def artifact_inventory(repository, run):
+    endpoint = f"repos/{repository}/actions/runs/{run['id']}/artifacts?per_page=100"
+    first = api(endpoint)
+    total = first["total_count"]
+    if not isinstance(total, int) or not 0 <= total <= 1000:
+        raise ValueError("artifact inventory exceeds the verified lookup bound")
+    responses = [first] if len(first["artifacts"]) == total else pages(endpoint)
+    artifacts = [item for response in responses for item in response["artifacts"]]
+    if (any(response["total_count"] != total for response in responses)
+            or len(artifacts) != total or len({item["id"] for item in artifacts}) != total):
+        raise ValueError("artifact inventory is incomplete or changed during pagination")
+    return artifacts
+
+
 def download_evidence(repository, run, prefix="validation-tree"):
     name = f"{prefix}-{run['id']}-{run['run_attempt']}"
-    artifacts = api(f"repos/{repository}/actions/runs/{run['id']}/artifacts?per_page=100")["artifacts"]
-    matching = [item for item in artifacts if item["name"] == name and not item["expired"]]
-    if len(matching) != 1:
+    artifacts = artifact_inventory(repository, run)
+    matching = [item for item in artifacts if item["name"] == name]
+    if not matching:
+        raise MissingEvidence("evidence artifact is absent from complete inventory")
+    if len(matching) != 1 or matching[0]["expired"]:
         raise ValueError("missing, duplicate or expired evidence artifact")
     with tempfile.TemporaryDirectory(prefix="rozine-validation-") as directory:
         command("gh", "run", "download", str(run["id"]), "--repo", repository,
                 "--name", name, "--dir", directory)
-        proof = json.loads((Path(directory) / "tested-tree.json").read_text())
+        filename = "merge-identity.json" if prefix == "pr-merge-identity" else "tested-tree.json"
+        proof = json.loads((Path(directory) / filename).read_text())
     if not isinstance(proof, dict):
         raise ValueError("evidence must be an object")
     return proof
@@ -163,6 +185,45 @@ def attempt_order(run):
     return (latest, run["id"])
 
 
+def immutable_merge_identity(repository, run):
+    if (run.get("event") != "pull_request" or run.get("path") != ".github/workflows/tests.yml"
+            or run.get("head_repository", {}).get("full_name") != repository):
+        raise ValueError("merge identity requires the trusted same-repository PR workflow")
+    proof = download_evidence(repository, run, "pr-merge-identity")
+    expected = {"schema": 1, "kind": "pr-merge-identity", "scope": "identity-only",
+                "repository": repository, "run_id": str(run["id"]),
+                "run_attempt": str(run["run_attempt"]), "head_sha": run["head_sha"]}
+    if any(proof.get(key) != value for key, value in expected.items()):
+        raise ValueError("PR merge identity does not bind the run/attempt/head")
+    for key in ("tested_sha", "tree_sha", "base_sha", "head_sha"):
+        if not re.fullmatch(SHA, str(proof.get(key, ""))):
+            raise ValueError("invalid immutable merge identity SHA")
+    if not re.fullmatch(r"[1-9][0-9]*", str(proof.get("pull_number", ""))):
+        raise ValueError("invalid immutable merge identity pull number")
+    age = datetime.datetime.now(datetime.timezone.utc) - datetime.datetime.fromisoformat(run["created_at"].replace("Z", "+00:00"))
+    if age.total_seconds() < 0 or age > datetime.timedelta(days=30):
+        raise ValueError("PR merge identity is stale")
+    tested = api(f"repos/{repository}/git/commits/{proof['tested_sha']}")
+    if (tested.get("sha") != proof["tested_sha"] or tested["tree"]["sha"] != proof["tree_sha"]
+            or [parent["sha"] for parent in tested["parents"]] != [proof["base_sha"], run["head_sha"]]):
+        raise ValueError("PR merge identity does not match native ordered parents/tree")
+    jobs = [job for job in run_jobs(repository, run) if job["name"] == "Select CI scope"]
+    if len(jobs) != 1:
+        raise ValueError("PR merge identity requires a unique scope job")
+    for name in MERGE_IDENTITY_STEPS:
+        steps = [step for step in jobs[0].get("steps", []) if step["name"] == name]
+        if len(steps) != 1 or steps[0]["conclusion"] != "success":
+            raise ValueError("PR merge identity record/publication did not succeed")
+    legacy_name = f"validation-tree-{run['id']}-{run['run_attempt']}"
+    if any(item["name"] == legacy_name for item in artifact_inventory(repository, run)):
+        raise ValueError("validation evidence appeared during merge classification")
+    latest = api(f"repos/{repository}/actions/runs/{run['id']}")
+    for key in ("id", "run_attempt", "head_sha", "event", "workflow_id", "path", "head_repository"):
+        if latest.get(key) != run.get(key):
+            raise ValueError("run identity/attempt changed during merge classification")
+    return proof
+
+
 def newer_run_blocks(repository, run, source, tree):
     # A later rerun attempt keeps the same run ID. Its status is authoritative.
     if run["id"] == source["id"]:
@@ -175,9 +236,12 @@ def newer_run_blocks(repository, run, source, tree):
     if commit["tree"]["sha"] == tree:
         return True
     if run["event"] == "pull_request":
-        # Failed PRs may have tested a different merge tree than their head.
-        # If the merge artifact is absent/unverifiable, fail closed on reuse.
-        proof = download_evidence(repository, run)
+        # Identity-only provenance can rule out an unrelated merge, never pass
+        # failed tests. Only genuine absence permits the early-identity path.
+        try:
+            proof = download_evidence(repository, run)
+        except MissingEvidence:
+            return immutable_merge_identity(repository, run)["tree_sha"] == tree
         expected = {"schema": 2, "repository": repository, "run_id": str(run["id"]), "run_attempt": str(run["run_attempt"])}
         if any(proof.get(key) != value for key, value in expected.items()) or not re.fullmatch(SHA, str(proof.get("tested_sha", ""))):
             raise ValueError("failed-run merge evidence has unverifiable provenance")
@@ -305,6 +369,34 @@ def record(env, scope):
     Path("ci-evidence/tested-tree.json").write_text(json.dumps(proof, indent=2) + "\n")
 
 
+def record_merge_identity(env):
+    if env.get("GITHUB_EVENT_NAME") != "pull_request":
+        raise ValueError("merge identity is restricted to pull_request")
+    event = json.loads(Path(env["GITHUB_EVENT_PATH"]).read_text())
+    pull = event["pull_request"]
+    repository = env["GITHUB_REPOSITORY"]
+    if pull["head"]["repo"]["full_name"] != repository or pull["base"]["repo"]["full_name"] != repository:
+        raise ValueError("merge identity is restricted to same-repository PRs")
+    tested = command("git", "rev-parse", "HEAD")
+    tree = command("git", "rev-parse", "HEAD^{tree}")
+    # Read raw commit headers: checkout is shallow, but parent identities are
+    # immutable commit content and must not disappear at a shallow boundary.
+    headers = command("git", "cat-file", "-p", "HEAD").split("\n\n", 1)[0].splitlines()
+    parents = [line.removeprefix("parent ") for line in headers if line.startswith("parent ")]
+    expected_parents = [pull["base"]["sha"], pull["head"]["sha"]]
+    if tested != env["GITHUB_SHA"] or parents != expected_parents:
+        raise ValueError("checkout does not bind the original PR event merge")
+    for value in [tested, tree, *parents]:
+        if not re.fullmatch(SHA, value):
+            raise ValueError("invalid checked-out merge identity SHA")
+    proof = {"schema": 1, "kind": "pr-merge-identity", "scope": "identity-only",
+             "repository": repository, "run_id": env["GITHUB_RUN_ID"],
+             "run_attempt": env["GITHUB_RUN_ATTEMPT"], "pull_number": str(pull["number"]),
+             "tested_sha": tested, "tree_sha": tree, "base_sha": parents[0], "head_sha": parents[1]}
+    Path("ci-merge-identity").mkdir(exist_ok=True)
+    Path("ci-merge-identity/merge-identity.json").write_text(json.dumps(proof, indent=2) + "\n")
+
+
 def record_reuse(env):
     if (not re.fullmatch(r"[0-9]+", env.get("SOURCE_RUN", ""))
             or not re.fullmatch(r"[1-9][0-9]*", env.get("SOURCE_ATTEMPT", ""))
@@ -319,6 +411,9 @@ def record_reuse(env):
 
 def main():
     env = os.environ
+    if sys.argv[1:] == ["record-merge-identity"]:
+        record_merge_identity(env)
+        return
     if sys.argv[1:] == ["admit-staging"]:
         print(json.dumps(staging_evidence(env)))
         return
