@@ -143,6 +143,8 @@ def run_jobs(repository, run):
 
 def validate_source(repository, run, tree, scope):
     proof = download_evidence(repository, run)
+    if proof.get("tree_sha") != tree or proof.get("scope") != scope:
+        raise ValueError("source tree or scope differs")
     commit = api(f"repos/{repository}/git/commits/{proof['tested_sha']}")
     validate_proof(proof, run, run_jobs(repository, run), commit, tree, repository, scope)
     if run["event"] == "pull_request":
@@ -183,6 +185,8 @@ def reusable_run(env, scope):
     runs = api(f"repos/{repository}/actions/workflows/tests.yml/runs?per_page=100")["workflow_runs"]
     runs = [run for run in runs if trusted_run(run, repository, workflow_id) and str(run["id"]) != env.get("GITHUB_RUN_ID")]
     for source in sorted(runs, key=lambda item: item["id"], reverse=True):
+        if source["status"] != "completed" or source["conclusion"] != "success":
+            continue
         if env.get("SOURCE_RUN") and str(source["id"]) != env["SOURCE_RUN"]:
             continue
         try:
