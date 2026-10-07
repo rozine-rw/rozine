@@ -157,8 +157,9 @@ def validate_source(repository, run, tree, scope):
 
 def attempt_order(run):
     # Rerunning an old ID can be newer than a subsequent successful run.
-    started = run.get("run_started_at") or run["created_at"]
-    return (datetime.datetime.fromisoformat(started.replace("Z", "+00:00")), run["id"])
+    timestamps = [run[key] for key in ("created_at", "run_started_at", "updated_at") if run.get(key)]
+    latest = max(datetime.datetime.fromisoformat(value.replace("Z", "+00:00")) for value in timestamps)
+    return (latest, run["id"])
 
 
 def newer_run_blocks(repository, run, source, tree):
