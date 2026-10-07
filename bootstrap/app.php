@@ -43,6 +43,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->dontFlash(['code', 'step_up', 'proof', 'step_up_proof']);
         $exceptions->render(function (IdentityViolation $exception, Request $request) {
+            // A person still being verified browses the Investor deals until the role opens.
+            if (! $request->expectsJson() && $request->routeIs('investor.home') && $exception->reason === 'IDENTITY_VERIFICATION_REQUIRED') {
+                return redirect()->route('investor.deals');
+            }
+
             if (! $request->expectsJson() && $request->routeIs('investor.home', 'investor.wallet', 'investor.verification', 'business.home', 'auditor.home', 'auditor.profile',
                 'auditor.jobs.index', 'auditor.jobs.show', 'auditor.conflicts.index', 'auditor.conflicts.show', 'auditor.reports.show', 'auditor.engagement.show', 'business.applications.show', 'business.applications.publish.show', 'business.campaigns.show', 'staff.applications.show', 'staff.applications.operations.show', 'business.audit-reports.show', 'staff.audit.show', 'staff.audit.operations.show', 'staff.disbursements.index', 'staff.disbursements.show', 'staff.investor-verifications.index', 'staff.staging-mail-testers.index', 'admin.home', 'identity.roles.resume')) {
                 return Inertia::render('identity/access-denied', ['code' => $exception->reason, 'status' => $exception->status])

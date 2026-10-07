@@ -95,6 +95,10 @@ const fr: Catalog = {
     'suite.motto': 'Un seul cœur en direct · chaque surface',
     'suite.section.apps': 'Vos applications',
     'suite.app.open': "Ouvrir l'application →",
+    'suite.app.browse': 'Voir les offres →',
+    'suite.app.request_access': "Demander l'accès →",
+    'suite.app.investor.preview':
+        "Parcourez dès maintenant les offres ouvertes. L'investissement s'ouvre une fois votre identité vérifiée.",
     'suite.app.investor.title': 'Investisseur',
     'suite.app.investor.description':
         'Découvrez des entreprises vérifiées, investissez, suivez vos rendements.',
@@ -117,8 +121,6 @@ const fr: Catalog = {
         "Votre connexion n'est liée à aucune identité vérifiée ; aucune application ne peut encore s'ouvrir.",
     'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title':
         'Votre identité est en cours de vérification',
-    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.body':
-        "Vos applications s'ouvriront une fois la vérification terminée.",
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
         'Un pouvoir de signature est requis',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.body':
@@ -131,10 +133,6 @@ const fr: Catalog = {
         'Ces applications ne peuvent pas être combinées',
     'suite.blocker.ROLE_MEMBERSHIP_CONFLICT.body':
         "Un partenaire d'audit ne peut pas aussi investir ou lever des fonds sur Rozine. Le support vous aidera à choisir.",
-    'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.title':
-        "Aucune application pour l'instant",
-    'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.body':
-        "Vous n'avez encore rejoint aucune application. Le support peut configurer celle qu'il vous faut.",
 
     'business.auth.wordmark': 'rozine',
     'business.auth.for_business': 'Pour les entreprises',
@@ -3909,10 +3907,6 @@ const fr: Catalog = {
         "Cette levée s'est clôturée sans versement",
     'investor.deal.notice.failed_closing.body':
         "Le versement à l'entreprise n'a pas eu lieu : chaque engagement a été remboursé intégralement.",
-    'investor.deals.gated_title':
-        'Vérifiez votre identité pour voir les offres',
-    'investor.deals.gated_body':
-        "Les offres et leurs entreprises ne sont montrées qu'aux investisseurs vérifiés.",
     'investor.deals.paused': 'Suspendu',
     'investor.deal.cap.max': {
         one: "Jusqu'à {count} titre : {reason}.",

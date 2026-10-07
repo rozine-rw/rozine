@@ -990,7 +990,8 @@ export type C3InvestorShellLinks = {
     deals: RouteLink | null;
     portfolio: RouteLink | null;
     profile: RouteLink | null;
-    wallet: RouteLink;
+    /** Null before the identity is verified: there is no wallet yet. */
+    wallet: RouteLink | null;
     notifications: RouteLink | null;
     launcher: RouteLink;
 };
@@ -1181,9 +1182,12 @@ export type PrimaryQuote = {
 };
 
 export type C3InvestorDealsProps = InvestorPageContract & {
-    /** Unverified: the gate only, with `deals: []` and `focus: null` (H8). */
+    /**
+     * While the identity is being verified the deck is readable behind the gate, with no wallet,
+     * no wallet links and nothing to invest with (this supersedes H8's gate-only deck).
+     */
     gate: InvestGate;
-    wallet: WalletSummary;
+    wallet: WalletSummary | null;
     unread_notifications: number;
     sorts: DealSort[];
     industries: IndustryFilter[];
@@ -1192,7 +1196,7 @@ export type C3InvestorDealsProps = InvestorPageContract & {
     quote: PrimaryQuote | null;
     /** A destination with no live route yet is null (C3InvestorShellLinks). */
     links: C3InvestorShellLinks & {
-        deposit: RouteLink;
+        deposit: RouteLink | null;
         checkout: RouteLink | null;
     };
 };
