@@ -138,3 +138,32 @@ it('rolls back staff grants if immutable audit persistence fails', function (): 
         IdentityAuditEvent::flushEventListeners();
     }
 });
+
+it('links the staff home and each console page to exactly the sections the account may open', function (string $role, array $sections): void {
+    $user = User::factory()->withTwoFactor()->create();
+    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Console sections.', (string) Str::uuid(), [$role]);
+    $urls = ['investors' => route('staff.investor-verifications.index', [], false), 'applications' => route('staff.applications.index', [], false),
+        'disbursements' => route('staff.disbursements.index', [], false)];
+    $expected = array_map(fn (string $section): ?array => in_array($section, $sections, true) ? ['url' => $urls[$section], 'method' => 'get'] : null,
+        array_combine(array_keys($urls), array_keys($urls)));
+
+    $this->actingAs($user)->get(route('admin.home'))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->component('identity/staff-home', false)->where('sections', $expected));
+    foreach (array_diff(array_keys($urls), $sections) as $closed) {
+        $this->getJson($urls[$closed])->assertForbidden();
+    }
+    foreach ($sections as $section) {
+        $this->get($urls[$section])->assertOk()->assertInertia(function (Assert $page) use ($expected): Assert {
+            foreach ($expected as $key => $link) {
+                $page->where('nav.'.$key, $link);
+            }
+
+            return $page->where('nav.launcher.url', route('dashboard', [], false));
+        });
+    }
+})->with([
+    'superadmin' => ['superadmin', ['investors', 'applications', 'disbursements']],
+    'compliance' => ['compliance', ['investors', 'disbursements']],
+    'approver' => ['approver', ['applications', 'disbursements']],
+    'analyst' => ['analyst', []],
+]);

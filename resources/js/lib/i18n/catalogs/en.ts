@@ -94,6 +94,10 @@ const en = {
     'suite.motto': 'One live core · every surface',
     'suite.section.apps': 'Your apps',
     'suite.app.open': 'Open app →',
+    'suite.app.browse': 'Browse deals →',
+    'suite.app.request_access': 'Request access →',
+    'suite.app.investor.preview':
+        'Browse open deals now. Investing opens once your identity is verified.',
     'suite.app.investor.title': 'Investor',
     'suite.app.investor.description':
         'Discover verified businesses, invest, track returns.',
@@ -116,8 +120,6 @@ const en = {
         'Your sign-in is not linked to a verified identity, so no app can open yet.',
     'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title':
         'Your identity is being verified',
-    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.body':
-        'Your apps open once your identity verification is complete.',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
         'Signing authority is needed',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.body':
@@ -130,9 +132,6 @@ const en = {
         'These apps cannot be combined',
     'suite.blocker.ROLE_MEMBERSHIP_CONFLICT.body':
         'An Audit Partner cannot also invest or raise on Rozine. Support will help you choose.',
-    'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.title': 'No apps yet',
-    'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.body':
-        'You have not joined an app yet. Support can set up the one you need.',
 
     'business.auth.wordmark': 'rozine',
     'business.auth.for_business': 'For business',
@@ -3755,9 +3754,6 @@ const en = {
         'This raise closed without paying out',
     'investor.deal.notice.failed_closing.body':
         "The payout to the business didn't go ahead, so every commitment was refunded in full.",
-    'investor.deals.gated_title': 'Verify to see open deals',
-    'investor.deals.gated_body':
-        'Deals and their businesses are shown to verified investors only.',
     'investor.deals.paused': 'Paused',
     'investor.deal.cap.max': {
         one: 'Up to {count} note: {reason}.',

@@ -34,34 +34,11 @@ type DealsBodyProps = C3InvestorDealsProps & {
 const CANVAS_HEIGHT = 720;
 
 /**
- * "No deals open" (crosswalk SCR-01-ST-01), in the design's caught-up layout (L596–603). An
- * unverified Investor gets the gate only (H8): no deal, name or figure is sent, just the way to
- * verify.
+ * "No deals open" (crosswalk SCR-01-ST-01), in the design's caught-up layout (L596–603). A person
+ * still to verify their identity also gets the way to verify, so they are ready when one opens.
  */
 function EmptyDeals({ gate }: { gate: InvestGate }) {
     const { t } = useTranslation();
-
-    if (gate.status === 'verification_required') {
-        return (
-            <div className="flex flex-1 flex-col items-center justify-center px-[22px] py-16 text-center">
-                <span className="flex size-[72px] items-center justify-center rounded-[20px] bg-rz-accent-soft text-[26px]">
-                    <Icon name="shield" />
-                </span>
-                <p className="mt-4 text-lg font-semibold text-rz-ink">
-                    {t('investor.deals.gated_title')}
-                </p>
-                <p className="mt-1.5 max-w-[250px] text-[13px] leading-normal text-rz-secondary">
-                    {t('investor.deals.gated_body')}
-                </p>
-                <Link
-                    href={gate.link}
-                    className="mt-4 flex h-11 items-center justify-center rounded-[14px] bg-rz-accent-fill px-5 text-sm font-semibold text-white"
-                >
-                    {t('investor.deals.verify_to_invest')}
-                </Link>
-            </div>
-        );
-    }
 
     return (
         <div className="flex flex-1 flex-col items-center justify-center px-[22px] py-16 text-center">
@@ -74,6 +51,14 @@ function EmptyDeals({ gate }: { gate: InvestGate }) {
             <p className="mt-1.5 max-w-[230px] text-[13px] leading-normal text-rz-secondary">
                 {t('investor.deals.empty_body')}
             </p>
+            {gate.status === 'verification_required' && (
+                <Link
+                    href={gate.link}
+                    className="mt-4 flex h-11 items-center justify-center rounded-[14px] bg-rz-accent-fill px-5 text-sm font-semibold text-white"
+                >
+                    {t('investor.deals.verify_to_invest')}
+                </Link>
+            )}
         </div>
     );
 }
