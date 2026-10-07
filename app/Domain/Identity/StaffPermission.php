@@ -16,7 +16,7 @@ final class StaffPermission
             'disbursements.view', 'disbursements.hold'],
         // No superadmin bypass (§10.6, §11.1): disbursements are view-only here, never authorize or approve.
         'superadmin' => ['businesses.view', 'businesses.verify', 'investors.verify', 'applications.review', 'audit.partners.verify', 'audit.assignments.manage', 'audit.reports.view', 'consent.documents.record',
-            'disbursements.view'],
+            'disbursements.view', 'staging.mail.testers.manage'],
     ];
 
     /**

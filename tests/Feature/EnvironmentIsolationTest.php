@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Environment\EnvironmentIsolation;
+use App\Models\StagingMailTester;
 use App\Models\User;
 use App\Providers\AppServiceProvider;
 use App\Providers\EnvironmentSafetyServiceProvider;
@@ -426,6 +427,18 @@ test('verification and password reset notifications only reach approved testers 
     'an approved tester' => ['tester@example.test', 2],
     'an unapproved sign-up' => ['stranger@example.org', 0],
 ]);
+
+test('a named tester from the admin list receives staging mail until removed', function () {
+    $deliveries = stagingMailDeliveries();
+    $tester = StagingMailTester::factory()->create(['email' => 'named@example.org']);
+
+    Mail::raw('While approved.', fn ($message) => $message->to('Named@Example.org')->subject('While approved'));
+    $tester->delete();
+    Mail::raw('After removal.', fn ($message) => $message->to('named@example.org')->subject('After removal'));
+
+    expect($deliveries->map(fn (MessageSent $delivery): ?string => $delivery->message->getSubject())->all())
+        ->toBe(['[Staging] While approved']);
+});
 
 test('staging mail stops once the hourly allowance is spent', function () {
     $deliveries = stagingMailDeliveries(['isolation.staging_mail.hourly_limit' => 2]);
