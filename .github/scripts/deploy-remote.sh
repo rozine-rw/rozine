@@ -132,11 +132,13 @@ if [ "${EXPECTED_PROFILE}" = "uat" ] && [ ! -L public/storage ]; then
 fi
 
 "${PHP_BIN}" artisan route:cache
-if [ "${EXPECTED_PROFILE}" = "uat" ]; then
-  # Compiled views must stay readable by the other approved writer even when
-  # the caller uses a private umask; limit this change to isolated view output.
-  (umask 0007; "${PHP_BIN}" artisan view:cache)
-else
+# On uat the site runs as its own identity, and Blade refreshes a stale
+# compiled view by setting its timestamp, which only the file's owner may do.
+# Views compiled here would belong to this account, so once a later release
+# copied newer sources every page would fail until the deploy recompiled
+# them, and for good if that deploy stopped early. optimize:clear has already
+# removed the compiled views, so the runtime compiles and owns them instead.
+if [ "${EXPECTED_PROFILE}" != "uat" ]; then
   "${PHP_BIN}" artisan view:cache
 fi
 "${PHP_BIN}" artisan queue:restart
