@@ -8,8 +8,8 @@
 #   1. The SHA is a full 40-hex immutable Git object.
 #   2. The SHA is the current tip of the target branch (no stale redeploys).
 #   3. The authoritative `tests` workflow ran on that exact SHA and succeeded.
-#      Staging may use explicitly dispatched full validation; production still
-#      requires its target-branch push run. POC/reused/skipped jobs cannot admit.
+#      Staging validates POC/full scope and original identical-tree POC source.
+#      Production requires its target-branch full push gates.
 #   4. Every required quality-gate job inside that run succeeded; a skipped or
 #      cancelled job is not a pass.
 #   5. The SHA reached the target branch through a merged pull request.
@@ -37,6 +37,12 @@ set -euo pipefail
 
 EVIDENCE_WORKFLOW="${EVIDENCE_WORKFLOW:-tests.yml}"
 WAIT_TIMEOUT_SECONDS="${WAIT_TIMEOUT_SECONDS:-2700}"
+if [ "${TARGET_BRANCH}" = uat ]; then
+  WAIT_TIMEOUT_SECONDS="${STAGING_WAIT_TIMEOUT_SECONDS:-600}"
+elif [ "${TARGET_BRANCH}" != main ]; then
+  echo "Unsupported deployment target" >&2
+  exit 1
+fi
 POLL_INTERVAL_SECONDS="${POLL_INTERVAL_SECONDS:-20}"
 REQUIRED_JOBS="${REQUIRED_JOBS:-PHP 8.5 quality gate
 TypeScript/React quality gate
@@ -124,18 +130,24 @@ echo "OK  ${EVIDENCE_WORKFLOW} run ${run_id} succeeded on the exact candidate SH
 # 4. Every required job inside that run must have succeeded in its own right.
 #    A run can conclude 'success' while a job was skipped; that is not evidence.
 # ---------------------------------------------------------------------------
-jobs_json="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100" \
-  --jq '.jobs[] | {name, conclusion}' | jq -s '.')"
-
-while IFS= read -r required_job; do
-  [ -n "${required_job}" ] || continue
-  conclusion="$(echo "${jobs_json}" | jq -r --arg n "${required_job}" \
-    'map(select(.name == $n)) | .[0].conclusion // "missing"')"
-  if [ "${conclusion}" != "success" ]; then
-    refuse "required job '${required_job}' is '${conclusion}' in run ${run_id}."
-  fi
-  echo "OK  required job '${required_job}' succeeded."
-done <<< "${REQUIRED_JOBS}"
+scope_evidence='{"scope":"full","source_run":"","source_attempt":"","tree_sha":""}'
+if [ "${TARGET_BRANCH}" = uat ]; then
+  scope_evidence="$(EVIDENCE_RUN="${run_id}" python3 "$(dirname "${BASH_SOURCE[0]}")/select-validation-scope.py" admit-staging)" || refuse "staging scoped evidence/provenance validation failed."
+  REQUIRED_JOBS="$(echo "${scope_evidence}" | jq -r '.required_jobs[]')"
+  echo "OK  validated staging scoped evidence: ${scope_evidence}"
+else
+  jobs_json="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100" \
+    --jq '.jobs[] | {name, conclusion}' | jq -s '.')"
+  while IFS= read -r required_job; do
+    [ -n "${required_job}" ] || continue
+    conclusion="$(echo "${jobs_json}" | jq -r --arg n "${required_job}" \
+      'map(select(.name == $n)) | if length == 1 then .[0].conclusion // "missing" else "missing or duplicate" end')"
+    if [ "${conclusion}" != success ]; then
+      refuse "required job '${required_job}' is '${conclusion}' in run ${run_id}."
+    fi
+    echo "OK  required job '${required_job}' succeeded."
+  done <<< "${REQUIRED_JOBS}"
+fi
 
 # ---------------------------------------------------------------------------
 # 5 & 6. The SHA must have arrived through a merged pull request that the
@@ -143,7 +155,7 @@ done <<< "${REQUIRED_JOBS}"
 # ---------------------------------------------------------------------------
 pulls_json="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${CANDIDATE_SHA}/pulls" \
   --header 'Accept: application/vnd.github+json' \
-  --jq "[.[] | select(.base.ref == \"${TARGET_BRANCH}\" and .merged_at != null)]")"
+  --jq "[.[] | select(.base.ref == \"${TARGET_BRANCH}\" and .merged_at != null and .merge_commit_sha == \"${CANDIDATE_SHA}\")]")"
 
 pull_count="$(echo "${pulls_json}" | jq 'length')"
 if [ "${pull_count}" -eq 0 ]; then
@@ -155,8 +167,10 @@ pull_author="$(echo "${pulls_json}" | jq -r 'sort_by(.merged_at) | last | .user.
 pull_head_sha="$(echo "${pulls_json}" | jq -r 'sort_by(.merged_at) | last | .head.sha')"
 echo "OK  candidate arrived through merged pull request #${pull_number} (author: ${pull_author}, head: ${pull_head_sha})."
 
-approver="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${pull_number}/reviews?per_page=100" \
-  --jq "[.[] | select(.state == \"APPROVED\" and .commit_id == \"${pull_head_sha}\" and .user.login != \"${pull_author}\")] | sort_by(.submitted_at) | last | .user.login // empty")"
+approver="$(gh api --paginate --slurp "repos/${GITHUB_REPOSITORY}/pulls/${pull_number}/reviews?per_page=100" \
+  --jq "add | map(select(.state != \"COMMENTED\")) | sort_by(.user.login, .submitted_at) | group_by(.user.login) | map(last) |
+    map(select(.state == \"APPROVED\" and .commit_id == \"${pull_head_sha}\" and .user.login != \"${pull_author}\" and .user.type == \"User\")) |
+    sort_by(.submitted_at) | last | .user.login // empty")"
 
 if [ -z "${approver}" ]; then
   refuse "pull request #${pull_number} has no APPROVED review of its final head SHA ${pull_head_sha} from a developer other than its author ${pull_author}."
@@ -166,8 +180,11 @@ echo "OK  non-author approval of the final candidate SHA recorded by '${approver
 # ---------------------------------------------------------------------------
 # Attestation. This is the record the phase gate archives.
 # ---------------------------------------------------------------------------
+branch_tip="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/${TARGET_BRANCH}" --jq '.object.sha')"
+[ "${branch_tip}" = "${CANDIDATE_SHA}" ] || refuse "stale candidate after evidence/review validation."
 mkdir -p "$(dirname "${ATTESTATION_PATH:-deployment-admission.json}")"
 jq -n \
+  --argjson scope_evidence "${scope_evidence}" \
   --arg repository "${GITHUB_REPOSITORY}" \
   --arg candidate_sha "${CANDIDATE_SHA}" \
   --arg target_branch "${TARGET_BRANCH}" \
@@ -188,7 +205,8 @@ jq -n \
     evidence: {
       workflow: $evidence_workflow,
       run_id: $evidence_run_id,
-      required_jobs: $required_jobs
+      required_jobs: $required_jobs,
+      validation: $scope_evidence
     },
     review: {
       pull_request: $pull_request,

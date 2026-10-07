@@ -10,11 +10,11 @@ on:
   workflow_dispatch:
     inputs:
       validation:
-        description: Full release validation (never POC coverage evidence)
+        description: Auto uses POC for dev/UAT; full is exhaustive release validation
         required: true
-        default: full
+        default: auto
         type: choice
-        options: [full]
+        options: [auto, poc, full]
 
 permissions:
   contents: read
@@ -65,7 +65,7 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ github.sha }}
-      - name: Reuse only successful evidence for an identical dev tree
+      - name: Reuse only original successful evidence for an identical dev/UAT tree
         id: scope
         env:
           GH_TOKEN: ${{ github.token }}
@@ -837,7 +837,7 @@ jobs:
       run: composer ci:check:php:static
     - name: Run explicit POC PostgreSQL safety catalog without coverage replay
       run: python3 .github/scripts/run-poc-tests.py php
-    - name: Prove deployment admission still refuses missing full evidence
+    - name: Prove deployment admission refuses missing scoped evidence
       run: bash .github/scripts/test-deployment-admission.sh
     - name: Prove scoped selection and evidence reuse fail closed
       run: python3 -B -m unittest discover -s .github/scripts -p 'test_validation_scope.py' -v
@@ -952,7 +952,7 @@ jobs:
         PR_NUMBER: ${{ github.event.pull_request.number }}
         SCOPE: ${{ needs.plan.outputs.scope }}
       run: python3 .github/scripts/select-validation-scope.py record "$SCOPE"
-    - name: Upload scope-bound evidence (POC never authorizes release)
+    - name: Upload scope-bound full release evidence
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
         name: validation-tree-${{ github.run_id }}-${{ github.run_attempt }}
@@ -1001,6 +1001,24 @@ jobs:
       - name: Revalidate original POC proof without repeating passed tests
         env:
           GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN: ${{ needs.plan.outputs.source_run }}
         run: python3 .github/scripts/select-validation-scope.py verify-poc
-      - name: Distinguish reuse from release admission
-        run: echo 'Identical-tree POC checks reused. Full release coverage and deployment admission remain separate requirements.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Record original POC source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN: ${{ needs.plan.outputs.source_run }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: python3 .github/scripts/select-validation-scope.py record-reuse
+      - name: Publish POC reuse receipt
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: poc-reuse-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ci-evidence/tested-tree.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Require combined POC execution within ten minutes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/check-poc-budget.py
+      - name: Distinguish POC staging from full production admission
+        run: echo 'Original identical-tree POC proof retained. Staging still needs current-tip and independent-review admission; production needs full exact-candidate validation.' >> "$GITHUB_STEP_SUMMARY"
