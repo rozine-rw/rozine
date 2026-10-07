@@ -105,6 +105,16 @@ const GLYPHS: Record<AdminFrameSection, ReactNode> = {
             <circle cx="12" cy="10.5" r="2.2" />
         </>
     ),
+    mail_testers: (
+        <>
+            <rect x="3" y="5" width="18" height="14" rx="2.5" />
+            <path
+                d="m4 7 8 6 8-6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </>
+    ),
     reports: (
         <>
             <path d="M6 3h8l4 4v14H6Z" strokeLinejoin="round" />
@@ -166,7 +176,7 @@ const GROUPS: {
             'ledger',
         ],
     },
-    { group: 'console', items: ['staff', 'events', 'reports'] },
+    { group: 'console', items: ['staff', 'events', 'reports', 'mail_testers'] },
 ];
 
 type AdminFrameProps = AdminFrameShellProps & {

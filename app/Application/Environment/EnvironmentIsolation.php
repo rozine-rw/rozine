@@ -46,6 +46,16 @@ class EnvironmentIsolation
         return $this->profile() === 'uat' && $this->config->get('mail.default') === 'smtp';
     }
 
+    /**
+     * The tester domains and addresses set on the server, as staging's start-up check accepted them.
+     *
+     * @return list<string>
+     */
+    public function stagingMailServerRecipients(): array
+    {
+        return array_values(array_filter($this->config->array('isolation.staging_mail.recipients'), is_string(...)));
+    }
+
     public function assertSafeConfiguration(?string $expectedProfile = null): void
     {
         $profile = $this->profile();

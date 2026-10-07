@@ -4,11 +4,15 @@ import { useTranslation } from '@/hooks/use-translation';
 import { dashboard } from '@/routes';
 import { edit } from '@/routes/profile';
 import type { StaffAccess } from '@/types/identity';
+import type { RouteLink } from '@/types/routing';
 
 export default function StaffHome({
     staff_access,
+    staging_mail_testers = null,
 }: {
     staff_access: StaffAccess;
+    /** Sent only on staging, to staff who may manage the staging mail testers. */
+    staging_mail_testers?: RouteLink | null;
 }) {
     const { t } = useTranslation();
     useAccessRefresh(['staff_access']);
@@ -27,6 +31,11 @@ export default function StaffHome({
                         : 'identity.denied.body',
                 )}
             </p>
+            {staging_mail_testers && (
+                <Link href={staging_mail_testers.url}>
+                    {t('identity.home.staging_mail_testers')}
+                </Link>
+            )}
             <Link href={edit()}>{t('identity.home.settings')}</Link>
         </main>
     );
