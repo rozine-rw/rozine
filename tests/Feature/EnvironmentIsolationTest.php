@@ -3,24 +3,30 @@
 declare(strict_types=1);
 
 use App\Application\Environment\EnvironmentIsolation;
+use App\Application\Environment\StagingMailAllowance;
 use App\Models\User;
 use App\Providers\AppServiceProvider;
 use App\Providers\EnvironmentSafetyServiceProvider;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Cache\ApcStore;
+use Illuminate\Cache\ApcWrapper;
 use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Database\Console\Migrations\FreshCommand;
 use Illuminate\Database\Console\Seeds\SeedCommand;
 use Illuminate\Http\Client\StrayRequestException;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -436,6 +442,69 @@ test('staging mail stops once the hourly allowance is spent', function () {
 
     expect($deliveries->map(fn (MessageSent $delivery): ?string => $delivery->message->getSubject())->all())
         ->toBe(['[Staging] Attempt 1', '[Staging] Attempt 2']);
+});
+
+test('a message waits for another worker taking the last place and is withheld if it cannot', function () {
+    $deliveries = stagingMailDeliveries();
+    Sleep::fake(syncWithCarbon: true);
+    // Another worker is part-way through its own reservation and holds the allowance lock.
+    $store = Cache::store(config('cache.limiter'))->getStore();
+    if (! $store instanceof LockProvider) {
+        $this->fail('The configured limiter cache cannot lock.');
+    }
+    $otherWorker = $store->lock('staging-mail:reservation', 10);
+    expect($otherWorker->get())->toBeTrue();
+
+    Mail::raw('While another worker reserves.', fn ($message) => $message->to('tester@example.test')->subject('Blocked'));
+    $otherWorker->release();
+    Mail::raw('After it finished.', fn ($message) => $message->to('tester@example.test')->subject('Released'));
+
+    expect($deliveries->map(fn (MessageSent $delivery): ?string => $delivery->message->getSubject())->all())
+        ->toBe(['[Staging] Released']);
+});
+
+test('staging mail is withheld when the configured cache cannot lock the allowance', function () {
+    config(['isolation.staging_mail.hourly_limit' => 50, 'cache.limiter' => 'apc-without-locks']);
+    // APC is a real cache that offers no locks; nothing is stored, so the extension is not needed.
+    Cache::extend('apc-without-locks', fn () => Cache::repository(new ApcStore(new ApcWrapper)));
+    config(['cache.stores.apc-without-locks' => ['driver' => 'apc-without-locks']]);
+
+    expect(app(StagingMailAllowance::class)->reserve())->toBeFalse();
+});
+
+test('independent workers together never exceed the hourly allowance', function () {
+    $code = <<<'PHP'
+require getcwd().'/vendor/autoload.php';
+$app = require getcwd().'/bootstrap/app.php';
+$app->afterBootstrapping(Illuminate\Foundation\Bootstrap\LoadConfiguration::class, function ($app) use ($argv) {
+    $app['config']->set([
+        'cache.default' => 'file', 'cache.limiter' => 'file',
+        'cache.stores.file' => ['driver' => 'file', 'path' => $argv[1], 'lock_path' => $argv[1]],
+        'isolation.staging_mail.hourly_limit' => 12,
+    ]);
+});
+$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+$reserved = 0;
+foreach (range(1, 8) as $attempt) {
+    $reserved += $app->make(App\Application\Environment\StagingMailAllowance::class)->reserve() ? 1 : 0;
+}
+echo $reserved;
+PHP;
+
+    $cache = $this->isolationDirectory.'/shared-cache';
+    File::ensureDirectoryExists($cache);
+    $workers = array_map(fn (): Process => new Process([PHP_BINARY, '-r', $code, $cache], base_path()), range(1, 4));
+    array_walk($workers, fn (Process $worker) => $worker->start());
+
+    $reserved = array_sum(array_map(function (Process $worker): int {
+        $worker->wait();
+        $this->assertSame(0, $worker->getExitCode(), $worker->getErrorOutput());
+
+        return (int) $worker->getOutput();
+    }, $workers));
+
+    // 4 workers × 8 attempts = 32 tries for 12 places.
+    expect($reserved)->toBe(12);
 });
 
 test('environments without staging mail keep the sender and recipients the message asked for', function (string $environment) {
