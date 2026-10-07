@@ -7,15 +7,20 @@ use App\Models\User;
 use App\Providers\AppServiceProvider;
 use App\Providers\EnvironmentSafetyServiceProvider;
 use Database\Seeders\DatabaseSeeder;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Database\Console\Migrations\FreshCommand;
 use Illuminate\Database\Console\Seeds\SeedCommand;
 use Illuminate\Http\Client\StrayRequestException;
+use Illuminate\Mail\Events\MessageSent;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -47,6 +52,55 @@ function isolatedConfiguration(string $environment = 'demo'): EnvironmentIsolati
     ]);
 
     return app(EnvironmentIsolation::class);
+}
+
+/**
+ * Staging's Resend relay as the server's .env would state it.
+ *
+ * @return array<string, mixed>
+ */
+function stagingResendMail(): array
+{
+    return [
+        'mail.default' => 'smtp',
+        'mail.mailers.smtp' => [
+            'transport' => 'smtp',
+            'scheme' => 'smtps',
+            'url' => null,
+            'host' => 'smtp.resend.com',
+            'port' => 465,
+            'username' => 'resend',
+            'password' => 'staging-key-do-not-expose',
+            'timeout' => null,
+            'local_domain' => 'uat.example.test',
+        ],
+        'mail.from.address' => 'staging@mail.rozine.rw',
+        'mail.from.name' => 'Rozine Staging',
+        'isolation.staging_mail.recipients' => ['tester@example.test', '@rozine.rw'],
+        'isolation.staging_mail.hourly_limit' => 50,
+    ];
+}
+
+/**
+ * Boots staging with real mail switched on, then routes delivery to the
+ * in-memory transport so the boundary can be observed without a network.
+ *
+ * @param  array<string, mixed>  $overrides
+ * @return Collection<int, MessageSent>
+ */
+function stagingMailDeliveries(array $overrides = []): Collection
+{
+    $isolation = isolatedConfiguration('staging');
+    config([...stagingResendMail(), ...$overrides]);
+    $isolation->configure();
+    (new EnvironmentSafetyServiceProvider(app()))->boot($isolation);
+    config(['mail.default' => 'array']);
+    Mail::forgetMailers();
+
+    $deliveries = collect();
+    Event::listen(MessageSent::class, fn (MessageSent $event) => $deliveries->push($event));
+
+    return $deliveries;
 }
 
 beforeEach(function () {
@@ -245,6 +299,205 @@ test('provider secrets are rejected without appearing in the exception', functio
     'mail.mailers.smtp.url', 'filesystems.disks.s3.bucket', 'filesystems.disks.s3.endpoint',
     'queue.connections.sqs.key', 'queue.connections.sqs.secret', 'logging.channels.slack.url',
     'database.redis.default.password', 'database.redis.default.url',
+]);
+
+test('staging may send real mail only through its Resend relay', function (string $environment) {
+    $isolation = isolatedConfiguration($environment);
+    config(stagingResendMail());
+    $isolation->configure();
+
+    expect($isolation->sendsStagingMail())->toBeTrue()
+        ->and(config('mail.default'))->toBe('smtp')
+        ->and(array_keys(config('mail.mailers')))->toBe(['array', 'smtp'])
+        ->and(config('mail.mailers.smtp'))->not->toHaveKey('url')
+        ->and(config('mail.mailers.smtp.host'))->toBe('smtp.resend.com')
+        ->and(config('mail.mailers.smtp.username'))->toBe('resend')
+        ->and(config('services'))->toBe([]);
+
+    $before = config()->all();
+    $isolation->configure();
+    expect(config()->all())->toBe($before)
+        ->and(Artisan::call('isolation:check', ['--expect' => 'uat']))->toBe(0);
+})->with(['staging', 'uat']);
+
+test('staging mail refuses any other relay or credential shape without exposing the key', function (string $key, mixed $value) {
+    $isolation = isolatedConfiguration('staging');
+    config(stagingResendMail());
+    config([$key => $value]);
+
+    try {
+        $isolation->configure();
+        $this->fail('A staging mail relay other than Resend was accepted.');
+    } catch (LogicException $exception) {
+        expect($exception->getMessage())->toBe('ISOLATION_MAIL_PROVIDER_DENIED')
+            ->not->toContain('staging-key-do-not-expose');
+    }
+})->with([
+    'another relay' => ['mail.mailers.smtp.host', 'smtp.example.test'],
+    'a relay hidden in a url' => ['mail.mailers.smtp.url', 'smtps://resend:staging-key-do-not-expose@smtp.example.test:465'],
+    'another account' => ['mail.mailers.smtp.username', 'apikey'],
+    'no key' => ['mail.mailers.smtp.password', ''],
+    'another transport' => ['mail.mailers.smtp.transport', 'sendmail'],
+    'plaintext or a STARTTLS downgrade' => ['mail.mailers.smtp.scheme', 'smtp'],
+    'no scheme' => ['mail.mailers.smtp.scheme', null],
+    'peer verification off' => ['mail.mailers.smtp.verify_peer', false],
+    'peer verification off as text' => ['mail.mailers.smtp.verify_peer', 'false'],
+    'TLS negotiation off' => ['mail.mailers.smtp.auto_tls', false],
+    'an unreviewed transport option' => ['mail.mailers.smtp.peer_fingerprint', 'sha256'],
+]);
+
+test('staging mail refuses to start without owner-approved testers and an hourly allowance', function (string $key, mixed $value, string $error) {
+    $isolation = isolatedConfiguration('uat');
+    config(stagingResendMail());
+    config([$key => $value]);
+
+    expect(fn () => $isolation->configure())->toThrow(LogicException::class, $error);
+})->with([
+    'no testers' => ['isolation.staging_mail.recipients', [], 'ISOLATION_MAIL_RECIPIENTS_REQUIRED'],
+    'not an address' => ['isolation.staging_mail.recipients', ['tester'], 'ISOLATION_MAIL_RECIPIENTS_REQUIRED'],
+    'a bare at sign' => ['isolation.staging_mail.recipients', ['@'], 'ISOLATION_MAIL_RECIPIENTS_REQUIRED'],
+    'a domain without a dot' => ['isolation.staging_mail.recipients', ['tester@example.test', '@rozine'], 'ISOLATION_MAIL_RECIPIENTS_REQUIRED'],
+    'no allowance' => ['isolation.staging_mail.hourly_limit', false, 'ISOLATION_MAIL_LIMIT_REQUIRED'],
+    'a zero allowance' => ['isolation.staging_mail.hourly_limit', 0, 'ISOLATION_MAIL_LIMIT_REQUIRED'],
+    'an allowance as text' => ['isolation.staging_mail.hourly_limit', '50', 'ISOLATION_MAIL_LIMIT_REQUIRED'],
+]);
+
+test('the staging tester list and allowance are read from the environment strictly', function () {
+    $_SERVER['STAGING_MAIL_RECIPIENTS'] = $_ENV['STAGING_MAIL_RECIPIENTS'] = ' tester@example.test, @rozine.rw ,, ';
+    $_SERVER['STAGING_MAIL_HOURLY_LIMIT'] = $_ENV['STAGING_MAIL_HOURLY_LIMIT'] = '25';
+    $parsed = require config_path('isolation.php');
+
+    $_SERVER['STAGING_MAIL_HOURLY_LIMIT'] = $_ENV['STAGING_MAIL_HOURLY_LIMIT'] = '25 per hour';
+    $unparsable = require config_path('isolation.php');
+
+    unset($_SERVER['STAGING_MAIL_RECIPIENTS'], $_ENV['STAGING_MAIL_RECIPIENTS'], $_SERVER['STAGING_MAIL_HOURLY_LIMIT'], $_ENV['STAGING_MAIL_HOURLY_LIMIT']);
+    $unset = require config_path('isolation.php');
+
+    expect($parsed['staging_mail'])->toBe(['recipients' => ['tester@example.test', '@rozine.rw'], 'hourly_limit' => 25])
+        ->and($unparsable['staging_mail']['hourly_limit'])->toBeFalse()
+        ->and($unset['staging_mail'])->toBe(['recipients' => [], 'hourly_limit' => false]);
+});
+
+test('staging mail reaches approved testers only as the staging sender whatever the message asked for', function () {
+    $deliveries = stagingMailDeliveries();
+
+    Mail::raw('Approved by address.', fn ($message) => $message->to('Tester@Example.test')->subject('Verify Email Address')
+        ->from('no-reply@mail.rozine.rw', 'Rozine')->sender('ops@mail.rozine.rw')->returnPath('bounce@mail.rozine.rw'));
+    Mail::raw('Approved by domain.', fn ($message) => $message->to('someone@ROZINE.rw')->subject('Reset Password'));
+
+    expect($deliveries)->toHaveCount(2);
+
+    foreach ($deliveries as $delivery) {
+        $from = $delivery->message->getFrom();
+
+        expect($from)->toHaveCount(1)
+            ->and($from[0]->getAddress())->toBe('staging@mail.rozine.rw')
+            ->and($from[0]->getName())->toBe('Rozine Staging')
+            ->and($delivery->message->getSender())->toBeNull()
+            ->and($delivery->message->getReturnPath())->toBeNull()
+            ->and($delivery->sent->getSymfonySentMessage()->getEnvelope()->getSender()->getAddress())->toBe('staging@mail.rozine.rw')
+            ->and($delivery->message->getSubject())->toStartWith('[Staging] ');
+    }
+});
+
+test('a staging message with any recipient outside the approved testers is withheld', function (Closure $address) {
+    $deliveries = stagingMailDeliveries();
+
+    Mail::raw('Not for outsiders.', fn ($message) => $address($message->to('tester@example.test')->subject('Hello')));
+
+    expect($deliveries)->toBeEmpty();
+})->with([
+    'an outside To' => fn ($message) => $message->to('stranger@example.org'),
+    'an outside Cc' => fn ($message) => $message->cc('stranger@example.org'),
+    'an outside Bcc' => fn ($message) => $message->bcc('stranger@example.org'),
+    'a lookalike domain' => fn ($message) => $message->to('someone@evilrozine.rw'),
+    'a subdomain of an approved domain' => fn ($message) => $message->to('someone@mail.rozine.rw'),
+]);
+
+test('verification and password reset notifications only reach approved testers on staging', function (string $email, int $expected) {
+    $deliveries = stagingMailDeliveries();
+    $user = User::factory()->make(['id' => 4242, 'email' => $email]);
+
+    $user->notify(new VerifyEmail);
+    $user->notify(new ResetPassword('synthetic-reset-token'));
+
+    expect($deliveries)->toHaveCount($expected);
+})->with([
+    'an approved tester' => ['tester@example.test', 2],
+    'an unapproved sign-up' => ['stranger@example.org', 0],
+]);
+
+test('staging mail stops once the hourly allowance is spent', function () {
+    $deliveries = stagingMailDeliveries(['isolation.staging_mail.hourly_limit' => 2]);
+
+    foreach (range(1, 3) as $attempt) {
+        Mail::raw('Attempt '.$attempt, fn ($message) => $message->to('tester@example.test')->subject('Attempt '.$attempt));
+    }
+
+    expect($deliveries->map(fn (MessageSent $delivery): ?string => $delivery->message->getSubject())->all())
+        ->toBe(['[Staging] Attempt 1', '[Staging] Attempt 2']);
+});
+
+test('environments without staging mail keep the sender and recipients the message asked for', function (string $environment) {
+    $isolation = $environment === 'testing' ? app(EnvironmentIsolation::class) : isolatedConfiguration($environment);
+    config(['mail.default' => 'array', 'mail.mailers.array' => ['transport' => 'array']]);
+    Mail::forgetMailers();
+    (new EnvironmentSafetyServiceProvider(app()))->boot($isolation);
+    $deliveries = collect();
+    Event::listen(MessageSent::class, fn (MessageSent $event) => $deliveries->push($event));
+
+    Mail::raw('Production path.', fn ($message) => $message->to('stranger@example.org')->from('no-reply@mail.rozine.rw', 'Rozine')->subject('Hello'));
+
+    expect($deliveries)->toHaveCount(1)
+        ->and($deliveries[0]->message->getFrom()[0]->getAddress())->toBe('no-reply@mail.rozine.rw');
+})->with(['testing', 'uat']);
+
+test('staging mail must come from a sender that says staging', function (mixed $address, mixed $name) {
+    $isolation = isolatedConfiguration('uat');
+    config(stagingResendMail());
+    config(['mail.from.address' => $address, 'mail.from.name' => $name]);
+
+    expect(fn () => $isolation->configure())->toThrow(LogicException::class, 'ISOLATION_MAIL_SENDER_NOT_STAGING');
+})->with([
+    'the production sender' => ['no-reply@mail.rozine.rw', 'Rozine Staging'],
+    'a sender named like production' => ['staging@mail.rozine.rw', 'Rozine'],
+    'no sender' => [null, 'Rozine Staging'],
+    'staging only after the at sign' => ['hello@staging.rozine.rw', 'Rozine Staging'],
+]);
+
+test('demo never sends real mail even with the staging relay configured', function () {
+    $isolation = isolatedConfiguration('demo');
+    config(stagingResendMail());
+
+    expect($isolation->sendsStagingMail())->toBeFalse()
+        ->and(fn () => $isolation->configure())->toThrow(LogicException::class, 'ISOLATION_PROVIDER_CREDENTIALS_DENIED');
+
+    config(['mail.mailers.smtp.username' => null, 'mail.mailers.smtp.password' => null]);
+    $isolation->configure();
+
+    expect(config('mail.default'))->toBe('array')
+        ->and(config('mail.mailers'))->toBe(['array' => ['transport' => 'array']]);
+});
+
+test('every staging email is marked as staging and other environments keep their subjects', function (string $environment, string $subject) {
+    $isolation = $environment === 'testing' ? app(EnvironmentIsolation::class) : isolatedConfiguration($environment);
+    config(['mail.default' => 'array', 'mail.mailers.array' => ['transport' => 'array']]);
+    Mail::forgetMailers();
+    (new EnvironmentSafetyServiceProvider(app()))->boot($isolation);
+    $subjects = [];
+    Event::listen(MessageSent::class, function (MessageSent $event) use (&$subjects): void {
+        $subjects[] = $event->message->getSubject();
+    });
+
+    Mail::raw('Open the link to verify.', fn ($message) => $message->to('tester@example.test')->subject('Verify Email Address'));
+    Mail::raw('Already marked.', fn ($message) => $message->to('tester@example.test')->subject('[Staging] Reset Password'));
+
+    expect($subjects)->toBe([$subject, '[Staging] Reset Password']);
+})->with([
+    'staging' => ['staging', '[Staging] Verify Email Address'],
+    'uat' => ['uat', '[Staging] Verify Email Address'],
+    'demo' => ['demo', 'Verify Email Address'],
+    'testing' => ['testing', 'Verify Email Address'],
 ]);
 
 test('debug mode and live or invalid application urls are refused', function (string $key, mixed $value, string $error) {

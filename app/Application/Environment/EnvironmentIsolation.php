@@ -11,6 +11,9 @@ use LogicException;
 
 class EnvironmentIsolation
 {
+    /** The only SMTP settings staging's Resend relay may carry. */
+    private const array STAGING_MAILER_KEYS = ['transport', 'scheme', 'url', 'host', 'port', 'username', 'password', 'timeout', 'local_domain', 'verify_peer'];
+
     public function __construct(
         private readonly Application $app,
         private readonly Repository $config,
@@ -31,6 +34,16 @@ class EnvironmentIsolation
     public function isIsolated(): bool
     {
         return in_array($this->profile(), ['demo', 'uat'], true);
+    }
+
+    /**
+     * Staging may opt into real mail, and only through its own Resend SMTP
+     * key as a visibly staging sender. Every other non-live profile and every
+     * staging configuration without the opt-in keeps mail in memory.
+     */
+    public function sendsStagingMail(): bool
+    {
+        return $this->profile() === 'uat' && $this->config->get('mail.default') === 'smtp';
     }
 
     public function assertSafeConfiguration(?string $expectedProfile = null): void
@@ -69,6 +82,7 @@ class EnvironmentIsolation
         }
 
         $this->assertDatabaseBoundary();
+        $this->assertStagingMailBoundary();
         $this->assertNoProviderCredentials();
         $this->assertStorageBoundary();
 
@@ -89,8 +103,9 @@ class EnvironmentIsolation
 
     /**
      * Install a deliberately narrow, local-only non-live runtime before any
-     * provider boots. No secondary database, cloud disk, Redis, SMTP, SQS or
-     * fallback driver remains selectable by an explicit connection name.
+     * provider boots. No secondary database, cloud disk, Redis, SQS or fallback
+     * driver remains selectable by an explicit connection name, and SMTP only
+     * as staging's checked Resend relay.
      */
     public function configure(): void
     {
@@ -149,8 +164,10 @@ class EnvironmentIsolation
                 ],
             ],
             'filesystems.links' => [$this->app->publicPath('storage') => $root.'/public'],
-            'mail.default' => 'array',
-            'mail.mailers' => ['array' => ['transport' => 'array']],
+            'mail.default' => $this->sendsStagingMail() ? 'smtp' : 'array',
+            'mail.mailers' => ['array' => ['transport' => 'array']] + ($this->sendsStagingMail()
+                ? ['smtp' => Arr::except($this->config->array('mail.mailers.smtp'), ['url'])]
+                : []),
             'services' => [],
             'logging.default' => 'isolated',
             'logging.channels' => ['isolated' => [
@@ -259,8 +276,56 @@ class EnvironmentIsolation
         }
     }
 
+    private function assertStagingMailBoundary(): void
+    {
+        if (! $this->sendsStagingMail()) {
+            return;
+        }
+
+        $mailer = $this->config->array('mail.mailers.smtp');
+        $host = $mailer['host'] ?? null;
+        $password = $mailer['password'] ?? null;
+        $verifyPeer = $mailer['verify_peer'] ?? true;
+
+        // Implicit TLS only, with the peer certificate verified: no plaintext,
+        // no STARTTLS downgrade and no option the boundary has not reviewed.
+        if (array_diff(array_keys($mailer), self::STAGING_MAILER_KEYS) !== []
+            || ($mailer['transport'] ?? null) !== 'smtp' || ($mailer['scheme'] ?? null) !== 'smtps'
+            || ! empty($mailer['url']) || filter_var($verifyPeer, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE) !== true
+            || ! is_string($host) || strtolower($host) !== 'smtp.resend.com'
+            || ($mailer['username'] ?? null) !== 'resend'
+            || ! is_string($password) || $password === '') {
+            throw new LogicException('ISOLATION_MAIL_PROVIDER_DENIED');
+        }
+
+        $recipients = $this->config->get('isolation.staging_mail.recipients');
+
+        if (! is_array($recipients) || $recipients === []
+            || array_filter($recipients, fn (mixed $entry): bool => ! is_string($entry)
+                || (preg_match('/^@[a-z0-9-]+(\.[a-z0-9-]+)+$/i', $entry) !== 1
+                    && filter_var($entry, FILTER_VALIDATE_EMAIL) === false)) !== []) {
+            throw new LogicException('ISOLATION_MAIL_RECIPIENTS_REQUIRED');
+        }
+
+        $hourlyLimit = $this->config->get('isolation.staging_mail.hourly_limit');
+
+        if (! is_int($hourlyLimit) || $hourlyLimit < 1) {
+            throw new LogicException('ISOLATION_MAIL_LIMIT_REQUIRED');
+        }
+
+        $address = $this->config->get('mail.from.address');
+        $name = $this->config->get('mail.from.name');
+
+        if (! is_string($address) || preg_match('/^staging[^@\s]*@[^@\s]+$/i', $address) !== 1
+            || ! is_string($name) || stripos($name, 'staging') === false) {
+            throw new LogicException('ISOLATION_MAIL_SENDER_NOT_STAGING');
+        }
+    }
+
     private function assertNoProviderCredentials(): void
     {
+        $stagingMailCredentials = $this->sendsStagingMail() ? ['mailers.smtp.username', 'mailers.smtp.password'] : [];
+
         $values = Arr::dot([
             'services' => $this->config->array('services'),
             'mailers' => $this->config->array('mail.mailers'),
@@ -273,7 +338,7 @@ class EnvironmentIsolation
         foreach ($values as $key => $value) {
             if (preg_match('/(?:key|secret|token|password|username|bucket|url|endpoint)$/', $key) === 1
                 && $value !== null && $value !== '' && $value !== false
-                && ! in_array($key, ['disks.public.url', 'logs.slack.username'], true)) {
+                && ! in_array($key, ['disks.public.url', 'logs.slack.username', ...$stagingMailCredentials], true)) {
                 throw new LogicException('ISOLATION_PROVIDER_CREDENTIALS_DENIED');
             }
         }
