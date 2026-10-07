@@ -56,6 +56,7 @@ jobs:
     outputs:
       full: ${{ steps.scope.outputs.full }}
       source_run: ${{ steps.scope.outputs.source_run }}
+      source_attempt: ${{ steps.scope.outputs.source_attempt }}
       poc: ${{ steps.scope.outputs.poc }}
       scope: ${{ steps.scope.outputs.scope }}
       reused: ${{ steps.scope.outputs.reused }}
@@ -764,6 +765,7 @@ jobs:
       - name: Record reused full-suite evidence
         env:
           SOURCE_RUN: ${{ needs.plan.outputs.source_run }}
+          SOURCE_ATTEMPT: ${{ needs.plan.outputs.source_attempt }}
         run: echo "Full checks passed for this exact file tree in PR run $SOURCE_RUN. Post-merge build and smoke checks passed." >> "$GITHUB_STEP_SUMMARY"
 
   poc-php:
@@ -1002,11 +1004,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           SOURCE_RUN: ${{ needs.plan.outputs.source_run }}
+          SOURCE_ATTEMPT: ${{ needs.plan.outputs.source_attempt }}
         run: python3 .github/scripts/select-validation-scope.py verify-poc
       - name: Record original POC source
         env:
           GH_TOKEN: ${{ github.token }}
           SOURCE_RUN: ${{ needs.plan.outputs.source_run }}
+          SOURCE_ATTEMPT: ${{ needs.plan.outputs.source_attempt }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: python3 .github/scripts/select-validation-scope.py record-reuse
       - name: Publish POC reuse receipt

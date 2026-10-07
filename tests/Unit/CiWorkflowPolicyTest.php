@@ -183,6 +183,8 @@ it('pins original POC provenance and budgets reuse before staging admission', fu
     $workflow = Yaml::parseFile($this->root.'/.github/workflows/tests.yml');
     $steps = $workflow['jobs']['reuse-poc']['steps'];
     expect($steps[1]['env']['SOURCE_RUN'])->toBe('${{ needs.plan.outputs.source_run }}')
+        ->and($steps[1]['env']['SOURCE_ATTEMPT'])->toBe('${{ needs.plan.outputs.source_attempt }}')
+        ->and($steps[2]['env']['SOURCE_ATTEMPT'])->toBe('${{ needs.plan.outputs.source_attempt }}')
         ->and($steps[2]['env']['SOURCE_RUN'])->toBe('${{ needs.plan.outputs.source_run }}')
         ->and($steps[3]['with']['name'])->toBe('poc-reuse-${{ github.run_id }}-${{ github.run_attempt }}')
         ->and($steps[4]['run'])->toBe('python3 .github/scripts/check-poc-budget.py');

@@ -54,9 +54,10 @@ class ScopeTests(unittest.TestCase):
             with self.subTest(context=context), tempfile.TemporaryDirectory() as directory:
                 output = Path(directory) / "output"
                 env = dict(context, GITHUB_OUTPUT=str(output))
-                with patch.dict(policy.os.environ, env, clear=True), patch.object(policy.sys, "argv", ["select-validation-scope.py"]), patch.object(policy, "reusable_run", return_value="99") as lookup:
+                with patch.dict(policy.os.environ, env, clear=True), patch.object(policy.sys, "argv", ["select-validation-scope.py"]), patch.object(policy, "reusable_run", return_value=("99", "2")) as lookup:
                     policy.main()
                 self.assertEqual(lookup.call_count, int(reused))
+                self.assertIn("source_attempt=" + ("2" if reused else "") + "\n", output.read_text())
                 self.assertIn("source_run=" + ("99" if reused else "") + "\n", output.read_text())
                 self.assertIn("full=" + ("false" if reused else "true") + "\n", output.read_text())
 
@@ -233,7 +234,7 @@ class ScopeTests(unittest.TestCase):
                 if endpoint.endswith("/workflows/tests.yml"):
                     return {"id": 7}
                 if "/workflows/" in endpoint:
-                    return {"workflow_runs": [run]}
+                    return {"total_count": 1, "workflow_runs": [run]}
                 if "/artifacts?" in endpoint:
                     return {"artifacts": artifacts}
                 if "/git/commits/" in endpoint:
@@ -306,7 +307,7 @@ class ScopeTests(unittest.TestCase):
                 runs = [candidate, original] + ([newer] if failed else [])
                 def api(endpoint):
                     if endpoint.endswith("/workflows/tests.yml"): return {"id": 7}
-                    if "/workflows/tests.yml/runs?" in endpoint: return {"workflow_runs": runs}
+                    if "/workflows/tests.yml/runs?" in endpoint: return {"total_count": len(runs), "workflow_runs": runs}
                     if "/git/commits/" in endpoint:
                         return dict(self.commit, parents=[{"sha": "a" * 40}])
                     if endpoint.endswith("/100"): return candidate
@@ -327,6 +328,45 @@ class ScopeTests(unittest.TestCase):
                         with self.assertRaises(ValueError): policy.staging_evidence(env)
                     else:
                         self.assertEqual(policy.staging_evidence(env)["source_run"], "99" if reused else "100")
+
+    def test_complete_history_detects_newer_failed_rerun_outside_first_page(self):
+        old_failed = dict(self.run, id=77, conclusion="failure", updated_at="2099-01-01T00:00:00Z")
+        first_runs = [dict(self.run, id=value) for value in range(99, 199)]
+        first = {"total_count": 101, "workflow_runs": first_runs}
+        last = {"total_count": 101, "workflow_runs": [old_failed]}
+        env = {"GITHUB_REPOSITORY": "rozine-rw/rozine", "GITHUB_SHA": "f" * 40, "SOURCE_RUN": "99", "SOURCE_ATTEMPT": "2"}
+        def api(endpoint):
+            return first if "/runs?" in endpoint else {"id": 7}
+        with patch.object(policy, "command", side_effect=["f" * 40, "c" * 40]), patch.object(policy, "api", side_effect=api), patch.object(policy, "pages", return_value=[first, last]), patch.object(policy, "validate_source", return_value=self.proof):
+            self.assertEqual(policy.reusable_run(env, "full"), "")
+        for scenario in ["missing page", "duplicate IDs", "changed count", "bound exceeded"]:
+            responses = copy.deepcopy([first, last])
+            first_response = copy.deepcopy(first)
+            if scenario == "missing page": responses = [first]
+            if scenario == "duplicate IDs": responses[-1]["workflow_runs"] = [first_runs[0]]
+            if scenario == "changed count": responses[-1]["total_count"] = 102
+            if scenario == "bound exceeded": first_response["total_count"] = 5001
+            with self.subTest(scenario=scenario), patch.object(policy, "api", return_value=first_response), patch.object(policy, "pages", return_value=responses):
+                with self.assertRaises(ValueError): policy.workflow_history("rozine-rw/rozine")
+
+    def test_source_attempt_is_pinned_and_changed_attempt_refuses_receipt(self):
+        env = {"GITHUB_REPOSITORY": "rozine-rw/rozine", "GITHUB_SHA": "f" * 40, "SOURCE_RUN": "99", "SOURCE_ATTEMPT": "2"}
+        for conclusion in ["success", "failure", None]:
+            changed = dict(self.run, run_attempt=3, conclusion=conclusion)
+            def api(endpoint):
+                return {"total_count": 1, "workflow_runs": [changed]} if "/runs?" in endpoint else {"id": 7}
+            with self.subTest(conclusion=conclusion), patch.object(policy, "command", side_effect=["f" * 40, "c" * 40]), patch.object(policy, "api", side_effect=api), patch.object(policy, "validate_source") as validate, patch.object(policy, "record") as record:
+                with self.assertRaises(ValueError): policy.record_reuse(env)
+                validate.assert_not_called()
+                record.assert_not_called()
+        with tempfile.TemporaryDirectory() as directory, patch.object(policy, "reusable_run", return_value="99") as validate, patch.object(policy, "record") as record, patch.object(policy, "Path", wraps=Path) as paths:
+            path = Path(directory) / "tested-tree.json"
+            path.write_text(json.dumps(self.proof))
+            paths.return_value = path
+            policy.record_reuse(env)
+            self.assertEqual(json.loads(path.read_text())["source_attempt"], "2")
+            validate.assert_called_once_with(env, "poc")
+            record.assert_called_once_with(env, "poc")
 
     def test_reuse_budget_includes_selection_board_and_receipt(self):
         jobs = [{"name": name, "status": "completed", "conclusion": "success", "started_at": "2026-10-06T11:00:00Z", "completed_at": "2026-10-06T11:00:20Z"}
