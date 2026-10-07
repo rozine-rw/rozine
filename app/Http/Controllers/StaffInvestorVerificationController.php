@@ -45,10 +45,11 @@ class StaffInvestorVerificationController extends Controller
         $queue = $this->review->queue($actorId, (string) $request->validated('tab', 'submitted'), trim((string) $request->validated('search', '')),
             $request->validated('before'), (int) $request->validated('limit', 25));
         $selected = $request->validated('verification');
+        $staff = $access->handle($actorId);
 
         $resource = new StaffInvestorVerificationsResource([...$queue,
             'review' => $selected === null ? null : $this->review->show($actorId, (string) $selected),
-            'roles' => $access->handle($actorId)['roles']]);
+            'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions']]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('admin/investor-verifications', $resource->resolve($request));
     }

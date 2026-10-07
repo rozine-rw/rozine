@@ -28,6 +28,6 @@ final class ListStaffApplications
             throw new IdentityViolation('STAFF_PERMISSION_REQUIRED');
         }
 
-        return [...$page, 'release_page' => $release, 'roles' => $access['roles']];
+        return [...$page, 'release_page' => $release, 'roles' => $access['roles'], 'permissions' => $access['allowed_actions']];
     }
 }

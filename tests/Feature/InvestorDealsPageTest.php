@@ -8,11 +8,15 @@ use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Business\Contracts\PublishedCampaignEvidence;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\PrimaryCheckout;
+use App\Domain\Identity\InvestorVerificationCase;
 use App\Infrastructure\Business\RetainedCampaignPublication;
 use App\Models\AuditReportSeal;
 use App\Models\BusinessApplicationQuote;
+use App\Models\InvestorVerification;
+use App\Models\Party;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
+use App\Models\StaffAccount;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -227,4 +231,57 @@ it('refuses a caller without the Investor role', function (): void {
     $business = $this->campaign->actor_user_id;
 
     $this->actingAs(User::query()->findOrFail($business))->get(route('investor.deals'))->assertForbidden();
+});
+
+it('lets a person still being verified browse the deals, with no wallet and no way to transact', function (?string $status, array $gate): void {
+    $person = User::factory()->create(['party_id' => Party::factory()]);
+    if ($status !== null) {
+        (new InvestorVerification)->forceFill(['party_id' => $person->party_id, 'revision' => 1, 'status' => $status,
+            'state' => app(InvestorVerificationCase::class)->empty(), 'submitted_at' => $status === 'draft' ? null : now()])->save();
+    }
+
+    $props = $this->actingAs($person)->get(route('investor.deals'))->assertOk()
+        ->assertInertia(fn ($page) => $page->component('investor/deals'))->viewData('page')['props'];
+    expect($props)->toMatchArray(['gate' => $gate, 'wallet' => null, 'allowed_actions' => [], 'quote' => null,
+        'identity_context_revision' => $person->context_revision])
+        ->and($props['links'])->toMatchArray(['wallet' => null, 'deposit' => null, 'checkout' => null,
+            'deals' => ['url' => '/investor/deals', 'method' => 'get']])
+        ->and(array_column($props['deals'], 'campaign_id'))->toBe([$this->campaign->id])
+        ->and($props['focus']['campaign_id'])->toBe($this->campaign->id);
+    $this->get(route('investor.deals.show', ['campaign' => $this->campaign->id]))->assertOk()
+        ->assertInertia(fn ($page) => $page->component('investor/deal')->where('gate', $gate)
+            ->where('deal.campaign_id', $this->campaign->id)->where('links.checkout', null)->where('home.wallet', null));
+    $this->get(route('investor.home'))->assertRedirect(route('investor.deals'));
+
+    $this->getJson(route('investor.wallet'))->assertForbidden()->assertJsonPath('code', 'IDENTITY_VERIFICATION_REQUIRED');
+    $this->postJson(route('investor.primary.reserve', ['campaign' => $this->campaign->id]), ['request_id' => (string) Str::uuid(),
+        'identity_context_revision' => $person->context_revision, 'campaign_id' => $this->campaign->id, 'units' => '2',
+        'expected_campaign_revision' => 1, 'quote_revision' => 1])->assertJsonPath('code', 'IDENTITY_VERIFICATION_REQUIRED');
+    expect(PrimaryReservationRecord::query()->count())->toBe(0);
+})->with([
+    'not started' => [null, ['status' => 'verification_required', 'link' => ['url' => '/investor/verification', 'method' => 'get']]],
+    'drafting' => ['draft', ['status' => 'verification_required', 'link' => ['url' => '/investor/verification', 'method' => 'get']]],
+    'with Compliance' => ['submitted', ['status' => 'verification_pending']],
+    'rejected' => ['rejected', ['status' => 'verification_required', 'link' => ['url' => '/investor/verification', 'method' => 'get']]],
+]);
+
+it('serves the same verification gate to a person on the API', function (): void {
+    $person = User::factory()->create(['party_id' => Party::factory()]);
+    Sanctum::actingAs($person, ['investor:read']);
+
+    $this->getJson(route('api.v1.investor.deals'))->assertOk()->assertJsonPath('data.wallet', null)
+        ->assertJsonPath('data.gate', ['status' => 'verification_required', 'link' => ['url' => '/api/v1/investor/verification', 'method' => 'get']])
+        ->assertJsonPath('data.deals.0.campaign_id', $this->campaign->id);
+});
+
+it('keeps the deals closed to staff and to a verified person without the Investor role', function (): void {
+    $staff = User::factory()->withTwoFactor()->create();
+    StaffAccount::factory()->create(['user_id' => $staff->id]);
+    $this->actingAs($staff)->getJson(route('investor.deals'))->assertForbidden()->assertJsonPath('code', 'IDENTITY_NOT_LINKED');
+    $this->get(route('investor.home'))->assertForbidden();
+
+    $verified = User::factory()->create(['party_id' => Party::factory()->verified()]);
+    $this->actingAs($verified)->getJson(route('investor.deals'))->assertForbidden()
+        ->assertJsonPath('code', fn (string $code): bool => $code !== 'IDENTITY_VERIFICATION_REQUIRED');
+    $this->get(route('investor.home'))->assertForbidden();
 });

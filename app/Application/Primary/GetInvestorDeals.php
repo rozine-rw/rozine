@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Application\Primary;
 
 use App\Application\Business\Contracts\InvestorDealCatalogue;
+use App\Application\Identity\GetInvestorVerification;
 use App\Application\Wallet\Contracts\WalletStore;
+use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use Brick\Math\BigDecimal;
 
@@ -14,15 +16,19 @@ use Brick\Math\BigDecimal;
  * the wallet read; the deck then reads only the allowlisted publication projection. Nothing here
  * quotes, reserves or chooses terms: until admission exists there is no quote and no checkout.
  *
- * @phpstan-type DealsPage array{identity_context_revision: int, restricted: bool, available: array{currency: string, amount: string},
- *     sort: string, industry: string|null, industries: list<array{industry: string|null, count: int}>, deals: list<array<string, mixed>>,
- *     focus: array<string, mixed>|null}
+ * A person whose identity is not yet verified may browse the same deck while it is checked, with
+ * no wallet and the stage of their verification instead: verification comes before any investment
+ * (BRS FR-100, CR-1), not before reading the deals. Every command still requires the Investor role.
+ *
+ * @phpstan-type DealsPage array{identity_context_revision: int, restricted: bool, available: array{currency: string, amount: string}|null,
+ *     verification: 'required'|'pending'|null, sort: string, industry: string|null, industries: list<array{industry: string|null, count: int}>,
+ *     deals: list<array<string, mixed>>, focus: array<string, mixed>|null}
  */
 final class GetInvestorDeals
 {
     public const array SORTS = ['all', 'top_interest', 'top_rated'];
 
-    public function __construct(private WalletStore $wallets, private InvestorDealCatalogue $catalogue) {}
+    public function __construct(private WalletStore $wallets, private InvestorDealCatalogue $catalogue, private GetInvestorVerification $verification) {}
 
     /**
      * @param  array{sort?: string|null, industry?: string|null, deal?: string|null}  $query
@@ -30,7 +36,7 @@ final class GetInvestorDeals
      */
     public function page(int $userId, ?int $contextRevision, array $query): array
     {
-        $wallet = $this->wallets->page($userId, $contextRevision, []);
+        $viewer = $this->viewer($userId, $contextRevision);
         $all = $this->catalogue->deals();
         $sort = in_array($query['sort'] ?? null, self::SORTS, true) ? $query['sort'] : 'all';
         $industry = $query['industry'] ?? null;
@@ -40,8 +46,7 @@ final class GetInvestorDeals
         $deals = self::sorted(array_values(array_filter($all, fn (array $deal): bool => $industry === null || $deal['industry'] === $industry)), $sort);
         $focusId = $query['deal'] ?? ($deals[0]['campaign_id'] ?? null);
 
-        return ['identity_context_revision' => (int) $wallet['identity_context_revision'], 'restricted' => $wallet['wallet']['status'] === 'restricted',
-            'available' => $wallet['wallet']['breakdown']['available'], 'sort' => $sort, 'industry' => $industry,
+        return [...$viewer, 'sort' => $sort, 'industry' => $industry,
             'industries' => [['industry' => null, 'count' => count($all)],
                 ...array_map(fn (string $name): array => ['industry' => $name,
                     'count' => count(array_filter($all, fn (array $deal): bool => $deal['industry'] === $name))], $names)],
@@ -61,6 +66,33 @@ final class GetInvestorDeals
         }
 
         return $page;
+    }
+
+    /**
+     * A verified Investor's wallet facts or, for a person whose identity is still unverified, no
+     * wallet and whether their submission is with Compliance. Any other refusal stands.
+     *
+     * @return array{identity_context_revision: int, restricted: bool, available: array{currency: string, amount: string}|null, verification: 'required'|'pending'|null}
+     */
+    private function viewer(int $userId, ?int $contextRevision): array
+    {
+        try {
+            $wallet = $this->wallets->page($userId, $contextRevision, []);
+        } catch (IdentityViolation $violation) {
+            if ($violation->reason !== 'IDENTITY_VERIFICATION_REQUIRED') {
+                throw $violation;
+            }
+            $submission = $this->verification->handle($userId);
+            if ($submission['verified']) {
+                throw $violation;
+            }
+
+            return ['identity_context_revision' => $submission['identity_context_revision'], 'restricted' => false, 'available' => null,
+                'verification' => $submission['status'] === 'submitted' ? 'pending' : 'required'];
+        }
+
+        return ['identity_context_revision' => (int) $wallet['identity_context_revision'], 'restricted' => $wallet['wallet']['status'] === 'restricted',
+            'available' => $wallet['wallet']['breakdown']['available'], 'verification' => null];
     }
 
     /**

@@ -8,11 +8,12 @@ import type { RouteLink } from '@/types';
 import type { WalletSummary } from '@/types/investor';
 
 type DealTopBarProps = {
-    wallet: WalletSummary;
+    /** Null before the identity is verified: there is no wallet to show or fund. */
+    wallet: WalletSummary | null;
     unread: number;
     links: {
-        wallet: RouteLink;
-        deposit: RouteLink;
+        wallet: RouteLink | null;
+        deposit: RouteLink | null;
         /** Null until notifications have a live route; the bell is then not shown. */
         notifications: RouteLink | null;
     };
@@ -131,29 +132,33 @@ function nextPayoutLabel(wallet: WalletSummary, locale: string): string | null {
  */
 export function PhoneTopBar({ wallet, unread, links }: DealTopBarProps) {
     const { t, locale } = useTranslation();
-    const payout = nextPayoutLabel(wallet, locale);
+    const payout = wallet === null ? null : nextPayoutLabel(wallet, locale);
 
     return (
         <div className="flex items-center gap-[9px] px-3.5 pt-[calc(env(safe-area-inset-top)+12px)] pb-1 lg:hidden">
-            <div className="flex h-[34px] min-w-0 flex-auto items-center gap-[7px] rounded-xl border border-rz-border bg-rz-surface px-[9px]">
-                <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-rz-accent-soft text-rz-accent-app-text">
-                    <WalletGlyph className="size-3.5" />
-                </span>
-                <Link
-                    href={links.wallet}
-                    aria-label={t('investor.deals.wallet_balance')}
-                    className="flex min-w-0 items-baseline gap-1.5 text-left"
-                >
-                    <span className="text-[13.5px] font-bold tracking-[-.3px] whitespace-nowrap text-rz-ink">
-                        {formatRwf(wallet.available)}
+            {wallet === null || links.wallet === null ? (
+                <div className="min-h-[34px] flex-auto" />
+            ) : (
+                <div className="flex h-[34px] min-w-0 flex-auto items-center gap-[7px] rounded-xl border border-rz-border bg-rz-surface px-[9px]">
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-rz-accent-soft text-rz-accent-app-text">
+                        <WalletGlyph className="size-3.5" />
                     </span>
-                    {payout !== null && (
-                        <span className="truncate text-[10px] font-semibold text-[#17795a] dark:text-[#3fcda0]">
-                            {payout}
+                    <Link
+                        href={links.wallet}
+                        aria-label={t('investor.deals.wallet_balance')}
+                        className="flex min-w-0 items-baseline gap-1.5 text-left"
+                    >
+                        <span className="text-[13.5px] font-bold tracking-[-.3px] whitespace-nowrap text-rz-ink">
+                            {formatRwf(wallet.available)}
                         </span>
-                    )}
-                </Link>
-            </div>
+                        {payout !== null && (
+                            <span className="truncate text-[10px] font-semibold text-[#17795a] dark:text-[#3fcda0]">
+                                {payout}
+                            </span>
+                        )}
+                    </Link>
+                </div>
+            )}
             <Bell unread={unread} href={links.notifications} size="phone" />
         </div>
     );
@@ -173,49 +178,53 @@ export function DeskTopBar({
     status?: ReactNode;
 }) {
     const { t, locale } = useTranslation();
-    const payout = nextPayoutLabel(wallet, locale);
+    const payout = wallet === null ? null : nextPayoutLabel(wallet, locale);
 
     return (
         <div className="flex shrink-0 items-center gap-3.5 pt-1.5 pb-3.5">
-            <div className="flex items-center gap-2.5 rounded-2xl border border-rz-border bg-rz-surface px-3 py-[9px]">
-                <span className="flex size-[38px] shrink-0 items-center justify-center rounded-[10px] bg-rz-accent-soft text-rz-accent-app-text">
-                    <WalletGlyph className="size-[21px]" />
-                </span>
-                <Link
-                    href={links.wallet}
-                    aria-label={t('investor.deals.wallet_balance')}
-                    className="leading-[1.15]"
-                >
-                    <span className="block text-lg font-bold tracking-[-.3px] text-rz-ink">
-                        {formatRwf(wallet.available)}
+            {wallet !== null && links.wallet !== null && (
+                <div className="flex items-center gap-2.5 rounded-2xl border border-rz-border bg-rz-surface px-3 py-[9px]">
+                    <span className="flex size-[38px] shrink-0 items-center justify-center rounded-[10px] bg-rz-accent-soft text-rz-accent-app-text">
+                        <WalletGlyph className="size-[21px]" />
                     </span>
-                    {payout !== null && (
-                        <span className="mt-px block text-[10px] font-semibold whitespace-nowrap text-[#17795a] dark:text-[#3fcda0]">
-                            {payout}
-                        </span>
-                    )}
-                </Link>
-                <Link
-                    href={links.deposit}
-                    aria-label={t('investor.deals.deposit')}
-                    className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-rz-accent-fill"
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        aria-hidden
-                        className="size-4"
+                    <Link
+                        href={links.wallet}
+                        aria-label={t('investor.deals.wallet_balance')}
+                        className="leading-[1.15]"
                     >
-                        <path
-                            d="M12 5v14M5 12l7 7 7-7"
-                            stroke="#fff"
-                            strokeWidth="2.2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
-                </Link>
-            </div>
+                        <span className="block text-lg font-bold tracking-[-.3px] text-rz-ink">
+                            {formatRwf(wallet.available)}
+                        </span>
+                        {payout !== null && (
+                            <span className="mt-px block text-[10px] font-semibold whitespace-nowrap text-[#17795a] dark:text-[#3fcda0]">
+                                {payout}
+                            </span>
+                        )}
+                    </Link>
+                    {links.deposit !== null && (
+                        <Link
+                            href={links.deposit}
+                            aria-label={t('investor.deals.deposit')}
+                            className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-rz-accent-fill"
+                        >
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                aria-hidden
+                                className="size-4"
+                            >
+                                <path
+                                    d="M12 5v14M5 12l7 7 7-7"
+                                    stroke="#fff"
+                                    strokeWidth="2.2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                        </Link>
+                    )}
+                </div>
+            )}
             {status}
             <Bell unread={unread} href={links.notifications} size="desk" />
         </div>

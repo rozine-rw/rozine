@@ -69,11 +69,19 @@ describe('Suite launcher', () => {
         expect(apps.map((app) => app.dataset.audience)).toEqual([
             'investor',
             'business',
+            'auditor',
         ]);
         expect(within(apps[0]).getByRole('button')).toHaveTextContent(
             'Discover verified businesses, invest, track returns.',
         );
-        expect(screen.queryByText('Auditor')).not.toBeInTheDocument();
+        expect(within(apps[2]).queryByRole('button')).not.toBeInTheDocument();
+        expect(within(apps[2]).getByRole('link')).toHaveAttribute(
+            'href',
+            'mailto:hello@rozine.rw',
+        );
+        expect(within(apps[2]).getByRole('link')).toHaveTextContent(
+            /^Auditor.*Request access →$/u,
+        );
         await userEvent.click(within(apps[0]).getByRole('button'));
         expect(mocks.command.transform.mock.calls[0][0]()).toEqual({
             role: 'investor',
@@ -116,12 +124,15 @@ describe('Suite launcher', () => {
             expect.objectContaining({ url: '/identity/roles/business/resume' }),
         );
     });
-    it('shows the Auditor app only for that membership and enables MFA setup when selection is denied', async () => {
+    it('opens the Auditor app only for that membership and enables MFA setup when selection is denied', async () => {
         mocks.command.submit.mockResolvedValue({ data: selected('auditor') });
         const view = render(
             <Launcher identity={identityFrom(auditorFixture)} />,
         );
-        expect(screen.getAllByRole('listitem')).toHaveLength(1);
+        expect(screen.getAllByRole('listitem')).toHaveLength(3);
+        expect(
+            within(screen.getByRole('list')).getAllByRole('button'),
+        ).toHaveLength(1);
         await userEvent.click(screen.getByRole('button', { name: 'Auditor' }));
         expect(mocks.visit).toHaveBeenCalledWith(
             expect.objectContaining({ url: '/identity/roles/auditor/resume' }),
@@ -173,6 +184,7 @@ describe('Suite launcher', () => {
             screen.getByRole('link', { name: 'Open staff workspace' }),
         ).toHaveAttribute('href', '/admin');
         expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.queryByRole('list')).not.toBeInTheDocument();
         view.rerender(
             <Launcher
                 identity={ready}
@@ -340,9 +352,33 @@ describe('Suite launcher', () => {
         });
         expect(screen.getByRole('button', { name: 'Investor' })).toBeEnabled();
     });
-    it('explains pending verification with a real next step', () => {
+    it('opens the Investor deals while the identity is verified and offers the other apps on request', () => {
         render(<Launcher identity={identityFrom(pendingFixture)} />);
-        expect(screen.queryByRole('list')).not.toBeInTheDocument();
+        const apps = screen.getAllByRole('listitem');
+
+        expect(apps.map((app) => app.dataset.audience)).toEqual([
+            'investor',
+            'business',
+            'auditor',
+        ]);
+        expect(
+            within(screen.getByRole('list')).queryByRole('button'),
+        ).not.toBeInTheDocument();
+        expect(within(apps[0]).getByRole('link')).toHaveAttribute(
+            'href',
+            '/investor/deals',
+        );
+        expect(within(apps[0]).getByRole('link')).toHaveTextContent(
+            'Browse open deals now. Investing opens once your identity is verified.Browse deals →',
+        );
+        expect(within(apps[1]).getByRole('link')).toHaveAttribute(
+            'href',
+            'mailto:hello@rozine.rw',
+        );
+        expect(within(apps[2]).getByRole('link')).toHaveAttribute(
+            'href',
+            'mailto:hello@rozine.rw',
+        );
         expect(screen.getByRole('status')).toHaveTextContent(
             'Your identity is being verified',
         );
@@ -381,12 +417,6 @@ describe('Suite launcher', () => {
             'Contact Rozine support →',
             'mailto:hello@rozine.rw',
         ],
-        [
-            'ROLE_MEMBERSHIP_REQUIRED',
-            'No apps yet',
-            'Contact Rozine support →',
-            'mailto:hello@rozine.rw',
-        ],
     ])(
         'gives %s a titled notice and its next step',
         (code, title, action, href) => {
@@ -414,7 +444,7 @@ describe('Suite launcher preview states', () => {
     it('resumes the already selected Business app from its fixture without switching', async () => {
         render(<Launcher identity={identityFrom(selectedFixture)} />);
 
-        expect(screen.getAllByRole('listitem')).toHaveLength(2);
+        expect(screen.getAllByRole('listitem')).toHaveLength(3);
         await userEvent.click(screen.getByRole('button', { name: 'Business' }));
         expect(mocks.command.submit).not.toHaveBeenCalled();
         expect(mocks.visit).toHaveBeenCalledWith(
@@ -446,19 +476,26 @@ describe('Suite launcher preview states', () => {
         expect(mocks.visit).not.toHaveBeenCalled();
     });
 
-    it('explains a lost membership with no apps and a support path', () => {
+    it('offers every app on request after a lost membership', () => {
         render(<Launcher identity={identityFrom(lostMembershipFixture)} />);
 
-        expect(screen.queryByRole('list')).not.toBeInTheDocument();
+        const apps = screen.getAllByRole('listitem');
 
-        const notice = screen.getByRole('status');
-
-        expect(notice).toHaveTextContent('No apps yet');
+        expect(apps).toHaveLength(3);
         expect(
-            within(notice).getByRole('link', {
-                name: 'Contact Rozine support →',
-            }),
-        ).toHaveAttribute('href', 'mailto:hello@rozine.rw');
+            within(screen.getByRole('list')).queryByRole('button'),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+        for (const app of apps) {
+            expect(within(app).getByRole('link')).toHaveAttribute(
+                'href',
+                'mailto:hello@rozine.rw',
+            );
+            expect(within(app).getByRole('link')).toHaveTextContent(
+                /Request access →$/u,
+            );
+        }
     });
 
     it('holds the Auditor app closed until two-factor authentication is set up', () => {

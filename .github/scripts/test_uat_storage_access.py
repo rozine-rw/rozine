@@ -218,8 +218,16 @@ class RealRuntimeIdentityTest(StorageAccessTest):
         (root / "cache/deploy-proof").write_text("deploy")
         subprocess.run(["sudo", "-n", "-u", "nobody", "--", "/usr/bin/test", "-r",
                         str(root / "cache/deploy-proof")], check=True)
-        subprocess.run(["sudo", "-n", "-u", "nobody", "--", "/usr/bin/test", "-r",
-                        str(root / "views/compiled-fixture")], check=True)
+        # Blade refreshes a stale compiled view by setting its timestamp, which
+        # only the owner may do, so the deploy must leave compiling to the runtime.
+        self.assertEqual(list((root / "views").iterdir()), [])
+        subprocess.run(["sudo", "-n", "-u", "nobody", "--", "bash", "-c",
+                        'umask 007; printf compiled > "$1/views/runtime-compiled"'
+                        ' && touch -d @1700000000 "$1/views/runtime-compiled"', "--", str(root)], check=True)
+        (root / "views/deploy-compiled").write_text("compiled")
+        refused = subprocess.run(["sudo", "-n", "-u", "nobody", "--", "touch", "-d", "@1700000000",
+                                  str(root / "views/deploy-compiled")], capture_output=True, text=True)
+        self.assertNotEqual(refused.returncode, 0, "the runtime set the time on a deploy-owned view")
 
     def test_actual_runtime_cannot_traverse_existing_private_parent(self):
         parent = self.storage / "isolated"
