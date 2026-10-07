@@ -218,13 +218,14 @@ class ScopeTests(unittest.TestCase):
                 if endpoint.endswith("/workflows/tests.yml"):
                     return {"id": 7}
                 return self.run if endpoint.endswith("/99") else run
-            for scenario in ["good", "wrong candidate", "untrusted", "cancelled", "wrong receipt tree", "source attempt changed", "newer failure", "skipped reuse", "skipped provenance"]:
+            for scenario in ["good", "wrong candidate", "untrusted", "cancelled", "wrong receipt tree", "source attempt changed", "future source", "newer failure", "skipped reuse", "skipped provenance"]:
                 original_run, original_proof, original_jobs = copy.deepcopy(run), copy.deepcopy(proof), copy.deepcopy(jobs)
                 if scenario == "wrong candidate": run["head_sha"] = "e" * 40
                 if scenario == "untrusted": run["head_repository"] = {"full_name": "fork/repo"}
                 if scenario == "cancelled": run["conclusion"] = "cancelled"
                 if scenario == "wrong receipt tree": proof["tree_sha"] = "e" * 40
                 if scenario == "source attempt changed": proof["source_attempt"] = "1"
+                if scenario == "future source": proof["source_run"] = "101"
                 if scenario == "skipped reuse": jobs[-1]["conclusion"] = "skipped"
                 if scenario == "skipped provenance": jobs[-1]["steps"][-1]["conclusion"] = "skipped"
                 def evidence(*args):
@@ -235,7 +236,7 @@ class ScopeTests(unittest.TestCase):
                     if proof["tree_sha"] != "c" * 40:
                         raise ValueError("changed tree")
                 expected_source = "99" if reused else "100"
-                expected_good = scenario == "good" or (not reused and scenario in ("source attempt changed", "skipped reuse", "skipped provenance"))
+                expected_good = scenario == "good" or (not reused and scenario in ("source attempt changed", "future source", "skipped reuse", "skipped provenance"))
                 with self.subTest(scope=scope, reused=reused, scenario=scenario), patch.object(policy, "command", side_effect=["b" * 40, "c" * 40]), patch.object(policy, "api", side_effect=api), patch.object(policy, "download_evidence", side_effect=evidence), patch.object(policy, "validate_source", side_effect=validate), patch.object(policy, "run_jobs", return_value=jobs), patch.object(policy, "reusable_run", return_value="" if scenario == "newer failure" else expected_source):
                     if expected_good:
                         result = policy.staging_evidence(env)

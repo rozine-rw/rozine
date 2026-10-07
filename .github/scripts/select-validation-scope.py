@@ -241,6 +241,8 @@ def staging_evidence(env):
             steps = [step for step in reuse.get("steps", []) if step["name"] == name]
             if len(steps) != 1 or steps[0]["conclusion"] != "success":
                 raise ValueError("missing/unsuccessful reuse provenance/budget step")
+        if not re.fullmatch(r"[0-9]+", str(proof.get("source_run", ""))) or int(proof["source_run"]) >= run["id"]:
+            raise ValueError("reuse must name an earlier original run")
         source = api(f"repos/{repository}/actions/runs/{proof['source_run']}")
         if str(source["run_attempt"]) != proof.get("source_attempt"):
             raise ValueError("original source attempt changed")
@@ -299,7 +301,7 @@ def main():
     if scope == "poc" and (promotion or (env.get("GITHUB_EVENT_NAME") in ("push", "workflow_dispatch") and env.get("GITHUB_REF") in ("refs/heads/dev", "refs/heads/uat"))):
         try:
             source = reusable_run(env, scope)
-        except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError):
+        except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError, AttributeError):
             pass
     with open(env["GITHUB_OUTPUT"], "a") as output:
         output.write(f"full={str(scope == 'full' and not source).lower()}\npoc={str(scope == 'poc' and not source).lower()}\nscope={scope}\nreused={str(bool(source)).lower()}\nsource_run={source}\n")
