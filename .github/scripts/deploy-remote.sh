@@ -47,6 +47,18 @@ cd "${APP_ROOT}"
 "${PHP_BIN}" artisan config:clear
 "${PHP_BIN}" artisan isolation:check --expect="${EXPECTED_PROFILE}" --no-interaction
 
+# The uat profile keeps its cache, sessions, uploads, logs and compiled views
+# under storage/isolated/uat, and the runtime never creates those folders, so a
+# fresh host answers every page with a 500. Create them once the target is
+# confirmed: group-writable and setgid, so files keep the folder's group
+# whichever account writes them. A folder this account cannot fix stops here.
+if [ "${EXPECTED_PROFILE}" = "uat" ]; then
+  for directory in cache sessions private public logs views; do
+    mkdir -p "storage/isolated/${EXPECTED_PROFILE}/${directory}"
+    chmod 2775 "storage/isolated/${EXPECTED_PROFILE}/${directory}"
+  done
+fi
+
 # Wayfinder builds the typed client from the Laravel route list during the
 # asset build, and Laravel answers that list from the route cache left by the
 # previous run. Drop stale caches first, or a release that adds a route builds
@@ -59,6 +71,13 @@ npm run build
 "${PHP_BIN}" artisan migrate --force
 "${PHP_BIN}" artisan config:cache
 "${PHP_BIN}" artisan isolation:check --expect="${EXPECTED_PROFILE}" --no-interaction
+
+# The isolation layer points public/storage at storage/isolated/uat/public, the
+# only target isolation:check accepts, so an existing link is already right.
+if [ "${EXPECTED_PROFILE}" = "uat" ] && [ ! -L public/storage ]; then
+  "${PHP_BIN}" artisan storage:link --no-interaction
+fi
+
 "${PHP_BIN}" artisan route:cache
 "${PHP_BIN}" artisan view:cache
 "${PHP_BIN}" artisan queue:restart

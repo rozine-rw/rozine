@@ -20,6 +20,9 @@ if [[ "${1:-}" == "-r" ]]; then
   exit 0
 fi
 printf '%s\n' "$*" >> "${DEPLOY_TEST_CALLS}"
+if [[ "${1:-}" == "artisan" && "${2:-}" == "optimize:clear" ]]; then
+  ls -1 storage/isolated/uat > "${DEPLOY_TEST_CALLS}.at-clear" 2>/dev/null || true
+fi
 if [[ "${1:-}" == "artisan" && "${2:-}" == "isolation:check" ]]; then
   if [[ "${DEPLOY_TEST_FAIL:-}" == "first" ]]; then
     exit 42
@@ -85,11 +88,55 @@ test('deployment checks the target before mutations and again after caching conf
         'artisan migrate --force',
         'artisan config:cache',
         $check,
+        ...($profile === 'uat' ? ['artisan storage:link --no-interaction'] : []),
         'artisan route:cache',
         'artisan view:cache',
         'artisan queue:restart',
     ]);
 })->with(['uat', 'production']);
+
+test('a uat deployment creates its isolated storage folders before clearing caches', function () {
+    $process = runIsolatedDeployment($this->deploymentDirectory, 'uat');
+    $root = $this->deploymentDirectory.'/app root/storage/isolated/uat';
+    $folders = ['cache', 'logs', 'private', 'public', 'sessions', 'views'];
+
+    expect($process->isSuccessful())->toBeTrue()
+        ->and(explode("\n", trim(File::get($this->deploymentDirectory.'/calls.at-clear'))))->toBe($folders);
+
+    foreach ($folders as $folder) {
+        expect(fileperms($root.'/'.$folder) & 07777)->toBe(02775, $folder.' is not group-writable and setgid');
+    }
+});
+
+test('a production deployment leaves isolated storage and the public link alone', function () {
+    $process = runIsolatedDeployment($this->deploymentDirectory, 'production');
+
+    expect($process->isSuccessful())->toBeTrue()
+        ->and(File::exists($this->deploymentDirectory.'/app root/storage/isolated'))->toBeFalse()
+        ->and(File::get($this->deploymentDirectory.'/calls'))->not->toContain('storage:link');
+});
+
+test('a uat deployment keeps an existing public storage link', function () {
+    File::ensureDirectoryExists($this->deploymentDirectory.'/app root/public');
+    symlink($this->deploymentDirectory.'/app root/storage/isolated/uat/public', $this->deploymentDirectory.'/app root/public/storage');
+
+    $process = runIsolatedDeployment($this->deploymentDirectory, 'uat');
+
+    expect($process->isSuccessful())->toBeTrue()
+        ->and(File::get($this->deploymentDirectory.'/calls'))->not->toContain('storage:link');
+});
+
+test('an isolated storage folder that cannot be created stops the deployment before it clears caches', function () {
+    File::ensureDirectoryExists($this->deploymentDirectory.'/app root/storage/isolated/uat');
+    File::put($this->deploymentDirectory.'/app root/storage/isolated/uat/sessions', '');
+
+    $process = runIsolatedDeployment($this->deploymentDirectory, 'uat');
+
+    expect($process->isSuccessful())->toBeFalse()
+        ->and(File::get($this->deploymentDirectory.'/calls'))->toContain('artisan isolation:check --expect=uat')
+        ->not->toContain('optimize:clear', 'migrate --force', 'queue:restart', 'ci --no-audit')
+        ->and($process->getOutput())->not->toContain('Deployment complete');
+});
 
 test('a rejected deployment never clears shared caches migrates or restarts queues', function () {
     $process = runIsolatedDeployment($this->deploymentDirectory, 'uat', 'first');
@@ -98,6 +145,7 @@ test('a rejected deployment never clears shared caches migrates or restarts queu
     expect($process->getExitCode())->toBe(42)
         ->and($calls)->toContain('artisan isolation:check --expect=uat')
         ->not->toContain('optimize:clear', 'migrate --force', 'queue:restart', 'ci --no-audit')
+        ->and(File::exists($this->deploymentDirectory.'/app root/storage/isolated'))->toBeFalse()
         ->and($process->getOutput())->not->toContain('Deployment complete');
 });
 
