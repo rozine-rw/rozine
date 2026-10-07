@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\StaffStagingMailTesterController::store
-* @see app/Http/Controllers/StaffStagingMailTesterController.php:43
+* @see app/Http/Controllers/StaffStagingMailTesterController.php:42
 * @route '/admin/staging-mail-testers'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +97,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffStagingMailTesterController::store
-* @see app/Http/Controllers/StaffStagingMailTesterController.php:43
+* @see app/Http/Controllers/StaffStagingMailTesterController.php:42
 * @route '/admin/staging-mail-testers'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffStagingMailTesterController::store
-* @see app/Http/Controllers/StaffStagingMailTesterController.php:43
+* @see app/Http/Controllers/StaffStagingMailTesterController.php:42
 * @route '/admin/staging-mail-testers'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +116,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffStagingMailTesterController::store
-* @see app/Http/Controllers/StaffStagingMailTesterController.php:43
+* @see app/Http/Controllers/StaffStagingMailTesterController.php:42
 * @route '/admin/staging-mail-testers'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -126,7 +126,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\StaffStagingMailTesterController::store
-* @see app/Http/Controllers/StaffStagingMailTesterController.php:43
+* @see app/Http/Controllers/StaffStagingMailTesterController.php:42
 * @route '/admin/staging-mail-testers'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -138,7 +138,7 @@ store.form = storeForm
 
 /**
 * @see \App\Http\Controllers\StaffStagingMailTesterController::remove
-* @see app/Http/Controllers/StaffStagingMailTesterController.php:51
+* @see app/Http/Controllers/StaffStagingMailTesterController.php:48
 * @route '/admin/staging-mail-testers/{tester}/remove'
 */
 export const remove = (args: { tester: string | number } | [tester: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -153,7 +153,7 @@ remove.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffStagingMailTesterController::remove
-* @see app/Http/Controllers/StaffStagingMailTesterController.php:51
+* @see app/Http/Controllers/StaffStagingMailTesterController.php:48
 * @route '/admin/staging-mail-testers/{tester}/remove'
 */
 remove.url = (args: { tester: string | number } | [tester: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -180,7 +180,7 @@ remove.url = (args: { tester: string | number } | [tester: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\StaffStagingMailTesterController::remove
-* @see app/Http/Controllers/StaffStagingMailTesterController.php:51
+* @see app/Http/Controllers/StaffStagingMailTesterController.php:48
 * @route '/admin/staging-mail-testers/{tester}/remove'
 */
 remove.post = (args: { tester: string | number } | [tester: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -190,7 +190,7 @@ remove.post = (args: { tester: string | number } | [tester: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\StaffStagingMailTesterController::remove
-* @see app/Http/Controllers/StaffStagingMailTesterController.php:51
+* @see app/Http/Controllers/StaffStagingMailTesterController.php:48
 * @route '/admin/staging-mail-testers/{tester}/remove'
 */
 const removeForm = (args: { tester: string | number } | [tester: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -200,7 +200,7 @@ const removeForm = (args: { tester: string | number } | [tester: string | number
 
 /**
 * @see \App\Http\Controllers\StaffStagingMailTesterController::remove
-* @see app/Http/Controllers/StaffStagingMailTesterController.php:51
+* @see app/Http/Controllers/StaffStagingMailTesterController.php:48
 * @route '/admin/staging-mail-testers/{tester}/remove'
 */
 removeForm.post = (args: { tester: string | number } | [tester: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
