@@ -52,6 +52,29 @@ fi
 exec /bin/chgrp "$@"
 BASH);
     chmod($this->deploymentDirectory.'/bin/chgrp', 0700);
+
+    // These legacy call-order tests use stubs. The Python deployment controls
+    // additionally execute two real process identities on the CI runner.
+    File::put($this->deploymentDirectory.'/bin/id', <<<'BASH'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${2:-}" == "uat-runtime" ]]; then
+  case "$1" in
+    -u) echo 65534 ;;
+    -G) stat -c %g "${DEPLOY_TEST_STORAGE}" ;;
+    *) exit 1 ;;
+  esac
+else exec /usr/bin/id "$@"; fi
+BASH);
+    File::put($this->deploymentDirectory.'/bin/sudo', <<<'BASH'
+#!/usr/bin/env bash
+set -euo pipefail
+[[ "$1 $2 $3 $4 $5" == '-n -u uat-runtime -- /usr/bin/test' ]] || exit 1
+shift 4
+exec "$@"
+BASH);
+    chmod($this->deploymentDirectory.'/bin/id', 0700);
+    chmod($this->deploymentDirectory.'/bin/sudo', 0700);
 });
 
 afterEach(function () {
@@ -64,12 +87,14 @@ function runIsolatedDeployment(string $directory, ?string $profile, string $fail
 
     if ($profile !== null) {
         $arguments[] = $profile;
+        $arguments[] = 'uat-runtime';
     }
 
     $process = new Process($arguments, base_path(), [
         'PATH' => $directory.'/bin:/usr/bin:/bin',
         'DEPLOY_TEST_CALLS' => $directory.'/calls',
         'DEPLOY_TEST_FAIL' => $fail,
+        'DEPLOY_TEST_STORAGE' => $directory.'/app root/storage',
     ]);
     $process->run();
 
@@ -216,6 +241,6 @@ test('a rejected cached configuration prevents publishing route caches or restar
 });
 
 test('each deployment workflow passes its fixed environment profile', function () {
-    expect(File::get(base_path('.github/workflows/deploy-uat.yml')))->toContain(' uat\' < .github/scripts/deploy-remote.sh')
+    expect(File::get(base_path('.github/workflows/deploy-uat.yml')))->toContain(' uat ${UAT_RUNTIME_USER}', 'vars.STAGING_RUNTIME_USER')
         ->and(File::get(base_path('.github/workflows/deploy-prod.yml')))->toContain(' production\' < .github/scripts/deploy-remote.sh');
 });
