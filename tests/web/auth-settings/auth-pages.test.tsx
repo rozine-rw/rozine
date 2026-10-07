@@ -343,13 +343,16 @@ describe('authentication pages', () => {
         );
 
         expect(
-            screen.getByText(/A new verification link has been sent/),
+            screen.getByText(/A new code has been sent/),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('button', {
-                name: /Resend verification email/,
-            }),
+            screen.getByRole('button', { name: /Send a new code/ }),
         ).toBeDisabled();
+        expect(
+            screen.getByRole('button', { name: /Verify email/ }),
+        ).toBeDisabled();
+        expect(screen.getByLabelText('One-time code')).toBeDisabled();
+        expect(screen.getAllByTestId('spinner')).toHaveLength(2);
         expect(screen.getByRole('link', { name: 'Log out' })).toHaveAttribute(
             'href',
             '/logout',
@@ -358,8 +361,36 @@ describe('authentication pages', () => {
         inertia.state.processing = false;
         rerender(<VerifyEmail key="idle" status="unrelated-status" />);
         expect(
-            screen.queryByText(/A new verification link has been sent/),
+            screen.queryByText(/A new code has been sent/),
         ).not.toBeInTheDocument();
         expect(screen.queryByTestId('spinner')).not.toBeInTheDocument();
+    });
+
+    it('submits the six-digit email code to the verification route', () => {
+        inertia.state.errors = { code: 'That code is not right.' };
+        render(<VerifyEmail />);
+
+        const verify = screen.getByRole('button', { name: 'Verify email' });
+        const field = screen.getByLabelText('One-time code');
+
+        expect(inertia.forms[0]).toMatchObject({
+            action: '/email/verify-code',
+            method: 'post',
+        });
+        expect(inertia.forms[1]).toMatchObject({
+            action: '/email/verification-notification',
+            method: 'post',
+        });
+        expect(field).toHaveAttribute('name', 'code');
+        expect(screen.getAllByText(/^[0-5]$/)).toHaveLength(6);
+        expect(screen.getByText('That code is not right.')).toBeInTheDocument();
+        expect(verify).toBeDisabled();
+
+        fireEvent.change(field, { target: { value: '48291' } });
+        expect(verify).toBeDisabled();
+
+        fireEvent.change(field, { target: { value: '482913' } });
+        expect(field).toHaveValue('482913');
+        expect(verify).toBeEnabled();
     });
 });

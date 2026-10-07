@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Application\Identity\EmailVerificationCode;
+use App\Notifications\Account\OneTimeCode;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -50,6 +52,18 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function party(): BelongsTo
     {
         return $this->belongsTo(Party::class);
+    }
+
+    /**
+     * Confirm the email address with a six-digit code rather than a link. Sign-up and every
+     * "send a new code" request issue a fresh code, which replaces the last one.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new OneTimeCode(
+            app(EmailVerificationCode::class)->issue($this->id),
+            EmailVerificationCode::EXPIRES_IN_MINUTES,
+        ));
     }
 
     /**
