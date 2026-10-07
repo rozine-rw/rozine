@@ -137,14 +137,14 @@ test('deployment checks the target before mutations and again after caching conf
 test('a uat deployment leaves compiled views to the runtime identity, after clearing the stale ones', function () {
     $process = runIsolatedDeployment($this->deploymentDirectory, 'uat');
     $calls = explode("\n", trim(File::get($this->deploymentDirectory.'/calls')));
+    $position = array_flip($calls);
 
     // The runtime refreshes a stale compiled view by setting its timestamp,
     // which only the owner may do, so the deploy account must not own any.
     expect($process->isSuccessful())->toBeTrue()
-        ->and($calls)->toContain('artisan optimize:clear')
+        ->and($calls)->toContain('artisan optimize:clear', 'artisan migrate --force')
         ->and($calls)->not->toContain('artisan view:cache')
-        ->and(array_search('artisan optimize:clear', $calls, true))
-        ->toBeLessThan(array_search('artisan migrate --force', $calls, true));
+        ->and($position['artisan optimize:clear'])->toBeLessThan($position['artisan migrate --force']);
 });
 
 test('a uat deployment creates its isolated storage folders before clearing caches', function () {
