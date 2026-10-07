@@ -11,6 +11,9 @@ use LogicException;
 
 class EnvironmentIsolation
 {
+    /** The only SMTP settings staging's Resend relay may carry. */
+    private const array STAGING_MAILER_KEYS = ['transport', 'scheme', 'url', 'host', 'port', 'username', 'password', 'timeout', 'local_domain', 'verify_peer'];
+
     public function __construct(
         private readonly Application $app,
         private readonly Repository $config,
@@ -282,12 +285,32 @@ class EnvironmentIsolation
         $mailer = $this->config->array('mail.mailers.smtp');
         $host = $mailer['host'] ?? null;
         $password = $mailer['password'] ?? null;
+        $verifyPeer = $mailer['verify_peer'] ?? true;
 
-        if (($mailer['transport'] ?? null) !== 'smtp' || ! empty($mailer['url'])
+        // Implicit TLS only, with the peer certificate verified: no plaintext,
+        // no STARTTLS downgrade and no option the boundary has not reviewed.
+        if (array_diff(array_keys($mailer), self::STAGING_MAILER_KEYS) !== []
+            || ($mailer['transport'] ?? null) !== 'smtp' || ($mailer['scheme'] ?? null) !== 'smtps'
+            || ! empty($mailer['url']) || filter_var($verifyPeer, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE) !== true
             || ! is_string($host) || strtolower($host) !== 'smtp.resend.com'
             || ($mailer['username'] ?? null) !== 'resend'
             || ! is_string($password) || $password === '') {
             throw new LogicException('ISOLATION_MAIL_PROVIDER_DENIED');
+        }
+
+        $recipients = $this->config->get('isolation.staging_mail.recipients');
+
+        if (! is_array($recipients) || $recipients === []
+            || array_filter($recipients, fn (mixed $entry): bool => ! is_string($entry)
+                || (preg_match('/^@[a-z0-9-]+(\.[a-z0-9-]+)+$/i', $entry) !== 1
+                    && filter_var($entry, FILTER_VALIDATE_EMAIL) === false)) !== []) {
+            throw new LogicException('ISOLATION_MAIL_RECIPIENTS_REQUIRED');
+        }
+
+        $hourlyLimit = $this->config->get('isolation.staging_mail.hourly_limit');
+
+        if (! is_int($hourlyLimit) || $hourlyLimit < 1) {
+            throw new LogicException('ISOLATION_MAIL_LIMIT_REQUIRED');
         }
 
         $address = $this->config->get('mail.from.address');

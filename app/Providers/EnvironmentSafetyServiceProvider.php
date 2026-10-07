@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Application\Environment\EnvironmentIsolation;
+use App\Application\Environment\StagingMailGuard;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Database\Console\Seeds\SeedCommand;
 use Illuminate\Mail\Events\MessageSending;
@@ -39,6 +40,10 @@ class EnvironmentSafetyServiceProvider extends ServiceProvider
 
         if ($isolation->isIsolated()) {
             Http::preventStrayRequests();
+        }
+
+        if ($isolation->sendsStagingMail()) {
+            Event::listen(MessageSending::class, [StagingMailGuard::class, 'handle']);
         }
 
         // Staging and production share a sending domain, so every staging
