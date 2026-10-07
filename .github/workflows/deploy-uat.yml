@@ -36,6 +36,15 @@ jobs:
           persist-credentials: false
           ref: ${{ github.sha }}
 
+      - name: Require the separately approved staging runtime identity
+        env:
+          UAT_RUNTIME_USER: ${{ vars.STAGING_RUNTIME_USER }}
+        run: |
+          [[ "$UAT_RUNTIME_USER" =~ ^[a-z_][a-z0-9_-]*$ ]] || {
+            echo 'Staging runtime identity is not configured; no server changes made.' >&2
+            exit 1
+          }
+
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
@@ -59,7 +68,10 @@ jobs:
             ./ "${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_SSH_HOST }}:/var/www/rozine/"
 
       - name: Build, migrate & reload on server
+        env:
+          UAT_RUNTIME_USER: ${{ vars.STAGING_RUNTIME_USER }}
         run: |
+          [[ "$UAT_RUNTIME_USER" =~ ^[a-z_][a-z0-9_-]*$ ]] || exit 1
           ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new \
             "${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_SSH_HOST }}" \
-            'bash -s -- /var/www/rozine uat' < .github/scripts/deploy-remote.sh
+            "bash -s -- /var/www/rozine uat ${UAT_RUNTIME_USER}" < .github/scripts/deploy-remote.sh

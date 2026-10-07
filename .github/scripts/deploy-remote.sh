@@ -11,6 +11,7 @@ set -euo pipefail
 
 APP_ROOT="${1:?app root is required}"
 EXPECTED_PROFILE="${2:?expected environment profile is required}"
+RUNTIME_USER="${3:-}"
 
 case "${EXPECTED_PROFILE}" in
   uat|production) ;;
@@ -56,15 +57,56 @@ cd "${APP_ROOT}"
 # When storage/ is missing or this account cannot hand a folder to that group,
 # the deploy stops here rather than leave PHP-FPM unable to write.
 if [ "${EXPECTED_PROFILE}" = "uat" ]; then
-  if [ ! -d storage ]; then
+  if [ ! -d storage ] || [ -L storage ]; then
     echo "Deployment refused: storage/ is not provisioned on this host." >&2
     exit 1
   fi
+  # Supplied by reviewed provisioning, never inferred from the deploy account.
+  # The operator must verify this identity against the staging PHP-FPM pool.
+  if [[ ! "${RUNTIME_USER}" =~ ^[a-z_][a-z0-9_-]*$ ]] ||
+     ! runtime_uid="$(id -u "${RUNTIME_USER}")" ||
+     [ "${runtime_uid}" = "0" ] || [ "${runtime_uid}" = "$(id -u)" ]; then
+    echo "Deployment refused: an explicit distinct non-root UAT runtime identity is required." >&2
+    exit 1
+  fi
+  command -v sudo >/dev/null || { echo "Deployment refused: runtime access cannot be checked." >&2; exit 1; }
   runtime_group="$(stat -L -c %g storage)"
+  runtime_groups="$(id -G "${RUNTIME_USER}")"
+  if [[ " ${runtime_groups} " != *" ${runtime_group} "* ]]; then
+    echo "Deployment refused: runtime identity is outside the provisioned storage group." >&2
+    exit 1
+  fi
+  # Probe under the actual runtime identity; this includes traversal through
+  # every ancestor and honors ACLs. These read-only checks grant no privileges.
+  for ancestor in . storage storage/isolated storage/isolated/uat; do
+    if [ -L "${ancestor}" ] || { [ -e "${ancestor}" ] &&
+       ! sudo -n -u "${RUNTIME_USER}" -- /usr/bin/test -x "${PWD}/${ancestor}"; }; then
+      echo "Deployment refused: runtime cannot traverse the isolated storage ancestors." >&2
+      exit 1
+    fi
+  done
   for directory in cache sessions private public logs views; do
     folder="storage/isolated/${EXPECTED_PROFILE}/${directory}"
-    if ! { mkdir -p "${folder}" && chgrp "${runtime_group}" "${folder}" && chmod 2775 "${folder}"; }; then
+    if [ -L "${folder}" ] || { [ -e "${folder}" ] && [ ! -d "${folder}" ]; }; then
+      echo "Deployment refused: isolated storage is not a real directory." >&2
+      exit 1
+    fi
+    if [ -d "${folder}" ]; then
+      # Preserve existing ownership, group and mode; a provisioning defect is
+      # a separate operator decision, not permission to relabel existing data.
+      if [ "$(stat -c %g "${folder}")" != "${runtime_group}" ] ||
+         [ $(( 8#$(stat -c %a "${folder}") & 02000 )) -eq 0 ]; then
+        echo "Deployment refused: existing isolated storage needs approved group provisioning." >&2
+        exit 1
+      fi
+    elif ! { (umask 0002; mkdir -p "${folder}") && chgrp "${runtime_group}" "${folder}" && chmod 2775 "${folder}"; }; then
       echo "Deployment refused: ${folder} cannot be given the web server group ${runtime_group} with mode 2775." >&2
+      exit 1
+    fi
+    if ! /usr/bin/test -w "${folder}" || ! /usr/bin/test -x "${folder}" ||
+       ! sudo -n -u "${RUNTIME_USER}" -- /usr/bin/test -x "${PWD}/${folder}" ||
+       ! sudo -n -u "${RUNTIME_USER}" -- /usr/bin/test -w "${PWD}/${folder}"; then
+      echo "Deployment refused: deploy and runtime identities need isolated storage write and traversal access." >&2
       exit 1
     fi
   done
@@ -90,7 +132,13 @@ if [ "${EXPECTED_PROFILE}" = "uat" ] && [ ! -L public/storage ]; then
 fi
 
 "${PHP_BIN}" artisan route:cache
-"${PHP_BIN}" artisan view:cache
+if [ "${EXPECTED_PROFILE}" = "uat" ]; then
+  # Compiled views must stay readable by the other approved writer even when
+  # the caller uses a private umask; limit this change to isolated view output.
+  (umask 0007; "${PHP_BIN}" artisan view:cache)
+else
+  "${PHP_BIN}" artisan view:cache
+fi
 "${PHP_BIN}" artisan queue:restart
 
 echo "Deployment complete under PHP ${php_version}."
