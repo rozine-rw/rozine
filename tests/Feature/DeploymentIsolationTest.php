@@ -9,7 +9,7 @@ use Symfony\Component\Process\Process;
 beforeEach(function () {
     $this->deploymentDirectory = sys_get_temp_dir().'/rozine-deploy-'.Str::uuid();
     File::ensureDirectoryExists($this->deploymentDirectory.'/bin');
-    File::ensureDirectoryExists($this->deploymentDirectory.'/app root');
+    File::ensureDirectoryExists($this->deploymentDirectory.'/app root/storage');
     File::put($this->deploymentDirectory.'/calls', '');
 
     $stub = <<<'BASH'
@@ -20,6 +20,9 @@ if [[ "${1:-}" == "-r" ]]; then
   exit 0
 fi
 printf '%s\n' "$*" >> "${DEPLOY_TEST_CALLS}"
+if [[ "${1:-}" == "artisan" && "${2:-}" == "optimize:clear" ]]; then
+  ls -1 storage/isolated/uat > "${DEPLOY_TEST_CALLS}.at-clear" 2>/dev/null || true
+fi
 if [[ "${1:-}" == "artisan" && "${2:-}" == "isolation:check" ]]; then
   if [[ "${DEPLOY_TEST_FAIL:-}" == "first" ]]; then
     exit 42
@@ -35,6 +38,43 @@ BASH;
         File::put($path, $stub);
         chmod($path, 0700);
     }
+
+    // Records each group hand-over, then really applies it, unless the test
+    // stands in for a deploy account outside the web server's group.
+    File::put($this->deploymentDirectory.'/bin/chgrp', <<<'BASH'
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$*" >> "${DEPLOY_TEST_CALLS}.chgrp"
+if [[ "${DEPLOY_TEST_FAIL:-}" == "chgrp" ]]; then
+  echo "chgrp: changing group of '$2': Operation not permitted" >&2
+  exit 1
+fi
+exec /bin/chgrp "$@"
+BASH);
+    chmod($this->deploymentDirectory.'/bin/chgrp', 0700);
+
+    // These legacy call-order tests use stubs. The Python deployment controls
+    // additionally execute two real process identities on the CI runner.
+    File::put($this->deploymentDirectory.'/bin/id', <<<'BASH'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${2:-}" == "uat-runtime" ]]; then
+  case "$1" in
+    -u) echo 65534 ;;
+    -G) stat -c %g "${DEPLOY_TEST_STORAGE}" ;;
+    *) exit 1 ;;
+  esac
+else exec /usr/bin/id "$@"; fi
+BASH);
+    File::put($this->deploymentDirectory.'/bin/sudo', <<<'BASH'
+#!/usr/bin/env bash
+set -euo pipefail
+[[ "$1 $2 $3 $4 $5" == '-n -u uat-runtime -- /usr/bin/test' ]] || exit 1
+shift 4
+exec "$@"
+BASH);
+    chmod($this->deploymentDirectory.'/bin/id', 0700);
+    chmod($this->deploymentDirectory.'/bin/sudo', 0700);
 });
 
 afterEach(function () {
@@ -47,12 +87,14 @@ function runIsolatedDeployment(string $directory, ?string $profile, string $fail
 
     if ($profile !== null) {
         $arguments[] = $profile;
+        $arguments[] = 'uat-runtime';
     }
 
     $process = new Process($arguments, base_path(), [
         'PATH' => $directory.'/bin:/usr/bin:/bin',
         'DEPLOY_TEST_CALLS' => $directory.'/calls',
         'DEPLOY_TEST_FAIL' => $fail,
+        'DEPLOY_TEST_STORAGE' => $directory.'/app root/storage',
     ]);
     $process->run();
 
@@ -85,11 +127,98 @@ test('deployment checks the target before mutations and again after caching conf
         'artisan migrate --force',
         'artisan config:cache',
         $check,
+        ...($profile === 'uat' ? ['artisan storage:link --no-interaction'] : []),
         'artisan route:cache',
         'artisan view:cache',
         'artisan queue:restart',
     ]);
 })->with(['uat', 'production']);
+
+test('a uat deployment creates its isolated storage folders before clearing caches', function () {
+    $process = runIsolatedDeployment($this->deploymentDirectory, 'uat');
+    $root = $this->deploymentDirectory.'/app root/storage/isolated/uat';
+    $folders = ['cache', 'logs', 'private', 'public', 'sessions', 'views'];
+
+    expect($process->isSuccessful())->toBeTrue()
+        ->and(explode("\n", trim(File::get($this->deploymentDirectory.'/calls.at-clear'))))->toBe($folders);
+
+    foreach ($folders as $folder) {
+        expect(fileperms($root.'/'.$folder) & 07777)->toBe(02775, $folder.' is not group-writable and setgid');
+    }
+});
+
+test('a uat deployment hands each isolated storage folder to the web server group of the provisioned storage', function () {
+    // Stand storage/ in a group other than the deploy account's own whenever
+    // this account has one, so mkdir creates each folder in the wrong group.
+    $deployGroup = posix_getegid();
+    $group = posix_geteuid() === 0 ? 65534 : (array_values(array_diff(posix_getgroups() ?: [], [$deployGroup]))[0] ?? $deployGroup);
+    chgrp($this->deploymentDirectory.'/app root/storage', $group);
+
+    $process = runIsolatedDeployment($this->deploymentDirectory, 'uat');
+    $root = 'storage/isolated/uat/';
+
+    expect($process->isSuccessful())->toBeTrue()
+        ->and(explode("\n", trim(File::get($this->deploymentDirectory.'/calls.chgrp'))))->toBe(array_map(
+            fn (string $folder): string => $group.' '.$root.$folder,
+            ['cache', 'sessions', 'private', 'public', 'logs', 'views'],
+        ));
+
+    foreach (['cache', 'sessions', 'private', 'public', 'logs', 'views'] as $folder) {
+        expect(filegroup($this->deploymentDirectory.'/app root/'.$root.$folder))->toBe($group);
+    }
+});
+
+test('a uat deployment stops before clearing caches when this account cannot hand a folder to the web server group', function () {
+    $process = runIsolatedDeployment($this->deploymentDirectory, 'uat', 'chgrp');
+
+    expect($process->isSuccessful())->toBeFalse()
+        ->and($process->getErrorOutput())->toContain('storage/isolated/uat/cache cannot be given the web server group')
+        ->and(File::get($this->deploymentDirectory.'/calls'))->toContain('artisan isolation:check --expect=uat')
+        ->not->toContain('optimize:clear', 'migrate --force', 'queue:restart', 'ci --no-audit')
+        ->and($process->getOutput())->not->toContain('Deployment complete');
+});
+
+test('a uat deployment stops on a host whose storage was never provisioned', function () {
+    File::deleteDirectory($this->deploymentDirectory.'/app root/storage');
+
+    $process = runIsolatedDeployment($this->deploymentDirectory, 'uat');
+
+    expect($process->isSuccessful())->toBeFalse()
+        ->and($process->getErrorOutput())->toContain('storage/ is not provisioned')
+        ->and(File::exists($this->deploymentDirectory.'/app root/storage'))->toBeFalse()
+        ->and(File::get($this->deploymentDirectory.'/calls'))->not->toContain('optimize:clear', 'migrate --force');
+});
+
+test('a production deployment leaves isolated storage and the public link alone', function () {
+    $process = runIsolatedDeployment($this->deploymentDirectory, 'production');
+
+    expect($process->isSuccessful())->toBeTrue()
+        ->and(File::exists($this->deploymentDirectory.'/app root/storage/isolated'))->toBeFalse()
+        ->and(File::exists($this->deploymentDirectory.'/calls.chgrp'))->toBeFalse()
+        ->and(File::get($this->deploymentDirectory.'/calls'))->not->toContain('storage:link');
+});
+
+test('a uat deployment keeps an existing public storage link', function () {
+    File::ensureDirectoryExists($this->deploymentDirectory.'/app root/public');
+    symlink($this->deploymentDirectory.'/app root/storage/isolated/uat/public', $this->deploymentDirectory.'/app root/public/storage');
+
+    $process = runIsolatedDeployment($this->deploymentDirectory, 'uat');
+
+    expect($process->isSuccessful())->toBeTrue()
+        ->and(File::get($this->deploymentDirectory.'/calls'))->not->toContain('storage:link');
+});
+
+test('an isolated storage folder that cannot be created stops the deployment before it clears caches', function () {
+    File::ensureDirectoryExists($this->deploymentDirectory.'/app root/storage/isolated/uat');
+    File::put($this->deploymentDirectory.'/app root/storage/isolated/uat/sessions', '');
+
+    $process = runIsolatedDeployment($this->deploymentDirectory, 'uat');
+
+    expect($process->isSuccessful())->toBeFalse()
+        ->and(File::get($this->deploymentDirectory.'/calls'))->toContain('artisan isolation:check --expect=uat')
+        ->not->toContain('optimize:clear', 'migrate --force', 'queue:restart', 'ci --no-audit')
+        ->and($process->getOutput())->not->toContain('Deployment complete');
+});
 
 test('a rejected deployment never clears shared caches migrates or restarts queues', function () {
     $process = runIsolatedDeployment($this->deploymentDirectory, 'uat', 'first');
@@ -98,6 +227,7 @@ test('a rejected deployment never clears shared caches migrates or restarts queu
     expect($process->getExitCode())->toBe(42)
         ->and($calls)->toContain('artisan isolation:check --expect=uat')
         ->not->toContain('optimize:clear', 'migrate --force', 'queue:restart', 'ci --no-audit')
+        ->and(File::exists($this->deploymentDirectory.'/app root/storage/isolated'))->toBeFalse()
         ->and($process->getOutput())->not->toContain('Deployment complete');
 });
 
@@ -111,6 +241,6 @@ test('a rejected cached configuration prevents publishing route caches or restar
 });
 
 test('each deployment workflow passes its fixed environment profile', function () {
-    expect(File::get(base_path('.github/workflows/deploy-uat.yml')))->toContain(' uat\' < .github/scripts/deploy-remote.sh')
+    expect(File::get(base_path('.github/workflows/deploy-uat.yml')))->toContain(' uat ${UAT_RUNTIME_USER}', 'vars.STAGING_RUNTIME_USER')
         ->and(File::get(base_path('.github/workflows/deploy-prod.yml')))->toContain(' production\' < .github/scripts/deploy-remote.sh');
 });

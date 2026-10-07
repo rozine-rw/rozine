@@ -840,7 +840,11 @@ jobs:
     - name: Run explicit POC PostgreSQL safety catalog without coverage replay
       run: python3 .github/scripts/run-poc-tests.py php
     - name: Prove deployment admission refuses missing scoped evidence
-      run: bash .github/scripts/test-deployment-admission.sh
+      env:
+        REQUIRE_REAL_RUNTIME_IDENTITIES: 'true'
+      run: |
+        bash .github/scripts/test-deployment-admission.sh
+        python3 -B .github/scripts/test_uat_storage_access.py
     - name: Prove scoped selection and evidence reuse fail closed
       run: python3 -B -m unittest discover -s .github/scripts -p 'test_validation_scope.py' -v
     - name: Upload explicitly partial POC test evidence
