@@ -31,6 +31,11 @@ final class EloquentStagingMailTesterStore implements StagingMailTesterStore
         return StagingMailTester::query()->where('email', self::normalized($email))->exists();
     }
 
+    public function authorize(int $actorId): void
+    {
+        $this->staff->check($actorId, self::PERMISSION);
+    }
+
     /** @return list<Tester> */
     public function list(int $actorId): array
     {

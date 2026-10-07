@@ -16,6 +16,9 @@ interface StagingMailTesterStore
     /** Whether this exact address, in any case, is a named tester. Read by the delivery guard. */
     public function includes(string $email): bool;
 
+    /** Refuses staff who may not manage the list. */
+    public function authorize(int $actorId): void;
+
     /** @return list<Tester> */
     public function list(int $actorId): array;
 

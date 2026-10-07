@@ -155,6 +155,37 @@ test('only a superadmin may open or change the tester list', function (Closure $
     'a participant' => [fn () => User::factory()->create(['party_id' => Party::factory()]), 'STAFF_ACCESS_REQUIRED'],
 ]);
 
+test('a malformed change is refused by the staging and permission boundary before it is validated', function (string $environment, string $role, int $status) {
+    app()->detectEnvironment(fn (): string => $environment);
+    $tester = StagingMailTester::factory()->create(['added_by_user_id' => $this->superadmin->id]);
+    $this->actingAs(testerStaff([$role]));
+
+    $this->post(route('staff.staging-mail-testers.store'), ['email' => 'not-an-address'])
+        ->assertStatus($status)->assertSessionHasNoErrors();
+    $this->post(route('staff.staging-mail-testers.remove', ['tester' => $tester->id]), [])
+        ->assertStatus($status)->assertSessionHasNoErrors();
+})->with([
+    'compliance on staging' => ['staging', 'compliance', 403],
+    'superadmin outside staging' => ['testing', 'superadmin', 404],
+]);
+
+test('an address the server list already approves is not added as a named tester', function (string $email) {
+    $this->actingAs($this->superadmin)->from(route('staff.staging-mail-testers.index'))
+        ->post(route('staff.staging-mail-testers.store'), testerChange(['email' => $email]))
+        ->assertRedirect(route('staff.staging-mail-testers.index'))
+        ->assertSessionHasErrors(['email' => 'This address already receives staging mail through the server list, so it is not added here.']);
+
+    expect(StagingMailTester::query()->count())->toBe(0)
+        ->and(CommandOperation::query()->where('command', 'staging.mail.tester.add')->count())->toBe(0);
+})->with(['alice@rozine.rw', ' Alice@ROZINE.rw ']);
+
+test('a lookalike or subdomain of a server domain may still be named', function (string $email) {
+    $this->actingAs($this->superadmin)->post(route('staff.staging-mail-testers.store'), testerChange(['email' => $email]))
+        ->assertRedirect(route('staff.staging-mail-testers.index'))->assertSessionHasNoErrors();
+
+    expect(StagingMailTester::query()->pluck('email')->all())->toBe([$email]);
+})->with(['someone@evilrozine.rw', 'someone@mail.rozine.rw']);
+
 test('the tester list does not exist outside staging', function (string $environment) {
     app()->detectEnvironment(fn (): string => $environment);
     $tester = StagingMailTester::factory()->create(['added_by_user_id' => $this->superadmin->id]);
