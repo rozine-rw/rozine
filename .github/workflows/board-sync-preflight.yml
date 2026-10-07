@@ -1,0 +1,94 @@
+name: Delivery board App preflight (opt-in)
+
+on:
+  push:
+    branches: [dev]
+
+permissions: {}
+
+jobs:
+  preflight:
+    if: >-
+      github.repository == 'rozine-rw/rozine' &&
+      github.event_name == 'push' && github.ref == 'refs/heads/dev' &&
+      github.run_attempt == 1 && vars.BOARD_SYNC_PREFLIGHT_ENABLED == 'true' &&
+      contains(github.event.commits.*.id, vars.BOARD_SYNC_PREFLIGHT_TRIGGER_SHA)
+    concurrency:
+      group: rozine-delivery-project-1-sync
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      BOARD_SYNC_PREFLIGHT_ENABLED: ${{ vars.BOARD_SYNC_PREFLIGHT_ENABLED }}
+      BOARD_SYNC_PREFLIGHT_TRIGGER_SHA: ${{ vars.BOARD_SYNC_PREFLIGHT_TRIGGER_SHA }}
+      BOARD_SYNC_ENABLED: ${{ vars.BOARD_SYNC_ENABLED }}
+      BOARD_SYNC_WRITES_ENABLED: ${{ vars.BOARD_SYNC_WRITES_ENABLED }}
+      BOARD_SYNC_TRUSTED_SHA: ${{ vars.BOARD_SYNC_TRUSTED_SHA }}
+      BOARD_SYNC_CLIENT_ID: ${{ vars.BOARD_SYNC_CLIENT_ID }}
+      BOARD_SYNC_INSTALLATION_ID: ${{ vars.BOARD_SYNC_INSTALLATION_ID }}
+      BOARD_SYNC_APP_SLUG: ${{ vars.BOARD_SYNC_APP_SLUG }}
+    steps:
+      - name: Validate configuration before checkout or minting credentials
+        env:
+          HAS_PRIVATE_KEY: ${{ secrets.BOARD_SYNC_PRIVATE_KEY != '' }}
+        run: |
+          python3 - <<'PY'
+          import os, re
+          checks = [
+              os.environ['BOARD_SYNC_PREFLIGHT_ENABLED'] == 'true',
+              os.environ['BOARD_SYNC_ENABLED'] in ('', 'false'),
+              os.environ['BOARD_SYNC_WRITES_ENABLED'] == 'false',
+              os.environ['GITHUB_RUN_ATTEMPT'] == '1',
+              re.fullmatch(r'[0-9a-f]{40}', os.environ['BOARD_SYNC_TRUSTED_SHA']),
+              re.fullmatch(r'[0-9a-f]{40}', os.environ['BOARD_SYNC_PREFLIGHT_TRIGGER_SHA']),
+              re.fullmatch(r'Iv[0-9A-Za-z.]+', os.environ['BOARD_SYNC_CLIENT_ID']),
+              re.fullmatch(r'[1-9][0-9]*', os.environ['BOARD_SYNC_INSTALLATION_ID']),
+              re.fullmatch(r'[a-z0-9-]+', os.environ['BOARD_SYNC_APP_SLUG']),
+              os.environ['HAS_PRIVATE_KEY'] == 'true',
+          ]
+          if not all(checks):
+              raise SystemExit('Board preflight configuration missing or invalid; no token minted.')
+          PY
+      - name: Checkout only the reviewed immutable implementation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: rozine-rw/rozine
+          ref: ${{ vars.BOARD_SYNC_TRUSTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts/project_board_preflight.py
+            .github/scripts/project_board_sync.py
+          sparse-checkout-cone-mode: false
+      - name: Require the pinned implementation to be merged into dev
+        run: |
+          set -euo pipefail
+          if ! test "$(git rev-parse HEAD)" = "$BOARD_SYNC_TRUSTED_SHA" ||
+             ! git merge-base --is-ancestor "$BOARD_SYNC_TRUSTED_SHA" refs/remotes/origin/dev 2>/dev/null; then
+            echo 'Trusted implementation is not a verified dev ancestor; no token minted.' >&2
+            exit 1
+          fi
+      - name: Validate the approved push before minting credentials
+        id: eligibility
+        run: python3 .github/scripts/project_board_preflight.py --check
+      - name: Mint a read-only dedicated installation token
+        if: steps.eligibility.outputs.eligible == 'true'
+        id: app
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.BOARD_SYNC_CLIENT_ID }}
+          private-key: ${{ secrets.BOARD_SYNC_PRIVATE_KEY }}
+          owner: rozine-rw
+          repositories: rozine
+          permission-organization-projects: read
+          permission-pull-requests: read
+          permission-issues: read
+      - name: Check project identity and read access without selecting cards
+        if: steps.eligibility.outputs.eligible == 'true'
+        env:
+          BOARD_SYNC_TOKEN: ${{ steps.app.outputs.token }}
+          BOARD_SYNC_ACTUAL_INSTALLATION_ID: ${{ steps.app.outputs.installation-id }}
+          BOARD_SYNC_ACTUAL_APP_SLUG: ${{ steps.app.outputs.app-slug }}
+        run: python3 .github/scripts/project_board_preflight.py

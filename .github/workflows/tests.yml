@@ -21,7 +21,8 @@ permissions:
 
 concurrency:
   group: tests-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: false
+  queue: max
 
 jobs:
   board-sync:
@@ -43,12 +44,47 @@ jobs:
             -o "$RUNNER_TEMP/actionlint.tar.gz"
           echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $RUNNER_TEMP/actionlint.tar.gz" | sha256sum --check
           tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
-          "$RUNNER_TEMP/actionlint" -shellcheck=
+          python3 .github/scripts/check-workflow-lint.py "$RUNNER_TEMP/actionlint"
+
+  identity:
+    name: Identify CI validation tree
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      tree_sha: ${{ steps.identity.outputs.tree_sha }}
+      scope: ${{ steps.identity.outputs.scope }}
+      coordinate: ${{ steps.identity.outputs.coordinate }}
+    steps:
+      - name: Checkout actual proposed merge or pushed candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Record immutable POC coordination identity
+        id: identity
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
+          PR_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          VALIDATION: ${{ inputs.validation }}
+        run: python3 .github/scripts/select-validation-scope.py record-coordination-identity
+      - name: Publish immutable POC coordination identity
+        if: ${{ steps.identity.outputs.coordinate == 'true' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ci-coordination-identity-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ci-coordination-identity
+          if-no-files-found: error
+          retention-days: 30
 
   plan:
     name: Select CI scope
+    needs: identity
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    concurrency:
+      group: ci-poc-decision-${{ needs.identity.outputs.coordinate == 'true' && needs.identity.outputs.tree_sha || github.run_id }}-${{ needs.identity.outputs.scope }}
+      cancel-in-progress: false
+      queue: max
     permissions:
       contents: read
       actions: read
@@ -60,6 +96,7 @@ jobs:
       poc: ${{ steps.scope.outputs.poc }}
       scope: ${{ steps.scope.outputs.scope }}
       reused: ${{ steps.scope.outputs.reused }}
+      coordinate: ${{ needs.identity.outputs.coordinate }}
     steps:
       - name: Checkout proposed merge or pushed commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -73,7 +110,16 @@ jobs:
           PR_BASE: ${{ github.event.pull_request.base.ref }}
           PR_HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
           VALIDATION: ${{ inputs.validation }}
+          COORDINATION_ACTIVE: ${{ needs.identity.outputs.coordinate }}
         run: python3 .github/scripts/select-validation-scope.py
+      - name: Publish canonical validation decision
+        if: ${{ needs.identity.outputs.coordinate == 'true' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ci-coordination-decision-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ci-coordination-decision
+          if-no-files-found: error
+          retention-days: 30
       - name: Record immutable PR merge identity
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
         run: python3 .github/scripts/select-validation-scope.py record-merge-identity
@@ -1004,7 +1050,9 @@ jobs:
     needs: plan
     if: ${{ needs.plan.outputs.reused == 'true' && needs.plan.outputs.scope == 'poc' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 10
+    env:
+      COORDINATION_ACTIVE: ${{ needs.plan.outputs.coordinate }}
     permissions:
       contents: read
       actions: read
