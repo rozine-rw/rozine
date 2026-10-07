@@ -31,6 +31,7 @@ path=""; filter=""
 while [ $# -gt 0 ]; do
   case "$1" in
     api|--paginate) shift ;;
+    --slurp) slurp=true; shift ;;
     --jq) filter="$2"; shift 2 ;;
     --header) shift 2 ;;
     *) [ -z "$path" ] && path="$1"; shift ;;
@@ -46,6 +47,7 @@ case "$path" in
   *pulls/*/reviews*) body="$(cat "$FIXTURES/reviews.json")" ;;
   *) echo "stub gh: unexpected path $path" >&2; exit 64 ;;
 esac
+if [ "${slurp:-false}" = true ]; then body="[$body]"; fi
 if [ -n "$filter" ]; then printf '%s' "$body" | jq -r "$filter"; else printf '%s' "$body"; fi
 STUB
 chmod +x "${WORKDIR}/bin/gh"
@@ -70,7 +72,7 @@ write_pulls() { echo "$1" > "${FIXTURES}/pulls.json"; }
 write_reviews() { echo "$1" > "${FIXTURES}/reviews.json"; }
 
 merged_pr() {
-  echo "[{\"number\":42,\"base\":{\"ref\":\"main\"},\"merged_at\":\"2026-09-06T11:00:00Z\",
+  echo "[{\"number\":42,\"base\":{\"ref\":\"main\"},\"merged_at\":\"2026-09-06T11:00:00Z\",\"merge_commit_sha\":\"${GOOD_SHA}\",
          \"user\":{\"login\":\"erastus\"},\"head\":{\"sha\":\"${HEAD_SHA}\"}}]"
 }
 
@@ -81,7 +83,7 @@ baseline() {
   write_runs completed '"success"'
   write_jobs success success
   write_pulls "$(merged_pr)"
-  write_reviews "[{\"state\":\"APPROVED\",\"commit_id\":\"${HEAD_SHA}\",\"user\":{\"login\":\"aminu\"},\"submitted_at\":\"2026-09-06T11:30:00Z\"}]"
+  write_reviews "[{\"state\":\"APPROVED\",\"commit_id\":\"${HEAD_SHA}\",\"user\":{\"login\":\"aminu\",\"type\":\"User\"},\"submitted_at\":\"2026-09-06T11:30:00Z\"}]"
 }
 
 # --- runner ------------------------------------------------------------------
@@ -149,6 +151,11 @@ jq '.workflow_runs += [(.workflow_runs[0] | .id = 100 | .event = "pull_request" 
 mv "${FIXTURES}/changed.json" "${FIXTURES}/runs.json"
 check "keeps exact push evidence when a newer PR run exists" admit "run 99 succeeded"
 
+baseline
+jq '.workflow_runs += [(.workflow_runs[0] | .id = 98 | .run_started_at = "2026-09-06T13:00:00Z" | .conclusion = "failure")]' "${FIXTURES}/runs.json" > "${FIXTURES}/changed.json"
+mv "${FIXTURES}/changed.json" "${FIXTURES}/runs.json"
+check "refuses a newer failed rerun of an older run ID" refuse "concluded 'failure'"
+
 baseline; write_jobs skipped success
 check "refuses a skipped required job inside a green run" refuse "'PHP 8.5 quality gate' is 'skipped'"
 
@@ -161,10 +168,10 @@ check "refuses a direct push with no merged pull request" refuse "direct push ca
 baseline; write_reviews "[{\"state\":\"APPROVED\",\"commit_id\":\"${HEAD_SHA}\",\"user\":{\"login\":\"erastus\"},\"submitted_at\":\"2026-09-06T11:30:00Z\"}]"
 check "refuses an author approving their own pull request" refuse "no APPROVED review"
 
-baseline; write_reviews "[{\"state\":\"APPROVED\",\"commit_id\":\"${OLD_SHA}\",\"user\":{\"login\":\"aminu\"},\"submitted_at\":\"2026-09-06T11:30:00Z\"}]"
+baseline; write_reviews "[{\"state\":\"APPROVED\",\"commit_id\":\"${OLD_SHA}\",\"user\":{\"login\":\"aminu\",\"type\":\"User\"},\"submitted_at\":\"2026-09-06T11:30:00Z\"}]"
 check "refuses an approval that names a superseded commit" refuse "no APPROVED review"
 
-baseline; write_reviews "[{\"state\":\"CHANGES_REQUESTED\",\"commit_id\":\"${HEAD_SHA}\",\"user\":{\"login\":\"aminu\"},\"submitted_at\":\"2026-09-06T11:30:00Z\"}]"
+baseline; write_reviews "[{\"state\":\"CHANGES_REQUESTED\",\"commit_id\":\"${HEAD_SHA}\",\"user\":{\"login\":\"aminu\",\"type\":\"User\"},\"submitted_at\":\"2026-09-06T11:30:00Z\"}]"
 check "refuses when the non-author requested changes instead of approving" refuse "no APPROVED review"
 
 baseline
@@ -172,14 +179,30 @@ jq '.workflow_runs[0].event = "workflow_dispatch"' "${FIXTURES}/runs.json" > "${
 mv "${FIXTURES}/changed.json" "${FIXTURES}/runs.json"
 check "production refuses dispatched evidence instead of its push gates" refuse "timed out"
 
+baseline
+jq '.[0].user.type = "Bot"' "${FIXTURES}/reviews.json" > "${FIXTURES}/changed.json"
+mv "${FIXTURES}/changed.json" "${FIXTURES}/reviews.json"
+check "refuses automated approval instead of a genuine non-author review" refuse "no APPROVED review"
+
+baseline
+jq '. += [(.[0] | .state = "CHANGES_REQUESTED" | .submitted_at = "2026-09-06T12:00:00Z")]' "${FIXTURES}/reviews.json" > "${FIXTURES}/changed.json"
+mv "${FIXTURES}/changed.json" "${FIXTURES}/reviews.json"
+check "refuses superseded approval after changes requested" refuse "no APPROVED review"
+
+baseline
+jq '.[0].merge_commit_sha = "3333333333333333333333333333333333333333"' "${FIXTURES}/pulls.json" > "${FIXTURES}/changed.json"
+mv "${FIXTURES}/changed.json" "${FIXTURES}/pulls.json"
+check "refuses direct descendant of a previously reviewed merge" refuse "direct push cannot deploy"
+
+baseline
+jq '.workflow_runs[0].event = "workflow_dispatch" | .workflow_runs[0].head_branch = "uat"' "${FIXTURES}/runs.json" > "${FIXTURES}/changed.json"
+mv "${FIXTURES}/changed.json" "${FIXTURES}/runs.json"
 export TEST_TARGET_BRANCH=uat
 jq '.workflow_runs[0].head_branch = "uat"' "${FIXTURES}/runs.json" > "${FIXTURES}/changed.json"
 mv "${FIXTURES}/changed.json" "${FIXTURES}/runs.json"
 jq '.[0].base.ref = "uat"' "${FIXTURES}/pulls.json" > "${FIXTURES}/changed.json"
 mv "${FIXTURES}/changed.json" "${FIXTURES}/pulls.json"
-check "staging accepts exact-SHA dispatched full gates with independent approval" admit "run 99 succeeded"
-write_jobs skipped skipped
-check "staging refuses partial POC or reused proof without executed full gates" refuse "'PHP 8.5 quality gate' is 'skipped'"
+check "staging refuses missing original scope-bound evidence" refuse "staging scoped evidence/provenance validation failed"
 unset TEST_TARGET_BRANCH
 
 echo
