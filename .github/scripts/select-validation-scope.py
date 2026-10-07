@@ -8,6 +8,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 FULL_JOBS = [
@@ -17,6 +18,8 @@ FULL_JOBS = [
     *[f"PHP negative controls ({group})" for group in ["architecture", "business", "auditor", "coverage"]],
 ]
 POC_JOBS = ["Board sync offline tests", "POC PHP safety and static checks", "POC web safety and static checks"]
+REUSE_JOBS = ["Select CI scope", "Board sync offline tests", "Reuse POC validation evidence"]
+REUSE_STEPS = ["Revalidate original POC proof without repeating passed tests", "Record original POC source", "Publish POC reuse receipt", "Require combined POC execution within ten minutes"]
 POC_STEPS = ["Record POC validation tree", "Publish POC validation tree", "Require combined POC execution within ten minutes"]
 SHA = r"[0-9a-f]{40}"
 
@@ -36,14 +39,39 @@ def pages(endpoint):
 def requested_scope(env):
     event, ref = env.get("GITHUB_EVENT_NAME"), env.get("GITHUB_REF")
     if event == "workflow_dispatch":
-        if env.get("VALIDATION") != "full":
-            raise ValueError("manual validation must explicitly request full")
+        validation = env.get("VALIDATION", "auto")
+        if validation not in ("auto", "poc", "full"):
+            raise ValueError("unknown manual validation scope")
+        if validation == "full":
+            return "full"
+        if ref in ("refs/heads/dev", "refs/heads/uat"):
+            return "poc"
+        if validation == "poc":
+            raise ValueError("POC dispatch is restricted to dev/uat")
         return "full"
     if event == "pull_request" and env.get("PR_BASE") in ("dev", "uat"):
         return "poc"
     if event == "push" and ref in ("refs/heads/dev", "refs/heads/uat"):
         return "poc"
     return "full"
+
+
+def validate_completed_budget(jobs, reused=False):
+    names = REUSE_JOBS if reused else ["Select CI scope", *POC_JOBS]
+    durations = {}
+    for name in names:
+        matches = [job for job in jobs if job["name"] == name]
+        if len(matches) != 1 or matches[0]["conclusion"] != "success" or matches[0]["status"] != "completed":
+            raise ValueError("budget requires complete successful execution")
+        job = matches[0]
+        start = datetime.datetime.fromisoformat(job["started_at"].replace("Z", "+00:00"))
+        end = datetime.datetime.fromisoformat(job["completed_at"].replace("Z", "+00:00"))
+        durations[name] = (end - start).total_seconds()
+        if durations[name] < 0:
+            raise ValueError("invalid execution interval")
+    critical = max(durations["Board sync offline tests"], durations["Select CI scope"] + max(durations[name] for name in names if name not in ("Select CI scope", "Board sync offline tests")))
+    if critical > 600:
+        raise ValueError("completed combined POC execution exceeds ten minutes")
 
 
 def validate_proof(proof, run, jobs, commit, tree, repository, scope):
@@ -69,6 +97,7 @@ def validate_proof(proof, run, jobs, commit, tree, repository, scope):
         if len(matches) != 1 or matches[0]["conclusion"] != "success":
             raise ValueError(f"missing, duplicate or unsuccessful job: {name}")
     if scope == "poc":
+        validate_completed_budget(jobs)
         job = next(job for job in jobs if job["name"] == "POC PHP safety and static checks")
         if proof.get("required_steps") != POC_STEPS:
             raise ValueError("POC proof omits publication/budget controls")
@@ -81,51 +110,187 @@ def validate_proof(proof, run, jobs, commit, tree, repository, scope):
         if len(parents) != 2 or parents[1]["sha"] != run["head_sha"]:
             raise ValueError("tested merge does not contain the source PR head")
     elif run["event"] in ("push", "workflow_dispatch"):
-        if run["head_branch"] != "dev" or tested != run["head_sha"]:
-            raise ValueError("source is not exact dev validation")
+        if run["head_branch"] not in ("dev", "uat") or tested != run["head_sha"]:
+            raise ValueError("source is not exact dev/uat validation")
     else:
         raise ValueError("unsupported source event")
 
 
-def reusable_run(env, scope):
+def trusted_run(run, repository, workflow_id):
+    return (run.get("workflow_id") == workflow_id
+            and run.get("path") == ".github/workflows/tests.yml"
+            and run.get("head_repository", {}).get("full_name") == repository
+            and run.get("event") in ("push", "workflow_dispatch", "pull_request"))
+
+
+def download_evidence(repository, run, prefix="validation-tree"):
+    name = f"{prefix}-{run['id']}-{run['run_attempt']}"
+    artifacts = api(f"repos/{repository}/actions/runs/{run['id']}/artifacts?per_page=100")["artifacts"]
+    matching = [item for item in artifacts if item["name"] == name and not item["expired"]]
+    if len(matching) != 1:
+        raise ValueError("missing, duplicate or expired evidence artifact")
+    with tempfile.TemporaryDirectory(prefix="rozine-validation-") as directory:
+        command("gh", "run", "download", str(run["id"]), "--repo", repository,
+                "--name", name, "--dir", directory)
+        proof = json.loads((Path(directory) / "tested-tree.json").read_text())
+    if not isinstance(proof, dict):
+        raise ValueError("evidence must be an object")
+    return proof
+
+
+def run_jobs(repository, run):
+    return [job for page in pages(f"repos/{repository}/actions/runs/{run['id']}/attempts/{run['run_attempt']}/jobs?per_page=100") for job in page["jobs"]]
+
+
+def validate_source(repository, run, tree, scope):
+    proof = download_evidence(repository, run)
+    if proof.get("tree_sha") != tree or proof.get("scope") != scope:
+        raise ValueError("source tree or scope differs")
+    commit = api(f"repos/{repository}/git/commits/{proof['tested_sha']}")
+    validate_proof(proof, run, run_jobs(repository, run), commit, tree, repository, scope)
+    if run["event"] == "pull_request":
+        pull = api(f"repos/{repository}/pulls/{proof['pull_number']}")
+        allowed = pull["base"]["ref"] == "dev" or (scope == "poc" and pull["base"]["ref"] == "uat" and pull["head"]["ref"] == "dev")
+        if not allowed or pull["head"]["sha"] != run["head_sha"] or pull["head"]["repo"]["full_name"] != repository:
+            raise ValueError("source PR is not trusted dev/uat validation")
+    return proof
+
+
+def attempt_order(run):
+    # Rerunning an old ID can be newer than a subsequent successful run.
+    timestamps = [run[key] for key in ("created_at", "run_started_at", "updated_at") if run.get(key)]
+    latest = max(datetime.datetime.fromisoformat(value.replace("Z", "+00:00")) for value in timestamps)
+    return (latest, run["id"])
+
+
+def newer_run_blocks(repository, run, source, tree):
+    # A later rerun attempt keeps the same run ID. Its status is authoritative.
+    if run["id"] == source["id"]:
+        return run["run_attempt"] != source["run_attempt"] or run["conclusion"] != "success"
+    if attempt_order(run) < attempt_order(source) or (run["status"] == "completed" and run["conclusion"] == "success"):
+        return False
+    if run["head_sha"] == source["head_sha"]:
+        return True
+    commit = api(f"repos/{repository}/git/commits/{run['head_sha']}")
+    if commit["tree"]["sha"] == tree:
+        return True
+    if run["event"] == "pull_request":
+        # Failed PRs may have tested a different merge tree than their head.
+        # If the merge artifact is absent/unverifiable, fail closed on reuse.
+        proof = download_evidence(repository, run)
+        expected = {"schema": 2, "repository": repository, "run_id": str(run["id"]), "run_attempt": str(run["run_attempt"])}
+        if any(proof.get(key) != value for key, value in expected.items()) or not re.fullmatch(SHA, str(proof.get("tested_sha", ""))):
+            raise ValueError("failed-run merge evidence has unverifiable provenance")
+        tested = api(f"repos/{repository}/git/commits/{proof['tested_sha']}")
+        if (tested["sha"] != proof["tested_sha"] or tested["tree"]["sha"] != proof.get("tree_sha")
+                or len(tested["parents"]) != 2 or tested["parents"][1]["sha"] != run["head_sha"]):
+            raise ValueError("failed-run merge tree does not bind the actual source head")
+        return tested["tree"]["sha"] == tree
+    return False
+
+
+def workflow_history(repository):
+    endpoint = f"repos/{repository}/actions/workflows/tests.yml/runs?per_page=100"
+    first = api(endpoint)
+    total = first["total_count"]
+    if not isinstance(total, int) or not 0 <= total <= 5000:
+        raise ValueError("workflow history exceeds the verified lookup bound")
+    responses = [first] if len(first["workflow_runs"]) == total else pages(endpoint)
+    runs = [run for response in responses for run in response["workflow_runs"]]
+    if (any(response["total_count"] != total for response in responses)
+            or len(runs) != total or len({run["id"] for run in runs}) != total):
+        raise ValueError("workflow history is incomplete or changed during pagination")
+    return runs
+
+
+def reusable_run(env, scope, with_attempt=False):
     repository = env["GITHUB_REPOSITORY"]
     candidate = env["GITHUB_SHA"]
     if not re.fullmatch(SHA, candidate) or command("git", "rev-parse", "HEAD") != candidate:
         raise ValueError("checkout does not match candidate")
     tree = command("git", "rev-parse", "HEAD^{tree}")
-    # Bounded lookup: absent or expired evidence causes execution, never a green bypass.
-    runs = api(f"repos/{repository}/actions/workflows/tests.yml/runs?per_page=100")["workflow_runs"]
-    latest_heads = set()
-    for run in sorted(runs, key=lambda item: item["id"], reverse=True):
-        identity = (run["event"], run["head_sha"])
-        if identity in latest_heads or str(run["id"]) == env.get("GITHUB_RUN_ID"):
+    workflow_id = api(f"repos/{repository}/actions/workflows/tests.yml")["id"]
+    runs = workflow_history(repository)
+    runs = [run for run in runs if trusted_run(run, repository, workflow_id) and str(run["id"]) != env.get("GITHUB_RUN_ID")]
+    candidates = sorted(runs, key=attempt_order, reverse=True)
+    if env.get("SOURCE_RUN"):
+        candidates = [run for run in candidates if str(run["id"]) == env["SOURCE_RUN"]]
+    else:
+        candidates = candidates[:100]
+    deadline = time.monotonic() + 45
+    for source in candidates:
+        if time.monotonic() > deadline:
+            break
+        if source["status"] != "completed" or source["conclusion"] != "success":
             continue
-        latest_heads.add(identity)
-        if run["status"] != "completed" or run["conclusion"] != "success":
+        if env.get("SOURCE_ATTEMPT") and str(source["run_attempt"]) != env["SOURCE_ATTEMPT"]:
             continue
         try:
-            artifacts = api(f"repos/{repository}/actions/runs/{run['id']}/artifacts?per_page=100")["artifacts"]
-            name = f"validation-tree-{run['id']}-{run['run_attempt']}"
-            matching = [item for item in artifacts if item["name"] == name and not item["expired"]]
-            if len(matching) != 1:
-                continue
-            with tempfile.TemporaryDirectory(prefix="rozine-validation-") as directory:
-                command("gh", "run", "download", str(run["id"]), "--repo", repository,
-                        "--name", name, "--dir", directory)
-                proof = json.loads((Path(directory) / "tested-tree.json").read_text())
-            if proof.get("tree_sha") != tree or proof.get("scope") != scope:
-                continue
-            commit = api(f"repos/{repository}/git/commits/{proof['tested_sha']}")
-            jobs = [job for page in pages(f"repos/{repository}/actions/runs/{run['id']}/attempts/{run['run_attempt']}/jobs?per_page=100") for job in page["jobs"]]
-            validate_proof(proof, run, jobs, commit, tree, repository, scope)
-            if run["event"] == "pull_request":
-                pull = api(f"repos/{repository}/pulls/{proof['pull_number']}")
-                if pull["base"]["ref"] != "dev" or pull["head"]["sha"] != run["head_sha"] or pull["head"]["repo"]["full_name"] != repository:
-                    raise ValueError("source PR is not same-repository dev validation")
-            return str(run["id"])
+            validate_source(repository, source, tree, scope)
         except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError, AttributeError):
             continue
-    return ""
+        # Do not silently fall back to an older success on a newer genuine
+        # failure, cancellation, skipped run or unresolved matching attempt.
+        if any(newer_run_blocks(repository, run, source, tree) for run in runs):
+            return ("", "") if with_attempt else ""
+        return (str(source["id"]), str(source["run_attempt"])) if with_attempt else str(source["id"])
+    return ("", "") if with_attempt else ""
+
+
+def staging_evidence(env):
+    repository = env["GITHUB_REPOSITORY"]
+    candidate = env["CANDIDATE_SHA"]
+    if command("git", "rev-parse", "HEAD") != candidate:
+        raise ValueError("admission checkout differs from candidate")
+    tree = command("git", "rev-parse", "HEAD^{tree}")
+    run = api(f"repos/{repository}/actions/runs/{env['EVIDENCE_RUN']}")
+    workflow_id = api(f"repos/{repository}/actions/workflows/tests.yml")["id"]
+    if (not trusted_run(run, repository, workflow_id) or run["head_sha"] != candidate
+            or run["head_branch"] != "uat" or run["event"] not in ("push", "workflow_dispatch")
+            or run["status"] != "completed" or run["conclusion"] != "success"):
+        raise ValueError("staging requires successful exact-candidate UAT validation")
+    try:
+        proof = download_evidence(repository, run)
+    except ValueError:
+        proof = download_evidence(repository, run, "poc-reuse")
+    scope = proof.get("scope")
+    if scope not in ("poc", "full"):
+        raise ValueError("unknown staging evidence scope")
+    source = run
+    if proof.get("kind") == "reuse":
+        if scope != "poc":
+            raise ValueError("staging cannot reuse full candidate coverage")
+        expected = {"schema": 2, "repository": repository, "tested_sha": candidate, "tree_sha": tree,
+                    "run_id": str(run["id"]), "run_attempt": str(run["run_attempt"])}
+        if any(proof.get(key) != value for key, value in expected.items()):
+            raise ValueError("reuse receipt identity mismatch")
+        jobs = run_jobs(repository, run)
+        if proof.get("required_jobs") != REUSE_JOBS or proof.get("required_steps") != REUSE_STEPS:
+            raise ValueError("reuse receipt check set differs")
+        validate_completed_budget(jobs, reused=True)
+        for name in REUSE_JOBS:
+            matches = [job for job in jobs if job["name"] == name]
+            if len(matches) != 1 or matches[0]["conclusion"] != "success":
+                raise ValueError("missing/unsuccessful reuse admission job")
+        reuse = next(job for job in jobs if job["name"] == "Reuse POC validation evidence")
+        for name in REUSE_STEPS:
+            steps = [step for step in reuse.get("steps", []) if step["name"] == name]
+            if len(steps) != 1 or steps[0]["conclusion"] != "success":
+                raise ValueError("missing/unsuccessful reuse provenance/budget step")
+        if not re.fullmatch(r"[0-9]+", str(proof.get("source_run", ""))) or int(proof["source_run"]) >= run["id"]:
+            raise ValueError("reuse must name an earlier original run")
+        source = api(f"repos/{repository}/actions/runs/{proof['source_run']}")
+        if str(source["run_attempt"]) != proof.get("source_attempt"):
+            raise ValueError("original source attempt changed")
+    elif proof.get("tested_sha") != candidate:
+        raise ValueError("executed UAT proof is not exact candidate")
+    if not trusted_run(source, repository, workflow_id):
+        raise ValueError("untrusted original source")
+    validate_source(repository, source, tree, scope)
+    lookup = dict(env, GITHUB_SHA=candidate, GITHUB_RUN_ID="", SOURCE_RUN=str(source["id"]), SOURCE_ATTEMPT=str(source["run_attempt"]))
+    if reusable_run(lookup, scope) != str(source["id"]):
+        raise ValueError("original evidence is unavailable or superseded by newer failure")
+    return {"scope": scope, "source_run": str(source["id"]), "source_attempt": str(source["run_attempt"]), "tree_sha": tree, "required_jobs": POC_JOBS if scope == "poc" else FULL_JOBS}
 
 
 def record(env, scope):
@@ -140,8 +305,26 @@ def record(env, scope):
     Path("ci-evidence/tested-tree.json").write_text(json.dumps(proof, indent=2) + "\n")
 
 
+def record_reuse(env):
+    if (not re.fullmatch(r"[0-9]+", env.get("SOURCE_RUN", ""))
+            or not re.fullmatch(r"[1-9][0-9]*", env.get("SOURCE_ATTEMPT", ""))
+            or reusable_run(env, "poc") != env["SOURCE_RUN"]):
+        raise ValueError("original pinned source attempt is no longer validated")
+    record(env, "poc")
+    path = Path("ci-evidence/tested-tree.json")
+    receipt = json.loads(path.read_text())
+    receipt.update(kind="reuse", source_run=env["SOURCE_RUN"], source_attempt=env["SOURCE_ATTEMPT"], required_jobs=REUSE_JOBS, required_steps=REUSE_STEPS)
+    path.write_text(json.dumps(receipt, indent=2) + "\n")
+
+
 def main():
     env = os.environ
+    if sys.argv[1:] == ["admit-staging"]:
+        print(json.dumps(staging_evidence(env)))
+        return
+    if sys.argv[1:] == ["record-reuse"]:
+        record_reuse(env)
+        return
     if sys.argv[1:] in (["verify-full"], ["verify-poc"]):
         scope = sys.argv[1].removeprefix("verify-")
         source = reusable_run(env, scope)
@@ -155,16 +338,16 @@ def main():
         record(env, sys.argv[2])
         return
     scope = requested_scope(env)
-    source = ""
+    source, source_attempt = "", ""
     # Dev PRs execute. A dev->uat PR may reuse only its actual proposed merge tree.
     promotion = env.get("GITHUB_EVENT_NAME") == "pull_request" and env.get("PR_BASE") == "uat" and env.get("PR_HEAD_BRANCH") == "dev"
-    if promotion or (env.get("GITHUB_EVENT_NAME") == "push" and env.get("GITHUB_REF") in ("refs/heads/dev", "refs/heads/uat")):
+    if scope == "poc" and (promotion or (env.get("GITHUB_EVENT_NAME") in ("push", "workflow_dispatch") and env.get("GITHUB_REF") in ("refs/heads/dev", "refs/heads/uat"))):
         try:
-            source = reusable_run(env, scope)
-        except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError):
+            source, source_attempt = reusable_run(env, scope, with_attempt=True)
+        except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError, AttributeError):
             pass
     with open(env["GITHUB_OUTPUT"], "a") as output:
-        output.write(f"full={str(scope == 'full' and not source).lower()}\npoc={str(scope == 'poc' and not source).lower()}\nscope={scope}\nreused={str(bool(source)).lower()}\nsource_run={source}\n")
+        output.write(f"full={str(scope == 'full' and not source).lower()}\npoc={str(scope == 'poc' and not source).lower()}\nscope={scope}\nreused={str(bool(source)).lower()}\nsource_run={source}\nsource_attempt={source_attempt}\n")
     print(f"Scope: {scope}; " + (f"reuse identical complete tree from run {source}" if source else "execute checks"))
 
 

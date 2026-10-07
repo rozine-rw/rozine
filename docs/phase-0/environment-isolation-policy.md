@@ -5,6 +5,32 @@ Compliance (data classification); Robert — internal Legal (personal data)
 
 **Implementation addendum, 2026-09-14:** Phase 0M in [kickoff evidence](kickoff-evidence.md) records local demo/UAT notices, temporary switch ownership/expiry, and a guarded synthetic Pulse fixture reset. This is not host-isolation acceptance or the Phase 3 financial demo book. The merged runtime requires `rozine_uat` for both UAT database and role and **denies all UAT/staging seeding and destructive resets**; it supersedes the earlier permissive staging entries below. Historical host observations have not been reverified by this addendum.
 
+**Owner-approved exception, 2026-10-07 (staging mail):** At Erastus's request, staging (`APP_ENV` `staging` or `uat`) may send real email. Erastus approved the following on 2026-10-07:
+
+- **Testers:** everyone at `@rozine.rw`, plus named testers. Admins are to manage the named testers from the admin console in a follow-up change; until then they are listed in `STAGING_MAIL_RECIPIENTS`.
+- **Allowance:** 20 messages per hour.
+- **Key:** a separate, staging-only sending key that can be revoked independently of production's.
+- **Trade-offs:** staging shares production's sending domain and reputation, and testers' addresses are held on the staging server and pass through Resend.
+- **Sign-up:** staging sign-up is not rate-limited for now.
+
+Staging opts in with `MAIL_MAILER=smtp`. Without the opt-in it keeps mail in memory, as before.
+
+At start-up and in `isolation:check`, the runtime refuses:
+
+- any relay other than Resend's SMTP relay (`smtp.resend.com`, user `resend`, staging's own key), a `MAIL_URL`, a scheme other than implicit TLS (`smtps`), disabled peer verification, or any transport option outside the reviewed set (`ISOLATION_MAIL_PROVIDER_DENIED`);
+- a sender whose address doesn't start with `staging` or whose name doesn't say Staging (`ISOLATION_MAIL_SENDER_NOT_STAGING`);
+- an empty or malformed tester list in `STAGING_MAIL_RECIPIENTS`, given as exact addresses or `@domains` (`ISOLATION_MAIL_RECIPIENTS_REQUIRED`);
+- a missing or non-positive hourly allowance in `STAGING_MAIL_HOURLY_LIMIT` (`ISOLATION_MAIL_LIMIT_REQUIRED`).
+
+At delivery, every message is checked, including verification, password reset and queued mail:
+
+- it is withheld unless every To, Cc and Bcc recipient is an approved tester;
+- it is withheld once the hourly allowance is spent;
+- it always leaves as the approved staging sender, with any Sender or Return-Path override removed;
+- its subject starts with `[Staging]`.
+
+Staging shares the `mail.rozine.rw` sending domain with production. Demo, and every other provider credential, stays denied.
+
 The requirement is that demo and UAT facts can never look live or touch real records. That is a
 property of the whole estate, not of one config flag, so this document states what each environment
 is for, what data it may hold, which boundaries hold today with evidence, and which do not yet.
