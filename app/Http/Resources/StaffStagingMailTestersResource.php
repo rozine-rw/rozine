@@ -30,7 +30,7 @@ class StaffStagingMailTestersResource extends JsonResource
             // Only superadmin holds staging.mail.testers.manage.
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
                 'initials' => mb_strtoupper(mb_substr($name, 0, 1)), 'role' => 'superadmin'],
-            'nav' => [...StaffNavigation::links($request, $page['permissions']), 'mail_testers' => $link('index')],
+            'nav' => [...(new StaffNavigationResource($page['permissions']))->resolve($request), 'mail_testers' => $link('index')],
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'],
             'server_recipients' => $page['server_recipients'],
             'testers' => array_map(fn (array $tester): array => [...$tester, 'remove' => $link('remove', ['tester' => $tester['id']], 'post')], $page['testers']),

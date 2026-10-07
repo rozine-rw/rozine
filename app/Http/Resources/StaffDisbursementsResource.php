@@ -32,7 +32,7 @@ class StaffDisbursementsResource extends JsonResource
         return ['contract_version' => 'staff-disbursement-v1', 'staff_access_version' => 'staff-access-v1', 'server_time' => now()->toIso8601String(),
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
                 'initials' => mb_strtoupper(mb_substr($name, 0, 1)), 'role' => 'approver'],
-            'nav' => StaffNavigation::links($request, $permissions),
+            'nav' => (new StaffNavigationResource($permissions))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => $page['awaiting_second_approver']], 'search' => '',
             'allowed_actions' => $detail['allowed_actions'] ?? [],
             'disbursements' => array_map(fn (array $row): array => [...$row, 'link' => $link('show', ['disbursement' => $row['id']])], $page['rows']),
