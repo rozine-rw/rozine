@@ -19,6 +19,8 @@ trap 'rm -rf "${WORKDIR}"' EXIT
 GOOD_SHA="1111111111111111111111111111111111111111"
 HEAD_SHA="2222222222222222222222222222222222222222"
 OLD_SHA="3333333333333333333333333333333333333333"
+REAL_GH="$(command -v gh)"
+export REAL_GH
 
 # --- stub gh -----------------------------------------------------------------
 # Dispatches on the API path and applies the caller's --jq filter exactly as gh
@@ -27,6 +29,7 @@ mkdir -p "${WORKDIR}/bin"
 cat > "${WORKDIR}/bin/gh" <<'STUB'
 #!/usr/bin/env bash
 set -euo pipefail
+original=("$@")
 path=""; filter=""
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -37,6 +40,16 @@ while [ $# -gt 0 ]; do
     *) [ -z "$path" ] && path="$1"; shift ;;
   esac
 done
+if [ "${slurp:-false}" = true ] && [ -n "$filter" ]; then
+  echo 'the --slurp option is not supported with --jq' >&2
+  exit 1
+fi
+if [[ "$path" == *pulls/*/reviews* ]] && [ -n "${REAL_GH_REVIEW_URL:-}" ]; then
+  for index in "${!original[@]}"; do
+    if [ "${original[$index]}" = "$path" ]; then original[$index]="$REAL_GH_REVIEW_URL"; fi
+  done
+  exec "$REAL_GH" "${original[@]}"
+fi
 case "$path" in
   *git/ref/heads/*) body="$(cat "$FIXTURES/ref.json")" ;;
   *actions/workflows/*)
@@ -47,6 +60,10 @@ case "$path" in
   *pulls/*/reviews*) body="$(cat "$FIXTURES/reviews.json")" ;;
   *) echo "stub gh: unexpected path $path" >&2; exit 64 ;;
 esac
+if [[ "$path" == *pulls/*/reviews* ]] && [ -f "$FIXTURES/reviews-error" ]; then
+  printf '%s' "$body"
+  exit 1
+fi
 if [ "${slurp:-false}" = true ]; then body="[$body]"; fi
 if [ -n "$filter" ]; then printf '%s' "$body" | jq -r "$filter"; else printf '%s' "$body"; fi
 STUB
@@ -188,6 +205,77 @@ baseline
 jq '. += [(.[0] | .state = "CHANGES_REQUESTED" | .submitted_at = "2026-09-06T12:00:00Z")]' "${FIXTURES}/reviews.json" > "${FIXTURES}/changed.json"
 mv "${FIXTURES}/changed.json" "${FIXTURES}/reviews.json"
 check "refuses superseded approval after changes requested" refuse "no APPROVED review"
+
+baseline
+printf '\n[{"state":"CHANGES_REQUESTED","commit_id":"%s","user":{"login":"aminu","type":"User"},"submitted_at":"2026-09-06T12:00:00Z"}]' "$HEAD_SHA" >> "${FIXTURES}/reviews.json"
+check "refuses an approval superseded on a later review page" refuse "no APPROVED review"
+
+baseline; write_reviews '[]'
+printf '\n[{"state":"APPROVED","commit_id":"%s","user":{"login":"aminu","type":"User"},"submitted_at":"2026-09-06T12:00:00Z"}]' "$HEAD_SHA" >> "${FIXTURES}/reviews.json"
+check "admits a genuine exact-head approval on a later review page" admit "non-author approval"
+
+baseline; touch "${FIXTURES}/reviews-error"
+check "refuses partial review output when the API fails" refuse "could not read complete"
+
+baseline; write_reviews 'not-json'
+check "refuses non-JSON review output" refuse "could not read complete"
+
+baseline; write_reviews '{"unexpected":"shape"}'
+check "refuses malformed review-page structure" refuse "could not parse complete"
+
+# Exercise the installed CLI against a loopback fixture, preserving its option
+# parser and Link pagination. The remaining gate API calls stay hermetic.
+cat > "${WORKDIR}/review-server.py" <<'PY'
+import http.server
+import json
+import os
+from pathlib import Path
+from urllib.parse import parse_qs, urlparse
+
+class Handler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        remaining = Path(os.environ["FIXTURES"], "reviews.json").read_text().strip()
+        documents = []
+        while remaining:
+            document, end = json.JSONDecoder().raw_decode(remaining)
+            documents.append(document)
+            remaining = remaining[end:].strip()
+        page = int(parse_qs(urlparse(self.path).query).get("page", ["1"])[0])
+        body = json.dumps(documents[page - 1]).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        if page < len(documents):
+            self.send_header("Link", f'<http://127.0.0.1:{self.server.server_port}/reviews?page={page + 1}>; rel="next"')
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *_args):
+        pass
+
+server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+Path(os.environ["REVIEW_PORT_PATH"]).write_text(str(server.server_port))
+server.serve_forever()
+PY
+baseline
+export REVIEW_PORT_PATH="${WORKDIR}/review-port"
+python3 "${WORKDIR}/review-server.py" &
+review_server_pid=$!
+trap 'kill "$review_server_pid" 2>/dev/null || true; rm -rf "${WORKDIR}"' EXIT
+for attempt in {1..30}; do
+  [ -s "$REVIEW_PORT_PATH" ] && break
+  sleep 0.1
+done
+export REAL_GH_REVIEW_URL="http://127.0.0.1:$(cat "$REVIEW_PORT_PATH")/reviews?page=1"
+write_reviews '[]'
+printf '\n[{"state":"APPROVED","commit_id":"%s","user":{"login":"aminu","type":"User"},"submitted_at":"2026-09-06T12:00:00Z"}]' "$HEAD_SHA" >> "${FIXTURES}/reviews.json"
+check "real gh CLI admits approval from a later paginated response" admit "non-author approval"
+
+printf '\n[{"state":"CHANGES_REQUESTED","commit_id":"%s","user":{"login":"aminu","type":"User"},"submitted_at":"2026-09-06T13:00:00Z"}]' "$HEAD_SHA" >> "${FIXTURES}/reviews.json"
+check "real gh CLI refuses superseded approval across pages" refuse "no APPROVED review"
+unset REAL_GH_REVIEW_URL
+kill "$review_server_pid"
+wait "$review_server_pid" 2>/dev/null || true
+trap 'rm -rf "${WORKDIR}"' EXIT
 
 baseline
 jq '.[0].merge_commit_sha = "3333333333333333333333333333333333333333"' "${FIXTURES}/pulls.json" > "${FIXTURES}/changed.json"

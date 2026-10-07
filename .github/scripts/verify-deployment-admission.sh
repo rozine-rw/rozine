@@ -167,10 +167,13 @@ pull_author="$(echo "${pulls_json}" | jq -r 'sort_by(.merged_at) | last | .user.
 pull_head_sha="$(echo "${pulls_json}" | jq -r 'sort_by(.merged_at) | last | .head.sha')"
 echo "OK  candidate arrived through merged pull request #${pull_number} (author: ${pull_author}, head: ${pull_head_sha})."
 
-approver="$(gh api --paginate --slurp "repos/${GITHUB_REPOSITORY}/pulls/${pull_number}/reviews?per_page=100" \
-  --jq "add | map(select(.state != \"COMMENTED\")) | sort_by(.user.login, .submitted_at) | group_by(.user.login) | map(last) |
+reviews_json="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${pull_number}/reviews?per_page=100" --jq '.')" \
+  || refuse "could not read complete pull request review evidence."
+approver="$(printf '%s' "${reviews_json}" | jq -sr \
+  "add | map(select(.state != \"COMMENTED\")) | sort_by(.user.login, .submitted_at) | group_by(.user.login) | map(last) |
     map(select(.state == \"APPROVED\" and .commit_id == \"${pull_head_sha}\" and .user.login != \"${pull_author}\" and .user.type == \"User\")) |
-    sort_by(.submitted_at) | last | .user.login // empty")"
+    sort_by(.submitted_at) | last | .user.login // empty")" \
+  || refuse "could not parse complete pull request review evidence."
 
 if [ -z "${approver}" ]; then
   refuse "pull request #${pull_number} has no APPROVED review of its final head SHA ${pull_head_sha} from a developer other than its author ${pull_author}."
