@@ -356,14 +356,20 @@ def canonical_selection(env):
     # Its immutable claim remains authoritative; a waiter cannot take over.
     retry = int(current["run_attempt"]) > 1 or current["event"] == "workflow_dispatch"
     retry_started = datetime.datetime.fromisoformat(current.get("run_started_at", current["created_at"]).replace("Z", "+00:00"))
+    inventory = coordination_artifact_index(repository)
     for run in runs:
         if (run["status"] != "completed" or run["conclusion"] == "success"
                 or retry and attempt_order(run)[0] < retry_started):
             continue
+        name = f"ci-coordination-identity-{run['id']}-{run['run_attempt']}"
+        if name not in inventory:
+            continue
+        if inventory[name] != run["id"]:
+            raise CoordinationRefusal("coordination_artifact_inventory_run_binding_mismatch")
         try:
             failed_identity = coordination_identity(repository, run)
         except MissingEvidence:
-            continue
+            raise CoordinationRefusal("coordination_index_changed_during_failed_peer_validation") from None
         if failed_identity["tree_sha"] == tree:
             diagnostic("canonical_peer_unsuccessful", run)
             raise CoordinationRefusal("canonical_peer_unsuccessful_no_takeover")
@@ -545,6 +551,31 @@ def workflow_history(repository):
             or len(runs) != total or len({run["id"] for run in runs}) != total):
         raise ValueError("workflow history is incomplete or changed during pagination")
     return runs
+
+
+def coordination_artifact_index(repository):
+    # One bounded paginated request replaces a serial lookup for every old
+    # unsuccessful run. Absence is usable only from a complete stable inventory.
+    endpoint = f"repos/{repository}/actions/artifacts?per_page=100"
+    first = api(endpoint)
+    total = first["total_count"]
+    if not isinstance(total, int) or not 0 <= total <= 10000:
+        raise CoordinationRefusal("coordination_artifact_inventory_exceeds_bound")
+    responses = [first] if len(first["artifacts"]) == total else pages(endpoint)
+    artifacts = [artifact for response in responses for artifact in response["artifacts"]]
+    if (any(response["total_count"] != total for response in responses)
+            or len(artifacts) != total or len({artifact["id"] for artifact in artifacts}) != total):
+        raise CoordinationRefusal("coordination_artifact_inventory_incomplete_or_changed")
+    index = {}
+    for artifact in artifacts:
+        if not isinstance(artifact["name"], str):
+            raise CoordinationRefusal("coordination_artifact_inventory_invalid_name")
+        if artifact["name"].startswith("ci-coordination-identity-"):
+            name = artifact["name"]
+            if name in index:
+                raise CoordinationRefusal("coordination_artifact_inventory_duplicate_identity")
+            index[name] = artifact["workflow_run"]["id"]
+    return index
 
 
 def reusable_run(env, scope, with_attempt=False):

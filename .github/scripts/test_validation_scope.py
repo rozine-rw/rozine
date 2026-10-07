@@ -674,6 +674,10 @@ class CanonicalCoordinationTests(unittest.TestCase):
         if "/git/commits/" in endpoint: return self.commits[endpoint.rsplit("/", 1)[-1]]
         if "/pulls/" in endpoint:
             return {"base": {"ref": "dev" if endpoint.endswith("/10") else "uat"}, "head": {"sha": "a" * 40 if endpoint.endswith("/10") else "d" * 40, "ref": "feature" if endpoint.endswith("/10") else "dev", "repo": {"full_name": self.repository}}}
+        if endpoint == f"repos/{self.repository}/actions/artifacts?per_page=100":
+            artifacts = [{"id": number * 10 + index, "name": f"{prefix}-{number}-{self.runs[number]['run_attempt']}", "workflow_run": {"id": number}}
+                         for number in self.artifacts for index, prefix in enumerate(self.artifacts[number])]
+            return {"total_count": len(artifacts), "artifacts": artifacts}
         if "/artifacts?" in endpoint:
             number = int(endpoint.split("/runs/")[1].split("/")[0])
             artifacts = [{"id": number * 10 + index, "name": f"{prefix}-{number}-{self.runs[number]['run_attempt']}", "expired": False} for index, prefix in enumerate(self.artifacts[number])]
@@ -862,6 +866,51 @@ class CanonicalCoordinationTests(unittest.TestCase):
             with self.subTest(field=field), self.server(), self.assertRaises(policy.CoordinationRefusal):
                 policy.canonical_selection(self.env())
             self.artifacts = copy.deepcopy(original)
+
+    def test_artifact_index_requires_complete_stable_unique_run_bound_inventory(self):
+        artifact = {"id": 1, "name": "ci-coordination-identity-200-1", "workflow_run": {"id": 200}}
+        first = {"total_count": 2, "artifacts": [artifact]}
+        second = {"id": 2, "name": "unrelated", "workflow_run": {"id": 100}}
+        for scenario in ["complete", "missing page", "changed count", "duplicate id", "duplicate identity", "invalid name"]:
+            responses = [copy.deepcopy(first), {"total_count": 2, "artifacts": [copy.deepcopy(second)]}]
+            if scenario == "missing page": responses.pop()
+            if scenario == "changed count": responses[-1]["total_count"] = 3
+            if scenario == "duplicate id": responses[-1]["artifacts"][0]["id"] = 1
+            if scenario == "duplicate identity": responses[-1]["artifacts"][0]["name"] = artifact["name"]
+            if scenario == "invalid name": responses[-1]["artifacts"][0]["name"] = []
+            with self.subTest(scenario=scenario), patch.object(policy, "api", return_value=first), patch.object(policy, "pages", return_value=responses):
+                if scenario == "complete":
+                    self.assertEqual(policy.coordination_artifact_index(self.repository), {artifact["name"]: 200})
+                else:
+                    with self.assertRaises(policy.CoordinationRefusal): policy.coordination_artifact_index(self.repository)
+
+    def test_artifact_index_timeout_never_grants_execute_ownership(self):
+        with self.server(), patch.object(policy, "coordination_artifact_index", side_effect=subprocess.TimeoutExpired("gh api", 45)), self.assertRaises(subprocess.TimeoutExpired):
+            policy.canonical_selection(self.env())
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_failed_peer_without_identity_avoids_serial_per_run_artifact_lookup(self):
+        self.runs[100]["conclusion"] = "failure"
+        self.artifacts[100].clear()
+        calls = []
+        native_api = self.api
+        def record(endpoint):
+            calls.append(endpoint)
+            return native_api(endpoint)
+        with self.server(), patch.object(policy, "api", side_effect=record):
+            self.assertEqual(policy.canonical_selection(self.env())["mode"], "execute")
+        self.assertFalse(any("/runs/100/artifacts?" in endpoint for endpoint in calls))
+
+    def test_indexed_failed_peer_identity_disappearing_refuses_new_ownership(self):
+        self.runs[100]["conclusion"] = "failure"
+        original = policy.coordination_identity
+        def disappearance(repository, run):
+            if run["id"] == 100:
+                raise policy.MissingEvidence("identity absent from now-complete per-run inventory")
+            return original(repository, run)
+        with self.server(), patch.object(policy, "coordination_identity", side_effect=disappearance), self.assertRaisesRegex(policy.CoordinationRefusal, "coordination_index_changed"):
+            policy.canonical_selection(self.env())
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
 
     def test_protocol_scope_native_tree_parents_and_publication_provenance_controls(self):
         original = copy.deepcopy((self.artifacts, self.commits, self.jobs))
