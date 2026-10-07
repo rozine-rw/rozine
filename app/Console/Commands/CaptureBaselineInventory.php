@@ -285,7 +285,8 @@ class CaptureBaselineInventory extends Command
 
             preg_match('/^name:\s*(.+)$/m', $contents, $name);
             preg_match('/branches:\s*\[([a-z]+)\]/', $contents, $branch);
-            preg_match("/bash -s -- (\S+) (uat|production)' </", $contents, $root);
+            // The profile may be followed by more arguments, such as the uat runtime identity.
+            preg_match("/bash -s -- (\S+) (uat|production)[ '\"]/", $contents, $root);
             preg_match_all('/secrets\.([A-Z0-9_]+)/', $contents, $secrets);
 
             $rows[] = [

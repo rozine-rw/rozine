@@ -22,11 +22,32 @@ REUSE_JOBS = ["Select CI scope", "Board sync offline tests", "Reuse POC validati
 REUSE_STEPS = ["Revalidate original POC proof without repeating passed tests", "Record original POC source", "Publish POC reuse receipt", "Require combined POC execution within ten minutes"]
 POC_STEPS = ["Record POC validation tree", "Publish POC validation tree", "Require combined POC execution within ten minutes"]
 MERGE_IDENTITY_STEPS = ["Record immutable PR merge identity", "Publish immutable PR merge identity"]
+IDENTITY_JOB = "Identify CI validation tree"
+IDENTITY_STEPS = ["Record immutable POC coordination identity", "Publish immutable POC coordination identity"]
+DECISION_STEPS = ["Reuse only original successful evidence for an identical dev/UAT tree", "Publish canonical validation decision"]
+VALIDATION_JOBS = [*POC_JOBS[1:], "Reuse POC validation evidence"]
 SHA = r"[0-9a-f]{40}"
 
 
 class MissingEvidence(ValueError):
     """The complete artifact inventory contains no artifact with this name."""
+
+
+class CoordinationRefusal(ValueError):
+    """A bounded, public reason code; never contains API output or credentials."""
+
+
+class PublicationPending(CoordinationRefusal):
+    """Native job publication is still in progress; bounded polling is safe."""
+
+
+class PreflightPublicationPending(PublicationPending):
+    """The independent identity job can finish while selection owns the lock."""
+
+
+def diagnostic(reason, run=None):
+    suffix = f" run={run['id']} attempt={run['run_attempt']}" if run else ""
+    print(f"CI coordination: {reason}{suffix}", file=sys.stderr)
 
 
 def command(*args):
@@ -63,6 +84,7 @@ def requested_scope(env):
 
 def validate_completed_budget(jobs, reused=False):
     names = REUSE_JOBS if reused else ["Select CI scope", *POC_JOBS]
+    names = [*names, *([IDENTITY_JOB] if any(job["name"] == IDENTITY_JOB for job in jobs) else [])]
     durations = {}
     for name in names:
         matches = [job for job in jobs if job["name"] == name]
@@ -74,7 +96,7 @@ def validate_completed_budget(jobs, reused=False):
         durations[name] = (end - start).total_seconds()
         if durations[name] < 0:
             raise ValueError("invalid execution interval")
-    critical = max(durations["Board sync offline tests"], durations["Select CI scope"] + max(durations[name] for name in names if name not in ("Select CI scope", "Board sync offline tests")))
+    critical = max(durations["Board sync offline tests"], durations.get(IDENTITY_JOB, 0) + durations["Select CI scope"] + max(durations[name] for name in names if name not in (IDENTITY_JOB, "Select CI scope", "Board sync offline tests")))
     if critical > 600:
         raise ValueError("completed combined POC execution exceeds ten minutes")
 
@@ -153,7 +175,8 @@ def download_evidence(repository, run, prefix="validation-tree"):
     with tempfile.TemporaryDirectory(prefix="rozine-validation-") as directory:
         command("gh", "run", "download", str(run["id"]), "--repo", repository,
                 "--name", name, "--dir", directory)
-        filename = "merge-identity.json" if prefix == "pr-merge-identity" else "tested-tree.json"
+        filename = {"pr-merge-identity": "merge-identity.json", "ci-coordination-identity": "coordination-identity.json",
+                    "ci-coordination-decision": "coordination-decision.json"}.get(prefix, "tested-tree.json")
         proof = json.loads((Path(directory) / filename).read_text())
     if not isinstance(proof, dict):
         raise ValueError("evidence must be an object")
@@ -162,6 +185,269 @@ def download_evidence(repository, run, prefix="validation-tree"):
 
 def run_jobs(repository, run):
     return [job for page in pages(f"repos/{repository}/actions/runs/{run['id']}/attempts/{run['run_attempt']}/jobs?per_page=100") for job in page["jobs"]]
+
+
+def same_attempt(repository, run):
+    latest = api(f"repos/{repository}/actions/runs/{run['id']}")
+    for key in ("id", "run_attempt", "head_sha", "event", "workflow_id", "path", "head_repository"):
+        if latest.get(key) != run.get(key):
+            diagnostic("run_or_attempt_changed", run)
+            raise CoordinationRefusal("run_or_attempt_changed")
+    return latest
+
+
+def successful_steps(jobs, name, steps):
+    matches = [job for job in jobs if job["name"] == name]
+    if len(matches) == 1 and matches[0].get("status") in ("queued", "pending", "waiting", "in_progress"):
+        raise PublicationPending("coordination_publication_in_progress")
+    if len(matches) != 1 or matches[0].get("status") != "completed" or matches[0].get("conclusion") != "success":
+        raise CoordinationRefusal("identity_or_decision_job_not_successful")
+    for step in steps:
+        found = [item for item in matches[0].get("steps", []) if item["name"] == step]
+        if len(found) != 1 or found[0].get("conclusion") != "success":
+            raise CoordinationRefusal("identity_or_decision_step_not_successful")
+
+
+def coordination_identity(repository, run):
+    proof = download_evidence(repository, run, "ci-coordination-identity")
+    expected = {"schema": 1, "protocol": 1, "kind": "poc-coordination-identity", "scope": "poc",
+                "repository": repository, "run_id": str(run["id"]), "run_attempt": str(run["run_attempt"]),
+                "event": run["event"], "head_sha": run["head_sha"]}
+    if any(proof.get(key) != value for key, value in expected.items()):
+        raise CoordinationRefusal("coordination_identity_binding_mismatch")
+    if any(not re.fullmatch(SHA, str(proof.get(key, ""))) for key in ("tested_sha", "tree_sha", "head_sha")):
+        raise CoordinationRefusal("coordination_identity_invalid_sha")
+    commit = api(f"repos/{repository}/git/commits/{proof['tested_sha']}")
+    if commit.get("sha") != proof["tested_sha"] or commit["tree"]["sha"] != proof["tree_sha"]:
+        raise CoordinationRefusal("coordination_identity_native_tree_mismatch")
+    if run["event"] == "pull_request":
+        allowed = proof.get("base_ref") == "dev" or (proof.get("base_ref") == "uat" and run["head_branch"] == "dev")
+        if (not allowed or not re.fullmatch(r"[1-9][0-9]*", str(proof.get("pull_number", "")))
+                or [parent["sha"] for parent in commit["parents"]] != [proof.get("base_sha"), run["head_sha"]]):
+            raise CoordinationRefusal("coordination_identity_pr_contract_mismatch")
+    elif run["event"] not in ("push", "workflow_dispatch") or run.get("head_branch") not in ("dev", "uat") or proof["tested_sha"] != run["head_sha"]:
+        raise CoordinationRefusal("coordination_identity_target_mismatch")
+    try:
+        successful_steps(run_jobs(repository, run), IDENTITY_JOB, IDENTITY_STEPS)
+    except PublicationPending:
+        raise PreflightPublicationPending("peer_preflight_identity_publication_in_progress") from None
+    same_attempt(repository, run)
+    return proof
+
+
+def coordination_decision(repository, run, identity):
+    proof = download_evidence(repository, run, "ci-coordination-decision")
+    expected = {key: identity[key] for key in ("schema", "protocol", "scope", "repository", "run_id", "run_attempt", "tested_sha", "tree_sha")}
+    expected["kind"] = "poc-coordination-decision"
+    if any(proof.get(key) != value for key, value in expected.items()):
+        raise CoordinationRefusal("coordination_decision_binding_mismatch")
+    if proof.get("mode") not in ("execute", "reuse", "await"):
+        raise CoordinationRefusal("coordination_decision_invalid_mode")
+    for key in ("owner_run", "owner_attempt", "source_run", "source_attempt"):
+        if not re.fullmatch(r"[1-9][0-9]*", str(proof.get(key, ""))):
+            raise CoordinationRefusal("coordination_decision_invalid_pin")
+    own = (str(run["id"]), str(run["run_attempt"]))
+    owner = (proof["owner_run"], proof["owner_attempt"])
+    source = (proof["source_run"], proof["source_attempt"])
+    if (proof["mode"] in ("execute", "reuse") and owner != own
+            or proof["mode"] == "execute" and source != own
+            or proof["mode"] == "await" and owner == own
+            or proof["mode"] == "reuse" and source == own):
+        raise CoordinationRefusal("coordination_decision_cycle_or_owner_mismatch")
+    successful_steps(run_jobs(repository, run), "Select CI scope", DECISION_STEPS)
+    same_attempt(repository, run)
+    return proof
+
+
+def pending_participants(repository, runs, tree):
+    participants = []
+    for run in runs:
+        if run["status"] == "completed":
+            continue
+        try:
+            identity = coordination_identity(repository, run)
+        except MissingEvidence:
+            jobs = run_jobs(repository, run)
+            preflight = [job for job in jobs if job["name"] == IDENTITY_JOB]
+            if len(preflight) == 1 and preflight[0]["status"] in ("queued", "pending", "waiting", "in_progress"):
+                raise PreflightPublicationPending("peer_preflight_identity_publication_in_progress")
+            # A legacy peer needs actual native/merge evidence proving a
+            # different tree. Unknown or matching active work cannot be owned
+            # again merely because there is no reusable successful source.
+            reference = {"id": 0, "run_attempt": 1, "head_sha": "0" * 40, "created_at": "2000-01-01T00:00:00Z"}
+            try:
+                blocks = newer_run_blocks(repository, run, reference, tree)
+            except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError, AttributeError):
+                diagnostic("unknown_pending_peer_tree", run)
+                raise CoordinationRefusal("unknown_pending_peer_tree") from None
+            if blocks:
+                diagnostic("unknown_matching_pending_peer", run)
+                raise CoordinationRefusal("unknown_matching_pending_peer")
+            continue
+        if identity["tree_sha"] != tree:
+            continue
+        try:
+            decision = coordination_decision(repository, run, identity)
+        except MissingEvidence:
+            jobs = run_jobs(repository, run)
+            plans = [job for job in jobs if job["name"] == "Select CI scope"]
+            if len(plans) == 1 and plans[0]["status"] == "in_progress":
+                raise PublicationPending("canonical_decision_publication_in_progress")
+            if (len(plans) > 1 or plans and plans[0]["status"] not in ("queued", "pending", "waiting")
+                    or any(job["name"] in VALIDATION_JOBS and job["status"] != "queued" for job in jobs)):
+                raise CoordinationRefusal("started_plan_without_verified_decision")
+            decision = None
+        latest = same_attempt(repository, run)
+        if latest["status"] == "completed":
+            raise CoordinationRefusal("participant_became_terminal_during_selection")
+        participants.append((run, decision))
+    return participants
+
+
+def canonical_context(env, tree):
+    repository = env["GITHUB_REPOSITORY"]
+    workflow_id = api(f"repos/{repository}/actions/workflows/tests.yml")["id"]
+    current = api(f"repos/{repository}/actions/runs/{env['GITHUB_RUN_ID']}")
+    if not trusted_run(current, repository, workflow_id) or str(current["run_attempt"]) != env["GITHUB_RUN_ATTEMPT"]:
+        raise CoordinationRefusal("current_run_is_not_trusted_attempt")
+    identity = coordination_identity(repository, current)
+    if identity["tree_sha"] != tree or identity["tested_sha"] != env["GITHUB_SHA"]:
+        raise CoordinationRefusal("current_checkout_identity_mismatch")
+    runs = [run for run in workflow_history(repository) if trusted_run(run, repository, workflow_id) and run["id"] != current["id"]]
+    return current, identity, runs
+
+
+def pending_follower_ids(env, runs, tree):
+    if env.get("COORDINATION_ACTIVE") != "true":
+        return set()
+    current, identity, _ = canonical_context(env, tree)
+    own = (str(current["id"]), str(current["run_attempt"]))
+    try:
+        decision = coordination_decision(env["GITHUB_REPOSITORY"], current, identity)
+    except MissingEvidence:
+        decision = None  # Selection is running under the native lock.
+    if decision and decision["mode"] == "await":
+        own = (decision["owner_run"], decision["owner_attempt"])
+    followers = set()
+    deadline = time.monotonic() + 45
+    while True:
+        try:
+            participants = pending_participants(env["GITHUB_REPOSITORY"], runs, tree)
+            break
+        except PublicationPending:
+            if time.monotonic() >= deadline:
+                raise CoordinationRefusal("follower_decision_publication_timeout")
+            diagnostic("waiting_for_follower_decision_publication")
+            time.sleep(3)
+    for run, other in participants:
+        if other is None or (other["mode"] == "await" and (other["owner_run"], other["owner_attempt"]) == own
+                             and (not decision or all(other[key] == decision[key] for key in ("source_run", "source_attempt")))):
+            followers.add(run["id"])
+    return followers
+
+
+def canonical_selection(env):
+    repository = env["GITHUB_REPOSITORY"]
+    if command("git", "rev-parse", "HEAD") != env["GITHUB_SHA"]:
+        raise CoordinationRefusal("selector_checkout_mismatch")
+    tree = command("git", "rev-parse", "HEAD^{tree}")
+    current, identity, runs = canonical_context(env, tree)
+    # A sibling may finish unsuccessfully before this queued selector starts.
+    # Its immutable claim remains authoritative; a waiter cannot take over.
+    retry = int(current["run_attempt"]) > 1 or current["event"] == "workflow_dispatch"
+    retry_started = datetime.datetime.fromisoformat(current.get("run_started_at", current["created_at"]).replace("Z", "+00:00"))
+    inventory = coordination_artifact_index(repository)
+    for run in runs:
+        if (run["status"] != "completed" or run["conclusion"] == "success"
+                or retry and attempt_order(run)[0] < retry_started):
+            continue
+        name = f"ci-coordination-identity-{run['id']}-{run['run_attempt']}"
+        if name not in inventory:
+            continue
+        if inventory[name] != run["id"]:
+            raise CoordinationRefusal("coordination_artifact_inventory_run_binding_mismatch")
+        try:
+            failed_identity = coordination_identity(repository, run)
+        except MissingEvidence:
+            raise CoordinationRefusal("coordination_index_changed_during_failed_peer_validation") from None
+        if failed_identity["tree_sha"] == tree:
+            diagnostic("canonical_peer_unsuccessful", run)
+            raise CoordinationRefusal("canonical_peer_unsuccessful_no_takeover")
+    deadline = time.monotonic() + 45
+    while True:
+        try:
+            participants = pending_participants(repository, runs, tree)
+            break
+        except PreflightPublicationPending:
+            if time.monotonic() >= deadline:
+                raise CoordinationRefusal("peer_preflight_identity_publication_timeout")
+            diagnostic("waiting_for_peer_preflight_identity")
+            time.sleep(3)
+            current, identity, runs = canonical_context(env, tree)
+    owners = [(run, decision) for run, decision in participants if decision and decision["mode"] in ("execute", "reuse")]
+    if len(owners) > 1:
+        raise CoordinationRefusal("multiple_pending_validation_owners")
+    if owners:
+        owner, decision = owners[0]
+        for _, other in participants:
+            if other and other["mode"] == "await" and (other["owner_run"], other["owner_attempt"]) != (str(owner["id"]), str(owner["run_attempt"])):
+                raise CoordinationRefusal("waiter_names_another_owner")
+        result = dict(decision, mode="await", owner_run=str(owner["id"]), owner_attempt=str(owner["run_attempt"]))
+        diagnostic("await_pinned_validation_owner", owner)
+    else:
+        if any(decision for _, decision in participants):
+            raise CoordinationRefusal("pending_waiter_has_no_pending_owner")
+        source, attempt = reusable_run(env, "poc", with_attempt=True)
+        own = {"owner_run": str(current["id"]), "owner_attempt": str(current["run_attempt"])}
+        result = dict(own, mode="reuse" if source else "execute", source_run=source or own["owner_run"], source_attempt=attempt or own["owner_attempt"])
+        diagnostic("reuse_original_proof" if source else "execute_canonical_validation", current)
+    result.update({key: identity[key] for key in ("schema", "protocol", "scope", "repository", "run_id", "run_attempt", "tested_sha", "tree_sha")}, kind="poc-coordination-decision")
+    same_attempt(repository, current)
+    Path("ci-coordination-decision").mkdir(exist_ok=True)
+    Path("ci-coordination-decision/coordination-decision.json").write_text(json.dumps(result, indent=2) + "\n")
+    return result
+
+
+def canonical_owner(env):
+    repository = env["GITHUB_REPOSITORY"]
+    tree = command("git", "rev-parse", "HEAD^{tree}")
+    current, identity, _ = canonical_context(env, tree)
+    decision = coordination_decision(repository, current, identity)
+    if decision["mode"] not in ("reuse", "await"):
+        raise CoordinationRefusal("reuse_job_is_not_a_consumer")
+    if (decision["source_run"], decision["source_attempt"]) != (env["SOURCE_RUN"], env["SOURCE_ATTEMPT"]):
+        raise CoordinationRefusal("consumer_original_source_pin_changed")
+    owner = api(f"repos/{repository}/actions/runs/{decision['owner_run']}")
+    if not trusted_run(owner, repository, current["workflow_id"]) or str(owner["run_attempt"]) != decision["owner_attempt"]:
+        raise CoordinationRefusal("canonical_owner_attempt_or_workflow_changed")
+    owner_identity = coordination_identity(repository, owner)
+    owner_decision = coordination_decision(repository, owner, owner_identity)
+    if (owner_identity["tree_sha"] != tree or owner_decision["mode"] not in ("execute", "reuse")
+            or any(owner_decision[key] != decision[key] for key in ("owner_run", "owner_attempt", "source_run", "source_attempt"))):
+        raise CoordinationRefusal("canonical_owner_provenance_or_cycle_mismatch")
+    return owner, decision
+
+
+def await_canonical_owner(env, timeout=510):
+    if env.get("COORDINATION_ACTIVE") != "true":
+        return
+    owner, decision = canonical_owner(env)
+    if decision["mode"] == "reuse":
+        return  # The current run owns consumption of already-successful proof.
+    started = time.monotonic()
+    while True:
+        latest = same_attempt(env["GITHUB_REPOSITORY"], owner)
+        if latest["status"] == "completed":
+            if latest["conclusion"] != "success":
+                diagnostic("canonical_owner_unsuccessful", latest)
+                raise CoordinationRefusal("canonical_owner_unsuccessful")
+            break
+        if time.monotonic() - started >= timeout:
+            diagnostic("canonical_owner_wait_timeout", owner)
+            raise CoordinationRefusal("canonical_owner_wait_timeout")
+        diagnostic("waiting_for_canonical_owner", owner)
+        time.sleep(10)
+    diagnostic(f"owner_succeeded_wait_seconds={time.monotonic() - started:.0f}", latest)
 
 
 def validate_source(repository, run, tree, scope):
@@ -267,6 +553,31 @@ def workflow_history(repository):
     return runs
 
 
+def coordination_artifact_index(repository):
+    # One bounded paginated request replaces a serial lookup for every old
+    # unsuccessful run. Absence is usable only from a complete stable inventory.
+    endpoint = f"repos/{repository}/actions/artifacts?per_page=100"
+    first = api(endpoint)
+    total = first["total_count"]
+    if not isinstance(total, int) or not 0 <= total <= 10000:
+        raise CoordinationRefusal("coordination_artifact_inventory_exceeds_bound")
+    responses = [first] if len(first["artifacts"]) == total else pages(endpoint)
+    artifacts = [artifact for response in responses for artifact in response["artifacts"]]
+    if (any(response["total_count"] != total for response in responses)
+            or len(artifacts) != total or len({artifact["id"] for artifact in artifacts}) != total):
+        raise CoordinationRefusal("coordination_artifact_inventory_incomplete_or_changed")
+    index = {}
+    for artifact in artifacts:
+        if not isinstance(artifact["name"], str):
+            raise CoordinationRefusal("coordination_artifact_inventory_invalid_name")
+        if artifact["name"].startswith("ci-coordination-identity-"):
+            name = artifact["name"]
+            if name in index:
+                raise CoordinationRefusal("coordination_artifact_inventory_duplicate_identity")
+            index[name] = artifact["workflow_run"]["id"]
+    return index
+
+
 def reusable_run(env, scope, with_attempt=False):
     repository = env["GITHUB_REPOSITORY"]
     candidate = env["GITHUB_SHA"]
@@ -276,6 +587,7 @@ def reusable_run(env, scope, with_attempt=False):
     workflow_id = api(f"repos/{repository}/actions/workflows/tests.yml")["id"]
     runs = workflow_history(repository)
     runs = [run for run in runs if trusted_run(run, repository, workflow_id) and str(run["id"]) != env.get("GITHUB_RUN_ID")]
+    followers = pending_follower_ids(env, runs, tree) if scope == "poc" else set()
     candidates = sorted(runs, key=attempt_order, reverse=True)
     if env.get("SOURCE_RUN"):
         candidates = [run for run in candidates if str(run["id"]) == env["SOURCE_RUN"]]
@@ -292,11 +604,21 @@ def reusable_run(env, scope, with_attempt=False):
         try:
             validate_source(repository, source, tree, scope)
         except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError, AttributeError):
+            diagnostic("source_proof_not_usable", source)
             continue
         # Do not silently fall back to an older success on a newer genuine
         # failure, cancellation, skipped run or unresolved matching attempt.
-        if any(newer_run_blocks(repository, run, source, tree) for run in runs):
-            return ("", "") if with_attempt else ""
+        for run in runs:
+            if run["id"] in followers:
+                run = same_attempt(repository, run)
+                if run["status"] != "completed" and run["id"] in pending_follower_ids(env, [run], tree):
+                    diagnostic("verified_pending_follower", run)
+                    continue
+            if newer_run_blocks(repository, run, source, tree):
+                diagnostic("newer_matching_run_blocks_reuse", run)
+                if env.get("COORDINATION_ACTIVE") == "true":
+                    raise CoordinationRefusal("newer_matching_run_blocks_reuse")
+                return ("", "") if with_attempt else ""
         return (str(source["id"]), str(source["run_attempt"])) if with_attempt else str(source["id"])
     return ("", "") if with_attempt else ""
 
@@ -341,8 +663,16 @@ def staging_evidence(env):
             steps = [step for step in reuse.get("steps", []) if step["name"] == name]
             if len(steps) != 1 or steps[0]["conclusion"] != "success":
                 raise ValueError("missing/unsuccessful reuse provenance/budget step")
-        if not re.fullmatch(r"[0-9]+", str(proof.get("source_run", ""))) or int(proof["source_run"]) >= run["id"]:
+        if not re.fullmatch(r"[1-9][0-9]*", str(proof.get("source_run", ""))) or (proof.get("coordination_protocol") != 1 and int(proof["source_run"]) >= run["id"]):
             raise ValueError("reuse must name an earlier original run")
+        if proof.get("coordination_protocol") == 1:
+            owner_env = dict(env, GITHUB_SHA=candidate, GITHUB_RUN_ID=str(run["id"]), GITHUB_RUN_ATTEMPT=str(run["run_attempt"]),
+                             SOURCE_RUN=proof["source_run"], SOURCE_ATTEMPT=proof["source_attempt"], COORDINATION_ACTIVE="true")
+            owner, decision = canonical_owner(owner_env)
+            if (str(owner["id"]), str(owner["run_attempt"])) != (proof.get("canonical_owner_run"), proof.get("canonical_owner_attempt")):
+                raise CoordinationRefusal("receipt_canonical_owner_pin_mismatch")
+            if decision["mode"] == "await" and (owner["status"] != "completed" or owner["conclusion"] != "success"):
+                raise CoordinationRefusal("receipt_canonical_owner_not_successful")
         source = api(f"repos/{repository}/actions/runs/{proof['source_run']}")
         if str(source["run_attempt"]) != proof.get("source_attempt"):
             raise ValueError("original source attempt changed")
@@ -367,6 +697,33 @@ def record(env, scope):
         proof["required_steps"] = POC_STEPS
     Path("ci-evidence").mkdir(exist_ok=True)
     Path("ci-evidence/tested-tree.json").write_text(json.dumps(proof, indent=2) + "\n")
+
+
+def record_coordination_identity(env):
+    scope = requested_scope(env)
+    tested = command("git", "rev-parse", "HEAD")
+    tree = command("git", "rev-parse", "HEAD^{tree}")
+    if tested != env["GITHUB_SHA"] or not re.fullmatch(SHA, tested) or not re.fullmatch(SHA, tree):
+        raise CoordinationRefusal("preflight_checkout_mismatch")
+    coordinated = scope == "poc" and (env.get("GITHUB_EVENT_NAME") != "pull_request" or env.get("PR_HEAD_REPOSITORY") == env["GITHUB_REPOSITORY"])
+    with open(env["GITHUB_OUTPUT"], "a") as output:
+        output.write(f"scope={scope}\ntree_sha={tree}\ncoordinate={str(coordinated).lower()}\n")
+    if not coordinated:
+        return
+    proof = {"schema": 1, "protocol": 1, "kind": "poc-coordination-identity", "scope": scope,
+             "repository": env["GITHUB_REPOSITORY"], "run_id": env["GITHUB_RUN_ID"], "run_attempt": env["GITHUB_RUN_ATTEMPT"],
+             "tested_sha": tested, "tree_sha": tree, "event": env["GITHUB_EVENT_NAME"], "head_sha": tested}
+    if env["GITHUB_EVENT_NAME"] == "pull_request":
+        pull = json.loads(Path(env["GITHUB_EVENT_PATH"]).read_text())["pull_request"]
+        headers = command("git", "cat-file", "-p", "HEAD").split("\n\n", 1)[0].splitlines()
+        parents = [line.removeprefix("parent ") for line in headers if line.startswith("parent ")]
+        if (pull["head"]["repo"]["full_name"] != env["GITHUB_REPOSITORY"] or pull["base"]["repo"]["full_name"] != env["GITHUB_REPOSITORY"]
+                or parents != [pull["base"]["sha"], pull["head"]["sha"]]
+                or not (pull["base"]["ref"] == "dev" or (pull["base"]["ref"] == "uat" and pull["head"]["ref"] == "dev"))):
+            raise CoordinationRefusal("preflight_original_pr_merge_mismatch")
+        proof.update(head_sha=parents[1], base_sha=parents[0], base_ref=pull["base"]["ref"], pull_number=str(pull["number"]))
+    Path("ci-coordination-identity").mkdir(exist_ok=True)
+    Path("ci-coordination-identity/coordination-identity.json").write_text(json.dumps(proof, indent=2) + "\n")
 
 
 def record_merge_identity(env):
@@ -398,6 +755,10 @@ def record_merge_identity(env):
 
 
 def record_reuse(env):
+    if env.get("COORDINATION_ACTIVE") == "true":
+        owner, decision = canonical_owner(env)
+        if decision["mode"] == "await" and (owner["status"] != "completed" or owner["conclusion"] != "success"):
+            raise CoordinationRefusal("canonical_owner_not_successful_at_receipt")
     if (not re.fullmatch(r"[0-9]+", env.get("SOURCE_RUN", ""))
             or not re.fullmatch(r"[1-9][0-9]*", env.get("SOURCE_ATTEMPT", ""))
             or reusable_run(env, "poc") != env["SOURCE_RUN"]):
@@ -406,11 +767,16 @@ def record_reuse(env):
     path = Path("ci-evidence/tested-tree.json")
     receipt = json.loads(path.read_text())
     receipt.update(kind="reuse", source_run=env["SOURCE_RUN"], source_attempt=env["SOURCE_ATTEMPT"], required_jobs=REUSE_JOBS, required_steps=REUSE_STEPS)
+    if env.get("COORDINATION_ACTIVE") == "true":
+        receipt.update(coordination_protocol=1, canonical_owner_run=decision["owner_run"], canonical_owner_attempt=decision["owner_attempt"])
     path.write_text(json.dumps(receipt, indent=2) + "\n")
 
 
 def main():
     env = os.environ
+    if sys.argv[1:] == ["record-coordination-identity"]:
+        record_coordination_identity(env)
+        return
     if sys.argv[1:] == ["record-merge-identity"]:
         record_merge_identity(env)
         return
@@ -422,6 +788,8 @@ def main():
         return
     if sys.argv[1:] in (["verify-full"], ["verify-poc"]):
         scope = sys.argv[1].removeprefix("verify-")
+        if scope == "poc":
+            await_canonical_owner(env)
         source = reusable_run(env, scope)
         if not source:
             raise ValueError(f"no fresh identical-tree {scope} proof")
@@ -434,13 +802,18 @@ def main():
         return
     scope = requested_scope(env)
     source, source_attempt = "", ""
+    canonical = None
+    if scope == "poc" and env.get("COORDINATION_ACTIVE") == "true":
+        canonical = canonical_selection(env)
+        if canonical["mode"] in ("reuse", "await"):
+            source, source_attempt = canonical["source_run"], canonical["source_attempt"]
     # Dev PRs execute. A dev->uat PR may reuse only its actual proposed merge tree.
     promotion = env.get("GITHUB_EVENT_NAME") == "pull_request" and env.get("PR_BASE") == "uat" and env.get("PR_HEAD_BRANCH") == "dev"
-    if scope == "poc" and (promotion or (env.get("GITHUB_EVENT_NAME") in ("push", "workflow_dispatch") and env.get("GITHUB_REF") in ("refs/heads/dev", "refs/heads/uat"))):
+    if not canonical and scope == "poc" and (promotion or (env.get("GITHUB_EVENT_NAME") in ("push", "workflow_dispatch") and env.get("GITHUB_REF") in ("refs/heads/dev", "refs/heads/uat"))):
         try:
             source, source_attempt = reusable_run(env, scope, with_attempt=True)
         except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError, AttributeError):
-            pass
+            diagnostic("unverifiable_lookup_execute_fresh_checks")
     with open(env["GITHUB_OUTPUT"], "a") as output:
         output.write(f"full={str(scope == 'full' and not source).lower()}\npoc={str(scope == 'poc' and not source).lower()}\nscope={scope}\nreused={str(bool(source)).lower()}\nsource_run={source}\nsource_attempt={source_attempt}\n")
     print(f"Scope: {scope}; " + (f"reuse identical complete tree from run {source}" if source else "execute checks"))

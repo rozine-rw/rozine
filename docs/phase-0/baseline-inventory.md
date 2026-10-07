@@ -2269,11 +2269,12 @@ The ADR-0001 layering as it stands. `tests/Architecture` enforces the dependency
 
 | Workflow | Name | Jobs | Job titles |
 |---|---|---|---|
+| `board-sync-preflight.yml` | Delivery board App preflight (opt-in) | push, preflight | — |
 | `board-sync.yml` | Delivery board sync (opt-in) | pull_request_target, workflow_dispatch, sync | — |
 | `deploy-prod.yml` | Deploy (production) | push, workflow_dispatch, admission, deploy | — |
 | `deploy-uat.yml` | Deploy (staging) | push, workflow_dispatch, admission, deploy | — |
 | `deployment-admission.yml` | Deployment admission | workflow_call, admit | Verify deployment evidence |
-| `tests.yml` | tests | push, pull_request, workflow_dispatch, board-sync, plan, php-shards, ci, web, concurrency, negative-control-groups, negative-controls, admission, tested-tree, dev-smoke, poc-php, poc-web, validation-tree, reuse-full, reuse-poc | Board sync offline tests; Select CI scope; PHP 8.5 tests (shard ${{ matrix.shard }}/4); PHP ${{ matrix.php-version }} quality gate; TypeScript/React quality gate; PostgreSQL concurrency lane; PHP negative controls (${{ matrix.group }}); PHP gate negative controls; Deployment admission negative controls; Record tested PR tree; Dev post-merge smoke; POC PHP safety and static checks; POC web safety and static checks; Record validation tree; Reuse full validation evidence; Reuse POC validation evidence |
+| `tests.yml` | tests | push, pull_request, workflow_dispatch, board-sync, identity, plan, php-shards, ci, web, concurrency, negative-control-groups, negative-controls, admission, tested-tree, dev-smoke, poc-php, poc-web, validation-tree, reuse-full, reuse-poc | Board sync offline tests; Identify CI validation tree; Select CI scope; PHP 8.5 tests (shard ${{ matrix.shard }}/4); PHP ${{ matrix.php-version }} quality gate; TypeScript/React quality gate; PostgreSQL concurrency lane; PHP negative controls (${{ matrix.group }}); PHP gate negative controls; Deployment admission negative controls; Record tested PR tree; Dev post-merge smoke; POC PHP safety and static checks; POC web safety and static checks; Record validation tree; Reuse full validation evidence; Reuse POC validation evidence |
 | `tia-baseline.yml` | TIA Baseline | push, schedule, workflow_dispatch, baseline | refresh Pest TIA baseline |
 
 ## Deployment targets
@@ -2283,5 +2284,5 @@ Secret **names** only — never values. Both environments run behind the D-68 ad
 | Environment | Branch | Server path | Isolation profile | Required secrets |
 |---|---|---|---|---|
 | Deploy (production) | `main` | `/var/www/rozine-prod` | `production` | STAGING_SSH_KEY, STAGING_SSH_HOST, STAGING_SSH_USER |
-| Deploy (staging) | `uat` | `—` | `—` | STAGING_SSH_KEY, STAGING_SSH_HOST, STAGING_SSH_USER |
+| Deploy (staging) | `uat` | `/var/www/rozine` | `uat` | STAGING_SSH_KEY, STAGING_SSH_HOST, STAGING_SSH_USER |
 
