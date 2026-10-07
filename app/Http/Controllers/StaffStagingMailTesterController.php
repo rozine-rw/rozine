@@ -16,8 +16,8 @@ use Inertia\Response;
 
 /**
  * Superadmin's named staging mail testers (`staging.mail.testers.manage`): who staging may email on
- * top of the server's own recipients. Staging only; elsewhere every route is not found. A recorded
- * refusal returns as a form error.
+ * top of the server's own recipients. EnsureStagingMailTesterAccess keeps every route to staging and
+ * to staff holding the permission. A recorded refusal returns as a form error.
  */
 class StaffStagingMailTesterController extends Controller
 {
@@ -32,7 +32,6 @@ class StaffStagingMailTesterController extends Controller
 
     public function index(Request $request): Response
     {
-        abort_unless($this->testers->available(), 404);
         $search = trim((string) $request->query('q', ''));
         $page = ['testers' => $this->testers->list((int) $request->user()?->getAuthIdentifier(), $search),
             'server_recipients' => $this->testers->serverRecipients(), 'search' => mb_substr($search, 0, 120)];
@@ -42,16 +41,12 @@ class StaffStagingMailTesterController extends Controller
 
     public function store(AddStagingMailTesterRequest $request): RedirectResponse
     {
-        abort_unless($this->testers->available(), 404);
-
         return $this->answer($this->testers->add((int) $request->user()?->getAuthIdentifier(), (string) $request->validated('email'),
             (string) $request->validated('reason'), (string) $request->validated('request_id')));
     }
 
     public function remove(RemoveStagingMailTesterRequest $request): RedirectResponse
     {
-        abort_unless($this->testers->available(), 404);
-
         return $this->answer($this->testers->remove((int) $request->user()?->getAuthIdentifier(), (string) $request->route('tester'),
             (string) $request->validated('reason'), (string) $request->validated('request_id')));
     }

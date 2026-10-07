@@ -21,6 +21,12 @@ final class ManageStagingMailTesters
         return $this->isolation->profile() === 'uat';
     }
 
+    /** Refuses staff who may not manage the list, before any change is read. */
+    public function authorize(int $actorId): void
+    {
+        $this->store->authorize($actorId);
+    }
+
     /**
      * The domains and addresses set on the server (STAGING_MAIL_RECIPIENTS), which always receive
      * staging mail and cannot be changed here.
@@ -48,6 +54,13 @@ final class ManageStagingMailTesters
     /** @return array<string, mixed> */
     public function add(int $actorId, string $email, string $reason, string $requestId): array
     {
+        // Naming an address the server already approves would make a later removal look effective
+        // while its mail kept flowing, so only the server's own list can change that address.
+        if ($this->isolation->stagingMailServerApproves($email)) {
+            return ['status' => 'rejected', 'code' => 'TESTER_APPROVED_BY_SERVER', 'http_status' => 422,
+                'field_errors' => ['email' => ['This address already receives staging mail through the server list, so it is not added here.']]];
+        }
+
         return $this->store->add($actorId, $email, $reason, $requestId);
     }
 
