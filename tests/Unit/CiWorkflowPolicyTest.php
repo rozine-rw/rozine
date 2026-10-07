@@ -164,7 +164,8 @@ it('requires board sync evidence before reusing the tested tree', function (): v
 
 it('keeps full suites executable while naming POC evidence separately', function (): void {
     $workflow = Yaml::parseFile($this->root.'/.github/workflows/tests.yml');
-    expect($workflow['on']['workflow_dispatch']['inputs']['validation']['options'])->toBe(['full'])
+    expect($workflow['on']['workflow_dispatch']['inputs']['validation']['options'])->toBe(['auto', 'poc', 'full'])
+        ->and($workflow['on']['workflow_dispatch']['inputs']['validation']['default'])->toBe('auto')
         ->and($workflow['jobs']['plan']['steps'][1]['run'])->toBe('python3 .github/scripts/select-validation-scope.py');
     foreach (['php-shards', 'web', 'concurrency', 'negative-control-groups', 'admission'] as $name) {
         expect($workflow['jobs'][$name]['if'])->toBe("\${{ needs.plan.outputs.full == 'true' }}");
@@ -176,4 +177,13 @@ it('keeps full suites executable while naming POC evidence separately', function
     expect(array_column($workflow['jobs']['poc-php']['steps'], 'name'))->toContain('Record POC validation tree', 'Publish POC validation tree', 'Require combined POC execution within ten minutes')
         ->and($workflow['jobs']['validation-tree']['needs'])->not->toContain('poc-php', 'poc-web')
         ->and($workflow['jobs']['reuse-poc']['name'])->toBe('Reuse POC validation evidence');
+});
+
+it('pins original POC provenance and budgets reuse before staging admission', function (): void {
+    $workflow = Yaml::parseFile($this->root.'/.github/workflows/tests.yml');
+    $steps = $workflow['jobs']['reuse-poc']['steps'];
+    expect($steps[1]['env']['SOURCE_RUN'])->toBe('${{ needs.plan.outputs.source_run }}')
+        ->and($steps[2]['env']['SOURCE_RUN'])->toBe('${{ needs.plan.outputs.source_run }}')
+        ->and($steps[3]['with']['name'])->toBe('poc-reuse-${{ github.run_id }}-${{ github.run_attempt }}')
+        ->and($steps[4]['run'])->toBe('python3 .github/scripts/check-poc-budget.py');
 });
