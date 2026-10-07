@@ -155,11 +155,17 @@ def validate_source(repository, run, tree, scope):
     return proof
 
 
+def attempt_order(run):
+    # Rerunning an old ID can be newer than a subsequent successful run.
+    started = run.get("run_started_at") or run["created_at"]
+    return (datetime.datetime.fromisoformat(started.replace("Z", "+00:00")), run["id"])
+
+
 def newer_run_blocks(repository, run, source, tree):
     # A later rerun attempt keeps the same run ID. Its status is authoritative.
     if run["id"] == source["id"]:
         return run["run_attempt"] != source["run_attempt"] or run["conclusion"] != "success"
-    if run["id"] < source["id"] or (run["status"] == "completed" and run["conclusion"] == "success"):
+    if attempt_order(run) < attempt_order(source) or (run["status"] == "completed" and run["conclusion"] == "success"):
         return False
     if run["head_sha"] == source["head_sha"]:
         return True
@@ -190,7 +196,7 @@ def reusable_run(env, scope):
     workflow_id = api(f"repos/{repository}/actions/workflows/tests.yml")["id"]
     runs = api(f"repos/{repository}/actions/workflows/tests.yml/runs?per_page=100")["workflow_runs"]
     runs = [run for run in runs if trusted_run(run, repository, workflow_id) and str(run["id"]) != env.get("GITHUB_RUN_ID")]
-    for source in sorted(runs, key=lambda item: item["id"], reverse=True):
+    for source in sorted(runs, key=attempt_order, reverse=True):
         if source["status"] != "completed" or source["conclusion"] != "success":
             continue
         if env.get("SOURCE_RUN") and str(source["id"]) != env["SOURCE_RUN"]:

@@ -136,6 +136,9 @@ class ScopeTests(unittest.TestCase):
             newer = dict(self.run, id=100, head_sha="e" * 40, event="workflow_dispatch", head_branch="uat", conclusion=conclusion)
             with self.subTest(conclusion=conclusion), patch.object(policy, "api", return_value={"tree": {"sha": "c" * 40}}):
                 self.assertTrue(policy.newer_run_blocks("rozine-rw/rozine", newer, self.run, "c" * 40))
+        rerun = dict(newer, id=98, conclusion="failure", run_started_at="2099-01-01T00:00:00Z")
+        with patch.object(policy, "api", return_value={"tree": {"sha": "c" * 40}}):
+            self.assertTrue(policy.newer_run_blocks("rozine-rw/rozine", rerun, self.run, "c" * 40))
         newer["conclusion"] = "failure"
         with patch.object(policy, "api", return_value={"tree": {"sha": "e" * 40}}):
             self.assertFalse(policy.newer_run_blocks("rozine-rw/rozine", newer, self.run, "c" * 40))

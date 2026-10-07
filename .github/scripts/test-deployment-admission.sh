@@ -151,6 +151,11 @@ jq '.workflow_runs += [(.workflow_runs[0] | .id = 100 | .event = "pull_request" 
 mv "${FIXTURES}/changed.json" "${FIXTURES}/runs.json"
 check "keeps exact push evidence when a newer PR run exists" admit "run 99 succeeded"
 
+baseline
+jq '.workflow_runs += [(.workflow_runs[0] | .id = 98 | .run_started_at = "2026-09-06T13:00:00Z" | .conclusion = "failure")]' "${FIXTURES}/runs.json" > "${FIXTURES}/changed.json"
+mv "${FIXTURES}/changed.json" "${FIXTURES}/runs.json"
+check "refuses a newer failed rerun of an older run ID" refuse "concluded 'failure'"
+
 baseline; write_jobs skipped success
 check "refuses a skipped required job inside a green run" refuse "'PHP 8.5 quality gate' is 'skipped'"
 
