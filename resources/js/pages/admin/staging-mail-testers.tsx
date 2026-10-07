@@ -96,6 +96,7 @@ export default function AdminStagingMailTesters(
             {stage ? (
                 <div className="mb-4 max-w-[720px]">
                     <ReasonStage
+                        key={requestId}
                         title={t(
                             `admin.mail_testers.stage.${stage.kind}.title`,
                             {
