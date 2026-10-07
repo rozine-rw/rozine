@@ -30,6 +30,7 @@ use App\Http\Controllers\StaffApplicationReleaseController;
 use App\Http\Controllers\StaffDisbursementController;
 use App\Http\Controllers\StaffHomeController;
 use App\Http\Controllers\StaffInvestorVerificationController;
+use App\Http\Controllers\StaffStagingMailTesterController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [SiteController::class, 'index'])->name('home');
@@ -211,6 +212,13 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
         ->whereUlid(['verification', 'document'])->name('document');
     Route::post('{verification}/approve', [StaffInvestorVerificationController::class, 'approve'])->whereUlid('verification')->name('approve');
     Route::post('{verification}/reject', [StaffInvestorVerificationController::class, 'reject'])->whereUlid('verification')->name('reject');
+});
+
+// Staging only: the controller answers 404 on every other profile.
+Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/staging-mail-testers')->name('staff.staging-mail-testers.')->group(function (): void {
+    Route::get('/', [StaffStagingMailTesterController::class, 'index'])->name('index');
+    Route::post('/', [StaffStagingMailTesterController::class, 'store'])->name('store');
+    Route::post('{tester}/remove', [StaffStagingMailTesterController::class, 'remove'])->whereUlid('tester')->name('remove');
 });
 
 /*

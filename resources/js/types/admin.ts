@@ -54,7 +54,8 @@ export type AdminOptionalSection =
     | 'exceptions'
     | 'reconciliation'
     | 'coverage'
-    | 'reports';
+    | 'reports'
+    | 'mail_testers';
 
 /** Every section the frame can mark as current. */
 export type AdminFrameSection = AdminSection | AdminOptionalSection;
@@ -1383,4 +1384,21 @@ export type AdminInvestorVerificationsProps = AdminFrameShellProps & {
     entries: InvestorVerificationEntry[];
     pagination: { next: RouteLink | null };
     review: InvestorVerificationReview | null;
+};
+
+/** A named tester a superadmin lets staging email; the server's own recipients are separate. */
+export type StagingMailTester = {
+    id: string;
+    email: string;
+    added_by: string;
+    added_at: string;
+    remove: RouteAction;
+};
+
+/** Superadmin's staging mail testers (`staging.mail.testers.manage`), on staging only. */
+export type AdminStagingMailTestersProps = AdminFrameShellProps & {
+    contract_version: 'staff-staging-mail-testers-v1';
+    server_recipients: string[];
+    testers: StagingMailTester[];
+    add: RouteAction;
 };

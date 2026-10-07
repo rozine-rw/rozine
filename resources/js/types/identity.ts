@@ -74,6 +74,7 @@ export type StaffAccess = {
         | 'audit.assignments.manage'
         | 'audit.reports.view'
         | 'consent.documents.record'
+        | 'staging.mail.testers.manage'
     )[];
 };
 

@@ -38,6 +38,7 @@ const fr: Catalog = {
         'Votre compte personnel est autorisé à ouvrir cet espace.',
     'identity.home.back': 'Choisir une application',
     'identity.home.settings': 'Paramètres du compte',
+    'identity.home.staging_mail_testers': 'Testeurs e-mail de préproduction',
     'identity.home.auditor_nav': "Votre travail d'audit",
     'identity.home.saving': 'Enregistrement de votre position…',
     'identity.home.failed':
@@ -857,6 +858,40 @@ const fr: Catalog = {
     'admin.kyc.stage.reject.cta': 'Rejeter la demande',
     'admin.kyc.stage.reject.placeholder':
         'p. ex. La photo de la pièce est floue. Téléversez une photo plus nette.',
+    'admin.nav.mail_testers': 'Testeurs e-mail de préproduction',
+    'admin.section.mail_testers.title': 'Testeurs e-mail de préproduction',
+    'admin.section.mail_testers.subtitle':
+        'Les personnes à qui la préproduction peut envoyer de vrais e-mails. Préproduction uniquement.',
+    'admin.section.mail_testers.search': 'Rechercher un testeur par e-mail…',
+    'admin.mail_testers.intro':
+        'La préproduction n’envoie de vrais e-mails qu’aux testeurs approuvés ; les autres messages sont abandonnés. Ajoutez ici l’adresse exacte d’un testeur, avec un motif. Chaque modification est enregistrée à votre nom.',
+    'admin.mail_testers.server.title': 'Toujours approuvés sur ce serveur',
+    'admin.mail_testers.server.body':
+        'Définis sur le serveur de préproduction. Modifiez-les là-bas, pas ici.',
+    'admin.mail_testers.add.label': 'Ajouter un testeur',
+    'admin.mail_testers.add.email': 'Adresse e-mail du testeur',
+    'admin.mail_testers.add.placeholder': 'nom@exemple.com',
+    'admin.mail_testers.add.cta': 'Ajouter le testeur',
+    'admin.mail_testers.table': 'Testeurs nommés',
+    'admin.mail_testers.col.email': 'E-mail',
+    'admin.mail_testers.col.added_by': 'Ajouté par',
+    'admin.mail_testers.col.added_at': 'Ajouté',
+    'admin.mail_testers.col.actions': 'Actions',
+    'admin.mail_testers.remove': 'Retirer',
+    'admin.mail_testers.remove_label': 'Retirer {email}',
+    'admin.mail_testers.empty': 'Aucun testeur nommé pour le moment.',
+    'admin.mail_testers.stage.add.title': 'Ajouter {email} comme testeur',
+    'admin.mail_testers.stage.add.body':
+        'La préproduction pourra envoyer de vrais e-mails à cette adresse, y compris les messages d’inscription et de réinitialisation du mot de passe.',
+    'admin.mail_testers.stage.add.cta': 'Ajouter le testeur',
+    'admin.mail_testers.stage.add.placeholder':
+        'Pourquoi cette personne a-t-elle besoin des e-mails de préproduction ?',
+    'admin.mail_testers.stage.remove.title': 'Retirer {email}',
+    'admin.mail_testers.stage.remove.body':
+        'La préproduction cessera immédiatement d’envoyer des e-mails à cette adresse.',
+    'admin.mail_testers.stage.remove.cta': 'Retirer le testeur',
+    'admin.mail_testers.stage.remove.placeholder':
+        'Pourquoi retirer ce testeur ?',
     'admin.drawer.close': 'Fermer',
     'admin.stage.reason_label': 'Motif pour le registre',
     'admin.stage.logged_as':
