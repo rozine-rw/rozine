@@ -9,7 +9,7 @@ use Symfony\Component\Process\Process;
 beforeEach(function () {
     $this->deploymentDirectory = sys_get_temp_dir().'/rozine-deploy-'.Str::uuid();
     File::ensureDirectoryExists($this->deploymentDirectory.'/bin');
-    File::ensureDirectoryExists($this->deploymentDirectory.'/app root');
+    File::ensureDirectoryExists($this->deploymentDirectory.'/app root/storage');
     File::put($this->deploymentDirectory.'/calls', '');
 
     $stub = <<<'BASH'
@@ -38,6 +38,20 @@ BASH;
         File::put($path, $stub);
         chmod($path, 0700);
     }
+
+    // Records each group hand-over, then really applies it, unless the test
+    // stands in for a deploy account outside the web server's group.
+    File::put($this->deploymentDirectory.'/bin/chgrp', <<<'BASH'
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$*" >> "${DEPLOY_TEST_CALLS}.chgrp"
+if [[ "${DEPLOY_TEST_FAIL:-}" == "chgrp" ]]; then
+  echo "chgrp: changing group of '$2': Operation not permitted" >&2
+  exit 1
+fi
+exec /bin/chgrp "$@"
+BASH);
+    chmod($this->deploymentDirectory.'/bin/chgrp', 0700);
 });
 
 afterEach(function () {
@@ -108,11 +122,54 @@ test('a uat deployment creates its isolated storage folders before clearing cach
     }
 });
 
+test('a uat deployment hands each isolated storage folder to the web server group of the provisioned storage', function () {
+    // Stand storage/ in a group other than the deploy account's own whenever
+    // this account has one, so mkdir creates each folder in the wrong group.
+    $deployGroup = posix_getegid();
+    $group = posix_geteuid() === 0 ? 65534 : (array_values(array_diff(posix_getgroups(), [$deployGroup]))[0] ?? $deployGroup);
+    chgrp($this->deploymentDirectory.'/app root/storage', $group);
+
+    $process = runIsolatedDeployment($this->deploymentDirectory, 'uat');
+    $root = 'storage/isolated/uat/';
+
+    expect($process->isSuccessful())->toBeTrue()
+        ->and(explode("\n", trim(File::get($this->deploymentDirectory.'/calls.chgrp'))))->toBe(array_map(
+            fn (string $folder): string => $group.' '.$root.$folder,
+            ['cache', 'sessions', 'private', 'public', 'logs', 'views'],
+        ));
+
+    foreach (['cache', 'sessions', 'private', 'public', 'logs', 'views'] as $folder) {
+        expect(filegroup($this->deploymentDirectory.'/app root/'.$root.$folder))->toBe($group);
+    }
+});
+
+test('a uat deployment stops before clearing caches when this account cannot hand a folder to the web server group', function () {
+    $process = runIsolatedDeployment($this->deploymentDirectory, 'uat', 'chgrp');
+
+    expect($process->isSuccessful())->toBeFalse()
+        ->and($process->getErrorOutput())->toContain('storage/isolated/uat/cache cannot be given the web server group')
+        ->and(File::get($this->deploymentDirectory.'/calls'))->toContain('artisan isolation:check --expect=uat')
+        ->not->toContain('optimize:clear', 'migrate --force', 'queue:restart', 'ci --no-audit')
+        ->and($process->getOutput())->not->toContain('Deployment complete');
+});
+
+test('a uat deployment stops on a host whose storage was never provisioned', function () {
+    File::deleteDirectory($this->deploymentDirectory.'/app root/storage');
+
+    $process = runIsolatedDeployment($this->deploymentDirectory, 'uat');
+
+    expect($process->isSuccessful())->toBeFalse()
+        ->and($process->getErrorOutput())->toContain('storage/ is not provisioned')
+        ->and(File::exists($this->deploymentDirectory.'/app root/storage'))->toBeFalse()
+        ->and(File::get($this->deploymentDirectory.'/calls'))->not->toContain('optimize:clear', 'migrate --force');
+});
+
 test('a production deployment leaves isolated storage and the public link alone', function () {
     $process = runIsolatedDeployment($this->deploymentDirectory, 'production');
 
     expect($process->isSuccessful())->toBeTrue()
         ->and(File::exists($this->deploymentDirectory.'/app root/storage/isolated'))->toBeFalse()
+        ->and(File::exists($this->deploymentDirectory.'/calls.chgrp'))->toBeFalse()
         ->and(File::get($this->deploymentDirectory.'/calls'))->not->toContain('storage:link');
 });
 

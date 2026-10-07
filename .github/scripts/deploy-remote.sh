@@ -50,12 +50,23 @@ cd "${APP_ROOT}"
 # The uat profile keeps its cache, sessions, uploads, logs and compiled views
 # under storage/isolated/uat, and the runtime never creates those folders, so a
 # fresh host answers every page with a 500. Create them once the target is
-# confirmed: group-writable and setgid, so files keep the folder's group
-# whichever account writes them. A folder this account cannot fix stops here.
+# confirmed. The web server's group comes from storage/, which the host's
+# provisioning owns (deploy:www-data on staging); each folder takes that group,
+# group-writable and setgid, so files keep it whichever account writes them.
+# When storage/ is missing or this account cannot hand a folder to that group,
+# the deploy stops here rather than leave PHP-FPM unable to write.
 if [ "${EXPECTED_PROFILE}" = "uat" ]; then
+  if [ ! -d storage ]; then
+    echo "Deployment refused: storage/ is not provisioned on this host." >&2
+    exit 1
+  fi
+  runtime_group="$(stat -L -c %g storage)"
   for directory in cache sessions private public logs views; do
-    mkdir -p "storage/isolated/${EXPECTED_PROFILE}/${directory}"
-    chmod 2775 "storage/isolated/${EXPECTED_PROFILE}/${directory}"
+    folder="storage/isolated/${EXPECTED_PROFILE}/${directory}"
+    if ! { mkdir -p "${folder}" && chgrp "${runtime_group}" "${folder}" && chmod 2775 "${folder}"; }; then
+      echo "Deployment refused: ${folder} cannot be given the web server group ${runtime_group} with mode 2775." >&2
+      exit 1
+    fi
   done
 fi
 
