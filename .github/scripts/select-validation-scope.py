@@ -170,7 +170,13 @@ def newer_run_blocks(repository, run, source, tree):
         # Failed PRs may have tested a different merge tree than their head.
         # If the merge artifact is absent/unverifiable, fail closed on reuse.
         proof = download_evidence(repository, run)
+        expected = {"schema": 2, "repository": repository, "run_id": str(run["id"]), "run_attempt": str(run["run_attempt"])}
+        if any(proof.get(key) != value for key, value in expected.items()) or not re.fullmatch(SHA, str(proof.get("tested_sha", ""))):
+            raise ValueError("failed-run merge evidence has unverifiable provenance")
         tested = api(f"repos/{repository}/git/commits/{proof['tested_sha']}")
+        if (tested["sha"] != proof["tested_sha"] or tested["tree"]["sha"] != proof.get("tree_sha")
+                or len(tested["parents"]) != 2 or tested["parents"][1]["sha"] != run["head_sha"]):
+            raise ValueError("failed-run merge tree does not bind the actual source head")
         return tested["tree"]["sha"] == tree
     return False
 

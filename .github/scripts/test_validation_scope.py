@@ -144,6 +144,25 @@ class ScopeTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 policy.newer_run_blocks("rozine-rw/rozine", newer, self.run, "c" * 40)
 
+    def test_failed_merge_tree_provenance_cannot_hide_newer_failure(self):
+        newer = dict(self.run, id=100, conclusion="failure", head_sha="e" * 40)
+        proof = dict(self.proof, run_id="100")
+        tested = dict(self.commit, parents=[{"sha": "a" * 40}, {"sha": "e" * 40}])
+        def api(endpoint):
+            return {"tree": {"sha": "f" * 40}} if endpoint.endswith("e" * 40) else tested
+        for scenario in ["good", "wrong run", "wrong attempt", "forged tree", "wrong parent"]:
+            original_proof, original_tested = copy.deepcopy(proof), copy.deepcopy(tested)
+            if scenario == "wrong run": proof["run_id"] = "99"
+            if scenario == "wrong attempt": proof["run_attempt"] = "1"
+            if scenario == "forged tree": proof["tree_sha"] = "f" * 40
+            if scenario == "wrong parent": tested["parents"][1]["sha"] = "a" * 40
+            with self.subTest(scenario=scenario), patch.object(policy, "api", side_effect=api), patch.object(policy, "download_evidence", return_value=proof):
+                if scenario == "good":
+                    self.assertTrue(policy.newer_run_blocks("rozine-rw/rozine", newer, self.run, "c" * 40))
+                else:
+                    with self.assertRaises(ValueError): policy.newer_run_blocks("rozine-rw/rozine", newer, self.run, "c" * 40)
+            proof, tested = original_proof, original_tested
+
     def test_failed_latest_attempt_never_reuses_previous_attempt(self):
         latest = dict(self.run, run_attempt=3, conclusion="failure")
         self.assertTrue(policy.newer_run_blocks("rozine-rw/rozine", latest, self.run, "c" * 40))
