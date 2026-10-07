@@ -8,12 +8,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * The superadmin's staging mail testers in the Admin console frame. Only this optional section is
- * served; every other sidebar entry is null. The server's own recipients are shown, never edited.
+ * The superadmin's staging mail testers in the Admin console frame, beside the other console
+ * sections this viewer may open. The server's own recipients are shown, never edited.
  *
  * @phpstan-type Page array{
  *     testers: list<array{id: string, email: string, added_by: string, added_at: string}>,
- *     server_recipients: list<string>, search: string
+ *     server_recipients: list<string>, search: string, permissions: list<string>
  * }
  */
 class StaffStagingMailTestersResource extends JsonResource
@@ -30,9 +30,7 @@ class StaffStagingMailTestersResource extends JsonResource
             // Only superadmin holds staging.mail.testers.manage.
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
                 'initials' => mb_strtoupper(mb_substr($name, 0, 1)), 'role' => 'superadmin'],
-            'nav' => ['mail_testers' => $link('index'), 'launcher' => ['url' => route('dashboard', [], false), 'method' => 'get'],
-                'today' => null, 'applications' => null, 'disbursements' => null, 'repayments' => null, 'businesses' => null,
-                'investors' => null, 'auditors' => null, 'staff' => null, 'ledger' => null, 'events' => null],
+            'nav' => [...StaffNavigation::links($request, $page['permissions']), 'mail_testers' => $link('index')],
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'],
             'server_recipients' => $page['server_recipients'],
             'testers' => array_map(fn (array $tester): array => [...$tester, 'remove' => $link('remove', ['tester' => $tester['id']], 'post')], $page['testers']),

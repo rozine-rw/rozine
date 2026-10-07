@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Domain\Identity\StaffPermission;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -42,9 +43,7 @@ class StaffInvestorVerificationsResource extends JsonResource
         return ['contract_version' => 'staff-investor-verifications-v1', 'server_time' => now()->toIso8601String(),
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
                 'initials' => mb_strtoupper(mb_substr($name, 0, 1)), 'role' => $role],
-            'nav' => ['investors' => $link([]), 'launcher' => ['url' => route('dashboard', [], false), 'method' => 'get'],
-                'today' => null, 'applications' => null, 'disbursements' => null, 'repayments' => null, 'businesses' => null,
-                'auditors' => null, 'staff' => null, 'ledger' => null, 'events' => null],
+            'nav' => StaffNavigation::links($request, StaffPermission::forRoles($page['roles'])),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'],
             'active_tab' => $page['tab'],
             'tabs' => array_map(fn (string $tab): array => ['key' => $tab, 'count' => $page['counts'][$tab], 'link' => $link([...$filters, 'tab' => $tab])], ['submitted', 'decided']),
