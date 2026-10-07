@@ -42,6 +42,24 @@ class ScopeTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             policy.requested_scope({"GITHUB_EVENT_NAME": "workflow_dispatch", "VALIDATION": "poc"})
 
+    def test_dispatch_and_promotion_reuse_only_poc_while_full_always_executes(self):
+        contexts = [
+            ({"GITHUB_EVENT_NAME": "workflow_dispatch", "GITHUB_REF": "refs/heads/dev", "VALIDATION": "auto"}, True),
+            ({"GITHUB_EVENT_NAME": "workflow_dispatch", "GITHUB_REF": "refs/heads/uat", "VALIDATION": "poc"}, True),
+            ({"GITHUB_EVENT_NAME": "pull_request", "PR_BASE": "uat", "PR_HEAD_BRANCH": "dev"}, True),
+            ({"GITHUB_EVENT_NAME": "workflow_dispatch", "GITHUB_REF": "refs/heads/uat", "VALIDATION": "full"}, False),
+            ({"GITHUB_EVENT_NAME": "workflow_dispatch", "GITHUB_REF": "refs/heads/main", "VALIDATION": "auto"}, False),
+        ]
+        for context, reused in contexts:
+            with self.subTest(context=context), tempfile.TemporaryDirectory() as directory:
+                output = Path(directory) / "output"
+                env = dict(context, GITHUB_OUTPUT=str(output))
+                with patch.dict(policy.os.environ, env, clear=True), patch.object(policy.sys, "argv", ["select-validation-scope.py"]), patch.object(policy, "reusable_run", return_value="99") as lookup:
+                    policy.main()
+                self.assertEqual(lookup.call_count, int(reused))
+                self.assertIn("source_run=" + ("99" if reused else "") + "\n", output.read_text())
+                self.assertIn("full=" + ("false" if reused else "true") + "\n", output.read_text())
+
     def test_catalog_is_explicit_and_all_files_exist(self):
         manifest = json.loads(Path("config/poc-test-manifest.json").read_text())
         for suite in ["php", "web"]:
