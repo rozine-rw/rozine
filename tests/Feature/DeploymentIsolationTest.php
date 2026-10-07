@@ -126,7 +126,7 @@ test('a uat deployment hands each isolated storage folder to the web server grou
     // Stand storage/ in a group other than the deploy account's own whenever
     // this account has one, so mkdir creates each folder in the wrong group.
     $deployGroup = posix_getegid();
-    $group = posix_geteuid() === 0 ? 65534 : (array_values(array_diff(posix_getgroups(), [$deployGroup]))[0] ?? $deployGroup);
+    $group = posix_geteuid() === 0 ? 65534 : (array_values(array_diff(posix_getgroups() ?: [], [$deployGroup]))[0] ?? $deployGroup);
     chgrp($this->deploymentDirectory.'/app root/storage', $group);
 
     $process = runIsolatedDeployment($this->deploymentDirectory, 'uat');
