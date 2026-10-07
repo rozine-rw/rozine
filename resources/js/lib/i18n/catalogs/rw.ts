@@ -96,6 +96,10 @@ const rw: Catalog = {
     'suite.motto': 'Intangiriro imwe · ahantu hose',
     'suite.section.apps': 'Porogaramu zawe',
     'suite.app.open': 'Fungura porogaramu →',
+    'suite.app.browse': 'Reba amahirwe →',
+    'suite.app.request_access': 'Saba uburenganzira →',
+    'suite.app.investor.preview':
+        'Reba amahirwe afunguye ubu. Uzashobora gushora umwirondoro wawe umaze kwemezwa.',
     'suite.app.investor.title': 'Umushoramari',
     'suite.app.investor.description':
         'Menya ubucuruzi bwagenzuwe, shora imari, ukurikirane inyungu.',
@@ -118,8 +122,6 @@ const rw: Catalog = {
         "Konti yawe ntirahuzwa n'umwirondoro wagenzuwe, bityo nta porogaramu irafunguka.",
     'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title':
         'Umwirondoro wawe uri kugenzurwa',
-    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.body':
-        'Porogaramu zawe zizafunguka igenzura ry’umwirondoro rirangiye.',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
         'Hakenewe ububasha bwo gusinya',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.body':
@@ -132,9 +134,6 @@ const rw: Catalog = {
         'Izi porogaramu ntizishobora guhurizwa hamwe',
     'suite.blocker.ROLE_MEMBERSHIP_CONFLICT.body':
         'Umufatanyabikorwa mu igenzura ntashobora no gushora cyangwa gushaka igishoro kuri Rozine. Ubufasha buzagufasha guhitamo.',
-    'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.title': 'Nta porogaramu uragira',
-    'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.body':
-        'Ntabwo urinjira muri porogaramu n’imwe. Ubufasha bushobora kugutegurira iyo ukeneye.',
 
     'business.auth.wordmark': 'rozine',
     'business.auth.for_business': 'Ku bucuruzi',
@@ -3892,10 +3891,6 @@ const rw: Catalog = {
         'Iki gikorwa cyarangiye nta bwishyu bubaye',
     'investor.deal.notice.failed_closing.body':
         'Amafaranga ntiyoherejwe, bityo buri cyiyemezo cyasubijwe cyose.',
-    'investor.deals.gated_title':
-        'Genzura umwirondoro kugira ngo ubone amahirwe afunguye',
-    'investor.deals.gated_body':
-        "Amahirwe n'ibigo byayo yerekwa gusa abashoramari bagenzuwe.",
     'investor.deals.paused': 'Byahagaritswe',
     'investor.deal.cap.max': {
         one: 'Kugeza ku rupapuro {count}: {reason}.',

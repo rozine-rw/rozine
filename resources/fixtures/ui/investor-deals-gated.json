@@ -13,19 +13,7 @@
                 "method": "get"
             }
         },
-        "wallet": {
-            "available": {
-                "currency": "RWF",
-                "amount": "1253485"
-            },
-            "next_payout": {
-                "amount": {
-                    "currency": "RWF",
-                    "amount": "912400"
-                },
-                "due_on": "2026-10-03T00:00:00+02:00"
-            }
-        },
+        "wallet": null,
         "unread_notifications": 2,
         "sorts": [
             {
@@ -88,10 +76,7 @@
                 "url": "/preview/investor-profile",
                 "method": "get"
             },
-            "wallet": {
-                "url": "/preview/investor-wallet",
-                "method": "get"
-            },
+            "wallet": null,
             "notifications": {
                 "url": "/preview/investor-deals",
                 "method": "get"
@@ -100,10 +85,7 @@
                 "url": "/preview/launcher-ready",
                 "method": "get"
             },
-            "deposit": {
-                "url": "/preview/investor-wallet-deposit",
-                "method": "get"
-            },
+            "deposit": null,
             "checkout": null
         }
     }
