@@ -212,6 +212,67 @@ describe('Staging mail testers', () => {
         ]);
     });
 
+    it('starts a fresh command when another tester is selected after a refusal', async () => {
+        vi.spyOn(crypto, 'randomUUID')
+            .mockReturnValueOnce('11111111-1111-4111-8111-111111111111')
+            .mockReturnValueOnce('22222222-2222-4222-8222-222222222222')
+            .mockReturnValueOnce('33333333-3333-4333-8333-333333333333');
+        const first = page().testers[0];
+        const second = {
+            ...first,
+            id: '01j9tester00000000000000b',
+            email: 'robert@example.net',
+            remove: action('/admin/staging-mail-testers/b/remove'),
+        };
+        const { user } = renderWithUser(
+            <AdminStagingMailTesters {...page({ testers: [first, second] })} />,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'Remove aline@example.org' }),
+        );
+        const firstStage = screen.getByRole('form', {
+            name: 'Remove aline@example.org',
+        });
+        await user.type(
+            within(firstStage).getByRole('textbox'),
+            'Aline finished her test round.',
+        );
+        await user.click(
+            within(firstStage).getByRole('button', { name: 'Remove tester' }),
+        );
+        await user.click(
+            within(firstStage).getByRole('button', { name: 'Remove tester' }),
+        );
+
+        expect(inertia.posts[1]).toEqual(inertia.posts[0]);
+        await user.click(
+            screen.getByRole('button', { name: 'Remove robert@example.net' }),
+        );
+        const secondStage = screen.getByRole('form', {
+            name: 'Remove robert@example.net',
+        });
+        expect(within(secondStage).getByRole('textbox')).toHaveValue('');
+        expect(
+            within(secondStage).getByRole('button', { name: 'Remove tester' }),
+        ).toBeDisabled();
+        await user.type(
+            within(secondStage).getByRole('textbox'),
+            'Robert finished his separate test round.',
+        );
+        await user.click(
+            within(secondStage).getByRole('button', { name: 'Remove tester' }),
+        );
+
+        expect(inertia.posts[2]).toEqual({
+            url: '/admin/staging-mail-testers/b/remove',
+            data: {
+                reason: 'Robert finished his separate test round.',
+                request_id: '33333333-3333-4333-8333-333333333333',
+            },
+        });
+    });
+
     it('shows a refused change and an invalid address from the server', () => {
         inertia.errors = {
             form: 'This address is already an approved tester.',
