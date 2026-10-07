@@ -5,7 +5,15 @@ Compliance (data classification); Robert — internal Legal (personal data)
 
 **Implementation addendum, 2026-09-14:** Phase 0M in [kickoff evidence](kickoff-evidence.md) records local demo/UAT notices, temporary switch ownership/expiry, and a guarded synthetic Pulse fixture reset. This is not host-isolation acceptance or the Phase 3 financial demo book. The merged runtime requires `rozine_uat` for both UAT database and role and **denies all UAT/staging seeding and destructive resets**; it supersedes the earlier permissive staging entries below. Historical host observations have not been reverified by this addendum.
 
-**Proposed exception, 2026-10-07 (staging mail), pending owner approval:** At Erastus's request, staging (`APP_ENV` `staging` or `uat`) may send real email. It stays a proposal until the owners approve the tester list, the hourly allowance, the staging-only key and its revocation, and the privacy and shared-domain reputation trade-off. Staging opts in with `MAIL_MAILER=smtp`. Without the opt-in it keeps mail in memory, as before.
+**Owner-approved exception, 2026-10-07 (staging mail):** At Erastus's request, staging (`APP_ENV` `staging` or `uat`) may send real email. Erastus approved the following on 2026-10-07:
+
+- **Testers:** everyone at `@rozine.rw`, plus named testers. Admins are to manage the named testers from the admin console in a follow-up change; until then they are listed in `STAGING_MAIL_RECIPIENTS`.
+- **Allowance:** 20 messages per hour.
+- **Key:** a separate, staging-only sending key that can be revoked independently of production's.
+- **Trade-offs:** staging shares production's sending domain and reputation, and testers' addresses are held on the staging server and pass through Resend.
+- **Sign-up:** staging sign-up is not rate-limited for now.
+
+Staging opts in with `MAIL_MAILER=smtp`. Without the opt-in it keeps mail in memory, as before.
 
 At start-up and in `isolation:check`, the runtime refuses:
 
