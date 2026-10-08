@@ -245,8 +245,8 @@ describe('The live-minimal queue', () => {
             name: 'Console navigation',
         });
 
-        // Applications, plus the fifteen design sections the server links to their pending pages.
-        expect(within(nav).getAllByRole('link')).toHaveLength(16);
+        // Applications, plus the sixteen design sections the server links to their pending pages.
+        expect(within(nav).getAllByRole('link')).toHaveLength(17);
         expect(
             within(nav).getByRole('link', { name: /^Applications$/ }),
         ).toHaveAttribute('href', '/admin/applications');
