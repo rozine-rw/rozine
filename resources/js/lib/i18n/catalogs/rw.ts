@@ -2930,6 +2930,7 @@ const rw: Catalog = {
     'investor.profile.linked.unverified': 'Biragenzurwa',
     'investor.profile.linked.none':
         'Nta konti yo kwishyurirwaho. Huza imwe ushyireho amafaranga kandi wakire ubwishyu.',
+    'investor.profile.linked.empty': 'Nta konti yo kwishyurirwaho irahuzwa.',
     'investor.profile.linked.new': 'Huza konti nshya',
     'investor.profile.linked.add': '+ Huza konti nshya',
     'investor.profile.linked.type': 'UBWOKO',
