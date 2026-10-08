@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\EmailVerificationCodeController::store
-* @see app/Http/Controllers/EmailVerificationCodeController.php:28
+* @see app/Http/Controllers/EmailVerificationCodeController.php:29
 * @route '/email/verify-code'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\EmailVerificationCodeController::store
-* @see app/Http/Controllers/EmailVerificationCodeController.php:28
+* @see app/Http/Controllers/EmailVerificationCodeController.php:29
 * @route '/email/verify-code'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\EmailVerificationCodeController::store
-* @see app/Http/Controllers/EmailVerificationCodeController.php:28
+* @see app/Http/Controllers/EmailVerificationCodeController.php:29
 * @route '/email/verify-code'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\EmailVerificationCodeController::store
-* @see app/Http/Controllers/EmailVerificationCodeController.php:28
+* @see app/Http/Controllers/EmailVerificationCodeController.php:29
 * @route '/email/verify-code'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\EmailVerificationCodeController::store
-* @see app/Http/Controllers/EmailVerificationCodeController.php:28
+* @see app/Http/Controllers/EmailVerificationCodeController.php:29
 * @route '/email/verify-code'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

@@ -194,9 +194,10 @@ test('changing the email refuses the code sent to the earlier address until a co
         ->post(route('verification.code'), ['code' => emailCodeFor($user)])
         ->assertSessionHasNoErrors();
 
-    expect($user->fresh())
-        ->email->toBe('second@example.test')
-        ->hasVerifiedEmail()->toBeTrue();
+    $user->refresh();
+
+    expect($user->email)->toBe('second@example.test')
+        ->and($user->hasVerifiedEmail())->toBeTrue();
 });
 
 test('a code is refused once the address changes, however it was changed', function () {
