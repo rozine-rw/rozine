@@ -38,7 +38,9 @@
         "resources/js/actions/App/Http/Controllers/AuditOperationsController.ts",
         "resources/js/actions/App/Http/Controllers/AuditSealVerificationController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorEngagementController.ts",
+        "resources/js/actions/App/Http/Controllers/AuditorHomeController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorJobsController.ts",
+        "resources/js/actions/App/Http/Controllers/AuditorPortfolioController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorProcedureController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorProfileController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessApplicationController.ts",
@@ -181,6 +183,7 @@
         "resources/js/routes/auditor/jobs/index.ts",
         "resources/js/routes/auditor/jobs/operations/index.ts",
         "resources/js/routes/auditor/operations/index.ts",
+        "resources/js/routes/auditor/portfolio/index.ts",
         "resources/js/routes/auditor/reports/disputes/index.ts",
         "resources/js/routes/auditor/reports/disputes/proofs/index.ts",
         "resources/js/routes/auditor/reports/index.ts",
@@ -650,8 +653,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 622,
-        "generated": 231,
+        "totalTrackedSources": 625,
+        "generated": 234,
         "declarationOnly": 18,
         "authoredExecutable": 373
     },

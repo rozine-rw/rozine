@@ -120,7 +120,9 @@ function ReportCard({ report }: { report: FiledReport }) {
                         {t('auditor.reports.due')}
                     </p>
                     <p className="mt-0.5 truncate text-[11.5px] font-bold text-rz-ink">
-                        {formatDayMonth(report.due_on, locale)}
+                        {report.due_on === null
+                            ? '—'
+                            : formatDayMonth(report.due_on, locale)}
                     </p>
                 </div>
             </div>

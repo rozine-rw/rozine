@@ -19,11 +19,13 @@ import BusinessAuditReportController from './BusinessAuditReportController'
 import PulseController from './PulseController'
 import DashboardController from './DashboardController'
 import RoleHomeController from './RoleHomeController'
+import AuditorHomeController from './AuditorHomeController'
 import StaffHomeController from './StaffHomeController'
 import AuditorProfileController from './AuditorProfileController'
 import AuditorProcedureController from './AuditorProcedureController'
 import AuditorEngagementController from './AuditorEngagementController'
 import AuditorJobsController from './AuditorJobsController'
+import AuditorPortfolioController from './AuditorPortfolioController'
 import BusinessApplicationController from './BusinessApplicationController'
 import IdentityManagementController from './IdentityManagementController'
 import RoleBookmarkController from './RoleBookmarkController'
@@ -52,11 +54,13 @@ const Controllers = {
     PulseController: Object.assign(PulseController, PulseController),
     DashboardController: Object.assign(DashboardController, DashboardController),
     RoleHomeController: Object.assign(RoleHomeController, RoleHomeController),
+    AuditorHomeController: Object.assign(AuditorHomeController, AuditorHomeController),
     StaffHomeController: Object.assign(StaffHomeController, StaffHomeController),
     AuditorProfileController: Object.assign(AuditorProfileController, AuditorProfileController),
     AuditorProcedureController: Object.assign(AuditorProcedureController, AuditorProcedureController),
     AuditorEngagementController: Object.assign(AuditorEngagementController, AuditorEngagementController),
     AuditorJobsController: Object.assign(AuditorJobsController, AuditorJobsController),
+    AuditorPortfolioController: Object.assign(AuditorPortfolioController, AuditorPortfolioController),
     BusinessApplicationController: Object.assign(BusinessApplicationController, BusinessApplicationController),
     IdentityManagementController: Object.assign(IdentityManagementController, IdentityManagementController),
     RoleBookmarkController: Object.assign(RoleBookmarkController, RoleBookmarkController),
