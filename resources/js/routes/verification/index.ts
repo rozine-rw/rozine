@@ -236,7 +236,7 @@ send.form = sendForm
 
 /**
 * @see \App\Http\Controllers\EmailVerificationCodeController::code
-* @see app/Http/Controllers/EmailVerificationCodeController.php:29
+* @see app/Http/Controllers/EmailVerificationCodeController.php:31
 * @route '/email/verify-code'
 */
 export const code = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -251,7 +251,7 @@ code.definition = {
 
 /**
 * @see \App\Http\Controllers\EmailVerificationCodeController::code
-* @see app/Http/Controllers/EmailVerificationCodeController.php:29
+* @see app/Http/Controllers/EmailVerificationCodeController.php:31
 * @route '/email/verify-code'
 */
 code.url = (options?: RouteQueryOptions) => {
@@ -260,7 +260,7 @@ code.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\EmailVerificationCodeController::code
-* @see app/Http/Controllers/EmailVerificationCodeController.php:29
+* @see app/Http/Controllers/EmailVerificationCodeController.php:31
 * @route '/email/verify-code'
 */
 code.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -270,7 +270,7 @@ code.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\EmailVerificationCodeController::code
-* @see app/Http/Controllers/EmailVerificationCodeController.php:29
+* @see app/Http/Controllers/EmailVerificationCodeController.php:31
 * @route '/email/verify-code'
 */
 const codeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -280,7 +280,7 @@ const codeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\EmailVerificationCodeController::code
-* @see app/Http/Controllers/EmailVerificationCodeController.php:29
+* @see app/Http/Controllers/EmailVerificationCodeController.php:31
 * @route '/email/verify-code'
 */
 codeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

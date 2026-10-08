@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Notifications\Account\OneTimeCode;
 use App\Notifications\Account\OneTimeCodePurpose;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
@@ -232,6 +233,71 @@ test('changing the email withdraws the pending code, even if the address is chan
         ->assertSessionHasErrors(['code' => 'That code has expired. Send a new code and enter it within 10 minutes.']);
 
     expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
+});
+
+/**
+ * Run a step at the moment an accepted code is consumed: after the code check and before the
+ * verification write, where a concurrent request on the same account could land.
+ */
+function whenCodeAccepted(User $user, Closure $step): void
+{
+    Event::listen(KeyForgotten::class, function (KeyForgotten $event) use ($user, $step): void {
+        if ($event->key === "identity:email-verification-code:{$user->id}") {
+            $step();
+        }
+    });
+}
+
+test('an email change that lands after the code is accepted is not verified by it', function () {
+    Notification::fake();
+    Event::fake([Verified::class]);
+    $user = User::factory()->unverified()->create(['email' => 'first@example.test']);
+    $user->sendEmailVerificationNotification();
+    $code = emailCodeFor($user);
+
+    whenCodeAccepted($user, fn () => User::query()->whereKey($user->id)->update(['email' => 'second@example.test']));
+
+    $this->actingAs($user)
+        ->from(route('verification.notice'))
+        ->post(route('verification.code'), ['code' => $code])
+        ->assertRedirect(route('verification.notice'))
+        ->assertSessionHasErrors(['code' => 'That code is not right. Check the latest email from Rozine and try again.']);
+
+    $stored = User::query()->findOrFail($user->id);
+
+    expect($stored->email)->toBe('second@example.test')
+        ->and($stored->hasVerifiedEmail())->toBeFalse();
+    Event::assertNotDispatched(Verified::class);
+});
+
+test('a submission that loses the write to another for the same address still continues as verified', function () {
+    Notification::fake();
+    Event::fake([Verified::class]);
+    $user = User::factory()->unverified()->create(['email' => 'first@example.test']);
+    $user->sendEmailVerificationNotification();
+    $code = emailCodeFor($user);
+
+    whenCodeAccepted($user, fn () => User::query()->whereKey($user->id)->update(['email_verified_at' => now()]));
+
+    $this->actingAs($user)
+        ->post(route('verification.code'), ['code' => $code])
+        ->assertRedirect(route('dashboard', absolute: false).'?verified=1')
+        ->assertSessionHasNoErrors();
+
+    expect(User::query()->findOrFail($user->id)->hasVerifiedEmail())->toBeTrue();
+    Event::assertNotDispatched(Verified::class);
+});
+
+test('the verification write only lands on the unverified address it names', function () {
+    $user = User::factory()->unverified()->create(['email' => 'first@example.test']);
+
+    expect($user->markEmailAsVerifiedFor('second@example.test'))->toBeFalse()
+        ->and($user->fresh()?->hasVerifiedEmail())->toBeFalse()
+        ->and($user->markEmailAsVerifiedFor('first@example.test'))->toBeTrue()
+        ->and($user->hasVerifiedEmail())->toBeTrue()
+        ->and($user->isDirty())->toBeFalse()
+        ->and($user->fresh()?->hasVerifiedEmail())->toBeTrue()
+        ->and($user->markEmailAsVerifiedFor('first@example.test'))->toBeFalse();
 });
 
 test('saving the profile without changing the email keeps the pending code', function () {

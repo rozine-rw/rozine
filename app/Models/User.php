@@ -55,6 +55,28 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     }
 
     /**
+     * Mark the email verified only while the account still holds the address the code was sent
+     * to, in one conditional write, so an email change that lands between the code check and
+     * this write cannot inherit the proof. Returns whether this call verified the address.
+     */
+    public function markEmailAsVerifiedFor(string $email): bool
+    {
+        $verifiedAt = $this->freshTimestamp();
+
+        $verified = static::query()
+            ->whereKey($this->getKey())
+            ->where('email', $email)
+            ->whereNull('email_verified_at')
+            ->update(['email_verified_at' => $verifiedAt]) === 1;
+
+        if ($verified) {
+            $this->forceFill(['email_verified_at' => $verifiedAt])->syncOriginalAttribute('email_verified_at');
+        }
+
+        return $verified;
+    }
+
+    /**
      * Confirm the email address with a six-digit code rather than a link. Sign-up and every
      * "send a new code" request issue a fresh code, which replaces the last one.
      */
