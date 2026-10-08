@@ -15,13 +15,15 @@ use Carbon\CarbonImmutable;
  * platform's headline figures, the human queues and capital raised over a chosen window. Each figure
  * comes from an existing read: the platform figures from the dashboard store, verified Investors and
  * submissions awaiting review from the Investor directory, and the applications waiting for release
- * from the staff applications queue, with its first few entries.
+ * from the staff applications queue, with its first few entries. The queue is read only for a
+ * viewer who holds `applications.review`, as the queue itself requires: anyone else gets neither
+ * the count nor a single row, so unreleased application details never leave the queue's guard.
  *
  * @phpstan-import-type Figures from OperationsDashboardStore
  * @phpstan-import-type Bar from OperationsDashboardStore
  *
  * @phpstan-type Dashboard array{
- *     figures: Figures, verified_investors: int, kyc_awaiting: int, applications_pending: int,
+ *     figures: Figures, verified_investors: int, kyc_awaiting: int, applications_pending: int|null,
  *     pending: list<array<string, mixed>>,
  *     capital: array{from: string|null, to: string|null, grain: 'year'|'month'|'day'|'hour', bars: list<Bar>}
  * }
@@ -49,12 +51,13 @@ final class BrowseOperationsDashboard
         $end = $to === null ? null : CarbonImmutable::parse($to, self::ZONE);
         $grain = self::grain($start, $end);
         $investors = $this->investors->directory('all', 'name', '', 0);
-        $queue = $this->applications->page('pending', '', null, self::PENDING, null);
+        $queue = $this->staff->currentlyHolds($actorId, 'applications.review')
+            ? $this->applications->page('pending', '', null, self::PENDING, null) : null;
         /** @var list<array<string, mixed>> $pending */
-        $pending = $queue['entries'];
+        $pending = $queue === null ? [] : $queue['entries'];
 
-        return ['figures' => $this->store->figures(), 'verified_investors' => $investors['counts']['verified'],
-            'kyc_awaiting' => $investors['awaiting_review'], 'applications_pending' => (int) $queue['counts']['pending'], 'pending' => $pending,
+        return ['figures' => $this->store->figures(), 'verified_investors' => $investors['counts']['verified'], 'kyc_awaiting' => $investors['awaiting_review'],
+            'applications_pending' => $queue === null ? null : (int) $queue['counts']['pending'], 'pending' => $pending,
             'capital' => ['from' => $start?->toIso8601String(), 'to' => $end?->toIso8601String(), 'grain' => $grain,
                 'bars' => $this->store->capitalRaised($grain, $start?->utc()->toIso8601String(), $end?->utc()->toIso8601String())]];
     }

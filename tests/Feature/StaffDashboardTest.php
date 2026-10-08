@@ -79,12 +79,13 @@ test('an empty platform shows zero figures, empty queues and every untracked fig
                 ['key' => 'active_businesses', 'value' => ['kind' => 'count', 'value' => 0]], ['key' => 'verified_investors', 'value' => ['kind' => 'count', 'value' => 0]],
                 ['key' => 'outstanding_notes', 'value' => ['kind' => 'count', 'value' => 0]], ['key' => 'treasury_position', 'value' => null],
                 ['key' => 'default_rate', 'value' => null], ['key' => 'secondary_volume', 'value' => null]])
-            ->where('attention', [['key' => 'applications_pending', 'count' => 0, 'link' => null], ['key' => 'kyc_awaiting', 'count' => 0, 'link' => null],
+            // An analyst cannot review applications, so the queue is not read at all.
+            ->where('attention', [['key' => 'applications_pending', 'count' => null, 'link' => null], ['key' => 'kyc_awaiting', 'count' => 0, 'link' => null],
                 ['key' => 'notes_late', 'count' => null, 'link' => null], ['key' => 'notes_default_risk', 'count' => null, 'link' => null],
                 ['key' => 'frozen_accounts', 'count' => null, 'link' => null]])
             ->where('breaks', null)->where('portfolio_health', null)->where('activity', null)->where('sector_exposure', null)->where('collections', null)
             ->where('capital_raised', ['from' => null, 'to' => null, 'grain' => 'year', 'bars' => []])
-            ->where('funnel', array_map(fn (string $stage): array => ['stage' => $stage, 'count' => $stage === 'matured' ? null : 0, 'width_pct' => 0],
+            ->where('funnel', array_map(fn (string $stage): array => ['stage' => $stage, 'count' => in_array($stage, ['submitted', 'matured'], true) ? null : 0, 'width_pct' => 0],
                 ['submitted', 'live', 'funded', 'repaying', 'matured', 'failed']))
             ->where('pending_applications', [])
             ->where('treasury', ['invested' => ['currency' => 'RWF', 'amount' => '0'], 'disbursed' => ['currency' => 'RWF', 'amount' => '0'],
@@ -134,7 +135,7 @@ test('the lifecycle places each published campaign where it sits now', function 
 
     $this->actingAs(boardStaff(['analyst']))->get(route('staff.dashboard'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('kpis.3.value.value', 2)
-            ->where('funnel', [['stage' => 'submitted', 'count' => 0, 'width_pct' => 0], ['stage' => 'live', 'count' => 1, 'width_pct' => 100],
+            ->where('funnel', [['stage' => 'submitted', 'count' => null, 'width_pct' => 0], ['stage' => 'live', 'count' => 1, 'width_pct' => 100],
                 ['stage' => 'funded', 'count' => 1, 'width_pct' => 100], ['stage' => 'repaying', 'count' => 0, 'width_pct' => 0],
                 ['stage' => 'matured', 'count' => null, 'width_pct' => 0], ['stage' => 'failed', 'count' => 1, 'width_pct' => 100]]));
 });
@@ -157,10 +158,35 @@ test('the queues count applications waiting, submissions awaiting review and dis
             ->where('pending_applications.0.requested', ['currency' => 'RWF', 'amount' => '12000000'])
             ->where('pending_applications.0.link', ['url' => '/admin/applications?application='.$application->id, 'method' => 'get'])
             ->where('pending_applications.0.business', fn (string $name): bool => $name !== ''));
+    // Without applications.review the queue is never read: no count, no funnel figure and no rows.
+    foreach (['compliance', 'analyst', 'treasury'] as $role) {
+        $this->actingAs(boardStaff([$role]))->get(route('staff.dashboard'))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('badges.applications', null)
+                ->where('attention.0', ['key' => 'applications_pending', 'count' => null, 'link' => null])
+                ->where('funnel.0', ['stage' => 'submitted', 'count' => null, 'width_pct' => 0])
+                ->where('pending_applications', []));
+    }
     $this->actingAs(boardStaff(['compliance']))->get(route('staff.dashboard'))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('badges', ['applications' => null, 'disbursements' => 1])
-            ->where('attention.0.link', null)->where('attention.1.link.url', '/admin/investors?chip=pending')
-            ->where('pending_applications.0.link', null)->where('nav.events.url', '/admin/activity'));
+        ->assertInertia(fn (Assert $page) => $page->where('badges.disbursements', 1)->where('attention.1.link.url', '/admin/investors?chip=pending')
+            ->where('nav.events.url', '/admin/activity'));
+});
+
+test('the API mirror withholds pending application details from staff without applications.review', function (): void {
+    $fixture = AuditSealingFixture::ready();
+    AuditSealingFixture::seal($fixture);
+    AuditSealingFixture::cosign($fixture);
+
+    Sanctum::actingAs(boardStaff(['compliance']), ['staff:dashboard:read']);
+    $this->getJson('/api/v1/staff/dashboard')->assertOk()
+        ->assertJsonPath('data.pending_applications', [])
+        ->assertJsonPath('data.attention.0.count', null)
+        ->assertJsonPath('data.funnel.0.count', null)
+        ->assertJsonMissing(['id' => $fixture['application']->id]);
+
+    Sanctum::actingAs(boardStaff(['approver']), ['staff:dashboard:read']);
+    $this->getJson('/api/v1/staff/dashboard')->assertOk()
+        ->assertJsonPath('data.pending_applications.0.id', $fixture['application']->id)
+        ->assertJsonPath('data.attention.0.count', 1);
 });
 
 test('the Operations Center answers over the API with the read ability and links API routes', function (): void {

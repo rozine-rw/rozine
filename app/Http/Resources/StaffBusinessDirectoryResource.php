@@ -11,7 +11,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * The designed Business directory (`admin/parties`, kind business) from live records: the four
  * figures, the chips with their counts, the sector and sort filters, the first sixty matches and one
  * Business's 360. Fields the platform does not record yet are not invented: no capacity read exists,
- * so capacity is null; no arrears or freeze read exists, so every Business reads healthy and open;
+ * so capacity is null; no arrears or freeze read exists, so health reads not tracked, frozen is null
+ * and the only chip is All;
  * and no eligibility policy is published, so the policy strip is empty. A Business with no rated
  * note reads as pending its audit, and the average is of published scores only.
  *
@@ -27,7 +28,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class StaffBusinessDirectoryResource extends JsonResource
 {
-    private const CHIPS = ['all', 'healthy', 'watch', 'distressed', 'frozen'];
+    /** Health chips wait for an arrears and freeze read. */
+    private const CHIPS = ['all'];
 
     /** The frame names the most privileged role the viewer holds. */
     private const ROLES = ['superadmin', 'compliance', 'approver', 'analyst'];
@@ -74,7 +76,7 @@ class StaffBusinessDirectoryResource extends JsonResource
             'shown' => count($page['rows']), 'total' => $page['matching'],
             'directory' => ['kind' => 'business', 'rows' => array_map(fn (array $row): array => ['id' => $row['business_id'], 'name' => $row['name'],
                 'sector' => $row['sector'], 'rating' => $row['rating'], 'active_notes' => $row['active_notes'], 'investors' => $row['investors'],
-                'raised' => $money($row['raised']), 'capacity_used_pct' => null, 'health' => 'healthy', 'frozen' => false, 'kyc' => $row['kyc'],
+                'raised' => $money($row['raised']), 'capacity_used_pct' => null, 'health' => 'not_tracked', 'frozen' => null, 'kyc' => $row['kyc'],
                 'link' => $link([...$position, 'business' => $row['business_id']])], $page['rows'])],
             'party' => $page['business'] === null ? null : self::business($page['business'], $link($position))];
     }
@@ -91,7 +93,7 @@ class StaffBusinessDirectoryResource extends JsonResource
         return ['id' => $row['business_id'], 'kind' => 'business', 'name' => $row['name'],
             'subtitle' => implode(' · ', array_filter([$row['sector'], $row['company_code'] === null ? '' : 'RDB '.$row['company_code'], $row['district']],
                 fn (string $part): bool => $part !== '')),
-            'health' => 'healthy',
+            'health' => 'not_tracked',
             'stats' => [['key' => 'active_notes', 'value' => ['kind' => 'count', 'value' => $row['active_notes']]],
                 ['key' => 'investors', 'value' => ['kind' => 'count', 'value' => $row['investors']]],
                 ['key' => 'raised', 'value' => ['kind' => 'money', 'value' => ['currency' => 'RWF', 'amount' => $row['raised']]]],

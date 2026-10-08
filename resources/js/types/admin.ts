@@ -504,8 +504,10 @@ export type BusinessPartyRow = {
     raised: Money;
     /** Null until the platform reads a Business's capacity; the cell shows a dash. */
     capacity_used_pct: number | null;
-    health: 'healthy' | 'watch' | 'distressed';
-    frozen: boolean;
+    /** `not_tracked` until the platform reads arrears and freezes; the cell says so. */
+    health: 'healthy' | 'watch' | 'distressed' | 'not_tracked';
+    /** Null while no freeze read exists. */
+    frozen: boolean | null;
     kyc: KycState;
     link: RouteLink;
 };
@@ -597,7 +599,8 @@ export type PartyDetail = {
         | 'watch'
         | 'distressed'
         | 'kyc_pending'
-        | 'frozen';
+        | 'frozen'
+        | 'not_tracked';
     stats: { key: PartyStatKey; value: StatValue }[];
     list: {
         key: 'active_notes' | 'holdings' | 'engagements';

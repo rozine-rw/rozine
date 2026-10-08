@@ -26,7 +26,7 @@ class StaffBusinessDirectoryController extends Controller
     public function index(ListBusinessDirectoryRequest $request, GetStaffAccess $access): Response|StaffBusinessDirectoryResource
     {
         $actorId = (int) $request->user()?->getAuthIdentifier();
-        /** @var 'all'|'healthy'|'watch'|'distressed'|'frozen' $chip */
+        /** @var 'all' $chip */
         $chip = (string) $request->validated('chip', 'all');
         /** @var 'raised'|'name' $sort */
         $sort = (string) $request->validated('sort', 'raised');

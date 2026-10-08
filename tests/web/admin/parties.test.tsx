@@ -121,6 +121,47 @@ describe('Party directories', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('says a live Business health is not tracked, in the row and its 360, with no frozen badge', () => {
+        const businesses = props(businessesFixture);
+
+        if (businesses.directory.kind === 'business') {
+            businesses.directory.rows = [
+                {
+                    ...businesses.directory.rows[0],
+                    health: 'not_tracked',
+                    frozen: null,
+                },
+            ];
+        }
+
+        const { unmount } = render(<AdminParties {...businesses} />);
+        const row = screen.getAllByRole('row')[1];
+
+        expect(within(row).getByText('Not tracked')).toBeInTheDocument();
+        expect(within(row).queryByText('Healthy')).not.toBeInTheDocument();
+        expect(within(row).queryByText('Frozen')).not.toBeInTheDocument();
+        unmount();
+
+        const frozen = props(frozenFixture);
+
+        if (frozen.party !== null) {
+            frozen.party = {
+                ...frozen.party,
+                health: 'not_tracked',
+                freeze: null,
+            };
+        }
+
+        render(<AdminParties {...frozen} />);
+
+        const drawer = screen.getByRole('dialog');
+
+        expect(within(drawer).getByText('Not tracked')).toBeInTheDocument();
+        expect(
+            within(drawer).queryByText('Distressed'),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows a dash where a live Business or partner has nothing recorded', () => {
         const businesses = props(businessesFixture);
         const auditors = props(auditorsFixture);

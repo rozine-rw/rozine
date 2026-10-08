@@ -33,10 +33,6 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
         }
         $totals = (clone $businesses)->selectRaw('count(*) AS everyone, coalesce(sum(active_notes), 0) AS notes, coalesce(sum(raised), 0)::text AS raised')->first();
         $ratings = $this->ratings(array_values((clone $businesses)->pluck('business_id')->map(fn (mixed $id): string => (string) $id)->all()));
-        // Every Business reads as healthy until an arrears or freeze read exists, so the other chips match no one.
-        if (in_array($chip, ['watch', 'distressed', 'frozen'], true)) {
-            $businesses->whereRaw('false');
-        }
         $matching = (clone $businesses)->count();
         $sort === 'name' ? $businesses->orderBy('name') : $businesses->orderByDesc('raised')->orderBy('name');
         $everyone = (int) ($totals->everyone ?? 0);
@@ -45,7 +41,7 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
         return ['rows' => array_values(array_map(fn (object $row): array => self::row($row, $ratings),
             $businesses->orderBy('business_id')->limit($limit)->get()->all())),
             'matching' => $matching,
-            'counts' => ['all' => $everyone, 'healthy' => $everyone, 'watch' => 0, 'distressed' => 0, 'frozen' => 0],
+            'counts' => ['all' => $everyone],
             'active_notes' => (int) ($totals->notes ?? 0), 'raised' => (string) ($totals->raised ?? '0'),
             'average_score' => $scores === [] ? null : (string) array_reduce($scores, fn (BigDecimal $sum, string $score): BigDecimal => $sum->plus($score), BigDecimal::zero())
                 ->dividedBy(count($scores), 1, RoundingMode::HalfUp),

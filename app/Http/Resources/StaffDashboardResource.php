@@ -19,7 +19,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * - Outstanding notes and the lifecycle: published campaigns live, funded and repaying (issued);
  *   failed ones closed unfunded or failed to close their disbursement; submitted is the
  *   applications queue.
- * - Applications pending and the pending list: the staff applications queue's pending tab.
+ * - Applications pending and the pending list: the staff applications queue's pending tab, read only
+ *   for `applications.review`; anyone else sees a dash and no rows.
  * - Disbursed: disbursements that closed with issued notes. The Payments badge counts those
  *   awaiting a second approver, for whoever may view disbursements.
  *
@@ -31,7 +32,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @phpstan-type Dashboard array{
  *     figures: array{capital_raised: string, active_businesses: int, awaiting_second_approver: int, disbursed: string,
  *         notes: array{live: int, funded: int, repaying: int, failed: int}},
- *     verified_investors: int, kyc_awaiting: int, applications_pending: int, pending: list<array<string, mixed>>,
+ *     verified_investors: int, kyc_awaiting: int, applications_pending: int|null, pending: list<array<string, mixed>>,
  *     capital: array{from: string|null, to: string|null, grain: string, bars: list<Bar>}
  * }
  * @phpstan-type Page array{dashboard: Dashboard, roles: list<string>, permissions: list<string>}

@@ -1698,6 +1698,7 @@ const rw: Catalog = {
     'admin.parties.health.active': 'Irakora',
     'admin.parties.health.kyc_pending': 'KYC itegerejwe',
     'admin.parties.health.frozen': 'Byahagaritswe',
+    'admin.parties.health.not_tracked': 'Ntibikurikiranwa',
     'admin.parties.kyc.verified': 'Byemejwe',
     'admin.parties.kyc.pending': 'Bitegereje',
     'admin.parties.kyc.overdue': 'Byarengeje igihe',

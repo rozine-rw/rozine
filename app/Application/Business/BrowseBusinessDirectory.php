@@ -20,7 +20,7 @@ final class BrowseBusinessDirectory
     public function __construct(private BusinessDirectoryStore $store, private AuthorizeStaffPermission $staff) {}
 
     /**
-     * @param  'all'|'healthy'|'watch'|'distressed'|'frozen'  $chip
+     * @param  'all'  $chip
      * @param  'raised'|'name'  $sort
      * @return Directory
      */

@@ -1631,6 +1631,7 @@ const en = {
     'admin.parties.health.active': 'Active',
     'admin.parties.health.kyc_pending': 'KYC pending',
     'admin.parties.health.frozen': 'Frozen',
+    'admin.parties.health.not_tracked': 'Not tracked',
     'admin.parties.kyc.verified': 'Verified',
     'admin.parties.kyc.pending': 'Pending',
     'admin.parties.kyc.overdue': 'Overdue',

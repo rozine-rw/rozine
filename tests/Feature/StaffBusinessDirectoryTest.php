@@ -65,8 +65,8 @@ test('an empty platform shows the design with zero figures, no sectors and no ro
                 ['key' => 'avg_rating', 'value' => ['kind' => 'text', 'value' => '—']],
                 ['key' => 'active_notes', 'value' => ['kind' => 'count', 'value' => 0]],
                 ['key' => 'capital_raised', 'value' => ['kind' => 'money', 'value' => ['currency' => 'RWF', 'amount' => '0']]]])
-            ->where('chips', fn (Collection $chips): bool => $chips->pluck('count', 'key')->all() === ['all' => 0, 'healthy' => 0, 'watch' => 0, 'distressed' => 0, 'frozen' => 0])
-            ->where('chips.0', ['key' => 'all', 'count' => 0, 'link' => ['url' => '/admin/businesses', 'method' => 'get'], 'active' => true])
+            // No arrears or freeze read exists, so All is the only chip.
+            ->where('chips', [['key' => 'all', 'count' => 0, 'link' => ['url' => '/admin/businesses', 'method' => 'get'], 'active' => true]])
             ->has('filters', 1)->where('filters.0.key', 'sort')->where('filters.0.value', 'raised')
             ->where('shown', 0)->where('total', 0)->where('directory', ['kind' => 'business', 'rows' => []]));
 });
@@ -83,7 +83,7 @@ test('rows carry real notes, ratings and KYC, and the chips, sectors, sort and s
         ->assertInertia(fn (Assert $page) => $page
             ->where('stats.0.value.value', 4)->where('stats.1.value', ['kind' => 'text', 'value' => '3.8 / 5'])
             ->where('stats.2.value.value', 2)->where('stats.3.value.value.amount', '0')
-            ->where('chips', fn (Collection $chips): bool => $chips->pluck('count', 'key')->all() === ['all' => 4, 'healthy' => 4, 'watch' => 0, 'distressed' => 0, 'frozen' => 0])
+            ->where('chips', fn (Collection $chips): bool => $chips->pluck('count', 'key')->all() === ['all' => 4])
             ->where('filters.0', ['key' => 'sector', 'value' => 'all', 'options' => [['value' => 'all', 'label' => 'All sectors'],
                 ['value' => 'Agriculture', 'label' => 'Agriculture'], ['value' => 'Food', 'label' => 'Food'],
                 ['value' => 'Manufacturing', 'label' => 'Manufacturing'], ['value' => 'Retail', 'label' => 'Retail']]])
@@ -92,27 +92,27 @@ test('rows carry real notes, ratings and KYC, and the chips, sectors, sort and s
                 return $rows->pluck('name')->all() === ['Amahoro Bakery', 'Isoko Farms', 'Kivu Mills', 'Rugali Freight']
                     && $rows->firstWhere('name', 'Isoko Farms') === ['id' => $seed->business_id, 'name' => 'Isoko Farms', 'sector' => 'Agriculture',
                         'rating' => ['band' => 'stable', 'score' => '3.1'], 'active_notes' => 1, 'investors' => 0, 'raised' => ['currency' => 'RWF', 'amount' => '0'],
-                        'capacity_used_pct' => null, 'health' => 'healthy', 'frozen' => false, 'kyc' => 'verified',
+                        'capacity_used_pct' => null, 'health' => 'not_tracked', 'frozen' => null, 'kyc' => 'verified',
                         'link' => ['url' => '/admin/businesses?business='.$seed->business_id, 'method' => 'get']]
                     && $rows->firstWhere('name', 'Amahoro Bakery')['kyc'] === 'pending' && $rows->firstWhere('name', 'Amahoro Bakery')['rating'] === null
                     && $rows->firstWhere('name', 'Amahoro Bakery')['id'] === $bakery->id
-                    && $rows->firstWhere('name', 'Rugali Freight')['active_notes'] === 0 && $rows->firstWhere('name', 'Rugali Freight')['rating'] === null;
+                    && $rows->firstWhere('name', 'Rugali Freight')['active_notes'] === 0 && $rows->firstWhere('name', 'Rugali Freight')['rating'] === null
+                    && $rows->every(fn (array $row): bool => $row['health'] === 'not_tracked' && $row['frozen'] === null);
             }));
 
-    $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['sort' => 'name', 'sector' => 'Agriculture', 'q' => 'isoko', 'chip' => 'healthy']))->assertOk()
+    $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['sort' => 'name', 'sector' => 'Agriculture', 'q' => 'isoko']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('search', 'isoko')->where('filters.0.value', 'Agriculture')->where('filters.1.value', 'name')
             ->where('stats.0.value.value', 1)->where('stats.1.value.value', '3.1 / 5')
-            ->where('chips.1', ['key' => 'healthy', 'count' => 1, 'active' => true,
-                'link' => ['url' => '/admin/businesses?q=isoko&sector=Agriculture&sort=name&chip=healthy', 'method' => 'get']])
+            ->where('chips', [['key' => 'all', 'count' => 1, 'active' => true,
+                'link' => ['url' => '/admin/businesses?q=isoko&sector=Agriculture&sort=name', 'method' => 'get']]])
             ->where('shown', 1)->where('total', 1)->where('directory.rows.0.name', 'Isoko Farms')
-            ->where('directory.rows.0.link.url', '/admin/businesses?q=isoko&sector=Agriculture&sort=name&chip=healthy&business='.$seed->business_id));
+            ->where('directory.rows.0.link.url', '/admin/businesses?q=isoko&sector=Agriculture&sort=name&business='.$seed->business_id));
     $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['sector' => 'all', 'q' => 'kivu']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('filters.0.value', 'all')->where('directory.rows.0.id', $mill->business_id));
-    foreach (['watch', 'distressed', 'frozen'] as $chip) {
-        $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['chip' => $chip]))->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->where('total', 0)->where('directory.rows', [])->where('stats.0.value.value', 4));
+    // Health filters wait for an arrears and freeze read, so none is accepted.
+    foreach (['healthy', 'watch', 'distressed', 'frozen', 'everyone'] as $chip) {
+        $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['chip' => $chip]))->assertSessionHasErrors('chip');
     }
-    $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['chip' => 'everyone']))->assertSessionHasErrors('chip');
 });
 
 test("a Business's 360 carries its notes, rating, KYC and history, and an unknown Business is not found", function (): void {
@@ -129,9 +129,9 @@ test("a Business's 360 carries its notes, rating, KYC and history, and an unknow
     BusinessMandate::factory()->create(['business_id' => $bakery->id, 'version' => 2, 'actor_user_id' => $this->analyst->id, 'reason' => 'Mandate withdrawn.',
         'terms' => [...$mandate->terms, 'status' => 'revoked']]);
 
-    $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['business' => $cancelled->business_id, 'chip' => 'healthy']))->assertOk()
+    $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['business' => $cancelled->business_id, 'chip' => 'all']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('party.id', $cancelled->business_id)->where('party.kind', 'business')->where('party.name', 'Rugali Freight')
-            ->where('party.subtitle', 'Retail · Gasabo')->where('party.health', 'healthy')
+            ->where('party.subtitle', 'Retail · Gasabo')->where('party.health', 'not_tracked')
             ->where('party.stats', [['key' => 'active_notes', 'value' => ['kind' => 'count', 'value' => 0]], ['key' => 'investors', 'value' => ['kind' => 'count', 'value' => 0]],
                 ['key' => 'raised', 'value' => ['kind' => 'money', 'value' => ['currency' => 'RWF', 'amount' => '0']]],
                 ['key' => 'rating', 'value' => ['kind' => 'rating', 'value' => ['band' => 'weak', 'score' => '2.4']]]])
@@ -141,7 +141,7 @@ test("a Business's 360 carries its notes, rating, KYC and history, and an unknow
             ->where('party.history.1.action', ['code' => 'campaign.publish', 'label' => 'Note published · Trucks', 'tone' => 'green'])
             ->where('party.history.1.reason', null)
             ->where('party.kyc', ['state' => 'verified', 'due_on' => null])->where('party.licence', null)->where('party.freeze', null)
-            ->where('party.restrictions', [])->where('party.actions', [])->where('party.links.close', ['url' => '/admin/businesses?chip=healthy', 'method' => 'get']));
+            ->where('party.restrictions', [])->where('party.actions', [])->where('party.links.close', ['url' => '/admin/businesses', 'method' => 'get']));
 
     $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['business' => $expired->business_id]))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('party.history.0.action.label', 'Note closed unfunded at its deadline · Old raise')

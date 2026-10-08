@@ -1703,6 +1703,7 @@ const fr: Catalog = {
     'admin.parties.health.active': 'Actif',
     'admin.parties.health.kyc_pending': 'KYC en attente',
     'admin.parties.health.frozen': 'Gelé',
+    'admin.parties.health.not_tracked': 'Non suivi',
     'admin.parties.kyc.verified': 'Vérifié',
     'admin.parties.kyc.pending': 'En attente',
     'admin.parties.kyc.overdue': 'En retard',

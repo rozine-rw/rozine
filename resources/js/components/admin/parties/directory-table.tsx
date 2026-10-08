@@ -54,6 +54,7 @@ const HEALTH_TONE: Record<BusinessPartyRow['health'], Tone> = {
     healthy: 'green',
     watch: 'amber',
     distressed: 'red',
+    not_tracked: 'grey',
 };
 
 const STANDING_TONE: Record<AuditorPartyRow['standing'], Tone> = {
