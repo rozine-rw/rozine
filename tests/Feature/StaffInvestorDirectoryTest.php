@@ -12,6 +12,7 @@ use App\Models\Party;
 use App\Models\PrimaryHolding;
 use App\Models\RoleMembership;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
@@ -100,11 +101,10 @@ test('rows carry real KYC states, ledger money and issued holdings, and the chip
         ->assertInertia(fn (Assert $page) => $page
             ->where('stats.0.value.value', 5)->where('stats.1.value.value', '40')->where('stats.2.value.value', 1)
             ->where('stats.3.value.value.amount', $aum)
-            ->where('chips', fn ($chips): bool => collect($chips)->pluck('count', 'key')->all()
+            ->where('chips', fn (Collection $chips): bool => $chips->pluck('count', 'key')->all()
                 === ['all' => 5, 'verified' => 2, 'pending' => 2, 'kyc_overdue' => 0, 'frozen' => 0, 'restricted' => 1])
             ->where('shown', 5)->where('total', 5)
-            ->where('directory.rows', function ($rows) use ($holder, $principal): bool {
-                $rows = collect($rows);
+            ->where('directory.rows', function (Collection $rows) use ($holder, $principal): bool {
                 $held = $rows->firstWhere('id', $holder->party_id);
 
                 return $rows->take(2)->pluck('kyc')->all() === ['verified', 'verified']
