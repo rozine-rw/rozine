@@ -10,7 +10,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * `BusinessWalletProps` (business-servicing-v1) for both transports. It shapes already computed,
  * authorized facts and adds real routes only: no amount is calculated here, no provider fact is
- * present, and a destination with no live route yet is null.
+ * present, and a destination with no live route yet is null, as Repayments, Reports and Profile
+ * are on the bearer transport.
  */
 class BusinessWalletResource extends JsonResource
 {
@@ -35,8 +36,9 @@ class BusinessWalletResource extends JsonResource
                 'pagination' => ['next' => $data['history']['next_before'] === null ? null : $wallet(['movement' => $movement, 'before' => $data['history']['next_before']])]],
             'receipt' => self::receipt($request, $business, $context, $data['receipt']), 'bases' => (object) [],
             'shell_links' => ['home' => $home, 'launcher' => ['url' => route($request->routeIs('api.*') ? 'api.v1.identity.show' : 'dashboard', [], false), 'method' => 'get'],
-                'reports' => null, 'profile' => null],
-            'links' => ['close' => $home, 'deposit' => $wallet(['kind' => 'deposit']), 'operation' => self::lookup($request, $business, $context), 'repayments' => null],
+                ...BusinessHomeResource::tabs($request, $business)],
+            'links' => ['close' => $home, 'deposit' => $wallet(['kind' => 'deposit']), 'operation' => self::lookup($request, $business, $context),
+                'repayments' => $request->routeIs('api.*') ? null : self::link($request, 'business.repayments.show', ['business' => $business])],
             'actions' => ['deposit' => ['url' => route(self::prefix($request).'business.wallet.deposit', ['business' => $business], false), 'method' => 'post']]];
     }
 

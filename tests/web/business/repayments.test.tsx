@@ -17,11 +17,15 @@ import {
 } from 'vite-plus/test';
 import { POLL_INTERVAL_MS, POLL_LIMIT } from '@/hooks/use-bounded-poll';
 import BusinessRepayments from '@/pages/business/repayments';
-import type { BusinessRepaymentsProps } from '@/types/business';
+import type {
+    BusinessRepaymentsEmptyProps,
+    BusinessRepaymentsProps,
+} from '@/types/business';
 import aheadFixture from '../../../resources/fixtures/ui/business-repayments-ahead.json';
 import allocatingFixture from '../../../resources/fixtures/ui/business-repayments-allocating.json';
 import dueFixture from '../../../resources/fixtures/ui/business-repayments-due.json';
 import minimalFixture from '../../../resources/fixtures/ui/business-repayments-live-minimal.json';
+import noneFixture from '../../../resources/fixtures/ui/business-repayments-none.json';
 import overdueFixture from '../../../resources/fixtures/ui/business-repayments-overdue.json';
 import paidFixture from '../../../resources/fixtures/ui/business-repayments-paid.json';
 import missingFixture from '../../../resources/fixtures/ui/business-repayments-policy-missing.json';
@@ -498,5 +502,46 @@ describe('Business repayments (business-servicing-v1)', () => {
         expect(
             view.getByRole('region', { name: 'If a payment is late' }),
         ).toHaveTextContent("The late-fee policy isn't available right now");
+    });
+
+    it('says there is nothing to repay while no note is servicing, offering no Pay', () => {
+        const page = structuredClone(
+            noneFixture.props,
+        ) as BusinessRepaymentsEmptyProps;
+
+        render(<BusinessRepayments {...page} />);
+
+        const view = within(sheet());
+
+        expect(
+            view.getByRole('heading', { name: 'Repayments' }),
+        ).toBeInTheDocument();
+        expect(view.getByText('Nothing to repay yet')).toBeInTheDocument();
+        expect(
+            view.getByText(
+                'Repayments start once a raise is funded and paid out to you. Its schedule, what is due and every payment will show here.',
+            ),
+        ).toBeInTheDocument();
+        expect(view.getByRole('link', { name: 'Back' })).toHaveAttribute(
+            'href',
+            '/preview/business-home',
+        );
+        expect(view.queryByRole('button')).not.toBeInTheDocument();
+        expect(
+            view.queryByRole('region', { name: 'Repayment schedule' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('draws the empty sheet over the real Home when the server sends it', () => {
+        const page = structuredClone(
+            noneFixture.props,
+        ) as BusinessRepaymentsEmptyProps;
+
+        page.home = structuredClone(props(repaymentsFixture).home);
+        render(<BusinessRepayments {...page} />);
+
+        expect(
+            within(sheet()).getByText('Nothing to repay yet'),
+        ).toBeInTheDocument();
     });
 });

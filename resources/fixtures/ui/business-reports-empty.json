@@ -1,0 +1,34 @@
+{
+    "component": "business/reports",
+    "props": {
+        "reports": {
+            "verified": [],
+            "in_audit": [],
+            "archived": []
+        },
+        "report": null,
+        "policy": null,
+        "links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports-empty",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "close": {
+                "url": "/preview/business-reports-empty",
+                "method": "get"
+            }
+        }
+    }
+}
