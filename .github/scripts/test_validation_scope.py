@@ -1,8 +1,10 @@
 """Negative controls for POC selection and immutable validation evidence."""
 
 import copy
+import contextlib
 import datetime
 import importlib.util
+import io
 import json
 import os
 import subprocess
@@ -22,6 +24,7 @@ def module(filename):
 policy = module("select-validation-scope.py")
 runner = module("run-poc-tests.py")
 budget = module("check-poc-budget.py")
+lint = module("check-workflow-lint.py")
 
 
 class ScopeTests(unittest.TestCase):
@@ -569,6 +572,16 @@ class MergeIdentityTests(unittest.TestCase):
             event = {"pull_request": {"number": 246, "head": {"sha": head, "repo": {"full_name": self.repository}}, "base": {"sha": base, "repo": {"full_name": self.repository}}}}
             event_path = root / "event.json"
             env = dict(os.environ, GITHUB_EVENT_NAME="pull_request", GITHUB_EVENT_PATH=str(event_path), GITHUB_REPOSITORY=self.repository, GITHUB_RUN_ID="100", GITHUB_RUN_ATTEMPT="2", GITHUB_SHA=tested)
+            preflight_event = copy.deepcopy(event)
+            preflight_event["pull_request"]["base"]["ref"] = "dev"
+            preflight_event["pull_request"]["head"]["ref"] = "feature"
+            event_path.write_text(json.dumps(preflight_event))
+            preflight_env = dict(env, PR_BASE="dev", PR_HEAD_REPOSITORY=self.repository, GITHUB_OUTPUT=str(root / "outputs"))
+            preflight = subprocess.run(["python3", script, "record-coordination-identity"], cwd=checkout, env=preflight_env, capture_output=True, text=True, timeout=45)
+            self.assertEqual(preflight.returncode, 0, preflight.stderr)
+            identity = json.loads((checkout / "ci-coordination-identity/coordination-identity.json").read_text())
+            self.assertEqual((identity["tested_sha"], identity["base_sha"], identity["head_sha"]), (tested, base, head))
+            self.assertIn("coordinate=true", (root / "outputs").read_text())
             for scenario in ["good", "changed head", "changed base", "fork", "wrong checkout", "wrong event"]:
                 current, current_env = copy.deepcopy(event), dict(env)
                 if scenario == "changed head": current["pull_request"]["head"]["sha"] = "a" * 40
@@ -583,6 +596,379 @@ class MergeIdentityTests(unittest.TestCase):
                     if scenario == "good":
                         proof = json.loads((checkout / "ci-merge-identity/merge-identity.json").read_text())
                         self.assertEqual((proof["tested_sha"], proof["tree_sha"], proof["base_sha"], proof["head_sha"]), (tested, git("rev-parse", "HEAD^{tree}", cwd=checkout), base, head))
+
+
+class CanonicalCoordinationTests(unittest.TestCase):
+    """A native API/artifact simulation; this does not simulate lock acquisition."""
+
+    def setUp(self):
+        self.repository = "rozine-rw/rozine"
+        self.tree = "c" * 40
+        now = datetime.datetime.now(datetime.timezone.utc)
+        def run(number, event, sha, branch, seconds, status="in_progress", conclusion=None):
+            stamp = (now - datetime.timedelta(seconds=seconds)).isoformat()
+            return {"id": number, "run_attempt": 1, "created_at": stamp, "updated_at": stamp,
+                    "status": status, "conclusion": conclusion, "event": event, "head_sha": sha,
+                    "head_branch": branch, "workflow_id": 7, "path": ".github/workflows/tests.yml",
+                    "head_repository": {"full_name": self.repository}}
+        self.runs = {100: run(100, "pull_request", "a" * 40, "feature", 120, "completed", "success"),
+                     200: run(200, "push", "d" * 40, "dev", 10),
+                     201: run(201, "pull_request", "d" * 40, "dev", 6)}
+        self.commits = {"b" * 40: {"sha": "b" * 40, "tree": {"sha": self.tree}, "parents": [{"sha": "9" * 40}, {"sha": "a" * 40}]},
+                        "d" * 40: {"sha": "d" * 40, "tree": {"sha": self.tree}, "parents": [{"sha": "8" * 40}]},
+                        "e" * 40: {"sha": "e" * 40, "tree": {"sha": self.tree}, "parents": [{"sha": "f" * 40}, {"sha": "d" * 40}]},
+                        "a" * 40: {"sha": "a" * 40, "tree": {"sha": "7" * 40}}}
+        self.artifacts = {number: {} for number in self.runs}
+        self.jobs = {number: [] for number in self.runs}
+        for number in self.runs:
+            self.identity(number)
+        self.publish(100, self.decision(100, "execute", 100, 100))
+        self.complete_validation(100)
+        self.jobs[200].append({"name": "Select CI scope", "status": "in_progress", "conclusion": None})
+        self.jobs[201].append({"name": "Select CI scope", "status": "queued", "conclusion": None})
+        self.current = 200
+
+    def job(self, name, duration=20, steps=()):
+        return {"name": name, "status": "completed", "conclusion": "success", "started_at": "2026-10-07T09:00:00Z",
+                "completed_at": f"2026-10-07T09:00:{duration:02d}Z", "steps": [{"name": step, "conclusion": "success"} for step in steps]}
+
+    def identity(self, number):
+        run = self.runs[number]
+        tested = {100: "b" * 40, 200: "d" * 40, 201: "e" * 40}.get(number, run["head_sha"])
+        proof = {"schema": 1, "protocol": 1, "kind": "poc-coordination-identity", "scope": "poc",
+                 "repository": self.repository, "run_id": str(number), "run_attempt": str(run["run_attempt"]),
+                 "tested_sha": tested, "tree_sha": self.tree, "event": run["event"], "head_sha": run["head_sha"]}
+        if run["event"] == "pull_request":
+            proof.update(base_ref="dev" if number == 100 else "uat", pull_number="10" if number == 100 else "250", base_sha=self.commits[tested]["parents"][0]["sha"])
+        self.artifacts[number]["ci-coordination-identity"] = proof
+        self.jobs[number].append(self.job(policy.IDENTITY_JOB, steps=policy.IDENTITY_STEPS))
+        return proof
+
+    def decision(self, number, mode, owner, source):
+        proof = {key: self.artifacts[number]["ci-coordination-identity"][key] for key in
+                 ("schema", "protocol", "scope", "repository", "run_id", "run_attempt", "tested_sha", "tree_sha")}
+        proof.update(kind="poc-coordination-decision", mode=mode, owner_run=str(owner), owner_attempt="1", source_run=str(source), source_attempt="1")
+        return proof
+
+    def publish(self, number, decision):
+        self.artifacts[number]["ci-coordination-decision"] = decision
+        self.jobs[number] = [job for job in self.jobs[number] if job["name"] != "Select CI scope"] + [self.job("Select CI scope", steps=policy.DECISION_STEPS)]
+
+    def complete_validation(self, number):
+        run = self.runs[number]
+        identity = self.artifacts[number]["ci-coordination-identity"]
+        self.artifacts[number]["validation-tree"] = {"schema": 2, "scope": "poc", "repository": self.repository,
+            "tested_sha": identity["tested_sha"], "tree_sha": self.tree, "run_id": str(number), "run_attempt": str(run["run_attempt"]),
+            "pull_number": identity.get("pull_number", ""), "required_jobs": policy.POC_JOBS, "required_steps": policy.POC_STEPS}
+        self.jobs[number] += [self.job(name, steps=policy.POC_STEPS if name == "POC PHP safety and static checks" else ()) for name in policy.POC_JOBS]
+        run.update(status="completed", conclusion="success")
+
+    def env(self, number=None, **extra):
+        number = self.current if number is None else number
+        return {"GITHUB_REPOSITORY": self.repository, "GITHUB_SHA": self.artifacts[number]["ci-coordination-identity"]["tested_sha"],
+                "GITHUB_RUN_ID": str(number), "GITHUB_RUN_ATTEMPT": str(self.runs[number]["run_attempt"]), "COORDINATION_ACTIVE": "true", **extra}
+
+    def api(self, endpoint):
+        if endpoint.endswith("/workflows/tests.yml"): return {"id": 7}
+        if "/workflows/tests.yml/runs?" in endpoint: return {"total_count": len(self.runs), "workflow_runs": list(self.runs.values())}
+        if "/git/commits/" in endpoint: return self.commits[endpoint.rsplit("/", 1)[-1]]
+        if "/pulls/" in endpoint:
+            return {"base": {"ref": "dev" if endpoint.endswith("/10") else "uat"}, "head": {"sha": "a" * 40 if endpoint.endswith("/10") else "d" * 40, "ref": "feature" if endpoint.endswith("/10") else "dev", "repo": {"full_name": self.repository}}}
+        if endpoint == f"repos/{self.repository}/actions/artifacts?per_page=100":
+            artifacts = [{"id": number * 10 + index, "name": f"{prefix}-{number}-{self.runs[number]['run_attempt']}", "workflow_run": {"id": number}}
+                         for number in self.artifacts for index, prefix in enumerate(self.artifacts[number])]
+            return {"total_count": len(artifacts), "artifacts": artifacts}
+        if "/artifacts?" in endpoint:
+            number = int(endpoint.split("/runs/")[1].split("/")[0])
+            artifacts = [{"id": number * 10 + index, "name": f"{prefix}-{number}-{self.runs[number]['run_attempt']}", "expired": False} for index, prefix in enumerate(self.artifacts[number])]
+            return {"total_count": len(artifacts), "artifacts": artifacts}
+        return self.runs[int(endpoint.rsplit("/", 1)[-1])]
+
+    def pages(self, endpoint):
+        if "/jobs?" in endpoint:
+            number = int(endpoint.split("/runs/")[1].split("/")[0])
+            return [{"jobs": self.jobs[number]}]
+        return [self.api(endpoint)]
+
+    def command(self, *args):
+        if args[:2] == ("git", "rev-parse"):
+            return self.tree if args[-1] == "HEAD^{tree}" else self.env()["GITHUB_SHA"]
+        self.assertEqual(args[:3], ("gh", "run", "download"))
+        number = int(args[3]);name = args[args.index("--name") + 1]
+        prefix = name.rsplit("-", 2)[0]
+        filename = {"ci-coordination-identity": "coordination-identity.json", "ci-coordination-decision": "coordination-decision.json"}.get(prefix, "tested-tree.json")
+        (Path(args[args.index("--dir") + 1]) / filename).write_text(json.dumps(self.artifacts[number][prefix]))
+        return ""
+
+    @contextlib.contextmanager
+    def server(self):
+        with patch.object(policy, "api", side_effect=self.api), patch.object(policy, "pages", side_effect=self.pages), patch.object(policy, "command", side_effect=self.command), tempfile.TemporaryDirectory() as directory:
+            previous = os.getcwd()
+            try:
+                os.chdir(directory)
+                yield
+            finally:
+                os.chdir(previous)
+
+    def test_simultaneous_dev_promotion_reuse_one_original_and_pin_receipt_owner(self):
+        with self.server():
+            first = policy.canonical_selection(self.env())
+            self.assertEqual((first["mode"], first["source_run"]), ("reuse", "100"))
+            self.publish(200, first)
+            self.current = 201
+            second = policy.canonical_selection(self.env())
+            self.assertEqual((second["mode"], second["owner_run"], second["source_run"]), ("await", "200", "100"))
+            self.publish(201, second)
+            self.current = 200
+            self.assertEqual(policy.reusable_run(self.env(SOURCE_RUN="100", SOURCE_ATTEMPT="1"), "poc"), "100")
+            self.current = 201
+            with patch.object(policy.time, "sleep", side_effect=lambda _: self.runs[200].update(status="completed", conclusion="success")):
+                policy.await_canonical_owner(self.env(SOURCE_RUN="100", SOURCE_ATTEMPT="1"))
+            self.assertEqual(policy.reusable_run(self.env(SOURCE_RUN="100", SOURCE_ATTEMPT="1"), "poc"), "100")
+
+    def test_simultaneous_runs_without_usable_proof_execute_only_one_owner(self):
+        self.artifacts[100].pop("validation-tree")
+        with self.server():
+            first = policy.canonical_selection(self.env())
+            self.assertEqual((first["mode"], first["source_run"]), ("execute", "200"))
+            self.publish(200, first)
+            self.current = 201
+            second = policy.canonical_selection(self.env())
+            self.assertEqual((second["mode"], second["owner_run"], second["source_run"]), ("await", "200", "200"))
+
+    def test_ready_promotion_can_own_validation_for_earlier_queued_push(self):
+        self.artifacts[100].pop("validation-tree")
+        self.jobs[200][-1]["status"] = "queued"
+        self.jobs[201][-1]["status"] = "in_progress"
+        self.current = 201
+        with self.server():
+            first = policy.canonical_selection(self.env())
+            self.assertEqual(first["mode"], "execute")
+            self.publish(201, first)
+            self.current = 200
+            second = policy.canonical_selection(self.env())
+            self.assertEqual((second["mode"], second["source_run"]), ("await", "201"))
+
+    def test_missing_decision_from_started_or_completed_selector_is_not_no_owner(self):
+        for status in ["in_progress", "completed"]:
+            self.jobs[201][-1].update(status=status, conclusion="success" if status == "completed" else None)
+            with self.subTest(status=status), self.server(), self.assertRaises(policy.CoordinationRefusal):
+                policy.canonical_selection(self.env())
+
+    def test_consumer_waits_for_follower_decision_publication_before_source_revalidation(self):
+        self.publish(200, self.decision(200, "reuse", 200, 100))
+        self.jobs[201][-1]["status"] = "in_progress"
+        with self.server(), patch.object(policy.time, "sleep", side_effect=lambda _: self.publish(201, self.decision(201, "await", 200, 100))):
+            self.assertEqual(policy.reusable_run(self.env(SOURCE_RUN="100", SOURCE_ATTEMPT="1"), "poc"), "100")
+
+    def test_failed_cancelled_skipped_owner_makes_consumer_fail_without_takeover(self):
+        self.publish(200, self.decision(200, "execute", 200, 200))
+        self.publish(201, self.decision(201, "await", 200, 200))
+        self.current = 201
+        for conclusion in ["failure", "cancelled", "skipped", "timed_out"]:
+            self.runs[200].update(status="completed", conclusion=conclusion, updated_at=self.runs[201]["created_at"])
+            with self.subTest(conclusion=conclusion), self.server():
+                with self.assertRaisesRegex(policy.CoordinationRefusal, "owner_unsuccessful"):
+                    policy.await_canonical_owner(self.env(SOURCE_RUN="200", SOURCE_ATTEMPT="1"))
+                with self.assertRaisesRegex(policy.CoordinationRefusal, "no_takeover"):
+                    policy.canonical_selection(self.env())
+
+    def test_owner_attempt_change_and_pinned_source_change_are_refused(self):
+        self.publish(200, self.decision(200, "execute", 200, 200))
+        self.publish(201, self.decision(201, "await", 200, 200))
+        self.current = 201
+        with self.server():
+            with self.assertRaisesRegex(policy.CoordinationRefusal, "source_pin_changed"):
+                policy.await_canonical_owner(self.env(SOURCE_RUN="100", SOURCE_ATTEMPT="1"))
+            self.runs[200]["run_attempt"] = 2
+            with self.assertRaisesRegex(policy.CoordinationRefusal, "attempt_or_workflow_changed"):
+                policy.await_canonical_owner(self.env(SOURCE_RUN="200", SOURCE_ATTEMPT="1"))
+
+    def test_owner_wait_is_bounded_and_timeout_never_executes_tests(self):
+        self.publish(200, self.decision(200, "execute", 200, 200))
+        self.publish(201, self.decision(201, "await", 200, 200))
+        self.current = 201
+        with self.server(), patch.object(policy.time, "monotonic", side_effect=[0, 511]), self.assertRaisesRegex(policy.CoordinationRefusal, "wait_timeout"):
+            policy.await_canonical_owner(self.env(SOURCE_RUN="200", SOURCE_ATTEMPT="1"))
+        self.assertNotIn("validation-tree", self.artifacts[201])
+
+    def test_waiter_cannot_target_another_waiter_or_a_different_tree(self):
+        self.publish(200, self.decision(200, "await", 201, 100))
+        self.publish(201, self.decision(201, "await", 200, 100))
+        self.current = 201
+        with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "cycle_mismatch"):
+            policy.await_canonical_owner(self.env(SOURCE_RUN="100", SOURCE_ATTEMPT="1"))
+
+    def test_terminal_failed_follower_still_blocks_original_proof(self):
+        self.publish(200, self.decision(200, "reuse", 200, 100))
+        self.publish(201, self.decision(201, "await", 200, 100))
+        self.runs[201].update(status="completed", conclusion="failure")
+        with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "newer_matching_run_blocks_reuse"):
+            policy.reusable_run(self.env(SOURCE_RUN="100", SOURCE_ATTEMPT="1"), "poc")
+
+    def test_unknown_matching_executing_peer_never_becomes_a_second_owner(self):
+        self.artifacts[201].clear()
+        self.jobs[201] = [self.job("POC PHP safety and static checks")]
+        for usable in [True, False]:
+            if not usable:
+                self.artifacts[100].pop("validation-tree")
+            with self.subTest(usable_source=usable), self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "unknown_matching_pending_peer"):
+                policy.canonical_selection(self.env())
+            self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_follower_failure_cancellation_and_attempt_change_during_source_verification_refuse(self):
+        self.publish(200, self.decision(200, "reuse", 200, 100))
+        self.publish(201, self.decision(201, "await", 200, 100))
+        original = policy.validate_source
+        for transition in ["failure", "cancelled", "attempt"]:
+            self.runs[201].update(status="in_progress", conclusion=None, run_attempt=1)
+            def change_after_source(*args):
+                proof = original(*args)
+                if transition == "attempt":
+                    self.runs[201]["run_attempt"] = 2
+                else:
+                    self.runs[201].update(status="completed", conclusion=transition)
+                return proof
+            with self.subTest(transition=transition), self.server(), patch.object(policy, "validate_source", side_effect=change_after_source), self.assertRaises(policy.CoordinationRefusal):
+                policy.reusable_run(self.env(SOURCE_RUN="100", SOURCE_ATTEMPT="1"), "poc")
+
+    def test_selector_waits_bounded_for_independent_preflight_to_finish(self):
+        self.jobs[201][0].update(status="in_progress", conclusion=None)
+        with self.server(), patch.object(policy.time, "sleep", side_effect=lambda _: self.jobs[201][0].update(status="completed", conclusion="success")):
+            self.assertEqual(policy.canonical_selection(self.env())["mode"], "reuse")
+
+    def test_receipt_owner_failure_cannot_be_hidden_by_original_source_success(self):
+        self.publish(200, self.decision(200, "reuse", 200, 100))
+        self.publish(201, self.decision(201, "await", 200, 100))
+        self.runs[200].update(status="completed", conclusion="failure")
+        self.current = 201
+        with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "owner_unsuccessful"):
+            policy.await_canonical_owner(self.env(SOURCE_RUN="100", SOURCE_ATTEMPT="1"))
+
+    def test_future_number_owner_produces_original_proof_and_consumer_receipt(self):
+        self.publish(201, self.decision(201, "execute", 201, 201))
+        self.complete_validation(201)
+        self.publish(200, self.decision(200, "await", 201, 201))
+        self.current = 200
+        with self.server():
+            env = self.env(SOURCE_RUN="201", SOURCE_ATTEMPT="1")
+            policy.await_canonical_owner(env)
+            policy.record_reuse(env)
+            receipt = json.loads(Path("ci-evidence/tested-tree.json").read_text())
+            self.assertEqual((receipt["source_run"], receipt["canonical_owner_run"]), ("201", "201"))
+            self.assertEqual(receipt["coordination_protocol"], 1)
+
+    def test_malformed_decision_pins_and_cycles_refuse_ownership(self):
+        original = copy.deepcopy(self.artifacts)
+        for field, value in [("tree_sha", "f" * 40), ("protocol", 2), ("owner_attempt", "0"), ("source_run", ""), ("owner_run", "201")]:
+            self.publish(201, self.decision(201, "await", 200, 100))
+            self.artifacts[201]["ci-coordination-decision"][field] = value
+            with self.subTest(field=field), self.server(), self.assertRaises(policy.CoordinationRefusal):
+                policy.canonical_selection(self.env())
+            self.artifacts = copy.deepcopy(original)
+
+    def test_artifact_index_requires_complete_stable_unique_run_bound_inventory(self):
+        artifact = {"id": 1, "name": "ci-coordination-identity-200-1", "workflow_run": {"id": 200}}
+        first = {"total_count": 2, "artifacts": [artifact]}
+        second = {"id": 2, "name": "unrelated", "workflow_run": {"id": 100}}
+        for scenario in ["complete", "missing page", "changed count", "duplicate id", "duplicate identity", "invalid name"]:
+            responses = [copy.deepcopy(first), {"total_count": 2, "artifacts": [copy.deepcopy(second)]}]
+            if scenario == "missing page": responses.pop()
+            if scenario == "changed count": responses[-1]["total_count"] = 3
+            if scenario == "duplicate id": responses[-1]["artifacts"][0]["id"] = 1
+            if scenario == "duplicate identity": responses[-1]["artifacts"][0]["name"] = artifact["name"]
+            if scenario == "invalid name": responses[-1]["artifacts"][0]["name"] = []
+            with self.subTest(scenario=scenario), patch.object(policy, "api", return_value=first), patch.object(policy, "pages", return_value=responses):
+                if scenario == "complete":
+                    self.assertEqual(policy.coordination_artifact_index(self.repository), {artifact["name"]: 200})
+                else:
+                    with self.assertRaises(policy.CoordinationRefusal): policy.coordination_artifact_index(self.repository)
+
+    def test_artifact_index_timeout_never_grants_execute_ownership(self):
+        with self.server(), patch.object(policy, "coordination_artifact_index", side_effect=subprocess.TimeoutExpired("gh api", 45)), self.assertRaises(subprocess.TimeoutExpired):
+            policy.canonical_selection(self.env())
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_failed_peer_without_identity_avoids_serial_per_run_artifact_lookup(self):
+        self.runs[100]["conclusion"] = "failure"
+        self.artifacts[100].clear()
+        calls = []
+        native_api = self.api
+        def record(endpoint):
+            calls.append(endpoint)
+            return native_api(endpoint)
+        with self.server(), patch.object(policy, "api", side_effect=record):
+            self.assertEqual(policy.canonical_selection(self.env())["mode"], "execute")
+        self.assertFalse(any("/runs/100/artifacts?" in endpoint for endpoint in calls))
+
+    def test_indexed_failed_peer_identity_disappearing_refuses_new_ownership(self):
+        self.runs[100]["conclusion"] = "failure"
+        original = policy.coordination_identity
+        def disappearance(repository, run):
+            if run["id"] == 100:
+                raise policy.MissingEvidence("identity absent from now-complete per-run inventory")
+            return original(repository, run)
+        with self.server(), patch.object(policy, "coordination_identity", side_effect=disappearance), self.assertRaisesRegex(policy.CoordinationRefusal, "coordination_index_changed"):
+            policy.canonical_selection(self.env())
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_protocol_scope_native_tree_parents_and_publication_provenance_controls(self):
+        original = copy.deepcopy((self.artifacts, self.commits, self.jobs))
+        for scenario in ["scope", "protocol", "attempt", "repository", "native tree", "native parents", "failed identity upload", "malformed identity"]:
+            identity = self.artifacts[201]["ci-coordination-identity"]
+            if scenario == "scope": identity["scope"] = "full"
+            if scenario == "protocol": identity["protocol"] = 2
+            if scenario == "attempt": identity["run_attempt"] = "2"
+            if scenario == "repository": identity["repository"] = "fork/repo"
+            if scenario == "native tree": self.commits["e" * 40]["tree"]["sha"] = "f" * 40
+            if scenario == "native parents": self.commits["e" * 40]["parents"].reverse()
+            if scenario == "failed identity upload": self.jobs[201][0]["steps"][-1]["conclusion"] = "failure"
+            if scenario == "malformed identity": self.artifacts[201]["ci-coordination-identity"] = []
+            with self.subTest(scenario=scenario), self.server(), self.assertRaises((ValueError, TypeError)):
+                policy.canonical_selection(self.env())
+            self.artifacts, self.commits, self.jobs = copy.deepcopy(original)
+
+    def test_refusal_diagnostics_do_not_emit_api_error_text_or_secrets(self):
+        output = io.StringIO()
+        with contextlib.redirect_stderr(output):
+            policy.diagnostic("source_proof_not_usable", self.runs[100])
+        self.assertEqual(output.getvalue(), "CI coordination: source_proof_not_usable run=100 attempt=1\n")
+
+    def test_budget_includes_identity_and_consumer_wait_execution(self):
+        jobs = [self.job(name) for name in [policy.IDENTITY_JOB, *policy.REUSE_JOBS]]
+        self.assertEqual(budget.measure(jobs), (60, 20, 80))
+        jobs[-1]["completed_at"] = "2026-10-07T09:09:40Z"
+        with self.assertRaises(ValueError): policy.validate_completed_budget(jobs, reused=True)
+
+
+class WorkflowQueueCompatibilityTests(unittest.TestCase):
+    def test_only_documented_queue_nodes_can_resolve_old_actionlint_diagnostic(self):
+        path = Path('.github/workflows/tests.yml')
+        lines = path.read_text().splitlines()
+        numbers = [index + 1 for index, line in enumerate(lines) if line.strip() == 'queue: max']
+        self.assertEqual(len(numbers), 2)
+        errors = [{"filepath": str(path), "line": number, "kind": "syntax-check", "message": lint.QUEUE_ERROR} for number in numbers]
+        self.assertEqual(lint.remaining_errors(json.dumps(errors), 1, path), [])
+        for scenario in ["other diagnostic", "other file", "wrong position", "other error kind"]:
+            error = dict(errors[0])
+            if scenario == "other diagnostic": error['message'] = 'invalid expression or unknown action'
+            if scenario == "other file": error['filepath'] = '.github/workflows/deploy-prod.yml'
+            if scenario == "wrong position": error['line'] = 1
+            if scenario == "other error kind": error['kind'] = 'expression'
+            with self.subTest(scenario=scenario):
+                self.assertEqual(lint.remaining_errors(json.dumps([error]), 1, path), [error])
+
+    def test_canceling_invalid_value_and_unexpected_context_are_never_accepted(self):
+        for block in ['concurrency:\n  group: x\n  cancel-in-progress: true\n  queue: max',
+                      'concurrency:\n  group: x\n  cancel-in-progress: false\n  queue: invalid',
+                      'jobs:\n  unrelated:\n    concurrency:\n      group: x\n      cancel-in-progress: false\n      queue: max']:
+            with self.subTest(block=block):
+                self.assertFalse(lint.valid_queue_node(block.splitlines(), len(block.splitlines())))
+
+    def test_malformed_output_or_tool_failure_cannot_become_lint_success(self):
+        for output, code in [('not json', 1), ('{}', 1), ('[]', 1), ('[]', 2), ('[{}]', 1)]:
+            with self.subTest(output=output, code=code), self.assertRaises(ValueError):
+                lint.remaining_errors(output, code, Path('.github/workflows/tests.yml'))
 
 
 if __name__ == "__main__":
