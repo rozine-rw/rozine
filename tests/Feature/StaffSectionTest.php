@@ -22,14 +22,23 @@ test('every design section opens the console frame with its empty state for any 
     $this->actingAs(sectionStaff(['analyst']))->get(route('staff.sections.show', ['section' => $slug]))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('admin/section')->where('section', $section)->where('search', '')
             ->where('viewer.role', 'analyst')->where('badges', ['applications' => null, 'disbursements' => null])
-            ->where("nav.{$section}.url", '/admin/'.$slug)->where('nav.investors', null)->where('nav.payments.url', '/admin/payments'));
+            ->where("nav.{$section}.url", '/admin/'.$slug)->where('nav.investors', null)->where('nav.payments.url', '/admin/payments')
+            ->where('nav.businesses.url', '/admin/businesses')->where('nav.auditors', null));
 })->with(fn (): array => array_map(fn (string $slug): array => [$slug, StaffSectionController::SECTIONS[$slug]],
     array_combine(array_keys(StaffSectionController::SECTIONS), array_keys(StaffSectionController::SECTIONS))));
 
 test('the frame names the most privileged role, and Payments opens disbursements for whoever may see them', function (): void {
     $this->actingAs(sectionStaff(['approver', 'superadmin']))->get(route('staff.sections.show', ['section' => 'notes']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('viewer.role', 'superadmin')
-            ->where('nav.payments.url', '/admin/disbursements')->where('nav.investors.url', '/admin/investors'));
+            ->where('nav.payments.url', '/admin/disbursements')->where('nav.investors.url', '/admin/investors')
+            ->where('nav.businesses.url', '/admin/businesses')->where('nav.auditors.url', '/admin/auditors'));
+});
+
+test('the Business directory and Audit Partner network are live screens, not pending sections', function (): void {
+    expect(StaffSectionController::SECTIONS)->not->toHaveKeys(['businesses', 'auditors']);
+    $this->actingAs(sectionStaff(['analyst']))->get('/admin/businesses')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('admin/parties')->where('kind', 'business'));
+    $this->actingAs(sectionStaff(['analyst']))->get('/admin/auditors')->assertForbidden();
 });
 
 test('participants and guests cannot open a console section, and unknown sections do not exist', function (): void {

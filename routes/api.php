@@ -25,6 +25,8 @@ use App\Http\Controllers\InvestorPrimaryController;
 use App\Http\Controllers\InvestorVerificationController;
 use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\StaffApplicationReleaseController;
+use App\Http\Controllers\StaffAuditorDirectoryController;
+use App\Http\Controllers\StaffBusinessDirectoryController;
 use App\Http\Controllers\StaffDisbursementController;
 use App\Http\Controllers\StaffInvestorDirectoryController;
 use App\Http\Controllers\StaffInvestorVerificationController;
@@ -192,6 +194,16 @@ Route::middleware(['auth:sanctum', 'verified', 'throttle:60,1', 'cache.headers:p
 
 Route::get('v1/staff/investors', [StaffInvestorDirectoryController::class, 'index'])
     ->middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->name('api.v1.staff.investors.index');
+
+Route::get('v1/staff/businesses', [StaffBusinessDirectoryController::class, 'index'])
+    ->middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->name('api.v1.staff.businesses.index');
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/auditors')->name('api.v1.staff.auditors.')->group(function (): void {
+    Route::get('/', [StaffAuditorDirectoryController::class, 'index'])->name('index');
+    foreach (['approve', 'reject'] as $decision) {
+        Route::post('{party}/licence/'.$decision, [StaffAuditorDirectoryController::class, 'decide'])->whereUlid('party')->defaults('decision', $decision)->name('licence.'.$decision);
+    }
+});
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/investor-verifications')->name('api.v1.staff.investor-verifications.')->group(function (): void {
     Route::get('/', [StaffInvestorVerificationController::class, 'index'])->name('index');
