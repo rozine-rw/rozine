@@ -198,6 +198,12 @@ def same_attempt(repository, run):
 
 def successful_steps(jobs, name, steps):
     matches = [job for job in jobs if job["name"] == name]
+    if len(matches) == 1 and matches[0].get("conclusion") not in (None, "success"):
+        raise CoordinationRefusal("identity_or_decision_job_not_successful")
+    if len(matches) == 1:
+        for step in steps:
+            if any(item["name"] == step and item.get("conclusion") not in (None, "success") for item in matches[0].get("steps", [])):
+                raise CoordinationRefusal("identity_or_decision_step_not_successful")
     if len(matches) == 1 and matches[0].get("status") in ("queued", "pending", "waiting", "in_progress"):
         raise PublicationPending("coordination_publication_in_progress")
     if len(matches) != 1 or matches[0].get("status") != "completed" or matches[0].get("conclusion") != "success":
@@ -227,12 +233,23 @@ def coordination_identity(repository, run):
             raise CoordinationRefusal("coordination_identity_pr_contract_mismatch")
     elif run["event"] not in ("push", "workflow_dispatch") or run.get("head_branch") not in ("dev", "uat") or proof["tested_sha"] != run["head_sha"]:
         raise CoordinationRefusal("coordination_identity_target_mismatch")
-    try:
-        successful_steps(run_jobs(repository, run), IDENTITY_JOB, IDENTITY_STEPS)
-    except PublicationPending:
-        raise PreflightPublicationPending("peer_preflight_identity_publication_in_progress") from None
-    same_attempt(repository, run)
-    return proof
+    for read in range(3):
+        jobs = run_jobs(repository, run)
+        try:
+            successful_steps(jobs, IDENTITY_JOB, IDENTITY_STEPS)
+        except PublicationPending:
+            latest = same_attempt(repository, run)
+            identity_jobs = [job for job in jobs if job["name"] == IDENTITY_JOB]
+            contradictory = latest["status"] == "completed" or identity_jobs[0].get("conclusion") is not None
+            if not contradictory:
+                raise PreflightPublicationPending("peer_preflight_identity_publication_in_progress") from None
+            if read == 2:
+                raise CoordinationRefusal("identity_job_status_inconsistent") from None
+            diagnostic("retrying_inconsistent_identity_job_status", run)
+            time.sleep(1)
+            continue
+        same_attempt(repository, run)
+        return proof
 
 
 def coordination_decision(repository, run, identity):
