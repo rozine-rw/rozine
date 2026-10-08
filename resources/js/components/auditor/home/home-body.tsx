@@ -98,7 +98,10 @@ function StandingTile({
     );
 }
 
-/** Your standing (design L174–181), coloured by the server's own flags. */
+/**
+ * Your standing (design L174–181), coloured by the server's own flags. A figure the server does
+ * not keep yet reads as a dash.
+ */
 function Standing({ standing }: { standing: AuditorStanding }) {
     const { t } = useTranslation();
 
@@ -137,8 +140,13 @@ function Standing({ standing }: { standing: AuditorStanding }) {
                 />
                 <StandingTile
                     label={t('auditor.standing.clock_expiries')}
-                    value={String(standing.clock_expiries)}
+                    value={
+                        standing.clock_expiries === null
+                            ? '—'
+                            : String(standing.clock_expiries)
+                    }
                     tone={
+                        standing.clock_expiries !== null &&
                         standing.clock_expiries > 0
                             ? 'text-rz-ink'
                             : 'text-rz-positive'

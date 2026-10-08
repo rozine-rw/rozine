@@ -10,15 +10,17 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * The Auditor Profile page (auditor-filing-v1, MVP-AUDITOR-SCR profile): the accreditation facts
  * and `allowed_actions` exactly as `AccreditationView` presents them, with the links and command
- * targets the page may use. Facts without a record yet stay null — the partner's firm,
- * professional body and start year, quality score and on-time share — and tabs whose routes do
- * not exist yet are null, so the page hides them rather than linking to nothing.
+ * targets the page may use. Jobs done counts the partner's filed reports and the open-offers
+ * badge comes from their work as Jobs reads it. Facts without a record yet stay null — the
+ * partner's firm, professional body and start year, quality score and on-time share — so the page
+ * leaves them out rather than showing a stand-in.
  *
  * @phpstan-type Accreditation array{contract_version: string, identity_context_revision: int, server_time: string, standing: array<string, mixed>, accreditation: array{submission: array{status: string, id?: string}}&array<string, mixed>, availability: array<string, mixed>, allowed_actions: list<string>}
  *
  * @phpstan-import-type Summary from \App\Application\Auditor\GetAuditEngagementSummary
+ * @phpstan-import-type AuditApplication from \App\Application\Business\Contracts\BusinessApplicationStore
  *
- * @phpstan-type Page array{accreditation: Accreditation, certificate_id: string|null, name: string, section: string, engagement: Summary}
+ * @phpstan-type Page array{accreditation: Accreditation, certificate_id: string|null, name: string, section: string, engagement: Summary, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, filed: int}
  */
 class AuditorProfileResource extends JsonResource
 {
@@ -47,7 +49,7 @@ class AuditorProfileResource extends JsonResource
             'auditor' => ['name' => $page['name'], 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => null],
             'quality_score' => null,
             'on_time_pct' => null,
-            'jobs_done' => 0,
+            'jobs_done' => $page['filed'],
             'accreditation' => $data['accreditation'],
             'standing' => $data['standing'],
             'availability' => [...$data['availability'], 'update' => self::action($prefix.'availability.update')],
@@ -56,11 +58,11 @@ class AuditorProfileResource extends JsonResource
                 'renew' => self::action($prefix.'accreditation.renew'),
                 'withdraw' => self::action($prefix.'accreditation.withdraw'),
             ],
-            'open_jobs' => 0,
+            'open_jobs' => AuditorJobsResource::openJobs($page['jobs']),
             'links' => [
                 'home' => self::link('auditor.home'),
                 'jobs' => self::link('auditor.jobs.index'),
-                'portfolio' => null,
+                'portfolio' => self::link('auditor.portfolio.index'),
                 'profile' => self::link('auditor.profile'),
                 'launcher' => self::link('dashboard'),
                 'sections' => [
@@ -101,8 +103,13 @@ class AuditorProfileResource extends JsonResource
         return ['url' => route($name, [], false), 'method' => 'post'];
     }
 
-    /** @return array{url: string, method: 'get'} */
-    private static function operationLink(string $prefix): array
+    /**
+     * The lookup for a recorded accreditation or availability command, with the literal token the
+     * page fills in; Home shares it for its dispatch switch.
+     *
+     * @return array{url: string, method: 'get'}
+     */
+    public static function operationLink(string $prefix): array
     {
         $url = route($prefix.'operations.show', ['request_id' => self::REQUEST_ID_PLACEHOLDER], false);
 

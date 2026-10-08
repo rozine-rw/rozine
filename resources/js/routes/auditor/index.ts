@@ -3,12 +3,13 @@ import reports from './reports'
 import engagement from './engagement'
 import jobs from './jobs'
 import conflicts from './conflicts'
+import portfolio from './portfolio'
 import accreditation from './accreditation'
 import availability from './availability'
 import operations from './operations'
 /**
-* @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see \App\Http\Controllers\AuditorHomeController::__invoke
+* @see app/Http/Controllers/AuditorHomeController.php:28
 * @route '/auditor'
 */
 export const home = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -22,8 +23,8 @@ home.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see \App\Http\Controllers\AuditorHomeController::__invoke
+* @see app/Http/Controllers/AuditorHomeController.php:28
 * @route '/auditor'
 */
 home.url = (options?: RouteQueryOptions) => {
@@ -31,8 +32,8 @@ home.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see \App\Http\Controllers\AuditorHomeController::__invoke
+* @see app/Http/Controllers/AuditorHomeController.php:28
 * @route '/auditor'
 */
 home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -41,8 +42,8 @@ home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see \App\Http\Controllers\AuditorHomeController::__invoke
+* @see app/Http/Controllers/AuditorHomeController.php:28
 * @route '/auditor'
 */
 home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -51,8 +52,8 @@ home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see \App\Http\Controllers\AuditorHomeController::__invoke
+* @see app/Http/Controllers/AuditorHomeController.php:28
 * @route '/auditor'
 */
 const homeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -61,8 +62,8 @@ const homeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see \App\Http\Controllers\AuditorHomeController::__invoke
+* @see app/Http/Controllers/AuditorHomeController.php:28
 * @route '/auditor'
 */
 homeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -71,8 +72,8 @@ homeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see \App\Http\Controllers\AuditorHomeController::__invoke
+* @see app/Http/Controllers/AuditorHomeController.php:28
 * @route '/auditor'
 */
 homeForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -89,7 +90,7 @@ home.form = homeForm
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:39
+* @see app/Http/Controllers/AuditorProfileController.php:41
 * @route '/auditor/profile'
 */
 export const profile = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -104,7 +105,7 @@ profile.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:39
+* @see app/Http/Controllers/AuditorProfileController.php:41
 * @route '/auditor/profile'
 */
 profile.url = (options?: RouteQueryOptions) => {
@@ -113,7 +114,7 @@ profile.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:39
+* @see app/Http/Controllers/AuditorProfileController.php:41
 * @route '/auditor/profile'
 */
 profile.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -123,7 +124,7 @@ profile.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:39
+* @see app/Http/Controllers/AuditorProfileController.php:41
 * @route '/auditor/profile'
 */
 profile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -133,7 +134,7 @@ profile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:39
+* @see app/Http/Controllers/AuditorProfileController.php:41
 * @route '/auditor/profile'
 */
 const profileForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -143,7 +144,7 @@ const profileForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:39
+* @see app/Http/Controllers/AuditorProfileController.php:41
 * @route '/auditor/profile'
 */
 profileForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -153,7 +154,7 @@ profileForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:39
+* @see app/Http/Controllers/AuditorProfileController.php:41
 * @route '/auditor/profile'
 */
 profileForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -175,6 +176,7 @@ const auditor = {
     engagement: Object.assign(engagement, engagement),
     jobs: Object.assign(jobs, jobs),
     conflicts: Object.assign(conflicts, conflicts),
+    portfolio: Object.assign(portfolio, portfolio),
     accreditation: Object.assign(accreditation, accreditation),
     availability: Object.assign(availability, availability),
     operations: Object.assign(operations, operations),

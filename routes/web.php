@@ -5,7 +5,9 @@ declare(strict_types=1);
 use App\Http\Controllers\AuditDisputeController;
 use App\Http\Controllers\AuditOperationsController;
 use App\Http\Controllers\AuditorEngagementController;
+use App\Http\Controllers\AuditorHomeController;
 use App\Http\Controllers\AuditorJobsController;
+use App\Http\Controllers\AuditorPortfolioController;
 use App\Http\Controllers\AuditorProcedureController;
 use App\Http\Controllers\AuditorProfileController;
 use App\Http\Controllers\AuditSealVerificationController;
@@ -81,7 +83,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::get('investor', RoleHomeController::class)->name('investor.home');
     Route::get('business', RoleHomeController::class)->middleware(['throttle:60,1', 'cache.headers:private;no_store'])->name('business.home');
-    Route::get('auditor', RoleHomeController::class)->name('auditor.home');
+    Route::get('auditor', AuditorHomeController::class)->middleware(['throttle:60,1', 'cache.headers:private;no_store'])->name('auditor.home');
     Route::get('admin', StaffHomeController::class)->name('admin.home');
     Route::get('auditor/profile', [AuditorProfileController::class, 'show'])->name('auditor.profile');
 });
@@ -128,6 +130,7 @@ Route::middleware(['auth', 'throttle:60,1'])->prefix('auditor')->name('auditor.'
     Route::get('jobs', [AuditorJobsController::class, 'index'])->middleware('cache.headers:private;no_store')->name('jobs.index');
     Route::get('jobs/{assignment}', [AuditorJobsController::class, 'show'])->where('assignment', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('jobs.show');
     Route::get('conflicts', [AuditorJobsController::class, 'conflicts'])->middleware('cache.headers:private;no_store')->name('conflicts.index');
+    Route::get('portfolio', [AuditorPortfolioController::class, 'index'])->middleware('cache.headers:private;no_store')->name('portfolio.index');
     Route::get('jobs/{assignment}/conflict', [AuditorJobsController::class, 'conflict'])->where('assignment', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('conflicts.show');
     foreach (['accept', 'decline', 'conflict'] as $decision) {
         Route::post('jobs/{assignment}/'.$decision, [AuditorJobsController::class, 'respond'])->where('assignment', '[0-9a-z]{26}')->defaults('decision', $decision)->name('jobs.'.$decision);
