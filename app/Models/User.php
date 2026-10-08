@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Application\Identity\EmailVerificationCode;
 use App\Notifications\Account\OneTimeCode;
 use Database\Factories\UserFactory;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -55,13 +56,71 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     }
 
     /**
+     * The MustVerifyEmail boundary also serves existing signed verification links. Refuse a
+     * stale address, and let an already-verified duplicate continue without another event.
+     */
+    public function markEmailAsVerified(): bool
+    {
+        $email = $this->getEmailForVerification();
+
+        if ($this->markEmailAsVerifiedFor($email)) {
+            return true;
+        }
+
+        if (! $this->refresh()->isVerifiedAt($email)) {
+            throw new AuthorizationException('EMAIL_VERIFICATION_ADDRESS_CHANGED');
+        }
+
+        return false;
+    }
+
+    /**
+     * Mark the email verified only while the account still holds the address the code was sent
+     * to, in one conditional write, so an email change that lands between the code check and
+     * this write cannot inherit the proof. Returns whether this call verified the address.
+     */
+    public function markEmailAsVerifiedFor(string $email): bool
+    {
+        $verifiedAt = $this->freshTimestamp();
+
+        $verified = static::query()
+            ->whereKey($this->getKey())
+            ->where('email', $email)
+            ->whereNull('email_verified_at')
+            ->update(['email_verified_at' => $verifiedAt]) === 1;
+
+        if ($verified) {
+            $this->forceFill(['email_verified_at' => $verifiedAt])->syncOriginalAttribute('email_verified_at');
+        }
+
+        return $verified;
+    }
+
+    /** Whether the account, as loaded, is verified at exactly this address. */
+    public function isVerifiedAt(string $email): bool
+    {
+        return $this->hasVerifiedEmail() && $this->getEmailForVerification() === $email;
+    }
+
+    /**
+     * Replace the account's address and drop any proof of the old one in a single write, so a
+     * verification of the old address that commits while this request runs cannot carry over.
+     */
+    public function changeEmail(string $email): void
+    {
+        static::query()->whereKey($this->getKey())->update(['email' => $email, 'email_verified_at' => null]);
+
+        $this->forceFill(['email' => $email, 'email_verified_at' => null])->syncOriginalAttributes(['email', 'email_verified_at']);
+    }
+
+    /**
      * Confirm the email address with a six-digit code rather than a link. Sign-up and every
      * "send a new code" request issue a fresh code, which replaces the last one.
      */
     public function sendEmailVerificationNotification(): void
     {
         $this->notify(new OneTimeCode(
-            app(EmailVerificationCode::class)->issue($this->id),
+            app(EmailVerificationCode::class)->issue($this->id, $this->getEmailForVerification()),
             EmailVerificationCode::EXPIRES_IN_MINUTES,
         ));
     }
