@@ -52,7 +52,9 @@
         "resources/js/actions/App/Http/Controllers/EmailVerificationCodeController.ts",
         "resources/js/actions/App/Http/Controllers/IdentityManagementController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorDealsController.ts",
+        "resources/js/actions/App/Http/Controllers/InvestorPortfolioController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorPrimaryController.ts",
+        "resources/js/actions/App/Http/Controllers/InvestorProfileController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorVerificationController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorWalletController.ts",
         "resources/js/actions/App/Http/Controllers/PulseController.ts",
@@ -651,8 +653,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 623,
-        "generated": 232,
+        "totalTrackedSources": 625,
+        "generated": 234,
         "declarationOnly": 18,
         "authoredExecutable": 373
     },
