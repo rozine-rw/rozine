@@ -151,6 +151,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Console\Seeds\SeedCommand;
 use Illuminate\Http\Request;
+use Illuminate\Mail\Markdown;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
@@ -285,6 +286,9 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);
+
+        // Values echoed into markdown mail cannot become links or HTML.
+        Markdown::withSecuredEncoding();
 
         DB::prohibitDestructiveCommands(
             ! $this->app->make(EnvironmentIsolation::class)->canReset(),

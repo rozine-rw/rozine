@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Identity;
 
 use App\Application\Identity\Contracts\InvestorDirectoryStore;
-use App\Models\BusinessCampaign;
 use App\Models\InvestorVerification;
-use App\Models\PrimaryHolding;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -59,9 +57,6 @@ final class EloquentInvestorDirectoryStore implements InvestorDirectoryStore
             return null;
         }
         $row = self::row($row);
-        $holdings = PrimaryHolding::query()->where('party_id', $partyId)->orderBy('issued_at')->orderBy('id')->get();
-        $titles = BusinessCampaign::query()->whereIn('id', $holdings->pluck('business_campaign_id')->all())->get()
-            ->mapWithKeys(fn (BusinessCampaign $campaign): array => [$campaign->id => (string) ($campaign->payload['title'] ?? '')]);
         $restriction = DB::table('investor_account_restrictions')->where('party_id', $partyId)->where('effective_at', '<=', now())
             ->where(fn (Builder $open) => $open->whereNull('expires_at')->orWhere('expires_at', '>', now()))->min('effective_at');
         $history = $row['verification_id'] === null ? collect() : DB::table('investor_verification_versions')
@@ -70,8 +65,6 @@ final class EloquentInvestorDirectoryStore implements InvestorDirectoryStore
             ->get(['investor_verification_versions.id', 'investor_verification_versions.created_at', 'users.name', 'command', 'reason']);
 
         return ['row' => $row,
-            'holdings' => array_values($holdings->map(fn (PrimaryHolding $holding): array => ['id' => $holding->id,
-                'title' => $titles[$holding->business_campaign_id] ?? '', 'principal' => (string) $holding->principal])->all()),
             'restricted_since' => $restriction === null ? null : (string) $restriction,
             'history' => array_values($history->map(function (object $version): array {
                 $version = (array) $version;
