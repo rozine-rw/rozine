@@ -54,6 +54,7 @@ const HEALTH_TONE: Record<PartyDetail['health'], Tone> = {
     watch: 'amber',
     distressed: 'red',
     kyc_pending: 'amber',
+    frozen: 'red',
 };
 
 const SECTION =
@@ -171,7 +172,8 @@ export function PartyDrawer({
                                     {t(`admin.parties.health.${party.health}`)}
                                 </span>
                             </span>
-                            {frozen && (
+                            {/* A staff account's state is its health, so it is not badged twice. */}
+                            {frozen && party.health !== 'frozen' && (
                                 <MicroBadge>
                                     {t('admin.parties.badge.frozen')}
                                 </MicroBadge>

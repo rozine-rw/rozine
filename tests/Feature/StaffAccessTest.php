@@ -147,8 +147,10 @@ it('links the staff home and each console page to exactly the sections the accou
     $expected = array_map(fn (string $section): ?array => in_array($section, $sections, true) ? ['url' => $urls[$section], 'method' => 'get'] : null,
         array_combine(array_keys($urls), array_keys($urls)));
 
+    // Every staff member opens the Operations Center first.
     $this->actingAs($user)->get(route('admin.home'))->assertOk()
-        ->assertInertia(fn (Assert $page): Assert => $page->component('identity/staff-home', false)->where('sections', $expected));
+        ->assertInertia(fn (Assert $page): Assert => $page->component('identity/staff-home', false)
+            ->where('sections', ['today' => ['url' => route('staff.dashboard', [], false), 'method' => 'get'], ...$expected]));
     foreach (array_diff(array_keys($urls), $sections) as $closed) {
         $this->getJson($urls[$closed])->assertForbidden();
     }

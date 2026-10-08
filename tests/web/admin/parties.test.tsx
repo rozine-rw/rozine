@@ -121,6 +121,31 @@ describe('Party directories', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('lists a Treasury operator, and one without a role as a dash', () => {
+        const fixture = props(staffFixture);
+
+        if (fixture.directory.kind === 'staff') {
+            fixture.directory.rows = [
+                { ...fixture.directory.rows[1], role: 'treasury' },
+                { ...fixture.directory.rows[2], role: null },
+            ];
+        }
+
+        render(<AdminParties {...fixture} />);
+
+        expect(
+            within(screen.getByRole('row', { name: /Eric Ndoli/ })).getByText(
+                'Treasury',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(screen.getByRole('row', { name: /Grace Kalisa/ })).getByText(
+                '—',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.queryByText('Analyst')).not.toBeInTheDocument();
+    });
+
     it('says when nothing matches, and without stats', () => {
         render(
             <AdminParties
@@ -448,5 +473,61 @@ describe('Party 360', () => {
         expect(screen.getByText('Expired')).toBeInTheDocument();
         expect(screen.getByText('Rejected')).toBeInTheDocument();
         expect(screen.getByText(/in the Admin app/)).toBeInTheDocument();
+    });
+
+    it('reads a frozen operator once, with who disabled them and their access history', async () => {
+        const fixture = props(staffFixture);
+
+        fixture.party = {
+            id: '7',
+            kind: 'staff',
+            name: 'Jean-Paul M.',
+            subtitle: 'jp@rozine.rw',
+            health: 'frozen',
+            stats: [
+                {
+                    key: 'role',
+                    value: { kind: 'text', value: 'Approver, Treasury' },
+                },
+            ],
+            list: null,
+            history: [
+                {
+                    id: 'h1',
+                    at: '2026-09-22T09:00:00+02:00',
+                    actor: 'Server console',
+                    action: {
+                        code: 'staff.configure',
+                        label: 'Changed staff access',
+                        tone: 'purple',
+                    },
+                    reason: 'Left the operations team.',
+                },
+            ],
+            kyc: null,
+            licence: null,
+            freeze: {
+                actor: 'Server console',
+                at: '2026-09-22T09:00:00+02:00',
+                reason: 'Left the operations team.',
+            },
+            release_blocked: null,
+            restrictions: [],
+            links: { close: { url: '/admin/staff', method: 'get' } },
+            actions: {},
+        };
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+        const drawer = screen.getByRole('dialog', {
+            name: /Jean-Paul M\./,
+        });
+
+        expect(within(drawer).getAllByText('Frozen')).toHaveLength(1);
+        expect(
+            within(drawer).getByText('Approver, Treasury'),
+        ).toBeInTheDocument();
+        await user.click(within(drawer).getByRole('tab', { name: 'Activity' }));
+        expect(
+            within(drawer).getByText('Changed staff access'),
+        ).toBeInTheDocument();
     });
 });

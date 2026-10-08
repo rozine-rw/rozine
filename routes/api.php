@@ -24,7 +24,10 @@ use App\Http\Controllers\InvestorDealsController;
 use App\Http\Controllers\InvestorPrimaryController;
 use App\Http\Controllers\InvestorVerificationController;
 use App\Http\Controllers\InvestorWalletController;
+use App\Http\Controllers\StaffActivityController;
 use App\Http\Controllers\StaffApplicationReleaseController;
+use App\Http\Controllers\StaffDashboardController;
+use App\Http\Controllers\StaffDirectoryController;
 use App\Http\Controllers\StaffDisbursementController;
 use App\Http\Controllers\StaffInvestorDirectoryController;
 use App\Http\Controllers\StaffInvestorVerificationController;
@@ -192,6 +195,12 @@ Route::middleware(['auth:sanctum', 'verified', 'throttle:60,1', 'cache.headers:p
 
 Route::get('v1/staff/investors', [StaffInvestorDirectoryController::class, 'index'])
     ->middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->name('api.v1.staff.investors.index');
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->group(function (): void {
+    Route::get('v1/staff/dashboard', StaffDashboardController::class)->name('api.v1.staff.dashboard');
+    Route::get('v1/staff/staff', [StaffDirectoryController::class, 'index'])->name('api.v1.staff.staff.index');
+    Route::get('v1/staff/activity', [StaffActivityController::class, 'index'])->name('api.v1.staff.events.index');
+});
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/investor-verifications')->name('api.v1.staff.investor-verifications.')->group(function (): void {
     Route::get('/', [StaffInvestorVerificationController::class, 'index'])->name('index');

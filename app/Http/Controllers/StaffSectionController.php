@@ -22,8 +22,7 @@ class StaffSectionController extends Controller
         'notes' => 'notes', 'primary-market' => 'primary_market', 'secondary-market' => 'secondary_market', 'risk' => 'risk',
         'compliance' => 'compliance', 'payments' => 'payments', 'ratings' => 'ratings', 'deferrals' => 'deferrals', 'plus' => 'plus',
         'finance' => 'finance', 'messaging' => 'messaging', 'academies' => 'academies', 'app-control' => 'app_control',
-        'policies' => 'policies', 'system-health' => 'system_health', 'dashboard' => 'today', 'businesses' => 'businesses',
-        'auditors' => 'auditors', 'staff' => 'staff', 'activity' => 'events',
+        'policies' => 'policies', 'system-health' => 'system_health', 'businesses' => 'businesses', 'auditors' => 'auditors',
     ];
 
     /** The role the frame names, most privileged first. */

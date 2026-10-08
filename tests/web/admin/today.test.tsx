@@ -354,16 +354,11 @@ describe('Admin Today', () => {
     it('explains quiet panels', () => {
         const fixture = props(todayFixture);
 
+        const [first, second] = fixture.activity ?? [];
+
         fixture.activity = [
-            {
-                ...fixture.activity[0],
-                at: '2026-09-23T17:39:40+02:00',
-            },
-            {
-                ...fixture.activity[1],
-                id: 'old',
-                at: '2026-09-20T17:39:40+02:00',
-            },
+            { ...first, at: '2026-09-23T17:39:40+02:00' },
+            { ...second, id: 'old', at: '2026-09-20T17:39:40+02:00' },
         ];
         render(<AdminToday {...fixture} />);
 
@@ -384,5 +379,99 @@ describe('Admin Today', () => {
         expect(
             screen.getByText('No applications waiting.'),
         ).toBeInTheDocument();
+    });
+});
+
+describe('Admin Today, live', () => {
+    /** The page as the live Operations Center sends it: every untracked figure and panel null. */
+    const live = (): AdminTodayProps => {
+        const fixture = props(todayFixture);
+
+        return {
+            ...fixture,
+            nav: { ...fixture.nav, ledger: null, events: null },
+            kpis: fixture.kpis.map((kpi) =>
+                [
+                    'treasury_position',
+                    'default_rate',
+                    'secondary_volume',
+                ].includes(kpi.key)
+                    ? { key: kpi.key, value: null }
+                    : kpi,
+            ),
+            attention: fixture.attention.map((tile) =>
+                tile.key === 'notes_late' ? { ...tile, count: null } : tile,
+            ),
+            breaks: null,
+            capital_raised: { ...fixture.capital_raised, bars: [] },
+            portfolio_health: null,
+            activity: null,
+            funnel: fixture.funnel.map((stage) =>
+                stage.stage === 'matured'
+                    ? { ...stage, count: null, width_pct: 0 }
+                    : stage,
+            ),
+            pending_applications: fixture.pending_applications.map((item) => ({
+                ...item,
+                link: null,
+            })),
+            sector_exposure: null,
+            treasury: {
+                ...fixture.treasury,
+                platform_net: null,
+                paid_to_investors: null,
+            },
+            collections: null,
+        };
+    };
+
+    it('reads every figure the platform does not record yet as not tracked', () => {
+        render(<AdminToday {...live()} />);
+
+        expect(screen.getAllByText('Not tracked yet')).toHaveLength(3);
+        expect(screen.getAllByText('—')).toHaveLength(7);
+        expect(screen.queryByText('9 of 165 notes')).not.toBeInTheDocument();
+        expect(
+            screen.getByText('Reconciliation not tracked yet'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText('Ledger fully reconciled'),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getAllByText('Not tracked in the console yet.'),
+        ).toHaveLength(4);
+        expect(
+            screen.getByText('No capital raised in this window.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText('No money has moved yet.'),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows only the links the viewer may open', () => {
+        render(<AdminToday {...live()} />);
+
+        const commands = screen.getByRole('navigation', {
+            name: 'Quick commands',
+        });
+
+        expect(
+            within(commands).getByRole('link', { name: 'Review queue' }),
+        ).toHaveAttribute('href', '/preview/admin-applications');
+        expect(
+            within(commands).queryByRole('link', { name: 'Audit trail' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: 'Open the ledger' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', {
+                name: 'See all activity in the ledger',
+            }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('Akabanga Foods')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: 'Review Akabanga Foods' }),
+        ).not.toBeInTheDocument();
     });
 });

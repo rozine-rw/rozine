@@ -26,7 +26,10 @@ use App\Http\Controllers\PulseController;
 use App\Http\Controllers\RoleBookmarkController;
 use App\Http\Controllers\RoleHomeController;
 use App\Http\Controllers\SiteController;
+use App\Http\Controllers\StaffActivityController;
 use App\Http\Controllers\StaffApplicationReleaseController;
+use App\Http\Controllers\StaffDashboardController;
+use App\Http\Controllers\StaffDirectoryController;
 use App\Http\Controllers\StaffDisbursementController;
 use App\Http\Controllers\StaffHomeController;
 use App\Http\Controllers\StaffInvestorDirectoryController;
@@ -214,6 +217,12 @@ Route::get('admin/{section}', [StaffSectionController::class, 'show'])->whereIn(
 
 Route::get('admin/investors', [StaffInvestorDirectoryController::class, 'index'])
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.investors.index');
+
+Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->group(function (): void {
+    Route::get('admin/dashboard', StaffDashboardController::class)->name('staff.dashboard');
+    Route::get('admin/staff', [StaffDirectoryController::class, 'index'])->name('staff.staff.index');
+    Route::get('admin/activity', [StaffActivityController::class, 'index'])->name('staff.events.index');
+});
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/investor-verifications')->name('staff.investor-verifications.')->group(function (): void {
     Route::get('/', [StaffInvestorVerificationController::class, 'index'])->name('index');
