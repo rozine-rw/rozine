@@ -252,7 +252,22 @@ test('a repayment reminder warns before the due date and escalates after it', fu
         ->and($overdue->subject)->toBe('Repayment overdue: Karongi Freight Ltd')
         ->and($overdueHtml)->toContain('notice-danger')
         ->and($overdueText)->toContain('3 days overdue')
-        ->and($overdueText)->toContain('Pay it now to protect your rating and standing');
+        ->and($overdueText)->toContain('Pay it now to protect your rating and standing')
+        ->and($overdueText)->not->toContain('Late penalty so far');
+});
+
+test('an overdue reminder shows the late penalty built up over the days overdue, as the engine states it', function () {
+    [, $html, $text] = rozineMail(new RepaymentReminder(RepaymentStage::Overdue, 'Karongi Freight Ltd', '2185000', kigali('2026-11-07'), 1, 6, 'https://rozine.test/business', 3, '359'));
+    [, , $upcoming] = rozineMail(new RepaymentReminder(RepaymentStage::Upcoming, 'Karongi Freight Ltd', '2185000', kigali('2026-11-07'), 1, 6, 'https://rozine.test/business', 0, '359'));
+
+    expect($text)->toContain('Late penalty so far: RWF 359')
+        ->and($text)->toContain('Days overdue: 3 days overdue')
+        ->and($text)->toContain('A late penalty is added for every day it stays unpaid')
+        ->and($text)->toMatch('/Amount due: RWF 2,185,000.*Late penalty so far: RWF 359/s')
+        ->and($html)->toContain('notice-danger')
+        ->and($upcoming)->not->toContain('Late penalty so far')
+        ->and(fn () => new RepaymentReminder(RepaymentStage::Overdue, 'Karongi Freight Ltd', '2185000', kigali('2026-11-07'), 1, 6, 'https://rozine.test/business', 3, '359.5')
+            ->toMail(rozineMailRecipient()))->toThrow(InvalidArgumentException::class);
 });
 
 test('the reporting window lists what to submit and when it closes', function () {

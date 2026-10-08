@@ -65,7 +65,7 @@ return [
     'business.application-declined' => fn () => new ApplicationDecided(ApplicationOutcome::Declined, $business, '12000000', 6, $link('/business'), 'monthly cash flow covers 0.9× the repayment; 1.3× is required'),
     'business.disbursement-sent' => fn () => new DisbursementSent($business, '12000000', 'Bank of Kigali ·· 7710', 'RZ-DSB-5K1W8D', '2185000', $on('2026-11-07'), $link('/business')),
     'business.repayment-upcoming' => fn () => new RepaymentReminder(RepaymentStage::Upcoming, $business, '2185000', $on('2026-11-07'), 1, 6, $link('/business')),
-    'business.repayment-overdue' => fn () => new RepaymentReminder(RepaymentStage::Overdue, $business, '2185000', $on('2026-11-07'), 1, 6, $link('/business'), 3),
+    'business.repayment-overdue' => fn () => new RepaymentReminder(RepaymentStage::Overdue, $business, '2185000', $on('2026-11-07'), 1, 6, $link('/business'), 3, '359'),
     'business.reporting-window-open' => fn () => new ReportingWindowOpen($business, 'September 2026', $on('2026-10-07'), $link('/business')),
     'business.raise-expired' => fn () => new BusinessRaiseExpired($business, '12000000', '7450000', $link('/business')),
 

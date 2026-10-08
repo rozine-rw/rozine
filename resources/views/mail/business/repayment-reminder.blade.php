@@ -6,7 +6,11 @@
 {{ $overdueLabel }}
 </x-mail::notice>
 
+@if ($penalised)
+{{ __('The :amount repayment for :business was due on :date. A late penalty is added for every day it stays unpaid; the amount below is what has built up so far. Pay it now to stop the penalty growing and to protect your rating and standing; investors see late payments on their holdings.', ['amount' => $amount, 'business' => $businessName, 'date' => $dueOn]) }}
+@else
 {{ __('The :amount repayment for :business was due on :date. Pay it now to protect your rating and standing; investors see late payments on their holdings.', ['amount' => $amount, 'business' => $businessName, 'date' => $dueOn]) }}
+@endif
 @else
 # {{ __('Repayment coming up') }}
 
