@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\User;
-use Illuminate\Auth\Notifications\VerifyEmail;
+use App\Notifications\Account\OneTimeCode;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Fortify\Features;
 
@@ -42,7 +42,7 @@ test('new users can verify their email using the registration notification', fun
 
     $user = User::query()->where('email', 'test@example.com')->sole();
 
-    Notification::assertSentToTimes($user, VerifyEmail::class, 1);
+    Notification::assertSentToTimes($user, OneTimeCode::class, 1);
 
     $this->get(route('dashboard'))->assertRedirect(route('verification.notice'));
     $this->getJson(route('api.v1.identity.show'))
@@ -50,9 +50,9 @@ test('new users can verify their email using the registration notification', fun
         ->assertJsonPath('data.code', 'EMAIL_VERIFICATION_REQUIRED')
         ->assertJsonPath('data.available_roles', []);
 
-    $notification = Notification::sent($user, VerifyEmail::class)->sole();
+    $notification = Notification::sent($user, OneTimeCode::class)->sole();
 
-    $this->get($notification->toMail($user)->actionUrl)
+    $this->post(route('verification.code'), ['code' => $notification->code])
         ->assertRedirect(route('dashboard', absolute: false));
 
     expect($user->refresh()->hasVerifiedEmail())->toBeTrue();
