@@ -11,8 +11,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * `C3InvestorDealsProps` (investor-primary-v1) for both transports, or `C3InvestorDealProps` when
  * the Resource is for one deal. It shapes already authorized facts and adds real routes only.
  * There is no quote and no checkout until admission exists, and a destination with no live
- * route yet is null. A person still being verified gets the deck behind the verification gate,
- * with no wallet and no wallet links.
+ * route yet is null. Portfolio and Profile are web pages only, so the API carries their links as
+ * null. A person still being verified gets the deck behind the verification gate, with no wallet
+ * and no wallet links.
  */
 class InvestorDealsResource extends JsonResource
 {
@@ -48,6 +49,7 @@ class InvestorDealsResource extends JsonResource
         $focus = $data['focus'];
         // Before verification there is no wallet to show or fund.
         $funded = $data['available'] !== null;
+        $page = fn (string $name): ?array => $request->routeIs('api.*') ? null : self::link($request, $name);
 
         return ['contract_version' => 'investor-primary-v1', 'identity_context_revision' => $data['identity_context_revision'],
             'server_time' => now()->toIso8601String(), 'allowed_actions' => [], 'gate' => self::gate($request, $data),
@@ -58,7 +60,8 @@ class InvestorDealsResource extends JsonResource
                 'link' => $filter($data['sort'], $row['industry'])], $data['industries']),
             'deals' => array_map(fn (array $deal): array => self::withLink($request, $deal), $data['deals']),
             'focus' => $focus === null ? null : self::withLink($request, $focus), 'quote' => null,
-            'links' => ['deals' => $deals(), 'portfolio' => null, 'profile' => null, 'wallet' => $funded ? self::link($request, 'investor.wallet') : null,
+            'links' => ['deals' => $deals(), 'portfolio' => $page('investor.portfolio'), 'profile' => $page('investor.profile'),
+                'wallet' => $funded ? self::link($request, 'investor.wallet') : null,
                 'notifications' => null, 'launcher' => self::link($request, $request->routeIs('api.*') ? 'identity.show' : 'dashboard'),
                 'deposit' => $funded ? self::link($request, 'investor.wallet', ['kind' => 'deposit']) : null, 'checkout' => null]];
     }

@@ -2941,6 +2941,7 @@ const fr: Catalog = {
     'investor.profile.linked.unverified': 'En vérification',
     'investor.profile.linked.none':
         'Aucun compte de versement. Liez-en un pour déposer et recevoir vos versements.',
+    'investor.profile.linked.empty': 'Aucun compte de versement lié.',
     'investor.profile.linked.new': 'Lier un nouveau compte',
     'investor.profile.linked.add': '+ Lier un nouveau compte',
     'investor.profile.linked.type': 'TYPE',

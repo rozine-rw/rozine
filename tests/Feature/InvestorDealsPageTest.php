@@ -59,7 +59,8 @@ it('lists the live publication with allowlisted facts, live fill and no quote or
         ->and($props['sorts'][0])->toBe(['key' => 'all', 'active' => true, 'link' => ['url' => '/investor/deals', 'method' => 'get']])
         ->and($props['industries'][0])->toMatchArray(['industry' => null, 'count' => 1, 'active' => true])
         ->and($props['industries'][1])->toMatchArray(['industry' => $this->evidence['business']['industry'], 'count' => 1, 'active' => false])
-        ->and($props['links'])->toMatchArray(['deals' => ['url' => '/investor/deals', 'method' => 'get'], 'portfolio' => null, 'profile' => null,
+        ->and($props['links'])->toMatchArray(['deals' => ['url' => '/investor/deals', 'method' => 'get'], 'portfolio' => ['url' => '/investor/portfolio', 'method' => 'get'],
+            'profile' => ['url' => '/investor/profile', 'method' => 'get'],
             'notifications' => null, 'checkout' => null, 'wallet' => ['url' => '/investor/wallet', 'method' => 'get'],
             'deposit' => ['url' => '/investor/wallet?kind=deposit', 'method' => 'get']])
         ->and($props['deals'])->toHaveCount(1)
@@ -108,7 +109,8 @@ it('shows live fill after a confirmed purchase, on both transports', function ()
     $api = $this->getJson(route('api.v1.investor.deals', ['identity_context_revision' => 1]))->assertOk()->json('data');
     expect($api['deals'][0]['raised']['amount'])->toBe('15000')
         ->and($api['deals'][0]['links']['detail']['url'])->toBe('/api/v1/investor/deals/'.$this->campaign->id)
-        ->and($api['links']['launcher']['url'])->toBe('/api/v1/identity');
+        ->and($api['links']['launcher']['url'])->toBe('/api/v1/identity')
+        ->and($api['links'])->toMatchArray(['portfolio' => null, 'profile' => null]);
     $this->getJson(route('api.v1.investor.deals', ['sort' => 'newest']))->assertUnprocessable()->assertJsonValidationErrors('sort');
 });
 
