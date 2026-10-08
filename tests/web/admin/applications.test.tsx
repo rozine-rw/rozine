@@ -245,7 +245,8 @@ describe('The live-minimal queue', () => {
             name: 'Console navigation',
         });
 
-        expect(within(nav).getAllByRole('link')).toHaveLength(1);
+        // Applications, plus the sixteen design sections the server links to their pending pages.
+        expect(within(nav).getAllByRole('link')).toHaveLength(17);
         expect(
             within(nav).getByRole('link', { name: /^Applications$/ }),
         ).toHaveAttribute('href', '/admin/applications');
@@ -254,8 +255,16 @@ describe('The live-minimal queue', () => {
         ).toHaveAttribute('aria-current', 'page');
         expect(within(nav).getByText('Capital')).toBeInTheDocument();
 
-        for (const group of ['Accounts', 'Treasury', 'Console']) {
-            expect(within(nav).queryByText(group)).not.toBeInTheDocument();
+        // No Accounts section is served, so its group heading is left out; the design sections are linked.
+        expect(within(nav).queryByText('Accounts')).not.toBeInTheDocument();
+
+        for (const group of [
+            'Oversight',
+            'Treasury',
+            'Engagement',
+            'Console',
+        ]) {
+            expect(within(nav).getByText(group)).toBeInTheDocument();
         }
 
         expect(
@@ -293,6 +302,7 @@ describe('The live-minimal queue', () => {
         page.nav = {
             ...page.nav,
             disbursements: { url: '/admin/disbursements', method: 'get' },
+            payments: { url: '/admin/disbursements', method: 'get' },
         };
         page.badges = { applications: null, disbursements: 3 };
         render(<AdminApplications {...page} />);
@@ -305,7 +315,7 @@ describe('The live-minimal queue', () => {
             within(nav).getByRole('link', { name: /^Applications$/ }),
         ).toBeInTheDocument();
         expect(
-            within(nav).getByRole('link', { name: /^Disbursements\s*3$/ }),
+            within(nav).getByRole('link', { name: /^Payments\s*3$/ }),
         ).toHaveAttribute('href', '/admin/disbursements');
         expect(within(nav).getByText('Treasury')).toBeInTheDocument();
     });

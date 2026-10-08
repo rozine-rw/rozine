@@ -32,7 +32,9 @@ use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StaffApplicationReleaseController;
 use App\Http\Controllers\StaffDisbursementController;
 use App\Http\Controllers\StaffHomeController;
+use App\Http\Controllers\StaffInvestorDirectoryController;
 use App\Http\Controllers\StaffInvestorVerificationController;
+use App\Http\Controllers\StaffSectionController;
 use App\Http\Controllers\StaffStagingMailTesterController;
 use App\Http\Middleware\EnsureStagingMailTesterAccess;
 use Illuminate\Support\Facades\Route;
@@ -222,6 +224,12 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::post('business/{business}/campaigns/{campaign}/cancel', [BusinessPublicationController::class, 'cancel'])
         ->whereUlid(['business', 'campaign'])->name('business.campaigns.cancel');
 });
+
+Route::get('admin/{section}', [StaffSectionController::class, 'show'])->whereIn('section', array_keys(StaffSectionController::SECTIONS))
+    ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.sections.show');
+
+Route::get('admin/investors', [StaffInvestorDirectoryController::class, 'index'])
+    ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.investors.index');
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/investor-verifications')->name('staff.investor-verifications.')->group(function (): void {
     Route::get('/', [StaffInvestorVerificationController::class, 'index'])->name('index');

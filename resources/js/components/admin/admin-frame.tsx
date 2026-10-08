@@ -18,6 +18,119 @@ import type { AdminFrameSection, AdminFrameShellProps } from '@/types/admin';
  * sections have no design glyph; theirs follow the same grid and stroke.
  */
 const GLYPHS: Record<AdminFrameSection, ReactNode> = {
+    notes: (
+        <>
+            <rect x="5" y="3" width="14" height="18" rx="2.5" />
+            <path d="M9 8h6M9 12h6M9 16h6" strokeLinecap="round" />
+        </>
+    ),
+    primary_market: (
+        <path
+            d="M3 17l5-5 4 3 8-8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+    ),
+    secondary_market: (
+        <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
+    ),
+    risk: (
+        <>
+            <path
+                d="M12 3 20 6v5c0 5-4 8-8 10-4-2-8-5-8-10V6Z"
+                strokeLinejoin="round"
+            />
+            <path d="M12 8.5v4M12 15.5v.5" strokeLinecap="round" />
+        </>
+    ),
+    compliance: (
+        <>
+            <path
+                d="M12 3 20 6v5c0 5-4 8-8 10-4-2-8-5-8-10V6Z"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M9 12l2 2 4-4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </>
+    ),
+    payments: (
+        <>
+            <rect x="3" y="6" width="18" height="12" rx="2.5" />
+            <path d="M3 10h18" />
+        </>
+    ),
+    ratings: (
+        <path
+            d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9Z"
+            strokeLinejoin="round"
+        />
+    ),
+    deferrals: (
+        <>
+            <path d="M4 12a8 8 0 1 0 2.3-5.6" strokeLinecap="round" />
+            <path d="M4 4v4h4" strokeLinecap="round" strokeLinejoin="round" />
+        </>
+    ),
+    plus: (
+        <path
+            d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9Z"
+            strokeLinejoin="round"
+        />
+    ),
+    finance: (
+        <path
+            d="M12 3v18M8 7h6a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h7"
+            strokeLinecap="round"
+        />
+    ),
+    messaging: (
+        <>
+            <path d="M4 5h16v11H9l-5 4Z" strokeLinejoin="round" />
+            <path d="M8 9h8M8 12h5" strokeLinecap="round" />
+        </>
+    ),
+    academies: (
+        <>
+            <path d="M2 9l10-5 10 5-10 5Z" strokeLinejoin="round" />
+            <path d="M6 11v5c3 2 9 2 12 0v-5" strokeLinecap="round" />
+        </>
+    ),
+    app_control: (
+        <>
+            <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
+            <circle cx="9" cy="7" r="1.8" />
+            <circle cx="15" cy="12" r="1.8" />
+            <circle cx="8" cy="17" r="1.8" />
+        </>
+    ),
+    engines: (
+        <>
+            <circle cx="12" cy="12" r="3.2" />
+            <path
+                d="M12 4.5V7M12 17v2.5M4.5 12H7M17 12h2.5M6.7 6.7l1.8 1.8M15.5 15.5l1.8 1.8M17.3 6.7l-1.8 1.8M8.5 15.5l-1.8 1.8"
+                strokeLinecap="round"
+            />
+        </>
+    ),
+    policies: (
+        <>
+            <circle cx="12" cy="12" r="3.5" />
+            <path
+                d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"
+                strokeLinecap="round"
+            />
+        </>
+    ),
+    system_health: (
+        <path
+            d="M3 12h4l2-5 4 10 2-5h6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+    ),
     today: (
         <>
             <rect x="3" y="3" width="8" height="8" rx="2" />
@@ -149,35 +262,60 @@ const GLYPHS: Record<AdminFrameSection, ReactNode> = {
 };
 
 /**
- * The console's MVP navigation. The design's other sections (Notes, markets, Reports, Risk,
- * Compliance, Payments, Ratings, Deferrals, Plus, Finance revenue/RAMP, Messaging, Academies,
- * App Control, Engines, Policies, System Health) are post-MVP or Phase 2 screens and are left out
- * rather than shipped as dead links. Book, Exceptions, Reconciliation, Partner coverage and Reports
- * are Phase 2 and optional: they show only when the server sends their link. Ratings in particular can never exist: no staff account may
- * set a rating (MVP-ADMIN-AC-04).
+ * The console's navigation, in the design's groups and order. Sections whose screens are not wired
+ * yet still appear: their link opens the frame with an empty state. Pages the design's sidebar does
+ * not name light the entry they sit under (see LIT_BY): Payments for disbursements, repayments and
+ * the ledger; Notes for the book; Risk Center for exceptions; Finance for reconciliation; Auditors
+ * for partner coverage. Staging mail testers is a staging-only tool the server sends to whoever may
+ * manage it.
  */
 const GROUPS: {
-    group: 'accounts' | 'capital' | 'treasury' | 'console' | null;
+    group:
+        | 'accounts'
+        | 'capital'
+        | 'oversight'
+        | 'treasury'
+        | 'engagement'
+        | 'console'
+        | null;
     items: AdminFrameSection[];
 }[] = [
     { group: null, items: ['today'] },
+    { group: 'accounts', items: ['businesses', 'investors', 'auditors'] },
     {
-        group: 'accounts',
-        items: ['businesses', 'investors', 'auditors', 'coverage'],
+        group: 'capital',
+        items: ['applications', 'notes', 'primary_market', 'secondary_market'],
     },
-    { group: 'capital', items: ['applications', 'book'] },
+    { group: 'oversight', items: ['reports', 'risk', 'compliance'] },
     {
         group: 'treasury',
+        items: ['payments', 'ratings', 'deferrals', 'plus', 'finance'],
+    },
+    { group: 'engagement', items: ['messaging', 'academies'] },
+    {
+        group: 'console',
         items: [
-            'disbursements',
-            'repayments',
-            'reconciliation',
-            'exceptions',
-            'ledger',
+            'app_control',
+            'engines',
+            'policies',
+            'staff',
+            'events',
+            'system_health',
+            'mail_testers',
         ],
     },
-    { group: 'console', items: ['staff', 'events', 'reports', 'mail_testers'] },
 ];
+
+/** Pages that sit under a sidebar entry with another name. */
+const LIT_BY: Partial<Record<AdminFrameSection, AdminFrameSection>> = {
+    disbursements: 'payments',
+    repayments: 'payments',
+    ledger: 'payments',
+    book: 'notes',
+    exceptions: 'risk',
+    reconciliation: 'finance',
+    coverage: 'auditors',
+};
 
 type AdminFrameProps = AdminFrameShellProps & {
     section: AdminFrameSection;
@@ -272,12 +410,14 @@ export function AdminFrame({
                                 </div>
                             )}
                             {served.map(({ key, href }) => {
-                                const active = key === section;
+                                const active =
+                                    key === (LIT_BY[section] ?? section);
                                 const badge =
-                                    key === 'applications' ||
-                                    key === 'disbursements'
-                                        ? (badges[key] ?? 0)
-                                        : 0;
+                                    key === 'applications'
+                                        ? (badges.applications ?? 0)
+                                        : key === 'payments'
+                                          ? (badges.disbursements ?? 0)
+                                          : 0;
 
                                 return (
                                     <Link

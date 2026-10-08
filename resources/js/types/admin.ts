@@ -55,7 +55,41 @@ export type AdminOptionalSection =
     | 'reconciliation'
     | 'coverage'
     | 'reports'
-    | 'mail_testers';
+    | 'mail_testers'
+    | AdminPendingSection;
+
+/**
+ * Design sections the console shows before their screens are wired: each opens the console frame
+ * with its title and an empty state, so the sidebar matches the design while the work lands.
+ */
+export type AdminPendingSection =
+    | 'notes'
+    | 'primary_market'
+    | 'secondary_market'
+    | 'risk'
+    | 'compliance'
+    | 'payments'
+    | 'ratings'
+    | 'deferrals'
+    | 'plus'
+    | 'finance'
+    | 'messaging'
+    | 'academies'
+    | 'app_control'
+    | 'engines'
+    | 'policies'
+    | 'system_health';
+
+export type AdminPendingSectionProps = AdminFrameShellProps & {
+    /** A pending design section, or a designed screen whose live data is still being wired. */
+    section:
+        | AdminPendingSection
+        | 'today'
+        | 'businesses'
+        | 'auditors'
+        | 'staff'
+        | 'events';
+};
 
 /** Every section the frame can mark as current. */
 export type AdminFrameSection = AdminSection | AdminOptionalSection;
@@ -556,6 +590,8 @@ export type PartyDetail = {
     release_blocked: 'LEGAL_HOLD' | null;
     /** Every freeze and release on this account, newest first. */
     restrictions: (TrailEntry & { kind: 'freeze' | 'release' })[];
+    /** An Investor's identity submission, reviewed in the 360; absent for other parties. */
+    verification?: InvestorVerificationReview | null;
     links: { close: RouteLink };
     actions: {
         freeze?: RouteAction;
@@ -1338,7 +1374,10 @@ export type InvestorVerificationDocument = {
     uploaded_at: string;
     /** Whether the submission still points at this upload rather than a replaced one. */
     current: boolean;
+    /** The private file as a download. */
     link: RouteLink;
+    /** The same private file, served for display in place. */
+    view: RouteLink;
 };
 
 export type InvestorVerificationReview = {
