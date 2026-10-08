@@ -121,6 +121,59 @@ describe('Party directories', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('shows a dash where a live Business or partner has nothing recorded', () => {
+        const businesses = props(businessesFixture);
+        const auditors = props(auditorsFixture);
+
+        if (businesses.directory.kind === 'business') {
+            businesses.directory.rows = [
+                {
+                    ...businesses.directory.rows[0],
+                    capacity_used_pct: null,
+                    frozen: false,
+                },
+            ];
+        }
+
+        const { unmount } = render(<AdminParties {...businesses} />);
+
+        expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+        // The head row comes first, then the one Business.
+        expect(
+            within(screen.getAllByRole('row')[1]).getByText('—'),
+        ).toBeInTheDocument();
+        unmount();
+
+        if (auditors.directory.kind === 'auditor') {
+            auditors.directory.rows = [
+                {
+                    ...auditors.directory.rows[0],
+                    firm: null,
+                    district: null,
+                    on_time_pct: null,
+                    share_mtd: null,
+                },
+                {
+                    ...auditors.directory.rows[1],
+                    firm: null,
+                    licence: null,
+                },
+            ];
+        }
+
+        render(<AdminParties {...auditors} />);
+
+        const [, diane, jean] = screen.getAllByRole('row');
+
+        expect(within(diane).getByText('Diane Uwase, CPA')).toBeInTheDocument();
+        expect(within(diane).getByText('PPC-0412')).toBeInTheDocument();
+        expect(within(diane).getAllByText('—')).toHaveLength(3);
+        expect(
+            within(jean).getByText('Jean Habimana, CPA'),
+        ).toBeInTheDocument();
+        expect(within(jean).getByText('Huye')).toBeInTheDocument();
+    });
+
     it('says when nothing matches, and without stats', () => {
         render(
             <AdminParties
@@ -381,6 +434,102 @@ describe('Party 360', () => {
                 name: 'Reject licence for Claude Mukamana, CPA',
             }),
         ).toBeInTheDocument();
+    });
+
+    it('decides a live waiting licence with the revision and submission it answers', async () => {
+        inertia.succeed = true;
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
+        );
+        const detail = party(licenceFixture);
+        const fixture = props(licenceFixture);
+
+        fixture.party = {
+            ...detail,
+            licence: detail.licence && {
+                ...detail.licence,
+                member_id: null,
+                district: null,
+                review: { revision: 3, submission_id: 'sub-a' },
+            },
+            actions: {
+                ...detail.actions,
+                freeze: {
+                    url: '/admin/parties/aud_claude/freeze',
+                    method: 'post',
+                },
+            },
+        };
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const licence = screen.getByRole('region', {
+            name: 'ICPAR licence & verification',
+        });
+
+        expect(within(licence).getAllByText('—')).toHaveLength(2);
+        expect(within(licence).getByText('PPC-0501')).toBeInTheDocument();
+
+        for (const [button, form, reason] of [
+            [
+                '✓ Verify licence',
+                'Verify licence for Claude Mukamana, CPA',
+                'Register checked today.',
+            ],
+            [
+                'Reject',
+                'Reject licence for Claude Mukamana, CPA',
+                'Not on the register.',
+            ],
+        ] as const) {
+            await user.click(
+                within(licence).getByRole('button', { name: button }),
+            );
+            const stage = screen.getByRole('form', { name: form });
+
+            await user.type(within(stage).getByRole('textbox'), reason);
+            await user.click(
+                within(stage).getByRole('button', {
+                    name:
+                        button === 'Reject'
+                            ? 'Reject licence'
+                            : 'Verify licence',
+                }),
+            );
+        }
+
+        await user.click(
+            screen.getByRole('button', { name: 'Freeze account' }),
+        );
+        const freeze = screen.getByRole('form', {
+            name: 'Freeze Claude Mukamana, CPA',
+        });
+
+        await user.type(within(freeze).getByRole('textbox'), 'Fraud alert.');
+        await user.click(
+            within(freeze).getByRole('button', { name: 'Freeze account' }),
+        );
+
+        const answers = {
+            request_id: '1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
+            expected_revision: 3,
+            submission_id: 'sub-a',
+        };
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/parties/aud_claude/licence/verify',
+                data: { reason: 'Register checked today.', ...answers },
+            },
+            {
+                url: '/admin/parties/aud_claude/licence/reject',
+                data: { reason: 'Not on the register.', ...answers },
+            },
+            {
+                url: '/admin/parties/aud_claude/freeze',
+                data: { reason: 'Fraud alert.' },
+            },
+        ]);
     });
 
     it('reads a legal hold, verified and expired licences, and a staff record', async () => {

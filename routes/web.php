@@ -28,6 +28,8 @@ use App\Http\Controllers\RoleBookmarkController;
 use App\Http\Controllers\RoleHomeController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StaffApplicationReleaseController;
+use App\Http\Controllers\StaffAuditorDirectoryController;
+use App\Http\Controllers\StaffBusinessDirectoryController;
 use App\Http\Controllers\StaffDisbursementController;
 use App\Http\Controllers\StaffHomeController;
 use App\Http\Controllers\StaffInvestorDirectoryController;
@@ -218,6 +220,16 @@ Route::get('admin/{section}', [StaffSectionController::class, 'show'])->whereIn(
 
 Route::get('admin/investors', [StaffInvestorDirectoryController::class, 'index'])
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.investors.index');
+
+Route::get('admin/businesses', [StaffBusinessDirectoryController::class, 'index'])
+    ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.index');
+
+Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/auditors')->name('staff.auditors.')->group(function (): void {
+    Route::get('/', [StaffAuditorDirectoryController::class, 'index'])->name('index');
+    foreach (['approve', 'reject'] as $decision) {
+        Route::post('{party}/licence/'.$decision, [StaffAuditorDirectoryController::class, 'decide'])->whereUlid('party')->defaults('decision', $decision)->name('licence.'.$decision);
+    }
+});
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/investor-verifications')->name('staff.investor-verifications.')->group(function (): void {
     Route::get('/', [StaffInvestorVerificationController::class, 'index'])->name('index');

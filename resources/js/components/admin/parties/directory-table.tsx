@@ -152,29 +152,35 @@ function BusinessRow({ row }: { row: BusinessPartyRow }) {
             <span role="cell" className="text-[12.5px] font-bold text-rz-ink">
                 {formatRwfShort(row.raised)}
             </span>
-            <div role="cell" className="flex items-center gap-2">
-                <div
-                    role="progressbar"
-                    aria-label={t('admin.parties.col.capacity')}
-                    aria-valuenow={row.capacity_used_pct}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    className="h-1.5 flex-1 overflow-hidden rounded-[3px] bg-[#e2e8f2] dark:bg-rz-surface-muted"
-                >
-                    <div
-                        className={cn(
-                            'h-full rounded-[3px]',
-                            utilFill(row.capacity_used_pct),
-                        )}
-                        style={{
-                            width: `${Math.min(100, row.capacity_used_pct)}%`,
-                        }}
-                    />
-                </div>
-                <span className="w-[30px] shrink-0 text-[11px] text-rz-muted">
-                    {row.capacity_used_pct}%
+            {row.capacity_used_pct === null ? (
+                <span role="cell" className="text-[12.5px] text-rz-muted">
+                    —
                 </span>
-            </div>
+            ) : (
+                <div role="cell" className="flex items-center gap-2">
+                    <div
+                        role="progressbar"
+                        aria-label={t('admin.parties.col.capacity')}
+                        aria-valuenow={row.capacity_used_pct}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        className="h-1.5 flex-1 overflow-hidden rounded-[3px] bg-[#e2e8f2] dark:bg-rz-surface-muted"
+                    >
+                        <div
+                            className={cn(
+                                'h-full rounded-[3px]',
+                                utilFill(row.capacity_used_pct),
+                            )}
+                            style={{
+                                width: `${Math.min(100, row.capacity_used_pct)}%`,
+                            }}
+                        />
+                    </div>
+                    <span className="w-[30px] shrink-0 text-[11px] text-rz-muted">
+                        {row.capacity_used_pct}%
+                    </span>
+                </div>
+            )}
             <span
                 role="cell"
                 className={cn(
@@ -267,7 +273,9 @@ function AuditorRow({ row }: { row: AuditorPartyRow }) {
             <PartyCell
                 id={row.id}
                 name={row.name}
-                sub={`${row.firm} · ${row.licence}`}
+                sub={[row.firm, row.licence]
+                    .filter((part) => part !== null)
+                    .join(' · ')}
                 link={row.link}
                 avatar="#c2661f"
                 badges={
@@ -279,7 +287,7 @@ function AuditorRow({ row }: { row: AuditorPartyRow }) {
                 }
             />
             <span role="cell" className="text-[12.5px] text-rz-slate">
-                {row.district}
+                {row.district ?? '—'}
             </span>
             <span role="cell" className="text-[12.5px] text-rz-body">
                 {row.active_engagements}
@@ -288,7 +296,7 @@ function AuditorRow({ row }: { row: AuditorPartyRow }) {
                 {row.on_time_pct === null ? '—' : `${row.on_time_pct}%`}
             </span>
             <span role="cell" className="text-[12.5px] font-bold text-rz-ink">
-                {formatRwfShort(row.share_mtd)}
+                {row.share_mtd === null ? '—' : formatRwfShort(row.share_mtd)}
             </span>
             <span role="cell">
                 <Chip

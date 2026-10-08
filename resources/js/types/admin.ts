@@ -484,7 +484,8 @@ export type BusinessPartyRow = {
     active_notes: number;
     investors: number;
     raised: Money;
-    capacity_used_pct: number;
+    /** Null until the platform reads a Business's capacity; the cell shows a dash. */
+    capacity_used_pct: number | null;
     health: 'healthy' | 'watch' | 'distressed';
     frozen: boolean;
     kyc: KycState;
@@ -508,12 +509,14 @@ export type InvestorPartyRow = {
 export type AuditorPartyRow = {
     id: string;
     name: string;
-    firm: string;
-    licence: string;
-    district: string;
+    /** Null where the platform records no firm, licence or district for the partner. */
+    firm: string | null;
+    licence: string | null;
+    district: string | null;
     active_engagements: number;
     on_time_pct: number | null;
-    share_mtd: Money;
+    /** Null until audit fees are paid out and read. */
+    share_mtd: Money | null;
     standing: 'active' | 'pending' | 'licence_expired' | 'suspended';
     frozen: boolean;
     link: RouteLink;
@@ -578,11 +581,14 @@ export type PartyDetail = {
     history: TrailEntry[];
     kyc: { state: KycState; due_on: string | null } | null;
     licence: {
-        member_id: string;
+        /** Null where the platform records no ICPAR member ID or district; the field shows a dash. */
+        member_id: string | null;
         licence: string;
         expires_on: string;
-        district: string;
+        district: string | null;
         state: 'verified' | 'pending' | 'expired';
+        /** The accreditation revision and waiting submission a licence decision answers. */
+        review?: { revision: number; submission_id: string } | null;
     } | null;
     /** The current restriction, attributed; null when the account is open. */
     freeze: Attribution | null;
