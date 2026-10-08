@@ -56,7 +56,8 @@ test('Compliance and superadmin see the designed Investor directory; other staff
             ->where('nav.investors.url', '/admin/investors')->where('party', null));
     $this->actingAs(directoryStaff(['superadmin']))->get(route('staff.investors.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('viewer.role', 'superadmin'));
-    $this->actingAs(directoryStaff(['approver']))->get(route('staff.investors.index'))->assertForbidden();
+    $this->actingAs(directoryStaff(['approver']))->get(route('staff.investors.index'))->assertForbidden()
+        ->assertInertia(fn (Assert $page) => $page->component('identity/access-denied')->where('code', 'STAFF_PERMISSION_REQUIRED'));
     auth()->logout();
     $this->get(route('staff.investors.index'))->assertRedirect(route('login'));
 });

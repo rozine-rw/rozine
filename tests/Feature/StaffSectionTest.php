@@ -34,7 +34,7 @@ test('the frame names the most privileged role, and Payments opens disbursements
 
 test('participants and guests cannot open a console section, and unknown sections do not exist', function (): void {
     $this->actingAs(User::factory()->create(['party_id' => Party::factory()]))->get(route('staff.sections.show', ['section' => 'notes']))
-        ->assertForbidden();
+        ->assertForbidden()->assertInertia(fn (Assert $page) => $page->component('identity/access-denied')->where('code', 'STAFF_ACCESS_REQUIRED'));
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/everything')->assertNotFound();
     auth()->logout();
     $this->get(route('staff.sections.show', ['section' => 'notes']))->assertRedirect(route('login'));
