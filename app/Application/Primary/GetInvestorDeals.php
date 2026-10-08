@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace App\Application\Primary;
 
 use App\Application\Business\Contracts\InvestorDealCatalogue;
-use App\Application\Identity\GetInvestorVerification;
-use App\Application\Wallet\Contracts\WalletStore;
-use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use Brick\Math\BigDecimal;
 
@@ -28,7 +25,7 @@ final class GetInvestorDeals
 {
     public const array SORTS = ['all', 'top_interest', 'top_rated'];
 
-    public function __construct(private WalletStore $wallets, private InvestorDealCatalogue $catalogue, private GetInvestorVerification $verification) {}
+    public function __construct(private GetInvestorViewer $viewer, private InvestorDealCatalogue $catalogue) {}
 
     /**
      * @param  array{sort?: string|null, industry?: string|null, deal?: string|null}  $query
@@ -70,29 +67,17 @@ final class GetInvestorDeals
 
     /**
      * A verified Investor's wallet facts or, for a person whose identity is still unverified, no
-     * wallet and whether their submission is with Compliance. Any other refusal stands.
+     * wallet and whether their submission is with Compliance (`GetInvestorViewer`).
      *
      * @return array{identity_context_revision: int, restricted: bool, available: array{currency: string, amount: string}|null, verification: 'required'|'pending'|null}
      */
     private function viewer(int $userId, ?int $contextRevision): array
     {
-        try {
-            $wallet = $this->wallets->page($userId, $contextRevision, []);
-        } catch (IdentityViolation $violation) {
-            if ($violation->reason !== 'IDENTITY_VERIFICATION_REQUIRED') {
-                throw $violation;
-            }
-            $submission = $this->verification->handle($userId);
-            if ($submission['verified']) {
-                throw $violation;
-            }
+        $viewer = $this->viewer->handle($userId, $contextRevision);
+        $wallet = $viewer['wallet'];
 
-            return ['identity_context_revision' => $submission['identity_context_revision'], 'restricted' => false, 'available' => null,
-                'verification' => $submission['status'] === 'submitted' ? 'pending' : 'required'];
-        }
-
-        return ['identity_context_revision' => (int) $wallet['identity_context_revision'], 'restricted' => $wallet['wallet']['status'] === 'restricted',
-            'available' => $wallet['wallet']['breakdown']['available'], 'verification' => null];
+        return ['identity_context_revision' => $viewer['identity_context_revision'], 'restricted' => $wallet !== null && $wallet['wallet']['status'] === 'restricted',
+            'available' => $wallet === null ? null : $wallet['wallet']['breakdown']['available'], 'verification' => $viewer['verification']];
     }
 
     /**

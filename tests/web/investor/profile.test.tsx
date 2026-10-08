@@ -171,6 +171,51 @@ describe('Profile', () => {
         ).toHaveLength(0);
     });
 
+    it('lists only the rows and commands the server links, as the live profile sends them', () => {
+        setWide(true);
+        const props = profile();
+
+        props.links.verification = null;
+        props.links.terms = null;
+        props.links.privacy = null;
+        props.actions.link_account = null;
+        props.linked = {
+            accounts: profile().linked!.accounts.map((account) => ({
+                ...account,
+                unlink: null,
+            })),
+            banks: [],
+        };
+        const { unmount } = render(<InvestorProfile {...props} />);
+        const menu = screen.getByRole('navigation', { name: 'Profile menu' });
+
+        expect(
+            within(menu)
+                .getAllByRole('link')
+                .map((link) => link.textContent),
+        ).toEqual(['Linked accounts›', 'Statements›']);
+        expect(screen.getByText('+250 788 ···· 456')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Unlink' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: '+ Link a new account' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('form', { name: 'Link a new account' }),
+        ).not.toBeInTheDocument();
+        unmount();
+
+        props.linked = { accounts: [], banks: [] };
+        render(<InvestorProfile {...props} />);
+        expect(
+            screen.getByText('No payout account linked yet.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('form', { name: 'Link a new account' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('lists statements, marks an open period and never asks for a tax identifier', () => {
         render(<InvestorProfile {...profile(statementsFixture)} />);
 

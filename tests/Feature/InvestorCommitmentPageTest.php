@@ -50,13 +50,16 @@ it('renders a confirmed commitment from its retained facts and recorded confirma
         ->and($props['links']['operation']['url'])->toContain('/investor/deals/'.$this->campaign->id.'/primary-operations/{request_id}')
         ->toContain('command=primary.cancel')->toContain('reservation='.$this->root->id)
         ->and($props['links']['close'])->toBe(['url' => '/investor/wallet', 'method' => 'get'])
-        ->and($props['links']['deals'])->toBe(['url' => '/investor/deals', 'method' => 'get']);
+        ->and($props['links']['deals'])->toBe(['url' => '/investor/deals', 'method' => 'get'])
+        ->and($props['links'])->toMatchArray(['portfolio' => ['url' => '/investor/portfolio', 'method' => 'get'],
+            'profile' => ['url' => '/investor/profile', 'method' => 'get'], 'notifications' => null]);
 
     Sanctum::actingAs($this->investor['user'], ['investor:read']);
     $api = $this->getJson(route('api.v1.investor.commitments.show', ['commitment' => $this->commitment, 'identity_context_revision' => 1]))
         ->assertOk()->json('data');
     expect($api['commitment']['link']['url'])->toBe('/api/v1/investor/commitments/'.$this->commitment)
-        ->and($api['commitment']['state'])->toBe('confirmed')->and($api['identity_context_revision'])->toBe(1);
+        ->and($api['commitment']['state'])->toBe('confirmed')->and($api['identity_context_revision'])->toBe(1)
+        ->and($api['links'])->toMatchArray(['portfolio' => null, 'profile' => null]);
 });
 
 it('shows an Investor-cancelled commitment with its refund receipt', function (): void {
