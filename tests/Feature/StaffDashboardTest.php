@@ -43,7 +43,12 @@ function boardSubmission(User $user): void
     $step(app(SubmitInvestorVerification::class)->handle($user->id, $user->context_revision, $revision, (string) Str::uuid()));
 }
 
-/** @return list<string> one campaign whose two purchases issued, with each Holding's issue time */
+/**
+ * One campaign whose two purchases issued, with each Holding's issue time.
+ *
+ * @param  list<string>  $issuedAt
+ * @return list<string>
+ */
 function boardIssued(array $issuedAt): array
 {
     ['campaign' => $campaign, 'commitments' => $commitments] = PrimaryHoldingFixture::committed();

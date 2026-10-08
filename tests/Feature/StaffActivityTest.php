@@ -8,11 +8,15 @@ use App\Models\IdentityAuditEvent;
 use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 
-/** @param  list<string>  $roles */
+/**
+ * @param  list<string>  $roles
+ * @param  array<string, mixed>  $attributes
+ */
 function trailStaff(array $roles, array $attributes = []): User
 {
     $user = User::factory()->withTwoFactor()->create($attributes);
@@ -77,7 +81,7 @@ test('rows come from the identity log and the command journal, newest first, wit
             ->where('events.5.action.label', 'Changed a membership')->where('events.5.target', 'Aline Uwase')->where('events.5.source', 'Admin console')
             ->where('events.5.reason', 'Identity documents matched.')
             ->where('events.5.changes', [['field' => 'status', 'before' => 'pending', 'after' => 'active']])
-            ->where('events', fn ($events): bool => collect($events)->pluck('action.code')->doesntContain('bookmark.save')));
+            ->where('events', fn (Collection $events): bool => $events->pluck('action.code')->doesntContain('bookmark.save')));
 
     $this->actingAs($officer)->get(route('staff.events.index', ['q' => 'eric']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('total', 3)->where('search', 'eric')->where('filters.q', 'eric'));

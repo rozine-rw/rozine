@@ -6,11 +6,15 @@ use App\Application\Identity\ConfigureStaffAccess;
 use App\Models\Party;
 use App\Models\StaffAccount;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 
-/** @param  list<string>  $roles */
+/**
+ * @param  list<string>  $roles
+ * @param  array<string, mixed>  $attributes
+ */
 function rosterStaff(array $roles, array $attributes = []): User
 {
     $user = User::factory()->withTwoFactor()->create($attributes);
@@ -50,8 +54,8 @@ test('rows carry real roles and account states, and the chips and search count t
                 ['key' => 'active', 'count' => 4, 'link' => ['url' => '/admin/staff?chip=active', 'method' => 'get'], 'active' => false],
                 ['key' => 'frozen', 'count' => 1, 'link' => ['url' => '/admin/staff?chip=frozen', 'method' => 'get'], 'active' => false]])
             ->where('shown', 5)->where('total', 5)->where('nav.events.url', '/admin/activity')
-            ->where('directory.rows', function ($rows) use ($viewer, $eric, $frozen, $treasury): bool {
-                $rows = collect($rows)->keyBy('id');
+            ->where('directory.rows', function (Collection $rows) use ($viewer, $eric, $frozen, $treasury): bool {
+                $rows = $rows->keyBy('id');
 
                 return $rows[(string) $viewer->id]['role'] === 'compliance' && $rows[(string) $viewer->id]['you'] === true
                     && $rows[(string) $eric->id]['role'] === 'approver' && $rows[(string) $eric->id]['you'] === false
