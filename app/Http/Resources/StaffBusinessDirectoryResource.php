@@ -28,9 +28,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class StaffBusinessDirectoryResource extends JsonResource
 {
-    /** Health chips wait for an arrears and freeze read. */
-    private const CHIPS = ['all'];
-
     /** The frame names the most privileged role the viewer holds. */
     private const ROLES = ['superadmin', 'compliance', 'approver', 'analyst'];
 
@@ -69,8 +66,8 @@ class StaffBusinessDirectoryResource extends JsonResource
                 ['key' => 'avg_rating', 'value' => ['kind' => 'text', 'value' => $page['average_score'] === null ? '—' : $page['average_score'].' / 5']],
                 ['key' => 'active_notes', 'value' => ['kind' => 'count', 'value' => $page['active_notes']]],
                 ['key' => 'capital_raised', 'value' => ['kind' => 'money', 'value' => $money($page['raised'])]]],
-            'chips' => array_map(fn (string $chip): array => ['key' => $chip, 'count' => $counts[$chip], 'link' => $link([...$filters, ...($chip === 'all' ? [] : ['chip' => $chip])]),
-                'active' => $chip === $page['chip']], self::CHIPS),
+            // Health chips wait for an arrears and freeze read, so All is the only one.
+            'chips' => [['key' => 'all', 'count' => $counts['all'], 'link' => $link($filters), 'active' => true]],
             'filters' => [...$sectors, ['key' => 'sort', 'value' => $page['sort'],
                 'options' => [['value' => 'raised', 'label' => 'Sort: Capital raised'], ['value' => 'name', 'label' => 'Sort: Name']]]],
             'shown' => count($page['rows']), 'total' => $page['matching'],

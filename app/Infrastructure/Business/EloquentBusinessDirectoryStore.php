@@ -85,20 +85,22 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
 
     /**
      * Every Business whose authority is recorded, one row each, with its figures. KYC is verified
-     * once the identity writer has verified the Business's own Party.
+     * once the identity writer has verified the Business's own Party, as of the application clock:
+     * a future-dated verification is not yet verified. The clock is bound rather than read from
+     * PostgreSQL's now(), which is the start of the surrounding transaction.
      */
     private function businesses(): Builder
     {
         return DB::table('business_profiles AS bp')->join('parties', 'parties.id', '=', 'bp.entity_party_id')
             ->selectRaw("bp.id AS business_id, bp.profile->>'name' AS name, bp.profile->>'industry' AS sector, bp.profile->>'district' AS district,
                 bp.profile->>'company_code' AS company_code,
-                CASE WHEN parties.verified_at IS NOT NULL AND parties.verified_at <= now() THEN 'verified' ELSE 'pending' END AS kyc,
+                CASE WHEN parties.verified_at IS NOT NULL AND parties.verified_at <= ? THEN 'verified' ELSE 'pending' END AS kyc,
                 (SELECT count(*) FROM business_campaigns c WHERE c.business_id = bp.id
                     AND NOT EXISTS (SELECT 1 FROM business_campaign_closures x WHERE x.business_campaign_id = c.id)) AS active_notes,
                 (SELECT count(DISTINCT r.party_id) FROM primary_campaign_fundings f JOIN primary_funding_commitments fc ON fc.funding_id = f.id
                     JOIN primary_commitments pc ON pc.id = fc.commitment_id JOIN primary_reservations r ON r.id = pc.primary_reservation_id
                     WHERE f.business_id = bp.id) AS investors,
-                coalesce((SELECT sum(f.principal) FROM primary_campaign_fundings f WHERE f.business_id = bp.id), 0) AS raised");
+                coalesce((SELECT sum(f.principal) FROM primary_campaign_fundings f WHERE f.business_id = bp.id), 0) AS raised", [now()]);
     }
 
     /**

@@ -187,3 +187,12 @@ test('the directory answers over the API with the read ability and links API rou
     Sanctum::actingAs($this->analyst, ['staff:investors:read']);
     $this->getJson('/api/v1/staff/businesses')->assertForbidden();
 });
+
+test('a Business verified for a later moment still reads as pending its KYC', function (): void {
+    $campaign = businessDirectoryNote('Isoko Farms', 'Agriculture', ['title' => 'Seed stock']);
+    $profile = BusinessProfile::query()->whereKey($campaign->business_id)->sole();
+    Party::query()->whereKey($profile->entity_party_id)->update(['verified_at' => now()->addDay()]);
+
+    $this->actingAs($this->analyst)->get(route('staff.businesses.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('directory.rows.0.kyc', 'pending'));
+});
