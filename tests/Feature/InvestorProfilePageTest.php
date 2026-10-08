@@ -77,7 +77,8 @@ it('shows a person still being verified where their verification stands, with no
 ]);
 
 it('keeps the profile from anyone without current Investor authority', function (): void {
-    $this->actingAs(User::factory()->create())->get(route('investor.profile'))->assertForbidden()->assertJsonPath('code', 'IDENTITY_NOT_LINKED');
+    $this->actingAs(User::factory()->create())->get(route('investor.profile'))->assertForbidden()
+        ->assertInertia(fn (Assert $page) => $page->component('identity/access-denied')->where('code', 'IDENTITY_NOT_LINKED'));
 
     $staff = User::factory()->withTwoFactor()->create();
     StaffAccount::factory()->create(['user_id' => $staff->id]);
