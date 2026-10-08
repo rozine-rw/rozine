@@ -43,7 +43,7 @@ export default function AdminInvestorVerifications(
 
     return (
         <AdminFrame
-            section="investors"
+            section="compliance"
             {...props}
             searchQuery={SEARCH_QUERY}
             overlay={
@@ -68,7 +68,7 @@ export default function AdminInvestorVerifications(
                 }))}
             />
             {props.entries.length === 0 && props.search !== '' ? (
-                <SearchEmpty section="investors" term={props.search} />
+                <SearchEmpty section="compliance" term={props.search} />
             ) : (
                 <TableCard
                     label={t('admin.kyc.table')}
