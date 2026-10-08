@@ -75,6 +75,10 @@
                 "url": "/admin/app-control",
                 "method": "get"
             },
+            "engines": {
+                "url": "/admin/engines",
+                "method": "get"
+            },
             "policies": {
                 "url": "/admin/policies",
                 "method": "get"

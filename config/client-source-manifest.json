@@ -309,6 +309,7 @@
         "resources/js/components/admin/repayments/panels.tsx",
         "resources/js/components/admin/repayments/repayment-drawer.tsx",
         "resources/js/components/admin/search-empty.tsx",
+        "resources/js/components/admin/section-designs.ts",
         "resources/js/components/admin/today/today-panels.tsx",
         "resources/js/components/admin/today/today-queues.tsx",
         "resources/js/components/admin/trail-list.tsx",
@@ -664,10 +665,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 636,
+        "totalTrackedSources": 637,
         "generated": 242,
         "declarationOnly": 18,
-        "authoredExecutable": 376
+        "authoredExecutable": 377
     },
-    "coverageSetSha256": "c66697a2eb4561798f8e540e8ef7df0c8755d5be496290ff13bb2a10a636226b"
+    "coverageSetSha256": "7d850a6835a5aa7d11774bd7f61c93e6cefe342033c6379f1cb2c32702cc46c3"
 }

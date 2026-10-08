@@ -101,6 +101,10 @@
                 "url": "/preview/admin-section",
                 "method": "get"
             },
+            "engines": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
             "policies": {
                 "url": "/preview/admin-section",
                 "method": "get"

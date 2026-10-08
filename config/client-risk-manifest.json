@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "aabfc1ab7330a12118a8bcaaac488651d5021c7f957f500d3a8e11cca337470f",
-    "coverageSetSha256": "c66697a2eb4561798f8e540e8ef7df0c8755d5be496290ff13bb2a10a636226b",
+    "sourceManifestSha256": "ecfd308b2739f65c78b10c9fcfedd546623a1cee7bacf1e429a24f26a1158041",
+    "coverageSetSha256": "7d850a6835a5aa7d11774bd7f61c93e6cefe342033c6379f1cb2c32702cc46c3",
     "thresholds": {
         "critical": {
             "global": {
@@ -71,6 +71,7 @@
         "resources/js/components/admin/repayments/panels.tsx",
         "resources/js/components/admin/repayments/repayment-drawer.tsx",
         "resources/js/components/admin/search-empty.tsx",
+        "resources/js/components/admin/section-designs.ts",
         "resources/js/components/admin/today/today-panels.tsx",
         "resources/js/components/admin/today/today-queues.tsx",
         "resources/js/components/admin/trail-list.tsx",

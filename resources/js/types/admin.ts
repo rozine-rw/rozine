@@ -76,6 +76,7 @@ export type AdminPendingSection =
     | 'messaging'
     | 'academies'
     | 'app_control'
+    | 'engines'
     | 'policies'
     | 'system_health';
 
