@@ -11,7 +11,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * `C3InvestorCommitmentProps` (investor-primary-v1) for both transports. It shapes already
  * authorized facts and adds real routes only. No cancel action is offered yet: the server cannot
  * yet tell a raising campaign from a funded one here, so the cancel command alone decides.
- * A destination with no live route yet is null.
+ * A destination with no live route yet is null; Portfolio and Profile are web pages only, so the
+ * API carries their links as null.
  */
 class InvestorCommitmentResource extends JsonResource
 {
@@ -23,11 +24,13 @@ class InvestorCommitmentResource extends JsonResource
         $context = $data['identity_context_revision'];
         $commitment = $data['commitment'];
         $wallet = self::link($request, 'investor.wallet');
+        $page = fn (string $name): ?array => $request->routeIs('api.*') ? null : self::link($request, $name);
 
         return ['contract_version' => 'investor-primary-v1', 'identity_context_revision' => $context, 'server_time' => now()->toIso8601String(),
             'allowed_actions' => [], 'commitment' => $commitment === null ? null : self::commitment($request, $context, $commitment),
             'refusal' => $data['refusal'],
-            'links' => ['deals' => self::link($request, 'investor.deals'), 'portfolio' => null, 'profile' => null, 'wallet' => $wallet, 'notifications' => null,
+            'links' => ['deals' => self::link($request, 'investor.deals'), 'portfolio' => $page('investor.portfolio'), 'profile' => $page('investor.profile'),
+                'wallet' => $wallet, 'notifications' => null,
                 'launcher' => self::link($request, $request->routeIs('api.*') ? 'identity.show' : 'dashboard'), 'close' => $wallet,
                 'operation' => $commitment === null ? null : self::lookup($request, $context, $commitment)]];
     }
