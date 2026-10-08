@@ -6,7 +6,6 @@ use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Domain\Operations\CommandRejection;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
-use Mockery\MockInterface;
 use Tests\Support\AuditSealingFixture;
 use Tests\Support\BusinessAuthorityFixture as AuthorityFixture;
 use Tests\Support\PrimaryReservationFixture;
@@ -165,7 +164,7 @@ it('lists the latest sealed monthly report in audit until it is published, openi
 
 it('does not list a report its own page cannot open', function (): void {
     [$authority, $business] = ($this->business)();
-    $this->mock(AuditReportPublicationStore::class, function (MockInterface $mock): void {
+    $this->mock(AuditReportPublicationStore::class, function ($mock): void {
         $mock->shouldReceive('latestForBusiness')->andReturn(['id' => '01K00000000000000000000000', 'kind' => 'monthly', 'status' => 'pending']);
         $mock->shouldReceive('get')->once()->andThrow(new CommandRejection('AUDIT_SIGNATURE_UNAVAILABLE', 503));
     });
