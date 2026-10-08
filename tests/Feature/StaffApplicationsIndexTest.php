@@ -45,7 +45,7 @@ it('projects the same retained queue and current release gates through web and A
             ->where('applications.0.rate_pct', BusinessApplicationSubmission::query()->where('business_application_id', $id)->firstOrFail()->payload['review']['quote']['rate_pct'])
             ->where('applications.0.state', 'submitted')->where('applications.0.capacity_used_pct', null)
             ->where('applications.0.approve_link', null)->where('tabs.0.count', 1)->where('tabs.1.count', 0)
-            ->where('nav.today', null)->where('nav.businesses', null)->where('policy', [])
+            ->where('nav.today.url', '/admin/dashboard')->where('nav.businesses.url', '/admin/businesses')->where('nav.ledger', null)->where('policy', [])
             ->where('review.release.allowed_actions', ['application.release'])->where('review.capacity.outstanding', null)
             ->where('review.links.business', null)->where('review.audit.state', null)->where('review.factors', [])
             ->missing('review.acceptance')->missing('review.actor_user_id')->missing('review.application.draft')->missing('roles'));

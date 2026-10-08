@@ -50,7 +50,8 @@ it('renders the live wallet with real routes, the literal lookup token and nothi
         ->and($props['contract_version'])->toBe('investor-primary-v1')->and($props['identity_context_revision'])->toBe(1)
         ->and($props['allowed_actions'])->toBe(['wallet.deposit'])->and($props)->not->toHaveKey('preview_outcome')
         ->and($json)->not->toContain('/preview/')->not->toContain('syn_')
-        ->and($props['links'])->toMatchArray(['deals' => ['url' => '/investor/deals', 'method' => 'get'], 'portfolio' => null, 'profile' => null, 'notifications' => null, 'link_account' => null,
+        ->and($props['links'])->toMatchArray(['deals' => ['url' => '/investor/deals', 'method' => 'get'], 'portfolio' => ['url' => '/investor/portfolio', 'method' => 'get'],
+            'profile' => ['url' => '/investor/profile', 'method' => 'get'], 'notifications' => null, 'link_account' => null,
             'wallet' => ['url' => '/investor/wallet', 'method' => 'get'], 'launcher' => ['url' => '/dashboard', 'method' => 'get'],
             'close' => ['url' => '/investor/wallet', 'method' => 'get'], 'deposit' => ['url' => '/investor/wallet?kind=deposit', 'method' => 'get'],
             'operation' => ['url' => '/investor/wallet-operations/{request_id}?command=wallet.deposit&identity_context_revision=1', 'method' => 'get']])
@@ -241,6 +242,7 @@ it('serves the same Resource over the API under investor token abilities only', 
     Sanctum::actingAs($fixture['user'], ['investor:read']);
     $read = $this->getJson(route('api.v1.investor.wallet'))->assertOk()->json('data');
     expect($read['allowed_actions'])->toBe([])->and($read['links']['launcher'])->toBe(['url' => '/api/v1/identity', 'method' => 'get'])
+        ->and($read['links'])->toMatchArray(['portfolio' => null, 'profile' => null])
         ->and($read['links']['operation']['url'])->toBe('/api/v1/investor/wallet-operations/{request_id}?command=wallet.deposit&identity_context_revision=1')
         ->and($read['actions']['deposit']['url'])->toBe('/api/v1/investor/wallet/deposits');
     $this->postJson(route('api.v1.investor.wallet.deposit'), walletDepositBody($fixture))->assertForbidden();

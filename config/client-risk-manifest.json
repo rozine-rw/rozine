@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "1e982288063259806224de278eb46ba2298d3d6f41ae863371952662ea8afcdf",
-    "coverageSetSha256": "bb25ab0eb44e43d7f1f980267b099e28d18bbbbc180b7938ac552f64971936cf",
+    "sourceManifestSha256": "82f90f4397f9e125525e6f07b654f6cf20f152885e0063eb174afea9fb928831",
+    "coverageSetSha256": "7d850a6835a5aa7d11774bd7f61c93e6cefe342033c6379f1cb2c32702cc46c3",
     "thresholds": {
         "critical": {
             "global": {
@@ -61,6 +61,8 @@
         "resources/js/components/admin/drawer.tsx",
         "resources/js/components/admin/format.ts",
         "resources/js/components/admin/kind-meta.ts",
+        "resources/js/components/admin/kyc-documents.tsx",
+        "resources/js/components/admin/kyc-review.tsx",
         "resources/js/components/admin/ledger/entry-drawer.tsx",
         "resources/js/components/admin/maker-checker.tsx",
         "resources/js/components/admin/parties/directory-table.tsx",
@@ -69,6 +71,7 @@
         "resources/js/components/admin/repayments/panels.tsx",
         "resources/js/components/admin/repayments/repayment-drawer.tsx",
         "resources/js/components/admin/search-empty.tsx",
+        "resources/js/components/admin/section-designs.ts",
         "resources/js/components/admin/today/today-panels.tsx",
         "resources/js/components/admin/today/today-queues.tsx",
         "resources/js/components/admin/trail-list.tsx",
@@ -365,6 +368,7 @@
         "resources/js/pages/admin/reconciliation.tsx",
         "resources/js/pages/admin/repayments.tsx",
         "resources/js/pages/admin/reports.tsx",
+        "resources/js/pages/admin/section.tsx",
         "resources/js/pages/admin/staging-mail-testers.tsx",
         "resources/js/pages/admin/today.tsx",
         "resources/js/pages/audit/verify-seal.tsx",

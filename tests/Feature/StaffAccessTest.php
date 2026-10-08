@@ -142,7 +142,7 @@ it('rolls back staff grants if immutable audit persistence fails', function (): 
 it('links the staff home and each console page to exactly the sections the account may open', function (string $role, array $sections): void {
     $user = User::factory()->withTwoFactor()->create();
     app(ConfigureStaffAccess::class)->handle($user->id, true, 'Console sections.', (string) Str::uuid(), [$role]);
-    $urls = ['investors' => route('staff.investor-verifications.index', [], false), 'applications' => route('staff.applications.index', [], false),
+    $urls = ['investors' => route('staff.investors.index', [], false), 'applications' => route('staff.applications.index', [], false),
         'disbursements' => route('staff.disbursements.index', [], false)];
     $expected = array_map(fn (string $section): ?array => in_array($section, $sections, true) ? ['url' => $urls[$section], 'method' => 'get'] : null,
         array_combine(array_keys($urls), array_keys($urls)));

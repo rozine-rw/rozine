@@ -117,4 +117,23 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Markdown Mail Settings
+    |--------------------------------------------------------------------------
+    |
+    | Markdown mail renders through the Rozine components and theme in
+    | resources/views/vendor/mail, so every message matches the product's
+    | design tokens.
+    |
+    */
+
+    'markdown' => [
+        'theme' => 'rozine',
+
+        'paths' => [
+            resource_path('views/vendor/mail'),
+        ],
+    ],
+
 ];

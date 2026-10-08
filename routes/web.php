@@ -17,9 +17,12 @@ use App\Http\Controllers\BusinessRepaymentController;
 use App\Http\Controllers\BusinessWalletController;
 use App\Http\Controllers\ChangeFeedController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmailVerificationCodeController;
 use App\Http\Controllers\IdentityManagementController;
 use App\Http\Controllers\InvestorDealsController;
+use App\Http\Controllers\InvestorPortfolioController;
 use App\Http\Controllers\InvestorPrimaryController;
+use App\Http\Controllers\InvestorProfileController;
 use App\Http\Controllers\InvestorVerificationController;
 use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\PulseController;
@@ -29,7 +32,9 @@ use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StaffApplicationReleaseController;
 use App\Http\Controllers\StaffDisbursementController;
 use App\Http\Controllers\StaffHomeController;
+use App\Http\Controllers\StaffInvestorDirectoryController;
 use App\Http\Controllers\StaffInvestorVerificationController;
+use App\Http\Controllers\StaffSectionController;
 use App\Http\Controllers\StaffStagingMailTesterController;
 use App\Http\Middleware\EnsureStagingMailTesterAccess;
 use Illuminate\Support\Facades\Route;
@@ -46,6 +51,9 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::post('{business}/audit-reports/{report}/dispute', [AuditDisputeController::class, 'dispute'])->whereUlid(['business', 'report'])->name('dispute');
     Route::get('{business}/audit-reports/{report}/dispute/proofs/{proof}', [AuditDisputeController::class, 'proof'])->whereUlid(['business', 'report', 'proof'])->defaults('review_role', 'business')->name('disputes.proofs.show');
 });
+
+Route::post('email/verify-code', [EmailVerificationCodeController::class, 'store'])
+    ->middleware(['auth', 'throttle:6,1'])->name('verification.code');
 
 Route::get('pulse', [PulseController::class, 'index'])->name('pulse');
 
@@ -79,6 +87,9 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
     Route::post('verification/steps', [InvestorVerificationController::class, 'save'])->name('verification.save');
     Route::post('verification/documents', [InvestorVerificationController::class, 'upload'])->name('verification.upload');
     Route::post('verification/submit', [InvestorVerificationController::class, 'submit'])->name('verification.submit');
+    Route::get('verified', [InvestorProfileController::class, 'verified'])->name('verified');
+    Route::get('portfolio', [InvestorPortfolioController::class, 'show'])->name('portfolio');
+    Route::get('profile', [InvestorProfileController::class, 'show'])->name('profile');
     Route::get('deals/{campaign}', [InvestorDealsController::class, 'show'])->whereUlid('campaign')->name('deals.show');
     Route::get('wallet', [InvestorWalletController::class, 'show'])->name('wallet');
     Route::post('wallet/deposits', [InvestorWalletController::class, 'deposit'])->name('wallet.deposit');
@@ -206,6 +217,12 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::post('business/{business}/campaigns/{campaign}/cancel', [BusinessPublicationController::class, 'cancel'])
         ->whereUlid(['business', 'campaign'])->name('business.campaigns.cancel');
 });
+
+Route::get('admin/{section}', [StaffSectionController::class, 'show'])->whereIn('section', array_keys(StaffSectionController::SECTIONS))
+    ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.sections.show');
+
+Route::get('admin/investors', [StaffInvestorDirectoryController::class, 'index'])
+    ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.investors.index');
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/investor-verifications')->name('staff.investor-verifications.')->group(function (): void {
     Route::get('/', [StaffInvestorVerificationController::class, 'index'])->name('index');

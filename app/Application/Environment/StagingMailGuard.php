@@ -8,7 +8,6 @@ use App\Application\Environment\Contracts\StagingMailTesterStore;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\RateLimiter;
 use Symfony\Component\Mime\Address;
 
 /**
@@ -20,10 +19,9 @@ use Symfony\Component\Mime\Address;
  */
 class StagingMailGuard
 {
-    private const string LIMITER_KEY = 'staging-mail';
-
     public function __construct(
         private readonly Repository $config,
+        private readonly StagingMailAllowance $allowance,
         private readonly StagingMailTesterStore $testers,
         private readonly EnvironmentIsolation $isolation,
     ) {}
@@ -44,13 +42,11 @@ class StagingMailGuard
             }
         }
 
-        if (RateLimiter::tooManyAttempts(self::LIMITER_KEY, $this->config->integer('isolation.staging_mail.hourly_limit'))) {
-            Log::warning('Staging mail withheld: the hourly allowance is spent.');
+        if (! $this->allowance->reserve()) {
+            Log::warning('Staging mail withheld: the hourly allowance is spent or could not be reserved.');
 
             return false;
         }
-
-        RateLimiter::hit(self::LIMITER_KEY, 3600);
 
         $message->from(new Address($this->config->string('mail.from.address'), $this->config->string('mail.from.name')));
         $message->getHeaders()->remove('Sender');

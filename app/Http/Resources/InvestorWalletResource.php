@@ -11,6 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * `C3InvestorWalletProps` (investor-primary-v1) for both transports. It shapes already computed,
  * authorized facts and adds real routes only: no amount is calculated here, no provider fact is
  * present, no `/preview/` route is emitted, and a destination with no live route yet is null.
+ * Portfolio and Profile are web pages only, so the API carries their links as null.
  */
 class InvestorWalletResource extends JsonResource
 {
@@ -21,6 +22,7 @@ class InvestorWalletResource extends JsonResource
         $data = $this->resource;
         $context = (int) $data['identity_context_revision'];
         $wallet = fn (array $query = []): array => self::link($request, 'investor.wallet', $query);
+        $page = fn (string $name): ?array => $request->routeIs('api.*') ? null : self::link($request, $name);
         $movement = $data['history']['movement'];
 
         return ['contract_version' => 'investor-primary-v1', 'identity_context_revision' => $context, 'server_time' => now()->toIso8601String(),
@@ -31,7 +33,8 @@ class InvestorWalletResource extends JsonResource
                 'items' => array_map(fn (array $item): array => [...$item, 'link' => $wallet(['receipt' => $item['id']])], $data['history']['items']),
                 'pagination' => ['next' => $data['history']['next_before'] === null ? null : $wallet(['movement' => $movement, 'before' => $data['history']['next_before']])]],
             'receipt' => self::receipt($request, $context, $data['receipt']), 'earnings' => null, 'exports' => null,
-            'links' => ['deals' => self::link($request, 'investor.deals'), 'portfolio' => null, 'profile' => null, 'wallet' => $wallet(), 'notifications' => null,
+            'links' => ['deals' => self::link($request, 'investor.deals'), 'portfolio' => $page('investor.portfolio'), 'profile' => $page('investor.profile'),
+                'wallet' => $wallet(), 'notifications' => null,
                 'launcher' => self::link($request, $request->routeIs('api.*') ? 'identity.show' : 'dashboard'), 'close' => $wallet(),
                 'deposit' => $wallet(['kind' => 'deposit']), 'link_account' => null, 'operation' => self::lookup($request, $context),
                 'changes' => isset($data['changes_cursor']) ? self::link($request, 'changes.index', ['topics' => 'wallet', 'after' => (string) $data['changes_cursor']]) : null],

@@ -337,9 +337,9 @@ test('preview routes are registered for local and testing', function (string $en
 
     $routes = Route::getRoutes()->getRoutes();
 
-    expect($routes)->toHaveCount(1)
-        ->and($routes[0]->uri())->toBe('preview/{fixture}')
-        ->and($routes[0]->getName())->toBeNull();
+    expect(array_map(fn ($route): string => $route->uri(), $routes))
+        ->toBe(['preview/mail', 'preview/mail/{template}', 'preview/{fixture}'])
+        ->and(array_map(fn ($route): ?string => $route->getName(), $routes))->toBe([null, null, null]);
 })->with(['local', 'testing']);
 
 test('preview routes do not exist in production, staging or demo', function (string $environment) {

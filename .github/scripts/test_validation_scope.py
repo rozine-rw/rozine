@@ -8,6 +8,7 @@ import io
 import json
 import os
 import subprocess
+import threading
 import unittest
 import tempfile
 from pathlib import Path
@@ -668,7 +669,7 @@ class CanonicalCoordinationTests(unittest.TestCase):
         return {"GITHUB_REPOSITORY": self.repository, "GITHUB_SHA": self.artifacts[number]["ci-coordination-identity"]["tested_sha"],
                 "GITHUB_RUN_ID": str(number), "GITHUB_RUN_ATTEMPT": str(self.runs[number]["run_attempt"]), "COORDINATION_ACTIVE": "true", **extra}
 
-    def api(self, endpoint):
+    def api(self, endpoint, *, timeout=45):
         if endpoint.endswith("/workflows/tests.yml"): return {"id": 7}
         if "/workflows/tests.yml/runs?" in endpoint: return {"total_count": len(self.runs), "workflow_runs": list(self.runs.values())}
         if "/git/commits/" in endpoint: return self.commits[endpoint.rsplit("/", 1)[-1]]
@@ -684,13 +685,13 @@ class CanonicalCoordinationTests(unittest.TestCase):
             return {"total_count": len(artifacts), "artifacts": artifacts}
         return self.runs[int(endpoint.rsplit("/", 1)[-1])]
 
-    def pages(self, endpoint):
+    def pages(self, endpoint, *, timeout=45):
         if "/jobs?" in endpoint:
             number = int(endpoint.split("/runs/")[1].split("/")[0])
             return [{"jobs": self.jobs[number]}]
         return [self.api(endpoint)]
 
-    def command(self, *args):
+    def command(self, *args, timeout=45):
         if args[:2] == ("git", "rev-parse"):
             return self.tree if args[-1] == "HEAD^{tree}" else self.env()["GITHUB_SHA"]
         self.assertEqual(args[:3], ("gh", "run", "download"))
@@ -878,11 +879,93 @@ class CanonicalCoordinationTests(unittest.TestCase):
             if scenario == "duplicate id": responses[-1]["artifacts"][0]["id"] = 1
             if scenario == "duplicate identity": responses[-1]["artifacts"][0]["name"] = artifact["name"]
             if scenario == "invalid name": responses[-1]["artifacts"][0]["name"] = []
-            with self.subTest(scenario=scenario), patch.object(policy, "api", return_value=first), patch.object(policy, "pages", return_value=responses):
+            with self.subTest(scenario=scenario), patch.object(policy, "api", return_value=first), patch.object(policy, "pages", return_value=responses), patch.object(policy.time, "sleep"):
                 if scenario == "complete":
                     self.assertEqual(policy.coordination_artifact_index(self.repository), {artifact["name"]: 200})
                 else:
                     with self.assertRaises(policy.CoordinationRefusal): policy.coordination_artifact_index(self.repository)
+
+    def test_artifact_index_restarts_complete_read_after_concurrent_publication(self):
+        old = [{"id": n, "name": f"ci-coordination-identity-{n}-1", "workflow_run": {"id": n}} for n in range(1, 3406)]
+        new = [{"id": 3406, "name": "ci-coordination-identity-3406-1", "workflow_run": {"id": 3406}}, *old]
+        def responses(items):
+            return [{"total_count": len(items), "artifacts": items[n:n + 100]} for n in range(0, len(items), 100)]
+        for scenario in ["upload after first read", "upload between pages", "overlapping page IDs"]:
+            unstable = responses(new)
+            if scenario != "upload after first read": unstable[0] = responses(old)[0]
+            if scenario == "overlapping page IDs":
+                unstable[-1]["artifacts"].pop()
+                for page in unstable: page["total_count"] = len(old)
+            with self.subTest(scenario=scenario), patch.object(policy, "api", side_effect=[responses(old)[0], responses(new)[0]]) as api, patch.object(policy, "pages", side_effect=[unstable, responses(new)]) as pages, patch.object(policy.time, "sleep"):
+                result = policy.coordination_artifact_index(self.repository)
+                self.assertEqual(result, {artifact["name"]: artifact["workflow_run"]["id"] for artifact in new})
+                self.assertEqual(api.call_count, 2)
+                self.assertEqual(pages.call_count, 2)
+
+    def test_stable_single_page_inventory_needs_no_retry_or_pagination(self):
+        artifact = {"id": 1, "name": "ci-coordination-identity-200-1", "workflow_run": {"id": 200}}
+        with patch.object(policy, "api", return_value={"total_count": 1, "artifacts": [artifact]}) as api, patch.object(policy, "pages") as pages, patch.object(policy.time, "sleep") as sleep:
+            self.assertEqual(policy.coordination_artifact_index(self.repository), {artifact["name"]: 200})
+        self.assertEqual(api.call_count, 1)
+        pages.assert_not_called()
+        sleep.assert_not_called()
+
+    def test_artifact_index_persistent_instability_is_bounded_and_cannot_claim_ownership(self):
+        first = {"total_count": 2, "artifacts": [{"id": 1, "name": "unrelated"}]}
+        inventory_reads = []
+        def pages(endpoint, **kwargs):
+            if endpoint.endswith("actions/artifacts?per_page=100"):
+                inventory_reads.append(endpoint)
+                return [first]
+            return self.pages(endpoint, **kwargs)
+        with self.server(), patch.object(policy, "api", side_effect=lambda endpoint, **kwargs: first if endpoint.endswith("actions/artifacts?per_page=100") else self.api(endpoint, **kwargs)), patch.object(policy, "pages", side_effect=pages), patch.object(policy.time, "sleep"), self.assertRaisesRegex(policy.CoordinationRefusal, "inventory_incomplete_or_changed"):
+            policy.canonical_selection(self.env())
+        self.assertEqual(len(inventory_reads), 3)
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_artifact_index_uses_one_deadline_for_both_native_commands(self):
+        first = {"total_count": 2, "artifacts": [{"id": 1, "name": "unrelated"}]}
+        last = {"total_count": 2, "artifacts": [{"id": 2, "name": "unrelated"}]}
+        with patch.object(policy.time, "monotonic", side_effect=[0, 0, 20, 46]), patch.object(policy.subprocess, "check_output", side_effect=[json.dumps(first), json.dumps([first, last])]) as command, self.assertRaisesRegex(policy.CoordinationRefusal, "inventory_incomplete_or_changed"):
+            policy.coordination_artifact_index(self.repository)
+        self.assertEqual([call.kwargs["timeout"] for call in command.call_args_list], [45, 25])
+
+    def test_artifact_index_hard_failures_are_not_retried(self):
+        artifact = {"id": 1, "name": "ci-coordination-identity-200-1", "workflow_run": {"id": 200}}
+        for scenario in ["exceeds bound", "invalid name", "duplicate identity", "API failure", "API timeout"]:
+            response = {"total_count": 1, "artifacts": [copy.deepcopy(artifact)]}
+            error = None
+            if scenario == "exceeds bound": response["total_count"] = 10001
+            if scenario == "invalid name": response["artifacts"][0]["name"] = []
+            if scenario == "duplicate identity": response = {"total_count": 2, "artifacts": [artifact, dict(artifact, id=2)]}
+            if scenario == "API failure": error = subprocess.CalledProcessError(1, "gh api")
+            if scenario == "API timeout": error = subprocess.TimeoutExpired("gh api", 45)
+            with self.subTest(scenario=scenario), patch.object(policy, "api", return_value=response, side_effect=error) as api, patch.object(policy.time, "sleep") as sleep, self.assertRaises((policy.CoordinationRefusal, subprocess.CalledProcessError, subprocess.TimeoutExpired)):
+                policy.coordination_artifact_index(self.repository)
+            self.assertEqual(api.call_count, 1)
+            sleep.assert_not_called()
+
+    def test_artifact_retry_cannot_publish_for_a_changed_run_attempt(self):
+        native_api = self.api
+        reads = 0
+        def api(endpoint, **kwargs):
+            nonlocal reads
+            result = copy.deepcopy(native_api(endpoint, **kwargs))
+            if endpoint.endswith("actions/artifacts?per_page=100"):
+                reads += 1
+                if reads == 1:
+                    result["total_count"] += 1
+                else:
+                    self.runs[200]["run_attempt"] = 2
+            return result
+        def pages(endpoint, **kwargs):
+            if endpoint.endswith("actions/artifacts?per_page=100"):
+                return [{"total_count": 0, "artifacts": []}]
+            return self.pages(endpoint, **kwargs)
+        with self.server(), patch.object(policy, "api", side_effect=api), patch.object(policy, "pages", side_effect=pages), patch.object(policy.time, "sleep"), self.assertRaisesRegex(policy.CoordinationRefusal, "current_run_is_not_trusted_attempt"):
+            policy.canonical_selection(self.env())
+        self.assertEqual(reads, 2)
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
 
     def test_artifact_index_timeout_never_grants_execute_ownership(self):
         with self.server(), patch.object(policy, "coordination_artifact_index", side_effect=subprocess.TimeoutExpired("gh api", 45)), self.assertRaises(subprocess.TimeoutExpired):
@@ -894,9 +977,9 @@ class CanonicalCoordinationTests(unittest.TestCase):
         self.artifacts[100].clear()
         calls = []
         native_api = self.api
-        def record(endpoint):
+        def record(endpoint, **kwargs):
             calls.append(endpoint)
-            return native_api(endpoint)
+            return native_api(endpoint, **kwargs)
         with self.server(), patch.object(policy, "api", side_effect=record):
             self.assertEqual(policy.canonical_selection(self.env())["mode"], "execute")
         self.assertFalse(any("/runs/100/artifacts?" in endpoint for endpoint in calls))
@@ -911,6 +994,144 @@ class CanonicalCoordinationTests(unittest.TestCase):
         with self.server(), patch.object(policy, "coordination_identity", side_effect=disappearance), self.assertRaisesRegex(policy.CoordinationRefusal, "coordination_index_changed"):
             policy.canonical_selection(self.env())
         self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def failed_peer(self, number, *, matching=False):
+        run = copy.deepcopy(self.runs[100])
+        sha = f"{number:040x}"
+        run.update(id=number, event="push", head_branch="dev", head_sha=sha, conclusion="failure")
+        self.runs[number] = run
+        self.artifacts[number] = {}
+        self.jobs[number] = []
+        tree = self.tree if matching else "7" * 40
+        self.commits[sha] = {"sha": sha, "tree": {"sha": tree}, "parents": [{"sha": "8" * 40}]}
+        self.identity(number)["tree_sha"] = tree
+
+    def test_historical_peer_reads_overlap_with_a_fixed_bound_and_validate_every_identity(self):
+        peers = list(range(300, 308))
+        for number in peers:
+            self.failed_peer(number)
+        original = policy.coordination_identity
+        lock = threading.Lock()
+        ready = threading.Event()
+        active = peak = 0
+        checked = []
+
+        def identity(repository, run):
+            nonlocal active, peak
+            if run["id"] not in peers:
+                return original(repository, run)
+            with lock:
+                active += 1
+                peak = max(peak, active)
+                if active == 4:
+                    ready.set()
+            try:
+                self.assertTrue(ready.wait(3), "historical reads were serialized")
+                result = original(repository, run)
+                with lock:
+                    checked.append(run["id"])
+                return result
+            finally:
+                with lock:
+                    active -= 1
+
+        with self.server(), patch.object(policy, "coordination_identity", side_effect=identity):
+            self.assertEqual(policy.canonical_selection(self.env())["mode"], "reuse")
+        self.assertEqual(peak, 4)
+        self.assertCountEqual(checked, peers)
+
+    def test_parallel_historical_reads_still_refuse_a_matching_failed_peer(self):
+        for number in range(300, 308):
+            self.failed_peer(number, matching=number == 307)
+        with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
+            policy.canonical_selection(self.env())
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_parallel_historical_reads_cannot_ignore_failed_identity_publication(self):
+        for number in range(300, 308):
+            self.failed_peer(number)
+        self.jobs[307][0]["steps"][-1]["conclusion"] = "failure"
+        with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "identity_or_decision_step_not_successful"):
+            policy.canonical_selection(self.env())
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_historical_refusal_does_not_submit_later_batches(self):
+        peers = list(range(300, 340))
+        for number in peers:
+            self.failed_peer(number, matching=number == 300)
+        original = policy.coordination_identity
+        checked = []
+
+        def identity(repository, run):
+            checked.append(run["id"])
+            return original(repository, run)
+
+        with self.server(), patch.object(policy, "coordination_identity", side_effect=identity), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
+            policy.canonical_selection(self.env())
+        self.assertTrue(set(checked).intersection(peers))
+        self.assertFalse(set(checked).intersection(peers[4:]))
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_current_identity_contradiction_rechecks_before_selecting(self):
+        self.jobs[200][0].update(status="in_progress", conclusion="success")
+        with self.server(), patch.object(policy.time, "sleep", side_effect=lambda _: self.jobs[200][0].update(status="completed")) as sleep:
+            self.assertEqual(policy.canonical_selection(self.env())["mode"], "reuse")
+        self.assertEqual(sleep.call_count, 1)
+
+    def test_persistent_current_identity_contradiction_is_bounded_and_refuses(self):
+        self.jobs[200][0].update(status="in_progress", conclusion="success")
+        with self.server(), patch.object(policy.time, "sleep") as sleep, self.assertRaisesRegex(policy.CoordinationRefusal, "identity_job_status_inconsistent") as error:
+            policy.canonical_selection(self.env())
+        self.assertNotIsInstance(error.exception, policy.PublicationPending)
+        self.assertEqual(sleep.call_count, 2)
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_terminal_historical_identity_job_cannot_escape_as_pending(self):
+        self.runs[100]["conclusion"] = "failure"
+        self.jobs[100][0].update(status="in_progress", conclusion=None)
+        with self.server(), patch.object(policy.time, "sleep") as sleep, self.assertRaisesRegex(policy.CoordinationRefusal, "identity_job_status_inconsistent") as error:
+            policy.canonical_selection(self.env())
+        self.assertNotIsInstance(error.exception, policy.PublicationPending)
+        self.assertEqual(sleep.call_count, 2)
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_historical_identity_recovery_still_blocks_matching_failed_peer(self):
+        self.runs[100]["conclusion"] = "failure"
+        self.jobs[100][0].update(status="in_progress", conclusion="success")
+        with self.server(), patch.object(policy.time, "sleep", side_effect=lambda _: self.jobs[100][0].update(status="completed")), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
+            policy.canonical_selection(self.env())
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_identity_status_retry_preserves_attempt_and_step_provenance(self):
+        for scenario in ["attempt changed", "failed upload"]:
+            self.runs[200]["run_attempt"] = 1
+            self.jobs[200][0] = self.job(policy.IDENTITY_JOB, steps=policy.IDENTITY_STEPS)
+            self.jobs[200][0].update(status="in_progress", conclusion="success")
+            def transition(_):
+                self.jobs[200][0]["status"] = "completed"
+                if scenario == "attempt changed":
+                    self.runs[200]["run_attempt"] = 2
+                else:
+                    self.jobs[200][0]["steps"][-1]["conclusion"] = "failure"
+            reason = "run_or_attempt_changed" if scenario == "attempt changed" else "identity_or_decision_step_not_successful"
+            with self.subTest(scenario=scenario), self.server(), patch.object(policy, "api", side_effect=lambda endpoint, **kwargs: copy.deepcopy(self.api(endpoint, **kwargs))), patch.object(policy.time, "sleep", side_effect=transition), self.assertRaisesRegex(policy.CoordinationRefusal, reason):
+                policy.canonical_selection(self.env())
+            self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_contradictory_status_never_retries_a_failed_publication_step(self):
+        self.jobs[200][0].update(status="in_progress", conclusion="success")
+        self.jobs[200][0]["steps"][-1]["conclusion"] = "failure"
+        with self.server(), patch.object(policy.time, "sleep") as sleep, self.assertRaisesRegex(policy.CoordinationRefusal, "identity_or_decision_step_not_successful"):
+            policy.canonical_selection(self.env())
+        sleep.assert_not_called()
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_nonterminal_identity_with_failed_conclusion_never_waits_or_succeeds(self):
+        for conclusion in ["failure", "cancelled", "skipped", "timed_out"]:
+            self.jobs[200][0].update(status="in_progress", conclusion=conclusion)
+            with self.subTest(conclusion=conclusion), self.server(), patch.object(policy.time, "sleep") as sleep, self.assertRaisesRegex(policy.CoordinationRefusal, "identity_or_decision_job_not_successful"):
+                policy.canonical_selection(self.env())
+            sleep.assert_not_called()
 
     def test_protocol_scope_native_tree_parents_and_publication_provenance_controls(self):
         original = copy.deepcopy((self.artifacts, self.commits, self.jobs))

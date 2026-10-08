@@ -12,15 +12,19 @@ import InvestorDealsController from './InvestorDealsController'
 import InvestorWalletController from './InvestorWalletController'
 import InvestorPrimaryController from './InvestorPrimaryController'
 import InvestorVerificationController from './InvestorVerificationController'
+import StaffInvestorDirectoryController from './StaffInvestorDirectoryController'
 import StaffInvestorVerificationController from './StaffInvestorVerificationController'
 import ChangeFeedController from './ChangeFeedController'
 import SiteController from './SiteController'
 import BusinessAuditReportController from './BusinessAuditReportController'
+import EmailVerificationCodeController from './EmailVerificationCodeController'
 import PulseController from './PulseController'
 import DashboardController from './DashboardController'
 import RoleHomeController from './RoleHomeController'
 import StaffHomeController from './StaffHomeController'
 import AuditorProfileController from './AuditorProfileController'
+import InvestorProfileController from './InvestorProfileController'
+import InvestorPortfolioController from './InvestorPortfolioController'
 import AuditorProcedureController from './AuditorProcedureController'
 import AuditorEngagementController from './AuditorEngagementController'
 import AuditorJobsController from './AuditorJobsController'
@@ -28,6 +32,7 @@ import BusinessApplicationController from './BusinessApplicationController'
 import IdentityManagementController from './IdentityManagementController'
 import RoleBookmarkController from './RoleBookmarkController'
 import Settings from './Settings'
+import StaffSectionController from './StaffSectionController'
 import StaffStagingMailTesterController from './StaffStagingMailTesterController'
 
 const Controllers = {
@@ -45,15 +50,19 @@ const Controllers = {
     InvestorWalletController: Object.assign(InvestorWalletController, InvestorWalletController),
     InvestorPrimaryController: Object.assign(InvestorPrimaryController, InvestorPrimaryController),
     InvestorVerificationController: Object.assign(InvestorVerificationController, InvestorVerificationController),
+    StaffInvestorDirectoryController: Object.assign(StaffInvestorDirectoryController, StaffInvestorDirectoryController),
     StaffInvestorVerificationController: Object.assign(StaffInvestorVerificationController, StaffInvestorVerificationController),
     ChangeFeedController: Object.assign(ChangeFeedController, ChangeFeedController),
     SiteController: Object.assign(SiteController, SiteController),
     BusinessAuditReportController: Object.assign(BusinessAuditReportController, BusinessAuditReportController),
+    EmailVerificationCodeController: Object.assign(EmailVerificationCodeController, EmailVerificationCodeController),
     PulseController: Object.assign(PulseController, PulseController),
     DashboardController: Object.assign(DashboardController, DashboardController),
     RoleHomeController: Object.assign(RoleHomeController, RoleHomeController),
     StaffHomeController: Object.assign(StaffHomeController, StaffHomeController),
     AuditorProfileController: Object.assign(AuditorProfileController, AuditorProfileController),
+    InvestorProfileController: Object.assign(InvestorProfileController, InvestorProfileController),
+    InvestorPortfolioController: Object.assign(InvestorPortfolioController, InvestorPortfolioController),
     AuditorProcedureController: Object.assign(AuditorProcedureController, AuditorProcedureController),
     AuditorEngagementController: Object.assign(AuditorEngagementController, AuditorEngagementController),
     AuditorJobsController: Object.assign(AuditorJobsController, AuditorJobsController),
@@ -61,6 +70,7 @@ const Controllers = {
     IdentityManagementController: Object.assign(IdentityManagementController, IdentityManagementController),
     RoleBookmarkController: Object.assign(RoleBookmarkController, RoleBookmarkController),
     Settings: Object.assign(Settings, Settings),
+    StaffSectionController: Object.assign(StaffSectionController, StaffSectionController),
     StaffStagingMailTesterController: Object.assign(StaffStagingMailTesterController, StaffStagingMailTesterController),
 }
 

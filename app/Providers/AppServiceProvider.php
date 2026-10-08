@@ -50,6 +50,7 @@ use App\Application\Identity\Contracts\Authenticator;
 use App\Application\Identity\Contracts\ConsentCatalog;
 use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\Contracts\IdentityRepository;
+use App\Application\Identity\Contracts\InvestorDirectoryStore;
 use App\Application\Identity\Contracts\InvestorVerificationReviewStore;
 use App\Application\Identity\Contracts\InvestorVerificationStore;
 use App\Application\Operations\Contracts\CanonicalJson;
@@ -118,6 +119,7 @@ use App\Infrastructure\Evidence\IsolatedStatementTextExtractor;
 use App\Infrastructure\Identity\EloquentConsentCatalog;
 use App\Infrastructure\Identity\EloquentIdentityAccessStore;
 use App\Infrastructure\Identity\EloquentIdentityRepository;
+use App\Infrastructure\Identity\EloquentInvestorDirectoryStore;
 use App\Infrastructure\Identity\EloquentInvestorVerificationReviewStore;
 use App\Infrastructure\Identity\EloquentInvestorVerificationStore;
 use App\Infrastructure\Identity\FortifyAuthenticator;
@@ -149,6 +151,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Console\Seeds\SeedCommand;
 use Illuminate\Http\Request;
+use Illuminate\Mail\Markdown;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
@@ -199,6 +202,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AuditorProfileStore::class, EloquentAuditorProfileStore::class);
         $this->app->bind(InvestorVerificationStore::class, EloquentInvestorVerificationStore::class);
         $this->app->bind(InvestorVerificationReviewStore::class, EloquentInvestorVerificationReviewStore::class);
+        $this->app->bind(InvestorDirectoryStore::class, EloquentInvestorDirectoryStore::class);
         $this->app->bind(StagingMailTesterStore::class, EloquentStagingMailTesterStore::class);
         $this->app->bind(AuditAssignmentStore::class, EloquentAuditAssignmentStore::class);
         $this->app->bind(AuditReportStore::class, EloquentAuditReportStore::class);
@@ -282,6 +286,9 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);
+
+        // Values echoed into markdown mail cannot become links or HTML.
+        Markdown::withSecuredEncoding();
 
         DB::prohibitDestructiveCommands(
             ! $this->app->make(EnvironmentIsolation::class)->canReset(),

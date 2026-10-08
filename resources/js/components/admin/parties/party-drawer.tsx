@@ -5,6 +5,7 @@ import {
     formatTimestamp,
     initialOf,
 } from '@/components/admin/format';
+import { KycReview } from '@/components/admin/kyc-review';
 import { KYC_TONE } from '@/components/admin/parties/directory-table';
 import { ReasonStage } from '@/components/admin/reason-stage';
 import type { StageTone } from '@/components/admin/reason-stage';
@@ -91,7 +92,10 @@ export function PartyDrawer({
 }) {
     const { t, locale } = useTranslation();
     const format = useStatFormatter();
-    const [tab, setTab] = useState<Tab>('overview');
+    // A submission waiting for review opens on Controls, where its documents and decision are.
+    const [tab, setTab] = useState<Tab>(
+        party.verification?.status === 'submitted' ? 'controls' : 'overview',
+    );
     const [stage, setStage] = useState<{
         key: Command;
         action: RouteAction;
@@ -392,6 +396,23 @@ export function PartyDrawer({
                             </section>
                         )}
 
+                        {party.verification && (
+                            <section
+                                aria-label={t('admin.kyc.drawer')}
+                                className="mb-5"
+                            >
+                                <h3 className={SECTION}>
+                                    {t('admin.kyc.drawer')}
+                                </h3>
+                                <div className="mt-2.5">
+                                    <KycReview
+                                        review={party.verification}
+                                        viewer={viewer}
+                                        returnTo="directory"
+                                    />
+                                </div>
+                            </section>
+                        )}
                         {party.licence !== null && (
                             <section
                                 aria-label={t('admin.parties.licence_title')}

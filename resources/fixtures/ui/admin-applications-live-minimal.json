@@ -26,6 +26,70 @@
             "launcher": {
                 "url": "/dashboard",
                 "method": "get"
+            },
+            "notes": {
+                "url": "/admin/notes",
+                "method": "get"
+            },
+            "primary_market": {
+                "url": "/admin/primary-market",
+                "method": "get"
+            },
+            "secondary_market": {
+                "url": "/admin/secondary-market",
+                "method": "get"
+            },
+            "risk": {
+                "url": "/admin/risk",
+                "method": "get"
+            },
+            "compliance": {
+                "url": "/admin/compliance",
+                "method": "get"
+            },
+            "ratings": {
+                "url": "/admin/ratings",
+                "method": "get"
+            },
+            "deferrals": {
+                "url": "/admin/deferrals",
+                "method": "get"
+            },
+            "plus": {
+                "url": "/admin/plus",
+                "method": "get"
+            },
+            "finance": {
+                "url": "/admin/finance",
+                "method": "get"
+            },
+            "messaging": {
+                "url": "/admin/messaging",
+                "method": "get"
+            },
+            "academies": {
+                "url": "/admin/academies",
+                "method": "get"
+            },
+            "app_control": {
+                "url": "/admin/app-control",
+                "method": "get"
+            },
+            "engines": {
+                "url": "/admin/engines",
+                "method": "get"
+            },
+            "policies": {
+                "url": "/admin/policies",
+                "method": "get"
+            },
+            "system_health": {
+                "url": "/admin/system-health",
+                "method": "get"
+            },
+            "payments": {
+                "url": "/admin/payments",
+                "method": "get"
             }
         },
         "badges": {

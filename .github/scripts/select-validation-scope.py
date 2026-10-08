@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 FULL_JOBS = [
@@ -50,16 +51,16 @@ def diagnostic(reason, run=None):
     print(f"CI coordination: {reason}{suffix}", file=sys.stderr)
 
 
-def command(*args):
-    return subprocess.check_output(args, text=True, stderr=subprocess.PIPE, timeout=45).strip()
+def command(*args, timeout=45):
+    return subprocess.check_output(args, text=True, stderr=subprocess.PIPE, timeout=timeout).strip()
 
 
-def api(endpoint):
-    return json.loads(command("gh", "api", endpoint))
+def api(endpoint, *, timeout=45):
+    return json.loads(command("gh", "api", endpoint, timeout=timeout))
 
 
-def pages(endpoint):
-    return json.loads(command("gh", "api", "--paginate", "--slurp", endpoint))
+def pages(endpoint, *, timeout=45):
+    return json.loads(command("gh", "api", "--paginate", "--slurp", endpoint, timeout=timeout))
 
 
 def requested_scope(env):
@@ -198,6 +199,12 @@ def same_attempt(repository, run):
 
 def successful_steps(jobs, name, steps):
     matches = [job for job in jobs if job["name"] == name]
+    if len(matches) == 1 and matches[0].get("conclusion") not in (None, "success"):
+        raise CoordinationRefusal("identity_or_decision_job_not_successful")
+    if len(matches) == 1:
+        for step in steps:
+            if any(item["name"] == step and item.get("conclusion") not in (None, "success") for item in matches[0].get("steps", [])):
+                raise CoordinationRefusal("identity_or_decision_step_not_successful")
     if len(matches) == 1 and matches[0].get("status") in ("queued", "pending", "waiting", "in_progress"):
         raise PublicationPending("coordination_publication_in_progress")
     if len(matches) != 1 or matches[0].get("status") != "completed" or matches[0].get("conclusion") != "success":
@@ -227,12 +234,23 @@ def coordination_identity(repository, run):
             raise CoordinationRefusal("coordination_identity_pr_contract_mismatch")
     elif run["event"] not in ("push", "workflow_dispatch") or run.get("head_branch") not in ("dev", "uat") or proof["tested_sha"] != run["head_sha"]:
         raise CoordinationRefusal("coordination_identity_target_mismatch")
-    try:
-        successful_steps(run_jobs(repository, run), IDENTITY_JOB, IDENTITY_STEPS)
-    except PublicationPending:
-        raise PreflightPublicationPending("peer_preflight_identity_publication_in_progress") from None
-    same_attempt(repository, run)
-    return proof
+    for read in range(3):
+        jobs = run_jobs(repository, run)
+        try:
+            successful_steps(jobs, IDENTITY_JOB, IDENTITY_STEPS)
+        except PublicationPending:
+            latest = same_attempt(repository, run)
+            identity_jobs = [job for job in jobs if job["name"] == IDENTITY_JOB]
+            contradictory = latest["status"] == "completed" or identity_jobs[0].get("conclusion") is not None
+            if not contradictory:
+                raise PreflightPublicationPending("peer_preflight_identity_publication_in_progress") from None
+            if read == 2:
+                raise CoordinationRefusal("identity_job_status_inconsistent") from None
+            diagnostic("retrying_inconsistent_identity_job_status", run)
+            time.sleep(1)
+            continue
+        same_attempt(repository, run)
+        return proof
 
 
 def coordination_decision(repository, run, identity):
@@ -357,6 +375,7 @@ def canonical_selection(env):
     retry = int(current["run_attempt"]) > 1 or current["event"] == "workflow_dispatch"
     retry_started = datetime.datetime.fromisoformat(current.get("run_started_at", current["created_at"]).replace("Z", "+00:00"))
     inventory = coordination_artifact_index(repository)
+    failed_peers = []
     for run in runs:
         if (run["status"] != "completed" or run["conclusion"] == "success"
                 or retry and attempt_order(run)[0] < retry_started):
@@ -366,13 +385,20 @@ def canonical_selection(env):
             continue
         if inventory[name] != run["id"]:
             raise CoordinationRefusal("coordination_artifact_inventory_run_binding_mismatch")
-        try:
-            failed_identity = coordination_identity(repository, run)
-        except MissingEvidence:
-            raise CoordinationRefusal("coordination_index_changed_during_failed_peer_validation") from None
-        if failed_identity["tree_sha"] == tree:
-            diagnostic("canonical_peer_unsuccessful", run)
-            raise CoordinationRefusal("canonical_peer_unsuccessful_no_takeover")
+        failed_peers.append(run)
+    # Each immutable identity still receives all native tree/job/attempt checks.
+    # Bound independent reads instead of serially downloading every old proof.
+    try:
+        with ThreadPoolExecutor(max_workers=4) as readers:
+            for start in range(0, len(failed_peers), 4):
+                batch = failed_peers[start:start + 4]
+                identities = readers.map(lambda run: coordination_identity(repository, run), batch)
+                for run, failed_identity in zip(batch, identities):
+                    if failed_identity["tree_sha"] == tree:
+                        diagnostic("canonical_peer_unsuccessful", run)
+                        raise CoordinationRefusal("canonical_peer_unsuccessful_no_takeover")
+    except MissingEvidence:
+        raise CoordinationRefusal("coordination_index_changed_during_failed_peer_validation") from None
     deadline = time.monotonic() + 45
     while True:
         try:
@@ -557,25 +583,42 @@ def coordination_artifact_index(repository):
     # One bounded paginated request replaces a serial lookup for every old
     # unsuccessful run. Absence is usable only from a complete stable inventory.
     endpoint = f"repos/{repository}/actions/artifacts?per_page=100"
-    first = api(endpoint)
-    total = first["total_count"]
-    if not isinstance(total, int) or not 0 <= total <= 10000:
-        raise CoordinationRefusal("coordination_artifact_inventory_exceeds_bound")
-    responses = [first] if len(first["artifacts"]) == total else pages(endpoint)
-    artifacts = [artifact for response in responses for artifact in response["artifacts"]]
-    if (any(response["total_count"] != total for response in responses)
-            or len(artifacts) != total or len({artifact["id"] for artifact in artifacts}) != total):
-        raise CoordinationRefusal("coordination_artifact_inventory_incomplete_or_changed")
-    index = {}
-    for artifact in artifacts:
-        if not isinstance(artifact["name"], str):
-            raise CoordinationRefusal("coordination_artifact_inventory_invalid_name")
-        if artifact["name"].startswith("ci-coordination-identity-"):
-            name = artifact["name"]
-            if name in index:
-                raise CoordinationRefusal("coordination_artifact_inventory_duplicate_identity")
-            index[name] = artifact["workflow_run"]["id"]
-    return index
+    deadline = time.monotonic() + 45
+
+    def remaining():
+        seconds = deadline - time.monotonic()
+        if seconds <= 0:
+            raise CoordinationRefusal("coordination_artifact_inventory_incomplete_or_changed")
+        return seconds
+
+    for attempt in range(3):
+        # Concurrent uploads can move page boundaries. Discard every page of
+        # an unstable read; never combine it with a later inventory.
+        first = api(endpoint, timeout=remaining())
+        total = first["total_count"]
+        if not isinstance(total, int) or not 0 <= total <= 10000:
+            raise CoordinationRefusal("coordination_artifact_inventory_exceeds_bound")
+        responses = [first] if len(first["artifacts"]) == total else pages(endpoint, timeout=remaining())
+        artifacts = [artifact for response in responses for artifact in response["artifacts"]]
+        for artifact in artifacts:
+            if not isinstance(artifact["name"], str):
+                raise CoordinationRefusal("coordination_artifact_inventory_invalid_name")
+        if (any(response["total_count"] != total for response in responses)
+                or len(artifacts) != total or len({artifact["id"] for artifact in artifacts}) != total):
+            if attempt == 2:
+                raise CoordinationRefusal("coordination_artifact_inventory_incomplete_or_changed")
+            diagnostic("retrying_unstable_coordination_artifact_inventory")
+            time.sleep(min(1, remaining()))
+            continue
+        remaining()  # Do not accept a read that finished outside its budget.
+        index = {}
+        for artifact in artifacts:
+            if artifact["name"].startswith("ci-coordination-identity-"):
+                name = artifact["name"]
+                if name in index:
+                    raise CoordinationRefusal("coordination_artifact_inventory_duplicate_identity")
+                index[name] = artifact["workflow_run"]["id"]
+        return index
 
 
 def reusable_run(env, scope, with_attempt=False):

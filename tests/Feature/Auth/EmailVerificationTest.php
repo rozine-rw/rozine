@@ -39,6 +39,47 @@ test('email can be verified', function () {
     $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
 });
 
+test('a signed link cannot verify an address changed after its account was loaded', function () {
+    $user = User::factory()->unverified()->create(['email' => 'first@example.test']);
+    Event::fake([Verified::class]);
+    $verificationUrl = URL::temporarySignedRoute(
+        'verification.verify',
+        now()->addMinutes(60),
+        ['id' => $user->id, 'hash' => sha1($user->email)],
+    );
+
+    // The guard already holds A, as when another request changes the account after authentication.
+    $this->actingAs($user);
+    User::query()->whereKey($user->id)->update(['email' => 'second@example.test', 'email_verified_at' => null]);
+
+    $response = $this->get($verificationUrl);
+
+    $stored = User::query()->findOrFail($user->id);
+    expect($stored->email)->toBe('second@example.test')
+        ->and($stored->hasVerifiedEmail())->toBeFalse();
+    $response->assertForbidden();
+    Event::assertNotDispatched(Verified::class);
+});
+
+test('a signed link losing its write to verification of the same address still succeeds once', function () {
+    $user = User::factory()->unverified()->create(['email' => 'first@example.test']);
+    Event::fake([Verified::class]);
+    $verificationUrl = URL::temporarySignedRoute(
+        'verification.verify',
+        now()->addMinutes(60),
+        ['id' => $user->id, 'hash' => sha1($user->email)],
+    );
+
+    $this->actingAs($user);
+    expect(User::query()->findOrFail($user->id)->markEmailAsVerified())->toBeTrue();
+
+    $this->get($verificationUrl)
+        ->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+
+    expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
+    Event::assertNotDispatched(Verified::class);
+});
+
 test('email is not verified with invalid hash', function () {
     $user = User::factory()->unverified()->create();
 

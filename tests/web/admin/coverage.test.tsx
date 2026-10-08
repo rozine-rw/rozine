@@ -33,11 +33,11 @@ describe('Partner coverage', () => {
             'Partner coverage',
         );
         expect(
-            within(nav()).getByRole('link', { name: 'Partner coverage' }),
+            within(nav()).getByRole('link', { name: 'Auditors' }),
         ).toHaveAttribute('aria-current', 'page');
         expect(
-            within(nav()).getByRole('link', { name: 'Auditors' }),
-        ).not.toHaveAttribute('aria-current');
+            within(nav()).queryByRole('link', { name: 'Partner coverage' }),
+        ).not.toBeInTheDocument();
 
         /* The tiles are the server's, and they agree with its rows. */
         expect(
@@ -135,10 +135,10 @@ describe('Partner coverage', () => {
         render(<AdminCoverage {...fixture} />);
 
         expect(
-            within(nav()).getByRole('link', { name: 'Partner coverage' }),
-        ).toHaveAttribute('aria-current', 'page');
-        expect(
             within(nav()).queryByRole('link', { name: 'Auditors' }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(nav()).queryByRole('link', { current: 'page' }),
         ).not.toBeInTheDocument();
     });
 });
