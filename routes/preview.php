@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Models\User;
+use App\Notifications\RozineMail;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -21,6 +26,34 @@ use Inertia\Inertia;
 if (! app()->environment(['local', 'testing'])) {
     return;
 }
+
+/*
+| Mail templates render the same way: every Rozine email, filled from the
+| synthetic resources/fixtures/mail.php and addressed to an unsaved account.
+*/
+
+Route::get('preview/mail', function (): string {
+    /** @var array<string, Closure(): (RozineMail|VerifyEmail|ResetPassword)> $previews */
+    $previews = require resource_path('fixtures/mail.php');
+
+    $links = array_map(
+        fn (string $template): string => '<li><a href="'.e(url("preview/mail/{$template}")).'">'.e($template).'</a></li>',
+        array_keys($previews),
+    );
+
+    return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Rozine mail previews</title></head><body><ul>'.implode('', $links).'</ul></body></html>';
+});
+
+Route::get('preview/mail/{template}', function (string $template): MailMessage {
+    /** @var array<string, Closure(): (RozineMail|VerifyEmail|ResetPassword)> $previews */
+    $previews = require resource_path('fixtures/mail.php');
+
+    abort_unless(isset($previews[$template]), 404);
+
+    $recipient = (new User)->forceFill(['id' => 1, 'name' => 'Aline Uwase', 'email' => 'aline.uwase@example.test']);
+
+    return $previews[$template]()->toMail($recipient);
+})->where('template', '[a-z0-9.-]+');
 
 Route::get('preview/{fixture}', function (string $fixture) {
     $path = resource_path("fixtures/ui/{$fixture}.json");

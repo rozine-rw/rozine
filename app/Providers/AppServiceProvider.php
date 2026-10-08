@@ -41,6 +41,7 @@ use App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures;
 use App\Application\Disbursement\Contracts\SyntheticPayoutScripts;
 use App\Application\Disbursement\SyntheticDisbursementGuard;
 use App\Application\Environment\Contracts\DemoFixtureStore;
+use App\Application\Environment\Contracts\StagingMailTesterStore;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Evidence\Contracts\StatementExtractionQueue;
 use App\Application\Evidence\Contracts\StatementStore;
@@ -49,6 +50,8 @@ use App\Application\Identity\Contracts\Authenticator;
 use App\Application\Identity\Contracts\ConsentCatalog;
 use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\Contracts\IdentityRepository;
+use App\Application\Identity\Contracts\InvestorVerificationReviewStore;
+use App\Application\Identity\Contracts\InvestorVerificationStore;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\Contracts\OperationJournal;
@@ -109,12 +112,15 @@ use App\Infrastructure\Disbursement\UnavailableFundedCampaigns;
 use App\Infrastructure\Disbursement\UnavailablePayoutDestinations;
 use App\Infrastructure\Disbursement\UnavailablePayoutProvider;
 use App\Infrastructure\Environment\EloquentDemoFixtureStore;
+use App\Infrastructure\Environment\EloquentStagingMailTesterStore;
 use App\Infrastructure\Evidence\EloquentStatementExtractionQueue;
 use App\Infrastructure\Evidence\EloquentStatementStore;
 use App\Infrastructure\Evidence\IsolatedStatementTextExtractor;
 use App\Infrastructure\Identity\EloquentConsentCatalog;
 use App\Infrastructure\Identity\EloquentIdentityAccessStore;
 use App\Infrastructure\Identity\EloquentIdentityRepository;
+use App\Infrastructure\Identity\EloquentInvestorVerificationReviewStore;
+use App\Infrastructure\Identity\EloquentInvestorVerificationStore;
 use App\Infrastructure\Identity\FortifyAuthenticator;
 use App\Infrastructure\Operations\EloquentOperationJournal;
 use App\Infrastructure\Operations\EloquentOperationRecords;
@@ -145,6 +151,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Console\Seeds\SeedCommand;
 use Illuminate\Http\Request;
+use Illuminate\Mail\Markdown;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
@@ -193,6 +200,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ConsentCatalog::class, EloquentConsentCatalog::class);
         $this->app->bind(StatementStore::class, EloquentStatementStore::class);
         $this->app->bind(AuditorProfileStore::class, EloquentAuditorProfileStore::class);
+        $this->app->bind(InvestorVerificationStore::class, EloquentInvestorVerificationStore::class);
+        $this->app->bind(InvestorVerificationReviewStore::class, EloquentInvestorVerificationReviewStore::class);
+        $this->app->bind(StagingMailTesterStore::class, EloquentStagingMailTesterStore::class);
         $this->app->bind(AuditAssignmentStore::class, EloquentAuditAssignmentStore::class);
         $this->app->bind(AuditReportStore::class, EloquentAuditReportStore::class);
         $this->app->bind(AuditSourceFactsStore::class, EloquentAuditSourceFactsStore::class);
@@ -276,6 +286,9 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);
+
+        // Values echoed into markdown mail cannot become links or HTML.
+        Markdown::withSecuredEncoding();
 
         DB::prohibitDestructiveCommands(
             ! $this->app->make(EnvironmentIsolation::class)->canReset(),

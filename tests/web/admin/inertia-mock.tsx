@@ -116,6 +116,11 @@ export const router = {
     },
 };
 
+/** The page's shared props: only the validation errors a failed visit left behind. */
+export function usePage() {
+    return { props: { errors: inertia.errors } };
+}
+
 export function useForm<T extends Record<string, unknown>>(initial: T) {
     const [data, setData] = useState(initial);
 

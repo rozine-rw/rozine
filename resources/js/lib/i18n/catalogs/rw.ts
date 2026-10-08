@@ -39,6 +39,7 @@ const rw: Catalog = {
     'identity.home.staff_ready': 'Konti yawe y’umukozi yemerewe kwinjira hano.',
     'identity.home.back': 'Hitamo porogaramu',
     'identity.home.settings': 'Igenamiterere rya konti',
+    'identity.home.staging_mail_testers': 'Abagerageza imeyili z’igerageza',
     'identity.home.auditor_nav': "Akazi kawe k'igenzura",
     'identity.home.saving': 'Kubika aho ugeze…',
     'identity.home.failed':
@@ -95,6 +96,10 @@ const rw: Catalog = {
     'suite.motto': 'Intangiriro imwe · ahantu hose',
     'suite.section.apps': 'Porogaramu zawe',
     'suite.app.open': 'Fungura porogaramu →',
+    'suite.app.browse': 'Reba amahirwe →',
+    'suite.app.request_access': 'Saba uburenganzira →',
+    'suite.app.investor.preview':
+        'Reba amahirwe afunguye ubu. Uzashobora gushora umwirondoro wawe umaze kwemezwa.',
     'suite.app.investor.title': 'Umushoramari',
     'suite.app.investor.description':
         'Menya ubucuruzi bwagenzuwe, shora imari, ukurikirane inyungu.',
@@ -105,6 +110,7 @@ const rw: Catalog = {
     'suite.app.auditor.description':
         'Genzura aho ubucuruzi bukorera, genzura raporo, ubone inyungu.',
     'suite.blocker.action.verify_email': 'Emeza imeyili yawe →',
+    'suite.blocker.action.verify_identity': 'Emeza umwirondoro wawe →',
     'suite.blocker.action.contact': "Vugana n'ubufasha bwa Rozine →",
     'suite.blocker.EMAIL_VERIFICATION_REQUIRED.title':
         'Banza wemeze imeyili yawe',
@@ -116,8 +122,6 @@ const rw: Catalog = {
         "Konti yawe ntirahuzwa n'umwirondoro wagenzuwe, bityo nta porogaramu irafunguka.",
     'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title':
         'Umwirondoro wawe uri kugenzurwa',
-    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.body':
-        'Porogaramu zawe zizafunguka igenzura ry’umwirondoro rirangiye.',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
         'Hakenewe ububasha bwo gusinya',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.body':
@@ -130,9 +134,6 @@ const rw: Catalog = {
         'Izi porogaramu ntizishobora guhurizwa hamwe',
     'suite.blocker.ROLE_MEMBERSHIP_CONFLICT.body':
         'Umufatanyabikorwa mu igenzura ntashobora no gushora cyangwa gushaka igishoro kuri Rozine. Ubufasha buzagufasha guhitamo.',
-    'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.title': 'Nta porogaramu uragira',
-    'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.body':
-        'Ntabwo urinjira muri porogaramu n’imwe. Ubufasha bushobora kugutegurira iyo ukeneye.',
 
     'business.auth.wordmark': 'rozine',
     'business.auth.for_business': 'Ku bucuruzi',
@@ -803,6 +804,98 @@ const rw: Catalog = {
     'admin.role.access.compliance': 'Uburenganzira bwo kubahiriza amategeko',
     'admin.role.treasury': 'Imari',
     'admin.role.access.treasury': 'Uburenganzira bw’imari',
+    'admin.kyc.intro':
+        "Ibisabwa byo kugenzura umwirondoro by'abantu bashaka gushora imari. Fungura kimwe urebe inyandiko zacyo, hanyuma ucyemeze cyangwa ucyange ugaragaza impamvu.",
+    'admin.kyc.tabs': "Imiterere y'igenzura",
+    'admin.kyc.tab.submitted': 'Bitegereje gusuzumwa',
+    'admin.kyc.tab.decided': 'Byafatiwe icyemezo',
+    'admin.kyc.table': 'Ibisabwa byo kugenzura umwirondoro',
+    'admin.kyc.col.person': 'Umuntu',
+    'admin.kyc.col.document': 'Inyandiko',
+    'admin.kyc.col.submitted': 'Byoherejwe',
+    'admin.kyc.col.status': 'Uko bihagaze',
+    'admin.kyc.id_type.national_id': 'Indangamuntu',
+    'admin.kyc.id_type.passport': 'Pasiporo',
+    'admin.kyc.id_type.drivers_license': 'Uruhushya rwo gutwara',
+    'admin.kyc.status.draft': 'Byongeye gufungurwa',
+    'admin.kyc.status.submitted': 'Bitegereje',
+    'admin.kyc.status.approved': 'Byemejwe',
+    'admin.kyc.status.rejected': 'Byanzwe',
+    'admin.kyc.empty.submitted': 'Nta bisabwa bitegereje gusuzumwa.',
+    'admin.kyc.empty.decided': 'Nta cyemezo kirafatwa.',
+    'admin.kyc.more': 'Erekana ibindi',
+    'admin.kyc.drawer': 'Igisabwa cyo kugenzura umwirondoro',
+    'admin.kyc.facts': 'Amakuru yoherejwe',
+    'admin.kyc.fact.date_of_birth': "Itariki y'amavuko",
+    'admin.kyc.fact.id_type': 'Inyandiko',
+    'admin.kyc.fact.id_number': "Nimero y'inyandiko",
+    'admin.kyc.fact.submitted_at': 'Byoherejwe',
+    'admin.kyc.documents': 'Inyandiko',
+    'admin.kyc.slot.front': "Imbere h'indangamuntu",
+    'admin.kyc.slot.back': "Inyuma h'indangamuntu",
+    'admin.kyc.slot.selfie': 'Ifoto yawe',
+    'admin.kyc.document.replaced': 'Yasimbuwe',
+    'admin.kyc.document.meta': '{name} · {size} KB',
+    'admin.kyc.document.open': 'Kuramo {name}',
+    'admin.kyc.document.download': 'Kuramo',
+    'admin.kyc.decision': 'Icyemezo',
+    'admin.kyc.history': 'Amateka',
+    'admin.kyc.command.verification.save': 'Intambwe yabitswe',
+    'admin.kyc.command.verification.upload': 'Inyandiko yashyizweho',
+    'admin.kyc.command.verification.submit': 'Byoherejwe gusuzumwa',
+    'admin.kyc.command.verification.approve':
+        "Byemejwe n'ushinzwe kubahiriza amategeko",
+    'admin.kyc.command.verification.reject':
+        "Byanzwe n'ushinzwe kubahiriza amategeko",
+    'admin.kyc.approve': 'Emeza',
+    'admin.kyc.reject': 'Anga',
+    'admin.kyc.stage.approve.title': 'Emeza uyu mwirondoro',
+    'admin.kyc.stage.approve.body':
+        'Ibi byemeza uyu muntu kandi bimufungurira kuba Umushoramari. Vuga ibyo wagenzuye.',
+    'admin.kyc.stage.approve.cta': 'Emeza umwirondoro',
+    'admin.kyc.stage.approve.placeholder':
+        "urugero: Ifoto, nimero n'ifoto ye bihuye na nyir'konti",
+    'admin.kyc.stage.reject.title': 'Anga iki gisabwa',
+    'admin.kyc.stage.reject.body':
+        'Uyu muntu abona impamvu yawe kandi ashobora gukosora amakuru ye.',
+    'admin.kyc.stage.reject.cta': 'Anga igisabwa',
+    'admin.kyc.stage.reject.placeholder':
+        "urugero: Ifoto y'indangamuntu ntigaragara neza. Ohereza indi isobanutse.",
+    'admin.nav.mail_testers': 'Abagerageza imeyili z’igerageza',
+    'admin.section.mail_testers.title': 'Abagerageza imeyili z’igerageza',
+    'admin.section.mail_testers.subtitle':
+        'Abo urubuga rw’igerageza rushobora koherereza imeyili nyazo. Ku rubuga rw’igerageza gusa.',
+    'admin.section.mail_testers.search':
+        'Shakisha ugerageza ukoresheje imeyili…',
+    'admin.mail_testers.intro':
+        'Urubuga rw’igerageza rwohereza imeyili nyazo ku bagerageza bemewe gusa; izindi zirahagarikwa. Ongeraho hano aderesi nyayo y’ugerageza, ugaragaze impamvu. Buri gihinduka kibikwa mu izina ryawe.',
+    'admin.mail_testers.server.title': 'Bemewe buri gihe kuri iyi seriveri',
+    'admin.mail_testers.server.body':
+        'Byashyizwe kuri seriveri y’igerageza. Bihindurirwe aho, si hano.',
+    'admin.mail_testers.add.label': 'Ongeraho ugerageza',
+    'admin.mail_testers.add.email': 'Aderesi ya imeyili y’ugerageza',
+    'admin.mail_testers.add.placeholder': 'izina@urugero.com',
+    'admin.mail_testers.add.cta': 'Ongeraho ugerageza',
+    'admin.mail_testers.table': 'Abagerageza bavuzwe mu mazina',
+    'admin.mail_testers.col.email': 'Imeyili',
+    'admin.mail_testers.col.added_by': 'Yongeweho na',
+    'admin.mail_testers.col.added_at': 'Yongeweho',
+    'admin.mail_testers.col.actions': 'Ibikorwa',
+    'admin.mail_testers.remove': 'Kuraho',
+    'admin.mail_testers.remove_label': 'Kuraho {email}',
+    'admin.mail_testers.empty': 'Nta bagerageza bavuzwe mu mazina barahari.',
+    'admin.mail_testers.stage.add.title': 'Ongeraho {email} nk’ugerageza',
+    'admin.mail_testers.stage.add.body':
+        'Urubuga rw’igerageza ruzashobora koherereza iyi aderesi imeyili nyazo, harimo ubutumwa bwo kwiyandikisha n’ubwo guhindura ijambobanga.',
+    'admin.mail_testers.stage.add.cta': 'Ongeraho ugerageza',
+    'admin.mail_testers.stage.add.placeholder':
+        'Kuki uyu muntu akeneye imeyili z’igerageza?',
+    'admin.mail_testers.stage.remove.title': 'Kuraho {email}',
+    'admin.mail_testers.stage.remove.body':
+        'Urubuga rw’igerageza ruzahita ruhagarika kohereza imeyili kuri iyi aderesi.',
+    'admin.mail_testers.stage.remove.cta': 'Kuraho ugerageza',
+    'admin.mail_testers.stage.remove.placeholder':
+        'Kuki uyu ugerageza akuweho?',
     'admin.drawer.close': 'Funga',
     'admin.stage.reason_label': 'Impamvu yandikwa',
     'admin.stage.logged_as':
@@ -2612,6 +2705,11 @@ const rw: Catalog = {
     'investor.kyc.target':
         "Numva ko inyungu ya Rozine Plus ari intego, atari isezerano, ko impapuro zibikwa mu izina ry'ikigo, kandi ko Rozine idafata igishoro mu mari yayo.",
     'investor.kyc.submit': 'Ohereza kugira ngo bigenzurwe',
+    'investor.kyc.previous': 'Intambwe ibanza',
+    'investor.kyc.submitted_notice':
+        'Amakuru yawe ari mu itsinda ryacu rishinzwe kubahiriza amategeko. Tuzakumenyesha nibamara kuyasuzuma.',
+    'investor.kyc.rejected_notice':
+        'Itsinda rishinzwe kubahiriza amategeko ntiryashoboye kwemeza aya makuru: {reason}. Yakosore wongere uyohereze.',
     'investor.kyc.verifying': 'Turimo kugenzura umwirondoro wawe…',
     'investor.kyc.verifying_entity': 'Turimo kugenzura ikigo…',
     'investor.verified.title': 'Wemejwe',
@@ -3801,10 +3899,6 @@ const rw: Catalog = {
         'Iki gikorwa cyarangiye nta bwishyu bubaye',
     'investor.deal.notice.failed_closing.body':
         'Amafaranga ntiyoherejwe, bityo buri cyiyemezo cyasubijwe cyose.',
-    'investor.deals.gated_title':
-        'Genzura umwirondoro kugira ngo ubone amahirwe afunguye',
-    'investor.deals.gated_body':
-        "Amahirwe n'ibigo byayo yerekwa gusa abashoramari bagenzuwe.",
     'investor.deals.paused': 'Byahagaritswe',
     'investor.deal.cap.max': {
         one: 'Kugeza ku rupapuro {count}: {reason}.',

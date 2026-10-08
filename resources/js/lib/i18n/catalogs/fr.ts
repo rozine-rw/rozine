@@ -38,6 +38,7 @@ const fr: Catalog = {
         'Votre compte personnel est autorisé à ouvrir cet espace.',
     'identity.home.back': 'Choisir une application',
     'identity.home.settings': 'Paramètres du compte',
+    'identity.home.staging_mail_testers': 'Testeurs e-mail de préproduction',
     'identity.home.auditor_nav': "Votre travail d'audit",
     'identity.home.saving': 'Enregistrement de votre position…',
     'identity.home.failed':
@@ -94,6 +95,10 @@ const fr: Catalog = {
     'suite.motto': 'Un seul cœur en direct · chaque surface',
     'suite.section.apps': 'Vos applications',
     'suite.app.open': "Ouvrir l'application →",
+    'suite.app.browse': 'Voir les offres →',
+    'suite.app.request_access': "Demander l'accès →",
+    'suite.app.investor.preview':
+        "Parcourez dès maintenant les offres ouvertes. L'investissement s'ouvre une fois votre identité vérifiée.",
     'suite.app.investor.title': 'Investisseur',
     'suite.app.investor.description':
         'Découvrez des entreprises vérifiées, investissez, suivez vos rendements.',
@@ -104,6 +109,7 @@ const fr: Catalog = {
     'suite.app.auditor.description':
         'Vérifiez sur site, auditez les rapports, percevez un rendement.',
     'suite.blocker.action.verify_email': 'Vérifier votre e-mail →',
+    'suite.blocker.action.verify_identity': 'Vérifier votre identité →',
     'suite.blocker.action.contact': 'Contacter le support Rozine →',
     'suite.blocker.EMAIL_VERIFICATION_REQUIRED.title':
         "Vérifiez d'abord votre e-mail",
@@ -115,8 +121,6 @@ const fr: Catalog = {
         "Votre connexion n'est liée à aucune identité vérifiée ; aucune application ne peut encore s'ouvrir.",
     'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title':
         'Votre identité est en cours de vérification',
-    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.body':
-        "Vos applications s'ouvriront une fois la vérification terminée.",
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
         'Un pouvoir de signature est requis',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.body':
@@ -129,10 +133,6 @@ const fr: Catalog = {
         'Ces applications ne peuvent pas être combinées',
     'suite.blocker.ROLE_MEMBERSHIP_CONFLICT.body':
         "Un partenaire d'audit ne peut pas aussi investir ou lever des fonds sur Rozine. Le support vous aidera à choisir.",
-    'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.title':
-        "Aucune application pour l'instant",
-    'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.body':
-        "Vous n'avez encore rejoint aucune application. Le support peut configurer celle qu'il vous faut.",
 
     'business.auth.wordmark': 'rozine',
     'business.auth.for_business': 'Pour les entreprises',
@@ -803,6 +803,95 @@ const fr: Catalog = {
     'admin.role.access.compliance': 'Accès conformité',
     'admin.role.treasury': 'Trésorerie',
     'admin.role.access.treasury': 'Accès trésorerie',
+    'admin.kyc.intro':
+        "Demandes de vérification d'identité de personnes qui souhaitent investir. Ouvrez-en une pour vérifier ses documents, puis approuvez-la ou rejetez-la avec un motif.",
+    'admin.kyc.tabs': 'États de vérification',
+    'admin.kyc.tab.submitted': "En attente d'examen",
+    'admin.kyc.tab.decided': 'Traitées',
+    'admin.kyc.table': "Demandes de vérification d'identité",
+    'admin.kyc.col.person': 'Personne',
+    'admin.kyc.col.document': 'Document',
+    'admin.kyc.col.submitted': 'Envoyée',
+    'admin.kyc.col.status': 'Statut',
+    'admin.kyc.id_type.national_id': "Carte d'identité nationale",
+    'admin.kyc.id_type.passport': 'Passeport',
+    'admin.kyc.id_type.drivers_license': 'Permis de conduire',
+    'admin.kyc.status.draft': 'Rouverte',
+    'admin.kyc.status.submitted': 'En attente',
+    'admin.kyc.status.approved': 'Approuvée',
+    'admin.kyc.status.rejected': 'Rejetée',
+    'admin.kyc.empty.submitted': "Aucune demande n'attend d'examen.",
+    'admin.kyc.empty.decided': 'Aucune décision pour le moment.',
+    'admin.kyc.more': 'Afficher plus',
+    'admin.kyc.drawer': "Demande de vérification d'identité",
+    'admin.kyc.facts': 'Informations envoyées',
+    'admin.kyc.fact.date_of_birth': 'Date de naissance',
+    'admin.kyc.fact.id_type': 'Document',
+    'admin.kyc.fact.id_number': 'Numéro du document',
+    'admin.kyc.fact.submitted_at': 'Envoyée',
+    'admin.kyc.documents': 'Documents',
+    'admin.kyc.slot.front': "Recto de la pièce d'identité",
+    'admin.kyc.slot.back': "Verso de la pièce d'identité",
+    'admin.kyc.slot.selfie': 'Selfie',
+    'admin.kyc.document.replaced': 'Remplacé',
+    'admin.kyc.document.meta': '{name} · {size} Ko',
+    'admin.kyc.document.open': 'Télécharger {name}',
+    'admin.kyc.document.download': 'Télécharger',
+    'admin.kyc.decision': 'Décision',
+    'admin.kyc.history': 'Historique',
+    'admin.kyc.command.verification.save': 'Étape enregistrée',
+    'admin.kyc.command.verification.upload': 'Document téléversé',
+    'admin.kyc.command.verification.submit': 'Envoyée pour examen',
+    'admin.kyc.command.verification.approve': 'Approuvée par la conformité',
+    'admin.kyc.command.verification.reject': 'Rejetée par la conformité',
+    'admin.kyc.approve': 'Approuver',
+    'admin.kyc.reject': 'Rejeter',
+    'admin.kyc.stage.approve.title': 'Approuver cette identité',
+    'admin.kyc.stage.approve.body':
+        'Cela vérifie la personne et ouvre son accès Investisseur. Indiquez ce que vous avez vérifié.',
+    'admin.kyc.stage.approve.cta': "Approuver l'identité",
+    'admin.kyc.stage.approve.placeholder':
+        'p. ex. La photo, le numéro et le selfie correspondent au titulaire du compte',
+    'admin.kyc.stage.reject.title': 'Rejeter cette demande',
+    'admin.kyc.stage.reject.body':
+        'La personne voit votre motif et peut corriger ses informations.',
+    'admin.kyc.stage.reject.cta': 'Rejeter la demande',
+    'admin.kyc.stage.reject.placeholder':
+        'p. ex. La photo de la pièce est floue. Téléversez une photo plus nette.',
+    'admin.nav.mail_testers': 'Testeurs e-mail de préproduction',
+    'admin.section.mail_testers.title': 'Testeurs e-mail de préproduction',
+    'admin.section.mail_testers.subtitle':
+        'Les personnes à qui la préproduction peut envoyer de vrais e-mails. Préproduction uniquement.',
+    'admin.section.mail_testers.search': 'Rechercher un testeur par e-mail…',
+    'admin.mail_testers.intro':
+        'La préproduction n’envoie de vrais e-mails qu’aux testeurs approuvés ; les autres messages sont abandonnés. Ajoutez ici l’adresse exacte d’un testeur, avec un motif. Chaque modification est enregistrée à votre nom.',
+    'admin.mail_testers.server.title': 'Toujours approuvés sur ce serveur',
+    'admin.mail_testers.server.body':
+        'Définis sur le serveur de préproduction. Modifiez-les là-bas, pas ici.',
+    'admin.mail_testers.add.label': 'Ajouter un testeur',
+    'admin.mail_testers.add.email': 'Adresse e-mail du testeur',
+    'admin.mail_testers.add.placeholder': 'nom@exemple.com',
+    'admin.mail_testers.add.cta': 'Ajouter le testeur',
+    'admin.mail_testers.table': 'Testeurs nommés',
+    'admin.mail_testers.col.email': 'E-mail',
+    'admin.mail_testers.col.added_by': 'Ajouté par',
+    'admin.mail_testers.col.added_at': 'Ajouté',
+    'admin.mail_testers.col.actions': 'Actions',
+    'admin.mail_testers.remove': 'Retirer',
+    'admin.mail_testers.remove_label': 'Retirer {email}',
+    'admin.mail_testers.empty': 'Aucun testeur nommé pour le moment.',
+    'admin.mail_testers.stage.add.title': 'Ajouter {email} comme testeur',
+    'admin.mail_testers.stage.add.body':
+        'La préproduction pourra envoyer de vrais e-mails à cette adresse, y compris les messages d’inscription et de réinitialisation du mot de passe.',
+    'admin.mail_testers.stage.add.cta': 'Ajouter le testeur',
+    'admin.mail_testers.stage.add.placeholder':
+        'Pourquoi cette personne a-t-elle besoin des e-mails de préproduction ?',
+    'admin.mail_testers.stage.remove.title': 'Retirer {email}',
+    'admin.mail_testers.stage.remove.body':
+        'La préproduction cessera immédiatement d’envoyer des e-mails à cette adresse.',
+    'admin.mail_testers.stage.remove.cta': 'Retirer le testeur',
+    'admin.mail_testers.stage.remove.placeholder':
+        'Pourquoi retirer ce testeur ?',
     'admin.drawer.close': 'Fermer',
     'admin.stage.reason_label': 'Motif pour le registre',
     'admin.stage.logged_as':
@@ -2619,6 +2708,11 @@ const fr: Catalog = {
     'investor.kyc.target':
         "Je comprends que le rendement Rozine Plus est un objectif, pas une garantie, que les titres sont détenus au nom de l'entité et que Rozine ne détient pas de capital à son bilan.",
     'investor.kyc.submit': 'Soumettre pour vérification',
+    'investor.kyc.previous': 'Étape précédente',
+    'investor.kyc.submitted_notice':
+        "Vos informations sont entre les mains de notre équipe Conformité. Nous vous préviendrons une fois l'examen terminé.",
+    'investor.kyc.rejected_notice':
+        "La Conformité n'a pas pu vérifier ces informations : {reason}. Corrigez-les et soumettez-les à nouveau.",
     'investor.kyc.verifying': 'Vérification de votre identité…',
     'investor.kyc.verifying_entity': "Vérification de l'entité…",
     'investor.verified.title': 'Vous êtes vérifié',
@@ -3822,10 +3916,6 @@ const fr: Catalog = {
         "Cette levée s'est clôturée sans versement",
     'investor.deal.notice.failed_closing.body':
         "Le versement à l'entreprise n'a pas eu lieu : chaque engagement a été remboursé intégralement.",
-    'investor.deals.gated_title':
-        'Vérifiez votre identité pour voir les offres',
-    'investor.deals.gated_body':
-        "Les offres et leurs entreprises ne sont montrées qu'aux investisseurs vérifiés.",
     'investor.deals.paused': 'Suspendu',
     'investor.deal.cap.max': {
         one: "Jusqu'à {count} titre : {reason}.",

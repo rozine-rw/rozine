@@ -260,27 +260,26 @@ describe('Deals on a phone', () => {
         expect(next).toBeEnabled();
     });
 
-    it('gives an unverified investor the gate only, with no deal or business named', () => {
+    it('shows an unverified person with no deal open the way to verify, and no wallet', () => {
         const { unmount } = render(<InvestorDeals {...deals(gatedFixture)} />);
 
         expect(
             screen.getByRole('link', { name: 'Verify to invest' }),
         ).toHaveAttribute('href', '/preview/investor-verification');
-        expect(
-            screen.getByText('Verify to see open deals'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('No deals open right now')).toBeInTheDocument();
         expect(screen.queryByRole('article')).not.toBeInTheDocument();
-        expect(screen.queryByRole('region')).not.toBeInTheDocument();
-        expect(screen.queryByText(/GreenLeaf/u)).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: 'Wallet balance' }),
+        ).not.toBeInTheDocument();
         unmount();
         setWide(true);
         render(<InvestorDeals {...deals(gatedFixture)} />);
+        expect(screen.getByText('No deals open right now')).toBeInTheDocument();
         expect(
-            screen.getByText('Verify to see open deals'),
-        ).toBeInTheDocument();
-        expect(screen.queryByRole('article')).not.toBeInTheDocument();
+            screen.queryByRole('link', { name: 'Wallet balance' }),
+        ).not.toBeInTheDocument();
         expect(
-            screen.queryByText(/Independently audited/u),
+            screen.queryByRole('link', { name: 'Deposit' }),
         ).not.toBeInTheDocument();
     });
 
@@ -290,7 +289,9 @@ describe('Deals on a phone', () => {
         pending.gate = { status: 'verification_pending' };
         pending.quote = null;
         pending.deals[0].lifecycle = 'funded';
-        pending.wallet.next_payout = null;
+        pending.wallet = null;
+        pending.links.wallet = null;
+        pending.links.deposit = null;
         pending.unread_notifications = 0;
         const { unmount: unmountSecond } = render(
             <InvestorDeals {...pending} />,
@@ -304,8 +305,8 @@ describe('Deals on a phone', () => {
             'We’re verifying your identity'.replace('’', "'"),
         );
         expect(
-            screen.getByRole('link', { name: 'Wallet balance' }),
-        ).toHaveTextContent(/^RWF 1,253,485$/u);
+            screen.queryByRole('link', { name: 'Wallet balance' }),
+        ).not.toBeInTheDocument();
         expect(
             screen.getByRole('link', { name: 'Notifications' }),
         ).toBeInTheDocument();
@@ -839,18 +840,54 @@ describe('Deals in C3 states', () => {
         ).toHaveTextContent('Paying out');
     });
 
-    it('still points to verification if a gated page ever carries a deal', () => {
+    it('lets a person still being verified browse the deck, with no wallet and verify in place of invest', () => {
         const props = deals();
 
         props.gate = {
             status: 'verification_required',
             link: { url: '/preview/investor-verification', method: 'get' },
         };
-        render(<InvestorDeals {...props} />);
+        props.wallet = null;
+        props.links.wallet = null;
+        props.links.deposit = null;
+        const { unmount } = render(<InvestorDeals {...props} />);
 
+        expect(
+            screen.getByRole('article', { name: 'GreenLeaf Agro' }),
+        ).toBeInTheDocument();
         expect(
             screen.getByRole('link', { name: 'Verify to invest' }),
         ).toHaveAttribute('href', '/preview/investor-verification');
+        expect(
+            screen.queryByRole('link', { name: 'Wallet balance' }),
+        ).not.toBeInTheDocument();
+        unmount();
+        setWide(true);
+        render(<InvestorDeals {...props} />);
+        expect(
+            screen.getAllByRole('link', { name: 'Verify to invest' })[0],
+        ).toHaveAttribute('href', '/preview/investor-verification');
+        expect(
+            screen.queryByRole('link', { name: 'Wallet balance' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: 'Deposit' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows the balance without a deposit link when the server sends none', () => {
+        const props = deals();
+
+        props.links.deposit = null;
+        setWide(true);
+        render(<InvestorDeals {...props} />);
+
+        expect(
+            screen.getByRole('link', { name: 'Wallet balance' }),
+        ).toHaveTextContent('RWF 1,253,485');
+        expect(
+            screen.queryByRole('link', { name: 'Deposit' }),
+        ).not.toBeInTheDocument();
     });
 
     it('offers Invest only while the server lists primary.reserve', () => {

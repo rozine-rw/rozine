@@ -10,6 +10,18 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class OperationResource extends JsonResource
 {
+    /**
+     * A command result as the API answers it. A refusal returned before the journal recorded it (an
+     * idempotency conflict or an input refused up front) has no operation, data or revision.
+     *
+     * @param  array<string, mixed>  $result
+     */
+    public static function fromResult(array $result, string $policyVersion): self
+    {
+        return new self([...['operation_id' => null, 'data' => [], 'revision' => null, 'policy_version' => $policyVersion,
+            'server_time' => now()->toIso8601String(), 'allowed_actions' => [], 'field_errors' => []], ...$result]);
+    }
+
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {

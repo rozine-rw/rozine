@@ -805,8 +805,19 @@ export type FundsSource =
     | 'contributions'
     | 'other';
 
+/**
+ * The live submission's command envelope (MVP-INVESTOR-SCR-03). Absent on preview fixtures, which
+ * send no `request_id`. `submitted` waits for Compliance; `rejected` carries the reason and reopens.
+ */
+export type KycSubmission = {
+    identity_context_revision: number;
+    revision: number;
+    status: 'draft' | 'submitted' | 'approved' | 'rejected';
+    decision_reason: string | null;
+};
+
 export type InvestorVerificationProps =
-    | {
+    | ({
           investor_type: 'individual';
           step: KycStep;
           country: string;
@@ -824,7 +835,7 @@ export type InvestorVerificationProps =
               upload: RouteAction;
               submit: RouteAction;
           };
-      }
+      } & Partial<KycSubmission>)
     | {
           investor_type: 'institution';
           step: KycInstitutionStep;
@@ -979,7 +990,8 @@ export type C3InvestorShellLinks = {
     deals: RouteLink | null;
     portfolio: RouteLink | null;
     profile: RouteLink | null;
-    wallet: RouteLink;
+    /** Null before the identity is verified: there is no wallet yet. */
+    wallet: RouteLink | null;
     notifications: RouteLink | null;
     launcher: RouteLink;
 };
@@ -1170,9 +1182,12 @@ export type PrimaryQuote = {
 };
 
 export type C3InvestorDealsProps = InvestorPageContract & {
-    /** Unverified: the gate only, with `deals: []` and `focus: null` (H8). */
+    /**
+     * While the identity is being verified the deck is readable behind the gate, with no wallet,
+     * no wallet links and nothing to invest with (this supersedes H8's gate-only deck).
+     */
     gate: InvestGate;
-    wallet: WalletSummary;
+    wallet: WalletSummary | null;
     unread_notifications: number;
     sorts: DealSort[];
     industries: IndustryFilter[];
@@ -1181,7 +1196,7 @@ export type C3InvestorDealsProps = InvestorPageContract & {
     quote: PrimaryQuote | null;
     /** A destination with no live route yet is null (C3InvestorShellLinks). */
     links: C3InvestorShellLinks & {
-        deposit: RouteLink;
+        deposit: RouteLink | null;
         checkout: RouteLink | null;
     };
 };

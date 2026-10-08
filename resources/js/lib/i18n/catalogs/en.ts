@@ -38,6 +38,7 @@ const en = {
         'Your staff account has permission to open this workspace.',
     'identity.home.back': 'Choose an app',
     'identity.home.settings': 'Account settings',
+    'identity.home.staging_mail_testers': 'Staging mail testers',
     'identity.home.auditor_nav': 'Your audit work',
     'identity.home.saving': 'Saving your position…',
     'identity.home.failed':
@@ -93,6 +94,10 @@ const en = {
     'suite.motto': 'One live core · every surface',
     'suite.section.apps': 'Your apps',
     'suite.app.open': 'Open app →',
+    'suite.app.browse': 'Browse deals →',
+    'suite.app.request_access': 'Request access →',
+    'suite.app.investor.preview':
+        'Browse open deals now. Investing opens once your identity is verified.',
     'suite.app.investor.title': 'Investor',
     'suite.app.investor.description':
         'Discover verified businesses, invest, track returns.',
@@ -103,6 +108,7 @@ const en = {
     'suite.app.auditor.description':
         'Field-verify on site, audit reports, earn yield.',
     'suite.blocker.action.verify_email': 'Verify your email →',
+    'suite.blocker.action.verify_identity': 'Verify your identity →',
     'suite.blocker.action.contact': 'Contact Rozine support →',
     'suite.blocker.EMAIL_VERIFICATION_REQUIRED.title':
         'Verify your email first',
@@ -114,8 +120,6 @@ const en = {
         'Your sign-in is not linked to a verified identity, so no app can open yet.',
     'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title':
         'Your identity is being verified',
-    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.body':
-        'Your apps open once your identity verification is complete.',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
         'Signing authority is needed',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.body':
@@ -128,9 +132,6 @@ const en = {
         'These apps cannot be combined',
     'suite.blocker.ROLE_MEMBERSHIP_CONFLICT.body':
         'An Audit Partner cannot also invest or raise on Rozine. Support will help you choose.',
-    'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.title': 'No apps yet',
-    'suite.blocker.ROLE_MEMBERSHIP_REQUIRED.body':
-        'You have not joined an app yet. Support can set up the one you need.',
 
     'business.auth.wordmark': 'rozine',
     'business.auth.for_business': 'For business',
@@ -780,6 +781,95 @@ const en = {
     'admin.role.access.compliance': 'Compliance access',
     'admin.role.treasury': 'Treasury',
     'admin.role.access.treasury': 'Treasury access',
+    'admin.kyc.intro':
+        'Identity submissions from people who want to invest. Open one to check its documents, then approve or reject it with a reason.',
+    'admin.kyc.tabs': 'Verification states',
+    'admin.kyc.tab.submitted': 'Waiting for review',
+    'admin.kyc.tab.decided': 'Decided',
+    'admin.kyc.table': 'Identity submissions',
+    'admin.kyc.col.person': 'Person',
+    'admin.kyc.col.document': 'Document',
+    'admin.kyc.col.submitted': 'Submitted',
+    'admin.kyc.col.status': 'Status',
+    'admin.kyc.id_type.national_id': 'National ID',
+    'admin.kyc.id_type.passport': 'Passport',
+    'admin.kyc.id_type.drivers_license': 'Driving licence',
+    'admin.kyc.status.draft': 'Reopened',
+    'admin.kyc.status.submitted': 'Waiting',
+    'admin.kyc.status.approved': 'Approved',
+    'admin.kyc.status.rejected': 'Rejected',
+    'admin.kyc.empty.submitted': 'No submissions are waiting for review.',
+    'admin.kyc.empty.decided': 'No decisions yet.',
+    'admin.kyc.more': 'Show more',
+    'admin.kyc.drawer': 'Identity submission',
+    'admin.kyc.facts': 'Submitted details',
+    'admin.kyc.fact.date_of_birth': 'Date of birth',
+    'admin.kyc.fact.id_type': 'Document',
+    'admin.kyc.fact.id_number': 'Document number',
+    'admin.kyc.fact.submitted_at': 'Submitted',
+    'admin.kyc.documents': 'Documents',
+    'admin.kyc.slot.front': 'ID front',
+    'admin.kyc.slot.back': 'ID back',
+    'admin.kyc.slot.selfie': 'Selfie',
+    'admin.kyc.document.replaced': 'Replaced',
+    'admin.kyc.document.meta': '{name} · {size} KB',
+    'admin.kyc.document.open': 'Download {name}',
+    'admin.kyc.document.download': 'Download',
+    'admin.kyc.decision': 'Decision',
+    'admin.kyc.history': 'History',
+    'admin.kyc.command.verification.save': 'Saved a step',
+    'admin.kyc.command.verification.upload': 'Uploaded a document',
+    'admin.kyc.command.verification.submit': 'Submitted for review',
+    'admin.kyc.command.verification.approve': 'Approved by Compliance',
+    'admin.kyc.command.verification.reject': 'Rejected by Compliance',
+    'admin.kyc.approve': 'Approve',
+    'admin.kyc.reject': 'Reject',
+    'admin.kyc.stage.approve.title': 'Approve this identity',
+    'admin.kyc.stage.approve.body':
+        'This verifies the person and opens their Investor access. Say what you checked.',
+    'admin.kyc.stage.approve.cta': 'Approve identity',
+    'admin.kyc.stage.approve.placeholder':
+        'e.g. The ID photo, number and selfie match the account holder',
+    'admin.kyc.stage.reject.title': 'Reject this submission',
+    'admin.kyc.stage.reject.body':
+        'The person sees your reason and can correct their details.',
+    'admin.kyc.stage.reject.cta': 'Reject submission',
+    'admin.kyc.stage.reject.placeholder':
+        'e.g. The ID photo is blurred. Upload a sharper photo.',
+    'admin.nav.mail_testers': 'Staging mail testers',
+    'admin.section.mail_testers.title': 'Staging mail testers',
+    'admin.section.mail_testers.subtitle':
+        'Who staging may send real email to. Staging only.',
+    'admin.section.mail_testers.search': 'Search testers by email…',
+    'admin.mail_testers.intro':
+        "Staging sends real email only to approved testers; mail to anyone else is dropped. Add a tester's exact address here, with a reason. Every change is recorded with your name.",
+    'admin.mail_testers.server.title': 'Always approved on this server',
+    'admin.mail_testers.server.body':
+        'Set on the staging server. Change them there, not here.',
+    'admin.mail_testers.add.label': 'Add a tester',
+    'admin.mail_testers.add.email': 'Tester email address',
+    'admin.mail_testers.add.placeholder': 'name@example.com',
+    'admin.mail_testers.add.cta': 'Add tester',
+    'admin.mail_testers.table': 'Named testers',
+    'admin.mail_testers.col.email': 'Email',
+    'admin.mail_testers.col.added_by': 'Added by',
+    'admin.mail_testers.col.added_at': 'Added',
+    'admin.mail_testers.col.actions': 'Actions',
+    'admin.mail_testers.remove': 'Remove',
+    'admin.mail_testers.remove_label': 'Remove {email}',
+    'admin.mail_testers.empty': 'No named testers yet.',
+    'admin.mail_testers.stage.add.title': 'Add {email} as a tester',
+    'admin.mail_testers.stage.add.body':
+        'Staging will be able to send this address real email, including sign-up and password-reset messages.',
+    'admin.mail_testers.stage.add.cta': 'Add tester',
+    'admin.mail_testers.stage.add.placeholder':
+        'Why does this person need staging email?',
+    'admin.mail_testers.stage.remove.title': 'Remove {email}',
+    'admin.mail_testers.stage.remove.body':
+        'Staging will stop sending this address email straight away.',
+    'admin.mail_testers.stage.remove.cta': 'Remove tester',
+    'admin.mail_testers.stage.remove.placeholder':
+        'Why is this tester being removed?',
     'admin.drawer.close': 'Close',
     'admin.stage.reason_label': 'Reason for the record',
     'admin.stage.logged_as': 'Logged to the audit trail as {name} · {role}',
@@ -2554,6 +2644,11 @@ const en = {
     'investor.kyc.target':
         "I understand the Rozine Plus return is a target, not a guarantee, that notes are held in the entity's own name, and that Rozine does not hold capital on its balance sheet.",
     'investor.kyc.submit': 'Submit for verification',
+    'investor.kyc.previous': 'Previous step',
+    'investor.kyc.submitted_notice':
+        'Your details are with our Compliance team. We will tell you when they have been reviewed.',
+    'investor.kyc.rejected_notice':
+        'Compliance could not verify these details: {reason}. Correct them and submit again.',
     'investor.kyc.verifying': 'Verifying your identity…',
     'investor.kyc.verifying_entity': 'Verifying the entity…',
     'investor.verified.title': "You're verified",
@@ -3667,9 +3762,6 @@ const en = {
         'This raise closed without paying out',
     'investor.deal.notice.failed_closing.body':
         "The payout to the business didn't go ahead, so every commitment was refunded in full.",
-    'investor.deals.gated_title': 'Verify to see open deals',
-    'investor.deals.gated_body':
-        'Deals and their businesses are shown to verified investors only.',
     'investor.deals.paused': 'Paused',
     'investor.deal.cap.max': {
         one: 'Up to {count} note: {reason}.',

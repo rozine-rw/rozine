@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "scope": "poc-only",
+  "php": [
+    "tests/Unit/WalletMoneyTest.php",
+    "tests/Unit/WalletBalanceTest.php",
+    "tests/Unit/JournalEntryTest.php",
+    "tests/Unit/IdentityRoleAccessTest.php",
+    "tests/Unit/McpRedirectSecurityTest.php",
+    "tests/Unit/CiWorkflowPolicyTest.php",
+    "tests/Architecture/ArchitectureTest.php",
+    "tests/Architecture/StrictTypesTest.php",
+    "tests/Feature/ExampleTest.php",
+    "tests/Feature/Auth/AuthenticationTest.php",
+    "tests/Feature/ActiveRoleAuthorizationTest.php",
+    "tests/Feature/EnvironmentIsolationTest.php",
+    "tests/Feature/WalletSyntheticIsolationTest.php",
+    "tests/Feature/StaffPermissionTest.php",
+    "tests/Feature/DemoSafeguardsTest.php",
+    "tests/Feature/AuditReportCryptographyTest.php",
+    "tests/Feature/AuditStatementAccessTest.php",
+    "tests/Feature/OrganizationIdentityTest.php",
+    "tests/Concurrency/LedgerCommitIntegrityTest.php",
+    "tests/Concurrency/WalletPostingsConcurrencyTest.php"
+  ],
+  "web": [
+    "tests/web/auth-settings/identity-entry.test.tsx",
+    "tests/web/auth-settings/access-refresh.test.tsx",
+    "tests/web/investor/auth.test.tsx",
+    "tests/web/business/auth.test.tsx",
+    "tests/web/investor/wallet.test.tsx",
+    "tests/web/business/wallet.test.tsx",
+    "tests/web/admin/reconciliation.test.tsx",
+    "tests/web/auditor/conflicts.test.tsx"
+  ]
+}

@@ -12,7 +12,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 
-it('derives checkpoint two permissions from explicit staff roles without any override', function (string $role, bool $canVerify, bool $canApprove, bool $canAccredit): void {
+it('derives checkpoint two permissions from explicit staff roles without any override', function (string $role, bool $canVerify, bool $canApprove, bool $canAccredit, bool $canVerifyInvestors): void {
     $user = User::factory()->withTwoFactor()->create();
     app(ConfigureStaffAccess::class)->handle($user->id, true, 'Checkpoint two staff assignment.', (string) Str::uuid(), [$role]);
     $access = app(GetStaffAccess::class)->handle($user->id);
@@ -20,13 +20,14 @@ it('derives checkpoint two permissions from explicit staff roles without any ove
         ->and(in_array('businesses.verify', $access['allowed_actions'], true))->toBe($canVerify)
         ->and(in_array('applications.review', $access['allowed_actions'], true))->toBe($canApprove)
         ->and(in_array('audit.partners.verify', $access['allowed_actions'], true))->toBe($canAccredit)
+        ->and(in_array('investors.verify', $access['allowed_actions'], true))->toBe($canVerifyInvestors)
         ->and($access['allowed_actions'])->not->toContain('underwriting.override', '*');
 })->with([
-    'analyst' => ['analyst', false, false, false],
-    'approver' => ['approver', true, true, true],
-    'treasury' => ['treasury', false, false, false],
-    'compliance' => ['compliance', true, false, true],
-    'superadmin' => ['superadmin', true, true, true],
+    'analyst' => ['analyst', false, false, false, false],
+    'approver' => ['approver', true, true, true, false],
+    'treasury' => ['treasury', false, false, false, false],
+    'compliance' => ['compliance', true, false, true, true],
+    'superadmin' => ['superadmin', true, true, true, true],
 ]);
 
 it('denies ungranted staff operations and rechecks permission and MFA after revocation', function (): void {
