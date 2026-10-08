@@ -73,6 +73,66 @@
             "launcher": {
                 "url": "/preview/launcher-ready",
                 "method": "get"
+            },
+            "notes": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "primary_market": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "secondary_market": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "risk": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "compliance": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "ratings": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "deferrals": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "plus": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "finance": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "messaging": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "academies": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "app_control": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "policies": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "system_health": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "payments": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
             }
         },
         "badges": {

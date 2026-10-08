@@ -29,6 +29,7 @@ import BusinessApplicationController from './BusinessApplicationController'
 import IdentityManagementController from './IdentityManagementController'
 import RoleBookmarkController from './RoleBookmarkController'
 import Settings from './Settings'
+import StaffSectionController from './StaffSectionController'
 import StaffStagingMailTesterController from './StaffStagingMailTesterController'
 
 const Controllers = {
@@ -63,6 +64,7 @@ const Controllers = {
     IdentityManagementController: Object.assign(IdentityManagementController, IdentityManagementController),
     RoleBookmarkController: Object.assign(RoleBookmarkController, RoleBookmarkController),
     Settings: Object.assign(Settings, Settings),
+    StaffSectionController: Object.assign(StaffSectionController, StaffSectionController),
     StaffStagingMailTesterController: Object.assign(StaffStagingMailTesterController, StaffStagingMailTesterController),
 }
 

@@ -30,10 +30,10 @@ describe('Reconciliation', () => {
 
         expect(screen.getByTestId('head')).toHaveTextContent('Reconciliation');
         expect(
-            within(nav()).getByRole('link', { name: 'Reconciliation' }),
+            within(nav()).getByRole('link', { name: 'Finance' }),
         ).toHaveAttribute('aria-current', 'page');
         expect(
-            within(nav()).getByRole('link', { name: 'Exceptions' }),
+            within(nav()).getByRole('link', { name: 'Risk Center' }),
         ).not.toHaveAttribute('aria-current');
 
         const close = screen.getByRole('region', { name: 'Day close' });
@@ -169,7 +169,7 @@ describe('Reconciliation', () => {
         render(<AdminReconciliation {...fixture} />);
 
         expect(
-            within(nav()).getByRole('link', { name: 'Reconciliation' }),
+            within(nav()).getByRole('link', { name: 'Finance' }),
         ).toHaveAttribute('aria-current', 'page');
         expect(
             within(nav()).queryByRole('link', { name: /Applications/u }),

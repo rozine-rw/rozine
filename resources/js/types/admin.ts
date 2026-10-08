@@ -55,7 +55,40 @@ export type AdminOptionalSection =
     | 'reconciliation'
     | 'coverage'
     | 'reports'
-    | 'mail_testers';
+    | 'mail_testers'
+    | AdminPendingSection;
+
+/**
+ * Design sections the console shows before their screens are wired: each opens the console frame
+ * with its title and an empty state, so the sidebar matches the design while the work lands.
+ */
+export type AdminPendingSection =
+    | 'notes'
+    | 'primary_market'
+    | 'secondary_market'
+    | 'risk'
+    | 'compliance'
+    | 'payments'
+    | 'ratings'
+    | 'deferrals'
+    | 'plus'
+    | 'finance'
+    | 'messaging'
+    | 'academies'
+    | 'app_control'
+    | 'policies'
+    | 'system_health';
+
+export type AdminPendingSectionProps = AdminFrameShellProps & {
+    /** A pending design section, or a designed screen whose live data is still being wired. */
+    section:
+        | AdminPendingSection
+        | 'today'
+        | 'businesses'
+        | 'auditors'
+        | 'staff'
+        | 'events';
+};
 
 /** Every section the frame can mark as current. */
 export type AdminFrameSection = AdminSection | AdminOptionalSection;

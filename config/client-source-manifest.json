@@ -596,6 +596,7 @@
         "resources/js/pages/admin/parties.tsx",
         "resources/js/pages/admin/reconciliation.tsx",
         "resources/js/pages/admin/repayments.tsx",
+        "resources/js/pages/admin/section.tsx",
         "resources/js/pages/admin/reports.tsx",
         "resources/js/pages/admin/staging-mail-testers.tsx",
         "resources/js/pages/admin/today.tsx",
