@@ -50,16 +50,16 @@ def diagnostic(reason, run=None):
     print(f"CI coordination: {reason}{suffix}", file=sys.stderr)
 
 
-def command(*args):
-    return subprocess.check_output(args, text=True, stderr=subprocess.PIPE, timeout=45).strip()
+def command(*args, timeout=45):
+    return subprocess.check_output(args, text=True, stderr=subprocess.PIPE, timeout=timeout).strip()
 
 
-def api(endpoint):
-    return json.loads(command("gh", "api", endpoint))
+def api(endpoint, *, timeout=45):
+    return json.loads(command("gh", "api", endpoint, timeout=timeout))
 
 
-def pages(endpoint):
-    return json.loads(command("gh", "api", "--paginate", "--slurp", endpoint))
+def pages(endpoint, *, timeout=45):
+    return json.loads(command("gh", "api", "--paginate", "--slurp", endpoint, timeout=timeout))
 
 
 def requested_scope(env):
@@ -557,25 +557,42 @@ def coordination_artifact_index(repository):
     # One bounded paginated request replaces a serial lookup for every old
     # unsuccessful run. Absence is usable only from a complete stable inventory.
     endpoint = f"repos/{repository}/actions/artifacts?per_page=100"
-    first = api(endpoint)
-    total = first["total_count"]
-    if not isinstance(total, int) or not 0 <= total <= 10000:
-        raise CoordinationRefusal("coordination_artifact_inventory_exceeds_bound")
-    responses = [first] if len(first["artifacts"]) == total else pages(endpoint)
-    artifacts = [artifact for response in responses for artifact in response["artifacts"]]
-    if (any(response["total_count"] != total for response in responses)
-            or len(artifacts) != total or len({artifact["id"] for artifact in artifacts}) != total):
-        raise CoordinationRefusal("coordination_artifact_inventory_incomplete_or_changed")
-    index = {}
-    for artifact in artifacts:
-        if not isinstance(artifact["name"], str):
-            raise CoordinationRefusal("coordination_artifact_inventory_invalid_name")
-        if artifact["name"].startswith("ci-coordination-identity-"):
-            name = artifact["name"]
-            if name in index:
-                raise CoordinationRefusal("coordination_artifact_inventory_duplicate_identity")
-            index[name] = artifact["workflow_run"]["id"]
-    return index
+    deadline = time.monotonic() + 45
+
+    def remaining():
+        seconds = deadline - time.monotonic()
+        if seconds <= 0:
+            raise CoordinationRefusal("coordination_artifact_inventory_incomplete_or_changed")
+        return seconds
+
+    for attempt in range(3):
+        # Concurrent uploads can move page boundaries. Discard every page of
+        # an unstable read; never combine it with a later inventory.
+        first = api(endpoint, timeout=remaining())
+        total = first["total_count"]
+        if not isinstance(total, int) or not 0 <= total <= 10000:
+            raise CoordinationRefusal("coordination_artifact_inventory_exceeds_bound")
+        responses = [first] if len(first["artifacts"]) == total else pages(endpoint, timeout=remaining())
+        artifacts = [artifact for response in responses for artifact in response["artifacts"]]
+        for artifact in artifacts:
+            if not isinstance(artifact["name"], str):
+                raise CoordinationRefusal("coordination_artifact_inventory_invalid_name")
+        if (any(response["total_count"] != total for response in responses)
+                or len(artifacts) != total or len({artifact["id"] for artifact in artifacts}) != total):
+            if attempt == 2:
+                raise CoordinationRefusal("coordination_artifact_inventory_incomplete_or_changed")
+            diagnostic("retrying_unstable_coordination_artifact_inventory")
+            time.sleep(min(1, remaining()))
+            continue
+        remaining()  # Do not accept a read that finished outside its budget.
+        index = {}
+        for artifact in artifacts:
+            if artifact["name"].startswith("ci-coordination-identity-"):
+                name = artifact["name"]
+                if name in index:
+                    raise CoordinationRefusal("coordination_artifact_inventory_duplicate_identity")
+                index[name] = artifact["workflow_run"]["id"]
+        return index
 
 
 def reusable_run(env, scope, with_attempt=False):
