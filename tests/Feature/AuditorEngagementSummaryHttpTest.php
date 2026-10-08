@@ -28,7 +28,7 @@ it('projects only current engagement status and the matching transport link on e
     }
     $prefix = $api ? 'api.v1.auditor.' : 'auditor.';
     $pages = $api ? ['profile' => 'auditor/profile', 'jobs.index' => 'auditor/jobs']
-        : ['home' => 'identity/role-home', 'profile' => 'auditor/profile', 'jobs.index' => 'auditor/jobs'];
+        : ['home' => 'auditor/home', 'profile' => 'auditor/profile', 'jobs.index' => 'auditor/jobs'];
     $read = function (string $status) use ($api, $prefix, $pages): void {
         $summary = ['status' => $status, 'link' => ['url' => route($prefix.'engagement.show', [], false), 'method' => 'get']];
         foreach ($pages as $route => $component) {

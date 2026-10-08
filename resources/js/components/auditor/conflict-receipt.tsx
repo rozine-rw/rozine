@@ -10,6 +10,28 @@ import type {
     ConflictReceipt,
 } from '@/types/auditor';
 
+/** Characters of the assignment ID kept in its short reference. */
+const REFERENCE_TAIL = 6;
+
+/**
+ * How a declaration on record is named where the read names no Business: "Business on record ·
+ * Ref. …7QK2M4", with the tail of a long assignment ID; a short one reads as sent.
+ */
+export function useBusinessOnRecord(): (assignmentId: string) => string {
+    const { t } = useTranslation();
+
+    return (assignmentId) =>
+        `${t('auditor.conflict.business_on_record')} · ${t(
+            'auditor.conflict.assignment_ref',
+            {
+                reference:
+                    assignmentId.length > REFERENCE_TAIL + 2
+                        ? `…${assignmentId.slice(-REFERENCE_TAIL)}`
+                        : assignmentId,
+            },
+        )}`;
+}
+
 const STATUS_TONE: Record<ConflictAssignmentStatus, PillTone> = {
     reassignment_pending: 'amber',
     reassigned: 'neutral',

@@ -50,7 +50,18 @@ it('authorizes each home without switching roles and shares the API identity fac
     $this->get(route($role.'.home'))->assertInertia(fn (Assert $page): Assert => $page->where('section', 'overview'));
     $this->getJson(route('api.v1.identity.roles.show', $role))->assertExactJson(['data' => $selected]);
     expect($user->refresh()->context_revision)->toBe(1);
-})->with(['investor', 'business', 'auditor']);
+})->with(['investor', 'business']);
+
+it('authorizes the Auditor home the same way and renders the designed Auditor Home there', function (): void {
+    [$user] = bookmarkParticipant('auditor');
+    $this->actingAs($user)->getJson(route('auditor.home'))->assertForbidden()->assertJsonPath('code', 'ACTIVE_ROLE_REQUIRED');
+    expect($user->refresh()->context_revision)->toBe(0);
+    $selected = app(SelectActiveRole::class)->handle($user->id, 'auditor', 0, (string) Str::uuid());
+    $this->get(route('auditor.home', ['section' => 'access']))->assertInertia(fn (Assert $page): Assert => $page
+        ->component('auditor/home', false)->where('identity_context_revision', $selected['context_revision'])->missing('section')->missing('identity'));
+    $this->getJson(route('api.v1.identity.roles.show', 'auditor'))->assertExactJson(['data' => $selected]);
+    expect($user->refresh()->context_revision)->toBe(1);
+});
 
 it('saves and resumes the current account position with web and API parity', function (): void {
     [$user] = bookmarkParticipant();

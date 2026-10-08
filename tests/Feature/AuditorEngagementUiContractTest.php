@@ -78,7 +78,7 @@ function engagementUiProps(User $user, string $url = '/auditor/engagement', stri
 }
 
 /**
- * Reads the engagement summary on every live Auditor entry page — the role home, Jobs, the file
+ * Reads the engagement summary on every live Auditor entry page — Home, Jobs, the file
  * and the Jobs beneath it, and Profile — checks each against the banner fixture's `engagement`
  * key by key, and returns them.
  *
@@ -88,7 +88,7 @@ function engagementUiSummaries(User $user, string $assignmentId): array
 {
     $summary = engagementUiFixture('auditor-jobs-engagement-required', 'auditor/jobs')['engagement'];
     $file = engagementUiProps($user, '/auditor/jobs/'.$assignmentId, 'auditor/file');
-    $read = ['home' => engagementUiProps($user, '/auditor', 'identity/role-home')['engagement'],
+    $read = ['home' => engagementUiProps($user, '/auditor', 'auditor/home')['engagement'],
         'jobs' => engagementUiProps($user, '/auditor/jobs', 'auditor/jobs')['engagement'],
         'file' => $file['engagement'], 'file.jobs' => $file['jobs']['engagement'],
         'profile' => engagementUiProps($user, '/auditor/profile', 'auditor/profile')['engagement']];
