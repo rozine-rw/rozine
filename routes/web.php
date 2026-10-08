@@ -17,6 +17,7 @@ use App\Http\Controllers\BusinessRepaymentController;
 use App\Http\Controllers\BusinessWalletController;
 use App\Http\Controllers\ChangeFeedController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmailVerificationCodeController;
 use App\Http\Controllers\IdentityManagementController;
 use App\Http\Controllers\InvestorDealsController;
 use App\Http\Controllers\InvestorPrimaryController;
@@ -46,6 +47,9 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::post('{business}/audit-reports/{report}/dispute', [AuditDisputeController::class, 'dispute'])->whereUlid(['business', 'report'])->name('dispute');
     Route::get('{business}/audit-reports/{report}/dispute/proofs/{proof}', [AuditDisputeController::class, 'proof'])->whereUlid(['business', 'report', 'proof'])->defaults('review_role', 'business')->name('disputes.proofs.show');
 });
+
+Route::post('email/verify-code', [EmailVerificationCodeController::class, 'store'])
+    ->middleware(['auth', 'throttle:6,1'])->name('verification.code');
 
 Route::get('pulse', [PulseController::class, 'index'])->name('pulse');
 
