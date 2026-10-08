@@ -59,10 +59,14 @@ class StaffInvestorVerificationController extends Controller
         abort_if($request->routeIs('api.*') && ! $request->user()?->tokenCan('staff:investors:read'), 403);
         $document = $this->review->document((int) $request->user()?->getAuthIdentifier(), (string) $request->route('verification'), (string) $request->route('document'));
 
+        // Every stored type is a signature-checked PDF, PNG or JPEG, so the reviewer may view it in place;
+        // anything else asked for is a download. nosniff keeps the browser to the declared type.
+        $disposition = $request->query('disposition') === 'inline' ? HeaderUtils::DISPOSITION_INLINE : HeaderUtils::DISPOSITION_ATTACHMENT;
+
         // The ASCII fallback may not carry '%' (Symfony refuses it); filename* keeps the original name.
         return response($document['content'], 200, [
             'Content-Type' => $document['media_type'],
-            'Content-Disposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, $document['filename'], str_replace('%', '_', Str::ascii($document['filename'])) ?: 'document'),
+            'Content-Disposition' => HeaderUtils::makeDisposition($disposition, $document['filename'], str_replace('%', '_', Str::ascii($document['filename'])) ?: 'document'),
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'no-store, private',
         ]);
