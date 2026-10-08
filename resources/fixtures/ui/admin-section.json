@@ -1,0 +1,125 @@
+{
+    "component": "admin/section",
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "repayments": {
+                "url": "/preview/admin-repayments",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "notes": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "primary_market": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "secondary_market": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "risk": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "compliance": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "ratings": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "deferrals": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "plus": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "finance": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "messaging": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "academies": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "app_control": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "policies": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "system_health": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "payments": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2026-09-23T17:40:00+02:00",
+        "section": "notes"
+    }
+}

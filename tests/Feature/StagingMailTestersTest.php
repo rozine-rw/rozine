@@ -57,7 +57,7 @@ test('a superadmin adds and removes a named tester with a reason the journal kee
             ->where('contract_version', 'staff-staging-mail-testers-v1')
             ->where('server_recipients', ['@rozine.rw'])->where('testers', [])
             ->where('viewer.role', 'superadmin')->where('nav.mail_testers.url', route('staff.staging-mail-testers.index', [], false))
-            ->where('nav.investors.url', route('staff.investor-verifications.index', [], false))
+            ->where('nav.investors.url', route('staff.investors.index', [], false))
             ->where('add', ['url' => route('staff.staging-mail-testers.store', [], false), 'method' => 'post']));
 
     $this->post(route('staff.staging-mail-testers.store'), testerChange(['email' => ' Tester@Example.org ']))

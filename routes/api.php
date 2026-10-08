@@ -26,6 +26,7 @@ use App\Http\Controllers\InvestorVerificationController;
 use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\StaffApplicationReleaseController;
 use App\Http\Controllers\StaffDisbursementController;
+use App\Http\Controllers\StaffInvestorDirectoryController;
 use App\Http\Controllers\StaffInvestorVerificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -188,6 +189,9 @@ Route::middleware(['auth:sanctum', 'verified', 'throttle:60,1', 'cache.headers:p
     Route::post('verification/documents', [InvestorVerificationController::class, 'upload'])->name('verification.upload');
     Route::post('verification/submit', [InvestorVerificationController::class, 'submit'])->name('verification.submit');
 });
+
+Route::get('v1/staff/investors', [StaffInvestorDirectoryController::class, 'index'])
+    ->middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->name('api.v1.staff.investors.index');
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/investor-verifications')->name('api.v1.staff.investor-verifications.')->group(function (): void {
     Route::get('/', [StaffInvestorVerificationController::class, 'index'])->name('index');

@@ -15,7 +15,7 @@ const props = (fixture: { props: unknown }) =>
 beforeEach(resetInertia);
 
 describe('Admin frame', () => {
-    it('draws the grouped MVP sidebar with live badges and no post-MVP sections', () => {
+    it('draws the grouped design sidebar with live badges', () => {
         render(<AdminToday {...props(todayFixture)} />);
 
         expect(screen.getByTestId('head')).toHaveTextContent(
@@ -32,14 +32,50 @@ describe('Admin frame', () => {
             within(nav).getByRole('link', { name: /^Applications\s*6$/ }),
         ).toHaveAttribute('href', '/preview/admin-applications');
         expect(
-            within(nav).getByRole('link', { name: /^Disbursements\s*2$/ }),
-        ).toBeInTheDocument();
-        expect(
-            within(nav).getByRole('link', { name: 'Ledger' }),
-        ).not.toHaveAttribute('aria-current');
-        expect(within(nav).getByText('Treasury')).toBeInTheDocument();
+            within(nav).getByRole('link', { name: /^Payments\s*2$/ }),
+        ).toHaveAttribute('href', '/preview/admin-disbursements');
 
-        for (const gone of ['Ratings', 'Policies', 'Engines', 'Notes']) {
+        for (const group of [
+            'Accounts',
+            'Capital',
+            'Oversight',
+            'Treasury',
+            'Engagement',
+            'Console',
+        ]) {
+            expect(within(nav).getByText(group)).toBeInTheDocument();
+        }
+
+        for (const shown of [
+            'Notes',
+            'Primary Market',
+            'Secondary Market',
+            'Risk Center',
+            'Compliance',
+            'Ratings',
+            'Deferrals',
+            'Rozine Plus',
+            'Finance',
+            'Messaging',
+            'Academies',
+            'App Control',
+            'Policies',
+            'System Health',
+        ]) {
+            expect(
+                within(nav).getByRole('link', { name: shown }),
+            ).toHaveAttribute('href', '/preview/admin-section');
+        }
+
+        for (const gone of [
+            'Disbursements',
+            'Repayments',
+            'Ledger',
+            'Book',
+            'Exceptions',
+            'Reconciliation',
+            'Partner coverage',
+        ]) {
             expect(
                 within(nav).queryByRole('link', { name: gone }),
             ).not.toBeInTheDocument();
