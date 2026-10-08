@@ -234,10 +234,67 @@ sendForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
 
 send.form = sendForm
 
+/**
+* @see \App\Http\Controllers\EmailVerificationCodeController::code
+* @see app/Http/Controllers/EmailVerificationCodeController.php:28
+* @route '/email/verify-code'
+*/
+export const code = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: code.url(options),
+    method: 'post',
+})
+
+code.definition = {
+    methods: ["post"],
+    url: '/email/verify-code',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\EmailVerificationCodeController::code
+* @see app/Http/Controllers/EmailVerificationCodeController.php:28
+* @route '/email/verify-code'
+*/
+code.url = (options?: RouteQueryOptions) => {
+    return code.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\EmailVerificationCodeController::code
+* @see app/Http/Controllers/EmailVerificationCodeController.php:28
+* @route '/email/verify-code'
+*/
+code.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: code.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\EmailVerificationCodeController::code
+* @see app/Http/Controllers/EmailVerificationCodeController.php:28
+* @route '/email/verify-code'
+*/
+const codeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: code.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\EmailVerificationCodeController::code
+* @see app/Http/Controllers/EmailVerificationCodeController.php:28
+* @route '/email/verify-code'
+*/
+codeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: code.url(options),
+    method: 'post',
+})
+
+code.form = codeForm
+
 const verification = {
     notice: Object.assign(notice, notice),
     verify: Object.assign(verify, verify),
     send: Object.assign(send, send),
+    code: Object.assign(code, code),
 }
 
 export default verification
