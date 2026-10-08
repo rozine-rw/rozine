@@ -4,10 +4,10 @@ import { AdminFrame } from '@/components/admin/admin-frame';
 import { Drawer, DrawerClose } from '@/components/admin/drawer';
 import {
     avatarColor,
-    formatCount,
     formatTimestamp,
     initialOf,
 } from '@/components/admin/format';
+import { KycDocuments } from '@/components/admin/kyc-documents';
 import { ReasonStage } from '@/components/admin/reason-stage';
 import { SearchEmpty } from '@/components/admin/search-empty';
 import {
@@ -253,46 +253,7 @@ function ReviewDrawer({
                     >
                         {t('admin.kyc.documents')}
                     </h3>
-                    <ul className="mt-2.5 overflow-hidden rounded-[13px] border border-rz-hairline bg-rz-surface">
-                        {review.documents.map((document) => (
-                            <li
-                                key={document.id}
-                                className="flex items-center gap-3 border-b border-[#eef2f8] px-[15px] py-3 last:border-b-0 dark:border-rz-divider"
-                            >
-                                <div className="min-w-0 flex-1">
-                                    <div className="text-[13px] font-semibold text-rz-ink">
-                                        {t(`admin.kyc.slot.${document.slot}`)}
-                                        {!document.current && (
-                                            <span className="ml-2 text-[11px] font-semibold text-rz-faint">
-                                                {t(
-                                                    'admin.kyc.document.replaced',
-                                                )}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="truncate text-[11.5px] text-rz-muted">
-                                        {t('admin.kyc.document.meta', {
-                                            name: document.filename,
-                                            size: formatCount(
-                                                Math.ceil(
-                                                    document.size_bytes / 1024,
-                                                ),
-                                            ),
-                                        })}
-                                    </div>
-                                </div>
-                                <a
-                                    href={document.link.url}
-                                    aria-label={t('admin.kyc.document.open', {
-                                        name: document.filename,
-                                    })}
-                                    className="shrink-0 rounded-[9px] border border-rz-hairline px-3 py-1.5 text-[12px] font-semibold text-rz-accent-app-text"
-                                >
-                                    {t('admin.kyc.document.download')}
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
+                    <KycDocuments documents={review.documents} />
                 </section>
                 {review.decision && (
                     <section

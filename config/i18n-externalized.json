@@ -25,6 +25,7 @@
         "resources/js/components/admin/disbursements/disbursement-status.tsx",
         "resources/js/components/admin/disbursements/panels.tsx",
         "resources/js/components/admin/drawer.tsx",
+        "resources/js/components/admin/kyc-documents.tsx",
         "resources/js/components/admin/ledger/entry-drawer.tsx",
         "resources/js/components/admin/maker-checker.tsx",
         "resources/js/components/admin/parties/directory-table.tsx",

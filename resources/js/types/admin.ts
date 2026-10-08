@@ -1338,7 +1338,10 @@ export type InvestorVerificationDocument = {
     uploaded_at: string;
     /** Whether the submission still points at this upload rather than a replaced one. */
     current: boolean;
+    /** The private file as a download. */
     link: RouteLink;
+    /** The same private file, served for display in place. */
+    view: RouteLink;
 };
 
 export type InvestorVerificationReview = {

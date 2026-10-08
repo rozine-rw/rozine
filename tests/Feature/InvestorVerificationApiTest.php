@@ -124,7 +124,8 @@ test('Compliance reads the queue and private documents over the API with its own
         ->assertJsonPath('data.contract_version', 'staff-investor-verifications-v1')->assertJsonPath('data.entries.0.id', $case->id)
         ->assertJsonPath('data.entries.0.link.url', '/api/v1/staff/investor-verifications?tab=submitted&verification='.$case->id)
         ->assertJsonPath('data.review.actions.approve.url', '/api/v1/staff/investor-verifications/'.$case->id.'/approve')
-        ->assertJsonPath('data.review.documents.0.link.url', '/api/v1/staff/investor-verifications/'.$case->id.'/documents/'.$front->id);
+        ->assertJsonPath('data.review.documents.0.link.url', '/api/v1/staff/investor-verifications/'.$case->id.'/documents/'.$front->id)
+        ->assertJsonPath('data.review.documents.0.view.url', '/api/v1/staff/investor-verifications/'.$case->id.'/documents/'.$front->id.'?disposition=inline');
     expect($this->get(route('api.v1.staff.investor-verifications.document', [$case->id, $front->id]))->assertOk()->getContent())
         ->toBe("\x89PNG\r\n\x1a\nsynthetic identity image");
 
