@@ -106,6 +106,15 @@ const GLYPHS: Record<AdminFrameSection, ReactNode> = {
             <circle cx="8" cy="17" r="1.8" />
         </>
     ),
+    engines: (
+        <>
+            <circle cx="12" cy="12" r="3.2" />
+            <path
+                d="M12 4.5V7M12 17v2.5M4.5 12H7M17 12h2.5M6.7 6.7l1.8 1.8M15.5 15.5l1.8 1.8M17.3 6.7l-1.8 1.8M8.5 15.5l-1.8 1.8"
+                strokeLinecap="round"
+            />
+        </>
+    ),
     policies: (
         <>
             <circle cx="12" cy="12" r="3.5" />
@@ -287,6 +296,7 @@ const GROUPS: {
         group: 'console',
         items: [
             'app_control',
+            'engines',
             'policies',
             'staff',
             'events',
